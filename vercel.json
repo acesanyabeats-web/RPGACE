@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "api/oracle.js": { "runtime": "nodejs20.x" },
+    "api/composio.js": { "runtime": "nodejs20.x" }
+  },
+  "routes": [
+    { "src": "/api/oracle", "dest": "/api/oracle.js" },
+    { "src": "/api/composio", "dest": "/api/composio.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
