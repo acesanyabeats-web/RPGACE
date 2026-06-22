@@ -690,6 +690,7 @@ async function generateAgendas(force=false){
   try{
     const data=await callOracle([{role:'user',content:prompt}],'',700);
     const raw=data.content.map(x=>x.text||'').join('');
+    console.log('AGENDA RAW:', raw.slice(0,500));
     const cleaned=raw.replace(/```json|```/g,"").trim();
     let parsed=[];
     try{const m=cleaned.match(/\[[\s\S]*\]/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
