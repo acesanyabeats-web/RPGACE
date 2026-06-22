@@ -686,11 +686,10 @@ async function generateAgendas(force=false){
   const journalSummary=journalEntries.slice(0,3).map(j=>`- ${j.title}: ${(j.content||'').slice(0,120)}`).join('\n')||'No journal yet';
   const vstsFound=[...new Set(encEntries.flatMap(e=>e.vst_tags||[]))].slice(0,8).join(', ')||'FL Studio built-ins';
   const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-  const prompt=`Generate 5 daily agendas for Alex (@AceSanyaBeats) — UK music producer (Russian/French background, grew up London), building FL Studio YouTube content toward 100k subscribers.\n\nTODAY: ${today}\nACTIVE VSTs: ${vstsFound}\nCONTENT PILLARS: FL Studio Secrets (2x/week), Made Different (1x/week), Producer Challenge (1x/week)\nWorks hospitality shifts — agendas must fit 25-90 min gaps\n\nRECENT ENCYCLOPEDIA:\n${encSummary}\n\nRECENT JOURNAL:\n${journalSummary}\n\nRULES: 2 beat making, 1 content creation, 1 growth, 1 personal/learning. Each directly actionable. Duration 25-90 mins.\n\nReturn ONLY JSON array:\n[{"title":"Short title","description":"Specific action","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"Why today","xp":75}]`;
+  const prompt=`Generate 5 daily agendas for Alex (@AceSanyaBeats) — UK music producer (Russian/French background, grew up London), building FL Studio YouTube content toward 100k subscribers.\n\nTODAY: ${today}\nACTIVE VSTs: ${vstsFound}\nCONTENT PILLARS: FL Studio Secrets (2x/week), Made Different (1x/week), Producer Challenge (1x/week)\nWorks hospitality shifts — agendas must fit 25-90 min gaps\n\nRECENT ENCYCLOPEDIA:\n${encSummary}\n\nRECENT JOURNAL:\n${journalSummary}\n\nRULES: 2 beat making, 1 content creation, 1 growth, 1 personal/learning. Each directly actionable. Duration 25-90 mins.\n\nReturn ONLY a JSON array. IMPORTANT: every string value must be under 12 words. Short and direct only.\n[{"title":"6 words max","description":"12 words max","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"8 words max","xp":75}]`;
   try{
-    const data=await callOracle([{role:'user',content:prompt}],'',700);
+    const data=await callOracle([{role:'user',content:prompt}],'',1500);
     const raw=data.content.map(x=>x.text||'').join('');
-    console.log('AGENDA RAW:', raw.slice(0,500));
     const cleaned=raw.replace(/```json|```/g,"").trim();
     let parsed=[];
     try{const m=cleaned.match(/\[[\s\S]*\]/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
@@ -700,7 +699,6 @@ async function generateAgendas(force=false){
     localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
     renderAgendas();
   }catch(e){
-    console.log('AGENDA ERROR:', e.message, e.stack);
     const el=document.getElementById('agenda-list');
     if(el)el.innerHTML=`<div style="color:var(--red);font-size:13px;padding:16px">✗ ${e.message}</div>`;
   }
@@ -3142,6 +3140,7 @@ function extractTopic(title){
 
 function renderDB(filter=''){
   const el = document.getElementById('db-list');
+  if(!el) return;
   const items = filter ? LEARN.db.filter(n=>n.videoTitle.toLowerCase().includes(filter.toLowerCase())||n.topic.includes(filter.toLowerCase())) : LEARN.db;
   if(!items.length){
     el.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:12px;text-align:center">${filter?'No matching notes found.':'No notes saved yet.'}</div>`;
