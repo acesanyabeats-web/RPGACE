@@ -1147,6 +1147,24 @@ async function sbInsightDelete(id){
   } catch(e){}
 }
 
+function parseInsightJSON(raw){
+  if(!raw) return [];
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+  try{ const r=JSON.parse(cleaned); if(Array.isArray(r)) return r.filter(i=>i&&i.insight); }catch(e){}
+  try{ const m=cleaned.match(/\[[\s\S]*\]/); if(m){ const r=JSON.parse(m[0]); if(Array.isArray(r)) return r.filter(i=>i&&i.insight); } }catch(e){}
+  try{
+    const objs=[]; const re=/\{[^{}]*"insight"\s*:[^{}]*\}/g; let match;
+    while((match=re.exec(cleaned))!==null){ try{ const o=JSON.parse(match[0]); if(o.insight) objs.push(o); }catch(e){} }
+    if(objs.length) return objs;
+  }catch(e){}
+  try{
+    const lines=cleaned.split('\n'); const objs=[];
+    for(const line of lines){ try{ const o=JSON.parse(line.trim().replace(/,$/,'')); if(o&&o.insight) objs.push(o); }catch(e){} }
+    if(objs.length) return objs;
+  }catch(e){}
+  return [];
+}
+
 // ── METHOD 1: AUTO ──
 async function extractInsightsAuto(entry, silent=true){
   const eid = String(entry.id||entry.created_at||entry.title||'');
