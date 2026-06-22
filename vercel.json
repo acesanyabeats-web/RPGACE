@@ -1,0 +1,52 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/scout",
+      "destination": "/api/scout.js"
+    },
+    {
+      "source": "/api/analyst",
+      "destination": "/api/analyst.js"
+    },
+    {
+      "source": "/api/noter",
+      "destination": "/api/noter.js"
+    },
+    {
+      "source": "/api/executor",
+      "destination": "/api/executor.js"
+    },
+    {
+      "source": "/api/orchestrate",
+      "destination": "/api/orchestrate.js"
+    },
+    {
+      "source": "/api/oracle",
+      "destination": "/api/oracle.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/oracle.js": {
+      "maxDuration": 30
+    },
+    "api/orchestrate.js": {
+      "maxDuration": 30
+    },
+    "api/scout.js": {
+      "maxDuration": 30
+    },
+    "api/analyst.js": {
+      "maxDuration": 30
+    },
+    "api/noter.js": {
+      "maxDuration": 30
+    },
+    "api/executor.js": {
+      "maxDuration": 30
+    }
+  }
+}

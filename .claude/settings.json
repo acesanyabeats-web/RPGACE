@@ -1,0 +1,13 @@
+{
+  "model": "claude-sonnet-4-6",
+  "context_files": ["CLAUDE.md"],
+  "auto_approve": false,
+  "check_commands": [
+    "node --check main.js"
+  ],
+  "ignore_paths": [
+    "index.html.bak",
+    "node_modules",
+    ".vercel"
+  ]
+}

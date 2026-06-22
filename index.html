@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Life RPG Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-icon">⚔</div>
+    <h1>RPGACE</h1>
+    <p>ENTER YOUR ACCESS KEY</p>
+    <input type="password" class="gate-input" id="pw-input" placeholder="••••••••••••••" autocomplete="off"/>
+    <div class="gate-error" id="gate-error"></div>
+    <button class="gate-btn" onclick="checkPassword()">ENTER THE REALM</button>
+    <div class="gate-toggle" onclick="togglePwVis()">Show / Hide password</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+<div class="nav">
+  <div class="nav-brand">⚔ RPGACE</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard',this)">Dashboard</button>
+    <button class="nav-tab" onclick="showPage('quests',this)">Quests</button>
+    <button class="nav-tab" onclick="showPage('schedule',this)">Schedule</button>
+    <button class="nav-tab" onclick="showPage('advisor',this)">AI Advisor</button>
+    <button class="nav-tab" onclick="showPage('agents',this)">⚡ Agents</button>
+    <button class="nav-tab" onclick="showPage('learning',this)">🔬 Research</button>
+    <button class="nav-tab" onclick="showPage('encyclopedia',this)">📖 Encyclopedia</button>
+    <button class="nav-tab" onclick="showPage('journal',this)">📓 Journal</button>
+  </div>
+</div>
+
+<div style="padding:16px 20px 0;max-width:1100px;margin:0 auto">
+  <div class="char-header">
+    <div class="avatar-ring">⚔</div>
+    <div class="char-info">
+      <h1>The Creator</h1>
+      <div class="subtitle" id="char-title">Novice Producer • Level <span id="lvl-display">1</span></div>
+      <div class="bars">
+        <div class="bar-row"><span class="bar-label">HP</span><div class="bar-track"><div class="bar-fill hp" style="width:70%"></div></div><span class="bar-val">70 / 100</span></div>
+        <div class="bar-row"><span class="bar-label">MP</span><div class="bar-track"><div class="bar-fill mp" style="width:45%"></div></div><span class="bar-val">45 / 100</span></div>
+        <div class="bar-row"><span class="bar-label">XP</span><div class="bar-track"><div class="bar-fill xp" id="xp-bar" style="width:0%"></div></div><span class="bar-val" id="xp-val">0 / 500</span></div>
+      </div>
+    </div>
+    <div class="stats-mini">
+      <div class="stat-chip"><span class="val" id="stat-tasks">0</span><span class="lbl">Done</span></div>
+      <div class="stat-chip"><span class="val" id="stat-streak">1</span><span class="lbl">Streak</span></div>
+      <div class="stat-chip"><span class="val" id="stat-lvl">1</span><span class="lbl">Level</span></div>
+      <div class="stat-chip"><span class="val" id="stat-xp">0</span><span class="lbl">Total XP</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="section-title">Today's Priority Quests</div>
+  <div class="quest-grid" id="daily-quests"></div>
+  <div class="section-title">Weekly Objectives</div>
+  <div class="quest-grid" id="weekly-quests"></div>
+</div>
+
+<!-- QUESTS -->
+<div class="page" id="page-quests">
+  <div class="section-title">Career — Creator Path 🎬</div>
+  <div class="quest-grid" id="career-quests"></div>
+  <div class="section-title">Health & Fitness 💪</div>
+  <div class="quest-grid" id="health-quests"></div>
+  <div class="section-title">Lifestyle & Habits 🌱</div>
+  <div class="quest-grid" id="lifestyle-quests"></div>
+</div>
+
+<!-- SCHEDULE -->
+<div class="page" id="page-schedule">
+  <div class="schedule-tabs">
+    <button class="sched-tab active" onclick="showSched('daily',this)">Daily (24hr)</button>
+    <button class="sched-tab" onclick="showSched('weekly',this)">Weekly</button>
+    <button class="sched-tab" onclick="showSched('monthly',this)">Monthly</button>
+    <button class="sched-tab" onclick="showSched('import',this)">⬆ Import Shifts</button>
+  </div>
+  <div id="sched-daily"><div class="section-title">24-Hour Schedule</div><div class="time-grid" id="time-slots"></div></div>
+  <div id="sched-weekly" style="display:none"><div class="section-title">Weekly Agenda</div><div class="week-grid" id="week-slots"></div></div>
+  <div id="sched-monthly" style="display:none"><div class="section-title">Monthly Overview</div><div class="month-grid" id="month-slots"></div></div>
+  <div id="sched-import" style="display:none">
+    <div class="section-title">Import Fourth / Rota Shifts</div>
+    <div class="import-panel">
+      <p>Import your shifts from <strong style="color:var(--text)">Fourth</strong> or any rota app. Supports <strong style="color:var(--gold)">.ics</strong>, <strong style="color:var(--gold)">.csv</strong>, and <strong style="color:var(--gold)">manual paste</strong>.</p>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+        <span class="dz-icon">📅</span>
+        <p><span>Click to upload</span> or drag & drop your shift file</p>
+        <p style="font-size:11px;margin-top:6px">.ics · .csv · .txt accepted</p>
+      </div>
+      <input type="file" id="file-input" accept=".ics,.csv,.txt" onchange="handleFile(this.files[0])">
+      <div class="import-methods">
+        <button class="import-method-btn" onclick="showPasteArea()"><span class="method-title">📋 Paste schedule text</span>Copy from Fourth app or email and paste here</button>
+        <button class="import-method-btn" onclick="loadDemoShifts()"><span class="method-title">🔧 Load demo shifts</span>Preview with example shift data</button>
+      </div>
+      <textarea class="paste-area" id="paste-area" placeholder="Paste your schedule here e.g.:&#10;Mon 02 Jun - 09:00 to 17:00 - Bar Staff&#10;Tue 03 Jun - 14:00 to 22:00 - Floor Manager"></textarea>
+      <button class="import-btn" id="parse-paste-btn" onclick="parsePasteInput()">Parse & Import Shifts</button>
+      <div class="import-result" id="import-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AI ADVISOR -->
+<div class="page" id="page-advisor">
+  <div class="section-title">Oracle — AI Quest Advisor ✦</div>
+  <div class="chat-wrap">
+    <div class="chat-toolbar">
+      <span class="toolbar-label">✦ Oracle + Agents active</span>
+      <span style="margin-left:auto;font-size:11px;color:var(--green)">⚡ Gmail · Notion · GitHub · YouTube · Instagram · Canva</span>
+    </div>
+    <div class="chat-msgs" id="chat-msgs"></div>
+    <div class="chat-footer">
+      <!-- INSTA-ORACLE command panel -->
+      <div id="insta-oracle-panel" style="display:none;background:linear-gradient(135deg,rgba(131,58,180,.08),rgba(193,53,132,.08));border:1px solid rgba(193,53,132,.25);border-radius:10px;padding:12px;margin-bottom:10px">
+        <div style="font-size:11px;color:#E1306C;font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">📸 INSTA-ORACLE — 7 GROWTH COMMANDS</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <button onclick="fireInstaCommand(1)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">1 · Content Angle</button>
+          <button onclick="fireInstaCommand(2)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">2 · 15 Hooks</button>
+          <button onclick="fireInstaCommand(3)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">3 · Week of Content</button>
+          <button onclick="fireInstaCommand(4)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">4 · Caption Writer</button>
+          <button onclick="fireInstaCommand(5)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">5 · Algorithm Audit</button>
+          <button onclick="fireInstaCommand(6)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">6 · Profile Audit</button>
+          <button onclick="fireInstaCommand(7)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">7 · Growth System</button>
+          <button onclick="toggleInstaPanel()" style="background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;margin-left:auto">✕ Close</button>
+        </div>
+      </div>
+      <div class="quick-row">
+        <span class="quick-label">Quick:</span>
+        <button class="agent-btn" onclick="quickPrompt('Give me 3 new career quests for today')">📋 New quests</button>
+        <button class="agent-btn" onclick="quickPrompt('Draft a collab outreach email to a music producer in my niche')">📧 Draft email</button>
+        <button class="agent-btn" onclick="quickPrompt('Save my progress today as a Notion page')">📓 Log to Notion</button>
+        <button class="agent-btn" onclick="quickPrompt('Check my YouTube stats')">🎬 YT stats</button>
+        <button class="agent-btn" onclick="toggleInstaPanel()" style="border-color:rgba(193,53,132,.4);color:#E1306C;background:rgba(193,53,132,.08)">📸 Insta-Oracle</button>
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-input" rows="2" placeholder="Ask for quests, tips, or use Agent mode to control your apps..."></textarea>
+        <button class="send-btn" id="send-btn" onclick="sendChat()">SEND</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENTS -->
+<div class="page" id="page-agents">
+  <div class="section-title">⚡ Composio Agent Control Centre</div>
+
+  <div class="section-title">Connected Apps</div>
+  <div class="agent-status-bar">
+    <h4>Your Composio Integrations</h4>
+    <div class="app-pills">
+      <div class="app-pill connected"><span class="dot"></span>Canva</div>
+      <div class="app-pill connected"><span class="dot"></span>GitHub</div>
+      <div class="app-pill connected"><span class="dot"></span>Gmail</div>
+      <div class="app-pill connected"><span class="dot"></span>Instagram</div>
+      <div class="app-pill connected"><span class="dot"></span>Notion</div>
+      <div class="app-pill connected"><span class="dot"></span>YouTube</div>
+      <div class="app-pill disconnected"><span class="dot"></span>Google Calendar (0 connections)</div>
+    </div>
+  </div>
+
+  <div class="section-title">One-Click Agent Actions</div>
+  <div class="quest-grid" id="agent-actions"></div>
+
+  <div class="section-title">Agent Activity Log</div>
+  <button class="learn-btn" style="margin-bottom:12px" onclick="debugComposio()">🔍 Debug — Fetch Account Details</button>
+  <div class="agent-log" id="agent-log"><span class="log-info">[SYSTEM] Agent log initialised. Execute an action above to see results here.</span></div>
+</div>
+
+<!-- LEARNING -->
+<div class="page" id="page-learning">
+  <div class="section-title">📚 Research Lab ✦</div>
+
+  <input type="hidden" id="yt-api-key"/>
+
+
+  <div class="learn-layout">
+
+    <!-- PANEL 1: Content Intelligence -->
+    <div class="learn-panel learn-full">
+      <h3>🧠 1 — CONTENT INTELLIGENCE</h3>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+        <div id="intel-server-status" style="display:flex;align-items:center;gap:6px;font-size:12px">
+          <div id="intel-server-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted)"></div>
+          <span id="intel-server-label" style="color:var(--muted)">Checking server...</span>
+        </div>
+        <div id="intel-stats" style="font-size:12px;color:var(--muted)"></div>
+      </div>
+      <div id="intel-sync-status" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
+
+      <!-- URL Submit -->
+      <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">ANALYSE A VIDEO</div>
+        <div style="display:flex;gap:8px">
+          <input id="intel-url-input" type="text" placeholder="Paste YouTube, TikTok or Instagram URL..."
+            style="flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none"
+            onkeydown="if(event.key==='Enter')submitIntelURL()"/>
+          <button class="learn-btn green" onclick="submitIntelURL()" id="intel-submit-btn">⚡ Analyse</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px">Keep <strong>start_server.bat</strong> running in background for this to work</div>
+      </div>
+
+      <!-- Active jobs -->
+      <div id="intel-jobs" style="margin-bottom:10px"></div>
+
+      <!-- Tab buttons -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="learn-btn" style="border-color:var(--blue);color:var(--blue);background:rgba(74,144,226,.08)" onclick="showIntelTab('insights')">📊 Insights</button>
+        <button class="learn-btn" style="border-color:var(--purple);color:var(--purple);background:rgba(139,92,246,.08)" onclick="showIntelTab('watchlist')">⭐ Watchlist</button>
+        <button class="learn-btn green" onclick="syncIntelData(true)">🔄 Sync</button>
+        <button class="learn-btn" onclick="showIntelTab('setup')" style="border-color:var(--muted);color:var(--muted)">⚙️ Setup</button>
+        <button class="learn-btn" onclick="importIntelJSON()" style="border-color:var(--muted);color:var(--muted);font-size:11px">📥 Manual Import</button>
+      </div>
+
+      <div id="intel-tab-insights">
+        <div id="intel-insights-content"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No insights yet — paste a URL above and click Analyse.</div></div>
+      </div>
+      <div id="intel-tab-watchlist" style="display:none">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px">Videos scoring 7+ auto-added here.</div>
+        <div id="intel-watchlist-content"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Watchlist empty.</div></div>
+      </div>
+      <div id="intel-tab-setup" style="display:none">
+        <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:14px;margin-bottom:10px">
+          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">SETUP</div>
+          <div style="font-size:12px;color:var(--text);line-height:2.2">
+            1. Run SQL in Supabase for <strong>intel_jobs</strong> table (see below)<br>
+            2. Copy <strong>local_server.py</strong> to <strong>C:\Users\acesa\RPGACE\</strong><br>
+            3. Double-click <strong>start_server.bat</strong> on your PC — keep open<br>
+            4. Paste any URL above → click ⚡ Analyse<br>
+            5. Your PC processes it automatically → results appear here
+          </div>
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">SUPABASE SQL — run this once</div>
+          <div style="font-size:11px;font-family:monospace;color:var(--text);line-height:1.8;background:rgba(0,0,0,.3);padding:10px;border-radius:6px;user-select:all">
+            create table intel_jobs (<br>
+            &nbsp;&nbsp;id uuid default gen_random_uuid() primary key,<br>
+            &nbsp;&nbsp;created_at timestamptz default now(),<br>
+            &nbsp;&nbsp;url text not null,<br>
+            &nbsp;&nbsp;status text default 'queued',<br>
+            &nbsp;&nbsp;progress text,<br>
+            &nbsp;&nbsp;error text<br>
+            );<br>
+            alter table intel_jobs enable row level security;<br>
+            create policy "Allow anon" on intel_jobs<br>
+            &nbsp;&nbsp;for all using (true) with check (true);
+          </div>
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">PRIVACY</div>
+          <div style="font-size:12px;color:var(--muted);line-height:2">
+            ✓ Video downloaded to your PC only<br>
+            ✓ Whisper transcribes locally<br>
+            ✓ <span style="color:var(--green);font-weight:600">Video deleted immediately after analysis</span><br>
+            ✓ Insights pushed to Supabase automatically
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: Video Finder -->
+    <div class="learn-panel">
+      <h3>🎬 2 — VIDEO FINDER AI</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Search YouTube without an API key — powered by Supadata.</p>
+      <div class="learn-input-row">
+        <input class="learn-input" id="video-search-input" placeholder="e.g. UK drill beat tutorial, FL Studio mixing..." onkeydown="if(event.key==='Enter')searchVideos()"/>
+        <button class="learn-btn" id="search-btn" onclick="searchVideos()">Search</button>
+      </div>
+      <div class="learn-status" id="search-status"></div>
+      <div id="learn-queue-status" style="display:none;background:rgba(74,144,226,.08);border:1px solid rgba(74,144,226,.2);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:13px;color:var(--text)"></div>
+      <div class="video-results" id="video-results"></div>
+    </div>
+
+    <!-- PANEL 2: Video Workshop -->
+    <div class="learn-panel learn-full" id="video-workshop-panel">
+      <h3>🎬 3 — VIDEO WORKSHOP — Upload Strategy</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Paste the transcript of your final video. AI builds a complete upload strategy — titles, thumbnails, short clips, description, tags and chapters — ready to publish.</p>
+
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:12px;color:var(--muted)">Content type:</span>
+        <select id="vw-type" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;font-family:'Rajdhani',sans-serif">
+          <option value="beat_tutorial">Beat Tutorial</option>
+          <option value="vlog">Production Vlog</option>
+          <option value="review">Plugin/Gear Review</option>
+          <option value="challenge">Challenge Video</option>
+          <option value="shorts">YouTube Shorts</option>
+        </select>
+        <span style="font-size:12px;color:var(--muted)">Duration:</span>
+        <select id="vw-duration" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;font-family:'Rajdhani',sans-serif">
+          <option value="short">Under 5 mins</option>
+          <option value="medium" selected>5-15 mins</option>
+          <option value="long">15+ mins</option>
+        </select>
+      </div>
+
+      <textarea class="pipeline-textarea" id="vw-transcript" placeholder="Paste your video transcript here...
+
+Get your transcript by:
+• Running the Whisper script: python rpgace_process.py your_video.mp4
+• Copying from YouTube auto-captions (click ... under a video → Open transcript)
+• Pasting spoken content manually for short videos
+
+The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip moments · full YouTube description · 15 tags · chapter timestamps" style="min-height:160px"></textarea>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="learn-btn green" onclick="runVideoWorkshop()" id="vw-run-btn">⚡ Generate Upload Strategy</button>
+        <button class="learn-btn" onclick="document.getElementById('vw-transcript').value=''" style="border-color:var(--muted);color:var(--muted)">Clear</button>
+      </div>
+      <div class="learn-status" id="vw-status" style="margin-top:8px"></div>
+
+      <div id="vw-output" style="display:none;margin-top:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
+            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">📝 TITLES (click to copy)</div>
+            <div id="vw-titles" style="font-size:13px;line-height:2"></div>
+          </div>
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
+            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">🖼 THUMBNAIL CONCEPTS</div>
+            <div id="vw-thumbnails" style="font-size:12px;line-height:1.8;color:var(--text)"></div>
+          </div>
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">✂️ SHORT CLIPS (TikTok/Reels/Shorts)</div>
+          <div id="vw-clips" style="font-size:12px;line-height:2;color:var(--text)"></div>
+        </div>
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px">📄 YOUTUBE DESCRIPTION</div>
+            <button onclick="copyDescription()" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">Copy</button>
+          </div>
+          <div id="vw-description" style="font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
+            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">🏷 TAGS</div>
+            <div id="vw-tags" style="font-size:12px;line-height:1.8;color:var(--muted)"></div>
+          </div>
+          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
+            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">📋 CHAPTERS</div>
+            <div id="vw-chapters" style="font-size:12px;line-height:1.8;color:var(--text)"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="learn-btn purple" onclick="saveWorkshopToEncyclopedia()">📖 Save to Encyclopedia</button>
+          <button class="learn-btn" style="border-color:var(--blue);color:var(--blue);background:rgba(74,144,226,.08)" onclick="saveWorkshopToNotion()">📓 Save to Notion</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- POPUPS -->
+<div class="popup-overlay" id="suggestion-popup">
+  <div class="popup">
+    <h3>⚡ Quest Suggestion</h3>
+    <p id="popup-msg">Your advisor has new tasks ready!</p>
+    <div id="popup-tasks"></div>
+    <div class="popup-actions">
+      <button class="popup-btn primary" onclick="acceptSuggestions()">Add to Quests</button>
+      <button class="popup-btn secondary" onclick="closeSuggestion()">Dismiss</button>
+    </div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="agent-confirm-popup">
+  <div class="popup">
+    <h3 id="agent-popup-title">⚡ Agent Action</h3>
+    <p id="agent-popup-desc">Confirm this action?</p>
+    <div class="popup-actions">
+      <button class="popup-btn primary" id="agent-popup-confirm">Execute</button>
+      <button class="popup-btn secondary" onclick="document.getElementById('agent-confirm-popup').classList.remove('show')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="levelup-overlay" id="levelup">
+  <div class="levelup-box">
+    <p>✦ LEVEL UP ✦</p>
+    <h2>LEVEL <span id="new-level">2</span></h2>
+    <p style="margin-top:8px" id="levelup-msg">New skills unlocked!</p>
+  </div>
+  <button class="levelup-btn" onclick="document.getElementById('levelup').classList.remove('show')">CONTINUE</button>
+</div>
+
+<div class="xp-toast" id="xp-toast">+50 XP</div>
+
+<script src="main.js"></script>
+
+<div class="page" id="page-encyclopedia">
+  <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
+
+  <!-- Category Filter Bar -->
+  <div style="margin-bottom:12px">
+    <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;font-family:'Cinzel',serif">FILTER BY CATEGORY</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px" id="enc-category-bar">
+      <button onclick="setEncCategory('all')" id="enc-cat-all" class="enc-cat-btn active">All</button>
+      <button onclick="setEncCategory('beat')" id="enc-cat-beat" class="enc-cat-btn">🎛 Beat Analysis</button>
+      <button onclick="setEncCategory('mixing')" id="enc-cat-mixing" class="enc-cat-btn">🎚 Mixing/Mastering</button>
+      <button onclick="setEncCategory('vst')" id="enc-cat-vst" class="enc-cat-btn">🔌 VST/Plugins</button>
+      <button onclick="setEncCategory('genre')" id="enc-cat-genre" class="enc-cat-btn">🎵 Genre Study</button>
+      <button onclick="setEncCategory('artist')" id="enc-cat-artist" class="enc-cat-btn">🎤 Artist Analysis</button>
+      <button onclick="setEncCategory('strategy')" id="enc-cat-strategy" class="enc-cat-btn">📊 Strategy/Growth</button>
+      <button onclick="setEncCategory('content')" id="enc-cat-content" class="enc-cat-btn">📸 Content Ideas</button>
+      <button onclick="setEncCategory('notes')" id="enc-cat-notes" class="enc-cat-btn">📝 Notes</button>
+    </div>
+  </div>
+
+  <!-- Sort Workflow Tabs -->
+  <div style="margin-bottom:16px">
+    <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;font-family:'Cinzel',serif">SORT WORKFLOW</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <button onclick="setEncSort('recent')" id="enc-sort-recent" class="enc-sort-btn" title="Most recently added entries first">🕐 Most Recent</button>
+      <button onclick="setEncSort('unique')" id="enc-sort-unique" class="enc-sort-btn active" title="Most unusual entries first — for creative inspiration">⭐ Most Unique</button>
+      <button onclick="setEncSort('steal')" id="enc-sort-steal" class="enc-sort-btn" title="Specific techniques you can apply right now">🔧 Steal Now</button>
+      <button onclick="setEncSort('action')" id="enc-sort-action" class="enc-sort-btn" title="Entries with the clearest next steps">⚡ Do Today</button>
+      <button onclick="setEncSort('context')" id="enc-sort-context" class="enc-sort-btn" title="Sorted by genre and artist context">🎵 Genre/Artist</button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <button class="learn-btn green" onclick="refreshEncyclopediaDisplay()">🔄 Refresh</button>
+    <button onclick="syncAndPush()" class="learn-btn" style="border-color:var(--gold);color:var(--gold)">⚡ Sync</button>
+    <button class="learn-btn" onclick="clearEncyclopedia()" style="border-color:var(--muted);color:var(--muted)">🗑 Clear All</button>
+    <span id="enc-count" style="font-size:12px;color:var(--muted)"></span>
+  </div>
+
+  <div id="enc-output">
+    <div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">📖</div>
+      <div style="font-size:15px;color:var(--text);margin-bottom:12px;font-family:'Cinzel',serif">Your Encyclopedia is Empty</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2.2">
+        Entries appear automatically when you analyse videos,<br>save Oracle chats, or use the Video Workshop.<br><br>
+        <button onclick="syncAndPush()" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">⚡ Sync &amp; Push All Reports</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="page" id="page-journal">
+  <div class="section-title">📓 Journal ✦</div>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+    <button class="learn-btn green" onclick="refreshJournalDisplay()">🔄 Refresh</button>
+    <button class="learn-btn" onclick="openJournalEntry()" style="border-color:var(--gold);color:var(--gold)">✏️ New Entry</button>
+    <button class="learn-btn" onclick="clearJournal()" style="border-color:var(--muted);color:var(--muted)">🗑 Clear All</button>
+    <span id="journal-count" style="font-size:12px;color:var(--muted)"></span>
+  </div>
+  <div id="journal-new-entry" style="display:none;background:var(--panel2);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:16px">
+    <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">NEW JOURNAL ENTRY</div>
+    <input id="journal-entry-title" type="text" placeholder="Entry title..." style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none;margin-bottom:8px;box-sizing:border-box"/>
+    <textarea id="journal-entry-body" placeholder="Write your thoughts, paste conversation logs, save strategy notes..." style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none;min-height:160px;resize:vertical;box-sizing:border-box"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="learn-btn green" onclick="saveJournalEntry()">💾 Save Entry</button>
+      <button class="learn-btn" onclick="closeJournalEntry()" style="border-color:var(--muted);color:var(--muted)">Cancel</button>
+    </div>
+  </div>
+  <div id="journal-output">
+    <div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">📓</div>
+      <div style="font-size:15px;color:var(--text);margin-bottom:12px;font-family:'Cinzel',serif">Your Journal is Empty</div>
+      <div style="font-size:13px;color:var(--muted);line-height:2.2">
+        After every Oracle reply, tap <strong style="color:var(--gold)">📓 Save to Journal</strong><br>
+        or type <strong style="color:var(--gold)">"save to journal"</strong> in Oracle chat.<br><br>
+        <button onclick="openJournalEntry()" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">✏️ Write First Entry</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
