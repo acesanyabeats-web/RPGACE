@@ -688,7 +688,7 @@ async function generateAgendas(force=false){
   const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
   const prompt=`Generate 5 daily agendas for Alex (@AceSanyaBeats) — UK music producer (Russian/French background, grew up London), building FL Studio YouTube content toward 100k subscribers.\n\nTODAY: ${today}\nACTIVE VSTs: ${vstsFound}\nCONTENT PILLARS: FL Studio Secrets (2x/week), Made Different (1x/week), Producer Challenge (1x/week)\nWorks hospitality shifts — agendas must fit 25-90 min gaps\n\nRECENT ENCYCLOPEDIA:\n${encSummary}\n\nRECENT JOURNAL:\n${journalSummary}\n\nRULES: 2 beat making, 1 content creation, 1 growth, 1 personal/learning. Each directly actionable. Duration 25-90 mins.\n\nReturn ONLY a JSON array. IMPORTANT: every string value must be under 12 words. Short and direct only.\n[{"title":"6 words max","description":"12 words max","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"8 words max","xp":75}]`;
   try{
-    const data=await callOracle([{role:'user',content:prompt}],'',1500);
+    const data=await callOracle([{role:'user',content:prompt}],'',2000);
     const raw=data.content.map(x=>x.text||'').join('');
     const cleaned=raw.replace(/```json|```/g,"").trim();
     let parsed=[];
@@ -1537,8 +1537,7 @@ Good examples: "EQ cut at 300hz in melody bus removes muddiness from stacked pad
 Entry: ${entry.title}
 Content: ${(entry.content||'').slice(0,3500)}
 
-Return ONLY JSON array:
-[{"insight":"text under 25 words","micro_categories":["Tag1","Tag2"],"macro_category":"beat|mixing|vst|genre|artist|strategy|content|notes"}]`;
+Return ONLY a compact JSON array. ALL strings max 8 words:\n[{"title":"short","description":"short","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"short","xp":75}]`;
   try {
     const data = await callOracle([{role:'user',content:prompt}],'',600);
     const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
