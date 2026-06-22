@@ -492,5 +492,81 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
   </div>
 </div>
 
+
+<!-- TIMER WIDGET -->
+<div id="timer-widget">
+  <div id="tw-label" style="font-size:9px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:2px">WARM-UP</div>
+  <div id="tw-time" style="font-size:24px;font-weight:700;color:var(--gold);font-family:monospace;letter-spacing:2px">5:00</div>
+  <div id="tw-sub" style="font-size:9px;color:var(--muted);margin-top:2px">Get ready</div>
+</div>
+
+<!-- RETURN TO SESSION BUTTON -->
+<button id="return-session-btn" onclick="reopenFocusOverlay()">← Return to Session</button>
+
+<!-- SESSION SETUP OVERLAY -->
+<div id="session-setup-overlay">
+  <div style="background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:28px;max-width:400px;width:90%">
+    <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:6px">BEGIN SESSION</div>
+    <div id="session-agenda-title" style="font-size:17px;color:var(--text);font-weight:600;margin-bottom:20px;line-height:1.4"></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-family:'Cinzel',serif;letter-spacing:.5px">HOW LONG DO YOU HAVE?</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+      <button onclick="pickDuration(25)" class="dur-btn" id="dur-25">25 min</button>
+      <button onclick="pickDuration(45)" class="dur-btn" id="dur-45">45 min</button>
+      <button onclick="pickDuration(60)" class="dur-btn" id="dur-60">60 min</button>
+      <button onclick="pickDuration(90)" class="dur-btn" id="dur-90">90 min</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px">
+      <input id="custom-dur" type="number" min="5" max="240" placeholder="Custom mins"
+        style="flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 12px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none"/>
+      <button onclick="pickDuration(parseInt(document.getElementById('custom-dur').value)||30)" class="dur-btn">Set</button>
+    </div>
+    <div id="dur-display" style="font-size:12px;color:var(--muted);margin-bottom:18px;min-height:16px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="beginSession()" style="flex:1;background:var(--gold);border:none;color:#000;border-radius:8px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Rajdhani',sans-serif">🔥 Begin Warm-up</button>
+      <button onclick="closeSessionSetup()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:13px 16px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOCUS MODE OVERLAY -->
+<div id="focus-overlay">
+  <div style="max-width:860px;margin:0 auto;padding:20px 16px 120px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-size:10px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:3px">⚡ FOCUS SESSION</div>
+        <div id="focus-agenda-title" style="font-size:17px;color:var(--text);font-weight:600;font-family:'Cinzel',serif"></div>
+      </div>
+      <button onclick="exitFocusToEnc()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif">📖 Encyclopedia</button>
+    </div>
+
+    <!-- AI concept panel (sticky, shown on text selection) -->
+    <div id="focus-concept-panel" style="display:none;background:var(--panel2);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:16px;position:sticky;top:0;z-index:50">
+      <div style="font-size:10px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">🔍 IDENTIFIED</div>
+      <div id="focus-concept-text" style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px"></div>
+      <div style="font-size:10px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">💡 RELATED INSIGHTS</div>
+      <div id="focus-insights-list"></div>
+      <button onclick="document.getElementById('focus-concept-panel').style.display='none'" style="margin-top:10px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">✕ Close</button>
+    </div>
+
+    <!-- Stop reason panel (shown when timer ends) -->
+    <div id="focus-stop-panel" style="display:none;background:rgba(225,48,108,.07);border:1px solid rgba(225,48,108,.2);border-radius:10px;padding:16px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text);font-weight:600;margin-bottom:10px">⏱ Time's up — did you finish?</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+        <button class="stop-reason-btn" onclick="logStopReason('Finished it!')">✓ Finished it!</button>
+        <button class="stop-reason-btn" onclick="logStopReason('Ran out of time')">⏰ Ran out of time</button>
+        <button class="stop-reason-btn" onclick="logStopReason('Got interrupted')">📱 Got interrupted</button>
+        <button class="stop-reason-btn" onclick="logStopReason('Lost focus')">🧠 Lost focus</button>
+      </div>
+      <div id="stop-reason-logged" style="font-size:12px;color:var(--muted)"></div>
+    </div>
+
+    <!-- Related encyclopedia entries -->
+    <div id="focus-entries"></div>
+  </div>
+
+  <!-- Fixed Exit button -->
+  <button onclick="closeFocusOverlay()" style="position:fixed;bottom:24px;right:24px;z-index:9150;background:rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);border-radius:10px;padding:12px 22px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">✕ Exit Session</button>
+</div>
+
 </body>
 </html>

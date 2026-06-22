@@ -787,6 +787,249 @@ function startDoNow(idx){
   alert('Do Now session started for: '+AGENDA_LIST[idx].title+'\n\nFocus mode coming in Feature 8.');
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// FOCUS MODE SYSTEM — Features 7-10
+// Timer widget + overlay + text selection AI + stop reason
+// ═══════════════════════════════════════════════════════════
+let FM_SESSION = {duration:0, agenda:null, phase:'idle'};
+let FM_TIMER_INTERVAL = null;
+let FM_TIMER_SECS = 0;
+
+// ── SESSION SETUP ──
+function startDoNow(idx){
+  const a = AGENDA_LIST[idx];
+  if(!a) return;
+  FM_SESSION.agenda = a;
+  FM_SESSION.duration = 0;
+  const titleEl = document.getElementById('session-agenda-title');
+  if(titleEl) titleEl.textContent = a.title;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('sel'));
+  const dd = document.getElementById('dur-display');
+  if(dd) dd.textContent = '';
+  const so = document.getElementById('session-setup-overlay');
+  if(so) so.style.display = 'flex';
+}
+
+function pickDuration(mins){
+  FM_SESSION.duration = mins;
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('sel'));
+  const btn = document.getElementById('dur-'+mins);
+  if(btn) btn.classList.add('sel');
+  const dd = document.getElementById('dur-display');
+  if(dd) dd.textContent = '⏱ ' + mins + ' minute session selected';
+}
+
+function closeSessionSetup(){
+  const so = document.getElementById('session-setup-overlay');
+  if(so) so.style.display = 'none';
+}
+
+function beginSession(){
+  if(!FM_SESSION.duration){
+    const dd = document.getElementById('dur-display');
+    if(dd){ dd.textContent = '⚠ Select a duration first'; dd.style.color='var(--red)'; }
+    return;
+  }
+  closeSessionSetup();
+  openFocusOverlay();
+  showTimerWidget();
+  FM_SESSION.phase = 'warmup';
+  startFMTimer(300, 'WARM-UP', 'Browse · Read · Get in the zone', ()=>{
+    FM_SESSION.phase = 'session';
+    startFMTimer(FM_SESSION.duration * 60, 'SESSION', (FM_SESSION.agenda?.title||'Focus').slice(0,20), ()=>{
+      onSessionTimerEnd();
+    });
+  });
+}
+
+// ── TIMER ──
+function showTimerWidget(){ const w=document.getElementById('timer-widget'); if(w) w.style.display='block'; }
+function hideTimerWidget(){ const w=document.getElementById('timer-widget'); if(w) w.style.display='none'; }
+
+function startFMTimer(totalSecs, label, sublabel, onDone){
+  if(FM_TIMER_INTERVAL){ clearInterval(FM_TIMER_INTERVAL); FM_TIMER_INTERVAL=null; }
+  FM_TIMER_SECS = totalSecs;
+  updateTimerDisplay(label, sublabel);
+  FM_TIMER_INTERVAL = setInterval(()=>{
+    FM_TIMER_SECS--;
+    updateTimerDisplay(label, sublabel);
+    if(FM_TIMER_SECS <= 0){
+      clearInterval(FM_TIMER_INTERVAL);
+      FM_TIMER_INTERVAL = null;
+      if(onDone) onDone();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay(label, sublabel){
+  const m = Math.floor(FM_TIMER_SECS/60);
+  const s = FM_TIMER_SECS % 60;
+  const timeStr = m + ':' + String(s).padStart(2,'0');
+  const lbl = document.getElementById('tw-label');
+  const tim = document.getElementById('tw-time');
+  const sub = document.getElementById('tw-sub');
+  if(lbl) lbl.textContent = label;
+  if(tim){ tim.textContent = timeStr; tim.style.color = (FM_SESSION.phase==='session' && FM_TIMER_SECS<120) ? 'var(--red)' : 'var(--gold)'; }
+  if(sub) sub.textContent = sublabel;
+}
+
+function onSessionTimerEnd(){
+  FM_SESSION.phase = 'complete';
+  const lbl=document.getElementById('tw-label'); if(lbl) lbl.textContent='COMPLETE';
+  const tim=document.getElementById('tw-time'); if(tim){ tim.textContent='✓'; tim.style.color='var(--green)'; }
+  const sub=document.getElementById('tw-sub'); if(sub) sub.textContent='Session done';
+  const sp = document.getElementById('focus-stop-panel');
+  if(sp){ sp.style.display='block'; sp.scrollIntoView({behavior:'smooth',block:'start'}); }
+}
+
+function logStopReason(reason){
+  if(reason==='Finished it!'){
+    const idx = AGENDA_LIST.findIndex(a=>a.id===FM_SESSION.agenda?.id);
+    if(idx>=0) markAgendaDone(idx);
+    closeFocusOverlay();
+    return;
+  }
+  const el = document.getElementById('stop-reason-logged');
+  if(el) el.innerHTML = '<span style="color:var(--gold)">✓ Logged: "' + reason + '"</span>';
+  if(FM_SESSION.agenda){
+    const title = 'Session Log — ' + FM_SESSION.agenda.title;
+    const body = 'Reason stopped: ' + reason + '\nAgenda: ' + FM_SESSION.agenda.title + '\nPlanned: ' + FM_SESSION.duration + 'min\nDate: ' + new Date().toLocaleDateString();
+    saveToJournal(title, body, 'session').catch(()=>{});
+  }
+}
+
+// ── FOCUS OVERLAY ──
+async function openFocusOverlay(){
+  const ov = document.getElementById('focus-overlay');
+  if(!ov) return;
+  ov.style.display = 'block';
+  const title = document.getElementById('focus-agenda-title');
+  if(title) title.textContent = FM_SESSION.agenda?.title || '';
+  const sp = document.getElementById('focus-stop-panel');
+  if(sp) sp.style.display = 'none';
+  const cp = document.getElementById('focus-concept-panel');
+  if(cp) cp.style.display = 'none';
+  await loadFocusEntries();
+  setupFocusTextSelect();
+}
+
+async function loadFocusEntries(){
+  const el = document.getElementById('focus-entries');
+  if(!el) return;
+  el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">Loading related knowledge...</div>';
+  let entries = [];
+  try{
+    const res = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia?order=created_at.desc&limit=60',
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    if(res.ok) entries = await res.json();
+  }catch(e){}
+  const a = FM_SESSION.agenda;
+  const words = ((a?.title||'')+' '+(a?.description||'')+' '+(a?.category||'')).toLowerCase().split(/\s+/).filter(w=>w.length>3);
+  const scored = entries.map(e=>({...e,_s:words.filter(w=>((e.title||'')+' '+(e.content||'')).toLowerCase().includes(w)).length}))
+    .sort((a,b)=>b._s-a._s).slice(0,5);
+  if(!scored.length){
+    el.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">No encyclopedia entries yet.<br>Analyse videos in Research to build your knowledge base.</div>';
+    return;
+  }
+  el.innerHTML = scored.map((e,i)=>`
+    <div class="focus-entry">
+      <div style="font-family:'Cinzel',serif;font-size:12px;color:var(--gold);margin-bottom:8px">${e.title||'Entry'}</div>
+      <div class="focus-selectable" data-eid="${e.id||i}" data-etitle="${(e.title||'').replace(/"/g,'')}" style="font-size:13px;line-height:1.9;color:var(--text)">${renderMarkdown(e.content||'')}</div>
+    </div>`).join('');
+}
+
+function closeFocusOverlay(){
+  if(FM_TIMER_INTERVAL){ clearInterval(FM_TIMER_INTERVAL); FM_TIMER_INTERVAL=null; }
+  hideTimerWidget();
+  const ov = document.getElementById('focus-overlay');
+  if(ov) ov.style.display = 'none';
+  const rb = document.getElementById('return-session-btn');
+  if(rb) rb.style.display = 'none';
+  FM_SESSION = {duration:0, agenda:null, phase:'idle'};
+}
+
+function exitFocusToEnc(){
+  const ov = document.getElementById('focus-overlay');
+  if(ov) ov.style.display = 'none';
+  const rb = document.getElementById('return-session-btn');
+  if(rb) rb.style.display = 'block';
+  const encTab = document.querySelector('[onclick*="encyclopedia"]');
+  if(encTab) showPage('encyclopedia', encTab);
+}
+
+function reopenFocusOverlay(){
+  const ov = document.getElementById('focus-overlay');
+  if(ov) ov.style.display = 'block';
+  const rb = document.getElementById('return-session-btn');
+  if(rb) rb.style.display = 'none';
+}
+
+// ── TEXT SELECTION AI — Feature 9 ──
+let _focusSelectTimeout = null;
+function setupFocusTextSelect(){
+  const ov = document.getElementById('focus-overlay');
+  if(!ov) return;
+  ov.addEventListener('mouseup', ()=>{
+    clearTimeout(_focusSelectTimeout);
+    _focusSelectTimeout = setTimeout(handleFocusSelect, 400);
+  });
+}
+
+async function handleFocusSelect(){
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed || sel.toString().trim().length < 5) return;
+  const selectedText = sel.toString().trim();
+  const node = sel.anchorNode?.parentElement;
+  const container = node?.closest('.focus-selectable');
+  const fullText = container ? container.textContent : '';
+  const selIdx = fullText.indexOf(selectedText);
+  const before = selIdx > 0 ? fullText.slice(Math.max(0,selIdx-400), selIdx) : '';
+  const after = fullText.slice(selIdx+selectedText.length, selIdx+selectedText.length+400);
+
+  const panel = document.getElementById('focus-concept-panel');
+  const conceptEl = document.getElementById('focus-concept-text');
+  const insightsEl = document.getElementById('focus-insights-list');
+  if(!panel) return;
+  panel.style.display = 'block';
+  if(conceptEl) conceptEl.innerHTML = '<em style="color:var(--muted)">Identifying "'+selectedText.slice(0,40)+'"...</em>';
+  if(insightsEl) insightsEl.innerHTML = '';
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+
+  let storedInsights = [];
+  try{
+    const ir = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia_insights?order=created_at.desc&limit=40',
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    if(ir.ok) storedInsights = await ir.json();
+  }catch(e){}
+
+  const insightTexts = storedInsights.slice(0,30).map(i=>'• '+i.insight_text+' ['+( i.source_entry_title||'')+']').join('\n');
+  const prompt = 'A music producer selected: "'+selectedText+'"\n\nContext:\n...'+before.slice(-250)+' [[['+selectedText+']]] '+after.slice(0,250)+'...\n\nKnowledge base:\n'+(insightTexts||'None yet')+'\n\nReturn JSON only:\n{"meaning":"2-3 sentence explanation","insights":[{"text":"insight","entry_id":"","entry_title":""}]}';
+
+  try{
+    const data = await callOracle([{role:'user',content:prompt}],'',400);
+    const raw = data.content.map(x=>x.text||'').join('').replace(/```json|```/g,'').trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('no json');
+    const result = JSON.parse(match[0]);
+    if(conceptEl) conceptEl.innerHTML = '<strong style="color:var(--gold)">"'+selectedText+'"</strong><br><br>'+(result.meaning||'');
+    if(insightsEl) insightsEl.innerHTML = (result.insights||[]).map(ins=>`
+      <div class="focus-insight-card" onclick="goToEncFromFocus('${ins.entry_id||''}')">
+        <div style="font-size:12px;color:var(--text);margin-bottom:3px">${ins.text}</div>
+        ${ins.entry_title?'<div style="font-size:10px;color:var(--blue)">↗ '+ins.entry_title+'</div>':''}
+      </div>`).join('');
+  }catch(e){
+    if(conceptEl) conceptEl.textContent = 'Could not identify — try selecting more specific text.';
+  }
+}
+
+function goToEncFromFocus(entryId){
+  exitFocusToEnc();
+  setTimeout(()=>{
+    if(typeof refreshEncyclopediaDisplay==='function') refreshEncyclopediaDisplay();
+  }, 300);
+}
+
 function initApp(){
   buildAllQuests();buildTimeSlots();buildWeekSlots();buildMonthSlots();buildSkillTree();buildAgentActions();initLearning();
   addMsg(`Greetings, Creator. I am the Oracle — now fully wired to your apps.\n\nI can talk AND act in the same message:\n📧 "Draft a collab email" → fires Gmail instantly\n📓 "Log today's progress" → creates a Notion page\n🎬 "Check my YouTube stats" → fetches live data\n💻 "Save these notes to GitHub" → commits a file\n\nJust talk to me naturally. I'll handle the rest.\n\nWhat do you need today?`,'ai');
