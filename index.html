@@ -28,7 +28,7 @@
   <div class="nav-brand">⚔ RPGACE</div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard',this)">Dashboard</button>
-    <button class="nav-tab" onclick="showPage('quests',this)">Quests</button>
+    <button class="nav-tab" onclick="showPage('quests',this)">📋 Agenda</button>
     <button class="nav-tab" onclick="showPage('schedule',this)">Schedule</button>
     <button class="nav-tab" onclick="showPage('advisor',this)">AI Advisor</button>
     <button class="nav-tab" onclick="showPage('agents',this)">⚡ Agents</button>
@@ -69,12 +69,27 @@
 
 <!-- QUESTS -->
 <div class="page" id="page-quests">
-  <div class="section-title">Career — Creator Path 🎬</div>
-  <div class="quest-grid" id="career-quests"></div>
-  <div class="section-title">Health & Fitness 💪</div>
-  <div class="quest-grid" id="health-quests"></div>
-  <div class="section-title">Lifestyle & Habits 🌱</div>
-  <div class="quest-grid" id="lifestyle-quests"></div>
+  <div class="section-title">📋 Today's Agenda ✦</div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+    <button class="learn-btn green" onclick="generateAgendas(false)" id="agenda-gen-btn">⚡ Generate</button>
+    <button class="learn-btn" onclick="generateAgendas(true)" style="border-color:var(--muted);color:var(--muted);padding:8px 12px">🔄 Refresh</button>
+    <span id="agenda-date-label" style="font-size:11px;color:var(--muted)"></span>
+  </div>
+  <div id="agenda-list" style="margin-bottom:28px">
+    <div style="text-align:center;padding:28px;color:var(--muted);font-size:13px">
+      <div style="font-size:28px;margin-bottom:8px">📋</div>
+      Click Generate to build today's agenda from your encyclopedia and journal.
+    </div>
+  </div>
+  <div style="border-top:1px solid var(--border);padding-top:18px">
+    <div class="section-title" style="margin-bottom:12px">⚔ Quest Board</div>
+    <div class="section-title" style="font-size:12px;margin-top:0">Career — Creator Path 🎬</div>
+    <div class="quest-grid" id="career-quests"></div>
+    <div class="section-title" style="font-size:12px">Health & Fitness 💪</div>
+    <div class="quest-grid" id="health-quests"></div>
+    <div class="section-title" style="font-size:12px">Lifestyle & Habits 🌱</div>
+    <div class="quest-grid" id="lifestyle-quests"></div>
+  </div>
 </div>
 
 <!-- SCHEDULE -->

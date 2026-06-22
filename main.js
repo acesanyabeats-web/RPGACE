@@ -670,6 +670,120 @@ function showPage(name,tab){document.querySelectorAll('.page').forEach(p=>p.clas
 function showSched(type,btn){['daily','weekly','monthly','import'].forEach(t=>{const el=document.getElementById('sched-'+t);if(el)el.style.display=t===type?'block':'none';});document.querySelectorAll('.sched-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');}
 
 // ── INIT ──
+const AGENDA_CACHE_KEY='rpgace_agendas_'+new Date().toDateString();
+const CAT_ICON={beat:'🎛',content:'📸',growth:'📈',learning:'📚',personal:'⚡'};
+const CAT_COL={beat:'var(--gold)',content:'#E1306C',growth:'var(--green)',learning:'var(--blue)',personal:'var(--purple)'};
+let AGENDA_LIST=[];
+
+async function generateAgendas(force=false){
+  if(!force){const cached=localStorage.getItem(AGENDA_CACHE_KEY);if(cached){try{AGENDA_LIST=JSON.parse(cached);renderAgendas();return;}catch(e){}}}
+  const btn=document.getElementById('agenda-gen-btn');
+  if(btn){btn.disabled=true;btn.textContent='⚡ Generating...';}
+  let encEntries=[],journalEntries=[];
+  try{const er=await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?order=created_at.desc&limit=15`,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});if(er.ok)encEntries=await er.json();}catch(e){}
+  try{const jr=await fetch(`${SUPABASE_URL}/rest/v1/journal?order=created_at.desc&limit=4`,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});if(jr.ok)journalEntries=await jr.json();}catch(e){}
+  const encSummary=encEntries.slice(0,8).map(e=>`- ${e.title}: ${(e.content||'').slice(0,90)}`).join('\n')||'No entries yet';
+  const journalSummary=journalEntries.slice(0,3).map(j=>`- ${j.title}: ${(j.content||'').slice(0,120)}`).join('\n')||'No journal yet';
+  const vstsFound=[...new Set(encEntries.flatMap(e=>e.vst_tags||[]))].slice(0,8).join(', ')||'FL Studio built-ins';
+  const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  const prompt=`Generate 5 daily agendas for Alex (@AceSanyaBeats) — UK music producer (Russian/French background, grew up London), building FL Studio YouTube content toward 100k subscribers.\n\nTODAY: ${today}\nACTIVE VSTs: ${vstsFound}\nCONTENT PILLARS: FL Studio Secrets (2x/week), Made Different (1x/week), Producer Challenge (1x/week)\nWorks hospitality shifts — agendas must fit 25-90 min gaps\n\nRECENT ENCYCLOPEDIA:\n${encSummary}\n\nRECENT JOURNAL:\n${journalSummary}\n\nRULES: 2 beat making, 1 content creation, 1 growth, 1 personal/learning. Each directly actionable. Duration 25-90 mins.\n\nReturn ONLY JSON array:\n[{"title":"Short title","description":"Specific action","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"Why today","xp":75}]`;
+  try{
+    const data=await callOracle([{role:'user',content:prompt}],'',700);
+    const raw=data.content.map(x=>x.text||'').join('');
+    const parsed=parseInsightJSON(raw).filter(a=>a&&a.title);
+    if(!parsed.length)throw new Error('No agendas returned');
+    AGENDA_LIST=parsed.slice(0,5).map((a,i)=>({...a,id:'ag'+Date.now()+i,status:'pending'}));
+    localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
+    renderAgendas();
+  }catch(e){
+    const el=document.getElementById('agenda-list');
+    if(el)el.innerHTML=`<div style="color:var(--red);font-size:13px;padding:16px">✗ ${e.message}</div>`;
+  }
+  if(btn){btn.disabled=false;btn.textContent='⚡ Generate';}
+}
+
+function initAgendas(){
+  const label=document.getElementById('agenda-date-label');
+  if(label)label.textContent=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+  const cached=localStorage.getItem(AGENDA_CACHE_KEY);
+  if(cached){try{AGENDA_LIST=JSON.parse(cached);renderAgendas();}catch(e){}}
+}
+
+function renderAgendas(){
+  const el=document.getElementById('agenda-list');
+  if(!el)return;
+  if(!AGENDA_LIST.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:12px">No agendas yet — click Generate.</div>';return;}
+  el.innerHTML=AGENDA_LIST.map((a,i)=>{
+    const icon=CAT_ICON[a.category]||'📋';
+    const col=CAT_COL[a.category]||'var(--gold)';
+    const done=a.status==='done';
+    const sched=a.status==='scheduled';
+    return `<div class="agenda-card${done?' done':sched?' scheduled':''}" id="agenda-card-${i}">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="font-size:20px;flex-shrink:0">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px">${a.title}</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:6px">${a.description}</div>
+          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+            <span style="background:${col}22;border:1px solid ${col}44;color:${col};border-radius:10px;padding:1px 8px;font-size:10px;font-family:'Rajdhani',sans-serif;font-weight:700">${(a.category||'').toUpperCase()}</span>
+            <span style="font-size:10px;color:var(--muted)">⏱ ${a.duration_mins}min</span>
+            <span style="font-size:10px;color:var(--gold)">+${a.xp||50} XP</span>
+          </div>
+          <div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:10px">💡 ${a.why||''}</div>
+          ${done?`<div style="color:var(--green);font-size:12px;font-weight:700">✓ Completed</div>`:sched?`<div style="color:var(--blue);font-size:12px;font-weight:700">📅 Scheduled</div>`:`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <button onclick="startDoNow(${i})" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:800">▶ Do Now</button>
+            <button onclick="openSchedulePicker(${i})" style="background:none;border:1px solid var(--blue);color:var(--blue);border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">📅 Schedule</button>
+            <button onclick="markAgendaDone(${i})" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:7px 12px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">✓ Done</button>
+          </div>
+          <div id="sched-picker-${i}" style="display:none;margin-top:10px;background:var(--panel);border:1px solid var(--blue);border-radius:8px;padding:12px">
+            <div style="font-size:11px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:.5px;margin-bottom:8px">SCHEDULE THIS AGENDA</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="time" id="sched-time-${i}" value="19:00" style="background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 10px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none"/>
+              <span style="font-size:12px;color:var(--muted)">${a.duration_mins} min</span>
+              <button onclick="confirmSchedule(${i})" style="background:var(--blue);border:none;color:#fff;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">Confirm</button>
+              <button onclick="document.getElementById('sched-picker-${i}').style.display='none'" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">Cancel</button>
+            </div>
+          </div>`}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function markAgendaDone(idx){
+  if(!AGENDA_LIST[idx])return;
+  AGENDA_LIST[idx].status='done';
+  addXP(AGENDA_LIST[idx].xp||50);
+  showXPToast(AGENDA_LIST[idx].xp||50);
+  localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
+  renderAgendas();
+}
+
+function openSchedulePicker(idx){
+  const el=document.getElementById(`sched-picker-${idx}`);
+  if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function confirmSchedule(idx){
+  const a=AGENDA_LIST[idx];if(!a)return;
+  const timeEl=document.getElementById(`sched-time-${idx}`);
+  const time=timeEl?timeEl.value:'19:00';
+  const blocks=JSON.parse(localStorage.getItem('rpgace_scheduled_agendas')||'[]');
+  blocks.push({title:a.title,category:a.category,duration_mins:a.duration_mins,time,date:new Date().toLocaleDateString(),xp:a.xp||50});
+  localStorage.setItem('rpgace_scheduled_agendas',JSON.stringify(blocks));
+  AGENDA_LIST[idx].status='scheduled';
+  AGENDA_LIST[idx].scheduled_time=time;
+  localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
+  renderAgendas();
+}
+
+function startDoNow(idx){
+  AGENDA_LIST[idx].status='active';
+  localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
+  renderAgendas();
+  alert('Do Now session started for: '+AGENDA_LIST[idx].title+'\n\nFocus mode coming in Feature 8.');
+}
+
 function initApp(){
   buildAllQuests();buildTimeSlots();buildWeekSlots();buildMonthSlots();buildSkillTree();buildAgentActions();initLearning();
   addMsg(`Greetings, Creator. I am the Oracle — now fully wired to your apps.\n\nI can talk AND act in the same message:\n📧 "Draft a collab email" → fires Gmail instantly\n📓 "Log today's progress" → creates a Notion page\n🎬 "Check my YouTube stats" → fetches live data\n💻 "Save these notes to GitHub" → commits a file\n\nJust talk to me naturally. I'll handle the rest.\n\nWhat do you need today?`,'ai');
@@ -796,6 +910,7 @@ DM script: "Yo [name], I make beats in FL Studio and I want to flip your vocals 
       await saveToJournal(seedEntry.title, seedEntry.content, 'oracle');
     }
   }, 3000);
+  initAgendas();
 }
 // ── CONTENT PIPELINE ──
 const PIPELINE = {
