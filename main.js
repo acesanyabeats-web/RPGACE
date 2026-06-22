@@ -690,7 +690,10 @@ async function generateAgendas(force=false){
   try{
     const data=await callOracle([{role:'user',content:prompt}],'',700);
     const raw=data.content.map(x=>x.text||'').join('');
-    const parsed=parseInsightJSON(raw).filter(a=>a&&a.title);
+    const cleaned=raw.replace(/```json|```/g,"").trim();
+    let parsed=[];
+    try{const m=cleaned.match(/\[[\s\S]*\]/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
+    parsed=parsed.filter(a=>a&&a.title);
     if(!parsed.length)throw new Error('No agendas returned');
     AGENDA_LIST=parsed.slice(0,5).map((a,i)=>({...a,id:'ag'+Date.now()+i,status:'pending'}));
     localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
