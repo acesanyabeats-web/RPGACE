@@ -1532,15 +1532,25 @@ function scrollToVSTInEntry(safeId, anchor){
   }, 200);
 }
 
-function renderVSTFooter(vsts){
+function extractVSTContext(content, vstName){
+  if(!content||!vstName) return '';
+  const sentences=content.split(/[.!?\n]+/).map(s=>s.trim()).filter(s=>s.length>0);
+  const re=new RegExp(vstName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i');
+  const found=sentences.find(s=>re.test(s));
+  if(!found) return '';
+  return found.length>80?found.slice(0,80)+'...':found;
+}
+
+function renderVSTFooter(vsts,rawContent){
   if(!vsts || !vsts.length) return '';
   return `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
     <div style="font-size:10px;color:#FF8C00;font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">🔌 VSTs & EQUIPMENT DETECTED</div>
     <div style="display:flex;flex-wrap:wrap;gap:5px">
       ${vsts.map(v => {
         const anchor = 'vst-ref-' + v.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+        const ctx = extractVSTContext(rawContent, v);
         return `<a href="#${anchor}" onclick="event.preventDefault();document.getElementById('${anchor}')?.scrollIntoView({behavior:'smooth',block:'center'})"
-          style="background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.3);color:#FF8C00;border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;text-decoration:none">${v}</a>`;
+          style="background:rgba(255,140,0,.12);border:1px solid rgba(255,140,0,.3);color:#FF8C00;border-radius:8px;padding:3px 10px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;text-decoration:none">${v}</a>${ctx ? `<span style="font-size:11px;color:var(--muted);font-style:italic;margin-left:6px">${ctx}</span>` : ''}`;
       }).join('')}
     </div>
   </div>`;
@@ -1870,7 +1880,7 @@ function renderEncEntries(){
           <div id="enc-insight-status-${safeId}" style="font-size:11px"></div>
         </div>
         <div id="enc-approval-${safeId}" style="display:none;background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:12px;margin-bottom:10px"></div>
-        ${(() => { const vsts = e.vst_tags?.length ? e.vst_tags : extractVSTsFromText(e.content||''); const highlighted = highlightVSTsInContent(renderMarkdown(e.content||''), vsts); return `<div data-entry-id="${id}" data-entry-title="${(e.title||'').replace(/"/g,'&quot;')}" style="font-size:13px;line-height:1.9;color:var(--text);margin-top:8px">${highlighted}</div>${renderVSTFooter(vsts)}`; })()}
+        ${(() => { const vsts = e.vst_tags?.length ? e.vst_tags : extractVSTsFromText(e.content||''); const highlighted = highlightVSTsInContent(renderMarkdown(e.content||''), vsts); return `<div data-entry-id="${id}" data-entry-title="${(e.title||'').replace(/"/g,'&quot;')}" style="font-size:13px;line-height:1.9;color:var(--text);margin-top:8px">${highlighted}</div>${renderVSTFooter(vsts, e.content||'')}`; })()}
         <button onclick="collapseEncEntry('${safeId}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;margin-top:12px">▲ Collapse</button>
       </div>
     </div>`;
