@@ -700,6 +700,7 @@ async function generateAgendas(force=false){
     localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
     renderAgendas();
   }catch(e){
+    console.log('AGENDA ERROR:', e.message, e.stack);
     const el=document.getElementById('agenda-list');
     if(el)el.innerHTML=`<div style="color:var(--red);font-size:13px;padding:16px">✗ ${e.message}</div>`;
   }
