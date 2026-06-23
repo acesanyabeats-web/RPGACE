@@ -2047,7 +2047,7 @@ Return ONLY a JSON array of insight objects, no explanation:\n[{"insight":"one c
     const data = await callOracle([{role:'user',content:prompt}],'',600);
     const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
     // Use robust 4-strategy parser to handle special chars in insight text
-    const parsed = parseInsightJSON(raw);
+    const parsed = parseInsightJSON(raw.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"'));
     const saved = [];
     for(const ins of parsed){
       const row = {source_entry_id:eid, source_entry_title:entry.title||'', insight_text:ins.insight,
@@ -2073,10 +2073,7 @@ Return JSON only:
   try {
     const data = await callOracle([{role:'user',content:prompt}],'',500);
     const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
-    const match = raw.match(/\[[\s\S]*?\]/);
-    if(!match) throw new Error('No JSON');
-    const suggestions = JSON.parse(match[0]).filter(i=>i&&i.insight);
-    const eid = String(entry.id||entry.created_at||entry.title||'');
+    const suggestions = parseInsightJSON(raw.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"'))
     const panel = document.getElementById('enc-approval-'+safeId);
     if(!panel) return;
     panel.style.display='block';
