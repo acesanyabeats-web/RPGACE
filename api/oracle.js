@@ -1,5 +1,5 @@
-// ORACLE — direct Claude chat (fallback, used by learning pipeline)
-import { setCORS, callClaude } from './_context.js';
+// ORACLE — direct Claude chat with image support
+import { setCORS, callClaude, MODEL } from './_context.js';
 
 export default async function handler(req, res){
   setCORS(res);
@@ -11,10 +11,40 @@ export default async function handler(req, res){
     if(!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { messages, system, maxTokens } = body;
+    const { messages, system, maxTokens, max_tokens } = body;
+    const tokens = maxTokens || max_tokens || 1000;
 
-    const reply = await callClaude(apiKey, messages, system || '', maxTokens || 1000);
-    // Return in same format as Anthropic API for compatibility
+    // Check if any message contains image content
+    const hasImages = messages && messages.some(m =>
+      Array.isArray(m.content) && m.content.some(c => c.type === 'image')
+    );
+
+    if(hasImages){
+      // Call Anthropic API directly with full message structure (supports images)
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: tokens,
+          system: system || '',
+          messages: messages
+        })
+      });
+      if(!response.ok){
+        const err = await response.text();
+        throw new Error('Anthropic API error: ' + err);
+      }
+      const data = await response.json();
+      return res.status(200).json(data);
+    }
+
+    // Text-only messages — use existing callClaude helper
+    const reply = await callClaude(apiKey, messages, system || '', tokens);
     return res.status(200).json({ content: [{ type: 'text', text: reply }] });
 
   } catch(err){
