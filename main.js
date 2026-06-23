@@ -2075,8 +2075,9 @@ Return JSON only:
     const data = await callOracle([{role:'user',content:prompt}],'',500);
     const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
     const suggestions = parseInsightJSON(raw.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"'))
+    console.log('SEMI suggestions:', suggestions.length, suggestions[0]);
     const panel = document.getElementById('enc-approval-'+safeId);
-    if(!panel) return;
+    if(!panel){ console.log('PANEL NOT FOUND:', 'enc-approval-'+safeId); return; }
     panel.style.display='block';
     panel.innerHTML = `<div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">📋 APPROVE INSIGHTS</div>`
       + suggestions.map((s,i)=>`<div style="background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:6px;display:flex;gap:8px;align-items:flex-start">
