@@ -2046,9 +2046,8 @@ Return ONLY a JSON array of insight objects, no explanation:\n[{"insight":"one c
   try {
     const data = await callOracle([{role:'user',content:prompt}],'',600);
     const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
-    const match = raw.match(/\[[\s\S]*?\]/);
-    if(!match) return [];
-    const parsed = JSON.parse(match[0]).filter(i=>i&&i.insight);
+    // Use robust 4-strategy parser to handle special chars in insight text
+    const parsed = parseInsightJSON(raw);
     const saved = [];
     for(const ins of parsed){
       const row = {source_entry_id:eid, source_entry_title:entry.title||'', insight_text:ins.insight,
