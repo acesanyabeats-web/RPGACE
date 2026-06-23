@@ -568,5 +568,18 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
   <button onclick="closeFocusOverlay()" style="position:fixed;bottom:24px;right:24px;z-index:9150;background:rgba(0,0,0,.8);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);border-radius:10px;padding:12px 22px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">✕ Exit Session</button>
 </div>
 
+
+<!-- GLOBAL CONCEPT IDENTIFICATION PANEL -->
+<button id="selection-identify-btn" onclick="triggerGlobalIdentify()">🔍 Identify</button>
+<div id="global-concept-panel" class="hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="font-size:10px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px">🔍 CONCEPT IDENTIFIED</div>
+    <button onclick="closeGlobalPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px">✕</button>
+  </div>
+  <div id="global-concept-text" style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:12px"></div>
+  <div style="font-size:10px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">💡 RELATED INSIGHTS</div>
+  <div id="global-insights-list"></div>
+</div>
+
 </body>
 </html>

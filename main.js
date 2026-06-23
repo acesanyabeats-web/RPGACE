@@ -1425,6 +1425,116 @@ Calculate hours accurately. Include ALL visible shifts including training sessio
 
 
 function updateDBStats(){} // stub — removed from dead code cleanup
+
+// ═══════════════════════════════════════════════════
+// GLOBAL TEXT SELECTION AI — works across all tabs
+// ═══════════════════════════════════════════════════
+let _globalSelectTimeout = null;
+let _globalSelectedText = '';
+let _globalSelectedContext = '';
+
+const SELECTABLE_PAGES = ['page-advisor','page-encyclopedia','page-journal','page-learning','focus-overlay'];
+
+function initGlobalTextSelect(){
+  document.addEventListener('mouseup', function(e){
+    // Skip if inside concept panels
+    if(e.target.closest('#global-concept-panel')) return;
+    if(e.target.closest('#focus-concept-panel')) return;
+    if(e.target.closest('#selection-identify-btn')) return;
+    // Check we're on a selectable page
+    const activePage = document.querySelector('.page.active');
+    const inFocus = document.getElementById('focus-overlay')?.style.display === 'block';
+    const pageId = activePage ? activePage.id : '';
+    if(!inFocus && !SELECTABLE_PAGES.includes(pageId)) return;
+    clearTimeout(_globalSelectTimeout);
+    _globalSelectTimeout = setTimeout(()=>handleGlobalSelect(e), 350);
+  });
+
+  // Hide identify button when clicking elsewhere
+  document.addEventListener('mousedown', function(e){
+    if(!e.target.closest('#selection-identify-btn')){
+      document.getElementById('selection-identify-btn').style.display = 'none';
+    }
+  });
+}
+
+function handleGlobalSelect(e){
+  // Skip if in focus overlay (handled separately)
+  const inFocus = document.getElementById('focus-overlay')?.style.display === 'block';
+  if(inFocus) return;
+
+  const sel = window.getSelection();
+  if(!sel || sel.isCollapsed || sel.toString().trim().length < 5) return;
+
+  _globalSelectedText = sel.toString().trim();
+
+  // Get surrounding context
+  const node = sel.anchorNode?.parentElement;
+  const container = node?.closest('p,div,li,td,section') || node;
+  _globalSelectedContext = container ? container.textContent.slice(0, 600) : '';
+
+  // Show identify button near selection
+  const range = sel.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  const btn = document.getElementById('selection-identify-btn');
+  if(!btn) return;
+  btn.style.display = 'block';
+  btn.style.top = Math.max(10, rect.top - 38) + 'px';
+  btn.style.left = Math.min(window.innerWidth - 120, rect.left) + 'px';
+}
+
+async function triggerGlobalIdentify(){
+  const btn = document.getElementById('selection-identify-btn');
+  if(btn) btn.style.display = 'none';
+
+  const text = _globalSelectedText;
+  const context = _globalSelectedContext;
+  if(!text) return;
+
+  const panel = document.getElementById('global-concept-panel');
+  const conceptEl = document.getElementById('global-concept-text');
+  const insightsEl = document.getElementById('global-insights-list');
+
+  if(!panel) return;
+  panel.classList.remove('hidden');
+  panel.style.display = 'block';
+  if(conceptEl) conceptEl.innerHTML = '<em style="color:var(--muted)">Identifying "'+text.slice(0,40)+'"...</em>';
+  if(insightsEl) insightsEl.innerHTML = '';
+
+  // Fetch stored insights for context
+  let storedInsights = [];
+  try{
+    const ir = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia_insights?order=created_at.desc&limit=30',
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    if(ir.ok) storedInsights = await ir.json();
+  }catch(e){}
+
+  const insightTexts = storedInsights.slice(0,20).map(i=>'• '+i.insight_text).join('\n') || 'None yet';
+  const prompt = 'A music producer / content creator selected this text: "'+text+'"\n\nContext around it:\n'+context+'\n\nKnowledge base:\n'+insightTexts+'\n\nReturn JSON only:\n{"meaning":"2-3 sentence explanation of this concept for a music producer/content creator","insights":[{"text":"brief related insight","entry_title":""}]}';
+
+  try{
+    const data = await callOracle([{role:'user',content:prompt}],'',400);
+    const raw = data.content.map(x=>x.text||'').join('').replace(/```json|```/g,'').trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('no json');
+    const result = JSON.parse(match[0]);
+
+    if(conceptEl) conceptEl.innerHTML = '<strong style="color:var(--gold)">"'+text.slice(0,60)+(text.length>60?'...':'')+'"</strong><br><br>'+(result.meaning||'');
+    if(insightsEl) insightsEl.innerHTML = (result.insights||[]).map(ins=>
+      '<div class="focus-insight-card" style="margin-bottom:6px;cursor:default">'
+      + '<div style="font-size:12px;color:var(--text)">'+ins.text+'</div>'
+      + (ins.entry_title?'<div style="font-size:10px;color:var(--blue);margin-top:2px">↗ '+ins.entry_title+'</div>':'')
+      + '</div>').join('');
+  }catch(err){
+    if(conceptEl) conceptEl.textContent = 'Could not identify — try selecting more specific text.';
+  }
+}
+
+function closeGlobalPanel(){
+  const panel = document.getElementById('global-concept-panel');
+  if(panel){ panel.classList.add('hidden'); setTimeout(()=>panel.style.display='none',250); }
+}
+
 function initApp(){
   buildAllQuests();buildTimeSlots();buildWeekSlots();buildMonthSlots();buildSkillTree();buildAgentActions();initLearning();
   addMsg(`Greetings, Creator. I am the Oracle — now fully wired to your apps.\n\nI can talk AND act in the same message:\n📧 "Draft a collab email" → fires Gmail instantly\n📓 "Log today's progress" → creates a Notion page\n🎬 "Check my YouTube stats" → fetches live data\n💻 "Save these notes to GitHub" → commits a file\n\nJust talk to me naturally. I'll handle the rest.\n\nWhat do you need today?`,'ai');
