@@ -692,7 +692,10 @@ async function generateAgendas(force=false){
     const raw=data.content.map(x=>x.text||'').join('');
     const cleaned=raw.replace(/```json|```/g,"").trim();
     let parsed=[];
-    try{const m=cleaned.match(/\[[\s\S]*\]/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
+    try{const m=cleaned.match(/\[[\s\S]*\]/);if(m)parsed=JSON.parse(m[0]);}catch(e){
+      const re=/\{[^{}]*"title"\s*:[^{}]*\}/g;
+      let m2;while((m2=re.exec(cleaned))!==null){try{const o=JSON.parse(m2[0]);if(o&&o.title)parsed.push(o);}catch(_){}}
+    }
     parsed=parsed.filter(a=>a&&a.title);
     if(!parsed.length)throw new Error('No agendas returned');
     AGENDA_LIST=parsed.slice(0,5).map((a,i)=>({...a,id:'ag'+Date.now()+i,status:'pending'}));
