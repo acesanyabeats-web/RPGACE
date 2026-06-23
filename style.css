@@ -434,3 +434,9 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
   font-family:'Rajdhani',sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.4);
   white-space:nowrap;
 }
+
+/* ── PROD. BY ORACLE ── */
+#prod-oracle-panel{display:none;background:linear-gradient(135deg,rgba(74,144,226,.06),rgba(156,39,176,.06));border:1px solid rgba(74,144,226,.25);border-radius:10px;padding:14px;margin-bottom:10px}
+.prod-cmd-btn{background:rgba(74,144,226,.08);border:1px solid rgba(74,144,226,.25);color:#4A90E2;border-radius:7px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;text-align:left;width:100%;margin-bottom:6px;transition:all .15s}
+.prod-cmd-btn:hover{background:rgba(74,144,226,.18);border-color:rgba(74,144,226,.5)}
+.prod-cmd-btn .cmd-num{font-size:10px;color:rgba(74,144,226,.7);display:block;margin-bottom:2px}

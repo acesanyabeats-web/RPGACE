@@ -1535,6 +1535,121 @@ function closeGlobalPanel(){
   if(panel){ panel.classList.add('hidden'); setTimeout(()=>panel.style.display='none',250); }
 }
 
+
+// ═══════════════════════════════════════════════════
+// PROD. BY ORACLE — 7 Teaching Commands + Beat Analysis
+// ═══════════════════════════════════════════════════
+const PROD_ORACLE_SYS = `You are Alex's personal 300IQ music production teacher — a master producer, beatmaker, and composer who has created beats for top hip hop and rap artists. You have encyclopedic knowledge of the complete craft:
+
+MUSIC THEORY: scales (minor pentatonic, dorian, phrygian), modes, chord progressions for hip hop, melody construction, counter-melodies, harmonic tension
+SOUND DESIGN: synthesis in Omnisphere/Serum/3xOsc/Harmor/Sytrus, layering techniques, sound selection for trap/drill/boom bap, sampling philosophy  
+DRUM SEQUENCING: 808 programming and pitch slides, trap hi-hat patterns and rolls, kick/snare placement, swing and groove quantization, percussion layering
+ARRANGEMENT: song structure (intro/verse/hook/bridge/outro), tension and release, transition techniques, stereo space, energy mapping across a track
+MIXING: EQ (frequency separation, surgical cuts, hi-shelf air), compression (attack/release for punch), sidechain (volume and multiband), saturation, reverb/delay for depth, stereo width
+MASTERING: loudness normalisation, true peak limiting, multiband compression, M/S processing, streaming standards (Spotify -14 LUFS)
+
+Alex (@AceSanyaBeats) uses FL Studio on Windows. Active VSTs: Omnisphere, Serum, Harmor, Sytrus, FL built-ins (3xOsc, Parametric EQ2, Fruity Compressor, Maximus). Target: YouTube content about FL Studio Secrets, grow to 100k subscribers.
+
+TEACHING RULES — never break these:
+1. Never waste a single word on anything that doesn't directly serve Alex's specific learning destination
+2. Always reference FL Studio specifically — plugins, menus, shortcuts, workflow
+3. Give concrete immediately actionable techniques he can apply in the next session
+4. Connect every concept to real tracks/producers he can reference and study
+5. Build compounding knowledge — connect each lesson to what came before
+6. Treat Alex as intelligent — skip the basics he clearly knows, go straight to the gap`;
+
+const PROD_COMMANDS = {
+  '1': {label:'Master Learning', icon:'🎓', prefill:true,
+    prompt:`You are now my personal teacher for the complete craft of hip hop and rap music production — music theory, sound design, drum sequencing, arrangement, mixing and mastering, all inside FL Studio. Before teaching anything ask me three questions: what is my current level of understanding in the specific area I want to learn, what specifically needs to be learned right now, and how will this knowledge be used in my actual beats and YouTube content. Use every answer to design a completely personalised teaching approach that starts from exactly where my understanding currently sits and builds toward exactly where it needs to go without wasting a single minute on anything that does not directly serve that specific destination.`},
+  '2': {label:'Instant Understanding', icon:'⚡', prefill:true,
+    prompt:`Here is something I need to understand right now: [TYPE CONCEPT — e.g. "sidechain compression", "dorian mode", "808 pitch slides"]. Teach it in three layers. Layer one: explain it in one sentence so simple a complete beginner understands it. Layer two: explain it in one paragraph with one real world example inside FL Studio — specific plugin, specific setting, specific result. Layer three: explain every nuance and complexity that matters for actually using this in my beats and production career. Stop after each layer and ask if that level of understanding is enough before going deeper.`},
+  '3': {label:'Socratic Teaching', icon:'🤔', prefill:true,
+    prompt:`Do not explain [TYPE SUBJECT — e.g. "compression", "minor scales", "trap hi-hat patterns"] directly. Instead teach it using only questions. Ask one question at a time. After each answer ask the next question that builds naturally on what was just said. Guide my thinking toward the right understanding without ever stating it directly. Only correct a wrong answer by asking a better question that reveals why it is wrong. Continue until I have reached complete understanding through thinking rather than being told what to think.`},
+  '4': {label:'Real World Application', icon:'🌍', prefill:true,
+    prompt:`Here is something I understand theoretically but have never fully applied: [TYPE KNOWLEDGE — e.g. "frequency separation", "chord inversions", "sidechain"]. Stop teaching theory completely. Design five real world scenarios in FL Studio where this knowledge gets applied immediately starting from today. For each scenario describe the exact situation, the exact decision this knowledge changes, the exact steps in FL Studio, and the exact way my beat sounds different. Make every scenario so realistic and immediately relevant that applying this knowledge feels urgent rather than optional.`},
+  '5': {label:'Gap Finder', icon:'🔍', prefill:true,
+    prompt:`Here is everything I currently understand about [TYPE SUBJECT]: [DESCRIBE YOUR CURRENT KNOWLEDGE AS HONESTLY AS POSSIBLE]. Study this completely. Find every gap in my understanding I do not even know exists yet. Find every place where my understanding is technically correct but missing the deeper insight that makes it genuinely useful. Find every misconception hiding inside what seems like correct knowledge. Address every gap starting with the one causing the most damage to the quality of my music right now.`},
+  '6': {label:'Teach It Back', icon:'🎯', prefill:true,
+    prompt:`Here is my explanation of [TYPE SUBJECT] that needs checking for genuine understanding: [PASTE YOUR EXPLANATION IN YOUR OWN WORDS]. Find every place where my explanation reveals genuine understanding versus comfortable familiarity with the right words without the right understanding underneath. Give me a score out of 10 for genuine production mastery and tell me exactly what needs to be studied and practised to move that score to a 10.`},
+  '7': {label:'Permanent Knowledge', icon:'🧠', prefill:true,
+    prompt:`Here is production knowledge I need permanently accessible: [DESCRIBE WHAT NEEDS TO BE REMEMBERED]. Design a complete knowledge retention system for this content. Include the spaced repetition schedule, the active recall exercises I can do while making beats, and the one connection to existing production knowledge that makes this feel like a natural extension of something I already deeply understand rather than an isolated piece of information floating without any anchor.`}
+};
+
+function toggleProdOraclePanel(){
+  const p = document.getElementById('prod-oracle-panel');
+  if(!p) return;
+  p.style.display = p.style.display==='none'||!p.style.display ? 'block' : 'none';
+}
+
+function fireProdCommand(num){
+  const cmd = PROD_COMMANDS[String(num)];
+  if(!cmd) return;
+  document.getElementById('prod-oracle-panel').style.display = 'none';
+  const input = document.getElementById('chat-input');
+  if(!input) return;
+  if(num===1){
+    // Fire immediately — no blanks to fill
+    window._prodOracleActive = true;
+    input.value = cmd.prompt;
+    sendChat();
+  } else {
+    // Pre-fill so user fills in the blanks
+    input.value = cmd.prompt;
+    input.focus();
+    // Highlight first [bracket] for easy replacement
+    const start = cmd.prompt.indexOf('[');
+    const end = cmd.prompt.indexOf(']') + 1;
+    if(start>=0) input.setSelectionRange(start, end);
+  }
+}
+
+async function fireBeatAnalysis(){
+  document.getElementById('prod-oracle-panel').style.display = 'none';
+  const input = document.getElementById('chat-input');
+
+  // Fetch encyclopedia insights
+  let insights = [];
+  try{
+    const r = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia_insights?order=created_at.desc&limit=60',
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    if(r.ok) insights = await r.json();
+  }catch(e){}
+
+  // Fetch encyclopedia entries
+  let entries = [];
+  try{
+    const r = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia?order=created_at.desc&limit=20',
+      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    if(r.ok) entries = await r.json();
+  }catch(e){}
+
+  const insightTexts = insights.map(i=>'• '+i.insight_text+(i.macro_category?' ['+i.macro_category+']':'')).join('\n') || 'No insights yet — extract some from encyclopedia entries first.';
+  const entryTitles = entries.map(e=>e.title).join(', ') || 'None yet';
+
+  const prompt = `BEAT ANALYSIS — scan my production knowledge base and teach me.
+
+MY ENCYCLOPEDIA ENTRIES: ${entryTitles}
+
+MY EXTRACTED INSIGHTS:
+${insightTexts}
+
+As my 300IQ production teacher:
+1. WHAT I KNOW: Identify the strongest production knowledge I have based on these insights
+2. THE GAP: Find the single most important gap in my production knowledge that is holding back my sound right now — the gap I probably don't even know exists
+3. CONNECTIONS: Find 3 insights that connect to each other in a way I probably haven't realised yet
+4. NEXT LESSON: Based on everything above, design my next production lesson starting with the most urgent knowledge gap
+5. APPLY NOW: Give me one concrete 30-minute FL Studio exercise I can do tonight that directly addresses the biggest gap
+
+Be brutal and specific. Reference my actual insights by content, not vaguely.`;
+
+  window._prodOracleActive = true;
+  if(input) input.value = prompt;
+  sendChat();
+}
+
+// Override sendChat to use PROD_ORACLE_SYS when active
+const _origSendChat = typeof sendChat === 'function' ? sendChat : null;
+
 function initApp(){
   buildAllQuests();buildTimeSlots();buildWeekSlots();buildMonthSlots();buildSkillTree();buildAgentActions();initLearning();
   addMsg(`Greetings, Creator. I am the Oracle — now fully wired to your apps.\n\nI can talk AND act in the same message:\n📧 "Draft a collab email" → fires Gmail instantly\n📓 "Log today's progress" → creates a Notion page\n🎬 "Check my YouTube stats" → fetches live data\n💻 "Save these notes to GitHub" → commits a file\n\nJust talk to me naturally. I'll handle the rest.\n\nWhat do you need today?`,'ai');

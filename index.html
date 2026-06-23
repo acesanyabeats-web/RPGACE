@@ -135,7 +135,18 @@
     <div class="chat-msgs" id="chat-msgs"></div>
     <div class="chat-footer">
       <!-- INSTA-ORACLE command panel -->
-      <div id="insta-oracle-panel" style="display:none;background:linear-gradient(135deg,rgba(131,58,180,.08),rgba(193,53,132,.08));border:1px solid rgba(193,53,132,.25);border-radius:10px;padding:12px;margin-bottom:10px">
+      <div id="prod-oracle-panel" style="display:none;background:linear-gradient(135deg,rgba(74,144,226,.06),rgba(156,39,176,.06));border:1px solid rgba(74,144,226,.25);border-radius:10px;padding:14px;margin-bottom:10px">
+  <div style="font-family:'Cinzel',serif;font-size:11px;color:#4A90E2;letter-spacing:1px;margin-bottom:12px">🎛 PROD. BY ORACLE — TEACHING COMMANDS</div>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(1)"><span class="cmd-num">1 · MASTER LEARNING</span>Start a personalised production lesson</button>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(2)"><span class="cmd-num">2 · INSTANT UNDERSTANDING</span>3-layer explanation of any concept</button>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(3)"><span class="cmd-num">3 · SOCRATIC TEACHING</span>Learn through questions only</button>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(4)"><span class="cmd-num">4 · REAL WORLD APPLICATION</span>5 FL Studio scenarios for any technique</button>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(5)"><span class="cmd-num">5 · GAP FINDER</span>Find what you don't know you don't know</button>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(6)"><span class="cmd-num">6 · TEACH IT BACK</span>Score your understanding 1-10</button>
+  <button class="prod-cmd-btn" onclick="fireProdCommand(7)"><span class="cmd-num">7 · PERMANENT KNOWLEDGE</span>Build a retention system</button>
+  <button class="prod-cmd-btn" onclick="fireBeatAnalysis()" style="border-color:rgba(201,168,76,.4);color:var(--gold);background:rgba(201,168,76,.08)"><span class="cmd-num" style="color:rgba(201,168,76,.7)">8 · BEAT ANALYSIS</span>Scan my knowledge base + find gaps</button>
+</div>
+<div id="insta-oracle-panel" style="display:none;background:linear-gradient(135deg,rgba(131,58,180,.08),rgba(193,53,132,.08));border:1px solid rgba(193,53,132,.25);border-radius:10px;padding:12px;margin-bottom:10px">
         <div style="font-size:11px;color:#E1306C;font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">📸 INSTA-ORACLE — 7 GROWTH COMMANDS</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
           <button onclick="fireInstaCommand(1)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">1 · Content Angle</button>
@@ -154,6 +165,7 @@
         <button class="agent-btn" onclick="quickPrompt('Draft a collab outreach email to a music producer in my niche')">📧 Draft email</button>
         <button class="agent-btn" onclick="quickPrompt('Save my progress today as a Notion page')">📓 Log to Notion</button>
         <button class="agent-btn" onclick="quickPrompt('Check my YouTube stats')">🎬 YT stats</button>
+        <button class="agent-btn" onclick="toggleProdOraclePanel()" style="border-color:rgba(74,144,226,.4);color:#4A90E2;background:rgba(74,144,226,.08)">🎛 Prod. Oracle</button>
         <button class="agent-btn" onclick="toggleInstaPanel()" style="border-color:rgba(193,53,132,.4);color:#E1306C;background:rgba(193,53,132,.08)">📸 Insta-Oracle</button>
       </div>
       <div class="chat-input-row">
