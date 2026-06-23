@@ -2042,7 +2042,7 @@ Good examples: "EQ cut at 300hz in melody bus removes muddiness from stacked pad
 Entry: ${entry.title}
 Content: ${(entry.content||'').slice(0,3500)}
 
-Return ONLY a compact JSON array. ALL strings max 8 words:\n[{"title":"short","description":"short","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"short","xp":75}]`;
+Return ONLY a JSON array of insight objects, no explanation:\n[{"insight":"one concrete fact or technique under 25 words","category":"technique|theory|mindset|gear|workflow|inspiration|business","micro_category":"specific sub-topic"}]`;
   try {
     const data = await callOracle([{role:'user',content:prompt}],'',600);
     const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
