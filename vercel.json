@@ -25,6 +25,10 @@
       "destination": "/api/oracle.js"
     },
     {
+      "source": "/api/search",
+      "destination": "/api/search.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
@@ -47,6 +51,9 @@
     },
     "api/executor.js": {
       "maxDuration": 30
+    },
+    "api/search.js": {
+      "maxDuration": 10
     }
   }
 }
