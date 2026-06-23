@@ -666,7 +666,8 @@ function buildSkillTree(){const el=document.getElementById('skill-tree');if(!el)
 function updateSkillTree(){SKILLS.forEach(s=>{if(STATE.level>=(parseInt(s.req.replace('Lv ',''))||1))s.active=true;});buildSkillTree();}
 
 // ── PAGE NAV ──
-function showPage(name,tab){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');if(tab)tab.classList.add('active');if(name==='learning'||name==='encyclopedia')refreshEncyclopediaDisplay(); if(name==='journal')refreshJournalDisplay();}
+function showPage(name,tab){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');if(tab)tab.classList.add('active');if(name==='learning'||name==='encyclopedia')refreshEncyclopediaDisplay();
+  if(name==='schedule')setTimeout(loadScheduledAgendas,100); if(name==='journal')refreshJournalDisplay();}
 function showSched(type,btn){['daily','weekly','monthly','import'].forEach(t=>{const el=document.getElementById('sched-'+t);if(el)el.style.display=t===type?'block':'none';});document.querySelectorAll('.sched-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');}
 
 // ── INIT ──
@@ -1031,6 +1032,47 @@ function goToEncFromFocus(entryId){
   setTimeout(()=>{
     if(typeof refreshEncyclopediaDisplay==='function') refreshEncyclopediaDisplay();
   }, 300);
+}
+
+
+// -- SCHEDULED AGENDAS IN SCHEDULE TAB --
+function loadScheduledAgendas(){
+  const blocks = JSON.parse(localStorage.getItem('rpgace_scheduled_agendas')||'[]');
+  const CAT_ICON_S = {beat:'🎛',content:'📸',growth:'📈',learning:'📚',personal:'⚡'};
+  const schedPage = document.getElementById('page-schedule');
+  if(!schedPage) return;
+  let summaryEl = document.getElementById('scheduled-agendas-summary');
+  if(summaryEl) summaryEl.remove();
+  if(!blocks.length) return;
+  summaryEl = document.createElement('div');
+  summaryEl.id = 'scheduled-agendas-summary';
+  summaryEl.style.cssText = 'background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px';
+  const firstChild = schedPage.querySelector('.section-title');
+  if(firstChild) schedPage.insertBefore(summaryEl, firstChild);
+  else schedPage.prepend(summaryEl);
+  summaryEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:var(--gold);letter-spacing:1px;margin-bottom:10px">SCHEDULED AGENDAS</div>'
+    + blocks.map(function(b,i){
+        return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'
+          + '<span style="font-size:16px">'+(CAT_ICON_S[b.category]||'📋')+'</span>'
+          + '<div style="flex:1"><div style="font-size:13px;color:var(--text);font-weight:600">'+b.title+'</div>'
+          + '<div style="font-size:11px;color:var(--muted)">'+b.time+' · '+b.duration_mins+'min · '+(b.date||'Today')+'</div></div>'
+          + '<button onclick="removeScheduledAgenda('+i+')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px">✕</button>'
+          + '</div>';
+      }).join('')
+    + '<div style="margin-top:10px"><button onclick="clearScheduledAgendas()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer">Clear All</button></div>';
+}
+
+function removeScheduledAgenda(idx){
+  const blocks = JSON.parse(localStorage.getItem('rpgace_scheduled_agendas')||'[]');
+  blocks.splice(idx,1);
+  localStorage.setItem('rpgace_scheduled_agendas',JSON.stringify(blocks));
+  loadScheduledAgendas();
+}
+
+function clearScheduledAgendas(){
+  if(!confirm('Clear all scheduled agendas?')) return;
+  localStorage.removeItem('rpgace_scheduled_agendas');
+  loadScheduledAgendas();
 }
 
 function initApp(){
