@@ -1298,7 +1298,7 @@ function handleOracleImage(input){
     preview.innerHTML = '<img src="'+dataUrl+'" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid var(--gold)"/>'
       + '<button onclick="clearPendingImage(this.parentElement)" style="position:absolute;top:-6px;right:-6px;background:var(--red,#e74c3c);border:none;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:18px;text-align:center">✕</button>'
       + '<div style="font-size:10px;color:var(--muted);margin-top:3px">📸 Image ready — send to analyse</div>';
-    const chatMessages = document.getElementById('chat-messages');
+    const chatMessages = document.getElementById('chat-msgs');
     if(chatMessages){ chatMessages.appendChild(preview);
     chatMessages.scrollTop = chatMessages.scrollHeight; }
   };
