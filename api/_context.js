@@ -18,7 +18,7 @@ CONFIRMED TOOLS:
 - GMAIL_CREATE_EMAIL_DRAFT — {subject, body, to}
 - GMAIL_FETCH_EMAILS — {max_results, label_ids}
 - NOTION_CREATE_NOTION_PAGE — {title, markdown}
-- GITHUB_CREATE_A_REPOSITORY — {name, description, private, auto_init}
+- GITHUB_RUN_GRAPH_QL_QUERY — use for repo creation via GraphQL
 - GITHUB_CREATE_OR_UPDATE_FILE_CONTENTS — {repo, path, message, content}
 - SUPADATA_GET_YOUTUBE_CHANNEL — {id} (use "@AceSanyaBeats")
 - INSTAGRAM_BASIC_DISPLAY_MEDIA_DETAILS — {}
