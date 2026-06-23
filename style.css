@@ -401,7 +401,7 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
 
 /* ── FOCUS MODE ── */
 #timer-widget{display:none;position:fixed;top:16px;right:16px;z-index:500;background:var(--panel);border:1px solid var(--gold);border-radius:10px;padding:10px 16px;text-align:center;pointer-events:none;min-width:116px;box-shadow:0 2px 14px rgba(0,0,0,.45)}
-#focus-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9100;background:var(--bg);overflow-y:auto}
+#focus-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9100;background:#0d0d12;background:var(--bg,#0d0d12);overflow-y:auto;isolation:isolate}
 #session-setup-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9200;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center}
 #return-session-btn{display:none;position:fixed;bottom:24px;left:16px;z-index:9999;background:var(--gold);border:none;color:#000;border-radius:8px;padding:10px 18px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:800;box-shadow:0 2px 14px rgba(0,0,0,.4)}
 .focus-entry{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
