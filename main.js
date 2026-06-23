@@ -1299,8 +1299,8 @@ function handleOracleImage(input){
       + '<button onclick="clearPendingImage(this.parentElement)" style="position:absolute;top:-6px;right:-6px;background:var(--red,#e74c3c);border:none;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:18px;text-align:center">✕</button>'
       + '<div style="font-size:10px;color:var(--muted);margin-top:3px">📸 Image ready — send to analyse</div>';
     const chatMessages = document.getElementById('chat-messages');
-    if(chatMessages) chatMessages.appendChild(preview);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if(chatMessages){ chatMessages.appendChild(preview);
+    chatMessages.scrollTop = chatMessages.scrollHeight; }
   };
   reader.readAsDataURL(file);
   input.value = ''; // reset so same file can be re-uploaded
@@ -1414,6 +1414,8 @@ Calculate hours accurately. Include ALL visible shifts including training sessio
   }
 }
 
+
+function updateDBStats(){} // stub — removed from dead code cleanup
 function initApp(){
   buildAllQuests();buildTimeSlots();buildWeekSlots();buildMonthSlots();buildSkillTree();buildAgentActions();initLearning();
   addMsg(`Greetings, Creator. I am the Oracle — now fully wired to your apps.\n\nI can talk AND act in the same message:\n📧 "Draft a collab email" → fires Gmail instantly\n📓 "Log today's progress" → creates a Notion page\n🎬 "Check my YouTube stats" → fetches live data\n💻 "Save these notes to GitHub" → commits a file\n\nJust talk to me naturally. I'll handle the rest.\n\nWhat do you need today?`,'ai');
