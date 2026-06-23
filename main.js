@@ -2063,6 +2063,7 @@ Return ONLY a JSON array of insight objects, no explanation:\n[{"insight":"one c
 
 // ── METHOD 2: SEMI-AUTO ──
 async function extractInsightsSemiAuto(entry, safeId){
+  const eid = String(entry.id||entry.created_at||entry.title||'');
   const statusEl = document.getElementById('enc-insight-status-'+safeId);
   if(statusEl) statusEl.innerHTML='<span style="color:var(--muted)">⚡ AI extracting...</span>';
   const prompt = `Extract 7 specific insights from this entry.
