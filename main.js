@@ -974,9 +974,18 @@ function reopenFocusOverlay(){
 // ── TEXT SELECTION AI — Feature 9 ──
 let _focusSelectTimeout = null;
 function setupFocusTextSelect(){
+  // Prevent concept panel from triggering itself
+  const panel = document.getElementById('focus-concept-panel');
+  if(panel){
+    panel.addEventListener('mouseup', function(e){ e.stopPropagation(); });
+    panel.style.userSelect = 'none';
+    panel.style.webkitUserSelect = 'none';
+  }
+
   const ov = document.getElementById('focus-overlay');
   if(!ov) return;
-  ov.addEventListener('mouseup', ()=>{
+  ov.addEventListener('mouseup', (e)=>{
+    if(e.target.closest('#focus-concept-panel')) return;
     clearTimeout(_focusSelectTimeout);
     _focusSelectTimeout = setTimeout(handleFocusSelect, 400);
   });
