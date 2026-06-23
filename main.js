@@ -2676,7 +2676,7 @@ async function refreshJournalDisplay(){
     return;
   }
 
-  const sourceIcon = s => s==='oracle'?'🔮':s==='insta'?'📸':'✏️';
+  const sourceIcon = s => s==='oracle'?'🔮':s==='insta'?'📸':s==='session'?'⚡':'✏️';
 
   el.innerHTML = entries.map((e,i) => {
     const preview = (e.content||'').slice(0,200).replace(/\*\*/g,'').replace(/\n/g,' ');
