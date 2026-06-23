@@ -8,7 +8,7 @@ an aspiring UK music producer and content creator targeting YouTube, TikTok and 
 CONNECTED APPS (Composio v3.1) — all under user_id: pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1:
 - Gmail:     ca_7oagofAi-tkv
 - YouTube:   ca_yfUI2ySIgkat
-- Instagram: ca_BuczS_wYvxRd
+- Instagram: ca_PZCS9R3VR5xG
 - GitHub:    ca_0dwb1yCGD-Dk
 - Canva:     ca_9U6ZLJW-DxFg
 - Supadata:  ca_2wlvzvhd5tFz  (YouTube stats — no-auth public data)
@@ -33,7 +33,7 @@ const PG = 'pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1';
 export const ACCOUNTS = {
   gmail:     { id: 'ca_7oagofAi-tkv',  user_id: PG },
   youtube:   { id: 'ca_yfUI2ySIgkat',  user_id: PG },
-  instagram: { id: 'ca_BuczS_wYvxRd',  user_id: PG },
+  instagram: { id: 'ca_PZCS9R3VR5xG',  user_id: PG },
   github:    { id: 'ca_0dwb1yCGD-Dk',  user_id: PG },
   canva:     { id: 'ca_9U6ZLJW-DxFg',  user_id: PG },
   supadata:  { id: 'ca_rxEcC9_UzPkL',  user_id: PG },

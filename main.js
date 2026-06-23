@@ -2510,56 +2510,6 @@ function renderVideoResults(items){
   });
 }
 
-function selectVideo(id, title, thumb, channel){
-  LEARN.selectedVideo = {id, title, thumb, channel, url:'https://youtube.com/watch?v='+id};
-  document.querySelectorAll('.video-card').forEach(c=>c.style.borderColor='var(--border)');
-  // Show in notes panel
-  const urlEl = document.getElementById('notes-video-url');
-  if(urlEl) urlEl.value = 'https://youtube.com/watch?v='+id;
-  const info = document.getElementById('notes-selected-info');
-  if(info){ info.textContent = '✓ Selected: '+title; info.style.display='block'; }
-  setLearnStatus('notes-status','Ready — click Generate Notes','ok');
-}
-
-// ── 2. NOTES AI — accepts URL directly OR selected video ──
-async function generateNotesFromUrl(){
-  const urlEl = document.getElementById('notes-video-url');
-  const input  = urlEl?.value?.trim() || '';
-  // Extract video ID from pasted URL
-  if(input){
-    const idMatch = input.match(/(?:v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    if(idMatch){
-      const videoId = idMatch[1];
-      if(!LEARN.selectedVideo || LEARN.selectedVideo.id !== videoId){
-        setLearnStatus('notes-status','Fetching video info...','loading');
-        try {
-          const res = await fetch('/api/executor',{
-            method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({tool:'SUPADATA_GET_YOUTUBE_VIDEO',input:{video_id:videoId}})
-          });
-          const data = await res.json();
-          const v = data.data||{};
-          LEARN.selectedVideo = {
-            id: videoId,
-            title: v.title || ('YouTube Video '+videoId),
-            channel: v.channel?.name || v.channelTitle || '',
-            thumb: v.thumbnail || ('https://img.youtube.com/vi/'+videoId+'/mqdefault.jpg'),
-            url: 'https://youtube.com/watch?v='+videoId
-          };
-          const info = document.getElementById('notes-selected-info');
-          if(info){ info.textContent = '✓ '+LEARN.selectedVideo.title; info.style.display='block'; }
-        } catch(e){
-          LEARN.selectedVideo = {id:videoId, title:'YouTube Video '+videoId, channel:'',
-            thumb:'https://img.youtube.com/vi/'+videoId+'/mqdefault.jpg',
-            url:'https://youtube.com/watch?v='+videoId};
-        }
-      }
-    }
-  }
-  if(!LEARN.selectedVideo){ alert('Paste a YouTube URL or select a video from Video Finder.'); return; }
-  await generateNotes();
-}
-
 // ── 2. NOTES AI ──
 async function generateNotes(){
   if(!LEARN.selectedVideo){ alert('Select a video first.'); return; }
@@ -3343,40 +3293,6 @@ function saveIntelToEncyclopedia(index){
   else alert('✓ Saved to Encyclopedia — check the Encyclopedia tab.');
 }
 
-function addNotesToEncyclopedia(){
-  const notes = document.getElementById('notes-output').value.trim();
-  if(!notes || !LEARN.selectedVideo){ alert('Generate notes first.'); return; }
-  const title = LEARN.selectedVideo.title;
-  saveOracleToEncyclopedia('Notes: '+title, notes);
-  const encTab = document.querySelector('[onclick*="encyclopedia"]');
-  if(encTab) showPage('encyclopedia', encTab);
-}
-
-function saveNotes(){
-  const notes = document.getElementById('notes-output').value.trim();
-  if(!notes || !LEARN.selectedVideo){ alert('Generate notes first.'); return; }
-  const entry = {
-    id: Date.now(),
-    videoId: LEARN.selectedVideo.id,
-    videoTitle: LEARN.selectedVideo.title,
-    channel: LEARN.selectedVideo.channel,
-    thumb: LEARN.selectedVideo.thumb,
-    url: LEARN.selectedVideo.url,
-    focus: document.getElementById('notes-focus').value.trim(),
-    notes,
-    wordCount: notes.split(/\s+/).filter(Boolean).length,
-    savedAt: new Date().toLocaleDateString(),
-    topic: extractTopic(LEARN.selectedVideo.title)
-  };
-  LEARN.db.unshift(entry);
-  localStorage.setItem('rpgace_notes', JSON.stringify(LEARN.db));
-  renderDB();
-  updateDBStats();
-  setLearnStatus('notes-status','✓ Saved to database!','ok');
-  addXP(30);
-  showXPToast(30);
-}
-
 function extractTopic(title){
   const topics = ['mixing','mastering','production','marketing','branding','youtube','tiktok','instagram','songwriting','beats','sampling','plugins','workflow','mindset','business','social media','content','editing','thumbnail','SEO'];
   const t = title.toLowerCase();
@@ -3409,15 +3325,6 @@ function renderDB(filter=''){
   });
 }
 
-function updateDBStats(){
-  document.getElementById('db-count').textContent = LEARN.db.length;
-  document.getElementById('db-videos').textContent = new Set(LEARN.db.map(n=>n.videoId)).size;
-  document.getElementById('db-topics').textContent = new Set(LEARN.db.map(n=>n.topic)).size;
-  document.getElementById('db-words').textContent = LEARN.db.reduce((a,n)=>a+n.wordCount,0);
-}
-
-function filterDB(val){ renderDB(val); }
-
 function loadNote(id){
   const entry = LEARN.db.find(n=>n.id===id);
   if(!entry) return;
@@ -3435,14 +3342,6 @@ function loadNote(id){
 function deleteNote(id){
   if(!confirm('Delete this note?')) return;
   LEARN.db = LEARN.db.filter(n=>n.id!==id);
-  localStorage.setItem('rpgace_notes', JSON.stringify(LEARN.db));
-  renderDB();
-  updateDBStats();
-}
-
-function clearAllNotes(){
-  if(!confirm('Delete ALL saved notes? This cannot be undone.')) return;
-  LEARN.db = [];
   localStorage.setItem('rpgace_notes', JSON.stringify(LEARN.db));
   renderDB();
   updateDBStats();
