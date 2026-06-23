@@ -687,7 +687,9 @@ async function generateAgendas(force=false){
   const journalSummary=journalEntries.slice(0,3).map(j=>`- ${j.title}: ${(j.content||'').slice(0,120)}`).join('\n')||'No journal yet';
   const vstsFound=[...new Set(encEntries.flatMap(e=>e.vst_tags||[]))].slice(0,8).join(', ')||'FL Studio built-ins';
   const today=new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
-  const prompt=`Generate 5 daily agendas for Alex (@AceSanyaBeats) — UK music producer (Russian/French background, grew up London), building FL Studio YouTube content toward 100k subscribers.\n\nTODAY: ${today}\nACTIVE VSTs: ${vstsFound}\nCONTENT PILLARS: FL Studio Secrets (2x/week), Made Different (1x/week), Producer Challenge (1x/week)\nWorks hospitality shifts — agendas must fit 25-90 min gaps\n\nRECENT ENCYCLOPEDIA:\n${encSummary}\n\nRECENT JOURNAL:\n${journalSummary}\n\nRULES: 2 beat making, 1 content creation, 1 growth, 1 personal/learning. Each directly actionable. Duration 25-90 mins.\n\nReturn ONLY a JSON array. IMPORTANT: every string value must be under 12 words. Short and direct only.\n[{"title":"6 words max","description":"12 words max","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"8 words max","xp":75}]`;
+  const shiftCtx=typeof getShiftContext==='function'?getShiftContext():'No shift data';
+  const freeWin=typeof getFreeWindows==='function'?getFreeWindows():'Unknown';
+  const prompt=`Generate 5 daily agendas for Alex (@AceSanyaBeats) — UK music producer (Russian/French background, grew up London), building FL Studio YouTube content toward 100k subscribers.\n\nTODAY: ${today}\nACTIVE VSTs: ${vstsFound}\nCONTENT PILLARS: FL Studio Secrets (2x/week), Made Different (1x/week), Producer Challenge (1x/week)\nWORK SHIFTS THIS WEEK:\n${shiftCtx}\nFREE WINDOWS TODAY: ${freeWin}\nCRITICAL: Never suggest tasks that overlap with shift times. Only use free windows.\n\nRECENT ENCYCLOPEDIA:\n${encSummary}\n\nRECENT JOURNAL:\n${journalSummary}\n\nRULES: 2 beat making, 1 content creation, 1 growth, 1 personal/learning. Each directly actionable. Duration 25-90 mins.\n\nReturn ONLY a JSON array. IMPORTANT: every string value must be under 12 words. Short and direct only.\n[{"title":"6 words max","description":"12 words max","category":"beat|content|growth|learning|personal","duration_mins":45,"why":"8 words max","xp":75}]`;
   try{
     const data=await callOracle([{role:'user',content:prompt}],'',2000);
     const raw=data.content.map(x=>x.text||'').join('');
@@ -1073,6 +1075,343 @@ function clearScheduledAgendas(){
   if(!confirm('Clear all scheduled agendas?')) return;
   localStorage.removeItem('rpgace_scheduled_agendas');
   loadScheduledAgendas();
+}
+
+
+// ═══════════════════════════════════════════════════
+// FOURTH ROTA — SHIFT SYSTEM
+// ═══════════════════════════════════════════════════
+const SHIFTS_KEY = 'rpgace_shifts';
+
+// Pre-loaded rota from Fourth screenshots (June-July 2026)
+const DEFAULT_SHIFTS = [
+  {date:'2026-06-23',day:'TUE',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-06-25',day:'THU',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-06-27',day:'SAT',role:'Bar Tender',start:'13:00',end:'22:00',hours:8.5},
+  {date:'2026-06-28',day:'SUN',role:'Training',start:'10:00',end:'12:00',hours:2},
+  {date:'2026-06-28',day:'SUN',role:'Bar Tender',start:'17:00',end:'00:00',hours:7},
+  {date:'2026-06-30',day:'TUE',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-07-02',day:'THU',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-07-03',day:'FRI',role:'Bar Tender',start:'13:00',end:'22:00',hours:8.5},
+  {date:'2026-07-04',day:'SAT',role:'Bar Tender',start:'13:00',end:'22:00',hours:8.5},
+  {date:'2026-07-05',day:'SUN',role:'Bar Tender',start:'17:00',end:'00:00',hours:7},
+  {date:'2026-07-07',day:'TUE',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-07-09',day:'THU',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-07-10',day:'FRI',role:'Bar Tender',start:'13:00',end:'22:00',hours:8.5},
+  {date:'2026-07-11',day:'SAT',role:'Bar Tender',start:'13:00',end:'22:00',hours:8.5},
+  {date:'2026-07-12',day:'SUN',role:'Training',start:'10:00',end:'12:00',hours:2},
+  {date:'2026-07-12',day:'SUN',role:'Bar Tender',start:'17:00',end:'00:00',hours:7},
+  {date:'2026-07-13',day:'MON',role:'Bar Tender',start:'17:00',end:'00:00',hours:7},
+  {date:'2026-07-15',day:'WED',role:'Bar Tender',start:'10:30',end:'21:00',hours:10},
+  {date:'2026-07-16',day:'THU',role:'Bar Tender',start:'17:00',end:'00:00',hours:7},
+  {date:'2026-07-18',day:'SAT',role:'Bar Tender',start:'13:00',end:'23:00',hours:9.5},
+  {date:'2026-07-19',day:'SUN',role:'Bar Tender',start:'17:00',end:'00:00',hours:7},
+];
+
+function initShifts(){
+  if(!localStorage.getItem(SHIFTS_KEY)){
+    localStorage.setItem(SHIFTS_KEY, JSON.stringify(DEFAULT_SHIFTS));
+  }
+}
+
+function getShifts(){
+  try{ return JSON.parse(localStorage.getItem(SHIFTS_KEY)||'[]'); }catch(e){ return []; }
+}
+
+function getTodayShifts(){
+  const today = new Date().toISOString().split('T')[0];
+  return getShifts().filter(s=>s.date===today);
+}
+
+function getShiftsForDate(dateStr){
+  return getShifts().filter(s=>s.date===dateStr);
+}
+
+function getShiftContext(){
+  // Returns shift summary for agenda generator prompt
+  const today = new Date();
+  const next7 = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(today);
+    d.setDate(today.getDate()+i);
+    const dateStr = d.toISOString().split('T')[0];
+    const shifts = getShiftsForDate(dateStr);
+    if(shifts.length){
+      const dayName = d.toLocaleDateString('en-GB',{weekday:'short'});
+      const dayNum = d.getDate();
+      shifts.forEach(s=>{
+        next7.push(dayName+' '+dayNum+': '+s.start+'-'+s.end+' ('+s.role+', '+s.hours+'h)');
+      });
+    }
+  }
+  if(!next7.length) return 'No shifts in next 7 days';
+  return next7.join('\n');
+}
+
+function getFreeWindows(){
+  // Get free time windows today around shifts
+  const todayShifts = getTodayShifts();
+  if(!todayShifts.length) return 'Full day free';
+  const windows = [];
+  const toMins = t => { const [h,m]=(t||'00:00').split(':').map(Number); return h*60+m; };
+  const toTime = m => String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+  // Sort shifts by start time
+  const sorted = [...todayShifts].sort((a,b)=>toMins(a.start)-toMins(b.start));
+  let cursor = 0;
+  sorted.forEach(s=>{
+    const start = toMins(s.start);
+    const end = s.end==='00:00'?24*60:toMins(s.end);
+    if(start-cursor >= 60) windows.push(toTime(cursor)+'-'+s.start+' ('+(start-cursor)+'min free)');
+    cursor = end;
+  });
+  if(1440-cursor >= 60) windows.push(toTime(cursor)+'-00:00 ('+(1440-cursor)+'min free)');
+  return windows.length ? windows.join(', ') : 'No significant free windows today';
+}
+
+function renderShiftBlocks(){
+  // Show shift blocks in schedule tab
+  const shifts = getShifts();
+  const today = new Date().toISOString().split('T')[0];
+  // Remove existing shift blocks
+  document.querySelectorAll('.shift-block').forEach(el=>el.remove());
+  let shiftSummaryEl = document.getElementById('shift-summary');
+  if(shiftSummaryEl) shiftSummaryEl.remove();
+  const schedPage = document.getElementById('page-schedule');
+  if(!schedPage) return;
+  // Show upcoming shifts summary
+  const upcoming = shifts.filter(s=>s.date>=today).slice(0,8);
+  if(!upcoming.length) return;
+  shiftSummaryEl = document.createElement('div');
+  shiftSummaryEl.id = 'shift-summary';
+  shiftSummaryEl.style.cssText = 'background:rgba(128,128,128,.08);border:1px solid rgba(128,128,128,.2);border-radius:10px;padding:14px;margin-bottom:16px';
+  shiftSummaryEl.innerHTML = '<div style="font-family:Cinzel,serif;font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">'
+    + '<span>🏪 WORK SHIFTS — The Joiners Arms</span>'
+    + '<button onclick="openPasteRota()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif">+ Update Rota</button>'
+    + '</div>'
+    + upcoming.map(s=>{
+        const d = new Date(s.date);
+        const dayStr = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+        const isTraining = s.role==='Training';
+        const col = isTraining ? 'var(--blue)' : 'rgba(128,128,128,.7)';
+        return '<div class="shift-block" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)">'
+          + '<div style="font-size:12px;color:var(--muted);min-width:90px">'+dayStr+'</div>'
+          + '<div style="flex:1;font-size:13px;font-weight:600;color:'+col+'">'+s.start+' → '+s.end+'</div>'
+          + '<div style="font-size:11px;color:var(--muted)">'+s.role+' · '+s.hours+'h</div>'
+          + '</div>';
+      }).join('')
+    + '<div id="paste-rota-area" style="display:none;margin-top:12px">'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Paste your shifts below (one per line: DD/MM START-END, e.g. "25/06 10:30-21:00"):</div>'
+    + '<textarea id="rota-paste-input" rows="6" placeholder="23/06 10:30-21:00&#10;25/06 10:30-21:00&#10;27/06 13:00-22:00" style="width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px;font-size:12px;font-family:monospace;resize:vertical;box-sizing:border-box"></textarea>'
+    + '<div style="display:flex;gap:8px;margin-top:8px">'
+    + '<button onclick="parseAndSaveRota()" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:800">✓ Import Shifts</button>'
+    + '<button onclick="closePasteRota()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif">Cancel</button>'
+    + '</div></div>';
+  // Insert before scheduled agendas summary or first section title
+  const agendaSummary = document.getElementById('scheduled-agendas-summary');
+  const firstTitle = schedPage.querySelector('.section-title');
+  if(agendaSummary) schedPage.insertBefore(shiftSummaryEl, agendaSummary);
+  else if(firstTitle) schedPage.insertBefore(shiftSummaryEl, firstTitle);
+  else schedPage.prepend(shiftSummaryEl);
+}
+
+function openPasteRota(){
+  const el = document.getElementById('paste-rota-area');
+  if(el) el.style.display = 'block';
+}
+
+function closePasteRota(){
+  const el = document.getElementById('paste-rota-area');
+  if(el) el.style.display = 'none';
+}
+
+function parseAndSaveRota(){
+  const input = document.getElementById('rota-paste-input');
+  if(!input) return;
+  const text = input.value.trim();
+  if(!text){ alert('Please paste your shifts first'); return; }
+  const lines = text.split('\n').map(l=>l.trim()).filter(l=>l);
+  const shifts = [];
+  const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const monthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+  lines.forEach(line=>{
+    // Format: DD/MM HH:MM-HH:MM or DD/MM/YYYY HH:MM-HH:MM
+    const m = line.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\s+(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+    if(m){
+      const day = parseInt(m[1]);
+      const month = parseInt(m[2])-1;
+      const year = m[3] ? parseInt(m[3].length===2?'20'+m[3]:m[3]) : new Date().getFullYear();
+      const start = m[4];
+      const end = m[5];
+      const d = new Date(year, month, day);
+      const dateStr = d.toISOString().split('T')[0];
+      const [sh,sm] = start.split(':').map(Number);
+      const [eh,em] = end.split(':').map(Number);
+      let hours = eh===0 ? (24-sh-sm/60) : (eh+em/60-sh-sm/60);
+      if(hours < 0) hours += 24;
+      shifts.push({
+        date: dateStr,
+        day: dayNames[d.getDay()],
+        role: 'Bar Tender',
+        start, end,
+        hours: Math.round(hours*10)/10
+      });
+    }
+  });
+  if(!shifts.length){ alert('Could not parse any shifts. Use format: DD/MM HH:MM-HH:MM'); return; }
+  // Merge with existing shifts (keep future ones not in new list)
+  const existing = getShifts();
+  const newDates = new Set(shifts.map(s=>s.date));
+  const kept = existing.filter(s=>!newDates.has(s.date));
+  const merged = [...kept, ...shifts].sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem(SHIFTS_KEY, JSON.stringify(merged));
+  closePasteRota();
+  renderShiftBlocks();
+  alert('Imported '+shifts.length+' shifts successfully!');
+}
+
+
+// ═══════════════════════════════════════════════════
+// ORACLE IMAGE UPLOAD — Rota Vision Parser
+// ═══════════════════════════════════════════════════
+let _pendingImage = null; // {base64, mediaType, preview}
+
+function oracleImageUpload(){
+  document.getElementById('oracle-img-input').click();
+}
+
+function handleOracleImage(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){
+    alert('Please upload an image file');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(',')[1];
+    const mediaType = file.type;
+    _pendingImage = {base64, mediaType, name: file.name};
+    // Show preview in chat
+    const preview = document.createElement('div');
+    preview.style.cssText = 'margin:8px 0;position:relative;display:inline-block';
+    preview.innerHTML = '<img src="'+dataUrl+'" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid var(--gold)"/>'
+      + '<button onclick="clearPendingImage(this.parentElement)" style="position:absolute;top:-6px;right:-6px;background:var(--red,#e74c3c);border:none;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:18px;text-align:center">✕</button>'
+      + '<div style="font-size:10px;color:var(--muted);margin-top:3px">📸 Image ready — send to analyse</div>';
+    const chatMessages = document.getElementById('chat-messages');
+    if(chatMessages) chatMessages.appendChild(preview);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  };
+  reader.readAsDataURL(file);
+  input.value = ''; // reset so same file can be re-uploaded
+}
+
+function clearPendingImage(el){
+  _pendingImage = null;
+  if(el) el.remove();
+}
+
+async function sendChatWithImage(){
+  if(!_pendingImage){ sendChat(); return; }
+  const input = document.getElementById('chat-input');
+  const userText = (input ? input.value.trim() : '') || 'Please analyse this image.';
+  if(input) input.value = '';
+
+  // Detect if this looks like a rota/schedule
+  const isRotaUpload = userText.toLowerCase().includes('rota') 
+    || userText.toLowerCase().includes('shift')
+    || userText.toLowerCase().includes('schedule')
+    || userText === 'Please analyse this image.';
+
+  addMsg(userText + ' [image attached]', 'user');
+
+  const imageData = _pendingImage;
+  _pendingImage = null;
+  // Remove preview from chat
+  document.querySelectorAll('#chat-messages img').forEach(img=>{
+    if(img.src.includes('data:image')) img.closest('div').remove();
+  });
+
+  const systemPrompt = isRotaUpload 
+    ? `You are analysing a work schedule/rota screenshot from the Fourth/HotSchedules app.
+Extract ALL shifts visible in the image.
+Return ONLY a JSON object in this exact format, no other text:
+{"shifts":[{"date":"DD/MM/YYYY","day":"MON","role":"Bar Tender","start":"HH:MM","end":"HH:MM","hours":8.5}],"summary":"Brief summary of what you see"}
+For shifts ending at 0:00 or 00:00, use "00:00" as end time.
+Calculate hours accurately. Include ALL visible shifts including training sessions.`
+    : 'You are a helpful AI assistant. Analyse this image and respond helpfully.';
+
+  try {
+    // Call oracle with image
+    const response = await fetch('/api/oracle', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        messages: [{
+          role: 'user',
+          content: [
+            {type:'image', source:{type:'base64', media_type:imageData.mediaType, data:imageData.base64}},
+            {type:'text', text: isRotaUpload ? 'Extract all shifts from this rota screenshot.' : userText}
+          ]
+        }],
+        system: systemPrompt,
+        max_tokens: 1000
+      })
+    });
+
+    if(!response.ok) throw new Error('Oracle request failed');
+    const data = await response.json();
+    const raw = (data.content||[]).map(x=>x.text||'').join('');
+
+    if(isRotaUpload){
+      // Try to parse as rota JSON
+      try{
+        const cleaned = raw.replace(/```json|```/g,'').trim();
+        const match = cleaned.match(/\{[\s\S]*\}/);
+        if(!match) throw new Error('No JSON found');
+        const result = JSON.parse(match[0]);
+        if(result.shifts && result.shifts.length){
+          // Convert to our shift format
+          const dayMap = {mon:'MON',tue:'TUE',wed:'WED',thu:'THU',fri:'FRI',sat:'SAT',sun:'SUN'};
+          const newShifts = result.shifts.map(s=>{
+            const parts = s.date.split('/');
+            let dateStr;
+            if(parts.length===3){
+              const y = parts[2].length===2?'20'+parts[2]:parts[2];
+              dateStr = y+'-'+parts[1].padStart(2,'0')+'-'+parts[0].padStart(2,'0');
+            } else {
+              dateStr = new Date().toISOString().split('T')[0];
+            }
+            return {
+              date: dateStr,
+              day: (s.day||'').toUpperCase(),
+              role: s.role||'Bar Tender',
+              start: s.start||'00:00',
+              end: s.end||'00:00',
+              hours: s.hours||0
+            };
+          });
+          // Merge with existing
+          const existing = JSON.parse(localStorage.getItem('rpgace_shifts')||'[]');
+          const newDates = new Set(newShifts.map(x=>x.date));
+          const kept = existing.filter(x=>!newDates.has(x.date));
+          const merged = [...kept,...newShifts].sort((a,b)=>a.date.localeCompare(b.date));
+          localStorage.setItem('rpgace_shifts', JSON.stringify(merged));
+          addMsg('✅ Rota imported! Found **'+newShifts.length+' shifts**:\n\n'
+            + newShifts.map(s=>'• '+s.day+' '+s.date.split('-').reverse().join('/')+': '+s.start+'-'+s.end+' ('+s.role+', '+s.hours+'h)').join('\n')
+            + '\n\nSwitch to the Schedule tab to see your shifts. Your agenda generator is now shift-aware.', 'assistant');
+          return;
+        }
+      }catch(parseErr){
+        // Fall through to show raw response
+      }
+      addMsg(raw || 'Could not parse rota from image. Try uploading a clearer screenshot.', 'assistant');
+    } else {
+      addMsg(raw, 'assistant');
+    }
+  } catch(err){
+    addMsg('Error analysing image: '+err.message, 'assistant');
+  }
 }
 
 function initApp(){
