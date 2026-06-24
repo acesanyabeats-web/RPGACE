@@ -227,7 +227,7 @@ function parseCSV(text){const lines=text.split('\n').filter(l=>l.trim());const e
 function parseText(text){const lines=text.split('\n').filter(l=>l.trim());const events=[];const timeRx=/(\d{1,2}):(\d{2})\s*(?:to|-|–)\s*(\d{1,2}):(\d{2})/;const dayRx=/(mon|tue|wed|thu|fri|sat|sun)/i;lines.forEach(line=>{const tm=line.match(timeRx),dm=line.match(dayRx);if(tm||dm){const sH=tm?parseInt(tm[1]):9,eH=tm?parseInt(tm[3]):17,day=dm?dm[1][0].toUpperCase()+dm[1].slice(1).toLowerCase():'';const parts=line.split(/[-–|]/);events.push({title:parts[parts.length-1].trim()||'Work Shift',startH:sH,endH:eH,dayName:day});}});if(events.length)applyShifts(events,'text');else showImportErr('Could not parse. Try .ics or .csv format.');}
 function applyShifts(events,source){STATE.importedShifts=events;events.forEach(ev=>{for(let h=ev.startH;h<ev.endH&&h<24;h++){const inp=document.getElementById('ti-'+h);if(inp){inp.value=ev.title+(inp.value?', '+inp.value:'');inp.closest('.time-slot').classList.add('shift','filled');}}});const dayMap={mon:0,tue:1,wed:2,thu:3,fri:4,sat:5,sun:6};const wI=document.querySelectorAll('.day-input');events.forEach(ev=>{if(ev.dayName){const idx=dayMap[ev.dayName.toLowerCase()];if(idx!==undefined&&wI[idx]){wI[idx].value=(wI[idx].value?wI[idx].value+'\n':'')+`${ev.startH}:00-${ev.endH}:00 ${ev.title}`;}}});const mc=document.querySelectorAll('.week-col');if(mc[0]){events.forEach(ev=>{const item=document.createElement('div');item.className='month-task shift-task';item.innerHTML=`<span>🏢 ${ev.title} ${ev.startH}:00–${ev.endH}:00</span><span onclick="this.parentElement.classList.toggle('done')" style="cursor:pointer;font-size:12px">✓</span>`;mc[0].insertBefore(item,mc[0].querySelector('.add-month-task'));});}const r=document.getElementById('import-result');r.style.display='block';r.style.borderColor='var(--green)';r.style.color='var(--green)';r.textContent=`✓ Imported ${events.length} shift${events.length!==1?'s':''} from ${source}.`;addXP(30);}
 function showImportErr(msg){const r=document.getElementById('import-result');r.style.display='block';r.style.borderColor='var(--red)';r.style.color='var(--red)';r.textContent='✗ '+msg;}
-function loadDemoShifts(){applyShifts([{title:'Bar Staff',startH:9,endH:17,dayName:'Mon'},{title:'Floor Manager',startH:14,endH:22,dayName:'Wed'},{title:'Supervisor',startH:10,endH:18,dayName:'Fri'},{title:'Bar Staff',startH:18,endH:23,dayName:'Sat'}],'demo');}
+
 
 // ── AI ADVISOR ──
 const ORACLE_SYS=`You are the Oracle — elite AI life coach in RPGACE, a gamified RPG life app. User is an aspiring YouTube/TikTok/Instagram producer who wants to get fit and build great habits.
@@ -786,12 +786,7 @@ function confirmSchedule(idx){
   renderAgendas();
 }
 
-function startDoNow(idx){
-  AGENDA_LIST[idx].status='active';
-  localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
-  renderAgendas();
-  alert('Do Now session started for: '+AGENDA_LIST[idx].title+'\n\nFocus mode coming in Feature 8.');
-}
+
 
 
 // ═══════════════════════════════════════════════════════════
@@ -4045,19 +4040,7 @@ document.addEventListener('keydown', e=>{
   if(e.key==='Enter' && document.activeElement.id==='video-search-input') searchVideos();
 });
 
-async function debugComposio(){
-  agentLog('[DEBUG] Fetching Gmail connected account details...','info');
-  try {
-    const result = await callComposio('debug', { input: { accountId: 'ca_7oagofAi-tkv' } });
-    const d = result.data;
-    agentLog(`[DEBUG] Account ID: ${d.id}`, 'ok');
-    agentLog(`[DEBUG] User ID: ${d.user_id || d.userId || d.entity_id || d.entityId || JSON.stringify(d).slice(0,200)}`, 'ok');
-    agentLog(`[DEBUG] Status: ${d.status}`, 'ok');
-    agentLog(`[DEBUG] Full: ${JSON.stringify(d).slice(0,400)}`, 'info');
-  } catch(e) {
-    agentLog('[DEBUG ERR] ' + e.message, 'err');
-  }
-}
+
 
 // ── COMPOSIO PIPELINE AGENTS ──
 
