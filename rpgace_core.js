@@ -102,29 +102,25 @@
      Single source of truth for all UI state.
      Replaces scattered window._xxx globals.
      ══════════════════════════════════════════════════════════ */
-  R.STATE = {
-    _s: {},
-
-    get: function (key) { return this._s[key]; },
-    set: function (key, value) {
-      this._s[key] = value;
-      R.hooks.fire('state:change', key, value);
-      return value;
-    },
-
-    /* Typed accessors for frequently-used state */
-    get dailyDate()  { return this._store.dailyDate  || new Date(); },
-    set dailyDate(d) { this._store.dailyDate  = d;   R.hooks.fire('state:change', 'dailyDate', d); },
-
-    get weekStart()  { return this._store.weekStart; },
-    set weekStart(d) { this._store.weekStart  = d;   R.hooks.fire('state:change', 'weekStart', d); },
-
-    get monthDate()  { return this._store.monthDate  || new Date(); },
-    set monthDate(d) { this._store.monthDate  = d;   R.hooks.fire('state:change', 'monthDate', d); },
-
-    get pendingSched()  { return this._store.pendingSched; },
-    set pendingSched(v) { this._store.pendingSched = v; },
-  };
+  R.STATE = (function () {
+    var _s = {};
+    return {
+      get: function (key) { return _s[key]; },
+      set: function (key, value) {
+        _s[key] = value;
+        R.hooks.fire('state:change', key, value);
+        return value;
+      },
+      get dailyDate()    { return _s.dailyDate  || new Date(); },
+      set dailyDate(d)   { _s.dailyDate  = d;  R.hooks.fire('state:change', 'dailyDate', d); },
+      get weekStart()    { var d = _s.weekStart; if (d) return d; var n=new Date(); n.setDate(n.getDate()-((n.getDay()+6)%7)); n.setHours(0,0,0,0); return n; },
+      set weekStart(d)   { _s.weekStart  = d;  R.hooks.fire('state:change', 'weekStart', d); },
+      get monthDate()    { return _s.monthDate  || new Date(); },
+      set monthDate(d)   { _s.monthDate  = d;  R.hooks.fire('state:change', 'monthDate', d); },
+      get pendingSched()    { return _s.pendingSched; },
+      set pendingSched(v)   { _s.pendingSched = v; },
+    };
+  }())
 
   /* Bridge: make existing window._xxx globals proxy through RPGACE.STATE
      so old code in main.js keeps working without changes.             */
