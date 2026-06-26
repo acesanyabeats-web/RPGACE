@@ -128,20 +128,25 @@
 
   /* Bridge: make existing window._xxx globals proxy through RPGACE.STATE
      so old code in main.js keeps working without changes.             */
-  function bridgeGlobal(globalName, stateKey) {
+    function bridgeGlobal(name, getter, setter) {
     try {
-      Object.defineProperty(global, globalName, {
-        get: function ()  { return R.STATE._store[stateKey]; },
-        set: function (v) { R.STATE._store[stateKey] = v; },
-        configurable: true,
+      Object.defineProperty(global, name, {
+        get: getter, set: setter, configurable: true, enumerable: true,
       });
-    } catch (e) { /* property may already be defined — non-fatal */ }
+    } catch (e) {}
   }
-
-  bridgeGlobal('_dailyDate',          'dailyDate');
-  bridgeGlobal('_calWeekStart',       'weekStart');
-  bridgeGlobal('_calMonthDate',       'monthDate');
-  bridgeGlobal('_pendingSchedAgenda', 'pendingSched');
+  bridgeGlobal('_dailyDate',
+    function() { var v = R.STATE && R.STATE.dailyDate; return (v instanceof Date) ? v : new Date(); },
+    function(v) { if (R.STATE) R.STATE.dailyDate = v; });
+  bridgeGlobal('_calWeekStart',
+    function() { var v = R.STATE && R.STATE.weekStart; return (v instanceof Date) ? v : (function(){ var d=new Date(); d.setDate(d.getDate()-((d.getDay()+6)%7)); d.setHours(0,0,0,0); return d; })(); },
+    function(v) { if (R.STATE) R.STATE.weekStart = v; });
+  bridgeGlobal('_calMonthDate',
+    function() { var v = R.STATE && R.STATE.monthDate; return (v instanceof Date) ? v : new Date(); },
+    function(v) { if (R.STATE) R.STATE.monthDate = v; });
+  bridgeGlobal('_pendingSchedAgenda',
+    function() { return R.STATE && R.STATE.pendingSched; },
+    function(v) { if (R.STATE) R.STATE.pendingSched = v; });
 
   /* ══════════════════════════════════════════════════════════
      HOOK SYSTEM
@@ -1062,6 +1067,9 @@ RPGACE.register('youtubeOracle', {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
       if (name === 'oracle') setTimeout(function() { self._btn(); }, 600);
+    });
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._btn(); }, 800);
     });
   },
 
