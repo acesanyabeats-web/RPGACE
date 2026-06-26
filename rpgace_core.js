@@ -1190,7 +1190,7 @@ RPGACE.register('youtubeOracle', {
    When a prompt contains [PLACEHOLDER], show a step-by-step
    overlay asking the user to fill each one before sending.
 ================================================================ */
-R.utils.fillGaps = function(prompt, onComplete) {
+RPGACE.utils.fillGaps = function(prompt, onComplete) {
   var gaps = [];
   var re = /\[([^\]]+)\]/g;
   var m;
@@ -1287,7 +1287,7 @@ R.utils.fillGaps = function(prompt, onComplete) {
 /* ================================================================
    SEND TO ORACLE HELPER (shared by all panels)
 ================================================================ */
-R.utils.sendToOracle = function(prompt) {
+RPGACE.utils.sendToOracle = function(prompt) {
   var input = document.getElementById('chat-input') || document.querySelector('textarea');
   if (!input) { RPGACE.utils.toast('Oracle input not found', 'rgba(226,84,84,0.9)', 2500); return; }
   input.value = prompt;
@@ -1308,8 +1308,8 @@ R.utils.sendToOracle = function(prompt) {
     if (!cmd) return;
     this._close();
     var self = this;
-    R.utils.fillGaps(cmd[1], function(filled) {
-      R.utils.sendToOracle(filled);
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
       RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2000);
     });
   };
@@ -1410,8 +1410,8 @@ RPGACE.register('prodOraclePanel', {
     var cmd = this.CMDS[i];
     if (!cmd) return;
     this._close();
-    R.utils.fillGaps(cmd[1], function(filled) {
-      R.utils.sendToOracle(filled);
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
       RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
     });
   },
@@ -1512,8 +1512,8 @@ RPGACE.register('instaOraclePanel', {
     var cmd = this.CMDS[i];
     if (!cmd) return;
     this._close();
-    R.utils.fillGaps(cmd[1], function(filled) {
-      R.utils.sendToOracle(filled);
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
       RPGACE.utils.toast('?? ' + cmd[0], 'rgba(155,89,182,0.9)', 2000);
     });
   },
