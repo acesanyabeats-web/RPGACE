@@ -1347,11 +1347,10 @@ RPGACE.register('prodOraclePanel', {
 
   _intercept: function() {
     if (window._prodOraclePanelIntercepted) return;
-    var btn = document.querySelector('[onclick*="toggleProdOraclePanel"]');
-    if (!btn) return;
+    if (typeof window.toggleProdOraclePanel === 'undefined') return;
     window._prodOraclePanelIntercepted = true;
     var self = this;
-    btn.onclick = function() { self.open(); };
+    window.toggleProdOraclePanel = function() { self.open(); };
   },
 
   _close: function() {
@@ -1449,11 +1448,10 @@ RPGACE.register('instaOraclePanel', {
 
   _intercept: function() {
     if (window._instaOraclePanelIntercepted) return;
-    var btn = document.querySelector('[onclick*="toggleInstaPanel"]');
-    if (!btn) return;
+    if (typeof window.toggleInstaPanel === 'undefined') return;
     window._instaOraclePanelIntercepted = true;
     var self = this;
-    btn.onclick = function() { self.open(); };
+    window.toggleInstaPanel = function() { self.open(); };
   },
 
   _close: function() {
