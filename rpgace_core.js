@@ -1,203 +1,1043 @@
 /**
  * RPGACE Core Foundation Layer v1.0
  * Loaded after main.js. Never modify main.js again.
- * Step 8+ features go here as RPGACE.register() modules.
+ * New features (Step 8+) go here as RPGACE.register() modules.
+ *
+ * Architecture: rpgace.vercel.app/rpgace_core.js
+ * Docs:         RPGACE_ARCHITECTURE.md
  */
-(function(global){
+
+(function (global) {
   'use strict';
 
-  function onReady(fn){
-    if(document.readyState==='complete'){setTimeout(fn,150);}
-    else{global.addEventListener('load',function(){setTimeout(fn,150);});}
+  /* ─── WAIT FOR INITAPP TO COMPLETE ────────────────────── */
+  function onReady(fn) {
+    if (document.readyState === 'complete') {
+      setTimeout(fn, 150); // give initApp() time to run
+    } else {
+      global.addEventListener('load', function () { setTimeout(fn, 150); });
+    }
   }
 
-  global.RPGACE=global.RPGACE||{};
-  var R=global.RPGACE;
+  /* ─── NAMESPACE ────────────────────────────────────────── */
+  global.RPGACE = global.RPGACE || {};
+  const R = global.RPGACE;
 
-  /* DATA LAYER */
-  R.DB={
-    SCHEMA:{
-      shifts:{key:'rpgace_shifts',fallback:[]},
-      sched:{key:'rpgace_sched_agendas',fallback:[]},
-      log:{key:'rpgace_daily_log',fallback:{}},
-      agendas:{key:'rpgace_agendas',fallback:[]},
+  /* ══════════════════════════════════════════════════════════
+     DATA LAYER
+     Validated, schema-aware localStorage access.
+     Never call localStorage directly in new code.
+     ══════════════════════════════════════════════════════════ */
+  R.DB = {
+    SCHEMA: {
+      shifts:   { key: 'rpgace_shifts',        fallback: [] },
+      sched:    { key: 'rpgace_sched_agendas', fallback: [] },
+      log:      { key: 'rpgace_daily_log',     fallback: {} },
+      agendas:  { key: 'rpgace_agendas',       fallback: [] },
     },
-    _key:function(n){return(this.SCHEMA[n]&&this.SCHEMA[n].key)||n;},
-    _fb:function(n){var s=this.SCHEMA[n];if(!s)return null;return Array.isArray(s.fallback)?[]:s.fallback;},
-    get:function(n){
-      try{var r=localStorage.getItem(this._key(n));return r===null?this._fb(n):JSON.parse(r);}
-      catch(e){console.warn('[RPGACE.DB.get]',n,e.message);return this._fb(n);}
+
+    /* Resolve key string from schema name or raw key */
+    _key(name) {
+      return (this.SCHEMA[name] && this.SCHEMA[name].key) || name;
     },
-    set:function(n,v){
-      try{localStorage.setItem(this._key(n),JSON.stringify(v));R.hooks.fire('db:change',n,v);return true;}
-      catch(e){console.warn('[RPGACE.DB.set]',n,e.message);return false;}
+    _fb(name) {
+      const s = this.SCHEMA[name];
+      if (!s) return null;
+      return Array.isArray(s.fallback) ? [] : (typeof s.fallback === 'object' ? {} : s.fallback);
     },
-    push:function(n,item){
-      var arr=this.get(n)||[];
-      var entry=Object.assign({id:R.utils.id(),createdAt:new Date().toISOString()},item);
-      arr.push(entry);this.set(n,arr);return entry;
+
+    get(name) {
+      try {
+        const raw = localStorage.getItem(this._key(name));
+        if (raw === null) return this._fb(name);
+        return JSON.parse(raw);
+      } catch (e) {
+        console.warn('[RPGACE.DB.get]', name, e.message);
+        return this._fb(name);
+      }
     },
-    update:function(n,id,updates){
-      var arr=this.get(n)||[];
-      var idx=arr.findIndex(function(x){return x.id===id||x._id===id;});
-      if(idx<0)return null;
-      arr[idx]=Object.assign({},arr[idx],updates);this.set(n,arr);return arr[idx];
+
+    set(name, value) {
+      try {
+        localStorage.setItem(this._key(name), JSON.stringify(value));
+        R.hooks.fire('db:change', name, value);
+        return true;
+      } catch (e) {
+        console.warn('[RPGACE.DB.set]', name, e.message);
+        return false;
+      }
     },
-    remove:function(n,id){
-      var arr=(this.get(n)||[]).filter(function(x){return x.id!==id&&x._id!==id;});
-      this.set(n,arr);return arr;
+
+    /* Append an item to an array key, auto-assigning an id */
+    push(name, item) {
+      const arr = this.get(name) || [];
+      const entry = Object.assign({ id: R.utils.id(), createdAt: new Date().toISOString() }, item);
+      arr.push(entry);
+      this.set(name, arr);
+      return entry;
+    },
+
+    /* Update one item by id in an array key */
+    update(name, id, updates) {
+      const arr = this.get(name) || [];
+      const idx = arr.findIndex(function (x) { return x.id === id || x._id === id; });
+      if (idx < 0) return null;
+      arr[idx] = Object.assign({}, arr[idx], updates);
+      this.set(name, arr);
+      return arr[idx];
+    },
+
+    /* Remove one item by id from an array key */
+    remove(name, id) {
+      const arr = (this.get(name) || []).filter(function (x) {
+        return x.id !== id && x._id !== id;
+      });
+      this.set(name, arr);
+      return arr;
     },
   };
 
-  /* STATE LAYER */
-  R.STATE={
-    _s:{},
-    get:function(k){return this._s[k];},
-    set:function(k,v){this._s[k]=v;R.hooks.fire('state:change',k,v);return v;},
-    get dailyDate(){return this._s.dailyDate||new Date();},
-    set dailyDate(d){this._s.dailyDate=d;R.hooks.fire('state:change','dailyDate',d);},
-    get weekStart(){return this._s.weekStart;},
-    set weekStart(d){this._s.weekStart=d;R.hooks.fire('state:change','weekStart',d);},
-    get monthDate(){return this._s.monthDate||new Date();},
-    set monthDate(d){this._s.monthDate=d;R.hooks.fire('state:change','monthDate',d);},
-    get pendingSched(){return this._s.pendingSched;},
-    set pendingSched(v){this._s.pendingSched=v;},
+  /* ══════════════════════════════════════════════════════════
+     STATE LAYER
+     Single source of truth for all UI state.
+     Replaces scattered window._xxx globals.
+     ══════════════════════════════════════════════════════════ */
+  R.STATE = {
+    _store: {},
+
+    get: function (key) { return this._store[key]; },
+    set: function (key, value) {
+      this._store[key] = value;
+      R.hooks.fire('state:change', key, value);
+      return value;
+    },
+
+    /* Typed accessors for frequently-used state */
+    get dailyDate()  { return this._store.dailyDate  || new Date(); },
+    set dailyDate(d) { this._store.dailyDate  = d;   R.hooks.fire('state:change', 'dailyDate', d); },
+
+    get weekStart()  { return this._store.weekStart; },
+    set weekStart(d) { this._store.weekStart  = d;   R.hooks.fire('state:change', 'weekStart', d); },
+
+    get monthDate()  { return this._store.monthDate  || new Date(); },
+    set monthDate(d) { this._store.monthDate  = d;   R.hooks.fire('state:change', 'monthDate', d); },
+
+    get pendingSched()  { return this._store.pendingSched; },
+    set pendingSched(v) { this._store.pendingSched = v; },
   };
 
-  /* Bridge window globals -> RPGACE.STATE */
-  function bridge(gn,sk){
-    try{Object.defineProperty(global,gn,{
-      get:function(){return R.STATE._s[sk];},
-      set:function(v){R.STATE._s[sk]=v;},
-      configurable:true
-    });}catch(e){}
+  /* Bridge: make existing window._xxx globals proxy through RPGACE.STATE
+     so old code in main.js keeps working without changes.             */
+  function bridgeGlobal(globalName, stateKey) {
+    try {
+      Object.defineProperty(global, globalName, {
+        get: function ()  { return R.STATE._store[stateKey]; },
+        set: function (v) { R.STATE._store[stateKey] = v; },
+        configurable: true,
+      });
+    } catch (e) { /* property may already be defined — non-fatal */ }
   }
-  bridge('_dailyDate','dailyDate');
-  bridge('_calWeekStart','weekStart');
-  bridge('_calMonthDate','monthDate');
-  bridge('_pendingSchedAgenda','pendingSched');
 
-  /* HOOK SYSTEM */
-  R.hooks={
-    _r:{},
-    on:function(ev,fn,p){
-      p=p||10;
-      if(!this._r[ev])this._r[ev]=[];
-      this._r[ev].push({handler:fn,priority:p});
-      this._r[ev].sort(function(a,b){return a.priority-b.priority;});
-      var self=this;return function(){self.off(ev,fn);};
+  bridgeGlobal('_dailyDate',          'dailyDate');
+  bridgeGlobal('_calWeekStart',       'weekStart');
+  bridgeGlobal('_calMonthDate',       'monthDate');
+  bridgeGlobal('_pendingSchedAgenda', 'pendingSched');
+
+  /* ══════════════════════════════════════════════════════════
+     HOOK SYSTEM
+     Register handlers on named events.
+     New features hook in here — no more string replacement.
+
+     Usage:
+       RPGACE.hooks.on('sched:show', type => { ... });
+       RPGACE.hooks.fire('sched:show', 'daily');
+     ══════════════════════════════════════════════════════════ */
+  R.hooks = {
+    _reg: {},
+
+    /* Subscribe. Returns an unsubscribe function. */
+    on: function (event, handler, priority) {
+      priority = priority || 10;
+      if (!this._reg[event]) this._reg[event] = [];
+      this._reg[event].push({ handler: handler, priority: priority });
+      this._reg[event].sort(function (a, b) { return a.priority - b.priority; });
+      var self = this;
+      return function () { self.off(event, handler); };
     },
-    off:function(ev,fn){
-      if(this._r[ev])this._r[ev]=this._r[ev].filter(function(h){return h.handler!==fn;});
-    },
-    fire:function(ev){
-      var args=Array.prototype.slice.call(arguments,1);
-      (this._r[ev]||[]).forEach(function(h){
-        try{h.handler.apply(null,args);}catch(e){console.warn('[RPGACE.hooks]',ev,e.message);}
+
+    off: function (event, handler) {
+      if (!this._reg[event]) return;
+      this._reg[event] = this._reg[event].filter(function (h) {
+        return h.handler !== handler;
       });
     },
-    pipe:function(ev,val){
-      return(this._r[ev]||[]).reduce(function(acc,h){
-        try{return h.handler(acc);}catch(e){return acc;}
-      },val);
+
+    /* Fire all handlers for an event */
+    fire: function (event) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      (this._reg[event] || []).forEach(function (h) {
+        try { h.handler.apply(null, args); }
+        catch (e) { console.warn('[RPGACE.hooks.fire]', event, e.message); }
+      });
+    },
+
+    /* Pipe: each handler receives and returns the value, transforming it */
+    pipe: function (event, value) {
+      return (this._reg[event] || []).reduce(function (acc, h) {
+        try { return h.handler(acc); }
+        catch (e) { return acc; }
+      }, value);
     },
   };
 
-  /* API LAYER */
-  R.api=async function(action,params){
-    params=params||{};
-    var res=await fetch('/api/composio',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'execute',tool:action,input:params}),
+  /* ══════════════════════════════════════════════════════════
+     API LAYER
+     Unified external call interface.
+     All Composio, Oracle, and future API calls go through here.
+
+     Usage:
+       await RPGACE.api('GMAIL_CREATE_EMAIL_DRAFT', { subject, body, to })
+       await RPGACE.oracle([{ role:'user', content:'...' }], systemPrompt)
+     ══════════════════════════════════════════════════════════ */
+  R.api = async function (action, params) {
+    params = params || {};
+    var res = await fetch('/api/composio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'execute', tool: action, input: params }),
     });
-    var data=await res.json();
-    if(data.error)throw new Error(data.error);
-    return data.data||data;
+    var data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data.data || data;
   };
-  R.oracle=async function(messages,system,maxTokens){
-    if(typeof callOracle==='function')return callOracle(messages,system,maxTokens||1000);
+
+  R.oracle = async function (messages, system, maxTokens) {
+    if (typeof callOracle === 'function') {
+      return callOracle(messages, system, maxTokens || 1000);
+    }
     throw new Error('[RPGACE.oracle] callOracle not available');
   };
 
-  /* UTILS */
-  R.utils={
-    dateStr:function(d){return(d||new Date()).toISOString().split('T')[0];},
-    mondayOf:function(d){
-      d=d||new Date();var r=new Date(d);r.setHours(0,0,0,0);
-      var dow=r.getDay();r.setDate(r.getDate()-(dow===0?6:dow-1));return r;
+  /* ══════════════════════════════════════════════════════════
+     UTILITIES
+     Shared helpers used across all modules.
+     ══════════════════════════════════════════════════════════ */
+  R.utils = {
+
+    /* YYYY-MM-DD string from a Date object */
+    dateStr: function (d) {
+      d = d || new Date();
+      return d.toISOString().split('T')[0];
     },
-    dayAbbr:function(ds){
-      try{var d=new Date(ds+'T00:00:00');return['MON','TUE','WED','THU','FRI','SAT','SUN'][d.getDay()===0?6:d.getDay()-1];}
-      catch(e){return'???';}
+
+    /* Monday of the week containing d */
+    mondayOf: function (d) {
+      d = d || new Date();
+      var r = new Date(d);
+      r.setHours(0, 0, 0, 0);
+      var dow = r.getDay();
+      r.setDate(r.getDate() - (dow === 0 ? 6 : dow - 1));
+      return r;
     },
-    fmtTime:function(s){var m=Math.floor(s/60);return m+':'+(Math.floor(s%60)).toString().padStart(2,'0');},
-    id:function(){return'rp_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);},
-    toast:function(msg,color,ms){
-      color=color||'#C9A84C';ms=ms||3000;
-      var t=document.createElement('div');
-      t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f0f18;border:1px solid '+color+'40;color:'+color+';font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;padding:10px 20px;border-radius:8px;z-index:9999;white-space:nowrap;pointer-events:none;transition:opacity .3s';
-      t.textContent=msg;document.body.appendChild(t);
-      setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},ms);
+
+    /* 3-letter day abbreviation from YYYY-MM-DD */
+    dayAbbr: function (dateStr) {
+      try {
+        var d = new Date(dateStr + 'T00:00:00');
+        return ['MON','TUE','WED','THU','FRI','SAT','SUN'][
+          d.getDay() === 0 ? 6 : d.getDay() - 1
+        ];
+      } catch (e) { return '???'; }
     },
-    copy:function(text,btn){
-      navigator.clipboard.writeText(text).then(function(){
-        if(btn){var o=btn.textContent;btn.textContent='Copied';setTimeout(function(){btn.textContent=o;},1500);}
-      }).catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();});
+
+    /* Format seconds as M:SS */
+    fmtTime: function (secs) {
+      var m = Math.floor(secs / 60);
+      var s = Math.floor(secs % 60);
+      return m + ':' + String(s).padStart(2, '0');
+    },
+
+    /* Generate a short unique ID */
+    id: function () {
+      return 'rp_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    },
+
+    /* Show a temporary gold toast notification */
+    toast: function (msg, color, ms) {
+      color = color || '#C9A84C';
+      ms    = ms    || 3000;
+      var t = document.createElement('div');
+      t.style.cssText = [
+        'position:fixed;bottom:24px;left:50%;transform:translateX(-50%)',
+        'background:#0f0f18;border:1px solid ' + color + '40;color:' + color,
+        'font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700',
+        'padding:10px 20px;border-radius:8px;z-index:9999',
+        'white-space:nowrap;pointer-events:none;transition:opacity .3s',
+      ].join(';');
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(function () {
+        t.style.opacity = '0';
+        setTimeout(function () { t.remove(); }, 300);
+      }, ms);
+    },
+
+    /* Copy text to clipboard and briefly show feedback on a button */
+    copy: function (text, btn) {
+      navigator.clipboard.writeText(text).then(function () {
+        if (btn) {
+          var orig = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(function () { btn.textContent = orig; }, 1500);
+        }
+      }).catch(function () {
+        /* fallback for older browsers */
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      });
     },
   };
 
-  /* FUNCTION WRAPPERS - add hooks to existing main.js functions */
-  onReady(function(){
-    function wrap(name,after){
-      if(typeof global[name]==='function'){
-        var orig=global[name];
-        global[name]=function(){
-          var result;
-          try{result=orig.apply(this,arguments);}
-          catch(e){console.warn('[RPGACE wrap:'+name+']',e.message);}
-          after.apply(this,arguments);
-          return result;
-        };
-      }
+  /* ══════════════════════════════════════════════════════════
+     FUNCTION WRAPPERS
+     Wraps existing main.js functions to add hook fire points.
+     This runs AFTER initApp() has completed.
+     Do NOT patch main.js — wrap here instead.
+     ══════════════════════════════════════════════════════════ */
+  onReady(function () {
+
+    /* showSched → fires 'sched:show' after each tab switch */
+    if (typeof showSched === 'function') {
+      var _origShowSched = showSched;
+      global.showSched = function (type, btn) {
+        try { _origShowSched.call(this, type, btn); }
+        catch (e) { console.warn('[RPGACE wrap:showSched]', e.message); }
+        R.hooks.fire('sched:show', type);
+      };
     }
-    function wrapAsync(name,after){
-      if(typeof global[name]==='function'){
-        var orig=global[name];
-        global[name]=async function(){
-          var result;
-          try{result=await orig.apply(this,arguments);}
-          catch(e){console.warn('[RPGACE wrap:'+name+']',e.message);}
-          after.apply(this,arguments);
-          return result;
-        };
-      }
+
+    /* showPage → fires 'page:show' after each nav switch */
+    if (typeof showPage === 'function') {
+      var _origShowPage = showPage;
+      global.showPage = function (name, tab) {
+        try { _origShowPage.call(this, name, tab); }
+        catch (e) { console.warn('[RPGACE wrap:showPage]', e.message); }
+        R.hooks.fire('page:show', name);
+      };
     }
-    wrap('showSched',function(type){R.hooks.fire('sched:show',type);});
-    wrap('showPage',function(name){R.hooks.fire('page:show',name);});
-    wrap('renderAgendas',function(){R.hooks.fire('agendas:rendered');});
-    wrap('addXP',function(amount){R.hooks.fire('xp:awarded',amount);});
-    wrapAsync('saveToJournal',function(title,content,source){R.hooks.fire('journal:saved',{title:title,source:source});});
-    console.log('[RPGACE] Foundation layer active. Hooks wired. Modules:',Object.keys(R.modules));
-    R._ready=true;
+
+    /* renderAgendas → fires 'agendas:rendered' after cards are drawn */
+    if (typeof renderAgendas === 'function') {
+      var _origRenderAgendas = renderAgendas;
+      global.renderAgendas = function () {
+        try { _origRenderAgendas.call(this); }
+        catch (e) { console.warn('[RPGACE wrap:renderAgendas]', e.message); }
+        R.hooks.fire('agendas:rendered');
+      };
+    }
+
+    /* addXP → fires 'xp:awarded' for future streak/level systems */
+    if (typeof addXP === 'function') {
+      var _origAddXP = addXP;
+      global.addXP = function (amount) {
+        try { _origAddXP.call(this, amount); }
+        catch (e) { console.warn('[RPGACE wrap:addXP]', e.message); }
+        R.hooks.fire('xp:awarded', amount);
+      };
+    }
+
+    /* saveToJournal → fires 'journal:saved' for cross-system sync */
+    if (typeof saveToJournal === 'function') {
+      var _origSaveJournal = saveToJournal;
+      global.saveToJournal = async function (title, content, source) {
+        var result;
+        try { result = await _origSaveJournal.call(this, title, content, source); }
+        catch (e) { console.warn('[RPGACE wrap:saveToJournal]', e.message); }
+        R.hooks.fire('journal:saved', { title: title, source: source });
+        return result;
+      };
+    }
+
+    console.log('[RPGACE] Foundation layer active. Hooks wired. Modules:', Object.keys(R.modules));
+    R._ready = true;
     R.hooks.fire('rpgace:ready');
   });
 
-  /* MODULE REGISTRY */
-  R.modules={};R._ready=false;
-  R.register=function(name,module){
-    if(R.modules[name]){console.warn('[RPGACE.register] Already registered:',name);return;}
-    R.modules[name]=module;
-    if(typeof module.init==='function'){
-      if(R._ready){try{module.init();}catch(e){console.error('[RPGACE] Module init failed:',name,e.message);}}
-      else{R.hooks.on('rpgace:ready',function(){try{module.init();}catch(e){console.error('[RPGACE] Module init failed:',name,e.message);}});}
+  /* ══════════════════════════════════════════════════════════
+     MODULE REGISTRY
+     Step 8+ features register here as self-contained modules.
+     Each module has an init() that runs after RPGACE is ready.
+
+     Usage:
+       RPGACE.register('feynman', {
+         init() { RPGACE.hooks.on('page:show', name => { ... }); },
+         startSession(concept) { ... },
+       });
+     ══════════════════════════════════════════════════════════ */
+  R.modules  = {};
+  R._ready   = false;
+  R._queue   = [];
+
+  R.register = function (name, module) {
+    if (R.modules[name]) {
+      console.warn('[RPGACE.register] Already registered:', name);
+      return;
     }
-    console.log('[RPGACE] Module registered:',name);
+    R.modules[name] = module;
+
+    if (typeof module.init === 'function') {
+      if (R._ready) {
+        try { module.init(); }
+        catch (e) { console.error('[RPGACE] Module init failed:', name, e.message); }
+      } else {
+        R.hooks.on('rpgace:ready', function () {
+          try { module.init(); }
+          catch (e) { console.error('[RPGACE] Module init failed:', name, e.message); }
+        });
+      }
+    }
+
+    console.log('[RPGACE] Module registered:', name);
   };
+
+  /* ══════════════════════════════════════════════════════════
+     HOOK DEFINITIONS (reference)
+     All named hooks fired in the system.
+     ══════════════════════════════════════════════════════════
+
+     rpgace:ready        — foundation layer live, all modules can init
+     sched:show(type)    — schedule tab switched (daily/weekly/monthly/import)
+     page:show(name)     — nav page switched
+     agendas:rendered    — agenda cards redrawn
+     xp:awarded(amount)  — XP given to the user
+     journal:saved(data) — journal entry saved
+     db:change(key,val)  — any RPGACE.DB key written
+     state:change(k,v)   — any RPGACE.STATE key written
+     shift:loaded        — shifts loaded from Fourth rota
+
+  ══════════════════════════════════════════════════════════ */
 
 })(window);
 
+/* ══════════════════════════════════════════════════════════════════
+   STEP 8+ MODULES GO BELOW THIS LINE.
+   Each module is a RPGACE.register() call.
+   No main.js edits. No string replacements. No patch scripts.
+
+   Template:
+
+   RPGACE.register('myFeature', {
+     init() {
+       RPGACE.hooks.on('sched:show', type => {
+         if (type === 'daily') this.render();
+       });
+     },
+
+     render() {
+       const container = document.getElementById('sched-daily');
+       if (!container || document.getElementById('my-widget')) return;
+       const el = document.createElement('div');
+       el.id = 'my-widget';
+       el.innerHTML = '...';
+       container.appendChild(el);
+     },
+
+     async fetchData() {
+       return RPGACE.DB.get('myData');
+     },
+
+     async callAPI(params) {
+       return RPGACE.api('TOOL_NAME', params);
+     },
+   });
+
+══════════════════════════════════════════════════════════════════ */
 /* ================================================================
-   STEP 8+ MODULES GO BELOW THIS LINE
-   Use RPGACE.register('name', { init(){ ... } })
-   NEVER edit main.js again.
+   RPGACE — FEYNMAN LOOP MODULE
+   Step 8 · Registers into rpgace_core.js
+   
+   Triggers:
+     - Taxonomy node button in Encyclopedia
+     - Do Now on a learning agenda
+     - Oracle chat intent detection
+     - Direct: RPGACE.modules.feynman.start(concept)
+   
+   Outputs:
+     - Oracle tab: session report
+     - Journal: structured study entry
+     - Taxonomy node: study_count++, last_studied_at
+     - Agenda: spaced repetition (3/7/14 day follow-up)
+     - Content Pipeline: YouTube idea from verified explanation
 ================================================================ */
+
+RPGACE.register('feynman', {
+
+  /* ── Session state ──────────────────────────────────── */
+  session: null,
+
+  /* ── System prompts ─────────────────────────────────── */
+  PROMPTS: {
+
+    phase1: function(concept, context) {
+      return 'You are running a Feynman learning session for a UK music producer named Alex (@AceSanyaBeats) who makes UK drill and hip hop in FL Studio.\n\nThe concept is: ' + concept + '\n' + (context ? 'Context from Alex\'s knowledge base:\n' + context + '\n' : '') + '\nYour job in this phase:\n1. Greet Alex briefly\n2. Ask him to explain ' + concept + ' in his own words — as if teaching someone who has never heard of it\n3. Tell him: no jargon, no looking anything up, just what he actually understands right now\n4. Be warm but direct. One short paragraph response only.\n\nDo NOT explain the concept yourself.';
+    },
+
+    phase2: function(concept, explanation) {
+      return 'You are running a Feynman gap analysis for a music producer learning: ' + concept + '\n\nAlex\'s explanation:\n"' + explanation + '"\n\nYour job:\n1. Identify the 2-3 most critical gaps or vague points in this explanation\n2. Ask ONE focused question targeting the most important gap\n3. The question should make him think, not confirm — it should expose what he can\'t explain yet\n4. Keep your response to 3 sentences max\n\nDo NOT fill in the gaps for him. Do NOT over-praise. Just probe.';
+    },
+
+    phase3: function(concept, explanation, gapAnswer) {
+      return 'You are completing a Feynman session for Alex, a UK music producer learning: ' + concept + '\n\nHis initial explanation:\n"' + explanation + '"\n\nHis gap response:\n"' + gapAnswer + '"\n\nGenerate a structured session report in this EXACT format:\n\n**FEYNMAN REPORT — ' + concept + '**\n\n**VERIFIED:** [2-3 things he clearly understands]\n\n**GAPS FOUND:** [1-2 specific things he couldn\'t explain or explained incorrectly]\n\n**SCORE:** [X/10] — [one sentence why]\n\n**NEXT STUDY:** [One specific action — e.g. "Watch Adam Neely\'s Dorian video, focus on the raised 6th"]\n\n**CONTENT ANGLE:** [One YouTube video idea that comes directly from the way he explained this concept — should be a tutorial only he could make based on his current understanding]\n\nBe honest with the score. A 6/10 is good progress. A 10/10 means he can teach it from scratch.';
+    },
+
+    singleShot: function(concept, context) {
+      return 'Run a rapid one-question Feynman check for Alex on: ' + concept + '\n\n' + (context || '') + '\n\nAsk ONE question that tests whether he actually understands this or just recognises the term. Make it specific to FL Studio and beat-making where possible. Keep it to 1-2 sentences.';
+    },
+  },
+
+  /* ── Init: wire all triggers ────────────────────────── */
+  init: function() {
+    var self = this;
+
+    /* Trigger 1: Oracle page — detect learning intent in chat */
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === 'oracle') self._wireOracleDetection();
+    });
+
+    /* Trigger 2: Agenda Do Now — intercept learning category */
+    self._wrapStartDoNow();
+
+    /* Trigger 3: Encyclopedia / Learning page — add session buttons */
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === 'encyclopedia' || name === 'learning') {
+        setTimeout(function() { self._wireEncyclopediaButtons(); }, 400);
+      }
+    });
+
+    /* Trigger 4: Agendas rendered — add Feynman button to learning cards */
+    RPGACE.hooks.on('agendas:rendered', function() {
+      setTimeout(function() { self._wireAgendaCards(); }, 300);
+    });
+
+    console.log('[RPGACE:feynman] Module ready');
+  },
+
+  /* ── TRIGGER: Oracle chat intent detection ──────────── */
+  _wireOracleDetection: function() {
+    if (window._rpgace_feynman_oracle_wired) return;
+    window._rpgace_feynman_oracle_wired = true;
+    var self = this;
+
+    var chatInput = document.getElementById('chat-input');
+    if (!chatInput) return;
+
+    /* Detect learning intent on Enter / send */
+    chatInput.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter' || e.shiftKey) return;
+      var text = chatInput.value.toLowerCase().trim();
+      var learningIntent = [
+        'teach me', 'explain', 'what is', 'how does', 'i want to learn',
+        'help me understand', 'feynman', 'study', 'learn about',
+      ];
+      var isLearning = learningIntent.some(function(phrase) {
+        return text.includes(phrase);
+      });
+      if (isLearning && text.length > 8) {
+        /* Extract concept from message */
+        var concept = self._extractConcept(chatInput.value);
+        if (concept) {
+          /* Show a subtle offer inline — don't block the normal chat */
+          setTimeout(function() { self._showOracleOffer(concept); }, 800);
+        }
+      }
+    }, { passive: true });
+  },
+
+  _extractConcept: function(text) {
+    var patterns = [
+      /teach me (?:about )?(.+)/i,
+      /explain (.+)/i,
+      /what is (.+)/i,
+      /how does (.+) work/i,
+      /i want to learn (.+)/i,
+      /help me understand (.+)/i,
+      /learn about (.+)/i,
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var m = text.match(patterns[i]);
+      if (m && m[1]) {
+        return m[1].replace(/[?.!]$/, '').trim().slice(0, 60);
+      }
+    }
+    return null;
+  },
+
+  _showOracleOffer: function(concept) {
+    if (document.getElementById('feynman-offer')) return;
+    var self = this;
+    var offer = document.createElement('div');
+    offer.id = 'feynman-offer';
+    offer.style.cssText = 'background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:8px;padding:10px 14px;margin:8px 0;font-family:Rajdhani,sans-serif;font-size:12px;display:flex;align-items:center;gap:10px;';
+    offer.innerHTML = '<span style="color:#4A90E2;font-weight:700">\uD83E\uDDE0 Feynman Loop detected</span>'
+      + '<span style="color:rgba(226,226,236,0.6);flex:1">Study "' + concept + '" properly — explain it to verify you know it.</span>'
+      + '<button onclick="RPGACE.modules.feynman.start(\'' + concept.replace(/'/g, "\\'") + '\',\'oracle\')" '
+      + 'style="background:rgba(74,144,226,0.2);border:1px solid #4A90E2;color:#4A90E2;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;white-space:nowrap">'
+      + 'Start Session</button>'
+      + '<button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:14px">\u00D7</button>';
+
+    var chatBox = document.getElementById('chat-box') || document.querySelector('.chat-messages');
+    if (chatBox) chatBox.appendChild(offer);
+    setTimeout(function() { if (offer.parentNode) offer.remove(); }, 8000);
+  },
+
+  /* ── TRIGGER: Do Now on learning agenda ─────────────── */
+  _wrapStartDoNow: function() {
+    if (window._rpgace_feynman_donow_wired) return;
+    window._rpgace_feynman_donow_wired = true;
+    var self = this;
+
+    if (typeof window.startDoNow !== 'function') return;
+    var orig = window.startDoNow;
+    window.startDoNow = function(idx) {
+      var agendas = (window.STATE && STATE.agendas) || [];
+      var agenda  = agendas[idx];
+      if (agenda && agenda.category === 'learning') {
+        self._showDoNowChoice(idx, agenda, orig);
+      } else {
+        orig.call(window, idx);
+      }
+    };
+  },
+
+  _showDoNowChoice: function(idx, agenda, orig) {
+    var self = this;
+    /* Remove any existing choice */
+    var existing = document.getElementById('feynman-choice');
+    if (existing) existing.remove();
+
+    var choice = document.createElement('div');
+    choice.id = 'feynman-choice';
+    choice.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0f0f18;border:1px solid rgba(74,144,226,0.4);border-radius:12px;padding:24px;z-index:9998;min-width:300px;font-family:Rajdhani,sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.6)';
+    choice.innerHTML = '<div style="font-family:Cinzel,serif;font-size:14px;color:#C9A84C;margin-bottom:8px">\uD83D\uDCDA ' + agenda.title + '</div>'
+      + '<div style="color:rgba(226,226,236,0.7);font-size:12px;margin-bottom:20px">This is a learning session. How do you want to approach it?</div>'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<button onclick="RPGACE.modules.feynman.start(\'' + agenda.title.replace(/'/g, "\\'") + '\',\'agenda\');document.getElementById(\'feynman-choice\').remove()" '
+      + 'style="background:rgba(74,144,226,0.15);border:1px solid rgba(74,144,226,0.4);color:#4A90E2;padding:10px 14px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;text-align:left">'
+      + '\uD83E\uDDE0 Feynman Loop — Test your understanding</button>'
+      + '<button onclick="window._origStartDoNow(' + idx + ');document.getElementById(\'feynman-choice\').remove()" '
+      + 'style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.7);padding:10px 14px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;text-align:left">'
+      + '\u25B6 Standard Do Now — Timer only</button>'
+      + '<button onclick="document.getElementById(\'feynman-choice\').remove()" style="background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:11px;margin-top:4px">Cancel</button>'
+      + '</div>';
+    window._origStartDoNow = orig;
+    document.body.appendChild(choice);
+  },
+
+  /* ── TRIGGER: Encyclopedia taxonomy buttons ──────────── */
+  _wireEncyclopediaButtons: function() {
+    var self = this;
+    /* Look for encyclopedia entry headers with taxonomy info */
+    var entries = document.querySelectorAll('.enc-entry,.enc-card,[class*="enc-"]');
+    entries.forEach(function(entry) {
+      if (entry.querySelector('.feynman-enc-btn')) return;
+      var title = entry.querySelector('h3,h4,.enc-title,.entry-title');
+      if (!title) return;
+      var concept = title.textContent.trim();
+      var btn = document.createElement('button');
+      btn.className = 'feynman-enc-btn';
+      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A90E2;padding:3px 8px;border-radius:4px;cursor:pointer;margin-left:8px;vertical-align:middle';
+      btn.textContent = '\uD83E\uDDE0 Feynman';
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        self.start(concept, 'encyclopedia');
+      };
+      title.appendChild(btn);
+    });
+  },
+
+  /* ── TRIGGER: Agenda card Feynman button ─────────────── */
+  _wireAgendaCards: function() {
+    var self = this;
+    var agendas = (window.STATE && STATE.agendas) || [];
+    document.querySelectorAll('.agenda-card,.agenda-item').forEach(function(card, i) {
+      if (card.querySelector('.feynman-card-btn')) return;
+      var agenda = agendas[i];
+      if (!agenda || agenda.category !== 'learning') return;
+      var btn = document.createElement('button');
+      btn.className = 'feynman-card-btn';
+      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A90E2;padding:3px 8px;border-radius:4px;cursor:pointer;margin-top:4px;display:block';
+      btn.textContent = '\uD83E\uDDE0 Feynman Test';
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        self.start(agenda.title, 'agenda');
+      };
+      card.appendChild(btn);
+    });
+  },
+
+  /* ════════════════════════════════════════════════════════
+     CORE: START SESSION
+  ════════════════════════════════════════════════════════ */
+  start: function(concept, source) {
+    this.session = {
+      id:          RPGACE.utils.id(),
+      concept:     concept,
+      source:      source || 'direct',
+      phase:       1,
+      explanation: '',
+      gapAnswer:   '',
+      score:       0,
+      startedAt:   new Date().toISOString(),
+    };
+    this._openPanel(concept);
+    this._runPhase1();
+  },
+
+  /* ── Panel UI ────────────────────────────────────────── */
+  _openPanel: function(concept) {
+    var existing = document.getElementById('feynman-panel');
+    if (existing) existing.remove();
+
+    var panel = document.createElement('div');
+    panel.id = 'feynman-panel';
+    panel.style.cssText = [
+      'position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh',
+      'background:#0c0c16;border-left:1px solid rgba(74,144,226,0.2)',
+      'z-index:9999;display:flex;flex-direction:column',
+      'box-shadow:-20px 0 60px rgba(0,0,0,0.5)',
+      'font-family:Rajdhani,sans-serif',
+      'transform:translateX(100%);transition:transform .3s ease',
+    ].join(';');
+
+    panel.innerHTML = [
+      '<div style="background:rgba(74,144,226,0.08);border-bottom:1px solid rgba(74,144,226,0.2);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">',
+        '<div>',
+          '<div style="font-family:Cinzel,serif;font-size:11px;color:rgba(74,144,226,0.7);letter-spacing:2px;text-transform:uppercase">Feynman Loop</div>',
+          '<div id="feynman-concept" style="font-size:15px;font-weight:700;color:#E2E2EC;margin-top:2px">' + concept + '</div>',
+        '</div>',
+        '<div style="display:flex;align-items:center;gap:10px">',
+          '<div id="feynman-phase-badge" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#4A90E2;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:10px;padding:3px 10px">Phase 1/3</div>',
+          '<button onclick="RPGACE.modules.feynman.closePanel()" style="background:none;border:none;color:rgba(226,226,236,0.4);cursor:pointer;font-size:18px;line-height:1">\u00D7</button>',
+        '</div>',
+      '</div>',
+      /* Progress bar */
+      '<div style="height:3px;background:rgba(255,255,255,0.05);flex-shrink:0">',
+        '<div id="feynman-progress" style="height:100%;background:#4A90E2;width:33%;transition:width .4s ease"></div>',
+      '</div>',
+      /* Messages */
+      '<div id="feynman-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>',
+      /* Input area */
+      '<div style="border-top:1px solid rgba(255,255,255,0.06);padding:12px;flex-shrink:0">',
+        '<textarea id="feynman-input" placeholder="Type your explanation here..." rows="3" ',
+          'style="width:100%;background:#12121e;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#E2E2EC;',
+          'padding:10px 12px;font-family:Rajdhani,sans-serif;font-size:13px;resize:none;outline:none;box-sizing:border-box"></textarea>',
+        '<div style="display:flex;gap:8px;margin-top:8px">',
+          '<button id="feynman-submit" onclick="RPGACE.modules.feynman.submit()" ',
+            'style="flex:1;background:rgba(74,144,226,0.2);border:1px solid rgba(74,144,226,0.5);color:#4A90E2;',
+            'padding:9px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;letter-spacing:1px">',
+            'SUBMIT',
+          '</button>',
+        '</div>',
+      '</div>',
+    ].join('');
+
+    document.body.appendChild(panel);
+    /* Slide in */
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
+    });
+  },
+
+  closePanel: function() {
+    var panel = document.getElementById('feynman-panel');
+    if (panel) {
+      panel.style.transform = 'translateX(100%)';
+      setTimeout(function() { panel.remove(); }, 320);
+    }
+    this.session = null;
+  },
+
+  _addMessage: function(text, role) {
+    var msgs = document.getElementById('feynman-messages');
+    if (!msgs) return;
+    var isOracle = role === 'oracle';
+    var msg = document.createElement('div');
+    msg.style.cssText = [
+      'padding:10px 13px;border-radius:8px;font-size:12px;line-height:1.6;max-width:92%',
+      isOracle
+        ? 'background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.15);color:rgba(226,226,236,0.85);align-self:flex-start'
+        : 'background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);color:rgba(226,226,236,0.85);align-self:flex-end',
+    ].join(';');
+    /* Render basic markdown bold */
+    msg.innerHTML = text.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E2E2EC">$1</strong>').replace(/\n/g, '<br>');
+    msgs.appendChild(msg);
+    msgs.scrollTop = msgs.scrollHeight;
+  },
+
+  _setLoading: function(on) {
+    var btn = document.getElementById('feynman-submit');
+    var inp = document.getElementById('feynman-input');
+    if (btn) btn.disabled = on;
+    if (inp) inp.disabled = on;
+    if (btn) btn.textContent = on ? 'THINKING...' : 'SUBMIT';
+  },
+
+  _setPhase: function(phase) {
+    var badge = document.getElementById('feynman-phase-badge');
+    var bar   = document.getElementById('feynman-progress');
+    var labels = { 1: 'Phase 1/3 — Explain', 2: 'Phase 2/3 — Gap Check', 3: 'Phase 3/3 — Report' };
+    var widths  = { 1: '33%', 2: '66%', 3: '100%' };
+    if (badge) badge.textContent = labels[phase] || 'Phase ' + phase;
+    if (bar)   bar.style.width   = widths[phase] || '33%';
+  },
+
+  /* ── Phase 1: Ask user to explain ───────────────────── */
+  _runPhase1: function() {
+    var self    = this;
+    var concept = this.session.concept;
+    this._setPhase(1);
+    this._setLoading(true);
+
+    RPGACE.oracle(
+      [{ role: 'user', content: 'Begin Phase 1 of the Feynman session for concept: ' + concept }],
+      this.PROMPTS.phase1(concept, '')
+    ).then(function(resp) {
+      var text = resp && resp.content ? resp.content[0].text : (typeof resp === 'string' ? resp : 'Explain ' + concept + ' in your own words, as simply as possible.');
+      self._addMessage(text, 'oracle');
+      self._setLoading(false);
+    }).catch(function(e) {
+      self._addMessage('Explain "' + concept + '" in plain language — no jargon, as if teaching someone completely new to music production.', 'oracle');
+      self._setLoading(false);
+    });
+  },
+
+  /* ── Phase 2: Probe gaps ─────────────────────────────── */
+  _runPhase2: function(explanation) {
+    var self    = this;
+    var concept = this.session.concept;
+    this.session.explanation = explanation;
+    this._setPhase(2);
+    this._addMessage(explanation, 'user');
+    this._setLoading(true);
+
+    RPGACE.oracle(
+      [{ role: 'user', content: 'User explained: ' + explanation }],
+      this.PROMPTS.phase2(concept, explanation)
+    ).then(function(resp) {
+      var text = resp && resp.content ? resp.content[0].text : (typeof resp === 'string' ? resp : "What's the one thing about " + concept + " you find hardest to explain?");
+      self._addMessage(text, 'oracle');
+      self._setLoading(false);
+    }).catch(function(e) {
+      self._addMessage("Now the hard part — what's the piece of " + concept + " you find hardest to explain?", 'oracle');
+      self._setLoading(false);
+    });
+  },
+
+  /* ── Phase 3: Report ─────────────────────────────────── */
+  _runPhase3: function(gapAnswer) {
+    var self    = this;
+    var concept = this.session.concept;
+    this.session.gapAnswer = gapAnswer;
+    this.session.phase     = 3;
+    this._setPhase(3);
+    this._addMessage(gapAnswer, 'user');
+    this._setLoading(true);
+
+    /* Hide input while generating report */
+    var inputArea = document.querySelector('#feynman-panel > div:last-child');
+    if (inputArea) inputArea.style.display = 'none';
+
+    RPGACE.oracle(
+      [{ role: 'user', content: 'Gap answer: ' + gapAnswer }],
+      this.PROMPTS.phase3(concept, this.session.explanation, gapAnswer)
+    ).then(function(resp) {
+      var report = resp && resp.content ? resp.content[0].text : (typeof resp === 'string' ? resp : 'Session complete. Review your explanation of ' + concept + '.');
+      self.session.report    = report;
+      self.session.completedAt = new Date().toISOString();
+
+      /* Extract score */
+      var scoreMatch = report.match(/SCORE[:\s]+(\d+)/i);
+      self.session.score = scoreMatch ? parseInt(scoreMatch[1]) : 6;
+
+      self._addMessage(report, 'oracle');
+      self._setLoading(false);
+      self._showCompleteActions();
+      self._saveSession();
+    }).catch(function(e) {
+      self._addMessage('Session complete. Review your notes on ' + concept + '.', 'oracle');
+      self._setLoading(false);
+    });
+  },
+
+  /* ── Submit handler (phase router) ──────────────────── */
+  submit: function() {
+    var inp = document.getElementById('feynman-input');
+    if (!inp) return;
+    var text = inp.value.trim();
+    if (!text) return;
+    inp.value = '';
+
+    if (!this.session) return;
+
+    if (this.session.phase === 1) {
+      this.session.phase = 2;
+      this._runPhase2(text);
+    } else if (this.session.phase === 2) {
+      this.session.phase = 3;
+      this._runPhase3(text);
+    }
+  },
+
+  /* ── Actions after report ────────────────────────────── */
+  _showCompleteActions: function() {
+    var self    = this;
+    var concept = this.session.concept;
+    var score   = this.session.score;
+
+    var actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06)';
+    actions.innerHTML = [
+      '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:4px">Session saved</div>',
+      '<div style="display:flex;gap:8px">',
+        '<div style="flex:1;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:7px;padding:10px;text-align:center">',
+          '<div style="font-size:22px;font-weight:700;color:#4A90E2;font-family:Cinzel,serif">' + score + '<span style="font-size:12px">/10</span></div>',
+          '<div style="font-size:10px;color:rgba(226,226,236,0.5);margin-top:2px">Feynman Score</div>',
+        '</div>',
+        '<div style="flex:2;display:flex;flex-direction:column;gap:5px">',
+          score < 7
+            ? '<div style="font-size:11px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:5px;padding:6px 10px">\u23F0 Review scheduled in 3 days</div>'
+            : '<div style="font-size:11px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);color:#3DAA6E;border-radius:5px;padding:6px 10px">\u2713 Verified — follow-up in 7 days</div>',
+          '<div style="font-size:11px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.2);color:#4A90E2;border-radius:5px;padding:6px 10px">\uD83D\uDCD3 Saved to Journal</div>',
+        '</div>',
+      '</div>',
+      '<button onclick="RPGACE.modules.feynman.closePanel()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(226,226,236,0.6);padding:8px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:12px;margin-top:2px">Close Panel</button>',
+    ].join('');
+
+    var panel = document.getElementById('feynman-panel');
+    if (panel) panel.appendChild(actions);
+  },
+
+  /* ════════════════════════════════════════════════════════
+     SAVE SESSION
+     Journal + localStorage + Taxonomy + Spaced Repetition
+  ════════════════════════════════════════════════════════ */
+  _saveSession: function() {
+    var self    = this;
+    var session = this.session;
+    if (!session) return;
+
+    /* 1. Save to RPGACE.DB (localStorage) */
+    RPGACE.DB.push('feynman_sessions', {
+      concept:     session.concept,
+      source:      session.source,
+      score:       session.score,
+      explanation: session.explanation,
+      gapAnswer:   session.gapAnswer,
+      report:      session.report,
+      startedAt:   session.startedAt,
+      completedAt: session.completedAt,
+    });
+
+    /* 2. Save to Journal */
+    var journalContent = [
+      '**Feynman Loop — ' + session.concept + '**',
+      '',
+      '**My explanation:**',
+      session.explanation,
+      '',
+      '**Gap I found:**',
+      session.gapAnswer,
+      '',
+      '**Session Report:**',
+      session.report || '',
+      '',
+      'Score: ' + session.score + '/10',
+      'Source: ' + session.source,
+      'Duration: ~' + Math.round((new Date(session.completedAt) - new Date(session.startedAt)) / 60000) + ' min',
+    ].join('\n');
+
+    if (typeof saveToJournal === 'function') {
+      saveToJournal(
+        'Feynman: ' + session.concept + ' (' + session.score + '/10)',
+        journalContent,
+        'feynman'
+      ).catch(function(e) { console.warn('[feynman] Journal save failed:', e.message); });
+    }
+
+    /* 3. Send report to Oracle chat (as an assistant message) */
+    if (typeof addMsg === 'function' && session.report) {
+      setTimeout(function() {
+        addMsg(
+          '\uD83E\uDDE0 **Feynman Report — ' + session.concept + '**\n\n' + session.report,
+          'assistant'
+        );
+      }, 500);
+    }
+
+    /* 4. Spaced repetition — create follow-up agenda */
+    var daysOut   = session.score >= 7 ? 7 : 3;
+    var followUp  = new Date();
+    followUp.setDate(followUp.getDate() + daysOut);
+    var followDate = RPGACE.utils.dateStr(followUp);
+
+    RPGACE.DB.push('sched', {
+      date:           followDate,
+      hour:           10,
+      title:          'Feynman Review: ' + session.concept,
+      description:    'Spaced repetition — re-test understanding. Previous score: ' + session.score + '/10',
+      category:       'learning',
+      estimated_mins: 20,
+      xp:             30,
+      from_feynman:   true,
+      feynman_score:  session.score,
+    });
+
+    RPGACE.utils.toast(
+      '\uD83E\uDDE0 Session saved ' + session.score + '/10 \u00B7 Review in ' + daysOut + ' days',
+      '#4A90E2', 4000
+    );
+
+    /* 5. Update taxonomy node in Supabase (non-blocking) */
+    self._updateTaxonomyNode(session.concept, session.score);
+
+    /* 6. Log to daily action log */
+    var today = RPGACE.utils.dateStr();
+    var log   = RPGACE.DB.get('log') || {};
+    if (!log[today]) log[today] = [];
+    log[today].push({
+      time:    new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+      title:   'Feynman: ' + session.concept,
+      summary: 'Score ' + session.score + '/10. ' + (session.score < 7 ? 'Gaps found — review in 3 days.' : 'Verified.'),
+      done:    true,
+      id:      RPGACE.utils.id(),
+    });
+    RPGACE.DB.set('log', log);
+  },
+
+  _updateTaxonomyNode: function(concept, score) {
+    if (!window.sb) return;
+    window.sb
+      .from('taxonomy_nodes')
+      .select('id,study_count,genus')
+      .ilike('genus', '%' + concept + '%')
+      .limit(1)
+      .then(function(res) {
+        if (!res.data || !res.data.length) return;
+        var node = res.data[0];
+        var updates = {
+          study_count:     (node.study_count || 0) + 1,
+          last_studied_at: new Date().toISOString(),
+        };
+        if (score >= 8) updates.applied_in_beat = true;
+        window.sb.from('taxonomy_nodes').update(updates).eq('id', node.id).then(function() {
+          console.log('[feynman] Taxonomy node updated:', concept, 'score:', score);
+        });
+      })
+      .catch(function(e) { console.warn('[feynman] Taxonomy update failed:', e.message); });
+  },
+
+});
