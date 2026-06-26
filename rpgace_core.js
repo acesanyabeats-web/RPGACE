@@ -1517,3 +1517,100 @@ RPGACE.register('instaOraclePanel', {
   },
 
 });
+
+/* ================================================================
+   ENCYCLOPEDIA SYNC FIX
+   - Deduplicates entries by title after syncAndPush()
+   - Clears rpgace_enc_saved URL backlog after sync
+   - clearEncyclopedia() also wipes both backlogs
+================================================================ */
+RPGACE.register('encSync', {
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._patch(); }, 800);
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._patch(); }, 800);
+    });
+  },
+
+  _dedup: function() {
+    try {
+      var raw = localStorage.getItem('rpgace_encyclopedia');
+      if (!raw) return 0;
+      var entries = JSON.parse(raw);
+      var seen = {};
+      var clean = entries.filter(function(e) {
+        var key = (e.title || e.id || '').toLowerCase().trim();
+        if (seen[key]) return false;
+        seen[key] = true;
+        return true;
+      });
+      if (clean.length < entries.length) {
+        localStorage.setItem('rpgace_encyclopedia', JSON.stringify(clean));
+        return entries.length - clean.length;
+      }
+    } catch(e) {}
+    return 0;
+  },
+
+  _clearBacklog: function() {
+    /* Wipe URL queue so next sync doesn't reimport the same items */
+    var hadUrls = !!localStorage.getItem('rpgace_enc_saved');
+    localStorage.removeItem('rpgace_enc_saved');
+    localStorage.removeItem('rpgace_intel_insights');
+    return hadUrls;
+  },
+
+  _patch: function() {
+    if (window._encSyncPatched) return;
+    var fn = window.syncAndPush;
+    var clr = window.clearEncyclopedia;
+    if (!fn || !clr) return;
+
+    window._encSyncPatched = true;
+    var self = this;
+
+    /* ── Patch syncAndPush ── */
+    window.syncAndPush = function() {
+      var before = 0;
+      try {
+        var prev = JSON.parse(localStorage.getItem('rpgace_encyclopedia') || '[]');
+        before = prev.length;
+      } catch(e) {}
+
+      fn.apply(this, arguments);
+
+      /* Give the original function time to finish (it likely does fetch/setState) */
+      setTimeout(function() {
+        var removed = self._dedup();
+        self._clearBacklog();
+
+        try {
+          var after = JSON.parse(localStorage.getItem('rpgace_encyclopedia') || '[]');
+          var net = after.length - before;
+          var msg = net > 0
+            ? '✅ ' + net + ' new entries added'
+            : net === 0
+              ? '✓ Already up to date'
+              : '✓ Sync complete';
+          if (removed > 0) msg += ' · ' + removed + ' duplicates removed';
+          RPGACE.utils.toast(msg, 'rgba(201,168,76,0.9)', 3500);
+          if (typeof window.refreshEncyclopediaDisplay === 'function') {
+            window.refreshEncyclopediaDisplay();
+          }
+        } catch(e) {}
+      }, 2500);
+    };
+
+    /* ── Patch clearEncyclopedia ── */
+    window.clearEncyclopedia = function() {
+      self._clearBacklog();
+      clr.apply(this, arguments);
+      RPGACE.utils.toast('?? Encyclopedia + backlog cleared', 'rgba(226,84,84,0.9)', 2500);
+    };
+
+    console.log('[RPGACE:encSync] Patched syncAndPush + clearEncyclopedia');
+  },
+
+});
