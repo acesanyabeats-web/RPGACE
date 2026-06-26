@@ -1072,15 +1072,32 @@ RPGACE.register('youtubeOracle', {
   _btn: function() {
     if (document.getElementById('yt-ob')) return;
     var self = this;
-    var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]') ||
-                 document.querySelector('#prod-oracle-btn');
-    if (!anchor) return;
-    var b = document.createElement('button');
-    b.id = 'yt-ob';
-    b.textContent = '?? YouTube Oracle';
-    b.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:rgba(255,0,0,0.08);border:1px solid rgba(255,80,80,0.25);color:rgba(255,130,130,0.9);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-left:8px;';
-    b.onclick = function() { self.open(); };
-    anchor.parentElement.appendChild(b);
+    var attempts = 0;
+    var tryInject = function() {
+      if (document.getElementById('yt-ob')) return;
+      attempts++;
+      /* Try multiple selectors for the quick-actions bar anchor */
+      var anchor = document.querySelector('[onclick*="toggleInstaPanel"]') ||
+                   document.querySelector('[onclick*="toggleProdOraclePanel"]') ||
+                   document.querySelector('#prod-oracle-btn');
+      if (!anchor) {
+        if (attempts < 15) setTimeout(tryInject, 400);
+        return;
+      }
+      var b = document.createElement('button');
+      b.id = 'yt-ob';
+      b.textContent = '\uD83C\uDFAC YouTube Oracle';
+      b.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:rgba(255,0,0,0.08);border:1px solid rgba(255,80,80,0.25);color:rgba(255,130,130,0.9);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-left:4px;margin-right:4px;';
+      b.onclick = function() { self.open(); };
+      /* Insert before the Insta-Oracle button so it sits between Prod Oracle and Insta */
+      var instaBtn = document.querySelector('[onclick*="toggleInstaPanel"]');
+      if (instaBtn) {
+        instaBtn.parentElement.insertBefore(b, instaBtn);
+      } else {
+        anchor.parentElement.appendChild(b);
+      }
+    };
+    setTimeout(tryInject, 300);
   },
 
   _close: function() {
