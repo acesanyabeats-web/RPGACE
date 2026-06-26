@@ -367,6 +367,27 @@
     console.log('[RPGACE] Foundation layer active. Hooks wired. Modules:', Object.keys(R.modules));
     R._ready = true;
     R.hooks.fire('rpgace:ready');
+  /* ── YouTube Oracle button injection (direct, no module dependency) ── */
+  setTimeout(function() {
+    var _ytBtnInject = function() {
+      if (document.getElementById('yt-ob')) return;
+      var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
+      if (!anchor) return;
+      var b = document.createElement('button');
+      b.id = 'yt-ob';
+      b.className = anchor.className;
+      b.textContent = '\uD83C\uDFAC YouTube Oracle';
+      b.style.marginLeft = '4px';
+      b.onclick = function() {
+        if (R.modules && R.modules.youtubeOracle) R.modules.youtubeOracle.open();
+      };
+      anchor.parentElement.insertBefore(b, anchor.nextSibling);
+      console.log('[RPGACE:youtubeOracle] Button injected');
+    };
+    _ytBtnInject();
+    setTimeout(_ytBtnInject, 800);
+    setTimeout(_ytBtnInject, 2000);
+  }, 400);
   });
 
   /* ══════════════════════════════════════════════════════════
