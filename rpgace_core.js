@@ -1072,32 +1072,22 @@ RPGACE.register('youtubeOracle', {
   _btn: function() {
     if (document.getElementById('yt-ob')) return;
     var self = this;
-    var attempts = 0;
-    var tryInject = function() {
+    var tries = 0;
+    var go = function() {
+      tries++;
       if (document.getElementById('yt-ob')) return;
-      attempts++;
-      /* Try multiple selectors for the quick-actions bar anchor */
-      var anchor = document.querySelector('[onclick*="toggleInstaPanel"]') ||
-                   document.querySelector('[onclick*="toggleProdOraclePanel"]') ||
-                   document.querySelector('#prod-oracle-btn');
-      if (!anchor) {
-        if (attempts < 15) setTimeout(tryInject, 400);
-        return;
-      }
+      var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
+      if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
       var b = document.createElement('button');
       b.id = 'yt-ob';
+      b.className = anchor.className;
       b.textContent = '\uD83C\uDFAC YouTube Oracle';
-      b.style.cssText = 'display:inline-flex;align-items:center;gap:6px;background:rgba(255,0,0,0.08);border:1px solid rgba(255,80,80,0.25);color:rgba(255,130,130,0.9);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-left:4px;margin-right:4px;';
       b.onclick = function() { self.open(); };
-      /* Insert before the Insta-Oracle button so it sits between Prod Oracle and Insta */
-      var instaBtn = document.querySelector('[onclick*="toggleInstaPanel"]');
-      if (instaBtn) {
-        instaBtn.parentElement.insertBefore(b, instaBtn);
-      } else {
-        anchor.parentElement.appendChild(b);
-      }
+      anchor.parentElement.insertBefore(b, anchor.nextSibling);
     };
-    setTimeout(tryInject, 300);
+    setTimeout(go, 600);
+    setTimeout(go, 1500);
+    setTimeout(go, 3000);
   },
 
   _close: function() {
