@@ -497,6 +497,335 @@
      - Content Pipeline: YouTube idea from verified explanation
 ================================================================ */
 
+/* ===DOMAIN:ORACLE=== */
+
+/* ===MODULE:youtubeOracle=== */
+RPGACE.register('youtubeOracle', {
+
+  CMDS: [
+    ['Find Your Niche', 'Analyse this YouTube niche for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FREQUENCY: 2x per week. Return: 1) Niche saturation score 1-10 with explanation 2) Top 3 direct competitors and their strengths 3) Three underserved sub-niches with lower competition 4) Monetisation potential ranking 5) Your single strongest differentiation angle. Be specific to this niche only.'],
+    ['Channel Identity Builder', 'Build the channel identity for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. UNIQUE ANGLES: Russian and French and London cultural perspective, building while working hospitality shifts. Return: 1) Three tagline options under 10 words each 2) My Unique Mechanism 3) Brand voice in 3 words 4) Positioning statement in one sentence 5) Visual identity direction 6) What cliches to avoid.'],
+    ['90-Day Content Machine', 'Build a 90-day compound view strategy for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. FREQUENCY: 2x per week, 24 videos total. Return: 1) The content pillars for the 90 days 2) Upload schedule with rotation logic 3) Ratio of evergreen vs trending content 4) Which video type to lead with 5) How videos compound on each other 6) What good traction looks like at day 30, 60, 90.'],
+    ['Script Writer Hook to CTA', 'Write a complete YouTube script for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FORMAT: Tutorial showing FL Studio screen with on-camera moments. Include: HOOK in first 10 seconds, PROBLEM in 30 seconds, SOLUTION as main body with scene notes as SCREEN: show X or CAM: say Y, PATTERN INTERRUPT every 90 seconds, CTA in final 20 seconds. TOPIC: Tell me your topic or I will suggest one for your niche.'],
+    ['Title and Thumbnail Optimizer', 'Generate 10 title options and thumbnail concepts for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. For each title: CTR score 1-10, one reason, category of Curiosity or Number or Transformation or How-To. For each thumbnail: main image, text overlay max 5 words, colour scheme, emotion triggered. Rank your top 3 title and thumbnail combinations. TOPIC: Describe your video or I will suggest based on underserved gaps in your niche.'],
+    ['YouTube Algorithm Audit', 'Audit @AceSanyaBeats for YouTube algorithm performance. NICHE: FL Studio beats and UK hip hop production tutorials. FREQUENCY: 2x per week. Return: 1) CTR OPTIMISATION 2) WATCH TIME retention architecture 3) SESSION TIME end screen card and playlist strategy 4) UPLOAD CONSISTENCY impact 5) COMMUNITY SIGNALS comment strategy 6) SHORTS recommendation 7) THE SINGLE BIGGEST MISTAKE music production channels make. Specific to FL Studio and UK hip hop only.'],
+    ['Audience Mind Reader', 'Analyse audience psychology for @AceSanyaBeats. AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Return: 1) Their 5 biggest frustrations 2) Their 3 core desires 3) Exact language they use in forums and comments 4) One content idea per frustration 5) Emotional journey from first video to subscriber to buyer 6) What makes them click away in 30 seconds 7) The one emotional trigger that makes them share content.'],
+    ['Viral Hook Generator 50', 'Generate 50 viral hooks for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. Category A: 18 TITLE HOOKS specific to FL Studio and beat-making. Category B: 17 THUMBNAIL TEXT HOOKS of 3-5 words max. Category C: 15 FIRST-10-SECONDS SPOKEN HOOKS that open a loop they must close. After the 50 hooks give your top 5 picks across all categories and explain why they outperform the others for this specific niche.'],
+  ],
+
+  ICONS: ['??','??','??','??','??','??','??','??'],
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === 'oracle') setTimeout(function() { self._btn(); }, 600);
+    });
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._btn(); }, 800);
+    });
+  },
+
+  _btn: function() {
+    if (document.getElementById('yt-ob')) return;
+    var self = this;
+    var tries = 0;
+    var go = function() {
+      tries++;
+      if (document.getElementById('yt-ob')) return;
+      var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
+      if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
+      var b = document.createElement('button');
+      b.id = 'yt-ob';
+      b.className = anchor.className;
+      b.textContent = '\uD83C\uDFAC YouTube Oracle';
+      b.onclick = function() { self.open(); };
+      anchor.parentElement.insertBefore(b, anchor.nextSibling);
+    };
+    setTimeout(go, 600);
+    setTimeout(go, 1500);
+    setTimeout(go, 3000);
+  },
+
+  _close: function() {
+    var p = document.getElementById('yt-op');
+    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
+  },
+
+  open: function() {
+    if (document.getElementById('yt-op')) { this._close(); return; }
+    var self = this;
+    var panel = document.createElement('div');
+    panel.id = 'yt-op';
+    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(255,80,80,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'background:rgba(255,40,40,0.06);border-bottom:1px solid rgba(255,80,80,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+    var ht = document.createElement('div');
+    var lb = document.createElement('div');
+    lb.textContent = 'YOUTUBE ORACLE';
+    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
+    var ch = document.createElement('div');
+    ch.textContent = '@AceSanyaBeats';
+    ch.style.cssText = 'font-size:13px;font-weight:700;color:#E2E2EC;';
+    ht.appendChild(lb); ht.appendChild(ch);
+    var cb = document.createElement('button');
+    cb.textContent = '×';
+    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+    cb.onclick = function() { self._close(); };
+    hdr.appendChild(ht); hdr.appendChild(cb);
+    panel.appendChild(hdr);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+    var note = document.createElement('div');
+    note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR CHANNEL';
+    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    body.appendChild(note);
+
+    self.CMDS.forEach(function(cmd, i) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+      var ic = document.createElement('span');
+      ic.textContent = self.ICONS[i] || '';
+      ic.style.fontSize = '16px';
+      var tx = document.createElement('span');
+      tx.textContent = cmd[0];
+      btn.appendChild(ic); btn.appendChild(tx);
+      btn.onmouseover = function() { this.style.background = 'rgba(255,60,60,0.1)'; };
+      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+      btn.onclick = function() { self.run(i); };
+      body.appendChild(btn);
+    });
+    panel.appendChild(body);
+    document.body.appendChild(panel);
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
+    });
+  },
+
+  run: function(i) {
+    var cmd = this.CMDS[i];
+    if (!cmd) return;
+    this._close();
+    var input = document.getElementById('chat-input') || document.querySelector('textarea');
+    if (input) {
+      input.value = cmd[1];
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      var sb = document.getElementById('send-btn') || document.querySelector('[onclick*="sendChat"]');
+      if (sb) { setTimeout(function() { sb.click(); }, 80); }
+      else if (typeof sendChat === 'function') { setTimeout(sendChat, 80); }
+    }
+    RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2500);
+  },
+
+});
+/* ===END:youtubeOracle=== */
+
+/* ===MODULE:prodOraclePanel=== */
+RPGACE.register('prodOraclePanel', {
+
+  CMDS: [
+    ['Master Learning', 'I am a music producer using FL Studio making UK hip hop and drill beats. I want to master [TYPE A SPECIFIC PRODUCTION TOPIC]. Teach me this concept completely. Use the 3-layer method: simple terms first, then technical mechanics, then the expert nuance most tutorials miss. Be specific to FL Studio throughout.'],
+    ['Instant Understanding', 'Explain [TYPE A PRODUCTION CONCEPT OR TECHNIQUE] to me in exactly 3 layers. Layer 1: explain it like I am 10 years old in 2 sentences. Layer 2: explain the real technical mechanics in 5 sentences. Layer 3: the one expert insight about this that most FL Studio producers never figure out.'],
+    ['Socratic Teaching', 'Teach me [TYPE A PRODUCTION CONCEPT] using the Socratic method. Ask me questions to expose what I already know, what I think I know but am wrong about, and what I have never considered. Do not explain the concept directly. Lead me to understand it through my own answers. I make UK hip hop and drill in FL Studio.'],
+    ['Real World Application', 'I understand [TYPE A PRODUCTION CONCEPT] in theory but have never applied it. Give me 5 specific real-world scenarios in FL Studio where this knowledge changes a decision I make tonight. For each: the exact situation, the exact decision this knowledge changes, the exact FL Studio steps, and exactly how my beat sounds different.'],
+    ['Gap Finder', 'Analyse my production knowledge and find the gap I do not know exists. MY KNOWN CONCEPTS: [LIST EVERY PRODUCTION CONCEPT YOU KNOW, SEPARATED BY COMMAS]. Find: the hidden prerequisite I am missing, the assumption I am probably making that is wrong, the connection between concepts I have not made, and the exact gap limiting my sound right now.'],
+    ['Teach It Back', 'I am going to explain [TYPE A PRODUCTION CONCEPT] to you as if you are a complete beginner. Score me on accuracy out of 10, identify every gap in my explanation, then teach me what I got wrong. Here is my explanation: [TYPE YOUR OWN EXPLANATION OF THE CONCEPT IN YOUR OWN WORDS]'],
+    ['Permanent Knowledge', 'Design a spaced repetition system for [TYPE A PRODUCTION TOPIC]. Give me: the 5 most important facts to remember, a 30-second daily review exercise, a weekly FL Studio practice task, a test to verify I have mastered it, and the first mistake I will make so I know to watch for it.'],
+    ['Beat Analysis', 'Analyse this beat reference and teach me every production technique used. REFERENCE: [DESCRIBE THE BEAT OR PASTE AN ARTIST AND TRACK NAME]. For each technique: name it, how it was done in FL Studio, which taxonomy node it maps to, exact FL Studio steps to recreate it, and difficulty 1-10.'],
+    ['Learn in 20 Hours', 'Build a 20-hour plan for mastering [TYPE A PRODUCTION SKILL] in FL Studio. Divide into 10 x 2-hour sessions. For each session: specific skill focus, exact exercises, FL Studio tools involved, test to confirm learning before moving on, and the mistake to watch for.'],
+    ['Test Me Until I Master It', 'I have just studied [TYPE A PRODUCTION TOPIC]. Test me with 10 increasingly difficult questions, starting with basic recall and ending with expert application. After each answer: tell me right or wrong, explain what I missed, ask the next question. Do not give answers until I attempt each one.'],
+    ['Learning Ladder', 'Create a 5-level learning ladder for [TYPE A PRODUCTION SKILL] in FL Studio. Level 1 is complete beginner and Level 5 is professional. For each level: the skills that define it, how to test if I am at that level, the one exercise that takes me to the next level, and the most common mistake. Then tell me which level I am at based on: [DESCRIBE YOUR CURRENT ABILITY WITH THIS SKILL]'],
+    ['Best Resources', 'Find the 5 best resources for learning [TYPE A PRODUCTION SKILL OR CONCEPT] specifically for FL Studio and UK hip hop production. For each: what it is, why it is the best for this topic, what level it targets, what I will learn that I cannot get elsewhere, and how long it takes to extract the value.'],
+    ['Research Questions', 'Generate 10 strong research questions about [TYPE A PRODUCTION TOPIC] for FL Studio and UK hip hop production. Each must be specific, actionable in FL Studio, capable of producing a tutorial insight, and relevant to my genre. After the 10 questions, tell me which 3 to research first and why.'],
+    ['Productize Yourself', 'Help me turn my production knowledge into a product. MY CORE SKILL: [TYPE YOUR STRONGEST PRODUCTION SKILL]. MY AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Give me 3 product formats scored by effort and revenue potential. For the highest scorer: outline, launch positioning, and 7-day launch plan.'],
+  ],
+
+  ICONS: ['??','??','❓','??','??','??','??','??','⏰','✅','??','??','??','??'],
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._intercept(); }, 1200);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._intercept(); }, 1200); });
+  },
+
+  _intercept: function() {
+    if (window._prodOraclePanelIntercepted) return;
+    if (typeof window.toggleProdOraclePanel === 'undefined') return;
+    window._prodOraclePanelIntercepted = true;
+    var self = this;
+    window.toggleProdOraclePanel = function() { self.open(); };
+  },
+
+  _close: function() {
+    var p = document.getElementById('prod-op');
+    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
+  },
+
+  open: function() {
+    if (document.getElementById('prod-op')) { this._close(); return; }
+    var self = this;
+    var panel = document.createElement('div');
+    panel.id = 'prod-op';
+    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(201,168,76,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'background:rgba(201,168,76,0.06);border-bottom:1px solid rgba(201,168,76,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+    var ht = document.createElement('div');
+    var lb = document.createElement('div');
+    lb.textContent = 'PROD. BY ORACLE';
+    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.65);margin-bottom:3px;';
+    var sub = document.createElement('div');
+    sub.textContent = 'FL Studio · UK Hip Hop · 14 Commands';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    ht.appendChild(lb); ht.appendChild(sub);
+    var cb = document.createElement('button');
+    cb.textContent = '×';
+    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+    cb.onclick = function() { self._close(); };
+    hdr.appendChild(ht); hdr.appendChild(cb);
+    panel.appendChild(hdr);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+    var note = document.createElement('div');
+    note.textContent = '14 COMMANDS · PRE-FILLED FOR YOUR SESSION';
+    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    body.appendChild(note);
+
+    self.CMDS.forEach(function(cmd, i) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '⭐'; ic.style.fontSize = '15px';
+      var tx = document.createElement('span'); tx.textContent = cmd[0];
+      btn.appendChild(ic); btn.appendChild(tx);
+      btn.onmouseover = function() { this.style.background = 'rgba(201,168,76,0.08)'; };
+      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+      btn.onclick = function() { self.run(i); };
+      body.appendChild(btn);
+    });
+    panel.appendChild(body);
+    document.body.appendChild(panel);
+    requestAnimationFrame(function() { requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; }); });
+  },
+
+  run: function(i) {
+    var cmd = this.CMDS[i];
+    if (!cmd) return;
+    this._close();
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
+      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
+    });
+  },
+
+});
+/* ===END:prodOraclePanel=== */
+
+/* ===MODULE:instaOraclePanel=== */
+RPGACE.register('instaOraclePanel', {
+
+  CMDS: [
+    ['Content Creator Mode', 'Activate full content creator mode for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. PLATFORMS: Instagram and YouTube. FREQUENCY: 3-4 posts per week. Generate: my positioning, unique voice and angle, content pillars with percentages, the 3 content types that drive the most followers in my niche, and the first 7 posts to create starting today.'],
+    ['100 Content Ideas', 'Generate 100 content ideas for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Organise into 9 categories: tutorials, beat showcases, process videos, opinion pieces, reaction content, challenges, collaborations, behind-the-scenes, and trending formats. For each idea: the hook angle, format, and why it performs for this audience. Mark the top 10 with a star.'],
+    ['50 Viral Hooks', 'Generate 50 viral content hooks for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Format: 20 Instagram caption hooks, 20 reel hooks for the first 3 seconds on screen, 10 story hooks. Each must stop the scroll, open a loop, and be specific to FL Studio or beat-making. No generic creator hooks.'],
+    ['Viral Content Architect', 'Design a complete viral content piece for @AceSanyaBeats. TOPIC: [TYPE YOUR CONTENT TOPIC]. PLATFORM: Instagram Reels. Build the full architecture: hook in 1 second, tension-building problem, value-delivering solution, pattern interrupt at the midpoint, CTA at the end. Give me the script, visual direction, caption with hashtags, and thumbnail concept.'],
+    ['30-Day Calendar', 'Build a 30-day content calendar for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. FREQUENCY: 3-4 posts per week on Instagram and YouTube Shorts. Include: daily posting schedule, content pillar rotation, hooks for each post, trending audio or format notes, and a tracking metric per week. Format as a clear calendar starting tomorrow.'],
+    ['Audience Mind Reader', 'Analyse the psychology of my Instagram audience for @AceSanyaBeats. AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Return: their 5 deepest frustrations, 3 secret desires beyond just making beats, exact language from comments and DMs, what makes them save vs scroll, what makes them share, the single emotional trigger that makes them follow. Then give me 5 content ideas built directly from these insights.'],
+    ['DIAGNOSE: Low Views', 'My Instagram content is getting low views. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose the exact reason and prescribe the fix. Check: hook quality in first 3 frames, audio choice, content relevance, posting time, hashtag strategy, reel length, visual quality, and caption structure. For each issue: how to diagnose it and the exact fix with examples for my niche.'],
+    ['DIAGNOSE: Low Likes', 'My Instagram posts get low likes. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose and prescribe. Analyse: emotional resonance, relatability to aspiring producers, visual appeal, CTA quality, whether my content makes people feel something vs just learn, and how it compares to top FL Studio creators.'],
+    ['DIAGNOSE: No Comments', 'My Instagram posts get no comments. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose the silence and prescribe how to start conversations. Cover: whether I ask questions, create opinions, am controversial enough to react to, how to end posts to invite discussion, and 5 specific comment-bait post ideas for the production niche.'],
+    ['DIAGNOSE: Low Shares', 'My Instagram posts are not shared. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose and prescribe. Analyse: share triggers for the producer audience, whether my content is identity-expressing, whether my tips are good enough to send to a friend, and the 3 specific post formats that will generate shares in my niche.'],
+    ['DIAGNOSE: Low Saves', 'My Instagram posts get no saves. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose and prescribe. Saves indicate reference value. Analyse: whether my content functions as a resource people return to, whether I use list formats worth saving, whether my tips are specific enough to keep, and the 5 most saveable content formats for the FL Studio production niche.'],
+    ['DIAGNOSE: No Followers', 'My Instagram account is not growing. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Run a complete profile audit. Check: bio clarity, profile picture and highlights, content consistency and visual identity, reason to follow beyond the individual post, positioning vs other FL Studio creators, and whether my niche is clear. Give me a 7-day follower growth action plan.'],
+    ['Full Profile Audit', 'Run a complete Instagram profile audit for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. Audit every element: bio, link in bio strategy, profile picture, highlight covers and content, pinned posts, content grid aesthetic, posting frequency, caption style, hashtag strategy, and engagement rate expectations. Priority list of what to fix first.'],
+  ],
+
+  ICONS: ['??','??','??','??','??','??','??','❤','??','♻','??','??','??'],
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._intercept(); }, 1400);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._intercept(); }, 1400); });
+  },
+
+  _intercept: function() {
+    if (window._instaOraclePanelIntercepted) return;
+    if (typeof window.toggleInstaPanel === 'undefined') return;
+    window._instaOraclePanelIntercepted = true;
+    var self = this;
+    window.toggleInstaPanel = function() { self.open(); };
+  },
+
+  _close: function() {
+    var p = document.getElementById('insta-op');
+    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
+  },
+
+  open: function() {
+    if (document.getElementById('insta-op')) { this._close(); return; }
+    var self = this;
+    var panel = document.createElement('div');
+    panel.id = 'insta-op';
+    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(155,89,182,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'background:rgba(155,89,182,0.06);border-bottom:1px solid rgba(155,89,182,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+    var ht = document.createElement('div');
+    var lb = document.createElement('div');
+    lb.textContent = 'INSTA-ORACLE';
+    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
+    var sub = document.createElement('div');
+    sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    ht.appendChild(lb); ht.appendChild(sub);
+    var cb = document.createElement('button');
+    cb.textContent = '×';
+    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+    cb.onclick = function() { self._close(); };
+    hdr.appendChild(ht); hdr.appendChild(cb);
+    panel.appendChild(hdr);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+    var note = document.createElement('div');
+    note.textContent = '13 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
+    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    body.appendChild(note);
+
+    self.CMDS.forEach(function(cmd, i) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '??'; ic.style.fontSize = '15px';
+      var tx = document.createElement('span'); tx.textContent = cmd[0];
+      btn.appendChild(ic); btn.appendChild(tx);
+      btn.onmouseover = function() { this.style.background = 'rgba(155,89,182,0.1)'; };
+      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+      btn.onclick = function() { self.run(i); };
+      body.appendChild(btn);
+    });
+    panel.appendChild(body);
+    document.body.appendChild(panel);
+    requestAnimationFrame(function() { requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; }); });
+  },
+
+  run: function(i) {
+    var cmd = this.CMDS[i];
+    if (!cmd) return;
+    this._close();
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
+      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(155,89,182,0.9)', 2000);
+    });
+  },
+
+});
+/* ===END:instaOraclePanel=== */
+/* ===END_DOMAIN:ORACLE=== */
+
+/* ===DOMAIN:LEARNING=== */
+
+/* ===MODULE:feynman=== */
 RPGACE.register('feynman', {
 
   /* ── Session state ──────────────────────────────────── */
@@ -1064,466 +1393,9 @@ RPGACE.register('feynman', {
   },
 
 });
+/* ===END:feynman=== */
 
-RPGACE.register('youtubeOracle', {
-
-  CMDS: [
-    ['Find Your Niche', 'Analyse this YouTube niche for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FREQUENCY: 2x per week. Return: 1) Niche saturation score 1-10 with explanation 2) Top 3 direct competitors and their strengths 3) Three underserved sub-niches with lower competition 4) Monetisation potential ranking 5) Your single strongest differentiation angle. Be specific to this niche only.'],
-    ['Channel Identity Builder', 'Build the channel identity for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. UNIQUE ANGLES: Russian and French and London cultural perspective, building while working hospitality shifts. Return: 1) Three tagline options under 10 words each 2) My Unique Mechanism 3) Brand voice in 3 words 4) Positioning statement in one sentence 5) Visual identity direction 6) What cliches to avoid.'],
-    ['90-Day Content Machine', 'Build a 90-day compound view strategy for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. FREQUENCY: 2x per week, 24 videos total. Return: 1) The content pillars for the 90 days 2) Upload schedule with rotation logic 3) Ratio of evergreen vs trending content 4) Which video type to lead with 5) How videos compound on each other 6) What good traction looks like at day 30, 60, 90.'],
-    ['Script Writer Hook to CTA', 'Write a complete YouTube script for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FORMAT: Tutorial showing FL Studio screen with on-camera moments. Include: HOOK in first 10 seconds, PROBLEM in 30 seconds, SOLUTION as main body with scene notes as SCREEN: show X or CAM: say Y, PATTERN INTERRUPT every 90 seconds, CTA in final 20 seconds. TOPIC: Tell me your topic or I will suggest one for your niche.'],
-    ['Title and Thumbnail Optimizer', 'Generate 10 title options and thumbnail concepts for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. For each title: CTR score 1-10, one reason, category of Curiosity or Number or Transformation or How-To. For each thumbnail: main image, text overlay max 5 words, colour scheme, emotion triggered. Rank your top 3 title and thumbnail combinations. TOPIC: Describe your video or I will suggest based on underserved gaps in your niche.'],
-    ['YouTube Algorithm Audit', 'Audit @AceSanyaBeats for YouTube algorithm performance. NICHE: FL Studio beats and UK hip hop production tutorials. FREQUENCY: 2x per week. Return: 1) CTR OPTIMISATION 2) WATCH TIME retention architecture 3) SESSION TIME end screen card and playlist strategy 4) UPLOAD CONSISTENCY impact 5) COMMUNITY SIGNALS comment strategy 6) SHORTS recommendation 7) THE SINGLE BIGGEST MISTAKE music production channels make. Specific to FL Studio and UK hip hop only.'],
-    ['Audience Mind Reader', 'Analyse audience psychology for @AceSanyaBeats. AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Return: 1) Their 5 biggest frustrations 2) Their 3 core desires 3) Exact language they use in forums and comments 4) One content idea per frustration 5) Emotional journey from first video to subscriber to buyer 6) What makes them click away in 30 seconds 7) The one emotional trigger that makes them share content.'],
-    ['Viral Hook Generator 50', 'Generate 50 viral hooks for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. Category A: 18 TITLE HOOKS specific to FL Studio and beat-making. Category B: 17 THUMBNAIL TEXT HOOKS of 3-5 words max. Category C: 15 FIRST-10-SECONDS SPOKEN HOOKS that open a loop they must close. After the 50 hooks give your top 5 picks across all categories and explain why they outperform the others for this specific niche.'],
-  ],
-
-  ICONS: ['??','??','??','??','??','??','??','??'],
-
-  init: function() {
-    var self = this;
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'oracle') setTimeout(function() { self._btn(); }, 600);
-    });
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._btn(); }, 800);
-    });
-  },
-
-  _btn: function() {
-    if (document.getElementById('yt-ob')) return;
-    var self = this;
-    var tries = 0;
-    var go = function() {
-      tries++;
-      if (document.getElementById('yt-ob')) return;
-      var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
-      if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
-      var b = document.createElement('button');
-      b.id = 'yt-ob';
-      b.className = anchor.className;
-      b.textContent = '\uD83C\uDFAC YouTube Oracle';
-      b.onclick = function() { self.open(); };
-      anchor.parentElement.insertBefore(b, anchor.nextSibling);
-    };
-    setTimeout(go, 600);
-    setTimeout(go, 1500);
-    setTimeout(go, 3000);
-  },
-
-  _close: function() {
-    var p = document.getElementById('yt-op');
-    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
-  },
-
-  open: function() {
-    if (document.getElementById('yt-op')) { this._close(); return; }
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'yt-op';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(255,80,80,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(255,40,40,0.06);border-bottom:1px solid rgba(255,80,80,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var ht = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.textContent = 'YOUTUBE ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
-    var ch = document.createElement('div');
-    ch.textContent = '@AceSanyaBeats';
-    ch.style.cssText = 'font-size:13px;font-weight:700;color:#E2E2EC;';
-    ht.appendChild(lb); ht.appendChild(ch);
-    var cb = document.createElement('button');
-    cb.textContent = '×';
-    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-    cb.onclick = function() { self._close(); };
-    hdr.appendChild(ht); hdr.appendChild(cb);
-    panel.appendChild(hdr);
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-    var note = document.createElement('div');
-    note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR CHANNEL';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-    body.appendChild(note);
-
-    self.CMDS.forEach(function(cmd, i) {
-      var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-      var ic = document.createElement('span');
-      ic.textContent = self.ICONS[i] || '';
-      ic.style.fontSize = '16px';
-      var tx = document.createElement('span');
-      tx.textContent = cmd[0];
-      btn.appendChild(ic); btn.appendChild(tx);
-      btn.onmouseover = function() { this.style.background = 'rgba(255,60,60,0.1)'; };
-      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-      btn.onclick = function() { self.run(i); };
-      body.appendChild(btn);
-    });
-    panel.appendChild(body);
-    document.body.appendChild(panel);
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
-    });
-  },
-
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    var input = document.getElementById('chat-input') || document.querySelector('textarea');
-    if (input) {
-      input.value = cmd[1];
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      var sb = document.getElementById('send-btn') || document.querySelector('[onclick*="sendChat"]');
-      if (sb) { setTimeout(function() { sb.click(); }, 80); }
-      else if (typeof sendChat === 'function') { setTimeout(sendChat, 80); }
-    }
-    RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2500);
-  },
-
-});
-
-/* ================================================================
-   GAP-FILL UTILITY
-   When a prompt contains [PLACEHOLDER], show a step-by-step
-   overlay asking the user to fill each one before sending.
-================================================================ */
-RPGACE.utils.fillGaps = function(prompt, onComplete) {
-  var gaps = [];
-  var re = /\[([^\]]+)\]/g;
-  var m;
-  while ((m = re.exec(prompt)) !== null) {
-    gaps.push({ label: m[1], index: m.index, raw: m[0] });
-  }
-  if (!gaps.length) { onComplete(prompt); return; }
-
-  var filled = {};
-  var step = 0;
-
-  var overlay = document.createElement('div');
-  overlay.id = 'gap-fill-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10000;display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;';
-
-  var box = document.createElement('div');
-  box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:28px 32px;width:min(420px,90vw);max-width:100%;';
-
-  var render = function() {
-    box.innerHTML = '';
-    var g = gaps[step];
-    var stepLabel = document.createElement('div');
-    stepLabel.textContent = 'Fill in · ' + (step+1) + ' of ' + gaps.length;
-    stepLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(201,168,76,0.65);margin-bottom:10px;';
-    box.appendChild(stepLabel);
-
-    var question = document.createElement('div');
-    question.textContent = g.label;
-    question.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:16px;line-height:1.4;';
-    box.appendChild(question);
-
-    var input = document.createElement('textarea');
-    input.placeholder = 'Type your answer here...';
-    input.value = filled[step] || '';
-    input.style.cssText = 'width:100%;min-height:80px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:7px;color:#E2E2EC;font-family:Rajdhani,sans-serif;font-size:13px;padding:10px 12px;resize:vertical;outline:none;box-sizing:border-box;';
-    box.appendChild(input);
-
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:10px;margin-top:16px;justify-content:flex-end;';
-
-    if (step > 0) {
-      var backBtn = document.createElement('button');
-      backBtn.textContent = '← Back';
-      backBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.15);color:rgba(226,226,236,0.5);border-radius:6px;padding:8px 16px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;';
-      backBtn.onclick = function() { filled[step] = input.value; step--; render(); };
-      btnRow.appendChild(backBtn);
-    }
-
-    var cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:6px;padding:8px 16px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;';
-    cancelBtn.onclick = function() { overlay.remove(); };
-    btnRow.appendChild(cancelBtn);
-
-    var isLast = step === gaps.length - 1;
-    var nextBtn = document.createElement('button');
-    nextBtn.textContent = isLast ? '✓ Submit' : 'Next →';
-    nextBtn.style.cssText = 'background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;border-radius:6px;padding:8px 20px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;';
-    nextBtn.onclick = function() {
-      var val = input.value.trim();
-      if (!val) { input.style.borderColor = 'rgba(226,84,84,0.6)'; return; }
-      filled[step] = val;
-      if (isLast) {
-        overlay.remove();
-        var result = prompt;
-        gaps.forEach(function(g2, i) {
-          result = result.replace(g2.raw, filled[i] || g2.raw);
-        });
-        onComplete(result);
-      } else {
-        step++;
-        render();
-      }
-    };
-    input.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) nextBtn.click();
-    });
-    btnRow.appendChild(nextBtn);
-    box.appendChild(btnRow);
-
-    var hint = document.createElement('div');
-    hint.textContent = 'Ctrl+Enter to continue';
-    hint.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.25);margin-top:8px;text-align:right;';
-    box.appendChild(hint);
-
-    setTimeout(function() { input.focus(); }, 50);
-  };
-
-  render();
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-};
-
-/* ================================================================
-   SEND TO ORACLE HELPER (shared by all panels)
-================================================================ */
-RPGACE.utils.sendToOracle = function(prompt) {
-  var input = document.getElementById('chat-input') || document.querySelector('textarea');
-  if (!input) { RPGACE.utils.toast('Oracle input not found', 'rgba(226,84,84,0.9)', 2500); return; }
-  input.value = prompt;
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  var sb = document.getElementById('send-btn') || document.querySelector('[onclick*="sendChat"]');
-  if (sb) { setTimeout(function() { sb.click(); }, 80); }
-  else if (typeof sendChat === 'function') { setTimeout(sendChat, 80); }
-};
-
-/* ================================================================
-   UPDATE YOUTUBE ORACLE run() TO USE fillGaps
-================================================================ */
-(function() {
-  var orig = RPGACE.modules.youtubeOracle && RPGACE.modules.youtubeOracle.run;
-  if (!orig) return;
-  RPGACE.modules.youtubeOracle.run = function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    var self = this;
-    RPGACE.utils.fillGaps(cmd[1], function(filled) {
-      RPGACE.utils.sendToOracle(filled);
-      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2000);
-    });
-  };
-})();
-
-/* ================================================================
-   PROD. BY ORACLE PANEL — Step 9 style
-================================================================ */
-RPGACE.register('prodOraclePanel', {
-
-  CMDS: [
-    ['Master Learning', 'I am a music producer using FL Studio making UK hip hop and drill beats. I want to master [TYPE A SPECIFIC PRODUCTION TOPIC]. Teach me this concept completely. Use the 3-layer method: simple terms first, then technical mechanics, then the expert nuance most tutorials miss. Be specific to FL Studio throughout.'],
-    ['Instant Understanding', 'Explain [TYPE A PRODUCTION CONCEPT OR TECHNIQUE] to me in exactly 3 layers. Layer 1: explain it like I am 10 years old in 2 sentences. Layer 2: explain the real technical mechanics in 5 sentences. Layer 3: the one expert insight about this that most FL Studio producers never figure out.'],
-    ['Socratic Teaching', 'Teach me [TYPE A PRODUCTION CONCEPT] using the Socratic method. Ask me questions to expose what I already know, what I think I know but am wrong about, and what I have never considered. Do not explain the concept directly. Lead me to understand it through my own answers. I make UK hip hop and drill in FL Studio.'],
-    ['Real World Application', 'I understand [TYPE A PRODUCTION CONCEPT] in theory but have never applied it. Give me 5 specific real-world scenarios in FL Studio where this knowledge changes a decision I make tonight. For each: the exact situation, the exact decision this knowledge changes, the exact FL Studio steps, and exactly how my beat sounds different.'],
-    ['Gap Finder', 'Analyse my production knowledge and find the gap I do not know exists. MY KNOWN CONCEPTS: [LIST EVERY PRODUCTION CONCEPT YOU KNOW, SEPARATED BY COMMAS]. Find: the hidden prerequisite I am missing, the assumption I am probably making that is wrong, the connection between concepts I have not made, and the exact gap limiting my sound right now.'],
-    ['Teach It Back', 'I am going to explain [TYPE A PRODUCTION CONCEPT] to you as if you are a complete beginner. Score me on accuracy out of 10, identify every gap in my explanation, then teach me what I got wrong. Here is my explanation: [TYPE YOUR OWN EXPLANATION OF THE CONCEPT IN YOUR OWN WORDS]'],
-    ['Permanent Knowledge', 'Design a spaced repetition system for [TYPE A PRODUCTION TOPIC]. Give me: the 5 most important facts to remember, a 30-second daily review exercise, a weekly FL Studio practice task, a test to verify I have mastered it, and the first mistake I will make so I know to watch for it.'],
-    ['Beat Analysis', 'Analyse this beat reference and teach me every production technique used. REFERENCE: [DESCRIBE THE BEAT OR PASTE AN ARTIST AND TRACK NAME]. For each technique: name it, how it was done in FL Studio, which taxonomy node it maps to, exact FL Studio steps to recreate it, and difficulty 1-10.'],
-    ['Learn in 20 Hours', 'Build a 20-hour plan for mastering [TYPE A PRODUCTION SKILL] in FL Studio. Divide into 10 x 2-hour sessions. For each session: specific skill focus, exact exercises, FL Studio tools involved, test to confirm learning before moving on, and the mistake to watch for.'],
-    ['Test Me Until I Master It', 'I have just studied [TYPE A PRODUCTION TOPIC]. Test me with 10 increasingly difficult questions, starting with basic recall and ending with expert application. After each answer: tell me right or wrong, explain what I missed, ask the next question. Do not give answers until I attempt each one.'],
-    ['Learning Ladder', 'Create a 5-level learning ladder for [TYPE A PRODUCTION SKILL] in FL Studio. Level 1 is complete beginner and Level 5 is professional. For each level: the skills that define it, how to test if I am at that level, the one exercise that takes me to the next level, and the most common mistake. Then tell me which level I am at based on: [DESCRIBE YOUR CURRENT ABILITY WITH THIS SKILL]'],
-    ['Best Resources', 'Find the 5 best resources for learning [TYPE A PRODUCTION SKILL OR CONCEPT] specifically for FL Studio and UK hip hop production. For each: what it is, why it is the best for this topic, what level it targets, what I will learn that I cannot get elsewhere, and how long it takes to extract the value.'],
-    ['Research Questions', 'Generate 10 strong research questions about [TYPE A PRODUCTION TOPIC] for FL Studio and UK hip hop production. Each must be specific, actionable in FL Studio, capable of producing a tutorial insight, and relevant to my genre. After the 10 questions, tell me which 3 to research first and why.'],
-    ['Productize Yourself', 'Help me turn my production knowledge into a product. MY CORE SKILL: [TYPE YOUR STRONGEST PRODUCTION SKILL]. MY AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Give me 3 product formats scored by effort and revenue potential. For the highest scorer: outline, launch positioning, and 7-day launch plan.'],
-  ],
-
-  ICONS: ['??','??','❓','??','??','??','??','??','⏰','✅','??','??','??','??'],
-
-  init: function() {
-    var self = this;
-    setTimeout(function() { self._intercept(); }, 1200);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._intercept(); }, 1200); });
-  },
-
-  _intercept: function() {
-    if (window._prodOraclePanelIntercepted) return;
-    if (typeof window.toggleProdOraclePanel === 'undefined') return;
-    window._prodOraclePanelIntercepted = true;
-    var self = this;
-    window.toggleProdOraclePanel = function() { self.open(); };
-  },
-
-  _close: function() {
-    var p = document.getElementById('prod-op');
-    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
-  },
-
-  open: function() {
-    if (document.getElementById('prod-op')) { this._close(); return; }
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'prod-op';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(201,168,76,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(201,168,76,0.06);border-bottom:1px solid rgba(201,168,76,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var ht = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.textContent = 'PROD. BY ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.65);margin-bottom:3px;';
-    var sub = document.createElement('div');
-    sub.textContent = 'FL Studio · UK Hip Hop · 14 Commands';
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
-    ht.appendChild(lb); ht.appendChild(sub);
-    var cb = document.createElement('button');
-    cb.textContent = '×';
-    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-    cb.onclick = function() { self._close(); };
-    hdr.appendChild(ht); hdr.appendChild(cb);
-    panel.appendChild(hdr);
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-    var note = document.createElement('div');
-    note.textContent = '14 COMMANDS · PRE-FILLED FOR YOUR SESSION';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-    body.appendChild(note);
-
-    self.CMDS.forEach(function(cmd, i) {
-      var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '⭐'; ic.style.fontSize = '15px';
-      var tx = document.createElement('span'); tx.textContent = cmd[0];
-      btn.appendChild(ic); btn.appendChild(tx);
-      btn.onmouseover = function() { this.style.background = 'rgba(201,168,76,0.08)'; };
-      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-      btn.onclick = function() { self.run(i); };
-      body.appendChild(btn);
-    });
-    panel.appendChild(body);
-    document.body.appendChild(panel);
-    requestAnimationFrame(function() { requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; }); });
-  },
-
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    RPGACE.utils.fillGaps(cmd[1], function(filled) {
-      RPGACE.utils.sendToOracle(filled);
-      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
-    });
-  },
-
-});
-
-/* ================================================================
-   INSTA-ORACLE PANEL — Step 9 style
-================================================================ */
-RPGACE.register('instaOraclePanel', {
-
-  CMDS: [
-    ['Content Creator Mode', 'Activate full content creator mode for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. PLATFORMS: Instagram and YouTube. FREQUENCY: 3-4 posts per week. Generate: my positioning, unique voice and angle, content pillars with percentages, the 3 content types that drive the most followers in my niche, and the first 7 posts to create starting today.'],
-    ['100 Content Ideas', 'Generate 100 content ideas for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Organise into 9 categories: tutorials, beat showcases, process videos, opinion pieces, reaction content, challenges, collaborations, behind-the-scenes, and trending formats. For each idea: the hook angle, format, and why it performs for this audience. Mark the top 10 with a star.'],
-    ['50 Viral Hooks', 'Generate 50 viral content hooks for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Format: 20 Instagram caption hooks, 20 reel hooks for the first 3 seconds on screen, 10 story hooks. Each must stop the scroll, open a loop, and be specific to FL Studio or beat-making. No generic creator hooks.'],
-    ['Viral Content Architect', 'Design a complete viral content piece for @AceSanyaBeats. TOPIC: [TYPE YOUR CONTENT TOPIC]. PLATFORM: Instagram Reels. Build the full architecture: hook in 1 second, tension-building problem, value-delivering solution, pattern interrupt at the midpoint, CTA at the end. Give me the script, visual direction, caption with hashtags, and thumbnail concept.'],
-    ['30-Day Calendar', 'Build a 30-day content calendar for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. FREQUENCY: 3-4 posts per week on Instagram and YouTube Shorts. Include: daily posting schedule, content pillar rotation, hooks for each post, trending audio or format notes, and a tracking metric per week. Format as a clear calendar starting tomorrow.'],
-    ['Audience Mind Reader', 'Analyse the psychology of my Instagram audience for @AceSanyaBeats. AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Return: their 5 deepest frustrations, 3 secret desires beyond just making beats, exact language from comments and DMs, what makes them save vs scroll, what makes them share, the single emotional trigger that makes them follow. Then give me 5 content ideas built directly from these insights.'],
-    ['DIAGNOSE: Low Views', 'My Instagram content is getting low views. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose the exact reason and prescribe the fix. Check: hook quality in first 3 frames, audio choice, content relevance, posting time, hashtag strategy, reel length, visual quality, and caption structure. For each issue: how to diagnose it and the exact fix with examples for my niche.'],
-    ['DIAGNOSE: Low Likes', 'My Instagram posts get low likes. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose and prescribe. Analyse: emotional resonance, relatability to aspiring producers, visual appeal, CTA quality, whether my content makes people feel something vs just learn, and how it compares to top FL Studio creators.'],
-    ['DIAGNOSE: No Comments', 'My Instagram posts get no comments. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose the silence and prescribe how to start conversations. Cover: whether I ask questions, create opinions, am controversial enough to react to, how to end posts to invite discussion, and 5 specific comment-bait post ideas for the production niche.'],
-    ['DIAGNOSE: Low Shares', 'My Instagram posts are not shared. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose and prescribe. Analyse: share triggers for the producer audience, whether my content is identity-expressing, whether my tips are good enough to send to a friend, and the 3 specific post formats that will generate shares in my niche.'],
-    ['DIAGNOSE: Low Saves', 'My Instagram posts get no saves. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Diagnose and prescribe. Saves indicate reference value. Analyse: whether my content functions as a resource people return to, whether I use list formats worth saving, whether my tips are specific enough to keep, and the 5 most saveable content formats for the FL Studio production niche.'],
-    ['DIAGNOSE: No Followers', 'My Instagram account is not growing. ACCOUNT: @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. Run a complete profile audit. Check: bio clarity, profile picture and highlights, content consistency and visual identity, reason to follow beyond the individual post, positioning vs other FL Studio creators, and whether my niche is clear. Give me a 7-day follower growth action plan.'],
-    ['Full Profile Audit', 'Run a complete Instagram profile audit for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. Audit every element: bio, link in bio strategy, profile picture, highlight covers and content, pinned posts, content grid aesthetic, posting frequency, caption style, hashtag strategy, and engagement rate expectations. Priority list of what to fix first.'],
-  ],
-
-  ICONS: ['??','??','??','??','??','??','??','❤','??','♻','??','??','??'],
-
-  init: function() {
-    var self = this;
-    setTimeout(function() { self._intercept(); }, 1400);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._intercept(); }, 1400); });
-  },
-
-  _intercept: function() {
-    if (window._instaOraclePanelIntercepted) return;
-    if (typeof window.toggleInstaPanel === 'undefined') return;
-    window._instaOraclePanelIntercepted = true;
-    var self = this;
-    window.toggleInstaPanel = function() { self.open(); };
-  },
-
-  _close: function() {
-    var p = document.getElementById('insta-op');
-    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
-  },
-
-  open: function() {
-    if (document.getElementById('insta-op')) { this._close(); return; }
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'insta-op';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(155,89,182,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(155,89,182,0.06);border-bottom:1px solid rgba(155,89,182,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var ht = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.textContent = 'INSTA-ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
-    var sub = document.createElement('div');
-    sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
-    ht.appendChild(lb); ht.appendChild(sub);
-    var cb = document.createElement('button');
-    cb.textContent = '×';
-    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-    cb.onclick = function() { self._close(); };
-    hdr.appendChild(ht); hdr.appendChild(cb);
-    panel.appendChild(hdr);
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-    var note = document.createElement('div');
-    note.textContent = '13 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-    body.appendChild(note);
-
-    self.CMDS.forEach(function(cmd, i) {
-      var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '??'; ic.style.fontSize = '15px';
-      var tx = document.createElement('span'); tx.textContent = cmd[0];
-      btn.appendChild(ic); btn.appendChild(tx);
-      btn.onmouseover = function() { this.style.background = 'rgba(155,89,182,0.1)'; };
-      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-      btn.onclick = function() { self.run(i); };
-      body.appendChild(btn);
-    });
-    panel.appendChild(body);
-    document.body.appendChild(panel);
-    requestAnimationFrame(function() { requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; }); });
-  },
-
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    RPGACE.utils.fillGaps(cmd[1], function(filled) {
-      RPGACE.utils.sendToOracle(filled);
-      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(155,89,182,0.9)', 2000);
-    });
-  },
-
-});
-
-/* ================================================================
-   ENCYCLOPEDIA SYNC FIX
-   - Deduplicates entries by title after syncAndPush()
-   - Clears rpgace_enc_saved URL backlog after sync
-   - clearEncyclopedia() also wipes both backlogs
-================================================================ */
+/* ===MODULE:encSync=== */
 RPGACE.register('encSync', {
 
   init: function() {
@@ -1614,12 +1486,9 @@ RPGACE.register('encSync', {
   },
 
 });
+/* ===END:encSync=== */
 
-/* ================================================================
-   INTEL CARD DELETE v4 — Supabase-native delete
-   Deletes from intel_reports + intel_watchlist directly.
-   No more local blacklist fighting sync.
-================================================================ */
+/* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
 
   SB_URL: 'https://gripopghczmrbrhqtqbm.supabase.co',
@@ -1876,3 +1745,73 @@ RPGACE.register('intelDelete', {
   },
 
 });
+/* ===END:intelDelete=== */
+/* ===END_DOMAIN:LEARNING=== */
+
+/* ===DOMAIN:CONFIG=== */
+
+/* ===MODULE:config=== */
+RPGACE.register('config', {
+
+  init: function() {
+    /* CONFIG module — no DOM work, just sets globals */
+    RPGACE.CONFIG = {
+      supabase: {
+        url: 'https://gripopghczmrbrhqtqbm.supabase.co',
+        key: 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf',
+      },
+      pages: {
+        dashboard:    'dashboard',
+        agenda:       'quests',
+        schedule:     'schedule',
+        oracle:       'advisor',
+        agents:       'agents',
+        research:     'learning',
+        encyclopedia: 'encyclopedia',
+        journal:      'journal',
+      },
+      mainFns: {
+        prodOracle:  'toggleProdOraclePanel',
+        instaOracle: 'toggleInstaPanel',
+        sync:        'syncAndPush',
+        clearEnc:    'clearEncyclopedia',
+        refreshEnc:  'refreshEncyclopediaDisplay',
+      },
+    };
+    RPGACE.sb = {
+      url: function(table) {
+        return RPGACE.CONFIG.supabase.url + '/rest/v1/' + table;
+      },
+      headers: function() {
+        var k = RPGACE.CONFIG.supabase.key;
+        return {
+          'Authorization': 'Bearer ' + k,
+          'apikey': k,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        };
+      },
+      del: function(table, filter) {
+        return fetch(RPGACE.sb.url(table) + '?' + filter, {
+          method: 'DELETE', headers: RPGACE.sb.headers(),
+        });
+      },
+      insert: function(table, row) {
+        return fetch(RPGACE.sb.url(table), {
+          method: 'POST', headers: RPGACE.sb.headers(),
+          body: JSON.stringify(row),
+        });
+      },
+      select: function(table, params) {
+        return fetch(RPGACE.sb.url(table) + (params ? '?' + params : ''), {
+          headers: RPGACE.sb.headers(),
+        }).then(function(r) { return r.json(); });
+      },
+    };
+    console.log('[RPGACE:config] CONFIG + RPGACE.sb ready');
+  },
+
+});
+/* ===END:config=== */
+
+/* ===END_DOMAIN:CONFIG=== */
