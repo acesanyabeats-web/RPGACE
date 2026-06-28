@@ -16,15 +16,15 @@ You can talk AND act. Respond ALWAYS with valid JSON only:
 WHEN TO TRIGGER ACTIONS:
 - draft/send email → GMAIL_CREATE_EMAIL_DRAFT — {subject, body, to:""}
 - check email → GMAIL_FETCH_EMAILS — {max_results:10, label_ids:["UNREAD"]}
-- save notes/log progress → NOTION_CREATE_NOTION_PAGE — {title, markdown}
+- save notes/log progress → NOTION_CREATE_NOTION_PAGE — {parent_id:"3830f922-7ad0-8064-ac35-f6ebaff22b99", title, markdown}
 - youtube stats/channel → SUPADATA_GET_YOUTUBE_CHANNEL — {id:"@AceSanyaBeats"} — app: "supadata"
-- instagram posts → INSTAGRAM_BASIC_DISPLAY_MEDIA_DETAILS — {} — app: "instagram"
-- create repo/save code → GITHUB_CREATE_A_REPOSITORY — {name, description, private:false, auto_init:true}
-- see designs → CANVA_LIST_DESIGNS — {} — app: "canva"
+- instagram posts → INSTAGRAM_GET_IG_USER_MEDIA — {} — app: "instagram"
+- create repo/save code → GITHUB_CREATE_A_REPOSITORY_FOR_THE_AUTHENTICATED_USER — {name, description, private:false, auto_init:true}
+- see designs → CANVA_LIST_USER_DESIGNS — {} — app: "canva"
 - anything else → action: null
 
 CRITICAL FORMAT RULES:
-- Respond with a raw JSON object ONLY — no ```json fences, no markdown around the JSON
+- Respond with a raw JSON object ONLY — no backtick json fences, no markdown around the JSON
 - The "reply" field should contain plain text with markdown formatting (**, ##, -, etc.)
 - Never wrap the entire response in code blocks
 - The reply field is what the user sees — make it clean, readable and well-formatted
@@ -48,14 +48,11 @@ export default async function handler(req, res){
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const { messages, lastReply } = body;
 
-    // For save-to-Notion requests, build context from lastReply directly
-    // This avoids sending huge conversation history to Claude
     const lastMsg = messages[messages.length-1]?.content || '';
     const isSaveRequest = /save.*notion|log.*notion|notion.*page/i.test(lastMsg);
 
     let messagesForClaude = messages;
     if(isSaveRequest && lastReply){
-      // Inject the content to save directly — much more reliable than asking Claude to recall it
       messagesForClaude = [
         ...messages.slice(0,-1),
         { role: 'user', content: `Save the following content to Notion as a page. Title it based on the content. Here is the content to save:\n\n${lastReply.slice(0,3000)}\n\nUser request: ${lastMsg}` }
@@ -73,8 +70,7 @@ export default async function handler(req, res){
       return res.status(200).json({ reply: rawReply, action_taken: null, action_result: null });
     }
 
-    const reply = data.reply || rawReply;
-    // Clean reply — remove any JSON code fences Claude accidentally includes
+    const reply = parsed.reply || rawReply;
     const cleanReply = reply
       .replace(/^```json\s*/i, '')
       .replace(/^```\s*/i, '')
