@@ -816,6 +816,93 @@ RPGACE.register('instaOraclePanel', {
 
 });
 /* ===END:instaOraclePanel=== */
+
+/* ===MODULE:quickActions=== */
+RPGACE.register('quickActions', {
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._setup(); }, 600);
+    });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.oracle) {
+        setTimeout(function() { self._setup(); }, 300);
+      }
+    });
+  },
+
+  _setup: function() {
+    var row = document.querySelector('.quick-row');
+    if (!row || row.dataset.qa === '1') return;
+    row.dataset.qa = '1';
+
+    // Fix the 4 broken quickPrompt buttons
+    var broken = row.querySelectorAll('button[onclick*="quickPrompt"]');
+    broken.forEach(function(btn) {
+      var prompt = btn.getAttribute('onclick').match(/quickPrompt\('(.+)'\)/);
+      if (!prompt) return;
+      var text = prompt[1];
+      var newBtn = btn.cloneNode(true);
+      newBtn.removeAttribute('onclick');
+      newBtn.addEventListener('click', function() {
+        RPGACE.utils.sendToOracle(text);
+      });
+      btn.parentNode.replaceChild(newBtn, btn);
+    });
+
+    // Replace YT Stats button with one that calls Composio directly
+    var ytStatsBtn = Array.from(row.querySelectorAll('button')).find(function(b) {
+      return b.textContent.trim() === '🎬 YT stats';
+    });
+    if (ytStatsBtn && !ytStatsBtn.dataset.qa) {
+      ytStatsBtn.dataset.qa = '1';
+      ytStatsBtn.removeAttribute('onclick');
+      ytStatsBtn.addEventListener('click', function() {
+        RPGACE.utils.sendToOracle('Fetching your YouTube stats now...');
+        RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
+          .then(function(result) {
+            var data = result.data || result;
+            var msg = '📊 **YouTube Stats — @AceSanyaBeats**\n\n';
+            if (data.subscribers !== undefined) msg += '👥 Subscribers: ' + data.subscribers + '\n';
+            if (data.views !== undefined)       msg += '👁 Total Views: ' + data.views + '\n';
+            if (data.videos !== undefined)      msg += '🎬 Videos: ' + data.videos + '\n';
+            if (data.title)                     msg += '📛 Channel: ' + data.title + '\n';
+            msg += '\nAnalyse this data. What should I focus on to grow @AceSanyaBeats this week? Consider my FL Studio / UK hip hop niche and 18-35 aspiring producer audience.';
+            RPGACE.utils.sendToOracle(msg);
+          })
+          .catch(function(err) {
+            RPGACE.utils.sendToOracle('YouTube stats fetch failed: ' + err.message + '. Please check Composio connection.');
+          });
+      });
+    }
+
+    // Replace Log to Notion with one that calls Composio directly
+    var notionBtn = Array.from(row.querySelectorAll('button')).find(function(b) {
+      return b.textContent.includes('Log to Notion');
+    });
+    if (notionBtn && !notionBtn.dataset.qa) {
+      notionBtn.dataset.qa = '1';
+      notionBtn.removeAttribute('onclick');
+      notionBtn.addEventListener('click', function() {
+        var today = new Date().toISOString().split('T')[0];
+        var title = 'RPGACE Session Log — ' + today;
+        var markdown = '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.';
+        RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
+          parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
+          title: title,
+          markdown: markdown
+        }).then(function(result) {
+          RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B59B6', 3000);
+        }).catch(function(err) {
+          RPGACE.utils.toast('Notion log failed: ' + err.message, '#E25454', 3000);
+        });
+      });
+    }
+
+    console.log('[RPGACE:quickActions] Quick-action bar patched');
+  },
+});
+/* ===END:quickActions=== */
 /* ===END_DOMAIN:ORACLE=== */
 
 /* ===DOMAIN:LEARNING=== */
