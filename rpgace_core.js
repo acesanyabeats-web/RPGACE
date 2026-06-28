@@ -395,12 +395,7 @@
      Step 8+ features register here as self-contained modules.
      Each module has an init() that runs after RPGACE is ready.
 
-     Usage:
-       RPGACE.register('feynman', {
-         init() { RPGACE.hooks.on('page:show', name => { ... }); },
-         startSession(concept) { ... },
-       });
-     ══════════════════════════════════════════════════════════ */
+  ═══════════════════════════════════════════════════ */
   R.modules  = {};
   R._ready   = false;
   R._queue   = [];
