@@ -2064,8 +2064,14 @@ RPGACE.register('taxonomySync', {
               return (n.concept || '').toLowerCase().trim();
             });
 
+            // Deduplicate within the incoming batch too
+            var seenTitles = {};
             var toSync = entries.filter(function(e) {
-              return !existingConcepts.includes((e.title || '').toLowerCase().trim());
+              var t = (e.title || '').toLowerCase().trim();
+              if (existingConcepts.includes(t)) return false;
+              if (seenTitles[t]) return false;
+              seenTitles[t] = true;
+              return true;
             });
 
             if (toSync.length === 0) {
