@@ -1881,8 +1881,6 @@ RPGACE.register('intelDelete', {
         });
       });
       scoreBox.insertBefore(btn, scoreBox.firstChild);
-      // Now make collapsible — header row stays visible, everything else collapses
-      self._makeCollapsible(card);
     });
   },
 
