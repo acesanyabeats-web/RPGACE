@@ -1706,10 +1706,20 @@ RPGACE.register('intelDelete', {
         setTimeout(function() { self._injectAll(); }, d);
       });
       setTimeout(function() { self._injectBibSection(); }, 1500);
+      var _injecting = false;
       var obs = new MutationObserver(function(muts) {
-        if (muts.some(function(m) { return m.addedNodes.length > 0; })) {
-          setTimeout(function() { self._injectAll(); }, 150);
-        }
+        if (_injecting) return;
+        var relevant = muts.some(function(m) {
+          return Array.from(m.addedNodes).some(function(n) {
+            return n.nodeType === 1 && !n.dataset.di4 && !n.dataset.colBody && !n.id;
+          });
+        });
+        if (!relevant) return;
+        _injecting = true;
+        setTimeout(function() {
+          self._injectAll();
+          _injecting = false;
+        }, 200);
       });
       obs.observe(document.body, { childList: true, subtree: true });
     });
