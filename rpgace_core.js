@@ -1712,15 +1712,7 @@ RPGACE.register('intelDelete', {
         }
       });
       obs.observe(document.body, { childList: true, subtree: true });
-      // Polling loop to re-apply collapsible after any full re-render
-      setInterval(function() {
-        var uncollapsed = document.querySelectorAll(
-          '[style*="background:var(--panel2)"][style*="margin-bottom:12px"]:not([data-collapsible])'
-        );
-        if (uncollapsed.length > 0) {
-          self._injectAll();
-        }
-      }, 800);
+
     });
   },
 
@@ -1767,13 +1759,13 @@ RPGACE.register('intelDelete', {
     if (bodyChildren.length === 0) return;
     var body = document.createElement('div');
     body.dataset.colBody = '1';
-    // Start collapsed
-    body.style.cssText = 'overflow:hidden;transition:max-height .3s ease,opacity .25s ease;max-height:0;opacity:0;';
-    body.dataset.collapsed = '1';
+    // Start expanded
+    body.style.cssText = 'overflow:hidden;transition:max-height .3s ease,opacity .25s ease;max-height:1000px;opacity:1;';
+    body.dataset.collapsed = '0';
     bodyChildren.forEach(function(c) { body.appendChild(c); });
     card.appendChild(body);
     var indicator = document.createElement('span');
-    indicator.textContent = ' ▸';
+    indicator.textContent = ' ▾';
     indicator.style.cssText = 'font-size:10px;color:var(--muted);display:inline-block;margin-left:4px;vertical-align:middle;';
     var titleEl = card.querySelector('[style*="font-weight:600"]');
     if (titleEl) titleEl.appendChild(indicator);
