@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   // UPDATED June 28 2026 — verified tool names from app.composio.dev
   const SHARED = 'pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1';
   const ACCOUNTS = {
-    gmail:     { id: 'ca_p2wfPZctumH_', user_id: 'ACESANYAROTA' },
+    gmail:     { id: 'ca_p2wfPZctumH_', user_id: 'AceSanyaBeats.com' },
     github:    { id: 'ca_0dwb1yCGD-Dk', user_id: SHARED },
     youtube:   { id: 'ca_yfUI2ySIgkat', user_id: SHARED },
     instagram: { id: 'ca_BuczS_wYvxRd', user_id: SHARED },
