@@ -831,7 +831,21 @@ RPGACE.register('quickActions', {
     });
   },
 
+  _send: function(text) {
+    var input = document.querySelector('#chat-input');
+    if (!input) return;
+    input.value = text;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    if (typeof sendChat === 'function') {
+      sendChat();
+    } else {
+      var btn = document.querySelector('#send-btn') || document.querySelector('button[onclick*="sendChat"]');
+      if (btn) btn.click();
+    }
+  },
+
   _setup: function() {
+    var self = this;
     var row = document.querySelector('.quick-row');
     if (!row || row.dataset.qa === '1') return;
     row.dataset.qa = '1';
@@ -839,45 +853,46 @@ RPGACE.register('quickActions', {
     // Fix the 4 broken quickPrompt buttons
     var broken = row.querySelectorAll('button[onclick*="quickPrompt"]');
     broken.forEach(function(btn) {
-      var prompt = btn.getAttribute('onclick').match(/quickPrompt\('(.+)'\)/);
-      if (!prompt) return;
-      var text = prompt[1];
+      var match = btn.getAttribute('onclick').match(/quickPrompt\('(.+)'\)/);
+      if (!match) return;
+      var text = match[1];
       var newBtn = btn.cloneNode(true);
       newBtn.removeAttribute('onclick');
       newBtn.addEventListener('click', function() {
-        RPGACE.utils.sendToOracle(text);
+        self._send(text);
       });
       btn.parentNode.replaceChild(newBtn, btn);
     });
 
-    // Replace YT Stats button with one that calls Composio directly
-    var ytStatsBtn = Array.from(row.querySelectorAll('button')).find(function(b) {
+    // Replace YT Stats button with Composio-direct call
+    var allBtns = Array.from(row.querySelectorAll('button'));
+    var ytStatsBtn = allBtns.find(function(b) {
       return b.textContent.trim() === '🎬 YT stats';
     });
     if (ytStatsBtn && !ytStatsBtn.dataset.qa) {
       ytStatsBtn.dataset.qa = '1';
       ytStatsBtn.removeAttribute('onclick');
       ytStatsBtn.addEventListener('click', function() {
-        RPGACE.utils.sendToOracle('Fetching your YouTube stats now...');
+        RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
         RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
           .then(function(result) {
             var data = result.data || result;
-            var msg = '📊 **YouTube Stats — @AceSanyaBeats**\n\n';
-            if (data.subscribers !== undefined) msg += '👥 Subscribers: ' + data.subscribers + '\n';
-            if (data.views !== undefined)       msg += '👁 Total Views: ' + data.views + '\n';
-            if (data.videos !== undefined)      msg += '🎬 Videos: ' + data.videos + '\n';
-            if (data.title)                     msg += '📛 Channel: ' + data.title + '\n';
-            msg += '\nAnalyse this data. What should I focus on to grow @AceSanyaBeats this week? Consider my FL Studio / UK hip hop niche and 18-35 aspiring producer audience.';
-            RPGACE.utils.sendToOracle(msg);
+            var msg = '📊 YouTube Stats for @AceSanyaBeats:\n';
+            if (data.subscribers !== undefined) msg += 'Subscribers: ' + data.subscribers + '\n';
+            if (data.views !== undefined)       msg += 'Total Views: ' + data.views + '\n';
+            if (data.videos !== undefined)      msg += 'Videos: ' + data.videos + '\n';
+            if (data.title)                     msg += 'Channel: ' + data.title + '\n';
+            msg += '\nAnalyse this. What should I focus on to grow this week given my FL Studio / UK hip hop niche targeting aspiring producers aged 18-35?';
+            self._send(msg);
           })
           .catch(function(err) {
-            RPGACE.utils.sendToOracle('YouTube stats fetch failed: ' + err.message + '. Please check Composio connection.');
+            self._send('YouTube stats fetch failed: ' + err.message + '. Please check Composio connection.');
           });
       });
     }
 
-    // Replace Log to Notion with one that calls Composio directly
-    var notionBtn = Array.from(row.querySelectorAll('button')).find(function(b) {
+    // Replace Log to Notion with Composio-direct call
+    var notionBtn = allBtns.find(function(b) {
       return b.textContent.includes('Log to Notion');
     });
     if (notionBtn && !notionBtn.dataset.qa) {
@@ -886,15 +901,14 @@ RPGACE.register('quickActions', {
       notionBtn.addEventListener('click', function() {
         var today = new Date().toISOString().split('T')[0];
         var title = 'RPGACE Session Log — ' + today;
-        var markdown = '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.';
         RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
           parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
           title: title,
-          markdown: markdown
-        }).then(function(result) {
+          markdown: '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.'
+        }).then(function() {
           RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B59B6', 3000);
         }).catch(function(err) {
-          RPGACE.utils.toast('Notion log failed: ' + err.message, '#E25454', 3000);
+          RPGACE.utils.toast('Notion failed: ' + err.message, '#E25454', 3000);
         });
       });
     }
