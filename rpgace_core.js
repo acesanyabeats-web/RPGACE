@@ -864,8 +864,9 @@ RPGACE.register('quickActions', {
       btn.parentNode.replaceChild(newBtn, btn);
     });
 
-    // Replace YT Stats button with Composio-direct call
     var allBtns = Array.from(row.querySelectorAll('button'));
+
+    // YT Stats — Composio direct, correct Supadata field names
     var ytStatsBtn = allBtns.find(function(b) {
       return b.textContent.trim() === '🎬 YT stats';
     });
@@ -876,22 +877,23 @@ RPGACE.register('quickActions', {
         RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
         RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
           .then(function(result) {
-            var data = result.data || result;
-            var msg = '📊 YouTube Stats for @AceSanyaBeats:\n';
-            if (data.subscribers !== undefined) msg += 'Subscribers: ' + data.subscribers + '\n';
-            if (data.views !== undefined)       msg += 'Total Views: ' + data.views + '\n';
-            if (data.videos !== undefined)      msg += 'Videos: ' + data.videos + '\n';
-            if (data.title)                     msg += 'Channel: ' + data.title + '\n';
-            msg += '\nAnalyse this. What should I focus on to grow this week given my FL Studio / UK hip hop niche targeting aspiring producers aged 18-35?';
+            var d = result.data || result;
+            var msg = '📊 YouTube Stats for @AceSanyaBeats:\n'
+              + 'Channel: ' + (d.name || 'AceSanya') + '\n'
+              + 'Handle: ' + (d.handle || '@AceSanyaBeats') + '\n'
+              + 'Total Views: ' + (d.viewCount || 0) + '\n'
+              + 'Videos Published: ' + (d.videoCount || 0) + '\n'
+              + (d.description ? 'Bio: ' + d.description + '\n' : '')
+              + '\nGiven this is an early-stage channel (FL Studio / UK hip hop, targeting aspiring producers 18-35), what are the 3 most important things I should do THIS WEEK to grow @AceSanyaBeats? Be specific and actionable.';
             self._send(msg);
           })
           .catch(function(err) {
-            self._send('YouTube stats fetch failed: ' + err.message + '. Please check Composio connection.');
+            self._send('YouTube stats fetch failed: ' + err.message);
           });
       });
     }
 
-    // Replace Log to Notion with Composio-direct call
+    // Log to Notion — Composio direct call, no Oracle relay
     var notionBtn = allBtns.find(function(b) {
       return b.textContent.includes('Log to Notion');
     });
