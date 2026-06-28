@@ -1794,7 +1794,7 @@ RPGACE.register('intelDelete', {
     bar.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:10px;cursor:pointer;';
     var label = document.createElement('span');
     label.style.cssText = 'font-size:11px;font-weight:700;color:rgba(226,226,236,0.5);letter-spacing:2px;text-transform:uppercase;';
-    label.textContent = 'Insights · Click to expand all';
+    label.textContent = 'Click to see insights list';
     var chevron = document.createElement('span');
     chevron.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.3);';
     chevron.textContent = '▸';
@@ -1818,36 +1818,35 @@ RPGACE.register('intelDelete', {
         }
       });
       chevron.textContent = allExpanded ? '▾' : '▸';
-      label.textContent = allExpanded ? 'Insights · Click to collapse all' : 'Insights · Click to expand all';
+      label.textContent = allExpanded ? 'Hide insights list' : 'Click to see insights list';
     };
     container.insertBefore(bar, container.firstChild);
   },
 
   _injectInsights: function() {
     var self = this;
-    // Find the insights container to inject master toggle
     var cards = document.querySelectorAll('[style*="background:var(--panel2)"][style*="margin-bottom:12px"]');
     if (cards.length > 0) {
       self._injectMasterToggle(cards[0].parentElement);
     }
     cards.forEach(function(card) {
       if (card.dataset.di4) return;
-      // Make collapsible FIRST (before adding DEL button)
-      self._makeCollapsible(card);
       card.dataset.di4 = '1';
       var te = card.querySelector('[style*="font-weight:600"]');
       var title = te ? te.textContent.replace('☁️','').trim() : '';
-      /* Get entry id and url from localStorage */
       var entry = self._findEntry('rpgace_intel_insights', title);
       var flexRow = card.querySelector('[style*="justify-content:space-between"]');
       if (!flexRow || !flexRow.children[1]) return;
       var scoreBox = flexRow.children[1];
+      // Inject DEL button BEFORE making collapsible (DOM structure must be intact)
       var btn = self._mkBtn(function() {
         self._confirm(title, entry ? entry.url : '', card, function(saveBib) {
           self._deleteInsight(entry, title, card, saveBib);
         });
       });
       scoreBox.insertBefore(btn, scoreBox.firstChild);
+      // Now make collapsible — header row stays visible, everything else collapses
+      self._makeCollapsible(card);
     });
   },
 
