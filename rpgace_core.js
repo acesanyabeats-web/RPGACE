@@ -1056,7 +1056,7 @@ RPGACE.register('contentRepurpose', {
 
   // ── Get last N Oracle messages for dropdown ──────────────────
   _getOracleMessages: function(limit) {
-    var chatBox = document.getElementById('chat-box');
+    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
     if (!chatBox) return [];
     var children = Array.from(chatBox.children);
     var results = [];
@@ -4641,7 +4641,7 @@ RPGACE.register('contentProductionLive', {
     if (!this._activeConID) return;
     if (document.getElementById('cpl-oracle-bar')) return;
     var self = this;
-    var chatBox = document.getElementById('chat-box');
+    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
     if (!chatBox) return;
 
     var bar = document.createElement('div');
@@ -4763,7 +4763,7 @@ RPGACE.register('contentProductionLive', {
     if (bar) bar.remove();
 
     // Compile Oracle conversation to journal and update entry
-    var chatBox = document.getElementById('chat-box');
+    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
     var sessionText = chatBox ? chatBox.innerText.slice(-3000) : '';
 
     if (self._activeId && sessionText) {
