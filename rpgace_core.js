@@ -1312,6 +1312,7 @@ RPGACE.register('contentRepurpose', {
 
 });
 /* ===END:contentRepurpose=== */
+
 /* ===END_DOMAIN:ORACLE=== */
 
 /* ===DOMAIN:LEARNING=== */
