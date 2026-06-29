@@ -1324,25 +1324,14 @@ RPGACE.register('contentRepurpose', {
         self._getPhylaContext(checkedPhyla.map(function(p){return p.num;}), function(taxonomyContext) {
           // Extract clean title from Oracle contribution
           var titleGuess = 'Content Idea';
-          // Try to find a quoted idea title first e.g. "Why your beats sound quiet"
-          var quotedMatch = oracleTxt.match(/["“”]([^"“”]{10,80})["“”]/);
+          // Extract clean title — try quoted string first, then first meaningful line
+          var quotedMatch = oracleTxt.match(/[“”"]([^“”"]{10,80})[“”"]/);
           if (quotedMatch) {
-            titleGuess = quotedMatch[1].trim();
+            titleGuess = quotedMatch[1].trim().slice(0, 80);
           } else {
-            // Try numbered idea format: "T9. Why your beats..." or "9. Why your beats..."
-            var numberedMatch = oracleTxt.match(/(?:^|
-)[A-Z]?\d+[\.\)]\s*[⭐\*]?\s*[""]?([^
-""“”]{10,80})/);
-            if (numberedMatch) {
-              titleGuess = numberedMatch[1].trim();
-            } else {
-              // Fall back to first meaningful line
-              var lines = oracleTxt.split('
-').map(function(l){return l.trim();}).filter(function(l){return l.length > 20 && l.length < 100;});
-              if (lines.length > 0) titleGuess = lines[0].replace(/[#*\[\]]/g,'').trim();
-            }
+            var lines2 = oracleTxt.split('\n').map(function(l){return l.replace(/[#*\[\]•⭐]/g,'').trim();}).filter(function(l){return l.length > 15 && l.length < 100;});
+            if (lines2.length > 0) titleGuess = lines2[0].slice(0, 80);
           }
-          titleGuess = titleGuess.slice(0, 80);
 
           var prompt = 'Repurpose the following content idea into 4 platform formats for @AceSanyaBeats (FL Studio, UK hip hop, aspiring producers 18-35).\n\n' +
             'ORACLE CONTRIBUTION:\n' + oracleTxt.slice(0, 800) + '\n\n' +
