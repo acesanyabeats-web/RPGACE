@@ -5137,7 +5137,7 @@ RPGACE.register('conidPot', {
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
     var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;';
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:90vh;overflow-y:auto;';
 
     var hdr = document.createElement('div');
     hdr.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:6px;';
@@ -5291,7 +5291,7 @@ RPGACE.register('conidPot', {
 
     var list = document.createElement('div');
     list.id = 'cp-idea-bank-list';
-    list.style.cssText = 'max-height:320px;overflow-y:auto;';
+    list.style.cssText = 'max-height:400px;overflow-y:auto;';
 
     panel.appendChild(eyebrow); panel.appendChild(titleEl); panel.appendChild(sub);
     panel.appendChild(filterRow); panel.appendChild(list);
@@ -5488,7 +5488,7 @@ RPGACE.register('conidPot', {
       }
     });
     if (current) ideas.push(current);
-    return ideas.slice(0, 20); // max 20 per response
+    return ideas.slice(0, 50); // max 50 per response
   },
 
   _quickDetectPhyla: function(text) {
