@@ -1065,8 +1065,10 @@ RPGACE.register('contentRepurpose', {
       var cls = el.className || '';
       var txt = el.textContent.trim();
       if (txt.length < 40) continue;
-      if (cls.includes('assistant') || cls.includes('oracle') || cls.includes('response') ||
-          el.querySelector('[class*="assistant"]') || el.querySelector('[class*="oracle"]')) {
+      // Support: 'msg ai', 'assistant', 'oracle', 'response', 'bot'
+      if (cls.includes('ai') || cls.includes('assistant') || cls.includes('oracle') ||
+          cls.includes('response') || cls.includes('bot') ||
+          el.querySelector('[class*="assistant"]') || el.querySelector('[class*="ai"]')) {
         results.unshift({ text: txt, preview: txt.slice(0, 80) + '...' });
       }
     }
