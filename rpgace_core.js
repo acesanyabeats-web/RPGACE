@@ -1029,6 +1029,289 @@ RPGACE.register('visualOracle', {
 
 });
 /* ===END:visualOracle=== */
+
+/* ===MODULE:contentRepurpose=== */
+RPGACE.register('contentRepurpose', {
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() {
+        self._restructureQuickBar();
+        self._injectAgentButtons();
+        self._upgradeOraclePanels();
+      }, 1500);
+    });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.oracle) {
+        setTimeout(function() {
+          self._restructureQuickBar();
+          self._upgradeOraclePanels();
+        }, 400);
+      }
+      if (name === 'agents') {
+        setTimeout(function() { self._injectAgentButtons(); }, 400);
+      }
+      if (name === RPGACE.CONFIG.pages.research) {
+        setTimeout(function() { self._injectVideoWorkshop(); }, 400);
+      }
+    });
+  },
+
+  // Get useful context from current Oracle conversation
+  _getConversationContext: function() {
+    var msgs = document.querySelectorAll('#chat-box .message, #chat-box [class*="msg"], #chat-box [class*="assistant"]');
+    if (!msgs || msgs.length === 0) return null;
+    // Get last 3 assistant messages
+    var assistantMsgs = Array.from(msgs).filter(function(m) {
+      return m.className && (m.className.includes('assistant') || m.className.includes('oracle') || m.className.includes('bot'));
+    });
+    if (assistantMsgs.length === 0) {
+      // Fallback: get all messages and filter by position/content
+      var allMsgs = Array.from(msgs);
+      var lastFew = allMsgs.slice(-4).map(function(m) { return m.textContent.trim(); }).filter(function(t) { return t.length > 50; });
+      return lastFew.length > 0 ? lastFew.join('\n\n') : null;
+    }
+    var lastAssistant = assistantMsgs.slice(-2).map(function(m) { return m.textContent.trim(); }).join('\n\n');
+    return lastAssistant.length > 100 ? lastAssistant.slice(0, 2000) : null;
+  },
+
+  // Smart send — use context if good, otherwise gap-fill
+  _smartSend: function(prompt, contextHint, forceGapFill) {
+    var context = this._getConversationContext();
+    var hasGoodContext = context && context.length > 100;
+
+    if (forceGapFill || !hasGoodContext) {
+      // No useful context — ask for input
+      RPGACE.utils.fillGaps(prompt, function(filled) {
+        RPGACE.utils.sendToOracle(filled);
+      });
+      return;
+    }
+
+    // Has context — show mini overlay: use context or add more
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(500px,90vw);';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;';
+    eyebrow.textContent = contextHint || 'Context detected';
+
+    var preview = document.createElement('div');
+    preview.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;padding:10px;margin-bottom:14px;max-height:80px;overflow:hidden;line-height:1.5;';
+    preview.textContent = context.slice(0, 200) + '...';
+
+    var question = document.createElement('div');
+    question.style.cssText = 'font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    question.textContent = 'Use this conversation as context, or add your own?';
+
+    var inp = document.createElement('textarea');
+    inp.placeholder = 'Optional: add specific details or paste your own content here...';
+    inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;resize:vertical;min-height:60px;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;';
+
+    var useCtxBtn = document.createElement('button');
+    useCtxBtn.textContent = '⚡ Use conversation context';
+    useCtxBtn.style.cssText = 'flex:1;padding:9px 14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);border-radius:6px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    useCtxBtn.onclick = function() {
+      overlay.remove();
+      var extra = inp.value.trim();
+      var fullPrompt = prompt.replace('[CONVERSATION_CONTEXT]', context) + (extra ? '\n\nAdditional context: ' + extra : '');
+      RPGACE.utils.sendToOracle(fullPrompt);
+    };
+
+    var ownBtn = document.createElement('button');
+    ownBtn.textContent = 'Type my own';
+    ownBtn.style.cssText = 'padding:9px 14px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.4);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    ownBtn.onclick = function() {
+      overlay.remove();
+      RPGACE.utils.fillGaps(prompt.replace('[CONVERSATION_CONTEXT]', '[YOUR CONTENT HERE]'), function(filled) {
+        RPGACE.utils.sendToOracle(filled);
+      });
+    };
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '×';
+    cancelBtn.style.cssText = 'padding:9px 12px;background:none;border:1px solid rgba(255,255,255,0.06);border-radius:6px;color:rgba(226,226,236,0.2);font-size:14px;cursor:pointer;';
+    cancelBtn.onclick = function() { overlay.remove(); };
+
+    btnRow.appendChild(useCtxBtn); btnRow.appendChild(ownBtn); btnRow.appendChild(cancelBtn);
+    box.appendChild(eyebrow); box.appendChild(preview); box.appendChild(question); box.appendChild(inp); box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  _restructureQuickBar: function() {
+    if (document.getElementById('cr-restructured')) return;
+    var row = document.querySelector('.quick-row');
+    if (!row) return;
+    var self = this;
+
+    // Remove the 4 redundant buttons
+    var toRemove = ['📋 New quests', '📧 Draft email', '📓 Log to Notion', '🎬 YT stats'];
+    Array.from(row.querySelectorAll('button')).forEach(function(btn) {
+      var txt = btn.textContent.trim();
+      if (toRemove.some(function(t) { return txt.includes(t.replace(/[^\w\s]/g,'').trim()) || txt === t; })) {
+        btn.remove();
+      }
+    });
+
+    // Add Content Repurpose button
+    var crBtn = document.createElement('button');
+    crBtn.id = 'cr-btn';
+    crBtn.className = 'agent-btn';
+    crBtn.textContent = '🔀 Repurpose';
+    crBtn.style.cssText = 'border-color:rgba(61,170,110,0.4);color:#3DAA6E;background:rgba(61,170,110,0.08);margin-left:4px;';
+    crBtn.onclick = function() { self._runRepurpose(); };
+    row.appendChild(crBtn);
+
+    // Mark restructured
+    row.id = 'cr-restructured';
+    console.log('[RPGACE:contentRepurpose] Quick bar restructured');
+  },
+
+  _runRepurpose: function() {
+    var prompt = 'Take the following content and repurpose it into 4 platform-specific formats for @AceSanyaBeats (FL Studio beats, UK hip hop production, aspiring producers 18-35).\n\nCONTENT TO REPURPOSE:\n[CONVERSATION_CONTEXT]\n\nGenerate ALL FOUR — different opening line per platform, no copy-paste between them:\n\n1. 📸 INSTAGRAM REELS CAPTION\nHook line (stops scroll in 2 seconds) + value body + CTA. Under 150 words. Use line breaks. 3-5 relevant hashtags at end.\n\n2. 🎬 YOUTUBE SHORTS HOOK\nFirst 3 seconds on screen (text overlay, max 8 words) + spoken hook line + one-line description for the video. Make it a question or a bold claim.\n\n3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram. More casual, more direct. Under 100 words. 1-2 trending hooks. Hashtags.\n\n4. 📧 EMAIL BLURB\nExactly 60 words. Subject line included. For producer newsletter or beat store email list. Professional but personal tone. CTA at end.\n\nBe specific to FL Studio and UK hip hop throughout. No generic creator advice.';
+
+    this._smartSend(prompt, 'Oracle conversation detected — repurposing last response', false);
+  },
+
+  _upgradeOraclePanels: function() {
+    // This makes all Oracle panel buttons context-aware
+    // The panels themselves already use fillGaps — we enhance them
+    // by pre-injecting context into the gap-fill when available
+    // This is handled by the _smartSend overlay which fires before fillGaps
+    // No additional wiring needed — panels already use RPGACE.utils.fillGaps
+  },
+
+  _injectAgentButtons: function() {
+    if (document.getElementById('agent-quick-btns')) return;
+    var self = this;
+
+    // Find agents page
+    var agentPage = document.getElementById('page-agents') ||
+                    document.querySelector('[id*="agent"]');
+    if (!agentPage) return;
+
+    var wrap = document.createElement('div');
+    wrap.id = 'agent-quick-btns';
+    wrap.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 20px;margin-bottom:20px;';
+
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(226,226,236,0.25);text-transform:uppercase;margin-bottom:12px;';
+    lbl.textContent = 'Quick Actions';
+
+    var btnGrid = document.createElement('div');
+    btnGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
+
+    var quickActions = [
+      {
+        label: '📋 New Quests',
+        color: 'rgba(74,144,226)',
+        prompt: 'Give me 3 new career quests for today as @AceSanyaBeats. I make FL Studio beats and UK hip hop tutorials. Make them specific, actionable, and completable today. Format each as: QUEST: [name] | XP: [amount] | Category: [career/content/learning]'
+      },
+      {
+        label: '📧 Draft Email',
+        color: 'rgba(201,168,76)',
+        prompt: 'Draft a professional email for @AceSanyaBeats. PURPOSE: [DESCRIBE WHO YOU ARE EMAILING AND WHY]. Tone: direct, confident, not salesy. Sign off as: Alex | @AceSanyaBeats | acesanyabeats@gmail.com'
+      },
+      {
+        label: '📓 Log to Notion',
+        color: 'rgba(155,89,182)',
+        action: 'notion'
+      },
+      {
+        label: '🎬 YT Stats',
+        color: 'rgba(226,84,84)',
+        action: 'youtube'
+      },
+    ];
+
+    quickActions.forEach(function(qa) {
+      var btn = document.createElement('button');
+      btn.className = 'agent-btn';
+      btn.textContent = qa.label;
+      btn.style.cssText = 'padding:8px 14px;background:' + qa.color + ',0.08);border:1px solid ' + qa.color + ',0.25);border-radius:6px;color:rgba(226,226,236,0.7);font-size:12px;font-weight:600;cursor:pointer;font-family:Rajdhani,sans-serif;';
+
+      if (qa.action === 'notion') {
+        btn.onclick = function() {
+          var today = new Date().toISOString().split('T')[0];
+          RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
+            parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
+            title: 'RPGACE Session — ' + today,
+            markdown: '## Session Log\n**Date:** ' + today + '\n\nLogged from RPGACE Agents tab.'
+          }).then(function() {
+            RPGACE.utils.toast('📓 Logged to Notion', '#9B59B6', 3000);
+          }).catch(function(e) {
+            RPGACE.utils.toast('Notion error: ' + e.message, '#E25454', 3000);
+          });
+        };
+      } else if (qa.action === 'youtube') {
+        btn.onclick = function() {
+          RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
+          RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
+            .then(function(r) {
+              var d = r.data || r;
+              var msg = '📊 @AceSanyaBeats YouTube Stats:\nChannel: ' + (d.name||'AceSanya') + '\nVideos: ' + (d.videoCount||0) + '\nTotal Views: ' + (d.viewCount||0) + '\n\nGiven this is early stage (FL Studio / UK hip hop, targeting aspiring producers 18-35), what are my 3 most important growth actions this week?';
+              if (typeof showPage === 'function') showPage('advisor');
+              setTimeout(function() { RPGACE.utils.sendToOracle(msg); }, 300);
+            }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3000); });
+        };
+      } else {
+        btn.onclick = function() {
+          if (typeof showPage === 'function') showPage('advisor');
+          setTimeout(function() {
+            self._smartSend(qa.prompt, 'Using conversation context', false);
+          }, 300);
+        };
+      }
+      btnGrid.appendChild(btn);
+    });
+
+    wrap.appendChild(lbl); wrap.appendChild(btnGrid);
+    agentPage.insertBefore(wrap, agentPage.firstChild);
+    console.log('[RPGACE:contentRepurpose] Agent buttons injected');
+  },
+
+  _injectVideoWorkshop: function() {
+    if (document.getElementById('vw-repurpose-btn')) return;
+    var self = this;
+
+    // Find Video Workshop section
+    var sections = document.querySelectorAll('.section-title, h2, h3, div');
+    var vwSection = Array.from(sections).find(function(s) {
+      return s.textContent && s.textContent.includes('VIDEO WORKSHOP');
+    });
+    if (!vwSection) return;
+
+    var btn = document.createElement('button');
+    btn.id = 'vw-repurpose-btn';
+    btn.textContent = '🔀 Repurpose for All Platforms';
+    btn.style.cssText = 'margin-top:10px;padding:9px 18px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
+    btn.onclick = function() {
+      // Read Video Workshop textarea content if available
+      var workshopInput = document.querySelector('#vw-transcript, textarea[placeholder*="transcript"], textarea[placeholder*="script"]');
+      var content = workshopInput ? workshopInput.value.trim() : '';
+      if (content) {
+        var prompt = 'Repurpose this video script/content into 4 platform formats for @AceSanyaBeats:\n\nCONTENT:\n' + content + '\n\n1. 📸 INSTAGRAM REELS CAPTION — hook + value + CTA + hashtags\n2. 🎬 YOUTUBE SHORTS HOOK — 8-word text overlay + spoken hook\n3. 🎵 TIKTOK CAPTION — casual angle, different from Instagram\n4. 📧 EMAIL BLURB — exactly 60 words with subject line\n\nFL Studio / UK hip hop / aspiring producers 18-35 throughout.';
+        if (typeof showPage === 'function') showPage('advisor');
+        setTimeout(function() { RPGACE.utils.sendToOracle(prompt); }, 300);
+      } else {
+        self._runRepurpose();
+        if (typeof showPage === 'function') showPage('advisor');
+      }
+    };
+
+    vwSection.parentElement.insertBefore(btn, vwSection.nextSibling);
+  },
+
+});
+/* ===END:contentRepurpose=== */
 /* ===END_DOMAIN:ORACLE=== */
 
 /* ===DOMAIN:LEARNING=== */
