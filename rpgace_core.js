@@ -5951,13 +5951,17 @@ RPGACE.register('suppressQuestPopup', {
 /* ===MODULE:restoreSendChat=== */
 RPGACE.register('restoreSendChat', {
   init: function() {
+    // The streaming intercept cannot be undone at runtime.
+    // This module prevents it from loading via the config cache patch.
+    // The intercepted sendChat is neutralised by deleting RPGACE.streamOracle
+    // so the intercept's guard condition fails and falls through to _origSend.
     RPGACE.hooks.on('rpgace:ready', function() {
       setTimeout(function() {
-        // Remove the broken streaming intercept
+        // Disable stream path so intercepted sendChat falls through to original
+        RPGACE.streamOracle = null;
         window._sendChatPatched = false;
-        window._agendaAutoBlocked = false;
-        console.log('[RPGACE] sendChat and agenda restored to original state');
-      }, 800);
+        console.log('[RPGACE] streamOracle disabled — sendChat falls through to main.js original');
+      }, 300);
     });
   }
 });
