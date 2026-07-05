@@ -3286,10 +3286,12 @@ RPGACE.register('config', {
 
     console.log('[RPGACE:config] Cache + streaming Oracle ready');
 
-    // Attach global phyla-scan observer once DOM is ready
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { RPGACE.utils._initPhylaObserver(); }, 1000);
-    });
+    // Attach global phyla-scan observer directly — rpgace:ready may have
+    // already fired before this code runs, so we don't wait for it.
+    // _initPhylaObserver has its own self-retry if #send-btn isn't in the DOM yet.
+    setTimeout(function() {
+      if (RPGACE.utils._initPhylaObserver) RPGACE.utils._initPhylaObserver();
+    }, 500);
 
     // Intel UI: hide main.js container, show our collapsed list instead
     function applyIntelUI() {
