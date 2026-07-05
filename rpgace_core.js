@@ -3151,6 +3151,16 @@ RPGACE.register('taxonomyTree', {
     19:'Referentia Mercati',20:'Technologia',21:'Miscellaneous Ordinanda'
   },
 
+  PHYLUM_ENGLISH: {
+    1:'Melody, Harmony, Chords',2:'Drums, 808s, Rhythm',3:'Sound Design, Synths, Sampling',
+    4:'Mixing, EQ, Compression',5:'Mastering, Loudness',6:'FL Studio, VSTs, DAW Workflow',
+    7:'Critical Listening, Reference',8:'Music Theory Fundamentals',9:'Producer History, Influences',
+    10:'Creative Psychology, Flow',11:'Colour, Mood, Visual Language',12:'Tutorials, Learning Resources',
+    13:'YouTube, Instagram, Content',14:'Visual Treatment, Filmmaking',15:'Collaboration, Outreach',
+    16:'Beat Selling, Licensing',17:'Business, Operations',18:'Distribution, Release',
+    19:'Market Reference, Trends',20:'Technology, Tools',21:'Miscellaneous'
+  },
+
   init: function() {
     var self = this;
     RPGACE.hooks.on('rpgace:ready', function() {
@@ -3201,14 +3211,41 @@ RPGACE.register('taxonomyTree', {
     input.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:13px;padding:10px 12px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
 
     var phylumSelect = document.createElement('select');
-    phylumSelect.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
+    phylumSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
     var blank = document.createElement('option'); blank.value=''; blank.textContent='— which phylum does this belong to? —';
+    blank.style.color = '#E2E2EC'; blank.style.background = '#1a1a24';
     phylumSelect.appendChild(blank);
-    Object.keys(self.PHYLUM_NAMES).forEach(function(num) {
+    Object.keys(self.PHYLUM_ENGLISH).forEach(function(num) {
       var opt = document.createElement('option');
-      opt.value = num; opt.textContent = 'Phylum ' + num + ' — ' + self.PHYLUM_NAMES[num];
+      opt.value = num;
+      opt.textContent = 'Phylum ' + num + ' — ' + self.PHYLUM_NAMES[num] + ' (' + self.PHYLUM_ENGLISH[num] + ')';
+      opt.style.color = '#E2E2EC'; opt.style.background = '#1a1a24';
       phylumSelect.appendChild(opt);
     });
+
+    // Native content preview — shows what's already in the selected phylum
+    var previewBox = document.createElement('div');
+    previewBox.id = 'taxtree-phylum-preview';
+    previewBox.style.cssText = 'display:none;background:rgba(155,89,182,0.05);border:1px solid rgba(155,89,182,0.15);border-radius:6px;padding:10px 12px;margin-bottom:16px;font-size:11px;color:rgba(226,226,236,0.55);';
+
+    phylumSelect.onchange = function() {
+      var num = parseInt(phylumSelect.value);
+      if (!num) { previewBox.style.display = 'none'; return; }
+      previewBox.style.display = 'block';
+      previewBox.innerHTML = '<div style="color:rgba(155,89,182,0.7);font-weight:700;margin-bottom:4px;">Loading what already lives here...</div>';
+      RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + num + '&order=created_at.desc&limit=5')
+        .then(function(nodes) {
+          nodes = nodes || [];
+          if (nodes.length === 0) {
+            previewBox.innerHTML = '<div style="color:rgba(226,226,236,0.35);">Nothing in this phylum yet — you would be first to add here. Examples of what belongs: <strong style="color:#9B59B6;">' + self.PHYLUM_ENGLISH[num] + '</strong></div>';
+            return;
+          }
+          previewBox.innerHTML = '<div style="color:rgba(155,89,182,0.7);font-weight:700;margin-bottom:4px;">Already in ' + self.PHYLUM_ENGLISH[num] + ':</div>' +
+            nodes.map(function(n) { return '• ' + n.name; }).join('<br>');
+        }).catch(function() {
+          previewBox.innerHTML = '<div style="color:rgba(226,226,236,0.3);">Could not load preview</div>';
+        });
+    };
 
     var genBtn = document.createElement('button');
     genBtn.textContent = '🌳 Propose Lineage';
@@ -3229,6 +3266,7 @@ RPGACE.register('taxonomyTree', {
 
     box.appendChild(eyebrow); box.appendChild(title);
     box.appendChild(input); box.appendChild(phylumSelect);
+    box.appendChild(previewBox);
     box.appendChild(genBtn); box.appendChild(cancelBtn);
     overlay.appendChild(box);
     document.body.appendChild(overlay);
@@ -3243,9 +3281,11 @@ RPGACE.register('taxonomyTree', {
 
     RPGACE.utils.toast('🌳 Generating taxonomy lineage...', '#9B59B6', 2500);
 
+    var phylumDesc = self.PHYLUM_ENGLISH[phylumNumber] || '';
     var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
-      'ROOT PHYLUM: ' + phylumName + ' (Phylum ' + phylumNumber + ')\n' +
+      'ROOT PHYLUM: ' + phylumName + ' (Phylum ' + phylumNumber + ') — this phylum covers: ' + phylumDesc + '\n' +
       'TOPIC TO PLACE: "' + topicText + '"\n\n' +
+      'IMPORTANT: If the topic does not actually fit what this phylum covers, say so first before proposing a path — do not force an unrelated topic into the wrong phylum just because it was selected.\n\n' +
       'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
       'Use as many or as few steps as genuinely needed — could be 2 steps, could be 10. ' +
       'Each step should be a real conceptual grouping, not padding.\n\n' +
