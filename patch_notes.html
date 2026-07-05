@@ -145,7 +145,12 @@
   </div>
 </div>
 
-<div class="section" id="jul1">
+<div class="card">
+    <div class="card-title">Formal phylum/lineage selection criteria — future brainstorm <span class="badge open">NOT YET SCOPED — DEDICATED SESSION NEEDED</span></div>
+    <div class="card-body">Surfaced from real testing of the taxonomy tree's pre-filter and lineage proposal system: a single incidental keyword match was letting implausible phyla (Historia) through, and the fix (raising the threshold to 2+ hits) is a blunt patch, not a real solution. What's actually needed: a dedicated brainstorming session to establish general rules for how keywords, phylum identity, and lineage depth interrelate — so future selection/rejection of proposals happens with the least possible "knowledge waste" (good insights discarded, or bad insights accepted) as the tree scales past a handful of phyla. Not solved tonight, deliberately — flagged as needing its own focused session rather than another reactive patch.</div>
+  </div>
+
+  <div class="section" id="jul1">
   <div class="date-tag">JULY 1, 2026</div>
   <div class="section-title">Patch Notes — July 1</div>
   <div class="section-sub">Continuation from the June 29 session. This entry covers Content Repurpose v2 stabilisation, Content Production Live, ConIDPot, a major performance regression caused by tonight's own fixes, and the actual root cause of the site lag — found and closed at the database level.</div>
@@ -317,7 +322,47 @@ ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
     <div class="card-body">No DistroKid account created as of this entry. Logged for later: DistroKid does not currently have a public developer API (closed platform) — auto-integration may not be technically possible regardless of build priority. Revisit once the account exists and DistroKid's API status is re-checked, since platform capabilities can change. Until then this stays a manual reference-link field at most, same pattern as the existing YouTube/Instagram URL fields on ConID post details.</div>
   </div>
 
+  <div class="card gold" style="border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.06);">
+    <div class="card-title">Recursive Taxonomy Tree — full architecture <span class="badge next">CONFIRMED — MAJOR BUILD — NEXT SESSION</span></div>
+    <div class="card-body">
+      Built via GODMODE + Council of 5, July 2 evening. This is the single largest architectural addition since the original 21-phylum taxonomy — replaces the current flat Phylum→concept structure with genuine unlimited-depth drill-down, and adds an unattended proposal-and-review pipeline so the tree grows passively from every content source, not just live Oracle chats.<br><br>
+
+      <strong>Core decision — one self-referencing table, not fixed levels:</strong> biological taxonomy's fixed ranks (Class/Order/Family/Genus) were rejected because depth genuinely varies per branch — some topics resolve in 3 steps, others need 21. A single <code>taxonomy_tree</code> table with a <code>parent_id</code> self-reference supports any depth without schema changes.<br><br>
+
+      <strong>Two new tables:</strong>
+      <ul style="margin-top:6px;">
+        <li><code>taxonomy_tree</code> — the live, accepted tree. Every row (Phylum down to deepest leaf) has: name, Latin name (Phylum-only, confirmed — no other level gets Latin), phylum_number, materialized path (e.g. "Compositio/Scales/Natural Minor/Chord Progressions/1-1-3-4"), an explainer field (what this group is + how children interconnect), a deep_content JSONB payload (richest at leaf level), and a sources array designed to accept Video Finder and uploaded documents later without restructuring.</li>
+        <li><code>taxonomy_proposals</code> — a staging table. Nothing writes to the live tree until explicitly accepted. Holds source_type (content_intelligence/encyclopedia/oracle/manual), the proposed full path, proposed steps as JSON, and a status field.</li>
+      </ul>
+
+      <strong>Four trigger sources, confirmed:</strong>
+      <ol style="margin-top:6px;">
+        <li><strong>Oracle responses</strong> — existing "🌿 N topics" badge becomes the entry point; clicking now proposes a full drill-down path per detected topic, not just a Phylum-level flag</li>
+        <li><strong>Content Intelligence pipeline</strong> — auto-scans Claude's analysis output at the end of every unattended pipeline run, writes proposals silently to <code>taxonomy_proposals</code>, does not pause or wait for review — pipeline stays fully unattended as designed</li>
+        <li><strong>Encyclopedia sync</strong> — same silent-queue behavior on every sync</li>
+        <li><strong>Manual button</strong> — for deliberately forcing a topic into the tree on demand, independent of organic content triggering it</li>
+      </ol>
+
+      <strong>Review UI — confirmed batched, not live-blocking:</strong> a "🌳 X taxonomy proposals waiting" indicator (Dashboard, alongside the existing Knowledge Gap Tracker) appears whenever pending proposals exist. Opening it steps through each proposal one at a time via the accept/edit/reject/morph popup:
+      <ul style="margin-top:6px;">
+        <li><strong>Accept</strong> — writes the full proposed path into <code>taxonomy_tree</code> as real nodes</li>
+        <li><strong>Edit</strong> — delete a step, rename a step, or insert a new step mid-chain before accepting</li>
+        <li><strong>Reject</strong> — discarded, no tree changes</li>
+        <li><strong>Morph</strong> — if the proposed path touches a node name that already exists in the tree, the popup shows that existing node's current children/content instead of silently duplicating a branch, letting the user attach the new leaf under the existing node or branch off if it's genuinely a different concept</li>
+      </ul>
+
+      <strong>Generation template — merges two prompting patterns into one, keyed to each node's own name as the topic:</strong> combines a "neuro-optimized tutor, spaced repetition/interleaving/Feynman technique/active recall, 90-day top-1%" framing with a "world-class expert, apprentice training, stages/tasks/uncommon resources/shortcuts, simulations" framing. Fires once per accepted node. Pulls existing <code>taxonomy_nodes</code> and <code>encyclopedia</code>/<code>intel_reports</code> content matching that node's name as context before generating, rather than generating cold. Leaf-level nodes get the actual technical content itself (e.g. a chord progression node gets the real chords, emotional palette, and known-track examples), branch-level nodes get the explainer + how-children-interconnect framing only.<br><br>
+
+      <strong>Worked example, confirmed by the user:</strong> "1-1-3-4 progression in natural minor" resolves as a full path — <code>Music Theory → Scales → Natural Minor → Chord Progressions → 1-1-3-4</code> — with the leaf node carrying the actual chord identities, emotional palette, and cross-referenced insights pulled from taxonomy, Content Intelligence, and (future) Video Finder / uploaded books and articles.
+    </div>
+  </div>
+
   <div class="card">
+    <div class="card-title">Taxonomy badge scrollable list fix <span class="badge next">NEXT — SAME SESSION AS TREE BUILD</span></div>
+    <div class="card-body">Small bug found during the global taxonomy detection build: the "🌿 N topics" badge counts all matches (e.g. 11), but the expanded panel only rendered the first 5 with no indication of truncation. Confirmed fix: make the expanded panel scrollable and show all N matches, not a silently truncated top-5. Bundled into the same session as the taxonomy tree build since the panel is being rebuilt anyway to support full lineage paths instead of flat Phylum+gap display.</div>
+  </div>
+
+    <div class="card">
     <div class="card-title">Upgrade Oracle to Claude Sonnet 5 <span class="badge next">NEXT — BRAINSTORM, NOT SCOPED YET</span></div>
     <div class="card-body">Raised as a brainstorm idea, not yet actioned. Model string is currently set in <code>api/_context.js</code> as the single source of truth imported by both <code>oracle.js</code> and <code>orchestrate.js</code> — needs confirming via <code>findstr /n "MODEL" api\_context.js</code> before any change, to verify the exact current string and that it isn't hardcoded separately anywhere else. Small change once confirmed, but the exact model identifier must be verified first rather than guessed — a wrong string would silently break every Oracle call the same way tonight's other unverified changes did.</div>
   </div>
