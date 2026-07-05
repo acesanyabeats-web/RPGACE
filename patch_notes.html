@@ -60,7 +60,8 @@
 <nav class="sidebar">
   <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">PATCH NOTES</div></div>
   <div class="nav-group"><div class="nav-label">Current Entry</div>
-    <a class="nav-item" href="#jul1">July 1, 2026</a>
+    <a class="nav-item" href="#jul1-daylog">July 1 — Day Log</a>
+    <a class="nav-item" href="#jul1">July 1 — Technical Detail</a>
   </div>
   <div class="nav-group"><div class="nav-label">This Entry</div>
     <a class="nav-item" href="#summary">Summary</a>
@@ -80,6 +81,69 @@
 </nav>
 
 <div class="content">
+
+<div class="section" id="jul1-daylog">
+  <div class="date-tag">JULY 1, 2026 — DAY LOG</div>
+  <div class="section-title">Full Session Reflection</div>
+  <div class="section-sub">Written at day's end, before July 2 begins. Purpose: extract what actually made building slower or faster today, so tomorrow starts smarter rather than repeating the same shape of mistake.</div>
+
+  <div class="card red">
+    <div class="card-title">The honest headline</div>
+    <div class="card-body">[Certain] More of today's time went to recovering from problems created during today's own session than to shipping planned features. Content Repurpose v2 and Content Production Live shipped cleanly early on. Everything after that — the performance "optimisations," the Oracle regression, the encyclopedia investigation — was reactive, triggered by changes made in direct response to a vague complaint ("site is lagging") rather than a measured one.</div>
+  </div>
+
+  <h3>What actually happened, in three phases</h3>
+  <table>
+    <tr><th>Phase</th><th>What happened</th><th>Outcome</th></tr>
+    <tr><td>1. Planned build</td><td>Content Repurpose v2, Content Production Live, ConIDPot shipped as scoped</td><td>Clean, worked first try, no regressions</td></tr>
+    <tr><td>2. Reactive "fix"</td><td>Four architecture changes (streaming Oracle, cache layer, MutationObserver rescope, agenda block) built and deployed together off one performance trace</td><td>Broke Oracle entirely; none of the four fixed the actual complaint</td></tr>
+    <tr><td>3. Root cause found</td><td>Fresh, targeted Performance recording of the specific complained-about action → traced to 104 duplicate Supabase rows</td><td>2-line SQL constraint fixed it permanently; user confirmed "way quicker"</td></tr>
+  </table>
+
+  <h3>Judgment calls worth stating plainly</h3>
+
+  <div class="card">
+    <div class="card-title">1. The four architecture changes were not wrong in isolation — they were premature</div>
+    <div class="card-body">Streaming Oracle, a Supabase cache layer, and a tighter MutationObserver are all reasonable things to eventually want. The mistake was building all four at once, off a general performance trace, before isolating what the user was actually complaining about. A trace showing "Oracle calls take 5-7s" and "encyclopedia queried 3x" doesn't mean either one is *the* problem the user experienced — it means those are two things that showed up in a trace. Only re-recording a trace of the exact complained-about action (login → lag → unlag) surfaced the real cause.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2. Console overrides were repeatedly mistaken for fixes</div>
+    <div class="card-body"><code>RPGACE.streamOracle = null</code> typed into console appeared to fix Oracle twice tonight, and both times it was diagnostic evidence, not a working fix, because it didn't survive a refresh. This cost at least two extra rounds of back-and-forth before the actual fix (moving the null-assignment to module <code>init()</code> instead of the <code>rpgace:ready</code> hook) was found.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">3. Toast/success messages were trusted over re-querying actual state</div>
+    <div class="card-body">A Supabase DELETE returned "Success. No rows returned" and was treated as confirmation of full completion. It had only partially run. This was caught only because the next step (adding a UNIQUE constraint) failed loudly with a specific duplicate title in the error message — if that next step hadn't existed, the partial DELETE could have gone unnoticed indefinitely.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">4. The real root cause was one layer deeper than either of us initially looked</div>
+    <div class="card-body">Client-side (localStorage) dedup logic was correct and was still failing to hold, which looked like a client-side bug. It wasn't — the actual duplicate-producing writer was a local Python server (port 7842) inserting directly into Supabase with no existence check, something neither browser console nor client-side code could ever see or fix. The lesson: when a fix that should work keeps not holding, the write is probably happening somewhere the current investigation isn't looking, not that the fix logic is wrong.</div>
+  </div>
+
+  <h3>What worked well today, worth repeating</h3>
+  <div class="card green">
+    <div class="card-body">
+      <ul>
+        <li>The Council of 5 format, once genuinely used (grounded in real specs, not vague titles), produced sharper, more decisive verdicts than open-ended discussion — see the Hermes evaluation and the 9-option taxonomy detection comparison</li>
+        <li>Pulling the actual <code>sendChat()</code> source from the original build conversation resolved in one exchange what console-guessing had failed to resolve across several — when a "how does X actually work" question comes up, going to the source beats inferring from behavior</li>
+        <li>Fresh, targeted Performance-tab recordings of the exact complained-about action, done twice tonight, were the only diagnostic method that produced a correct root cause both times</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The one process change for tomorrow</h3>
+  <div class="card gold">
+    <div class="card-title">Diagnose the specific complaint before architecting a general fix</div>
+    <div class="card-body">Going forward: when something is reported as "slow" or "broken" without a specific reproduction step, the first action is a targeted trace of that exact action — not a general performance audit, not a batch of plausible-sounding fixes. Tonight's second investigation (encyclopedia) followed this correctly and found the real cause in one pass. Tonight's first investigation (the four-fix batch) didn't, and cost the most time of the entire session. This single discipline — reproduce first, architect second — would have prevented the majority of tonight's wasted cycles.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Standing reminder carried into July 2</div>
+    <div class="card-body">Both Patch Notes and the Interconnection Map now get updated together for every new idea, per the standing instruction logged at the end of Part 5. Tonight's late-session spec (global taxonomy detection, 3-layer stack) is the first idea fully built under that discipline — confirm this held cleanly going into tomorrow's actual build session.</div>
+  </div>
+</div>
 
 <div class="section" id="jul1">
   <div class="date-tag">JULY 1, 2026</div>
@@ -258,8 +322,8 @@ ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
     <div class="card-body">Raised as a brainstorm idea, not yet actioned. Model string is currently set in <code>api/_context.js</code> as the single source of truth imported by both <code>oracle.js</code> and <code>orchestrate.js</code> — needs confirming via <code>findstr /n "MODEL" api\_context.js</code> before any change, to verify the exact current string and that it isn't hardcoded separately anywhere else. Small change once confirmed, but the exact model identifier must be verified first rather than guessed — a wrong string would silently break every Oracle call the same way tonight's other unverified changes did.</div>
   </div>
 
-  <div class="card gold">
-    <div class="card-title">Universal taxonomy detection — GLOBAL, on all Oracle responses <span class="badge next">CONFIRMED — FINAL SPEC — BUILD NEXT SESSION</span></div>
+  <div class="card green">
+    <div class="card-title">Universal taxonomy detection — GLOBAL, on all Oracle responses <span class="badge live">SHIPPED — LIVE JULY 2</span></div>
     <div class="card-body">
       <strong>Scope widened from the original 5-call-site plan to fully global</strong>, via <code>RPGACE.utils.sendToOracle</code> — the single shared function every Oracle-invoking button already routes through (confirmed via <code>main.js</code> source: no completion callback exists in <code>sendChat()</code>, so detection hooks off <code>send-btn.disabled</code> flipping back to <code>false</code>, which fires synchronously right after <code>checkForQuestSuggestions(reply)</code> runs on the same response text).<br><br>
       <strong>Final architecture — 3-layer stack, chosen via Council of 5 across 9 evaluated configurations:</strong>
@@ -269,7 +333,8 @@ ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
         <li><strong>Display layer — silent badge, click to expand.</strong> If the filter passes, a small "🌿 N topics" tag appears under the response. Clicking it — and only clicking it — triggers the expensive part: a live Supabase pull of gap scores, rendering the full confirmed/suggested/gap-flagged checklist (same UI already built for Repurpose Step 3).</li>
       </ol>
       <strong>Why global instead of scoped to 4 buttons + 2 entry points:</strong> every Oracle interaction — quests, emails, Feynman, ConID sessions, panels, everything — now quietly strengthens the taxonomy's read on what you're actually working on, not just content-planning calls. The 3-layer stack was specifically chosen to make going global safe: base layer keeps cost near-zero on calls that don't need it, filter layer kills visual noise on weak matches, display layer means UI screens never designed for a checklist (ConID Oracle bar, quest suggestions) stay untouched unless the user opts in by clicking.<br><br>
-      <strong>Rejected alternatives, for the record:</strong> debounced/batched detection (delays feedback), a persistent sidebar panel (bigger build, worse per-message clarity), a manual on/off toggle (punts the design problem to the user), and nightly batch tagging (kills live value entirely). Full 9-option comparison lives in this session's conversation history if needed for reference.
+      <strong>Rejected alternatives, for the record:</strong> debounced/batched detection (delays feedback), a persistent sidebar panel (bigger build, worse per-message clarity), a manual on/off toggle (punts the design problem to the user), and nightly batch tagging (kills live value entirely). Full 9-option comparison lives in this session's conversation history if needed for reference.<br><br>
+      <strong>Build note — real bug found and fixed during implementation:</strong> the initial wiring attached the observer inside a <code>RPGACE.hooks.on('rpgace:ready', ...)</code> callback, following the same pattern used elsewhere in the codebase. It silently failed on every load. Root cause: RPGACE's hooks system (<code>fire()</code>) has no replay mechanism — it only calls handlers currently registered at the moment an event fires. <code>rpgace:ready</code> had already fired before the <code>config</code> module's code (where this hook was registered) finished executing, so the callback was permanently orphaned, waiting for a second firing that never comes. Fixed by calling <code>_initPhylaObserver()</code> directly with its own self-retry loop instead of waiting on the event. <strong>Wider implication:</strong> any future code added late in the <code>config</code> module that depends on <code>rpgace:ready</code> firing correctly should be checked against this same failure mode first.
     </div>
   </div>
 
