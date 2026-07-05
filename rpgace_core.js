@@ -3282,7 +3282,103 @@ RPGACE.register('taxonomyTree', {
     if (!entry) return true;
     var t = (text || '').toLowerCase();
     var hits = entry.keywords.filter(function(k) { return t.includes(k); }).length;
-    return hits >= 1;
+    return hits >= 2; // raised from 1 - single incidental word match is too permissive
+  },
+
+  // ── Extract named node candidates from an Oracle response ──────────
+  // ── Looks for bullet-point items with a bold/named lead-in — Oracle    ──
+  // ── frequently writes exactly this pattern when suggesting topics      ──
+  // ── ("• The Major Scale & Interval Structure (tones/semitones...)").   ──
+  // ── If found, these become the ACTUAL proposal topics instead of a     ──
+  // ── vague blob slice of the whole response.                           ──
+  extractNamedTopics: function(text, phylumNumber) {
+    var phylumName = self.PHYLUM_NAMES ? self.PHYLUM_NAMES[phylumNumber] : null;
+    var lines = text.split('\n');
+    var candidates = [];
+    var inRelevantSection = !phylumName; // if we don't know the name, scan everything
+
+    lines.forEach(function(line) {
+      var trimmed = line.trim();
+      // Detect a section header naming this phylum's English or Latin name
+      if (phylumName && trimmed.length < 80) {
+        var lower = trimmed.toLowerCase();
+        if (lower.includes(phylumName.toLowerCase())) { inRelevantSection = true; return; }
+        // A new bolded header that ISN'T this phylum likely ends the section
+        if (/^[•\-\*]/.test(trimmed) === false && trimmed.length > 10 && /^[A-Z]/.test(trimmed) && inRelevantSection) {
+          // heuristic: heading-like line with no bullet, treat as new section boundary
+        }
+      }
+      // Bullet items: "• Name Here (parenthetical description)"
+      var bulletMatch = trimmed.match(/^[•\-\*]\s*(.+)/);
+      if (bulletMatch && inRelevantSection) {
+        var itemText = bulletMatch[1];
+        // Strip trailing parenthetical for the "name" but keep full text as context
+        var nameOnly = itemText.split('(')[0].trim();
+        if (nameOnly.length > 3 && nameOnly.length < 90) {
+          candidates.push({ name: nameOnly, fullText: itemText });
+        }
+      }
+    });
+
+    return candidates;
+  },
+
+  // ── Picker shown when Oracle's response contains multiple named nodes ──
+  // ── for one phylum — lets user pick which specific ones to propose,   ──
+  // ── instead of collapsing them all into one vague blob topic.          ──
+  _showNamedTopicPicker: function(candidates, phylumNumber) {
+    var self = this;
+    var phylumName = self.PHYLUM_NAMES[phylumNumber] || '';
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:80vh;overflow-y:auto;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = 'Oracle already named these — pick which to propose';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.textContent = phylumName + ' — ' + candidates.length + ' named nodes found';
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    candidates.forEach(function(c, i) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.id = 'named-topic-' + i; cb.checked = true;
+      cb.style.cssText = 'margin-top:3px;flex-shrink:0;';
+      var label = document.createElement('div');
+      label.innerHTML = '<div style="font-size:12px;font-weight:600;color:#E2E2EC;">' + c.name + '</div>' +
+        '<div style="font-size:10px;color:rgba(226,226,236,0.35);margin-top:2px;">' + c.fullText.slice(0, 100) + '</div>';
+      row.appendChild(cb); row.appendChild(label);
+      box.appendChild(row);
+    });
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
+    var proceedBtn = document.createElement('button');
+    proceedBtn.textContent = '🌳 Propose selected';
+    proceedBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    proceedBtn.onclick = function() {
+      var selected = candidates.filter(function(c, i) {
+        var cb = document.getElementById('named-topic-' + i);
+        return cb && cb.checked;
+      });
+      overlay.remove();
+      // Propose each selected item as its own separate lineage, sequentially
+      selected.forEach(function(c) {
+        self.proposeLineage(c.fullText, phylumNumber, 'oracle', null);
+      });
+    };
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    btnRow.appendChild(proceedBtn); btnRow.appendChild(cancelBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
   },
 
   // ── Core: propose a lineage for any topic, from any source ────────
