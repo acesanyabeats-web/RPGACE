@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Patch Notes</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7}
+  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;overflow-y:auto;z-index:100}
+  .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .sidebar-logo .name{font-family:Georgia,serif;font-size:16px;color:var(--gold);letter-spacing:2px}
+  .sidebar-logo .version{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+  .nav-group{padding:8px 0}
+  .nav-label{padding:4px 20px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  .nav-item{display:block;padding:6px 20px;font-size:12px;color:var(--dim);text-decoration:none;cursor:pointer}
+  .nav-item:hover{color:var(--gold)}
+  .content{margin-left:220px;padding:48px 56px;max-width:1000px}
+  .section{margin-bottom:56px}
+  .section-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+  .section-title{font-family:Georgia,serif;font-size:26px;color:#E2E2EC;margin-bottom:6px}
+  .section-sub{color:var(--dim);font-size:13px;margin-bottom:28px;max-width:700px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:12px}
+  .card-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .card-body{font-size:12px;color:var(--dim);line-height:1.7}
+  .card.red{border-color:rgba(226,84,84,0.25);background:rgba(226,84,84,0.05)}
+  .card.green{border-color:rgba(61,170,110,0.2);background:rgba(61,170,110,0.04)}
+  .card.gold{border-color:rgba(201,168,76,0.2);background:rgba(201,168,76,0.04)}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
+  pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:10px 0;overflow-x:auto;font-size:11px;font-family:'Cascadia Code','Fira Mono',monospace;color:#B8C4D4;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0}
+  th{text-align:left;padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+  td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;color:var(--dim)}
+  td:first-child{color:#E2E2EC;font-weight:600;white-space:nowrap}
+  .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
+  .badge.fixed{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
+  .badge.regression{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .badge.open{background:rgba(74,144,226,0.15);color:var(--blue);border:1px solid rgba(74,144,226,0.3)}
+  h3{font-size:13px;font-weight:700;color:#E2E2EC;margin:20px 0 8px}
+  p{color:var(--dim);font-size:13px;margin-bottom:8px}
+  strong{color:#E2E2EC;font-weight:600}
+  .timeline-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .timeline-num{font-size:11px;font-weight:700;color:var(--gold);min-width:22px;flex-shrink:0}
+  .timeline-text{font-size:12px;color:var(--dim);line-height:1.6}
+  .timeline-text strong{color:#E2E2EC}
+  .date-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;margin-bottom:16px}
+  hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+  @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">PATCH NOTES</div></div>
+  <div class="nav-group"><div class="nav-label">Current Entry</div>
+    <a class="nav-item" href="#jul1">July 1, 2026</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">This Entry</div>
+    <a class="nav-item" href="#summary">Summary</a>
+    <a class="nav-item" href="#shipped">Shipped Today</a>
+    <a class="nav-item" href="#regression">Regression + Fix Chain</a>
+    <a class="nav-item" href="#root-cause">Root Cause: Encyclopedia Lag</a>
+    <a class="nav-item" href="#lessons">Lessons Logged</a>
+    <a class="nav-item" href="#open">Still Open</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Architecture Diagrams</div>
+    <a class="nav-item" href="#diagram-current">Current Architecture</a>
+    <a class="nav-item" href="#diagram-future">Future Architecture</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Format Rules</div>
+    <a class="nav-item" href="#format-rules">How This Manual Works</a>
+  </div>
+</nav>
+
+<div class="content">
+
+<div class="section" id="jul1">
+  <div class="date-tag">JULY 1, 2026</div>
+  <div class="section-title">Patch Notes — July 1</div>
+  <div class="section-sub">Continuation from the June 29 session. This entry covers Content Repurpose v2 stabilisation, Content Production Live, ConIDPot, a major performance regression caused by tonight's own fixes, and the actual root cause of the site lag — found and closed at the database level.</div>
+</div>
+
+<div class="section" id="summary">
+  <div class="section-eyebrow">Overview</div>
+  <div class="section-title">What Happened Tonight</div>
+  <div class="card gold">
+    <div class="card-title">Net result</div>
+    <div class="card-body">Started the session finishing Content Repurpose v2 and Content Production Live. Mid-session, performance optimisation attempts (streaming Oracle, cache layers, intercepts) caused a real regression — Oracle went silent. Chased that for over an hour before finding the actual cause was unrelated: a stuck streaming intercept. Fixed. Then chased a separate, real complaint — "site takes ages to load" — through five wrong hypotheses before finding the actual root cause: <strong>104 duplicate rows in the Supabase encyclopedia table</strong>, being triple-rendered and triple-sorted on every page load. Fixed at the database level with a UNIQUE constraint. Confirmed by the user: "it works way quicker now."</div>
+  </div>
+</div>
+
+<div class="section" id="shipped">
+  <div class="section-eyebrow">Shipped</div>
+  <div class="section-title">Features Completed Today</div>
+  <table>
+    <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Content Repurpose v2</td><td><span class="badge fixed">LIVE</span></td><td>Chat box ID fixed (chat-msgs), Oracle message detection fixed (msg ai class), context extraction limited to last exchange</td></tr>
+    <tr><td>Content Production Live</td><td><span class="badge fixed">LIVE</span></td><td>ConID tracker, swap button, inline title edit, progress bar confirmed working</td></tr>
+    <tr><td>ConIDPot / Idea Bank</td><td><span class="badge fixed">LIVE</span></td><td>Save Ideas button on Oracle panel responses, parse limit raised to 50</td></tr>
+    <tr><td>Phylum 12/13 auto-confirm</td><td><span class="badge fixed">LIVE</span></td><td>Made context-aware (was blanket auto-confirm) — only fires for content/tutorial or social media ideas</td></tr>
+    <tr><td>Housekeeping</td><td><span class="badge fixed">LIVE</span></td><td>88 patch scripts archived to scripts/, root folder clean</td></tr>
+  </table>
+</div>
+
+<div class="section" id="regression">
+  <div class="section-eyebrow">Incident Log</div>
+  <div class="section-title">Regression + Fix Chain</div>
+  <div class="section-sub">In order, as it happened. Kept honest — including the wrong turns — because the lesson is in the sequence, not just the fix.</div>
+
+  <div class="timeline-item"><div class="timeline-num">01</div><div class="timeline-text"><strong>Performance complaint raised.</strong> Site described as "lagging" with slow logins and slow encyclopedia loads.</div></div>
+  <div class="timeline-item"><div class="timeline-num">02</div><div class="timeline-text"><strong>Diagnosed via performance.getEntriesByType()</strong> — found Oracle API calls taking 5-7s, rpgace_core.js parsing at 502ms, encyclopedia queried 3x per session.</div></div>
+  <div class="timeline-item"><div class="timeline-num">03</div><div class="timeline-text"><strong>Built 4 fixes in one pass:</strong> streaming Oracle (Edge runtime), Supabase in-memory cache, scoped MutationObserver, agenda auto-popup block. Deployed together.</div></div>
+  <div class="timeline-item"><div class="timeline-num">04</div><div class="timeline-text"><span class="badge regression">REGRESSION</span> <strong>Oracle went completely silent.</strong> Streaming intercept replaced sendChat but the Edge runtime oracle.js returned application/json instead of text/event-stream — imports incompatible with Edge.</div></div>
+  <div class="timeline-item"><div class="timeline-num">05</div><div class="timeline-text">Attempted revert via new module (<code>restoreSendChat</code>) setting <code>streamOracle = null</code> on <code>rpgace:ready</code> at 800ms — too late, intercepted sendChat had already cached the reference.</div></div>
+  <div class="timeline-item"><div class="timeline-num">06</div><div class="timeline-text">Console override (<code>RPGACE.streamOracle = null</code>) confirmed the fix concept worked — but didn't persist across refresh, proving the module itself wasn't firing early enough.</div></div>
+  <div class="timeline-item"><div class="timeline-num">07</div><div class="timeline-text"><span class="badge fixed">FIXED</span> Moved the null assignment to fire immediately on module <code>init()</code>, not inside the <code>rpgace:ready</code> hook. Confirmed via console after hard refresh: <code>streamOracle:false</code>. Oracle responded correctly.</div></div>
+  <div class="timeline-item"><div class="timeline-num">08</div><div class="timeline-text">Separately, quest suggestion popup on login was suppressed via a new <code>suppressQuestPopup</code> module — confirmed working, not the source of the load lag (0.009ms execution, ruled out via Performance tab).</div></div>
+</div>
+
+<div class="section" id="root-cause">
+  <div class="section-eyebrow">Root Cause Analysis</div>
+  <div class="section-title">The Real Lag: Encyclopedia Duplication</div>
+  <div class="section-sub">Oracle being broken was a real bug, but it was not the cause of the original "site is lagging" complaint. This is what actually was.</div>
+
+  <div class="card red">
+    <div class="card-title">Diagnostic method that worked</div>
+    <div class="card-body">Chrome DevTools → Performance tab → record login → stop after unlag. Flame graph showed one ~31,000ms red Task block, entirely inside <code>refreshEncyclopediaDisplay → renderEncEntries → sortEntries</code>, called <strong>three times in immediate succession</strong>.</div>
+  </div>
+
+  <h3>The chain of evidence</h3>
+  <table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>localStorage entries</td><td>112 (should have been ~38)</td></tr>
+    <tr><td>Unique titles in localStorage</td><td>38 of 112 — 74 duplicates</td></tr>
+    <tr><td>Supabase encyclopedia table</td><td>104 rows, 38 unique titles</td></tr>
+    <tr><td>Worst offender</td><td>"The Trending Artist Tutorial Format..." — 5 copies</td></tr>
+    <tr><td>Client-side dedup logic (encSync)</td><td>Correct, but only cleans localStorage 2.5s <em>after</em> sync — cosmetic, not preventative</td></tr>
+    <tr><td>Actual insert source</td><td><code>pushLocalToSupabase()</code> in frozen main.js, called via <code>localhost:7842/push-to-supabase</code> — a local Python server, not the browser</td></tr>
+  </table>
+
+  <h3>Why client-side fixes kept failing</h3>
+  <p>Every localStorage cleanup was overwritten on the next sync because Supabase itself held the duplicates. Cleaning the client is treating a symptom — the real writer was a local server process (port 7842, likely <code>local_server.py</code> or <code>rpgace_intel.py</code>) inserting rows with no existence check, at some point earlier in past sessions while that server was running.</p>
+
+  <h3>The permanent fix</h3>
+  <pre>-- Step 1: remove existing duplicates, keep lowest id per title
+DELETE FROM encyclopedia a
+USING encyclopedia b
+WHERE a.title = b.title
+  AND a.id > b.id;
+
+-- Step 2: make duplicate titles structurally impossible
+ALTER TABLE encyclopedia
+ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
+  <p>First DELETE attempt (using <code>ROW_NUMBER() OVER (PARTITION BY title ORDER BY created_at)</code>) partially failed — 5 titles retained 2 copies each, likely due to a <code>created_at</code> tie or NULL breaking the ordering. Second attempt used <code>id</code> as the tiebreaker instead — always unique, never NULL — and succeeded cleanly.</p>
+
+  <div class="card green">
+    <div class="card-title">Confirmed result</div>
+    <div class="card-body">104 rows → 38 rows in Supabase. localStorage re-synced to match. Performance re-recorded after hard refresh: the 31,000ms scripting block is gone. User confirmed: "it works way quicker now."</div>
+  </div>
+
+  <h3>Why this matters going forward</h3>
+  <p>The UNIQUE constraint means <strong>no future insert — from any script, any session, any button — can ever create a duplicate title again.</strong> This closes the bug at the only layer that actually controls it. It also makes auto-sync safe to consider in a future session, since duplicate insertion is now impossible regardless of how many times sync fires.</p>
+</div>
+
+<div class="section" id="lessons">
+  <div class="section-eyebrow">Retrospective</div>
+  <div class="section-title">Lessons Logged</div>
+
+  <div class="card">
+    <div class="card-title">Profile before architecting</div>
+    <div class="card-body">Four significant architecture changes (streaming Oracle, cache layer, MutationObserver rescoping, agenda blocking) were built and deployed based on a performance trace that correctly identified symptoms (slow Oracle calls, repeated encyclopedia queries) but not root causes. None of the four fixed the actual reported complaint. The one fix that worked was a 2-line SQL constraint, found by tracing a fresh Performance recording of the specific complained-about action, not by guessing from an earlier trace.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Console overrides don't persist — don't trust them as fixes</div>
+    <div class="card-body"><code>RPGACE.streamOracle = null</code> typed directly in console appeared to fix Oracle, but vanished on refresh. It was diagnostic evidence, not a fix. The actual fix required finding why the module-level assignment ran too late and correcting its timing.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Client-side dedup cannot fix a server-side duplication source</div>
+    <div class="card-body">Cleaning localStorage repeatedly, three times in a row, produced three different counts (104 → 66 removed → 107 → 38) because the write source was never touched. The fix always had to happen where the actual INSERT occurred — Supabase — not in the browser.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Trust the database over the toast message</div>
+    <div class="card-body">A "Success. No rows returned" message from a DELETE query was assumed to mean full success. A subsequent UNIQUE constraint attempt proved the DELETE had only partially run. Always re-query and confirm state directly rather than trusting a UI confirmation message.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Project instructions belong in Project Settings, not chat messages</div>
+    <div class="card-body">The full RPGACE master instruction block was pasted into chat multiple times during this session under the belief it needed re-establishing. It does not — once present in a conversation, Claude retains it for that session. Repeated pasting cost turn space without adding function. The correct permanent home is Claude.ai → Project → Settings → Project Instructions field, set once.</div>
+  </div>
+</div>
+
+<div class="section" id="open">
+  <div class="section-eyebrow">Carried Forward</div>
+  <div class="section-title">Still Open</div>
+
+  <div class="card">
+    <div class="card-title">Streaming Oracle intercept <span class="badge open">TECH DEBT</span></div>
+    <div class="card-body">Currently neutralised via <code>restoreSendChat</code> setting <code>streamOracle = null</code> at module init. Functionally stable and confirmed working, but this is a workaround sitting on top of dead streaming code rather than a full clean revert. <strong>Concrete removal task:</strong> delete the dead Edge-runtime streaming code from <code>api/oracle.js</code> history (already reverted to the stable version, but the streaming attempt's client-side hooks in <code>config</code> module — <code>RPGACE.streamOracle</code> definition itself — are still present and unused); delete the <code>restoreSendChat</code> module entirely once confirmed nothing still references <code>streamOracle</code>; re-run <code>rpgace_build.py check</code> to confirm no orphaned calls remain.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">local_server.py (port 7842) not running <span class="badge open">INFRA</span></div>
+    <div class="card-body"><code>ERR_CONNECTION_REFUSED</code> on every sync attempt tonight. Not urgent — the UNIQUE constraint makes it safe to leave off — but Content Intelligence auto-push does nothing until this is restarted. Also: <code>intel.bat</code> fails locally because it calls <code>python</code> and the system only resolves <code>py</code>.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Council of 5 RPGACE 2.0 plan <span class="badge open">PAUSED</span></div>
+    <div class="card-body">Requested mid-session, partially delivered (Architect/Stability/DevEx/Integration/Product perspectives given, prioritised roadmap produced), but paused correctly once Oracle broke — fixing the live regression took priority over long-term planning. Worth revisiting once the current fixes have held for a full session with no new regressions.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Auto-sync — now safe to reconsider</div>
+    <div class="card-body">Previously explicitly blocked because sync was pointed at a dead local server and any automation would've automated silence. With the UNIQUE constraint live, duplicate insertion is now structurally impossible regardless of trigger frequency — this is the actual precondition for safely automating sync, next time it's requested.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Multi-channel Oracle access <span class="badge open">IDEA — NOT PLANNED</span></div>
+    <div class="card-body">Surfaced from evaluating a third-party agent tool (rejected — see Council of 5 verdict below). The one useful concept: Oracle currently only lives in the web app plus Gmail via Composio. A future low-priority idea is routing Oracle access through Composio's Telegram/Slack connectors so quick prompts (quest check, YouTube stats, a fast idea capture) can happen from a phone notification without opening the site. Not scoped, not scheduled — logged as a concept only.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Idea Bank connector row <span class="badge open">UNDOCUMENTED — ALREADY BUILT</span></div>
+    <div class="card-body">Each ConIDPot entry in the Idea Bank (Research tab) has 5 working connector buttons that were never given their own feature entry in this document: <strong>Repurpose</strong> (sends to contentRepurpose 3-step popup), <strong>Oracle</strong> (opens a fresh Oracle conversation seeded with the idea), <strong>Add to Agenda</strong> (pushes to Schedule tab), <strong>Activate ConID</strong> (promotes the pot idea into a full tracked ConID in Content Production Live), <strong>Delete</strong>. This is a designed unit, not five separate afterthoughts — logging it here so a future session or a fresh Claude instance reading this doc cold knows it exists as intended architecture, not incidental buttons.</div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">Context engineering rules — agreed, not yet written <span class="badge next">NEXT — QUICK</span></div>
+    <div class="card-body">Council of 5 verdict reached earlier this session: adopt <code>context-optimization</code>, <code>harness-engineering</code>, and <code>tool-design</code> from the Agent-Skills-for-Context-Engineering repo, translated into 3 new lines for the <code>RPGACE_MASTER</code> project instructions, same style as the existing "THINGS THAT MUST NEVER HAPPEN AGAIN" list. Verdict was confirmed by the user but the actual 3 lines were never drafted or added before the conversation moved on. Concrete next step: draft the 3 rules, paste into Project Instructions in Claude.ai settings — not a code change, a project-config change.</div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">Stop Slop prompt rules — agreed, not yet built <span class="badge next">NEXT — QUICK</span></div>
+    <div class="card-body">Council of 5 verdict: adopt Stop Slop's core output-quality rules (no em dashes, no throat-clearing openers, active voice required, cut adverbs, no rhetorical Wh- sentence starters) folded directly into the system prompt used by <code>contentRepurpose</code> and the Oracle panel commands. Confirmed by the user, never drafted. Concrete next step: write the rule block, add it as a prefix to the prompt strings in <code>mod_contentRepurpose.js</code> and the 3 Oracle panel modules — one session, no new dependency, directly improves caption/script output quality on every future Repurpose call.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Beatstars auto-listing integration <span class="badge later">FUTURE — WHEN WE GET TO IT</span></div>
+    <div class="card-body">Beatstars has a developer API for listing management. Future scope: when a beat is marked "Posted" in Content Production Live, auto-create the Beatstars listing directly from Beat Log data already captured — price tier, licence type (lease/exclusive/sync-ready — already a Beat Log field), mood/genre tags, BPM, key. No manual re-entry of data RPGACE already has. Depends on Steps 30-32 (Beat Selling Integration) landing first, since that's where licence type and pricing fields get properly wired into <code>content_productions</code>.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">DistroKid integration <span class="badge open">NOT YET — NO ACCOUNT EXISTS</span></div>
+    <div class="card-body">No DistroKid account created as of this entry. Logged for later: DistroKid does not currently have a public developer API (closed platform) — auto-integration may not be technically possible regardless of build priority. Revisit once the account exists and DistroKid's API status is re-checked, since platform capabilities can change. Until then this stays a manual reference-link field at most, same pattern as the existing YouTube/Instagram URL fields on ConID post details.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Upgrade Oracle to Claude Sonnet 5 <span class="badge next">NEXT — BRAINSTORM, NOT SCOPED YET</span></div>
+    <div class="card-body">Raised as a brainstorm idea, not yet actioned. Model string is currently set in <code>api/_context.js</code> as the single source of truth imported by both <code>oracle.js</code> and <code>orchestrate.js</code> — needs confirming via <code>findstr /n "MODEL" api\_context.js</code> before any change, to verify the exact current string and that it isn't hardcoded separately anywhere else. Small change once confirmed, but the exact model identifier must be verified first rather than guessed — a wrong string would silently break every Oracle call the same way tonight's other unverified changes did.</div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">Universal taxonomy detection — GLOBAL, on all Oracle responses <span class="badge next">CONFIRMED — FINAL SPEC — BUILD NEXT SESSION</span></div>
+    <div class="card-body">
+      <strong>Scope widened from the original 5-call-site plan to fully global</strong>, via <code>RPGACE.utils.sendToOracle</code> — the single shared function every Oracle-invoking button already routes through (confirmed via <code>main.js</code> source: no completion callback exists in <code>sendChat()</code>, so detection hooks off <code>send-btn.disabled</code> flipping back to <code>false</code>, which fires synchronously right after <code>checkForQuestSuggestions(reply)</code> runs on the same response text).<br><br>
+      <strong>Final architecture — 3-layer stack, chosen via Council of 5 across 9 evaluated configurations:</strong>
+      <ol style="margin-top:6px;">
+        <li><strong>Base layer — cheap local keyword scan, always runs.</strong> The instant any Oracle response completes, a zero-cost keyword match against the 21-phylum list runs client-side. No Supabase call, no API cost, near-instant.</li>
+        <li><strong>Filter layer — confidence-gated.</strong> The scan result only surfaces if it found 2+ phyla matches or 1+ gap-score-relevant concept. Weak or empty detections show nothing — no badge, no clutter, no wasted render.</li>
+        <li><strong>Display layer — silent badge, click to expand.</strong> If the filter passes, a small "🌿 N topics" tag appears under the response. Clicking it — and only clicking it — triggers the expensive part: a live Supabase pull of gap scores, rendering the full confirmed/suggested/gap-flagged checklist (same UI already built for Repurpose Step 3).</li>
+      </ol>
+      <strong>Why global instead of scoped to 4 buttons + 2 entry points:</strong> every Oracle interaction — quests, emails, Feynman, ConID sessions, panels, everything — now quietly strengthens the taxonomy's read on what you're actually working on, not just content-planning calls. The 3-layer stack was specifically chosen to make going global safe: base layer keeps cost near-zero on calls that don't need it, filter layer kills visual noise on weak matches, display layer means UI screens never designed for a checklist (ConID Oracle bar, quest suggestions) stay untouched unless the user opts in by clicking.<br><br>
+      <strong>Rejected alternatives, for the record:</strong> debounced/batched detection (delays feedback), a persistent sidebar panel (bigger build, worse per-message clarity), a manual on/off toggle (punts the design problem to the user), and nightly batch tagging (kills live value entirely). Full 9-option comparison lives in this session's conversation history if needed for reference.
+    </div>
+  </div>
+
+    <div class="card gold">
+    <div class="card-title">Shared getRecentOracleMessages() helper <span class="badge next">NEXT — HIGH LEVERAGE, SMALL</span></div>
+    <div class="card-body">
+      Surfaced from a full interconnection audit of every button/function in RPGACE (see RPGACE_INTERCONNECTION_MAP.md). Finding: three separate modules — <code>contentRepurpose</code> (dropdown), <code>conidPot</code> (<code>_getOracleMessages()</code>), and the "Save ideas" button injector (<code>_injectSaveBtn()</code>) — each independently walk the live <code>chat-msgs</code> DOM to find recent Oracle output, using three slightly different parsing functions.<br><br>
+      <strong>This is the concrete version of "not interconnected enough":</strong> not a lack of connections between modules, but duplicate connections to the same place, built three separate times instead of once and shared.<br><br>
+      <strong>Fix:</strong> one <code>RPGACE.utils.getRecentOracleMessages(n)</code> helper added to the <code>config</code> module. All three existing callers switch to use it instead of their own DOM-walk. Same output, one shared implementation. Any future module needing "what did Oracle just say" gets it for free instead of writing a fourth parser.<br><br>
+      <strong>Bonus fix this unlocks:</strong> once centralised, this helper can be pointed at <code>conid_pot</code> (Supabase) as a secondary/preferred source instead of raw chat DOM — which would resolve the earlier-flagged bug where the Repurpose dropdown sometimes grabs the wrong idea from a long Oracle response, since ConIDPot entries are already clean, titled, and structured, unlike raw chat text.
+    </div>
+  </div>
+
+  <div class="card green">
+    <div class="card-title">Timestamped Insights + Self-Correcting Frame Pull <span class="badge next">SCHEDULED</span></div>
+    <div class="card-body">
+      Final scoped version, replacing two earlier drafts (manual-only attach, and full auto-extraction — both superseded). Confirmed buildable: yt-dlp is already integrated in RPGACE, FFmpeg is already installed locally, Whisper transcripts are already timestamped per segment.<br><br>
+      <strong>How it works:</strong>
+      <ol style="margin-top:6px;">
+        <li>When Content Intelligence generates an insight from a video, tag it with the Whisper segment timestamp it came from (e.g. "0:38–0:46") — one field added to the existing pipeline, no new pipeline stage</li>
+        <li>A "Pull screenshot" button next to each insight triggers yt-dlp (already integrated) + FFmpeg to grab 3 candidate frames spaced across that segment window, not one guessed frame — on demand, only for insights you actually click, not all frames in the video</li>
+        <li>You pick the frame that actually matches the insight, or reject all three — this is the confirm/reject step, and it doubles as free labeling data with zero extra manual effort since you were reviewing the insight anyway</li>
+        <li>Each confirmed pick logs its offset from segment-start. After ~15-20 confirmed insights, the system has a real running average of where in a segment the useful frame tends to sit for your specific tutorial-watching footage style — the 3 candidate frames start biasing toward that learned offset instead of a generic even spread across the segment</li>
+      </ol>
+      <strong>What this is not:</strong> not a trained vision model, not FL Studio element recognition, not frame-by-frame extraction of full videos. It's a timestamp field, an on-demand 3-frame pull, and a running offset correction — cheap, buildable now, and it is the version where today's manual work genuinely improves tomorrow's automated pull, which none of the earlier drafts actually achieved.<br><br>
+      <strong>Known remaining limitation:</strong> Whisper segment precision varies by video — some segments span 8+ seconds. The 3-candidate spread exists specifically to absorb this imprecision rather than assume timestamp accuracy.
+    </div>
+  </div>
+</div>
+
+<div class="section" id="diagram-current">
+  <div class="section-eyebrow">Council of 5 — Architecture Diagrams</div>
+  <div class="section-title">System Map — Current vs Future</div>
+  <div class="section-sub">Every module, button, and hub gets one letter ID. Shape and colour encode domain and type. Arrows show structural flow to the three shared hubs plus External APIs. Two diagrams: what exists today, and what exists once every roadmap step (15–36) ships.</div>
+
+  <div class="card gold" style="margin-bottom:20px">
+    <div class="card-title">Council verdict on format</div>
+    <div class="card-body">Drawing every individual click-path as its own arrow was rejected — at 23+ nodes it becomes unreadable. Instead: every node connects to whichever hub(s) it actually reads from or writes to, letter-labeled, colour-coded by domain, shape-coded by type. The legend table below each diagram is the actual reference — the diagram shows structure, the table gives you the specific role of every letter.</div>
+  </div>
+
+  <h3>Legend — Shape & Colour Key</h3>
+  <table>
+    <tr><th>Shape</th><th>Meaning</th><th>Colour</th><th>Domain</th></tr>
+    <tr><td>◯ Circle</td><td>Hub — shared by many modules</td><td>Grey outline</td><td>—</td></tr>
+    <tr><td>▭ Rounded box, solid</td><td>Module — live in production</td><td>Blue</td><td>ORACLE</td></tr>
+    <tr><td>▭ Rounded box, solid</td><td>Module — live in production</td><td>Purple</td><td>LEARNING</td></tr>
+    <tr><td>▭ Rounded box, solid</td><td>Module — live in production</td><td>Green</td><td>CONTENT</td></tr>
+    <tr><td>▭ Rounded box, solid</td><td>Module — live in production</td><td>Red</td><td>JOURNAL</td></tr>
+    <tr><td>▭ Rounded box, solid</td><td>Module — live in production</td><td>Gold</td><td>CONFIG / SYSTEM</td></tr>
+    <tr><td>▭ Rounded box, dashed</td><td>Planned — not yet built</td><td>Domain colour, 50% opacity</td><td>varies</td></tr>
+    <tr><td>⬡ Hexagon</td><td>External API / third-party service</td><td>Teal</td><td>—</td></tr>
+  </table>
+
+  <h3 style="margin-top:28px">Diagram 1 — Current Architecture (July 1, 2026)</h3>
+  <div class="web-wrap">
+    <svg width="100%" viewBox="0 0 900 900" role="img">
+      <defs>
+        <marker id="arrC" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#3a3a4a" stroke-width="1.5"/></marker>
+      </defs>
+
+      <!-- structural lines -->
+      <g stroke="#262633" stroke-width="1" fill="none">
+        <line x1="140" y1="70" x2="450" y2="150"/><line x1="140" y1="114" x2="450" y2="158"/><line x1="140" y1="158" x2="450" y2="166"/>
+        <line x1="140" y1="202" x2="450" y2="174"/><line x1="140" y1="246" x2="450" y2="182"/><line x1="140" y1="290" x2="450" y2="190"/>
+        <line x1="760" y1="70" x2="450" y2="150"/><line x1="760" y1="114" x2="450" y2="158"/><line x1="760" y1="158" x2="450" y2="166"/>
+        <line x1="760" y1="202" x2="450" y2="174"/><line x1="760" y1="246" x2="450" y2="182"/>
+        <line x1="140" y1="360" x2="450" y2="400"/><line x1="140" y1="404" x2="450" y2="408"/><line x1="140" y1="448" x2="450" y2="416"/><line x1="140" y1="492" x2="450" y2="424"/>
+        <line x1="760" y1="360" x2="450" y2="400"/><line x1="760" y1="404" x2="450" y2="408"/>
+        <line x1="450" y1="230" x2="450" y2="370"/><line x1="450" y1="450" x2="450" y2="590"/>
+        <line x1="140" y1="600" x2="450" y2="620"/><line x1="140" y1="644" x2="450" y2="628"/>
+        <line x1="760" y1="600" x2="450" y2="620"/><line x1="760" y1="644" x2="450" y2="628"/>
+        <line x1="230" y1="720" x2="450" y2="640"/><line x1="450" y1="720" x2="450" y2="670"/><line x1="670" y1="720" x2="450" y2="640"/>
+      </g>
+
+      <!-- Hub: Oracle -->
+      <circle cx="450" cy="200" r="52" fill="#1a1530" stroke="#9B59B6" stroke-width="1.5"/>
+      <text x="450" y="196" text-anchor="middle" font-size="12" font-weight="700" fill="#9B59B6">A</text>
+      <text x="450" y="210" text-anchor="middle" font-size="9" fill="#9B59B6">ORACLE</text>
+
+      <!-- Hub: Supabase -->
+      <circle cx="450" cy="410" r="52" fill="#1a2a1f" stroke="#3DAA6E" stroke-width="1.5"/>
+      <text x="450" y="406" text-anchor="middle" font-size="12" font-weight="700" fill="#3DAA6E">B</text>
+      <text x="450" y="420" text-anchor="middle" font-size="9" fill="#3DAA6E">SUPABASE</text>
+
+      <!-- Hub: Display -->
+      <circle cx="450" cy="630" r="52" fill="#2a2410" stroke="#C9A84C" stroke-width="1.5"/>
+      <text x="450" y="626" text-anchor="middle" font-size="12" font-weight="700" fill="#C9A84C">C</text>
+      <text x="450" y="640" text-anchor="middle" font-size="9" fill="#C9A84C">DISPLAY</text>
+
+      <!-- Hub: External APIs (hexagon-ish via polygon) -->
+      <polygon points="450,700 490,720 490,760 450,780 410,760 410,720" fill="#1a2a2a" stroke="#2ABFB0" stroke-width="1.5"/>
+      <text x="450" y="736" text-anchor="middle" font-size="12" font-weight="700" fill="#2ABFB0">D</text>
+      <text x="450" y="750" text-anchor="middle" font-size="8" fill="#2ABFB0">EXT APIs</text>
+
+      <!-- ORACLE domain modules (blue) -->
+      <g font-size="9">
+        <rect x="60" y="52" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="72" font-weight="700" fill="#4A90E2">E</text><text x="140" y="72" text-anchor="middle" fill="#4A90E2">youtubeOracle</text>
+        <rect x="60" y="96" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="116" font-weight="700" fill="#4A90E2">F</text><text x="140" y="116" text-anchor="middle" fill="#4A90E2">prodOraclePanel</text>
+        <rect x="60" y="140" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="160" font-weight="700" fill="#4A90E2">G</text><text x="140" y="160" text-anchor="middle" fill="#4A90E2">instaOraclePanel</text>
+        <rect x="60" y="184" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="204" font-weight="700" fill="#4A90E2">H</text><text x="140" y="204" text-anchor="middle" fill="#4A90E2">visualOracle</text>
+        <rect x="60" y="228" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="248" font-weight="700" fill="#4A90E2">I</text><text x="140" y="248" text-anchor="middle" fill="#4A90E2">contentRepurpose</text>
+        <rect x="60" y="272" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="292" font-weight="700" fill="#4A90E2">J</text><text x="140" y="292" text-anchor="middle" fill="#4A90E2">quickActions</text>
+      </g>
+
+      <!-- LEARNING domain modules (purple) -->
+      <g font-size="9">
+        <rect x="680" y="52" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="72" font-weight="700" fill="#9B59B6">K</text><text x="760" y="72" text-anchor="middle" fill="#9B59B6">feynman</text>
+        <rect x="680" y="96" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="116" font-weight="700" fill="#9B59B6">L</text><text x="760" y="116" text-anchor="middle" fill="#9B59B6">encSync</text>
+        <rect x="680" y="140" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="160" font-weight="700" fill="#9B59B6">M</text><text x="760" y="160" text-anchor="middle" fill="#9B59B6">intelDelete</text>
+        <rect x="680" y="184" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="204" font-weight="700" fill="#9B59B6">N</text><text x="760" y="204" text-anchor="middle" fill="#9B59B6">taxonomySync</text>
+        <rect x="680" y="228" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="248" font-weight="700" fill="#9B59B6">O</text><text x="760" y="248" text-anchor="middle" fill="#9B59B6">knowledgeGap</text>
+      </g>
+
+      <!-- CONTENT domain modules (green) -->
+      <g font-size="9">
+        <rect x="60" y="344" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="364" font-weight="700" fill="#3DAA6E">P</text><text x="140" y="364" text-anchor="middle" fill="#3DAA6E">beatLog</text>
+        <rect x="60" y="388" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="408" font-weight="700" fill="#3DAA6E">Q</text><text x="140" y="408" text-anchor="middle" fill="#3DAA6E">refCorpus</text>
+        <rect x="60" y="432" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="452" font-weight="700" fill="#3DAA6E">R</text><text x="140" y="452" text-anchor="middle" fill="#3DAA6E">contentProductionLive</text>
+        <rect x="60" y="476" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="496" font-weight="700" fill="#3DAA6E">S</text><text x="140" y="496" text-anchor="middle" fill="#3DAA6E">conidPot</text>
+      </g>
+
+      <!-- JOURNAL + SYSTEM + CONFIG (red/gold) -->
+      <g font-size="9">
+        <rect x="680" y="344" width="160" height="32" rx="6" fill="#2a1818" stroke="#E25454" stroke-width="1"/><text x="692" y="364" font-weight="700" fill="#E25454">T</text><text x="760" y="364" text-anchor="middle" fill="#E25454">morningBrief</text>
+        <rect x="680" y="388" width="160" height="32" rx="6" fill="#2a2410" stroke="#C9A84C" stroke-width="1"/><text x="692" y="408" font-weight="700" fill="#C9A84C">U</text><text x="760" y="408" text-anchor="middle" fill="#C9A84C">suppressQuestPopup</text>
+        <rect x="60" y="580" width="160" height="32" rx="6" fill="#2a2410" stroke="#C9A84C" stroke-width="1"/><text x="72" y="600" font-weight="700" fill="#C9A84C">V</text><text x="140" y="600" text-anchor="middle" fill="#C9A84C">restoreSendChat</text>
+        <rect x="60" y="624" width="160" height="32" rx="6" fill="#2a2410" stroke="#C9A84C" stroke-width="1"/><text x="72" y="644" font-weight="700" fill="#C9A84C">W</text><text x="140" y="644" text-anchor="middle" fill="#C9A84C">config</text>
+      </g>
+
+      <!-- Display destinations (grey) -->
+      <g font-size="9">
+        <rect x="680" y="580" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="692" y="600" font-weight="700" fill="rgba(226,226,236,0.8)">X</text><text x="760" y="600" text-anchor="middle" fill="rgba(226,226,236,0.7)">Dashboard</text>
+        <rect x="680" y="624" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="692" y="644" font-weight="700" fill="rgba(226,226,236,0.8)">Y</text><text x="760" y="644" text-anchor="middle" fill="rgba(226,226,236,0.7)">Research tab</text>
+        <rect x="230" y="700" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="242" y="720" font-weight="700" fill="rgba(226,226,236,0.8)">Z</text><text x="310" y="720" text-anchor="middle" fill="rgba(226,226,236,0.7)">Encyclopedia tab</text>
+        <rect x="590" y="700" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="602" y="720" font-weight="700" fill="rgba(226,226,236,0.8)">a</text><text x="670" y="720" text-anchor="middle" fill="rgba(226,226,236,0.7)">Journal</text>
+      </g>
+
+      <text x="450" y="830" text-anchor="middle" font-size="10" fill="rgba(226,226,236,0.3)">23 modules · 4 hubs · legend table below maps every letter</text>
+    </svg>
+  </div>
+
+  <h3>Legend — Current Architecture (Diagram 1)</h3>
+  <table>
+    <tr><th>ID</th><th>Name</th><th>Domain</th><th>Role</th></tr>
+    <tr><td>A</td><td>ORACLE hub</td><td>—</td><td>Claude Sonnet 4.6 API — every AI response routes through here</td></tr>
+    <tr><td>B</td><td>SUPABASE hub</td><td>—</td><td>11 tables — every persistent read/write routes through here</td></tr>
+    <tr><td>C</td><td>DISPLAY hub</td><td>—</td><td>Dashboard, tabs, widgets — where output becomes visible</td></tr>
+    <tr><td>D</td><td>EXTERNAL APIs hub</td><td>—</td><td>Composio (Gmail/YouTube/Notion), Last.fm — third-party data</td></tr>
+    <tr><td>E</td><td>youtubeOracle</td><td>ORACLE</td><td>8-command YouTube growth panel</td></tr>
+    <tr><td>F</td><td>prodOraclePanel</td><td>ORACLE</td><td>14-command production teaching framework</td></tr>
+    <tr><td>G</td><td>instaOraclePanel</td><td>ORACLE</td><td>13-command Instagram growth strategy</td></tr>
+    <tr><td>H</td><td>visualOracle</td><td>ORACLE</td><td>6-command filmmaker matching + Neural Frames briefs</td></tr>
+    <tr><td>I</td><td>contentRepurpose</td><td>ORACLE</td><td>3-step popup — idea → 4 platform outputs + script</td></tr>
+    <tr><td>J</td><td>quickActions</td><td>ORACLE</td><td>Quick-send prompt buttons in Oracle tab</td></tr>
+    <tr><td>K</td><td>feynman</td><td>LEARNING</td><td>3-phase Feynman Loop — largest module</td></tr>
+    <tr><td>L</td><td>encSync</td><td>LEARNING</td><td>Encyclopedia sync wrapper + client-side dedup</td></tr>
+    <tr><td>M</td><td>intelDelete</td><td>LEARNING</td><td>Two-container intel view, unified delete cascade</td></tr>
+    <tr><td>N</td><td>taxonomySync</td><td>LEARNING</td><td>21-phylum taxonomy, gap scoring</td></tr>
+    <tr><td>O</td><td>knowledgeGap</td><td>LEARNING</td><td>Dashboard gap tracker, Study/Apply buttons</td></tr>
+    <tr><td>P</td><td>beatLog</td><td>CONTENT</td><td>Drag-and-drop beat logging, taxonomy tagging</td></tr>
+    <tr><td>Q</td><td>refCorpus</td><td>CONTENT</td><td>Reference track corpus, BPM/mood artist matching</td></tr>
+    <tr><td>R</td><td>contentProductionLive</td><td>CONTENT</td><td>ConID tracker, swap button, post details</td></tr>
+    <tr><td>S</td><td>conidPot</td><td>CONTENT</td><td>Idea bank, save button, merge detection</td></tr>
+    <tr><td>T</td><td>morningBrief</td><td>JOURNAL</td><td>4-source daily brief, day rotation</td></tr>
+    <tr><td>U</td><td>suppressQuestPopup</td><td>SYSTEM</td><td>Neutralises main.js quest suggestion popup</td></tr>
+    <tr><td>V</td><td>restoreSendChat</td><td>SYSTEM</td><td>Neutralises broken streaming intercept</td></tr>
+    <tr><td>W</td><td>config</td><td>CONFIG</td><td>CONFIG object, Supabase helpers, cache layer — loads first</td></tr>
+    <tr><td>X</td><td>Dashboard</td><td>Display</td><td>Widgets: Knowledge Gap, Content Pipeline, Morning Brief</td></tr>
+    <tr><td>Y</td><td>Research tab</td><td>Display</td><td>Beat Log, Reference Corpus, Idea Bank panels</td></tr>
+    <tr><td>Z</td><td>Encyclopedia tab</td><td>Display</td><td>Deduplicated knowledge entries — now UNIQUE-constrained</td></tr>
+    <tr><td>a</td><td>Journal</td><td>Display</td><td>Session logs, saved conversations</td></tr>
+  </table>
+</div>
+
+<div class="section" id="diagram-future">
+  <h3 style="margin-top:0">Diagram 2 — Future Architecture (All Roadmap Steps Fulfilled)</h3>
+  <p>Same base structure as Diagram 1, with 9 additional dashed nodes representing Steps 15–36 once shipped. Existing 23 nodes retain their letters; new nodes continue AA onward.</p>
+
+  <div class="web-wrap">
+    <svg width="100%" viewBox="0 0 900 980" role="img">
+      <g stroke="#262633" stroke-width="1" fill="none">
+        <line x1="140" y1="70" x2="450" y2="150"/><line x1="140" y1="114" x2="450" y2="158"/><line x1="140" y1="158" x2="450" y2="166"/>
+        <line x1="140" y1="202" x2="450" y2="174"/><line x1="140" y1="246" x2="450" y2="182"/><line x1="140" y1="290" x2="450" y2="190"/>
+        <line x1="760" y1="70" x2="450" y2="150"/><line x1="760" y1="114" x2="450" y2="158"/><line x1="760" y1="158" x2="450" y2="166"/>
+        <line x1="760" y1="202" x2="450" y2="174"/><line x1="760" y1="246" x2="450" y2="182"/>
+        <line x1="140" y1="360" x2="450" y2="400"/><line x1="140" y1="404" x2="450" y2="408"/><line x1="140" y1="448" x2="450" y2="416"/><line x1="140" y1="492" x2="450" y2="424"/>
+        <line x1="760" y1="360" x2="450" y2="400"/><line x1="760" y1="404" x2="450" y2="408"/>
+        <line x1="450" y1="230" x2="450" y2="370"/><line x1="450" y1="450" x2="450" y2="590"/>
+        <line x1="140" y1="600" x2="450" y2="620"/><line x1="140" y1="644" x2="450" y2="628"/>
+        <line x1="760" y1="600" x2="450" y2="620"/><line x1="760" y1="644" x2="450" y2="628"/>
+        <line x1="230" y1="720" x2="450" y2="640"/><line x1="450" y1="720" x2="450" y2="670"/><line x1="670" y1="720" x2="450" y2="640"/>
+      </g>
+      <circle cx="450" cy="200" r="52" fill="#1a1530" stroke="#9B59B6" stroke-width="1.5"/><text x="450" y="196" text-anchor="middle" font-size="12" font-weight="700" fill="#9B59B6">A</text><text x="450" y="210" text-anchor="middle" font-size="9" fill="#9B59B6">ORACLE</text>
+      <circle cx="450" cy="410" r="52" fill="#1a2a1f" stroke="#3DAA6E" stroke-width="1.5"/><text x="450" y="406" text-anchor="middle" font-size="12" font-weight="700" fill="#3DAA6E">B</text><text x="450" y="420" text-anchor="middle" font-size="9" fill="#3DAA6E">SUPABASE</text>
+      <circle cx="450" cy="630" r="52" fill="#2a2410" stroke="#C9A84C" stroke-width="1.5"/><text x="450" y="626" text-anchor="middle" font-size="12" font-weight="700" fill="#C9A84C">C</text><text x="450" y="640" text-anchor="middle" font-size="9" fill="#C9A84C">DISPLAY</text>
+      <polygon points="450,700 490,720 490,760 450,780 410,760 410,720" fill="#1a2a2a" stroke="#2ABFB0" stroke-width="1.5"/><text x="450" y="736" text-anchor="middle" font-size="12" font-weight="700" fill="#2ABFB0">D</text><text x="450" y="750" text-anchor="middle" font-size="8" fill="#2ABFB0">EXT APIs</text>
+
+      <g font-size="9">
+        <rect x="60" y="52" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="72" font-weight="700" fill="#4A90E2">E</text><text x="140" y="72" text-anchor="middle" fill="#4A90E2">youtubeOracle</text>
+        <rect x="60" y="96" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="116" font-weight="700" fill="#4A90E2">F</text><text x="140" y="116" text-anchor="middle" fill="#4A90E2">prodOraclePanel</text>
+        <rect x="60" y="140" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="160" font-weight="700" fill="#4A90E2">G</text><text x="140" y="160" text-anchor="middle" fill="#4A90E2">instaOraclePanel</text>
+        <rect x="60" y="184" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="204" font-weight="700" fill="#4A90E2">H</text><text x="140" y="204" text-anchor="middle" fill="#4A90E2">visualOracle</text>
+        <rect x="60" y="228" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="248" font-weight="700" fill="#4A90E2">I</text><text x="140" y="248" text-anchor="middle" fill="#4A90E2">contentRepurpose</text>
+        <rect x="60" y="272" width="160" height="32" rx="6" fill="#15203a" stroke="#4A90E2" stroke-width="1"/><text x="72" y="292" font-weight="700" fill="#4A90E2">J</text><text x="140" y="292" text-anchor="middle" fill="#4A90E2">quickActions</text>
+      </g>
+      <g font-size="9">
+        <rect x="680" y="52" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="72" font-weight="700" fill="#9B59B6">K</text><text x="760" y="72" text-anchor="middle" fill="#9B59B6">feynman</text>
+        <rect x="680" y="96" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="116" font-weight="700" fill="#9B59B6">L</text><text x="760" y="116" text-anchor="middle" fill="#9B59B6">encSync</text>
+        <rect x="680" y="140" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="160" font-weight="700" fill="#9B59B6">M</text><text x="760" y="160" text-anchor="middle" fill="#9B59B6">intelDelete</text>
+        <rect x="680" y="184" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="204" font-weight="700" fill="#9B59B6">N</text><text x="760" y="204" text-anchor="middle" fill="#9B59B6">taxonomySync</text>
+        <rect x="680" y="228" width="160" height="32" rx="6" fill="#221a30" stroke="#9B59B6" stroke-width="1"/><text x="692" y="248" font-weight="700" fill="#9B59B6">O</text><text x="760" y="248" text-anchor="middle" fill="#9B59B6">knowledgeGap</text>
+      </g>
+      <g font-size="9">
+        <rect x="60" y="344" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="364" font-weight="700" fill="#3DAA6E">P</text><text x="140" y="364" text-anchor="middle" fill="#3DAA6E">beatLog</text>
+        <rect x="60" y="388" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="408" font-weight="700" fill="#3DAA6E">Q</text><text x="140" y="408" text-anchor="middle" fill="#3DAA6E">refCorpus</text>
+        <rect x="60" y="432" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="452" font-weight="700" fill="#3DAA6E">R</text><text x="140" y="452" text-anchor="middle" fill="#3DAA6E">contentProductionLive</text>
+        <rect x="60" y="476" width="160" height="32" rx="6" fill="#152a1f" stroke="#3DAA6E" stroke-width="1"/><text x="72" y="496" font-weight="700" fill="#3DAA6E">S</text><text x="140" y="496" text-anchor="middle" fill="#3DAA6E">conidPot</text>
+      </g>
+      <g font-size="9">
+        <rect x="680" y="344" width="160" height="32" rx="6" fill="#2a1818" stroke="#E25454" stroke-width="1"/><text x="692" y="364" font-weight="700" fill="#E25454">T</text><text x="760" y="364" text-anchor="middle" fill="#E25454">morningBrief</text>
+        <rect x="680" y="388" width="160" height="32" rx="6" fill="#2a2410" stroke="#C9A84C" stroke-width="1"/><text x="692" y="408" font-weight="700" fill="#C9A84C">U</text><text x="760" y="408" text-anchor="middle" fill="#C9A84C">suppressQuestPopup</text>
+        <rect x="60" y="580" width="160" height="32" rx="6" fill="#2a2410" stroke="#C9A84C" stroke-width="1"/><text x="72" y="600" font-weight="700" fill="#C9A84C">V</text><text x="140" y="600" text-anchor="middle" fill="#C9A84C">restoreSendChat</text>
+        <rect x="60" y="624" width="160" height="32" rx="6" fill="#2a2410" stroke="#C9A84C" stroke-width="1"/><text x="72" y="644" font-weight="700" fill="#C9A84C">W</text><text x="140" y="644" text-anchor="middle" fill="#C9A84C">config</text>
+      </g>
+      <g font-size="9">
+        <rect x="680" y="580" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="692" y="600" font-weight="700" fill="rgba(226,226,236,0.8)">X</text><text x="760" y="600" text-anchor="middle" fill="rgba(226,226,236,0.7)">Dashboard</text>
+        <rect x="680" y="624" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="692" y="644" font-weight="700" fill="rgba(226,226,236,0.8)">Y</text><text x="760" y="644" text-anchor="middle" fill="rgba(226,226,236,0.7)">Research tab</text>
+        <rect x="230" y="700" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="242" y="720" font-weight="700" fill="rgba(226,226,236,0.8)">Z</text><text x="310" y="720" text-anchor="middle" fill="rgba(226,226,236,0.7)">Encyclopedia tab</text>
+        <rect x="590" y="700" width="160" height="32" rx="6" fill="#1a1a24" stroke="#5a5a6a" stroke-width="1"/><text x="602" y="720" font-weight="700" fill="rgba(226,226,236,0.8)">a</text><text x="670" y="720" text-anchor="middle" fill="rgba(226,226,236,0.7)">Journal</text>
+      </g>
+
+      <!-- FUTURE nodes, dashed, opacity 0.7 -->
+      <g font-size="8" opacity="0.75">
+        <line x1="230" y1="850" x2="450" y2="600" stroke="#4A90E2" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="150" y="838" width="150" height="28" rx="6" fill="none" stroke="#4A90E2" stroke-width="1" stroke-dasharray="3,3"/><text x="160" y="856" font-weight="700" fill="#4A90E2">AA</text><text x="220" y="856" text-anchor="middle" fill="#4A90E2">workStyle (15)</text>
+
+        <line x1="380" y1="850" x2="450" y2="600" stroke="#4A90E2" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="310" y="838" width="150" height="28" rx="6" fill="none" stroke="#4A90E2" stroke-width="1" stroke-dasharray="3,3"/><text x="320" y="856" font-weight="700" fill="#4A90E2">BB</text><text x="380" y="856" text-anchor="middle" fill="#4A90E2">flowState (16)</text>
+
+        <line x1="540" y1="850" x2="450" y2="600" stroke="#E25454" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="470" y="838" width="150" height="28" rx="6" fill="none" stroke="#E25454" stroke-width="1" stroke-dasharray="3,3"/><text x="480" y="856" font-weight="700" fill="#E25454">CC</text><text x="540" y="856" text-anchor="middle" fill="#E25454">n8n auto (17A)</text>
+
+        <line x1="700" y1="850" x2="450" y2="410" stroke="#9B59B6" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="630" y="838" width="150" height="28" rx="6" fill="none" stroke="#9B59B6" stroke-width="1" stroke-dasharray="3,3"/><text x="640" y="856" font-weight="700" fill="#9B59B6">DD</text><text x="700" y="856" text-anchor="middle" fill="#9B59B6">taxSync (27)</text>
+
+        <line x1="230" y1="900" x2="450" y2="410" stroke="#9B59B6" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="150" y="888" width="150" height="28" rx="6" fill="none" stroke="#9B59B6" stroke-width="1" stroke-dasharray="3,3"/><text x="160" y="906" font-weight="700" fill="#9B59B6">EE</text><text x="220" y="906" text-anchor="middle" fill="#9B59B6">knowlPipe (28)</text>
+
+        <line x1="380" y1="900" x2="450" y2="410" stroke="#3DAA6E" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="310" y="888" width="150" height="28" rx="6" fill="none" stroke="#3DAA6E" stroke-width="1" stroke-dasharray="3,3"/><text x="320" y="906" font-weight="700" fill="#3DAA6E">FF</text><text x="380" y="906" text-anchor="middle" fill="#3DAA6E">beatSell (30-32)</text>
+
+        <line x1="540" y1="900" x2="450" y2="410" stroke="#9B59B6" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="470" y="888" width="150" height="28" rx="6" fill="none" stroke="#9B59B6" stroke-width="1" stroke-dasharray="3,3"/><text x="480" y="906" font-weight="700" fill="#9B59B6">GG</text><text x="540" y="906" text-anchor="middle" fill="#9B59B6">filmLib (33)</text>
+
+        <line x1="700" y1="900" x2="450" y2="630" stroke="#3DAA6E" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="630" y="888" width="150" height="28" rx="6" fill="none" stroke="#3DAA6E" stroke-width="1" stroke-dasharray="3,3"/><text x="640" y="906" font-weight="700" fill="#3DAA6E">HH</text><text x="700" y="906" text-anchor="middle" fill="#3DAA6E">videoTab (34)</text>
+
+        <line x1="450" y1="950" x2="450" y2="630" stroke="#3DAA6E" stroke-width="1" stroke-dasharray="3,3"/>
+        <rect x="380" y="938" width="150" height="28" rx="6" fill="none" stroke="#3DAA6E" stroke-width="1" stroke-dasharray="3,3"/><text x="390" y="956" font-weight="700" fill="#3DAA6E">II</text><text x="450" y="956" text-anchor="middle" fill="#3DAA6E">visualTreat (35)</text>
+      </g>
+
+      <text x="450" y="978" text-anchor="middle" font-size="10" fill="rgba(226,226,236,0.3)">23 current + 9 planned = 32 nodes at full roadmap completion</text>
+    </svg>
+  </div>
+
+  <h3>Legend — Future Additions Only (Diagram 2)</h3>
+  <p>Letters A–a are identical to Diagram 1. Only new nodes listed below.</p>
+  <table>
+    <tr><th>ID</th><th>Name</th><th>Step</th><th>Domain</th><th>Connects to</th><th>Role</th></tr>
+    <tr><td>AA</td><td>workStyle</td><td>15</td><td>SCHEDULE</td><td>Display (C)</td><td>One-time picker, shapes agenda structure</td></tr>
+    <tr><td>BB</td><td>flowState</td><td>16</td><td>SCHEDULE</td><td>Display (C)</td><td>Pre/post session energy check, feeds agenda difficulty</td></tr>
+    <tr><td>CC</td><td>n8n automation</td><td>17A</td><td>JOURNAL</td><td>Display (C)</td><td>Auto-fires Morning Brief at 8am, no manual click</td></tr>
+    <tr><td>DD</td><td>taxonomySync expansion</td><td>27</td><td>LEARNING</td><td>Supabase (B)</td><td>Auto-push encyclopedia → taxonomy nodes</td></tr>
+    <tr><td>EE</td><td>Daily Knowledge Pipeline</td><td>28</td><td>LEARNING</td><td>Supabase (B)</td><td>6am n8n job — 2 tutorials/day auto-analysed into taxonomy</td></tr>
+    <tr><td>FF</td><td>Beat Selling Integration</td><td>30-32</td><td>CONTENT</td><td>CONTENT modules (P-S)</td><td>Beatstars/Airbit + licence + auto-draft on release</td></tr>
+    <tr><td>GG</td><td>Filmmaker Library (Phylum XXV)</td><td>33</td><td>LEARNING</td><td>Supabase (B)</td><td>50 directors with visual profiles, feeds visualOracle (H)</td></tr>
+    <tr><td>HH</td><td>Video Pipeline Tab</td><td>34</td><td>CONTENT</td><td>Display (C)</td><td>New 📹 nav tab — EDL review, render, 4 exports</td></tr>
+    <tr><td>II</td><td>Visual Treatment Generator</td><td>35</td><td>CONTENT</td><td>Display (C)</td><td>Beat Log (P) → auto Neural Frames video, no editor needed</td></tr>
+  </table>
+
+  <div class="card gold" style="margin-top:20px">
+    <div class="card-title">Council closing note</div>
+    <div class="card-body">Both diagrams intentionally share the same hub structure (A–D) and the same 23 core node letters — this is the point. RPGACE 2.0 is not a rebuild, it's the same four hubs absorbing 9 more spokes. Nothing in the future diagram requires re-architecting anything shown solid in the current one. That was the actual test of whether tonight's regression-heavy session left the foundation sound: it did.</div>
+  </div>
+</div>
+
+<div class="section" id="format-rules">
+  <div class="section-eyebrow">Meta</div>
+  <div class="section-title">How This Manual Works</div>
+  <div class="card gold">
+    <div class="card-title">Purpose</div>
+    <div class="card-body">This is a living, dated log — not a replacement for the V6 architecture manual. Each session that ships fixes or features gets its own dated entry, appended below the most recent one, newest at top. It exists specifically to prevent re-diagnosing the same bug twice and to keep an honest record of what was tried and failed, not just what eventually worked.</div>
+  </div>
+  <p><strong>Format for future entries:</strong> Summary → Shipped → Regression/Incident log (if any, kept in chronological order including wrong turns) → Root cause detail (for anything that took more than 2 exchanges to diagnose) → Lessons logged → Still open. Every entry gets a <code>date-tag</code> and its own anchor in the sidebar nav.</p>
+</div>
+
+</div>
+</body>
+</html>
