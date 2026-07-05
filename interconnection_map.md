@@ -290,3 +290,22 @@ This is the **first main.js touchpoint** in either document — every other func
 ### Open question for next diagnosis session
 Does `rpgace_shifts` (localStorage key, referenced by `autoApplyStoredShifts`) still hold valid data? Does this code assume a Supabase `rpgace_shifts` table exists (logged separately under R-21 as "not yet built")? If the code expects Supabase-backed shifts that were never actually created, that alone explains "worked once, then stopped" — the code degrades gracefully to nothing rather than erroring loudly.
 
+
+---
+
+## PART 8 — Encyclopedia ↔ Taxonomy Tree Bidirectional Link (confirmed, next session)
+
+Directly resolves the gap Part 3 originally flagged: *"Encyclopedia and taxonomy_nodes currently don't cross-reference each other at all despite being conceptually related."* This part supersedes that gap with a confirmed fix.
+
+### The connection, once built
+`encyclopedia` entries gain a forward-reference field → pointing to `taxonomy_tree.id` node(s) generated from them
+`taxonomy_tree.sources` (already schema'd, unused until now) → stores the back-reference to the originating `encyclopedia.id`
+
+This makes **two previously isolated touchpoints** (the `encyclopedia` table and the `taxonomy_tree` table, Part 6) into one navigable pair — a user can move from an insight to its structured taxonomy placement and back, with context following across the switch.
+
+### New trigger, same queue
+A "🌳 Propose to Taxonomy" button on Encyclopedia cards is **not a fifth trigger source** — it's a second, manual-mode entry into the same `taxonomy_proposals` queue that the silent Encyclopedia-sync auto-propose (Part 6, still unbuilt) will also feed. Same table, same review popup, two ways in: automatic (sync-triggered, silent, batched) and manual (per-entry, deliberate, immediate).
+
+### Stability note carried from Council of 5
+Accepting a proposal that originated from an Encyclopedia entry now requires a two-table write (new tree node + back-reference update on the entry), not the single-table write every other trigger source uses. This is the first place in the entire map where accept-a-proposal isn't a single atomic insert — worth flagging for whoever builds this that sequencing/failure-handling needs explicit thought, not just a copy-paste of the existing `_acceptLineage()` logic.
+
