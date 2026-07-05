@@ -3273,6 +3273,18 @@ RPGACE.register('taxonomyTree', {
     input.focus();
   },
 
+  // ── Cheap pre-check: does this phylum's keyword set actually overlap  ──
+  // ── the text at all? Uses the FREE Layer 1 scan already computed —    ──
+  // ── prevents wasting an Oracle API call generating a mismatch notice. ──
+  isPlausiblePhylum: function(text, phylumNumber) {
+    if (!RPGACE.utils._PHYLA_KEYWORDS) return true; // fail open if scan unavailable
+    var entry = RPGACE.utils._PHYLA_KEYWORDS.find(function(p) { return p.num === phylumNumber; });
+    if (!entry) return true;
+    var t = (text || '').toLowerCase();
+    var hits = entry.keywords.filter(function(k) { return t.includes(k); }).length;
+    return hits >= 1;
+  },
+
   // ── Core: propose a lineage for any topic, from any source ────────
   // sourceType: 'manual' | 'oracle' | 'content_intelligence' | 'encyclopedia'
   proposeLineage: function(topicText, phylumNumber, sourceType, sourceId) {
@@ -3285,7 +3297,7 @@ RPGACE.register('taxonomyTree', {
     var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
       'ROOT PHYLUM: ' + phylumName + ' (Phylum ' + phylumNumber + ') — this phylum covers: ' + phylumDesc + '\n' +
       'TOPIC TO PLACE: "' + topicText + '"\n\n' +
-      'IMPORTANT: If the topic does not actually fit what this phylum covers, say so first before proposing a path — do not force an unrelated topic into the wrong phylum just because it was selected.\n\n' +
+      'This phylum has already been confirmed as a plausible fit for this topic. ' +
       'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
       'Use as many or as few steps as genuinely needed — could be 2 steps, could be 10. ' +
       'Each step should be a real conceptual grouping, not padding.\n\n' +
@@ -3314,7 +3326,7 @@ RPGACE.register('taxonomyTree', {
       if (!match) throw new Error('No JSON found in response');
       var parsed = JSON.parse(match[0]);
 
-      self._checkForMorph(phylumNumber, parsed.path, function(morphMatch) {
+      self._checkForMorph(phylumNumber, parsed.path, function(morphMatch, exactLeafMatch) {
         self._showProposalPopup({
           phylumNumber: phylumNumber,
           phylumName: phylumName,
@@ -3322,7 +3334,8 @@ RPGACE.register('taxonomyTree', {
           explainers: parsed.explainers || [],
           sourceType: sourceType,
           sourceId: sourceId,
-          morphMatch: morphMatch
+          morphMatch: exactLeafMatch || morphMatch,
+          suggestUpdate: !!exactLeafMatch
         });
       });
     })
@@ -3332,19 +3345,56 @@ RPGACE.register('taxonomyTree', {
   },
 
   // ── Check if any step in the proposed path already exists ────────
+  // ── Now also detects if the NEW leaf's explainer is meaningfully      ──
+  // ── different/better-written than an existing matching leaf, and      ──
+  // ── offers to UPDATE the existing node's content instead of just      ──
+  // ── warning about duplication.                                        ──
   _checkForMorph: function(phylumNumber, path, callback) {
     RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=depth.asc')
       .then(function(existing) {
         existing = existing || [];
         var matched = null;
+        var exactLeafMatch = null;
+        var lastStepName = path[path.length - 1];
+
         path.forEach(function(stepName) {
           var found = existing.find(function(n) {
             return n.name.toLowerCase().trim() === stepName.toLowerCase().trim();
           });
           if (found && !matched) matched = found;
         });
-        callback(matched);
-      }).catch(function() { callback(null); });
+
+        // Check specifically if the LEAF matches an existing leaf — this is the
+        // "duplicate insight" case, distinct from "shares a parent grouping" case
+        exactLeafMatch = existing.find(function(n) {
+          return n.node_type === 'leaf' && n.name.toLowerCase().trim() === lastStepName.toLowerCase().trim();
+        });
+
+        callback(matched, exactLeafMatch);
+      }).catch(function() { callback(null, null); });
+  },
+
+  // ── Update an existing node's content with a better-written version ──
+  _updateExistingNode: function(existingNode, proposal) {
+    var self = this;
+    RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#3DAA6E', 2500);
+    var newExplainer = proposal.explainers[proposal.explainers.length - 1] || existingNode.explainer;
+
+    fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/taxonomy_tree?id=eq.' + existingNode.id, {
+      method: 'PATCH',
+      headers: {
+        'apikey': RPGACE.CONFIG.supabase.key,
+        'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ explainer: newExplainer, updated_at: new Date().toISOString() })
+    }).then(function() {
+      RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#3DAA6E', 3000);
+      self._generateNodeContent(existingNode);
+    }).catch(function(e) {
+      RPGACE.utils.toast('Error updating node: ' + e.message, '#E25454', 3000);
+    });
   },
 
   // ── The accept/edit/reject/morph popup ────────────────────────────
@@ -3365,8 +3415,13 @@ RPGACE.register('taxonomyTree', {
 
     if (proposal.morphMatch) {
       var morphNote = document.createElement('div');
-      morphNote.style.cssText = 'background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#E25454;';
-      morphNote.innerHTML = '⚠️ A node named "<strong>' + proposal.morphMatch.name + '</strong>" already exists in this phylum. Consider attaching under it instead of creating a duplicate branch.';
+      if (proposal.suggestUpdate) {
+        morphNote.style.cssText = 'background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#3DAA6E;';
+        morphNote.innerHTML = '🔄 This exact leaf already exists: "<strong>' + proposal.morphMatch.name + '</strong>". This proposal looks like a refinement — accepting will <strong>update the existing node\'s content</strong> instead of creating a duplicate.';
+      } else {
+        morphNote.style.cssText = 'background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#E25454;';
+        morphNote.innerHTML = '⚠️ A node named "<strong>' + proposal.morphMatch.name + '</strong>" already exists in this phylum. Consider attaching under it instead of creating a duplicate branch.';
+      }
       box.appendChild(morphNote);
     }
 
@@ -3417,69 +3472,30 @@ RPGACE.register('taxonomyTree', {
     box.appendChild(stepsContainer);
 
     var pathPreview = document.createElement('div');
-    pathPreview.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;';
+    pathPreview.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:16px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;';
     function updatePreview() {
       pathPreview.textContent = proposal.phylumName + ' → ' + proposal.path.join(' → ');
     }
     updatePreview();
     box.appendChild(pathPreview);
 
-    // ── Scrollable summary: what each step actually means, so the user
-    // ── can make an informed accept/edit/reject decision, not a blind guess
-    var summaryLabel = document.createElement('div');
-    summaryLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(155,89,182,0.5);margin-bottom:6px;';
-    summaryLabel.textContent = 'What each step means';
-    box.appendChild(summaryLabel);
-
-    var summaryBox = document.createElement('div');
-    summaryBox.id = 'taxtree-summary-box';
-    summaryBox.style.cssText = 'max-height:180px;overflow-y:auto;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 12px;margin-bottom:16px;';
-
-    function renderSummary() {
-      summaryBox.innerHTML = '';
-
-      // Root phylum context first
-      var phylumRow = document.createElement('div');
-      phylumRow.style.cssText = 'margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.05);';
-      phylumRow.innerHTML = '<div style="font-size:11px;font-weight:700;color:#9B59B6;">' + proposal.phylumName + ' (Phylum ' + proposal.phylumNumber + ')</div>' +
-        '<div style="font-size:10px;color:rgba(226,226,236,0.4);margin-top:2px;">' + (self.PHYLUM_ENGLISH[proposal.phylumNumber] || 'Root category') + '</div>';
-      summaryBox.appendChild(phylumRow);
-
-      proposal.path.forEach(function(stepName, i) {
-        var isLeaf = (i === proposal.path.length - 1);
-        var row = document.createElement('div');
-        row.style.cssText = 'margin-bottom:10px;padding-bottom:10px;' + (i < proposal.path.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : '');
-
-        var indent = '&nbsp;&nbsp;'.repeat(i);
-        var arrow = i === 0 ? '' : '↳ ';
-        var nameLine = document.createElement('div');
-        nameLine.style.cssText = 'font-size:11px;font-weight:700;color:' + (isLeaf ? '#3DAA6E' : '#E2E2EC') + ';';
-        nameLine.innerHTML = indent + arrow + (isLeaf ? '🎯 ' : '📁 ') + stepName + (isLeaf ? ' <span style="font-size:9px;color:rgba(61,170,110,0.6);">(specific leaf topic)</span>' : ' <span style="font-size:9px;color:rgba(226,226,236,0.25);">(grouping)</span>');
-        row.appendChild(nameLine);
-
-        var explainerText = proposal.explainers[i];
-        if (explainerText) {
-          var explLine = document.createElement('div');
-          explLine.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.5);margin-top:3px;line-height:1.5;' + (i > 0 ? 'padding-left:' + (i * 12) + 'px;' : '');
-          explLine.textContent = explainerText;
-          row.appendChild(explLine);
-        }
-        summaryBox.appendChild(row);
-      });
-    }
-    renderSummary();
-    box.appendChild(summaryBox);
-
+    // No mismatch-notice path — implausible phyla are filtered out BEFORE
+    // this popup can ever open (isPlausiblePhylum pre-check gates the propose
+    // button itself in rpgace_core.js's badge panel, zero API cost).
     var btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
 
     var acceptBtn = document.createElement('button');
-    acceptBtn.textContent = '✓ Accept & Generate Content';
+    acceptBtn.textContent = proposal.suggestUpdate ? '✓ Update Existing Node' : '✓ Accept & Generate Content';
     acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     acceptBtn.onclick = function() {
       updatePreview();
       overlay.remove();
-      self._acceptLineage(proposal);
+      if (proposal.suggestUpdate && proposal.morphMatch) {
+        self._updateExistingNode(proposal.morphMatch, proposal);
+      } else {
+        self._acceptLineage(proposal);
+      }
     };
 
     var rejectBtn = document.createElement('button');
@@ -4014,17 +4030,25 @@ RPGACE.register('config', {
             label.textContent = (isGap ? '🔴 ' : '✅ ') + 'Phylum ' + m.num + ' — ' + m.name;
             topLine.appendChild(label);
 
-            var proposeBtn = document.createElement('button');
-            proposeBtn.textContent = '🌳 Propose lineage';
-            proposeBtn.style.cssText = 'padding:2px 8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:10px;color:#9B59B6;font-size:9px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
-            proposeBtn.onclick = function() {
-              if (RPGACE.modules.taxonomyTree) {
-                // Extract a reasonable topic snippet from the response text for this phylum's context
-                var topicGuess = text.slice(0, 300);
-                RPGACE.modules.taxonomyTree.proposeLineage(topicGuess, m.num, 'oracle', null);
-              }
-            };
-            topLine.appendChild(proposeBtn);
+            // Pre-filter: only show the propose button if this phylum's own
+            // keyword set genuinely overlaps the text — costs zero API calls,
+            // prevents generating mismatch notices for implausible phyla.
+            var plausible = RPGACE.modules.taxonomyTree
+              ? RPGACE.modules.taxonomyTree.isPlausiblePhylum(text, m.num)
+              : true;
+
+            if (plausible) {
+              var proposeBtn = document.createElement('button');
+              proposeBtn.textContent = '🌳 Propose lineage';
+              proposeBtn.style.cssText = 'padding:2px 8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:10px;color:#9B59B6;font-size:9px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+              proposeBtn.onclick = function() {
+                if (RPGACE.modules.taxonomyTree) {
+                  var topicGuess = text.slice(0, 300);
+                  RPGACE.modules.taxonomyTree.proposeLineage(topicGuess, m.num, 'oracle', null);
+                }
+              };
+              topLine.appendChild(proposeBtn);
+            }
             row.appendChild(topLine);
 
             if (isGap) {
