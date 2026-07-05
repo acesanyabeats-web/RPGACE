@@ -242,3 +242,51 @@ This section exists so both documents stay aligned. Every new idea logged to Pat
 ---
 
 **Standing instruction, logged here for continuity:** any new idea from this point forward gets written to *both* `RPGACE_PATCH_NOTES.html` (dated entry, full detail) and this file (which touchpoint/group it belongs to, one paragraph). Patch Notes is the record of what and why; this map is the record of where it connects. Keeping both in sync is what stops future sessions from re-discovering the same interconnection gaps from scratch.
+
+---
+
+## PART 6 — Recursive Taxonomy Tree (July 2, GODMODE Council of 5)
+
+The largest interconnection change since the original map — this doesn't just add a new touchpoint, it **replaces the shape** of the `taxonomy_nodes` touchpoint entirely, upgrading it from flat Phylum→concept to unlimited-depth drill-down.
+
+### New tables, new touchpoints
+**`taxonomy_tree`** — self-referencing (`parent_id`), any depth, replaces the mental model of `taxonomy_nodes` as "one flat list per phylum." Every node (Phylum through deepest leaf) is the same row shape: name, path, explainer, deep_content, sources.
+**`taxonomy_proposals`** — a staging table sitting *in front of* `taxonomy_tree`. Nothing reaches the live tree without passing through here first and being explicitly accepted.
+
+### Four writers into `taxonomy_proposals` (all new)
+| Source | Fires when | Blocks pipeline? |
+|---|---|---|
+| Oracle response badge (existing "🌿 N topics") | User clicks the badge | No — proposal generation happens on click, review is separate |
+| Content Intelligence pipeline | End of every unattended run | No — writes silently, pipeline continues |
+| Encyclopedia sync | End of every sync | No — same silent-queue pattern |
+| Manual button (new) | User-initiated, on demand | N/A — always synchronous by design |
+
+### The review layer (new)
+A single Dashboard indicator — **"🌳 X taxonomy proposals waiting"** — becomes the one place all four sources converge for human review. This is architecturally identical to how ConIDPot already works (silent save → later batch review → promote to real tracked entity), just applied to taxonomy structure instead of content ideas. Confirms a pattern is now used twice in RPGACE, which is worth noting: **silent-queue-then-batch-review** is becoming a standard RPGACE interaction shape, not a one-off.
+
+### What this means for Part 3's original cross-reference table
+The `taxonomy_nodes` row in Part 3 said: *"Any future module that needs 'what do I know / what's a gap' should read this table directly — it's already the single source of truth."* That statement now needs a caveat: once the tree ships, **new reads should go through `taxonomy_tree`, not `taxonomy_nodes`** — the old table doesn't disappear (existing gap scores, existing concepts stay valid data), but new development should treat the tree as the deeper, more current source, and existing `taxonomy_nodes` rows become effectively depth-0/1 entries within the new structure rather than a separate parallel system.
+
+### Generation logic — the merged prompt
+Every accepted node fires one prompt combining two structures: spaced-repetition/Feynman/active-recall framing (learning velocity) + apprentice-to-mastery/stages-tasks-shortcuts framing (expert depth). This reuses the node's own name as the topic — meaning the *same* generation function works whether the node is "Music Theory" (branch, gets explainer only) or "1-1-3-4 Progression" (leaf, gets full technical content). One function, two output depths, gated by `node_type`.
+
+### Sequencing note, consistent with Part 4's Group B insight
+Part 4 already flagged that Steps 27/28/33 (all taxonomy-deepening) should land before Steps 30-32/35 (which *read* taxonomy for context). This tree build **is** that deepening work, arriving ahead of schedule relative to the numbered steps — meaning Steps 30-32 and 35, whenever they're built, will have a genuinely deep tree to draw from rather than the flat structure Part 4 was written against. Good sequencing, arrived at independently of the original roadmap order.
+
+
+---
+
+## PART 7 — Discovered Touchpoint: main.js Schedule Functions (frozen-file violation)
+
+Surfaced accidentally via `git status` during docs cleanup, July 2. Not part of any planned architecture — a pre-existing, undocumented modification to the frozen `main.js` file, committed 11+ days after it was made, with origin untraced.
+
+### New functions, now part of the live system (touchpoint, not a module)
+`showSched(type, btn)` → conditionally calls: `autoApplyStoredShifts()`, `buildMonthSlots()`, `buildWeekSlots()`, `initDailyNav()`, `renderDailyGrid()`, `_addSchedButtons()`
+`renderAgendas()` → calls `patchAgendaCardsWithSchedule()` on a 400ms delay
+
+### Why this matters structurally, not just as a bug
+This is the **first main.js touchpoint** in either document — every other function map (Part 1, Part 2) exclusively covers `rpgace_core.js` modules calling into main.js's pre-existing frozen functions, never main.js being modified itself. This breaks that clean separation, and until the "not showing anymore" bug is diagnosed, it's unclear whether these functions still integrate correctly with `RPGACE.hooks` or if they're now a silent second schedule-rendering path running alongside whatever `rpgace_core.js` modules also do for Schedule.
+
+### Open question for next diagnosis session
+Does `rpgace_shifts` (localStorage key, referenced by `autoApplyStoredShifts`) still hold valid data? Does this code assume a Supabase `rpgace_shifts` table exists (logged separately under R-21 as "not yet built")? If the code expects Supabase-backed shifts that were never actually created, that alone explains "worked once, then stopped" — the code degrades gracefully to nothing rather than erroring loudly.
+

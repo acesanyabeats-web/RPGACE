@@ -150,6 +150,22 @@
     <div class="card-body">Surfaced from real testing of the taxonomy tree's pre-filter and lineage proposal system: a single incidental keyword match was letting implausible phyla (Historia) through, and the fix (raising the threshold to 2+ hits) is a blunt patch, not a real solution. What's actually needed: a dedicated brainstorming session to establish general rules for how keywords, phylum identity, and lineage depth interrelate — so future selection/rejection of proposals happens with the least possible "knowledge waste" (good insights discarded, or bad insights accepted) as the tree scales past a handful of phyla. Not solved tonight, deliberately — flagged as needing its own focused session rather than another reactive patch.</div>
   </div>
 
+  <div class="card red">
+    <div class="card-title">Discovered: uncommitted main.js schedule fixes, 11+ days old, frozen-file rule violated <span class="badge fix">COMMITTED — INVESTIGATE LIVE BUG NEXT</span></div>
+    <div class="card-body">
+      During routine <code>git status</code> checks while committing docs, <code>main.js</code> showed as locally modified — despite the standing rule that main.js is frozen and never edited. Last real commit to main.js was <strong>June 24</strong>; this change predates even the July 1st reboot plan and had been sitting uncommitted, unflagged, across every session since, until surfaced by accident tonight.<br><br>
+      <strong>Functions added/modified in the uncommitted diff (347 insertions total):</strong>
+      <ul style="margin-top:6px;">
+        <li><code>showSched()</code> — now also calls <code>autoApplyStoredShifts()</code>, <code>buildMonthSlots()</code>, <code>buildWeekSlots()</code>, <code>initDailyNav()</code>, <code>renderDailyGrid()</code>, and <code>_addSchedButtons()</code> depending on which schedule tab (daily/weekly/monthly) is opened</li>
+        <li><code>renderAgendas()</code> — now also calls <code>patchAgendaCardsWithSchedule()</code> on a 400ms delay</li>
+      </ul>
+      <strong>Status, per user confirmation:</strong> this code was previously working — rotas auto-showed on Schedule with one known visual bug — but has since stopped showing entirely, for reasons not yet diagnosed. The user does not recall exactly when or how this change was made, only that it predates the July 1st plan.<br><br>
+      <strong>Decision made:</strong> committed as-is rather than left in permanent uncommitted limbo, since a stray <code>git checkout</code> or fresh clone risked silently destroying 347 lines of working schedule logic with no record it ever existed. Commit message documents the frozen-file rule violation honestly rather than hiding it.<br><br>
+      <strong>Next action:</strong> diagnose why shift/rota data has stopped rendering despite this code existing — leading candidates: <code>rpgace_shifts</code> localStorage key empty or malformed, or a dependency (like the Supabase <code>rpgace_shifts</code> table logged elsewhere as "not yet built" under R-21) that this code assumes exists but doesn't yet.<br><br>
+      <strong>Standing lesson:</strong> the frozen-file rule needs an enforcement mechanism, not just a stated policy — an uncommitted violation sat invisible for 11+ days purely because nothing ever checked <code>git status</code> on main.js specifically. Worth adding a <code>rpgace_build.py status</code> check for main.js diffs specifically, going forward.
+    </div>
+  </div>
+
   <div class="section" id="jul1">
   <div class="date-tag">JULY 1, 2026</div>
   <div class="section-title">Patch Notes — July 1</div>
