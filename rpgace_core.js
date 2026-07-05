@@ -3286,6 +3286,11 @@ RPGACE.register('config', {
 
     console.log('[RPGACE:config] Cache + streaming Oracle ready');
 
+    // Attach global phyla-scan observer once DOM is ready
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { RPGACE.utils._initPhylaObserver(); }, 1000);
+    });
+
     // Intel UI: hide main.js container, show our collapsed list instead
     function applyIntelUI() {
       if (!RPGACE.modules.intelDelete) return;
@@ -3443,29 +3448,32 @@ RPGACE.register('config', {
       if (!input) return;
       input.value = text;
       input.dispatchEvent(new Event('input', { bubbles: true }));
-
-      // Watch send-btn for disabled->enabled flip = response complete
-      var sendBtn = document.querySelector('#send-btn');
-      if (sendBtn && RPGACE.utils._runPhylaScan) {
-        var obs = new MutationObserver(function(muts) {
-          muts.forEach(function(m) {
-            if (m.attributeName === 'disabled' && !sendBtn.disabled) {
-              obs.disconnect();
-              setTimeout(function() { RPGACE.utils._runPhylaScan(); }, 50);
-            }
-          });
-        });
-        obs.observe(sendBtn, { attributes: true });
-        // Safety: disconnect after 30s regardless
-        setTimeout(function() { obs.disconnect(); }, 30000);
-      }
-
       if (typeof sendChat === 'function') {
         sendChat();
       } else {
         var btn = document.querySelector('#send-btn') || document.querySelector('button[onclick*="sendChat"]');
         if (btn) btn.click();
       }
+    };
+
+    // ── Global phyla-scan observer — attached ONCE at init, independent of  ──
+    // ── sendToOracle. Catches direct typing (sendChat/sendChatWithImage)   ──
+    // ── AND panel-injected prompts, since both flip #send-btn's disabled   ──
+    // ── attribute through the same underlying sendChat() call.            ──
+    RPGACE.utils._initPhylaObserver = function() {
+      if (RPGACE.utils._phylaObserverActive) return;
+      var sendBtn = document.querySelector('#send-btn');
+      if (!sendBtn) { setTimeout(RPGACE.utils._initPhylaObserver, 1000); return; }
+      RPGACE.utils._phylaObserverActive = true;
+      var obs = new MutationObserver(function(muts) {
+        muts.forEach(function(m) {
+          if (m.attributeName === 'disabled' && !sendBtn.disabled) {
+            setTimeout(function() { RPGACE.utils._runPhylaScan(); }, 50);
+          }
+        });
+      });
+      obs.observe(sendBtn, { attributes: true });
+      console.log('[RPGACE] Global phyla-scan observer attached to #send-btn');
     };
 
     // ── Layer 1: cheap local keyword scan, always runs ──────────────
