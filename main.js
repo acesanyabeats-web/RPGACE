@@ -1934,7 +1934,7 @@ function shiftDay(delta){window._dailyDate=window._dailyDate||new Date();window.
 
 function initSchedModal(){
   if(document.getElementById('sched-modal'))return;
-  const hours=Array.from({length:18},function(_,i){const h=i+6;const label=h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM';return '<option value="'+h+'">'+label+'</option>';}).join('');
+  const hours=Array.from({length:24},function(_,i){const h=i;const label=h===0?'12:00 AM':h<12?h+':00 AM':h===12?'12:00 PM':(h-12)+':00 PM';return '<option value="'+h+'">'+label+'</option>';}).join('');
   const minutes=[0,5,10,15,20,25,30,35,40,45,50,55].map(function(m){return '<option value="'+m+'">:'+String(m).padStart(2,'0')+'</option>';}).join('');
   const modal=document.createElement('div');modal.id='sched-modal';modal.style.cssText='display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;';
   const pills=[15,30,45,60,90,120].map(function(m){return '<button onclick="selectDuration('+m+')" data-dur="'+m+'" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);padding:6px 12px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700">'+(m<60?m+'m':m===60?'1h':m===90?'1.5h':'2h')+'</button>';}).join('');
