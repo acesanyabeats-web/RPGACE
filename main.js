@@ -777,9 +777,13 @@ function confirmSchedule(idx){
   const a=AGENDA_LIST[idx];if(!a)return;
   const timeEl=document.getElementById(`sched-time-${idx}`);
   const time=timeEl?timeEl.value:'19:00';
-  const blocks=JSON.parse(localStorage.getItem('rpgace_scheduled_agendas')||'[]');
-  blocks.push({title:a.title,category:a.category,duration_mins:a.duration_mins,time,date:new Date().toLocaleDateString(),xp:a.xp||50});
-  localStorage.setItem('rpgace_scheduled_agendas',JSON.stringify(blocks));
+  const hour=parseInt((time||'19:00').split(':')[0])||19;
+  const dateStr=(typeof _calDateStr==='function'?_calDateStr(new Date()):new Date().toISOString().split('T')[0]);
+  // Converged onto the same key/shape as confirmScheduleModal (rpgace_sched_agendas)
+  // so both scheduling entry points render identically on Weekly/Monthly/Daily.
+  const stored=JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');
+  stored.push({id:'sa_'+Date.now(),date:dateStr,hour,title:a.title||'Task',description:a.description||'',category:a.category||'personal',xp:a.xp||50,estimated_mins:a.duration_mins||60,actual_mins:null,completed:false,started_at:null,ended_at:null,created_at:new Date().toISOString()});
+  localStorage.setItem('rpgace_sched_agendas',JSON.stringify(stored));
   AGENDA_LIST[idx].status='scheduled';
   AGENDA_LIST[idx].scheduled_time=time;
   localStorage.setItem(AGENDA_CACHE_KEY,JSON.stringify(AGENDA_LIST));
@@ -1689,7 +1693,7 @@ function autoApplyStoredShifts(){
 window._calMonthDate=new Date();
 window._calWeekStart=null;
 function _calGetShifts(){return JSON.parse(localStorage.getItem('rpgace_shifts')||'[]');}
-function _calGetSchedAgendas(){return JSON.parse(localStorage.getItem('rpgace_scheduled_agendas')||'[]');}
+function _calGetSchedAgendas(){return JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');}
 function _calDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _calMondayOf(d){const r=new Date(d);r.setHours(0,0,0,0);const dow=r.getDay();r.setDate(r.getDate()-(dow===0?6:dow-1));return r;}
 function _calCellItems(dateStr){const shifts=_calGetShifts().filter(s=>s.date===dateStr);const agendas=_calGetSchedAgendas().filter(a=>a.date===dateStr);return {shifts,agendas};}
@@ -1780,8 +1784,8 @@ function renderDailyGrid(){
   const lbl=document.getElementById('daily-date-label');
   if(lbl)lbl.textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   buildTimeSlots();
-  const dateStr=d.toISOString().split('T')[0];
-  const todayStr=new Date().toISOString().split('T')[0];
+  const dateStr=(typeof _calDateStr==='function'?_calDateStr(d):d.toISOString().split('T')[0]);
+  const todayStr=(typeof _calDateStr==='function'?_calDateStr(new Date()):new Date().toISOString().split('T')[0]);
   const isPast=dateStr<todayStr;
   const shifts=typeof getShiftsForDate==='function'?getShiftsForDate(dateStr):[];
   document.querySelectorAll('.dsh-block,.dsh-divider,.dsh-agenda,.dsh-log').forEach(el=>el.remove());
@@ -1877,7 +1881,7 @@ function initSchedModal(){
     +'</div></div>';
   document.body.appendChild(modal);
   modal.onclick=function(e){if(e.target===modal)closeSchedModal();};
-  modal.querySelector('#sched-date').value=new Date().toISOString().split('T')[0];
+  modal.querySelector('#sched-date').value=(typeof _calDateStr==='function'?_calDateStr(new Date()):new Date().toISOString().split('T')[0]);
   selectDuration(60);
 }
 
@@ -1887,7 +1891,7 @@ function openSchedModal(agenda){
   const titleEl=document.getElementById('sched-modal-title');
   if(titleEl)titleEl.textContent=agenda.title||'Task';
   const dateEl=document.getElementById('sched-date');
-  if(dateEl)dateEl.value=new Date().toISOString().split('T')[0];
+  if(dateEl)dateEl.value=(typeof _calDateStr==='function'?_calDateStr(window._dailyDate||new Date()):new Date().toISOString().split('T')[0]);
   document.getElementById('sched-modal').style.display='flex';
 }
 
