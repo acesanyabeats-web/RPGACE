@@ -1803,23 +1803,28 @@ function scheduleToCalendar(item){
   return entry;
 }
 
+function _fracClock(f){
+  var h=Math.floor(f), m=Math.round((f-h)*60);
+  if(m===60){h+=1;m=0;}
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+
 function renderDailyGrid(){
   window._dailyDate=window._dailyDate||new Date();
   const d=window._dailyDate;
   const lbl=document.getElementById('daily-date-label');
   if(lbl)lbl.textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  buildTimeSlots();
+
   const dateStr=(typeof _calDateStr==='function'?_calDateStr(d):d.toISOString().split('T')[0]);
   const todayStr=(typeof _calDateStr==='function'?_calDateStr(new Date()):new Date().toISOString().split('T')[0]);
   const isPast=dateStr<todayStr;
 
-  const timeSlotsEl=document.getElementById('time-slots');
-  if(!timeSlotsEl)return;
-  timeSlotsEl.style.position='relative';
+  const el=document.getElementById('time-slots');
+  if(!el)return;
+  el.innerHTML='';
+  el.style.position='static';
 
-  document.querySelectorAll('.dsh-overlay,.dsh-log').forEach(el=>el.remove());
-
-  // ── Gather all events for this day, normalized to fractional hours ──
+  // ── Gather events, normalized to fractional hours (0-24) ──
   const shifts=typeof getShiftsForDate==='function'?getShiftsForDate(dateStr):[];
   const schedAgendas=JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]').filter(a=>a.date===dateStr);
 
@@ -1830,88 +1835,52 @@ function renderDailyGrid(){
     const isMid=s.end==='00:00';
     const endH=isMid?24:parseInt(s.end.split(':')[0]);
     const endM=isMid?0:(parseInt(s.end.split(':')[1])||0);
-    events.push({
-      startFrac:startH+startM/60, endFrac:endH+endM/60,
-      label:'\uD83C\uDFEA '+s.role, sub:s.start+' \u2013 '+(isMid?'00:00':s.end),
-      color:'#C9A84C', bg:'rgba(201,168,76,0.14)', type:'shift'
-    });
+    events.push({startFrac:startH+startM/60, endFrac:endH+endM/60, type:'shift', label:'\uD83C\uDFEA '+s.role, color:'#C9A84C', bg:'rgba(201,168,76,0.14)'});
   });
   schedAgendas.forEach(function(a){
-    const startH=a.hour||0, startM=a.minute||0;
-    const durMins=a.estimated_mins||60;
-    const startFrac=startH+startM/60;
-    const endFrac=startFrac+(durMins/60);
-    events.push({
-      startFrac, endFrac,
-      label:'\u23F0 '+a.title, sub:String(startH).padStart(2,'0')+':'+String(startM).padStart(2,'0')+' \u00B7 '+durMins+'min est',
-      color:'#4A90E2', bg:'rgba(74,144,226,0.14)', type:'agenda', id:a.id,
-      completed:a.completed
-    });
+    const startFrac=(a.hour||0)+(a.minute||0)/60;
+    const endFrac=startFrac+((a.estimated_mins||60)/60);
+    events.push({startFrac,endFrac,type:'agenda',label:'\u23F0 '+a.title,color:'#4A90E2',bg:'rgba(74,144,226,0.14)',id:a.id,completed:a.completed,estimated_mins:a.estimated_mins});
   });
   events.sort(function(a,b){return a.startFrac-b.startFrac;});
 
-  // ── Measure a clean row's height to compute absolute positions ──
-  const row0=document.getElementById('ts-0');
-  const row1=document.getElementById('ts-1');
-  const rowHeight=(row0&&row1)?(row1.getBoundingClientRect().top-row0.getBoundingClientRect().top):(row0?row0.getBoundingClientRect().height:44);
-  const baseOffset=row0?row0.offsetTop:0;
-
-  const overlay=document.createElement('div');
-  overlay.className='dsh-overlay';
-  overlay.style.cssText='position:absolute;top:0;left:0;right:0;pointer-events:none;z-index:2;';
-  timeSlotsEl.appendChild(overlay);
-
+  // ── Build a row list: free gaps + events, collapsing multi-hour spans into ONE row ──
+  const rows=[];
+  let cursor=0;
   events.forEach(function(ev){
-    const top=baseOffset+ev.startFrac*rowHeight;
-    const minH=ev.type==='agenda'?58:24;
-    const height=Math.max((ev.endFrac-ev.startFrac)*rowHeight,minH);
-
-    // Hide the free-text inputs on every hour row this event covers
-    const firstH=Math.floor(ev.startFrac), lastH=Math.ceil(ev.endFrac)-1;
-    for(var h=firstH;h<=Math.min(lastH,23);h++){
-      const slot=document.getElementById('ts-'+h);
-      if(slot){const inp=slot.querySelector('.time-input');if(inp)inp.style.display='none';}
-    }
-
-    const block=document.createElement('div');
-    block.className='dsh-agenda';
-    if(ev.id)block.dataset.id=ev.id;
-    block.style.cssText='position:absolute;left:4px;right:8px;top:'+top+'px;height:'+height+'px;'
-      +'background:'+ev.bg+';border-left:2px solid '+ev.color+';border-radius:5px;padding:5px 9px;'
-      +'font-family:Rajdhani,sans-serif;pointer-events:auto;overflow:visible;'
-      +(ev.completed?'opacity:0.5;':'');
-    block.innerHTML='<div style="font-size:11px;font-weight:700;color:'+ev.color+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+ev.label+'</div>'
-      +'<div style="font-size:10px;color:rgba(226,226,236,0.45);margin-top:1px;">'+ev.sub+'</div>';
-    overlay.appendChild(block);
-
-    // Green partial-hour boundary markers where start/end don't land on the hour
-    // Green boundary markers - subtle dashed line only, NO floating text label
-    // (the block's own subtitle already shows exact times; a floating label here
-    // was colliding visually with each row's hour number, corrupting the display)
-    const startFracPart=ev.startFrac%1;
-    if(startFracPart>0.01){
-      const marker=document.createElement('div');
-      marker.style.cssText='position:absolute;left:0;right:0;top:'+top+'px;border-top:1px dashed rgba(61,170,110,0.45);pointer-events:none;';
-      overlay.appendChild(marker);
-    }
-    const endFracPart=ev.endFrac%1;
-    if(endFracPart>0.01){
-      const endTop=baseOffset+ev.endFrac*rowHeight;
-      const marker=document.createElement('div');
-      marker.style.cssText='position:absolute;left:0;right:0;top:'+endTop+'px;border-top:1px dashed rgba(61,170,110,0.45);pointer-events:none;';
-      overlay.appendChild(marker);
-    }
+    if(ev.startFrac>cursor+0.001) rows.push({startFrac:cursor,endFrac:ev.startFrac,type:'free'});
+    rows.push(ev);
+    cursor=Math.max(cursor,ev.endFrac);
   });
+  if(cursor<23.999) rows.push({startFrac:cursor,endFrac:24,type:'free'});
 
-  // Agenda blocks get Start/Done action buttons (only for non-completed, non-past-uncompleted)
-  events.filter(function(e){return e.type==='agenda'&&!e.completed;}).forEach(function(ev){
-    const block=overlay.querySelector('.dsh-agenda[data-id="'+ev.id+'"]');
-    if(!block)return;
-    const actions=document.createElement('div');
-    actions.style.cssText='margin-top:3px;display:flex;gap:6px;';
-    actions.innerHTML='<button onclick="event.stopPropagation();startScheduledTask(\''+ev.id+'\')" style="background:none;border:1px solid rgba(74,144,226,0.3);color:#4A90E2;border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer;font-family:Rajdhani,sans-serif;">Start</button>'
-      +'<button onclick="event.stopPropagation();completeScheduledTask(\''+ev.id+'\')" style="background:none;border:1px solid rgba(61,170,110,0.3);color:#3DAA6E;border-radius:4px;padding:2px 8px;font-size:9px;cursor:pointer;font-family:Rajdhani,sans-serif;">Done</button>';
-    block.appendChild(actions);
+  // ── Render each row as one normal-flow div — no absolute positioning, no pixel math ──
+  let firstEventRow=null;
+  rows.forEach(function(row,i){
+    const div=document.createElement('div');
+    div.className='time-slot'+(row.type!=='free'?' filled':'');
+    const rangeLabel=_fracClock(row.startFrac)+'\u2013'+_fracClock(row.endFrac);
+
+    if(row.type==='free'){
+      div.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:12px;min-height:36px;';
+      div.innerHTML='<span style="font-family:Rajdhani,sans-serif;font-size:11px;color:rgba(226,226,236,0.35);min-width:110px;">'+rangeLabel+'</span>'
+        +'<input class="time-input" placeholder="Add task..." style="flex:1;background:none;border:none;color:rgba(226,226,236,0.5);font-family:Rajdhani,sans-serif;font-size:12px;outline:none;"/>';
+    } else {
+      const isAgenda=row.type==='agenda';
+      div.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);border-left:3px solid '+row.color+';background:'+row.bg+';'+(row.completed?'opacity:0.5;':'');
+      div.innerHTML='<div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;color:'+row.color+';">'+row.label+'</div>'
+        +'<div style="font-family:Rajdhani,sans-serif;font-size:11px;color:rgba(226,226,236,0.4);margin-top:2px;">'+rangeLabel+(isAgenda&&row.estimated_mins?' \u00B7 '+row.estimated_mins+'min est':'')+'</div>';
+
+      if(isAgenda && !row.completed){
+        const actions=document.createElement('div');
+        actions.style.cssText='display:flex;gap:6px;margin-top:6px;';
+        actions.innerHTML='<button onclick="event.stopPropagation();startScheduledTask(\''+row.id+'\')" style="background:none;border:1px solid rgba(74,144,226,0.3);color:#4A90E2;border-radius:4px;padding:3px 9px;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Start</button>'
+          +'<button onclick="event.stopPropagation();completeScheduledTask(\''+row.id+'\')" style="background:none;border:1px solid rgba(61,170,110,0.3);color:#3DAA6E;border-radius:4px;padding:3px 9px;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;">Done</button>';
+        div.appendChild(actions);
+      }
+      if(firstEventRow===null) firstEventRow=div;
+    }
+    el.appendChild(div);
   });
 
   if(isPast){
@@ -1930,16 +1899,11 @@ function renderDailyGrid(){
       });
       logH.onclick=function(){logB.style.display=logB.style.display==='none'?'block':'none';};
       logC.appendChild(logH);logC.appendChild(logB);
-      const ts=document.getElementById('time-slots');if(ts)ts.parentNode.insertBefore(logC,ts);
+      el.parentNode.insertBefore(logC,el);
     }
   }
 
-  const fh=events.length?Math.floor(events[0].startFrac):9;
-  const fs=document.getElementById('ts-'+fh);
-  if(fs)setTimeout(function(){fs.scrollIntoView({behavior:'smooth',block:'center'});},100);
-  // NOTE: _addSchedButtons() intentionally NOT called here - this rewrite already
-  // adds Start/Done buttons inline (see the events.filter(...agenda...) block above).
-  // Calling both caused duplicate button rows on every agenda block.
+  if(firstEventRow) setTimeout(function(){firstEventRow.scrollIntoView({behavior:'smooth',block:'center'});},100);
 }
 
 function initDailyNav(){
