@@ -2043,27 +2043,7 @@ function completeScheduledTask(id){
 
 function scheduleAgenda(agenda){openSchedModal(agenda);}
 
-function _addSchedButtons(){
-  const stored=JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');
-  const dailyDate=window._dailyDate||new Date();
-  const dateStr=dailyDate.toISOString().split('T')[0];
-  document.querySelectorAll('.dsh-agenda').forEach(function(blk){
-    if(blk.querySelector('.sa-btn'))return;
-    const id=blk.dataset.id;
-    const match=stored.find(function(a){return a.id===id;});
-    if(!match)return;
-    const actions=document.createElement('div');actions.style.cssText='display:flex;gap:6px;margin-top:5px;';
-    if(!match.completed){
-      if(!match.started_at){
-        const s=document.createElement('button');s.className='sa-btn';s.style.cssText='font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(74,144,226,0.15);border:1px solid rgba(74,144,226,0.3);color:#4A90E2;padding:3px 8px;border-radius:4px;cursor:pointer;';s.textContent='Start';
-        s.onclick=function(e){e.stopPropagation();startScheduledTask(id);s.textContent='Running...';s.disabled=true;};actions.appendChild(s);
-      }
-      const d=document.createElement('button');d.className='sa-btn';d.style.cssText='font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(61,170,110,0.15);border:1px solid rgba(61,170,110,0.3);color:#3DAA6E;padding:3px 8px;border-radius:4px;cursor:pointer;';d.textContent='Done';
-      d.onclick=function(e){e.stopPropagation();const r=completeScheduledTask(id);if(r){blk.style.borderColor='#3DAA6E';blk.style.color='#3DAA6E';actions.innerHTML='<span style="font-size:10px;color:#3DAA6E">Done'+(r.actual_mins?' '+r.actual_mins+'min':'')+' </span>';if(typeof addXP==='function')addXP(r.xp||50);}};actions.appendChild(d);
-    }
-    blk.appendChild(actions);
-  });
-}
+function _addSchedButtons(){} // stub - superseded by inline Start/Done buttons in renderDailyGrid's rewrite, kept as empty stub since multiple places still call it
 
 function patchAgendaCardsWithSchedule(){}
 
