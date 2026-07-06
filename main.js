@@ -1851,8 +1851,9 @@ function renderDailyGrid(){
   events.sort(function(a,b){return a.startFrac-b.startFrac;});
 
   // ── Measure a clean row's height to compute absolute positions ──
-  const sampleRow=document.getElementById('ts-0');
-  const rowHeight=sampleRow?sampleRow.getBoundingClientRect().height:40;
+  const row0=document.getElementById('ts-0');
+  const row1=document.getElementById('ts-1');
+  const rowHeight=(row0&&row1)?(row1.getBoundingClientRect().top-row0.getBoundingClientRect().top):(row0?row0.getBoundingClientRect().height:44);
 
   const overlay=document.createElement('div');
   overlay.className='dsh-overlay';
@@ -1861,7 +1862,7 @@ function renderDailyGrid(){
 
   events.forEach(function(ev){
     const top=ev.startFrac*rowHeight;
-    const height=Math.max((ev.endFrac-ev.startFrac)*rowHeight,rowHeight*0.4);
+    const height=Math.max((ev.endFrac-ev.startFrac)*rowHeight,22);
 
     // Hide the free-text inputs on every hour row this event covers
     const firstH=Math.floor(ev.startFrac), lastH=Math.ceil(ev.endFrac)-1;
