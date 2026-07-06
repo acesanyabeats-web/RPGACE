@@ -212,8 +212,8 @@ function showXPToast(a){const t=document.getElementById('xp-toast');t.textConten
 
 // ── SCHEDULE ──
 function buildTimeSlots(){const el=document.getElementById('time-slots');if(!el)return;el.innerHTML='';for(let h=0;h<24;h++){const label=h===0?'12am':h<12?h+'am':h===12?'12pm':(h-12)+'pm';const slot=document.createElement('div');slot.className='time-slot';slot.id='ts-'+h;slot.innerHTML=`<span class="time-label">${label}</span><input class="time-input" id="ti-${h}" placeholder="Add task..." oninput="this.closest('.time-slot').classList.toggle('filled',this.value.length>0)"/>`;el.appendChild(slot);}}
-function buildWeekSlots(){const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const el=document.getElementById('week-slots');if(!el)return;el.innerHTML='';days.forEach(d=>{const col=document.createElement('div');col.className='day-col';col.innerHTML=`<div class="day-name">${d}</div><textarea class="day-input" placeholder="Goals & tasks..."></textarea>`;el.appendChild(col);});}
-function buildMonthSlots(){const el=document.getElementById('month-slots');if(!el)return;el.innerHTML='';const def=[['Plan content calendar','Set gym schedule','Define weekly budget'],['Review TikTok analytics','Meal prep check-in','Progress photo'],['Post YouTube video','Collab outreach','Review spending'],['Monthly review','Plan next month','Celebrate wins!']];for(let w=1;w<=4;w++){const col=document.createElement('div');col.className='week-col';col.innerHTML=`<h4>Week ${w}</h4>`;def[w-1].forEach(t=>{const item=document.createElement('div');item.className='month-task';item.innerHTML=`<span>${t}</span><span onclick="this.parentElement.classList.toggle('done')" style="cursor:pointer;color:var(--muted);font-size:12px">✓</span>`;col.appendChild(item);});const addBtn=document.createElement('button');addBtn.className='add-month-task';addBtn.textContent='+ Add goal';addBtn.onclick=function(){const txt=prompt('New goal for Week '+w+':');if(!txt)return;const item=document.createElement('div');item.className='month-task';item.innerHTML=`<span>${txt}</span><span onclick="this.parentElement.classList.toggle('done')" style="cursor:pointer;color:var(--muted);font-size:12px">✓</span>`;col.insertBefore(item,addBtn);};col.appendChild(addBtn);el.appendChild(col);}}
+// (dead duplicate buildWeekSlots removed - old goal-tracker version, superseded by the real shift-calendar version later in this file)
+// (dead duplicate buildMonthSlots removed - old goal-tracker version, superseded by the real shift-calendar version later in this file)
 
 // ── SHIFT IMPORT ──
 function dzOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
@@ -1193,7 +1193,7 @@ function renderShiftBlocks(){autoApplyStoredShifts();
     + '<button onclick="openPasteRota()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif">+ Update Rota</button>'
     + '</div>'
     + upcoming.map(s=>{
-        const d = new Date(s.date);
+        const d = new Date(s.date+'T00:00:00');
         const dayStr = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
         const isTraining = s.role==='Training';
         const col = isTraining ? 'var(--blue)' : 'rgba(128,128,128,.7)';
