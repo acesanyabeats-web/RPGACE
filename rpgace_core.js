@@ -6681,6 +6681,12 @@ RPGACE.register('shiftSync', {
 
   init: function() {
     var self = this;
+    // Do NOT rely solely on rpgace:ready — it may have already fired before
+    // this module's init() runs (confirmed failure mode from the taxonomy
+    // detection build). Call directly with a delay instead, plus keep the
+    // hook as a secondary path in case timing differs on some page loads.
+    setTimeout(function() { self._syncFromSupabase(); }, 1200);
+
     RPGACE.hooks.on('rpgace:ready', function() {
       setTimeout(function() { self._syncFromSupabase(); }, 900);
     });
