@@ -1854,6 +1854,7 @@ function renderDailyGrid(){
   const row0=document.getElementById('ts-0');
   const row1=document.getElementById('ts-1');
   const rowHeight=(row0&&row1)?(row1.getBoundingClientRect().top-row0.getBoundingClientRect().top):(row0?row0.getBoundingClientRect().height:44);
+  const baseOffset=row0?row0.offsetTop:0;
 
   const overlay=document.createElement('div');
   overlay.className='dsh-overlay';
@@ -1861,8 +1862,9 @@ function renderDailyGrid(){
   timeSlotsEl.appendChild(overlay);
 
   events.forEach(function(ev){
-    const top=ev.startFrac*rowHeight;
-    const height=Math.max((ev.endFrac-ev.startFrac)*rowHeight,22);
+    const top=baseOffset+ev.startFrac*rowHeight;
+    const minH=ev.type==='agenda'?58:24;
+    const height=Math.max((ev.endFrac-ev.startFrac)*rowHeight,minH);
 
     // Hide the free-text inputs on every hour row this event covers
     const firstH=Math.floor(ev.startFrac), lastH=Math.ceil(ev.endFrac)-1;
@@ -1876,26 +1878,27 @@ function renderDailyGrid(){
     if(ev.id)block.dataset.id=ev.id;
     block.style.cssText='position:absolute;left:4px;right:8px;top:'+top+'px;height:'+height+'px;'
       +'background:'+ev.bg+';border-left:2px solid '+ev.color+';border-radius:5px;padding:5px 9px;'
-      +'font-family:Rajdhani,sans-serif;pointer-events:auto;overflow:hidden;'
+      +'font-family:Rajdhani,sans-serif;pointer-events:auto;overflow:visible;'
       +(ev.completed?'opacity:0.5;':'');
     block.innerHTML='<div style="font-size:11px;font-weight:700;color:'+ev.color+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+ev.label+'</div>'
       +'<div style="font-size:10px;color:rgba(226,226,236,0.45);margin-top:1px;">'+ev.sub+'</div>';
     overlay.appendChild(block);
 
     // Green partial-hour boundary markers where start/end don't land on the hour
+    // Green boundary markers - subtle dashed line only, NO floating text label
+    // (the block's own subtitle already shows exact times; a floating label here
+    // was colliding visually with each row's hour number, corrupting the display)
     const startFracPart=ev.startFrac%1;
     if(startFracPart>0.01){
       const marker=document.createElement('div');
-      marker.style.cssText='position:absolute;left:0;right:0;top:'+top+'px;border-top:1px dashed rgba(61,170,110,0.5);pointer-events:none;';
-      marker.innerHTML='<span style="position:absolute;left:2px;top:-8px;font-size:8px;color:rgba(61,170,110,0.7);font-family:Rajdhani,sans-serif;background:#0a0a12;padding:0 3px;">:'+String(Math.round(startFracPart*60)).padStart(2,'0')+'</span>';
+      marker.style.cssText='position:absolute;left:0;right:0;top:'+top+'px;border-top:1px dashed rgba(61,170,110,0.45);pointer-events:none;';
       overlay.appendChild(marker);
     }
     const endFracPart=ev.endFrac%1;
     if(endFracPart>0.01){
-      const endTop=ev.endFrac*rowHeight;
+      const endTop=baseOffset+ev.endFrac*rowHeight;
       const marker=document.createElement('div');
-      marker.style.cssText='position:absolute;left:0;right:0;top:'+endTop+'px;border-top:1px dashed rgba(61,170,110,0.5);pointer-events:none;';
-      marker.innerHTML='<span style="position:absolute;left:2px;top:2px;font-size:8px;color:rgba(61,170,110,0.7);font-family:Rajdhani,sans-serif;background:#0a0a12;padding:0 3px;">:'+String(Math.round(endFracPart*60)).padStart(2,'0')+'</span>';
+      marker.style.cssText='position:absolute;left:0;right:0;top:'+endTop+'px;border-top:1px dashed rgba(61,170,110,0.45);pointer-events:none;';
       overlay.appendChild(marker);
     }
   });
