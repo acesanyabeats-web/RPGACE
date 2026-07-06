@@ -1690,7 +1690,7 @@ window._calMonthDate=new Date();
 window._calWeekStart=null;
 function _calGetShifts(){return JSON.parse(localStorage.getItem('rpgace_shifts')||'[]');}
 function _calGetSchedAgendas(){return JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');}
-function _calDateStr(d){return d.toISOString().split('T')[0];}
+function _calDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _calMondayOf(d){const r=new Date(d);r.setHours(0,0,0,0);const dow=r.getDay();r.setDate(r.getDate()-(dow===0?6:dow-1));return r;}
 function _calCellItems(dateStr){const shifts=_calGetShifts().filter(s=>s.date===dateStr);const agendas=_calGetSchedAgendas().filter(a=>a.date===dateStr);return {shifts,agendas};}
 function _calFmtShort(s){return s.start+'\u2013'+(s.end==='00:00'?'00:00':s.end);}
