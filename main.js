@@ -1940,8 +1940,10 @@ function initSchedModal(){
   const pills=[15,30,45,60,90,120].map(function(m){return '<button onclick="selectDuration('+m+')" data-dur="'+m+'" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);padding:6px 12px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700">'+(m<60?m+'m':m===60?'1h':m===90?'1.5h':'2h')+'</button>';}).join('');
   modal.innerHTML='<div style="background:#0f0f18;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:28px;width:min(420px,90vw);max-height:90vh;overflow-y:auto">'
     +'<div style="font-family:Cinzel,serif;font-size:14px;color:#C9A84C;margin-bottom:6px">Schedule Task</div>'
-    +'<div id="sched-modal-title" style="font-family:Rajdhani,sans-serif;font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.07)"></div>'
+    +'<div id="sched-modal-title" style="font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(226,226,236,0.4);margin-bottom:16px;text-transform:uppercase;"></div>'
     +'<div style="display:grid;gap:14px">'
+    +'<div><div style="font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:6px">Title</div><input type="text" id="sched-title-input" placeholder="What are you doing?" style="width:100%;background:#141420;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;padding:8px 12px;font-family:Rajdhani,sans-serif;font-size:13px;outline:none;box-sizing:border-box;"/></div>'
+    +'<div><div style="font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:6px">Description (optional)</div><textarea id="sched-desc-input" rows="2" placeholder="Any notes..." style="width:100%;background:#141420;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;padding:8px 12px;font-family:Rajdhani,sans-serif;font-size:13px;outline:none;resize:vertical;box-sizing:border-box;"></textarea></div>'
     +'<div><div style="font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:6px">Date</div><input type="date" id="sched-date" style="width:100%;background:#141420;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;padding:8px 12px;font-family:Rajdhani,sans-serif;font-size:13px;outline:none"/></div>'
     +'<div><div style="font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:6px">Start Time</div><div style="display:flex;gap:8px"><select id="sched-hour" style="flex:1;background:#141420;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;padding:8px 12px;font-family:Rajdhani,sans-serif;font-size:13px;outline:none">'+hours+'</select><select id="sched-minute" style="width:80px;background:#141420;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;padding:8px 12px;font-family:Rajdhani,sans-serif;font-size:13px;outline:none">'+minutes+'</select></div></div>'
     +'<div><div style="font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:8px">Estimated Duration</div><div id="duration-pills" style="display:flex;gap:6px;flex-wrap:wrap">'+pills+'</div><input type="hidden" id="sched-duration" value="60"/></div>'
@@ -1957,10 +1959,15 @@ function openSchedModal(agenda){
   initSchedModal();
   window._pendingSchedAgenda=agenda;
   const titleEl=document.getElementById('sched-modal-title');
-  if(titleEl)titleEl.textContent=agenda.title||'Task';
+  if(titleEl)titleEl.textContent=agenda.title?'Editing: '+agenda.title:'New Task';
+  const titleInput=document.getElementById('sched-title-input');
+  if(titleInput)titleInput.value=agenda.title||'';
+  const descInput=document.getElementById('sched-desc-input');
+  if(descInput)descInput.value=agenda.description||'';
   const dateEl=document.getElementById('sched-date');
   if(dateEl)dateEl.value=(typeof _calDateStr==='function'?_calDateStr(window._dailyDate||new Date()):new Date().toISOString().split('T')[0]);
   document.getElementById('sched-modal').style.display='flex';
+  setTimeout(function(){if(titleInput)titleInput.focus();},50);
 }
 
 function closeSchedModal(){
@@ -1985,8 +1992,13 @@ function confirmScheduleModal(){
   const minuteEl=document.getElementById('sched-minute');
   const minute=minuteEl?parseInt(minuteEl.value)||0:0;
   const estMins=parseInt(document.getElementById('sched-duration').value)||60;
+  const titleInput=document.getElementById('sched-title-input');
+  const descInput=document.getElementById('sched-desc-input');
+  const typedTitle=titleInput?titleInput.value.trim():'';
+  const typedDesc=descInput?descInput.value.trim():'';
   if(!date){alert('Please choose a date.');return;}
-  const entry=scheduleToCalendar({title:agenda.title,description:agenda.description,category:agenda.category,xp:agenda.xp,duration_mins:estMins,hour,minute,date,source_type:'agenda'});
+  if(!typedTitle){alert('Please enter a title.');return;}
+  const entry=scheduleToCalendar({title:typedTitle,description:typedDesc||agenda.description,category:agenda.category,xp:agenda.xp,duration_mins:estMins,hour,minute,date,source_type:'agenda'});
   closeSchedModal();
   window._dailyDate=new Date(date+'T00:00:00');
   if(typeof showSched==='function')showSched('daily',document.querySelector('.sched-tab'));
