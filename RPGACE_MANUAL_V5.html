@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — V5 Manual</title>
+<style>
+:root{
+  --gold:#C9A84C;--blue:#4A90E2;--green:#3DAA6E;
+  --red:#E25454;--purple:#9B59B6;--teal:#2ABFB0;
+  --bg:#080810;--surface:#0f0f1a;--surface2:#14141f;--surface3:#1a1a2a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:rgba(226,226,236,0.88);--dim:rgba(226,226,236,0.45);--dimmer:rgba(226,226,236,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7}
+
+/* SIDEBAR */
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;overflow-y:auto;z-index:100}
+.sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.sidebar-logo .name{font-family:Georgia,serif;font-size:16px;color:var(--gold);letter-spacing:2px}
+.sidebar-logo .version{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+.sidebar-logo .url{font-size:9px;color:var(--dimmer);margin-top:4px}
+.nav-group{padding:8px 0}
+.nav-label{padding:4px 20px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dimmer)}
+.nav-item{display:block;padding:6px 20px;font-size:12px;color:var(--dim);text-decoration:none;cursor:pointer;transition:color .15s}
+.nav-item:hover,.nav-item.active{color:var(--gold)}
+.nav-item.active{border-left:2px solid var(--gold)}
+
+/* LAYOUT */
+.content{margin-left:220px;padding:48px 56px;max-width:1000px}
+.section{margin-bottom:72px}
+.section-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+.section-title{font-family:Georgia,serif;font-size:28px;color:#E2E2EC;margin-bottom:6px;letter-spacing:0.5px}
+.section-sub{color:var(--dim);font-size:13px;margin-bottom:32px;max-width:640px;line-height:1.8}
+hr{border:none;border-top:1px solid var(--border);margin:48px 0}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.card-body{font-size:12px;color:var(--dim);line-height:1.75}
+.card.gold{border-color:rgba(201,168,76,0.25);background:rgba(201,168,76,0.04)}
+.card.blue{border-color:rgba(74,144,226,0.2);background:rgba(74,144,226,0.04)}
+.card.green{border-color:rgba(61,170,110,0.2);background:rgba(61,170,110,0.04)}
+.card.purple{border-color:rgba(155,89,182,0.2);background:rgba(155,89,182,0.04)}
+.card.teal{border-color:rgba(42,191,176,0.2);background:rgba(42,191,176,0.04)}
+.card.red{border-color:rgba(226,84,84,0.2);background:rgba(226,84,84,0.04)}
+
+/* GRIDS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* BADGES */
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.badge.live{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
+.badge.active{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3)}
+.badge.future{background:rgba(74,144,226,0.1);color:var(--blue);border:1px solid rgba(74,144,226,0.2)}
+.badge.frozen{background:rgba(155,89,182,0.15);color:var(--purple);border:1px solid rgba(155,89,182,0.3)}
+
+/* RULE BOX */
+.rule-box{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:18px 22px;margin-bottom:32px}
+.rule-box .label{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.rule-box .text{font-size:14px;color:#E2E2EC;font-style:italic}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:12px;margin:16px 0}
+th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;color:var(--dim)}
+td:first-child{color:#E2E2EC;font-weight:600}
+tr:hover td{background:rgba(255,255,255,0.015)}
+
+/* SPIDER DIAGRAM */
+.spider-container{position:relative;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.spider-container svg{width:100%;display:block}
+.node-group{cursor:pointer}
+.node-group:hover rect,.node-group:hover circle{opacity:0.85}
+.spider-tooltip{position:absolute;background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:12px;color:var(--text);line-height:1.65;max-width:240px;pointer-events:none;z-index:10;display:none;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+.spider-tooltip .tt-title{color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+.spider-legend{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:16px}
+.spider-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim)}
+.spider-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.spider-hint{font-size:10px;color:var(--dimmer);margin-top:12px;text-align:center}
+
+/* TAXONOMY */
+.phyla-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.phylum-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;position:relative;overflow:hidden}
+.phylum-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.phylum-card.core::before{background:var(--gold)}
+.phylum-card.extended::before{background:var(--blue)}
+.phylum-card.business::before{background:var(--green)}
+.phylum-card.visual::before{background:var(--purple)}
+.phylum-num{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dimmer);margin-bottom:4px}
+.phylum-name{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+.phylum-sub{font-size:11px;color:var(--dim);line-height:1.5}
+
+/* FLOW ARROWS */
+.flow-section{margin-bottom:32px}
+.flow-row{display:flex;align-items:center;gap:0;margin-bottom:10px;flex-wrap:wrap}
+.flow-node{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 14px;font-size:11px;color:var(--text);white-space:nowrap}
+.flow-arrow{color:var(--dimmer);font-size:14px;padding:0 8px;flex-shrink:0}
+.flow-node.gold{border-color:rgba(201,168,76,0.4);color:var(--gold)}
+.flow-node.blue{border-color:rgba(74,144,226,0.4);color:var(--blue)}
+.flow-node.green{border-color:rgba(61,170,110,0.4);color:var(--green)}
+.flow-node.purple{border-color:rgba(155,89,182,0.4);color:var(--purple)}
+.flow-node.teal{border-color:rgba(42,191,176,0.4);color:var(--teal)}
+
+/* TIMELINE */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:8px;bottom:8px;width:1px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:28px}
+.tl-dot{position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;border:1px solid var(--gold);background:var(--bg)}
+.tl-dot.done{background:var(--green);border-color:var(--green)}
+.tl-dot.active{background:var(--gold);border-color:var(--gold)}
+.tl-dot.future{background:var(--surface);border-color:var(--border2)}
+.tl-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+.tl-date{font-size:10px;color:var(--dimmer);margin-bottom:6px;letter-spacing:1px;text-transform:uppercase}
+.tl-body{font-size:12px;color:var(--dim);line-height:1.7}
+.tl-body ul{padding-left:16px;margin-top:6px}
+.tl-body li{margin-bottom:3px}
+
+/* AUTONOMOUS TABLE */
+.auto-grid{display:grid;grid-template-columns:120px 1fr;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px}
+.auto-time{padding:16px;background:var(--surface2);font-size:11px;font-weight:700;color:var(--gold);letter-spacing:1px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.auto-time:last-of-type{border-bottom:none}
+.auto-desc{padding:16px;background:var(--surface);font-size:12px;color:var(--dim);line-height:1.65;border-bottom:1px solid var(--border)}
+.auto-desc:last-child{border-bottom:none}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .content{margin-left:0;padding:24px 20px}
+  .grid2,.grid3,.phyla-grid{grid-template-columns:1fr}
+  .auto-grid{grid-template-columns:1fr}
+  .auto-time{border-bottom:none;padding-bottom:4px}
+}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="name">RPGACE</div>
+    <div class="version">V5 MANUAL · JUNE 2026</div>
+    <div class="url">rpgace.vercel.app</div>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Overview</div>
+    <a class="nav-item" href="#governing-rule">Governing rule</a>
+    <a class="nav-item" href="#what-is">What is RPGACE</a>
+    <a class="nav-item" href="#current-state">Current state</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Architecture</div>
+    <a class="nav-item" href="#spider">AI interconnection map</a>
+    <a class="nav-item" href="#taxonomy">Productorum Totalis</a>
+    <a class="nav-item" href="#taxonomy-flows">Taxonomy data flows</a>
+    <a class="nav-item" href="#ai-comms">AI intercommunication</a>
+    <a class="nav-item" href="#autonomous">Autonomous workflows</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Roadmap</div>
+    <a class="nav-item" href="#timeline">Release timeline</a>
+    <a class="nav-item" href="#phase1">Phase 1 — July 2026</a>
+    <a class="nav-item" href="#phase2">Phase 2 — Aug–Sep 2026</a>
+    <a class="nav-item" href="#phase3">Phase 3 — Q4 2026</a>
+    <a class="nav-item" href="#phase4">Phase 4 — 2027</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Full capacity</div>
+    <a class="nav-item" href="#full-capacity">What runs autonomously</a>
+    <a class="nav-item" href="#vision">The vision</a>
+  </div>
+</nav>
+
+<div class="content">
+
+<!-- GOVERNING RULE -->
+<div class="section" id="governing-rule">
+  <div class="section-eyebrow">Foundation</div>
+  <div class="section-title">The governing rule</div>
+  <div class="rule-box">
+    <div class="label">Every feature passes this test before it is built</div>
+    <div class="text">"Does this feature directly result in a beat being made or a video posted within 48 hours of using it?"</div>
+  </div>
+  <p class="section-sub">Yes → build immediately. No → only build when all existing features are working daily. This rule governs architecture, module priority, and every Composio integration decision.</p>
+</div>
+
+<!-- WHAT IS -->
+<div class="section" id="what-is">
+  <div class="section-eyebrow">Overview</div>
+  <div class="section-title">What is RPGACE</div>
+  <p class="section-sub">A personal AI operating system for an independent UK music producer. It manages schedule, builds production knowledge, guides creative sessions, automates content pipelines, and connects to external services — all through a single web app.</p>
+  <div class="grid3">
+    <div class="card blue">
+      <div class="card-title">Learn</div>
+      <div class="card-body">Feynman Loop, Encyclopedia taxonomy, Daily Knowledge Pipeline, spaced repetition agendas, Productorum Totalis knowledge tree, knowledge gap tracking.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-title">Make</div>
+      <div class="card-body">Shift-aware agenda, Beat Log with taxonomy tagging, Visual Treatment Generator, Flow State tracking, Canva cover art automation.</div>
+    </div>
+    <div class="card green">
+      <div class="card-title">Post</div>
+      <div class="card-body">AI video pipeline, content repurposing (1 input → 4 platforms), Oracle-generated hooks and titles, Instagram and YouTube strategy panels.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CURRENT STATE -->
+<div class="section" id="current-state">
+  <div class="section-eyebrow">As of June 28 2026</div>
+  <div class="section-title">What is live right now</div>
+  <p class="section-sub">Everything below is deployed and running at rpgace.vercel.app. 8 modules registered. main.js permanently frozen.</p>
+
+  <div class="grid2">
+    <div class="card green">
+      <div class="card-title">Working</div>
+      <div class="card-body">
+        AI Oracle (Claude Sonnet 4.6) · image support · Gmail / Notion / YouTube Composio<br><br>
+        YouTube Oracle (8 commands) · Prod. Oracle (14 commands) · Insta-Oracle (13 commands)<br><br>
+        quickActions module — all quick-action buttons patched and working<br><br>
+        Feynman Loop — 3-phase mastery, journal save, spaced repetition, taxonomy update<br><br>
+        Encyclopedia sync with deduplication · intel card delete (Supabase-native)<br><br>
+        orchestrate.js fixed — ES module, correct v3.1 Composio tool names<br><br>
+        intel_bibliography table live with RLS · Architecture V2 with rpgace_build.py<br><br>
+        19 shifts loaded (Jun 27 – Jul 19) · Shift-aware agenda generation
+      </div>
+    </div>
+    <div class="card red">
+      <div class="card-title">Pending / next session</div>
+      <div class="card-body">
+        Visual Oracle panel (Step 11) — not yet built<br><br>
+        Beat Log (Step 12) — not yet built<br><br>
+        Morning Brief (Step 13) — not yet built<br><br>
+        Schedule fixes R-01 through R-24 (calendar nav bugs)<br><br>
+        Insight extraction quality R-25 — prompts need rewrite<br><br>
+        Orphan feynman stub — migrate command pending fix<br><br>
+        Canva / Instagram / GitHub Composio — tool names fixed in composio.js, not yet tested live
+      </div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- SPIDER DIAGRAM -->
+<div class="section" id="spider">
+  <div class="section-eyebrow">Architecture</div>
+  <div class="section-title">AI interconnection map</div>
+  <p class="section-sub">Every system in RPGACE feeds data into at least one other system. Click any node to see its role and connections.</p>
+
+  <div class="spider-legend">
+    <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#4A90E2"></div>Core AI layer</div>
+    <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#3DAA6E"></div>Learning systems</div>
+    <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#C9A84C"></div>Content pipeline</div>
+    <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#9B59B6"></div>External services</div>
+    <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#E25454"></div>Automation layer</div>
+    <div class="spider-legend-item"><div class="spider-legend-dot" style="background:#2ABFB0"></div>Taxonomy / Knowledge</div>
+  </div>
+
+  <div class="spider-container" id="spider-wrap">
+    <div class="spider-tooltip" id="spider-tt"></div>
+    <svg viewBox="0 0 680 580" role="img">
+      <title>RPGACE AI interconnection diagram</title>
+      <desc>Spider diagram showing Oracle at centre connecting to all RPGACE subsystems</desc>
+      <defs>
+        <marker id="sarr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Connection lines -->
+      <g opacity="0.3">
+        <line x1="340" y1="236" x2="340" y2="92" stroke="#4A90E2" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="236" x2="150" y2="175" stroke="#4A90E2" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="236" x2="530" y2="175" stroke="#4A90E2" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="264" x2="150" y2="335" stroke="#3DAA6E" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="264" x2="200" y2="440" stroke="#2ABFB0" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="264" x2="530" y2="335" stroke="#C9A84C" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="264" x2="480" y2="440" stroke="#9B59B6" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <line x1="340" y1="264" x2="340" y2="440" stroke="#E25454" stroke-width="1.2" marker-end="url(#sarr)"/>
+        <!-- cross connections -->
+        <line x1="200" y1="440" x2="150" y2="335" stroke="#2ABFB0" stroke-width="0.6" stroke-dasharray="4 4"/>
+        <line x1="200" y1="440" x2="530" y2="335" stroke="#2ABFB0" stroke-width="0.6" stroke-dasharray="4 4"/>
+        <line x1="340" y1="440" x2="480" y2="440" stroke="#E25454" stroke-width="0.6" stroke-dasharray="4 4"/>
+        <line x1="530" y1="335" x2="480" y2="440" stroke="#C9A84C" stroke-width="0.6" stroke-dasharray="4 4"/>
+        <line x1="150" y1="335" x2="200" y2="440" stroke="#3DAA6E" stroke-width="0.6" stroke-dasharray="4 4"/>
+        <line x1="150" y1="175" x2="150" y2="335" stroke="#3DAA6E" stroke-width="0.6" stroke-dasharray="4 4"/>
+        <line x1="530" y1="175" x2="530" y2="335" stroke="#C9A84C" stroke-width="0.6" stroke-dasharray="4 4"/>
+      </g>
+
+      <!-- CENTRE: Oracle Core -->
+      <g class="node-group" onclick="spiderClick('core')" id="snode-core">
+        <rect x="270" y="215" width="140" height="70" rx="10" fill="rgba(74,144,226,0.12)" stroke="#4A90E2" stroke-width="1.8"/>
+        <text x="340" y="241" text-anchor="middle" fill="#4A90E2" font-size="11" font-weight="700" font-family="'Segoe UI',sans-serif">RPGACE CORE</text>
+        <text x="340" y="257" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.8" font-family="'Segoe UI',sans-serif">Claude Sonnet 4.6</text>
+        <text x="340" y="271" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.6" font-family="'Segoe UI',sans-serif">8 modules · Supabase · Vercel</text>
+      </g>
+
+      <!-- TOP: Prod Oracle -->
+      <g class="node-group" onclick="spiderClick('prod')" id="snode-prod">
+        <rect x="266" y="56" width="148" height="56" rx="8" fill="rgba(74,144,226,0.08)" stroke="#4A90E2" stroke-width="1"/>
+        <text x="340" y="77" text-anchor="middle" fill="#4A90E2" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">PROD. ORACLE</text>
+        <text x="340" y="91" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">14 Socratic commands</text>
+        <text x="340" y="104" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Feynman · Gap Finder</text>
+      </g>
+
+      <!-- LEFT: Learning -->
+      <g class="node-group" onclick="spiderClick('prod-panel')" id="snode-prodp">
+        <rect x="62" y="143" width="176" height="60" rx="8" fill="rgba(74,144,226,0.08)" stroke="#4A90E2" stroke-width="1"/>
+        <text x="150" y="165" text-anchor="middle" fill="#4A90E2" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">YT + INSTA ORACLE</text>
+        <text x="150" y="180" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">21 strategy commands</text>
+        <text x="150" y="194" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">@AceSanyaBeats pre-filled</text>
+      </g>
+
+      <!-- RIGHT: Content Strategy -->
+      <g class="node-group" onclick="spiderClick('visual')" id="snode-visual">
+        <rect x="442" y="143" width="176" height="60" rx="8" fill="rgba(74,144,226,0.08)" stroke="#4A90E2" stroke-width="1"/>
+        <text x="530" y="165" text-anchor="middle" fill="#4A90E2" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">VISUAL ORACLE</text>
+        <text x="530" y="180" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">Filmmaker library · Neural Frames</text>
+        <text x="530" y="194" text-anchor="middle" fill="#4A90E2" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Visual Treatment · Storyboard</text>
+      </g>
+
+      <!-- LOWER LEFT: Learning System -->
+      <g class="node-group" onclick="spiderClick('learning')" id="snode-learn">
+        <rect x="56" y="303" width="188" height="60" rx="8" fill="rgba(61,170,110,0.08)" stroke="#3DAA6E" stroke-width="1"/>
+        <text x="150" y="325" text-anchor="middle" fill="#3DAA6E" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">LEARNING SYSTEM</text>
+        <text x="150" y="340" text-anchor="middle" fill="#3DAA6E" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">Feynman Loop · Encyclopedia</text>
+        <text x="150" y="354" text-anchor="middle" fill="#3DAA6E" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Knowledge Gaps · Spaced rep</text>
+      </g>
+
+      <!-- LOWER RIGHT: Content Pipeline -->
+      <g class="node-group" onclick="spiderClick('content')" id="snode-content">
+        <rect x="436" y="303" width="188" height="60" rx="8" fill="rgba(201,168,76,0.08)" stroke="#C9A84C" stroke-width="1"/>
+        <text x="530" y="325" text-anchor="middle" fill="#C9A84C" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">CONTENT PIPELINE</text>
+        <text x="530" y="340" text-anchor="middle" fill="#C9A84C" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">Beat Log · Video Tab · Canva</text>
+        <text x="530" y="354" text-anchor="middle" fill="#C9A84C" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Neural Frames · Cover art auto</text>
+      </g>
+
+      <!-- BOTTOM LEFT: Taxonomy -->
+      <g class="node-group" onclick="spiderClick('taxonomy')" id="snode-tax">
+        <rect x="100" y="408" width="200" height="60" rx="8" fill="rgba(42,191,176,0.08)" stroke="#2ABFB0" stroke-width="1.5"/>
+        <text x="200" y="430" text-anchor="middle" fill="#2ABFB0" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">PRODUCTORUM TOTALIS</text>
+        <text x="200" y="445" text-anchor="middle" fill="#2ABFB0" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">24-phylum knowledge taxonomy</text>
+        <text x="200" y="459" text-anchor="middle" fill="#2ABFB0" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Feeds every AI system</text>
+      </g>
+
+      <!-- BOTTOM CENTRE: Automation -->
+      <g class="node-group" onclick="spiderClick('auto')" id="snode-auto">
+        <rect x="268" y="408" width="144" height="60" rx="8" fill="rgba(226,84,84,0.08)" stroke="#E25454" stroke-width="1"/>
+        <text x="340" y="430" text-anchor="middle" fill="#E25454" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">AUTOMATION</text>
+        <text x="340" y="445" text-anchor="middle" fill="#E25454" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">n8n · Morning Brief</text>
+        <text x="340" y="459" text-anchor="middle" fill="#E25454" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Daily CI · Rota sync</text>
+      </g>
+
+      <!-- BOTTOM RIGHT: External -->
+      <g class="node-group" onclick="spiderClick('external')" id="snode-ext">
+        <rect x="424" y="408" width="188" height="60" rx="8" fill="rgba(155,89,182,0.08)" stroke="#9B59B6" stroke-width="1"/>
+        <text x="518" y="430" text-anchor="middle" fill="#9B59B6" font-size="10" font-weight="700" font-family="'Segoe UI',sans-serif">EXTERNAL SERVICES</text>
+        <text x="518" y="445" text-anchor="middle" fill="#9B59B6" font-size="9" opacity="0.7" font-family="'Segoe UI',sans-serif">Gmail · Notion · GitHub · YouTube</text>
+        <text x="518" y="459" text-anchor="middle" fill="#9B59B6" font-size="9" opacity="0.55" font-family="'Segoe UI',sans-serif">Beatstars · PRS · DistroKid</text>
+      </g>
+
+    </svg>
+    <div class="spider-hint">Click any node to learn its role in the system</div>
+  </div>
+</div>
+
+<hr>
+
+<!-- TAXONOMY -->
+<div class="section" id="taxonomy">
+  <div class="section-eyebrow">Knowledge Architecture</div>
+  <div class="section-title">Productorum Totalis — the taxonomy</div>
+  <p class="section-sub">A Linnaeus-style 24-phylum classification of all music production knowledge. Every piece of learning, every beat, every encyclopedia entry, every Feynman session is tagged to a node. The taxonomy is the shared language of every AI system in RPGACE.</p>
+
+  <div class="card teal" style="margin-bottom:24px">
+    <div class="card-title">Why a taxonomy and not just notes</div>
+    <div class="card-body">Flat notes accumulate. A taxonomy connects. When a Feynman session on Dorian Mode scores 7/10, the taxonomy node knows: studied twice, never applied in a beat, gap score high. That gap score influences the agenda generator. Oracle reads it before teaching. The knowledge pipeline targets it. The beat log checks it. One data point — six downstream effects.</div>
+  </div>
+
+  <div class="phyla-grid">
+    <div class="phylum-card core"><div class="phylum-num">Phylum I</div><div class="phylum-name">Compositio</div><div class="phylum-sub">Melody, harmony, chord progressions, scales, song structure</div></div>
+    <div class="phylum-card core"><div class="phylum-num">Phylum II</div><div class="phylum-name">Percussio</div><div class="phylum-sub">Drum programming, groove, 808 design, hi-hat patterns, UK drill rhythms</div></div>
+    <div class="phylum-card core"><div class="phylum-num">Phylum III</div><div class="phylum-name">Sonus Designatio</div><div class="phylum-sub">Sound design, synthesis, sampling, foley, textural layers</div></div>
+    <div class="phylum-card core"><div class="phylum-num">Phylum IV</div><div class="phylum-name">Mixtura</div><div class="phylum-sub">Mixing: EQ, compression, saturation, sidechain, spatial placement</div></div>
+    <div class="phylum-card core"><div class="phylum-num">Phylum V</div><div class="phylum-name">Magistra</div><div class="phylum-sub">Mastering: LUFS targets, limiting, stem mastering, streaming loudness</div></div>
+    <div class="phylum-card core"><div class="phylum-num">Phylum VI</div><div class="phylum-name">Instrumentarium</div><div class="phylum-sub">FL Studio, VSTs, hardware controllers, DAW workflow efficiency</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum VII</div><div class="phylum-name">Negotium</div><div class="phylum-sub">Licensing, contracts, publishing splits, work-for-hire clauses</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum VIII</div><div class="phylum-name">Historia</div><div class="phylum-sub">200-producer corpus — Golden Era through UK, French rap, Russian trap</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum IX</div><div class="phylum-name">Psychologia</div><div class="phylum-sub">Creative psychology, flow state, anti-procrastination, artist identity</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum X</div><div class="phylum-name">Technologia</div><div class="phylum-sub">AI tools, automation, content intelligence, production tech stack</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum XI</div><div class="phylum-name">Lingua Musicae</div><div class="phylum-sub">Scale → colour palette map, visual language of music theory</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum XII</div><div class="phylum-name">Contentum</div><div class="phylum-sub">YouTube tutorials, Instagram Reels, hooks, thumbnails, titles, scripts</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum XIII</div><div class="phylum-name">Collaboratio</div><div class="phylum-sub">A&amp;R outreach, collab strategy, community building, cold email</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum XIV</div><div class="phylum-name">Sensus Auris</div><div class="phylum-sub">Critical listening, reference track analysis, A/B comparison</div></div>
+    <div class="phylum-card extended"><div class="phylum-num">Phylum XV</div><div class="phylum-name">Anatomia</div><div class="phylum-sub">Music theory fundamentals — intervals, modes, voice leading, tension</div></div>
+    <div class="phylum-card business"><div class="phylum-num">Phylum XVI</div><div class="phylum-name">Venditionis Beatorum</div><div class="phylum-sub">Beat selling: Beatstars, pricing, lease vs exclusive, UK regional advantages</div></div>
+    <div class="phylum-card business"><div class="phylum-num">Phylum XVII</div><div class="phylum-name">Fons Educationis</div><div class="phylum-sub">Source database: artists + YouTube educators + beat selling angle per node</div></div>
+    <div class="phylum-card business"><div class="phylum-num">Phylum XVIII</div><div class="phylum-name">Referentia Mercati</div><div class="phylum-sub">Trend intelligence, competitive analysis, regional market gaps</div></div>
+    <div class="phylum-card business"><div class="phylum-num">Phylum XIX–XXII</div><div class="phylum-name">Distribution + Rights</div><div class="phylum-sub">DistroKid, RouteNote Content ID, PRS for Music, publishing stack</div></div>
+    <div class="phylum-card business"><div class="phylum-num">Phylum XXIII–XXIV</div><div class="phylum-name">Beat Stores + Sync</div><div class="phylum-sub">Platform strategy, sync licensing, catalogue management</div></div>
+    <div class="phylum-card visual"><div class="phylum-num">Phylum XXV</div><div class="phylum-name">Visio Cinematica</div><div class="phylum-sub">50-filmmaker visual library, Neural Frames briefs, colour grading, camera grammar</div></div>
+    <div class="phylum-card visual"><div class="phylum-num">Nodes per phylum</div><div class="phylum-name">What a node stores</div><div class="phylum-sub">Definition · Artist references · YouTube educators · Beat selling angle · FL Studio implementation · Study count · Last studied · Applied in beat · Gap score</div></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- TAXONOMY DATA FLOWS -->
+<div class="section" id="taxonomy-flows">
+  <div class="section-eyebrow">Knowledge Architecture</div>
+  <div class="section-title">How taxonomy feeds every AI system</div>
+  <p class="section-sub">The taxonomy is not a reference document. It is live data that every module reads and writes. Every AI call in RPGACE is context-enriched by what the taxonomy knows.</p>
+
+  <div class="flow-section">
+    <div class="card-title" style="margin-bottom:12px;font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase">Feynman Loop → Taxonomy</div>
+    <div class="flow-row">
+      <div class="flow-node">User studies a concept</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">3-phase Feynman session</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node gold">Score 1–10 generated</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">taxonomy_nodes.study_count++</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">gap_score updated</div>
+    </div>
+    <div class="flow-row" style="margin-top:6px">
+      <div class="flow-node teal">gap_score high</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">Agenda generator weights this node</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">Spaced repetition entry created</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">Do Now task fires at correct time</div>
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="card-title" style="margin-bottom:12px;font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase">Beat Log → Taxonomy → Cover Art</div>
+    <div class="flow-row">
+      <div class="flow-node">Beat logged (key, BPM, mood)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">Phylum XI: scale → colour palette</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node gold">Canva autofill template</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node gold">4 cover art formats</div>
+    </div>
+    <div class="flow-row" style="margin-top:6px">
+      <div class="flow-node teal">Phylum XVI: beat selling angle</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node gold">Beatstars description auto-written</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">Phylum XXV: filmmaker match</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node gold">Neural Frames brief drafted</div>
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="card-title" style="margin-bottom:12px;font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase">Daily Knowledge Pipeline → Taxonomy</div>
+    <div class="flow-row">
+      <div class="flow-node">n8n 6am: 2 YouTube tutorials fetched</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">Whisper transcribes audio</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">Claude extracts insights</div>
+    </div>
+    <div class="flow-row" style="margin-top:6px">
+      <div class="flow-node blue">Each insight tagged to phylum node</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">taxonomy_nodes enriched</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">Encyclopedia entry created</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">720 knowledge reports / year</div>
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="card-title" style="margin-bottom:12px;font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase">Oracle Chat → Taxonomy-enriched context</div>
+    <div class="flow-row">
+      <div class="flow-node">User sends message to Oracle</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">Relevant taxonomy nodes pulled</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">Oracle response enriched with phylum context</div>
+    </div>
+    <div class="flow-row" style="margin-top:6px">
+      <div class="flow-node blue">Oracle identifies learning intent</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node green">Feynman offer bar appears</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">Session scored → taxonomy updated</div>
+    </div>
+  </div>
+
+  <div class="flow-section">
+    <div class="card-title" style="margin-bottom:12px;font-size:12px;color:var(--dim);letter-spacing:2px;text-transform:uppercase">Taxonomy → Prod. Oracle panel buttons</div>
+    <div class="flow-row">
+      <div class="flow-node">User clicks "Gap Finder" command</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">taxonomy_nodes: gap_score DESC</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">Oracle teaches highest-gap node</div>
+    </div>
+    <div class="flow-row" style="margin-top:6px">
+      <div class="flow-node">User clicks "Beat Analysis" command</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node teal">Phylum I, II, III, IV nodes</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node blue">Structured analysis: key, BPM, chords, 808, mix notes</div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Taxonomy field</th><th>Written by</th><th>Read by</th></tr>
+    <tr><td>study_count</td><td>Feynman Loop after each session</td><td>Knowledge Gap Tracker, Agenda generator</td></tr>
+    <tr><td>gap_score</td><td>Feynman session score (1–10 inverted)</td><td>Prod. Oracle Gap Finder, Morning Brief, Daily agenda</td></tr>
+    <tr><td>last_studied_at</td><td>Feynman Loop timestamp</td><td>Spaced repetition scheduler</td></tr>
+    <tr><td>applied_in_beat</td><td>Beat Log when nodes are tagged</td><td>"Used in a Beat" filter, gap tracker</td></tr>
+    <tr><td>fl_studio_implementation</td><td>Content Intel extraction, manual</td><td>Prod. Oracle teaching prompts</td></tr>
+    <tr><td>artist_references</td><td>Phylum XVII source database</td><td>Beat Analysis command, History (Phylum VIII)</td></tr>
+    <tr><td>youtube_educators</td><td>Content Intel pipeline</td><td>Best Resources command (Prod. Oracle Cmd 12)</td></tr>
+    <tr><td>beat_selling_angle</td><td>Phylum XVI + Oracle analysis</td><td>Beat Log → Beatstars auto-description</td></tr>
+    <tr><td>colour_palette</td><td>Phylum XI scale mapping</td><td>Canva autofill, Neural Frames brief, Visual Treatment</td></tr>
+  </table>
+</div>
+
+<hr>
+
+<!-- AI INTERCOMMUNICATION -->
+<div class="section" id="ai-comms">
+  <div class="section-eyebrow">AI Architecture</div>
+  <div class="section-title">How the AI systems communicate</div>
+  <p class="section-sub">At full capacity, no single Claude call happens in isolation. Every AI output is structured data that feeds the next system. The taxonomy is the shared language between them all.</p>
+
+  <div class="grid2">
+    <div class="card blue">
+      <div class="card-title">Oracle → Encyclopedia</div>
+      <div class="card-body">When Oracle identifies a production concept in conversation, it auto-triggers an encyclopedia entry with phylum assignment. Feynman Loop watches Oracle output for encyclopedia-style headers and offers a mastery session immediately.</div>
+    </div>
+    <div class="card green">
+      <div class="card-title">Content Intel → Taxonomy</div>
+      <div class="card-body">Whisper transcribes a tutorial. Claude extracts structured insights with: concept + why it matters + FL Studio application + phylum node. Minimum 2 sentences. Single-word insights are rejected. Each insight updates its node.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-title">Beat Log → Canva → Four formats</div>
+      <div class="card-body">Beat logged → taxonomy node pulled → Phylum XI maps scale to colour → Phylum XXV matches filmmaker → Canva autofill creates cover art → 3000×3000 (Beatstars), 1080×1080 (Instagram), 1280×720 (YouTube), 1080×1920 (Reels).</div>
+    </div>
+    <div class="card teal">
+      <div class="card-title">Feynman → Schedule → Agenda</div>
+      <div class="card-body">Feynman session scores a concept 1–10. Score inverted to gap_score. High gap → spaced repetition entry created in rpgace_sched_agendas. Agenda generator picks it up at the correct interval. Do Now button fires the next Feynman session.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-title">Morning Brief → Day shape</div>
+      <div class="card-body">n8n 8am: Gmail unread + shift schedule + YouTube stats delta pulled. Claude synthesises sub-400-word brief. Agenda generator reads shift difficulty from the brief and weights today's task complexity accordingly.</div>
+    </div>
+    <div class="card red">
+      <div class="card-title">Taxonomy → Prod. Oracle prompts</div>
+      <div class="card-body">Every Prod. Oracle command is pre-seeded with taxonomy context. Gap Finder reads gap_score DESC. Beat Analysis reads Phyla I–IV nodes. Best Resources reads youtube_educators field. The buttons are not generic prompts — they are taxonomy-aware queries.</div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- AUTONOMOUS -->
+<div class="section" id="autonomous">
+  <div class="section-eyebrow">Full Capacity</div>
+  <div class="section-title">What runs without being asked</div>
+  <p class="section-sub">When all phases are complete and n8n is running, these workflows fire automatically. The system moves from reactive (you ask, it answers) to proactive (it prepares, you create).</p>
+
+  <div class="auto-grid">
+    <div class="auto-time">8:00 AM daily</div>
+    <div class="auto-desc">n8n fires Morning Brief. Gmail unread flagged, today's shifts, YouTube stats delta from last week all pulled. Claude writes sub-400 words. Agenda generator reads shift difficulty and weights tasks for the day. Delivered to Dashboard before the first coffee.</div>
+    <div class="auto-time">6:00 AM daily</div>
+    <div class="auto-desc">Daily Knowledge Pipeline: n8n finds 2 relevant YouTube tutorials based on current taxonomy gaps. Whisper transcribes audio locally. Claude extracts structured insights (concept + why + FL Studio application + phylum node). Encyclopedia updated, taxonomy nodes enriched. 720 knowledge reports per year at steady state.</div>
+    <div class="auto-time">On beat log</div>
+    <div class="auto-desc">Taxonomy nodes tagged from key, BPM, mood selection. Phylum XI maps scale to colour palette. Phylum XVI provides beat selling angle. Phylum XXV matches filmmaker visual style. Canva autofill generates cover art in 4 formats. Beatstars description written. Neural Frames brief drafted. All without leaving RPGACE.</div>
+    <div class="auto-time">Monday 7:00 AM</div>
+    <div class="auto-desc">Fourth rota extractor runs via Browser Use (or n8n). Logs into Fourth, navigates to schedule, extracts shifts for the next 3 weeks. Writes to Supabase rpgace_shifts. Calendar updates automatically. No screenshot, no manual paste.</div>
+    <div class="auto-time">Sunday 6:00 PM</div>
+    <div class="auto-desc">Weekly Review fires. Sessions logged, beats made, insights extracted, knowledge scored. Gap analysis from taxonomy. Monday agenda pre-built. Journal entry saved to Supabase and Notion. Ready before the week starts.</div>
+    <div class="auto-time">On video drop</div>
+    <div class="auto-desc">Video pipeline detects new .mp4 in watch folder. auto-editor removes silence. Whisper transcribes. Claude generates EDL (keep/cut decisions). RPGACE Video tab shows review UI. Approve → FFmpeg renders. 4 exports: main edit, Shorts, Reels, thumbnail still. DaVinci for colour only.</div>
+  </div>
+</div>
+
+<hr>
+
+<!-- TIMELINE -->
+<div class="section" id="timeline">
+  <div class="section-eyebrow">Roadmap</div>
+  <div class="section-title">Release timeline</div>
+  <p class="section-sub">Each phase is gated. Nothing in the next phase ships until the current phase is used daily and passing the 48-hour governing rule.</p>
+</div>
+
+<div class="section" id="phase1">
+  <div class="section-eyebrow">Phase 1</div>
+  <div class="section-title">July 2026 — The reboot <span class="badge active">In progress</span></div>
+  <p class="section-sub">Making the system operational for daily use. Every item here directly enables a beat or a video within 48 hours.</p>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot done"></div>
+      <div class="tl-title">Foundation complete <span class="badge live">Live</span></div>
+      <div class="tl-date">June 2026</div>
+      <div class="tl-body">8 modules, Supabase, Vercel, Composio Gmail/Notion/YouTube, Feynman Loop, Encyclopedia, Architecture V2, intel_bibliography, quickActions, orchestrate.js fixed.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">Visual Oracle panel (Step 11)</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">Director Match · Copyright Risk Analyser · Mood Board Brief · Storyboard Scene Builder · Neural Frames brief generator · Visual Treatment Document. Connects Phylum XXV filmmaker library to content output.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">Beat Log (Step 12)</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">Log: title, key, BPM, scale, energy, mood, taxonomy nodes applied. Awards XP. Triggers content brief. Stores in Supabase video_jobs. Tags phyla for downstream automation.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">Morning Brief (Step 13)</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">Dashboard button → Gmail flagged + shifts + YouTube stats delta + 2 encyclopedia insights. Sub-400 words. Reads in 90 seconds. Shapes the day's agenda difficulty.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">Content Repurpose + Work Style + Flow State</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">1 input → 4 platform outputs (Steps 14–16). Work Style selector (Planner/Prioritiser/Arranger/Visualiser) shapes agenda structure. Flow state pre/post session check feeds difficulty calibration.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">Schedule fixes R-01 through R-24</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">Monthly calendar duplicate nav, weekly nav positioning, daily nav in wrong place, empty state bugs, prompt() → modal replacement, past day log from Supabase.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">Knowledge Gap Tracker + Taxonomy Sync</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">Dashboard badge showing gap count per phylum. "Apply it tonight" button per node. Encyclopedia entries push to taxonomy_nodes. Phylum/Class/Genus assigned by Claude based on content.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot active"></div>
+      <div class="tl-title">n8n installed + Morning Brief automated</div>
+      <div class="tl-date">July 2026</div>
+      <div class="tl-body">n8n running locally (docker). First workflow: Morning Brief at 8am. Second: CI daily pipeline. Browser Use installed for rota extraction without screenshots.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="phase2">
+  <div class="section-eyebrow">Phase 2</div>
+  <div class="section-title">August – September 2026 — Content machine <span class="badge future">Upcoming</span></div>
+  <p class="section-sub">Automating the full path from beat to posted content. Beat → taxonomy → cover art → post with minimal manual steps.</p>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">AI Video Pipeline tab (Step 34)</div>
+      <div class="tl-date">August 2026</div>
+      <div class="tl-body">New nav tab. Drop raw .mp4 → auto-editor removes silence → Whisper transcribes → Claude EDL → RPGACE review UI (Keep/Cut) → FFmpeg renders → 4 exports. DaVinci for colour only.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Visual Treatment Generator (Step 35)</div>
+      <div class="tl-date">August 2026</div>
+      <div class="tl-body">Beat Log → 600-word Visual Treatment Document → Neural Frames Autopilot with stems → 4K beat-synced video. Phylum XXV filmmaker library provides style direction. Calls Visual Oracle commands automatically.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Canva autofill + cover art automation</div>
+      <div class="tl-date">August 2026</div>
+      <div class="tl-body">CANVA_INITIATE_CANVA_DESIGN_AUTOFILL_JOB called from Beat Log. Phylum XI colour palette fills template. Beat title, key, BPM injected. 4 export formats for Beatstars, Instagram, YouTube, Reels.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Beat selling integration</div>
+      <div class="tl-date">August–September 2026</div>
+      <div class="tl-body">Phylum XVI beat selling angle → Beatstars auto-descriptions. PRS for Music registration workflow. RouteNote Content ID fingerprinting. DistroKid + RouteNote distribution stack. Income: lease sales + PRS royalties + Content ID + exclusives.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Phylum XXV — 50 filmmaker library</div>
+      <div class="tl-date">September 2026</div>
+      <div class="tl-body">50 directors with visual style profiles. Beat genre pairing. 80-word Neural Frames prompt per director. ShotDeck search URL. Copyright risk level. Scale → colour palette map (7 scales, 7 palettes). Camera vocabulary (15 nodes). Lighting typography (10 nodes).</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">YouTube channel at 1,000+ subscribers</div>
+      <div class="tl-date">September 2026</div>
+      <div class="tl-body">Milestone enabled by consistent posting (2 tutorials/week) using the content pipeline. First licensing deal target. 40+ beats listed on Beatstars.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="phase3">
+  <div class="section-eyebrow">Phase 3</div>
+  <div class="section-title">October – December 2026 — Intelligent automation <span class="badge future">Upcoming</span></div>
+  <p class="section-sub">The system becomes proactive. It knows what you need to learn before you ask. It prepares content before you sit down to make it.</p>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Daily Knowledge Pipeline at scale</div>
+      <div class="tl-date">October 2026</div>
+      <div class="tl-body">n8n 6am daily: 2 tutorials fetched by gap_score targeting → Whisper → Claude → 2 structured reports with phylum tagging. 720 knowledge reports per year. Taxonomy fills itself. Encyclopedia grows without manual input.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Beat → Post pipeline fully automated</div>
+      <div class="tl-date">October 2026</div>
+      <div class="tl-body">One button: log beat → cover art generated → Beatstars description written → Instagram caption → YouTube title and thumbnail brief → all queued for review. Human approves, system posts.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">Agenda fully adaptive</div>
+      <div class="tl-date">November 2026</div>
+      <div class="tl-body">Flow state history (did you hit flow? 1–5 energy) feeds next agenda difficulty. Heavy shift yesterday → lighter creative tasks today. High gap_score nodes weighted at correct spaced repetition interval. Agenda calibrates itself.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">200-producer curriculum</div>
+      <div class="tl-date">November 2026</div>
+      <div class="tl-body">Manual learning track. 3-day deep-dive protocol per producer: Deconstruct → Recreate → Extract. Each producer tagged to Phylum VIII (Historia). Taxonomy nodes enriched with producer-specific techniques. Knowledge genuinely mastered, not accumulated.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot future"></div>
+      <div class="tl-title">NotebookLM integration</div>
+      <div class="tl-date">December 2026</div>
+      <div class="tl-body">Each Encyclopedia entry gets a NotebookLM link. Click → paste transcript as source → Audio Overview, Flashcards, Mind Map generated. Listen to Audio Overview while making beats in FL Studio. Flashcard test after. Pass/fail logged to Journal. Feeds Feynman spaced rep schedule.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="phase4">
+  <div class="section-eyebrow">Phase 4</div>
+  <div class="section-title">2027 — SaaS launch <span class="badge future">Upcoming</span></div>
+  <p class="section-sub">RPGACE becomes a product for independent producers. Built on the same architecture, personalised to any genre, any audience, any platform.</p>
+  <div class="grid2">
+    <div class="card blue">
+      <div class="card-title">What changes for SaaS</div>
+      <div class="card-body">Multi-user Supabase schema with RLS per account. Stripe billing. Custom domain, SEO, onboarding flow. Personalisation layer: any genre, any audience, any taxonomy structure. Public-facing taxonomy that users can contribute to.</div>
+    </div>
+    <div class="card purple">
+      <div class="card-title">What stays the same</div>
+      <div class="card-body">The governing rule. The 48-hour test. The module architecture. The taxonomy as the shared language. The Feynman Loop. The content pipeline. The principles that made it work for Alex work for every independent producer.</div>
+    </div>
+    <div class="card gold">
+      <div class="card-title">New integrations</div>
+      <div class="card-body">Composio extended to Beatstars, Airbit, SoundCloud, DistroKid direct API. Community leaderboard: beats made, knowledge mastered, videos posted. Public taxonomy with crowdsourced phylum nodes.</div>
+    </div>
+    <div class="card green">
+      <div class="card-title">Revenue model</div>
+      <div class="card-body">Subscription (monthly/annual). Pro tier unlocks Canva automation, video pipeline, full taxonomy. Free tier: Oracle + Feynman Loop + Encyclopedia. Composio usage billed through API at cost + margin.</div>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- FULL CAPACITY -->
+<div class="section" id="full-capacity">
+  <div class="section-eyebrow">End state</div>
+  <div class="section-title">RPGACE at full capacity</div>
+  <p class="section-sub">When every phase is complete, this is a normal day in the system.</p>
+
+  <div class="card gold" style="margin-bottom:16px">
+    <div class="card-title">Before you wake up</div>
+    <div class="card-body">n8n has already run the Daily Knowledge Pipeline. 2 tutorials transcribed, analysed, and pushed to Encyclopedia. 2 taxonomy nodes enriched with new FL Studio implementations. Gap scores updated. Morning Brief drafted and waiting on Dashboard.</div>
+  </div>
+  <div class="card blue" style="margin-bottom:16px">
+    <div class="card-title">When you open RPGACE</div>
+    <div class="card-body">Morning Brief tells you: one email needs a reply before your shift, your YouTube watch time dropped 12% this week, and your highest knowledge gap is in sidechain EQ (Phylum IV, gap score 8.2). Agenda has been built around your shift difficulty and that gap. Do Now button is waiting.</div>
+  </div>
+  <div class="card green" style="margin-bottom:16px">
+    <div class="card-title">When you make a beat</div>
+    <div class="card-body">Log it in Beat Log. Key: D minor. BPM: 140. Mood: dark, cinematic. Taxonomy auto-suggests: Phylum I (Compositio), II (Percussio), XI (Lingua Musicae — Dorian mode, mapped to cold blue-grey palette). Canva generates the cover. Neural Frames brief is drafted. Beatstars description is written. Phylum XVI angle: "UK drill cinematic — high demand in sync licensing."</div>
+  </div>
+  <div class="card purple" style="margin-bottom:16px">
+    <div class="card-title">When you study</div>
+    <div class="card-body">Feynman Loop starts from the Knowledge Gap Tracker or the Do Now button. 3 phases. Score 8.2 → gap drops to 6.1 → spaced repetition schedules next session in 4 days. Oracle knows: you have studied sidechain EQ twice, applied it in zero beats. Next beat log prompts: "Did you apply sidechain EQ in this beat?"</div>
+  </div>
+  <div class="card teal">
+    <div class="card-title">By end of day</div>
+    <div class="card-body">Beat made. Cover art posted to Instagram. YouTube short scheduled. Journal entry saved automatically with Oracle summary. Taxonomy updated. Encyclopedia entry created from the session. Gap score shifted. Tomorrow's agenda already adjusting. The system learned from today.</div>
+  </div>
+</div>
+
+<hr>
+
+<!-- VISION -->
+<div class="section" id="vision">
+  <div class="section-eyebrow">The mission</div>
+  <div class="section-title">What this is really about</div>
+  <p class="section-sub">RPGACE is not a productivity tool. It is a system that removes every excuse between Alex and the music. The shifts are real. The time is limited. The knowledge has to compound. The content has to be consistent. The system handles everything it can so the human can handle everything it can't.</p>
+
+  <div class="rule-box">
+    <div class="label">Non-negotiables</div>
+    <div class="text">Russian/French/London cultural perspective stays in the voice. Independent, no label, no compromise on creative direction. Music production knowledge must be genuinely mastered, not just accumulated. Every tool in RPGACE must pass the 48-hour test.</div>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">Phase 1 target</div>
+      <div class="card-body">2 beats/week. 2 YouTube tutorials/week. 2 Instagram posts/week. System used daily. Taxonomy growing. Feynman Loop completing at least one cycle per week.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Phase 2 target</div>
+      <div class="card-body">1,000+ YouTube subscribers. 40+ beats on Beatstars. First licensing deal. Cover art automation live. Visual treatment pipeline working end to end.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Phase 4 target</div>
+      <div class="card-body">RPGACE is a product. Other independent producers use it. The taxonomy is public and crowdsourced. The system that was built for one producer serves many.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:48px;padding-top:32px;border-top:1px solid var(--border);text-align:center">
+    <div style="font-family:Georgia,serif;font-size:11px;color:var(--dimmer);letter-spacing:2px;text-transform:uppercase">RPGACE V5 Manual · Generated June 28 2026</div>
+    <div style="font-size:10px;color:var(--dimmer);margin-top:6px">rpgace.vercel.app · @AceSanyaBeats · Derby, UK</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const spiderData = {
+  core: {title:'RPGACE Core Engine', body:'Claude Sonnet 4.6 at the centre. 8 registered modules on rpgace_core.js. Supabase for all persistence. Vercel for serverless deployment. rpgace_build.py manages all module additions. main.js is permanently frozen — no exceptions.'},
+  prod: {title:'Prod. Oracle Panel', body:'14 Socratic teaching commands. Intercepts window.toggleProdOraclePanel(). Gap Finder reads taxonomy gap_score DESC. Beat Analysis reads Phyla I–IV nodes. Best Resources reads youtube_educators field. Every command is taxonomy-aware.'},
+  'prod-panel': {title:'YouTube + Insta Oracle', body:'21 combined strategy commands. All pre-filled for @AceSanyaBeats, FL Studio, UK hip hop, 18–35 audience. Intercepts main.js panel toggles without touching the frozen file. quickActions module patches broken buttons.'},
+  visual: {title:'Visual Oracle Panel', body:'6 commands: Director Match from 50-filmmaker Phylum XXV library, Copyright Risk Analyser, Mood Board Brief, Storyboard Scene Builder, Neural Frames brief generator, Visual Treatment Document. Reads Phylum XXV and XI.'},
+  learning: {title:'Learning System', body:'Feynman Loop (3-phase mastery), Encyclopedia (Supabase), encSync with deduplication, intelDelete with bibliography save. Scores every session 1–10. Updates taxonomy_nodes.gap_score. Schedules spaced repetition entries.'},
+  content: {title:'Content Pipeline', body:'Beat Log tags phylum nodes. Visual Treatment Generator calls Visual Oracle. Canva INITIATE_DESIGN_AUTOFILL_JOB fills template from Phylum XI colour palette. Neural Frames brief from Phylum XXV filmmaker match. Video tab with AI-assisted EDL review.'},
+  taxonomy: {title:'Productorum Totalis', body:'24-phylum Linnaeus-style classification of all production knowledge. Every module reads and writes to it. The shared language between all AI systems. Feeds: Oracle prompts, agenda weighting, cover art colours, Beatstars descriptions, Feynman targets, Morning Brief gap highlights.'},
+  auto: {title:'Automation Layer', body:'n8n runs locally (or cloud). Workflows: 8am Morning Brief (Gmail + shifts + YouTube), 6am Daily Knowledge Pipeline (2 tutorials/day → 720 reports/year), Monday rota sync via Browser Use, Sunday weekly review. Zero manual triggers required.'},
+  external: {title:'External Services', body:'Composio v3.1: Gmail drafts, Notion pages, GitHub repos, YouTube/Supadata analytics. Future: Beatstars, Airbit, DistroKid, SoundCloud. PRS for Music registration. RouteNote Content ID. Income stack: lease sales + PRS royalties + Content ID + exclusives.'}
+};
+
+function spiderClick(id) {
+  const d = spiderData[id];
+  if (!d) return;
+  const tt = document.getElementById('spider-tt');
+  tt.innerHTML = '<div class="tt-title">'+d.title+'</div>'+d.body;
+  tt.style.display = 'block';
+  tt.style.top = '12px';
+  tt.style.right = '12px';
+  tt.style.left = 'auto';
+  clearTimeout(window._ttTimer);
+  window._ttTimer = setTimeout(()=>{ tt.style.display='none'; }, 6000);
+}
+
+document.getElementById('spider-wrap').addEventListener('click', function(e){
+  if(e.target.tagName==='svg'||e.target===this){
+    document.getElementById('spider-tt').style.display='none';
+  }
+});
+
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('.section[id]');
+window.addEventListener('scroll', function(){
+  let cur = '';
+  sections.forEach(s=>{ if(window.scrollY >= s.offsetTop - 120) cur = s.id; });
+  navItems.forEach(a=>{
+    a.classList.toggle('active', a.getAttribute('href')==='#'+cur);
+  });
+}, {passive:true});
+</script>
+</body>
+</html>

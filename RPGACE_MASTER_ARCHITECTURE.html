@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPGACE Master Architecture — July 1st Implementation Plan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070d;--panel:#0f0f18;--panel2:#141420;--panel3:#1a1a28;
+  --gold:#C9A84C;--gdim:rgba(201,168,76,0.1);--gline:rgba(201,168,76,0.25);
+  --green:#3DAA6E;--red:#E24A4A;--blue:#4A90E2;--purple:#9B59B6;--teal:#2ABFBF;
+  --text:#E2E2EC;--muted:#4A4A68;--sub:rgba(226,226,236,0.62);
+  --border:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.04);
+  --sans:'Rajdhani',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;line-height:1.7;padding:0 0 80px}
+a{color:var(--gold);text-decoration:none}
+h1{font-family:var(--sans);font-size:clamp(28px,5vw,52px);font-weight:700;color:var(--gold);line-height:1}
+h2{font-family:var(--sans);font-size:17px;font-weight:700;color:var(--text);margin:32px 0 12px;letter-spacing:0.3px}
+h3{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--gold);letter-spacing:2.5px;text-transform:uppercase;margin:20px 0 8px}
+p{color:var(--sub);margin-bottom:10px;line-height:1.75}
+.page{max-width:960px;margin:0 auto;padding:0 28px}
+/* NAV */
+.topnav{background:rgba(7,7,13,0.92);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;gap:20px;flex-wrap:wrap;position:sticky;top:0;z-index:100;backdrop-filter:blur(8px)}
+.topnav a{font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);transition:color .15s}
+.topnav a:hover{color:var(--gold)}
+/* COVER */
+.cover{padding:64px 0 48px;border-bottom:1px solid var(--border)}
+.subtitle{font-family:var(--sans);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin:8px 0 28px}
+.kpi-row{display:flex;flex-wrap:wrap;gap:20px;margin-top:28px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:16px 20px;min-width:120px}
+.kpi-n{font-family:var(--sans);font-size:26px;font-weight:700;color:var(--gold);display:block}
+.kpi-l{font-size:10px;font-family:var(--sans);letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+/* SECTION */
+.section{padding:48px 0;border-bottom:1px solid var(--border)}
+/* DOMAIN CARDS */
+.domain{border-radius:10px;margin-bottom:20px;overflow:hidden}
+.domain-hdr{display:flex;align-items:center;gap:14px;padding:16px 20px}
+.domain-icon{font-size:22px}
+.domain-name{font-family:var(--sans);font-size:15px;font-weight:700}
+.domain-desc{font-size:11px;opacity:.65;margin-top:1px}
+.domain-body{padding:16px 20px 20px;border-top:1px solid rgba(255,255,255,0.05)}
+.domain-oracle .domain-hdr{background:rgba(255,100,100,0.06);border:1px solid rgba(255,80,80,0.15);border-bottom:none}
+.domain-oracle .domain-body{background:rgba(255,100,100,0.03);border:1px solid rgba(255,80,80,0.15);border-top:none}
+.domain-learning .domain-hdr{background:rgba(201,168,76,0.06);border:1px solid var(--gline);border-bottom:none}
+.domain-learning .domain-body{background:rgba(201,168,76,0.03);border:1px solid var(--gline);border-top:none}
+.domain-schedule .domain-hdr{background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.25);border-bottom:none}
+.domain-schedule .domain-body{background:rgba(74,144,226,0.03);border:1px solid rgba(74,144,226,0.25);border-top:none}
+.domain-content .domain-hdr{background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.25);border-bottom:none}
+.domain-content .domain-body{background:rgba(61,170,110,0.03);border:1px solid rgba(61,170,110,0.25);border-top:none}
+.domain-journal .domain-hdr{background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.25);border-bottom:none}
+.domain-journal .domain-body{background:rgba(155,89,182,0.03);border:1px solid rgba(155,89,182,0.25);border-top:none}
+.domain-system .domain-hdr{background:rgba(42,191,191,0.06);border:1px solid rgba(42,191,191,0.2);border-bottom:none}
+.domain-system .domain-body{background:rgba(42,191,191,0.03);border:1px solid rgba(42,191,191,0.2);border-top:none}
+/* MODULE GRID */
+.mod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.mod{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:10px 13px}
+.mod-name{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px}
+.mod-desc{font-size:10px;color:var(--muted)}
+.mod-step{font-size:9px;font-family:var(--sans);font-weight:700;letter-spacing:1px;margin-top:5px}
+.done .mod-step{color:var(--green)}
+.next .mod-step{color:var(--gold)}
+.later .mod-step{color:var(--muted)}
+.badge{display:inline-block;font-family:var(--sans);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:8px}
+.badge-done{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
+.badge-next{background:var(--gdim);color:var(--gold);border:1px solid var(--gline)}
+.badge-later{background:rgba(74,144,226,0.1);color:var(--blue);border:1px solid rgba(74,144,226,0.25)}
+.badge-ref{background:rgba(155,89,182,0.1);color:var(--purple);border:1px solid rgba(155,89,182,0.25)}
+.badge-frozen{background:rgba(226,84,84,0.1);color:var(--red);border:1px solid rgba(226,84,84,0.2)}
+/* STEP TABLE */
+.step-table{width:100%;border-collapse:collapse;font-size:12px}
+.step-table th{font-family:var(--sans);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+.step-table td{padding:9px 12px;border-bottom:1px solid var(--b2);color:var(--sub);vertical-align:top}
+.step-table td:first-child{font-family:var(--sans);font-weight:700;color:var(--text);white-space:nowrap}
+.step-table td:nth-child(2){color:var(--gold)}
+.step-table td:nth-child(3){color:var(--teal)}
+.step-table tr.done-row td:first-child{color:var(--green)}
+.step-table tr:last-child td{border-bottom:none}
+/* CODE */
+pre{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:11px;color:#a8c4d4;overflow-x:auto;margin:12px 0;line-height:1.55;font-family:'Courier New',monospace}
+code{background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:3px;font-size:11px;color:var(--teal);font-family:'Courier New',monospace}
+/* FLOW */
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:8px;margin:12px 0}
+.fs{background:var(--panel2);border:1px solid var(--border);padding:6px 12px;border-radius:4px;font-family:var(--sans);font-size:11px;font-weight:600;white-space:nowrap}
+.fhi{border-color:var(--gline);color:var(--gold)}
+.fa{color:var(--muted);font-size:11px}
+/* SB TABLE */
+.sb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.sb-card{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:13px}
+.sb-name{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--teal);margin-bottom:4px}
+.sb-cols{font-size:10px;color:var(--muted);line-height:1.6}
+/* RULE */
+.rule{background:var(--gdim);border:1px solid var(--gline);border-radius:8px;padding:16px 20px;margin:20px 0}
+.rule p{color:var(--text);font-style:italic;font-size:13px;margin:0}
+/* CMD SEQUENCE */
+.cmd-seq{background:var(--panel2);border:1px solid rgba(42,191,191,0.2);border-radius:8px;padding:16px 20px;margin:12px 0}
+.cmd-seq h3{color:var(--teal);margin-top:0}
+/* WARN */
+.warn{background:rgba(226,84,84,0.06);border:1px solid rgba(226,84,84,0.2);border-radius:6px;padding:12px 16px;margin:12px 0;font-size:12px;color:var(--sub)}
+.warn strong{color:var(--red)}
+/* REFINE */
+.r-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--b2)}
+.r-id{font-family:var(--sans);font-size:10px;font-weight:700;color:var(--gold);flex-shrink:0;min-width:36px}
+.r-domain{font-size:10px;color:var(--blue);font-family:var(--sans);flex-shrink:0;min-width:80px}
+.r-desc{font-size:11px;color:var(--sub)}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="#architecture">Architecture</a>
+  <a href="#domains">Domains</a>
+  <a href="#roadmap">Roadmap</a>
+  <a href="#supabase">Supabase</a>
+  <a href="#ai-layer">AI Layer</a>
+  <a href="#refine">Refinements</a>
+  <a href="#commands">Commands</a>
+  <a href="#deploy">Deploy</a>
+</nav>
+
+<div class="page">
+<div class="cover" id="top">
+  <h1>RPGACE<br>Master Architecture</h1>
+  <div class="subtitle">Senior Digital Architecture Review · July 1st Implementation Plan · June 27, 2026</div>
+  <p>One system. Six domains. Every July 1st step mapped to the exact module and command that builds it.</p>
+  <div class="kpi-row">
+    <div class="kpi"><span class="kpi-n">36</span><div class="kpi-l">Reboot Steps</div></div>
+    <div class="kpi"><span class="kpi-n">28</span><div class="kpi-l">R-Items</div></div>
+    <div class="kpi"><span class="kpi-n">6</span><div class="kpi-l">Domains</div></div>
+    <div class="kpi"><span class="kpi-n">8</span><div class="kpi-l">Modules Live</div></div>
+    <div class="kpi"><span class="kpi-n">14+</span><div class="kpi-l">Modules Planned</div></div>
+    <div class="kpi"><span class="kpi-n">7</span><div class="kpi-l">Supabase Tables</div></div>
+  </div>
+</div>
+
+<!-- ARCHITECTURE -->
+<div class="section" id="architecture">
+<h2>The Architecture Decision</h2>
+
+<div class="rule">
+  <p>"Does this feature directly result in a beat being made or a video posted within 48 hours of using it?" — The governing rule. Every architectural decision answers to this.</p>
+</div>
+
+<h3>The Root Problem — Diagnosed</h3>
+<p>Every bug this session had the same cause: Python scripts doing fragile string-matching on a monolithic JS file. The file grows, patterns don't match, modules duplicate, things break. The fix is not another patch script. It is a permanent structural change.</p>
+
+<h3>The Three-Layer Model</h3>
+<pre>
+┌─────────────────────────────────────────────────────────────┐
+│  LAYER 1: FOUNDATION (FROZEN after tested)                  │
+│  rpgace_core.js — STATE · hooks · DB · utils · bridge      │
+│  Never edited after July 1st. Never patched. Never touched. │
+├─────────────────────────────────────────────────────────────┤
+│  LAYER 2: DOMAIN MODULES (edit freely by domain)            │
+│  ORACLE · LEARNING · SCHEDULE · CONTENT · JOURNAL · SYSTEM │
+│  Each domain = one logical area. Modules inside it = atomic │
+│  features. Add one module, change one thing, stay focused.  │
+├─────────────────────────────────────────────────────────────┤
+│  LAYER 3: SERVER (api/ folder — Vercel serverless)          │
+│  oracle.js · intel.js · composio.js                        │
+│  Separate from frontend modules. Own deployment lifecycle.  │
+└─────────────────────────────────────────────────────────────┘
+</pre>
+
+<h3>The Build Tool Replaces All Patch Scripts</h3>
+<div class="flow">
+  <div class="fs fhi">Write mod_X.js</div><div class="fa">→</div>
+  <div class="fs fhi">python rpgace_build.py add DOMAIN mod_X.js</div><div class="fa">→</div>
+  <div class="fs">Syntax checked</div><div class="fa">→</div>
+  <div class="fs fhi">python rpgace_build.py deploy "Step N: X"</div><div class="fa">→</div>
+  <div class="fs">Live</div>
+</div>
+
+<h3>Module Anatomy — The Standard</h3>
+<pre>
+/* ===MODULE:moduleName=== */
+RPGACE.register('moduleName', {
+
+  init: function() {
+    var self = this;
+    /* 1. Wire page:show hook */
+    RPGACE.hooks.on('page:show', function(pageName) {
+      if (pageName === RPGACE.CONFIG.pages.oracle) {
+        setTimeout(function() { self._setup(); }, 400);
+      }
+    });
+    /* 2. Wire rpgace:ready */
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._setup(); }, 500);
+    });
+    /* 3. Intercept main.js functions if needed */
+    /* window.toggleProdOraclePanel = function() { self.open(); }; */
+  },
+
+  _setup: function() { /* inject DOM, patch functions */ },
+  _supabaseDel: function(table, filter) { return RPGACE.sb.del(table, filter); },
+  _supabaseInsert: function(table, row)  { return RPGACE.sb.insert(table, row); },
+
+});
+/* ===END:moduleName=== */
+</pre>
+
+<h3>File Structure</h3>
+<pre>
+rpgace-vercel-v4/
+│
+├── rpgace_core.js          ← THE ONE FILE Vercel serves
+│   ├── [FOUNDATION]        ← FROZEN: STATE,hooks,DB,utils,bridge
+│   ├── [CONFIG]            ← Supabase creds, page names, fn names
+│   ├── [DOMAIN:ORACLE]     ← ytOracle, prodOracle, instaOracle...
+│   ├── [DOMAIN:LEARNING]   ← feynman, encSync, intelDelete...
+│   ├── [DOMAIN:SCHEDULE]   ← workStyle, flowState, agendaScheduler...
+│   ├── [DOMAIN:CONTENT]    ← beatLog, videoTab, visualTreatment...
+│   ├── [DOMAIN:JOURNAL]    ← morningBrief, weeklyReview...
+│   └── [DOMAIN:SYSTEM]     ← directInject, composioFix...
+│
+├── rpgace_build.py         ← THE ONLY TOOL YOU NEED
+│
+├── mod_*.js                ← Individual module files (write here)
+│
+├── api/
+│   ├── oracle.js           ← Serverless: Claude API calls
+│   ├── intel.js            ← Serverless: Content Intelligence
+│   └── composio.js         ← Serverless: Composio bridge
+│
+├── main.js                 ← FROZEN FOREVER
+└── index.html              ← Unchanged
+</pre>
+</div>
+
+<!-- DOMAINS -->
+<div class="section" id="domains">
+<h2>The Six Domains — Current + Planned Modules</h2>
+
+<!-- ORACLE -->
+<div class="domain domain-oracle">
+  <div class="domain-hdr">
+    <span class="domain-icon">🔮</span>
+    <div>
+      <div class="domain-name">ORACLE DOMAIN</div>
+      <div class="domain-desc">All AI panels, commands, gap-fill, send-to-oracle. The user-facing AI command layer.</div>
+    </div>
+  </div>
+  <div class="domain-body">
+    <div class="mod-grid">
+      <div class="mod done"><div class="mod-name">ytOracle</div><div class="mod-desc">YouTube Oracle panel · 8 commands · @AceSanyaBeats</div><div class="mod-step">✓ DONE — Step 9</div></div>
+      <div class="mod done"><div class="mod-name">prodOracle</div><div class="mod-desc">Prod. By Oracle panel · 14 commands · gold accent</div><div class="mod-step">✓ DONE — Step 8</div></div>
+      <div class="mod done"><div class="mod-name">instaOracle</div><div class="mod-desc">Insta-Oracle panel · 13 commands · purple accent</div><div class="mod-step">✓ DONE — Step 8</div></div>
+      <div class="mod next"><div class="mod-name">visualOracle</div><div class="mod-desc">Visual Treatment · Director Match · Storyboard · Copyright Check</div><div class="mod-step">→ NEXT — Steps 33-35</div></div>
+      <div class="mod next"><div class="mod-name">contentRepurpose</div><div class="mod-desc">1 input → 4 platform outputs: Reels, Shorts, email, thread</div><div class="mod-step">→ NEXT — Step 17B</div></div>
+    </div>
+    <p style="margin-top:12px;font-size:11px"><strong>Intercepts:</strong> toggleProdOraclePanel, toggleInstaPanel &nbsp;·&nbsp; <strong>Uses:</strong> RPGACE.utils.fillGaps, RPGACE.utils.sendToOracle &nbsp;·&nbsp; <strong>Tables:</strong> none (API calls)</p>
+  </div>
+</div>
+
+<!-- LEARNING -->
+<div class="domain domain-learning">
+  <div class="domain-hdr">
+    <span class="domain-icon">📖</span>
+    <div>
+      <div class="domain-name">LEARNING DOMAIN</div>
+      <div class="domain-desc">Encyclopedia, taxonomy, research pipeline, Feynman loop, intel management.</div>
+    </div>
+  </div>
+  <div class="domain-body">
+    <div class="mod-grid">
+      <div class="mod done"><div class="mod-name">feynman</div><div class="mod-desc">3-phase mastery loop · Oracle integration · Journal save · Spaced repetition</div><div class="mod-step">✓ DONE — Step 8/10F</div></div>
+      <div class="mod done"><div class="mod-name">encSync</div><div class="mod-desc">Dedup sync · URL backlog clear · bibliography count</div><div class="mod-step">✓ DONE — Step 5</div></div>
+      <div class="mod done"><div class="mod-name">intelDelete</div><div class="mod-desc">Supabase-native delete · bib popup · watchlist DEL · bib section</div><div class="mod-step">✓ DONE — R-29</div></div>
+      <div class="mod next"><div class="mod-name">taxonomySync</div><div class="mod-desc">Push encyclopedia entries to taxonomy_nodes with Phylum/Class/Genus tags</div><div class="mod-step">→ NEXT — Step 27</div></div>
+      <div class="mod next"><div class="mod-name">knowledgeGap</div><div class="mod-desc">Track studied vs applied. Dashboard badge. "Apply it" button per node.</div><div class="mod-step">→ NEXT — Step 28</div></div>
+      <div class="mod later"><div class="mod-name">deepResearch</div><div class="mod-desc">5-track parallel research · Oracle Research tab button</div><div class="mod-step">Step 17C</div></div>
+    </div>
+    <p style="margin-top:12px;font-size:11px"><strong>Tables:</strong> encyclopedia, taxonomy_nodes, intel_reports, intel_watchlist, intel_bibliography &nbsp;·&nbsp; <strong>Page:</strong> learning (research tab), encyclopedia</p>
+  </div>
+</div>
+
+<!-- SCHEDULE -->
+<div class="domain domain-schedule">
+  <div class="domain-hdr">
+    <span class="domain-icon">📅</span>
+    <div>
+      <div class="domain-name">SCHEDULE DOMAIN</div>
+      <div class="domain-desc">Shifts, agenda slots, work style, flow state tracking. Connects calendar to creativity.</div>
+    </div>
+  </div>
+  <div class="domain-body">
+    <div class="mod-grid">
+      <div class="mod next"><div class="mod-name">workStyle</div><div class="mod-desc">Planner / Prioritiser / Arranger / Visualiser selector. Shapes agenda structure.</div><div class="mod-step">→ NEXT — Step 15</div></div>
+      <div class="mod next"><div class="mod-name">flowState</div><div class="mod-desc">Pre-session flow check. Post-session "Did you hit flow?" tracking. Journal output.</div><div class="mod-step">→ NEXT — Step 16</div></div>
+      <div class="mod next"><div class="mod-name">agendaScheduler</div><div class="mod-desc">📅 button on agenda cards → modal date/hour picker → blue block in daily view</div><div class="mod-step">→ NEXT — R-15, R-17</div></div>
+      <div class="mod later"><div class="mod-name">shiftIntegration</div><div class="mod-desc">Auto-push Fourth rota → Supabase. n8n Monday trigger. No manual run.</div><div class="mod-step">R-18, R-21</div></div>
+    </div>
+    <p style="margin-top:12px;font-size:11px"><strong>Tables:</strong> rpgace_shifts &nbsp;·&nbsp; <strong>Patches:</strong> schedule display functions &nbsp;·&nbsp; <strong>Page:</strong> schedule, quests</p>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="domain domain-content">
+  <div class="domain-hdr">
+    <span class="domain-icon">🎬</span>
+    <div>
+      <div class="domain-name">CONTENT DOMAIN</div>
+      <div class="domain-desc">Beat log, video pipeline, visual treatment. Where beats become videos become posts.</div>
+    </div>
+  </div>
+  <div class="domain-body">
+    <div class="mod-grid">
+      <div class="mod next"><div class="mod-name">beatLog</div><div class="mod-desc">Log beat (title/key/BPM/scale/energy). Awards XP. Triggers content brief auto.</div><div class="mod-step">→ NEXT — Step 12/34</div></div>
+      <div class="mod next"><div class="mod-name">videoTab</div><div class="mod-desc">📹 nav tab. Submit job. EDL review (✓Keep/✗Cut). Approve & Render. 4 exports.</div><div class="mod-step">→ NEXT — Step 34</div></div>
+      <div class="mod next"><div class="mod-name">visualTreatment</div><div class="mod-desc">Beat log → Visual Treatment Document → Neural Frames brief. 50 director match.</div><div class="mod-step">→ NEXT — Steps 33, 35#3</div></div>
+      <div class="mod later"><div class="mod-name">visualOracle</div><div class="mod-desc">4 Oracle commands for visual generation (Director Match, Copyright Check, etc.)</div><div class="mod-step">Steps 33-35</div></div>
+    </div>
+    <p style="margin-top:12px;font-size:11px"><strong>Tables:</strong> video_jobs, video_style_profiles &nbsp;·&nbsp; <strong>Local:</strong> video_processor.py, video_tab.js (already built) &nbsp;·&nbsp; <strong>Page:</strong> new Video tab</p>
+  </div>
+</div>
+
+<!-- JOURNAL -->
+<div class="domain domain-journal">
+  <div class="domain-hdr">
+    <span class="domain-icon">📓</span>
+    <div>
+      <div class="domain-name">JOURNAL DOMAIN</div>
+      <div class="domain-desc">Morning brief, session logging, weekly review. The memory layer of RPGACE.</div>
+    </div>
+  </div>
+  <div class="domain-body">
+    <div class="mod-grid">
+      <div class="mod next"><div class="mod-name">morningBrief</div><div class="mod-desc">Dashboard button. Gmail flagged + shifts + YouTube delta + 2 insights. Under 400 words.</div><div class="mod-step">→ NEXT — Step 17A</div></div>
+      <div class="mod next"><div class="mod-name">sessionLogger</div><div class="mod-desc">Auto-log Focus sessions: duration, stop reason, flow state, XP, nodes used.</div><div class="mod-step">→ NEXT — Step 16</div></div>
+      <div class="mod later"><div class="mod-name">weeklyReview</div><div class="mod-desc">Sunday 6pm auto-review. Sessions + beats + insights. Ready Monday.</div><div class="mod-step">Step 28 / August</div></div>
+    </div>
+    <p style="margin-top:12px;font-size:11px"><strong>Tables:</strong> journal_entries (add if not exists) &nbsp;·&nbsp; <strong>Composio:</strong> Gmail (read) &nbsp;·&nbsp; <strong>Page:</strong> dashboard, journal</p>
+  </div>
+</div>
+
+<!-- SYSTEM -->
+<div class="domain domain-system">
+  <div class="domain-hdr">
+    <span class="domain-icon">⚙️</span>
+    <div>
+      <div class="domain-name">SYSTEM DOMAIN</div>
+      <div class="domain-desc">Config, direct injection, broken Composio fixes, n8n hooks. Infrastructure only.</div>
+    </div>
+  </div>
+  <div class="domain-body">
+    <div class="mod-grid">
+      <div class="mod done"><div class="mod-name">directInject</div><div class="mod-desc">YouTube Oracle button injected directly in onReady (reliable bypass of module timing)</div><div class="mod-step">✓ DONE</div></div>
+      <div class="mod next"><div class="mod-name">composioFix</div><div class="mod-desc">R-26: GitHub (GITHUB_CREATE_REPOSITORY_V2?) · R-27: Canva · R-28: Instagram replacement</div><div class="mod-step">→ NEXT — R-26, R-27, R-28</div></div>
+    </div>
+    <p style="margin-top:12px;font-size:11px"><strong>Rule:</strong> SYSTEM modules must not duplicate anything in CONFIG. &nbsp;·&nbsp; Composio: check new tool names at app.composio.dev</p>
+  </div>
+</div>
+</div>
+
+<!-- ROADMAP -->
+<div class="section" id="roadmap">
+<h2>July 1st Roadmap — Every Step Mapped</h2>
+
+<table class="step-table">
+<tr><th>#</th><th>Step</th><th>Domain / Module</th><th>Command</th><th>Status</th></tr>
+<tr class="done-row"><td>1</td><td>Confirm Anthropic API</td><td>CONFIG</td><td>curl test (see JULY1_REBOOT.txt)</td><td><span class="badge badge-done">Done</span></td></tr>
+<tr class="done-row"><td>2</td><td>Wire Prod. Oracle system prompt</td><td>ORACLE / prodOracle</td><td>_wire_prod_oracle.py</td><td><span class="badge badge-done">Done</span></td></tr>
+<tr><td>3</td><td>Fix oracle.js image support</td><td>api/oracle.js (server)</td><td>Check import chain</td><td><span class="badge badge-next">July 1</span></td></tr>
+<tr><td>4</td><td>Verify Schedule shift blocks</td><td>SCHEDULE</td><td>Visual smoke test</td><td><span class="badge badge-next">July 1</span></td></tr>
+<tr><td>5</td><td>Fix insight extraction</td><td>LEARNING / encSync</td><td>Oracle must work first (Step 3)</td><td><span class="badge badge-next">After Step 3</span></td></tr>
+<tr><td>6</td><td>Test Composio connections</td><td>SYSTEM / composioFix</td><td>Oracle chat test</td><td><span class="badge badge-next">July 1</span></td></tr>
+<tr><td>7</td><td>Full smoke test</td><td>All domains</td><td>JULY1_REBOOT.txt checklist</td><td><span class="badge badge-next">July 1</span></td></tr>
+<tr class="done-row"><td>8</td><td>Insta-Oracle expansion (13 commands)</td><td>ORACLE / instaOracle</td><td>python rpgace_build.py update instaOracle mod_instaOracle.js</td><td><span class="badge badge-done">Done</span></td></tr>
+<tr class="done-row"><td>9</td><td>YouTube Oracle panel (8 commands)</td><td>ORACLE / ytOracle</td><td>—</td><td><span class="badge badge-done">Done</span></td></tr>
+<tr class="done-row"><td>10</td><td>Feynman Loop module</td><td>LEARNING / feynman</td><td>—</td><td><span class="badge badge-done">Done</span></td></tr>
+<tr><td>11</td><td>Visual Oracle panel</td><td>ORACLE / visualOracle</td><td>python rpgace_build.py new ORACLE visualOracle → implement → add</td><td><span class="badge badge-later">Step 33</span></td></tr>
+<tr><td>12</td><td>Beat Log</td><td>CONTENT / beatLog</td><td>python rpgace_build.py new CONTENT beatLog</td><td><span class="badge badge-next">High Priority</span></td></tr>
+<tr><td>13</td><td>Morning Brief</td><td>JOURNAL / morningBrief</td><td>python rpgace_build.py new JOURNAL morningBrief</td><td><span class="badge badge-next">Step 17A</span></td></tr>
+<tr><td>14</td><td>Content Repurpose button</td><td>ORACLE / contentRepurpose</td><td>python rpgace_build.py new ORACLE contentRepurpose</td><td><span class="badge badge-next">Step 17B</span></td></tr>
+<tr><td>15</td><td>Work Style selector</td><td>SCHEDULE / workStyle</td><td>python rpgace_build.py new SCHEDULE workStyle</td><td><span class="badge badge-next">Step 15</span></td></tr>
+<tr><td>16</td><td>Flow State integration</td><td>SCHEDULE / flowState</td><td>python rpgace_build.py new SCHEDULE flowState</td><td><span class="badge badge-next">Step 16</span></td></tr>
+<tr><td>17A</td><td>Morning Brief (n8n auto)</td><td>JOURNAL / morningBrief</td><td>Same module, wire n8n trigger</td><td><span class="badge badge-later">After basics</span></td></tr>
+<tr><td>17C</td><td>Deep Research button</td><td>LEARNING / deepResearch</td><td>python rpgace_build.py new LEARNING deepResearch</td><td><span class="badge badge-later">Step 17C</span></td></tr>
+<tr><td>27</td><td>Taxonomy sync</td><td>LEARNING / taxonomySync</td><td>python rpgace_build.py new LEARNING taxonomySync</td><td><span class="badge badge-later">Step 27</span></td></tr>
+<tr><td>28</td><td>Knowledge Gap tracker</td><td>LEARNING / knowledgeGap</td><td>python rpgace_build.py new LEARNING knowledgeGap</td><td><span class="badge badge-later">Step 28</span></td></tr>
+<tr><td>33</td><td>Phylum XXV + 50 filmmaker library</td><td>LEARNING / taxonomySync</td><td>Supabase insert + taxonomy nodes</td><td><span class="badge badge-later">Step 33</span></td></tr>
+<tr><td>34</td><td>Video Pipeline tab</td><td>CONTENT / videoTab</td><td>python rpgace_build.py new CONTENT videoTab</td><td><span class="badge badge-later">Step 34</span></td></tr>
+<tr><td>35</td><td>Visual Treatment Generator</td><td>CONTENT / visualTreatment</td><td>python rpgace_build.py new CONTENT visualTreatment</td><td><span class="badge badge-later">Step 35</span></td></tr>
+<tr><td>R-26</td><td>Fix GitHub Composio</td><td>SYSTEM / composioFix</td><td>Check new tool name at app.composio.dev</td><td><span class="badge badge-ref">R-26</span></td></tr>
+<tr><td>R-27</td><td>Fix Canva Composio</td><td>SYSTEM / composioFix</td><td>Same</td><td><span class="badge badge-ref">R-27</span></td></tr>
+<tr><td>R-28</td><td>Fix Instagram Composio</td><td>SYSTEM / composioFix</td><td>Meta deprecated Basic Display. Use Graph API.</td><td><span class="badge badge-ref">R-28</span></td></tr>
+</table>
+</div>
+
+<!-- SUPABASE -->
+<div class="section" id="supabase">
+<h2>Supabase Architecture — Tables by Domain</h2>
+
+<div class="sb-grid">
+  <div class="sb-card">
+    <div class="sb-name">intel_reports</div>
+    <div class="sb-cols">id · url · title · creator · platform · score · insights · transcript_snippet · added_to_watchlist · date · source<br><br><strong style="color:var(--gold)">Domain:</strong> LEARNING<br><strong style="color:var(--gold)">Writes:</strong> Content Intelligence (Python)<br><strong style="color:var(--gold)">Reads:</strong> encSync, intelDelete<br><strong style="color:var(--gold)">Deletes:</strong> intelDelete via id</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-name">intel_watchlist</div>
+    <div class="sb-cols">url · title · creator · platform · score · reason · date<br><br><strong style="color:var(--gold)">Domain:</strong> LEARNING<br><strong style="color:var(--gold)">Deletes:</strong> intelDelete via url</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-name">intel_bibliography</div>
+    <div class="sb-cols">id · title · url · saved<br><br><strong style="color:var(--gold)">Domain:</strong> LEARNING<br><strong style="color:var(--gold)">Writes:</strong> intelDelete (when "Yes, save it")<br><strong style="color:var(--gold)">Displays:</strong> Encyclopedia bib section<br><strong style="color:var(--red)">CREATE IF MISSING:</strong> see SQL below</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-name">encyclopedia</div>
+    <div class="sb-cols">id · created_at · title · date · content<br><br><strong style="color:var(--gold)">Domain:</strong> LEARNING<br><strong style="color:var(--gold)">Reads:</strong> encSync (dedup display)<br><strong style="color:var(--gold)">Writes:</strong> Oracle "Save to Encyclopedia"</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-name">taxonomy_nodes</div>
+    <div class="sb-cols">id · phylum_number · phylum_name · class_name · order_name · definition · artist_references · youtube_educators · beat_selling_angle + many more<br><br><strong style="color:var(--gold)">Domain:</strong> LEARNING<br><strong style="color:var(--gold)">Future:</strong> add neural_frames_template, shotdeck_url, copyright_risk</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-name">video_jobs</div>
+    <div class="sb-cols">id · title · raw_path · script · status · edl · style_profile_id<br><br><strong style="color:var(--gold)">Domain:</strong> CONTENT<br><strong style="color:var(--gold)">Future:</strong> videoTab module reads/writes this</div>
+  </div>
+  <div class="sb-card">
+    <div class="sb-name">rpgace_shifts</div>
+    <div class="sb-cols">date · start · end · location · notes<br><br><strong style="color:var(--gold)">Domain:</strong> SCHEDULE<br><strong style="color:var(--gold)">Future:</strong> shiftIntegration writes from fourth_rota.py</div>
+  </div>
+  <div class="sb-card" style="border-color:rgba(226,84,84,0.3)">
+    <div class="sb-name" style="color:var(--red)">CREATE: intel_bibliography</div>
+    <div class="sb-cols"><pre style="margin:6px 0;font-size:10px">CREATE TABLE intel_bibliography (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT,
+  url TEXT UNIQUE,
+  saved TIMESTAMPTZ DEFAULT now()
+);</pre></div>
+  </div>
+</div>
+</div>
+
+<!-- AI LAYER -->
+<div class="section" id="ai-layer">
+<h2>AI Intercommunication — How It All Connects</h2>
+
+<h3>The Signal Flow</h3>
+<pre>
+USER ACTION                  RPGACE MODULE              AI/DATA LAYER
+─────────────────────────────────────────────────────────────────────
+Click Oracle command     →   ORACLE domain              → api/oracle.js
+                                                         → Claude Sonnet 4.6
+                                                         → Composio (Gmail/Notion)
+                             ↓
+                             fillGaps overlay (if [...])
+                             ↓
+                             sendToOracle()
+                             ↓
+                             Oracle chat renders response
+
+Encyclopedia "Sync"      →   LEARNING / encSync         → Supabase intel_reports
+                                                           (fetch → dedup → display)
+
+Delete intel card        →   LEARNING / intelDelete     → Supabase DELETE intel_reports
+Save to bibliography     →   LEARNING / intelDelete     → Supabase INSERT intel_bibliography
+
+Beat logged              →   CONTENT / beatLog          → Supabase video_jobs (insert)
+                             ↓
+                             ORACLE / visualTreatment    → api/oracle.js (Visual Treatment)
+                             ↓
+                             CONTENT / videoTab          → FFmpeg (local Python script)
+
+Focus session starts     →   SCHEDULE / flowState       → Journal entry on end
+                             SCHEDULE / workStyle
+                             ↓
+                             JOURNAL / sessionLogger     → Supabase journal_entries
+
+Morning brief trigger    →   JOURNAL / morningBrief     → Composio Gmail (read)
+                                                         → api/oracle.js (summarise)
+                                                         → Dashboard display
+</pre>
+
+<h3>RPGACE.CONFIG — The Binding Layer</h3>
+<pre>
+RPGACE.CONFIG.pages.research     → 'learning'   (fixes the mismatch bug permanently)
+RPGACE.CONFIG.mainFns.prodOracle → 'toggleProdOraclePanel'
+RPGACE.CONFIG.supabase.url       → 'https://gripopghczmrbrhqtqbm.supabase.co'
+RPGACE.sb.del('intel_reports', 'id=eq.UUID')    → delete from Supabase
+RPGACE.sb.insert('intel_bibliography', {...})   → insert into Supabase
+</pre>
+<p>Any module that needs Supabase, page names, or main.js function names references CONFIG. When anything changes, you edit one line.</p>
+
+<h3>RPGACE.hooks — The Event Bus</h3>
+<pre>
+'rpgace:ready'     → Fires 150ms after window.load. All modules initialized.
+'page:show'        → Fires when user navigates tabs. Payload = page name from CONFIG.
+'xp:awarded'       → Fires when XP is added. Any module can respond.
+'journal:saved'    → Fires when a journal entry is saved.
+'state:change'     → Fires when STATE changes. Payload = key, value.
+</pre>
+</div>
+
+<!-- REFINE -->
+<div class="section" id="refine">
+<h2>Refinements — R-01 through R-28, Mapped to Domain</h2>
+
+<div class="r-item"><div class="r-id">R-01</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Monthly internal nav block shows underneath inline nav. Rewrite buildMonthSlots.</div></div>
+<div class="r-item"><div class="r-id">R-02</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Monthly grid cells too small on mobile. min-height:64px + truncation fix.</div></div>
+<div class="r-item"><div class="r-id">R-03</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Previous month days still clickable. Add pointer-events:none when inMonth=false.</div></div>
+<div class="r-item"><div class="r-id">R-04</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Today's highlight too faint. Add gold dot indicator below date number.</div></div>
+<div class="r-item"><div class="r-id">R-05</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Monthly grid doesn't show scheduled agendas. Fix _calGetSchedAgendas() key.</div></div>
+<div class="r-item"><div class="r-id">R-06</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Year nav buttons confusing. Replace with "◄ 2026 ►" inline cycle.</div></div>
+<div class="r-item"><div class="r-id">R-07</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Weekly inline nav positioning broken on some screen sizes. Use shared _calShowNav().</div></div>
+<div class="r-item"><div class="r-id">R-08</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Week number calculation inaccurate. Derive from offset to first Monday of month.</div></div>
+<div class="r-item"><div class="r-id">R-09</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Weekly view rows inconsistent padding. min-height:60px + align-items:stretch.</div></div>
+<div class="r-item"><div class="r-id">R-10</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Rest day label. If no shifts AND future date → show "🎛 Free Session" in green.</div></div>
+<div class="r-item"><div class="r-id">R-11</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Weekly row click should switch to Daily AND scroll to time.</div></div>
+<div class="r-item"><div class="r-id">R-12</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Daily nav needs inline position same as weekly/monthly. Use _calShowNav().</div></div>
+<div class="r-item"><div class="r-id">R-13</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Half-hour shift blocks gap between divider and block below needs 2px more.</div></div>
+<div class="r-item"><div class="r-id">R-14</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Daily view shows text inputs when no shifts. Show "No shifts or sessions scheduled."</div></div>
+<div class="r-item"><div class="r-id">R-15</div><div class="r-domain">SCHEDULE / agendaScheduler</div><div class="r-desc">📅 button: replace prompt() with modal date picker + hour dropdown. Store in rpgace_sched_agendas.</div></div>
+<div class="r-item"><div class="r-id">R-16</div><div class="r-domain">JOURNAL / sessionLogger</div><div class="r-desc">Previous days log auto-populate from Supabase journal_entries. Query by date.</div></div>
+<div class="r-item"><div class="r-id">R-17</div><div class="r-domain">SCHEDULE / agendaScheduler</div><div class="r-desc">Daily view auto-places today's agendas at first free window after shifts.</div></div>
+<div class="r-item"><div class="r-id">R-18</div><div class="r-domain">SCHEDULE / shiftIntegration</div><div class="r-desc">fourth_rota.py → n8n Monday trigger → auto-update Supabase shifts. No manual run.</div></div>
+<div class="r-item"><div class="r-id">R-19</div><div class="r-domain">SCHEDULE / shiftIntegration</div><div class="r-desc">Move Fourth credentials to .fourth_credentials.json. Silent read at runtime.</div></div>
+<div class="r-item"><div class="r-id">R-20</div><div class="r-domain">SCHEDULE / shiftIntegration</div><div class="r-desc">Dynamic scroll detection in fourth_rota.py. Stop on 3 identical screenshots.</div></div>
+<div class="r-item"><div class="r-id">R-21</div><div class="r-domain">SCHEDULE / shiftIntegration</div><div class="r-desc">After extraction auto-push to Supabase rpgace_shifts. Persists across devices.</div></div>
+<div class="r-item"><div class="r-id">R-22-24</div><div class="r-domain">SCHEDULE</div><div class="r-desc">Tab bar UX, Import Shifts display, Shift difficulty rating. Schedule module group.</div></div>
+<div class="r-item"><div class="r-id">R-25</div><div class="r-domain">LEARNING / encSync</div><div class="r-desc">Insight extraction prompt too surface-level. Upgrade prompt in api/intel.js.</div></div>
+<div class="r-item"><div class="r-id">R-26</div><div class="r-domain">SYSTEM / composioFix</div><div class="r-desc">GitHub broken. Check new tool name at app.composio.dev. Update RPGACE.CONFIG.mainFns.</div></div>
+<div class="r-item"><div class="r-id">R-27</div><div class="r-domain">SYSTEM / composioFix</div><div class="r-desc">Canva broken. Same fix.</div></div>
+<div class="r-item"><div class="r-id">R-28</div><div class="r-domain">SYSTEM / composioFix</div><div class="r-desc">Instagram broken. Meta deprecated Basic Display API. Need Graph API alternative.</div></div>
+</div>
+
+<!-- COMMANDS -->
+<div class="section" id="commands">
+<h2>The Only Commands You Need</h2>
+
+<div class="cmd-seq">
+  <h3>Add a new feature</h3>
+  <pre>
+# 1. Create a module stub
+python rpgace_build.py new CONTENT beatLog
+
+# 2. Implement mod_beatLog.js in any text editor
+
+# 3. Add to the correct domain
+python rpgace_build.py add CONTENT mod_beatLog.js
+
+# 4. Deploy
+python rpgace_build.py deploy "Step 12: Beat Log"</pre>
+</div>
+
+<div class="cmd-seq">
+  <h3>Update an existing module</h3>
+  <pre>
+# Edit mod_instaOracle.js
+# Then:
+python rpgace_build.py update instaOracle mod_instaOracle.js
+python rpgace_build.py deploy "Update: instaOracle new commands"</pre>
+</div>
+
+<div class="cmd-seq">
+  <h3>Check state of the file</h3>
+  <pre>
+python rpgace_build.py list      # See all modules by domain
+python rpgace_build.py check     # Syntax + duplicates
+python rpgace_build.py status    # Overview + recent git log</pre>
+</div>
+
+<div class="cmd-seq">
+  <h3>Remove a broken module</h3>
+  <pre>
+python rpgace_build.py remove brokenModuleName
+python rpgace_build.py deploy "Remove: brokenModuleName"</pre>
+</div>
+
+<div class="warn">
+  <strong>⚠ NEVER DO THIS AGAIN:</strong> Writing JavaScript as Python string literals. Every module lives in its own <code>.js</code> file. Python only handles file operations, never JS content.
+</div>
+</div>
+
+<!-- DEPLOY -->
+<div class="section" id="deploy">
+<h2>July 1st Execution Sequence</h2>
+
+<div class="flow">
+  <div class="fs fhi">Step 1: Copy tools</div><div class="fa">→</div>
+  <div class="fs fhi">Step 2: Run migrate</div><div class="fa">→</div>
+  <div class="fs">Step 3: Add config</div><div class="fa">→</div>
+  <div class="fs fhi">Step 4: Deploy</div><div class="fa">→</div>
+  <div class="fs">Step 5: Smoke test</div>
+</div>
+
+<pre>
+cd C:\Users\acesa\Downloads\rpgace-vercel-v4
+
+REM 1. Install tools
+copy C:\Users\acesa\Downloads\rpgace_build.py rpgace_build.py
+copy C:\Users\acesa\Downloads\rpgace_config.js rpgace_config.js
+
+REM 2. Migrate existing file to domain structure
+python rpgace_build.py migrate
+
+REM 3. Add config module
+python rpgace_build.py add CONFIG rpgace_config.js
+
+REM 4. Verify
+python rpgace_build.py list
+python rpgace_build.py check
+
+REM 5. Deploy
+python rpgace_build.py deploy "V2: Domain architecture + CONFIG"
+
+REM 6. July 1st fixes (after smoke test passes)
+REM    Fix oracle.js (Step 3) — ask Claude: "Fix oracle.js import chain"
+REM    Fix Composio (Step 6) — check app.composio.dev for new tool names
+
+REM 7. First new feature (Step 17A: Morning Brief)
+python rpgace_build.py new JOURNAL morningBrief
+REM [implement mod_morningBrief.js]
+python rpgace_build.py add JOURNAL mod_morningBrief.js
+python rpgace_build.py deploy "Step 17A: Morning Brief"
+</pre>
+
+<div class="rule" style="margin-top:24px">
+  <p>From this point: every future session starts with <code>python rpgace_build.py status</code> and ends with <code>python rpgace_build.py deploy "Step N: feature"</code>. No more patch scripts. No more string matching. No more duplicates.</p>
+</div>
+</div>
+
+<div style="text-align:center;padding:40px 0;font-family:var(--sans);font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase">
+  RPGACE Master Architecture · 10-Minute Council Review · June 27 2026 · rpgace.vercel.app
+</div>
+</div>
+</body>
+</html>

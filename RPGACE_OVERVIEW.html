@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — System Overview</title>
+<style>
+  :root{
+    --gold:#C9A84C;--blue:#4A90E2;--green:#3DAA6E;
+    --purple:#9B59B6;--red:#E25454;
+    --bg:#07070f;--surface:#0f0f1a;--surface2:#13131e;
+    --border:rgba(255,255,255,0.06);
+    --text:rgba(226,226,236,0.88);--dim:rgba(226,226,236,0.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);
+       font-family:'Segoe UI',system-ui,sans-serif;
+       font-size:14px;line-height:1.7;padding:0 0 80px}
+
+  /* HERO */
+  .hero{
+    text-align:center;padding:80px 24px 60px;
+    border-bottom:1px solid var(--border);
+    background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(201,168,76,0.06) 0%,transparent 70%);
+  }
+  .hero-eyebrow{
+    font-size:10px;font-weight:700;letter-spacing:4px;
+    text-transform:uppercase;color:var(--gold);margin-bottom:18px;
+    display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .hero-eyebrow::before,.hero-eyebrow::after{
+    content:'';width:40px;height:1px;background:rgba(201,168,76,0.3);
+  }
+  .hero-title{
+    font-family:Georgia,serif;font-size:clamp(32px,5vw,56px);
+    color:#E2E2EC;letter-spacing:2px;margin-bottom:12px;
+  }
+  .hero-title span{color:var(--gold)}
+  .hero-sub{
+    color:var(--dim);font-size:clamp(14px,2vw,17px);
+    max-width:560px;margin:0 auto 32px;line-height:1.6;
+  }
+  .hero-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .tag{
+    font-size:10px;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;padding:5px 12px;border-radius:20px;
+    border:1px solid rgba(201,168,76,0.25);color:var(--gold);
+    background:rgba(201,168,76,0.05);
+  }
+
+  /* LAYOUT */
+  .container{max-width:900px;margin:0 auto;padding:0 24px}
+
+  /* SECTION */
+  .section{padding:64px 0 0}
+  .section-eyebrow{
+    font-size:9px;font-weight:700;letter-spacing:3px;
+    text-transform:uppercase;color:var(--blue);margin-bottom:10px;
+  }
+  .section-title{
+    font-family:Georgia,serif;font-size:clamp(22px,3vw,30px);
+    color:#E2E2EC;margin-bottom:8px;
+  }
+  .section-sub{color:var(--dim);font-size:13px;max-width:580px;margin-bottom:36px}
+
+  /* RULE */
+  .rule{
+    background:rgba(201,168,76,0.05);
+    border:1px solid rgba(201,168,76,0.2);
+    border-radius:12px;padding:22px 28px;margin-bottom:48px;
+  }
+  .rule-label{
+    font-size:9px;font-weight:700;letter-spacing:2px;
+    text-transform:uppercase;color:var(--gold);margin-bottom:8px;
+  }
+  .rule-text{font-size:16px;color:#E2E2EC;font-style:italic;line-height:1.5}
+
+  /* PILLARS */
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:48px}
+  .pillar{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:24px 20px;
+  }
+  .pillar-icon{font-size:28px;margin-bottom:12px;display:block}
+  .pillar-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:6px}
+  .pillar-body{font-size:12px;color:var(--dim);line-height:1.6}
+
+  /* AI STACK */
+  .ai-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:12px}
+  .ai-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;padding:18px 20px;
+    display:flex;align-items:flex-start;gap:14px;
+  }
+  .ai-logo{
+    width:36px;height:36px;border-radius:8px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:12px;letter-spacing:0.5px;
+  }
+  .ai-logo.claude{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
+  .ai-logo.supabase{background:rgba(61,170,110,0.12);color:var(--green);border:1px solid rgba(61,170,110,0.25)}
+  .ai-logo.composio{background:rgba(74,144,226,0.12);color:var(--blue);border:1px solid rgba(74,144,226,0.25)}
+  .ai-logo.vercel{background:rgba(255,255,255,0.08);color:#E2E2EC;border:1px solid rgba(255,255,255,0.15)}
+  .ai-logo.whisper{background:rgba(155,89,182,0.12);color:var(--purple);border:1px solid rgba(155,89,182,0.25)}
+  .ai-logo.n8n{background:rgba(226,84,84,0.12);color:var(--red);border:1px solid rgba(226,84,84,0.25)}
+  .ai-logo.playwright{background:rgba(61,170,110,0.12);color:var(--green);border:1px solid rgba(61,170,110,0.25)}
+  .ai-logo.neural{background:rgba(201,168,76,0.12);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
+  .ai-name{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .ai-role{font-size:11px;color:var(--dim);line-height:1.5}
+
+  /* MODULES */
+  .module-list{display:flex;flex-direction:column;gap:10px}
+  .module{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:10px;padding:16px 20px;
+    display:flex;align-items:flex-start;gap:16px;
+  }
+  .module-num{
+    font-family:Georgia,serif;font-size:11px;color:var(--gold);
+    font-weight:700;min-width:24px;margin-top:2px;
+  }
+  .module-content{}
+  .module-title{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+  .module-desc{font-size:11px;color:var(--dim);line-height:1.5}
+  .module-ai{
+    display:inline-block;margin-top:6px;
+    font-size:9px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;padding:2px 8px;border-radius:10px;
+    background:rgba(74,144,226,0.08);color:var(--blue);
+    border:1px solid rgba(74,144,226,0.2);
+  }
+  .module.live .module-num{color:var(--green)}
+  .module.live{border-color:rgba(61,170,110,0.12)}
+
+  /* PIPELINE */
+  .pipeline{
+    display:flex;align-items:center;flex-wrap:wrap;gap:0;
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;overflow:hidden;margin-bottom:12px;
+  }
+  .pipe-step{
+    flex:1;min-width:120px;padding:16px 18px;
+    border-right:1px solid var(--border);position:relative;
+  }
+  .pipe-step:last-child{border-right:none}
+  .pipe-label{font-size:9px;font-weight:700;letter-spacing:1.5px;
+              text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+  .pipe-tool{font-size:12px;font-weight:700;color:#E2E2EC}
+  .pipe-action{font-size:10px;color:var(--dim);margin-top:2px}
+
+  /* TAXONOMY */
+  .phyla-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;
+  }
+  .phylum{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:8px;padding:12px 14px;
+  }
+  .phylum-num{font-size:9px;color:var(--gold);font-weight:700;
+              letter-spacing:1px;margin-bottom:2px}
+  .phylum-name{font-size:11px;font-weight:700;color:#E2E2EC}
+  .phylum-sub{font-size:10px;color:var(--dim);margin-top:2px}
+
+  /* ROADMAP */
+  .roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .phase{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:12px;padding:20px;
+  }
+  .phase-label{
+    font-size:9px;font-weight:700;letter-spacing:2px;
+    text-transform:uppercase;margin-bottom:12px;
+  }
+  .phase-label.now{color:var(--green)}
+  .phase-label.july{color:var(--gold)}
+  .phase-label.aug{color:var(--blue)}
+  .phase-item{
+    font-size:11px;color:var(--dim);padding:5px 0;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    line-height:1.4;
+  }
+  .phase-item:last-child{border-bottom:none}
+  .phase-item strong{color:#E2E2EC;font-weight:600}
+
+  /* COST */
+  .cost-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);
+    font-size:12px;
+  }
+  .cost-row:last-child{border-bottom:none}
+  .cost-name{color:var(--dim)}
+  .cost-amount{color:#E2E2EC;font-weight:700}
+  .cost-amount.free{color:var(--green)}
+
+  /* FOOTER */
+  .footer{
+    text-align:center;padding:48px 24px 0;
+    border-top:1px solid var(--border);margin-top:64px;
+  }
+  .footer-title{font-family:Georgia,serif;font-size:20px;
+                color:var(--gold);margin-bottom:8px}
+  .footer-sub{font-size:12px;color:var(--dim)}
+
+  @media(max-width:700px){
+    .pillars,.ai-grid,.roadmap,.phyla-grid{grid-template-columns:1fr}
+    .pipeline{flex-direction:column}
+    .pipe-step{border-right:none;border-bottom:1px solid var(--border)}
+    .pipe-step:last-child{border-bottom:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Personal AI Operating System</div>
+  <h1 class="hero-title">RPG<span>ACE</span></h1>
+  <p class="hero-sub">A fully custom AI system built to turn hospitality shifts into production sessions, production sessions into beats, and beats into content — automatically.</p>
+  <div class="hero-tags">
+    <span class="tag">Music Production</span>
+    <span class="tag">AI-Powered</span>
+    <span class="tag">Knowledge System</span>
+    <span class="tag">Content Pipeline</span>
+    <span class="tag">FL Studio</span>
+    <span class="tag">UK Hip Hop</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- GOVERNING RULE -->
+  <div class="section">
+    <div class="rule">
+      <div class="rule-label">The One Rule Everything Is Built Around</div>
+      <div class="rule-text">"Does this feature directly result in a beat being made or a video posted within 48 hours of using it?"</div>
+    </div>
+
+    <!-- THREE PILLARS -->
+    <div class="pillars">
+      <div class="pillar">
+        <span class="pillar-icon">🧠</span>
+        <div class="pillar-title">Learn</div>
+        <div class="pillar-body">AI-driven knowledge system that builds verified production expertise. Every concept studied is tested, scored, and scheduled for spaced review.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🎛</span>
+        <div class="pillar-title">Make</div>
+        <div class="pillar-body">Shift-aware agenda engine that plans sessions around real work hours. Beats are logged, tagged to knowledge nodes, and linked straight to content.</div>
+      </div>
+      <div class="pillar">
+        <span class="pillar-icon">🎬</span>
+        <div class="pillar-title">Post</div>
+        <div class="pillar-body">End-to-end content pipeline. One beat becomes a music video, a tutorial, a Reel, a Short, and an email — with AI handling the creative brief at every stage.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI STACK -->
+  <div class="section">
+    <div class="section-eyebrow">Technology</div>
+    <div class="section-title">The AI Stack</div>
+    <div class="section-sub">Every AI in the system and the specific result it produces.</div>
+
+    <div class="ai-grid">
+      <div class="ai-card">
+        <div class="ai-logo claude">A</div>
+        <div>
+          <div class="ai-name">Claude (Anthropic) — Sonnet 4.6</div>
+          <div class="ai-role">The intelligence layer across the entire system. Powers the Oracle advisor, agenda generation, Feynman Loop sessions, content repurposing, Visual Treatment documents, script writing, insight extraction, and every structured output the system produces. Every AI-generated result originates here.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo supabase">SB</div>
+        <div>
+          <div class="ai-name">Supabase (PostgreSQL)</div>
+          <div class="ai-role">Persistent knowledge layer. Stores the production knowledge taxonomy (25 phyla, 700+ planned nodes), journal entries, encyclopedia entries, video pipeline jobs, and content intelligence reports. The long-term memory the system compounds over time.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo whisper">W</div>
+        <div>
+          <div class="ai-name">OpenAI Whisper (local)</div>
+          <div class="ai-role">Transcription engine. Converts any video or audio to timestamped text locally on-device. Powers the Content Intelligence pipeline — competitor tutorials, reference tracks, and own recordings all become searchable, analysable text before Claude processes them.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo composio">CO</div>
+        <div>
+          <div class="ai-name">Composio</div>
+          <div class="ai-role">Integration middleware. Connects Claude to Gmail, Notion, YouTube Analytics, and Instagram without managing individual OAuth flows. The Oracle can draft emails, save entries to Notion, and pull channel data on command during a conversation.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo n8n">n8n</div>
+        <div>
+          <div class="ai-name">n8n (self-hosted automation)</div>
+          <div class="ai-role">Workflow automation layer. Runs the Daily Knowledge Pipeline (6am daily: finds 2 production tutorials, transcribes, sends to Claude, updates taxonomy automatically). Also handles the Morning Brief, Content ID alerts, and rota extraction. Replaces Zapier — free and self-hosted.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo playwright">PW</div>
+        <div>
+          <div class="ai-name">Playwright + Claude Vision</div>
+          <div class="ai-role">Work rota extraction. Logs into the employer's scheduling portal, takes precision screenshots of the rota grid, and sends them to Claude Vision which extracts every shift date and time into structured data. Eliminates manual schedule entry entirely.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo neural">NF</div>
+        <div>
+          <div class="ai-name">Neural Frames</div>
+          <div class="ai-role">AI video generation. Takes exported beat stems and a Claude-written Visual Treatment Document (directing brief, mood, filmmaker references) and generates a 4K beat-synced music video automatically. Every video starts with a concept Claude wrote from the beat's production data.</div>
+        </div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-logo vercel">V</div>
+        <div>
+          <div class="ai-name">Vercel (Edge Runtime)</div>
+          <div class="ai-role">Hosting and serverless functions. All Claude API calls, Composio integrations, and data operations route through Vercel Edge Functions — meaning the frontend never exposes API keys and every AI call has a controlled, auditable server layer in between.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE MODULES -->
+  <div class="section">
+    <div class="section-eyebrow">Features</div>
+    <div class="section-title">Core Modules</div>
+    <div class="section-sub">What the system does and what AI drives each result.</div>
+
+    <div class="module-list">
+
+      <div class="module live">
+        <div class="module-num">01</div>
+        <div class="module-content">
+          <div class="module-title">Shift-Aware Agenda Engine</div>
+          <div class="module-desc">Pulls today's work shifts, cross-references free windows, your current knowledge level, and your work style preference — then generates 5 personalised production tasks calibrated to your actual available energy. A heavy bar shift produces lighter cognitive tasks. A rest day produces a full creative session plan.</div>
+          <span class="module-ai">Claude · Supabase · Composio</span>
+        </div>
+      </div>
+
+      <div class="module live">
+        <div class="module-num">02</div>
+        <div class="module-content">
+          <div class="module-title">Feynman Loop — Verified Learning System <span style="font-size:10px;color:var(--green);font-weight:700;margin-left:6px">LIVE</span></div>
+          <div class="module-desc">Three-phase AI learning session triggered from anywhere in the app — the Oracle chat, an Encyclopedia entry, or a learning agenda. Phase 1: explain the concept in plain language. Phase 2: Claude identifies the biggest gap and probes it with one question. Phase 3: full session report with a score out of 10, verified knowledge, gaps found, a specific next study action, and a YouTube content angle. On completion: report saved to Journal, taxonomy node updated, spaced repetition agenda auto-created 3 or 7 days out depending on score.</div>
+          <span class="module-ai">Claude · Supabase</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">03</div>
+        <div class="module-content">
+          <div class="module-title">Productorum Totalis — Production Taxonomy</div>
+          <div class="module-desc">A Linnaeus-style hierarchical classification of all music production knowledge across 25 phyla — from melody theory and drum architecture to beat selling strategy and visual film direction. Every concept studied, every beat made, and every tutorial processed feeds back into this tree. Over time it becomes a mapped record of everything learned, applied, and verified — with source links, FL Studio implementations, producer references, and YouTube educator links per node.</div>
+          <span class="module-ai">Claude · Supabase · n8n</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">04</div>
+        <div class="module-content">
+          <div class="module-title">Daily Knowledge Pipeline</div>
+          <div class="module-desc">Automated 6am workflow. Finds the 2 most relevant new production tutorials uploaded in the last 24 hours, transcribes them locally, sends transcripts to Claude for structured analysis, extracts key concepts, maps them to taxonomy nodes, enriches encyclopedia entries, and files a brief in the Morning Dashboard. Running daily for a year produces over 700 structured knowledge reports — a searchable, AI-indexed production library built automatically in the background while working shifts.</div>
+          <span class="module-ai">n8n · Whisper · Claude · Supabase</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">05</div>
+        <div class="module-content">
+          <div class="module-title">Content Intelligence — Competitor Analysis</div>
+          <div class="module-desc">Submit any YouTube URL. The local pipeline downloads it, Whisper transcribes it with word-level timestamps, Claude extracts production techniques, maps them to taxonomy nodes, writes structured insights with FL Studio application notes, and saves everything to the knowledge base. Competitor tutorials become your encyclopedia entries.</div>
+          <span class="module-ai">Whisper · Claude · Supabase</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">06</div>
+        <div class="module-content">
+          <div class="module-title">Oracle AI Advisor</div>
+          <div class="module-desc">The main conversational layer. Text and image input. Knows your current XP level, shift schedule, encyclopedia depth, and verified Feynman knowledge — so advice is calibrated to where you actually are, not a generic response. Can draft Gmail, save to Notion, pull YouTube stats, and trigger any Composio-connected service mid-conversation. The Production Oracle variant operates as a structured 300IQ production teacher using a Socratic question framework.</div>
+          <span class="module-ai">Claude · Composio · Gmail · Notion · YouTube</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">07</div>
+        <div class="module-content">
+          <div class="module-title">AI Video Pipeline</div>
+          <div class="module-desc">Full post-production pipeline for FL Studio tutorial videos. Drop raw footage in — silence is removed automatically, Whisper transcribes, Claude aligns the transcript to the target script and generates an Edit Decision List. The Review tab shows each cut decision. Approve in ~5 minutes. Renders automatically to four formats: YouTube 16:9, Shorts 9:16, Instagram Reels, thumbnail still. Claude also writes the Visual Treatment Document upfront — the directing brief that tells Neural Frames exactly what the video should look and feel like based on the beat's production data.</div>
+          <span class="module-ai">Claude · Whisper · Neural Frames · n8n</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">08</div>
+        <div class="module-content">
+          <div class="module-title">Content Repurposing Engine</div>
+          <div class="module-desc">One YouTube video script becomes four pieces of platform-native content in one Claude call: a 60-second Short, an Instagram Reels caption with hook and hashtags, a 60-word email blurb with subject line, and a Twitter/X thread. Each opens with a different line. Each matches the voice. Built to clear a content backlog in a single session.</div>
+          <span class="module-ai">Claude · Composio</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">09</div>
+        <div class="module-content">
+          <div class="module-title">Morning Brief</div>
+          <div class="module-desc">Dashboard button. Pulls Gmail from the last 12 hours, today's shift schedule, and a scan of new production concepts filed overnight. Returns a structured 3-section brief under 400 words: what needs a reply before the shift, what can wait, and what new knowledge was filed. Reads in 90 seconds. All infrastructure already connected — zero new services required.</div>
+          <span class="module-ai">Claude · Gmail · Supabase</span>
+        </div>
+      </div>
+
+      <div class="module">
+        <div class="module-num">10</div>
+        <div class="module-content">
+          <div class="module-title">Beat Log + Taxonomy Connection</div>
+          <div class="module-desc">After every production session: log the beat with key, BPM, primary technique, and which taxonomy nodes were applied. The system marks those nodes as "used in a beat." Over time the Encyclopedia shows a filter: entries never applied in a production session — your actual to-do list for the next session. Beat Log also triggers the content button: one Oracle call generates a YouTube tutorial angle, Instagram Reels concept, title suggestion, and email blurb from the beat's data.</div>
+          <span class="module-ai">Claude · Supabase</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIDEO PIPELINE -->
+  <div class="section">
+    <div class="section-eyebrow">Pipeline</div>
+    <div class="section-title">Beat → Published Video Flow</div>
+    <div class="section-sub">How a finished beat becomes a posted video with minimal manual work.</div>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-label">01 — Produce</div>
+        <div class="pipe-tool">FL Studio</div>
+        <div class="pipe-action">Export stems</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">02 — Brief</div>
+        <div class="pipe-tool">Claude</div>
+        <div class="pipe-action">Visual Treatment Doc</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">03 — Generate</div>
+        <div class="pipe-tool">Neural Frames</div>
+        <div class="pipe-action">4K beat-synced video</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">04 — Edit</div>
+        <div class="pipe-tool">Claude + FFmpeg</div>
+        <div class="pipe-action">EDL · 5-min review</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">05 — Export</div>
+        <div class="pipe-tool">FFmpeg · DaVinci</div>
+        <div class="pipe-action">4 formats, colour graded</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">06 — Publish</div>
+        <div class="pipe-tool">Claude · Composio</div>
+        <div class="pipe-action">Title · description · tags</div>
+      </div>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-label">01 — Record</div>
+        <div class="pipe-tool">Camera / Screen</div>
+        <div class="pipe-action">Raw .mp4 footage</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">02 — Clean</div>
+        <div class="pipe-tool">auto-editor</div>
+        <div class="pipe-action">Silence removed (−35%)</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">03 — Transcribe</div>
+        <div class="pipe-tool">Whisper (local)</div>
+        <div class="pipe-action">Timestamped transcript</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">04 — Cut Plan</div>
+        <div class="pipe-tool">Claude</div>
+        <div class="pipe-action">Edit Decision List</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">05 — Review</div>
+        <div class="pipe-tool">RPGACE Tab</div>
+        <div class="pipe-action">Approve cuts (~5 min)</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-label">06 — Render</div>
+        <div class="pipe-tool">FFmpeg</div>
+        <div class="pipe-action">YouTube · Shorts · Reels</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KNOWLEDGE TAXONOMY -->
+  <div class="section">
+    <div class="section-eyebrow">Knowledge System</div>
+    <div class="section-title">Productorum Totalis — 25 Phyla</div>
+    <div class="section-sub">The complete classification of music production knowledge. Every concept learned, applied, and verified maps to a node in this tree.</div>
+
+    <div class="phyla-grid">
+      <div class="phylum"><div class="phylum-num">I</div><div class="phylum-name">Compositio</div><div class="phylum-sub">Melody · Harmony · Rhythm · Sampling</div></div>
+      <div class="phylum"><div class="phylum-num">II</div><div class="phylum-name">Percussio</div><div class="phylum-sub">Drum Sequencing · Groove · Layering</div></div>
+      <div class="phylum"><div class="phylum-num">III</div><div class="phylum-name">Sonus Designatio</div><div class="phylum-sub">Sound Design · Synthesis · 808 Science</div></div>
+      <div class="phylum"><div class="phylum-num">IV</div><div class="phylum-name">Mixtura</div><div class="phylum-sub">Mixing · EQ · Compression · Space</div></div>
+      <div class="phylum"><div class="phylum-num">V</div><div class="phylum-name">Magistra</div><div class="phylum-sub">Mastering · Loudness · Format</div></div>
+      <div class="phylum"><div class="phylum-num">VI</div><div class="phylum-name">Instrumentarium</div><div class="phylum-sub">VSTs · FL Studio · Plugin Ecosystem</div></div>
+      <div class="phylum"><div class="phylum-num">VII</div><div class="phylum-name">Negotium</div><div class="phylum-sub">Business · Licensing · Brand</div></div>
+      <div class="phylum"><div class="phylum-num">VIII</div><div class="phylum-name">Historia</div><div class="phylum-sub">Music History · Geography · Lineage</div></div>
+      <div class="phylum"><div class="phylum-num">IX</div><div class="phylum-name">Psychologia</div><div class="phylum-sub">Flow State · Creative Blocks · Learning</div></div>
+      <div class="phylum"><div class="phylum-num">X</div><div class="phylum-name">Technologia</div><div class="phylum-sub">Studio Setup · Hardware · File Management</div></div>
+      <div class="phylum"><div class="phylum-num">XI</div><div class="phylum-name">Lingua Musicae</div><div class="phylum-sub">Vocabulary · Communication · Delivery</div></div>
+      <div class="phylum"><div class="phylum-num">XII</div><div class="phylum-name">Contentum</div><div class="phylum-sub">Video · Script · Thumbnail · Algorithm</div></div>
+      <div class="phylum"><div class="phylum-num">XIII</div><div class="phylum-name">Collaboratio</div><div class="phylum-sub">Artists · Sessions · Split Sheets</div></div>
+      <div class="phylum"><div class="phylum-num">XIV</div><div class="phylum-name">Sensus Auris</div><div class="phylum-sub">Ear Training · Frequency ID</div></div>
+      <div class="phylum"><div class="phylum-num">XV</div><div class="phylum-name">Anatomia</div><div class="phylum-sub">Song Structure · Arrangement</div></div>
+      <div class="phylum"><div class="phylum-num">XVI</div><div class="phylum-name">Venditionis Beatorum</div><div class="phylum-sub">Beat Selling · YouTube Strategy · Pricing</div></div>
+      <div class="phylum"><div class="phylum-num">XVII</div><div class="phylum-name">Fons Educationis</div><div class="phylum-sub">Source Database · Artist References</div></div>
+      <div class="phylum"><div class="phylum-num">XVIII</div><div class="phylum-name">Referentia Mercati</div><div class="phylum-sub">Market Intelligence · Regional Gaps</div></div>
+      <div class="phylum" style="grid-column:1/-1;border-color:rgba(201,168,76,0.2);background:rgba(201,168,76,0.03)">
+        <div class="phylum-num" style="color:var(--gold)">XXV</div>
+        <div class="phylum-name">Visio Cinematica</div>
+        <div class="phylum-sub">50-filmmaker directing library · Shot types · Camera movement · Lighting · Genre visual grammar · Scale→colour mapping · Neural Frames prompt templates</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section">
+    <div class="section-eyebrow">Build Timeline</div>
+    <div class="section-title">Roadmap</div>
+    <div class="section-sub">Three phases. Each unlocks the next.</div>
+
+    <div class="roadmap">
+      <div class="phase">
+        <div class="phase-label now">● Now — Complete</div>
+        <div class="phase-item"><strong>Oracle AI Advisor</strong> — text + image, shift-aware</div>
+        <div class="phase-item"><strong>Shift Calendar</strong> — daily / weekly / monthly views</div>
+        <div class="phase-item"><strong>Agenda Engine</strong> — 5 AI-generated daily tasks</div>
+        <div class="phase-item"><strong>Encyclopedia</strong> — AI insight extraction from any entry</div>
+        <div class="phase-item"><strong>Feynman Loop</strong> — 3-phase verified learning, live</div>
+        <div class="phase-item"><strong>Content Intelligence</strong> — competitor video → knowledge</div>
+        <div class="phase-item"><strong>Rota Automation</strong> — Playwright extracts work shifts</div>
+        <div class="phase-item"><strong>Journal</strong> — persistent session and study log</div>
+      </div>
+      <div class="phase">
+        <div class="phase-label july">◆ July — In Build</div>
+        <div class="phase-item"><strong>Beat Log</strong> — log beats, link to taxonomy nodes</div>
+        <div class="phase-item"><strong>Morning Brief</strong> — Gmail + shifts + knowledge summary</div>
+        <div class="phase-item"><strong>Daily Knowledge Pipeline</strong> — 2 concepts/day, automated</div>
+        <div class="phase-item"><strong>Content Repurpose Engine</strong> — 1 script → 4 platforms</div>
+        <div class="phase-item"><strong>YouTube Oracle</strong> — 8 channel strategy commands</div>
+        <div class="phase-item"><strong>Work Style Selector</strong> — Agenda adapts to how you work</div>
+        <div class="phase-item"><strong>Flow State Integration</strong> — session calibration + tracking</div>
+        <div class="phase-item"><strong>n8n Automation Layer</strong> — replaces paid middleware</div>
+      </div>
+      <div class="phase">
+        <div class="phase-label aug">◈ August — Planned</div>
+        <div class="phase-item"><strong>AI Video Pipeline</strong> — footage → published, ~5 min review</div>
+        <div class="phase-item"><strong>Neural Frames Integration</strong> — beat → music video brief</div>
+        <div class="phase-item"><strong>Visual Treatment Generator</strong> — Claude writes the directing brief</div>
+        <div class="phase-item"><strong>Phylum XXV: Visio Cinematica</strong> — 50-filmmaker library</div>
+        <div class="phase-item"><strong>Rights + Publishing System</strong> — PRS, Content ID, contracts</div>
+        <div class="phase-item"><strong>Beat Store Pipeline</strong> — BeatStars Pro Page strategy</div>
+        <div class="phase-item"><strong>200 Producers Curriculum</strong> — structured deep-dive tracks</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COST -->
+  <div class="section">
+    <div class="section-eyebrow">Running Cost</div>
+    <div class="section-title">Monthly When Fully Operational</div>
+
+    <div class="cost-row"><span class="cost-name">Anthropic API (Claude)</span><span class="cost-amount">£20–30</span></div>
+    <div class="cost-row"><span class="cost-name">Neural Frames Knight (4K video generation)</span><span class="cost-amount">£30</span></div>
+    <div class="cost-row"><span class="cost-name">Vercel (hosting + serverless)</span><span class="cost-amount free">Free tier</span></div>
+    <div class="cost-row"><span class="cost-name">Supabase (database)</span><span class="cost-amount free">Free tier</span></div>
+    <div class="cost-row"><span class="cost-name">n8n (workflow automation)</span><span class="cost-amount free">Self-hosted, free</span></div>
+    <div class="cost-row"><span class="cost-name">Whisper (transcription)</span><span class="cost-amount free">Local, free</span></div>
+    <div class="cost-row"><span class="cost-name">Composio (integrations)</span><span class="cost-amount free">Free tier</span></div>
+    <div class="cost-row" style="border-top:1px solid rgba(201,168,76,0.2);margin-top:8px;padding-top:14px">
+      <span class="cost-name" style="color:#E2E2EC;font-weight:700">Total</span>
+      <span class="cost-amount" style="color:var(--gold)">~£50–60 / month</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-title">Built for one producer. Runs itself.</div>
+  <div class="footer-sub" style="margin-top:8px;color:var(--dim)">RPGACE · Personal AI Operating System · June 2026</div>
+</div>
+
+</body>
+</html>
