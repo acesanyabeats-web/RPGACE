@@ -3970,9 +3970,24 @@ async function submitIntelURL(){
   if(!url || !url.startsWith('http')){ alert('Paste a valid URL first.'); return; }
 
   const btn = document.getElementById('intel-submit-btn');
-  if(btn){ btn.disabled = true; btn.textContent = '⏳ Queuing...'; }
+  if(btn){ btn.disabled = true; btn.textContent = '\u23F3 Checking...'; }
 
   try {
+    // Guard: check for an existing pending/processing job with this exact URL
+    // before inserting a new one - prevents wasting a full transcription+analysis
+    // cycle on an accidental double-submit.
+    const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/intel_jobs?url=eq.${encodeURIComponent(url)}&status=in.(queued,processing)&select=id,status`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const existing = checkRes.ok ? await checkRes.json() : [];
+    if(existing.length > 0){
+      alert('This URL is already ' + existing[0].status + '. Check the Insights tab - it should appear shortly.');
+      if(btn){ btn.disabled = false; btn.textContent = '\u26A1 Analyse'; }
+      return;
+    }
+
+    if(btn) btn.textContent = '\u23F3 Queuing...';
+
     // Submit job to Supabase — local server picks it up automatically
     const res = await fetch(`${SUPABASE_URL}/rest/v1/intel_jobs`, {
       method: 'POST',
@@ -3995,7 +4010,7 @@ async function submitIntelURL(){
     const jobsEl = document.getElementById('intel-jobs');
     if(jobsEl) jobsEl.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--gold)33;border-left:3px solid var(--gold);border-radius:6px;padding:10px 14px;margin-bottom:8px">
       <div style="font-size:12px;color:var(--text)">${url.slice(0,60)}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">⏳ Queued — your PC will pick this up automatically...</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">\u23F3 Queued — your PC will pick this up automatically...</div>
     </div>`;
 
     // Start polling Supabase for job updates
@@ -4005,7 +4020,7 @@ async function submitIntelURL(){
     alert('Submit failed: ' + e.message + '\n\nMake sure you have run the intel_jobs SQL in Supabase.');
   }
 
-  if(btn){ btn.disabled = false; btn.textContent = '⚡ Analyse'; }
+  if(btn){ btn.disabled = false; btn.textContent = '\u26A1 Analyse'; }
 }
 
 // ── JOB TRACKING ──
