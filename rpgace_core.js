@@ -1056,23 +1056,15 @@ RPGACE.register('contentRepurpose', {
 
   // ── Get last N Oracle messages for dropdown ──────────────────
   _getOracleMessages: function(limit) {
-    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
-    if (!chatBox) return [];
-    var children = Array.from(chatBox.children);
-    var results = [];
-    for (var i = children.length - 1; i >= 0 && results.length < (limit || 8); i--) {
-      var el = children[i];
-      var cls = el.className || '';
+    // F1: now uses the shared RPGACE.utils.getOracleMessageElements() query
+    // instead of its own duplicated DOM-walk.
+    var elements = RPGACE.utils.getOracleMessageElements ? RPGACE.utils.getOracleMessageElements() : [];
+    var lim = limit || 8;
+    var recent = elements.slice(-lim);
+    return recent.map(function(el) {
       var txt = el.textContent.trim();
-      if (txt.length < 40) continue;
-      // Support: 'msg ai', 'assistant', 'oracle', 'response', 'bot'
-      if (cls.includes('ai') || cls.includes('assistant') || cls.includes('oracle') ||
-          cls.includes('response') || cls.includes('bot') ||
-          el.querySelector('[class*="assistant"]') || el.querySelector('[class*="ai"]')) {
-        results.unshift({ text: txt, preview: txt.slice(0, 80) + '...' });
-      }
-    }
-    return results;
+      return { text: txt, preview: txt.slice(0, 80) + '...' };
+    });
   },
 
   // ── Detect relevant phyla from idea text ─────────────────────
@@ -4000,6 +3992,23 @@ RPGACE.register('config', {
     setTimeout(patchIntelFns, 1500);
 
     // Utility: send text to Oracle chat input and fire sendChat
+    // ── Shared low-level query: find AI-message elements in the chat container ──
+    // ── Both contentRepurpose's dropdown and conidPot's save-button injector    ──
+    // ── independently re-implemented this exact DOM lookup. Consolidated here.  ──
+    RPGACE.utils.getOracleMessageElements = function() {
+      var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
+      if (!chatBox) return [];
+      var children = Array.from(chatBox.children);
+      return children.filter(function(el) {
+        var cls = el.className || '';
+        var txt = el.textContent.trim();
+        if (txt.length < 40) return false;
+        return cls.includes('ai') || cls.includes('assistant') || cls.includes('oracle') ||
+               cls.includes('response') || cls.includes('bot') ||
+               el.querySelector('[class*="assistant"]') || el.querySelector('[class*="ai"]');
+      });
+    };
+
     RPGACE.utils.sendToOracle = function(text) {
       var input = document.querySelector('#chat-input');
       if (!input) return;
@@ -5969,10 +5978,10 @@ RPGACE.register('conidPot', {
   // ── Inject Save Ideas button after Oracle panel responses ─────
   _injectSaveBtn: function() {
     var self = this;
-    var chatMsgs = document.getElementById('chat-msgs');
-    if (!chatMsgs) return;
-
-    var aiMsgs = Array.from(chatMsgs.querySelectorAll('.msg.ai'));
+    // F1: now uses the shared RPGACE.utils.getOracleMessageElements() query
+    // instead of its own separate .msg.ai selector - one shared source of
+    // truth for "what counts as an AI message."
+    var aiMsgs = RPGACE.utils.getOracleMessageElements ? RPGACE.utils.getOracleMessageElements() : [];
     aiMsgs.forEach(function(msg) {
       if (msg.dataset.cpSave) return;
       msg.dataset.cpSave = '1';
