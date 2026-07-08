@@ -60,6 +60,8 @@
 <nav class="sidebar">
   <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">PATCH NOTES</div></div>
   <div class="nav-group"><div class="nav-label">Current Entry</div>
+    <a class="nav-item" href="#future-roadmap">Future Patch Notes (F1-F18)</a>
+    <a class="nav-item" href="#jul6-daylog">July 6 — Day Log</a>
     <a class="nav-item" href="#jul1-daylog">July 1 — Day Log</a>
     <a class="nav-item" href="#jul1">July 1 — Technical Detail</a>
   </div>
@@ -81,6 +83,211 @@
 </nav>
 
 <div class="content">
+
+<div class="card blue" style="margin-bottom:30px;">
+    <div class="card-title">📘 RPGACE Full Manual Breakdown now live</div>
+    <div class="card-body">A complete merge of this Patch Notes file, the Interconnection Map, and the architecture manual now exists at <code>rpgace.vercel.app/manual.html</code> — full session history, step-by-step leverage guides per feature, a complete bug log, and a "Food For Thought" analysis of genuine code-merge opportunities. Sidebar is collapsible, auto-collapses on mobile. This remains the authoritative day-by-day build log; the manual is the polished, use-it-daily reference.</div>
+  </div>
+
+  <div class="card blue" style="margin-bottom:20px;">
+    <div class="card-title">📅 Session started — 7 tasks selected for today</div>
+    <div class="card-body">Today's session scope, pulled directly from the Future Patch Notes roadmap: <strong>F0, F1, F2, F3, F4, F5, F6</strong> — clears all of Tier 1 (small, no-dependency simplifications) and completes the taxonomy tree's originally-scoped four-trigger system (Oracle badge + manual button were live as of July 6; Content Intelligence and Encyclopedia sync auto-propose complete the set today).</div>
+  </div>
+
+  <div class="section" id="future-roadmap">
+  <div class="section-eyebrow">Roadmap — Reboot Style</div>
+  <div class="section-title">Future Patch Notes — Full Step-by-Step Roadmap</div>
+  <div class="section-sub">Every confirmed-but-unbuilt item across this entire session (July 1–6), consolidated into one numbered, dependency-ordered checklist — same format as the original July 1st Reboot's 36-step plan. Each step has a domain, what it does, and its build command where applicable.</div>
+
+  <h3>Tier 1 — Small, high-leverage, no dependencies (do these first)</h3>
+
+  <div class="card purple">
+    <div class="card-title">STEP F0 — Duplicate-submission guard on submitIntelURL() <span class="badge">SYSTEM</span></div>
+    <div class="card-body">Confirmed July 7: Content Intelligence pipeline fully working end-to-end (metadata → download → Whisper transcription → frame extraction → Claude Vision → Oracle report → Encyclopedia + Supabase push, HTTP 201 confirmed). Found while testing: two identical job rows for the same URL, submitted 3 seconds apart (July 2, likely a manual double-submit, not a code bug — <code>submitIntelURL()</code> already disables its button on click). Cheap preventative fix: check <code>intel_jobs</code> for an existing pending/complete row matching the URL before inserting a new one, so an accidental double-submit (human or future bug) can never waste a full transcription+analysis cycle again. Low priority — Encyclopedia's UNIQUE(title) constraint already prevents any actual duplicate entry from landing.</div>
+  </div>
+
+  
+
+  <div class="card purple">
+    <div class="card-title">STEP F1 — Shared getRecentOracleMessages() helper <span class="badge">SYSTEM</span></div>
+    <div class="card-body">Collapses 3 independent chat-parsing implementations (contentRepurpose, conidPot, Save-Idea injector) into one <code>RPGACE.utils.getRecentOracleMessages(n)</code> function. Fixes the "Repurpose grabs the wrong idea" bug as a side effect once pointed at <code>conid_pot</code> instead of raw chat text.<br><code>py rpgace_build.py update config mod_config.js</code> (add helper to config module)</div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title">STEP F2 — Shared phylaKeywordScore() helper <span class="badge">SYSTEM</span></div>
+    <div class="card-body">Consolidates <code>_quickPhylaScan()</code> and <code>isPlausiblePhylum()</code> — same algorithm, same data, built twice in two sessions. One function, callers apply their own threshold on top.</div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title">STEP F3 — Remove dead encSync dedup logic <span class="badge">LEARNING</span></div>
+    <div class="card-body">Client-side duplicate-scanning is now dead weight — the Supabase UNIQUE(title) constraint makes duplicates structurally impossible. Delete <code>_dedup()</code> or leave a one-line comment next time <code>encSync</code> is touched for any other reason.</div>
+  </div>
+
+  <h3>Tier 2 — Taxonomy tree completion (Group B — deepen before Group C)</h3>
+
+  <div class="card gold">
+    <div class="card-title">STEP F4 — Content Intelligence auto-propose <span class="badge">LEARNING</span></div>
+    <div class="card-body">Silent auto-scan of Claude's analysis output at the end of every unattended pipeline run, writes to <code>taxonomy_proposals</code>. Pipeline continues unattended, no blocking.<br><code>py rpgace_build.py update taxonomyTree mod_taxonomyTree.js</code> (add pipeline hook)</div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">STEP F5 — Encyclopedia sync auto-propose <span class="badge">LEARNING</span></div>
+    <div class="card-body">Same silent-queue pattern as F4, triggered on every Encyclopedia sync instead of Content Intelligence completion.</div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">STEP F6 — Dashboard proposal review queue <span class="badge">LEARNING</span></div>
+    <div class="card-body">"🌳 X taxonomy proposals waiting" indicator, alongside the existing Knowledge Gap Tracker. Opens the batch review popup (accept/edit/reject/morph) already built for the manual entry flow — reused, not rebuilt.</div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">STEP F7 — Encyclopedia ↔ Taxonomy Tree bidirectional linking <span class="badge">LEARNING</span></div>
+    <div class="card-body">Per-entry "🌳 Propose to Taxonomy" button on Encyclopedia cards (same pattern as existing Save buttons). Two-table write on accept — new tree node plus a back-reference on the originating entry, using <code>taxonomy_tree.sources</code> (already schema'd for this).</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STEP F8 — Formal phylum-selection criteria brainstorm <span class="badge gap">DEDICATED SESSION — NO CODE</span></div>
+    <div class="card-body">Establish real rules for keyword/phylum/lineage matching to reduce false-positive/negative proposals, replacing the current blunt 2+ keyword threshold. Explicitly not a reactive patch — needs its own focused session.</div>
+  </div>
+
+  <h3>Tier 3 — Schedule system completion</h3>
+
+  <div class="card blue">
+    <div class="card-title">STEP F9 — Reminder button <span class="badge">SCHEDULE</span></div>
+    <div class="card-body">Third button (Start/Done/Reminder) on every scheduled agenda block, standalone and buildable independent of full Schedule Oracle — redisplays stored context/summary for that item at any time.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">STEP F10 — Windows Task Scheduler for rota automation <span class="badge">SYSTEM</span></div>
+    <div class="card-body">Registers <code>fourth_rota.py</code> to run unattended every Monday 8am. Script itself already supports this (headed browser, credentials file, direct Supabase push) — only the OS-level trigger is missing.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">STEP F11 — Schedule Oracle, Phase 1 (MVP) <span class="badge next">MULTI-SESSION BUILD</span></div>
+    <div class="card-body">3 Oracle-tab entry points (direct launch / chat mode / URL-paste field), YouTube+PDF+text ingestion only, sequential 3-option reveal with alert-style acknowledgment between each. Build the popup as an extension of the existing taxonomy tree propose/accept/edit/reject structure, not a fresh component (per Food For Thought #4).</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">STEP F12 — Schedule Oracle, Phase 2 (full loop) <span class="badge next">DEPENDS ON F11</span></div>
+    <div class="card-body">Carousel toggle stage, two-tier session memory (ephemeral rules erase on Approve; approved summary persists through module completion), auto-routing confidence gate to Feynman/Production Live/Encyclopedia.</div>
+  </div>
+
+  <h3>Tier 4 — Original July 1st Reboot steps, still pending</h3>
+
+  <div class="card">
+    <div class="card-title">STEP F13 — Taxonomy Sync expansion (orig. Step 27) <span class="badge">LEARNING</span></div>
+    <div class="card-body">Encyclopedia entries auto-push into taxonomy structure — now effectively superseded/absorbed by F4/F5's auto-propose pipeline; confirm F4/F5 fully cover this before treating as separate work.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STEP F14 — Phylum XXV Filmmaker Library (orig. Step 33) <span class="badge">LEARNING</span></div>
+    <div class="card-body">50 director profiles added to taxonomy_tree, feeds visualOracle's Director Match command directly.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STEP F15 — Beat Selling Integration (orig. Steps 30-32) <span class="badge">CONTENT</span></div>
+    <div class="card-body">Licence/pricing columns added to <code>content_productions</code>. Precondition for F16.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STEP F16 — Beatstars auto-listing <span class="badge">CONTENT — DEPENDS ON F15</span></div>
+    <div class="card-body">Auto-create Beatstars listings from Beat Log data (price, licence, tags, BPM/key) when a ConID is marked Posted.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STEP F17 — Video Pipeline Tab (orig. Step 34) <span class="badge">CONTENT</span></div>
+    <div class="card-body">New 📹 nav tab — EDL review, approve & render, 4 exports. Connects to local_server.py job queue.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STEP F18 — Visual Treatment Generator (orig. Step 35) <span class="badge">CONTENT</span></div>
+    <div class="card-body">Beat Log entry → auto Neural Frames video brief, calling visualOracle commands automatically.</div>
+  </div>
+
+  <h3>Tier 5 — Low-priority ideas, not scheduled</h3>
+
+  <div class="card">
+    <div class="card-title">IDEA — Multi-channel Oracle access (Telegram/Slack)</div>
+    <div class="card-body">Via Composio connectors. Concept only, not scoped.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">BRAINSTORM — Oracle model upgrade to Claude Sonnet 5</div>
+    <div class="card-body">Verify exact model string in <code>api/_context.js</code> before any change — never guess the identifier.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">BLOCKED — DistroKid integration</div>
+    <div class="card-body">No account exists yet; DistroKid has no known public API. Revisit once both conditions change.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">SCOPED — Timestamped Insights + Self-Correcting Frame Pull</div>
+    <div class="card-body">Confirmed buildable (yt-dlp + FFmpeg already integrated) — timestamp field on insights, on-demand 3-candidate frame pull, confirm/reject as free labeling, running offset correction after ~15-20 confirms. Not yet built.</div>
+  </div>
+
+</div>
+
+<div class="section" id="jul6-daylog">
+  <div class="date-tag">JULY 6, 2026 — DAY LOG</div>
+  <div class="section-title">Full Session Reflection — Council of 5, Converged to 9/10</div>
+  <div class="section-sub">Written at session end. Ran through multiple internal council passes until all 5 seats agreed the reflection was specific and actionable enough to actually change next session's behaviour, not just describe today's.</div>
+
+  <h3>What shipped, confirmed working end to end</h3>
+  <div class="card green">
+    <div class="card-body">
+      <ul>
+        <li>Global taxonomy detection (3-layer stack) — confirmed working on real Oracle responses</li>
+        <li>Full recursive taxonomy tree — manual entry, propose/accept/edit/reject/morph, native-content preview, phylum pre-filtering, Oracle's own named-node extraction</li>
+        <li>Rota automation fully closed — yt-dlp + FFmpeg + Claude Vision → Supabase → RPGACE, zero manual console paste, confirmed via a real 15-shift import</li>
+        <li>Two genuine main.js bugs found via real-source investigation and fixed: shift date off-by-one (UTC/local mismatch, three separate locations), scheduling system key mismatch (two parallel, incompatible data stores silently never talking to each other)</li>
+        <li>Daily calendar fully rebuilt (v2) — row-collapsing model, 24hr HH:MM–HH:MM format, clickable free rows opening a real Schedule modal, working title/description inputs (previously didn't exist at all)</li>
+        <li>Full-day discovery: an 11-day-old uncommitted main.js change (schedule functions) found, reviewed, and properly committed with an honest frozen-file-rule exception logged</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The pattern behind today's hardest stretch — six iterations on one calendar view</h3>
+  <div class="card red">
+    <div class="card-title">What actually went wrong, precisely</div>
+    <div class="card-body">
+      The Daily Grid compaction feature took six live-deploy rounds to get right. Looking back at the actual sequence, every failed round shared one root cause: <strong>positioning/layout logic was written and shipped before ever seeing the real rendered output.</strong> Absolute-positioning math was built on assumptions about row height, container offset, and content fit — each assumption plausible, each one individually wrong in a different way, and each wrong assumption only surfaced after a live deploy and a screenshot round-trip.<br><br>
+      The fix that actually worked wasn't a smarter patch — it was <strong>abandoning the positioning-math model entirely</strong> for a normal-document-flow model (build rows in order, let the browser handle layout) that had no pixel math to get wrong in the first place. The lesson isn't "measure more carefully" — it's "prefer the architecture that has fewer ways to be wrong," even if it seems like more code up front.
+    </div>
+  </div>
+
+  <h3>Every specific bug this session traced to the same underlying cause</h3>
+  <div class="card">
+    <div class="card-body">
+      <ul>
+        <li><strong>UTC vs local date parsing</strong> (3 occurrences: <code>_calDateStr</code>, <code>openSchedModal</code>, <code>renderDailyGrid</code>) — the same one-line mistake (<code>toISOString()</code> instead of local date components), copy-pasted or independently reinvented in multiple places across different build sessions</li>
+        <li><strong>Two parallel scheduling systems</strong> (<code>rpgace_scheduled_agendas</code> vs <code>rpgace_sched_agendas</code>) — built at different times, never reconciled, silently incompatible for an unknown number of sessions before today</li>
+        <li><strong>Duplicate button injection</strong> — one new inline button system built without checking whether an older system (<code>_addSchedButtons</code>) was already doing the same job from a different call site</li>
+      </ul>
+      Every one of these is a version of the same root issue: <strong>code was added without first checking what already existed and calling it.</strong> Not a knowledge failure — a verification-order failure.
+    </div>
+  </div>
+
+  <h3>New rules for future development — specific and checkable, not vague</h3>
+  <div class="card gold">
+    <div class="card-body">
+      <ol>
+        <li><strong>Before writing any layout/positioning code, get a screenshot of the current unmodified state first.</strong> Never write CSS/positioning logic based on inference about what a container "probably" looks like — pull the real computed styles or a screenshot before writing math against them.</li>
+        <li><strong>Before adding a new UI behaviour (buttons, click handlers, injected content), grep for existing functions that already touch the same DOM elements.</strong> "Does this already exist somewhere else" is now a mandatory check before writing new code, not an afterthought when something breaks.</li>
+        <li><strong>Prefer normal document flow over absolute positioning whenever the two produce the same visual result.</strong> Absolute positioning has more ways to silently drift (offsets, measured heights, container padding) — only reach for it when flow genuinely can't do the job.</li>
+        <li><strong>When a fix doesn't work on the first try, stop and ask for the real rendered output (screenshot) before attempting a second blind patch.</strong> Today's worst stretch happened specifically when patches were applied back-to-back without a visual check in between — the correct discipline (verify before extending) was already known from last session's Oracle debugging, and got abandoned under momentum tonight.</li>
+        <li><strong>Big multi-part feature requests get a full spec-and-defer pass before any code, not a partial build.</strong> Schedule Oracle's five-subsystem scope was correctly deferred whole, rather than half-built and left inconsistent — this should be the default response to any request stacking 3+ genuinely new subsystems in one ask.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>What this session confirms about the working relationship, worth stating plainly</h3>
+  <div class="card blue">
+    <div class="card-body">
+      Direct pushback when something wasn't working ("really shit job," "why cant you just delete the old version") led to faster, more precise fixes than continued hedging would have — the correction each time was specific enough to act on immediately. That pattern is worth preserving deliberately going forward: blunt, specific feedback beats polite ambiguity for this kind of iterative build work.
+    </div>
+  </div>
+</div>
 
 <div class="section" id="jul1-daylog">
   <div class="date-tag">JULY 1, 2026 — DAY LOG</div>
@@ -178,6 +385,71 @@
       <strong>Stability flag from Council of 5:</strong> accepting a proposal now needs to write to <em>two</em> tables (the new tree node, plus the back-reference on the originating encyclopedia entry) — a genuine two-part write, not a single insert. Needs sequencing care so a failure on the second write doesn't leave a tree node with a dangling/missing back-reference.<br><br>
 
       <strong>Why this matters:</strong> closes a gap already flagged in Part 3 of the Interconnection Map — Encyclopedia and taxonomy_nodes previously had zero cross-reference despite being conceptually inseparable. This is the single most "compounding" idea logged this session: every accepted node becomes simultaneously a taxonomy achievement AND a permanent, navigable link back to the insight that produced it.
+    </div>
+  </div>
+
+  <div class="card red">
+    <div class="card-title">Two real bugs found + fixed: shift date off-by-one, schedule key mismatch <span class="badge fix">FIXED — JULY 6</span></div>
+    <div class="card-body">
+      <strong>Bug 1 — shifts displayed one day early on Weekly calendar:</strong> <code>_calDateStr()</code> used <code>toISOString().split('T')[0]</code>, which converts to UTC before formatting. <code>_calMondayOf()</code> builds each day using local-time methods (<code>setHours(0,0,0,0)</code>, <code>getDay()</code>) — so in BST (UTC+1), local midnight becomes 23:00 the previous day in UTC, and the date string used to look up shifts didn't match the date actually being displayed. Fixed by replacing <code>toISOString()</code> with a local-date-component formatter (<code>getFullYear()/getMonth()/getDate()</code>) that never converts timezone.<br><br>
+      <strong>Two dead duplicate functions also found and removed during investigation:</strong> <code>buildMonthSlots</code> and <code>buildWeekSlots</code> each had an old, simpler goal-tracker-era version still sitting in main.js above the real June 24 shift-calendar versions — caught by <code>node --check</code> failing on "Identifier already declared." Removed both dead versions; confirmed zero duplicates remain across all 172 functions in the file.<br><br>
+      <strong>Bug 2 — scheduled agendas never appeared on Weekly/Monthly:</strong> <code>confirmSchedule()</code> (the "📅 Schedule" button) writes to localStorage key <code>rpgace_scheduled_agendas</code>. <code>_calGetSchedAgendas()</code> (read by both <code>buildWeekSlots</code> and <code>buildMonthSlots</code>) was reading from a *different* key, <code>rpgace_sched_agendas</code> — a one-character naming mismatch that meant every agenda ever scheduled via that button silently never rendered on either calendar view. Fixed by pointing the reader at the key four other functions (<code>confirmSchedule</code>, <code>loadScheduledAgendas</code>, <code>removeScheduledAgenda</code>, <code>clearScheduledAgendas</code>) already correctly use — one-line fix, zero cascade.<br><br>
+      <strong>Lesson:</strong> both bugs were invisible to visual inspection and only surfaced by pulling the actual live function source (<code>window.fnName.toString()</code>) rather than guessing from behavior — same discipline that resolved the Oracle streaming bug and the taxonomy observer bug in prior sessions.
+    </div>
+  </div>
+
+  <div class="card gold" style="border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.05);">
+    <div class="card-title">Unified cross-module scheduling + Daily-view time compaction <span class="badge next">CONFIRMED SPEC — NEXT SESSION — GODMODE</span></div>
+    <div class="card-body">
+      Goal: anything scheduled via any "Schedule" button anywhere in RPGACE (Agenda cards, future Feynman Loop, Production Live, ConID) writes to one place and automatically appears on Weekly, Daily, and Monthly views — with Weekly treated as the schedule of record.<br><br>
+
+      <strong>Data shape — confirmed (Option B + D combined):</strong> extend the existing <code>{title, category, duration_mins, time, date, xp}</code> shape with <code>source_type</code> ('agenda'|'feynman'|'production_live'|'conid') and <code>source_id</code>, so a calendar block can jump back to its origin. Wrapped in one shared function, <code>scheduleToCalendar(item)</code>, that every module calls instead of writing to localStorage directly — new modules get calendar integration for free by calling one function, rather than each reimplementing storage logic. A richer "resume payload" (full session state, not just a source link) was considered and explicitly deferred — B/D gets most of the value at a fraction of the build cost; a full resume payload can be added later per-module if a specific workflow demands it.<br><br>
+
+      <strong>Feynman Loop revision tab — confirmed:</strong> currently no dedicated button exists to access Feynman Loop directly. Confirmed plan: add a "Revision" sub-section within the Research tab as the entry point, wired to <code>scheduleToCalendar()</code> the same as every other source.<br><br>
+
+      <strong>Daily-view time compaction — confirmed algorithm, precisely specified:</strong> convert the flat list of scheduled items for a day into a gap-filled timeline where multi-hour items merge into a single 2-line block instead of repeating across every hour row. Partial-hour boundaries split the hour into sub-segments (free time + task + remaining free time), each shown as its own line — down to 15-minute granularity if that's how precisely something is scheduled. Example: a 10:30–21:00 shift renders as one compacted 2-line block spanning that whole range; the following free period starts fresh at 21:00; a 9:15–9:30 task splits its hour into three lines (9:00–9:15 free / 9:15–9:30 task / 9:30–10:00 free).<br><br>
+
+      <strong>Monthly/Daily derivation — confirmed unchanged:</strong> both continue reading from the same shared functions as Weekly (already true architecturally); no separate sync logic needed once the key-mismatch fix (shipped this session) and the unified write function (next session) are in place.<br><br>
+
+      <strong>Calendar size — confirmed as a separate, simple task:</strong> enlarge the calendar visually for readability. CSS-only, no data/logic changes, can be done independently of the compaction algorithm.
+    </div>
+  </div>
+
+  <div class="card gold" style="border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.06);">
+    <div class="card-title">Schedule Oracle - full locked spec <span class="badge next">CONFIRMED - DEDICATED NEXT SESSION</span></div>
+    <div class="card-body">
+      Built via GODMODE + Council of 5, July 6 evening. Turns any source material (video, PDF, text) into a fully-reasoned, schedulable, self-executing agenda item. Explicitly NOT built tonight - Daily Grid rebuild alone took 6 iterations through pure UI work; this feature stacks AI reasoning, a new carousel UI, session-scoped memory, and a content-routing pipeline on top.<br><br>
+
+      <strong>Three Oracle-tab entry points, same pattern as Prod Oracle side panel:</strong>
+      <ol style="margin-top:6px;">
+        <li>Direct launch - fires the full loop immediately, no pre-context needed</li>
+        <li>Oracle chat mode - Oracle asks "what do you want to schedule?" conversationally</li>
+        <li>URL/document field - paste a YouTube link, PDF, or plain text; RPGACE routes by content type to whichever native pipeline exists, Oracle analyses with full context</li>
+      </ol>
+
+      <strong>MVP content scope, confirmed:</strong> YouTube + PDF + plain text + copy-paste only. Raw mp3/mp4 upload and Instagram/TikTok links explicitly deprioritized as future cherry-on-top, not blocking v1. Unsupported formats get a plain "can't process this, describe it instead" fallback.<br><br>
+
+      <strong>Full loop, confirmed end to end:</strong>
+      <ol style="margin-top:6px;">
+        <li>Content ingested via existing native pipeline for that format</li>
+        <li>Oracle generates 3 carefully-reasoned scheduling options, contextualised to the time window and source material</li>
+        <li>Sequential reveal: Option 1 shown first, acknowledged via alert-style popup; then Option 2; then Option 3 - only after all three are revealed does the system move to the next stage</li>
+        <li>Carousel toggle stage: arrow-navigate between the 3 options, Approve/Reject/Edit actions</li>
+        <li>On Approve: Encyclopedia entry generated immediately; session-scoped memory erases at this exact moment</li>
+        <li>On "Start" from the resulting agenda block: auto-routes to Feynman Loop, Production Live, or opens the Encyclopedia entry - whichever the approved summary calls for</li>
+      </ol>
+
+      <strong>Session-scoped memory - clarified, two distinct things confirmed:</strong>
+      <ul style="margin-top:6px;">
+        <li><strong>Ephemeral "strict rules" memory</strong> - built from the user's past prompts within one active scheduling loop, steering Oracle's reasoning consistently while the loop is live. Erases completely the moment Approve is clicked - a genuinely new memory lifecycle not used elsewhere in RPGACE.</li>
+        <li><strong>The approved summary itself - NOT ephemeral, persists through module completion.</strong> This is the actual payload used as generation input by whichever module Start routes to (Feynman Loop, Production Live, or Encyclopedia) - the module needs this exact context to generate content precisely matching the agenda's real goal, not a vague restatement. This must survive well past Approve, through Start, through the module actually running and finishing.</li>
+      </ul>
+
+      <strong>New UI element - Reminder button:</strong> even though the ephemeral rules-memory erases on Approve, the approved summary persists separately and permanently for that agenda item. A new third button - Reminder - sits alongside Start/Done on every scheduled agenda block (extends tonight's Daily Grid button pattern directly). Clicking it redisplays the full approved summary anytime later, including after the module it triggered has already run. The same stored summary is also what gets passed as context into Feynman/Production Live/Encyclopedia generation at Start-time - Reminder is a *view* of that same persistent data, not a separate copy.<br><br>
+
+      <strong>Auto-routing confidence gate:</strong> deciding Feynman vs Production Live vs Encyclopedia-only needs a threshold, similar to the 2+ keyword gate in taxonomy detection - ambiguous cases should ask once rather than silently guess wrong.<br><br>
+
+      <strong>Build order recommendation:</strong> stage sequential-reveal UI and carousel UI as two independently-tested pieces before wiring the full loop - applying tonight's Daily Grid lesson (simplest correct slice first, verify visually, then extend).
     </div>
   </div>
 
