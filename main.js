@@ -1797,9 +1797,24 @@ function scheduleToCalendar(item){
     source_id:item.source_id||null,
     created_at:new Date().toISOString()
   };
+  // Write to localStorage immediately (instant UI feedback, works offline)
   const stored=JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');
   stored.push(entry);
   localStorage.setItem('rpgace_sched_agendas',JSON.stringify(stored));
+
+  // Also push to Supabase (rpgace_agendas) - same cross-device pattern as rpgace_shifts.
+  // Fixes: tasks scheduled on one device (e.g. phone) not appearing on another.
+  fetch(SUPABASE_URL + '/rest/v1/rpgace_agendas', {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify(entry)
+  }).catch(function(e){ console.warn('[scheduleToCalendar] Supabase push failed, saved locally only:', e.message); });
+
   return entry;
 }
 
