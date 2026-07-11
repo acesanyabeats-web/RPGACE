@@ -309,3 +309,130 @@ A "🌳 Propose to Taxonomy" button on Encyclopedia cards is **not a fifth trigg
 ### Stability note carried from Council of 5
 Accepting a proposal that originated from an Encyclopedia entry now requires a two-table write (new tree node + back-reference update on the entry), not the single-table write every other trigger source uses. This is the first place in the entire map where accept-a-proposal isn't a single atomic insert — worth flagging for whoever builds this that sequencing/failure-handling needs explicit thought, not just a copy-paste of the existing `_acceptLineage()` logic.
 
+
+---
+
+## PART 9 — Schedule System: Bugs Found + Unified Scheduling Spec (July 6)
+
+### Bugs fixed this session
+**`_calDateStr` UTC/local mismatch:** the calendar's date-computation and date-formatting used two different time bases (local for computing which day, UTC for formatting the lookup string) — a subtle but total correctness bug in the Weekly/Monthly touchpoint from Part 4/6. Fixed by making both local-consistent.
+**`rpgace_sched_agendas` vs `rpgace_scheduled_agendas` key mismatch:** confirms a pattern worth watching for elsewhere in the codebase — a single-character key name drift between a writer (`confirmSchedule`, 3 other functions) and a reader (`_calGetSchedAgendas`, 2 call sites) silently broke a touchpoint for an unknown length of time with no error, no console warning, just silent non-display.
+**Two dead duplicate functions removed** (`buildMonthSlots`, `buildWeekSlots` old versions) — confirms the June 24 uncommitted main.js changes (Part 7) added new implementations without removing what they replaced.
+
+### New confirmed touchpoint: unified `scheduleToCalendar()`
+This is a genuinely new shared function, not yet built, that will become **the single write path into the Weekly/Daily/Monthly calendar system** — currently only `confirmSchedule()` writes here; after this ships, Feynman Loop (new Research-tab sub-section) and Production Live/ConID will write through the same function.
+
+**Data shape:** existing `{title, category, duration_mins, time, date, xp}` plus new `source_type`/`source_id` fields — lets any calendar block link back to its origin module.
+
+**Fits into:** extends Group A (Part 4) — the Schedule/Agenda cluster — by adding new writers (Feynman, Production Live, ConID) into the same calendar data flow that Group A already established between Steps 15/16/R-24.
+
+### Daily-view compaction algorithm (confirmed spec, not yet built)
+Converts a flat event list into a gap-filled timeline: multi-hour items become one compacted 2-line block instead of repeating per hour row; partial-hour boundaries split into free/task/free sub-segments down to 15-minute granularity. This is a rendering-layer change only — reads from the same `_calGetShifts()`/`_calGetSchedAgendas()` functions already in use, no new data touchpoint.
+
+
+---
+
+## PART 10 — Schedule Oracle (locked spec, next session)
+
+The most architecturally significant confirmed-but-unbuilt feature in the whole map — it becomes a new hub, not just another module, once built.
+
+### New touchpoints this creates
+- **Content ingestion router** — reads YouTube (via existing Supadata pipeline), PDF, and plain text; routes each to the right existing native handler rather than building new parsers
+- **Two-tier session memory, clarified:** an ephemeral "strict rules" layer that self-destructs at Approve (first instance in RPGACE of deliberately-erased memory), and a separate, persistent "approved summary" layer that survives through Start and module completion - because Feynman/Production Live/Encyclopedia need that exact context as their generation input, not a vague restatement. The Reminder button is a view onto this persistent layer, not a separate copy.
+- **Post-approval router** — a new decision point that chooses between three existing destinations (Feynman Loop, Production Live, Encyclopedia) based on classifying the approved summary's content
+
+### Fits into existing structure
+This is the same "unify, don't duplicate" pattern as `scheduleToCalendar()` (Part 9) - one shared engine (`scheduleOracle()`) callable from 3 different entry points (Oracle-tab direct launch, Oracle-tab chat mode, Oracle-tab URL field), same as `scheduleToCalendar` being callable from both the Agenda-card button and the detailed Schedule modal.
+
+The **Reminder button** extends the exact Start/Done button pattern built in Part 9's Daily Grid rebuild - same styling, same click-handling approach, just a third button and a different click action (redisplay stored summary instead of state-changing).
+
+The **auto-routing confidence gate** reuses the same 2+ keyword confidence-gate concept from Part 6's taxonomy detection, applied to a new classification problem (which module to launch) instead of the original one (which phylum matches).
+
+### Deliberately deferred, not forgotten
+Instagram/TikTok ingestion, raw mp3/mp4 upload - both explicitly out of MVP scope. Confirmed reason: Instagram already known-blocked (per `sendChat`'s own system prompt, discovered mid-session), TikTok never attempted anywhere in RPGACE, raw audio needs Whisper which currently only exists in local Python scripts, not the web app itself.
+
+
+---
+
+## PART 11 — July 6 Day Log Summary (full reflection in Patch Notes)
+
+Full Council-of-5-converged reflection lives in `patch_notes.html` under "July 6 — Day Log." Summary for the map's own record:
+
+**Root pattern behind today's hardest stretch (6-iteration Daily Grid rebuild):** positioning logic was written and shipped before ever seeing real rendered output. Fixed by abandoning pixel-math positioning entirely for normal document flow — fewer ways to be wrong beats more careful math.
+
+**Three bugs, one shared cause:** UTC/local date mismatch (3 locations), two incompatible parallel scheduling systems, duplicate button injection — all three trace back to code being added without first checking what already existed at that touchpoint.
+
+**Five new development rules logged** (screenshot-before-positioning-code, grep-before-adding-UI-behaviour, prefer-flow-over-absolute-positioning, verify-before-second-blind-patch, defer-whole-multi-subsystem-asks) — full text in Patch Notes, referenced here so both documents point to the same standing rules rather than duplicating them differently.
+
+**Confirms the standing update discipline held all session:** every new idea (taxonomy tree extensions, Schedule Oracle, main.js discoveries) got logged to both files as it was confirmed, not batched at the end — this is now the proven default working pattern for RPGACE sessions going forward.
+
+
+---
+
+## PART 12 — RPGACE Full Manual Breakdown + Future Patch Notes Roadmap (July 6, closing)
+
+### Full Manual Breakdown now live
+`rpgace.vercel.app/manual.html` merges this Interconnection Map, Patch Notes, and the original architecture manual into one document — full session history, per-feature leverage guides, complete bug log, and a "Food For Thought" section analyzing genuine code-merge opportunities (4 confirmed worth doing, 2 explicitly rejected with reasoning). Sidebar is collapsible, defaults collapsed on mobile.
+
+### Future Patch Notes — full roadmap, F1 through F18
+A complete, numbered, dependency-ordered consolidation of every confirmed-but-unbuilt item across the entire July 1-6 session now lives in Patch Notes under "Future Patch Notes," styled like the original July 1st Reboot's 36-step checklist. Five tiers:
+
+1. **Tier 1 (F1-F3)** — small system-level simplifications (shared Oracle-message helper, shared keyword-scoring helper, dead dedup removal) — the three confirmed Food-For-Thought merges, now given step numbers and priority
+2. **Tier 2 (F4-F8)** — taxonomy tree completion — the four remaining trigger/UI pieces plus the deferred selection-criteria brainstorm
+3. **Tier 3 (F9-F12)** — schedule system completion — Reminder button, Task Scheduler automation, Schedule Oracle Phases 1 and 2
+4. **Tier 4 (F13-F18)** — original July 1st Reboot steps still pending, renumbered and cross-referenced to what's already been superseded
+5. **Tier 5** — low-priority ideas and explicitly blocked items (multi-channel Oracle, Sonnet 5 upgrade, DistroKid, frame-pull system)
+
+This is now the single authoritative "what's next" reference — future sessions should start here rather than reconstructing priority order from scattered individual entries across both documents.
+
+
+---
+
+## PART 13 — Taxonomy Sorting Agent (July 8, replaces earlier per-node council concept)
+
+Major architecture correction from Part 6/9's earlier framing. Supersedes any implication that AI reasoning lives inside the tree itself.
+
+### The corrected model
+**One agent, not per-node AI.** The "Taxonomy Sorting Agent" knows the full tree structure and, given any insight, either maps it onto an existing path or invents a new one autonomously (new classes/orders, not just new leaves), always via accept/reject/modify.
+
+### Cost architecture — the actual design constraint
+AI reasoning is confined to exactly two touchpoints: the Sorting Agent's classification decision, and the Council-of-5 justification text shown at Lineage Proposal time. **The tree itself — every node, every browse, every display — is pure static data with zero AI cost.** This is the opposite of "AI in every node," which was the original ask's literal wording; the corrected version keeps the same functional outcome (intelligent, justified placement) at a fraction of the cost.
+
+### New shared touchpoint: book knowledge table
+A new Supabase table, explicitly designed to be queried by any domain — not siloed to taxonomy. Oracle is named specifically as a future consumer. Reuses the ingestion pipeline already spec'd for Schedule Oracle's PDF handling rather than building parallel infrastructure.
+
+### Jargon Encyclopedia — the payoff view
+Not new infrastructure — a read-only view over `taxonomy_tree`'s leaf nodes. Confirms the tree's design (name + explainer per node) was already shaped to support this without modification.
+
+### Explicitly deferred
+Circles (rabbit-hole nav) stays inside Research tab. A Research-tab declumping session is now a confirmed prerequisite, logged as its own future item.
+
+### Known open bug, blocking full confidence in this session's testing
+Propose-lineage button missing on phyla beyond the 5th in the scrollable badge panel — real cause not yet confirmed, needs `_expandPhylaDetail`'s actual current source.
+
+
+---
+
+## PART 14 — Future Integration Vision (a-f), July 8
+
+Six confirmed future directions, logged for continuity. Full detail in Patch Notes Tier 6.
+
+**a-d** extend already-established touchpoints: social platforms extend Composio connectors; video editing extends F17/F18; the learning environment unifies Feynman+Encyclopedia+Taxonomy into one curriculum; auto-logging extends Journal+Content Production Live.
+
+**e — Autonomous self-improvement meta-agent.** The most structurally novel item logged this session — an agent with standing permission to *directly correct* confirmed-poor existing implementations without asking, while still requiring permission to *adopt* new ideas. This is a genuinely different governance shape than anything else in RPGACE, which otherwise never modifies itself without an explicit user-issued instruction each time.
+
+**f — Competitor/book insight pipeline, with a concrete worked template.** Insight → taxonomy leaf node → structured summary (what/how/used-on-what) → clickable footnote back to source. This confirms `intel_bibliography`'s purpose extends beyond Content Intelligence specifically into general taxonomy leaf sourcing — the same citation infrastructure serves both. Directly connects to the Taxonomy Sorting Agent (Part 13): once that agent exists, insights from books/competitor research become just another input source alongside Oracle/Content Intelligence/Encyclopedia sync, all converging on the same leaf-creation-with-footnote pattern.
+
+**Open design question, carried forward:** the exact template structure for a "complete outlook" leaf summary needs designing once, so every Sorting-Agent-created node is consistent rather than separately reasoned each time.
+
+
+---
+
+## PART 15 — Oracle Timeout Bug (July 8, partial fix, still open)
+
+New touchpoint discovered: `api/oracle.js`'s `maxDuration` config, previously unset (using Vercel's account-default ceiling). Raised to 60s — insufficient on its own.
+
+**Diagnostic finding worth preserving:** the bug is response-shape-dependent, not universal. Long, heavily-structured multi-part responses (3-layer teaching format) time out; shorter conversational/Socratic-method responses on the identical topic complete normally. This narrows the real cause to either genuine generation-time length or a hang inside `callClaude()` (`api/_context.js`), not a blanket Oracle failure.
+
+**Next diagnostic step:** pull real `api/_context.js` source before any further fix attempt — consistent with the standing rule against guessing at unseen server-side code.
+

@@ -99,7 +99,65 @@
   <div class="section-title">Future Patch Notes — Full Step-by-Step Roadmap</div>
   <div class="section-sub">Every confirmed-but-unbuilt item across this entire session (July 1–6), consolidated into one numbered, dependency-ordered checklist — same format as the original July 1st Reboot's 36-step plan. Each step has a domain, what it does, and its build command where applicable.</div>
 
+  <h3>Tier 6 — Future Integrations (a-f), confirmed vision, not yet scoped for build</h3>
+
+  <div class="card blue">
+    <div class="card-title">6a — Social media platform integrations</div>
+    <div class="card-body">Direct posting/scheduling integrations beyond current Composio connectors. Not yet scoped to specific platforms or build order — logged as confirmed direction.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">6b — Video editing and scripting integration</div>
+    <div class="card-body">Extends Steps F17 (Video Pipeline Tab) and F18 (Visual Treatment Generator) — connects RPGACE to actual editing/scripting tools, not just planning them.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">6c — Full learning environment for music production + posting</div>
+    <div class="card-body">A structured curriculum layer over the existing Feynman Loop + Encyclopedia + Taxonomy Tree — teaching production AND posting/growth as one connected learning path, not two separate systems.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">6d — Auto-logging videos, beats, and career progress</div>
+    <div class="card-body">Passive, automatic logging of creative output and career milestones — extends Journal + Content Production Live to capture progress without manual entry.</div>
+  </div>
+
+  <div class="card purple">
+    <div class="card-title">6e — Autonomous RPGACE self-improvement meta-agent <span class="badge next">NOVEL GOVERNANCE PATTERN — CONFIRMED, PRECISE SPEC</span></div>
+    <div class="card-body">
+      An AI agent that continuously monitors AI development and social media platform developments, comparing RPGACE's current structure against what a "best possible version" would look like with the latest relevant feature integrated.<br><br>
+      <strong>Confirmed decision rule, stated precisely:</strong> if the agent identifies a genuinely good new idea not yet in RPGACE, it asks the user before adopting. <strong>If it identifies that something already integrated is a poor implementation, it does NOT ask — it acts directly</strong> (fixes or replaces it). This is an explicit two-tier autonomy rule: permission required for new adoption, no permission required for correcting confirmed-bad existing implementation.<br><br>
+      This is the most architecturally unusual system logged all session — an agent with a standing mandate to modify RPGACE's own code based on its own judgment of quality, not just execute user-issued patches. Needs careful scoping (what counts as "confirmed shit," what stops it from over-correcting) before any build begins.
+    </div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-title">6f — Competitive/book/article learning pipeline into Taxonomy <span class="badge next">CONFIRMED, WITH WORKED EXAMPLE</span></div>
+    <div class="card-body">
+      The environment learns from competitor research and book/article drops the user provides. Best, most unique insights get extracted and pushed down the taxonomy tree, which then feeds the database, which then surfaces in Oracle responses and Encyclopedia entries as source material.<br><br>
+      <strong>Worked example, given directly by the user — this should become the template for every Sorting-Agent-created leaf node:</strong><br>
+      A reverb technique using Valhalla (specific knobs, specific sound) gets extracted → logged as a taxonomy leaf node titled "Valhalla reverb VST used" → the leaf's summary is structured to give a complete outlook: what the VST is, how it works, how it's used, on what sounds.<br><br>
+      <strong>Confirmed requirement:</strong> every such leaf node includes <strong>clickable footnotes</strong> linking back to the original source — this is precisely why the Content Intelligence bibliography system exists (<code>intel_bibliography</code> table), and confirms that table's purpose extends beyond Content Intelligence into taxonomy leaf sourcing generally.<br><br>
+      <strong>Open question for next session:</strong> the exact structure of a "complete outlook" summary (what fields, what order, how long) needs to be designed once — a template — so every leaf node created this way is consistent, rather than each one being separately reasoned about from scratch.
+    </div>
+  </div>
+
+  <h3>Tier 0 — Confirmed critical bug, next fix</h3>
+
+  <div class="card red">
+    <div class="card-title">BUG — Oracle 504 timeout on long structured responses <span class="badge gap">PARTIAL FIX APPLIED — NEEDS callClaude SOURCE</span></div>
+    <div class="card-body">Confirmed reproducible: the 3-layer teaching format (simple → technical → expert nuance, FL Studio-specific) consistently times out with <code>FUNCTION_INVOCATION_TIMEOUT</code>. Raised <code>api/oracle.js</code>'s <code>maxDuration</code> from Vercel's default to 60s — did not fully resolve it, response still timed out at the raised ceiling. Confirmed NOT a general Oracle failure — Socratic-method mode (shorter, conversational, one question at a time) completes successfully on the identical topic. Points at either genuine generation time exceeding 60s for long structured responses, or a hang somewhere in <code>callClaude()</code> (imported from <code>api/_context.js</code>, source not yet pulled). Next step: get real <code>_context.js</code> source before further fixes — do not guess a second time.</div>
+  </div>
+
+  
+
+  <div class="card red">
+    <div class="card-title">BUG — Propose-lineage button missing on phyla beyond 5th in scrollable list <span class="badge gap">NEEDS REAL SOURCE — IN PROGRESS</span></div>
+    <div class="card-body">Confirmed by user testing July 8: when a response detects more than 5 relevant phyla, the "🌳 Propose lineage" button doesn't render on rows past the 5th. Root cause not yet confirmed — needs <code>_expandPhylaDetail</code>'s real current source before fixing (function was rebuilt across several patches July 6/7, exact live version unconfirmed).</div>
+  </div>
+
   <h3>Tier 1 — Small, high-leverage, no dependencies (do these first)</h3>
+
+  
 
   <div class="card purple">
     <div class="card-title">STEP F0 — Duplicate-submission guard on submitIntelURL() <span class="badge">SYSTEM</span></div>
@@ -451,6 +509,42 @@
 
       <strong>Build order recommendation:</strong> stage sequential-reveal UI and carousel UI as two independently-tested pieces before wiring the full loop - applying tonight's Daily Grid lesson (simplest correct slice first, verify visually, then extend).
     </div>
+  </div>
+
+  <div class="card gold" style="border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.06);">
+    <div class="card-title">Taxonomy Sorting Agent — full confirmed architecture <span class="badge next">CONFIRMED — MAJOR BUILD — NEXT SESSION</span></div>
+    <div class="card-body">
+      Built via GODMODE + Council of 5, July 8. This is the missing piece connecting every insight source (Oracle, Content Intelligence, Encyclopedia, future book imports) to the taxonomy tree with genuine reasoning instead of blunt keyword matching — while keeping cost controlled by design.<br><br>
+
+      <strong>Core decision — ONE agent, not per-node AI:</strong> a single "Taxonomy Sorting Agent" that knows the whole tree structure (all phyla, classes, orders currently populated), takes any incoming insight, and does one of two things:
+      <ol style="margin-top:6px;">
+        <li><strong>Maps onto an existing path</strong> — walks down from phylum through however many levels are actually populated, finds the best-fit existing node</li>
+        <li><strong>Invents a new logical path</strong> when nothing fits — can autonomously propose new classes/orders/etc, not just a new leaf under an existing branch. Always surfaced as accept/reject/modify — Oracle never writes to the tree without confirmation.</li>
+      </ol>
+
+      <strong>Cost control, confirmed as a hard rule:</strong> AI reasoning lives in exactly two places only — (1) inside the Sorting Agent's own classification decision, and (2) as the "Council of 5 justification" text shown when Propose Lineage is clicked, explaining why this path won over alternatives. <strong>The tree and its nodes themselves stay pure static data</strong> — no AI cost baked into browsing, displaying, or storing taxonomy content. This was an explicit design constraint to keep the system affordable at scale.<br><br>
+
+      <strong>Council of 5 also strengthens Lineage Proposal itself:</strong> the existing propose/accept/edit/reject/morph popup gains a justification block — not just "here's a path," but "here's why this path won over the alternatives the Sorting Agent considered," giving the user real information to judge the proposal by instead of guessing whether a lineage actually fits.<br><br>
+
+      <strong>Anti-runaway-growth safeguard:</strong> reuses the existing morph/similarity-check logic already built for manual taxonomy entry (July 6) — before creating a new node, checks whether something close enough already exists. Explicitly acknowledged: this agent WILL grow the tree aggressively at first, since real accepted depth today is only 3-5 levels in most branches. This is expected and correct behaviour for a young tree, not a bug to be alarmed by.<br><br>
+
+      <strong>Per-insight AI-generated 2-line summary, confirmed:</strong> every proposed lineage gets a short, plain-language summary of what the actual insight IS, shown alongside the path — solving the "guessing game" problem where a lineage path alone gives no way to judge whether it's actually correct.
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Jargon Encyclopedia — confirmed, build it <span class="badge next">CONFIRMED — CHEAP, BUILD ONCE TREE HAS DEPTH</span></div>
+    <div class="card-body">A view over the taxonomy tree's leaf nodes — every accepted leaf's name + one-line explainer, alphabetized, forming a living dictionary of every production term the system has learned. Not new infrastructure — a query and a display page against data the Sorting Agent is already producing. Builds naturally in value as the tree deepens.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Book import — merged into existing ingestion pipeline, shared Supabase table <span class="badge next">CONFIRMED</span></div>
+    <div class="card-body">Uses the same ingestion pipeline already scoped for Schedule Oracle's PDF/text handling — not separate infrastructure. Writes to a new shared Supabase table (book knowledge) queryable by any domain, explicitly including Oracle, so book-derived insights can be pulled into any future conversation or generation, not siloed to taxonomy alone.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Circles (rabbit-hole exploration nav) — deferred, stays in Research tab <span class="badge gap">DEFERRED — NEEDS RESEARCH TAB DECLUMP SESSION FIRST</span></div>
+    <div class="card-body">User confirmed: keep taxonomy browsing inside the existing Research tab for now rather than building a new nav destination. A dedicated future session to declump Research tab into more manageable chunks is confirmed as a prerequisite before Circles gets its own space.</div>
   </div>
 
   <div class="section" id="jul1">
