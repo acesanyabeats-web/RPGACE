@@ -1,5 +1,13 @@
 // ORACLE — direct Claude chat with image support
 import { setCORS, callClaude, MODEL } from './_context.js';
+
+// Raises the Vercel serverless function timeout ceiling - was using the
+// account's default limit, which is too short for long, detailed responses
+// (e.g. multi-layer teaching explanations), causing 504 Gateway Timeout.
+export const config = {
+  maxDuration: 60,
+};
+
 export default async function handler(req, res) {
   setCORS(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
