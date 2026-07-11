@@ -2957,7 +2957,7 @@ RPGACE.register('knowledgeGap', {
     });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
-        setTimeout(function() { self._inject(); }, 400);
+        self._inject();
       }
     });
   },
@@ -5267,7 +5267,7 @@ RPGACE.register('contentProductionLive', {
     });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
-        setTimeout(function() { self._injectDashboardWidget(); }, 400);
+        self._injectDashboardWidget();
       }
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._injectOracleBar(); }, 600);
@@ -6421,7 +6421,7 @@ RPGACE.register('morningBrief', {
     });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
-        setTimeout(function() { self._injectButton(); }, 400);
+        self._injectButton();
       }
     });
   },
