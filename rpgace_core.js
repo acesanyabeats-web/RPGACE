@@ -6684,6 +6684,60 @@ RPGACE.register('restoreSendChat', {
   }
 });
 /* ===END:restoreSendChat=== */
+
+/* ===MODULE:docsLinks=== */
+RPGACE.register('docsLinks', {
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._inject(); }, 1200);
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === 'dashboard') setTimeout(function() { self._inject(); }, 300);
+    });
+  },
+
+  _inject: function() {
+    if (document.getElementById('docs-links-box')) return;
+    var page = document.getElementById('page-dashboard');
+    if (!page) return;
+
+    var box = document.createElement('div');
+    box.id = 'docs-links-box';
+    box.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;margin-bottom:16px;';
+
+    var label = document.createElement('div');
+    label.style.cssText = 'font-family:Cinzel,serif;font-size:10px;color:rgba(226,226,236,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;';
+    label.textContent = '📚 RPGACE Documentation — Always Latest';
+    box.appendChild(label);
+
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+
+    var links = [
+      { label: '📓 Patch Notes', href: '/patch_notes.html', color: '#C9A84C' },
+      { label: '🔗 Interconnection Map', href: '/interconnection_map.md', color: '#4A90E2' },
+      { label: '📘 Full Manual', href: '/manual.html', color: '#9B59B6' }
+    ];
+
+    links.forEach(function(l) {
+      var a = document.createElement('a');
+      a.href = l.href;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = l.label;
+      a.style.cssText = 'flex:1;min-width:120px;text-align:center;padding:9px 12px;background:' + l.color + '14;border:1px solid ' + l.color + '40;border-radius:8px;color:' + l.color + ';font-size:12px;font-weight:700;text-decoration:none;font-family:Rajdhani,sans-serif;';
+      row.appendChild(a);
+    });
+
+    box.appendChild(row);
+
+    var firstChild = page.querySelector('.section-title') || page.firstChild;
+    if (firstChild) page.insertBefore(box, firstChild);
+    else page.appendChild(box);
+  },
+
+});
+/* ===END:docsLinks=== */
 /* ===END_DOMAIN:SYSTEM=== */
 
 /* ===DOMAIN:SCHEDULE=== */
