@@ -6692,7 +6692,7 @@ RPGACE.register('docsLinks', {
     var self = this;
     setTimeout(function() { self._inject(); }, 1200);
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'dashboard') setTimeout(function() { self._inject(); }, 300);
+      if (name === 'dashboard') self._inject();
     });
   },
 
