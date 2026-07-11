@@ -2069,7 +2069,13 @@ function scheduleAgendaByIdx(idx){
 function initApp(){
   buildAllQuests();buildTimeSlots();buildWeekSlots();buildMonthSlots();buildSkillTree();buildAgentActions();initLearning();
   addMsg(`Greetings, Creator. I am the Oracle — now fully wired to your apps.\n\nI can talk AND act in the same message:\n📧 "Draft a collab email" → fires Gmail instantly\n📓 "Log today's progress" → creates a Notion page\n🎬 "Check my YouTube stats" → fetches live data\n💻 "Save these notes to GitHub" → commits a file\n\nJust talk to me naturally. I'll handle the rest.\n\nWhat do you need today?`,'ai');
-  setTimeout(()=>{document.getElementById('popup-msg').textContent='Welcome to RPGACE. Ready to earn your first XP?';document.getElementById('popup-tasks').innerHTML='<div class="popup-task"><span>⚔ Post your first TikTok video</span><span class="popup-task-xp">+80 XP</span></div>';document.getElementById('suggestion-popup').classList.add('show');},3000);
+  setTimeout(()=>{
+    // Guarded - #popup-msg no longer exists in current DOM (stale first-time
+    // onboarding element, was throwing on every page load per user report).
+    var pm=document.getElementById('popup-msg'); if(pm) pm.textContent='Welcome to RPGACE. Ready to earn your first XP?';
+    var pt=document.getElementById('popup-tasks'); if(pt) pt.innerHTML='<div class="popup-task"><span>⚔ Post your first TikTok video</span><span class="popup-task-xp">+80 XP</span></div>';
+    var sp=document.getElementById('suggestion-popup'); if(sp) sp.classList.add('show');
+  },3000);
   // Start Content Intelligence auto-sync (polls Supabase + local server every 30s)
   setTimeout(startIntelPolling, 2000);
   // Load encyclopedia from Supabase
@@ -2477,15 +2483,17 @@ async function saveOracleToEncyclopedia(title, content){
     // Extract VSTs before saving
     entry.vst_tags = extractVSTsFromText(content);
 
-    // Save to Supabase
+    // Save to Supabase - upsert on title, matches the UNIQUE(title) constraint.
+    // Was a raw insert before, causing repeated 409 Conflict spam in console
+    // every time an already-saved title was submitted again.
     try {
-      const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia`, {
+      const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?on_conflict=title`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Content-Type': 'application/json',
-          'Prefer': 'return=representation'
+          'Prefer': 'return=representation,resolution=merge-duplicates'
         },
         body: JSON.stringify(entry)
       });
@@ -2493,6 +2501,8 @@ async function saveOracleToEncyclopedia(title, content){
         const saved = await sbRes.json();
         const savedEntry = Array.isArray(saved) ? saved[0] : saved;
         if(savedEntry?.id) await saveEncWithVSTs(savedEntry);
+      } else if(sbRes.status !== 409){
+        console.log('Supabase enc save failed:', sbRes.status);
       }
     } catch(e){ console.log('Supabase enc save failed:', e.message); }
 

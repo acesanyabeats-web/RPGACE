@@ -4065,7 +4065,10 @@ RPGACE.register('config', {
       var matches = [];
       RPGACE.utils._PHYLA_KEYWORDS.forEach(function(p) {
         var hits = p.keywords.filter(function(k) { return t.includes(k); }).length;
-        if (hits >= 1) matches.push({ num: p.num, name: p.name, hits: hits });
+        // Raised from >=1 to >=2 to match isPlausiblePhylum's threshold exactly -
+        // ensures the "N topics" badge count always equals the number of phyla
+        // that will actually show a working Propose Lineage button.
+        if (hits >= 2) matches.push({ num: p.num, name: p.name, hits: hits });
       });
       matches.sort(function(a, b) { return b.hits - a.hits; });
       return matches;
