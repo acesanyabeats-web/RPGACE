@@ -2123,7 +2123,8 @@ RPGACE.register('encSync', {
       if (blob.length < 60) return;
       var matches = RPGACE.utils._quickPhylaScan(blob);
       if (matches.length === 0) return;
-      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'encyclopedia', e.id || null);
+      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'encyclopedia', e.id || null)
+        .catch(function(err) { console.warn('[encSync] silentPropose failed:', err.message); });
       queued++;
     });
     localStorage.setItem('rpgace_enc_proposed', guard);
@@ -2179,7 +2180,8 @@ RPGACE.register('ciAutoPropose', {
       if (blob.length < 60) return;
       var matches = RPGACE.utils._quickPhylaScan(blob);
       if (matches.length === 0) return;
-      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'content_intelligence', r.url || null);
+      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'content_intelligence', r.url || null)
+        .catch(function(err) { console.warn('[ciAutoPropose] silentPropose failed:', err.message); });
       queued++;
     });
     localStorage.setItem('rpgace_ci_proposed', guard);
@@ -2352,6 +2354,121 @@ RPGACE.register('taxonomyReviewQueue', {
 
 });
 /* ===END:taxonomyReviewQueue=== */
+
+/* ===MODULE:encTaxonomyLink=== */
+// F7: per-entry "🌳 Propose to Taxonomy" button on Encyclopedia cards. Per
+// the interconnection map's spec this is a second, manual entry point into
+// the SAME taxonomy_proposals queue F4/F5 feed silently - not a fresh
+// popup, not a direct taxonomy_tree write. main.js re-renders the whole
+// #enc-output list on every sort/filter/refresh (window.renderEncEntries),
+// so buttons are injected by wrapping that function rather than a one-time
+// pass - a MutationObserver would fight the innerHTML replace on every call.
+RPGACE.register('encTaxonomyLink', {
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.renderEncEntries !== 'function' || window._encTaxLinkPatched) return;
+      window._encTaxLinkPatched = true;
+      var orig = window.renderEncEntries;
+      window.renderEncEntries = function() {
+        var result = orig.apply(this, arguments);
+        setTimeout(function() { self._injectButtons(); }, 50);
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
+  },
+
+  _injectButtons: function() {
+    var self = this;
+    var contentDivs = document.querySelectorAll('#enc-output [data-entry-id]');
+    if (contentDivs.length === 0) return;
+
+    // One batch query for which entries already have a pending proposal,
+    // instead of one query per card - RPGACE.sb.select already caches for
+    // 60s so repeated re-renders (sort/filter clicks) don't refetch.
+    RPGACE.sb.select('taxonomy_proposals', 'source_type=eq.encyclopedia&status=eq.pending&select=source_id')
+      .then(function(pending) {
+        var pendingIds = {};
+        (pending || []).forEach(function(p) { if (p.source_id) pendingIds[p.source_id] = true; });
+        contentDivs.forEach(function(div) { self._injectOne(div, pendingIds); });
+      })
+      .catch(function() {
+        contentDivs.forEach(function(div) { self._injectOne(div, {}); });
+      });
+  },
+
+  _injectOne: function(div, pendingIds) {
+    var self = this;
+    if (div.dataset.taxLinkInjected) return;
+    div.dataset.taxLinkInjected = '1';
+
+    var id = div.getAttribute('data-entry-id');
+    var entry = (window.ENC_ALL_ENTRIES || []).find(function(e) { return String(e.id || e.created_at) === String(id); });
+    if (!entry) return;
+
+    var expandedContainer = div.closest('[id^="enc-expanded-"]');
+    if (!expandedContainer) return;
+    var collapseBtn = expandedContainer.querySelector('button[onclick^="collapseEncEntry"]');
+    var anchor = collapseBtn || null;
+
+    if (entry.taxonomy_node_id) {
+      var linked = document.createElement('span');
+      linked.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#3DAA6E;font-size:11px;font-family:Rajdhani,sans-serif;';
+      linked.textContent = '🌳 Linked to Taxonomy Tree';
+      if (anchor) anchor.insertAdjacentElement('beforebegin', linked); else expandedContainer.appendChild(linked);
+      return;
+    }
+
+    if (pendingIds[id]) {
+      var pendingLabel = document.createElement('span');
+      pendingLabel.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:rgba(155,89,182,0.7);font-size:11px;font-family:Rajdhani,sans-serif;';
+      pendingLabel.textContent = '⏳ Proposal pending review';
+      if (anchor) anchor.insertAdjacentElement('beforebegin', pendingLabel); else expandedContainer.appendChild(pendingLabel);
+      return;
+    }
+
+    var btn = document.createElement('button');
+    btn.textContent = '🌳 Propose to Taxonomy';
+    btn.style.cssText = 'background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);color:#9B59B6;border-radius:5px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-right:8px;';
+    btn.onclick = function() { self._propose(entry, btn); };
+    if (anchor) anchor.insertAdjacentElement('beforebegin', btn); else expandedContainer.appendChild(btn);
+  },
+
+  _propose: function(entry, btn) {
+    if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) {
+      RPGACE.utils.toast('Taxonomy system not ready yet — try again in a moment', '#E25454', 2500);
+      return;
+    }
+    var blob = (entry.title || '') + ' ' + (entry.content || '');
+    var matches = RPGACE.utils._quickPhylaScan(blob);
+    if (matches.length === 0) {
+      RPGACE.utils.toast('No clear phylum match for this entry — try "🌳 Add to Taxonomy Tree" on the Research tab instead', '#E25454', 3500);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '🌳 Generating proposal...';
+    var entryId = entry.id || entry.created_at;
+
+    RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'encyclopedia', entryId)
+      .then(function() {
+        btn.textContent = '✓ Queued for review';
+        btn.style.opacity = '0.6';
+        RPGACE.utils.toast('🌳 Queued — review it from the Dashboard', 'rgba(155,89,182,0.85)', 3000);
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = '🌳 Propose to Taxonomy';
+        RPGACE.utils.toast('Error generating proposal: ' + err.message, '#E25454', 3500);
+      });
+  },
+
+});
+/* ===END:encTaxonomyLink=== */
 
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
@@ -3709,10 +3826,11 @@ RPGACE.register('taxonomyTree', {
           }).then(resolve).catch(reject);
         });
       });
-    })
-    .catch(function(err) {
-      console.warn('[taxonomyTree] silentPropose failed for "' + topicText.slice(0, 60) + '":', err.message);
     });
+    // Note: deliberately no .catch() here - errors propagate to the caller.
+    // ciAutoPropose/encSync's batch scans swallow per-item failures on
+    // purpose (one bad report shouldn't stop the loop); encTaxonomyLink's
+    // per-entry button attaches its own .catch() to show real user feedback.
   },
 
   // ── Check if any step in the proposed path already exists ────────
@@ -3964,6 +4082,14 @@ RPGACE.register('taxonomyTree', {
           if (row && row.id) parentId = row.id;
           if (isLeaf && row) {
             self._generateNodeContent(row);
+            // F7: Encyclopedia-sourced proposals need a two-table write on
+            // accept, not just the taxonomy_tree insert every other source
+            // uses - back-reference the leaf onto the originating entry so
+            // its card can show "already linked" instead of the propose
+            // button re-offering the same entry indefinitely.
+            if (proposal.sourceType === 'encyclopedia' && proposal.sourceId) {
+              RPGACE.sb.update('encyclopedia', 'id=eq.' + proposal.sourceId, { taxonomy_node_id: row.id }).catch(function() {});
+            }
           }
         });
       });
