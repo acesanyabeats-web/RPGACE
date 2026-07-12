@@ -3495,9 +3495,21 @@ RPGACE.register('taxonomyTree', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Proposed Taxonomy Lineage · ' + proposal.sourceType;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
-    title.textContent = proposal.phylumName + ' (Phylum ' + proposal.phylumNumber + ')';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    var englishName = (self.PHYLUM_ENGLISH && self.PHYLUM_ENGLISH[proposal.phylumNumber]) || '';
+    title.textContent = proposal.phylumName + (englishName ? ' (' + englishName + ')' : '') + ' — Phylum ' + proposal.phylumNumber;
     box.appendChild(eyebrow); box.appendChild(title);
+
+    // Insight summary — what the underlying content actually IS, so the lineage
+    // isn't a guessing game. Reuses the leaf's own Oracle-generated explainer,
+    // no new API call, keeps the "AI cost confined to 2 touchpoints" rule intact.
+    if (proposal.explainers && proposal.explainers.length) {
+      var insightSummary = document.createElement('div');
+      insightSummary.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);line-height:1.6;margin-bottom:14px;padding:10px 12px;background:rgba(155,89,182,0.04);border-left:2px solid rgba(155,89,182,0.3);border-radius:0 6px 6px 0;';
+      var leafSummary = proposal.explainers[proposal.explainers.length - 1] || '';
+      insightSummary.innerHTML = '<strong style="color:rgba(226,226,236,0.7);">What this insight is:</strong> ' + leafSummary;
+      box.appendChild(insightSummary);
+    }
 
     if (proposal.morphMatch) {
       var morphNote = document.createElement('div');
@@ -3556,6 +3568,39 @@ RPGACE.register('taxonomyTree', {
     }
     renderSteps();
     box.appendChild(stepsContainer);
+
+    // Restored: this was referenced (renderSteps calls it on every edit) but
+    // had no definition anywhere in this function - dead calls found July 8.
+    var summaryLabel = document.createElement('div');
+    summaryLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(155,89,182,0.5);margin-bottom:6px;';
+    summaryLabel.textContent = 'What each step means';
+    box.appendChild(summaryLabel);
+
+    var summaryBox = document.createElement('div');
+    summaryBox.style.cssText = 'max-height:180px;overflow-y:auto;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:10px 12px;margin-bottom:16px;';
+
+    function renderSummary() {
+      summaryBox.innerHTML = '';
+      proposal.path.forEach(function(stepName, i) {
+        var isLeaf = (i === proposal.path.length - 1);
+        var row = document.createElement('div');
+        row.style.cssText = 'margin-bottom:10px;padding-bottom:10px;' + (i < proposal.path.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : '');
+        var nameLine = document.createElement('div');
+        nameLine.style.cssText = 'font-size:11px;font-weight:700;color:' + (isLeaf ? '#3DAA6E' : '#E2E2EC') + ';';
+        nameLine.textContent = (isLeaf ? '🎯 ' : '📁 ') + stepName;
+        row.appendChild(nameLine);
+        var explainerText = proposal.explainers[i];
+        if (explainerText) {
+          var explLine = document.createElement('div');
+          explLine.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.5);margin-top:3px;line-height:1.5;padding-left:' + (i * 10) + 'px;';
+          explLine.textContent = explainerText;
+          row.appendChild(explLine);
+        }
+        summaryBox.appendChild(row);
+      });
+    }
+    renderSummary();
+    box.appendChild(summaryBox);
 
     var pathPreview = document.createElement('div');
     pathPreview.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:16px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;';
