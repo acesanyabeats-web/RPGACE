@@ -13,6 +13,7 @@ from playwright.async_api import async_playwright
 OUTPUT       = Path(r"C:\Users\acesa\RPGACE\rota_output.json")
 CONSOLE_FILE = Path(r"C:\Users\acesa\RPGACE\rota_console_cmd.txt")
 API_KEY_FILE = Path(r"C:\Users\acesa\RPGACE\.anthropic_key")
+CRED_FILE    = Path(r"C:\Users\acesa\RPGACE\.fourth_credentials")
 LOGIN_URL    = "https://secure.fourth.com/fmplogin"
 SS_DIR       = Path(r"C:\Users\acesa\RPGACE")
 
@@ -23,6 +24,21 @@ def day_abbr(date_str):
         return ["MON","TUE","WED","THU","FRI","SAT","SUN"][d.weekday()]
     except:
         return "???"
+
+
+def get_credentials():
+    """Line 1 = username, line 2 = password, if CRED_FILE exists and is
+    filled in. Falls back to interactive prompts otherwise - this file is
+    what makes an unattended (Task Scheduler) run possible at all, but it
+    does NOT solve the two manual "press Enter" gates further down if
+    Fourth's login turns out to need MFA/CAPTCHA; those still block."""
+    if CRED_FILE.exists():
+        lines = CRED_FILE.read_text(encoding="utf-8").splitlines()
+        if len(lines) >= 2 and lines[0].strip() and lines[1].strip():
+            print(f"Using credentials from {CRED_FILE}")
+            return lines[0].strip(), lines[1].strip()
+        print(f"⚠  {CRED_FILE} exists but is missing username/password lines — falling back to prompts.")
+    return None
 
 
 async def try_click(page, selectors):
@@ -55,8 +71,12 @@ async def extract():
     print("=" * 60)
     print("RPGACE — Fourth Rota Extractor")
     print("=" * 60)
-    username = input("Fourth username / email: ").strip()
-    password = getpass.getpass("Fourth password (hidden): ").strip()
+    creds = get_credentials()
+    if creds:
+        username, password = creds
+    else:
+        username = input("Fourth username / email: ").strip()
+        password = getpass.getpass("Fourth password (hidden): ").strip()
     print("\nOpening browser...\n")
 
     async with async_playwright() as p:
