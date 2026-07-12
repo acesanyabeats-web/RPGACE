@@ -2470,6 +2470,97 @@ RPGACE.register('encTaxonomyLink', {
 });
 /* ===END:encTaxonomyLink=== */
 
+/* ===MODULE:agendaReminder=== */
+// F9: third button (Start/Done/Reminder) on scheduled agenda blocks in the
+// Daily Grid. Standalone from Schedule Oracle - just redisplays the stored
+// title/description/context for that block on demand. renderDailyGrid()
+// (main.js) fully rebuilds #time-slots on every date-nav/refresh, so this
+// wraps that function the same way encTaxonomyLink wraps renderEncEntries
+// rather than doing a one-time DOM pass.
+RPGACE.register('agendaReminder', {
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.renderDailyGrid !== 'function' || window._agendaReminderPatched) return;
+      window._agendaReminderPatched = true;
+      var orig = window.renderDailyGrid;
+      window.renderDailyGrid = function() {
+        var result = orig.apply(this, arguments);
+        setTimeout(function() { self._injectButtons(); }, 50);
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
+  },
+
+  _injectButtons: function() {
+    var self = this;
+    var startBtns = document.querySelectorAll('#time-slots button[onclick*="startScheduledTask("]');
+    startBtns.forEach(function(startBtn) {
+      var actions = startBtn.parentElement;
+      if (!actions || actions.dataset.reminderInjected) return;
+      actions.dataset.reminderInjected = '1';
+      var m = startBtn.getAttribute('onclick').match(/startScheduledTask\('([^']+)'\)/);
+      var id = m ? m[1] : null;
+      if (!id) return;
+
+      var btn = document.createElement('button');
+      btn.textContent = '🔔 Reminder';
+      btn.style.cssText = 'background:none;border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:4px;padding:3px 9px;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;';
+      btn.onclick = function(e) {
+        e.stopPropagation();
+        self._show(id);
+      };
+      actions.appendChild(btn);
+    });
+  },
+
+  _show: function(id) {
+    var stored = [];
+    try { stored = JSON.parse(localStorage.getItem('rpgace_sched_agendas') || '[]'); } catch (e) {}
+    var entry = stored.find(function(a) { return a.id === id; });
+    if (!entry) { RPGACE.utils.toast("Could not find this task's stored details", '#E25454', 2500); return; }
+
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:22px 26px;width:min(440px,95vw);';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;';
+    eyebrow.textContent = '🔔 Reminder';
+
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:10px;';
+    title.textContent = entry.title || 'Task';
+
+    var meta = document.createElement('div');
+    meta.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:14px;';
+    var timeStr = String(entry.hour || 0).padStart(2, '0') + ':' + String(entry.minute || 0).padStart(2, '0');
+    meta.textContent = timeStr + ' · ' + (entry.category || 'personal') + ' · ' + (entry.estimated_mins || 60) + 'min · +' + (entry.xp || 50) + 'XP';
+
+    var desc = document.createElement('div');
+    desc.style.cssText = 'font-size:13px;color:rgba(226,226,236,0.75);line-height:1.6;margin-bottom:18px;white-space:pre-wrap;';
+    desc.textContent = entry.description || 'No description was saved for this task.';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Close';
+    closeBtn.style.cssText = 'padding:8px 18px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+
+    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(meta); box.appendChild(desc); box.appendChild(closeBtn);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+});
+/* ===END:agendaReminder=== */
+
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
 
