@@ -2047,26 +2047,6 @@ RPGACE.register('encSync', {
     });
   },
 
-  _dedup: function() {
-    try {
-      var raw = localStorage.getItem('rpgace_encyclopedia');
-      if (!raw) return 0;
-      var entries = JSON.parse(raw);
-      var seen = {};
-      var clean = entries.filter(function(e) {
-        var key = (e.title || e.id || '').toLowerCase().trim();
-        if (seen[key]) return false;
-        seen[key] = true;
-        return true;
-      });
-      if (clean.length < entries.length) {
-        localStorage.setItem('rpgace_encyclopedia', JSON.stringify(clean));
-        return entries.length - clean.length;
-      }
-    } catch(e) {}
-    return 0;
-  },
-
   _clearBacklog: function() {
     /* Wipe URL queue so next sync doesn't reimport the same items */
     var hadUrls = !!localStorage.getItem('rpgace_enc_saved');
@@ -2096,7 +2076,6 @@ RPGACE.register('encSync', {
 
       /* Give the original function time to finish (it likely does fetch/setState) */
       setTimeout(function() {
-        var removed = self._dedup();
         self._clearBacklog();
 
         try {
@@ -2107,11 +2086,11 @@ RPGACE.register('encSync', {
             : net === 0
               ? '✓ Already up to date'
               : '✓ Sync complete';
-          if (removed > 0) msg += ' · ' + removed + ' duplicates removed';
           RPGACE.utils.toast(msg, 'rgba(201,168,76,0.9)', 3500);
           if (typeof window.refreshEncyclopediaDisplay === 'function') {
             window.refreshEncyclopediaDisplay();
           }
+          self._autoPropose(after);
         } catch(e) {}
       }, 2500);
     };
@@ -2126,8 +2105,253 @@ RPGACE.register('encSync', {
     console.log('[RPGACE:encSync] Patched syncAndPush + clearEncyclopedia');
   },
 
+  // F5: silent taxonomy_proposals queueing for Encyclopedia entries, same
+  // pattern/guard as ciAutoPropose's F4 hook on Content Intelligence. Capped
+  // at 5 checks per sync so one big backlog sync can't fire a burst of
+  // Oracle calls.
+  _autoPropose: function(entries) {
+    if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) return;
+    var guard = localStorage.getItem('rpgace_enc_proposed') || '';
+    var queued = 0, checked = 0;
+    (entries || []).forEach(function(e) {
+      if (checked >= 5) return;
+      var key = (e.title || '').toLowerCase().trim();
+      if (!key || guard.indexOf('|' + key + '|') !== -1) return;
+      checked++;
+      guard += '|' + key + '|';
+      var blob = (e.title || '') + ' ' + (e.content || '');
+      if (blob.length < 60) return;
+      var matches = RPGACE.utils._quickPhylaScan(blob);
+      if (matches.length === 0) return;
+      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'encyclopedia', e.id || null);
+      queued++;
+    });
+    localStorage.setItem('rpgace_enc_proposed', guard);
+    if (queued > 0) {
+      RPGACE.utils.toast('🌳 ' + queued + ' taxonomy proposal' + (queued > 1 ? 's' : '') + ' queued for review', 'rgba(155,89,182,0.85)', 3000);
+    }
+  },
+
 });
 /* ===END:encSync=== */
+
+/* ===MODULE:ciAutoPropose=== */
+// F4: silent taxonomy_proposals queueing at the end of every Content
+// Intelligence pipeline run (syncIntelData), same guarded pattern as
+// main.js's existing "auto-save new entries to encyclopedia" loop just
+// above it — mirrors that loop's dedup-by-url/title + 5-item cap so this
+// doesn't fan out into a burst of Oracle calls on a big backlog sync.
+RPGACE.register('ciAutoPropose', {
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.syncIntelData !== 'function' || window._ciAutoProposePatched) return;
+      window._ciAutoProposePatched = true;
+      var orig = window.syncIntelData;
+      window.syncIntelData = function() {
+        var result = orig.apply(this, arguments);
+        if (result && typeof result.then === 'function') {
+          result.then(function(all) { self._scan(all || []); });
+        }
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+  },
+
+  _scan: function(all) {
+    if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) return;
+    var guard = localStorage.getItem('rpgace_ci_proposed') || '';
+    var queued = 0, checked = 0;
+    all.forEach(function(r) {
+      if (checked >= 5) return;
+      var key = r.url || r.title;
+      if (!key || guard.indexOf('|' + key + '|') !== -1) return;
+      checked++;
+      guard += '|' + key + '|';
+      var enc = r.insights && r.insights.encyclopedia_entry;
+      var blob = [r.title, r.creator, enc && enc.summary,
+        ((r.insights && r.insights.key_learnings) || []).join(' '),
+        ((r.insights && r.insights.production_techniques) || []).join(' ')]
+        .filter(Boolean).join(' ');
+      if (blob.length < 60) return;
+      var matches = RPGACE.utils._quickPhylaScan(blob);
+      if (matches.length === 0) return;
+      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'content_intelligence', r.url || null);
+      queued++;
+    });
+    localStorage.setItem('rpgace_ci_proposed', guard);
+    if (queued > 0) {
+      RPGACE.utils.toast('🌳 ' + queued + ' taxonomy proposal' + (queued > 1 ? 's' : '') + ' queued for review', 'rgba(155,89,182,0.85)', 3000);
+    }
+  },
+
+});
+/* ===END:ciAutoPropose=== */
+
+/* ===MODULE:taxonomyReviewQueue=== */
+// F6: Dashboard indicator + batch review popup for taxonomy_proposals rows
+// queued silently by F4 (ciAutoPropose) and F5 (encSync._autoPropose).
+// Reuses taxonomyTree's existing _acceptLineage/_showProposalPopup instead
+// of rebuilding the accept/edit UI — same popup the manual + Oracle-badge
+// flows already use, just fed from a stored proposal instead of a fresh one.
+RPGACE.register('taxonomyReviewQueue', {
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._inject(); }, 1400);
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === 'dashboard') setTimeout(function() { self._inject(); }, 400);
+    });
+  },
+
+  _inject: function() {
+    var self = this;
+    var page = document.getElementById('page-dashboard');
+    if (!page) return;
+
+    RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id&limit=200')
+      .then(function(rows) {
+        rows = rows || [];
+        var existing = document.getElementById('taxproposal-badge');
+        if (rows.length === 0) { if (existing) existing.remove(); return; }
+        if (existing) { existing.querySelector('.count').textContent = rows.length; return; }
+
+        var badge = document.createElement('div');
+        badge.id = 'taxproposal-badge';
+        badge.style.cssText = 'background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;';
+        badge.innerHTML = '<span style="color:#9B59B6;font-size:12px;font-weight:700;">🌳 <span class="count">' + rows.length + '</span> taxonomy proposal' + (rows.length > 1 ? 's' : '') + ' waiting</span><span style="color:rgba(155,89,182,0.5);font-size:11px;">Review →</span>';
+        badge.onclick = function() { self._openQueue(); };
+
+        var firstChild = page.querySelector('.section-title') || page.firstChild;
+        if (firstChild) page.insertBefore(badge, firstChild);
+        else page.appendChild(badge);
+      }).catch(function() {});
+  },
+
+  _openQueue: function() {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    var box = document.createElement('div');
+    box.style.cssText = 'position:relative;background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(640px,95vw);max-height:85vh;overflow-y:auto;';
+    box.innerHTML = '<div style="font-size:15px;font-weight:700;color:#E2E2EC;">Loading proposals...</div>';
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    closeBtn.style.cssText = 'position:sticky;float:right;top:0;background:none;border:none;color:rgba(226,226,236,0.4);font-size:16px;cursor:pointer;';
+    closeBtn.onclick = function() { overlay.remove(); self._inject(); };
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&order=created_at.asc&limit=200')
+      .then(function(rows) {
+        rows = rows || [];
+        box.innerHTML = '';
+        box.appendChild(closeBtn);
+
+        var title = document.createElement('div');
+        title.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+        title.textContent = 'Taxonomy Review Queue';
+        var sub = document.createElement('div');
+        sub.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+        sub.textContent = rows.length + ' proposal' + (rows.length !== 1 ? 's' : '') + ' waiting for review';
+        box.appendChild(title); box.appendChild(sub);
+
+        if (rows.length === 0) {
+          var empty = document.createElement('div');
+          empty.style.cssText = 'color:rgba(226,226,236,0.35);font-size:12px;padding:20px 0;text-align:center;';
+          empty.textContent = 'Nothing waiting — all caught up.';
+          box.appendChild(empty);
+          return;
+        }
+
+        var sourceLabels = { content_intelligence: '📹 Content Intelligence', encyclopedia: '📖 Encyclopedia', oracle: '💬 Oracle', manual: '✎ Manual' };
+
+        rows.forEach(function(p) {
+          var row = document.createElement('div');
+          row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;';
+
+          var head = document.createElement('div');
+          head.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;';
+          var pathEl = document.createElement('div');
+          pathEl.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;line-height:1.5;';
+          pathEl.textContent = p.proposed_path;
+          var srcEl = document.createElement('div');
+          srcEl.style.cssText = 'font-size:9px;color:rgba(155,89,182,0.6);white-space:nowrap;flex-shrink:0;';
+          srcEl.textContent = sourceLabels[p.source_type] || p.source_type;
+          head.appendChild(pathEl); head.appendChild(srcEl);
+          row.appendChild(head);
+
+          if (p.matched_existing_node_id) {
+            var warn = document.createElement('div');
+            warn.style.cssText = 'font-size:10px;color:#E25454;margin-bottom:8px;';
+            warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
+            row.appendChild(warn);
+          }
+
+          var btnRow = document.createElement('div');
+          btnRow.style.cssText = 'display:flex;gap:6px;';
+
+          var acceptBtn = document.createElement('button');
+          acceptBtn.textContent = '✓ Accept';
+          acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          acceptBtn.onclick = function() {
+            row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
+            RPGACE.modules.taxonomyTree._acceptLineage(self._toProposal(p));
+            row.remove();
+          };
+
+          var editBtn = document.createElement('button');
+          editBtn.textContent = '✎ Edit';
+          editBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          editBtn.onclick = function() {
+            overlay.remove();
+            RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p));
+          };
+
+          var rejectBtn = document.createElement('button');
+          rejectBtn.textContent = '✗ Reject';
+          rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#E25454;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          rejectBtn.onclick = function() {
+            RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'rejected', reviewed_at: new Date().toISOString() }).catch(function() {});
+            row.remove();
+          };
+
+          btnRow.appendChild(acceptBtn); btnRow.appendChild(editBtn); btnRow.appendChild(rejectBtn);
+          row.appendChild(btnRow);
+          box.appendChild(row);
+        });
+      }).catch(function() {
+        box.innerHTML = '';
+        box.appendChild(closeBtn);
+        var err = document.createElement('div');
+        err.style.cssText = 'color:#E25454;font-size:12px;';
+        err.textContent = 'Could not load proposals.';
+        box.appendChild(err);
+      });
+  },
+
+  _toProposal: function(p) {
+    var tt = RPGACE.modules.taxonomyTree;
+    return {
+      phylumNumber: p.phylum_number,
+      phylumName: (tt && tt.PHYLUM_NAMES[p.phylum_number]) || 'Unknown',
+      path: ((p.proposed_steps && p.proposed_steps.path) || []).slice(),
+      explainers: ((p.proposed_steps && p.proposed_steps.explainers) || []).slice(),
+      sourceType: p.source_type,
+      sourceId: p.source_id,
+      morphMatch: null,
+      suggestUpdate: false,
+      queuedProposalId: p.id,
+    };
+  },
+
+});
+/* ===END:taxonomyReviewQueue=== */
 
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
@@ -3430,6 +3654,67 @@ RPGACE.register('taxonomyTree', {
     });
   },
 
+  // ── F4/F5: silent sibling of proposeLineage() — same Oracle-generated  ──
+  // ── lineage, but queues it into taxonomy_proposals for later batch      ──
+  // ── review (F6's Dashboard queue) instead of opening the accept popup   ──
+  // ── immediately. Used by unattended triggers (Content Intelligence      ──
+  // ── pipeline completion, Encyclopedia sync) that must not block on a    ──
+  // ── human decision mid-pipeline.                                       ──
+  silentPropose: function(topicText, phylumNumber, sourceType, sourceId) {
+    var self = this;
+    var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
+    var phylumDesc = self.PHYLUM_ENGLISH[phylumNumber] || '';
+    var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
+      'ROOT PHYLUM: ' + phylumName + ' (Phylum ' + phylumNumber + ') — this phylum covers: ' + phylumDesc + '\n' +
+      'TOPIC TO PLACE: "' + topicText + '"\n\n' +
+      'This phylum has already been confirmed as a plausible fit for this topic. ' +
+      'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
+      'Use as many or as few steps as genuinely needed — could be 2 steps, could be 10. ' +
+      'Each step should be a real conceptual grouping, not padding.\n\n' +
+      'Only the Phylum name uses Latin. Every other step uses plain, clear English.\n\n' +
+      'Return ONLY a JSON object, no other text, in this exact format:\n' +
+      '{"path": ["Step1Name","Step2Name","Step3Name","FinalTopicName"], ' +
+      '"explainers": ["what Step1 covers and how its children relate","...", "..."], ' +
+      '"is_leaf_specific": true}\n\n' +
+      'The path array should NOT include the phylum name itself (that is depth 0, already known). ' +
+      'Start from depth 1. The last item in path should be the specific topic itself.';
+
+    return fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        system: 'You return only valid JSON, no markdown formatting, no explanation text.',
+        max_tokens: 800
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+      var cleaned = raw.replace(/```json|```/g, '').trim();
+      var match = cleaned.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('No JSON found in response');
+      var parsed = JSON.parse(match[0]);
+
+      return new Promise(function(resolve, reject) {
+        self._checkForMorph(phylumNumber, parsed.path, function(morphMatch, exactLeafMatch) {
+          var matched = exactLeafMatch || morphMatch;
+          RPGACE.sb.insert('taxonomy_proposals', {
+            source_type: sourceType,
+            source_id: sourceId,
+            proposed_path: phylumName + ' → ' + parsed.path.join(' → '),
+            proposed_steps: { path: parsed.path, explainers: parsed.explainers || [] },
+            phylum_number: phylumNumber,
+            matched_existing_node_id: matched ? matched.id : null,
+          }).then(resolve).catch(reject);
+        });
+      });
+    })
+    .catch(function(err) {
+      console.warn('[taxonomyTree] silentPropose failed for "' + topicText.slice(0, 60) + '":', err.message);
+    });
+  },
+
   // ── Check if any step in the proposed path already exists ────────
   // ── Now also detects if the NEW leaf's explainer is meaningfully      ──
   // ── different/better-written than an existing matching leaf, and      ──
@@ -3656,17 +3941,25 @@ RPGACE.register('taxonomyTree', {
         var currentPath = pathSoFar;
         var currentParent = parentId;
 
-        return RPGACE.sb.insert('taxonomy_tree', {
-          parent_id: currentParent,
-          depth: i + 1,
-          name: stepName,
-          latin_name: null,
-          phylum_number: proposal.phylumNumber,
-          path: currentPath,
-          node_type: isLeaf ? 'leaf' : 'branch',
-          explainer: proposal.explainers[i] || '',
-          sources: [{ type: proposal.sourceType, id: proposal.sourceId }],
-        }).then(function(result) {
+        // Needs the inserted row's real id back to chain parent_id correctly on
+        // the next step - RPGACE.sb.insert() defaults to Prefer:return=minimal
+        // (empty body), which silently broke this into a flat set of orphan
+        // nodes (parent_id always null) for any path longer than one step.
+        return fetch(RPGACE.sb.url('taxonomy_tree'), {
+          method: 'POST',
+          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+          body: JSON.stringify({
+            parent_id: currentParent,
+            depth: i + 1,
+            name: stepName,
+            latin_name: null,
+            phylum_number: proposal.phylumNumber,
+            path: currentPath,
+            node_type: isLeaf ? 'leaf' : 'branch',
+            explainer: proposal.explainers[i] || '',
+            sources: [{ type: proposal.sourceType, id: proposal.sourceId }],
+          }),
+        }).then(function(r) { return r.json(); }).then(function(result) {
           var row = Array.isArray(result) ? result[0] : result;
           if (row && row.id) parentId = row.id;
           if (isLeaf && row) {
@@ -3678,6 +3971,12 @@ RPGACE.register('taxonomyTree', {
 
     chain.then(function() {
       RPGACE.utils.toast('✅ Taxonomy lineage saved: ' + pathSoFar, '#3DAA6E', 4000);
+      // F6: if this lineage came from the review queue, close the loop on
+      // the taxonomy_proposals row it originated from.
+      if (proposal.queuedProposalId) {
+        RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + proposal.queuedProposalId,
+          { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+      }
     }).catch(function(e) {
       RPGACE.utils.toast('Error saving lineage: ' + e.message, '#E25454', 3500);
     });
@@ -3779,6 +4078,12 @@ RPGACE.register('config', {
           method: 'DELETE', headers: RPGACE.sb.headers(),
         });
       },
+      update: function(table, filter, patch) {
+        return fetch(RPGACE.sb.url(table) + '?' + filter, {
+          method: 'PATCH', headers: RPGACE.sb.headers(),
+          body: JSON.stringify(patch),
+        });
+      },
       insert: function(table, row) {
         return fetch(RPGACE.sb.url(table), {
           method: 'POST', headers: RPGACE.sb.headers(),
@@ -3837,6 +4142,11 @@ RPGACE.register('config', {
     RPGACE.sb.del = function(table, filter) {
       RPGACE.cache.clear(table);
       return _origDel(table, filter);
+    };
+    var _origUpdate = RPGACE.sb.update.bind(RPGACE.sb);
+    RPGACE.sb.update = function(table, filter, patch) {
+      RPGACE.cache.clear(table);
+      return _origUpdate(table, filter, patch);
     };
 
     // Streaming Oracle client — replaces callOracle for new callers

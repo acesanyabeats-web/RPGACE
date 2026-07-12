@@ -94,6 +94,16 @@
     <div class="card-body">Today's session scope, pulled directly from the Future Patch Notes roadmap: <strong>F0, F1, F2, F3, F4, F5, F6</strong> — clears all of Tier 1 (small, no-dependency simplifications) and completes the taxonomy tree's originally-scoped four-trigger system (Oracle badge + manual button were live as of July 6; Content Intelligence and Encyclopedia sync auto-propose complete the set today).</div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">✅ July 12 — F3, F4, F5, F6 shipped</div>
+    <div class="card-body">
+      <strong>STEP F3</strong> — <code>encSync._dedup()</code> deleted along with its call site; Supabase's <code>UNIQUE(title)</code> constraint already made it dead weight.<br><br>
+      <strong>STEP F4/F5</strong> — <code>taxonomyTree.silentPropose()</code> added (same Oracle-generated lineage as <code>proposeLineage()</code>, but queues into <code>taxonomy_proposals</code> instead of opening the accept popup). Wired into two silent triggers: <code>ciAutoPropose</code> (end of every Content Intelligence sync, mirrors main.js's existing encyclopedia-autosave dedup/cap pattern) and <code>encSync._autoPropose()</code> (end of every Encyclopedia sync). Both capped at 5 checks per run and keyword-gated at 2+ hits before spending an Oracle call.<br><br>
+      <strong>STEP F6</strong> — <code>taxonomyReviewQueue</code> module: Dashboard badge ("🌳 X taxonomy proposals waiting") backed by a live count of <code>taxonomy_proposals</code> where <code>status=pending</code>, opening a batch popup with Accept/Edit/Reject per row. Accept and Edit both reuse <code>taxonomyTree._acceptLineage()</code> / <code>_showProposalPopup()</code> unchanged — no rebuilt UI, per F6's original scope note.<br><br>
+      <strong>Bug found + fixed while wiring F6's Accept path:</strong> <code>_acceptLineage()</code>'s per-step insert into <code>taxonomy_tree</code> was calling the shared <code>RPGACE.sb.insert()</code> helper, which defaults to <code>Prefer: return=minimal</code> — so <code>result.id</code> was always <code>undefined</code> and every multi-step lineage landed as a flat set of orphan nodes with <code>parent_id: null</code>, not a real tree. Fixed by having that one insert use <code>return=representation</code> directly so <code>parent_id</code> chains correctly across steps. Everything accepted through the popup before today should be assumed flat, not nested — not re-migrated as part of this pass, flagged here in case it matters later.
+    </div>
+  </div>
+
   <div class="section" id="future-roadmap">
   <div class="section-eyebrow">Roadmap — Reboot Style</div>
   <div class="section-title">Future Patch Notes — Full Step-by-Step Roadmap</div>
@@ -150,9 +160,9 @@
 
   
 
-  <div class="card red">
-    <div class="card-title">BUG — Propose-lineage button missing on phyla beyond 5th in scrollable list <span class="badge gap">NEEDS REAL SOURCE — IN PROGRESS</span></div>
-    <div class="card-body">Confirmed by user testing July 8: when a response detects more than 5 relevant phyla, the "🌳 Propose lineage" button doesn't render on rows past the 5th. Root cause not yet confirmed — needs <code>_expandPhylaDetail</code>'s real current source before fixing (function was rebuilt across several patches July 6/7, exact live version unconfirmed).</div>
+  <div class="card green">
+    <div class="card-title">BUG — Propose-lineage button missing on phyla beyond 5th in scrollable list <span class="badge fixed">CONFIRMED FIXED — DOC WAS STALE</span></div>
+    <div class="card-body">Re-checked against <code>_expandPhylaDetail</code>'s real current source (July 12): the panel already renders every match in a scrollable container (<code>max-height:280px;overflow-y:auto</code>) with a "🌳 Propose lineage" button generated per row inside the same <code>.forEach</code>, not sliced to 5. This was already fixed in an earlier session; this entry just never got updated to reflect it.</div>
   </div>
 
   <h3>Tier 1 — Small, high-leverage, no dependencies (do these first)</h3>
