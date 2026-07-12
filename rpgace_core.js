@@ -3269,12 +3269,10 @@ RPGACE.register('taxonomyTree', {
   // ── the text at all? Uses the FREE Layer 1 scan already computed —    ──
   // ── prevents wasting an Oracle API call generating a mismatch notice. ──
   isPlausiblePhylum: function(text, phylumNumber) {
-    if (!RPGACE.utils._PHYLA_KEYWORDS) return true; // fail open if scan unavailable
-    var entry = RPGACE.utils._PHYLA_KEYWORDS.find(function(p) { return p.num === phylumNumber; });
-    if (!entry) return true;
-    var t = (text || '').toLowerCase();
-    var hits = entry.keywords.filter(function(k) { return t.includes(k); }).length;
-    return hits >= 2; // raised from 1 - single incidental word match is too permissive
+    // F2: now reads from the shared RPGACE.utils.phylaKeywordScore(), same
+    // scoring function the badge scan uses - one source of truth, can't drift.
+    if (!RPGACE.utils.phylaKeywordScore) return true; // fail open if scorer unavailable
+    return RPGACE.utils.phylaKeywordScore(text, phylumNumber) >= 2;
   },
 
   // ── Extract named node candidates from an Oracle response ──────────
@@ -4060,14 +4058,24 @@ RPGACE.register('config', {
       { num: 16, name: 'Venditionis Beatorum',  keywords: ['sell','beat store','beatstars','license','lease','exclusive','price'] },
     ];
 
-    RPGACE.utils._quickPhylaScan = function(text) {
+    // F2: single source of truth for keyword-overlap scoring, used by both the
+    // badge scan (_quickPhylaScan) and the taxonomy tree's pre-filter
+    // (isPlausiblePhylum). Was two independent implementations with separately
+    // maintained thresholds that had already drifted once (badge counted 1+ hit,
+    // propose-button required 2+) before being manually reconciled July 8.
+    // Now there is exactly one place that counts keyword hits.
+    RPGACE.utils.phylaKeywordScore = function(text, phylumNumber) {
+      if (!RPGACE.utils._PHYLA_KEYWORDS) return 0;
+      var entry = RPGACE.utils._PHYLA_KEYWORDS.find(function(p) { return p.num === phylumNumber; });
+      if (!entry) return 0;
       var t = (text || '').toLowerCase();
+      return entry.keywords.filter(function(k) { return t.includes(k); }).length;
+    };
+
+    RPGACE.utils._quickPhylaScan = function(text) {
       var matches = [];
       RPGACE.utils._PHYLA_KEYWORDS.forEach(function(p) {
-        var hits = p.keywords.filter(function(k) { return t.includes(k); }).length;
-        // Raised from >=1 to >=2 to match isPlausiblePhylum's threshold exactly -
-        // ensures the "N topics" badge count always equals the number of phyla
-        // that will actually show a working Propose Lineage button.
+        var hits = RPGACE.utils.phylaKeywordScore(text, p.num);
         if (hits >= 2) matches.push({ num: p.num, name: p.name, hits: hits });
       });
       matches.sort(function(a, b) { return b.hits - a.hits; });
