@@ -436,3 +436,179 @@ New touchpoint discovered: `api/oracle.js`'s `maxDuration` config, previously un
 
 **Next diagnostic step:** pull real `api/_context.js` source before any further fix attempt — consistent with the standing rule against guessing at unseen server-side code.
 
+---
+
+## PART 16 — Diagram Chain: Atomic → Module → Domain → Full System
+
+Built via GODMODE + Council of 5, July 8. Same content as Parts 1-15, presented as a progressive visual chain — each level combines the pieces from the level before it, so the mechanism is understandable at every scale rather than only as one dense final diagram.
+
+### Level 1 — Atomic (one button, one path)
+
+**Example A: Save an idea**
+```
+[💡 Save Ideas button]
+        │
+        ▼
+[conidPot.saveIdea()]
+        │
+        ▼
+[Supabase: conid_pot table]
+```
+
+**Example B: Schedule a task**
+```
+[Click free calendar row]
+        │
+        ▼
+[scheduleToCalendar()]
+        │
+        ├──▶ [localStorage: rpgace_sched_agendas]  (instant UI)
+        │
+        └──▶ [Supabase: rpgace_agendas]  (cross-device sync)
+```
+
+**Example C: Propose a taxonomy lineage**
+```
+[🌳 Propose lineage button]
+        │
+        ▼
+[taxonomyTree.proposeLineage()]
+        │
+        ▼
+[Oracle API — generates path]
+        │
+        ▼
+[Popup: accept / edit / reject]
+        │
+        ▼ (on accept)
+[Supabase: taxonomy_tree]
+```
+
+### Level 2 — Module (several atomic paths combined)
+
+**Beat Log module — 4 atomic paths firing from ONE button click**
+```
+                    [⚡ Log Beat + Find Artists]
+                              │
+        ┌──────────────┬──────┴───────┬──────────────┐
+        ▼              ▼              ▼              ▼
+  [Supabase:      [refCorpus       [taxonomySync   [Oracle API:
+   video_jobs]     .findMatches()]  .markApplied()] content brief]
+        │              │                                │
+        │              ▼                                │
+        │        [Last.fm API]                          │
+        │        (if no corpus match)                   │
+        │                                                ▼
+        │                                        [Journal + XP award]
+        ▼
+  [Beat Log display updates]
+```
+
+**Taxonomy Tree module — the propose/accept cycle, full loop**
+```
+[Any insight source] ──▶ [proposeLineage()] ──▶ [Oracle: generate path]
+                                                        │
+                                                        ▼
+                                          [_checkForMorph() — duplicate check]
+                                                        │
+                                          ┌─────────────┴─────────────┐
+                                          ▼                           ▼
+                                   [New lineage]              [Existing match found]
+                                          │                           │
+                                          ▼                           ▼
+                                [Show accept/edit/reject]   [Offer: update existing]
+                                          │
+                                          ▼ (accept)
+                          ┌───────────────┴───────────────┐
+                          ▼                                ▼
+                [Supabase: taxonomy_tree]          [_generateNodeContent()]
+                   (write real nodes)                       │
+                                                              ▼
+                                                    [Oracle: deep leaf content]
+```
+
+### Level 3 — Domain (modules combined within one domain)
+
+**CONTENT domain — how Beat Log, Repurpose, and Content Production Live chain together**
+```
+[Beat Log] ──produces──▶ [Content ideas + artist brief]
+                                    │
+                                    ▼
+                          [🔀 Repurpose (3-step popup)]
+                                    │
+                     ┌──────────────┴──────────────┐
+                     ▼                              ▼
+          [4 platform outputs]          [contentProductionLive.createEntry()]
+                                                    │
+                                                    ▼
+                                          [New ConID, tracked:
+                                    Idea→Scripted→Filmed→Edited→Posted→Analysed]
+                                                    │
+                                                    ▼
+                                          [Dashboard widget updates]
+```
+
+**LEARNING domain — how Encyclopedia, Feynman, and Taxonomy Tree feed each other**
+```
+[Encyclopedia entry] ──┬──▶ [Knowledge Gap Tracker: surfaces top gap]
+                        │              │
+                        │              ▼
+                        │    [🧠 Study Now → Feynman Loop (3 phases)]
+                        │              │
+                        │              ▼
+                        │    [Journal save + gap score update]
+                        │
+                        └──▶ [🌳 Propose lineage → Taxonomy Tree]
+                                       │
+                                       ▼
+                             [taxonomy_tree: new/updated node]
+```
+
+### Level 4 — Full System (every domain converging on the two real hubs)
+
+```
+                              ┌─────────────────┐
+                              │   ORACLE HUB     │
+                              │  (Claude API)    │
+                              └────────┬─────────┘
+                    ▲                  │                  ▲
+                    │                  ▼                  │
+         ┌──────────┴──────┐  ┌────────────────┐  ┌──────┴──────────┐
+         │  4 Oracle Panels │  │ Every response  │  │ Feynman, Beat   │
+         │  (Prod/YT/Insta/ │  │ auto-scans for  │  │ Log briefs,     │
+         │   Visual)        │  │ taxonomy (🌿)   │  │ Morning Brief   │
+         └──────────────────┘  └────────┬────────┘  └─────────────────┘
+                                          │
+                                          ▼
+                              ┌─────────────────────┐
+                              │  TAXONOMY TREE HUB   │
+                              │  (taxonomy_tree +    │
+                              │   taxonomy_proposals)│
+                              └──────────┬───────────┘
+                    ▲                    │                    ▲
+                    │                    ▼                    │
+         ┌──────────┴───────┐  ┌──────────────────┐  ┌───────┴──────────┐
+         │ Manual entry      │  │ Knowledge Gap     │  │ Future: Content  │
+         │ (Research tab)    │  │ Tracker reads     │  │ Intelligence +   │
+         │                   │  │ gap scores         │  │ Encyclopedia     │
+         │                   │  │                    │  │ auto-propose      │
+         └───────────────────┘  └──────────────────┘  └───────────────────┘
+
+         Meanwhile, on a parallel independent track:
+
+         [rpgace_shifts] ◀──sync──▶ [shiftSync module] ◀──sync──▶ [rpgace_agendas]
+                                            │
+                                            ▼
+                              [Weekly / Daily / Monthly Calendar]
+                                            │
+                                            ▼
+                              [scheduleToCalendar() — single write path]
+```
+
+### What this chain reveals, stated plainly
+
+Every domain in RPGACE ultimately touches one of exactly two hubs — **Oracle** (for generation) or **Taxonomy Tree** (for knowledge structure) — except the Schedule system, which runs as a genuinely separate, self-contained loop (shifts + agendas + calendar) with no taxonomy dependency at all. This is useful to know precisely: the Schedule system could be extracted or rebuilt independently without touching Oracle or Taxonomy, but any change to either hub ripples through nearly everything else.
+
+### New standing rule, confirmed July 8
+
+Every future documentation update applies to all three living docs (Patch Notes, this Interconnection Map, and the Full Manual) by default, not only when explicitly requested — same discipline already proven to work for code changes, now formalized for documentation too.
