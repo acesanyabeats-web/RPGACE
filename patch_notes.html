@@ -94,6 +94,16 @@
     <div class="card-body">Today's session scope, pulled directly from the Future Patch Notes roadmap: <strong>F0, F1, F2, F3, F4, F5, F6</strong> — clears all of Tier 1 (small, no-dependency simplifications) and completes the taxonomy tree's originally-scoped four-trigger system (Oracle badge + manual button were live as of July 6; Content Intelligence and Encyclopedia sync auto-propose complete the set today).</div>
   </div>
 
+  <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🔍 July 13 — first real smoke test, 3 findings</div>
+    <div class="card-body">
+      Hand-tested F14 (Director Match) and F11 (Schedule Oracle) for the first time. <strong>F14's data grounding confirmed correct</strong> — real directors (Malick, Wong Kar-wai, Villeneuve) matched from the corrected 50-entry library with accurate style analysis, not invented. Three problems found in the process, all fixed except the first:<br><br>
+      1. <strong>Oracle timeout (pre-existing, not new)</strong> — the long 3-director response hit the same <code>FUNCTION_INVOCATION_TIMEOUT</code> already logged before this session. Still open, still needs a deliberate decision (streaming vs. other mitigation) before a second attempt — not fixed today.<br><br>
+      2. <strong>Fixed: overlapping Oracle requests could cross-wire responses.</strong> <code>sendChat()</code>'s <code>send-btn.disabled=true</code> is only a visual guard — nothing stopped a second call firing programmatically (a panel button calling <code>sendToOracle()</code>) while a prior request was still pending. Two overlapping calls shared one global <code>STATE.chatHistory</code> and one fixed <code>#typing-indicator</code> id, so whichever response resolved first stole the other's placeholder — this is almost certainly why a "Learn in 20 Hours" (Prod Oracle) request came back showing filmmaker content instead of FL Studio teaching, fired while the slow Director Match request was still hanging. Fixed by wrapping <code>window.sendChat</code> (in <code>scheduleOracle._injectEntryPoints</code>, the one place it was already wrapped) with a <code>window._oracleRequestInFlight</code> guard — a second call while one's pending now shows a toast and is blocked, rather than firing concurrently. No main.js edit needed.<br><br>
+      3. <strong>F11 ingestion failure still needs its own fix</strong> — a YouTube URL that Jina couldn't fetch produced a title of "Content Unavailable" that silently flowed through Encyclopedia save / Schedule / Taxonomy queue instead of stopping with a clear error. Flagged, not yet fixed.
+    </div>
+  </div>
+
   <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">✅ July 12 — F3–F11, F13, F14, F15 shipped (F12 not started, F16 not started)</div>
     <div class="card-body">

@@ -2631,6 +2631,23 @@ RPGACE.register('scheduleOracle', {
       window._scheduleOracleChatPatched = true;
       var origSend = window.sendChat;
       window.sendChat = function() {
+        // General concurrency guard - bundled here since this is the one
+        // place window.sendChat gets wrapped, not Schedule-Oracle-specific.
+        // sendChat()'s send-btn.disabled=true is only a VISUAL guard - it
+        // doesn't stop a second call fired programmatically (e.g. a Visual
+        // Oracle / Prod Oracle panel button calling sendToOracle() while a
+        // prior request is still pending). Two overlapping calls share one
+        // global STATE.chatHistory and one fixed #typing-indicator id, so
+        // whichever response resolves first steals the other's placeholder -
+        // confirmed via testing: a slow request (Director Match, near the
+        // Oracle timeout ceiling) got its content silently swapped with a
+        // faster one fired while it was still pending. Blocking overlap
+        // entirely removes the chance of that happening, no main.js edit
+        // needed.
+        if (window._oracleRequestInFlight) {
+          RPGACE.utils.toast('⏳ Oracle is still answering — wait for it to finish first', '#E25454', 2800);
+          return;
+        }
         var input = document.getElementById('chat-input');
         var val = input ? input.value.trim() : '';
         var lower = val.toLowerCase();
@@ -2642,7 +2659,14 @@ RPGACE.register('scheduleOracle', {
           self._openPanel(rest);
           return;
         }
-        return origSend.apply(this, arguments);
+        window._oracleRequestInFlight = true;
+        var result = origSend.apply(this, arguments);
+        if (result && typeof result.then === 'function') {
+          result.finally(function() { window._oracleRequestInFlight = false; });
+        } else {
+          window._oracleRequestInFlight = false;
+        }
+        return result;
       };
     }
   },
