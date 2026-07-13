@@ -1070,25 +1070,6 @@ RPGACE.register('contentRepurpose', {
   // ── Detect relevant phyla from idea text ─────────────────────
   _detectPhyla: function(ideaText, callback) {
     var text = (ideaText || '').toLowerCase();
-    var allPhyla = [
-      { num: 1,  name: 'Compositio',           reason: 'Melody, harmony, chord progressions', keywords: ['melody','chord','scale','harmony','progression','notes','key'] },
-      { num: 2,  name: 'Percussio',             reason: 'Drums, 808, groove patterns', keywords: ['drum','kick','snare','808','hi-hat','groove','pattern','percussion'] },
-      { num: 3,  name: 'Sonus Designatio',      reason: 'Sound design, synthesis, sampling', keywords: ['sound design','synth','sample','patch','oscillator','wavetable','texture'] },
-      { num: 4,  name: 'Mixtura',               reason: 'Mixing, EQ, compression, sidechain', keywords: ['mix','eq','compress','sidechain','reverb','delay','level','gain','frequency'] },
-      { num: 5,  name: 'Magistra',              reason: 'Mastering, loudness, final chain', keywords: ['master','lufs','limiter','loud','stem','final'] },
-      { num: 6,  name: 'Instrumentarium',       reason: 'FL Studio, VSTs, DAW workflow', keywords: ['fl studio','vst','plugin','daw','workflow','edison','mixer','channel','playlist','piano roll'] },
-      { num: 7,  name: 'Sensus Auris',          reason: 'Critical listening, reference analysis', keywords: ['listen','reference','ear','compare','a/b','monitor','speaker'] },
-      { num: 8,  name: 'Anatomia',              reason: 'Music theory fundamentals', keywords: ['theory','interval','mode','minor','major','scale','degree','chord','tension'] },
-      { num: 9,  name: 'Historia',              reason: 'Producer history, era study, influences', keywords: ['producer','artist','era','influence','style','sound like','inspired'] },
-      { num: 10, name: 'Psychologia',           reason: 'Creative psychology, flow state', keywords: ['creative','block','inspiration','flow','mindset','habit','routine'] },
-      { num: 12, name: 'Fons Educationis',      reason: 'YouTube educators, learning resources', keywords: ['tutorial','learn','teach','explain','breakdown','guide','lesson'] },
-      { num: 13, name: 'Contentum',             reason: 'YouTube, Instagram, content strategy', keywords: ['youtube','instagram','reels','hook','thumbnail','title','content','video','tiktok','caption'] },
-      { num: 14, name: 'Visio Cinematica',      reason: 'Visual treatment, filmmaker style', keywords: ['visual','cinematic','camera','colour','grade','filmmaker','neural frames','mood board'] },
-      { num: 16, name: 'Venditionis Beatorum',  reason: 'Beat selling, Beatstars, licensing', keywords: ['sell','beat store','beatstars','license','lease','exclusive','price'] },
-    ];
-
-    var confirmed = [];
-    var suggested = [];
 
     var isContentIdea = text.includes('tutorial') || text.includes('teach') || text.includes('how to') ||
       text.includes('tip') || text.includes('reel') || text.includes('video') || text.includes('content') ||
@@ -1096,14 +1077,25 @@ RPGACE.register('contentRepurpose', {
     var isSocialIdea = text.includes('instagram') || text.includes('tiktok') || text.includes('reel') ||
       text.includes('caption') || text.includes('hook') || text.includes('post') || text.includes('platform');
 
-    allPhyla.forEach(function(p) {
-      var hits = p.keywords.filter(function(k) { return text.includes(k); }).length;
+    var confirmed = [];
+    var suggested = [];
+    var threshold = RPGACE.utils.PHYLA_MATCH_THRESHOLD || 3;
+    var phylumEnglish = (RPGACE.modules.taxonomyTree && RPGACE.modules.taxonomyTree.PHYLUM_ENGLISH) || {};
+
+    // F8: this used to be a third, independent copy of the phyla keyword
+    // list (missed by F2's consolidation of _quickPhylaScan/isPlausiblePhylum
+    // onto one shared scorer, and stuck on the old 14-of-21-phyla/raw-count
+    // model). Now reuses RPGACE.utils._PHYLA_KEYWORDS/phylaKeywordScore -
+    // one list, one weighted scorer, can't drift out of sync again.
+    (RPGACE.utils._PHYLA_KEYWORDS || []).forEach(function(p) {
+      var score = RPGACE.utils.phylaKeywordScore ? RPGACE.utils.phylaKeywordScore(text, p.num) : 0;
+      var entry = { num: p.num, name: p.name, reason: phylumEnglish[p.num] || p.name };
       if ((p.num === 12 && isContentIdea) || (p.num === 13 && isSocialIdea)) {
-        confirmed.push(p);
-      } else if (hits >= 2) {
-        confirmed.push(p);
-      } else if (hits === 1) {
-        suggested.push(p);
+        confirmed.push(entry);
+      } else if (score >= threshold) {
+        confirmed.push(entry);
+      } else if (score > 0) {
+        suggested.push(entry);
       }
     });
 
@@ -3239,7 +3231,10 @@ RPGACE.register('taxonomySync', {
       return { num: p[0], name: p[1], score: score };
     });
     scores.sort(function(a, b) { return b.score - a.score; });
-    return scores[0].score > 0 ? scores[0] : { num: 10, name: 'Technologia' };
+    // F8: fallback default had num:10/name:'Technologia' - PHYLUM_MAP (above)
+    // has 10 as Psychologia and 20 as Technologia, so any zero-score entry
+    // landed with a self-contradictory {num, name} pair. Technologia is 20.
+    return scores[0].score > 0 ? scores[0] : { num: 20, name: 'Technologia' };
   },
 
   _runSync: function() {
@@ -3701,10 +3696,13 @@ RPGACE.register('taxonomyTree', {
   // ── the text at all? Uses the FREE Layer 1 scan already computed —    ──
   // ── prevents wasting an Oracle API call generating a mismatch notice. ──
   isPlausiblePhylum: function(text, phylumNumber) {
-    // F2: now reads from the shared RPGACE.utils.phylaKeywordScore(), same
+    // F2: reads from the shared RPGACE.utils.phylaKeywordScore(), same
     // scoring function the badge scan uses - one source of truth, can't drift.
+    // F8: threshold now lives on RPGACE.utils.PHYLA_MATCH_THRESHOLD (weighted
+    // score, not raw hit count) so this can't drift out of sync with
+    // _quickPhylaScan's bar the way the old two-hardcoded-"2"s did.
     if (!RPGACE.utils.phylaKeywordScore) return true; // fail open if scorer unavailable
-    return RPGACE.utils.phylaKeywordScore(text, phylumNumber) >= 2;
+    return RPGACE.utils.phylaKeywordScore(text, phylumNumber) >= (RPGACE.utils.PHYLA_MATCH_THRESHOLD || 3);
   },
 
   // ── Extract named node candidates from an Oracle response ──────────
@@ -4613,42 +4611,80 @@ RPGACE.register('config', {
     };
 
     // ── Layer 1: cheap local keyword scan, always runs ──────────────
+    // F8: formal redesign, replacing the flat keyword-list/raw-count model.
+    // Three concrete problems fixed:
+    //   1. Only 14 of 21 phyla had any keywords at all (11,15,17-21 could
+    //      never be silently matched by anything, no matter how relevant).
+    //   2. Every keyword counted equally - "sidechain" (near-unique to
+    //      Mixtura) and "style" (generic, shows up everywhere) both scored
+    //      1 point. Now {term, weight}: 2 = specific/rare outside this
+    //      phylum, 1 = generic/could plausibly appear in several.
+    //   3. Naive substring match (`text.includes(k)`) false-positived on
+    //      short terms inside unrelated words - "key" matched "monkey",
+    //      "turkey", "keyword". Now word-boundary regex matching.
+    // Also found and fixed a real overlap: 14 (Visio Cinematica) and the
+    // new 11 (Lingua Musicae, colour/mood/visual language) both claimed
+    // "colour" and "mood board" - kept 14 to concrete filmmaking-production
+    // terms, 11 to abstract aesthetic/branding terms.
+    // 21 (Miscellaneous) deliberately has NO keywords - it's the catch-all
+    // for "doesn't fit anywhere else"; giving it keywords would mean the
+    // scanner could match on it exactly when it shouldn't.
     RPGACE.utils._PHYLA_KEYWORDS = [
-      { num: 1,  name: 'Compositio',           keywords: ['melody','chord','scale','harmony','progression','notes','key'] },
-      { num: 2,  name: 'Percussio',             keywords: ['drum','kick','snare','808','hi-hat','groove','pattern','percussion'] },
-      { num: 3,  name: 'Sonus Designatio',      keywords: ['sound design','synth','sample','patch','oscillator','wavetable','texture'] },
-      { num: 4,  name: 'Mixtura',               keywords: ['mix','eq','compress','sidechain','reverb','delay','level','gain','frequency'] },
-      { num: 5,  name: 'Magistra',              keywords: ['master','lufs','limiter','loud','stem','final'] },
-      { num: 6,  name: 'Instrumentarium',       keywords: ['fl studio','vst','plugin','daw','workflow','edison','mixer','channel','playlist','piano roll'] },
-      { num: 7,  name: 'Sensus Auris',          keywords: ['listen','reference','ear','compare','a/b','monitor','speaker'] },
-      { num: 8,  name: 'Anatomia',              keywords: ['theory','interval','mode','minor','major','scale','degree','chord','tension'] },
-      { num: 9,  name: 'Historia',              keywords: ['producer','artist','era','influence','style','sound like','inspired'] },
-      { num: 10, name: 'Psychologia',           keywords: ['creative','block','inspiration','flow','mindset','habit','routine'] },
-      { num: 12, name: 'Fons Educationis',      keywords: ['tutorial','learn','teach','explain','breakdown','guide','lesson'] },
-      { num: 13, name: 'Contentum',             keywords: ['youtube','instagram','reels','hook','thumbnail','title','content','video','tiktok','caption'] },
-      { num: 14, name: 'Visio Cinematica',      keywords: ['visual','cinematic','camera','colour','grade','filmmaker','neural frames','mood board'] },
-      { num: 16, name: 'Venditionis Beatorum',  keywords: ['sell','beat store','beatstars','license','lease','exclusive','price'] },
+      { num: 1,  name: 'Compositio',           keywords: [{t:'melody',w:2},{t:'chord progression',w:2},{t:'harmony',w:2},{t:'chord',w:1},{t:'scale',w:1},{t:'key change',w:2},{t:'notes',w:1}] },
+      { num: 2,  name: 'Percussio',             keywords: [{t:'drum',w:2},{t:'kick',w:2},{t:'snare',w:2},{t:'808',w:2},{t:'hi-hat',w:2},{t:'groove',w:1},{t:'drum pattern',w:2},{t:'percussion',w:1}] },
+      { num: 3,  name: 'Sonus Designatio',      keywords: [{t:'sound design',w:2},{t:'synth',w:2},{t:'sample',w:1},{t:'patch',w:1},{t:'oscillator',w:2},{t:'wavetable',w:2},{t:'texture',w:1}] },
+      { num: 4,  name: 'Mixtura',               keywords: [{t:'mixing',w:2},{t:'eq',w:2},{t:'compress',w:2},{t:'sidechain',w:2},{t:'reverb',w:1},{t:'delay',w:1},{t:'gain',w:1},{t:'frequency',w:1}] },
+      { num: 5,  name: 'Magistra',              keywords: [{t:'master',w:2},{t:'lufs',w:2},{t:'limiter',w:2},{t:'loudness',w:2},{t:'stem',w:1},{t:'final mix',w:2}] },
+      { num: 6,  name: 'Instrumentarium',       keywords: [{t:'fl studio',w:2},{t:'vst',w:2},{t:'plugin',w:2},{t:'daw',w:2},{t:'workflow',w:1},{t:'edison',w:2},{t:'mixer',w:1},{t:'piano roll',w:2}] },
+      { num: 7,  name: 'Sensus Auris',          keywords: [{t:'critical listening',w:2},{t:'reference track',w:2},{t:'a/b',w:2},{t:'monitor',w:1},{t:'speaker',w:1}] },
+      { num: 8,  name: 'Anatomia',              keywords: [{t:'music theory',w:2},{t:'interval',w:2},{t:'mode',w:1},{t:'minor',w:1},{t:'major',w:1},{t:'degree',w:1},{t:'tension',w:1}] },
+      { num: 9,  name: 'Historia',              keywords: [{t:'producer history',w:2},{t:'influence',w:1},{t:'era',w:1},{t:'sound like',w:2},{t:'inspired by',w:2}] },
+      { num: 10, name: 'Psychologia',           keywords: [{t:'creative block',w:2},{t:'inspiration',w:1},{t:'flow state',w:2},{t:'mindset',w:1},{t:'habit',w:1},{t:'routine',w:1}] },
+      { num: 11, name: 'Lingua Musicae',        keywords: [{t:'colour palette',w:2},{t:'mood board',w:2},{t:'aesthetic',w:2},{t:'visual identity',w:2},{t:'vibe',w:1},{t:'tone',w:1},{t:'brand colours',w:2}] },
+      { num: 12, name: 'Fons Educationis',      keywords: [{t:'tutorial',w:2},{t:'learn',w:1},{t:'teach',w:1},{t:'breakdown',w:1},{t:'guide',w:1},{t:'lesson',w:1}] },
+      { num: 13, name: 'Contentum',             keywords: [{t:'youtube',w:2},{t:'instagram',w:2},{t:'reels',w:2},{t:'hook',w:1},{t:'thumbnail',w:2},{t:'tiktok',w:2},{t:'caption',w:1}] },
+      { num: 14, name: 'Visio Cinematica',      keywords: [{t:'cinematic',w:2},{t:'camera',w:2},{t:'filmmaker',w:2},{t:'neural frames',w:2},{t:'shot',w:1},{t:'b-roll',w:2},{t:'colour grade',w:2},{t:'footage',w:1}] },
+      { num: 15, name: 'Collaboratio',          keywords: [{t:'collab',w:2},{t:'feature',w:1},{t:'outreach',w:2},{t:'guest verse',w:2},{t:'networking',w:1},{t:'cross-promotion',w:2}] },
+      { num: 16, name: 'Venditionis Beatorum',  keywords: [{t:'beatstars',w:2},{t:'license',w:2},{t:'lease',w:2},{t:'exclusive rights',w:2},{t:'beat store',w:2},{t:'sell',w:1},{t:'price',w:1}] },
+      { num: 17, name: 'Negotium',              keywords: [{t:'invoice',w:2},{t:'contract',w:2},{t:'accounting',w:2},{t:'tax',w:2},{t:'budget',w:1},{t:'business',w:1}] },
+      { num: 18, name: 'Distributio',           keywords: [{t:'distrokid',w:2},{t:'tunecore',w:2},{t:'release date',w:2},{t:'rollout',w:1},{t:'playlist pitch',w:2},{t:'streaming platforms',w:2}] },
+      { num: 19, name: 'Referentia Mercati',    keywords: [{t:'trending sound',w:2},{t:'competitor',w:2},{t:'benchmark',w:1},{t:'viral',w:1},{t:'industry standard',w:2},{t:'algorithm',w:1}] },
+      { num: 20, name: 'Technologia',           keywords: [{t:'ai tool',w:2},{t:'automation',w:2},{t:'api',w:1},{t:'integration',w:1},{t:'software update',w:2},{t:'tech stack',w:2}] },
+      { num: 21, name: 'Miscellaneous Ordinanda', keywords: [] },
     ];
 
-    // F2: single source of truth for keyword-overlap scoring, used by both the
-    // badge scan (_quickPhylaScan) and the taxonomy tree's pre-filter
-    // (isPlausiblePhylum). Was two independent implementations with separately
-    // maintained thresholds that had already drifted once (badge counted 1+ hit,
-    // propose-button required 2+) before being manually reconciled July 8.
-    // Now there is exactly one place that counts keyword hits.
+    // Escapes regex metacharacters in a keyword term before building a
+    // word-boundary pattern from it (several terms contain "/" or "-").
+    RPGACE.utils._escapeRegExp = function(s) {
+      return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    };
+
+    // F2 (kept)/F8 (reworked): single source of truth for keyword-overlap
+    // scoring, used by both the badge scan (_quickPhylaScan) and the
+    // taxonomy tree's pre-filter (isPlausiblePhylum). Now returns a
+    // WEIGHTED score, not a raw hit count - callers compare against the
+    // new threshold (3), not the old one (2).
     RPGACE.utils.phylaKeywordScore = function(text, phylumNumber) {
       if (!RPGACE.utils._PHYLA_KEYWORDS) return 0;
       var entry = RPGACE.utils._PHYLA_KEYWORDS.find(function(p) { return p.num === phylumNumber; });
-      if (!entry) return 0;
+      if (!entry || !entry.keywords.length) return 0;
       var t = (text || '').toLowerCase();
-      return entry.keywords.filter(function(k) { return t.includes(k); }).length;
+      return entry.keywords.reduce(function(score, kw) {
+        var pattern = new RegExp('\\b' + RPGACE.utils._escapeRegExp(kw.t) + '\\b', 'i');
+        return pattern.test(t) ? score + kw.w : score;
+      }, 0);
     };
+
+    // Weighted-score threshold: roughly "2 specific terms" or "1 specific +
+    // 2 generic" - deliberately higher than the old raw-count>=2 bar, which
+    // let two generic words alone (e.g. "style" + "tone") trigger a match.
+    RPGACE.utils.PHYLA_MATCH_THRESHOLD = 3;
 
     RPGACE.utils._quickPhylaScan = function(text) {
       var matches = [];
       RPGACE.utils._PHYLA_KEYWORDS.forEach(function(p) {
-        var hits = RPGACE.utils.phylaKeywordScore(text, p.num);
-        if (hits >= 2) matches.push({ num: p.num, name: p.name, hits: hits });
+        var score = RPGACE.utils.phylaKeywordScore(text, p.num);
+        if (score >= RPGACE.utils.PHYLA_MATCH_THRESHOLD) matches.push({ num: p.num, name: p.name, hits: score });
       });
       matches.sort(function(a, b) { return b.hits - a.hits; });
       return matches;
