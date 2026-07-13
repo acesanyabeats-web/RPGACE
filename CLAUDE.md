@@ -12,8 +12,11 @@ Deploy: npx vercel --prod (or git push if GitHub Actions is set up)
 ## FILE STRUCTURE (after Step 1 split)
 ```
 rpgace-vercel-v4/
-  index.html      ← HTML shell ONLY — pages, nav, gate div. No inline JS or CSS.
-  main.js         ← ALL application logic. Edit this for features.
+  index.html      ← HTML shell — pages, nav, gate div. Loads main.js AND rpgace_core.js.
+  main.js         ← Original application logic (Step 1 split). "Never modify again" per
+                    rpgace_core.js's own header — new features go in rpgace_core.js instead.
+  rpgace_core.js  ← Everything since Step 8+. RPGACE.register() module system — this is
+                    where new features actually get added now, not main.js.
   style.css       ← ALL styles. Edit this for visual changes.
   CLAUDE.md       ← This file (you're reading it)
   api/
@@ -27,7 +30,32 @@ rpgace-vercel-v4/
     search.js     ← YouTube search (no API key needed)
   vercel.json     ← Routing config
   saved_conversation.md ← Seeded Oracle session (INSTA-ORACLE strategy)
+  patch_notes.html, interconnection_map.md, manual.html, taxonomy_map.html
+                  ← the 4 Oversight docs — see OVERSIGHT DOCS section below
 ```
+
+---
+
+## OVERSIGHT DOCS — update these at the end of every session
+
+**"Oversight"** is these 4 files, treated as one group:
+
+| File | Type | What it's for |
+|---|---|---|
+| `patch_notes.html` | Hand-updated log | Day-by-day build log — what shipped, bugs found/fixed, still-open items |
+| `interconnection_map.md` | Hand-updated log | Every button/module's full function chain, data flow, Supabase touchpoints |
+| `manual.html` | Hand-updated log | Polished merge of Patch Notes + Interconnection Map + architecture, for daily reference |
+| `taxonomy_map.html` | **Live document** | Queries `taxonomy_tree` directly from Supabase on every page load — never a stale snapshot, unlike the other 3 |
+
+All 4 are linked from the Dashboard's "Oversight" box (`docsLinks` module in `rpgace_core.js`), always pointing at whatever is currently deployed.
+
+**When the user says "update oversight"**, it means: update all 4 files with what actually happened in the session just finished — new features, bugs found and fixed (or found and deliberately left), schema changes, corrected doc claims that turned out to be stale. This is not a copy-paste of the same summary into 4 files — each has a different job:
+- `patch_notes.html` gets the full session narrative (what shipped, what broke, root causes, what's still open) — append a new dated entry or extend the current one, don't overwrite prior entries.
+- `interconnection_map.md` gets any new/changed button, module, or data-flow chain — update the specific Part(s) affected, not a full rewrite.
+- `manual.html` gets a lighter-touch sync — pull the polished version of whatever changed into the relevant section.
+- `taxonomy_map.html` needs no manual data update (it's live) — only touch it if its own code/columns changed.
+
+Before editing any of them, check the real current state (git log, live Supabase schema, actual running code) rather than trusting a prior doc's claim — this project has a repeated history of docs describing something as "done" when the underlying code says otherwise. Confirm, don't assume.
 
 ---
 

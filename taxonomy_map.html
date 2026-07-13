@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPGACE — Taxonomy Tree Map</title>
+<style>
+  :root {
+    --bg: #08080f;
+    --surface: #101019;
+    --surface2: #161623;
+    --border: rgba(255,255,255,0.08);
+    --ink: rgba(230,230,238,0.92);
+    --muted: rgba(230,230,238,0.5);
+    --faint: rgba(230,230,238,0.3);
+
+    --phylum:  #C9A84C;
+    --order:   #4A90E2;
+    --class:   #3DAA6E;
+    --family:  #9B59B6;
+    --genus:   #2ABFB0;
+    --species: #E2685A;
+    --variant: #D48CC7;
+
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+    --sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --mono: 'Cascadia Code', 'SF Mono', 'Fira Mono', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; width: 248px; height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 28px 0; overflow-y: auto;
+    transition: transform .25s ease;
+    z-index: 50;
+  }
+  .sidebar.collapsed { transform: translateX(-100%); }
+  .brand { padding: 0 22px 20px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .brand .name { font-family: var(--serif); font-size: 17px; color: var(--phylum); letter-spacing: 0.5px; }
+  .brand .sub { font-size: 10px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .nav-label { padding: 10px 22px 6px; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--faint); }
+  .nav-item { display: block; padding: 6px 22px; font-size: 12.5px; color: var(--muted); text-decoration: none; }
+  .nav-item:hover { color: var(--phylum); }
+
+  .nav-toggle {
+    position: fixed; top: 16px; left: 16px; z-index: 60;
+    width: 38px; height: 38px; border-radius: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--phylum); display: none; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px;
+  }
+
+  .content { margin-left: 248px; flex: 1; padding: 56px 64px 100px; max-width: 1180px; }
+
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); box-shadow: 0 0 60px rgba(0,0,0,0.5); }
+    .sidebar.open { transform: translateX(0); }
+    .nav-toggle { display: flex; }
+    .content { margin-left: 0; padding: 80px 22px 80px; }
+  }
+
+  .eyebrow { font-family: var(--serif); font-style: italic; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--phylum); margin-bottom: 10px; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 40px; margin: 0 0 14px; text-wrap: balance; }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 26px; margin: 0 0 6px; text-wrap: balance; }
+  .section-sub { color: var(--muted); font-size: 13.5px; max-width: 640px; margin-bottom: 30px; }
+  p { max-width: 640px; }
+  code { font-family: var(--mono); font-size: 12px; background: var(--surface2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; }
+  section { margin-bottom: 76px; scroll-margin-top: 30px; }
+
+  .live-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 18px; margin-bottom: 24px; max-width: 720px;
+  }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--class); flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  .live-label { font-size: 12px; color: var(--muted); }
+  .live-ts { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+  .refresh-btn {
+    margin-left: auto; background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 6px; padding: 5px 12px; font-size: 11px; cursor: pointer; font-family: var(--sans);
+  }
+  .refresh-btn:hover { color: var(--phylum); border-color: var(--phylum); }
+  .refresh-btn:focus-visible, a:focus-visible, .nav-toggle:focus-visible { outline: 2px solid var(--phylum); outline-offset: 2px; }
+
+  .callout {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 14px; max-width: 720px;
+  }
+  .callout .k { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+
+  .rank-chain { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 22px 0 8px; }
+  .rank-pill { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--border); font-size: 12.5px; font-weight: 600; }
+  .rank-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .rank-arrow { color: var(--faint); font-size: 14px; }
+
+  .domain-block { margin-bottom: 26px; }
+  .domain-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .phylum-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .phylum-card { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--phylum); border-radius: 8px; padding: 11px 14px; }
+  .phylum-card.empty { border-left-color: var(--border); opacity: 0.55; }
+  .phylum-card .num { font-family: var(--mono); font-size: 10px; color: var(--faint); }
+  .phylum-card .lat { font-family: var(--serif); font-size: 14px; margin: 2px 0; }
+  .phylum-card .eng { font-size: 11px; color: var(--muted); }
+  .phylum-card .flag { display: inline-block; margin-top: 6px; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; }
+  .flag.yes { background: rgba(61,170,110,0.16); color: var(--class); }
+  .flag.no { background: var(--surface2); color: var(--faint); }
+
+  .transition-group { margin-bottom: 24px; }
+  .transition-phylum-label { font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--muted); margin: 18px 0 8px; }
+  .pair-row { display: flex; align-items: center; gap: 0; margin-bottom: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .node-box {
+    flex-shrink: 0; min-width: 170px; max-width: 260px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 13px; font-size: 12.5px; font-weight: 600;
+  }
+  .node-box .rank-tag { display: block; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; opacity: 0.85; }
+  .connector { flex-shrink: 0; width: 34px; height: 2px; position: relative; }
+  .connector::after {
+    content: '▸'; position: absolute; right: -2px; top: 50%; transform: translateY(-50%);
+    font-size: 12px; color: var(--faint);
+  }
+  .no-data-note { color: var(--faint); font-size: 12px; font-style: italic; }
+
+  .phylum-tree-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 26px; margin-bottom: 20px; }
+  .phylum-tree-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+  .phylum-tree-header .lat { font-family: var(--serif); font-size: 20px; }
+  .phylum-tree-header .num { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+  .phylum-tree-header .eng { font-size: 12.5px; color: var(--muted); }
+  .chain-row { display: flex; gap: 22px; margin-top: 18px; overflow-x: auto; padding-bottom: 6px; }
+  .chain-col { flex-shrink: 0; width: 236px; display: flex; flex-direction: column; align-items: stretch; }
+  .chain-node { position: relative; padding-left: 2px; }
+  .chain-node .stem { width: 2px; height: 16px; background: var(--border); margin: 0 auto; }
+  .chain-box {
+    border: 1px solid var(--border); border-left-width: 3px; border-radius: 7px;
+    background: var(--surface2); padding: 9px 12px;
+  }
+  .chain-box .rank-tag { display: block; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+  .chain-box .name { font-size: 12.5px; font-weight: 600; line-height: 1.4; word-break: break-word; }
+  .leaf-badge { display: inline-block; margin-top: 5px; margin-right: 6px; font-size: 8.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
+
+  .loading-note { color: var(--faint); font-size: 13px; padding: 20px 0; }
+  .error-note { color: var(--species); font-size: 13px; padding: 20px 0; max-width: 640px; }
+
+  footer { border-top: 1px solid var(--border); padding-top: 26px; color: var(--faint); font-size: 11.5px; max-width: 640px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="name">RPGACE</div>
+      <div class="sub">Taxonomy Structural Map</div>
+    </div>
+    <div class="nav-label">Orientation</div>
+    <a class="nav-item" href="#legend">Rank Legend</a>
+    <a class="nav-item" href="#overview">All 21 Phyla</a>
+    <div class="nav-label">Rank Transitions</div>
+    <a class="nav-item" href="#t-phylum-order">Phylum → Order</a>
+    <a class="nav-item" href="#t-order-class">Order → Class</a>
+    <a class="nav-item" href="#t-class-family">Class → Family</a>
+    <a class="nav-item" href="#t-family-genus">Family → Genus</a>
+    <a class="nav-item" href="#t-genus-species">Genus → Species</a>
+    <a class="nav-item" href="#t-species-variant">Species → Variant</a>
+    <div class="nav-label">Grouped View</div>
+    <a class="nav-item" href="#by-phylum">Full Trees by Phylum</a>
+    <div class="nav-label">Notes</div>
+    <a class="nav-item" href="#methodology">Methodology</a>
+    <div class="nav-label">Oversight Docs</div>
+    <a class="nav-item" href="/patch_notes.html">Patch Notes</a>
+    <a class="nav-item" href="/interconnection_map.md">Interconnection Map</a>
+    <a class="nav-item" href="/manual.html">Full Manual</a>
+  </nav>
+
+  <main class="content">
+    <div class="eyebrow">Oversight · Live Document</div>
+    <h1>The Taxonomy Tree, Mapped End to End</h1>
+    <p class="section-sub">
+      Every rank transition as its own diagram — Phylum → Order → Class → Family → Genus → Species → Variant —
+      then the whole thing regrouped by phylum. This page queries <code>taxonomy_tree</code> directly on
+      every load — it is never a stale snapshot, unlike the other three Oversight documents which are
+      hand-updated session logs.
+    </p>
+
+    <div class="live-bar">
+      <span class="live-dot"></span>
+      <span class="live-label" id="liveStatus">Connecting to Supabase…</span>
+      <span class="live-ts" id="liveTs"></span>
+      <button class="refresh-btn" id="refreshBtn">↻ Refresh</button>
+    </div>
+
+    <div id="pageBody">
+      <div class="loading-note">Loading live taxonomy data…</div>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+
+  var sidebar = document.getElementById('sidebar');
+  var toggle = document.getElementById('navToggle');
+  toggle.onclick = function () { sidebar.classList.toggle('open'); };
+
+  var RANKS = [
+    { name: 'Phylum',  color: 'var(--phylum)'  },
+    { name: 'Order',   color: 'var(--order)'   },
+    { name: 'Class',   color: 'var(--class)'   },
+    { name: 'Family',  color: 'var(--family)'  },
+    { name: 'Genus',   color: 'var(--genus)'   },
+    { name: 'Species', color: 'var(--species)' },
+    { name: 'Variant', color: 'var(--variant)' },
+  ];
+  function rankFor(depth) {
+    return RANKS[depth] || { name: 'Rank ' + depth, color: 'var(--faint)' };
+  }
+
+  var DOMAINS = [
+    { label: 'Domain A — Craft (I–VIII)', nums: [1,2,3,4,5,6,7,8] },
+    { label: 'Domain B — Knowledge (IX–XII)', nums: [9,10,11,12] },
+    { label: 'Domain C — Content (XIII–XV)', nums: [13,14,15] },
+    { label: 'Domain D — Business (XVI–XIX)', nums: [16,17,18,19] },
+    { label: 'Domain E — Systems (XX–XXI)', nums: [20,21] },
+  ];
+  var PHYLA = {
+    1:{lat:'Compositio',eng:'Melody, Harmony, Chords'}, 2:{lat:'Percussio',eng:'Drums, 808s, Rhythm'},
+    3:{lat:'Sonus Designatio',eng:'Sound Design, Synths, Sampling'}, 4:{lat:'Mixtura',eng:'Mixing, EQ, Compression'},
+    5:{lat:'Magistra',eng:'Mastering, Loudness'}, 6:{lat:'Instrumentarium',eng:'FL Studio, VSTs, DAW Workflow'},
+    7:{lat:'Sensus Auris',eng:'Critical Listening, Reference'}, 8:{lat:'Anatomia',eng:'Music Theory Fundamentals'},
+    9:{lat:'Historia',eng:'Producer History, Influences'}, 10:{lat:'Psychologia',eng:'Creative Psychology, Flow'},
+    11:{lat:'Lingua Musicae',eng:'Colour, Mood, Visual Language'}, 12:{lat:'Fons Educationis',eng:'Tutorials, Learning Resources'},
+    13:{lat:'Contentum',eng:'YouTube, Instagram, Content'}, 14:{lat:'Visio Cinematica',eng:'Visual Treatment, Filmmaking'},
+    15:{lat:'Collaboratio',eng:'Collaboration, Outreach'}, 16:{lat:'Venditionis Beatorum',eng:'Beat Selling, Licensing'},
+    17:{lat:'Negotium',eng:'Business, Operations'}, 18:{lat:'Distributio',eng:'Distribution, Release'},
+    19:{lat:'Referentia Mercati',eng:'Market Reference, Trends'}, 20:{lat:'Technologia',eng:'Technology, Tools'},
+    21:{lat:'Miscellaneous Ordinanda',eng:'Miscellaneous'},
+  };
+
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+  function fetchLiveNodes() {
+    return fetch(SUPABASE_URL + '/rest/v1/taxonomy_tree?select=id,depth,name,phylum_number,path,node_type&order=phylum_number.asc,depth.asc', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    }).then(function (r) {
+      if (!r.ok) throw new Error('Supabase returned HTTP ' + r.status);
+      return r.json();
+    }).then(function (rows) {
+      return (rows || []).map(function (r) {
+        return { phylum: r.phylum_number, depth: r.depth, name: r.name, path: r.path, type: r.node_type };
+      });
+    });
+  }
+
+  function render(NODES) {
+    var body = document.getElementById('pageBody');
+    body.innerHTML = '';
+
+    // ── Live QA: flag unusually long names + names duplicated across phyla ──
+    var nameToPhyla = {};
+    NODES.forEach(function (n) {
+      nameToPhyla[n.name] = nameToPhyla[n.name] || [];
+      if (nameToPhyla[n.name].indexOf(n.phylum) === -1) nameToPhyla[n.name].push(n.phylum);
+    });
+    NODES.forEach(function (n) {
+      n.flaggedLong = n.name.length > 150;
+      n.flaggedDup = nameToPhyla[n.name].length > 1;
+    });
+
+    var byPath = {};
+    NODES.forEach(function (n) { byPath[n.path] = n; });
+    function parentOf(node) {
+      var parts = node.path.split('/');
+      if (parts.length <= 2) return null;
+      var parentPath = parts.slice(0, -1).join('/');
+      return byPath[parentPath] || null;
+    }
+
+    // Legend
+    var legendSection = document.createElement('section');
+    legendSection.id = 'legend';
+    legendSection.innerHTML = '<div class="eyebrow">Orientation</div><h2>Rank Legend</h2>' +
+      '<p class="section-sub">The tree itself only stores a numeric <code>depth</code> — this is the naming convention used consistently across every diagram below.</p>' +
+      '<div class="rank-chain" id="legendChain"></div>';
+    body.appendChild(legendSection);
+    var legendEl = legendSection.querySelector('#legendChain');
+    RANKS.forEach(function (r, i) {
+      var pill = document.createElement('div');
+      pill.className = 'rank-pill';
+      pill.innerHTML = '<span class="rank-dot" style="background:' + r.color + '"></span>' + r.name +
+        '<span style="color:var(--faint);font-weight:400;"> · depth ' + i + '</span>';
+      legendEl.appendChild(pill);
+      if (i < RANKS.length - 1) {
+        var arrow = document.createElement('span');
+        arrow.className = 'rank-arrow'; arrow.textContent = '→';
+        legendEl.appendChild(arrow);
+      }
+    });
+
+    // Overview
+    var hasData = {};
+    NODES.forEach(function (n) { hasData[n.phylum] = true; });
+    var overviewSection = document.createElement('section');
+    overviewSection.id = 'overview';
+    overviewSection.innerHTML = '<div class="eyebrow">Orientation</div><h2>All 21 Phyla</h2>' +
+      '<p class="section-sub">Grouped by domain, exactly as <code>taxonomySync.PHYLUM_MAP</code> defines them. Green flag = has real tree data right now; grey = phylum exists, nothing has been proposed into it yet.</p>' +
+      '<div id="phylaOverview"></div>';
+    body.appendChild(overviewSection);
+    var overviewEl = overviewSection.querySelector('#phylaOverview');
+    DOMAINS.forEach(function (d) {
+      var block = document.createElement('div');
+      block.className = 'domain-block';
+      var title = document.createElement('div');
+      title.className = 'domain-title'; title.textContent = d.label;
+      var grid = document.createElement('div');
+      grid.className = 'phylum-grid';
+      d.nums.forEach(function (num) {
+        var p = PHYLA[num];
+        var card = document.createElement('div');
+        card.className = 'phylum-card ' + (hasData[num] ? 'has-data' : 'empty');
+        card.innerHTML = '<div class="num">Phylum ' + num + '</div>' +
+          '<div class="lat">' + esc(p.lat) + '</div>' +
+          '<div class="eng">' + esc(p.eng) + '</div>' +
+          '<span class="flag ' + (hasData[num] ? 'yes' : 'no') + '">' + (hasData[num] ? 'Has tree data' : 'Empty') + '</span>';
+        grid.appendChild(card);
+      });
+      block.appendChild(title); block.appendChild(grid);
+      overviewEl.appendChild(block);
+    });
+
+    // Transition diagrams
+    var transitions = [
+      ['t-phylum-order', 'Diagram 1 of 6', 'Phylum → Order', 0, 1, 'Every phylum with at least one accepted lineage, and its root-level Order(s).'],
+      ['t-order-class', 'Diagram 2 of 6', 'Order → Class', 1, 2, ''],
+      ['t-class-family', 'Diagram 3 of 6', 'Class → Family', 2, 3, ''],
+      ['t-family-genus', 'Diagram 4 of 6', 'Family → Genus', 3, 4, ''],
+      ['t-genus-species', 'Diagram 5 of 6', 'Genus → Species', 4, 5, ''],
+      ['t-species-variant', 'Diagram 6 of 6', 'Species → Variant', 5, 6, ''],
+    ];
+    transitions.forEach(function (t) {
+      var sec = document.createElement('section');
+      sec.id = t[0];
+      sec.innerHTML = '<div class="eyebrow">' + t[1] + '</div><h2>' + t[2] + '</h2>' +
+        (t[5] ? '<p class="section-sub">' + t[5] + '</p>' : '') +
+        '<div class="diagram-target"></div>';
+      body.appendChild(sec);
+      var target = sec.querySelector('.diagram-target');
+
+      var parentDepth = t[3], childDepth = t[4];
+      var children = NODES.filter(function (n) { return n.depth === childDepth; });
+      if (children.length === 0) {
+        target.innerHTML = '<div class="no-data-note">No lineage in the tree currently reaches this depth.</div>';
+        return;
+      }
+      var byPhylum = {};
+      children.forEach(function (child) {
+        var parent = parentOf(child);
+        var parentName = parentDepth === 0 ? PHYLA[child.phylum].lat : (parent ? parent.name : null);
+        if (!parentName) return;
+        byPhylum[child.phylum] = byPhylum[child.phylum] || [];
+        byPhylum[child.phylum].push({ parentName: parentName, child: child });
+      });
+      Object.keys(byPhylum).sort(function(a,b){return a-b;}).forEach(function (phylumNum) {
+        var group = document.createElement('div');
+        group.className = 'transition-group';
+        var label = document.createElement('div');
+        label.className = 'transition-phylum-label';
+        label.textContent = 'Phylum ' + phylumNum + ' — ' + PHYLA[phylumNum].lat;
+        group.appendChild(label);
+        byPhylum[phylumNum].forEach(function (pair) {
+          var row = document.createElement('div');
+          row.className = 'pair-row';
+          var pr = rankFor(parentDepth), cr = rankFor(childDepth);
+          row.innerHTML =
+            '<div class="node-box" style="border-left:3px solid ' + pr.color + '">' +
+              '<span class="rank-tag" style="color:' + pr.color + '">' + pr.name + '</span>' + esc(pair.parentName) +
+            '</div>' +
+            '<div class="connector"></div>' +
+            '<div class="node-box" style="border-left:3px solid ' + cr.color + '">' +
+              '<span class="rank-tag" style="color:' + cr.color + '">' + cr.name + '</span>' + esc(pair.child.name) +
+            '</div>';
+          group.appendChild(row);
+        });
+        target.appendChild(group);
+      });
+    });
+
+    // Grouped by phylum
+    var byPhylumSection = document.createElement('section');
+    byPhylumSection.id = 'by-phylum';
+    byPhylumSection.innerHTML = '<div class="eyebrow">Regrouped</div><h2>Full Trees, Grouped by Phylum</h2>' +
+      '<p class="section-sub">Same nodes, read the other way — each phylum\'s complete root-to-leaf chains in one place, rank colours carried through from the legend above.</p>' +
+      '<div id="byPhylumTarget"></div>';
+    body.appendChild(byPhylumSection);
+    var byPhylumEl = byPhylumSection.querySelector('#byPhylumTarget');
+    var phylumNumsWithData = Object.keys(hasData).map(Number).sort(function(a,b){return a-b;});
+    phylumNumsWithData.forEach(function (phylumNum) {
+      var rootOrders = NODES.filter(function (n) { return n.phylum === phylumNum && n.depth === 1; });
+      var section = document.createElement('div');
+      section.className = 'phylum-tree-section';
+      section.innerHTML = '<div class="phylum-tree-header">' +
+        '<span class="lat">' + esc(PHYLA[phylumNum].lat) + '</span>' +
+        '<span class="num">Phylum ' + phylumNum + '</span>' +
+        '<span class="eng">— ' + esc(PHYLA[phylumNum].eng) + '</span>' +
+        '</div>';
+      var chainRow = document.createElement('div');
+      chainRow.className = 'chain-row';
+      rootOrders.forEach(function (root) {
+        var chain = [root];
+        var current = root;
+        var guard = 0;
+        while (guard++ < 20) {
+          var next = NODES.find(function (n) { return n.phylum === phylumNum && parentOf(n) === current; });
+          if (!next) break;
+          chain.push(next);
+          current = next;
+        }
+        var col = document.createElement('div');
+        col.className = 'chain-col';
+        chain.forEach(function (node, i) {
+          if (i > 0) {
+            var stem = document.createElement('div');
+            stem.className = 'chain-node'; stem.innerHTML = '<div class="stem"></div>';
+            col.appendChild(stem);
+          }
+          var wrap = document.createElement('div');
+          wrap.className = 'chain-node';
+          var r = rankFor(node.depth);
+          var displayName = node.flaggedLong ? node.name.slice(0, 90) + '…' : node.name;
+          var box = document.createElement('div');
+          box.className = 'chain-box';
+          box.style.borderLeftColor = r.color;
+          box.innerHTML = '<span class="rank-tag" style="color:' + r.color + '">' + r.name + '</span>' +
+            '<span class="name">' + esc(displayName) + '</span><br>' +
+            (node.type === 'leaf' ? '<span class="leaf-badge">● leaf</span>' : '') +
+            (node.flaggedLong ? '<span class="leaf-badge" style="color:var(--species)">⚠ unusually long name</span>' : '') +
+            (node.flaggedDup ? '<span class="leaf-badge" style="color:var(--family)">⧉ name repeats in another phylum</span>' : '');
+          wrap.appendChild(box);
+          col.appendChild(wrap);
+        });
+        chainRow.appendChild(col);
+      });
+      section.appendChild(chainRow);
+      byPhylumEl.appendChild(section);
+    });
+
+    var emptyList = Object.keys(PHYLA).map(Number).filter(function (n) { return !hasData[n]; });
+    if (emptyList.length) {
+      var emptyNote = document.createElement('div');
+      emptyNote.className = 'callout';
+      emptyNote.innerHTML = '<div class="k">' + emptyList.length + ' phyla with no tree data yet</div>' +
+        emptyList.map(function (n) { return n + ' ' + esc(PHYLA[n].lat); }).join(' · ');
+      byPhylumEl.appendChild(emptyNote);
+    }
+
+    // Footer / methodology
+    var foot = document.createElement('footer');
+    foot.id = 'methodology';
+    var flaggedNodes = NODES.filter(function (n) { return n.flaggedLong || n.flaggedDup; });
+    foot.innerHTML = '<div class="eyebrow" style="margin-bottom:14px;">Notes</div>' +
+      '<p><strong>Methodology.</strong> This page queries <code>taxonomy_tree</code> live via the Supabase REST API on every load (public anon key, same one main.js/rpgace_core.js already use client-side) — it is never a stale snapshot. Hierarchy is reconstructed from each row\'s <code>path</code> field, not <code>parent_id</code> — historical rows created before a July 12 fix to <code>_acceptLineage()</code> all have <code>parent_id: null</code>, so <code>path</code> is the reliable source of the real structure.</p>' +
+      (flaggedNodes.length
+        ? '<p><strong>' + flaggedNodes.length + ' data quality flag(s) detected live</strong> (unusually long names, or the same name accepted under more than one phylum) — marked directly on the affected nodes above rather than cleaned up silently.</p>'
+        : '<p><strong>No data quality flags detected on this load.</strong></p>') +
+      '<p>Part of RPGACE\'s <strong>Oversight</strong> document group — this page, Patch Notes, the Interconnection Map, and the Full Manual are updated together at the end of every build session.</p>';
+    body.appendChild(foot);
+  }
+
+  function load() {
+    document.getElementById('liveStatus').textContent = 'Connecting to Supabase…';
+    fetchLiveNodes().then(function (nodes) {
+      document.getElementById('liveStatus').textContent = nodes.length + ' live nodes loaded from taxonomy_tree';
+      document.getElementById('liveTs').textContent = 'Last refreshed ' + new Date().toLocaleTimeString('en-GB');
+      render(nodes);
+    }).catch(function (err) {
+      document.getElementById('liveStatus').textContent = 'Could not reach Supabase';
+      document.getElementById('pageBody').innerHTML = '<div class="error-note">Live fetch failed: ' + esc(err.message) + '. Check your connection and press Refresh.</div>';
+    });
+  }
+
+  document.getElementById('refreshBtn').onclick = load;
+  load();
+})();
+</script>
+</body>
+</html>

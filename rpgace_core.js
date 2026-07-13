@@ -7614,16 +7614,22 @@ RPGACE.register('docsLinks', {
 
     var label = document.createElement('div');
     label.style.cssText = 'font-family:Cinzel,serif;font-size:10px;color:rgba(226,226,236,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;';
-    label.textContent = '📚 RPGACE Documentation — Always Latest';
+    label.textContent = '📚 Oversight — 4 Docs, Always Latest';
     box.appendChild(label);
 
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
 
+    // "Oversight" = these 4 documents, treated as one group. Patch Notes,
+    // Interconnection Map, and Full Manual are hand-updated session logs;
+    // Taxonomy Map queries Supabase live on every load and never goes stale
+    // on its own. All 4 get updated together at the end of every session
+    // (see CLAUDE.md's Oversight section for the convention).
     var links = [
       { label: '📓 Patch Notes', href: '/patch_notes.html', color: '#C9A84C' },
       { label: '🔗 Interconnection Map', href: '/interconnection_map.md', color: '#4A90E2' },
-      { label: '📘 Full Manual', href: '/manual.html', color: '#9B59B6' }
+      { label: '📘 Full Manual', href: '/manual.html', color: '#9B59B6' },
+      { label: '🌳 Taxonomy Map', href: '/taxonomy_map.html', color: '#2ABFB0' }
     ];
 
     links.forEach(function(l) {

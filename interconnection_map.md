@@ -609,6 +609,40 @@ Built via GODMODE + Council of 5, July 8. Same content as Parts 1-15, presented 
 
 Every domain in RPGACE ultimately touches one of exactly two hubs — **Oracle** (for generation) or **Taxonomy Tree** (for knowledge structure) — except the Schedule system, which runs as a genuinely separate, self-contained loop (shifts + agendas + calendar) with no taxonomy dependency at all. This is useful to know precisely: the Schedule system could be extracted or rebuilt independently without touching Oracle or Taxonomy, but any change to either hub ripples through nearly everything else.
 
-### New standing rule, confirmed July 8
+### New standing rule, confirmed July 8 — renamed and extended July 12: "Oversight"
 
-Every future documentation update applies to all three living docs (Patch Notes, this Interconnection Map, and the Full Manual) by default, not only when explicitly requested — same discipline already proven to work for code changes, now formalized for documentation too.
+Every future documentation update applies to all living docs by default, not only when explicitly requested — same discipline already proven to work for code changes, now formalized for documentation too. As of July 12 this group has a name and a fourth member: **Oversight** = Patch Notes, this Interconnection Map, the Full Manual, and the new **Taxonomy Map** (`taxonomy_map.html`). The first three are hand-updated session logs; Taxonomy Map queries `taxonomy_tree` live from Supabase on every page load, so it never needs a manual data update — only its own code changes if the underlying columns change. "Update Oversight" now means: update all 4 with what happened in the session, each in the format it's actually good at (Patch Notes = full narrative, Interconnection Map = new/changed function chains, Full Manual = polished lighter-touch sync, Taxonomy Map = usually nothing, it's live). See `CLAUDE.md`'s OVERSIGHT DOCS section for the durable version of this rule.
+
+---
+
+## PART 17 — July 12 Session: Taxonomy Proposals Pipeline, Schedule Oracle Phase 1, Oversight (this session)
+
+**● 🌳 Propose to Taxonomy** (Encyclopedia cards, per-entry — new)
+`encTaxonomyLink._propose()` → `taxonomyTree.silentPropose()` (same Oracle-generated lineage as the interactive `proposeLineage()`, but queues instead of popping the accept dialog) → ▢ **Supabase `taxonomy_proposals`** (`status: 'pending'`) → card shows "⏳ Proposal pending review" until reviewed
+
+**● Content Intelligence sync completion → silent auto-propose** (new)
+`ciAutoPropose` wraps `window.syncIntelData` → keyword-gated scan of each new report (2+ weighted hits, see Part 13/F8 below) → `taxonomyTree.silentPropose()` → ▢ **Supabase `taxonomy_proposals`**
+
+**● Encyclopedia sync completion → silent auto-propose** (new)
+`encSync._autoPropose()`, same wrap-and-scan pattern as above, hooked into the existing `syncAndPush` patch → ▢ **Supabase `taxonomy_proposals`**
+
+**● 🌳 X taxonomy proposals waiting** (Dashboard badge — new)
+`taxonomyReviewQueue._inject()` reads count of ▢ **Supabase `taxonomy_proposals`** where `status=pending` → click → batch popup → **Accept** reuses `taxonomyTree._acceptLineage()` unchanged (writes ▢ **`taxonomy_tree`**, marks the originating proposal `accepted`) → **Edit** reuses `taxonomyTree._showProposalPopup()` unchanged → **Reject** marks the proposal row `rejected` directly, no tree write
+
+**● 🔔 Reminder** (Daily Grid agenda blocks, third button alongside Start/Done — new)
+`agendaReminder` wraps `renderDailyGrid()` → reads the block's own row from `localStorage.rpgace_sched_agendas` → popup shows stored title/description/category/duration/XP, no Oracle call, no Supabase read
+
+**● 📅 Schedule Oracle** (3 entry points — new, Phase 1 only)
+Direct-launch button, chat-mode trigger (`schedule oracle:` / `schedule this:` / `learn later:` prefix intercepts `sendChat()`), or the panel's own paste field → `scheduleOracle._ingest()` → ▢ **`/api/scout`** (URL detect + Jina fetch + type ID) ⋯> ▢ **`/api/analyst`** (type-aware analysis) → sequential 3-option reveal, one acknowledged at a time: **Save to Encyclopedia** → ▢ **Supabase `encyclopedia`**; **Schedule a session** → `openSchedModal()` pre-filled, same write path as the existing Schedule system; **Queue for Taxonomy Tree** → same `silentPropose()` path as the Encyclopedia button above. Phase 2 (carousel toggle, two-tier session memory, auto-routing confidence gate) is not built — depends on this phase, separate pass.
+
+**● 🎬 Director Match** (Visual Oracle, existing button — chain corrected)
+Previously told Claude to imagine "the Phylum XXV filmmaker library" with no real data behind it. Now `visualOracle._withFilmmakerLibrary()` reads ▢ **Supabase `taxonomy_nodes`** (`source='f14_filmmaker_library'`, 50 real director profiles spanning action/blockbuster/arthouse/horror/animation, phylum 14) and injects the real list into the prompt before it reaches ▢ **Oracle API**.
+
+**● 📋 Add post details, licence + price fields** (ConID cards — extended)
+Same questionnaire, two new fields → ▢ **Supabase `content_productions`** (`licence_type`, `price` — both nullable, precondition for the not-yet-built Beatstars auto-listing step)
+
+**● n8n rota sync** (new, file-based — not a live app touchpoint)
+`n8n/rota_sync_workflow.json`, importable Cron trigger → Execute Command running `scripts/fourth_rota.py` locally, which now reads `.fourth_credentials` if present instead of always blocking on interactive login prompts. Not wired to any Supabase table directly — the script still writes a local console-command file for manual paste, unchanged.
+
+**Phyla keyword scoring, corrected (F8, affects every chain above that calls `silentPropose`/`isPlausiblePhylum`)**
+`RPGACE.utils._PHYLA_KEYWORDS` now covers all 21 phyla (was 14), each keyword weighted (2=specific, 1=generic) instead of counted flatly, matched by word-boundary regex instead of substring, threshold moved to `RPGACE.utils.PHYLA_MATCH_THRESHOLD` (3) shared by `_quickPhylaScan`, `isPlausiblePhylum`, and `contentRepurpose._detectPhyla` (a third independent copy of this list, found and consolidated onto the same scorer).

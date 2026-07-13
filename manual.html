@@ -270,6 +270,9 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Phyla badge count ≠ button count</td><td>Two different thresholds, now matched (2+)</td></tr>
     <tr><td>Encyclopedia 409 spam</td><td>Raw insert, no upsert — fixed</td></tr>
     <tr><td>Console crash on load</td><td>Stale onboarding popup element, now guarded</td></tr>
+    <tr><td>Taxonomy lineages landed flat, not nested (parent_id always null)</td><td>Insert used shared helper defaulting to <code>return=minimal</code>, never got a row id back to chain to — fixed July 12</td></tr>
+    <tr><td>taxonomySync zero-score fallback self-contradictory</td><td><code>{num:10,name:'Technologia'}</code> when 10 is actually Psychologia — fixed July 12</td></tr>
+    <tr><td>Director Match had no real filmmaker data</td><td>Prompt told Claude to imagine "the Phylum XXV library" — never existed until July 12's 50-profile insert</td></tr>
   </table>
 </div>
 
@@ -282,17 +285,21 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><th>Step</th><th>Status</th><th>What</th></tr>
     <tr><td>F0</td><td><span class="badge live">SHIPPED</span></td><td>Duplicate-submission guard, Content Intelligence</td></tr>
     <tr><td>F1</td><td><span class="badge live">SHIPPED</span></td><td>Shared getOracleMessageElements() helper</td></tr>
-    <tr><td>F2</td><td><span class="badge next">NEXT</span></td><td>Shared phylaKeywordScore() helper</td></tr>
-    <tr><td>F3</td><td><span class="badge next">NEXT</span></td><td>Remove dead encSync dedup logic</td></tr>
-    <tr><td>F4</td><td><span class="badge next">NEXT</span></td><td>Content Intelligence auto-propose to taxonomy</td></tr>
-    <tr><td>F5</td><td><span class="badge next">NEXT</span></td><td>Encyclopedia sync auto-propose to taxonomy</td></tr>
-    <tr><td>F6</td><td><span class="badge next">NEXT</span></td><td>Dashboard proposal review queue</td></tr>
-    <tr><td>F7</td><td><span class="badge next">NEXT</span></td><td>Encyclopedia ↔ Taxonomy bidirectional linking</td></tr>
-    <tr><td>F8</td><td><span class="badge gap">DEDICATED SESSION</span></td><td>Formal phylum-selection criteria brainstorm</td></tr>
-    <tr><td>F9</td><td><span class="badge next">NEXT</span></td><td>Reminder button (Start/Done/Reminder)</td></tr>
-    <tr><td>F10</td><td><span class="badge next">NEXT</span></td><td>Windows Task Scheduler, unattended rota sync</td></tr>
-    <tr><td>F11–F12</td><td><span class="badge gap">MULTI-SESSION</span></td><td>Schedule Oracle Phase 1 (MVP) + Phase 2 (full loop)</td></tr>
-    <tr><td>F13–F18</td><td><span class="badge next">CARRIED FORWARD</span></td><td>Original Reboot steps: taxonomy sync expansion, Filmmaker Library, Beat Selling, Beatstars, Video Pipeline, Visual Treatment Generator</td></tr>
+    <tr><td>F2</td><td><span class="badge live">SHIPPED</span></td><td>Shared phylaKeywordScore() helper</td></tr>
+    <tr><td>F3</td><td><span class="badge live">SHIPPED</span></td><td>Removed dead encSync dedup logic</td></tr>
+    <tr><td>F4</td><td><span class="badge live">SHIPPED</span></td><td>Content Intelligence auto-propose to taxonomy (queues, doesn't write directly)</td></tr>
+    <tr><td>F5</td><td><span class="badge live">SHIPPED</span></td><td>Encyclopedia sync auto-propose to taxonomy</td></tr>
+    <tr><td>F6</td><td><span class="badge live">SHIPPED</span></td><td>Dashboard proposal review queue (Accept/Edit/Reject)</td></tr>
+    <tr><td>F7</td><td><span class="badge live">SHIPPED</span></td><td>Encyclopedia ↔ Taxonomy bidirectional linking, per-entry button</td></tr>
+    <tr><td>F8</td><td><span class="badge live">SHIPPED</span></td><td>Formal phylum-selection criteria — 21-phylum coverage, weighted scoring, word-boundary matching</td></tr>
+    <tr><td>F9</td><td><span class="badge live">SHIPPED</span></td><td>Reminder button (Start/Done/Reminder)</td></tr>
+    <tr><td>F10</td><td><span class="badge gap">PARTIAL — n8n workflow ready, not test-run</span></td><td>Rota sync automation (pivoted from Windows Task Scheduler to n8n)</td></tr>
+    <tr><td>F11</td><td><span class="badge live">SHIPPED (Phase 1 / MVP)</span></td><td>Schedule Oracle — 3 entry points, scout+analyst ingestion, 3-option sequential reveal</td></tr>
+    <tr><td>F12</td><td><span class="badge gap">NOT STARTED — depends on F11</span></td><td>Schedule Oracle Phase 2 — carousel, two-tier session memory, auto-routing</td></tr>
+    <tr><td>F13</td><td><span class="badge live">CLOSED, superseded by F5</span></td><td>Taxonomy sync expansion — confirmed no separate work needed</td></tr>
+    <tr><td>F14</td><td><span class="badge live">SHIPPED</span></td><td>Phylum XXV Filmmaker Library — 50 real director profiles, Director Match now grounded in real data</td></tr>
+    <tr><td>F15</td><td><span class="badge live">SHIPPED</span></td><td>Beat Selling Integration — licence/price columns on content_productions</td></tr>
+    <tr><td>F16–F18</td><td><span class="badge next">CARRIED FORWARD</span></td><td>Beatstars auto-listing, Video Pipeline Tab, Visual Treatment Generator</td></tr>
   </table>
 </div>
 
