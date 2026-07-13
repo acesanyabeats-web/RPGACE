@@ -1009,13 +1009,25 @@ RPGACE.register('visualOracle', {
       btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
       btn.onclick = function() {
         self._close();
-        RPGACE.utils.fillGaps(cmd[1], function(filled) {
-          var input = document.querySelector('#chat-input');
-          if (!input) return;
-          input.value = filled;
-          input.dispatchEvent(new Event('input', {bubbles:true}));
-          if (typeof sendChat === 'function') sendChat();
-        });
+        var proceed = function(promptText) {
+          RPGACE.utils.fillGaps(promptText, function(filled) {
+            var input = document.querySelector('#chat-input');
+            if (!input) return;
+            input.value = filled;
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+            if (typeof sendChat === 'function') sendChat();
+          });
+        };
+        // F14: Director Match used to just tell Claude to imagine "the Phylum
+        // XXV filmmaker library" with nothing behind it - no such data
+        // existed. Now grounds the prompt in the real 50 profiles stored in
+        // taxonomy_nodes (source='f14_filmmaker_library') instead of hoping
+        // the model improvises consistent answers each time.
+        if (i === 0) {
+          self._withFilmmakerLibrary(function(block) { proceed(cmd[1] + '\n\n' + block); });
+        } else {
+          proceed(cmd[1]);
+        }
       };
       body.appendChild(btn);
     });
@@ -1025,6 +1037,23 @@ RPGACE.register('visualOracle', {
     requestAnimationFrame(function() {
       requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
     });
+  },
+
+  // F14: fetches the 50-director Phylum XXV (Visio Cinematica, phylum 14)
+  // library and formats it as a compact reference block for Director Match.
+  // Fails open (empty block, same behaviour as before F14) if the fetch
+  // fails, rather than blocking the command entirely.
+  _withFilmmakerLibrary: function(callback) {
+    RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
+      .then(function(rows) {
+        rows = rows || [];
+        if (rows.length === 0) { callback(''); return; }
+        var list = rows.map(function(r) {
+          return '- ' + r.concept + ': ' + r.definition + ' Palette: ' + r.colour_palette;
+        }).join('\n');
+        callback('PHYLUM XXV FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
+      })
+      .catch(function() { callback(''); });
   },
 
 });
@@ -6211,6 +6240,32 @@ RPGACE.register('contentProductionLive', {
       box.appendChild(lbl); box.appendChild(inp);
     });
 
+    // F15: licence + price, if this ConID has a beat attached to it (not
+    // every post is a beat sale, so both are optional and null if left
+    // blank) - precondition for F16's Beatstars auto-listing, which reads
+    // these two columns straight off content_productions.
+    var licLbl = document.createElement('div');
+    licLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+    licLbl.textContent = 'Licence type (if selling this beat):';
+    var licSelect = document.createElement('select');
+    licSelect.id = 'pd-licence';
+    licSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+    [['', '— not a beat sale —'], ['lease', 'Lease'], ['non-exclusive', 'Non-Exclusive'], ['exclusive', 'Exclusive']].forEach(function(o) {
+      var opt = document.createElement('option');
+      opt.value = o[0]; opt.textContent = o[1];
+      opt.style.color = '#E2E2EC'; opt.style.background = '#1a1a24';
+      licSelect.appendChild(opt);
+    });
+    box.appendChild(licLbl); box.appendChild(licSelect);
+
+    var priceLbl = document.createElement('div');
+    priceLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+    priceLbl.textContent = 'Price (GBP):';
+    var priceInp = document.createElement('input');
+    priceInp.id = 'pd-price'; priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01'; priceInp.placeholder = 'e.g. 29.99';
+    priceInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+    box.appendChild(priceLbl); box.appendChild(priceInp);
+
     var btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
     var saveBtn = document.createElement('button');
@@ -6218,6 +6273,7 @@ RPGACE.register('contentProductionLive', {
     saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     saveBtn.onclick = function() {
       var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
+      var priceVal = g('pd-price');
       var updates = {
         status: 'Posted',
         posted_at: new Date().toISOString(),
@@ -6226,6 +6282,8 @@ RPGACE.register('contentProductionLive', {
         tiktok_url: g('pd-tiktok') || null,
         raw_footage_path: g('pd-raw') || null,
         notes: g('pd-notes') || null,
+        licence_type: g('pd-licence') || null,
+        price: priceVal ? parseFloat(priceVal) : null,
       };
       self.updateEntry(row.id, updates).then(function() {
         overlay.remove();

@@ -95,7 +95,7 @@
   </div>
 
   <div class="card green" style="margin-bottom:20px;">
-    <div class="card-title">✅ July 12 — F3, F4, F5, F6, F7, F8, F9, F10 shipped</div>
+    <div class="card-title">✅ July 12 — F3–F10, F13, F14, F15 shipped</div>
     <div class="card-body">
       <strong>STEP F3</strong> — <code>encSync._dedup()</code> deleted along with its call site; Supabase's <code>UNIQUE(title)</code> constraint already made it dead weight.<br><br>
       <strong>STEP F4/F5</strong> — <code>taxonomyTree.silentPropose()</code> added (same Oracle-generated lineage as <code>proposeLineage()</code>, but queues into <code>taxonomy_proposals</code> instead of opening the accept popup). Wired into two silent triggers: <code>ciAutoPropose</code> (end of every Content Intelligence sync, mirrors main.js's existing encyclopedia-autosave dedup/cap pattern) and <code>encSync._autoPropose()</code> (end of every Encyclopedia sync). Both capped at 5 checks per run and keyword-gated at 2+ hits before spending an Oracle call.<br><br>
@@ -256,19 +256,20 @@
 
   <h3>Tier 4 — Original July 1st Reboot steps, still pending</h3>
 
-  <div class="card">
-    <div class="card-title">STEP F13 — Taxonomy Sync expansion (orig. Step 27) <span class="badge">LEARNING</span></div>
-    <div class="card-body">Encyclopedia entries auto-push into taxonomy structure — now effectively superseded/absorbed by F4/F5's auto-propose pipeline; confirm F4/F5 fully cover this before treating as separate work.</div>
+  <div class="card green">
+    <div class="card-title">STEP F13 — Taxonomy Sync expansion (orig. Step 27) <span class="badge fixed">CONFIRMED SUPERSEDED, CLOSED — NO CODE</span></div>
+    <div class="card-body">Confirmed July 12: F5 (<code>encSync._autoPropose()</code>) already does exactly this — every Encyclopedia sync silently scans new entries and queues a taxonomy lineage proposal, reviewable from the F6 Dashboard queue. This is a safer version of "auto-push" (queued for a yes/no decision, not a blind write) and fully covers what Step 27 originally asked for. No separate work needed.</div>
   </div>
 
-  <div class="card">
-    <div class="card-title">STEP F14 — Phylum XXV Filmmaker Library (orig. Step 33) <span class="badge">LEARNING</span></div>
-    <div class="card-body">50 director profiles added to taxonomy_tree, feeds visualOracle's Director Match command directly.</div>
+  <div class="card green">
+    <div class="card-title">STEP F14 — Phylum XXV Filmmaker Library (orig. Step 33) <span class="badge fixed">SHIPPED JULY 12</span></div>
+    <div class="card-body">50 director/filmmaker profiles inserted into <code>taxonomy_nodes</code> (phylum 14, Visio Cinematica — this doc's own wording said <code>taxonomy_tree</code>, but per the interconnection map and the table's actual field fit, <code>taxonomy_nodes</code> is correct: <code>concept</code>/<code>definition</code>/<code>colour_palette</code> map naturally to name/style/palette, <code>taxonomy_tree</code> has no such fields). Curated across music-video directors (Hype Williams, Dave Meyers, Director X, Melina Matsoukas), UK/Afrobeats specifically (Meji Alabi, TG Omori, Clarence Peters, Rollo Jackson — spot-checked via web search rather than assumed) and internationally recognised filmmakers with distinct visual signatures (Wong Kar-wai, Fincher, Refn, Gondry, Villeneuve, and more), each with a style definition and colour palette.<br><br>
+    <strong>Also fixed the actual bug this step existed to solve:</strong> <code>visualOracle</code>'s "Director Match" command told Claude to pull from "the Phylum XXV filmmaker library" — which never existed as real data, so every answer was pure improvisation with no grounding. Added <code>_withFilmmakerLibrary()</code>, which now fetches the real 50 entries and injects them into the prompt with an explicit "choose ONLY from this list" instruction before it reaches Oracle.</div>
   </div>
 
-  <div class="card">
-    <div class="card-title">STEP F15 — Beat Selling Integration (orig. Steps 30-32) <span class="badge">CONTENT</span></div>
-    <div class="card-body">Licence/pricing columns added to <code>content_productions</code>. Precondition for F16.</div>
+  <div class="card green">
+    <div class="card-title">STEP F15 — Beat Selling Integration (orig. Steps 30-32) <span class="badge fixed">SHIPPED JULY 12</span></div>
+    <div class="card-body">Added nullable <code>licence_type</code> (lease/non-exclusive/exclusive) and <code>price</code> columns to <code>content_productions</code> (migration <code>add_licence_price_to_content_productions</code>). Both surfaced in the existing "📋 Add post details" questionnaire (<code>contentProductionLive._showPostDetails</code>) rather than a new UI — same pattern as the URL fields already there, both optional since not every ConID is a beat sale. Precondition for F16 cleared; F16 itself (Beatstars auto-listing) not built this round.</div>
   </div>
 
   <div class="card">
@@ -709,8 +710,8 @@ ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
   </div>
 
   <div class="card">
-    <div class="card-title">F3–F10 shipped July 12, not yet smoke-tested <span class="badge open">SMOKE TEST — DO FIRST TOMORROW</span></div>
-    <div class="card-body">Deployed to the preview build (branch <code>claude/rpgace-master-steps-uobp98</code>) but not walked through by hand yet. Before trusting any of this or building further on top of it: confirm Encyclopedia sync no longer shows a "duplicates removed" message (F3); complete a real Content Intelligence job and confirm a silent "🌳 N taxonomy proposal(s) queued" toast appears with no blocking popup (F4); sync an Encyclopedia entry with strong subject keywords and confirm the same queuing behaviour, and confirm a vague entry does NOT queue one (F5); on Dashboard, confirm the "🌳 X taxonomy proposals waiting" badge appears/disappears correctly and Accept/Edit/Reject all work from the review popup (F6); accept a 3+ step lineage and check in Supabase that <code>taxonomy_tree.parent_id</code> actually chains between steps instead of landing flat (the bug fixed alongside F6); and on an Encyclopedia card, confirm the "🌳 Propose to Taxonomy" button appears, queues a proposal, flips to "⏳ Proposal pending review", and — after accepting it from the Dashboard queue — the card shows "🌳 Linked to Taxonomy Tree" and the entry's row in Supabase actually has <code>taxonomy_node_id</code> set (F7); and on a scheduled Daily Grid block, confirm the "🔔 Reminder" button shows up alongside Start/Done and opens a popup with that task's real stored title/description (F9); confirm the Oracle badge/Repurpose phyla detection still fires normally on real chat/idea text with the new weighted threshold — watch for it becoming too strict (real matches no longer surfacing) or still too loose (F8); and treat F10 as needing a real local test run with <code>.fourth_credentials</code> in place before the n8n schedule is trusted (see F10's own card above).</div>
+    <div class="card-title">F3–F10, F13–F15 shipped July 12, not yet smoke-tested <span class="badge open">SMOKE TEST — DO FIRST TOMORROW</span></div>
+    <div class="card-body">Deployed to the preview build (branch <code>claude/rpgace-master-steps-uobp98</code>) but not walked through by hand yet. Before trusting any of this or building further on top of it: confirm Encyclopedia sync no longer shows a "duplicates removed" message (F3); complete a real Content Intelligence job and confirm a silent "🌳 N taxonomy proposal(s) queued" toast appears with no blocking popup (F4); sync an Encyclopedia entry with strong subject keywords and confirm the same queuing behaviour, and confirm a vague entry does NOT queue one (F5); on Dashboard, confirm the "🌳 X taxonomy proposals waiting" badge appears/disappears correctly and Accept/Edit/Reject all work from the review popup (F6); accept a 3+ step lineage and check in Supabase that <code>taxonomy_tree.parent_id</code> actually chains between steps instead of landing flat (the bug fixed alongside F6); and on an Encyclopedia card, confirm the "🌳 Propose to Taxonomy" button appears, queues a proposal, flips to "⏳ Proposal pending review", and — after accepting it from the Dashboard queue — the card shows "🌳 Linked to Taxonomy Tree" and the entry's row in Supabase actually has <code>taxonomy_node_id</code> set (F7); and on a scheduled Daily Grid block, confirm the "🔔 Reminder" button shows up alongside Start/Done and opens a popup with that task's real stored title/description (F9); confirm the Oracle badge/Repurpose phyla detection still fires normally on real chat/idea text with the new weighted threshold — watch for it becoming too strict (real matches no longer surfacing) or still too loose (F8); and treat F10 as needing a real local test run with <code>.fourth_credentials</code> in place before the n8n schedule is trusted (see F10's own card above). Also: open Visual Oracle → Director Match and confirm the response only names directors from the real 50-entry library, not invented ones (F14); and confirm the licence/price fields on "📋 Add post details" save correctly onto the ConID's row in <code>content_productions</code> (F15).</div>
   </div>
 
   <div class="card">
