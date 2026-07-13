@@ -639,10 +639,23 @@ Direct-launch button, chat-mode trigger (`schedule oracle:` / `schedule this:` /
 Previously told Claude to imagine "the Phylum XXV filmmaker library" with no real data behind it. Now `visualOracle._withFilmmakerLibrary()` reads ▢ **Supabase `taxonomy_nodes`** (`source='f14_filmmaker_library'`, 50 real director profiles spanning action/blockbuster/arthouse/horror/animation, phylum 14) and injects the real list into the prompt before it reaches ▢ **Oracle API**.
 
 **● 📋 Add post details, licence + price fields** (ConID cards — extended)
-Same questionnaire, two new fields → ▢ **Supabase `content_productions`** (`licence_type`, `price` — both nullable, precondition for the not-yet-built Beatstars auto-listing step)
+Same questionnaire, two new fields → ▢ **Supabase `content_productions`** (`licence_type`, `price` — both nullable, precondition for F16's Beatstars listing generator, see Part 18)
 
 **● n8n rota sync** (new, file-based — not a live app touchpoint)
 `n8n/rota_sync_workflow.json`, importable Cron trigger → Execute Command running `scripts/fourth_rota.py` locally, which now reads `.fourth_credentials` if present instead of always blocking on interactive login prompts. Not wired to any Supabase table directly — the script still writes a local console-command file for manual paste, unchanged.
 
 **Phyla keyword scoring, corrected (F8, affects every chain above that calls `silentPropose`/`isPlausiblePhylum`)**
 `RPGACE.utils._PHYLA_KEYWORDS` now covers all 21 phyla (was 14), each keyword weighted (2=specific, 1=generic) instead of counted flatly, matched by word-boundary regex instead of substring, threshold moved to `RPGACE.utils.PHYLA_MATCH_THRESHOLD` (3) shared by `_quickPhylaScan`, `isPlausiblePhylum`, and `contentRepurpose._detectPhyla` (a third independent copy of this list, found and consolidated onto the same scorer).
+
+## PART 18 — July 13 Session: First Real Smoke Test + F16 (this session)
+
+**Confirmed via smoke test:** F14's grounding is real (Director Match matched Malick/Wong Kar-wai/Villeneuve correctly from the corrected library, not invented). Two bugs found and one fixed:
+
+**● Oracle request concurrency guard** (`scheduleOracle._injectEntryPoints()`'s existing `window.sendChat` wrap — extended)
+Root cause of the "Learn in 20 Hours" (Prod Oracle) response coming back as filmmaker content: `sendChat()`'s `send-btn.disabled=true` is a visual-only guard, `STATE.chatHistory` is one shared global array, and `#typing-indicator` is one shared fixed DOM id referenced by multiple completion handlers — so two overlapping requests (a slow Director Match still pending + a new Prod Oracle click) could cross-wire, whichever resolved first stealing the other's placeholder. Fixed by adding a `window._oracleRequestInFlight` guard as the first check in the wrap — a second call while one's pending is now blocked with a toast instead of firing concurrently. No `main.js` edit needed.
+
+**● F11 ingestion failure still silent** (not fixed this session, flagged only)
+A YouTube URL Jina couldn't fetch produced "Content Unavailable" placeholder data that flowed silently through Encyclopedia save / Schedule / Taxonomy queue instead of stopping with a clear error.
+
+**● 🎧 Beatstars Listing (F16 — new, scoped down from original "auto-listing" spec)**
+Premise-checked first, same discipline as F10: BeatStars has no public API for creating listings (confirmed via web search — a repeatedly-requested, still-unimplemented feature on their end). Rescoped to content generation, not auto-posting. `contentProductionLive`'s ConID action row gets a new button, shown only when F15's `licence_type` field is set on that row → `_generateBeatstarsListing(row)` queries ▢ **Supabase `video_jobs`** (`status=beat_logged`, fuzzy title match against the ConID title) for a matching Beat Log entry, pulling real BPM/key/mood when one exists and falling back to ConID-only data when it doesn't → builds a prompt carrying the actual licence terms text for lease/non-exclusive/exclusive (written out directly, not left for Oracle to invent) plus price → ▢ **Oracle API** returns title options, description, tags, and the licence terms block, ready to paste into BeatStars by hand. Depends on F15's fields (cleared July 12) and, loosely, on Beat Log (`beatLog` module → `video_jobs`) for the richer BPM/key/mood version — degrades gracefully without it. Not yet hand-tested.

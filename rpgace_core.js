@@ -6214,6 +6214,58 @@ RPGACE.register('contentProductionLive', {
     });
   },
 
+  // ── F16: Beatstars listing generator ──────────────────────────
+  // BeatStars has no public API for creating listings (confirmed July 13
+  // via web search — it's a repeatedly-requested, still-unimplemented
+  // feature). So this generates ready-to-copy-paste listing content via
+  // Oracle instead of attempting true auto-posting — same pattern as F10's
+  // scoped-down Fourth automation.
+  _generateBeatstarsListing: function(row) {
+    var self = this;
+    RPGACE.utils.toast('🎧 Pulling beat data + generating listing...', '#C9A84C', 3000);
+
+    RPGACE.sb.select('video_jobs', 'status=eq.beat_logged&title=ilike.*' + encodeURIComponent(row.title.split(' ')[0]) + '*&order=id.desc&limit=1')
+      .catch(function(e) {
+        console.warn('[contentProductionLive] beatstars listing lookup error:', e.message);
+        return [];
+      })
+      .then(function(jobs) {
+        var beat = null;
+        if (jobs && jobs[0] && jobs[0].script) {
+          try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
+        }
+
+        var licenceTerms = {
+          'lease': 'Lease — MP3/WAV, non-exclusive, up to 10,000 streams/sales, credit required, seller retains ownership and may resell.',
+          'non-exclusive': 'Non-Exclusive — WAV + trackout stems, unlimited streams/sales, credit required, seller retains ownership and may resell.',
+          'exclusive': 'Exclusive — full trackout stems + exclusive rights transfer, unlimited use, no credit required, beat removed from store after sale, one buyer only.'
+        };
+
+        var prompt = 'Generate a complete BeatStars listing for a beat I am selling.\n' +
+          'Title: ' + row.title + '\n' +
+          (beat && beat.key ? 'Key: ' + beat.key + ' ' + (beat.scale || '') + '\n' : '') +
+          (beat && beat.bpm ? 'BPM: ' + beat.bpm + '\n' : '') +
+          (beat && beat.mood ? 'Mood: ' + beat.mood + '\n' : '') +
+          'Licence: ' + row.licence_type + '\n' +
+          'Price: £' + (row.price != null ? row.price : 'TBD') + '\n' +
+          'Licence terms to use verbatim: ' + (licenceTerms[row.licence_type] || row.licence_type) + '\n\n' +
+          'Generate ALL of the following, ready to copy-paste directly into BeatStars\' listing fields:\n\n' +
+          '1. LISTING TITLE (3 options) — BeatStars SEO format, e.g. "[Artist] x [Artist] Type Beat - \\"' + row.title + '\\""\n\n' +
+          '2. DESCRIPTION — 150-200 words, professional, SEO-friendly, mention key/BPM/mood, end with a clear purchase CTA.\n\n' +
+          '3. GENRE + TAGS — 10-15 comma-separated BeatStars tags, most relevant first.\n\n' +
+          '4. LICENCE TERMS BLOCK — formatted as it should appear in the listing, based on the licence terms given above.\n\n' +
+          'Be specific and pre-filled for @AceSanyaBeats / UK hip hop — no placeholders.';
+
+        if (typeof showPage === 'function') showPage('advisor');
+        setTimeout(function() {
+          self._activeConID = row.con_id;
+          self._activeId = row.id;
+          self._injectOracleBar();
+          RPGACE.utils.sendToOracle(prompt);
+        }, 500);
+      });
+  },
+
   // ── Dashboard widget — ConID tracker ─────────────────────────
   _injectDashboardWidget: function() {
     if (document.getElementById('cpl-widget')) return;
@@ -6457,6 +6509,16 @@ RPGACE.register('contentProductionLive', {
             }, 500);
           };
           actions.appendChild(oracleBtn);
+
+          // F16: Beatstars listing generator — only shown once a licence
+          // type is set (i.e. this ConID is a beat sale, not just content)
+          if (row.licence_type) {
+            var bsBtn = document.createElement('button');
+            bsBtn.textContent = '🎧 Beatstars Listing';
+            bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
+            actions.appendChild(bsBtn);
+          }
 
           item.appendChild(actions);
           list.appendChild(item);

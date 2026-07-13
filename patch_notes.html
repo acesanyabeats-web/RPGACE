@@ -104,6 +104,11 @@
     </div>
   </div>
 
+  <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">✅ July 13 — F16 shipped (Beatstars listing generator, scoped down)</div>
+    <div class="card-body">Next F-step after F15. Checked the premise first (same discipline as F10): BeatStars has no public API for creating listings, confirmed via web search — so "auto-listing" as originally spec'd isn't buildable. Rescoped to a "🎧 Beatstars Listing" button on <code>contentProductionLive</code>'s ConID rows (shown once F15's <code>licence_type</code> field is set), which pulls real BPM/key/mood from a matching Beat Log entry where one exists, writes out the correct licence terms text for lease/non-exclusive/exclusive rather than leaving it to Oracle to invent, and gets Oracle to return title options, description, tags, and the licence block — ready to paste into BeatStars by hand. See F16's card in the roadmap below for full detail. Not yet hand-tested.</div>
+  </div>
+
   <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">✅ July 12 — F3–F11, F13, F14, F15 shipped (F12 not started, F16 not started)</div>
     <div class="card-body">
@@ -285,9 +290,10 @@
     <div class="card-body">Added nullable <code>licence_type</code> (lease/non-exclusive/exclusive) and <code>price</code> columns to <code>content_productions</code> (migration <code>add_licence_price_to_content_productions</code>). Both surfaced in the existing "📋 Add post details" questionnaire (<code>contentProductionLive._showPostDetails</code>) rather than a new UI — same pattern as the URL fields already there, both optional since not every ConID is a beat sale. Precondition for F16 cleared; F16 itself (Beatstars auto-listing) not built this round.</div>
   </div>
 
-  <div class="card">
-    <div class="card-title">STEP F16 — Beatstars auto-listing <span class="badge">CONTENT — DEPENDS ON F15</span></div>
-    <div class="card-body">Auto-create Beatstars listings from Beat Log data (price, licence, tags, BPM/key) when a ConID is marked Posted.</div>
+  <div class="card green">
+    <div class="card-title">STEP F16 — Beatstars listing generator (orig. spec: auto-listing) <span class="badge fixed">SHIPPED JULY 13 — SCOPED DOWN</span></div>
+    <div class="card-body"><strong>Premise-check first, like F10:</strong> confirmed via web search that BeatStars has no public API for creating listings — it's a repeatedly-requested, still-unimplemented feature on their end, not something RPGACE can call into. So F16 was rescoped from "auto-create" to "auto-generate the listing content, human does the final manual paste" — same pattern as F10's Fourth automation.
+    <br><br>Added a "🎧 Beatstars Listing" button to <code>contentProductionLive</code>'s ConID action row (only shown once <code>licence_type</code> is set on that ConID — i.e. it's actually a beat sale, per F15's fields). <code>_generateBeatstarsListing(row)</code> looks up a matching <code>video_jobs</code> row from Beat Log (<code>status='beat_logged'</code>, fuzzy title match) to pull real BPM/key/scale/mood if that beat was logged first, falls back gracefully to ConID-only data if no match or the lookup fails, then sends Oracle a prompt covering the licence's real terms (lease/non-exclusive/exclusive text blocks written out, not left to Oracle to invent) and price. Oracle returns: 3 SEO-formatted title options, a 150-200 word description, 10-15 BeatStars tags, and the licence terms block — all ready to copy-paste directly into BeatStars' listing fields.</div>
   </div>
 
   <div class="card">
@@ -725,6 +731,16 @@ ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
   <div class="card">
     <div class="card-title">F3–F11, F13–F15 shipped July 12, not yet smoke-tested <span class="badge open">SMOKE TEST — DO FIRST TOMORROW</span></div>
     <div class="card-body">Deployed to the preview build (branch <code>claude/rpgace-master-steps-uobp98</code>) but not walked through by hand yet. Before trusting any of this or building further on top of it: confirm Encyclopedia sync no longer shows a "duplicates removed" message (F3); complete a real Content Intelligence job and confirm a silent "🌳 N taxonomy proposal(s) queued" toast appears with no blocking popup (F4); sync an Encyclopedia entry with strong subject keywords and confirm the same queuing behaviour, and confirm a vague entry does NOT queue one (F5); on Dashboard, confirm the "🌳 X taxonomy proposals waiting" badge appears/disappears correctly and Accept/Edit/Reject all work from the review popup (F6); accept a 3+ step lineage and check in Supabase that <code>taxonomy_tree.parent_id</code> actually chains between steps instead of landing flat (the bug fixed alongside F6); and on an Encyclopedia card, confirm the "🌳 Propose to Taxonomy" button appears, queues a proposal, flips to "⏳ Proposal pending review", and — after accepting it from the Dashboard queue — the card shows "🌳 Linked to Taxonomy Tree" and the entry's row in Supabase actually has <code>taxonomy_node_id</code> set (F7); and on a scheduled Daily Grid block, confirm the "🔔 Reminder" button shows up alongside Start/Done and opens a popup with that task's real stored title/description (F9); confirm the Oracle badge/Repurpose phyla detection still fires normally on real chat/idea text with the new weighted threshold — watch for it becoming too strict (real matches no longer surfacing) or still too loose (F8); and treat F10 as needing a real local test run with <code>.fourth_credentials</code> in place before the n8n schedule is trusted (see F10's own card above). Also: open Visual Oracle → Director Match and confirm the response only names directors from the real 50-entry library, not invented ones (F14); and confirm the licence/price fields on "📋 Add post details" save correctly onto the ConID's row in <code>content_productions</code> (F15). And for F11: try all 3 entry points (direct button, typing <code>schedule oracle: &lt;topic&gt;</code> in Oracle chat, pasting a link/text into the panel), confirm normal Oracle chat still works completely unaffected when NOT using a trigger prefix, and step through all 3 sequential options confirming each one's real action (Encyclopedia save, Schedule modal, taxonomy queue) actually lands correctly, not just the UI advancing.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">F11 ingestion failure not yet fixed <span class="badge open">BUG — FROM JULY 13 SMOKE TEST</span></div>
+    <div class="card-body">A YouTube URL Jina couldn't fetch produced a scheduled task titled "Study: YouTube Video - Content Unavailable" instead of stopping with a clear error — garbage flowed silently through the whole F11 pipeline. Needs <code>/api/scout</code> (or <code>scheduleOracle._ingest()</code>) to detect a failed/empty fetch and surface it before Encyclopedia/Schedule/Taxonomy options are ever shown.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">F16 (Beatstars listing generator) not yet hand-tested <span class="badge open">SMOKE TEST</span></div>
+    <div class="card-body">Shipped July 13, not walked through by hand yet. Confirm: the "🎧 Beatstars Listing" button only appears on ConID rows with a <code>licence_type</code> set (not on plain content posts); with a matching Beat Log entry logged first, confirm BPM/key/mood actually get pulled in and used in Oracle's response rather than falling back silently; without one, confirm it still generates cleanly from ConID data alone; and confirm the licence terms text in Oracle's output actually matches the licence type chosen (lease vs non-exclusive vs exclusive), not a generic/invented version.</div>
   </div>
 
   <div class="card">
