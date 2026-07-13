@@ -1,317 +1,78 @@
-# RPGACE — Claude Code Project Context
+# RPGACE — CLAUDE.md
+Read automatically by Claude Code at the start of every session in this folder.
 
-## WHAT THIS IS
-RPGACE is a gamified life management web app for Alex (@AceSanyaBeats) — UK music producer
-(Russian/French, grew up London) building toward 100k YouTube with FL Studio content.
-Live: https://rpgace.vercel.app
-Local: C:\Users\acesa\Downloads\rpgace-vercel-v4
-Deploy: npx vercel --prod (or git push if GitHub Actions is set up)
+## Who you're working with
+Alex (@AceSanyaBeats), UK music producer, Derby. Building RPGACE — a personal AI operating system for music production and content creation. Solo project.
 
----
+## The governing rule
+"Does this result in a beat made or video posted within 48 hours?" Yes → build now. No → wait. **Standing exception: RPGACE infrastructure itself is exempt** — building the system that builds beats counts.
 
-## FILE STRUCTURE (after Step 1 split)
-```
-rpgace-vercel-v4/
-  index.html      ← HTML shell — pages, nav, gate div. Loads main.js AND rpgace_core.js.
-  main.js         ← Original application logic (Step 1 split). "Never modify again" per
-                    rpgace_core.js's own header — new features go in rpgace_core.js instead.
-  rpgace_core.js  ← Everything since Step 8+. RPGACE.register() module system — this is
-                    where new features actually get added now, not main.js.
-  style.css       ← ALL styles. Edit this for visual changes.
-  CLAUDE.md       ← This file (you're reading it)
-  api/
-    _context.js   ← Composio account IDs + API keys
-    oracle.js     ← Oracle AI endpoint
-    executor.js   ← Composio tool executor
-    scout.js      ← Content Intelligence scout
-    analyst.js    ← Content Intelligence analyst
-    noter.js      ← Note generation
-    orchestrate.js← Multi-agent orchestrator
-    search.js     ← YouTube search (no API key needed)
-  vercel.json     ← Routing config
-  saved_conversation.md ← Seeded Oracle session (INSTA-ORACLE strategy)
-  patch_notes.html, interconnection_map.md, manual.html, taxonomy_map.html
-                  ← the 4 Oversight docs — see OVERSIGHT DOCS section below
-```
+## Architecture — never violate without explicit confirmation
+- **main.js is FROZEN.** Edit only as a deliberate, logged exception, with `node --check main.js` before every commit. Log the exception in patch_notes.html same session.
+- **All new code goes in rpgace_core.js**, via `RPGACE.register()`, built through `py rpgace_build.py` (new/add/update/check) — never hand-edited. (Note: the July 12 session hand-edited rpgace_core.js directly via Edit-tool calls instead of through the script — same `/* ===MODULE:x=== */`/`/* ===END:x=== */` marker convention the tool itself produces, and `node --check` was run after every change, so the result is structurally equivalent. Still worth going back through `rpgace_build.py` for those modules — ciAutoPropose, taxonomyReviewQueue, encTaxonomyLink, agendaReminder, scheduleOracle — if you want standalone `mod_*.js` source files for them like every earlier module has.)
+- Working dir: `C:\Users\acesa\Downloads\rpgace-vercel-v4`. Python automation scripts live separately: `C:\Users\acesa\RPGACE`.
 
----
+## Known landmines — condensed from the original rule set, still true
+- **Never add a second `<script>` tag to `index.html`.** Exactly one `<script src="main.js"></script>` plus `<script src="rpgace_core.js"></script>` — adding another breaks the password gate via race conditions.
+- **Never use Python string-replace on `index.html`.** `exportEncyclopedia` contains `</body></html>` inside a JS string literal — naive replacement hits that fake tag first and corrupts the file. Use targeted edits instead.
+- **All fixed overlays (modals, focus overlays, timer widgets) must be created dynamically via `document.createElement` and appended to `document.body`** — never placed inside `.page` divs, which intercept clicks via z-index even when `display:none` in some browsers.
+- **Every `id="page-X"` div must appear before the `<script>` tags**, inside `#app` — the `.page`/`.page.active` CSS only works there.
 
-## OVERSIGHT DOCS — update these at the end of every session
+## Non-negotiable process rules
+1. **Pull real source before editing.** `window.functionName.toString()` in browser console for client-side, `type filename` for server-side. Never guess at function internals.
+2. **Screenshot or real DOM output before positioning/layout code.** Never infer container geometry.
+3. **Grep before adding new UI behavior** — check if an existing function already touches the same elements. RPGACE has a history of duplicate/conflicting implementations from skipping this step (two parallel scheduling systems, three independent chat-parsers, duplicate button injection, three independent copies of the phyla keyword list — found and fixed July 6-12).
+4. **One failed fix = stop, get real evidence, don't patch blind a second time.**
+5. **Multi-subsystem asks (3+ new pieces) get spec'd and deferred whole**, never half-built. Log the spec, don't start coding until confirmed.
+6. **Every confirmed idea or fix updates all four Oversight docs in the same session** — patch_notes.html, interconnection_map.md, manual.html, taxonomy_map.html. Not optional, not batched later.
 
-**"Oversight"** is these 4 files, treated as one group:
+## Oversight — the four docs, read these for full context
+Deployed at rpgace.vercel.app, also in this project root. Named and extended to 4 members on July 12 (was "the three living docs"):
+- **patch_notes.html** — day-by-day build history, the canonical F-series roadmap (F0 onward — NOT the old R-items or original 36-step list, which are historical only), every bug found/fixed, Tier 6 future integrations (a-f)
+- **interconnection_map.md** — structural touchpoints between modules, 17-part diagram chain (atomic → module → domain → full-system), confirms Oracle and Taxonomy Tree as the two real hubs everything converges on except Schedule (which runs fully independent)
+- **manual.html** — polished merged reference, leverage guides per feature, full button catalog, Supabase table reference, F0-F18 roadmap status table
+- **taxonomy_map.html** — **live document**, queries `taxonomy_tree` directly from Supabase on every page load. Never needs a manual data update, unlike the other 3 — only touch it if its own code/columns change.
 
-| File | Type | What it's for |
-|---|---|---|
-| `patch_notes.html` | Hand-updated log | Day-by-day build log — what shipped, bugs found/fixed, still-open items |
-| `interconnection_map.md` | Hand-updated log | Every button/module's full function chain, data flow, Supabase touchpoints |
-| `manual.html` | Hand-updated log | Polished merge of Patch Notes + Interconnection Map + architecture, for daily reference |
-| `taxonomy_map.html` | **Live document** | Queries `taxonomy_tree` directly from Supabase on every page load — never a stale snapshot, unlike the other 3 |
+**Before starting any nontrivial task, read the relevant sections of these four files first** — they exist specifically to prevent re-discovering already-solved problems or rebuilding already-shipped features. Check the real current state (git log, live Supabase schema, actual running code) before trusting a prior doc's claim — this project has a repeated history of docs describing something as "done" when the underlying code says otherwise.
 
-All 4 are linked from the Dashboard's "Oversight" box (`docsLinks` module in `rpgace_core.js`), always pointing at whatever is currently deployed.
+## Current state (July 12, 2026) — don't re-discover this
+- 27+ modules live across 7 domains (ORACLE/LEARNING/SCHEDULE/CONTENT/JOURNAL/SYSTEM/CONFIG)
+- Taxonomy tree (recursive, self-referencing, `taxonomy_tree` + `taxonomy_proposals` tables) shipped July 6, full propose/accept/edit/reject/morph cycle. Auto-propose from Content Intelligence + Encyclopedia sync (F4/F5), Dashboard review queue (F6), and a per-entry manual propose button on Encyclopedia cards (F7) shipped July 12 — the originally-scoped four-trigger system is complete.
+- `_acceptLineage()`'s tree insert was silently landing every multi-step lineage flat (parent_id always null) until fixed July 12 — anything accepted before that date is flat, not nested, and wasn't retroactively migrated.
+- Phylum-matching (F8) rebuilt July 12: full 21-phylum keyword coverage (was 14), weighted scoring instead of raw count, word-boundary matching instead of substring.
+- Phylum XXV Filmmaker Library (F14) shipped July 12 — 50 real director profiles in `taxonomy_nodes` (phylum 14), grounding `visualOracle`'s Director Match command in real data instead of pure improvisation.
+- Schedule Oracle Phase 1 / MVP (F11) shipped July 12 — 3 entry points, `/api/scout`+`/api/analyst` ingestion, sequential 3-option reveal. Phase 2 (F12: carousel, two-tier session memory, auto-routing) not started, depends on F11.
+- Content Intelligence pipeline confirmed fully working end-to-end
+- Cross-device sync confirmed working for both shifts (`rpgace_shifts`) and scheduled tasks (`rpgace_agendas`)
+- n8n rota-sync workflow (F10) built and importable (`n8n/rota_sync_workflow.json`) but not yet test-run — `fourth_rota.py` now reads `.fourth_credentials` if present, but the two manual "press Enter" login-confirmation gates are untouched and untested against a real unattended run.
+- **Biggest confirmed-not-built item: Taxonomy Sorting Agent** — one classification agent (not per-node AI), cost confined to exactly 2 touchpoints (classification call + Lineage Proposal justification text), tree itself stays free static data
+- **Known open bug:** Oracle 504 timeout on long structured responses — `maxDuration` raised to 60s, insufficient on its own. Root cause confirmed July 12: `callClaude()` is a single blocking non-streaming call, so generation time alone can exceed even the raised ceiling. A prior streaming attempt broke things and was reverted (dead code + `restoreSendChat` neutraliser still in `rpgace_core.js`) — needs a deliberate decision before a second attempt, not a blind retry.
+- **None of July 12's work (cleanup through Oversight) has been hand-tested yet.** Full smoke-test list is in patch_notes.html's Still Open section — do this before trusting or building further on any of it.
 
-**When the user says "update oversight"**, it means: update all 4 files with what actually happened in the session just finished — new features, bugs found and fixed (or found and deliberately left), schema changes, corrected doc claims that turned out to be stale. This is not a copy-paste of the same summary into 4 files — each has a different job:
-- `patch_notes.html` gets the full session narrative (what shipped, what broke, root causes, what's still open) — append a new dated entry or extend the current one, don't overwrite prior entries.
-- `interconnection_map.md` gets any new/changed button, module, or data-flow chain — update the specific Part(s) affected, not a full rewrite.
-- `manual.html` gets a lighter-touch sync — pull the polished version of whatever changed into the relevant section.
-- `taxonomy_map.html` needs no manual data update (it's live) — only touch it if its own code/columns changed.
+## Style
+Direct, unhedged technical correction preferred over polite hedging — it produces faster fixes. Council of 5 + GODMODE framing used for major architecture decisions: real pushback and real questions before big builds, never agreement-then-build. When something doesn't work, get real evidence before a second attempt rather than guessing again.
 
-Before editing any of them, check the real current state (git log, live Supabase schema, actual running code) rather than trusting a prior doc's claim — this project has a repeated history of docs describing something as "done" when the underlying code says otherwise. Confirm, don't assume.
+## Remote Control — laptop ↔ phone workflow (confirmed working, July 2026)
 
----
+**To move a live Claude Code session from laptop to phone:**
+1. On laptop, inside a running Claude Code session: `/remote-control`
+2. This prints a session URL like `https://claude.ai/code/session_XXXXX`
+3. Open that exact URL directly in your phone's browser (Safari/Chrome) — connects instantly to the same live session
+4. Laptop must stay powered on and connected the whole time — Remote Control syncs to a session running locally, it does not move execution to the cloud
 
-## CRITICAL RULES — READ BEFORE EDITING
+**To move back from phone to laptop:** same session stays live on both — just switch back to the laptop terminal, still the same conversation.
 
-### 1. NEVER add a second <script> tag to index.html
-There is exactly ONE <script src="main.js"></script> in index.html. Adding early scripts
-breaks the password gate via race conditions. All JS goes in main.js only.
+**Plan mode reminder:** use `/plan` (typed inside an active session) or Shift+Tab twice to toggle plan mode mid-session. `--permission-mode plan` is a startup flag only, used when first launching `claude`, not a command typed inside a running session.
 
-### 2. NEVER use Python string replace on index.html for JS/HTML injection
-The exportEncyclopedia function contains </body></html> inside a JS string literal.
-Naive string replacement hits the fake tag first and corrupts the file.
-Use targeted AST-level edits to main.js instead.
+## Oversight logging — NOT automatic, confirmed limitation
 
-### 3. All fixed overlays must be body-level, created by JS
-Modals, focus overlays, timer widgets — create them dynamically via document.createElement
-and append to document.body inside initApp(). Never place position:fixed elements inside
-.page divs. They intercept clicks via z-index even when display:none in some browsers.
+There is no way to auto-trigger a doc update just by opening a Remote Control session URL or switching devices — Claude Code has no hook for "device changed" and opening a link can't fire a file write. This was explicitly investigated and ruled out July 8.
 
-### 4. Pages must stay inside #app div in index.html
-The CSS .page { display:none } and .page.active { display:block } only works for pages
-inside #app. Pages outside #app are always visible and stack on top of each other.
-Verify: every id="page-X" div must appear BEFORE the <script src="main.js"> tag.
+**The actual working pattern:** at the end of any work session (on either device), explicitly say **"update oversight"** (or "end session" / "log this session" — same trigger, same result). This prompts a review of what changed (git diff + conversation summary) and a structured update to all four Oversight docs — patch_notes.html, interconnection_map.md, manual.html, taxonomy_map.html (usually a no-op for taxonomy_map.html specifically, since it's live) — each in the format it's actually good at, not a copy-paste of one summary into 4 files. This is a deliberate action you take, not something that fires automatically, and that's the more reliable design: it happens exactly when you mean it to.
 
-### 5. Run node --check main.js before every deploy
-Always verify syntax after edits. The file is ~3000 lines and a missing backtick
-silently breaks the entire app.
-
----
-
-## PASSWORDS & SECRETS
-App password: jddj12alexpillBDE (stored as CORRECT_PW in main.js)
-Supabase URL: https://gripopghczmrbrhqtqbm.supabase.co
-Supabase Key: sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf
-Composio Key: ak_AvD9xe8vKYKERZXhyQJ8
-Notion parent page ID: 3830f922-7ad0-8064-ac35-f6ebaff22b99
-Anthropic key location: C:\Users\acesa\RPGACE\.anthropic_key
-
----
-
-## SUPABASE TABLES
-- encyclopedia       — knowledge entries (title, content, date, source, vst_tags[])
-- encyclopedia_insights — extracted insights (source_entry_id, insight_text, micro_categories[], macro_category, status)
-- intel_reports      — Content Intelligence analysis results
-- intel_watchlist    — tracked channels/creators
-- intel_jobs         — CI job queue (url, status: queued/processing/complete/failed)
-- journal            — Oracle conversation logs (title, content, date, source)
-
-RLS policy for ALL tables (anon writes must work):
-  create policy "anon_all" on TABLE for all to anon using (true) with check (true);
-
----
-
-## COMPOSIO ACCOUNTS
-All share user_id: pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1 except Notion
-
-| App       | account_id          |
-|-----------|---------------------|
-| Gmail     | ca_7oagofAi-tkv     |
-| YouTube   | ca_yfUI2ySIgkat     |
-| Instagram | ca_BuczS_wYvxRd     |
-| GitHub    | ca_0dwb1yCGD-Dk     |
-| Canva     | ca_9U6ZLJW-DxFg     |
-| Supadata  | ca_rxEcC9_UzPkL     |
-| Notion    | ca_Qfjy_TRBQA7T (user_id: notionACE) |
-
-Working Composio tools:
-- GMAIL_CREATE_EMAIL_DRAFT {subject, body, to:""}
-- GMAIL_FETCH_EMAILS {max_results, label_ids}
-- NOTION_CREATE_NOTION_PAGE {parent_id:"3830f922...", title, markdown}
-- SUPADATA_GET_YOUTUBE_CHANNEL {id:"@AceSanyaBeats"}
-- INSTAGRAM_BASIC_DISPLAY_MEDIA_DETAILS {}
-- CANVA_LIST_DESIGNS {}
-- GITHUB_CREATE_A_REPOSITORY {name, description, private, auto_init}
-
-NEVER USE: NOTION_CREATE_PAGE (wrong), YOUTUBE_LIST_VIDEOS (wrong)
-
----
-
-## NAV STRUCTURE
-Dashboard · 📋 Agenda · Schedule · AI Advisor · ⚡ Agents · 🔬 Research · 📖 Encyclopedia · 📓 Journal
-
-showPage(name, tabElement) — switches visible .page div and updates .nav-tab active class
-
----
-
-## KEY FUNCTIONS IN main.js
-
-### Gate
-- checkPassword() — validates CORRECT_PW, hides gate, shows app, calls initApp()
-- togglePwVis() — show/hide password input
-
-### App Init
-- initApp() — called once after gate passes. Builds quests, sets up chat, starts polling.
-  DO NOT call initApp() anywhere else. DO NOT add _APP_READY/_GATE_PASSED flags.
-
-### Oracle / Chat
-- sendChat() — handles user message, routes to Oracle or agent tools
-- callOracle(messages, systemPrompt, maxTokens) — calls Anthropic API
-- addMsg(text, role, instaMode) — renders message in chat
-
-### Encyclopedia
-- refreshEncyclopediaDisplay() — fetches from Supabase, renders entries
-- renderEncEntries() — renders filtered/sorted entry cards
-- ENC_ALL_ENTRIES — global array of all encyclopedia entries
-- ENC_SORT — current sort: 'recent'|'unique'|'steal'|'action'|'context'
-- ENC_CATEGORY — current filter: 'all'|'beat'|'mixing'|'vst'|'genre'|'artist'|'strategy'|'content'|'notes'
-- generateEncBullets(entry, allEntries) — AI generates 7-bullet preview for collapsed entry
-- ENC_BULLET_CACHE — object keyed by entry id, caches generated bullets
-
-### Insights
-- extractInsightsAuto(entry, silent) — auto-extracts 5-10 insights, saves to Supabase
-- extractInsightsSemiAuto(entry, safeId) — shows approval UI before saving
-- saveManualInsight() — saves text selection as insight
-- parseInsightJSON(raw) — 4-strategy robust JSON parser for AI insight output
-- loadInsightsByCategory(macroCategory) — shows insights grouped by micro-category
-- loadVSTInspector() — shows VST → entries map for VST/Plugins category
-
-### VST System
-- extractVSTsFromText(text) — returns array of VST/plugin names found in text
-- extractVSTContext(content, vstName) — finds usage context sentence for a VST
-- renderVSTChips(vsts, safeId) — orange clickable chips on collapsed entry
-- renderVSTFooter(vsts, rawContent) — VST list with context at bottom of expanded entry
-- highlightVSTsInContent(htmlContent, vsts) — wraps VST mentions with anchor spans
-
-### INSTA-ORACLE
-- isInstaOracleQuery(text) — detects Instagram-related queries
-- INSTA_ORACLE_SYS — full INSTA-ORACLE system prompt (10 rules + 7 commands)
-- INSTA_COMMANDS — object mapping 1-7 to command prompts
-- fireInstaCommand(num) — fires command 1/2/7 immediately, pre-fills 3/4/5/6
-- toggleInstaPanel() — shows/hides the 7-command panel in Oracle footer
-
-### Journal
-- saveToJournal(title, content, source) — saves to Supabase journal table
-- refreshJournalDisplay() — fetches and renders journal entries
-- quickSaveToJournal() — saves last Oracle reply as journal entry
-
-### Content Intelligence
-- syncIntelData(force) — polls Supabase for intel results
-- startIntelPolling() — polls intel_jobs every 30s
-- showJumpToEncDialog(videoTitle) — post-processing prompt to jump to encyclopedia
-- learnVideo(id, title, thumb, channel) — submits video URL to intel_jobs queue
-
-### Parsing
-- parseInsightJSON(raw) — robust 4-strategy parser:
-  1. Direct JSON.parse after cleaning
-  2. Regex extract array [...]
-  3. Object-by-object extraction
-  4. Line-by-line fallback
-  Always use this for ALL AI JSON responses. Never use JSON.parse directly.
-
-### XP / Quests
-- addXP(amount) — adds to STATE.xp, checks for level up
-- showXPToast(amount) — shows floating +XP notification
-- buildAllQuests() — populates quest grids from QUESTS object
-
----
-
-## FEATURES TO ADD (Step 5 — in priority order)
-
-### 1. parseInsightJSON (BLOCKER — add first, other features depend on it)
-Already described above. The robust parser that prevents all JSON errors from AI responses.
-
-### 2. INSTA-ORACLE 7 Growth Commands panel
-Add a command panel to Oracle chat footer (pink gradient, 7 buttons).
-The INSTA_ORACLE_SYS prompt already contains the 7 commands.
-Add: toggleInstaPanel(), fireInstaCommand(num), INSTA_COMMANDS object.
-UI: "📸 Insta-Oracle" button in quick-actions row opens the panel.
-
-### 3. VST context (what the producer uses it FOR)
-Enhance extractVSTContext() to pull the sentence where the VST is mentioned.
-Show context next to VST name in renderVSTFooter().
-
-### 4. Notes AI panel removed
-Remove the "📝 3 — NOTES AI" panel from Research tab in index.html.
-The Video Finder → Learn → CI queue already replaces this functionality.
-
-### 5. Agenda tab (rename Quests)
-- Nav tab: "Quests" → "📋 Agenda"
-- page-quests: add Agenda section ABOVE existing Quest Board
-- Daily agenda generation from encyclopedia + journal via Oracle
-- 5 agendas: 2 beat, 1 content, 1 growth, 1 personal/learning
-- Cache per day (localStorage key includes date string)
-- Manual refresh button
-- Cards: title, description, category chip, duration, XP, why-today
-- Action buttons: ▶ Do Now | 📅 Schedule | ✓ Done
-
-### 6. Schedule inline picker
-On "📅 Schedule" click, expand a time-picker inline within the agenda card:
-  [time input: 19:00] [45 min] [Confirm] [Cancel]
-On Confirm: save to localStorage('rpgace_scheduled_agendas'), mark agenda as scheduled.
-
-### 7. Timer widget (created dynamically by JS)
-createFocusModeElements() called inside initApp() appends to document.body:
-  - #timer-widget: position:fixed, top:16px, right:16px, z-index:500, pointer-events:none
-    Shows: label (WARM-UP / SESSION / COMPLETE) + time (MM:SS) + sublabel
-  - #return-to-session-btn: position:fixed, bottom:24px, left:16px, z-index:9999
-    Shows when focus overlay is temporarily closed to browse encyclopedia
-
-### 8. Do Now → Session Setup → Focus Mode flow
-Do Now click → session setup appears (inside dynamically-created full-screen overlay):
-  Duration picker: [25] [45] [60] [90] [Custom input] → [🔥 Begin Warm-up]
-Submit → 
-  Focus overlay content loads (related encyclopedia entries)
-  Warm-up timer starts: 5:00 counting down in timer widget
-After warm-up →
-  Session timer starts: chosen duration counting down
-Session end →
-  Timer shows ✓ COMPLETE in green
-  Stop-reason panel appears in overlay:
-    [⏰ Ran out of time] [📱 Got interrupted] [🧠 Lost focus] [✓ Finished early]
-  Overlay stays open until user clicks ✕ Exit Session
-
-### 9. Text selection AI in focus overlay
-User selects text inside focus overlay:
-  → AI identifies concept using 2 paragraphs of surrounding context
-  → Sticky panel at top shows: concept meaning + 5 related insights
-  → Each insight clickable: closes overlay, switches to encyclopedia, expands entry
-  → Return to Session button appears (bottom-left, gold)
-  → Click Return: reopens focus overlay exactly as it was
-
-### 10. Stop reason logging
-When stop reason is tapped, save to journal:
-  Title: "Session Log — [agenda title]"
-  Content: "Reason stopped: [reason] | Planned: [duration]min | Date: [date]"
-  Source: 'session'
-If "Finished early" tapped: auto-mark agenda as done, close overlay, award XP.
-
----
-
-## CONTENT STRATEGY (reference for agenda generation)
-- Content pillars: FL Studio Secrets (2x/week) | Made Different (1x/week) | Producer Challenge (1x/week)
-- Target: 10k Instagram followers → 100k YouTube subscribers
-- Authentic angle: Russian/French/London background — "outsider producer"
-- Alex works hospitality shifts — agendas must fit 25-90 min gaps
-- Active VSTs: Omnisphere, Serum, FL Studio built-ins
-- Account: @AceSanyaBeats (YouTube + Instagram)
-
----
-
-## LOCAL INTEL SYSTEM
-Script: C:\Users\acesa\RPGACE\rpgace_intel.py
-Server: C:\Users\acesa\RPGACE\local_server.py (port 7842)
-Run: cd C:\Users\acesa\RPGACE && python local_server.py
-Flow: RPGACE submits URL → Supabase intel_jobs → local server polls → yt-dlp downloads →
-      Whisper transcribes → Claude Vision analyses → results pushed to Supabase → app auto-displays
-Python: 3.14 | FFmpeg: 8.1.1 | Whisper: small model cached
-Windows SSL workaround: ssl.CERT_NONE for urllib requests
-
----
-
-## DEPLOYMENT
-Vercel project URL: https://rpgace.vercel.app
-Deploy command: npx vercel --prod
-(After Step 4 GitHub Actions: deploy happens automatically on git push to main)
-
-## KNOWN WORKING API MODEL
+## Known working API model
 Always use: claude-sonnet-4-6
 Never use: claude-sonnet-4-20250514 (wrong), claude-3-5-sonnet (wrong)
+
+## Security note (July 12)
+This repo is **public** on GitHub. The old CLAUDE.md's Passwords & Secrets section (app password, Composio key) was exposed in git history as a result — that section is deliberately not present in this file. If the app password (`CORRECT_PW` in main.js) or the Composio key haven't been rotated since, treat that as still outstanding. The Supabase key is a "publishable" key by design (protected by RLS, not secrecy) — not a real exposure. `.env.local` was also found tracked in git (a since-expired Vercel OIDC token) and has been untracked + gitignored.

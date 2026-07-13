@@ -8,5 +8,6 @@ _diag.py
 _cleanup_dead_code.py 
 RPGACE_DIAGNOSTICS.txt 
 RPGACE_ROADMAP.txt 
-audit_report.txt 
+audit_report.txt
+.env.local
 a
