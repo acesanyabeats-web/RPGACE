@@ -1,0 +1,50 @@
+{
+  "name": "RPGACE - Fourth Rota Sync (Monday 8am)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "a1e6f6d0-0f2a-4a5b-8b3a-rota-trigger",
+      "name": "Every Monday 8am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "command": "python \"C:\\Users\\acesa\\Downloads\\rpgace-vercel-v4\\scripts\\fourth_rota.py\""
+      },
+      "id": "b2f7g7e1-1g3b-5b6c-9c4b-rota-exec",
+      "name": "Run fourth_rota.py",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [480, 300],
+      "notes": "Requires C:\\Users\\acesa\\RPGACE\\.fourth_credentials to exist (line 1 = username, line 2 = password) so the script doesn't block on interactive input. If Fourth's login still hits one of the two manual 'press Enter' fallback gates, this node will hang until n8n's execution timeout kills it - check the execution log's stdout to see how far it got."
+    }
+  ],
+  "connections": {
+    "Every Monday 8am": {
+      "main": [
+        [
+          {
+            "node": "Run fourth_rota.py",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
