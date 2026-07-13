@@ -89,6 +89,11 @@
     <div class="card-body">A complete merge of this Patch Notes file, the Interconnection Map, and the architecture manual now exists at <code>rpgace.vercel.app/manual.html</code> — full session history, step-by-step leverage guides per feature, a complete bug log, and a "Food For Thought" analysis of genuine code-merge opportunities. Sidebar is collapsible, auto-collapses on mobile. This remains the authoritative day-by-day build log; the manual is the polished, use-it-daily reference.</div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🏁 July 13 — session closed. F0–F18 all shipped.</div>
+    <div class="card-body">The full numbered roadmap is now built out end to end — F0 through F18, nothing skipped. Only F12 (Schedule Oracle Phase 2) remains deliberately deferred, by design, pending F11 proving out. This session: fixed the Oracle request cross-wiring bug, shipped F16/F17/F18 (each premise-checked first, like F10 — Beatstars has no listing API, local_server.py has no render queue — so both were scoped down to content-generation/tracking rather than the originally-imagined full automation), and found + fixed a real bug along the way: the <code>video_jobs</code> table Beat Log has been writing to since it shipped never actually existed in Supabase, so every save was silently failing. <strong>Nothing shipped today or on July 12 has been hand-tested yet</strong> — see Still Open below for the full smoke-test list, and do that before trusting or building further on any of it.</div>
+  </div>
+
   <div class="card blue" style="margin-bottom:20px;">
     <div class="card-title">📅 Session started — 7 tasks selected for today</div>
     <div class="card-body">Today's session scope, pulled directly from the Future Patch Notes roadmap: <strong>F0, F1, F2, F3, F4, F5, F6</strong> — clears all of Tier 1 (small, no-dependency simplifications) and completes the taxonomy tree's originally-scoped four-trigger system (Oracle badge + manual button were live as of July 6; Content Intelligence and Encyclopedia sync auto-propose complete the set today).</div>
