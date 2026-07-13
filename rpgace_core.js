@@ -2582,6 +2582,239 @@ RPGACE.register('agendaReminder', {
 });
 /* ===END:agendaReminder=== */
 
+/* ===MODULE:scheduleOracle=== */
+// F11: Schedule Oracle, Phase 1 (MVP). Per the roadmap: 3 Oracle-tab entry
+// points, YouTube+PDF+text ingestion, sequential 3-option reveal with
+// alert-style acknowledgment between each. Built as an extension of the
+// existing taxonomy popup's visual language (dark overlay, bordered box,
+// accept/reject-style buttons) - not a literal reuse of
+// taxonomyTree._showProposalPopup, since that component is structurally
+// specific to editable multi-step lineage paths and doesn't generalise to
+// arbitrary sequential options; same look and interaction rhythm instead.
+//
+// Ingestion deliberately reuses the existing /api/scout + /api/analyst
+// agents (already do URL-detection + Jina fetch + type-aware analysis)
+// rather than building new ingestion infrastructure - this is genuinely
+// Phase 1 scope; F12 (carousel toggle, two-tier session memory,
+// auto-routing confidence gate) is NOT built here, it depends on this
+// phase and is its own separate pass.
+RPGACE.register('scheduleOracle', {
+
+  TRIGGER_PREFIXES: ['schedule oracle:', 'schedule this:', 'learn later:'],
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._injectEntryPoints(); }, 1400);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectEntryPoints(); }, 1400); });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectEntryPoints(); }, 600);
+    });
+  },
+
+  // Entry point A: direct-launch button. Entry point C: chat-mode trigger
+  // phrase, wraps window.sendChat once.
+  _injectEntryPoints: function() {
+    var self = this;
+    if (!document.getElementById('sched-oracle-btn')) {
+      var row = document.querySelector('.quick-row');
+      if (row) {
+        var btn = document.createElement('button');
+        btn.id = 'sched-oracle-btn';
+        btn.className = 'agent-btn';
+        btn.textContent = '📅 Schedule Oracle';
+        btn.style.cssText = 'border-color:rgba(74,144,226,0.4);color:#4A90E2;background:rgba(74,144,226,0.08);margin-left:4px;';
+        btn.onclick = function() { self._openPanel(); };
+        row.appendChild(btn);
+      }
+    }
+    if (typeof window.sendChat === 'function' && !window._scheduleOracleChatPatched) {
+      window._scheduleOracleChatPatched = true;
+      var origSend = window.sendChat;
+      window.sendChat = function() {
+        var input = document.getElementById('chat-input');
+        var val = input ? input.value.trim() : '';
+        var lower = val.toLowerCase();
+        var matchedPrefix = self.TRIGGER_PREFIXES.find(function(p) { return lower.indexOf(p) === 0; });
+        if (matchedPrefix) {
+          var rest = val.slice(matchedPrefix.length).trim();
+          input.value = '';
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          self._openPanel(rest);
+          return;
+        }
+        return origSend.apply(this, arguments);
+      };
+    }
+  },
+
+  // Entry point B: the panel's own URL/text field.
+  _openPanel: function(prefill) {
+    if (document.getElementById('sched-oracle-panel')) return;
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.id = 'sched-oracle-panel';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = 'Schedule Oracle · Phase 1';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.textContent = 'What do you want to learn / schedule?';
+
+    var input = document.createElement('textarea');
+    input.id = 'sched-oracle-input';
+    input.placeholder = 'Paste a YouTube link, a PDF link, or just type/paste text...';
+    input.value = prefill || '';
+    input.style.cssText = 'width:100%;min-height:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:13px;padding:10px 12px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:14px;';
+
+    var goBtn = document.createElement('button');
+    goBtn.textContent = '🔮 Ingest + Analyse';
+    goBtn.style.cssText = 'padding:10px 20px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:8px;color:#4A90E2;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    goBtn.onclick = function() {
+      var text = input.value.trim();
+      if (!text) { RPGACE.utils.toast('Paste a link or type something first', '#E25454', 2000); return; }
+      overlay.remove();
+      self._ingest(text);
+    };
+
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:8px;';
+    cancelBtn.onclick = function() { overlay.remove(); };
+
+    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(input); box.appendChild(goBtn); box.appendChild(cancelBtn);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    input.focus();
+  },
+
+  // Ingestion: /api/scout handles URL-or-text detection + Jina fetch (works
+  // for YouTube page text and PDF URLs, not a full video transcript pipeline
+  // - that's Content Intelligence's job, not this one) + type identification.
+  // /api/analyst produces a type-aware structured analysis from it.
+  _ingest: function(text) {
+    var self = this;
+    RPGACE.utils.toast('🔮 Ingesting content...', '#4A90E2', 2500);
+    fetch('/api/scout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: text, type: 'auto' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(scout) {
+      if (scout.error) throw new Error(scout.error);
+      RPGACE.utils.toast('🔮 Analysing (' + scout.detectedType + ')...', '#4A90E2', 2500);
+      return fetch('/api/analyst', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: scout.content, detectedType: scout.detectedType, title: scout.title })
+      }).then(function(r) { return r.json(); }).then(function(analyst) {
+        if (analyst.error) throw new Error(analyst.error);
+        self._showOptionSequence({ title: scout.title, analysis: analyst.analysis, sourceURL: scout.sourceURL });
+      });
+    })
+    .catch(function(e) {
+      RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+    });
+  },
+
+  // Sequential 3-option reveal - one option shown at a time, each requires
+  // an explicit action or an explicit skip before the next one appears.
+  _showOptionSequence: function(data) {
+    var self = this;
+    var steps = [
+      {
+        icon: '📖', title: 'Save to Encyclopedia',
+        body: 'Save this as a permanent knowledge base entry, searchable later.',
+        actionLabel: '📖 Save now',
+        action: function(done) {
+          if (typeof saveOracleToEncyclopedia !== 'function') { done(); return; }
+          saveOracleToEncyclopedia(data.title, '## ' + data.title + '\n\n' + data.analysis + (data.sourceURL ? '\n\n**Source:** ' + data.sourceURL : ''))
+            .then(function() { RPGACE.utils.toast('✅ Saved to Encyclopedia', '#3DAA6E', 2500); done(); })
+            .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3000); done(); });
+        }
+      },
+      {
+        icon: '📅', title: 'Schedule a learning session',
+        body: 'Block real time to study this via the Schedule modal.',
+        actionLabel: '📅 Schedule',
+        action: function(done) {
+          if (typeof openSchedModal === 'function') {
+            openSchedModal({ title: 'Study: ' + data.title, description: data.analysis.slice(0, 300), category: 'learning', xp: 60, duration_mins: 45 });
+          }
+          done();
+        }
+      },
+      {
+        icon: '🌳', title: 'Queue for Taxonomy Tree',
+        body: 'Silently generate a taxonomy lineage proposal from this content, reviewable later from the Dashboard queue (same F4/F5/F6 pipeline).',
+        actionLabel: '🌳 Queue proposal',
+        action: function(done) {
+          if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) { done(); return; }
+          var blob = data.title + ' ' + data.analysis;
+          var matches = RPGACE.utils._quickPhylaScan(blob);
+          if (matches.length === 0) { RPGACE.utils.toast('No clear phylum match for this content', '#E25454', 2500); done(); return; }
+          RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'schedule_oracle', null)
+            .then(function() { RPGACE.utils.toast('🌳 Queued — review from Dashboard', 'rgba(155,89,182,0.85)', 3000); done(); })
+            .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3000); done(); });
+        }
+      }
+    ];
+
+    var idx = 0;
+    function renderStep() {
+      var s = steps[idx];
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.3);border-radius:12px;padding:24px 28px;width:min(480px,95vw);';
+
+      var eyebrow = document.createElement('div');
+      eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
+      eyebrow.textContent = 'Option ' + (idx + 1) + ' of ' + steps.length;
+      var stepTitle = document.createElement('div');
+      stepTitle.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:8px;';
+      stepTitle.textContent = s.icon + ' ' + s.title;
+      var body = document.createElement('div');
+      body.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.55);line-height:1.6;margin-bottom:18px;';
+      body.textContent = s.body;
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+
+      var advance = function() {
+        overlay.remove();
+        idx++;
+        if (idx < steps.length) renderStep();
+        else RPGACE.utils.toast('✅ Schedule Oracle pass complete', '#4A90E2', 2500);
+      };
+
+      var actionBtn = document.createElement('button');
+      actionBtn.textContent = s.actionLabel;
+      actionBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      actionBtn.onclick = function() {
+        actionBtn.disabled = true;
+        actionBtn.textContent = 'Working...';
+        s.action(advance);
+      };
+
+      var skipBtn = document.createElement('button');
+      skipBtn.textContent = idx < steps.length - 1 ? 'Skip →' : 'Done';
+      skipBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.4);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      skipBtn.onclick = advance;
+
+      btnRow.appendChild(actionBtn); btnRow.appendChild(skipBtn);
+      box.appendChild(eyebrow); box.appendChild(stepTitle); box.appendChild(body); box.appendChild(btnRow);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+    }
+    renderStep();
+  },
+
+});
+/* ===END:scheduleOracle=== */
+
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
 
