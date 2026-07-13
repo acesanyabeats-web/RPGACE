@@ -5463,6 +5463,19 @@ RPGACE.register('beatLog', {
     sampleRow.appendChild(sampleCb); sampleRow.appendChild(sampleLbl);
     panel.appendChild(sampleRow);
 
+    // F18: optional auto Visual Treatment Doc — off by default since it's
+    // a second, separate Oracle call on top of the main beat-log prompt
+    var vtRow = document.createElement('div');
+    vtRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:16px;';
+    var vtCb = document.createElement('input');
+    vtCb.type = 'checkbox'; vtCb.id = 'bl-visual-treatment';
+    var vtLbl = document.createElement('label');
+    vtLbl.htmlFor = 'bl-visual-treatment';
+    vtLbl.textContent = '🎬 Also generate Visual Treatment Doc (Phylum XXV, extra Oracle call)';
+    vtLbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);cursor:pointer;';
+    vtRow.appendChild(vtCb); vtRow.appendChild(vtLbl);
+    panel.appendChild(vtRow);
+
     // Action buttons
     var btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;';
@@ -5607,6 +5620,7 @@ RPGACE.register('beatLog', {
       refTrack: get('bl-ref-track'),
       flPath:   get('bl-fl-path'),
       sample:   document.getElementById('bl-sample') ? document.getElementById('bl-sample').checked : false,
+      visualTreatment: document.getElementById('bl-visual-treatment') ? document.getElementById('bl-visual-treatment').checked : false,
       taxNodes: activeTax,
     };
   },
@@ -5622,6 +5636,7 @@ RPGACE.register('beatLog', {
       b.style.color = 'rgba(226,226,236,0.5)';
     });
     var cb = document.getElementById('bl-sample'); if (cb) cb.checked = false;
+    var vtCb = document.getElementById('bl-visual-treatment'); if (vtCb) vtCb.checked = false;
     var out = document.getElementById('beat-log-output'); if (out) { out.style.display='none'; out.innerHTML=''; }
   },
 
@@ -5810,8 +5825,55 @@ RPGACE.register('beatLog', {
 
     RPGACE.utils.sendToOracle(prompt);
 
+    // F18: optional second Oracle call, chained after the main beat-log
+    // prompt clears the in-flight guard (see scheduleOracle's sendChat
+    // wrap) instead of firing immediately, which would just get blocked
+    // by that same guard and silently dropped.
+    if (form.visualTreatment) self._waitThenAutoVisualTreatment(form, palette);
+
     // Render artist match panel in output
     self._renderArtistPanel(form, palette, big, emerging, underground, output);
+  },
+
+  // F18: Beat Log entry → auto Visual Treatment Document, calling
+  // visualOracle's own template automatically instead of requiring a
+  // manual trip through the Visual Oracle panel with placeholder-filling.
+  // Grounded in the real F14 filmmaker library the same way Director
+  // Match is, so Oracle picks a real director rather than inventing one.
+  _waitThenAutoVisualTreatment: function(form, palette) {
+    var self = this;
+    var waited = 0;
+    var poll = function() {
+      if (window._oracleRequestInFlight && waited < 30000) {
+        waited += 500;
+        setTimeout(poll, 500);
+        return;
+      }
+      self._autoVisualTreatment(form, palette);
+    };
+    setTimeout(poll, 500);
+  },
+
+  _autoVisualTreatment: function(form, palette) {
+    var buildPrompt = function(filmmakerBlock) {
+      return 'Generate a full Visual Treatment Document for my beat.\n' +
+        'Beat title: ' + form.title + '\n' +
+        'Mood: ' + form.mood + ' | Key + scale: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + '\n' +
+        'Colour palette: ' + palette.name + ' (' + palette.hex + ')\n' +
+        (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
+        (filmmakerBlock ? '\n' + filmmakerBlock + '\n' : '') +
+        '\nThe document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), ' +
+        'Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), ' +
+        'Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars.' +
+        (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why.' : '');
+    };
+    if (RPGACE.modules.visualOracle && typeof RPGACE.modules.visualOracle._withFilmmakerLibrary === 'function') {
+      RPGACE.modules.visualOracle._withFilmmakerLibrary(function(block) {
+        RPGACE.utils.sendToOracle(buildPrompt(block));
+      });
+    } else {
+      RPGACE.utils.sendToOracle(buildPrompt(''));
+    }
   },
 
   _renderArtistPanel: function(form, palette, big, emerging, underground, output) {
@@ -6774,6 +6836,330 @@ RPGACE.register('contentProductionLive', {
 
 });
 /* ===END:contentProductionLive=== */
+
+/* ===MODULE:videoPipeline=== */
+// F17: Video Pipeline tracker. Original spec assumed "EDL review, approve &
+// render, connects to local_server.py job queue" — confirmed July 13 that
+// local_server.py has no render/EDL endpoints (only /reports,
+// /push-to-supabase, /watchlist for Content Intelligence) and no render
+// engine exists anywhere in this codebase. Rescoped per user direction to a
+// status tracker only, no actual rendering — same widget/progress-dot
+// pattern as contentProductionLive's ConID tracker, over the video_jobs
+// table (which beatLog already wrote to, but which never actually existed
+// in Supabase until this session — every beatLog save has been silently
+// failing; table created alongside this module).
+RPGACE.register('videoPipeline', {
+
+  STAGES: ['beat_logged', 'raw_footage', 'edited', 'rendered', 'exported'],
+  STAGE_LABELS: { beat_logged: 'Beat Logged', raw_footage: 'Raw Footage', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
+  EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._injectWidget(); }, 1700);
+    });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.dashboard) self._injectWidget();
+    });
+  },
+
+  updateEntry: function(id, updates) {
+    updates.updated_at = new Date().toISOString();
+    return fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/video_jobs?id=eq.' + id, {
+      method: 'PATCH',
+      headers: {
+        'apikey': RPGACE.CONFIG.supabase.key,
+        'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(updates)
+    });
+  },
+
+  _injectWidget: function() {
+    if (document.getElementById('vp-widget')) return;
+    var self = this;
+    var page = document.getElementById('page-dashboard');
+    if (!page) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'vp-widget';
+    widget.style.cssText = 'background:rgba(74,144,226,0.03);border:1px solid rgba(74,144,226,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+    var titleEl = document.createElement('div');
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:3px;';
+    eyebrow.textContent = 'Video Pipeline';
+    var titleText = document.createElement('div');
+    titleText.className = 'section-title';
+    titleText.style.cssText = 'font-size:14px;';
+    titleText.textContent = '📹 Video Jobs';
+    titleEl.appendChild(eyebrow); titleEl.appendChild(titleText);
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;';
+    var newBtn = document.createElement('button');
+    newBtn.textContent = '+ New';
+    newBtn.style.cssText = 'background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:6px;color:#4A90E2;cursor:pointer;font-size:11px;font-weight:700;padding:4px 10px;font-family:Rajdhani,sans-serif;';
+    newBtn.onclick = function() { self._showNewJobForm(); };
+    var refreshBtn = document.createElement('button');
+    refreshBtn.textContent = '↻';
+    refreshBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);cursor:pointer;font-size:12px;padding:4px 10px;';
+    refreshBtn.onclick = function() { self._refreshWidget(); };
+    btnRow.appendChild(newBtn); btnRow.appendChild(refreshBtn);
+    hdr.appendChild(titleEl); hdr.appendChild(btnRow);
+    widget.appendChild(hdr);
+
+    var list = document.createElement('div');
+    list.id = 'vp-list';
+    list.style.cssText = 'max-height:320px;overflow-y:auto;';
+    list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+    widget.appendChild(list);
+
+    var cplWidget = document.getElementById('cpl-widget');
+    if (cplWidget && cplWidget.nextSibling) {
+      page.insertBefore(widget, cplWidget.nextSibling);
+    } else if (cplWidget) {
+      page.insertBefore(widget, cplWidget);
+    } else {
+      page.insertBefore(widget, page.firstChild);
+    }
+
+    self._refreshWidget();
+    console.log('[videoPipeline] Widget injected');
+  },
+
+  _showNewJobForm: function() {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.25);border-radius:12px;padding:24px 28px;width:min(420px,95vw);';
+
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+    title.textContent = 'New Video Job';
+    box.appendChild(title);
+
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+    lbl.textContent = 'Title';
+    var titleInp = document.createElement('input');
+    titleInp.type = 'text'; titleInp.placeholder = 'e.g. Edison Tutorial Video';
+    titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
+    box.appendChild(lbl); box.appendChild(titleInp);
+
+    var pathLbl = document.createElement('div');
+    pathLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+    pathLbl.textContent = 'Raw footage path (optional)';
+    var pathInp = document.createElement('input');
+    pathInp.type = 'text'; pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
+    pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
+    box.appendChild(pathLbl); box.appendChild(pathInp);
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;';
+    var saveBtn = document.createElement('button');
+    saveBtn.textContent = '💾 Create';
+    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    saveBtn.onclick = function() {
+      var t = titleInp.value.trim();
+      if (!t) { RPGACE.utils.toast('Add a title first', '#E25454', 2000); return; }
+      RPGACE.sb.insert('video_jobs', {
+        title: t,
+        status: 'raw_footage',
+        raw_path: pathInp.value.trim() || null,
+        export_paths: {},
+      }).then(function() {
+        overlay.remove();
+        self._refreshWidget();
+        RPGACE.utils.toast('📹 Video job created: ' + t, '#4A90E2', 3000);
+      }).catch(function(e) {
+        RPGACE.utils.toast('Save error: ' + e.message, '#E25454', 3000);
+      });
+    };
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  _refreshWidget: function() {
+    var self = this;
+    var list = document.getElementById('vp-list');
+    if (!list) return;
+
+    RPGACE.sb.select('video_jobs', 'order=created_at.desc&limit=20')
+      .then(function(rows) {
+        rows = rows || [];
+        list.innerHTML = '';
+
+        if (rows.length === 0) {
+          list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;padding:8px 0;">No video jobs yet. Log a beat, or use + New for a standalone video.</div>';
+          return;
+        }
+
+        rows.forEach(function(row) { list.appendChild(self._renderRow(row)); });
+      }).catch(function(e) {
+        list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+      });
+  },
+
+  _renderRow: function(row) {
+    var self = this;
+    var statusColors = {
+      beat_logged: '#C9A84C', raw_footage: '#4A90E2', edited: '#9B59B6',
+      rendered: '#E25454', exported: '#3DAA6E',
+    };
+    var stageIdx = self.STAGES.indexOf(row.status);
+    if (stageIdx === -1) stageIdx = 0;
+    var color = statusColors[row.status] || '#4A90E2';
+
+    var item = document.createElement('div');
+    item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
+
+    var topRow = document.createElement('div');
+    topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
+    var titleSpan = document.createElement('span');
+    titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    titleSpan.textContent = row.title;
+    var statusBadge = document.createElement('span');
+    statusBadge.style.cssText = 'font-size:9px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb', 'rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb', 'rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
+    statusBadge.textContent = self.STAGE_LABELS[row.status] || row.status;
+    topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
+    item.appendChild(topRow);
+
+    // Stage progress bar — same visual language as contentProductionLive's ConID tracker
+    var progressWrap = document.createElement('div');
+    progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
+    self.STAGES.forEach(function(s, i) {
+      var dot = document.createElement('div');
+      dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= stageIdx ? color : 'rgba(255,255,255,0.08)') + ';';
+      progressWrap.appendChild(dot);
+    });
+    item.appendChild(progressWrap);
+
+    // Actions
+    var actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+
+    if (stageIdx < self.STAGES.length - 1) {
+      var nextStage = self.STAGES[stageIdx + 1];
+      var advBtn = document.createElement('button');
+      advBtn.textContent = '→ Mark ' + self.STAGE_LABELS[nextStage];
+      advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      advBtn.onclick = function() {
+        self.updateEntry(row.id, { status: nextStage }).then(function() {
+          self._refreshWidget();
+          RPGACE.utils.toast(row.title + ' → ' + self.STAGE_LABELS[nextStage], color, 2000);
+        });
+      };
+      actions.appendChild(advBtn);
+    }
+
+    var detailsBtn = document.createElement('button');
+    detailsBtn.textContent = '📋 Paths + exports';
+    detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A90E2;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    detailsBtn.onclick = function() { self._showDetails(row); };
+    actions.appendChild(detailsBtn);
+
+    item.appendChild(actions);
+    return item;
+  },
+
+  // Per-stage paths + the "4 exports" (YouTube/Instagram/TikTok/Beatstars) —
+  // no rendering happens here, these are just where the human puts the
+  // real file path or URL once that step is done outside RPGACE.
+  _showDetails: function(row) {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.25);border-radius:12px;padding:24px 28px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;';
+
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+    title.textContent = row.title;
+    box.appendChild(title);
+
+    var pathFields = [
+      { id: 'vp-raw', label: 'Raw footage path', value: row.raw_path },
+      { id: 'vp-edited', label: 'Edited file path', value: row.edited_path },
+      { id: 'vp-rendered', label: 'Rendered file path', value: row.rendered_path },
+      { id: 'vp-notes', label: 'Notes', value: row.notes },
+    ];
+    pathFields.forEach(function(f) {
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+      lbl.textContent = f.label;
+      var inp = document.createElement('input');
+      inp.id = f.id; inp.type = 'text'; inp.value = f.value || '';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      box.appendChild(lbl); box.appendChild(inp);
+    });
+
+    var exportLbl = document.createElement('div');
+    exportLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;margin-top:16px;';
+    exportLbl.textContent = 'Export URLs / paths (4)';
+    box.appendChild(exportLbl);
+
+    var exportPaths = row.export_paths || {};
+    self.EXPORT_TARGETS.forEach(function(t) {
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:4px;margin-top:8px;text-transform:capitalize;';
+      lbl.textContent = t;
+      var inp = document.createElement('input');
+      inp.id = 'vp-export-' + t; inp.type = 'text'; inp.value = exportPaths[t] || '';
+      inp.placeholder = 'URL or file path';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      box.appendChild(lbl); box.appendChild(inp);
+    });
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
+    var saveBtn = document.createElement('button');
+    saveBtn.textContent = '💾 Save';
+    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    saveBtn.onclick = function() {
+      var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      var newExportPaths = {};
+      self.EXPORT_TARGETS.forEach(function(t) {
+        var v = g('vp-export-' + t);
+        if (v) newExportPaths[t] = v;
+      });
+      var updates = {
+        raw_path: g('vp-raw') || null,
+        edited_path: g('vp-edited') || null,
+        rendered_path: g('vp-rendered') || null,
+        notes: g('vp-notes') || null,
+        export_paths: newExportPaths,
+      };
+      self.updateEntry(row.id, updates).then(function() {
+        overlay.remove();
+        self._refreshWidget();
+        RPGACE.utils.toast('✅ Video job updated', '#3DAA6E', 2500);
+      });
+    };
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    cancelBtn.onclick = function() { overlay.remove(); };
+    btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+});
+/* ===END:videoPipeline=== */
 
 /* ===MODULE:conidPot=== */
 RPGACE.register('conidPot', {
