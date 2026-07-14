@@ -278,6 +278,8 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Director Match had no real filmmaker data</td><td>Prompt told Claude to imagine "the Phylum XXV library" — never existed until July 12's 50-profile insert</td></tr>
     <tr><td>Overlapping Oracle requests could cross-wire responses</td><td>send-btn.disabled is visual-only; shared STATE.chatHistory + #typing-indicator — fixed July 13 with an in-flight guard</td></tr>
     <tr><td>Beat Log saves were silently failing since it shipped</td><td><code>video_jobs</code> table never actually existed in Supabase — insert error swallowed by a console-only catch; table created July 13 while scoping F17</td></tr>
+    <tr><td>Phylum 14 mislabeled "Phylum XXV" across visualOracle's UI + prompts</td><td>Leftover from an old numbering scheme; data was always correctly tagged phylum_number=14 in Supabase, only display/prompt text was stale — fixed July 13</td></tr>
+    <tr><td>lastfm_beat_match mislabeled phylum 17 as Fons Educationis</td><td>Fons Educationis is actually phylum 12; 17 is Negotium — fixed the insert to write 12, matching its own stated intent — fixed July 13</td></tr>
   </table>
 </div>
 

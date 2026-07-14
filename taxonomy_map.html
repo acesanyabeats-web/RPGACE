@@ -116,6 +116,7 @@
   .phylum-card .num { font-family: var(--mono); font-size: 10px; color: var(--faint); }
   .phylum-card .lat { font-family: var(--serif); font-size: 14px; margin: 2px 0; }
   .phylum-card .eng { font-size: 11px; color: var(--muted); }
+  .phylum-card .purp { font-size: 10.5px; color: var(--faint); margin-top: 5px; line-height: 1.4; }
   .phylum-card .flag { display: inline-block; margin-top: 6px; font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; }
   .flag.yes { background: rgba(61,170,110,0.16); color: var(--class); }
   .flag.no { background: var(--surface2); color: var(--faint); }
@@ -141,6 +142,7 @@
   .phylum-tree-header .lat { font-family: var(--serif); font-size: 20px; }
   .phylum-tree-header .num { font-family: var(--mono); font-size: 12px; color: var(--faint); }
   .phylum-tree-header .eng { font-size: 12.5px; color: var(--muted); }
+  .phylum-tree-purp { font-size: 11px; color: var(--faint); margin-bottom: 14px; line-height: 1.4; max-width: 640px; }
   .chain-row { display: flex; gap: 22px; margin-top: 18px; overflow-x: auto; padding-bottom: 6px; }
   .chain-col { flex-shrink: 0; width: 236px; display: flex; flex-direction: column; align-items: stretch; }
   .chain-node { position: relative; padding-left: 2px; }
@@ -241,17 +243,27 @@
     { label: 'Domain E — Systems (XX–XXI)', nums: [20,21] },
   ];
   var PHYLA = {
-    1:{lat:'Compositio',eng:'Melody, Harmony, Chords'}, 2:{lat:'Percussio',eng:'Drums, 808s, Rhythm'},
-    3:{lat:'Sonus Designatio',eng:'Sound Design, Synths, Sampling'}, 4:{lat:'Mixtura',eng:'Mixing, EQ, Compression'},
-    5:{lat:'Magistra',eng:'Mastering, Loudness'}, 6:{lat:'Instrumentarium',eng:'FL Studio, VSTs, DAW Workflow'},
-    7:{lat:'Sensus Auris',eng:'Critical Listening, Reference'}, 8:{lat:'Anatomia',eng:'Music Theory Fundamentals'},
-    9:{lat:'Historia',eng:'Producer History, Influences'}, 10:{lat:'Psychologia',eng:'Creative Psychology, Flow'},
-    11:{lat:'Lingua Musicae',eng:'Colour, Mood, Visual Language'}, 12:{lat:'Fons Educationis',eng:'Tutorials, Learning Resources'},
-    13:{lat:'Contentum',eng:'YouTube, Instagram, Content'}, 14:{lat:'Visio Cinematica',eng:'Visual Treatment, Filmmaking'},
-    15:{lat:'Collaboratio',eng:'Collaboration, Outreach'}, 16:{lat:'Venditionis Beatorum',eng:'Beat Selling, Licensing'},
-    17:{lat:'Negotium',eng:'Business, Operations'}, 18:{lat:'Distributio',eng:'Distribution, Release'},
-    19:{lat:'Referentia Mercati',eng:'Market Reference, Trends'}, 20:{lat:'Technologia',eng:'Technology, Tools'},
-    21:{lat:'Miscellaneous Ordinanda',eng:'Miscellaneous'},
+    1:{lat:'Compositio',eng:'Melody, Harmony, Chords',purp:'The core melodic/harmonic decisions that make a beat memorable — chord choices, melody writing, key/scale selection.'},
+    2:{lat:'Percussio',eng:'Drums, 808s, Rhythm',purp:'The rhythmic foundation of a beat — drum programming, 808 patterns, groove and swing.'},
+    3:{lat:'Sonus Designatio',eng:'Sound Design, Synths, Sampling',purp:'Shaping and sourcing the actual sounds used — synth patches, sampling, layering, texture.'},
+    4:{lat:'Mixtura',eng:'Mixing, EQ, Compression',purp:'Balancing and polishing individual elements so they sit together correctly before mastering.'},
+    5:{lat:'Magistra',eng:'Mastering, Loudness',purp:'Final loudness/tonal polish and platform-ready export standards.'},
+    6:{lat:'Instrumentarium',eng:'FL Studio, VSTs, DAW Workflow',purp:'The tools and technical workflow used to actually build a track — FL Studio techniques, plugin usage, efficiency.'},
+    7:{lat:'Sensus Auris',eng:'Critical Listening, Reference',purp:'Training the ear — critical listening skills, reference-track comparison, spotting what\'s wrong.'},
+    8:{lat:'Anatomia',eng:'Music Theory Fundamentals',purp:'The underlying theory knowledge (scales, intervals, structure) the other Craft phyla draw on.'},
+    9:{lat:'Historia',eng:'Producer History, Influences',purp:'Knowing the lineage of producers and records that shaped the genres being worked in.'},
+    10:{lat:'Psychologia',eng:'Creative Psychology, Flow',purp:'The mental/creative-process side of producing — flow state, motivation, creative blocks.'},
+    11:{lat:'Lingua Musicae',eng:'Colour, Mood, Visual Language',purp:'Translating musical feel (key, scale, mood) into a visual/colour language for content and branding.'},
+    12:{lat:'Fons Educationis',eng:'Tutorials, Learning Resources',purp:'External learning material — tutorials, courses, educators worth following.'},
+    13:{lat:'Contentum',eng:'YouTube, Instagram, Content',purp:'Content creation and posting strategy across platforms.'},
+    14:{lat:'Visio Cinematica',eng:'Visual Treatment, Filmmaking',purp:'The visual/cinematic direction for beat videos — directors, camera language, treatment docs.'},
+    15:{lat:'Collaboratio',eng:'Collaboration, Outreach',purp:'Finding and reaching out to artists/collaborators.'},
+    16:{lat:'Venditionis Beatorum',eng:'Beat Selling, Licensing',purp:'Monetising beats — licensing terms, pricing, marketplace listings.'},
+    17:{lat:'Negotium',eng:'Business, Operations',purp:'The operational/business admin side of running this as a project.'},
+    18:{lat:'Distributio',eng:'Distribution, Release',purp:'Getting finished work out onto platforms — release logistics and requirements.'},
+    19:{lat:'Referentia Mercati',eng:'Market Reference, Trends',purp:'Tracking what\'s trending/working in the market right now.'},
+    20:{lat:'Technologia',eng:'Technology, Tools',purp:'The broader tech/tooling stack outside the DAW itself.'},
+    21:{lat:'Miscellaneous Ordinanda',eng:'Miscellaneous',purp:'Deliberate catch-all for anything that doesn\'t fit elsewhere yet.'},
   };
 
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
@@ -336,8 +348,8 @@
         var card = document.createElement('div');
         card.className = 'phylum-card ' + (hasData[num] ? 'has-data' : 'empty');
         card.innerHTML = '<div class="num">Phylum ' + num + '</div>' +
-          '<div class="lat">' + esc(p.lat) + '</div>' +
-          '<div class="eng">' + esc(p.eng) + '</div>' +
+          '<div class="lat">' + esc(p.lat) + ' (' + esc(p.eng) + ')</div>' +
+          '<div class="purp">' + esc(p.purp) + '</div>' +
           '<span class="flag ' + (hasData[num] ? 'yes' : 'no') + '">' + (hasData[num] ? 'Has tree data' : 'Empty') + '</span>';
         grid.appendChild(card);
       });
@@ -382,7 +394,7 @@
         group.className = 'transition-group';
         var label = document.createElement('div');
         label.className = 'transition-phylum-label';
-        label.textContent = 'Phylum ' + phylumNum + ' — ' + PHYLA[phylumNum].lat;
+        label.textContent = 'Phylum ' + phylumNum + ' — ' + PHYLA[phylumNum].lat + ' (' + PHYLA[phylumNum].eng + ')';
         group.appendChild(label);
         byPhylum[phylumNum].forEach(function (pair) {
           var row = document.createElement('div');
@@ -418,8 +430,9 @@
       section.innerHTML = '<div class="phylum-tree-header">' +
         '<span class="lat">' + esc(PHYLA[phylumNum].lat) + '</span>' +
         '<span class="num">Phylum ' + phylumNum + '</span>' +
-        '<span class="eng">— ' + esc(PHYLA[phylumNum].eng) + '</span>' +
-        '</div>';
+        '<span class="eng">(' + esc(PHYLA[phylumNum].eng) + ')</span>' +
+        '</div>' +
+        '<div class="phylum-tree-purp">' + esc(PHYLA[phylumNum].purp) + '</div>';
       var chainRow = document.createElement('div');
       chainRow.className = 'chain-row';
       rootOrders.forEach(function (root) {
@@ -466,7 +479,7 @@
       var emptyNote = document.createElement('div');
       emptyNote.className = 'callout';
       emptyNote.innerHTML = '<div class="k">' + emptyList.length + ' phyla with no tree data yet</div>' +
-        emptyList.map(function (n) { return n + ' ' + esc(PHYLA[n].lat); }).join(' · ');
+        emptyList.map(function (n) { return n + ' ' + esc(PHYLA[n].lat) + ' (' + esc(PHYLA[n].eng) + ')'; }).join(' · ');
       byPhylumEl.appendChild(emptyNote);
     }
 

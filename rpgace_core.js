@@ -924,7 +924,7 @@ RPGACE.register('quickActions', {
 RPGACE.register('visualOracle', {
 
   CMDS: [
-    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum XXV filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word Neural Frames prompt I can use immediately.'],
+    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 14 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word Neural Frames prompt I can use immediately.'],
     ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars.'],
     ['Copyright Risk Analyser', 'Analyse the copyright risk of my planned music video concept. CONCEPT: [DESCRIBE YOUR VIDEO CONCEPT IN DETAIL] VISUAL REFERENCES: [LIST ANY FILMS, MUSIC VIDEOS, OR DIRECTORS YOU PLAN TO REFERENCE] FOOTAGE SOURCES: [LIST WHERE YOU PLAN TO SOURCE FOOTAGE — stock, self-shot, archival, AI-generated]. For each element: copyright risk level (Low / Medium / High), what specifically creates the risk, how to modify the concept to eliminate or reduce the risk, and safe alternative approaches. End with an overall risk score and a clear/proceed/modify verdict.'],
     ['Mood Board Brief', 'Create a detailed mood board brief for my beat visual. BEAT DESCRIPTION: [DESCRIBE YOUR BEAT — genre, mood, key, BPM, feel] TARGET PLATFORM: [YOUTUBE / INSTAGRAM / BEATSTARS / ALL]. The brief must specify: 5 colour hex codes with usage ratios, 3 texture references (describe the material/surface quality), lighting direction (quality, direction, colour temperature), typography direction if text appears, 5 specific shot types with descriptions, 3 real-world location types that fit, and 3 visual DONTs for this concept. Format this so I can hand it directly to a designer or use it in Canva.'],
@@ -976,7 +976,7 @@ RPGACE.register('visualOracle', {
     lb.textContent = 'VISUAL ORACLE';
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
-    sub.textContent = 'Phylum XXV · Filmmaker Library · 6 Commands';
+    sub.textContent = RPGACE.utils.phylumLabel(14) + ' · Filmmaker Library · 6 Commands';
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
@@ -995,8 +995,8 @@ RPGACE.register('visualOracle', {
     body.appendChild(note);
 
     var phNote = document.createElement('div');
-    phNote.textContent = 'Phylum XXV — Visio Cinematica';
-    phNote.style.cssText = 'font-size:10px;color:rgba(155,89,182,0.6);margin-bottom:14px;letter-spacing:1px;border-left:2px solid rgba(155,89,182,0.3);padding-left:8px;';
+    phNote.textContent = RPGACE.utils.phylumContext(14);
+    phNote.style.cssText = 'font-size:10px;color:rgba(155,89,182,0.6);margin-bottom:14px;letter-spacing:1px;border-left:2px solid rgba(155,89,182,0.3);padding-left:8px;line-height:1.5;';
     body.appendChild(phNote);
 
     self.CMDS.forEach(function(cmd, i) {
@@ -1039,10 +1039,10 @@ RPGACE.register('visualOracle', {
     });
   },
 
-  // F14: fetches the 50-director Phylum XXV (Visio Cinematica, phylum 14)
-  // library and formats it as a compact reference block for Director Match.
-  // Fails open (empty block, same behaviour as before F14) if the fetch
-  // fails, rather than blocking the command entirely.
+  // F14: fetches the 50-director Phylum 14 (Visio Cinematica) library and
+  // formats it as a compact reference block for Director Match. Fails open
+  // (empty block, same behaviour as before F14) if the fetch fails, rather
+  // than blocking the command entirely.
   _withFilmmakerLibrary: function(callback) {
     RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
       .then(function(rows) {
@@ -1051,7 +1051,7 @@ RPGACE.register('visualOracle', {
         var list = rows.map(function(r) {
           return '- ' + r.concept + ': ' + r.definition + ' Palette: ' + r.colour_palette;
         }).join('\n');
-        callback('PHYLUM XXV FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
+        callback(RPGACE.utils.phylumContext(14) + ' FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
       })
       .catch(function() { callback(''); });
   },
@@ -1329,7 +1329,7 @@ RPGACE.register('contentRepurpose', {
           nameEl.style.cssText = 'font-size:12px;font-weight:700;color:' +
             (item.type === 'gap' ? '#E25454' : item.type === 'confirmed' ? '#3DAA6E' : '#4A90E2') + ';';
           nameEl.textContent = (item.type === 'gap' ? '🔴 ' : item.type === 'confirmed' ? '✅ ' : '💡 ') +
-            'Phylum ' + item.p.num + ' — ' + item.p.name +
+            RPGACE.utils.phylumLabel(item.p.num) +
             (item.p.gapScore ? ' (Gap ' + parseFloat(item.p.gapScore).toFixed(1) + '/10)' : '');
           var reasonEl = document.createElement('div');
           reasonEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-top:2px;';
@@ -3779,7 +3779,7 @@ RPGACE.register('knowledgeGap', {
 
       var phylumLabel = document.createElement('div');
       phylumLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + gapColor + ';opacity:0.7;margin-bottom:4px;';
-      phylumLabel.textContent = 'Phylum ' + (node.phylum_number || '?') + ' · ' + (node.phylum_name || 'Unknown');
+      phylumLabel.textContent = node.phylum_number ? RPGACE.utils.phylumLabel(node.phylum_number) : 'Phylum ? · Unknown';
 
       var conceptName = document.createElement('div');
       conceptName.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:8px;line-height:1.3;';
@@ -3866,6 +3866,33 @@ RPGACE.register('taxonomyTree', {
     19:'Market Reference, Trends',20:'Technology, Tools',21:'Miscellaneous'
   },
 
+  // One-line role reminder per phylum — restated wherever a phylum shows up
+  // with real context (Oracle prompts, review popups, taxonomy_map.html),
+  // not just the terse number+name shown everywhere else.
+  PHYLUM_PURPOSE: {
+    1:'The core melodic/harmonic decisions that make a beat memorable — chord choices, melody writing, key/scale selection.',
+    2:'The rhythmic foundation of a beat — drum programming, 808 patterns, groove and swing.',
+    3:'Shaping and sourcing the actual sounds used — synth patches, sampling, layering, texture.',
+    4:'Balancing and polishing individual elements so they sit together correctly before mastering.',
+    5:'Final loudness/tonal polish and platform-ready export standards.',
+    6:'The tools and technical workflow used to actually build a track — FL Studio techniques, plugin usage, efficiency.',
+    7:'Training the ear — critical listening skills, reference-track comparison, spotting what\'s wrong.',
+    8:'The underlying theory knowledge (scales, intervals, structure) the other Craft phyla draw on.',
+    9:'Knowing the lineage of producers and records that shaped the genres being worked in.',
+    10:'The mental/creative-process side of producing — flow state, motivation, creative blocks.',
+    11:'Translating musical feel (key, scale, mood) into a visual/colour language for content and branding.',
+    12:'External learning material — tutorials, courses, educators worth following.',
+    13:'Content creation and posting strategy across platforms.',
+    14:'The visual/cinematic direction for beat videos — directors, camera language, treatment docs.',
+    15:'Finding and reaching out to artists/collaborators.',
+    16:'Monetising beats — licensing terms, pricing, marketplace listings.',
+    17:'The operational/business admin side of running this as a project.',
+    18:'Getting finished work out onto platforms — release logistics and requirements.',
+    19:'Tracking what\'s trending/working in the market right now.',
+    20:'The broader tech/tooling stack outside the DAW itself.',
+    21:'Deliberate catch-all for anything that doesn\'t fit elsewhere yet.',
+  },
+
   init: function() {
     var self = this;
     RPGACE.hooks.on('rpgace:ready', function() {
@@ -3923,7 +3950,7 @@ RPGACE.register('taxonomyTree', {
     Object.keys(self.PHYLUM_ENGLISH).forEach(function(num) {
       var opt = document.createElement('option');
       opt.value = num;
-      opt.textContent = 'Phylum ' + num + ' — ' + self.PHYLUM_NAMES[num] + ' (' + self.PHYLUM_ENGLISH[num] + ')';
+      opt.textContent = RPGACE.utils.phylumLabel(num);
       opt.style.color = '#E2E2EC'; opt.style.background = '#1a1a24';
       phylumSelect.appendChild(opt);
     });
@@ -4095,9 +4122,8 @@ RPGACE.register('taxonomyTree', {
 
     RPGACE.utils.toast('🌳 Generating taxonomy lineage...', '#9B59B6', 2500);
 
-    var phylumDesc = self.PHYLUM_ENGLISH[phylumNumber] || '';
     var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
-      'ROOT PHYLUM: ' + phylumName + ' (Phylum ' + phylumNumber + ') — this phylum covers: ' + phylumDesc + '\n' +
+      'ROOT ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
       'TOPIC TO PLACE: "' + topicText + '"\n\n' +
       'This phylum has already been confirmed as a plausible fit for this topic. ' +
       'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
@@ -4155,9 +4181,8 @@ RPGACE.register('taxonomyTree', {
   silentPropose: function(topicText, phylumNumber, sourceType, sourceId) {
     var self = this;
     var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
-    var phylumDesc = self.PHYLUM_ENGLISH[phylumNumber] || '';
     var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
-      'ROOT PHYLUM: ' + phylumName + ' (Phylum ' + phylumNumber + ') — this phylum covers: ' + phylumDesc + '\n' +
+      'ROOT ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
       'TOPIC TO PLACE: "' + topicText + '"\n\n' +
       'This phylum has already been confirmed as a plausible fit for this topic. ' +
       'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
@@ -4274,9 +4299,11 @@ RPGACE.register('taxonomyTree', {
     eyebrow.textContent = 'Proposed Taxonomy Lineage · ' + proposal.sourceType;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
-    var englishName = (self.PHYLUM_ENGLISH && self.PHYLUM_ENGLISH[proposal.phylumNumber]) || '';
-    title.textContent = proposal.phylumName + (englishName ? ' (' + englishName + ')' : '') + ' — Phylum ' + proposal.phylumNumber;
-    box.appendChild(eyebrow); box.appendChild(title);
+    title.textContent = RPGACE.utils.phylumLabel(proposal.phylumNumber);
+    var purposeLine = document.createElement('div');
+    purposeLine.style.cssText = 'font-size:10.5px;color:rgba(226,226,236,0.4);margin-bottom:14px;line-height:1.5;';
+    purposeLine.textContent = (self.PHYLUM_PURPOSE && self.PHYLUM_PURPOSE[proposal.phylumNumber]) || '';
+    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(purposeLine);
 
     // Insight summary — what the underlying content actually IS, so the lineage
     // isn't a guessing game. Reuses the leaf's own Oracle-generated explainer,
@@ -4876,6 +4903,27 @@ RPGACE.register('config', {
       }
     };
 
+    // ── Shared phylum display helpers — single source of truth for how a  ──
+    // ── phylum's name is shown, everywhere it's shown: short UI labels    ──
+    // ── use phylumLabel() (Latin + English in brackets), anything sent to ──
+    // ── Oracle uses phylumContext() (adds the one-line purpose too, so    ──
+    // ── the model is reminded what the phylum is actually for). Both read ──
+    // ── taxonomyTree's PHYLUM_NAMES/PHYLUM_ENGLISH/PHYLUM_PURPOSE at call  ──
+    // ── time rather than duplicating the data here.                       ──
+    RPGACE.utils.phylumLabel = function(num) {
+      var tt = RPGACE.modules.taxonomyTree;
+      var lat = (tt && tt.PHYLUM_NAMES[num]) || 'Unknown';
+      var eng = (tt && tt.PHYLUM_ENGLISH[num]) || '';
+      return 'Phylum ' + num + ' — ' + lat + (eng ? ' (' + eng + ')' : '');
+    };
+    RPGACE.utils.phylumContext = function(num) {
+      var tt = RPGACE.modules.taxonomyTree;
+      var lat = (tt && tt.PHYLUM_NAMES[num]) || 'Unknown';
+      var eng = (tt && tt.PHYLUM_ENGLISH[num]) || '';
+      var purpose = (tt && tt.PHYLUM_PURPOSE[num]) || '';
+      return 'Phylum ' + num + ' — ' + lat + (eng ? ' (' + eng + ')' : '') + (purpose ? '. Purpose: ' + purpose : '');
+    };
+
     // ── Global phyla-scan observer — attached ONCE at init, independent of  ──
     // ── sendToOracle. Catches direct typing (sendChat/sendChatWithImage)   ──
     // ── AND panel-injected prompts, since both flip #send-btn's disabled   ──
@@ -5037,7 +5085,7 @@ RPGACE.register('config', {
             topLine.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
             var label = document.createElement('span');
             label.style.cssText = 'color:' + (isGap ? '#E25454' : '#3DAA6E') + ';font-weight:700;';
-            label.textContent = (isGap ? '🔴 ' : '✅ ') + 'Phylum ' + m.num + ' — ' + m.name;
+            label.textContent = (isGap ? '🔴 ' : '✅ ') + RPGACE.utils.phylumLabel(m.num);
             topLine.appendChild(label);
 
             // Pre-filter: only show the propose button if this phylum's own
@@ -5174,7 +5222,7 @@ RPGACE.register('config', {
 /* ===MODULE:beatLog=== */
 RPGACE.register('beatLog', {
 
-  // Colour palette by scale (Phylum XI — Lingua Musicae)
+  // Colour palette by scale (Phylum 11 — Lingua Musicae, Colour/Mood/Visual Language)
   SCALE_COLOURS: {
     'Minor':         { hex: '#1a3a5c', name: 'Cold midnight blue',    rgb: '26,58,92' },
     'Dorian':        { hex: '#2d1b4e', name: 'Deep purple',           rgb: '45,27,78' },
@@ -5288,7 +5336,7 @@ RPGACE.register('beatLog', {
     var title = document.createElement('div');
     var eyebrow = document.createElement('div');
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
-    eyebrow.textContent = 'Beat Log · Phylum XVI';
+    eyebrow.textContent = 'Beat Log · ' + RPGACE.utils.phylumLabel(16);
     var titleText = document.createElement('div');
     titleText.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;';
     titleText.textContent = 'Log a Beat';
@@ -5471,7 +5519,7 @@ RPGACE.register('beatLog', {
     vtCb.type = 'checkbox'; vtCb.id = 'bl-visual-treatment';
     var vtLbl = document.createElement('label');
     vtLbl.htmlFor = 'bl-visual-treatment';
-    vtLbl.textContent = '🎬 Also generate Visual Treatment Doc (Phylum XXV, extra Oracle call)';
+    vtLbl.textContent = '🎬 Also generate Visual Treatment Doc (' + RPGACE.utils.phylumLabel(14) + ', extra Oracle call)';
     vtLbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);cursor:pointer;';
     vtRow.appendChild(vtCb); vtRow.appendChild(vtLbl);
     panel.appendChild(vtRow);
@@ -5780,7 +5828,11 @@ RPGACE.register('beatLog', {
   },
 
   _addNewArtistsToTaxonomy: function(artists, mood) {
-    // Add top emerging artists to taxonomy Phylum 17 (Fons Educationis) if not already there
+    // Add top emerging artists to taxonomy Phylum 12 (Fons Educationis) if not
+    // already there. Bug fixed here: this used to write phylum_number: 17
+    // while claiming phylum_name 'Fons Educationis' - 17 is actually Negotium,
+    // Fons Educationis is 12. No rows had been written from this path yet
+    // when caught, so nothing needed migrating.
     var emerging = artists.filter(function(a) { return a.listeners > 5000 && a.listeners <= 500000; }).slice(0, 10);
     emerging.forEach(function(a) {
       RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
@@ -5788,7 +5840,7 @@ RPGACE.register('beatLog', {
           if (rows && rows.length > 0) return; // already exists
           RPGACE.sb.insert('taxonomy_nodes', {
             concept:       a.name,
-            phylum_number: 17,
+            phylum_number: 12,
             phylum_name:   'Fons Educationis',
             definition:    'Artist discovered via Last.fm beat matching. Style: ' + mood + '. Listeners: ' + a.listeners,
             source:        'lastfm_beat_match',
@@ -5887,7 +5939,7 @@ RPGACE.register('beatLog', {
     var swatch = document.createElement('div');
     swatch.style.cssText = 'width:32px;height:32px;border-radius:6px;background:' + palette.hex + ';border:1px solid rgba(255,255,255,0.1);flex-shrink:0;';
     var palText = document.createElement('div');
-    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#E2E2EC;">' + palette.name + '</div><div style="font-size:10px;color:rgba(226,226,236,0.4);">Phylum XI · ' + form.scale + ' · ' + palette.hex + '</div>';
+    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#E2E2EC;">' + palette.name + '</div><div style="font-size:10px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
     palRow.appendChild(swatch); palRow.appendChild(palText);
     output.appendChild(palRow);
 
@@ -5978,7 +6030,7 @@ RPGACE.register('refCorpus', {
     // Header
     var eyebrow = document.createElement('div');
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:4px;';
-    eyebrow.textContent = 'Reference Corpus · Phylum VIII + XVII';
+    eyebrow.textContent = 'Reference Corpus · ' + RPGACE.utils.phylumLabel(8) + ' + ' + RPGACE.utils.phylumLabel(17);
     var titleEl = document.createElement('div');
     titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
     titleEl.textContent = 'Track Reference Library';
