@@ -4517,17 +4517,28 @@ RPGACE.register('taxonomyTree', {
   },
 
   // ── Generation template — merged tutor + expert prompt ────────────
+  // Trimmed July 14: real Phylum 1 data showed deep_content empty on every
+  // single leaf despite this function supposedly populating it. Best-
+  // supported theory (not empirically confirmed - no live browser access
+  // this session): this is the same already-documented Oracle 504 timeout
+  // on long structured responses, just manifesting silently here (this
+  // call is fire-and-forget, its .catch() only console.warns) instead of
+  // visibly in chat. The original prompt asked for 5 sections in one 1500-
+  // token call; sections 3-5 (spaced-repetition blueprint, stages/
+  // resources, practice assignment) overlap with what feynman's loop and
+  // prodOraclePanel's own commands already cover elsewhere, so cut down to
+  // the 2 sections that are actually this column's unique job - if this
+  // doesn't fully fix it, the timeout needs its own dedicated pass
+  // (streaming, or splitting into 2 sequential calls), not another blind
+  // prompt trim.
   _generateNodeContent: function(node) {
     var prompt = 'You are a neuro-optimized tutor AND a world-class expert in "' + node.name + '".\n\n' +
       'Context: this is a node in a music production taxonomy tree, path: ' + node.path + '. ' +
       'This is for FL Studio / UK hip hop production, aspiring producers 18-35.\n\n' +
-      'Train me as if I am your apprentice, from beginner to mastery, on "' + node.name + '" specifically. Include:\n\n' +
+      'Give me, on "' + node.name + '" specifically:\n\n' +
       '1. WHAT THIS IS — clear explainer of ' + node.name + ' as a concept\n' +
-      '2. THE ACTUAL TECHNICAL CONTENT — since this is a specific leaf topic, give me the real, specific information (exact notes/settings/techniques/chord identities as relevant), not general theory\n' +
-      '3. A weekly learning blueprint using spaced repetition, interleaving, Feynman technique, and active recall\n' +
-      '4. Stages, tasks, uncommon resources, and shortcuts specific to this exact topic\n' +
-      '5. A real FL Studio practice assignment to internalize it today\n\n' +
-      'Be specific and technical. I want to be functionally in the top 1% on this specific topic within 90 days.';
+      '2. THE ACTUAL TECHNICAL CONTENT — since this is a specific leaf topic, give me the real, specific information (exact notes/settings/techniques/chord identities as relevant), not general theory\n\n' +
+      'Be specific and technical, but concise — this is a reference entry, not a full course.';
 
     fetch('/api/oracle', {
       method: 'POST',
@@ -4535,7 +4546,7 @@ RPGACE.register('taxonomyTree', {
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }],
         system: '',
-        max_tokens: 1500
+        max_tokens: 900
       })
     })
     .then(function(r) { return r.json(); })

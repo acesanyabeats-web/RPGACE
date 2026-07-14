@@ -715,3 +715,17 @@ Not yet hand-tested — no live browser session available in this environment.
 
 **● Self-inflicted duplicate `MutationObserver`**
 Phylum Path's auto-detect (built minutes earlier, same session) installed its own second observer on `#send-btn`, duplicating `RPGACE.utils._initPhylaObserver`'s existing one and re-querying the chat DOM again on every completed Oracle response — the exact "didn't grep before adding new UI behavior" pattern this project has repeatedly caught before. Fixed by adding a new `RPGACE.hooks.fire('oracle:response-scanned', text, lastMsg, matches)` call inside `_runPhylaScan` (right after computing `matches`, before its own 2+-phyla confidence gate), and having `phylumPath` subscribe to that hook instead of owning an observer — also lets it read phylum 1's score straight out of the already-computed `matches` instead of re-scoring. 4 `MutationObserver` instances → 3; any future per-phylum auto-detect is now a hook subscription, not another observer.
+
+## PART 21 — July 14: Phylum 1 data repair + full tree buildout from the 90-term jargon sweep (this session)
+
+Done directly against ▢ **Supabase `taxonomy_tree`** via SQL, not through the live app (no browser access this session):
+
+**● Flat `parent_id` bug fixed on real data** — all 23 pre-existing Phylum 1 rows had `parent_id: null` (the known pre-July-12 bug, confirmed still un-migrated). Backfilled by matching each row's `path` minus its last `/segment` against another row's full `path` in the same phylum; verified zero depth>1 rows with a null `parent_id` afterward.
+
+**● Garbage-named leaf cleaned up** — a node whose `name` was a 298-character gamified quest-plan blob (found while designing Phylum Path) renamed to a real concept label, with the original text relocated into `deep_content` and a proper `explainer` added.
+
+**● `taxonomyTree._generateNodeContent()` trimmed** — best-supported theory for `deep_content` being empty on every real leaf: the same already-documented Oracle 504 timeout, failing silently since this call is fire-and-forget (`.catch()` only `console.warn`s). Cut from a 5-section/1500-token ask to the 2 sections unique to this column (explainer + real technical content), dropping 3 sections that duplicated Feynman/Prod Oracle's existing coverage elsewhere. Not empirically confirmed as the actual cause — if leaves still come back empty, the timeout needs its own dedicated fix next, not another blind prompt trim.
+
+**● Phylum 1 tree built out from the 90-term jargon sweep** — 32 new rows extending the 5 existing Orders plus one brand-new 6th Order ("Genre & Production Vocabulary" for UK-drill/FL-Studio-specific jargon that didn't fit the existing 5). Every one of the 90 terms lives under a real node now, grouped into coherent terminology-bucket leaves (e.g. "Cadence & Resolution Vocabulary" holds cadence/resolution/tension/i-iv-v/ii-v-i/circle of fifths/pivot chord/modulation/progression) rather than 90 individual leaves. All new rows chained via real `parent_id` from creation (no repeat of the flat-lineage bug). Tagged `source: phylum_path_manual`; terminal nodes carry a placeholder `deep_content` flagging that full teaching content isn't generated yet, ready for Phylum Path's "Generate/Refresh Article" button. Total Phylum 1 row count: 23 → 55.
+
+Not yet hand-tested in the live app — all verified via direct SQL query, not by clicking through the UI.

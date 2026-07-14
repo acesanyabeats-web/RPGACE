@@ -90,6 +90,17 @@
   </div>
 
   <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🌳 July 14 — Phylum 1 data repair + full tree built out from the 90-term jargon sweep</div>
+    <div class="card-body">
+      Asked to fix everything blocking a clean Phylum 1 tree, then build it out from the 90 jargon terms gathered earlier. Done directly against Supabase (no live browser needed for data work):<br><br>
+      1. <strong>Fixed the flat <code>parent_id</code> bug on Phylum 1's real data</strong> — all 23 existing nodes had <code>parent_id: null</code> (the known pre-July-12 bug, confirmed still un-migrated as of this morning). Backfilled every non-root row's <code>parent_id</code> by matching each node's <code>path</code> minus its last segment against an existing node's full <code>path</code> — verified zero orphans afterward (every depth&gt;1 row now has a real parent).<br><br>
+      2. <strong>Cleaned up the garbage-named node</strong> found during Phylum Path's design — a leaf whose <code>name</code> was a 298-character gamified quest-plan blob instead of a concept label. Renamed to <code>Dave x Central Cee "Our 25th Birthday" Type-Beat Tempo &amp; Harmonic Blueprint</code>, moved the original text into <code>deep_content</code> where it actually belongs, added a real one-line <code>explainer</code>.<br><br>
+      3. <strong>Trimmed <code>taxonomyTree._generateNodeContent()</code>'s prompt</strong> — the best-supported (not yet empirically confirmed) theory for why <code>deep_content</code> was empty on every real leaf is the same already-documented Oracle 504 timeout, just failing silently here since this call is fire-and-forget. Cut the prompt from 5 sections/1500 tokens to the 2 that are actually this column's job (explainer + real technical content), dropping the 3 sections that overlapped with what Feynman/Prod Oracle already cover elsewhere. If leaves still come back empty after this, the timeout itself needs a dedicated fix, not another blind trim.<br><br>
+      4. <strong>Built out the full Phylum 1 tree from the 90-term jargon sweep</strong> — 32 new <code>taxonomy_tree</code> rows (6 new depth-1/2/3/4/5 branches extending the 5 existing Orders, plus a brand-new 6th Order, "Genre &amp; Production Vocabulary", for the UK-drill/FL-Studio-specific jargon that didn't fit anywhere else), all correctly chained via real <code>parent_id</code> from the moment they were created. Every one of the 90 terms is now housed under a real node, grouped into coherent terminology buckets rather than 90 individual leaves. Terminal nodes are tagged <code>source: phylum_path_manual</code> and carry a placeholder <code>deep_content</code> noting full teaching content isn't generated yet — ready for Phylum Path's "Generate/Refresh Article" button once hand-tested. Full resulting tree is below and in the session reply.
+    </div>
+  </div>
+
+  <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">⚡ July 14 — efficiency audit: 1 real correctness bug + 1 self-inflicted duplication, both fixed</div>
     <div class="card-body">
       Asked to audit the codebase for efficiency/speed/workload upgrades after Phylum Path shipped. Found two, both fixed (Council of 5 verdict on each: 9/10 — concrete, low-risk, verified before reporting):<br><br>
@@ -808,6 +819,11 @@ ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
   <div class="card">
     <div class="card-title">Cache-bust fix + hook consolidation not yet hand-tested <span class="badge open">SMOKE TEST</span></div>
     <div class="card-body">Shipped July 14, verified only via a standalone Node simulation, not inside the real running app. Confirm: place an insight via Phylum Path, then immediately reopen the panel (well within 60 seconds) and confirm the new node shows up right away instead of needing a hard refresh; more generally, watch for any other spot that writes then immediately re-reads the same table (ConID dashboard widget, taxonomy review queue, gap cards) now reflecting changes instantly instead of occasionally looking stale for up to a minute. Also confirm the generic "🌿 N topics" Oracle badge still fires normally on ordinary chat (unrelated to Phylum Path) — the shared scan it depends on was edited to add the new hook-fire, should be behaviourally unchanged for that badge.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Phylum 1 tree buildout not yet hand-tested in the live app <span class="badge open">SMOKE TEST</span></div>
+    <div class="card-body">All of this session's Phylum 1 data work (parent_id repair, garbage-node cleanup, the 32 new nodes from the 90-term sweep) was done directly against Supabase and verified with SQL queries, not by clicking through the live app. Confirm: open Phylum Path's panel and check the tree view renders the full structure without errors (32+23=55 rows, 6 top-level Orders); confirm the renamed "Dave x Central Cee..." node displays correctly and its deep_content shows the migrated original text; try "Generate/Refresh Article" on one of the new terminology-bucket leaves (e.g. "Cadence & Resolution Vocabulary") and confirm it produces a real synthesized article, not just echoing the placeholder text back; and log a beat with an insight that should attach under the new "Genre & Production Vocabulary" branch to confirm Phylum Path's own placement logic recognizes it as existing structure rather than creating a duplicate.</div>
   </div>
 
   <div class="card">
