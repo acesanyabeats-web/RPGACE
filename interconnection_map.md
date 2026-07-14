@@ -686,3 +686,24 @@ Per the brainstorm doc's "reuse before invent" finding — several empty phyla a
 Both follow the same `source`-tagging convention F14 established (`f14_filmmaker_library`).
 
 **Deliberately not built this pass** (logged as future menu items in the plan file, not dropped silently): new from-scratch reference libraries for the other empty phyla, the Oracle 504 timeout fix, F11's ingestion-failure fix, and the rest of the F0-F18 depth-improvement tiers from the brainstorm.
+
+## PART 20 — July 14: "Phylum Path" — bottom-up insight → article pipeline, Phylum 1 pilot (this session)
+
+Spec'd via an 8-question questionnaire before any code was written (full record: `/root/.claude/plans/woolly-watching-lamport.md`) — a new pipeline, direction-inverted from the existing `taxonomyTree.proposeLineage`/`silentPropose` (top-down: one topic placed into a path from phylum to leaf, in one shot). Phylum Path instead starts from a granular teaching insight and builds up, attaching at whatever rank it genuinely needs.
+
+**New shared touchpoint: `taxonomyTree.RANK_NAMES` + `rankNameForDepth(depth)`** — Phylum/Order/Class/Family/Genus/Species/Variant by depth index. Previously this naming convention only existed as a display-only array inside `taxonomy_map.html`; this is the first time the live app itself reasons about rank names rather than raw `depth` integers.
+
+**● 🧬 Phylum Path (new module, `phylumPath`)**
+Button in the Oracle quick-row → panel showing `RPGACE.utils.phylumContext(1)` (purpose reminder), a manual insight textarea, "📄 Generate Phylum-Level Article" for the root, and a live tree of ▢ **Supabase `taxonomy_tree`** rows for phylum 1, each with its own "📄 Generate/Refresh Article" button.
+
+`_placeInsight(text, phylumNumber)` → fetches existing phylum-1 structure → ▢ **Oracle API** with a prompt asking it to decide an attach point (must exact-match an existing `path` string — extends `_checkForMorph`'s exact-match idea to per-rank attachment instead of only whole-leaf duplicate detection) and however many new ranks are genuinely needed, reasoned through 5 explicit checks (pedagogical clarity / non-redundancy / practical applicability / structural fit / expansion headroom) — the phylum-specific operationalization of this project's Council-of-5 convention as an actual prompt instruction, not just a human planning ritual → `_insertNewSteps()` chains the new rows into ▢ **`taxonomy_tree`** using the exact same `Prefer: return=representation` chained-`parent_id` pattern as `_acceptLineage` → `_generateInsightContent()` fires a second ▢ **Oracle API** call (persona: "private tutor, PhD in this phylum", extending Prod Oracle's existing 3-layer method — simple terms → technical mechanics → expert nuance — rather than a new prompt shape) and PATCHes the deepest new node's `deep_content`.
+
+`_generateArticle(node)` (node `null` = the phylum root itself) → gathers that node + all descendants' `explainer`/`deep_content` → ▢ **Oracle API** synthesizes a real article → `saveOracleToEncyclopedia()` (main.js) → ▢ **`encyclopedia`** → `taxonomy_node_id` linked back, same mechanism F7's `encTaxonomyLink` already established (no new article storage built).
+
+**● Auto-detect entry point** — reuses the exact same `#send-btn` disabled-attribute completion signal `RPGACE.utils._initPhylaObserver` already watches (a second, independent `MutationObserver` instance, not a modification of the shared one), scores the last completed Oracle response against phylum 1's newly-enriched keyword list (`RPGACE.utils.phylaKeywordScore`), and surfaces an opt-in "🧬 Add to Phylum Path?" button rather than auto-committing anything — same "detect, then let the human confirm" shape as F4/F5/F6's proposal queue.
+
+**Real data finding that shaped scope, not fixed this pass**: live-queried phylum 1's real 23 `taxonomy_tree` rows before designing — every row has `parent_id: null` (the known pre-July-12 flat-lineage bug, confirmed still un-migrated; questionnaire answer: repair deferred, Phylum Path only touches new insights), and `deep_content` is empty on all of them despite `_generateNodeContent` supposedly populating it — a second, previously-undiscovered bug, also deferred (questionnaire answer: Phylum Path uses its own separate content-gen call regardless, doesn't block on investigating this).
+
+**Feeds into F8's phyla-keyword scorer** (Part 18 above) — phylum 1's keyword list was enriched from 7 to ~140 terms this session (a real jargon sweep across scales/modes, chord types, progressions, melody construction, harmony, intervals, UK-drill production slang, and FL Studio-specific terms) specifically to seed both Phylum Path's placement quality and its auto-detect gate. Deliberately asymmetric with the other 20 phyla (still 6-8 terms each) — flagged as a real tradeoff in patch_notes.html, not silently absorbed.
+
+Not yet hand-tested — no live browser session available in this environment.

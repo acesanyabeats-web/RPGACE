@@ -3893,6 +3893,12 @@ RPGACE.register('taxonomyTree', {
     21:'Deliberate catch-all for anything that doesn\'t fit elsewhere yet.',
   },
 
+  // Rank naming, by depth. This convention previously only existed as a
+  // display-only array in taxonomy_map.html - Phylum Path is the first live
+  // app feature that reasons about rank names, not just raw depth integers.
+  RANK_NAMES: ['Phylum', 'Order', 'Class', 'Family', 'Genus', 'Species', 'Variant'],
+  rankNameForDepth: function(depth) { return this.RANK_NAMES[depth] || ('Rank ' + depth); },
+
   init: function() {
     var self = this;
     RPGACE.hooks.on('rpgace:ready', function() {
@@ -4556,6 +4562,450 @@ RPGACE.register('taxonomyTree', {
 
 });
 /* ===END:taxonomyTree=== */
+
+/* ===MODULE:phylumPath=== */
+// "Phylum Path" - bottom-up insight-to-article pipeline. Distinct from
+// taxonomyTree.proposeLineage/silentPropose (which places one topic into a
+// path FROM a phylum DOWN to a leaf, in one shot). This instead starts from
+// a granular teaching insight and builds UP: the insight anchors at the
+// deepest rank it needs, attaching under existing structure where possible
+// (same exact-path-matching idea as taxonomyTree._checkForMorph, just
+// applied per-rank instead of per-leaf), and any rank along the way can get
+// its own synthesized reference article in Encyclopedia (reuses
+// saveOracleToEncyclopedia + taxonomy_node_id linking, same as F7's
+// encTaxonomyLink).
+//
+// Piloted on Phylum 1 (Compositio) only - PHYLUM_NUM is the single knob to
+// turn to point this at another phylum once proven; every function below
+// takes phylumNumber as a parameter rather than hardcoding it, so
+// generalizing later is a UI change, not a rewrite.
+//
+// Persona: extends Prod Oracle's existing "Master Learning" 3-layer method
+// (simple terms -> technical mechanics -> expert nuance) with a "private
+// tutor, PhD in this phylum" framing, grounded via
+// RPGACE.utils.phylumContext() - reused prompt shape, not reinvented.
+//
+// Depth flexes per insight (as many or as few new ranks as genuinely
+// needed, same philosophy as proposeLineage), decided by an explicit
+// 5-perspective check embedded in the placement prompt (pedagogical
+// clarity / non-redundancy / practical applicability / structural fit /
+// expansion headroom) - the phylum-appropriate version of this project's
+// Council of 5 convention, operationalized as a real prompt instruction
+// instead of only a human planning ritual.
+//
+// Scoped per the questionnaire: new insights only (no retroactive repair
+// of Phylum 1's pre-existing flat-parent_id nodes); manual button triggers
+// article regeneration (no auto-regen); every rank gets its own article,
+// including the phylum root itself.
+RPGACE.register('phylumPath', {
+
+  PHYLUM_NUM: 1,
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectButton(); self._initAutoDetect(); }, 1500); });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectButton(); }, 600);
+    });
+  },
+
+  _injectButton: function() {
+    if (document.getElementById('phylum-path-btn')) return;
+    var self = this;
+    var row = document.querySelector('.quick-row');
+    if (!row) return;
+    var btn = document.createElement('button');
+    btn.id = 'phylum-path-btn';
+    btn.className = 'agent-btn';
+    btn.textContent = '🧬 Phylum Path';
+    btn.style.cssText = 'border-color:rgba(61,170,110,0.4);color:#3DAA6E;background:rgba(61,170,110,0.08);margin-left:4px;';
+    btn.onclick = function() { self.open(); };
+    row.appendChild(btn);
+  },
+
+  // ── Auto-detect entry point: reuses the same #send-btn completion     ──
+  // ── signal RPGACE.utils._initPhylaObserver already watches, but scores ──
+  // ── specifically against PHYLUM_NUM (using the enriched keyword list)  ──
+  // ── instead of the generic "2+ phyla" badge, and surfaces an opt-in    ──
+  // ── button rather than auto-committing anything to Supabase.          ──
+  _initAutoDetect: function() {
+    var self = this;
+    var sendBtn = document.querySelector('#send-btn');
+    if (!sendBtn) { setTimeout(function() { self._initAutoDetect(); }, 1000); return; }
+    if (self._autoDetectActive) return;
+    self._autoDetectActive = true;
+    var obs = new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        if (m.attributeName === 'disabled' && !sendBtn.disabled) {
+          setTimeout(function() { self._checkLastResponse(); }, 80);
+        }
+      });
+    });
+    obs.observe(sendBtn, { attributes: true });
+  },
+
+  _checkLastResponse: function() {
+    var self = this;
+    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box');
+    if (!chatBox) return;
+    var aiMsgs = chatBox.querySelectorAll('.msg.ai');
+    if (aiMsgs.length === 0) return;
+    var lastMsg = aiMsgs[aiMsgs.length - 1];
+    if (lastMsg.dataset.phylumPathScanned) return;
+    lastMsg.dataset.phylumPathScanned = '1';
+
+    var text = lastMsg.textContent || '';
+    if (text.length < 100) return;
+
+    var score = RPGACE.utils.phylaKeywordScore(text, self.PHYLUM_NUM);
+    if (score < RPGACE.utils.PHYLA_MATCH_THRESHOLD) return;
+
+    var badge = document.createElement('button');
+    badge.textContent = '🧬 Add to Phylum Path?';
+    badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    badge.onclick = function() {
+      badge.remove();
+      self.open(text.slice(0, 2000));
+    };
+    lastMsg.appendChild(badge);
+  },
+
+  // ── Panel ──────────────────────────────────────────────────────────
+  _close: function() {
+    var p = document.getElementById('phylum-path-panel');
+    if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
+  },
+
+  open: function(prefillText) {
+    if (document.getElementById('phylum-path-panel')) { this._close(); return; }
+    var self = this;
+    var panel = document.createElement('div');
+    panel.id = 'phylum-path-panel';
+    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(440px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(61,170,110,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'background:rgba(61,170,110,0.06);border-bottom:1px solid rgba(61,170,110,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+    var ht = document.createElement('div');
+    var lb = document.createElement('div');
+    lb.textContent = 'PHYLUM PATH';
+    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
+    var sub = document.createElement('div');
+    sub.textContent = RPGACE.utils.phylumLabel(self.PHYLUM_NUM);
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    ht.appendChild(lb); ht.appendChild(sub);
+    var cb = document.createElement('button');
+    cb.textContent = '×';
+    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+    cb.onclick = function() { self._close(); };
+    hdr.appendChild(ht); hdr.appendChild(cb);
+    panel.appendChild(hdr);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+
+    var purposeNote = document.createElement('div');
+    purposeNote.textContent = RPGACE.utils.phylumContext(self.PHYLUM_NUM);
+    purposeNote.style.cssText = 'font-size:10px;color:rgba(61,170,110,0.6);margin-bottom:14px;letter-spacing:0.3px;line-height:1.5;border-left:2px solid rgba(61,170,110,0.3);padding-left:8px;';
+    body.appendChild(purposeNote);
+
+    // Manual insight entry
+    var entryLbl = document.createElement('div');
+    entryLbl.textContent = 'Add an insight';
+    entryLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:6px;';
+    body.appendChild(entryLbl);
+
+    var tt0 = RPGACE.modules.taxonomyTree;
+    var textarea = document.createElement('textarea');
+    textarea.id = 'phylum-path-input';
+    textarea.placeholder = 'Paste or describe a specific teaching insight - a fact, technique, or observation about ' + (tt0 ? tt0.PHYLUM_NAMES[self.PHYLUM_NUM] : 'this phylum') + '...';
+    textarea.value = prefillText || '';
+    textarea.rows = 5;
+    textarea.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:10px;';
+    body.appendChild(textarea);
+
+    var placeBtn = document.createElement('button');
+    placeBtn.textContent = '🧬 Place this insight';
+    placeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:18px;';
+    placeBtn.onclick = function() {
+      var text = document.getElementById('phylum-path-input').value.trim();
+      if (!text) { RPGACE.utils.toast('Add an insight first', '#E25454', 2000); return; }
+      placeBtn.disabled = true;
+      placeBtn.textContent = '⏳ Placing...';
+      self._placeInsight(text, self.PHYLUM_NUM).then(function() {
+        placeBtn.disabled = false;
+        placeBtn.textContent = '🧬 Place this insight';
+        document.getElementById('phylum-path-input').value = '';
+        self._renderTree();
+      }).catch(function(e) {
+        placeBtn.disabled = false;
+        placeBtn.textContent = '🧬 Place this insight';
+        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+      });
+    };
+    body.appendChild(placeBtn);
+
+    // Phylum-level article button (the root itself - no taxonomy_tree row
+    // exists for it, node=null is the signal _generateArticle reads as "the
+    // whole phylum" rather than one specific node).
+    var phylumArticleBtn = document.createElement('button');
+    phylumArticleBtn.textContent = '📄 Generate Phylum-Level Article';
+    phylumArticleBtn.style.cssText = 'width:100%;padding:8px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
+    phylumArticleBtn.onclick = function() { self._generateArticle(null); };
+    body.appendChild(phylumArticleBtn);
+
+    var treeLbl = document.createElement('div');
+    treeLbl.textContent = 'Current structure';
+    treeLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
+    body.appendChild(treeLbl);
+
+    var treeList = document.createElement('div');
+    treeList.id = 'phylum-path-tree';
+    treeList.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+    body.appendChild(treeList);
+
+    panel.appendChild(body);
+    document.body.appendChild(panel);
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() { panel.style.transform = 'translateX(0)'; });
+    });
+
+    self._renderTree();
+  },
+
+  _renderTree: function() {
+    var self = this;
+    var treeList = document.getElementById('phylum-path-tree');
+    if (!treeList) return;
+    treeList.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+
+    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + self.PHYLUM_NUM + '&order=path.asc')
+      .then(function(nodes) {
+        nodes = nodes || [];
+        treeList.innerHTML = '';
+        if (nodes.length === 0) {
+          treeList.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;">Nothing mapped yet - add the first insight above.</div>';
+          return;
+        }
+        var tt = RPGACE.modules.taxonomyTree;
+        nodes.forEach(function(node) {
+          var row = document.createElement('div');
+          row.style.cssText = 'padding:8px 10px;border:1px solid rgba(255,255,255,0.05);border-radius:6px;margin-bottom:6px;background:rgba(255,255,255,0.02);';
+          var rankLbl = document.createElement('div');
+          rankLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);margin-bottom:2px;';
+          rankLbl.textContent = (tt ? tt.rankNameForDepth(node.depth) : 'Depth ' + node.depth) + (node.node_type === 'leaf' ? ' · leaf' : '');
+          var nameEl = document.createElement('div');
+          nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;margin-bottom:6px;';
+          nameEl.textContent = node.name;
+          var artBtn = document.createElement('button');
+          artBtn.textContent = '📄 Generate/Refresh Article';
+          artBtn.style.cssText = 'padding:3px 8px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:#9B59B6;font-size:9px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          artBtn.onclick = function() { self._generateArticle(node); };
+          row.appendChild(rankLbl); row.appendChild(nameEl); row.appendChild(artBtn);
+          treeList.appendChild(row);
+        });
+      }).catch(function(e) {
+        treeList.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+      });
+  },
+
+  // ── Core: place a bottom-up insight ─────────────────────────────────
+  // Fetches existing structure, asks Oracle to decide an attach point +
+  // however many new ranks are genuinely needed (the 5-perspective check
+  // stands in for this project's Council of 5 convention here), then
+  // inserts only the new steps and generates deep-dive content for the
+  // deepest one.
+  _placeInsight: function(insightText, phylumNumber) {
+    var self = this;
+    RPGACE.utils.toast('🧬 Deciding placement...', '#3DAA6E', 2500);
+
+    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
+      .then(function(existing) {
+        existing = existing || [];
+        var pathList = existing.length
+          ? existing.map(function(n) { return '- ' + n.path; }).join('\n')
+          : '(nothing mapped yet - this will be the first entry)';
+
+        var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
+          'A student/producer just learned this insight:\n"' + insightText + '"\n\n' +
+          'EXISTING STRUCTURE already mapped in this phylum (paths shown root-first):\n' + pathList + '\n\n' +
+          'Decide where this insight belongs using these 5 checks, in order:\n' +
+          '1. Pedagogical clarity — is each rank one genuinely distinct, teachable idea, not padding?\n' +
+          '2. Non-redundancy — would merging two adjacent ranks lose anything real?\n' +
+          '3. Practical applicability — can this cash out into an actual FL Studio move tonight?\n' +
+          '4. Structural fit — does this attach cleanly to an EXISTING path above, or does it need a new one?\n' +
+          '5. Expansion headroom — will this path still make sense once 20 more insights land under it?\n\n' +
+          'Then decide:\n' +
+          '- ATTACH POINT: the exact existing path string this insight should extend (copy one from the list above EXACTLY, character for character), or null if this needs a brand new path.\n' +
+          '- NEW STEPS: the additional rank names needed from the attach point down to a specific, concrete leaf representing this insight. Use as many or as few as genuinely needed - could be 1, could be several. Do NOT repeat ranks that already exist in the attach point.\n' +
+          '- One-sentence explainer per new step.\n\n' +
+          'Return ONLY JSON, no markdown, no other text:\n' +
+          '{"attachTo": "existing path string or null", "newSteps": ["Step1", "Step2"], "explainers": ["...", "..."]}';
+
+        return fetch('/api/oracle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: prompt }],
+            system: 'You return only valid JSON, no markdown formatting, no explanation text.',
+            max_tokens: 700
+          })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+          var cleaned = raw.replace(/```json|```/g, '').trim();
+          var match = cleaned.match(/\{[\s\S]*\}/);
+          if (!match) throw new Error('No JSON found in Oracle response');
+          var parsed = JSON.parse(match[0]);
+
+          var attachNode = null;
+          if (parsed.attachTo) {
+            attachNode = existing.find(function(n) { return n.path === parsed.attachTo; });
+          }
+          return self._insertNewSteps(phylumNumber, attachNode, parsed.newSteps || [], parsed.explainers || [], insightText);
+        });
+      });
+  },
+
+  // Chained insert, same pattern as taxonomyTree._acceptLineage (needs the
+  // real inserted id back each time to chain parent_id correctly, since
+  // RPGACE.sb.insert() defaults to Prefer:return=minimal).
+  _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText) {
+    var self = this;
+    if (!newSteps.length) return Promise.reject(new Error('Oracle returned no new steps to place this insight'));
+
+    var tt = RPGACE.modules.taxonomyTree;
+    var phylumLatin = tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber);
+    var parentId = attachNode ? attachNode.id : null;
+    var baseDepth = attachNode ? attachNode.depth : 0;
+    var pathSoFar = attachNode ? attachNode.path : phylumLatin;
+    var chain = Promise.resolve();
+    var finalRow = null;
+
+    newSteps.forEach(function(stepName, i) {
+      chain = chain.then(function() {
+        pathSoFar += '/' + stepName;
+        var isLast = (i === newSteps.length - 1);
+        var currentPath = pathSoFar;
+        var currentParent = parentId;
+        var currentDepth = baseDepth + i + 1;
+
+        return fetch(RPGACE.sb.url('taxonomy_tree'), {
+          method: 'POST',
+          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+          body: JSON.stringify({
+            parent_id: currentParent,
+            depth: currentDepth,
+            name: stepName,
+            latin_name: null,
+            phylum_number: phylumNumber,
+            path: currentPath,
+            node_type: isLast ? 'leaf' : 'branch',
+            explainer: explainers[i] || '',
+            sources: [{ type: 'phylum_path', id: null }],
+          }),
+        }).then(function(r) { return r.json(); }).then(function(result) {
+          var row = Array.isArray(result) ? result[0] : result;
+          if (row && row.id) parentId = row.id;
+          if (isLast) finalRow = row;
+        });
+      });
+    });
+
+    return chain.then(function() {
+      RPGACE.utils.toast('✅ Placed: ' + pathSoFar, '#3DAA6E', 4000);
+      if (finalRow) return self._generateInsightContent(finalRow, phylumNumber, insightText);
+    });
+  },
+
+  // ── Content generation for the new deepest node - extends Prod         ──
+  // ── Oracle's "Master Learning" 3-layer method with a private-tutor-PhD  ──
+  // ── persona, per the questionnaire's answer, rather than a new prompt   ──
+  // ── shape from scratch. Deliberately a separate call from taxonomyTree's ──
+  // ── _generateNodeContent - real Phylum 1 data shows deep_content is     ──
+  // ── empty on every node that call is supposed to have populated, an    ──
+  // ── open bug not investigated here (flagged in the plan doc instead).  ──
+  _generateInsightContent: function(node, phylumNumber, insightText) {
+    var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ', teaching a UK hip hop / drill producer who works in FL Studio.\n\n' +
+      'TOPIC: "' + node.name + '" (part of: ' + node.path + ')\n' +
+      'THE INSIGHT THAT PROMPTED THIS: "' + insightText + '"\n\n' +
+      'Teach this completely using the 3-layer method: simple terms first, then technical mechanics, then the expert nuance most tutorials miss. Be specific to FL Studio throughout.';
+
+    return fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1200
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+      return RPGACE.sb.update('taxonomy_tree', 'id=eq.' + node.id, {
+        deep_content: { generated: text, generated_at: new Date().toISOString() }
+      });
+    }).catch(function(e) {
+      console.warn('[phylumPath] content generation failed:', e.message);
+    });
+  },
+
+  // ── Article generation, any rank (or the phylum root itself if node   ──
+  // ── is null) - manual button trigger only, per the questionnaire.     ──
+  // ── Reuses saveOracleToEncyclopedia() + the same taxonomy_node_id      ──
+  // ── linking pattern F7's encTaxonomyLink already established, instead  ──
+  // ── of inventing new article storage.                                 ──
+  _generateArticle: function(node) {
+    var self = this;
+    var phylumNumber = node ? node.phylum_number : self.PHYLUM_NUM;
+    RPGACE.utils.toast('📄 Gathering content...', '#9B59B6', 2500);
+
+    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
+      .then(function(allNodes) {
+        allNodes = allNodes || [];
+        var relevant = node
+          ? allNodes.filter(function(n) { return n.id === node.id || (n.path || '').indexOf(node.path + '/') === 0; })
+          : allNodes;
+
+        var contentBlock = relevant.map(function(n) {
+          var deep = (n.deep_content && n.deep_content.generated) ? n.deep_content.generated : '';
+          return '### ' + n.name + '\n' + (n.explainer || '') + (deep ? '\n' + deep : '');
+        }).join('\n\n');
+
+        var tt = RPGACE.modules.taxonomyTree;
+        var title = node ? node.name : (tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber));
+        var rankLabel = node ? (tt ? tt.rankNameForDepth(node.depth) : 'Node') : 'Phylum';
+
+        var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
+          'Write a complete reference article for "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ').\n\n' +
+          'Synthesize the following accumulated teaching content from this topic and everything beneath it in the tree:\n\n' + (contentBlock || '(nothing accumulated yet - write a foundational overview instead)') + '\n\n' +
+          'Produce a well-organized, complete article a producer can use as a standing reference — a real synthesized understanding of the topic as a whole, not just a restated list.';
+
+        return fetch('/api/oracle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 1800
+          })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+          var articleTitle = title + ' — ' + rankLabel + ' Reference';
+          if (typeof saveOracleToEncyclopedia !== 'function') {
+            RPGACE.utils.toast('Article generated but saveOracleToEncyclopedia() not found', '#E25454', 3500);
+            return;
+          }
+          return saveOracleToEncyclopedia(articleTitle, text).then(function() {
+            if (node) {
+              return RPGACE.sb.update('encyclopedia', 'title=eq.' + encodeURIComponent(articleTitle), { taxonomy_node_id: node.id }).catch(function() {});
+            }
+          }).then(function() {
+            RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#3DAA6E', 4000);
+          });
+        });
+      }).catch(function(e) {
+        RPGACE.utils.toast('Error generating article: ' + e.message, '#E25454', 3500);
+      });
+  },
+
+});
+/* ===END:phylumPath=== */
 /* ===END_DOMAIN:LEARNING=== */
 
 /* ===DOMAIN:CONFIG=== */
