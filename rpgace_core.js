@@ -4603,9 +4603,19 @@ RPGACE.register('phylumPath', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectButton(); self._initAutoDetect(); }, 1500); });
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectButton(); }, 1500); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectButton(); }, 600);
+    });
+    // Subscribes to the shared oracle:response-scanned hook instead of
+    // installing a second MutationObserver on #send-btn - the original
+    // version of this module did exactly that (duplicate observer +
+    // duplicate chat-DOM query on every single Oracle response, forever),
+    // found and fixed same-session. RPGACE.utils._runPhylaScan already
+    // computes `matches` for all 21 phyla on every response; this just
+    // reads phylum 1's score back out of that instead of re-scoring.
+    RPGACE.hooks.on('oracle:response-scanned', function(text, lastMsg, matches) {
+      self._checkLastResponse(text, lastMsg, matches);
     });
   },
 
@@ -4623,42 +4633,15 @@ RPGACE.register('phylumPath', {
     row.appendChild(btn);
   },
 
-  // ── Auto-detect entry point: reuses the same #send-btn completion     ──
-  // ── signal RPGACE.utils._initPhylaObserver already watches, but scores ──
-  // ── specifically against PHYLUM_NUM (using the enriched keyword list)  ──
-  // ── instead of the generic "2+ phyla" badge, and surfaces an opt-in    ──
-  // ── button rather than auto-committing anything to Supabase.          ──
-  _initAutoDetect: function() {
+  // ── Auto-detect entry point: reads phylum 1's score straight out of   ──
+  // ── the shared scan's already-computed `matches` array (fired via the  ──
+  // ── 'oracle:response-scanned' hook - see init()) rather than owning    ──
+  // ── its own MutationObserver or re-scoring the text itself. Surfaces   ──
+  // ── an opt-in button, never auto-commits anything to Supabase.        ──
+  _checkLastResponse: function(text, lastMsg, matches) {
     var self = this;
-    var sendBtn = document.querySelector('#send-btn');
-    if (!sendBtn) { setTimeout(function() { self._initAutoDetect(); }, 1000); return; }
-    if (self._autoDetectActive) return;
-    self._autoDetectActive = true;
-    var obs = new MutationObserver(function(muts) {
-      muts.forEach(function(m) {
-        if (m.attributeName === 'disabled' && !sendBtn.disabled) {
-          setTimeout(function() { self._checkLastResponse(); }, 80);
-        }
-      });
-    });
-    obs.observe(sendBtn, { attributes: true });
-  },
-
-  _checkLastResponse: function() {
-    var self = this;
-    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box');
-    if (!chatBox) return;
-    var aiMsgs = chatBox.querySelectorAll('.msg.ai');
-    if (aiMsgs.length === 0) return;
-    var lastMsg = aiMsgs[aiMsgs.length - 1];
-    if (lastMsg.dataset.phylumPathScanned) return;
-    lastMsg.dataset.phylumPathScanned = '1';
-
-    var text = lastMsg.textContent || '';
-    if (text.length < 100) return;
-
-    var score = RPGACE.utils.phylaKeywordScore(text, self.PHYLUM_NUM);
-    if (score < RPGACE.utils.PHYLA_MATCH_THRESHOLD) return;
+    var m1 = matches.find(function(m) { return m.num === self.PHYLUM_NUM; });
+    if (!m1) return;
 
     var badge = document.createElement('button');
     badge.textContent = '🧬 Add to Phylum Path?';
@@ -5089,9 +5072,21 @@ RPGACE.register('config', {
         this._store[key] = { data: data, ts: Date.now() };
         return data;
       },
+      // Bug fixed here: every real cache key is `table + '|' + params`
+      // (set by RPGACE.sb.select's wrapper below), but every caller of
+      // clear() below (the insert/update/del wrappers) passes just the
+      // bare table name - `delete this._store[key]` was deleting a key
+      // that never existed, silently. Cache-busting on write has never
+      // actually worked; stale reads could persist for the full 60s TTL
+      // after any insert/update/delete. Now matches by prefix so a bare
+      // table name clears every cached query against that table.
       clear: function(key) {
-        if (key) delete this._store[key];
-        else this._store = {};
+        var store = this._store;
+        if (!key) { this._store = {}; return; }
+        var prefix = key + '|';
+        Object.keys(store).forEach(function(k) {
+          if (k === key || k.indexOf(prefix) === 0) delete store[k];
+        });
       }
     };
 
@@ -5523,6 +5518,15 @@ RPGACE.register('config', {
 
       var matches = RPGACE.utils._quickPhylaScan(text);
       var gapConcepts = matches.length > 0 ? 1 : 0; // placeholder signal, refined on click
+
+      // Fires once per completed Oracle response, before the generic badge's
+      // own 2+-phyla confidence gate below - lets single-phylum-specific
+      // subscribers (e.g. phylumPath's auto-detect) apply their own
+      // threshold against `matches` without installing a second
+      // MutationObserver on #send-btn or re-querying the chat DOM. Found
+      // and fixed same-session: phylumPath's first version did exactly
+      // that duplicate-observer thing this hook now prevents.
+      RPGACE.hooks.fire('oracle:response-scanned', text, lastMsg, matches);
 
       // Confidence gate: only show if 2+ phyla matched
       if (matches.length < 2) return;

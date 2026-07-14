@@ -281,6 +281,8 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Beat Log saves were silently failing since it shipped</td><td><code>video_jobs</code> table never actually existed in Supabase — insert error swallowed by a console-only catch; table created July 13 while scoping F17</td></tr>
     <tr><td>Phylum 14 mislabeled "Phylum XXV" across visualOracle's UI + prompts</td><td>Leftover from an old numbering scheme; data was always correctly tagged phylum_number=14 in Supabase, only display/prompt text was stale — fixed July 13</td></tr>
     <tr><td>lastfm_beat_match mislabeled phylum 17 as Fons Educationis</td><td>Fons Educationis is actually phylum 12; 17 is Negotium — fixed the insert to write 12, matching its own stated intent — fixed July 13</td></tr>
+    <tr><td>RPGACE.cache's clear() never actually busted anything</td><td>Cache keys are table+'|'+params but clear() was called with a bare table name, which never matched a real key — stale cached reads could persist up to 60s after any write, on any cached table — fixed July 14</td></tr>
+    <tr><td>phylumPath's auto-detect duplicated the shared phyla-scan observer</td><td>Installed a second MutationObserver on #send-btn doing the same DOM query as RPGACE.utils._initPhylaObserver — consolidated onto a shared 'oracle:response-scanned' hook instead — fixed July 14, same session it shipped</td></tr>
   </table>
 </div>
 
