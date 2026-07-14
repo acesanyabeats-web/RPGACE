@@ -262,13 +262,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   <div class="section-title">Every Bug Found + Fixed</div>
   <table>
     <tr><th>Bug</th><th>Root cause</th></tr>
-    <tr><td>Encyclopedia lag</td><td>104 duplicate rows, triple-rendered</td></tr>
-    <tr><td>Taxonomy badge silent</td><td><code>rpgace:ready</code> fired before hook registered</td></tr>
-    <tr><td>Shift date off-by-one (×3 locations)</td><td>UTC vs local date mismatch</td></tr>
-    <tr><td>Scheduled agendas invisible</td><td>Two different localStorage keys</td></tr>
-    <tr><td>Duplicate Start/Done buttons</td><td>Old + new button logic both firing</td></tr>
-    <tr><td>Compaction blocks misaligned</td><td>Absolute-positioning, unverified assumptions</td></tr>
-    <tr><td>No title field when scheduling</td><td>Modal built to display, never to input</td></tr>
+    <tr><td>Early UI/data bugs (July 1-6, 7 total)</td><td>Encyclopedia lag (104 dup rows), taxonomy badge silent (event-replay), shift date off-by-one ×3 (UTC/local mismatch), scheduled agendas invisible (key mismatch), duplicate Start/Done buttons, compaction blocks misaligned (absolute-positioning), no title field on schedule modal — full detail in <code>patch_notes_archive.html</code></td></tr>
     <tr><td>Content Intelligence double-submit</td><td>No pre-insert check (F0, fixed)</td></tr>
     <tr><td>Tasks invisible across devices</td><td>localStorage-only, no Supabase sync (fixed)</td></tr>
     <tr><td>Phyla badge count ≠ button count</td><td>Two different thresholds, now matched (2+)</td></tr>

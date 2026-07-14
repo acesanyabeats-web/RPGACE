@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Patch Notes Archive</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7}
+  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;overflow-y:auto;z-index:100}
+  .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .sidebar-logo .name{font-family:Georgia,serif;font-size:16px;color:var(--gold);letter-spacing:2px}
+  .sidebar-logo .version{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+  .nav-group{padding:8px 0}
+  .nav-label{padding:4px 20px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  .nav-item{display:block;padding:6px 20px;font-size:12px;color:var(--dim);text-decoration:none;cursor:pointer}
+  .nav-item:hover{color:var(--gold)}
+  .content{margin-left:220px;padding:48px 56px;max-width:1000px}
+  .section{margin-bottom:56px}
+  .section-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+  .section-title{font-family:Georgia,serif;font-size:26px;color:#E2E2EC;margin-bottom:6px}
+  .section-sub{color:var(--dim);font-size:13px;margin-bottom:28px;max-width:700px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:12px}
+  .card-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .card-body{font-size:12px;color:var(--dim);line-height:1.7}
+  .card.red{border-color:rgba(226,84,84,0.25);background:rgba(226,84,84,0.05)}
+  .card.green{border-color:rgba(61,170,110,0.2);background:rgba(61,170,110,0.04)}
+  .card.gold{border-color:rgba(201,168,76,0.2);background:rgba(201,168,76,0.04)}
+  .card.blue{border-color:rgba(74,144,226,0.2);background:rgba(74,144,226,0.04)}
+  .card.purple{border-color:rgba(155,89,182,0.2);background:rgba(155,89,182,0.04)}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
+  pre{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:10px 0;overflow-x:auto;font-size:11px;font-family:'Cascadia Code','Fira Mono',monospace;color:#B8C4D4;line-height:1.6}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0}
+  th{text-align:left;padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--border)}
+  td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:top;color:var(--dim)}
+  td:first-child{color:#E2E2EC;font-weight:600;white-space:nowrap}
+  .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
+  .badge.fixed{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
+  .badge.regression{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .badge.open{background:rgba(74,144,226,0.15);color:var(--blue);border:1px solid rgba(74,144,226,0.3)}
+  .badge.next{background:rgba(155,89,182,0.15);color:var(--purple);border:1px solid rgba(155,89,182,0.3)}
+  .badge.live{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
+  .badge.gap{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .badge.later{background:rgba(74,144,226,0.1);color:var(--blue);border:1px solid rgba(74,144,226,0.2)}
+  h3{font-size:13px;font-weight:700;color:#E2E2EC;margin:20px 0 8px}
+  p{color:var(--dim);font-size:13px;margin-bottom:8px}
+  strong{color:#E2E2EC;font-weight:600}
+  .timeline-item{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .timeline-num{font-size:11px;font-weight:700;color:var(--gold);min-width:22px;flex-shrink:0}
+  .timeline-text{font-size:12px;color:var(--dim);line-height:1.6}
+  .timeline-text strong{color:#E2E2EC}
+  .date-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;margin-bottom:16px}
+  hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+  a{color:var(--blue)}
+  @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">PATCH NOTES ARCHIVE</div></div>
+  <div class="nav-group"><div class="nav-label">Back</div>
+    <a class="nav-item" href="/patch_notes.html">← Live Patch Notes</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">July 6</div>
+    <a class="nav-item" href="#jul6-daylog">Day Log</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">July 1</div>
+    <a class="nav-item" href="#jul1-daylog">Day Log</a>
+    <a class="nav-item" href="#jul1">Technical Detail</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Architecture</div>
+    <a class="nav-item" href="#diagram-current">System Diagrams (July 1, obsolete)</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Superseded</div>
+    <a class="nav-item" href="#stale-open-items">Old "Still Open" items, resolved/duplicate</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Format</div>
+    <a class="nav-item" href="#format-rules">How This Manual Worked</a>
+  </div>
+</nav>
+
+<div class="content">
+
+<div class="card blue" style="margin-bottom:30px;">
+  <div class="card-title">📦 This is the archive</div>
+  <div class="card-body">Everything below predates July 12 (when the F0-F18 numbered roadmap took over as the canonical build log), plus a handful of "Still Open" items from the live doc that turned out to be resolved, shipped under a different name, or exact duplicates of something already tracked elsewhere. Nothing here is deleted — it's moved here on July 14 to keep <code>patch_notes.html</code> itself readable. If you're looking for anything from July 12 onward, it's in the live doc.</div>
+</div>
+
+<div class="section" id="jul6-daylog">
+  <div class="date-tag">JULY 6, 2026 — DAY LOG</div>
+  <div class="section-title">Full Session Reflection — Council of 5, Converged to 9/10</div>
+  <div class="section-sub">Written at session end. Ran through multiple internal council passes until all 5 seats agreed the reflection was specific and actionable enough to actually change next session's behaviour, not just describe today's.</div>
+
+  <h3>What shipped, confirmed working end to end</h3>
+  <div class="card green">
+    <div class="card-body">
+      <ul>
+        <li>Global taxonomy detection (3-layer stack) — confirmed working on real Oracle responses</li>
+        <li>Full recursive taxonomy tree — manual entry, propose/accept/edit/reject/morph, native-content preview, phylum pre-filtering, Oracle's own named-node extraction</li>
+        <li>Rota automation fully closed — yt-dlp + FFmpeg + Claude Vision → Supabase → RPGACE, zero manual console paste, confirmed via a real 15-shift import</li>
+        <li>Two genuine main.js bugs found via real-source investigation and fixed: shift date off-by-one (UTC/local mismatch, three separate locations), scheduling system key mismatch (two parallel, incompatible data stores silently never talking to each other)</li>
+        <li>Daily calendar fully rebuilt (v2) — row-collapsing model, 24hr HH:MM–HH:MM format, clickable free rows opening a real Schedule modal, working title/description inputs (previously didn't exist at all)</li>
+        <li>Full-day discovery: an 11-day-old uncommitted main.js change (schedule functions) found, reviewed, and properly committed with an honest frozen-file-rule exception logged</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The pattern behind today's hardest stretch — six iterations on one calendar view</h3>
+  <div class="card red">
+    <div class="card-title">What actually went wrong, precisely</div>
+    <div class="card-body">
+      The Daily Grid compaction feature took six live-deploy rounds to get right. Looking back at the actual sequence, every failed round shared one root cause: <strong>positioning/layout logic was written and shipped before ever seeing the real rendered output.</strong> Absolute-positioning math was built on assumptions about row height, container offset, and content fit — each assumption plausible, each one individually wrong in a different way, and each wrong assumption only surfaced after a live deploy and a screenshot round-trip.<br><br>
+      The fix that actually worked wasn't a smarter patch — it was <strong>abandoning the positioning-math model entirely</strong> for a normal-document-flow model (build rows in order, let the browser handle layout) that had no pixel math to get wrong in the first place. The lesson isn't "measure more carefully" — it's "prefer the architecture that has fewer ways to be wrong," even if it seems like more code up front.
+    </div>
+  </div>
+
+  <h3>Every specific bug this session traced to the same underlying cause</h3>
+  <div class="card">
+    <div class="card-body">
+      <ul>
+        <li><strong>UTC vs local date parsing</strong> (3 occurrences: <code>_calDateStr</code>, <code>openSchedModal</code>, <code>renderDailyGrid</code>) — the same one-line mistake (<code>toISOString()</code> instead of local date components), copy-pasted or independently reinvented in multiple places across different build sessions</li>
+        <li><strong>Two parallel scheduling systems</strong> (<code>rpgace_scheduled_agendas</code> vs <code>rpgace_sched_agendas</code>) — built at different times, never reconciled, silently incompatible for an unknown number of sessions before today</li>
+        <li><strong>Duplicate button injection</strong> — one new inline button system built without checking whether an older system (<code>_addSchedButtons</code>) was already doing the same job from a different call site</li>
+      </ul>
+      Every one of these is a version of the same root issue: <strong>code was added without first checking what already existed and calling it.</strong> Not a knowledge failure — a verification-order failure.
+    </div>
+  </div>
+
+  <h3>New rules for future development — specific and checkable, not vague</h3>
+  <div class="card gold">
+    <div class="card-body">
+      <ol>
+        <li><strong>Before writing any layout/positioning code, get a screenshot of the current unmodified state first.</strong> Never write CSS/positioning logic based on inference about what a container "probably" looks like — pull the real computed styles or a screenshot before writing math against them.</li>
+        <li><strong>Before adding a new UI behaviour (buttons, click handlers, injected content), grep for existing functions that already touch the same DOM elements.</strong> "Does this already exist somewhere else" is now a mandatory check before writing new code, not an afterthought when something breaks.</li>
+        <li><strong>Prefer normal document flow over absolute positioning whenever the two produce the same visual result.</strong> Absolute positioning has more ways to silently drift (offsets, measured heights, container padding) — only reach for it when flow genuinely can't do the job.</li>
+        <li><strong>When a fix doesn't work on the first try, stop and ask for the real rendered output (screenshot) before attempting a second blind patch.</strong> Today's worst stretch happened specifically when patches were applied back-to-back without a visual check in between — the correct discipline (verify before extending) was already known from last session's Oracle debugging, and got abandoned under momentum tonight.</li>
+        <li><strong>Big multi-part feature requests get a full spec-and-defer pass before any code, not a partial build.</strong> Schedule Oracle's five-subsystem scope was correctly deferred whole, rather than half-built and left inconsistent — this should be the default response to any request stacking 3+ genuinely new subsystems in one ask.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>What this session confirms about the working relationship, worth stating plainly</h3>
+  <div class="card blue">
+    <div class="card-body">
+      Direct pushback when something wasn't working ("really shit job," "why cant you just delete the old version") led to faster, more precise fixes than continued hedging would have — the correction each time was specific enough to act on immediately. That pattern is worth preserving deliberately going forward: blunt, specific feedback beats polite ambiguity for this kind of iterative build work.
+    </div>
+  </div>
+</div>
+
+<div class="section" id="jul1-daylog">
+  <div class="date-tag">JULY 1, 2026 — DAY LOG</div>
+  <div class="section-title">Full Session Reflection</div>
+  <div class="section-sub">Written at day's end, before July 2 begins. Purpose: extract what actually made building slower or faster today, so tomorrow starts smarter rather than repeating the same shape of mistake.</div>
+
+  <div class="card red">
+    <div class="card-title">The honest headline</div>
+    <div class="card-body">[Certain] More of today's time went to recovering from problems created during today's own session than to shipping planned features. Content Repurpose v2 and Content Production Live shipped cleanly early on. Everything after that — the performance "optimisations," the Oracle regression, the encyclopedia investigation — was reactive, triggered by changes made in direct response to a vague complaint ("site is lagging") rather than a measured one.</div>
+  </div>
+
+  <h3>What actually happened, in three phases</h3>
+  <table>
+    <tr><th>Phase</th><th>What happened</th><th>Outcome</th></tr>
+    <tr><td>1. Planned build</td><td>Content Repurpose v2, Content Production Live, ConIDPot shipped as scoped</td><td>Clean, worked first try, no regressions</td></tr>
+    <tr><td>2. Reactive "fix"</td><td>Four architecture changes (streaming Oracle, cache layer, MutationObserver rescope, agenda block) built and deployed together off one performance trace</td><td>Broke Oracle entirely; none of the four fixed the actual complaint</td></tr>
+    <tr><td>3. Root cause found</td><td>Fresh, targeted Performance recording of the specific complained-about action → traced to 104 duplicate Supabase rows</td><td>2-line SQL constraint fixed it permanently; user confirmed "way quicker"</td></tr>
+  </table>
+
+  <h3>Judgment calls worth stating plainly</h3>
+
+  <div class="card">
+    <div class="card-title">1. The four architecture changes were not wrong in isolation — they were premature</div>
+    <div class="card-body">Streaming Oracle, a Supabase cache layer, and a tighter MutationObserver are all reasonable things to eventually want. The mistake was building all four at once, off a general performance trace, before isolating what the user was actually complaining about. A trace showing "Oracle calls take 5-7s" and "encyclopedia queried 3x" doesn't mean either one is *the* problem the user experienced — it means those are two things that showed up in a trace. Only re-recording a trace of the exact complained-about action (login → lag → unlag) surfaced the real cause.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2. Console overrides were repeatedly mistaken for fixes</div>
+    <div class="card-body"><code>RPGACE.streamOracle = null</code> typed into console appeared to fix Oracle twice tonight, and both times it was diagnostic evidence, not a working fix, because it didn't survive a refresh. This cost at least two extra rounds of back-and-forth before the actual fix (moving the null-assignment to module <code>init()</code> instead of the <code>rpgace:ready</code> hook) was found.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">3. Toast/success messages were trusted over re-querying actual state</div>
+    <div class="card-body">A Supabase DELETE returned "Success. No rows returned" and was treated as confirmation of full completion. It had only partially run. This was caught only because the next step (adding a UNIQUE constraint) failed loudly with a specific duplicate title in the error message — if that next step hadn't existed, the partial DELETE could have gone unnoticed indefinitely.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">4. The real root cause was one layer deeper than either of us initially looked</div>
+    <div class="card-body">Client-side (localStorage) dedup logic was correct and was still failing to hold, which looked like a client-side bug. It wasn't — the actual duplicate-producing writer was a local Python server (port 7842) inserting directly into Supabase with no existence check, something neither browser console nor client-side code could ever see or fix. The lesson: when a fix that should work keeps not holding, the write is probably happening somewhere the current investigation isn't looking, not that the fix logic is wrong.</div>
+  </div>
+
+  <h3>What worked well today, worth repeating</h3>
+  <div class="card green">
+    <div class="card-body">
+      <ul>
+        <li>The Council of 5 format, once genuinely used (grounded in real specs, not vague titles), produced sharper, more decisive verdicts than open-ended discussion — see the Hermes evaluation and the 9-option taxonomy detection comparison</li>
+        <li>Pulling the actual <code>sendChat()</code> source from the original build conversation resolved in one exchange what console-guessing had failed to resolve across several — when a "how does X actually work" question comes up, going to the source beats inferring from behavior</li>
+        <li>Fresh, targeted Performance-tab recordings of the exact complained-about action, done twice tonight, were the only diagnostic method that produced a correct root cause both times</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The one process change for tomorrow</h3>
+  <div class="card gold">
+    <div class="card-title">Diagnose the specific complaint before architecting a general fix</div>
+    <div class="card-body">Going forward: when something is reported as "slow" or "broken" without a specific reproduction step, the first action is a targeted trace of that exact action — not a general performance audit, not a batch of plausible-sounding fixes. Tonight's second investigation (encyclopedia) followed this correctly and found the real cause in one pass. Tonight's first investigation (the four-fix batch) didn't, and cost the most time of the entire session. This single discipline — reproduce first, architect second — would have prevented the majority of tonight's wasted cycles.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Standing reminder carried into July 2</div>
+    <div class="card-body">Both Patch Notes and the Interconnection Map now get updated together for every new idea, per the standing instruction logged at the end of Part 5. Tonight's late-session spec (global taxonomy detection, 3-layer stack) is the first idea fully built under that discipline — confirm this held cleanly going into tomorrow's actual build session.</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Formal phylum/lineage selection criteria — future brainstorm <span class="badge open">SUPERSEDED BY F8</span></div>
+  <div class="card-body">Surfaced from real testing of the taxonomy tree's pre-filter and lineage proposal system: a single incidental keyword match was letting implausible phyla (Historia) through. This was fully addressed by F8 (weighted scoring, word-boundary matching, full 21-phylum coverage) — see the live doc.</div>
+</div>
+
+<div class="card red">
+  <div class="card-title">Discovered: uncommitted main.js schedule fixes, 11+ days old, frozen-file rule violated <span class="badge fix">COMMITTED</span></div>
+  <div class="card-body">
+    During routine <code>git status</code> checks while committing docs, <code>main.js</code> showed as locally modified — despite the standing rule that main.js is frozen and never edited. Last real commit to main.js was <strong>June 24</strong>; this change predates even the July 1st reboot plan and had been sitting uncommitted, unflagged, across every session since, until surfaced by accident tonight.<br><br>
+    <strong>Functions added/modified in the uncommitted diff (347 insertions total):</strong>
+    <ul style="margin-top:6px;">
+      <li><code>showSched()</code> — now also calls <code>autoApplyStoredShifts()</code>, <code>buildMonthSlots()</code>, <code>buildWeekSlots()</code>, <code>initDailyNav()</code>, <code>renderDailyGrid()</code>, and <code>_addSchedButtons()</code> depending on which schedule tab (daily/weekly/monthly) is opened</li>
+      <li><code>renderAgendas()</code> — now also calls <code>patchAgendaCardsWithSchedule()</code> on a 400ms delay</li>
+    </ul>
+    <strong>Status, per user confirmation:</strong> this code was previously working — rotas auto-showed on Schedule with one known visual bug — but has since stopped showing entirely, for reasons not yet diagnosed. The user does not recall exactly when or how this change was made, only that it predates the July 1st plan.<br><br>
+    <strong>Decision made:</strong> committed as-is rather than left in permanent uncommitted limbo, since a stray <code>git checkout</code> or fresh clone risked silently destroying 347 lines of working schedule logic with no record it ever existed. Commit message documents the frozen-file rule violation honestly rather than hiding it.<br><br>
+    <strong>Standing lesson:</strong> the frozen-file rule needs an enforcement mechanism, not just a stated policy — an uncommitted violation sat invisible for 11+ days purely because nothing ever checked <code>git status</code> on main.js specifically.
+  </div>
+</div>
+
+<div class="card gold" style="border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.05);">
+  <div class="card-title">Encyclopedia ↔ Taxonomy Tree bidirectional linking + per-entry propose button <span class="badge fixed">SHIPPED AS F7</span></div>
+  <div class="card-body">
+    Extends the taxonomy tree's four originally-scoped trigger sources (Oracle badge, manual button, Content Intelligence, Encyclopedia sync). This spec became F7, shipped July 12 — see the live doc's F7 entry for what actually got built (<code>encTaxonomyLink</code> module, <code>taxonomy_node_id</code> column on <code>encyclopedia</code>).
+  </div>
+</div>
+
+<div class="card red">
+  <div class="card-title">Two real bugs found + fixed: shift date off-by-one, schedule key mismatch <span class="badge fix">FIXED — JULY 6</span></div>
+  <div class="card-body">
+    <strong>Bug 1 — shifts displayed one day early on Weekly calendar:</strong> <code>_calDateStr()</code> used <code>toISOString().split('T')[0]</code>, which converts to UTC before formatting. <code>_calMondayOf()</code> builds each day using local-time methods — so in BST (UTC+1), local midnight becomes 23:00 the previous day in UTC, and the date string used to look up shifts didn't match the date actually being displayed. Fixed by replacing <code>toISOString()</code> with a local-date-component formatter.<br><br>
+    <strong>Bug 2 — scheduled agendas never appeared on Weekly/Monthly:</strong> <code>confirmSchedule()</code> writes to localStorage key <code>rpgace_scheduled_agendas</code>. <code>_calGetSchedAgendas()</code> was reading from a <em>different</em> key, <code>rpgace_sched_agendas</code> — a one-character naming mismatch that meant every agenda ever scheduled via that button silently never rendered on either calendar view.<br><br>
+    <strong>Lesson:</strong> both bugs were invisible to visual inspection and only surfaced by pulling the actual live function source rather than guessing from behavior.
+  </div>
+</div>
+
+<div class="card gold" style="border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.05);">
+  <div class="card-title">Unified cross-module scheduling + Daily-view time compaction <span class="badge fixed">SHIPPED (Daily Grid v2, July 6)</span></div>
+  <div class="card-body">
+    Goal: anything scheduled via any "Schedule" button anywhere in RPGACE writes to one place and automatically appears on Weekly, Daily, and Monthly views. Data shape extended with <code>source_type</code>/<code>source_id</code>. Daily-view time compaction (gap-filled timeline, multi-hour items merge into one block) shipped as part of the Daily Grid v2 rebuild same session.
+  </div>
+</div>
+
+<div class="card gold" style="border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.06);">
+  <div class="card-title">Schedule Oracle — full locked spec <span class="badge fixed">PHASE 1 SHIPPED AS F11 JULY 12</span></div>
+  <div class="card-body">
+    Turns any source material (video, PDF, text) into a fully-reasoned, schedulable agenda item. Three Oracle-tab entry points, sequential 3-option reveal — this became F11 (Phase 1/MVP), shipped July 12. The full carousel/session-memory/auto-routing spec described here is F12, still not started — see the live doc's Tier 3 section.
+  </div>
+</div>
+
+<div class="card gold" style="border-color:rgba(201,168,76,0.35);background:rgba(201,168,76,0.06);">
+  <div class="card-title">Taxonomy Sorting Agent — full confirmed architecture <span class="badge open">STILL NOT BUILT — SEE CLAUDE.md</span></div>
+  <div class="card-body">
+    Built via GODMODE + Council of 5, July 8. A single classification agent that knows the whole tree structure, maps insights onto existing paths or proposes new ones, with AI cost confined to exactly 2 touchpoints (classification decision + Lineage Proposal justification text) so the tree itself stays free static data. This is still the single biggest confirmed-not-built item in the project — flagged as such in CLAUDE.md's current-state section, not duplicated here.
+  </div>
+</div>
+
+<div class="card blue">
+  <div class="card-title">Jargon Encyclopedia <span class="badge open">STATUS UNCLEAR — NOT VERIFIED BUILT</span></div>
+  <div class="card-body">A view over the taxonomy tree's leaf nodes — every accepted leaf's name + one-line explainer, alphabetized. Not new infrastructure — a query and display page against existing data. Not confirmed built as of July 14 — if wanted, verify current state before re-scoping.</div>
+</div>
+
+<div class="card blue">
+  <div class="card-title">Book import — merged into existing ingestion pipeline <span class="badge open">NOT BUILT</span></div>
+  <div class="card-body">Uses the same ingestion pipeline scoped for Schedule Oracle's PDF/text handling. Writes to a new shared Supabase table (book knowledge) queryable by any domain. Not built as of July 14.</div>
+</div>
+
+<div class="card">
+  <div class="card-title">Circles (rabbit-hole exploration nav) <span class="badge gap">DEFERRED</span></div>
+  <div class="card-body">Keep taxonomy browsing inside the existing Research tab for now. A dedicated Research-tab declump session is a prerequisite before this gets its own space. Status unchanged as of July 14.</div>
+</div>
+
+<div class="section" id="jul1">
+  <div class="date-tag">JULY 1, 2026</div>
+  <div class="section-title">Patch Notes — July 1</div>
+  <div class="section-sub">Continuation from the June 29 session. This entry covers Content Repurpose v2 stabilisation, Content Production Live, ConIDPot, a major performance regression caused by tonight's own fixes, and the actual root cause of the site lag — found and closed at the database level.</div>
+</div>
+
+<div class="section" id="summary">
+  <div class="section-eyebrow">Overview</div>
+  <div class="section-title">What Happened That Night</div>
+  <div class="card gold">
+    <div class="card-title">Net result</div>
+    <div class="card-body">Started the session finishing Content Repurpose v2 and Content Production Live. Mid-session, performance optimisation attempts (streaming Oracle, cache layers, intercepts) caused a real regression — Oracle went silent. Chased that for over an hour before finding the actual cause was unrelated: a stuck streaming intercept. Fixed. Then chased a separate, real complaint — "site takes ages to load" — through five wrong hypotheses before finding the actual root cause: <strong>104 duplicate rows in the Supabase encyclopedia table</strong>, being triple-rendered and triple-sorted on every page load. Fixed at the database level with a UNIQUE constraint. Confirmed by the user: "it works way quicker now."</div>
+  </div>
+</div>
+
+<div class="section" id="shipped">
+  <div class="section-eyebrow">Shipped</div>
+  <div class="section-title">Features Completed That Day</div>
+  <table>
+    <tr><th>Feature</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>Content Repurpose v2</td><td><span class="badge fixed">LIVE</span></td><td>Chat box ID fixed (chat-msgs), Oracle message detection fixed (msg ai class), context extraction limited to last exchange</td></tr>
+    <tr><td>Content Production Live</td><td><span class="badge fixed">LIVE</span></td><td>ConID tracker, swap button, inline title edit, progress bar confirmed working</td></tr>
+    <tr><td>ConIDPot / Idea Bank</td><td><span class="badge fixed">LIVE</span></td><td>Save Ideas button on Oracle panel responses, parse limit raised to 50</td></tr>
+    <tr><td>Phylum 12/13 auto-confirm</td><td><span class="badge fixed">LIVE</span></td><td>Made context-aware (was blanket auto-confirm) — only fires for content/tutorial or social media ideas</td></tr>
+    <tr><td>Housekeeping</td><td><span class="badge fixed">LIVE</span></td><td>88 patch scripts archived to scripts/, root folder clean</td></tr>
+  </table>
+</div>
+
+<div class="section" id="regression">
+  <div class="section-eyebrow">Incident Log</div>
+  <div class="section-title">Regression + Fix Chain</div>
+  <div class="section-sub">In order, as it happened. Kept honest — including the wrong turns — because the lesson is in the sequence, not just the fix.</div>
+
+  <div class="timeline-item"><div class="timeline-num">01</div><div class="timeline-text"><strong>Performance complaint raised.</strong> Site described as "lagging" with slow logins and slow encyclopedia loads.</div></div>
+  <div class="timeline-item"><div class="timeline-num">02</div><div class="timeline-text"><strong>Diagnosed via performance.getEntriesByType()</strong> — found Oracle API calls taking 5-7s, rpgace_core.js parsing at 502ms, encyclopedia queried 3x per session.</div></div>
+  <div class="timeline-item"><div class="timeline-num">03</div><div class="timeline-text"><strong>Built 4 fixes in one pass:</strong> streaming Oracle (Edge runtime), Supabase in-memory cache, scoped MutationObserver, agenda auto-popup block. Deployed together.</div></div>
+  <div class="timeline-item"><div class="timeline-num">04</div><div class="timeline-text"><span class="badge regression">REGRESSION</span> <strong>Oracle went completely silent.</strong> Streaming intercept replaced sendChat but the Edge runtime oracle.js returned application/json instead of text/event-stream — imports incompatible with Edge.</div></div>
+  <div class="timeline-item"><div class="timeline-num">05</div><div class="timeline-text">Attempted revert via new module (<code>restoreSendChat</code>) setting <code>streamOracle = null</code> on <code>rpgace:ready</code> at 800ms — too late, intercepted sendChat had already cached the reference.</div></div>
+  <div class="timeline-item"><div class="timeline-num">06</div><div class="timeline-text">Console override (<code>RPGACE.streamOracle = null</code>) confirmed the fix concept worked — but didn't persist across refresh, proving the module itself wasn't firing early enough.</div></div>
+  <div class="timeline-item"><div class="timeline-num">07</div><div class="timeline-text"><span class="badge fixed">FIXED</span> Moved the null assignment to fire immediately on module <code>init()</code>, not inside the <code>rpgace:ready</code> hook. Confirmed via console after hard refresh: <code>streamOracle:false</code>. Oracle responded correctly.</div></div>
+  <div class="timeline-item"><div class="timeline-num">08</div><div class="timeline-text">Separately, quest suggestion popup on login was suppressed via a new <code>suppressQuestPopup</code> module — confirmed working, not the source of the load lag (0.009ms execution, ruled out via Performance tab).</div></div>
+</div>
+
+<div class="section" id="root-cause">
+  <div class="section-eyebrow">Root Cause Analysis</div>
+  <div class="section-title">The Real Lag: Encyclopedia Duplication</div>
+  <div class="section-sub">Oracle being broken was a real bug, but it was not the cause of the original "site is lagging" complaint. This is what actually was.</div>
+
+  <div class="card red">
+    <div class="card-title">Diagnostic method that worked</div>
+    <div class="card-body">Chrome DevTools → Performance tab → record login → stop after unlag. Flame graph showed one ~31,000ms red Task block, entirely inside <code>refreshEncyclopediaDisplay → renderEncEntries → sortEntries</code>, called <strong>three times in immediate succession</strong>.</div>
+  </div>
+
+  <h3>The chain of evidence</h3>
+  <table>
+    <tr><th>Check</th><th>Result</th></tr>
+    <tr><td>localStorage entries</td><td>112 (should have been ~38)</td></tr>
+    <tr><td>Unique titles in localStorage</td><td>38 of 112 — 74 duplicates</td></tr>
+    <tr><td>Supabase encyclopedia table</td><td>104 rows, 38 unique titles</td></tr>
+    <tr><td>Worst offender</td><td>"The Trending Artist Tutorial Format..." — 5 copies</td></tr>
+    <tr><td>Client-side dedup logic (encSync)</td><td>Correct, but only cleans localStorage 2.5s <em>after</em> sync — cosmetic, not preventative</td></tr>
+    <tr><td>Actual insert source</td><td><code>pushLocalToSupabase()</code> in frozen main.js, called via <code>localhost:7842/push-to-supabase</code> — a local Python server, not the browser</td></tr>
+  </table>
+
+  <h3>Why client-side fixes kept failing</h3>
+  <p>Every localStorage cleanup was overwritten on the next sync because Supabase itself held the duplicates. Cleaning the client is treating a symptom — the real writer was a local server process (port 7842) inserting rows with no existence check, at some point earlier in past sessions while that server was running.</p>
+
+  <h3>The permanent fix</h3>
+  <pre>-- Step 1: remove existing duplicates, keep lowest id per title
+DELETE FROM encyclopedia a
+USING encyclopedia b
+WHERE a.title = b.title
+  AND a.id > b.id;
+
+-- Step 2: make duplicate titles structurally impossible
+ALTER TABLE encyclopedia
+ADD CONSTRAINT encyclopedia_title_unique UNIQUE (title);</pre>
+  <p>First DELETE attempt (using <code>ROW_NUMBER() OVER (PARTITION BY title ORDER BY created_at)</code>) partially failed — 5 titles retained 2 copies each, likely due to a <code>created_at</code> tie or NULL breaking the ordering. Second attempt used <code>id</code> as the tiebreaker instead — always unique, never NULL — and succeeded cleanly.</p>
+
+  <div class="card green">
+    <div class="card-title">Confirmed result</div>
+    <div class="card-body">104 rows → 38 rows in Supabase. localStorage re-synced to match. Performance re-recorded after hard refresh: the 31,000ms scripting block is gone. User confirmed: "it works way quicker now."</div>
+  </div>
+
+  <h3>Why this matters going forward</h3>
+  <p>The UNIQUE constraint means <strong>no future insert — from any script, any session, any button — can ever create a duplicate title again.</strong> This closes the bug at the only layer that actually controls it. It also makes auto-sync safe to consider in a future session, since duplicate insertion is now impossible regardless of how many times sync fires.</p>
+</div>
+
+<div class="section" id="lessons">
+  <div class="section-eyebrow">Retrospective</div>
+  <div class="section-title">Lessons Logged</div>
+
+  <div class="card">
+    <div class="card-title">Profile before architecting</div>
+    <div class="card-body">Four significant architecture changes (streaming Oracle, cache layer, MutationObserver rescoping, agenda blocking) were built and deployed based on a performance trace that correctly identified symptoms (slow Oracle calls, repeated encyclopedia queries) but not root causes. None of the four fixed the actual reported complaint. The one fix that worked was a 2-line SQL constraint, found by tracing a fresh Performance recording of the specific complained-about action, not by guessing from an earlier trace.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Console overrides don't persist — don't trust them as fixes</div>
+    <div class="card-body"><code>RPGACE.streamOracle = null</code> typed directly in console appeared to fix Oracle, but vanished on refresh. It was diagnostic evidence, not a fix. The actual fix required finding why the module-level assignment ran too late and correcting its timing.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Client-side dedup cannot fix a server-side duplication source</div>
+    <div class="card-body">Cleaning localStorage repeatedly, three times in a row, produced three different counts (104 → 66 removed → 107 → 38) because the write source was never touched. The fix always had to happen where the actual INSERT occurred — Supabase — not in the browser.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Trust the database over the toast message</div>
+    <div class="card-body">A "Success. No rows returned" message from a DELETE query was assumed to mean full success. A subsequent UNIQUE constraint attempt proved the DELETE had only partially run. Always re-query and confirm state directly rather than trusting a UI confirmation message.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Project instructions belong in Project Settings, not chat messages</div>
+    <div class="card-body">The full RPGACE master instruction block was pasted into chat multiple times during this session under the belief it needed re-establishing. It does not — once present in a conversation, Claude retains it for that session. Repeated pasting cost turn space without adding function. The correct permanent home is Claude.ai → Project → Settings → Project Instructions field, set once.</div>
+  </div>
+</div>
+
+<div class="section" id="diagram-current">
+  <div class="section-eyebrow">Council of 5 — Architecture Diagrams (July 1, now obsolete)</div>
+  <div class="section-title">System Map — Current vs Future (23 modules → 32 planned, July 1 snapshot)</div>
+  <div class="section-sub">Kept for historical record only — RPGACE now has 30+ modules and structures (taxonomy tree, Phylum Path, videoPipeline, etc.) that didn't exist when this was drawn. Not an accurate picture of the current app. If a fresh architecture diagram is ever wanted, draw a new one — don't extend this.</div>
+
+  <table>
+    <tr><th>ID</th><th>Name</th><th>Domain</th><th>Role (as of July 1)</th></tr>
+    <tr><td>A</td><td>ORACLE hub</td><td>—</td><td>Claude API — every AI response routes through here</td></tr>
+    <tr><td>B</td><td>SUPABASE hub</td><td>—</td><td>11 tables — every persistent read/write routes through here</td></tr>
+    <tr><td>C</td><td>DISPLAY hub</td><td>—</td><td>Dashboard, tabs, widgets — where output becomes visible</td></tr>
+    <tr><td>D</td><td>EXTERNAL APIs hub</td><td>—</td><td>Composio (Gmail/YouTube/Notion), Last.fm — third-party data</td></tr>
+    <tr><td>E</td><td>youtubeOracle</td><td>ORACLE</td><td>8-command YouTube growth panel</td></tr>
+    <tr><td>F</td><td>prodOraclePanel</td><td>ORACLE</td><td>14-command production teaching framework</td></tr>
+    <tr><td>G</td><td>instaOraclePanel</td><td>ORACLE</td><td>13-command Instagram growth strategy</td></tr>
+    <tr><td>H</td><td>visualOracle</td><td>ORACLE</td><td>6-command filmmaker matching + Neural Frames briefs</td></tr>
+    <tr><td>I</td><td>contentRepurpose</td><td>ORACLE</td><td>3-step popup — idea → 4 platform outputs + script</td></tr>
+    <tr><td>J</td><td>quickActions</td><td>ORACLE</td><td>Quick-send prompt buttons in Oracle tab</td></tr>
+    <tr><td>K</td><td>feynman</td><td>LEARNING</td><td>3-phase Feynman Loop — largest module</td></tr>
+    <tr><td>L</td><td>encSync</td><td>LEARNING</td><td>Encyclopedia sync wrapper + client-side dedup</td></tr>
+    <tr><td>M</td><td>intelDelete</td><td>LEARNING</td><td>Two-container intel view, unified delete cascade</td></tr>
+    <tr><td>N</td><td>taxonomySync</td><td>LEARNING</td><td>21-phylum taxonomy, gap scoring</td></tr>
+    <tr><td>O</td><td>knowledgeGap</td><td>LEARNING</td><td>Dashboard gap tracker, Study/Apply buttons</td></tr>
+    <tr><td>P</td><td>beatLog</td><td>CONTENT</td><td>Drag-and-drop beat logging, taxonomy tagging</td></tr>
+    <tr><td>Q</td><td>refCorpus</td><td>CONTENT</td><td>Reference track corpus, BPM/mood artist matching</td></tr>
+    <tr><td>R</td><td>contentProductionLive</td><td>CONTENT</td><td>ConID tracker, swap button, post details</td></tr>
+    <tr><td>S</td><td>conidPot</td><td>CONTENT</td><td>Idea bank, save button, merge detection</td></tr>
+    <tr><td>T</td><td>morningBrief</td><td>JOURNAL</td><td>4-source daily brief, day rotation</td></tr>
+    <tr><td>U</td><td>suppressQuestPopup</td><td>SYSTEM</td><td>Neutralises main.js quest suggestion popup</td></tr>
+    <tr><td>V</td><td>restoreSendChat</td><td>SYSTEM</td><td>Neutralises broken streaming intercept</td></tr>
+    <tr><td>W</td><td>config</td><td>CONFIG</td><td>CONFIG object, Supabase helpers, cache layer — loads first</td></tr>
+    <tr><td>AA</td><td>workStyle</td><td>SCHEDULE</td><td>One-time picker, shapes agenda structure (planned)</td></tr>
+    <tr><td>BB</td><td>flowState</td><td>SCHEDULE</td><td>Pre/post session energy check (planned)</td></tr>
+    <tr><td>CC</td><td>n8n automation</td><td>JOURNAL</td><td>Auto-fires Morning Brief (planned)</td></tr>
+    <tr><td>DD</td><td>taxonomySync expansion</td><td>LEARNING</td><td>Auto-push encyclopedia → taxonomy nodes (became F5)</td></tr>
+    <tr><td>EE</td><td>Daily Knowledge Pipeline</td><td>LEARNING</td><td>Auto-analysed tutorials into taxonomy (planned)</td></tr>
+    <tr><td>FF</td><td>Beat Selling Integration</td><td>CONTENT</td><td>Became F15/F16</td></tr>
+    <tr><td>GG</td><td>Filmmaker Library</td><td>LEARNING</td><td>Became F14</td></tr>
+    <tr><td>HH</td><td>Video Pipeline Tab</td><td>CONTENT</td><td>Became F17 (scoped down)</td></tr>
+    <tr><td>II</td><td>Visual Treatment Generator</td><td>CONTENT</td><td>Became F18</td></tr>
+  </table>
+</div>
+
+<div class="section" id="stale-open-items">
+  <div class="section-eyebrow">Superseded</div>
+  <div class="section-title">Old "Still Open" items — resolved, shipped, or duplicated elsewhere</div>
+  <div class="section-sub">Moved out of the live doc's "Still Open" section on July 14 — each of these is either already shipped under a different name, already tracked once elsewhere (Tier 5 of the roadmap), or simply stale.</div>
+
+  <div class="card">
+    <div class="card-title">Council of 5 RPGACE 2.0 plan <span class="badge open">PAUSED, NEVER RESUMED</span></div>
+    <div class="card-body">Requested mid-session (July 1), partially delivered, paused once Oracle broke that night. Superseded by everything actually built since — if a fresh RPGACE 2.0 planning pass is wanted, start it new rather than resuming this.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">F3–F11, F13–F15 "not yet smoke-tested" <span class="badge fixed">SUPERSEDED — TESTED JULY 13</span></div>
+    <div class="card-body">This entry asked to smoke-test July 12's shipped work. F14 was confirmed correct in the July 13 smoke test (documented in the live doc). The rest of this list was superseded by later, more current smoke-test entries.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Auto-sync — now safe to reconsider <span class="badge open">INFORMATIONAL</span></div>
+    <div class="card-body">Duplicate insertion is structurally impossible now (UNIQUE constraint). Note kept here for context; not an action item.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Multi-channel Oracle access, Oracle model upgrade, DistroKid integration, Timestamped Insights <span class="badge open">DUPLICATES</span></div>
+    <div class="card-body">All four of these are exact duplicates of cards already in the live doc's Tier 5 ("Low-priority ideas, not scheduled") section. Removed from Still Open to avoid tracking the same idea twice.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Idea Bank connector row <span class="badge open">DOCUMENTATION, NOT AN OPEN ITEM</span></div>
+    <div class="card-body">Each ConIDPot entry has 5 working connector buttons (Repurpose, Oracle, Add to Agenda, Activate ConID, Delete) — already built, just wasn't documented elsewhere. Logged here for the record; belongs in manual.html's button catalog going forward, not in a list of open work.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Context engineering rules / Stop Slop prompt rules <span class="badge open">STALE, NEVER ACTIONED</span></div>
+    <div class="card-body">Both were "Council of 5 verdict reached, never drafted" threads from an early session. No evidence either was ever picked back up. If still wanted, they'd need to be re-scoped as a fresh ask, not resumed from this stub.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Beatstars auto-listing integration <span class="badge fixed">SUPERSEDED — PREMISE WAS WRONG</span></div>
+    <div class="card-body">This entry assumed Beatstars has a developer API for listing management. Confirmed false when F16 was actually scoped (July 13) — Beatstars has no public API for creating listings. F16 shipped as a content-generation tool instead. See the live doc's F16 entry for what's real.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Recursive Taxonomy Tree — full architecture <span class="badge fixed">SHIPPED JULY 6</span></div>
+    <div class="card-body">This entire spec (self-referencing taxonomy_tree table, taxonomy_proposals staging table, 4 trigger sources, review UI) was built July 6 — see that day's "What shipped" list above. This card just never got marked done.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Taxonomy badge scrollable list fix <span class="badge fixed">CONFIRMED FIXED, DOC WAS STALE</span></div>
+    <div class="card-body">Duplicate of the Tier 0 card in the live doc confirming <code>_expandPhylaDetail</code> already renders every match in a scrollable container, not truncated to 5.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Universal taxonomy detection — GLOBAL, on all Oracle responses <span class="badge fixed">SHIPPED — LIVE JULY 2</span></div>
+    <div class="card-body">Already marked SHIPPED in its own title — doesn't belong in a list of open work. The 3-layer stack (cheap keyword scan → confidence gate → silent badge) it describes is still the live architecture <code>RPGACE.utils._runPhylaScan</code>/<code>_quickPhylaScan</code> use today.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Shared getRecentOracleMessages() helper <span class="badge fixed">SHIPPED AS F1</span></div>
+    <div class="card-body">Became F1 (shipped, though the live function ended up named <code>getOracleMessageElements()</code>, not <code>getRecentOracleMessages()</code> — a naming drift from spec to implementation, not a functional gap).</div>
+  </div>
+</div>
+
+<div class="section" id="format-rules">
+  <div class="section-eyebrow">Meta</div>
+  <div class="section-title">How This Manual Used to Work</div>
+  <div class="card gold">
+    <div class="card-title">Original format (pre-July-12)</div>
+    <div class="card-body">This was a living, dated log — each session that shipped fixes or features got its own dated entry: Summary → Shipped → Regression/Incident log → Root cause detail → Lessons logged → Still open. From F0 onward, the live doc switched to the numbered F-step format instead, which better matches a dependency-ordered roadmap than a pure day-by-day diary.</div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>
