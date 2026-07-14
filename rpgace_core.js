@@ -4964,7 +4964,41 @@ RPGACE.register('config', {
     // for "doesn't fit anywhere else"; giving it keywords would mean the
     // scanner could match on it exactly when it shouldn't.
     RPGACE.utils._PHYLA_KEYWORDS = [
-      { num: 1,  name: 'Compositio',           keywords: [{t:'melody',w:2},{t:'chord progression',w:2},{t:'harmony',w:2},{t:'chord',w:1},{t:'scale',w:1},{t:'key change',w:2},{t:'notes',w:1}] },
+      { num: 1,  name: 'Compositio',           keywords: [
+        // core (pre-existing)
+        {t:'melody',w:2},{t:'chord progression',w:2},{t:'harmony',w:2},{t:'chord',w:1},{t:'scale',w:1},{t:'key change',w:2},{t:'notes',w:1},
+        // scales & modes — July 14 jargon enrichment, pilot phylum for Phylum Path
+        {t:'mode',w:1},{t:'minor scale',w:2},{t:'major scale',w:2},{t:'natural minor',w:2},{t:'harmonic minor',w:2},{t:'melodic minor',w:2},
+        {t:'dorian',w:2},{t:'phrygian',w:2},{t:'lydian',w:2},{t:'mixolydian',w:2},{t:'locrian',w:2},{t:'pentatonic',w:2},{t:'minor pentatonic',w:2},
+        {t:'major pentatonic',w:2},{t:'blues scale',w:2},{t:'chromatic',w:2},{t:'diatonic',w:2},{t:'modal interchange',w:2},{t:'borrowed chord',w:2},
+        {t:'key signature',w:2},{t:'relative minor',w:2},{t:'relative major',w:2},{t:'parallel minor',w:2},
+        // chord types & qualities
+        {t:'triad',w:2},{t:'major chord',w:2},{t:'minor chord',w:2},{t:'diminished chord',w:2},{t:'augmented chord',w:2},{t:'seventh chord',w:2},
+        {t:'maj7',w:2},{t:'min7',w:2},{t:'dominant 7',w:2},{t:'sus2',w:2},{t:'sus4',w:2},{t:'add9',w:2},{t:'sixth chord',w:2},{t:'ninth chord',w:2},
+        {t:'eleventh chord',w:2},{t:'thirteenth chord',w:2},{t:'power chord',w:2},{t:'inversion',w:1},{t:'voicing',w:1},{t:'chord voicing',w:2},
+        {t:'close voicing',w:2},{t:'open voicing',w:2},{t:'drop voicing',w:2},
+        // progressions & harmonic function
+        {t:'progression',w:1},{t:'cadence',w:2},{t:'resolution',w:1},{t:'tension',w:1},{t:'i-iv-v',w:2},{t:'ii-v-i',w:2},{t:'circle of fifths',w:2},
+        {t:'tonic',w:2},{t:'subdominant',w:2},{t:'dominant',w:1},{t:'submediant',w:2},{t:'leading tone',w:2},{t:'root note',w:2},{t:'root position',w:2},
+        {t:'harmonic function',w:2},{t:'chord function',w:2},{t:'modulation',w:2},{t:'pivot chord',w:2},
+        // melody construction
+        {t:'melodic line',w:2},{t:'hook',w:1},{t:'top line',w:2},{t:'lead melody',w:2},{t:'counter melody',w:2},{t:'melodic motif',w:2},{t:'motif',w:1},
+        {t:'phrase',w:1},{t:'melodic phrase',w:2},{t:'call and response',w:2},{t:'melodic contour',w:2},{t:'stepwise motion',w:2},{t:'leap',w:1},
+        {t:'passing tone',w:2},{t:'neighbor tone',w:2},{t:'ornamentation',w:2},{t:'melodic development',w:2},{t:'riff',w:1},{t:'lick',w:1},
+        // harmony (deeper)
+        {t:'harmonic',w:1},{t:'harmonization',w:2},{t:'counterpoint',w:2},{t:'voice leading',w:2},{t:'chord tone',w:2},{t:'non-chord tone',w:2},
+        {t:'suspension',w:1},{t:'pedal tone',w:2},{t:'drone',w:1},{t:'harmonic rhythm',w:2},{t:'chord extension',w:2},{t:'chord substitution',w:2},
+        {t:'tritone substitution',w:2},{t:'secondary dominant',w:2},
+        // intervals
+        {t:'interval',w:1},{t:'semitone',w:2},{t:'whole tone',w:2},{t:'minor third',w:2},{t:'major third',w:2},{t:'perfect fifth',w:2},
+        {t:'perfect fourth',w:2},{t:'minor seventh',w:2},{t:'major seventh',w:2},{t:'octave',w:1},{t:'unison',w:1},
+        // genre/production jargon (UK rap/drill)
+        {t:'type beat melody',w:2},{t:'sample flip',w:1},{t:'chord loop',w:2},{t:'piano loop',w:2},{t:'string melody',w:2},{t:'pluck melody',w:2},
+        {t:'melodic trap',w:2},{t:'dark melody',w:2},{t:'eerie melody',w:2},{t:'haunting chords',w:2},{t:'minor key melody',w:2},{t:'sad piano',w:2},
+        {t:'emotional chords',w:2},{t:'drill melody',w:2},{t:'uk drill piano',w:2},{t:'8-bar loop',w:1},{t:'melodic hook',w:2},{t:'vocal chop melody',w:2},
+        // DAW/FL Studio-specific
+        {t:'piano roll',w:2},{t:'scale helper',w:2},{t:'chord stamp',w:2},{t:'arpeggiator',w:2},{t:'midi chord',w:2},{t:'chord progression generator',w:2},{t:'scale snap',w:2},
+      ] },
       { num: 2,  name: 'Percussio',             keywords: [{t:'drum',w:2},{t:'kick',w:2},{t:'snare',w:2},{t:'808',w:2},{t:'hi-hat',w:2},{t:'groove',w:1},{t:'drum pattern',w:2},{t:'percussion',w:1}] },
       { num: 3,  name: 'Sonus Designatio',      keywords: [{t:'sound design',w:2},{t:'synth',w:2},{t:'sample',w:1},{t:'patch',w:1},{t:'oscillator',w:2},{t:'wavetable',w:2},{t:'texture',w:1}] },
       { num: 4,  name: 'Mixtura',               keywords: [{t:'mixing',w:2},{t:'eq',w:2},{t:'compress',w:2},{t:'sidechain',w:2},{t:'reverb',w:1},{t:'delay',w:1},{t:'gain',w:1},{t:'frequency',w:1}] },
