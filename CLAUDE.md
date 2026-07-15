@@ -74,6 +74,8 @@ Direct, unhedged technical correction preferred over polite hedging — it produ
 
 **To move back from phone to laptop:** same session stays live on both — just switch back to the laptop terminal, still the same conversation.
 
+**Extended July 15 — converged single cloud session, no laptop dependency (confirmed, "option 3").** Distinct from the laptop↔phone sync above (which requires the laptop's local session to stay running the whole time). This mode instead runs entirely inside a Claude Code on the web / remote execution environment session (cloud-hosted, tied to the GitHub repo, own git push/pull access) — reachable from any browser/device via its session URL, no laptop power-on required. Chosen as the standing default going forward instead of running a local laptop terminal session and a separate cloud session in parallel: the cloud session does the actual editing/committing/pushing directly. Genuine exceptions where the physical Windows machine is still needed: local-only Python scripts under `C:\Users\acesa\RPGACE`, and anything requiring `localhost`/`local_server.py` (port 7842) rather than the deployed `rpgace.vercel.app`. Hand-testing the live app itself (smoke tests, UI checks) does NOT require the laptop — `rpgace.vercel.app` is reachable from any phone/browser.
+
 **Plan mode reminder:** use `/plan` (typed inside an active session) or Shift+Tab twice to toggle plan mode mid-session. `--permission-mode plan` is a startup flag only, used when first launching `claude`, not a command typed inside a running session.
 
 ## Oversight logging — NOT automatic, confirmed limitation
