@@ -2235,17 +2235,22 @@ RPGACE.register('taxonomyReviewQueue', {
     var page = document.getElementById('page-dashboard');
     if (!page) return;
 
-    RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id&limit=200')
-      .then(function(rows) {
-        rows = rows || [];
+    // July 16: badge count now also includes pending taxonomy_links
+    // (fusion-link candidates) alongside taxonomy_proposals - same
+    // review queue, same badge, different card type per row.
+    Promise.all([
+      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id&limit=200'),
+      RPGACE.sb.select('taxonomy_links', 'status=eq.pending&select=id&limit=200')
+    ]).then(function(results) {
+        var total = (results[0] || []).length + (results[1] || []).length;
         var existing = document.getElementById('taxproposal-badge');
-        if (rows.length === 0) { if (existing) existing.remove(); return; }
-        if (existing) { existing.querySelector('.count').textContent = rows.length; return; }
+        if (total === 0) { if (existing) existing.remove(); return; }
+        if (existing) { existing.querySelector('.count').textContent = total; return; }
 
         var badge = document.createElement('div');
         badge.id = 'taxproposal-badge';
         badge.style.cssText = 'background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;';
-        badge.innerHTML = '<span style="color:#9B59B6;font-size:12px;font-weight:700;">🌳 <span class="count">' + rows.length + '</span> taxonomy proposal' + (rows.length > 1 ? 's' : '') + ' waiting</span><span style="color:rgba(155,89,182,0.5);font-size:11px;">Review →</span>';
+        badge.innerHTML = '<span style="color:#9B59B6;font-size:12px;font-weight:700;">🌳 <span class="count">' + total + '</span> taxonomy item' + (total > 1 ? 's' : '') + ' waiting</span><span style="color:rgba(155,89,182,0.5);font-size:11px;">Review →</span>';
         badge.onclick = function() { self._openQueue(); };
 
         var firstChild = page.querySelector('.section-title') || page.firstChild;
@@ -2270,9 +2275,12 @@ RPGACE.register('taxonomyReviewQueue', {
     overlay.appendChild(box);
     document.body.appendChild(overlay);
 
-    RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&order=created_at.asc&limit=200')
-      .then(function(rows) {
-        rows = rows || [];
+    Promise.all([
+      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&order=created_at.asc&limit=200'),
+      RPGACE.sb.select('taxonomy_links', 'status=eq.pending&order=created_at.asc&limit=200')
+    ]).then(function(results) {
+        var rows = results[0] || [];
+        var linkRows = results[1] || [];
         box.innerHTML = '';
         box.appendChild(closeBtn);
 
@@ -2281,10 +2289,11 @@ RPGACE.register('taxonomyReviewQueue', {
         title.textContent = 'Taxonomy Review Queue';
         var sub = document.createElement('div');
         sub.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
-        sub.textContent = rows.length + ' proposal' + (rows.length !== 1 ? 's' : '') + ' waiting for review';
+        var totalCount = rows.length + linkRows.length;
+        sub.textContent = totalCount + ' item' + (totalCount !== 1 ? 's' : '') + ' waiting for review';
         box.appendChild(title); box.appendChild(sub);
 
-        if (rows.length === 0) {
+        if (totalCount === 0) {
           var empty = document.createElement('div');
           empty.style.cssText = 'color:rgba(226,226,236,0.35);font-size:12px;padding:20px 0;text-align:center;';
           empty.textContent = 'Nothing waiting — all caught up.';
@@ -2350,6 +2359,70 @@ RPGACE.register('taxonomyReviewQueue', {
           btnRow.appendChild(acceptBtn); btnRow.appendChild(editBtn); btnRow.appendChild(rejectBtn);
           row.appendChild(btnRow);
           box.appendChild(row);
+        });
+
+        // ── Fusion-link candidates (taxonomy_links, status=pending) - a  ──
+        // ── separate card type in the same queue. Accept/Reject only, no ──
+        // ── Edit: a link is just two node ids + one insight sentence,    ──
+        // ── nothing to restructure like a lineage proposal's step list.  ──
+        if (!linkRows.length) return;
+
+        var nodeIds = [];
+        linkRows.forEach(function(l) { nodeIds.push(l.node_a_id, l.node_b_id); });
+        var uniqueIds = nodeIds.filter(function(id, i) { return nodeIds.indexOf(id) === i; });
+
+        return RPGACE.sb.select('taxonomy_tree', 'id=in.(' + uniqueIds.join(',') + ')&select=id,name,path,phylum_number').then(function(nodeRows) {
+          var byId = {};
+          (nodeRows || []).forEach(function(n) { byId[n.id] = n; });
+          var tt = RPGACE.modules.taxonomyTree;
+
+          linkRows.forEach(function(l) {
+            var a = byId[l.node_a_id], b = byId[l.node_b_id];
+            if (!a || !b) return;
+            var row = document.createElement('div');
+            row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(52,152,219,0.04);border:1px solid rgba(52,152,219,0.2);border-radius:8px;';
+
+            var head = document.createElement('div');
+            head.style.cssText = 'font-size:9px;font-weight:700;color:rgba(52,152,219,0.7);margin-bottom:6px;';
+            head.textContent = '🔗 Fusion Link';
+            row.appendChild(head);
+
+            var phA = tt ? (tt.PHYLUM_NAMES[a.phylum_number] || '') : '';
+            var phB = tt ? (tt.PHYLUM_NAMES[b.phylum_number] || '') : '';
+            var linkText = document.createElement('div');
+            linkText.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;line-height:1.5;margin-bottom:4px;';
+            linkText.textContent = '[' + phA + '] ' + a.path + '  ⇄  [' + phB + '] ' + b.path;
+            row.appendChild(linkText);
+
+            var insightEl = document.createElement('div');
+            insightEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
+            insightEl.textContent = l.link_insight || '';
+            row.appendChild(insightEl);
+
+            var btnRow2 = document.createElement('div');
+            btnRow2.style.cssText = 'display:flex;gap:6px;';
+
+            var acceptBtn2 = document.createElement('button');
+            acceptBtn2.textContent = '✓ Confirm Link';
+            acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            acceptBtn2.onclick = function() {
+              row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
+              RPGACE.sb.update('taxonomy_links', 'id=eq.' + l.id, { status: 'confirmed', reviewed_at: new Date().toISOString() }).catch(function() {});
+              row.remove();
+            };
+
+            var rejectBtn2 = document.createElement('button');
+            rejectBtn2.textContent = '✗ Reject';
+            rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#E25454;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            rejectBtn2.onclick = function() {
+              RPGACE.sb.update('taxonomy_links', 'id=eq.' + l.id, { status: 'rejected', reviewed_at: new Date().toISOString() }).catch(function() {});
+              row.remove();
+            };
+
+            btnRow2.appendChild(acceptBtn2); btnRow2.appendChild(rejectBtn2);
+            row.appendChild(btnRow2);
+            box.appendChild(row);
+          });
         });
       }).catch(function() {
         box.innerHTML = '';
@@ -5280,8 +5353,101 @@ RPGACE.register('phylumPath', {
 
     return chain.then(function() {
       RPGACE.utils.toast('✅ Placed: ' + pathSoFar, '#3DAA6E', 4000);
-      if (finalRow) return self._generateInsightContent(finalRow, phylumNumber, insightText);
+      if (finalRow) {
+        // Fire-and-forget - a missed fusion-link pass shouldn't block the
+        // insight's own content generation, same pattern as F18's auto
+        // Visual Treatment Doc trigger elsewhere in this file.
+        self._findFusionLinks(finalRow, phylumNumber);
+        return self._generateInsightContent(finalRow, phylumNumber, insightText);
+      }
     });
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  // July 16: fusion links - cross-taxonomy connections between a new
+  // leaf and topically-related nodes ANYWHERE else in the tree (any
+  // rank, any phylum), staged in the new taxonomy_links table and
+  // confirmed/rejected through the same review queue as taxonomy
+  // proposals (taxonomyReviewQueue). Answers a question the strict
+  // one-parent tree can't: "does this same idea show up somewhere
+  // else, and how do the two combine into something new." A link is
+  // symmetric - one row, shown identically from either node's side
+  // (see _renderFusionLinks) - and carries a one-sentence insight
+  // explaining HOW the two connect, not just that they're similar.
+  // New nodes only, going forward - no retroactive scan of the
+  // existing tree this pass (same precedent as Phylum Path's original
+  // "new insights only" scope decision).
+  // ══════════════════════════════════════════════════════════════════
+  _findFusionLinks: function(node, phylumNumber) {
+    var self = this;
+    if (!node) return Promise.resolve();
+
+    return RPGACE.sb.select('taxonomy_tree', 'select=id,name,path,phylum_number&order=phylum_number.asc,path.asc')
+      .then(function(allNodes) {
+        allNodes = allNodes || [];
+        var tt = RPGACE.modules.taxonomyTree;
+        // Exclude the node itself and anything on its own direct
+        // ancestor/descendant line (path prefix match) - fusion links are
+        // for genuinely separate branches, not restating the tree's own
+        // existing parent/child structure.
+        var others = allNodes.filter(function(n) {
+          return n.id !== node.id &&
+            (n.path || '').indexOf(node.path + '/') !== 0 &&
+            (node.path || '').indexOf(n.path + '/') !== 0;
+        });
+        if (!others.length) return;
+
+        var pathList = others.map(function(n) {
+          var phName = tt ? (tt.PHYLUM_NAMES[n.phylum_number] || ('Phylum ' + n.phylum_number)) : ('Phylum ' + n.phylum_number);
+          return '- [' + phName + '] ' + n.path;
+        }).join('\n');
+
+        var extractorPrompt = 'You are a fast triage pass looking for cross-discipline connections.\n\n' +
+          'NEW NODE: "' + node.name + '" (' + node.path + ')\n\n' +
+          'ALL OTHER EXISTING NODES IN THE TAXONOMY:\n' + pathList + '\n\n' +
+          'Shortlist up to 5 existing paths that seem like genuine fusion-discipline candidates - real, non-obvious connections worth a closer look (a "this + that combine into a specific technique or system" relationship), not just loose topic overlap.\n\n' +
+          'Return ONLY JSON: {"candidates": ["path1", "path2"]}';
+
+        return self._callExtractor(extractorPrompt, 300)
+          .catch(function(e) {
+            console.warn('[phylumPath] fusion-link extractor failed, ground worker scans cold:', e.message);
+            return null;
+          })
+          .then(function(shortlist) {
+            var candidateBlock = (shortlist && shortlist.candidates && shortlist.candidates.length)
+              ? '\n\nA FASTER TRIAGE PASS ALREADY SHORTLISTED THESE AS WORTH CHECKING (verify and refine, do not just accept blindly):\n' + shortlist.candidates.join('\n')
+              : '';
+
+            var prompt = 'You are a private tutor with a PhD across all music production disciplines, looking for genuine "fusion discipline" connections - places where two separately-classified ideas actually combine into a real technique, system, or craft angle a producer could use, not just two things that happen to share a topic.\n\n' +
+              'NEW NODE just added: "' + node.name + '" (' + node.path + ')\n\n' +
+              'ALL OTHER EXISTING NODES IN THE TAXONOMY:\n' + pathList + candidateBlock + '\n\n' +
+              'Pick 0-3 REAL connections only - it is fine to return zero if nothing genuinely fuses. For each real connection, write a one-sentence insight explaining exactly HOW/WHY the two connect (this note will be shown on both nodes, so phrase it as the shared idea, not "node A relates to node B").\n\n' +
+              'Return ONLY JSON: {"links": [{"path": "exact existing path string", "insight": "..."}]}';
+
+            return self._callGroundWorkerJSON(prompt, 500);
+          })
+          .then(function(parsed) {
+            var links = (parsed && parsed.links) || [];
+            if (!links.length) return;
+
+            var chain = Promise.resolve();
+            links.forEach(function(link) {
+              var match = others.find(function(n) { return n.path === link.path; });
+              if (!match) return;
+              chain = chain.then(function() {
+                return RPGACE.sb.insert('taxonomy_links', {
+                  node_a_id: node.id,
+                  node_b_id: match.id,
+                  link_insight: link.insight || '',
+                  status: 'pending'
+                }).catch(function() {});
+              });
+            });
+            return chain;
+          });
+      }).catch(function(e) {
+        console.warn('[phylumPath] fusion link search failed:', e.message);
+      });
   },
 
   // ── Content generation for the new deepest node - extends Prod         ──
@@ -5564,6 +5730,13 @@ RPGACE.register('phylumPath', {
 
     body.appendChild(self._articleSection(focus));
 
+    if (focus) {
+      var linksWrap = document.createElement('div');
+      linksWrap.id = 'pp-links-' + focus.id;
+      body.appendChild(linksWrap);
+      self._renderFusionLinks(focus, linksWrap);
+    }
+
     var children = allNodes.filter(function(n) {
       return focus ? n.parent_id === focus.id : n.parent_id === null;
     });
@@ -5651,6 +5824,60 @@ RPGACE.register('phylumPath', {
       }).catch(function() { renderButton('📄 Generate/Refresh Article', null); });
 
     return wrap;
+  },
+
+  // ── Fusion links for the focused node - confirmed cross-taxonomy       ──
+  // ── connections (see _findFusionLinks above). Rendered symmetrically   ──
+  // ── from either side of a link since taxonomy_links doesn't privilege  ──
+  // ── node_a over node_b - whichever node you're looking at, the OTHER   ──
+  // ── one is what gets shown. Only same-phylum links are clickable to    ──
+  // ── jump to directly (Phylum Path itself is still Phylum-1-only), but  ──
+  // ── cross-phylum links still display so the connection itself is real  ──
+  // ── and visible even before that phylum has its own Phylum Path view.  ──
+  _renderFusionLinks: function(focus, wrap) {
+    var self = this;
+    wrap.innerHTML = '';
+    RPGACE.sb.select('taxonomy_links', 'status=eq.confirmed&or=(node_a_id.eq.' + focus.id + ',node_b_id.eq.' + focus.id + ')')
+      .then(function(links) {
+        links = links || [];
+        if (!links.length) return;
+        var otherIds = links.map(function(l) { return l.node_a_id === focus.id ? l.node_b_id : l.node_a_id; });
+        return RPGACE.sb.select('taxonomy_tree', 'id=in.(' + otherIds.join(',') + ')&select=id,name,path,phylum_number').then(function(nodes) {
+          var byId = {};
+          (nodes || []).forEach(function(n) { byId[n.id] = n; });
+          var tt = RPGACE.modules.taxonomyTree;
+
+          var lbl = document.createElement('div');
+          lbl.textContent = '🔗 Fusion connections';
+          lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(52,152,219,0.6);margin:14px 0 8px;';
+          wrap.appendChild(lbl);
+
+          links.forEach(function(l) {
+            var otherId = l.node_a_id === focus.id ? l.node_b_id : l.node_a_id;
+            var other = byId[otherId];
+            if (!other) return;
+            var row = document.createElement('div');
+            var sameP = other.phylum_number === self.PHYLUM_NUM;
+            row.style.cssText = 'padding:10px 12px;margin-bottom:6px;background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);border-radius:8px;' + (sameP ? 'cursor:pointer;' : '');
+
+            var phName = tt ? (tt.PHYLUM_NAMES[other.phylum_number] || ('Phylum ' + other.phylum_number)) : ('Phylum ' + other.phylum_number);
+            var pathEl = document.createElement('div');
+            pathEl.style.cssText = 'font-size:11px;font-weight:600;color:#3498DB;margin-bottom:3px;';
+            pathEl.textContent = '[' + phName + '] ' + other.path;
+            row.appendChild(pathEl);
+
+            if (l.link_insight) {
+              var insightEl = document.createElement('div');
+              insightEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.55);font-style:italic;';
+              insightEl.textContent = l.link_insight;
+              row.appendChild(insightEl);
+            }
+
+            if (sameP) row.onclick = function() { self._loadNodesAndRender(other.id); };
+            wrap.appendChild(row);
+          });
+        });
+      }).catch(function() {});
   },
 
 });
