@@ -4745,6 +4745,7 @@ RPGACE.register('phylumPath', {
     RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectButton(); }, 1500); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectButton(); }, 600);
+      if (name === RPGACE.CONFIG.pages.phylumPath) self._loadNodesAndRender(self._focusNodeId);
     });
     // Subscribes to the shared oracle:response-scanned hook instead of
     // installing a second MutationObserver on #send-btn - the original
@@ -4757,6 +4758,10 @@ RPGACE.register('phylumPath', {
       self._checkLastResponse(text, lastMsg, matches);
     });
     self._patchTextSelect();
+    // Phase 2 (July 15): dedicated nav tab + full drill-down page.
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._injectNavTab(); self._injectPageShell(); }, 1500);
+    });
   },
 
   // ── Highlight-any-text entry point ──────────────────────────────────
@@ -5296,6 +5301,229 @@ RPGACE.register('phylumPath', {
       });
   },
 
+  // ══════════════════════════════════════════════════════════════════
+  // PHASE 2 (July 15): dedicated nav tab, Linnaean drill-down browsing.
+  // Confirmed decisions: Phylum 1 only (not all 21 with placeholders),
+  // articles are lazy-generated + cached (not auto-regenerated), Circles
+  // (the old "rabbit-hole nav" idea, previously deferred pending a
+  // Research-tab declutter) folds straight into this instead of getting
+  // its own build - sibling browsing at any level IS the rabbit-hole
+  // concept, finally given a real home. Direct-from-chat placement
+  // deliberately held back this pass. Insight-adding still happens via
+  // the existing side panel / auto-detect badge / highlight-select -
+  // this tab is for browsing + reading, not a duplicate entry point.
+  // ══════════════════════════════════════════════════════════════════
+
+  _focusNodeId: null, // null = phylum root
+
+  _injectNavTab: function() {
+    if (document.getElementById('phylum-path-nav-tab')) return;
+    var self = this;
+    var tabs = document.querySelector('.nav-tabs');
+    if (!tabs) return;
+    var btn = document.createElement('button');
+    btn.id = 'phylum-path-nav-tab';
+    btn.className = 'nav-tab';
+    btn.textContent = '🧬 Phylum Path';
+    btn.onclick = function() { showPage(RPGACE.CONFIG.pages.phylumPath, btn); };
+    tabs.appendChild(btn);
+  },
+
+  _injectPageShell: function() {
+    if (document.getElementById('page-' + RPGACE.CONFIG.pages.phylumPath)) return;
+    var self = this;
+    var app = document.getElementById('app');
+    if (!app) return;
+    var page = document.createElement('div');
+    page.className = 'page';
+    page.id = 'page-' + RPGACE.CONFIG.pages.phylumPath;
+    page.innerHTML =
+      '<div class="section-title">🧬 Phylum Path — ' + RPGACE.utils.phylumLabel(this.PHYLUM_NUM) + '</div>' +
+      '<div id="pp-breadcrumb" style="margin-bottom:10px;"></div>' +
+      '<div id="pp-siblings" style="margin-bottom:14px;"></div>' +
+      '<div id="pp-body"></div>';
+    app.appendChild(page);
+  },
+
+  // Fetches (fresh every render - cache-bust already covers writes) the
+  // full Phylum 1 node set once per render pass, rather than once per
+  // helper function, to avoid N redundant selects while building one view.
+  _loadNodesAndRender: function(focusId) {
+    var self = this;
+    self._focusNodeId = focusId;
+    var body = document.getElementById('pp-body');
+    if (body) body.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:12px;">Loading...</div>';
+
+    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + self.PHYLUM_NUM + '&order=path.asc')
+      .then(function(nodes) {
+        self._renderDrillDown(nodes || [], focusId);
+      }).catch(function(e) {
+        if (body) body.innerHTML = '<div style="color:#E25454;font-size:12px;">Load error: ' + e.message + '</div>';
+      });
+  },
+
+  _renderDrillDown: function(allNodes, focusId) {
+    var self = this;
+    var tt = RPGACE.modules.taxonomyTree;
+    var focus = focusId ? allNodes.find(function(n) { return n.id === focusId; }) : null;
+
+    // ── Breadcrumb: walk parent_id chain from focus up to root ──
+    var crumb = document.getElementById('pp-breadcrumb');
+    if (crumb) {
+      crumb.innerHTML = '';
+      var chain = [];
+      var walk = focus;
+      while (walk) {
+        chain.unshift(walk);
+        walk = walk.parent_id ? allNodes.find(function(n) { return n.id === walk.parent_id; }) : null;
+      }
+      var rootCrumb = document.createElement('span');
+      rootCrumb.textContent = (tt ? tt.PHYLUM_NAMES[self.PHYLUM_NUM] : 'Phylum ' + self.PHYLUM_NUM);
+      rootCrumb.style.cssText = 'cursor:pointer;color:' + (!focus ? '#3DAA6E;font-weight:700;' : 'rgba(61,170,110,0.6);') + 'font-size:12px;';
+      rootCrumb.onclick = function() { self._loadNodesAndRender(null); };
+      crumb.appendChild(rootCrumb);
+      chain.forEach(function(n, i) {
+        var sep = document.createElement('span');
+        sep.textContent = ' › ';
+        sep.style.cssText = 'color:rgba(226,226,236,0.25);font-size:12px;';
+        crumb.appendChild(sep);
+        var seg = document.createElement('span');
+        seg.textContent = n.name;
+        var isLast = (i === chain.length - 1);
+        seg.style.cssText = 'cursor:pointer;color:' + (isLast ? '#3DAA6E;font-weight:700;' : 'rgba(61,170,110,0.6);') + 'font-size:12px;';
+        seg.onclick = function() { self._loadNodesAndRender(n.id); };
+        crumb.appendChild(seg);
+      });
+    }
+
+    // ── Siblings ("scope" — Circles' rabbit-hole concept, browse ──
+    // ── sideways without changing depth) ─────────────────────────
+    var sibWrap = document.getElementById('pp-siblings');
+    if (sibWrap) {
+      sibWrap.innerHTML = '';
+      var parentId = focus ? focus.parent_id : null;
+      var siblings = allNodes.filter(function(n) {
+        return focus ? n.parent_id === parentId && n.id !== focus.id : false;
+      });
+      if (focus && siblings.length) {
+        var lbl = document.createElement('div');
+        lbl.textContent = 'Other ' + (tt ? tt.rankNameForDepth(focus.depth) : 'items') + ' here:';
+        lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.3);margin-bottom:6px;';
+        sibWrap.appendChild(lbl);
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+        siblings.forEach(function(s) {
+          var chip = document.createElement('button');
+          chip.textContent = s.name;
+          chip.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#3DAA6E;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          chip.onclick = function() { self._loadNodesAndRender(s.id); };
+          row.appendChild(chip);
+        });
+        sibWrap.appendChild(row);
+      }
+    }
+
+    // ── Body: purpose line + children list, or leaf content ──────
+    var body = document.getElementById('pp-body');
+    if (!body) return;
+    body.innerHTML = '';
+
+    var purposeLine = document.createElement('div');
+    purposeLine.textContent = focus ? (focus.explainer || '') : RPGACE.utils.phylumContext(self.PHYLUM_NUM);
+    purposeLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);margin-bottom:14px;line-height:1.6;border-left:2px solid rgba(61,170,110,0.3);padding-left:10px;';
+    if (purposeLine.textContent) body.appendChild(purposeLine);
+
+    body.appendChild(self._articleSection(focus));
+
+    var children = allNodes.filter(function(n) {
+      return focus ? n.parent_id === focus.id : n.parent_id === null;
+    });
+
+    if (children.length) {
+      var childLbl = document.createElement('div');
+      childLbl.textContent = focus ? 'Drill in' : 'Orders';
+      childLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin:16px 0 8px;';
+      body.appendChild(childLbl);
+      children.forEach(function(c) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid rgba(255,255,255,0.06);border-radius:8px;margin-bottom:6px;cursor:pointer;background:rgba(255,255,255,0.02);';
+        var left = document.createElement('div');
+        var rankLbl = document.createElement('div');
+        rankLbl.textContent = (tt ? tt.rankNameForDepth(c.depth) : 'Depth ' + c.depth) + (c.node_type === 'leaf' ? ' · leaf' : '');
+        rankLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);';
+        var nameLbl = document.createElement('div');
+        nameLbl.textContent = c.name;
+        nameLbl.style.cssText = 'font-size:13px;font-weight:600;color:#E2E2EC;';
+        left.appendChild(rankLbl); left.appendChild(nameLbl);
+        var arrow = document.createElement('span');
+        arrow.textContent = '→';
+        arrow.style.cssText = 'color:rgba(61,170,110,0.5);font-size:14px;';
+        row.appendChild(left); row.appendChild(arrow);
+        row.onclick = function() { self._loadNodesAndRender(c.id); };
+        body.appendChild(row);
+      });
+    } else if (focus && focus.node_type === 'leaf') {
+      var deep = (focus.deep_content && focus.deep_content.generated) ? focus.deep_content.generated : '';
+      if (deep) {
+        var deepBox = document.createElement('div');
+        deepBox.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7;background:rgba(255,255,255,0.02);border-radius:8px;padding:14px;margin-top:12px;';
+        deepBox.textContent = deep;
+        body.appendChild(deepBox);
+      }
+    }
+  },
+
+  // ── Lazy + cached article view: checks Encyclopedia (via ──────────
+  // ── taxonomy_node_id) for an existing article before ever calling ──
+  // ── Oracle - only regenerates on explicit "Refresh" tap. Reuses    ──
+  // ── _generateArticle()/saveOracleToEncyclopedia()'s existing       ──
+  // ── upsert-on-title behavior, no new storage or column needed.     ──
+  _articleSection: function(focus) {
+    var self = this;
+    var wrap = document.createElement('div');
+    wrap.id = 'pp-article-' + (focus ? focus.id : 'root');
+    wrap.style.cssText = 'margin-bottom:6px;';
+
+    var renderButton = function(label, cached) {
+      wrap.innerHTML = '';
+      if (cached) {
+        var box = document.createElement('div');
+        box.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.15);border-radius:8px;padding:14px;margin-bottom:8px;';
+        box.textContent = cached;
+        wrap.appendChild(box);
+      }
+      var btn = document.createElement('button');
+      btn.textContent = label;
+      btn.style.cssText = 'padding:6px 14px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.onclick = function() {
+        btn.disabled = true; btn.textContent = '⏳ Generating...';
+        self._generateArticle(focus).then(function() {
+          // saveOracleToEncyclopedia() (main.js) writes via a raw fetch,
+          // not RPGACE.sb.insert/update - the cache-busting wrapper never
+          // fires for it, so the just-written row could show stale for up
+          // to 60s on the immediate re-check below without this.
+          RPGACE.cache.clear('encyclopedia');
+          self._loadNodesAndRender(self._focusNodeId);
+        });
+      };
+      wrap.appendChild(btn);
+    };
+
+    if (!focus) {
+      renderButton('📄 Generate Phylum-Level Article', null);
+      return wrap;
+    }
+
+    var title = focus.name + ' — ' + (RPGACE.modules.taxonomyTree ? RPGACE.modules.taxonomyTree.rankNameForDepth(focus.depth) : 'Node') + ' Reference';
+    RPGACE.sb.select('encyclopedia', 'taxonomy_node_id=eq.' + focus.id + '&limit=1')
+      .then(function(rows) {
+        if (rows && rows[0]) renderButton('🔄 Refresh Article', rows[0].content);
+        else renderButton('📄 Generate/Refresh Article', null);
+      }).catch(function() { renderButton('📄 Generate/Refresh Article', null); });
+
+    return wrap;
+  },
+
 });
 /* ===END:phylumPath=== */
 /* ===END_DOMAIN:LEARNING=== */
@@ -5321,6 +5549,7 @@ RPGACE.register('config', {
         research:     'learning',
         encyclopedia: 'encyclopedia',
         journal:      'journal',
+        phylumPath:   'phylumpath',
       },
       mainFns: {
         prodOracle:  'toggleProdOraclePanel',
