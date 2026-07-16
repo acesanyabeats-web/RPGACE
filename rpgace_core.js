@@ -2303,13 +2303,14 @@ RPGACE.register('taxonomyReviewQueue', {
           var pathEl = document.createElement('div');
           pathEl.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;line-height:1.5;';
           pathEl.textContent = p.proposed_path;
+          var isPhylumPath = !!(p.proposed_steps && p.proposed_steps.engine === 'phylum_path');
           var srcEl = document.createElement('div');
-          srcEl.style.cssText = 'font-size:9px;color:rgba(155,89,182,0.6);white-space:nowrap;flex-shrink:0;';
-          srcEl.textContent = sourceLabels[p.source_type] || p.source_type;
+          srcEl.style.cssText = 'font-size:9px;color:' + (isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
+          srcEl.textContent = (isPhylumPath ? '🧬 Phylum Path · ' : '') + (sourceLabels[p.source_type] || p.source_type);
           head.appendChild(pathEl); head.appendChild(srcEl);
           row.appendChild(head);
 
-          if (p.matched_existing_node_id) {
+          if (p.matched_existing_node_id && !isPhylumPath) {
             var warn = document.createElement('div');
             warn.style.cssText = 'font-size:10px;color:#E25454;margin-bottom:8px;';
             warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
@@ -2324,7 +2325,8 @@ RPGACE.register('taxonomyReviewQueue', {
           acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
           acceptBtn.onclick = function() {
             row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
-            RPGACE.modules.taxonomyTree._acceptLineage(self._toProposal(p));
+            if (isPhylumPath) { self._acceptPhylumPathProposal(p); }
+            else { RPGACE.modules.taxonomyTree._acceptLineage(self._toProposal(p)); }
             row.remove();
           };
 
@@ -2333,7 +2335,8 @@ RPGACE.register('taxonomyReviewQueue', {
           editBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           editBtn.onclick = function() {
             overlay.remove();
-            RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p));
+            if (isPhylumPath) { self._editPhylumPathProposal(p); }
+            else { RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p)); }
           };
 
           var rejectBtn = document.createElement('button');
@@ -2356,6 +2359,53 @@ RPGACE.register('taxonomyReviewQueue', {
         err.textContent = 'Could not load proposals.';
         box.appendChild(err);
       });
+  },
+
+  // ── Phylum Path-engine rows: reconstruct the real attach node (if any)  ──
+  // ── by id, then insert directly via phylumPath._insertNewSteps - the    ──
+  // ── queued row itself already IS the confirmed decision (this batch     ──
+  // ── review is the deferred confirm/deny/modify step for silent          ──
+  // ── triggers), so there's no second popup on plain Accept.              ──
+  _acceptPhylumPathProposal: function(p) {
+    var ps = p.proposed_steps || {};
+    var pp = RPGACE.modules.phylumPath;
+    var finish = function(attachNode) {
+      pp._insertNewSteps(p.phylum_number, attachNode, ps.newSteps || [], ps.explainers || [], ps.insightText || '')
+        .then(function() {
+          RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+        });
+    };
+    if (ps.attachToId) {
+      RPGACE.sb.select('taxonomy_tree', 'id=eq.' + ps.attachToId + '&limit=1')
+        .then(function(rows) { finish(rows && rows[0] ? rows[0] : null); })
+        .catch(function() { finish(null); });
+    } else {
+      finish(null);
+    }
+  },
+
+  // ── Edit before accepting: reuses phylumPath's own confirm/edit popup ──
+  // ── rather than the old full-path editor, since a Phylum Path proposal ──
+  // ── is always "attach here, add these steps," never a whole fresh path. ──
+  _editPhylumPathProposal: function(p) {
+    var ps = p.proposed_steps || {};
+    var pp = RPGACE.modules.phylumPath;
+    var openEditor = function(attachNode) {
+      pp._showPlacementConfirm(p.phylum_number, attachNode, (ps.newSteps || []).slice(), (ps.explainers || []).slice(), ps.insightText || '',
+        function(finalSteps, finalExplainers) {
+          pp._insertNewSteps(p.phylum_number, attachNode, finalSteps, finalExplainers, ps.insightText || '').then(function() {
+            RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+          });
+        }
+      );
+    };
+    if (ps.attachToId) {
+      RPGACE.sb.select('taxonomy_tree', 'id=eq.' + ps.attachToId + '&limit=1')
+        .then(function(rows) { openEditor(rows && rows[0] ? rows[0] : null); })
+        .catch(function() { openEditor(null); });
+    } else {
+      openEditor(null);
+    }
   },
 
   _toProposal: function(p) {
@@ -4122,8 +4172,21 @@ RPGACE.register('taxonomyTree', {
 
   // ── Core: propose a lineage for any topic, from any source ────────
   // sourceType: 'manual' | 'oracle' | 'content_intelligence' | 'encyclopedia'
+  // July 15, "old feeds new": this function used to be the only decision-
+  // maker for every trigger source, and its flat top-down generation has
+  // no real structural awareness (_checkForMorph only catches exact name
+  // matches) - confirmed live to create duplicate/overlapping branches
+  // (a whole new "Harmony & Chord Theory" Order sitting beside the
+  // existing "Harmony" Order for near-identical content). For any phylum
+  // phylumPath has taken over, delegate the actual placement DECISION to
+  // its structure-aware 5-check reasoning instead - this function's job
+  // becomes "how did the insight get here," not "where does it go."
   proposeLineage: function(topicText, phylumNumber, sourceType, sourceId) {
     var self = this;
+    var pp = RPGACE.modules.phylumPath;
+    if (pp && pp.isEnabled(phylumNumber)) {
+      return self._proposeLineageViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
+    }
     var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
 
     RPGACE.utils.toast('🌳 Generating taxonomy lineage...', '#9B59B6', 2500);
@@ -4178,6 +4241,26 @@ RPGACE.register('taxonomyTree', {
     });
   },
 
+  // ── Interactive placement via Phylum Path's structure-aware engine ──
+  // Same external behavior as the old proposeLineage() from the caller's
+  // point of view (fires, shows a confirm UI, writes on accept) - just a
+  // smarter decision underneath, and a lighter confirm popup than the
+  // old full-path editor since Phylum Path only ever appends below an
+  // attach point.
+  _proposeLineageViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
+    var pp = RPGACE.modules.phylumPath;
+    RPGACE.utils.toast('🧬 Deciding placement (Phylum Path)...', '#3DAA6E', 2500);
+    return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
+      pp._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, topicText,
+        function(finalSteps, finalExplainers) {
+          pp._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, topicText);
+        }
+      );
+    }).catch(function(err) {
+      RPGACE.utils.toast('Error generating placement: ' + err.message, '#E25454', 3500);
+    });
+  },
+
   // ── F4/F5: silent sibling of proposeLineage() — same Oracle-generated  ──
   // ── lineage, but queues it into taxonomy_proposals for later batch      ──
   // ── review (F6's Dashboard queue) instead of opening the accept popup   ──
@@ -4186,6 +4269,10 @@ RPGACE.register('taxonomyTree', {
   // ── human decision mid-pipeline.                                       ──
   silentPropose: function(topicText, phylumNumber, sourceType, sourceId) {
     var self = this;
+    var pp = RPGACE.modules.phylumPath;
+    if (pp && pp.isEnabled(phylumNumber)) {
+      return self._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
+    }
     var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
     var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
       'ROOT ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
@@ -4237,6 +4324,39 @@ RPGACE.register('taxonomyTree', {
     // ciAutoPropose/encSync's batch scans swallow per-item failures on
     // purpose (one bad report shouldn't stop the loop); encTaxonomyLink's
     // per-entry button attaches its own .catch() to show real user feedback.
+  },
+
+  // ── Silent placement via Phylum Path's structure-aware engine ──────
+  // Same queue-not-block contract as silentPropose() - writes into the
+  // SAME taxonomy_proposals table so F6's existing Dashboard review queue
+  // is still the one place all of this surfaces for review, just tagged
+  // so taxonomyReviewQueue knows to render the lighter Phylum Path confirm
+  // view (attach point + appended steps) instead of the old full-path
+  // editor when the row's engine is 'phylum_path'.
+  _silentProposeViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
+    var self = this;
+    var pp = RPGACE.modules.phylumPath;
+    return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
+      var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
+      var base = decision.attachNode ? decision.attachNode.path : phylumName;
+      var previewPath = base + (decision.newSteps.length ? '/' + decision.newSteps.join('/') : '');
+      return RPGACE.sb.insert('taxonomy_proposals', {
+        source_type: sourceType,
+        source_id: sourceId,
+        proposed_path: previewPath.replace(/\//g, ' → '),
+        proposed_steps: {
+          engine: 'phylum_path',
+          attachToId: decision.attachNode ? decision.attachNode.id : null,
+          newSteps: decision.newSteps,
+          explainers: decision.explainers,
+          insightText: topicText,
+        },
+        phylum_number: phylumNumber,
+        matched_existing_node_id: decision.attachNode ? decision.attachNode.id : null,
+      });
+    });
+    // Same no-.catch() contract as silentPropose() above - errors
+    // propagate to the caller's own error handling.
   },
 
   // ── Check if any step in the proposed path already exists ────────
@@ -4612,6 +4732,14 @@ RPGACE.register('phylumPath', {
 
   PHYLUM_NUM: 1,
 
+  // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
+  // silentPropose() check this before running their own flat top-down
+  // path-generation, and delegate to decidePlacement()/_insertNewSteps()
+  // below instead when the target phylum is enabled here. Still Phylum 1
+  // only for now (confirmed) - expanding rollout later is just adding a
+  // number to this check, not a rewrite.
+  isEnabled: function(phylumNumber) { return phylumNumber === this.PHYLUM_NUM; },
+
   init: function() {
     var self = this;
     RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectButton(); }, 1500); });
@@ -4725,11 +4853,13 @@ RPGACE.register('phylumPath', {
       if (!text) { RPGACE.utils.toast('Add an insight first', '#E25454', 2000); return; }
       placeBtn.disabled = true;
       placeBtn.textContent = '⏳ Placing...';
-      self._placeInsight(text, self.PHYLUM_NUM).then(function() {
+      self._placeInsight(text, self.PHYLUM_NUM).then(function(result) {
         placeBtn.disabled = false;
         placeBtn.textContent = '🧬 Place this insight';
-        document.getElementById('phylum-path-input').value = '';
-        self._renderTree();
+        if (result && result.inserted) {
+          document.getElementById('phylum-path-input').value = '';
+          self._renderTree();
+        }
       }).catch(function(e) {
         placeBtn.disabled = false;
         placeBtn.textContent = '🧬 Place this insight';
@@ -4802,16 +4932,15 @@ RPGACE.register('phylumPath', {
       });
   },
 
-  // ── Core: place a bottom-up insight ─────────────────────────────────
+  // ── Decide (don't write) where a bottom-up insight belongs ──────────
   // Fetches existing structure, asks Oracle to decide an attach point +
   // however many new ranks are genuinely needed (the 5-perspective check
-  // stands in for this project's Council of 5 convention here), then
-  // inserts only the new steps and generates deep-dive content for the
-  // deepest one.
-  _placeInsight: function(insightText, phylumNumber) {
-    var self = this;
-    RPGACE.utils.toast('🧬 Deciding placement...', '#3DAA6E', 2500);
-
+  // stands in for this project's Council of 5 convention here). Returns a
+  // decision only - callers (the confirm popup below, or taxonomyTree's
+  // proposeLineage/silentPropose once routed here) own what happens next.
+  // Split out July 15 so the old top-down system can reuse this same
+  // structure-aware decision instead of its own duplicate-blind one.
+  decidePlacement: function(insightText, phylumNumber) {
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
       .then(function(existing) {
         existing = existing || [];
@@ -4854,9 +4983,122 @@ RPGACE.register('phylumPath', {
           if (parsed.attachTo) {
             attachNode = existing.find(function(n) { return n.path === parsed.attachTo; });
           }
-          return self._insertNewSteps(phylumNumber, attachNode, parsed.newSteps || [], parsed.explainers || [], insightText);
+          return { attachNode: attachNode, newSteps: parsed.newSteps || [], explainers: parsed.explainers || [] };
         });
       });
+  },
+
+  // ── Confirm/deny/modify checkpoint ──────────────────────────────────
+  // July 15: was missing entirely - _placeInsight used to write straight
+  // to taxonomy_tree the instant Oracle decided a placement, with zero
+  // human checkpoint (every other proposal path in RPGACE has one). Same
+  // editable-steps convention as taxonomyTree._showProposalPopup, but
+  // scoped to what Phylum Path actually does - only ever appends new
+  // steps below an attach point, never edits existing structure - so
+  // there's no full-path editor, just the attach point (read-only) plus
+  // the new steps (editable/removable/insertable).
+  _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) {
+    var tt = RPGACE.modules.taxonomyTree;
+    var steps = (newSteps || []).slice();
+    var expl = (explainers || []).slice();
+
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = 'Phylum Path · Confirm Placement';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    title.textContent = RPGACE.utils.phylumLabel(phylumNumber);
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    var attachLine = document.createElement('div');
+    attachLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);margin-bottom:14px;line-height:1.6;padding:10px 12px;background:rgba(61,170,110,0.04);border-left:2px solid rgba(61,170,110,0.3);border-radius:0 6px 6px 0;';
+    attachLine.innerHTML = attachNode
+      ? '<strong style="color:rgba(226,226,236,0.75);">Attaching under:</strong> ' + attachNode.path
+      : '<strong style="color:rgba(226,226,236,0.75);">Starting a new path</strong> from ' + (tt ? tt.PHYLUM_NAMES[phylumNumber] : 'the phylum root') + ' — no matching existing branch found.';
+    box.appendChild(attachLine);
+
+    var stepsContainer = document.createElement('div');
+    stepsContainer.style.cssText = 'margin-bottom:16px;';
+    var preview = document.createElement('div');
+    preview.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:16px;padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;';
+
+    function updatePreview() {
+      var base = attachNode ? attachNode.path : ((tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber)));
+      preview.textContent = base + (steps.length ? '/' + steps.join('/') : '');
+    }
+
+    function renderSteps() {
+      stepsContainer.innerHTML = '';
+      steps.forEach(function(step, i) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px;';
+        var depthLabel = document.createElement('span');
+        depthLabel.style.cssText = 'font-size:9px;color:rgba(61,170,110,0.5);flex-shrink:0;min-width:16px;';
+        depthLabel.textContent = (i + 1) + '.';
+        var stepInput = document.createElement('input');
+        stepInput.type = 'text'; stepInput.value = step;
+        stepInput.style.cssText = 'flex:1;background:none;border:none;color:#E2E2EC;font-size:12px;font-family:Rajdhani,sans-serif;outline:none;';
+        stepInput.oninput = function() { steps[i] = stepInput.value; updatePreview(); };
+        var delBtn = document.createElement('button');
+        delBtn.textContent = '×';
+        delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.5);cursor:pointer;font-size:14px;flex-shrink:0;';
+        delBtn.onclick = function() { steps.splice(i, 1); expl.splice(i, 1); renderSteps(); updatePreview(); };
+        row.appendChild(depthLabel); row.appendChild(stepInput); row.appendChild(delBtn);
+        stepsContainer.appendChild(row);
+      });
+      var addBtn = document.createElement('button');
+      addBtn.textContent = '+ Insert step';
+      addBtn.style.cssText = 'padding:5px 12px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.35);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      addBtn.onclick = function() { steps.push('New step'); expl.push(''); renderSteps(); updatePreview(); };
+      stepsContainer.appendChild(addBtn);
+    }
+    renderSteps();
+    updatePreview();
+    box.appendChild(stepsContainer);
+    box.appendChild(preview);
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+    var acceptBtn = document.createElement('button');
+    acceptBtn.textContent = '✓ Accept & Generate Content';
+    acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    acceptBtn.onclick = function() {
+      if (!steps.length) { RPGACE.utils.toast('No steps left to place', '#E25454', 2500); return; }
+      overlay.remove();
+      onAccept(steps, expl);
+    };
+    var rejectBtn = document.createElement('button');
+    rejectBtn.textContent = '✗ Reject';
+    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn.onclick = function() { overlay.remove(); if (onReject) onReject(); };
+    btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  // ── Manual-panel entry point: decide, confirm, then insert ──────────
+  _placeInsight: function(insightText, phylumNumber) {
+    var self = this;
+    RPGACE.utils.toast('🧬 Deciding placement...', '#3DAA6E', 2500);
+
+    return self.decidePlacement(insightText, phylumNumber).then(function(decision) {
+      return new Promise(function(resolve, reject) {
+        self._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, insightText,
+          function(finalSteps, finalExplainers) {
+            self._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, insightText)
+              .then(function() { resolve({ inserted: true }); })
+              .catch(reject);
+          },
+          function() { resolve({ inserted: false }); }
+        );
+      });
+    });
   },
 
   // Chained insert, same pattern as taxonomyTree._acceptLineage (needs the
@@ -4917,18 +5159,27 @@ RPGACE.register('phylumPath', {
   // ── _generateNodeContent - real Phylum 1 data shows deep_content is     ──
   // ── empty on every node that call is supposed to have populated, an    ──
   // ── open bug not investigated here (flagged in the plan doc instead).  ──
+  // July 15 smoke test: real Phrygian-Dominant insight got cut off mid-
+  // sentence at max_tokens:1200 asking for a full 3-layer teaching format.
+  // Same class of issue as the already-open Oracle 504 timeout bug -
+  // generation time, not just token count, is the real ceiling. Trimmed
+  // the ask to explicitly stay short (this is a reference note attached to
+  // one taxonomy leaf, not a full lesson - Feynman/Prod Oracle already own
+  // the full-length teaching job elsewhere) and lowered max_tokens to
+  // match the placement call's already-reliable budget, rather than
+  // raising it further.
   _generateInsightContent: function(node, phylumNumber, insightText) {
     var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ', teaching a UK hip hop / drill producer who works in FL Studio.\n\n' +
       'TOPIC: "' + node.name + '" (part of: ' + node.path + ')\n' +
       'THE INSIGHT THAT PROMPTED THIS: "' + insightText + '"\n\n' +
-      'Teach this completely using the 3-layer method: simple terms first, then technical mechanics, then the expert nuance most tutorials miss. Be specific to FL Studio throughout.';
+      'Teach this using the 3-layer method: simple terms first, then technical mechanics, then the one expert nuance most tutorials miss. Be specific to FL Studio. Keep this concise — under 350 words total across all 3 layers, this is a reference note attached to one taxonomy leaf, not a full lesson.';
 
     return fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 1200
+        max_tokens: 700
       })
     }).then(function(r) { return r.json(); }).then(function(data) {
       var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
@@ -4966,17 +5217,26 @@ RPGACE.register('phylumPath', {
         var title = node ? node.name : (tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber));
         var rankLabel = node ? (tt ? tt.rankNameForDepth(node.depth) : 'Node') : 'Phylum';
 
+        // July 15 smoke test: this call (max_tokens:1800, the longest of
+        // Phylum Path's 3 Oracle calls) failed outright with a JSON-parse
+        // error on "Church Modes" - Vercel's function timeout returned an
+        // HTML error page instead of JSON. Reproduces the already-open
+        // Oracle 504 timeout bug. Trimmed the ask + lowered max_tokens as
+        // a scoped mitigation (same move already made for
+        // _generateNodeContent and _generateInsightContent) - the timeout
+        // itself still needs its own dedicated fix (streaming or chunked
+        // generation), not another blind retry.
         var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
-          'Write a complete reference article for "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ').\n\n' +
-          'Synthesize the following accumulated teaching content from this topic and everything beneath it in the tree:\n\n' + (contentBlock || '(nothing accumulated yet - write a foundational overview instead)') + '\n\n' +
-          'Produce a well-organized, complete article a producer can use as a standing reference — a real synthesized understanding of the topic as a whole, not just a restated list.';
+          'Write a reference article for "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ').\n\n' +
+          'Synthesize the following accumulated teaching content from this topic and everything beneath it in the tree:\n\n' + (contentBlock || '(nothing accumulated yet - write a short foundational overview instead)') + '\n\n' +
+          'Produce a well-organized synthesis a producer can use as a standing reference, not just a restated list. Keep it under 500 words — concise and usable beats exhaustive.';
 
         return fetch('/api/oracle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: [{ role: 'user', content: prompt }],
-            max_tokens: 1800
+            max_tokens: 1000
           })
         }).then(function(r) { return r.json(); }).then(function(data) {
           var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
