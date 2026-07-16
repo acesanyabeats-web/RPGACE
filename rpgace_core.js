@@ -4756,6 +4756,44 @@ RPGACE.register('phylumPath', {
     RPGACE.hooks.on('oracle:response-scanned', function(text, lastMsg, matches) {
       self._checkLastResponse(text, lastMsg, matches);
     });
+    self._patchTextSelect();
+  },
+
+  // ── Highlight-any-text entry point ──────────────────────────────────
+  // July 15: reuses main.js's existing native #text-select-popup (the
+  // "🔍 Identify" popup that already appears over Oracle chat + Encyclopedia
+  // text on selection) instead of building a second selection listener -
+  // same exact pattern conidPot._patchTextSelect() already established for
+  // its "💡 Save as Idea" button, just a different appended button and its
+  // own dataset flag so both patches can coexist on the same popup without
+  // re-patching each other.
+  _patchTextSelect: function() {
+    var self = this;
+    var obs = new MutationObserver(function(muts) {
+      muts.forEach(function(m) {
+        m.addedNodes.forEach(function(node) {
+          if (node.nodeType !== 1) return;
+          var popup = node.id === 'text-select-popup' ? node :
+                      node.querySelector && node.querySelector('#text-select-popup');
+          if (!popup) return;
+          if (popup.dataset.ppPatched) return;
+          popup.dataset.ppPatched = '1';
+          var btn = document.createElement('button');
+          btn.textContent = '🧬 Send to Phylum Path';
+          btn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
+          btn.onclick = function() {
+            var selectedText = window.getSelection ? window.getSelection().toString() : '';
+            var text = selectedText || popup.dataset.selectedText || '';
+            if (!text) { RPGACE.utils.toast('Select some text first', '#E25454', 2000); return; }
+            self.open(text.slice(0, 2000));
+          };
+          var btnRow = popup.querySelector('div');
+          if (btnRow) btnRow.appendChild(btn);
+          else popup.appendChild(btn);
+        });
+      });
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
   },
 
   _injectButton: function() {
