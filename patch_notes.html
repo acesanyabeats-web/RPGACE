@@ -84,6 +84,16 @@
   </div>
 
   <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🎛️ July 17 — Sonus Designatio (Phylum 3): third phylum through the Development Framework, real overlap check vs Visio Cinematica</div>
+    <div class="card-body">
+      Keyword sweep: 7 → 150 terms across 8 categories (Synthesis Fundamentals, Synth Parameters, Sound Design Techniques, Sampling, Effects &amp; Processing, Textural &amp; Atmospheric Elements, Genre-Specific UK Drill &amp; Trap Jargon, DAW/FL Studio &amp; Plugin-specific), merging a GODMODE+Council-of-5 pass from the separate RPGACE Python project with the original 7 seed terms.<br><br>
+      <strong>Real overlap check run before adopting it</strong> (same discipline as the roll/fill fix on Percussio) — specifically checked Sonus Designatio against Visio Cinematica on a flagged concern that sound-design and filmmaking language share adjectives (atmospheric, cinematic, eerie, dark, haunting). Wrote a script parsing every phylum's real, live keyword list and checking for exact bare-term collisions across all 21 phyla. Result: <strong>zero exact shared bare terms between Sonus Designatio and Visio Cinematica</strong> — the concern doesn't materialize as a literal keyword collision, since the sound-design-specific terms are compound phrases ("cinematic synth", "eerie synth") rather than the bare adjective alone. Real overlaps found instead, all genuine shared technique vocabulary between adjacent crafts rather than false-positive bleed: Percussio (<code>glide</code>, <code>portamento</code>, <code>riser</code>, <code>one-shot</code>, <code>attack</code> — 808 slides and synth envelopes genuinely share this vocabulary), Compositio (<code>modulation</code>, <code>drone</code>, <code>unison</code>, <code>sample flip</code>), and Mixtura (<code>reverb</code>, <code>delay</code>).<br><br>
+      <strong>Data repair:</strong> found the same pre-July-12 flat-<code>parent_id</code> bug on the phylum's existing "Synthesizers" branch (5 rows, correct <code>path</code>/<code>depth</code> but no real parent chain) — backfilled by matching each row's path-minus-last-segment against another row's full path, zero orphans remaining. The existing "Sampling &amp; Sample Manipulation" branch was already correctly chained.<br><br>
+      <strong>Tree build:</strong> 42 new rows extending the 2 existing Orders (Synthesizers: +Synthesis Techniques, +Synth Parameter Design; Sampling &amp; Sample Manipulation: +Sample Chopping &amp; Manipulation Techniques) plus 2 new Orders (Sound Design &amp; Processing; Textural &amp; Atmospheric Sound Design). Deliberately kept the genre-specific "cinematic synth" leaf scoped to audio sound-design vocabulary only, distinct from Visio Cinematica's own visual/filmmaking vocabulary. Row count: 11 → 53. Phylum Path not yet enabled for it — same follow-up pattern as Percussio (needs an <code>ENABLED_PHYLA</code> addition, already generalized to support this trivially).
+    </div>
+  </div>
+
+  <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🔀 July 17 — Phylum Path generalized: Percussio now live alongside Compositio via a phylum switcher</div>
     <div class="card-body">
       Direct follow-up to the framework pass below — <code>phylumPath.PHYLUM_NUM</code> was still a hardcoded pilot constant threaded through ~10 places (manual-panel copy, auto-detect matching, the nav-tab drill-down root, the fusion-link same-phylum check), flagged as the next concrete step once Percussio's tree/keywords existed. Since every function already took <code>phylumNumber</code> as a parameter, this turned out to be a UI change, not a rewrite.<br><br>
@@ -510,6 +520,11 @@
   <div class="card">
     <div class="card-title">Multi-model pipeline, fusion-link system, and Percussio's new tree/keywords — none hand-tested yet <span class="badge open">SMOKE TEST</span></div>
     <div class="card-body">Everything built July 16-17 was done directly against Supabase/the codebase with no browser access this session. Needs a real pass: place an insight via Phylum Path and confirm the extractor→ground-worker pipeline behaves (and that the ground-worker-alone fallback actually works if Fable 5 fails); confirm the 2 seeded fusion links for the Theory-to-Emotion node actually render in the drill-down view under both Compositio and (once viewable) Anatomia/Lingua Musicae; confirm a genuinely new Phylum-1 insight triggers a real fusion-link search and lands a pending row in the Dashboard review queue; and review Percussio's 39-node tree/194-term keyword list for quality before treating it as a template for Phylum 3.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sonus Designatio (Phylum 3) not yet enabled or hand-tested <span class="badge open">SMOKE TEST</span></div>
+    <div class="card-body">Keyword sweep (150 terms) and tree build (53 rows) done July 17, same as Percussio's pattern — Phylum Path itself is not yet enabled for it (just needs a 3rd entry in <code>ENABLED_PHYLA</code>, already generalized to support this). Review the tree/keywords, then enable and hand-test the phylum switcher actually surfaces 3 phyla correctly, before moving to Phylum 4.</div>
   </div>
 </div>
 
