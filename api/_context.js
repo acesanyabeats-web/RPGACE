@@ -43,7 +43,16 @@ export const ACCOUNTS = {
 export const MODEL    = 'claude-sonnet-4-6';
 export const BASE_URL = 'https://backend.composio.dev/api/v3.1';
 
-export async function callClaude(apiKey, messages, system='', maxTokens=1000){
+// July 16: extractor/ground-worker two-tier pipeline (Phylum Path taxonomy
+// restructuring only, so far). MODEL_EXTRACTOR is a fast/cheap first pass
+// that produces a structured plan; MODEL_GROUND_WORKER executes it. Kept
+// as the already-verified-working model by default rather than switching
+// wholesale to an unverified string here - CLAUDE.md's own standing rule
+// is never guess a model identifier, confirm it works first.
+export const MODEL_EXTRACTOR      = 'claude-fable-5';
+export const MODEL_GROUND_WORKER  = MODEL;
+
+export async function callClaude(apiKey, messages, system='', maxTokens=1000, model=MODEL){
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -51,7 +60,7 @@ export async function callClaude(apiKey, messages, system='', maxTokens=1000){
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system, messages })
+    body: JSON.stringify({ model: model, max_tokens: maxTokens, system, messages })
   });
   const text = await res.text();
   let data;

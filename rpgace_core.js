@@ -4740,6 +4740,72 @@ RPGACE.register('phylumPath', {
   // number to this check, not a rewrite.
   isEnabled: function(phylumNumber) { return phylumNumber === this.PHYLUM_NUM; },
 
+  // ══════════════════════════════════════════════════════════════════
+  // July 16: extractor -> ground-worker pipeline for all 3 of Phylum
+  // Path's Oracle calls (decidePlacement, _generateInsightContent,
+  // _generateArticle). A fast/cheap Fable 5 pass produces a structured
+  // plan/outline first; the existing verified-working model (still
+  // claude-sonnet-4-6, the ground worker) does the actual detailed
+  // reasoning/writing, using that plan as a starting hint it can
+  // expand or override, not a locked-in answer. If the extractor call
+  // fails or times out, each caller falls back to the ground worker
+  // alone with the original single-call prompt - the extractor is a
+  // pure quality/framing addition, never a hard dependency.
+  // ══════════════════════════════════════════════════════════════════
+  EXTRACTOR_MODEL: 'claude-fable-5',
+
+  _callExtractor: function(prompt, maxTokens) {
+    return fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        system: 'You return only valid JSON, no markdown formatting, no explanation text.',
+        max_tokens: maxTokens,
+        model: this.EXTRACTOR_MODEL,
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+      var cleaned = raw.replace(/```json|```/g, '').trim();
+      var match = cleaned.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('No JSON found in extractor response');
+      return JSON.parse(match[0]);
+    });
+  },
+
+  // Ground worker calls omit `model` entirely - api/oracle.js defaults to
+  // the existing verified-working MODEL constant when none is given.
+  _callGroundWorkerJSON: function(prompt, maxTokens) {
+    return fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        system: 'You return only valid JSON, no markdown formatting, no explanation text.',
+        max_tokens: maxTokens,
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+      var cleaned = raw.replace(/```json|```/g, '').trim();
+      var match = cleaned.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('No JSON found in Oracle response');
+      return JSON.parse(match[0]);
+    });
+  },
+
+  _callGroundWorkerText: function(prompt, maxTokens) {
+    return fetch('/api/oracle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: maxTokens,
+      })
+    }).then(function(r) { return r.json(); }).then(function(data) {
+      return (data.content || []).map(function(c) { return c.text || ''; }).join('');
+    });
+  },
+
   init: function() {
     var self = this;
     // Found + fixed July 16: init() only ever runs because 'rpgace:ready'
@@ -4996,6 +5062,7 @@ RPGACE.register('phylumPath', {
   // Split out July 15 so the old top-down system can reuse this same
   // structure-aware decision instead of its own duplicate-blind one.
   decidePlacement: function(insightText, phylumNumber) {
+    var self = this;
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
       .then(function(existing) {
         existing = existing || [];
@@ -5003,43 +5070,53 @@ RPGACE.register('phylumPath', {
           ? existing.map(function(n) { return '- ' + n.path; }).join('\n')
           : '(nothing mapped yet - this will be the first entry)';
 
-        var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
-          'A student/producer just learned this insight:\n"' + insightText + '"\n\n' +
-          'EXISTING STRUCTURE already mapped in this phylum (paths shown root-first):\n' + pathList + '\n\n' +
-          'Decide where this insight belongs using these 5 checks, in order:\n' +
-          '1. Pedagogical clarity — is each rank one genuinely distinct, teachable idea, not padding?\n' +
-          '2. Non-redundancy — would merging two adjacent ranks lose anything real?\n' +
-          '3. Practical applicability — can this cash out into an actual FL Studio move tonight?\n' +
-          '4. Structural fit — does this attach cleanly to an EXISTING path above, or does it need a new one?\n' +
-          '5. Expansion headroom — will this path still make sense once 20 more insights land under it?\n\n' +
-          'Then decide:\n' +
-          '- ATTACH POINT: the exact existing path string this insight should extend (copy one from the list above EXACTLY, character for character), or null if this needs a brand new path.\n' +
-          '- NEW STEPS: the additional rank names needed from the attach point down to a specific, concrete leaf representing this insight. Use as many or as few as genuinely needed - could be 1, could be several. Do NOT repeat ranks that already exist in the attach point.\n' +
-          '- One-sentence explainer per new step.\n\n' +
-          'Return ONLY JSON, no markdown, no other text:\n' +
-          '{"attachTo": "existing path string or null", "newSteps": ["Step1", "Step2"], "explainers": ["...", "..."]}';
+        var extractorPrompt = 'You are a fast triage pass for a taxonomy-placement system.\n\n' +
+          'PHYLUM: ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
+          'INSIGHT: "' + insightText + '"\n\n' +
+          'EXISTING PATHS (root-first):\n' + pathList + '\n\n' +
+          'Produce a short plan for a more thorough reasoner to verify and execute:\n' +
+          '- CORE IDEA: the one genuinely distinct teachable concept here, one sentence.\n' +
+          '- CANDIDATE PATHS: up to 3 existing paths above that seem most topically related (exact strings, or an empty array if none are close).\n' +
+          '- LIKELY DEPTH: your best-guess number of new ranks needed (1-4).\n\n' +
+          'Return ONLY JSON: {"coreIdea": "...", "candidatePaths": ["...", "..."], "likelyDepth": 2}';
 
-        return fetch('/api/oracle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: prompt }],
-            system: 'You return only valid JSON, no markdown formatting, no explanation text.',
-            max_tokens: 700
+        return self._callExtractor(extractorPrompt, 250)
+          .catch(function(e) {
+            console.warn('[phylumPath] decidePlacement extractor failed, ground worker decides alone:', e.message);
+            return null;
           })
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
-          var cleaned = raw.replace(/```json|```/g, '').trim();
-          var match = cleaned.match(/\{[\s\S]*\}/);
-          if (!match) throw new Error('No JSON found in Oracle response');
-          var parsed = JSON.parse(match[0]);
+          .then(function(plan) {
+            var planBlock = plan
+              ? '\n\nA FASTER TRIAGE PASS ALREADY SUGGESTED THIS (a starting hint - verify and override anything wrong, do not just accept it):\n' +
+                '- Core idea: ' + plan.coreIdea + '\n' +
+                '- Candidate existing paths: ' + ((plan.candidatePaths && plan.candidatePaths.length) ? plan.candidatePaths.join(', ') : '(none suggested)') + '\n' +
+                '- Likely depth: ' + plan.likelyDepth + '\n'
+              : '';
 
-          var attachNode = null;
-          if (parsed.attachTo) {
-            attachNode = existing.find(function(n) { return n.path === parsed.attachTo; });
-          }
-          return { attachNode: attachNode, newSteps: parsed.newSteps || [], explainers: parsed.explainers || [] };
-        });
+            var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
+              'A student/producer just learned this insight:\n"' + insightText + '"\n\n' +
+              'EXISTING STRUCTURE already mapped in this phylum (paths shown root-first):\n' + pathList + planBlock + '\n\n' +
+              'Decide where this insight belongs using these 5 checks, in order:\n' +
+              '1. Pedagogical clarity — is each rank one genuinely distinct, teachable idea, not padding?\n' +
+              '2. Non-redundancy — would merging two adjacent ranks lose anything real?\n' +
+              '3. Practical applicability — can this cash out into an actual FL Studio move tonight?\n' +
+              '4. Structural fit — does this attach cleanly to an EXISTING path above, or does it need a new one?\n' +
+              '5. Expansion headroom — will this path still make sense once 20 more insights land under it?\n\n' +
+              'Then decide:\n' +
+              '- ATTACH POINT: the exact existing path string this insight should extend (copy one from the list above EXACTLY, character for character), or null if this needs a brand new path.\n' +
+              '- NEW STEPS: the additional rank names needed from the attach point down to a specific, concrete leaf representing this insight. Use as many or as few as genuinely needed - could be 1, could be several. Do NOT repeat ranks that already exist in the attach point.\n' +
+              '- One-sentence explainer per new step.\n\n' +
+              'Return ONLY JSON, no markdown, no other text:\n' +
+              '{"attachTo": "existing path string or null", "newSteps": ["Step1", "Step2"], "explainers": ["...", "..."]}';
+
+            return self._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
+              var attachNode = null;
+              if (parsed.attachTo) {
+                attachNode = existing.find(function(n) { return n.path === parsed.attachTo; });
+              }
+              return { attachNode: attachNode, newSteps: parsed.newSteps || [], explainers: parsed.explainers || [] };
+            });
+          });
       });
   },
 
@@ -5224,26 +5301,43 @@ RPGACE.register('phylumPath', {
   // match the placement call's already-reliable budget, rather than
   // raising it further.
   _generateInsightContent: function(node, phylumNumber, insightText) {
-    var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ', teaching a UK hip hop / drill producer who works in FL Studio.\n\n' +
+    var self = this;
+    var extractorPrompt = 'You are outlining a short teaching note before a tutor writes it in full.\n\n' +
       'TOPIC: "' + node.name + '" (part of: ' + node.path + ')\n' +
-      'THE INSIGHT THAT PROMPTED THIS: "' + insightText + '"\n\n' +
-      'Teach this using the 3-layer method: simple terms first, then technical mechanics, then the one expert nuance most tutorials miss. Be specific to FL Studio. Keep this concise — under 350 words total across all 3 layers, this is a reference note attached to one taxonomy leaf, not a full lesson.';
+      'INSIGHT: "' + insightText + '"\n\n' +
+      'Produce a brief outline for a 3-layer teaching method:\n' +
+      '- SIMPLE ANGLE: the one plain-terms hook to open with\n' +
+      '- TECHNICAL MECHANIC: the one specific mechanism/technique to explain\n' +
+      '- EXPERT NUANCE: the one thing most tutorials miss about this\n\n' +
+      'Return ONLY JSON: {"simpleAngle": "...", "technicalMechanic": "...", "expertNuance": "..."}';
 
-    return fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 700
+    return self._callExtractor(extractorPrompt, 250)
+      .catch(function(e) {
+        console.warn('[phylumPath] insight-content extractor failed, ground worker writes cold:', e.message);
+        return null;
       })
-    }).then(function(r) { return r.json(); }).then(function(data) {
-      var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
-      return RPGACE.sb.update('taxonomy_tree', 'id=eq.' + node.id, {
-        deep_content: { generated: text, generated_at: new Date().toISOString() }
+      .then(function(outline) {
+        var outlineBlock = outline
+          ? '\n\nA FASTER TRIAGE PASS ALREADY OUTLINED THIS (a starting angle - expand or correct as needed, do not just restate it):\n' +
+            '- Simple angle: ' + outline.simpleAngle + '\n' +
+            '- Technical mechanic: ' + outline.technicalMechanic + '\n' +
+            '- Expert nuance: ' + outline.expertNuance + '\n'
+          : '';
+
+        var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ', teaching a UK hip hop / drill producer who works in FL Studio.\n\n' +
+          'TOPIC: "' + node.name + '" (part of: ' + node.path + ')\n' +
+          'THE INSIGHT THAT PROMPTED THIS: "' + insightText + '"' + outlineBlock + '\n\n' +
+          'Teach this using the 3-layer method: simple terms first, then technical mechanics, then the one expert nuance most tutorials miss. Be specific to FL Studio. Keep this concise — under 350 words total across all 3 layers, this is a reference note attached to one taxonomy leaf, not a full lesson.';
+
+        return self._callGroundWorkerText(prompt, 700);
+      })
+      .then(function(text) {
+        return RPGACE.sb.update('taxonomy_tree', 'id=eq.' + node.id, {
+          deep_content: { generated: text, generated_at: new Date().toISOString() }
+        });
+      }).catch(function(e) {
+        console.warn('[phylumPath] content generation failed:', e.message);
       });
-    }).catch(function(e) {
-      console.warn('[phylumPath] content generation failed:', e.message);
-    });
   },
 
   // ── Article generation, any rank (or the phylum root itself if node   ──
@@ -5281,20 +5375,43 @@ RPGACE.register('phylumPath', {
         // _generateNodeContent and _generateInsightContent) - the timeout
         // itself still needs its own dedicated fix (streaming or chunked
         // generation), not another blind retry.
-        var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
-          'Write a reference article for "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ').\n\n' +
-          'Synthesize the following accumulated teaching content from this topic and everything beneath it in the tree:\n\n' + (contentBlock || '(nothing accumulated yet - write a short foundational overview instead)') + '\n\n' +
-          'Produce a well-organized synthesis a producer can use as a standing reference, not just a restated list. Keep it under 500 words — concise and usable beats exhaustive.';
+        //
+        // July 16: extractor pass added on top of that mitigation - Fable
+        // 5 outlines the article's structure first (which sub-points
+        // matter, what the throughline is), so the ground worker writes
+        // from a real outline instead of winging structure cold. Doesn't
+        // change the token/length mitigation above, just the quality of
+        // what gets written within that budget.
+        var extractorPrompt = 'You are outlining a reference article before it gets written in full.\n\n' +
+          'TOPIC: "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ')\n\n' +
+          'ACCUMULATED CONTENT to synthesize:\n\n' + (contentBlock || '(nothing accumulated yet)') + '\n\n' +
+          'Produce a brief outline:\n' +
+          '- THROUGHLINE: the one organizing idea that ties everything below together, one sentence.\n' +
+          '- KEEP: up to 4 sub-points from the accumulated content that are most worth keeping in the final article.\n' +
+          '- SKIP: anything redundant or minor worth leaving out.\n\n' +
+          'Return ONLY JSON: {"throughline": "...", "keep": ["...", "..."], "skip": ["...", "..."]}';
 
-        return fetch('/api/oracle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 1000
+        return self._callExtractor(extractorPrompt, 300)
+          .catch(function(e) {
+            console.warn('[phylumPath] article extractor failed, ground worker writes cold:', e.message);
+            return null;
           })
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+          .then(function(outline) {
+            var outlineBlock = outline
+              ? '\n\nA FASTER TRIAGE PASS ALREADY OUTLINED THIS (a starting structure - expand or correct as needed, do not just restate it):\n' +
+                '- Throughline: ' + outline.throughline + '\n' +
+                '- Worth keeping: ' + ((outline.keep && outline.keep.length) ? outline.keep.join('; ') : '(none flagged)') + '\n' +
+                '- Worth skipping: ' + ((outline.skip && outline.skip.length) ? outline.skip.join('; ') : '(none flagged)') + '\n'
+              : '';
+
+            var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
+              'Write a reference article for "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ').\n\n' +
+              'Synthesize the following accumulated teaching content from this topic and everything beneath it in the tree:\n\n' + (contentBlock || '(nothing accumulated yet - write a short foundational overview instead)') + outlineBlock + '\n\n' +
+              'Produce a well-organized synthesis a producer can use as a standing reference, not just a restated list. Keep it under 500 words — concise and usable beats exhaustive.';
+
+            return self._callGroundWorkerText(prompt, 1000);
+          })
+          .then(function(text) {
           var articleTitle = title + ' — ' + rankLabel + ' Reference';
           if (typeof saveOracleToEncyclopedia !== 'function') {
             RPGACE.utils.toast('Article generated but saveOracleToEncyclopedia() not found', '#E25454', 3500);
