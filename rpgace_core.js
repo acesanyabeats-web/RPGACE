@@ -4779,10 +4779,15 @@ RPGACE.register('taxonomyTree', {
 // saveOracleToEncyclopedia + taxonomy_node_id linking, same as F7's
 // encTaxonomyLink).
 //
-// Piloted on Phylum 1 (Compositio) only - PHYLUM_NUM is the single knob to
-// turn to point this at another phylum once proven; every function below
-// takes phylumNumber as a parameter rather than hardcoding it, so
-// generalizing later is a UI change, not a rewrite.
+// Piloted on Phylum 1 (Compositio), joined by Phylum 2 (Percussio) July 17
+// once its keyword sweep + tree build were done - ENABLED_PHYLA is the
+// list to extend as more phyla clear the Phylum Development Framework's
+// steps 1-4. PHYLUM_NUM is now the UI's *currently active/selected*
+// phylum (mutable via the phylum-switcher pills in both the side panel
+// and the nav-tab page), not a hardcoded pilot constant - every function
+// below already took phylumNumber as a parameter rather than hardcoding
+// it, so generalizing was a UI change (a switcher + a wider enabled-list
+// check), not a rewrite.
 //
 // Persona: extends Prod Oracle's existing "Master Learning" 3-layer method
 // (simple terms -> technical mechanics -> expert nuance) with a "private
@@ -4803,15 +4808,81 @@ RPGACE.register('taxonomyTree', {
 // including the phylum root itself.
 RPGACE.register('phylumPath', {
 
+  // Currently active/selected phylum for the panel + nav-tab UI - mutable
+  // at runtime via _switchPhylum(), defaults to Phylum 1 on first load.
   PHYLUM_NUM: 1,
+
+  // Every phylum Phylum Path actually covers (placement, auto-detect,
+  // nav-tab browsing, fusion-link search). Extend this list once a phylum
+  // clears framework steps 1-4 (spec, keyword sweep, tree build, data
+  // repair) - added July 17 with Phylum 2 (Percussio) as the second entry.
+  ENABLED_PHYLA: [1, 2],
 
   // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
   // silentPropose() check this before running their own flat top-down
   // path-generation, and delegate to decidePlacement()/_insertNewSteps()
-  // below instead when the target phylum is enabled here. Still Phylum 1
-  // only for now (confirmed) - expanding rollout later is just adding a
-  // number to this check, not a rewrite.
-  isEnabled: function(phylumNumber) { return phylumNumber === this.PHYLUM_NUM; },
+  // below instead when the target phylum is enabled here.
+  isEnabled: function(phylumNumber) { return this.ENABLED_PHYLA.indexOf(phylumNumber) !== -1; },
+
+  // Switches the active phylum and re-renders whichever Phylum Path UI
+  // surface is currently mounted (side panel or nav-tab page) - both read
+  // self.PHYLUM_NUM dynamically already, so this is just: update the
+  // constant, refresh whichever labels were set at initial render, then
+  // re-fetch. Silently no-ops for a phylum that isn't enabled.
+  _switchPhylum: function(num) {
+    if (!this.isEnabled(num) || this.PHYLUM_NUM === num) return;
+    this.PHYLUM_NUM = num;
+
+    var panel = document.getElementById('phylum-path-panel');
+    if (panel) {
+      var sub = panel.querySelector('.pp-panel-sub');
+      if (sub) sub.textContent = RPGACE.utils.phylumLabel(num);
+      var purpose = panel.querySelector('.pp-panel-purpose');
+      if (purpose) purpose.textContent = RPGACE.utils.phylumContext(num);
+      var textarea = document.getElementById('phylum-path-input');
+      var tt0 = RPGACE.modules.taxonomyTree;
+      if (textarea) textarea.placeholder = 'Paste or describe a specific teaching insight - a fact, technique, or observation about ' + (tt0 ? tt0.PHYLUM_NAMES[num] : 'this phylum') + '...';
+      panel.querySelectorAll('.pp-switch-pill').forEach(function(p) {
+        p.style.opacity = (parseInt(p.dataset.num, 10) === num) ? '1' : '0.4';
+      });
+      this._renderTree();
+    }
+
+    var pageTitle = document.getElementById('pp-phylum-title');
+    if (pageTitle) pageTitle.textContent = '🧬 Phylum Path — ' + RPGACE.utils.phylumLabel(num);
+    var pageSwitcher = document.getElementById('pp-phylum-switcher');
+    if (pageSwitcher) {
+      pageSwitcher.querySelectorAll('.pp-switch-pill').forEach(function(p) {
+        p.style.opacity = (parseInt(p.dataset.num, 10) === num) ? '1' : '0.4';
+      });
+      // Only re-fetch the drill-down view if it's the actually-visible
+      // page - avoids a wasted background Supabase call when the switch
+      // came from the side panel instead (the nav-tab page div persists
+      // in the DOM once injected, whether visible or not).
+      var page = document.getElementById('page-' + RPGACE.CONFIG.pages.phylumPath);
+      if (page && page.classList.contains('active')) this._loadNodesAndRender(null);
+    }
+  },
+
+  // Builds the shared phylum-switcher pill row (one pill per ENABLED_PHYLA
+  // entry) - used identically by the side panel and the nav-tab page so
+  // there's one switcher implementation, not two.
+  _renderPhylumSwitcher: function() {
+    var self = this;
+    var tt = RPGACE.modules.taxonomyTree;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;';
+    this.ENABLED_PHYLA.forEach(function(num) {
+      var pill = document.createElement('button');
+      pill.className = 'pp-switch-pill';
+      pill.dataset.num = num;
+      pill.textContent = tt ? tt.PHYLUM_NAMES[num] : ('Phylum ' + num);
+      pill.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (num === self.PHYLUM_NUM ? '1' : '0.4') + ';';
+      pill.onclick = function() { self._switchPhylum(num); };
+      wrap.appendChild(pill);
+    });
+    return wrap;
+  },
 
   // ══════════════════════════════════════════════════════════════════
   // July 16: extractor -> ground-worker pipeline for all 3 of Phylum
@@ -4973,15 +5044,18 @@ RPGACE.register('phylumPath', {
   // ── an opt-in button, never auto-commits anything to Supabase.        ──
   _checkLastResponse: function(text, lastMsg, matches) {
     var self = this;
-    var m1 = matches.find(function(m) { return m.num === self.PHYLUM_NUM; });
-    if (!m1) return;
+    // July 17: was hardcoded to self.PHYLUM_NUM (Phylum 1 only) - now
+    // checks every enabled phylum and opens on whichever one actually
+    // matched, so Percussio-relevant responses get their own badge too.
+    var m = matches.find(function(m) { return self.isEnabled(m.num); });
+    if (!m) return;
 
     var badge = document.createElement('button');
-    badge.textContent = '🧬 Add to Phylum Path?';
+    badge.textContent = '🧬 Add to Phylum Path? (' + m.name + ')';
     badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     badge.onclick = function() {
       badge.remove();
-      self.open(text.slice(0, 2000));
+      self.open(text.slice(0, 2000), m.num);
     };
     lastMsg.appendChild(badge);
   },
@@ -4992,9 +5066,10 @@ RPGACE.register('phylumPath', {
     if (p) { p.style.transform = 'translateX(100%)'; setTimeout(function(){p.remove();},280); }
   },
 
-  open: function(prefillText) {
+  open: function(prefillText, phylumNumber) {
     if (document.getElementById('phylum-path-panel')) { this._close(); return; }
     var self = this;
+    if (phylumNumber && this.isEnabled(phylumNumber)) this.PHYLUM_NUM = phylumNumber;
     var panel = document.createElement('div');
     panel.id = 'phylum-path-panel';
     panel.style.cssText = 'position:fixed;top:0;right:0;width:min(440px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(61,170,110,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;transform:translateX(100%);transition:transform .28s ease;';
@@ -5006,6 +5081,7 @@ RPGACE.register('phylumPath', {
     lb.textContent = 'PHYLUM PATH';
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
+    sub.className = 'pp-panel-sub';
     sub.textContent = RPGACE.utils.phylumLabel(self.PHYLUM_NUM);
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
     ht.appendChild(lb); ht.appendChild(sub);
@@ -5019,7 +5095,12 @@ RPGACE.register('phylumPath', {
     var body = document.createElement('div');
     body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
 
+    // Phylum switcher - only shows once there's more than one enabled
+    // phylum to pick between (Compositio + Percussio, July 17 onward).
+    if (this.ENABLED_PHYLA.length > 1) body.appendChild(this._renderPhylumSwitcher());
+
     var purposeNote = document.createElement('div');
+    purposeNote.className = 'pp-panel-purpose';
     purposeNote.textContent = RPGACE.utils.phylumContext(self.PHYLUM_NUM);
     purposeNote.style.cssText = 'font-size:10px;color:rgba(61,170,110,0.6);margin-bottom:14px;letter-spacing:0.3px;line-height:1.5;border-left:2px solid rgba(61,170,110,0.3);padding-left:8px;';
     body.appendChild(purposeNote);
@@ -5633,11 +5714,16 @@ RPGACE.register('phylumPath', {
     page.className = 'page';
     page.id = 'page-' + RPGACE.CONFIG.pages.phylumPath;
     page.innerHTML =
-      '<div class="section-title">🧬 Phylum Path — ' + RPGACE.utils.phylumLabel(this.PHYLUM_NUM) + '</div>' +
+      '<div class="section-title" id="pp-phylum-title">🧬 Phylum Path — ' + RPGACE.utils.phylumLabel(this.PHYLUM_NUM) + '</div>' +
+      '<div id="pp-phylum-switcher" style="margin-bottom:10px;"></div>' +
       '<div id="pp-breadcrumb" style="margin-bottom:10px;"></div>' +
       '<div id="pp-siblings" style="margin-bottom:14px;"></div>' +
       '<div id="pp-body"></div>';
     app.appendChild(page);
+    // Switcher only shows once there's more than one enabled phylum.
+    if (this.ENABLED_PHYLA.length > 1) {
+      document.getElementById('pp-phylum-switcher').appendChild(this._renderPhylumSwitcher());
+    }
   },
 
   // Fetches (fresh every render - cache-bust already covers writes) the
