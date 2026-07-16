@@ -6364,39 +6364,50 @@ RPGACE.register('config', {
         {t:'piano roll',w:2},{t:'scale helper',w:2},{t:'chord stamp',w:2},{t:'arpeggiator',w:2},{t:'midi chord',w:2},{t:'chord progression generator',w:2},{t:'scale snap',w:2},
       ] },
       { num: 2,  name: 'Percussio',             keywords: [
-        // core (pre-existing)
-        {t:'drum',w:2},{t:'kick',w:2},{t:'snare',w:2},{t:'808',w:2},{t:'hi-hat',w:2},{t:'groove',w:1},{t:'drum pattern',w:2},{t:'percussion',w:1},
-        // 808 sound/pitch design — July 16 jargon enrichment, Percussio first Phylum Development Framework pass
-        {t:'808 slide',w:2},{t:'808 glide',w:2},{t:'808 bend',w:2},{t:'808 portamento',w:2},{t:'sliding 808',w:2},{t:'808 pitch',w:2},
-        {t:'808 pitch bend',w:2},{t:'sub bass',w:2},{t:'808 pattern',w:2},{t:'808 mute',w:2},{t:'808 distortion',w:2},{t:'808 saturation',w:2},
-        {t:'808 drive',w:2},{t:'808 clip',w:2},{t:'808 layering',w:2},{t:'808 stack',w:2},{t:'sub layer',w:2},{t:'808 tail',w:2},
-        {t:'808 decay',w:2},{t:'808 length',w:2},{t:'808 note length',w:2},
-        // hi-hat programming
-        {t:'hi-hat roll',w:2},{t:'triplet hats',w:2},{t:'hi-hat triplets',w:2},{t:'stutter hats',w:2},{t:'hat roll',w:2},{t:'hi-hat pattern',w:2},
-        {t:'open hi-hat',w:2},{t:'closed hi-hat',w:2},{t:'hi-hat swing',w:2},{t:'hi-hat velocity',w:2},{t:'velocity automation',w:2},
-        {t:'hat automation',w:2},{t:'rolled hats',w:2},{t:'drill hi-hats',w:2},{t:'trap hi-hats',w:2},
-        // kick/snare/clap
-        {t:'kick pattern',w:2},{t:'kick placement',w:2},{t:'snare placement',w:2},{t:'clap placement',w:2},{t:'backbeat',w:2},{t:'ghost note',w:2},
-        {t:'rimshot',w:1},{t:'ruff',w:1},{t:'snare roll',w:2},{t:'kick roll',w:2},{t:'syncopated kick',w:2},{t:'four on the floor',w:2},
-        {t:'kick-808 interlock',w:2},
-        // groove/rhythm theory
-        {t:'swing',w:1},{t:'quantize',w:1},{t:'quantization',w:2},{t:'humanize',w:1},{t:'groove template',w:2},{t:'micro-timing',w:2},{t:'timing',w:1},
-        {t:'syncopation',w:2},{t:'polyrhythm',w:2},{t:'pocket',w:1},{t:'straight groove',w:2},{t:'shuffle groove',w:2},{t:'offbeat',w:1},
-        {t:'downbeat',w:1},{t:'upbeat',w:1},{t:'rhythmic displacement',w:2},{t:'groove percentage',w:2},
-        // meter/subdivision
-        {t:'time signature',w:2},{t:'bar',w:1},{t:'beat',w:1},{t:'subdivision',w:2},{t:'sixteenth note',w:2},{t:'eighth note',w:2},{t:'triplet',w:1},
-        {t:'quarter note',w:2},{t:'half-time',w:2},{t:'double-time',w:2},{t:'half-time feel',w:2},{t:'sixteenth note grid',w:2},{t:'triplet feel',w:2},
-        // genre/production jargon (UK drill/trap)
-        {t:'drill pattern',w:2},{t:'uk drill drums',w:2},{t:'drill groove',w:2},{t:'drill snare',w:2},{t:'drill clap',w:2},{t:'drill kick pattern',w:2},
-        {t:'chicago drill',w:2},{t:'brooklyn drill',w:2},{t:'trap 808',w:2},{t:'trap snare roll',w:2},{t:'trap drum pattern',w:2},{t:'boom bap drums',w:2},
-        {t:'afrobeats drums',w:2},{t:'amapiano drums',w:2},{t:'uk garage drums',w:2},{t:'grime drums',w:2},
+        // Drum Elements — July 16/17 rework, merging a GODMODE+Council-of-5
+        // pass (done in a separate RPGACE Python-side project) with the
+        // original July 16 sweep, same 7-category shape as Phylum 1's list.
+        {t:'kick',w:2},{t:'snare',w:2},{t:'hi-hat',w:2},{t:'hihat',w:2},{t:'open hat',w:2},{t:'closed hat',w:2},{t:'clap',w:2},{t:'rim shot',w:2},
+        {t:'rimshot',w:1},{t:'tom',w:1},{t:'crash',w:1},{t:'ride',w:1},{t:'shaker',w:1},{t:'tambourine',w:1},{t:'percussion',w:1},{t:'perc',w:1},
+        {t:'cowbell',w:1},{t:'snap',w:1},{t:'clave',w:1},{t:'bongo',w:1},{t:'conga',w:1},{t:'kick drum',w:2},{t:'snare drum',w:2},{t:'drum bus',w:1},
+        {t:'drum rack',w:2},{t:'drum kit',w:1},
+        // 808s & Bass Percussion
+        {t:'808',w:2},{t:'sub bass',w:2},{t:'808 bass',w:2},{t:'808 slide',w:2},{t:'808 glide',w:2},{t:'808 pattern',w:2},{t:'808 melody',w:2},
+        {t:'sub',w:1},{t:'bass hit',w:2},{t:'distorted 808',w:2},{t:'808 tuning',w:2},{t:'glide',w:1},{t:'portamento',w:2},{t:'808 kick',w:2},
+        {t:'layered 808',w:2},{t:'808 bend',w:2},{t:'sliding 808',w:2},{t:'808 pitch',w:2},{t:'808 pitch bend',w:2},{t:'808 mute',w:2},
+        {t:'808 distortion',w:2},{t:'808 saturation',w:2},{t:'808 drive',w:2},{t:'808 clip',w:2},{t:'808 layering',w:2},{t:'808 stack',w:2},
+        {t:'sub layer',w:2},{t:'808 tail',w:2},{t:'808 decay',w:2},{t:'808 length',w:2},{t:'808 note length',w:2},
+        // Rhythm & Pattern Construction
+        {t:'groove',w:1},{t:'drum pattern',w:2},{t:'rhythm',w:1},{t:'rhythmic pattern',w:2},{t:'beat pattern',w:2},{t:'drum programming',w:2},
+        {t:'sequencing',w:1},{t:'step sequencer',w:2},{t:'drum loop',w:2},{t:'break',w:1},{t:'breakbeat',w:2},{t:'syncopation',w:2},{t:'swing',w:1},
+        {t:'shuffle',w:1},{t:'quantize',w:1},{t:'quantization',w:2},{t:'humanize',w:1},{t:'velocity',w:1},{t:'ghost note',w:2},{t:'drum fill',w:2},
+        {t:'hi-hat roll',w:2},{t:'triplet roll',w:2},{t:'ratchet',w:1},{t:'hi-hat ratchet',w:2},{t:'stutter',w:1},
+        {t:'drum stutter',w:2},{t:'pocket',w:1},{t:'groove percentage',w:2},{t:'rhythmic displacement',w:2},{t:'snare roll',w:2},{t:'kick roll',w:2},
+        {t:'syncopated kick',w:2},{t:'four on the floor',w:2},{t:'kick-808 interlock',w:2},{t:'ruff',w:1},{t:'buildup',w:1},{t:'riser',w:1},
+        {t:'transition fill',w:2},{t:'breakdown',w:1},{t:'groove template',w:2},{t:'micro-timing',w:2},{t:'timing',w:1},{t:'straight groove',w:2},
+        {t:'shuffle groove',w:2},{t:'kick placement',w:2},{t:'snare placement',w:2},{t:'clap placement',w:2},{t:'hi-hat triplets',w:2},
+        {t:'stutter hats',w:2},{t:'hat roll',w:2},{t:'hat automation',w:2},{t:'velocity automation',w:2},{t:'rolled hats',w:2},{t:'hi-hat swing',w:2},
+        {t:'hi-hat velocity',w:2},
+        // Time Signature & Subdivision
+        {t:'tempo',w:1},{t:'bpm',w:1},{t:'time signature',w:2},{t:'4/4',w:1},{t:'triplet',w:1},{t:'sixteenth note',w:2},{t:'eighth note',w:2},
+        {t:'subdivision',w:2},{t:'polyrhythm',w:2},{t:'cross-rhythm',w:2},{t:'half-time',w:2},{t:'double-time',w:2},{t:'on the beat',w:1},
+        {t:'off the beat',w:1},{t:'upbeat',w:1},{t:'downbeat',w:1},{t:'backbeat',w:2},{t:'quarter note',w:2},{t:'half-time feel',w:2},
+        {t:'sixteenth note grid',w:2},{t:'triplet feel',w:2},{t:'bar',w:1},{t:'beat',w:1},
+        // Genre-Specific / UK Drill & Trap Jargon
+        {t:'drill pattern',w:2},{t:'uk drill drums',w:2},{t:'drill hi-hats',w:2},{t:'triplet hats',w:2},{t:'drill snare',w:2},
+        {t:'gunshot snare',w:2},{t:'trap hats',w:2},{t:'hi-hat pattern',w:2},{t:'drill beat',w:2},{t:'sample drums',w:2},{t:'boom bap drums',w:2},
+        {t:'one-shot',w:1},{t:'drum one-shot',w:2},{t:'drum sample pack',w:2},{t:'drum kit pack',w:2},{t:'vintage drums',w:2},{t:'dusty drums',w:2},
+        {t:'mpc swing',w:2},{t:'drill groove',w:2},{t:'drill clap',w:2},{t:'drill kick pattern',w:2},{t:'chicago drill',w:2},{t:'brooklyn drill',w:2},
+        {t:'trap 808',w:2},{t:'trap snare roll',w:2},{t:'trap drum pattern',w:2},{t:'afrobeats drums',w:2},{t:'amapiano drums',w:2},
+        {t:'uk garage drums',w:2},{t:'grime drums',w:2},{t:'trap hi-hats',w:2},
+        // Mixing/Processing Percussion
+        {t:'drum bus compression',w:2},{t:'transient',w:1},{t:'transient shaper',w:2},{t:'punch',w:1},{t:'drum layering',w:2},
+        {t:'layering drums',w:2},{t:'sidechain',w:1},{t:'sidechain compression',w:2},{t:'drum saturation',w:2},{t:'drum eq',w:2},
+        {t:'drum tuning',w:2},{t:'pitched drums',w:2},{t:'drum reverb',w:2},{t:'drum room',w:2},{t:'parallel compression',w:2},{t:'thump',w:1},
+        {t:'attack',w:1},
         // DAW/FL Studio-specific
-        {t:'step sequencer',w:2},{t:'drum sequencer',w:2},{t:'midi drum programming',w:2},{t:'velocity',w:1},{t:'swing percentage',w:2},
-        {t:'drum layering',w:2},{t:'drum bus',w:1},{t:'drum rack',w:2},{t:'channel rack',w:2},
-        // rhythm-section mix-adjacent vocabulary
-        {t:'transient',w:1},{t:'punch',w:1},{t:'snap',w:1},{t:'thump',w:1},{t:'attack',w:1},
-        // fills/transitions
-        {t:'drum fill',w:2},{t:'buildup',w:1},{t:'drum roll fill',w:2},{t:'riser',w:1},{t:'transition fill',w:2},{t:'breakdown',w:1},
+        {t:'fpc',w:2},{t:'fruity slicer',w:2},{t:'piano roll drums',w:2},{t:'channel rack',w:2},{t:'drum grid',w:2},{t:'sample slicing',w:2},
+        {t:'chop drums',w:2},{t:'drum layering rack',w:2},{t:'playlist pattern',w:2},{t:'midi drum programming',w:2},{t:'drum sequencer',w:2},
       ] },
       { num: 3,  name: 'Sonus Designatio',      keywords: [{t:'sound design',w:2},{t:'synth',w:2},{t:'sample',w:1},{t:'patch',w:1},{t:'oscillator',w:2},{t:'wavetable',w:2},{t:'texture',w:1}] },
       { num: 4,  name: 'Mixtura',               keywords: [{t:'mixing',w:2},{t:'eq',w:2},{t:'compress',w:2},{t:'sidechain',w:2},{t:'reverb',w:1},{t:'delay',w:1},{t:'gain',w:1},{t:'frequency',w:1}] },
