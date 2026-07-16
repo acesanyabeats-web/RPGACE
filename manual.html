@@ -218,7 +218,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>🎧 Beatstars Listing</td><td>CONTENT</td><td>F16: shown once licence_type set → pulls matching Beat Log entry → sendToOracle (title/description/tags/licence block)</td></tr>
     <tr><td>📹 + New / → Mark [Stage] / 📋 Paths + exports</td><td>CONTENT</td><td>F17: videoPipeline tracker over video_jobs — stage advance + per-stage paths + 4 export slots, no rendering</td></tr>
     <tr><td>🎬 Also generate Visual Treatment Doc</td><td>CONTENT</td><td>F18: Beat Log checkbox → waits for in-flight guard to clear → auto visualOracle Visual Treatment Doc, F14-grounded</td></tr>
-    <tr><td>🧬 Phylum Path (nav tab)</td><td>LEARNING</td><td>Dedicated nav tab (July 16) → Linnaean drill-down (tap to descend, breadcrumb, sibling chips) → decidePlacement() (extractor+ground-worker) → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → fusion-link search → per-node "Generate/Refresh Article" (lazy+cached) → Encyclopedia</td></tr>
+    <tr><td>🧬 Phylum Path (nav tab)</td><td>LEARNING</td><td>Dedicated nav tab (July 16) → phylum switcher (July 17, Compositio/Percussio) → Linnaean drill-down (tap to descend, breadcrumb, sibling chips) → decidePlacement() (extractor+ground-worker) → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → fusion-link search → per-node "Generate/Refresh Article" (lazy+cached) → Encyclopedia</td></tr>
     <tr><td>🧬 Send to Phylum Path</td><td>LEARNING</td><td>Highlight any text (Oracle chat, Encyclopedia) → button on the native text-select popup → opens Phylum Path panel pre-filled</td></tr>
     <tr><td>🔗 Confirm Link / ✗ Reject (Fusion Link card)</td><td>LEARNING</td><td>New July 16 — Dashboard review queue's second card type alongside taxonomy proposals → RPGACE.sb.update(taxonomy_links, status=confirmed/rejected)</td></tr>
     <tr><td>📅 Add to Agenda</td><td>CONTENT</td><td>ConIDPot idea → Schedule tab</td></tr>
@@ -262,10 +262,6 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <div class="card-title">~25 places in rpgace_core.js may share the rpgace:ready re-subscription bug</div>
     <div class="card-body">Found July 16 diagnosing the Phase 2 nav tab: <code>RPGACE.register()</code> wires every module's <code>init()</code> as a listener on <code>'rpgace:ready'</code> itself, so a module calling <code>RPGACE.hooks.on('rpgace:ready', ...)</code> from inside its own <code>init()</code> registers too late — <code>RPGACE.hooks.fire()</code>'s plain <code>Array.forEach</code> never revisits listeners pushed during its own iteration, so that listener can silently never fire. <code>phylumPath</code>'s 2 occurrences fixed (call the injector directly instead of re-subscribing); ~25 more occurrences of the same call elsewhere in the file are flagged but not individually audited.</div>
   </div>
-  <div class="card">
-    <div class="card-title">phylumPath.PHYLUM_NUM needs generalizing before a second phylum can use Phylum Path</div>
-    <div class="card-body">Percussio (Phylum 2) got its keyword sweep + 39-node tree built July 16-17, but Phylum Path itself is still hardcoded to <code>PHYLUM_NUM: 1</code>, threaded through ~10 places (manual-panel copy, auto-detect matching, the nav-tab drill-down root, the fusion-link same-phylum check). Not a one-line flip — its own scoped next step.</div>
-  </div>
 </div>
 
 <div class="section" id="bugs-fixed">
@@ -295,6 +291,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Stale JS cache could serve a pre-Phase-2 copy of the app indefinitely</td><td>rpgace_core.js/main.js script tags had no cache-busting query string at all — fixed July 16 by adding ?v=20260716a to both</td></tr>
     <tr><td>Mobile nav tab labels overlapped/clipped</td><td>.nav-tab had flex:1 + min-width:50px inside an overflow-x:auto container, a contradictory combination that squeezed every tab into an equal tiny slice — fixed July 16 by removing flex:1, bumping padding/font-size, adding scroll-arrow buttons</td></tr>
     <tr><td>Bare "roll"/"fill" keywords in Percussio's list could false-match unrelated phyla</td><td>F8's matcher is word-boundary regex (\bterm\b), and a hyphen counts as a word boundary — bare "roll" matched inside Phylum 14's own "b-roll" term, bare "fill" matched ordinary English — fixed July 17 by dropping both, keeping their specific compound siblings (hi-hat roll, drum fill, etc.)</td></tr>
+    <tr><td>Phylum Path could only ever cover one phylum (Compositio)</td><td>PHYLUM_NUM was a single hardcoded scalar, not a parameter - generalized July 17 into ENABLED_PHYLA + mutable active-phylum state, switched via a new phylum-switcher pill UI; Percussio now live alongside Compositio</td></tr>
   </table>
 </div>
 

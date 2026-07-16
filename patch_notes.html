@@ -84,6 +84,15 @@
   </div>
 
   <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🔀 July 17 — Phylum Path generalized: Percussio now live alongside Compositio via a phylum switcher</div>
+    <div class="card-body">
+      Direct follow-up to the framework pass below — <code>phylumPath.PHYLUM_NUM</code> was still a hardcoded pilot constant threaded through ~10 places (manual-panel copy, auto-detect matching, the nav-tab drill-down root, the fusion-link same-phylum check), flagged as the next concrete step once Percussio's tree/keywords existed. Since every function already took <code>phylumNumber</code> as a parameter, this turned out to be a UI change, not a rewrite.<br><br>
+      New <code>ENABLED_PHYLA: [1, 2]</code> list — <code>isEnabled()</code> now checks membership instead of equality against a single constant, so <code>proposeLineage()</code>/<code>silentPropose()</code>'s existing routing check automatically covers Percussio too, no separate change needed there. <code>PHYLUM_NUM</code> is now mutable "currently active phylum" UI state, switched via new <code>_switchPhylum()</code>/<code>_renderPhylumSwitcher()</code> — a small pill row (one pill per enabled phylum) shown in both the side panel and the nav-tab page whenever more than one phylum is enabled, updating the header label, purpose note, textarea placeholder, and re-fetching the tree/drill-down view for whichever phylum is now active. Guarded to only re-fetch the nav-tab's drill-down data when that page is actually the visible one, avoiding a wasted background Supabase call when the switch comes from the side panel instead.<br><br>
+      Auto-detect (<code>_checkLastResponse</code>) was hardcoded to only ever check Phylum 1's score out of the shared scan's <code>matches</code> array — now checks every enabled phylum and opens the panel pre-scoped to whichever one actually matched (badge text now names the matched phylum, e.g. "🧬 Add to Phylum Path? (Percussio)"). <code>open(prefillText, phylumNumber)</code> takes an optional phylum override to support this without breaking the existing no-argument callers (manual button, highlight-to-Phylum-Path). Not yet hand-tested (no browser access this session) — needs a real pass confirming the switcher actually flips context correctly and a genuinely Percussio-flavored Oracle response triggers the right-named badge.
+    </div>
+  </div>
+
+  <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🧬 July 16-17 — Phylum Development Framework codified + Percussio (Phylum 2) framework pass 1</div>
     <div class="card-body">
       Asked to make Genus-level insight leaves cross-link into other taxonomy branches ("fusion discipline"), then to recognise everything from Phylum 1's original questionnaire through today as a repeatable process and apply it to the other 20 phyla, starting with keywords. Per this project's own "3+ new pieces get spec'd and confirmed first" rule, asked 4 clarifying questions before building (link data model, link trigger, rollout pacing, retroactive scope) — all answered with the recommended options, then built.<br><br>
@@ -488,9 +497,9 @@
     <div class="card-body">See F16/F17/F18 cards above for full detail — none of the three have been walked through by hand yet. Separately, Phylum Path's new confirm/deny/modify popup (added July 15) and the "old feeds new" unification with <code>proposeLineage</code>/<code>silentPropose</code> have only been exercised through the manual panel button and the interactive badge flow — the silent/queued path (Content Intelligence auto-propose, Encyclopedia sync auto-propose landing a Phylum-1 proposal into the Dashboard review queue) has not been triggered or confirmed yet.</div>
   </div>
 
-  <div class="card">
-    <div class="card-title"><code>phylumPath.PHYLUM_NUM</code> needs generalizing before Phylum Path can cover a second phylum <span class="badge open">SYSTEM — NEXT STEP</span></div>
-    <div class="card-body">Percussio (Phylum 2) got its keyword sweep and full 39-node tree built July 16-17 (framework steps 2-3), but Phylum Path itself is still hardcoded to <code>PHYLUM_NUM: 1</code>, threaded through ~10 places in the module (the manual-panel copy/placeholder text, auto-detect matching, the nav-tab drill-down root, the fusion-link same-phylum jump-link check). Turning Percussio on for real needs this generalized to represent "currently active phylum" rather than a fixed constant — not a one-line flip, its own scoped piece of work, deliberately not rushed into the keyword/tree pass.</div>
+  <div class="card green">
+    <div class="card-title"><code>phylumPath.PHYLUM_NUM</code> generalized — Percussio now enabled <span class="badge fixed">SHIPPED JULY 17</span></div>
+    <div class="card-body">See the July 17 card above for full detail. <code>ENABLED_PHYLA: [1, 2]</code> + a phylum-switcher UI replace the old hardcoded single-phylum constant — Percussio (Phylum 2) can now be placed into, browsed, and auto-detected against, alongside Compositio. Not yet hand-tested by hand.</div>
   </div>
 
   <div class="card red">
