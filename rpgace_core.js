@@ -4815,8 +4815,10 @@ RPGACE.register('phylumPath', {
   // Every phylum Phylum Path actually covers (placement, auto-detect,
   // nav-tab browsing, fusion-link search). Extend this list once a phylum
   // clears framework steps 1-4 (spec, keyword sweep, tree build, data
-  // repair) - added July 17 with Phylum 2 (Percussio) as the second entry.
-  ENABLED_PHYLA: [1, 2],
+  // repair) - Percussio (2) added July 17, Sonus Designatio (3) and
+  // Mixtura (4) added the same day per explicit instruction to push all
+  // three together rather than one-at-a-time review.
+  ENABLED_PHYLA: [1, 2, 3, 4],
 
   // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
   // silentPropose() check this before running their own flat top-down
@@ -6537,7 +6539,49 @@ RPGACE.register('config', {
         {t:'sytrus',w:2},{t:'harmor',w:2},{t:'3xosc',w:2},{t:'serum',w:2},{t:'massive',w:2},{t:'vital',w:2},{t:'slicex',w:2},
         {t:'wavetable editor',w:2},{t:'granulizer',w:2},{t:'sakura',w:2},{t:'directwave',w:2},{t:'sampler',w:1},{t:'chop editor',w:2},
       ] },
-      { num: 4,  name: 'Mixtura',               keywords: [{t:'mixing',w:2},{t:'eq',w:2},{t:'compress',w:2},{t:'sidechain',w:2},{t:'reverb',w:1},{t:'delay',w:1},{t:'gain',w:1},{t:'frequency',w:1}] },
+      { num: 4,  name: 'Mixtura',               keywords: [
+        // Gain Staging & Levels — July 17, third Phylum Development
+        // Framework pass, same 8-category shape as Phylum 1/2/3's lists.
+        {t:'mixing',w:2},{t:'gain',w:1},{t:'gain staging',w:2},{t:'level',w:1},{t:'headroom',w:2},{t:'unity gain',w:2},{t:'fader',w:1},
+        {t:'fader level',w:2},{t:'volume automation',w:2},{t:'trim',w:1},{t:'input gain',w:2},{t:'output gain',w:2},{t:'clipping',w:1},
+        {t:'peak',w:1},{t:'peak level',w:2},{t:'rms',w:2},{t:'loudness',w:1},{t:'lufs',w:2},{t:'true peak',w:2},
+        // EQ
+        {t:'eq',w:2},{t:'equalization',w:2},{t:'equalizer',w:1},{t:'parametric eq',w:2},{t:'graphic eq',w:2},{t:'high pass filter',w:2},
+        {t:'low pass filter',w:2},{t:'shelf',w:1},{t:'shelving',w:2},{t:'bell curve',w:2},{t:'notch filter',w:2},{t:'boost',w:1},{t:'cut',w:1},
+        {t:'frequency',w:1},{t:'frequency band',w:2},{t:'low end',w:2},{t:'low mids',w:2},{t:'high mids',w:2},{t:'high end',w:2},
+        {t:'presence',w:1},{t:'air',w:1},{t:'mud',w:1},{t:'muddiness',w:2},{t:'boxiness',w:2},{t:'harshness',w:2},{t:'sibilance',w:2},
+        {t:'resonant frequency',w:2},{t:'bandwidth',w:2},
+        // Compression
+        {t:'compress',w:2},{t:'compressor',w:2},{t:'threshold',w:1},{t:'ratio',w:1},{t:'attack time',w:2},{t:'release time',w:2},
+        {t:'knee',w:1},{t:'soft knee',w:2},{t:'hard knee',w:2},{t:'makeup gain',w:2},{t:'sidechain',w:2},{t:'sidechain compression',w:2},
+        {t:'sidechaining',w:2},{t:'parallel compression',w:2},{t:'multiband compression',w:2},{t:'limiter',w:1},{t:'limiting',w:1},
+        {t:'brickwall limiter',w:2},{t:'transient',w:1},{t:'transient shaping',w:2},{t:'glue compression',w:2},{t:'bus compression',w:2},
+        {t:'vca compression',w:2},{t:'optical compression',w:2},{t:'fet compression',w:2},
+        // Spatial & Stereo Processing
+        {t:'panning',w:1},{t:'stereo width',w:2},{t:'stereo imaging',w:2},{t:'mono compatibility',w:2},{t:'phase',w:1},
+        {t:'phase cancellation',w:2},{t:'phase alignment',w:2},{t:'mid-side processing',w:2},{t:'haas effect',w:2},{t:'stereo widener',w:2},
+        {t:'correlation',w:1},{t:'stereo field',w:2},
+        // Reverb & Delay in Mix Context
+        {t:'reverb',w:1},{t:'reverb send',w:2},{t:'wet/dry',w:2},{t:'pre-delay',w:2},{t:'decay time',w:2},{t:'room reverb',w:2},
+        {t:'plate reverb',w:2},{t:'hall reverb',w:2},{t:'delay',w:1},{t:'delay throw',w:2},{t:'echo',w:1},{t:'slapback delay',w:2},
+        {t:'ducking delay',w:2},{t:'tempo-synced delay',w:2},
+        // Mix Bus & Signal Flow
+        {t:'mix bus',w:2},{t:'master bus',w:2},{t:'bus routing',w:2},{t:'send',w:1},{t:'return',w:1},{t:'aux',w:1},
+        {t:'auxiliary track',w:2},{t:'insert',w:1},{t:'insert effect',w:2},{t:'signal chain',w:2},{t:'signal flow',w:2},
+        {t:'gain reduction',w:2},{t:'vu meter',w:2},{t:'spectrum analyzer',w:2},{t:'metering',w:1},
+        // Balance & Space
+        {t:'mix balance',w:2},{t:'frequency masking',w:2},{t:'masking',w:1},{t:'carving space',w:2},{t:'eq carving',w:2},
+        {t:'ducking',w:1},{t:'sidechain ducking',w:2},{t:'layering in the mix',w:2},{t:'mix clarity',w:2},{t:'mix depth',w:2},
+        {t:'front-to-back depth',w:2},{t:'width vs depth',w:2},
+        // Genre-Specific / UK Drill & Trap Mixing
+        {t:'drill mix',w:2},{t:'trap mix',w:2},{t:'808 glue',w:2},{t:'vocal sit',w:2},{t:'vocal pocket',w:2},{t:'beat pocket',w:2},
+        {t:'hi-hat clarity',w:2},{t:'kick and 808 relationship',w:2},{t:'mix reference',w:2},{t:'reference track',w:2},{t:'loudness war',w:2},
+        {t:'streaming loudness target',w:2},
+        // DAW/FL Studio & Plugin-specific
+        {t:'fruity parametric eq 2',w:2},{t:'fruity limiter',w:2},{t:'fruity compressor',w:2},{t:'maximus',w:2},
+        {t:'fruity multiband compressor',w:2},{t:'fruity balance',w:2},{t:'mixer insert',w:2},{t:'mixer channel',w:2},{t:'fl mixer',w:2},
+        {t:'pro-q',w:2},{t:'pro-c',w:2},{t:'pro-l',w:2},{t:'ott',w:2},{t:'klanghelm mjuc',w:2},
+      ] },
       { num: 5,  name: 'Magistra',              keywords: [{t:'master',w:2},{t:'lufs',w:2},{t:'limiter',w:2},{t:'loudness',w:2},{t:'stem',w:1},{t:'final mix',w:2}] },
       { num: 6,  name: 'Instrumentarium',       keywords: [{t:'fl studio',w:2},{t:'vst',w:2},{t:'plugin',w:2},{t:'daw',w:2},{t:'workflow',w:1},{t:'edison',w:2},{t:'mixer',w:1},{t:'piano roll',w:2}] },
       { num: 7,  name: 'Sensus Auris',          keywords: [{t:'critical listening',w:2},{t:'reference track',w:2},{t:'a/b',w:2},{t:'monitor',w:1},{t:'speaker',w:1}] },
