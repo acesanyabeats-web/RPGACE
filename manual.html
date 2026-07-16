@@ -218,8 +218,9 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>🎧 Beatstars Listing</td><td>CONTENT</td><td>F16: shown once licence_type set → pulls matching Beat Log entry → sendToOracle (title/description/tags/licence block)</td></tr>
     <tr><td>📹 + New / → Mark [Stage] / 📋 Paths + exports</td><td>CONTENT</td><td>F17: videoPipeline tracker over video_jobs — stage advance + per-stage paths + 4 export slots, no rendering</td></tr>
     <tr><td>🎬 Also generate Visual Treatment Doc</td><td>CONTENT</td><td>F18: Beat Log checkbox → waits for in-flight guard to clear → auto visualOracle Visual Treatment Doc, F14-grounded</td></tr>
-    <tr><td>🧬 Phylum Path</td><td>LEARNING</td><td>Bottom-up insight→article pipeline, Phylum 1 pilot, hand-tested July 15 → decidePlacement() → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → per-node "Generate Article" → Encyclopedia</td></tr>
+    <tr><td>🧬 Phylum Path (nav tab)</td><td>LEARNING</td><td>Dedicated nav tab (July 16) → Linnaean drill-down (tap to descend, breadcrumb, sibling chips) → decidePlacement() (extractor+ground-worker) → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → fusion-link search → per-node "Generate/Refresh Article" (lazy+cached) → Encyclopedia</td></tr>
     <tr><td>🧬 Send to Phylum Path</td><td>LEARNING</td><td>Highlight any text (Oracle chat, Encyclopedia) → button on the native text-select popup → opens Phylum Path panel pre-filled</td></tr>
+    <tr><td>🔗 Confirm Link / ✗ Reject (Fusion Link card)</td><td>LEARNING</td><td>New July 16 — Dashboard review queue's second card type alongside taxonomy proposals → RPGACE.sb.update(taxonomy_links, status=confirmed/rejected)</td></tr>
     <tr><td>📅 Add to Agenda</td><td>CONTENT</td><td>ConIDPot idea → Schedule tab</td></tr>
     <tr><td>⚡ Activate ConID</td><td>CONTENT</td><td>Same endpoint as Repurpose</td></tr>
     <tr><td>☀️ Morning Brief</td><td>JOURNAL</td><td>4-source: Gmail, shifts, YouTube, top gap</td></tr>
@@ -238,6 +239,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>taxonomy_nodes</td><td>Legacy flat gap scores</td><td>—</td></tr>
     <tr><td>taxonomy_tree</td><td>Recursive lineage tree</td><td>Self-referencing parent_id</td></tr>
     <tr><td>taxonomy_proposals</td><td>Staging for auto-proposals</td><td>Nothing live until accepted</td></tr>
+    <tr><td>taxonomy_links</td><td>Fusion links — cross-taxonomy connections, any rank/phylum (new July 16)</td><td>Symmetric node_a_id/node_b_id + link_insight; nothing live until confirmed</td></tr>
     <tr><td>content_productions</td><td>ConID tracker</td><td>—</td></tr>
     <tr><td>conid_pot</td><td>Idea bank</td><td>—</td></tr>
     <tr><td>reference_tracks</td><td>Artist-matching corpus</td><td>—</td></tr>
@@ -255,6 +257,14 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   <div class="card red">
     <div class="card-title">Oracle 504 timeout on long structured responses</div>
     <div class="card-body">maxDuration raised to 60s — insufficient. Response-shape-dependent: long 3-layer teaching format times out, shorter Socratic-method mode completes fine on identical topic. July 15: reproduced concretely in Phylum Path's article-generation call (max_tokens:1800 failed outright with a JSON-parse error) — confirmed the failure scales with requested length (700 tokens worked, 1200 got truncated, 1800 failed). Mitigated for those 2 calls via trimmed prompts + lower token ceilings, but the underlying timeout is untouched — needs streaming or chunked generation, not another blind trim.</div>
+  </div>
+  <div class="card red">
+    <div class="card-title">~25 places in rpgace_core.js may share the rpgace:ready re-subscription bug</div>
+    <div class="card-body">Found July 16 diagnosing the Phase 2 nav tab: <code>RPGACE.register()</code> wires every module's <code>init()</code> as a listener on <code>'rpgace:ready'</code> itself, so a module calling <code>RPGACE.hooks.on('rpgace:ready', ...)</code> from inside its own <code>init()</code> registers too late — <code>RPGACE.hooks.fire()</code>'s plain <code>Array.forEach</code> never revisits listeners pushed during its own iteration, so that listener can silently never fire. <code>phylumPath</code>'s 2 occurrences fixed (call the injector directly instead of re-subscribing); ~25 more occurrences of the same call elsewhere in the file are flagged but not individually audited.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">phylumPath.PHYLUM_NUM needs generalizing before a second phylum can use Phylum Path</div>
+    <div class="card-body">Percussio (Phylum 2) got its keyword sweep + 39-node tree built July 16-17, but Phylum Path itself is still hardcoded to <code>PHYLUM_NUM: 1</code>, threaded through ~10 places (manual-panel copy, auto-detect matching, the nav-tab drill-down root, the fusion-link same-phylum check). Not a one-line flip — its own scoped next step.</div>
   </div>
 </div>
 
@@ -281,6 +291,10 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>proposeLineage/silentPropose could create duplicate/overlapping branches</td><td>Duplicate-check only matched exact names — created a whole new "Harmony & Chord Theory" Order beside the existing "Harmony" Order for near-identical content, confirmed live — fixed July 15 by routing Phylum 1 placement through Phylum Path's structure-aware 5-check decision instead of the old flat generation</td></tr>
     <tr><td>Phylum Path wrote straight to taxonomy_tree with zero confirm step</td><td>Every other proposal path in RPGACE has an accept/edit/reject checkpoint; Phylum Path committed the instant Oracle decided a placement — fixed July 15 with a new confirm/deny/modify popup between decision and insert</td></tr>
     <tr><td>Oracle invented fictional taxonomy categories in normal chat</td><td>Asked directly "which phylum is this," invented a "Kingdom" rank that doesn't exist and a phylum name that isn't one of the real 21 — ORACLE_SYS had zero real-taxonomy awareness — fixed July 15 by reading the real 21-phylum list live into the system prompt (deliberate, logged main.js exception)</td></tr>
+    <tr><td>Phase 2 nav tab never rendered on first page load</td><td>phylumPath.init() re-subscribed to 'rpgace:ready' from inside itself (twice) — that event only fires once, and RPGACE.hooks.fire()'s plain Array.forEach never revisits listeners pushed during its own iteration, so the re-subscribed listeners could never fire on the pass invoking them — fixed July 16 by calling the injector functions directly instead</td></tr>
+    <tr><td>Stale JS cache could serve a pre-Phase-2 copy of the app indefinitely</td><td>rpgace_core.js/main.js script tags had no cache-busting query string at all — fixed July 16 by adding ?v=20260716a to both</td></tr>
+    <tr><td>Mobile nav tab labels overlapped/clipped</td><td>.nav-tab had flex:1 + min-width:50px inside an overflow-x:auto container, a contradictory combination that squeezed every tab into an equal tiny slice — fixed July 16 by removing flex:1, bumping padding/font-size, adding scroll-arrow buttons</td></tr>
+    <tr><td>Bare "roll"/"fill" keywords in Percussio's list could false-match unrelated phyla</td><td>F8's matcher is word-boundary regex (\bterm\b), and a hyphen counts as a word boundary — bare "roll" matched inside Phylum 14's own "b-roll" term, bare "fill" matched ordinary English — fixed July 17 by dropping both, keeping their specific compound siblings (hi-hat roll, drum fill, etc.)</td></tr>
   </table>
 </div>
 
