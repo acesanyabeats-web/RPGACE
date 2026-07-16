@@ -6495,7 +6495,48 @@ RPGACE.register('config', {
         {t:'fpc',w:2},{t:'fruity slicer',w:2},{t:'piano roll drums',w:2},{t:'channel rack',w:2},{t:'drum grid',w:2},{t:'sample slicing',w:2},
         {t:'chop drums',w:2},{t:'drum layering rack',w:2},{t:'playlist pattern',w:2},{t:'midi drum programming',w:2},{t:'drum sequencer',w:2},
       ] },
-      { num: 3,  name: 'Sonus Designatio',      keywords: [{t:'sound design',w:2},{t:'synth',w:2},{t:'sample',w:1},{t:'patch',w:1},{t:'oscillator',w:2},{t:'wavetable',w:2},{t:'texture',w:1}] },
+      { num: 3,  name: 'Sonus Designatio',      keywords: [
+        // Synthesis Fundamentals — July 17, second Phylum Development
+        // Framework pass, same 7/8-category shape as Phylum 1/2's lists,
+        // merging a GODMODE+Council-of-5 pass from the separate RPGACE
+        // Python project with the original 7 seed terms.
+        {t:'synth',w:2},{t:'synthesizer',w:2},{t:'oscillator',w:2},{t:'osc',w:1},{t:'waveform',w:2},{t:'sine wave',w:2},{t:'saw wave',w:2},
+        {t:'square wave',w:2},{t:'triangle wave',w:2},{t:'noise',w:1},{t:'white noise',w:2},{t:'pink noise',w:2},{t:'wavetable',w:2},
+        {t:'wavetable synthesis',w:2},{t:'subtractive synthesis',w:2},{t:'additive synthesis',w:2},{t:'fm synthesis',w:2},{t:'frequency modulation',w:2},
+        {t:'phase modulation',w:2},{t:'granular synthesis',w:2},{t:'physical modeling',w:2},
+        // Synth Parameters
+        {t:'filter',w:1},{t:'low pass filter',w:2},{t:'lpf',w:2},{t:'high pass filter',w:2},{t:'hpf',w:2},{t:'band pass filter',w:2},
+        {t:'filter cutoff',w:2},{t:'resonance',w:2},{t:'filter envelope',w:2},{t:'adsr',w:2},{t:'attack',w:1},{t:'decay',w:1},{t:'sustain',w:1},
+        {t:'release',w:1},{t:'envelope',w:1},{t:'lfo',w:2},{t:'low frequency oscillator',w:2},{t:'modulation',w:1},{t:'mod wheel',w:2},
+        {t:'pitch bend',w:2},{t:'unison',w:2},{t:'detune',w:2},{t:'voice',w:1},{t:'polyphony',w:2},{t:'monophony',w:2},{t:'glide',w:1},
+        {t:'portamento',w:2},
+        // Sound Design Techniques
+        {t:'sound design',w:2},{t:'patch',w:1},{t:'preset',w:1},{t:'sound sculpting',w:2},{t:'layering',w:1},{t:'sound layering',w:2},
+        {t:'texture',w:1},{t:'sonic texture',w:2},{t:'timbre',w:2},{t:'tone shaping',w:2},{t:'resynthesis',w:2},{t:'sound morphing',w:2},
+        {t:'wavetable morphing',w:2},{t:'vector synthesis',w:2},{t:'cross-modulation',w:2},
+        // Sampling
+        {t:'sample',w:1},{t:'sampling',w:1},{t:'sample chop',w:2},{t:'chopping',w:1},{t:'sample flip',w:2},{t:'flip',w:1},
+        {t:'sample manipulation',w:2},{t:'time stretch',w:2},{t:'time stretching',w:2},{t:'pitch shift',w:2},{t:'pitch shifting',w:2},
+        {t:'resample',w:2},{t:'resampling',w:2},{t:'one-shot',w:1},{t:'one-shot sample',w:2},{t:'sample pack',w:2},{t:'loop',w:1},
+        {t:'sample loop',w:2},{t:'vinyl sample',w:2},{t:'dusty sample',w:2},{t:'sample library',w:2},{t:'royalty free sample',w:2},
+        {t:'sample clearance',w:2},{t:'sample layering',w:2},
+        // Effects & Processing
+        {t:'reverb',w:1},{t:'delay',w:1},{t:'chorus',w:1},{t:'flanger',w:1},{t:'phaser',w:1},{t:'distortion',w:1},{t:'bitcrush',w:2},
+        {t:'bit crusher',w:2},{t:'saturation',w:1},{t:'tape saturation',w:2},{t:'vinyl crackle',w:2},{t:'lo-fi effect',w:2},{t:'degrade',w:1},
+        {t:'degradation',w:1},{t:'filter sweep',w:2},{t:'riser',w:1},{t:'downlifter',w:2},{t:'impact',w:1},{t:'whoosh',w:1},
+        {t:'transition effect',w:2},
+        // Textural & Atmospheric Elements
+        {t:'pad',w:1},{t:'ambient pad',w:2},{t:'drone',w:1},{t:'atmosphere',w:1},{t:'texture layer',w:2},{t:'background texture',w:2},
+        {t:'sound bed',w:2},{t:'foley',w:1},{t:'field recording',w:2},{t:'found sound',w:2},{t:'vocal chop',w:2},{t:'vocal texture',w:2},
+        {t:'choir stab',w:2},{t:'string stab',w:2},{t:'orchestral hit',w:2},
+        // Genre-Specific / UK Drill & Trap Jargon
+        {t:'dark synth',w:2},{t:'eerie synth',w:2},{t:'haunting pad',w:2},{t:'drill lead',w:2},{t:'trap lead',w:2},{t:'plucky synth',w:2},
+        {t:'pluck',w:1},{t:'arp',w:1},{t:'arpeggio',w:2},{t:'arpeggiated synth',w:2},{t:'cinematic synth',w:2},{t:'evil synth',w:2},
+        {t:'distorted synth',w:2},{t:'sub synth',w:2},{t:'808 synth layer',w:2},
+        // DAW/FL Studio & Plugin-specific
+        {t:'sytrus',w:2},{t:'harmor',w:2},{t:'3xosc',w:2},{t:'serum',w:2},{t:'massive',w:2},{t:'vital',w:2},{t:'slicex',w:2},
+        {t:'wavetable editor',w:2},{t:'granulizer',w:2},{t:'sakura',w:2},{t:'directwave',w:2},{t:'sampler',w:1},{t:'chop editor',w:2},
+      ] },
       { num: 4,  name: 'Mixtura',               keywords: [{t:'mixing',w:2},{t:'eq',w:2},{t:'compress',w:2},{t:'sidechain',w:2},{t:'reverb',w:1},{t:'delay',w:1},{t:'gain',w:1},{t:'frequency',w:1}] },
       { num: 5,  name: 'Magistra',              keywords: [{t:'master',w:2},{t:'lufs',w:2},{t:'limiter',w:2},{t:'loudness',w:2},{t:'stem',w:1},{t:'final mix',w:2}] },
       { num: 6,  name: 'Instrumentarium',       keywords: [{t:'fl studio',w:2},{t:'vst',w:2},{t:'plugin',w:2},{t:'daw',w:2},{t:'workflow',w:1},{t:'edison',w:2},{t:'mixer',w:1},{t:'piano roll',w:2}] },
