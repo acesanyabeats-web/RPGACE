@@ -218,7 +218,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>🎧 Beatstars Listing</td><td>CONTENT</td><td>F16: shown once licence_type set → pulls matching Beat Log entry → sendToOracle (title/description/tags/licence block)</td></tr>
     <tr><td>📹 + New / → Mark [Stage] / 📋 Paths + exports</td><td>CONTENT</td><td>F17: videoPipeline tracker over video_jobs — stage advance + per-stage paths + 4 export slots, no rendering</td></tr>
     <tr><td>🎬 Also generate Visual Treatment Doc</td><td>CONTENT</td><td>F18: Beat Log checkbox → waits for in-flight guard to clear → auto visualOracle Visual Treatment Doc, F14-grounded</td></tr>
-    <tr><td>🧬 Phylum Path (nav tab)</td><td>LEARNING</td><td>Dedicated nav tab (July 16) → phylum switcher (July 17, Compositio/Percussio) → Linnaean drill-down (tap to descend, breadcrumb, sibling chips) → decidePlacement() (extractor+ground-worker) → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → fusion-link search → per-node "Generate/Refresh Article" (lazy+cached) → Encyclopedia</td></tr>
+    <tr><td>🧬 Phylum Path (nav tab)</td><td>LEARNING</td><td>Dedicated nav tab (July 16) → phylum switcher (July 17, Compositio/Percussio/Sonus Designatio/Mixtura) → Linnaean drill-down (tap to descend, breadcrumb, sibling chips) → decidePlacement() (extractor+ground-worker) → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → fusion-link search → per-node "Generate/Refresh Article" (lazy+cached) → Encyclopedia</td></tr>
     <tr><td>🧬 Send to Phylum Path</td><td>LEARNING</td><td>Highlight any text (Oracle chat, Encyclopedia) → button on the native text-select popup → opens Phylum Path panel pre-filled</td></tr>
     <tr><td>🔗 Confirm Link / ✗ Reject (Fusion Link card)</td><td>LEARNING</td><td>New July 16 — Dashboard review queue's second card type alongside taxonomy proposals → RPGACE.sb.update(taxonomy_links, status=confirmed/rejected)</td></tr>
     <tr><td>📅 Add to Agenda</td><td>CONTENT</td><td>ConIDPot idea → Schedule tab</td></tr>
@@ -240,7 +240,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>taxonomy_tree</td><td>Recursive lineage tree</td><td>Self-referencing parent_id</td></tr>
     <tr><td>taxonomy_proposals</td><td>Staging for auto-proposals</td><td>Nothing live until accepted</td></tr>
     <tr><td>taxonomy_links</td><td>Fusion links — cross-taxonomy connections, any rank/phylum (new July 16)</td><td>Symmetric node_a_id/node_b_id + link_insight; nothing live until confirmed</td></tr>
-    <tr><td>taxonomy_tree (Percussio/Sonus Designatio rows)</td><td>Phylums 2 and 3 now populated via the Development Framework (July 16-17)</td><td>Percussio: 39 rows. Sonus Designatio: 53 rows (11 pre-existing + 42 new, data-repaired first)</td></tr>
+    <tr><td>taxonomy_tree (Percussio/Sonus Designatio/Mixtura rows)</td><td>Phylums 2, 3 and 4 now populated via the Development Framework (July 16-17), all enabled for Phylum Path together</td><td>Percussio: 39 rows. Sonus Designatio: 53 rows (11 pre-existing + 42 new). Mixtura: 48 rows (7 pre-existing + 41 new) - all data-repaired (flat parent_id) before extending</td></tr>
     <tr><td>content_productions</td><td>ConID tracker</td><td>—</td></tr>
     <tr><td>conid_pot</td><td>Idea bank</td><td>—</td></tr>
     <tr><td>reference_tracks</td><td>Artist-matching corpus</td><td>—</td></tr>
@@ -294,6 +294,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Bare "roll"/"fill" keywords in Percussio's list could false-match unrelated phyla</td><td>F8's matcher is word-boundary regex (\bterm\b), and a hyphen counts as a word boundary — bare "roll" matched inside Phylum 14's own "b-roll" term, bare "fill" matched ordinary English — fixed July 17 by dropping both, keeping their specific compound siblings (hi-hat roll, drum fill, etc.)</td></tr>
     <tr><td>Phylum Path could only ever cover one phylum (Compositio)</td><td>PHYLUM_NUM was a single hardcoded scalar, not a parameter - generalized July 17 into ENABLED_PHYLA + mutable active-phylum state, switched via a new phylum-switcher pill UI; Percussio now live alongside Compositio</td></tr>
     <tr><td>Sonus Designatio's "Synthesizers" branch had flat parent_id (5 rows)</td><td>Same pre-July-12 bug pattern as Phylum 1's original data - backfilled July 17 via path-matching (regexp_replace to derive the parent path), zero orphans remaining</td></tr>
+    <tr><td>Mixtura's "Vocal Processing" branch had flat parent_id (3 rows)</td><td>Same recurring pre-July-12 pattern, third phylum found with it - backfilled July 17 the same way, zero orphans remaining</td></tr>
   </table>
 </div>
 
