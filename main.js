@@ -553,6 +553,23 @@ async function sendChat(){
       const instaMode = window._instaOracleActive || isInstaOracleQuery(msg);
       if(isInstaOracleQuery(msg)) window._instaOracleActive = true;
 
+      // July 15 deliberate main.js exception (frozen-file rule, logged same
+      // session): asked directly "which phylum is this," Oracle invented a
+      // whole fictional classification (a "Kingdom" rank that doesn't exist
+      // in RPGACE, a phylum name "Instrument Realism & MIDI Craft" that
+      // isn't one of the real 21) - normal chat had zero awareness of the
+      // real taxonomy, only the structured flows (Phylum Path, proposeLineage)
+      // did. Reads the real list live from taxonomyTree.PHYLUM_NAMES/
+      // PHYLUM_ENGLISH (rpgace_core.js, already loaded by the time a user
+      // can send a message) instead of hardcoding a second copy here.
+      const _phylumList = (function(){
+        var tt = window.RPGACE && RPGACE.modules && RPGACE.modules.taxonomyTree;
+        if(!tt) return '';
+        return Object.keys(tt.PHYLUM_NAMES).map(function(n){
+          return n+'. '+tt.PHYLUM_NAMES[n]+' ('+tt.PHYLUM_ENGLISH[n]+')';
+        }).join('\n');
+      })();
+
       const ORACLE_SYS=`You are the Oracle — Alex's AI life coach in RPGACE, a gamified life management app.
 Alex is an aspiring UK music producer and content creator targeting YouTube (@AceSanyaBeats), TikTok and Instagram.
 Be direct, motivating, RPG-toned. Use markdown formatting (**, ##, bullet points).
@@ -560,7 +577,11 @@ Be direct, motivating, RPG-toned. Use markdown formatting (**, ##, bullet points
 When a message contains [PAGE CONTENT FROM ...], you have been given the actual text of that webpage or post.
 Analyse and respond to that content directly — summarise it, extract insights, give strategy, connect it to Alex's goals.
 Never say you can't access URLs — the content has already been fetched and is in the message.
-
+${_phylumList ? `
+RPGACE organises production/career knowledge into exactly these 21 numbered Phyla - never invent a new one, never use a rank that isn't real here (there is no "Kingdom" level):
+${_phylumList}
+If asked which phylum something belongs to, or to classify/place a topic in the taxonomy, answer ONLY using one of the 21 above.
+` : ''}
 For quests: QUEST: [name] | XP: [50-300] | Type: [daily/weekly/monthly] | Category: [career/health/lifestyle]
 One sharp memorable line at the end of every reply.`;
 
