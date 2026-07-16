@@ -5704,6 +5704,31 @@ RPGACE.register('config', {
       if (RPGACE.utils._initPhylaObserver) RPGACE.utils._initPhylaObserver();
     }, 500);
 
+    // July 16: nav-scroll arrows — .nav-tabs is a horizontally-scrollable
+    // flex row on mobile (drag-to-scroll only), found hard to press/use
+    // reliably on a touchscreen, especially once Phylum Path became the
+    // 9th tab. Dynamically wraps the existing .nav-tabs with tap targets
+    // either side instead of touching main.js's nav markup - CSS in
+    // style.css hides these on desktop widths (display:none by default,
+    // shown only under the same 768px breakpoint the nav-tab sizing uses).
+    setTimeout(function() {
+      var tabs = document.querySelector('.nav-tabs');
+      if (!tabs || tabs.dataset.scrollArrowsAdded) return;
+      tabs.dataset.scrollArrowsAdded = '1';
+      var nav = tabs.parentElement;
+      if (!nav) return;
+      var leftBtn = document.createElement('button');
+      leftBtn.className = 'nav-scroll-arrow';
+      leftBtn.textContent = '‹';
+      leftBtn.onclick = function() { tabs.scrollBy({ left: -120, behavior: 'smooth' }); };
+      var rightBtn = document.createElement('button');
+      rightBtn.className = 'nav-scroll-arrow';
+      rightBtn.textContent = '›';
+      rightBtn.onclick = function() { tabs.scrollBy({ left: 120, behavior: 'smooth' }); };
+      nav.insertBefore(leftBtn, tabs);
+      nav.appendChild(rightBtn);
+    }, 600);
+
     // Intel UI: hide main.js container, show our collapsed list instead
     function applyIntelUI() {
       if (!RPGACE.modules.intelDelete) return;
