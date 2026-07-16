@@ -4742,7 +4742,21 @@ RPGACE.register('phylumPath', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectButton(); }, 1500); });
+    // Found + fixed July 16: init() only ever runs because 'rpgace:ready'
+    // already fired - RPGACE.register() wires every module's init() to
+    // that same event (rpgace_core.js ~line 415). Re-subscribing to
+    // 'rpgace:ready' from INSIDE init() (as this used to do, twice) is a
+    // latent reliability bug: RPGACE.hooks.fire() iterates listeners via
+    // a plain Array.forEach, which never revisits entries pushed onto the
+    // array after iteration starts - so a listener registered here could
+    // silently never fire on the very pass currently invoking init().
+    // Confirmed via direct testing: manually re-firing 'rpgace:ready' a
+    // second time made both this button and the new nav tab (below)
+    // appear instantly, which is what exposed this. Calling directly
+    // instead, since 'rpgace:ready' has unambiguously already happened by
+    // the time this code runs. Same pattern found in ~25 other places in
+    // this file - flagged in the plan doc, not fixed everywhere this pass.
+    setTimeout(function() { self._injectButton(); }, 1500);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectButton(); }, 600);
       if (name === RPGACE.CONFIG.pages.phylumPath) self._loadNodesAndRender(self._focusNodeId);
@@ -4759,9 +4773,7 @@ RPGACE.register('phylumPath', {
     });
     self._patchTextSelect();
     // Phase 2 (July 15): dedicated nav tab + full drill-down page.
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._injectNavTab(); self._injectPageShell(); }, 1500);
-    });
+    setTimeout(function() { self._injectNavTab(); self._injectPageShell(); }, 1500);
   },
 
   // ── Highlight-any-text entry point ──────────────────────────────────
