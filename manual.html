@@ -205,7 +205,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>🎛 Prod. Oracle</td><td>ORACLE</td><td>14 commands → fillGaps → sendToOracle → chat display</td></tr>
     <tr><td>🎬 YouTube Oracle</td><td>ORACLE</td><td>8 commands → same chain</td></tr>
     <tr><td>📸 Insta-Oracle</td><td>ORACLE</td><td>13 commands → same chain</td></tr>
-    <tr><td>🎬 Visual Oracle</td><td>ORACLE</td><td>6 commands, reads Phylum XXV taxonomy</td></tr>
+    <tr><td>🎬 Visual Oracle</td><td>ORACLE</td><td>6 commands, reads Phylum 14 (Visio Cinematica) taxonomy</td></tr>
     <tr><td>🔀 Repurpose</td><td>ORACLE/CONTENT</td><td>3-step popup → 4 outputs → auto-creates ConID</td></tr>
     <tr><td>💡 Save Ideas</td><td>CONTENT</td><td>conidPot.saveIdea() → dup check → conid_pot</td></tr>
     <tr><td>🗑 DEL (Intel)</td><td>LEARNING</td><td>Cascade delete: intel_reports + encyclopedia + taxonomy_nodes</td></tr>
@@ -218,11 +218,12 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>🎧 Beatstars Listing</td><td>CONTENT</td><td>F16: shown once licence_type set → pulls matching Beat Log entry → sendToOracle (title/description/tags/licence block)</td></tr>
     <tr><td>📹 + New / → Mark [Stage] / 📋 Paths + exports</td><td>CONTENT</td><td>F17: videoPipeline tracker over video_jobs — stage advance + per-stage paths + 4 export slots, no rendering</td></tr>
     <tr><td>🎬 Also generate Visual Treatment Doc</td><td>CONTENT</td><td>F18: Beat Log checkbox → waits for in-flight guard to clear → auto visualOracle Visual Treatment Doc, F14-grounded</td></tr>
-    <tr><td>🧬 Phylum Path</td><td>LEARNING</td><td>New bottom-up insight→article pipeline, Phylum 1 pilot → placeInsight() attach/extend taxonomy_tree → per-node "Generate Article" → Encyclopedia</td></tr>
+    <tr><td>🧬 Phylum Path</td><td>LEARNING</td><td>Bottom-up insight→article pipeline, Phylum 1 pilot, hand-tested July 15 → decidePlacement() → confirm/deny/modify popup → insertNewSteps() attach/extend taxonomy_tree → per-node "Generate Article" → Encyclopedia</td></tr>
+    <tr><td>🧬 Send to Phylum Path</td><td>LEARNING</td><td>Highlight any text (Oracle chat, Encyclopedia) → button on the native text-select popup → opens Phylum Path panel pre-filled</td></tr>
     <tr><td>📅 Add to Agenda</td><td>CONTENT</td><td>ConIDPot idea → Schedule tab</td></tr>
     <tr><td>⚡ Activate ConID</td><td>CONTENT</td><td>Same endpoint as Repurpose</td></tr>
     <tr><td>☀️ Morning Brief</td><td>JOURNAL</td><td>4-source: Gmail, shifts, YouTube, top gap</td></tr>
-    <tr><td>🌳 Propose lineage</td><td>LEARNING</td><td>Full accept/edit/reject/morph cycle</td></tr>
+    <tr><td>🌳 Propose lineage</td><td>LEARNING</td><td>Accept/edit/reject/morph cycle for 20 phyla; Phylum 1 now routes through Phylum Path's structure-aware decision instead (fixed a live duplicate-branch bug July 15)</td></tr>
     <tr><td>Free calendar rows</td><td>SCHEDULE</td><td>Opens Schedule modal, pre-filled</td></tr>
     <tr><td>Start / Done</td><td>SCHEDULE</td><td>Task tracking + XP</td></tr>
   </table>
@@ -253,7 +254,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   <div class="section-title">Currently Open Bugs</div>
   <div class="card red">
     <div class="card-title">Oracle 504 timeout on long structured responses</div>
-    <div class="card-body">maxDuration raised to 60s — insufficient. Response-shape-dependent: long 3-layer teaching format times out, shorter Socratic-method mode completes fine on identical topic. Needs real <code>api/_context.js</code>/<code>callClaude()</code> source before next fix attempt.</div>
+    <div class="card-body">maxDuration raised to 60s — insufficient. Response-shape-dependent: long 3-layer teaching format times out, shorter Socratic-method mode completes fine on identical topic. July 15: reproduced concretely in Phylum Path's article-generation call (max_tokens:1800 failed outright with a JSON-parse error) — confirmed the failure scales with requested length (700 tokens worked, 1200 got truncated, 1800 failed). Mitigated for those 2 calls via trimmed prompts + lower token ceilings, but the underlying timeout is untouched — needs streaming or chunked generation, not another blind trim.</div>
   </div>
 </div>
 
@@ -277,6 +278,9 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>lastfm_beat_match mislabeled phylum 17 as Fons Educationis</td><td>Fons Educationis is actually phylum 12; 17 is Negotium — fixed the insert to write 12, matching its own stated intent — fixed July 13</td></tr>
     <tr><td>RPGACE.cache's clear() never actually busted anything</td><td>Cache keys are table+'|'+params but clear() was called with a bare table name, which never matched a real key — stale cached reads could persist up to 60s after any write, on any cached table — fixed July 14</td></tr>
     <tr><td>phylumPath's auto-detect duplicated the shared phyla-scan observer</td><td>Installed a second MutationObserver on #send-btn doing the same DOM query as RPGACE.utils._initPhylaObserver — consolidated onto a shared 'oracle:response-scanned' hook instead — fixed July 14, same session it shipped</td></tr>
+    <tr><td>proposeLineage/silentPropose could create duplicate/overlapping branches</td><td>Duplicate-check only matched exact names — created a whole new "Harmony & Chord Theory" Order beside the existing "Harmony" Order for near-identical content, confirmed live — fixed July 15 by routing Phylum 1 placement through Phylum Path's structure-aware 5-check decision instead of the old flat generation</td></tr>
+    <tr><td>Phylum Path wrote straight to taxonomy_tree with zero confirm step</td><td>Every other proposal path in RPGACE has an accept/edit/reject checkpoint; Phylum Path committed the instant Oracle decided a placement — fixed July 15 with a new confirm/deny/modify popup between decision and insert</td></tr>
+    <tr><td>Oracle invented fictional taxonomy categories in normal chat</td><td>Asked directly "which phylum is this," invented a "Kingdom" rank that doesn't exist and a phylum name that isn't one of the real 21 — ORACLE_SYS had zero real-taxonomy awareness — fixed July 15 by reading the real 21-phylum list live into the system prompt (deliberate, logged main.js exception)</td></tr>
   </table>
 </div>
 
