@@ -6810,7 +6810,23 @@ RPGACE.register('bookworm', {
   // one call - keeps this to one Oracle round trip per attempt instead of
   // separate placement/scoring calls, given how many of these can run per
   // chapter (real cost/latency concern, flagged in patch notes).
+  // Fixed same session as a live bug: this prompt originally dropped a
+  // load-bearing instruction the proven phylumPath.decidePlacement()
+  // prompt has always had ("do NOT repeat ranks that already exist in
+  // the attach point"). Without it, Oracle returned newSteps as
+  // cumulative restatements of the existing path at each step instead of
+  // just the new segment names - confirmed live: a real insight came back
+  // with newSteps like ["Anatomia", "Anatomia/Pitch & Keyboard Geography",
+  // "Anatomia/Pitch & Keyboard Geography/Note Identification & Keyboard
+  // Layout", "...the real new leaf name"], which joined into a wall of
+  // repeated segments in the review popup - and would have inserted that
+  // garbage as literal taxonomy_tree node names if approved. Restored the
+  // instruction AND added _sanitizeNewSteps() as a defensive backstop
+  // (strips any step that's really a multi-segment path or repeats
+  // something already in the attach path) so a future prompt regression
+  // can't corrupt the tree even if it slips past the wording again.
   _decidePlacementScored: function(insightText, phylumNumber) {
+    var self = this;
     var pp = RPGACE.modules.phylumPath;
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
       existing = existing || [];
@@ -6819,17 +6835,39 @@ RPGACE.register('bookworm', {
         'A book insight: "' + insightText + '"\n\n' +
         'EXISTING STRUCTURE in this phylum (root-first):\n' + pathList + '\n\n' +
         'First decide: does this insight genuinely belong in THIS phylum at all (not just loosely related)? Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (or null for a new path), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10 for this placement.\n\n' +
+        'IMPORTANT about newSteps: each entry must be ONLY the single new rank\'s own name - never a "/"-joined path, never a restatement of the attachTo path or any earlier step. Do NOT repeat any rank that already exists in the attach point.\n\n' +
         'Return ONLY JSON: {"fits": true, "attachTo": "existing path or null", "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8}';
       return pp._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
         var attachNode = parsed.attachTo ? existing.find(function(n) { return n.path === parsed.attachTo; }) : null;
         return {
           fits: !!parsed.fits, phylumNumber: phylumNumber, attachNode: attachNode,
           attachPath: attachNode ? attachNode.path : null,
-          newSteps: parsed.newSteps || [], explainers: parsed.explainers || [],
+          newSteps: self._sanitizeNewSteps(attachNode ? attachNode.path : '', parsed.newSteps || []),
+          explainers: parsed.explainers || [],
           justification: parsed.justification || '', confidenceScore: parsed.confidenceScore || 0
         };
       });
     });
+  },
+
+  // Defensive backstop for the bug above: a step that contains "/" is
+  // really a multi-segment path, not a single rank name - keep only its
+  // final segment. A step that exactly restates something already in the
+  // attach path (case-insensitive) is dropped entirely rather than
+  // creating a duplicate rank.
+  _sanitizeNewSteps: function(attachPath, newSteps) {
+    var cleaned = [];
+    var soFarLower = (attachPath || '').split('/').map(function(s) { return s.trim().toLowerCase(); });
+    (newSteps || []).forEach(function(step) {
+      if (!step) return;
+      var parts = String(step).split('/').map(function(s) { return s.trim(); }).filter(Boolean);
+      var candidate = parts[parts.length - 1];
+      if (!candidate) return;
+      if (soFarLower.indexOf(candidate.toLowerCase()) !== -1) return;
+      cleaned.push(candidate);
+      soFarLower.push(candidate.toLowerCase());
+    });
+    return cleaned;
   },
 
   _rewordInsight: function(insightText) {
