@@ -20,12 +20,36 @@ ORIGINAL 4 QUESTIONS ASKED
 ANSWERS
 ============================================================
 
-Q1 — CONFIRMED (accepted the recommended option):
-Paste each chapter yourself. The "book" entry point isn't a working
-URL-fetch mechanism — it's just a title/reference. User pastes chapter
-1's text in when they get there, confirms read, gets insights + paths +
-justification, then pastes chapter 2, etc. Sidesteps the fetch/timeout
-problem entirely.
+Q1 — CORRECTED (the recommended default I first took was WRONG, this is
+the real answer, given after the correction — verbatim):
+"no I paste URL, Jina fetches content first, so system is aware of
+chapters, then Jina imports chapter 1, the whole chapter loads, goes
+through button function in dashboard. this way content is used as
+progress bar too, so when I stop, I know where I am at."
+Interpretation: paste the book's URL ONCE. A dedicated fetch (NOT the
+existing capped fetchURL() in api/_context.js, which truncates to 8000
+chars — that cap stays as-is for its other callers, Bookworm needs its
+own uncapped fetch path) pulls the FULL text via Jina up front. The
+system then detects chapter boundaries from that full text (regex/
+heuristic pass for common chapter-heading patterns first, Oracle
+fallback if that doesn't find enough boundaries) and knows the TOTAL
+chapter count immediately — this is what makes the progress bar
+possible (e.g. "Chapter 3 of 12"), which requires knowing the total
+upfront, not discovering it chapter-by-chapter. Chapters then get
+loaded/imported one at a time as the user progresses through the
+existing dashboard button flow (read -> per-insight summary/path/
+justification/approve-reject-edit loop, per Q3 above) — the WHOLE book
+gets fetched once, but processed/inserted into taxonomy incrementally,
+same as already speced.
+REAL TECHNICAL RISK, flagged honestly rather than promised to just
+work: Jina Reader reliably returning the FULL text of a book-length PDF
+in one HTTP response, within Vercel's function time/payload limits, is
+unverified — large PDFs are exactly the class of thing that already
+caused the original ingestion error this whole feature grew out of.
+Plan: attempt the full uncapped fetch; if it fails/times out, surface a
+clear error rather than silently truncating or giving fake progress
+data (same "don't paper over a real failure" principle as the rest of
+this project's Oracle-timeout handling).
 
 Q2 — USER'S ACTUAL ANSWER (verbatim — I wrongly substituted my own
 recommended default the first time around, this is the real one):
