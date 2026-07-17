@@ -20,36 +20,35 @@ ORIGINAL 4 QUESTIONS ASKED
 ANSWERS
 ============================================================
 
-Q1 — CORRECTED (the recommended default I first took was WRONG, this is
-the real answer, given after the correction — verbatim):
-"no I paste URL, Jina fetches content first, so system is aware of
-chapters, then Jina imports chapter 1, the whole chapter loads, goes
-through button function in dashboard. this way content is used as
-progress bar too, so when I stop, I know where I am at."
-Interpretation: paste the book's URL ONCE. A dedicated fetch (NOT the
-existing capped fetchURL() in api/_context.js, which truncates to 8000
-chars — that cap stays as-is for its other callers, Bookworm needs its
-own uncapped fetch path) pulls the FULL text via Jina up front. The
-system then detects chapter boundaries from that full text (regex/
-heuristic pass for common chapter-heading patterns first, Oracle
-fallback if that doesn't find enough boundaries) and knows the TOTAL
-chapter count immediately — this is what makes the progress bar
-possible (e.g. "Chapter 3 of 12"), which requires knowing the total
-upfront, not discovering it chapter-by-chapter. Chapters then get
-loaded/imported one at a time as the user progresses through the
-existing dashboard button flow (read -> per-insight summary/path/
-justification/approve-reject-edit loop, per Q3 above) — the WHOLE book
-gets fetched once, but processed/inserted into taxonomy incrementally,
-same as already speced.
+Q1 — FINAL, CORRECTED AGAIN (verbatim, the version actually being built):
+"Jina fetches only book contents first, names of chapters, that loads
+as steps for progress bar, then the progress bar sends kina what
+chapter to extract, one after the other. chapter 1 gets called, goes
+through function, all insights loaded down whole system, then approved.
+then chapter 1 is done, move to chapter 2. kina is then told chapter 2
+title, kina gets text under chapter 2 title, whole cycle again. repeat
+cycle till chapters left to study is 0."
+Interpretation, and the exact implementation being built: paste the
+book's URL once. ONE full uncapped Jina fetch happens up front (new
+dedicated fetch, NOT the existing capped fetchURL() in api/_context.js
+— that 8000-char cap stays untouched for its other callers). From that
+one fetch, chapter boundaries are detected (regex/heuristic pass for
+common chapter-heading patterns, Oracle fallback if that doesn't find
+enough) and EVERY chapter's text is sliced out immediately in that same
+pass — this is what makes the total chapter count (and therefore the
+progress bar) known right away, and avoids re-fetching Jina per chapter
+(slower, more failure-prone, and unnecessary once the full text is
+already in hand). "Jina extracts chapter N" is implemented as a local
+slice against the already-fetched text, not a fresh network call each
+time — functionally identical to what's described, just avoids hitting
+Jina N times for one book.
 REAL TECHNICAL RISK, flagged honestly rather than promised to just
 work: Jina Reader reliably returning the FULL text of a book-length PDF
-in one HTTP response, within Vercel's function time/payload limits, is
+in one response, within Vercel's function time/payload limits, is
 unverified — large PDFs are exactly the class of thing that already
 caused the original ingestion error this whole feature grew out of.
-Plan: attempt the full uncapped fetch; if it fails/times out, surface a
-clear error rather than silently truncating or giving fake progress
-data (same "don't paper over a real failure" principle as the rest of
-this project's Oracle-timeout handling).
+Plan: attempt the full fetch; if it fails/times out, surface a clear
+error rather than silently truncating or faking progress data.
 
 Q2 — USER'S ACTUAL ANSWER (verbatim — I wrongly substituted my own
 recommended default the first time around, this is the real one):
@@ -120,16 +119,21 @@ one call producing a 1-10 confidence number directly), or the rephrase-
 attempt cap. Will implement with a reasonable, clearly-commented
 interpretation and flag it for correction rather than blocking on it.
 
-Q4 — STILL UNANSWERED as of this file's creation. Asked again in plain
-chat text (not via a popup) rather than re-running the questionnaire
-tool, since re-showing it caused real frustration once already:
-"new dedicated bibliography table, or fold into Fons Educationis
-(Phylum 12)?"
+Q4 — ANSWERED (verbatim, given alongside the Q1 correction above):
+"then book gets loaded into bibliography section in research."
+Interpretation: neither of the two original options exactly — not a
+brand new standalone Dashboard module, and not folded into the
+taxonomy_tree as a Fons Educationis node. A dedicated `bibliography`
+table backs the data (title, source_url, total chapters/insights,
+phyla touched, completed_at), but the UI section that LISTS completed
+books lives inside the EXISTING Research page/tab (`#page-research`,
+same page phylumPath's own manual-entry button already anchors to),
+not as its own new top-level Dashboard tab.
 
 ============================================================
 STATUS
 ============================================================
-Not yet built. Waiting on Q4 before starting implementation. Nothing
-in this file should ever be silently overwritten with a "recommended"
-guess again — if an answer is genuinely unclear, ask in plain text and
-wait, don't substitute.
+ALL FOUR QUESTIONS ANSWERED. Building now. Nothing in this file should
+ever be silently overwritten with a "recommended" guess again — if
+something comes up mid-build that's genuinely unclear, ask in plain
+text and wait, don't substitute.
