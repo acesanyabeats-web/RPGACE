@@ -6561,6 +6561,37 @@ RPGACE.register('bookworm', {
     widget.appendChild(manualToggle);
     widget.appendChild(manualForm);
 
+    // Upload a purchased ebook PDF directly - real request from owning a
+    // legitimate ebook file with no fetchable URL and no interest in
+    // retyping the table of contents. Text extracted entirely client-side
+    // via PDF.js, never uploaded anywhere as a raw file - only the
+    // extracted text goes to the server, same as any other book source.
+    var uploadRow = document.createElement('div');
+    uploadRow.style.cssText = 'margin-bottom:14px;';
+    var uploadLabel = document.createElement('label');
+    uploadLabel.textContent = '📎 Or upload your own purchased ebook PDF';
+    uploadLabel.style.cssText = 'display:block;width:100%;padding:6px;background:none;border:1px dashed rgba(155,89,182,0.25);border-radius:6px;color:rgba(155,89,182,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;text-align:center;';
+    var uploadInput = document.createElement('input');
+    uploadInput.type = 'file';
+    uploadInput.accept = '.pdf,application/pdf';
+    uploadInput.style.cssText = 'display:none;';
+    uploadInput.onchange = function() {
+      var file = uploadInput.files && uploadInput.files[0];
+      if (!file) return;
+      var title = file.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ');
+      uploadLabel.textContent = '⏳ Extracting text + detecting chapters...';
+      self._startBookFromPDF(title, file).then(function() {
+        uploadLabel.textContent = '📎 Or upload your own purchased ebook PDF';
+        uploadInput.value = '';
+      }).catch(function(e) {
+        uploadLabel.textContent = '📎 Or upload your own purchased ebook PDF';
+        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4500);
+      });
+    };
+    uploadLabel.appendChild(uploadInput);
+    uploadRow.appendChild(uploadLabel);
+    widget.appendChild(uploadRow);
+
     var list = document.createElement('div');
     list.id = 'bookworm-list';
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
@@ -6670,41 +6701,114 @@ RPGACE.register('bookworm', {
     var self = this;
     return fetch('/api/bookworm-fetch', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url })
+      body: JSON.stringify({ url: url, phylumList: self._phylumListForPrompt() })
     }).then(function(r) { return r.json(); })
-      .then(function(result) {
-        if (result.error) throw new Error(result.error);
-        if (!result.chapters || !result.chapters.length) throw new Error('No chapters detected in this book');
+      .then(function(result) { return self._createBookFromExtraction(result, url); });
+  },
 
-        return fetch(RPGACE.sb.url('bookworm_books'), {
-          method: 'POST',
-          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-          body: JSON.stringify({ title: result.title, source_url: url, current_chapter_index: 0, status: 'in_progress' })
-        }).then(function(r) {
-          if (!r.ok) return r.text().then(function(t) { throw new Error('Book creation failed: ' + t.slice(0, 200)); });
-          return r.json();
-        }).then(function(bookRows) {
-          var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
-          if (!book || !book.id) throw new Error('Book creation did not return an id');
-
-          var chapterRows = result.chapters.map(function(c) {
-            return { book_id: book.id, chapter_index: c.index, chapter_title: c.title, raw_text: c.text, status: 'pending' };
-          });
-          return fetch(RPGACE.sb.url('bookworm_chapters'), {
-            method: 'POST',
-            headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-            body: JSON.stringify(chapterRows)
-          }).then(function(r) {
-            if (!r.ok) return r.text().then(function(t) { throw new Error('Chapter creation failed: ' + t.slice(0, 200)); });
-            return r.json();
-          }).then(function(insertedChapters) {
-            if (!insertedChapters || !insertedChapters.length) throw new Error('Chapters did not save correctly');
-            RPGACE.utils.toast('📖 ' + result.title + ' — ' + insertedChapters.length + ' chapters detected', '#9B59B6', 4000);
-            self._refreshWidget();
-            self._openBook(book.id);
-          });
+  // Uploaded-PDF entry point - for a legitimately purchased ebook sitting
+  // on the user's own device with no fetchable URL. Extracts text
+  // entirely client-side via PDF.js (dynamically loaded, never bundled
+  // into index.html's own script tags - see _ensurePdfJs), then runs it
+  // through the exact same /api/bookworm-fetch detection pipeline as a
+  // URL fetch, just skipping the Jina step since the text is already in
+  // hand. Real risk, not hidden: PDF text extraction quality depends on
+  // how the PDF itself was produced (a scanned/image-only PDF won't
+  // extract any real text this way, only a text-layer PDF will).
+  _startBookFromPDF: function(title, file) {
+    var self = this;
+    return self._ensurePdfJs().then(function(pdfjsLib) {
+      return file.arrayBuffer().then(function(buffer) {
+        return pdfjsLib.getDocument({ data: buffer }).promise.then(function(pdf) {
+          var pageTextPromises = [];
+          for (var i = 1; i <= pdf.numPages; i++) {
+            pageTextPromises.push(pdf.getPage(i).then(function(page) {
+              return page.getTextContent().then(function(content) {
+                return content.items.map(function(item) { return item.str; }).join(' ');
+              });
+            }));
+          }
+          return Promise.all(pageTextPromises);
         });
+      }).then(function(pageTexts) {
+        var fullText = pageTexts.join('\n\n');
+        if (!fullText || fullText.length < 200) throw new Error('Could not extract readable text from this PDF - it may be a scanned/image-only file');
+        return fetch('/api/bookworm-fetch', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullText: fullText, title: title, phylumList: self._phylumListForPrompt() })
+        }).then(function(r) { return r.json(); });
       });
+    }).then(function(result) { return self._createBookFromExtraction(result, 'uploaded-pdf'); });
+  },
+
+  // Dynamically loads PDF.js at runtime (never as a static <script> tag
+  // in index.html - that's reserved for exactly main.js + rpgace_core.js
+  // per this project's own rule, adding a 3rd static tag risks the same
+  // password-gate race condition). Cached on RPGACE._pdfjsLib so it only
+  // loads once per session.
+  _ensurePdfJs: function() {
+    if (RPGACE._pdfjsLib) return Promise.resolve(RPGACE._pdfjsLib);
+    return new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.onload = function() {
+        var lib = window.pdfjsLib;
+        if (!lib) { reject(new Error('PDF.js failed to load')); return; }
+        lib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        RPGACE._pdfjsLib = lib;
+        resolve(lib);
+      };
+      script.onerror = function() { reject(new Error('Could not load PDF.js from CDN')); };
+      document.head.appendChild(script);
+    });
+  },
+
+  _phylumListForPrompt: function() {
+    var pp = RPGACE.modules.phylumPath;
+    return pp.ENABLED_PHYLA.map(function(n) { return n + '. ' + RPGACE.utils.phylumContext(n); }).join('\n');
+  },
+
+  // Shared by _startBook (URL) and _startBookFromPDF (upload) - both hit
+  // the same /api/bookworm-fetch detection pipeline and land here with
+  // an identical result shape (chapters already have real text, plus
+  // keywords/suggestedPhylum from Function 1's guidance). One insert
+  // path, one confirmation screen, regardless of source.
+  _createBookFromExtraction: function(result, sourceUrl) {
+    var self = this;
+    if (result.error) throw new Error(result.error);
+    if (!result.chapters || !result.chapters.length) throw new Error('No chapters detected in this book');
+    var pp = RPGACE.modules.phylumPath;
+
+    return fetch(RPGACE.sb.url('bookworm_books'), {
+      method: 'POST',
+      headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ title: result.title, source_url: sourceUrl, current_chapter_index: 0, status: 'in_progress' })
+    }).then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { throw new Error('Book creation failed: ' + t.slice(0, 200)); });
+      return r.json();
+    }).then(function(bookRows) {
+      var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
+      if (!book || !book.id) throw new Error('Book creation did not return an id');
+
+      var chapterRows = result.chapters.map(function(c) {
+        return {
+          book_id: book.id, chapter_index: c.index, chapter_title: c.title, raw_text: c.text, status: 'pending',
+          keywords: c.keywords || [], suggested_phylum: pp.isEnabled(c.suggestedPhylum) ? c.suggestedPhylum : null
+        };
+      });
+      return fetch(RPGACE.sb.url('bookworm_chapters'), {
+        method: 'POST',
+        headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+        body: JSON.stringify(chapterRows)
+      }).then(function(r) {
+        if (!r.ok) return r.text().then(function(t) { throw new Error('Chapter creation failed: ' + t.slice(0, 200)); });
+        return r.json();
+      }).then(function(insertedChapters) {
+        if (!insertedChapters || !insertedChapters.length) throw new Error('Chapters did not save correctly');
+        self._refreshWidget();
+        self._renderStructureFound(book, insertedChapters);
+      });
+    });
   },
 
   // TOC-first manual entry - for a physical/owned book with no fetchable

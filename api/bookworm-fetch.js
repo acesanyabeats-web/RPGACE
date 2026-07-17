@@ -80,28 +80,29 @@ function detectChaptersByRegex(fullText) {
 // exactly the kind of judgment call that needs actual reading
 // comprehension, which is why regex is now the fallback, not the other
 // way around.
-async function detectChaptersByOracle(apiKey, fullText) {
+async function detectChaptersByOracle(apiKey, fullText, phylumList) {
   // 25000 chars (up from the original 6000) - real evidence showed this
   // book's front matter alone (title page, table of contents, AND an
   // expanded per-chapter topic-summary section) ran well past 6000 chars.
   // Still a prefix, not the whole book - a genuine limit, not a
   // guaranteed-sufficient window for every book's front matter length.
   const prefix = fullText.slice(0, 25000);
+  const phylumBlock = phylumList ? '\n\nPHYLA (for the suggestedPhylum field below):\n' + phylumList : '';
   const prompt = 'This is the beginning of a book or book-summary document, likely including front matter (title page, table of contents, possibly per-chapter recap sections).\n\n' +
     'TEXT:\n' + prefix + '\n\n' +
     'List the book\'s REAL chapters in reading order, ONE entry per chapter number - never split a single chapter into multiple entries and never skip a chapter that has real content.\n\n' +
     'One genuine decoy to exclude: a table of contents / index that just LISTS every chapter by number and title with no real content of its own (e.g. a plain list of "Chapter N: Title" lines, or just chapter titles with page numbers) - that block is not a chapter.\n\n' +
     'IMPORTANT - this is NOT a decoy: some chapters may ONLY have an abbreviated "Chapter N Summary" recap (a short bullet/table recap of that chapter\'s key points), with no separate full-prose version anywhere - for example if fuller narrative text is paywalled or cut off after an early chapter. If that recap is the ONLY content available for that chapter number, it IS that chapter and must get its own entry. Only skip a "Chapter N Summary" if a FULLER narrative version of that SAME chapter number also exists elsewhere in the text - in that case use the fuller version instead, not both.\n\n' +
-    'For each chapter, give an EXACT short string (8-12 words) copied verbatim from the very start of that chapter\'s own real content (its opening prose sentence, or its recap table\'s first real line if that\'s all it has) - not the heading/title text itself, since heading text can also appear in the table of contents and would match the wrong location.\n\n' +
-    'Return ONLY JSON: {"chapters": [{"title": "...", "searchString": "..."}]}';
+    'For each chapter, give an EXACT short string (8-12 words) copied verbatim from the very start of that chapter\'s own real content (its opening prose sentence, or its recap table\'s first real line if that\'s all it has) - not the heading/title text itself, since heading text can also appear in the table of contents and would match the wrong location. Also give 3-6 keywords for that chapter and (if a phylum list is given below) a best-guess suggestedPhylum number - just a starting hint for later insight placement, not a final decision.' + phylumBlock + '\n\n' +
+    'Return ONLY JSON: {"chapters": [{"title": "...", "searchString": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
 
-  const reply = await callClaude(apiKey, [{ role: 'user', content: prompt }], '', 1500);
+  const reply = await callClaude(apiKey, [{ role: 'user', content: prompt }], '', 1800);
   const jsonMatch = reply.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Oracle chapter-detection returned no JSON');
   const parsed = JSON.parse(jsonMatch[0]);
   const chapters = (parsed.chapters || []).map(function (c) {
     const offset = fullText.indexOf(c.searchString);
-    return { offset: offset >= 0 ? offset : null, title: c.title };
+    return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
   }).filter(function (c) { return c.offset !== null; });
   return chapters;
 }
@@ -144,16 +145,23 @@ export default async function handler(req, res) {
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
     const url = (body && body.url || '').trim();
-    if (!url) throw new Error('No URL provided');
+    // Uploaded-PDF path (client extracts text via PDF.js, no fetch needed
+    // here) - a real, legitimate personal-copy entry point alongside the
+    // URL fetch, since a purchased ebook sitting on a laptop has no URL
+    // to paste. Same detection/slicing pipeline either way.
+    const providedText = (body && body.fullText || '').trim();
+    if (!url && !providedText) throw new Error('No URL or text provided');
+    const providedTitle = (body && body.title || '').trim();
+    const phylumList = (body && body.phylumList) || null;
 
-    const fullText = await fetchFullText(url);
+    const fullText = providedText || await fetchFullText(url);
 
     // Oracle-primary as of the 3rd hand-test round (see detectChaptersByOracle
     // above for why) - regex is now only a fallback for when the Oracle call
     // itself fails outright or returns too few chapters to be useful.
     let boundaries;
     try {
-      boundaries = await detectChaptersByOracle(apiKey, fullText);
+      boundaries = await detectChaptersByOracle(apiKey, fullText, phylumList);
       if (boundaries.length < 2) boundaries = detectChaptersByRegex(fullText);
     } catch (e) {
       console.warn('Bookworm: Oracle chapter-detection failed, falling back to regex:', e.message);
@@ -166,7 +174,7 @@ export default async function handler(req, res) {
 
     const sliced = boundaries.map(function (b, i) {
       const end = (i + 1 < boundaries.length) ? boundaries[i + 1].offset : fullText.length;
-      return { title: b.title, text: fullText.slice(b.offset, end).trim() };
+      return { title: b.title, text: fullText.slice(b.offset, end).trim(), keywords: b.keywords || [], suggestedPhylum: b.suggestedPhylum || null };
     }).filter(function (c) { return c.text.length > 0; });
 
     // A genuine chapter has real body content - anything left this short
@@ -180,16 +188,18 @@ export default async function handler(req, res) {
     const merged = [];
     for (let i = 0; i < sliced.length; i++) {
       if (sliced[i].text.length < MIN_CHAPTER_LENGTH && i + 1 < sliced.length) {
-        sliced[i + 1] = { title: sliced[i + 1].title, text: sliced[i].text + '\n\n' + sliced[i + 1].text };
+        sliced[i + 1] = Object.assign({}, sliced[i + 1], { text: sliced[i].text + '\n\n' + sliced[i + 1].text });
         continue;
       }
       merged.push(sliced[i]);
     }
-    const chapters = merged.map(function (c, i) { return { index: i, title: c.title, text: c.text }; });
+    const chapters = merged.map(function (c, i) {
+      return { index: i, title: c.title, text: c.text, keywords: c.keywords, suggestedPhylum: c.suggestedPhylum };
+    });
 
     return res.status(200).json({
       success: true,
-      title: guessTitleFromURL(url),
+      title: providedTitle || guessTitleFromURL(url || 'Untitled Book.pdf'),
       chapters: chapters
     });
   } catch (err) {
