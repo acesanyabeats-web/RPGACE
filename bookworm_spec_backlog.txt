@@ -1,0 +1,111 @@
+BOOKWORM FEATURE — Q&A BACKLOG (raw record, verbatim where noted)
+Captured July 17, so nothing gets silently lost or replaced with a
+guessed default again. This file is committed to the repo (not just
+kept in conversation memory) specifically so it survives a session
+issue, a context reset, or anything else going wrong.
+
+============================================================
+ORIGINAL 4 QUESTIONS ASKED
+============================================================
+1. Ingestion method — given the 8000-char fetch cap in fetchURL()
+   (api/_context.js) makes one-shot whole-book URL ingestion unreliable,
+   how should Bookworm actually get chapter text in?
+2. Phylum scope — does a book get one fixed phylum, or auto-detect per
+   chapter/insight?
+3. Confirm granularity — whole chapter at once, or one insight at a time?
+4. Bibliography home — new dedicated table, or fold into Fons Educationis
+   (Phylum 12)?
+
+============================================================
+ANSWERS
+============================================================
+
+Q1 — CONFIRMED (accepted the recommended option):
+Paste each chapter yourself. The "book" entry point isn't a working
+URL-fetch mechanism — it's just a title/reference. User pastes chapter
+1's text in when they get there, confirms read, gets insights + paths +
+justification, then pastes chapter 2, etc. Sidesteps the fetch/timeout
+problem entirely.
+
+Q2 — USER'S ACTUAL ANSWER (verbatim — I wrongly substituted my own
+recommended default the first time around, this is the real one):
+"most closely related phylum, add each insight down taxonomy tree after
+I approve."
+Interpretation: NOT one fixed phylum chosen upfront for the whole book.
+Each insight gets matched to whichever phylum is most closely related
+(auto-detected, same scoring concept as the existing auto-detect badge),
+and once approved, gets inserted into THAT phylum's tree. Overrides the
+earlier "one phylum per book" default entirely.
+
+Q3 — SUPERSEDED, same message, verbatim:
+"To approve, I want the pop up to first show the chapter for me to read,
+once I click read, the insight summary is shown for me, then it's
+taxonomy path, then justification for path. When approved, the leaf is
+made, if rejected, the next insight is loaded with summary, path and
+path justification. If edit, give oracle chat where I give my own
+version of path. Do this all continuously till no insights for [chosen]
+phylum left."
+Interpretation: NOT a whole-chapter batch confirm (my original
+recommended default was also wrong here). It's PER-INSIGHT, sequential:
+read the chapter ONCE per chapter (a single Read button/popup), then
+cycle through each insight one at a time — insight summary, then
+taxonomy path, then justification for that path, then:
+  - Approve -> the leaf is created in taxonomy_tree
+  - Reject -> advance to the next insight (summary/path/justification)
+  - Edit -> open an Oracle chat turn where the user gives their own
+    version of the path
+Repeats continuously until every insight for the chosen/matched phylum
+is exhausted.
+
+NEW — phylum fallback cascade (volunteered this message, not one of the
+original 4 questions, verbatim):
+"then any insights that not for chosen phylum then get put against
+other phylums, and goes through same read summary path and justification.
+then insights that have not found a home then go through oracle to come
+up with where the insight should belong."
+Interpretation: after exhausting insights that fit the primary/most-
+related phylum, any leftover insights that didn't fit get checked
+against the OTHER phyla, one at a time, through the SAME read -> summary
+-> path -> justification -> approve/reject/edit loop. Any insight that
+still doesn't fit anywhere after that gets a final dedicated Oracle
+placement-reasoning pass to determine a home from scratch.
+
+NEW — Council of 5 / confidence-scoring loop (verbatim):
+"it should also use /Godmode and council of 5, where 5/10 insights get
+rephrased till unanimous 9/10, anything under 4 can be seen if possible
+to upgrade at all for leaf."
+Interpretation (MY BEST-FAITH READ, NOT YET CONFIRMED — flagging this
+explicitly rather than silently assuming, same mistake as Q2/Q3 the
+first time): each proposed placement gets scored via a Council-of-5-
+style multi-perspective confidence check, expressed out of 10.
+  - Score 9-10 -> proceed to show the user (read/summary/path/
+    justification/approve-reject-edit as above)
+  - Score 5-8 -> Oracle rephrases the insight's wording and re-scores,
+    looping until 9-10 is reached (capped at a small number of attempts
+    to avoid an infinite loop — exact cap not specified by the user yet)
+  - Score under 4 -> a distinct, lighter check: "is this even upgradeable
+    to leaf-quality at all" — if not, it doesn't get forced into a leaf,
+    it's flagged as unplaced instead
+Planned implementation: reuse the same 5-check framework already in
+phylumPath.decidePlacement() (pedagogical clarity / non-redundancy /
+practical applicability / structural fit / expansion headroom), each
+worth up to 2 points, scored by one extra Oracle self-critique call
+after a candidate placement is produced. NOT yet confirmed: exact
+scoring mechanics (is this literally 5 separate model votes summed, or
+one call producing a 1-10 confidence number directly), or the rephrase-
+attempt cap. Will implement with a reasonable, clearly-commented
+interpretation and flag it for correction rather than blocking on it.
+
+Q4 — STILL UNANSWERED as of this file's creation. Asked again in plain
+chat text (not via a popup) rather than re-running the questionnaire
+tool, since re-showing it caused real frustration once already:
+"new dedicated bibliography table, or fold into Fons Educationis
+(Phylum 12)?"
+
+============================================================
+STATUS
+============================================================
+Not yet built. Waiting on Q4 before starting implementation. Nothing
+in this file should ever be silently overwritten with a "recommended"
+guess again — if an answer is genuinely unclear, ask in plain text and
+wait, don't substitute.
