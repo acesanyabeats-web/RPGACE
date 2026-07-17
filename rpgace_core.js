@@ -6513,6 +6513,46 @@ RPGACE.register('bookworm', {
     urlRow.appendChild(urlInput); urlRow.appendChild(startBtn);
     widget.appendChild(urlRow);
 
+    // Manual entry - real gap found live: URL/Jina fetch is the only way
+    // in, but a physical/owned book with no fetchable URL had no path at
+    // all. Type or paste the text straight in instead, chapter by
+    // chapter, skipping the fetch+detection step entirely - same
+    // read/analyze/review pipeline downstream either way.
+    var manualToggle = document.createElement('button');
+    manualToggle.textContent = '✍️ Or type/paste a book in manually';
+    manualToggle.style.cssText = 'width:100%;padding:6px;background:none;border:1px dashed rgba(155,89,182,0.25);border-radius:6px;color:rgba(155,89,182,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
+    var manualForm = document.createElement('div');
+    manualForm.style.cssText = 'display:none;margin-bottom:14px;padding:10px;background:rgba(255,255,255,0.02);border-radius:8px;';
+    var manualTitleInput = document.createElement('input');
+    manualTitleInput.type = 'text';
+    manualTitleInput.placeholder = 'Book title...';
+    manualTitleInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    var manualChapterInput = document.createElement('textarea');
+    manualChapterInput.placeholder = 'Paste or type chapter 1\'s text...';
+    manualChapterInput.rows = 4;
+    manualChapterInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:8px;';
+    var manualStartBtn = document.createElement('button');
+    manualStartBtn.textContent = '✍️ Start this book';
+    manualStartBtn.style.cssText = 'width:100%;padding:8px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    manualStartBtn.onclick = function() {
+      var title = manualTitleInput.value.trim();
+      var text = manualChapterInput.value.trim();
+      if (!title || !text) { RPGACE.utils.toast('Add a title and chapter 1\'s text first', '#E25454', 2500); return; }
+      manualStartBtn.disabled = true; manualStartBtn.textContent = '⏳ Starting...';
+      self._startBookManual(title, text).then(function() {
+        manualStartBtn.disabled = false; manualStartBtn.textContent = '✍️ Start this book';
+        manualTitleInput.value = ''; manualChapterInput.value = '';
+        manualForm.style.display = 'none';
+      }).catch(function(e) {
+        manualStartBtn.disabled = false; manualStartBtn.textContent = '✍️ Start this book';
+        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4000);
+      });
+    };
+    manualForm.appendChild(manualTitleInput); manualForm.appendChild(manualChapterInput); manualForm.appendChild(manualStartBtn);
+    manualToggle.onclick = function() { manualForm.style.display = manualForm.style.display === 'none' ? 'block' : 'none'; };
+    widget.appendChild(manualToggle);
+    widget.appendChild(manualForm);
+
     var list = document.createElement('div');
     list.id = 'bookworm-list';
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
@@ -6583,15 +6623,25 @@ RPGACE.register('bookworm', {
             topRow.appendChild(nameEl); topRow.appendChild(delBtn);
             topRow.onclick = function() { self._openBook(book.id); };
 
-            var barOuter = document.createElement('div');
-            barOuter.style.cssText = 'height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin:4px 0;';
-            var barInner = document.createElement('div');
-            barInner.style.cssText = 'height:100%;width:' + pct + '%;background:#9B59B6;';
-            barOuter.appendChild(barInner);
             var subEl = document.createElement('div');
-            subEl.textContent = 'Chapter ' + Math.min(book.current_chapter_index + 1, total) + ' of ' + total;
-            subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
-            card.appendChild(topRow); card.appendChild(barOuter); card.appendChild(subEl);
+            // Manual books don't know their total chapter count upfront
+            // (added one at a time, done whenever the user says so) - a
+            // "chapter X of Y" progress bar would be meaningless, so show
+            // a running count instead of a fraction/percentage.
+            if (book.source_url === 'manual') {
+              subEl.textContent = 'Chapter ' + (book.current_chapter_index + 1) + ' — ' + total + ' added so far (manual entry)';
+              subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-top:4px;';
+              card.appendChild(topRow); card.appendChild(subEl);
+            } else {
+              var barOuter = document.createElement('div');
+              barOuter.style.cssText = 'height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin:4px 0;';
+              var barInner = document.createElement('div');
+              barInner.style.cssText = 'height:100%;width:' + pct + '%;background:#9B59B6;';
+              barOuter.appendChild(barInner);
+              subEl.textContent = 'Chapter ' + Math.min(book.current_chapter_index + 1, total) + ' of ' + total;
+              subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
+              card.appendChild(topRow); card.appendChild(barOuter); card.appendChild(subEl);
+            }
             list.appendChild(card);
           });
         });
@@ -6656,6 +6706,49 @@ RPGACE.register('bookworm', {
       });
   },
 
+  // Manual entry - for a physical/owned book with no fetchable URL.
+  // source_url: 'manual' is the sentinel _openBook() checks to know this
+  // book's total chapter count isn't known upfront (unlike a URL-fetched
+  // book, where every chapter is detected and sliced in one pass) - more
+  // chapters get added one at a time as the user types/pastes them in,
+  // and only the user knows when the book is actually finished.
+  _startBookManual: function(title, firstChapterText) {
+    var self = this;
+    return fetch(RPGACE.sb.url('bookworm_books'), {
+      method: 'POST',
+      headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ title: title, source_url: 'manual', current_chapter_index: 0, status: 'in_progress' })
+    }).then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { throw new Error('Book creation failed: ' + t.slice(0, 200)); });
+      return r.json();
+    }).then(function(bookRows) {
+      var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
+      if (!book || !book.id) throw new Error('Book creation did not return an id');
+      return self._addManualChapter(book.id, 0, 'Chapter 1', firstChapterText).then(function() {
+        RPGACE.utils.toast('✍️ ' + title + ' started', '#9B59B6', 3000);
+        self._refreshWidget();
+        self._openBook(book.id);
+      });
+    });
+  },
+
+  // Shared by the initial manual-entry form and "add next chapter" -
+  // both just insert one bookworm_chapters row at a known index.
+  _addManualChapter: function(bookId, chapterIndex, chapterTitle, text) {
+    return fetch(RPGACE.sb.url('bookworm_chapters'), {
+      method: 'POST',
+      headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+      body: JSON.stringify({ book_id: bookId, chapter_index: chapterIndex, chapter_title: chapterTitle, raw_text: text, status: 'pending' })
+    }).then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { throw new Error('Chapter creation failed: ' + t.slice(0, 200)); });
+      return r.json();
+    }).then(function(rows) {
+      var row = Array.isArray(rows) ? rows[0] : rows;
+      if (!row || !row.id) throw new Error('Chapter did not save correctly');
+      return row;
+    });
+  },
+
   // ── Open a book at its current checkpoint ─────────────────────────
   // Fetches ALL of this book's chapters once (not just the current one)
   // so a genuine zero-chapters book (only possible via the bug above, now
@@ -6677,7 +6770,16 @@ RPGACE.register('bookworm', {
           }
           var chapter = allChapters.find(function(c) { return c.chapter_index === book.current_chapter_index; });
           if (!chapter) {
-            self._markBookComplete(book);
+            // A URL-fetched book has every chapter sliced upfront, so no
+            // chapter at this index genuinely means the book is done. A
+            // manually-entered book doesn't know its total upfront -
+            // "no chapter yet" here just means the next one hasn't been
+            // typed in yet, not that the book is finished.
+            if (book.source_url === 'manual') {
+              self._renderAddManualChapter(book, allChapters.length);
+            } else {
+              self._markBookComplete(book);
+            }
             return;
           }
           if (chapter.insights) {
@@ -6729,6 +6831,70 @@ RPGACE.register('bookworm', {
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Exit (progress is saved)';
     closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.appendChild(closeBtn);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  // ── Manual books only: prompt for the next chapter's text instead of ──
+  // ── assuming "no chapter at this index" means the book is finished.  ──
+  // ── Also offers "mark complete" directly, since only the person      ──
+  // ── typing it in actually knows when a manually-entered book is done.──
+  _renderAddManualChapter: function(book, nextIndex) {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.id = 'bookworm-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = '📖 ' + book.title;
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.textContent = 'Add chapter ' + (nextIndex + 1) + ', or mark this book complete';
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    var chapterTitleInput = document.createElement('input');
+    chapterTitleInput.type = 'text';
+    chapterTitleInput.placeholder = 'Chapter ' + (nextIndex + 1) + ' title...';
+    chapterTitleInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    var chapterTextInput = document.createElement('textarea');
+    chapterTextInput.placeholder = 'Paste or type this chapter\'s text...';
+    chapterTextInput.rows = 6;
+    chapterTextInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:12px;';
+    box.appendChild(chapterTitleInput); box.appendChild(chapterTextInput);
+
+    var addBtn = document.createElement('button');
+    addBtn.textContent = '✍️ Add this chapter';
+    addBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    addBtn.onclick = function() {
+      var chapterTitle = chapterTitleInput.value.trim() || ('Chapter ' + (nextIndex + 1));
+      var text = chapterTextInput.value.trim();
+      if (!text) { RPGACE.utils.toast('Add the chapter\'s text first', '#E25454', 2000); return; }
+      addBtn.disabled = true; addBtn.textContent = '⏳ Adding...';
+      self._addManualChapter(book.id, nextIndex, chapterTitle, text).then(function() {
+        overlay.remove();
+        self._openBook(book.id);
+      }).catch(function(e) {
+        addBtn.disabled = false; addBtn.textContent = '✍️ Add this chapter';
+        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+      });
+    };
+    box.appendChild(addBtn);
+
+    var completeBtn = document.createElement('button');
+    completeBtn.textContent = '✅ That was the last chapter — mark book complete';
+    completeBtn.style.cssText = 'width:100%;padding:8px;background:none;border:1px solid rgba(61,170,110,0.25);border-radius:8px;color:#3DAA6E;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    completeBtn.onclick = function() { overlay.remove(); self._markBookComplete(book); };
+    box.appendChild(completeBtn);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Exit (progress is saved)';
+    closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); };
     box.appendChild(closeBtn);
 
