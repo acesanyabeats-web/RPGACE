@@ -6760,12 +6760,69 @@ RPGACE.register('bookworm', {
           return r.json();
         }).then(function(insertedChapters) {
           if (!insertedChapters || !insertedChapters.length) throw new Error('Chapters did not save correctly');
-          RPGACE.utils.toast('✍️ ' + title + ' — ' + insertedChapters.length + ' chapters extracted from contents page', '#9B59B6', 4000);
           self._refreshWidget();
-          self._openBook(book.id);
+          self._renderStructureFound(book, insertedChapters);
         });
       });
     });
+  },
+
+  // ── Function 1's visible output: confirm what was actually found     ──
+  // ── before diving into chapter 1. Real gap found live: extraction     ──
+  // ── succeeding silently and jumping straight to "paste chapter 1's    ──
+  // ── text" looked exactly like the app had mistaken the table of       ──
+  // ── contents itself for chapter 1 - there was no confirmation step    ──
+  // ── showing "here's the structure I actually found" in between.       ──
+  _renderStructureFound: function(book, chapters) {
+    var self = this;
+    var tt = RPGACE.modules.taxonomyTree;
+    var overlay = document.createElement('div');
+    overlay.id = 'bookworm-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = '📚 Contents Found — ' + book.title;
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.textContent = chapters.length + ' chapters extracted from the table of contents:';
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    var list = document.createElement('div');
+    list.style.cssText = 'max-height:45vh;overflow-y:auto;margin-bottom:16px;';
+    chapters.sort(function(a, b) { return a.chapter_index - b.chapter_index; }).forEach(function(c) {
+      var row = document.createElement('div');
+      row.style.cssText = 'padding:8px 10px;margin-bottom:4px;background:rgba(255,255,255,0.02);border-radius:6px;';
+      var nameEl = document.createElement('div');
+      nameEl.textContent = (c.chapter_index + 1) + '. ' + c.chapter_title;
+      nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;';
+      row.appendChild(nameEl);
+      if (c.keywords && c.keywords.length) {
+        var kwEl = document.createElement('div');
+        kwEl.textContent = c.keywords.join(', ') + (c.suggested_phylum && tt ? ' — ' + tt.PHYLUM_NAMES[c.suggested_phylum] : '');
+        kwEl.style.cssText = 'font-size:10px;color:rgba(155,89,182,0.6);margin-top:2px;';
+        row.appendChild(kwEl);
+      }
+      list.appendChild(row);
+    });
+    box.appendChild(list);
+
+    var startBtn = document.createElement('button');
+    startBtn.textContent = '▶ Start Chapter 1';
+    startBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    startBtn.onclick = function() { overlay.remove(); self._openBook(book.id); };
+    box.appendChild(startBtn);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Exit (progress is saved)';
+    closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.appendChild(closeBtn);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
   },
 
   // ── Open a book at its current checkpoint ─────────────────────────
