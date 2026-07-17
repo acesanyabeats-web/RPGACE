@@ -4815,9 +4815,10 @@ RPGACE.register('phylumPath', {
   // Every phylum Phylum Path actually covers (placement, auto-detect,
   // nav-tab browsing, fusion-link search). Extend this list once a phylum
   // clears framework steps 1-4 (spec, keyword sweep, tree build, data
-  // repair) - Percussio (2), Sonus Designatio (3), Mixtura (4) and now
-  // Magistra (5) all added July 17, pushed live as each was built.
-  ENABLED_PHYLA: [1, 2, 3, 4, 5],
+  // repair) - phyla 2-5 added July 17 individually, phyla 6-10
+  // (Instrumentarium, Sensus Auris, Anatomia, Historia, Psychologia)
+  // added the same day as one batch, pushed live together.
+  ENABLED_PHYLA: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 
   // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
   // silentPropose() check this before running their own flat top-down
@@ -6632,11 +6633,155 @@ RPGACE.register('config', {
         {t:'fruity stereo enhancer',w:2},{t:'lufs meter plugin',w:2},{t:'youlean loudness meter',w:2},
         {t:'stem',w:1},
       ] },
-      { num: 6,  name: 'Instrumentarium',       keywords: [{t:'fl studio',w:2},{t:'vst',w:2},{t:'plugin',w:2},{t:'daw',w:2},{t:'workflow',w:1},{t:'edison',w:2},{t:'mixer',w:1},{t:'piano roll',w:2}] },
-      { num: 7,  name: 'Sensus Auris',          keywords: [{t:'critical listening',w:2},{t:'reference track',w:2},{t:'a/b',w:2},{t:'monitor',w:1},{t:'speaker',w:1}] },
-      { num: 8,  name: 'Anatomia',              keywords: [{t:'music theory',w:2},{t:'interval',w:2},{t:'mode',w:1},{t:'minor',w:1},{t:'major',w:1},{t:'degree',w:1},{t:'tension',w:1}] },
-      { num: 9,  name: 'Historia',              keywords: [{t:'producer history',w:2},{t:'influence',w:1},{t:'era',w:1},{t:'sound like',w:2},{t:'inspired by',w:2}] },
-      { num: 10, name: 'Psychologia',           keywords: [{t:'creative block',w:2},{t:'inspiration',w:1},{t:'flow state',w:2},{t:'mindset',w:1},{t:'habit',w:1},{t:'routine',w:1}] },
+      { num: 6,  name: 'Instrumentarium',       keywords: [
+        // FL Studio Core — July 17, fourth batch of the Phylum
+        // Development Framework (phyla 6-10 built together).
+        {t:'fl studio',w:2},{t:'piano roll',w:2},{t:'playlist',w:1},{t:'channel rack',w:2},{t:'mixer',w:1},{t:'browser',w:1},
+        {t:'pattern',w:1},{t:'arrangement',w:1},{t:'project file',w:2},{t:'flp',w:2},{t:'step sequencer',w:2},{t:'automation clip',w:2},
+        {t:'automation',w:1},{t:'playlist track',w:2},{t:'pattern block',w:2},
+        // Plugin & VST Terminology
+        {t:'vst',w:2},{t:'vst3',w:2},{t:'plugin',w:2},{t:'instrument plugin',w:2},{t:'effect plugin',w:2},{t:'generator',w:1},
+        {t:'native plugin',w:2},{t:'third-party plugin',w:2},{t:'plugin chain',w:2},{t:'plugin delay compensation',w:2},{t:'pdc',w:2},
+        {t:'plugin preset',w:2},{t:'plugin browser',w:2},{t:'wrapper',w:1},
+        // Workflow & Efficiency
+        {t:'workflow',w:1},{t:'template',w:1},{t:'project template',w:2},{t:'mixer routing',w:2},{t:'track routing',w:2},
+        {t:'color coding',w:2},{t:'naming convention',w:2},{t:'keyboard shortcut',w:2},{t:'macro',w:1},{t:'macro control',w:2},
+        {t:'performance mode',w:2},{t:'freeze track',w:2},{t:'render',w:1},{t:'bounce',w:1},{t:'stem export',w:2},
+        {t:'project organization',w:2},
+        // FL Studio Native Tools
+        {t:'fpc',w:2},{t:'slicex',w:2},{t:'fruity slicer',w:2},{t:'sytrus',w:2},{t:'harmor',w:2},{t:'3xosc',w:2},{t:'sakura',w:2},
+        {t:'directwave',w:2},{t:'edison',w:2},{t:'patcher',w:2},{t:'fruity formula controller',w:2},{t:'fruity lsd',w:2},
+        {t:'fruity envelope controller',w:2},{t:'fruity x-y controller',w:2},{t:'newtone',w:2},{t:'vocodex',w:2},
+        // Session & File Management
+        {t:'save state',w:2},{t:'autosave',w:2},{t:'backup',w:1},{t:'project backup',w:2},{t:'sample browser',w:2},
+        {t:'plugin database',w:2},{t:'plugin manager',w:2},{t:'vst scan',w:2},{t:'missing sample',w:2},{t:'relocate sample',w:2},
+        {t:'project zip',w:2},{t:'flp to wav',w:2},
+        // Hardware & Controllers
+        {t:'midi controller',w:2},{t:'midi keyboard',w:2},{t:'midi mapping',w:2},{t:'controller mapping',w:2},{t:'audio interface',w:2},
+        {t:'asio',w:2},{t:'buffer size',w:2},{t:'latency',w:1},{t:'sample rate setting',w:2},{t:'driver',w:1},{t:'midi cc',w:2},
+        // Third-Party DAW Comparison Terms
+        {t:'ableton',w:2},{t:'logic pro',w:2},{t:'pro tools',w:2},{t:'studio one',w:2},{t:'cross-daw workflow',w:2},{t:'daw-agnostic',w:2},
+        // Genre-Specific / UK Drill & Trap Production Workflow
+        {t:'type beat template',w:2},{t:'drill template',w:2},{t:'beat starter pack',w:2},{t:'drum kit import',w:2},
+        {t:'sample pack organization',w:2},{t:'quick drum swap',w:2},{t:'fast workflow drill',w:2},
+        {t:'daw',w:2},
+      ] },
+      { num: 7,  name: 'Sensus Auris',          keywords: [
+        // Critical Listening Fundamentals
+        {t:'critical listening',w:2},{t:'active listening',w:2},{t:'reference listening',w:2},{t:'ear training',w:2},
+        {t:'frequency recognition',w:2},{t:'ear training exercise',w:2},{t:'listening environment',w:2},{t:'monitoring environment',w:2},
+        {t:'room treatment',w:2},{t:'acoustic treatment',w:2},
+        // Reference Track Practice
+        {t:'reference track',w:2},{t:'a/b',w:2},{t:'a/b comparison',w:2},{t:'a/b testing',w:2},{t:'gain matching',w:2},
+        {t:'level matching',w:2},{t:'reference mix',w:2},{t:'commercial reference',w:2},{t:'genre reference',w:2},
+        {t:'translation check',w:2},{t:'mix translation',w:2},
+        // Monitoring
+        {t:'monitor',w:1},{t:'speaker',w:1},{t:'studio monitor',w:2},{t:'monitor calibration',w:2},{t:'near-field monitor',w:2},
+        {t:'headphone mixing',w:2},{t:'monitor controller',w:2},{t:'flat response',w:2},{t:'monitor placement',w:2},{t:'sweet spot',w:1},
+        {t:'room mode',w:2},{t:'bass trap',w:2},
+        // Listening Skills
+        {t:'frequency identification',w:2},{t:'identifying muddiness',w:2},{t:'identifying harshness',w:2},{t:'identifying masking',w:2},
+        {t:'spotting phase issues',w:2},{t:'spotting distortion',w:2},{t:'detecting clipping',w:2},{t:'detecting sibilance',w:2},
+        {t:'dynamic range perception',w:2},{t:'stereo image perception',w:2},
+        // Translation & Playback Systems
+        {t:'car system check',w:2},{t:'phone speaker check',w:2},{t:'earbud check',w:2},{t:'club system check',w:2},
+        {t:'multi-system translation',w:2},{t:'mono check',w:1},{t:'mono compatibility check',w:2},{t:'playback consistency',w:2},
+        // Ear Fatigue & Practice
+        {t:'ear fatigue',w:2},{t:'listening break',w:2},{t:'gain staging by ear',w:2},{t:'volume matched listening',w:2},
+        {t:'blind listening test',w:2},{t:'critical listening session',w:2},{t:'daily ear training',w:2},
+        // Genre-Specific / UK Drill & Trap Reference Practice
+        {t:'drill reference track',w:2},{t:'trap reference track',w:2},{t:'uk rap reference',w:2},
+        {t:'comparing to commercial drill releases',w:2},{t:'benchmark track',w:2},{t:'industry standard comparison',w:2},
+      ] },
+      { num: 8,  name: 'Anatomia',              keywords: [
+        // Basic Theory
+        {t:'music theory',w:2},{t:'notation',w:1},{t:'staff',w:1},{t:'clef',w:1},{t:'treble clef',w:2},{t:'bass clef',w:2},
+        {t:'note value',w:2},{t:'rhythm notation',w:2},{t:'time signature',w:2},{t:'key signature',w:2},{t:'sharp',w:1},{t:'flat',w:1},
+        {t:'natural',w:1},{t:'accidental',w:1},
+        // Intervals
+        {t:'interval',w:2},{t:'semitone',w:2},{t:'whole tone',w:2},{t:'minor second',w:2},{t:'major second',w:2},{t:'minor third',w:2},
+        {t:'major third',w:2},{t:'perfect fourth',w:2},{t:'tritone',w:2},{t:'perfect fifth',w:2},{t:'minor sixth',w:2},
+        {t:'major sixth',w:2},{t:'minor seventh',w:2},{t:'major seventh',w:2},{t:'octave',w:1},
+        // Scales
+        {t:'scale',w:1},{t:'major scale',w:2},{t:'minor scale',w:2},{t:'scale degree',w:2},{t:'tonic',w:2},{t:'supertonic',w:2},
+        {t:'mediant',w:2},{t:'subdominant',w:2},{t:'dominant',w:1},{t:'submediant',w:2},{t:'leading tone',w:2},{t:'chromatic scale',w:2},
+        {t:'whole tone scale',w:2},{t:'pentatonic scale',w:2},{t:'modes',w:1},
+        // Chord Theory
+        {t:'triad',w:2},{t:'chord construction',w:2},{t:'stacking thirds',w:2},{t:'chord quality',w:2},{t:'major triad',w:2},
+        {t:'minor triad',w:2},{t:'diminished triad',w:2},{t:'augmented triad',w:2},{t:'seventh chord theory',w:2},
+        {t:'chord inversion theory',w:2},{t:'roman numeral analysis',w:2},
+        // Rhythm Theory
+        {t:'beat',w:1},{t:'measure',w:1},{t:'bar',w:1},{t:'meter',w:1},{t:'simple meter',w:2},{t:'compound meter',w:2},
+        {t:'syncopation theory',w:2},{t:'note duration',w:2},{t:'whole note',w:1},{t:'half note',w:1},{t:'quarter note',w:2},
+        {t:'eighth note',w:2},{t:'sixteenth note',w:2},{t:'dotted note',w:2},{t:'tie',w:1},{t:'rest',w:1},
+        // Harmonic Theory
+        {t:'functional harmony',w:2},{t:'non-functional harmony',w:2},{t:'voice leading theory',w:2},{t:'counterpoint theory',w:2},
+        {t:'cadence theory',w:2},{t:'perfect cadence',w:2},{t:'plagal cadence',w:2},{t:'deceptive cadence',w:2},{t:'half cadence',w:2},
+        {t:'modulation theory',w:2},{t:'key relationships',w:2},
+        // Ear/Theory Crossover
+        {t:'solfege',w:2},{t:'relative pitch',w:2},{t:'perfect pitch',w:2},{t:'interval recognition',w:2},
+        {t:'chord quality recognition',w:2},{t:'transcription',w:1},{t:'transcribing by ear',w:2},
+        // Genre-Specific Theory Application
+        {t:'theory applied to trap',w:2},{t:'theory applied to drill',w:2},{t:'minor key theory in rap',w:2},
+        {t:'modal theory in hip hop production',w:2},
+      ] },
+      { num: 9,  name: 'Historia',              keywords: [
+        // Producer Study
+        {t:'producer history',w:2},{t:'producer discography',w:2},{t:'production style',w:2},{t:'signature sound',w:2},
+        {t:'producer tag',w:2},{t:'producer influence',w:2},{t:'production era',w:2},{t:'production timeline',w:2},
+        {t:'legacy producer',w:2},{t:'up-and-coming producer',w:2},
+        // Historical Eras & Movements
+        {t:'era',w:1},{t:'golden era hip hop',w:2},{t:'boom bap era',w:2},{t:'trap era',w:2},{t:'drill era',w:2},
+        {t:'uk grime era',w:2},{t:'uk garage influence',w:2},{t:'afrobeats influence',w:2},{t:'sound evolution',w:2},
+        {t:'genre evolution',w:2},{t:'regional sound',w:2},
+        // Regional & Scene History
+        {t:'uk drill history',w:2},{t:'chicago drill origin',w:2},{t:'new york drill',w:2},{t:'brooklyn drill',w:2},
+        {t:'south london scene',w:2},{t:'north london scene',w:2},{t:'grime to drill lineage',w:2},{t:'road rap influence',w:2},
+        // Artist & Producer Case Studies
+        {t:'type beat study',w:2},{t:'artist sound study',w:2},{t:'artist discography breakdown',w:2},{t:'artist sonic signature',w:2},
+        {t:'artist production evolution',w:2},{t:'collaborator history',w:2},{t:'frequent collaborator',w:2},{t:'in-house producer',w:2},
+        // Sampling History
+        {t:'sample history',w:2},{t:'sample origin',w:2},{t:'sampled record',w:2},{t:'original sample source',w:2},
+        {t:'sample clearance history',w:2},{t:'interpolation',w:2},{t:'iconic sample',w:2},
+        // Influence Mapping
+        {t:'influence',w:1},{t:'influenced by',w:2},{t:'influence chain',w:2},{t:'sound lineage',w:2},{t:'stylistic descendant',w:2},
+        {t:'genre crossover influence',w:2},{t:'cross-genre influence',w:2},{t:'pioneering producer',w:2},{t:'innovation in production',w:2},
+        // Genre-Specific / UK Drill & Trap History
+        {t:'sech drill sound',w:2},{t:'67 collective influence',w:2},{t:'harlem spartans era',w:2},{t:'drill pioneers',w:2},
+        {t:'chicago to uk drill migration',w:2},{t:'metro boomin influence',w:2},{t:'southside influence',w:2},
+        {t:'uk rap history timeline',w:2},
+        {t:'sound like',w:2},{t:'inspired by',w:2},
+      ] },
+      { num: 10, name: 'Psychologia',           keywords: [
+        // Creative Process
+        {t:'creative process',w:2},{t:'creative block',w:2},{t:'writers block',w:2},{t:'producers block',w:2},{t:'inspiration',w:1},
+        {t:'creative flow',w:2},{t:'flow state',w:2},{t:'getting in the zone',w:2},{t:'creative momentum',w:2},{t:'creative routine',w:2},
+        // Motivation & Discipline
+        {t:'motivation',w:1},{t:'discipline',w:1},{t:'consistency',w:1},{t:'creative consistency',w:2},{t:'habit formation',w:2},
+        {t:'creative habit',w:2},{t:'daily practice',w:2},{t:'practice routine',w:2},{t:'accountability',w:1},
+        {t:'creative goal setting',w:2},
+        // Mindset
+        {t:'mindset',w:1},{t:'growth mindset',w:2},{t:'fixed mindset',w:2},{t:'imposter syndrome',w:2},{t:'creative confidence',w:2},
+        {t:'self-doubt',w:1},{t:'perfectionism',w:1},{t:'comparison trap',w:2},{t:'creative burnout',w:2},{t:'avoiding burnout',w:2},
+        {t:'mental fatigue',w:2},
+        // Focus & Environment
+        {t:'deep work',w:2},{t:'focus session',w:2},{t:'distraction-free environment',w:2},{t:'creative environment',w:2},
+        {t:'studio mindset',w:2},{t:'session preparation',w:2},{t:'pre-session ritual',w:2},{t:'warm-up routine',w:2},
+        // Emotional Expression
+        {t:'emotional expression in music',w:2},{t:'translating emotion to sound',w:2},{t:'mood-driven production',w:2},
+        {t:'personal experience in music',w:2},{t:'authenticity',w:1},{t:'vulnerability in music',w:2},{t:'emotional honesty',w:2},
+        // Collaboration Psychology
+        {t:'creative collaboration',w:2},{t:'studio chemistry',w:2},{t:'ego in collaboration',w:2},{t:'feedback receptiveness',w:2},
+        {t:'creative compromise',w:2},{t:'session energy',w:2},{t:'group creativity',w:2},
+        // Career Psychology
+        {t:'career longevity mindset',w:2},{t:'patience in music career',w:2},{t:'comparison to other producers',w:2},
+        {t:'handling rejection',w:2},{t:'handling criticism',w:2},{t:'staying inspired long-term',w:2},
+        {t:'avoiding creative stagnation',w:2},
+        // Genre-Specific / Producer Mental Game
+        {t:'staying authentic in drill',w:2},{t:'avoiding trend-chasing',w:2},{t:'finding your sound psychologically',w:2},
+        {t:'confidence in a saturated genre',w:2},
+        {t:'habit',w:1},{t:'routine',w:1},
+      ] },
       { num: 11, name: 'Lingua Musicae',        keywords: [{t:'colour palette',w:2},{t:'mood board',w:2},{t:'aesthetic',w:2},{t:'visual identity',w:2},{t:'vibe',w:1},{t:'tone',w:1},{t:'brand colours',w:2}] },
       { num: 12, name: 'Fons Educationis',      keywords: [{t:'tutorial',w:2},{t:'learn',w:1},{t:'teach',w:1},{t:'breakdown',w:1},{t:'guide',w:1},{t:'lesson',w:1}] },
       { num: 13, name: 'Contentum',             keywords: [{t:'youtube',w:2},{t:'instagram',w:2},{t:'reels',w:2},{t:'hook',w:1},{t:'thumbnail',w:2},{t:'tiktok',w:2},{t:'caption',w:1}] },
