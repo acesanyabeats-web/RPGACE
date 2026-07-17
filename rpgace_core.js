@@ -6377,6 +6377,607 @@ RPGACE.register('phylumPath', {
 
 });
 /* ===END:phylumPath=== */
+
+/* ===MODULE:bookworm=== */
+// BOOKWORM — July 17. Whole-book ingestion, chapter by chapter, into
+// Phylum Path. Spec locked after several rounds of real correction from
+// the user (see bookworm_spec_backlog.txt at repo root - the durable
+// record kept specifically because a first attempt at this substituted
+// recommended defaults for the user's actual answers, which was wrong).
+//
+// Flow: paste a book's URL once -> api/bookworm-fetch.js does ONE
+// uncapped Jina fetch + detects chapter boundaries + slices every
+// chapter's text in that same pass (this is what makes the total
+// chapter count, and therefore a real progress bar, known immediately -
+// not discovered chapter by chapter). Chapters are then processed one
+// at a time: read the chapter text -> extract every distinct insight ->
+// find each insight's most-related phylum, cascading through the other
+// enabled phyla for anything that doesn't fit, then a final broad
+// 21-phylum search for genuine orphans -> Council-of-5 confidence score
+// (1-10) on every placement before showing it, rewording+retrying
+// insights that land in the mediocre 5-8 band, flagging (not forcing)
+// anything under 4 -> user reviews each insight one at a time (read
+// once per chapter, then per-insight: summary, path, justification,
+// Approve/Reject/Edit) -> once every chapter is done, the book lands in
+// the Bibliography section on the Research page.
+//
+// Reuses phylumPath's existing Oracle-calling helpers (_callExtractor,
+// _callGroundWorkerJSON, _callGroundWorkerText) and its chained-insert
+// pattern (_insertNewSteps) rather than duplicating that plumbing.
+RPGACE.register('bookworm', {
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:ready', function() {
+      setTimeout(function() { self._injectDashboardWidget(); self._injectBibliographySection(); }, 1700);
+    });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.dashboard) self._injectDashboardWidget();
+      if (name === RPGACE.CONFIG.pages.research) self._injectBibliographySection();
+    });
+  },
+
+  // ── Dashboard widget: in-progress books (progress bar each) + start-new-book input ──
+  _injectDashboardWidget: function() {
+    if (document.getElementById('bookworm-widget')) return;
+    var self = this;
+    var page = document.getElementById('page-dashboard');
+    if (!page) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'bookworm-widget';
+    widget.style.cssText = 'background:rgba(155,89,182,0.03);border:1px solid rgba(155,89,182,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+    var titleEl = document.createElement('div');
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:3px;';
+    eyebrow.textContent = 'Bookworm';
+    var titleText = document.createElement('div');
+    titleText.className = 'section-title';
+    titleText.style.cssText = 'font-size:14px;';
+    titleText.textContent = '📖 Work Through Books & Massive Texts';
+    titleEl.appendChild(eyebrow); titleEl.appendChild(titleText);
+    hdr.appendChild(titleEl);
+    widget.appendChild(hdr);
+
+    var urlRow = document.createElement('div');
+    urlRow.style.cssText = 'display:flex;gap:6px;margin-bottom:14px;';
+    var urlInput = document.createElement('input');
+    urlInput.type = 'text';
+    urlInput.id = 'bookworm-url-input';
+    urlInput.placeholder = 'Paste a book URL (PDF or web page)...';
+    urlInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+    var startBtn = document.createElement('button');
+    startBtn.textContent = '📖 Start';
+    startBtn.style.cssText = 'padding:8px 16px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    startBtn.onclick = function() {
+      var url = urlInput.value.trim();
+      if (!url) { RPGACE.utils.toast('Paste a book URL first', '#E25454', 2000); return; }
+      startBtn.disabled = true; startBtn.textContent = '⏳ Fetching + detecting chapters...';
+      self._startBook(url).then(function() {
+        startBtn.disabled = false; startBtn.textContent = '📖 Start';
+        urlInput.value = '';
+      }).catch(function(e) {
+        startBtn.disabled = false; startBtn.textContent = '📖 Start';
+        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4000);
+      });
+    };
+    urlRow.appendChild(urlInput); urlRow.appendChild(startBtn);
+    widget.appendChild(urlRow);
+
+    var list = document.createElement('div');
+    list.id = 'bookworm-list';
+    list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+    widget.appendChild(list);
+
+    var kgPanel = document.getElementById('kg-panel');
+    if (kgPanel && kgPanel.parentElement) kgPanel.parentElement.insertBefore(widget, kgPanel);
+    else page.insertBefore(widget, page.firstChild);
+
+    self._refreshWidget();
+  },
+
+  _refreshWidget: function() {
+    var self = this;
+    var list = document.getElementById('bookworm-list');
+    if (!list) return;
+    list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+
+    RPGACE.sb.select('bookworm_books', 'status=eq.in_progress&order=created_at.desc')
+      .then(function(books) {
+        books = books || [];
+        list.innerHTML = '';
+        if (!books.length) {
+          list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;">No books in progress - paste a URL above to start one.</div>';
+          return;
+        }
+        return Promise.all(books.map(function(book) {
+          return RPGACE.sb.select('bookworm_chapters', 'book_id=eq.' + book.id + '&select=id&order=chapter_index.asc').then(function(chapters) {
+            return { book: book, total: (chapters || []).length };
+          });
+        })).then(function(rows) {
+          rows.forEach(function(row) {
+            var book = row.book, total = row.total;
+            var pct = total ? Math.round((book.current_chapter_index / total) * 100) : 0;
+            var card = document.createElement('div');
+            card.style.cssText = 'padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;';
+            var nameEl = document.createElement('div');
+            nameEl.textContent = book.title;
+            nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;margin-bottom:4px;';
+            var barOuter = document.createElement('div');
+            barOuter.style.cssText = 'height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:4px;';
+            var barInner = document.createElement('div');
+            barInner.style.cssText = 'height:100%;width:' + pct + '%;background:#9B59B6;';
+            barOuter.appendChild(barInner);
+            var subEl = document.createElement('div');
+            subEl.textContent = 'Chapter ' + Math.min(book.current_chapter_index + 1, total) + ' of ' + total;
+            subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
+            card.appendChild(nameEl); card.appendChild(barOuter); card.appendChild(subEl);
+            card.onclick = function() { self._openBook(book.id); };
+            list.appendChild(card);
+          });
+        });
+      }).catch(function(e) {
+        list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+      });
+  },
+
+  // ── Start a new book: fetch + detect + slice chapters, create rows ──
+  _startBook: function(url) {
+    var self = this;
+    return fetch('/api/bookworm-fetch', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url })
+    }).then(function(r) { return r.json(); })
+      .then(function(result) {
+        if (result.error) throw new Error(result.error);
+        if (!result.chapters || !result.chapters.length) throw new Error('No chapters detected in this book');
+        return RPGACE.sb.insert('bookworm_books', {
+          title: result.title, source_url: url, current_chapter_index: 0, status: 'in_progress'
+        }).then(function(bookResult) {
+          var book = Array.isArray(bookResult) ? bookResult[0] : bookResult;
+          var chapterRows = result.chapters.map(function(c) {
+            return { book_id: book.id, chapter_index: c.index, chapter_title: c.title, raw_text: c.text, status: 'pending' };
+          });
+          return RPGACE.sb.insert('bookworm_chapters', chapterRows).then(function() {
+            RPGACE.utils.toast('📖 ' + result.title + ' — ' + result.chapters.length + ' chapters detected', '#9B59B6', 4000);
+            self._refreshWidget();
+            self._openBook(book.id);
+          });
+        });
+      });
+  },
+
+  // ── Open a book at its current checkpoint ─────────────────────────
+  _openBook: function(bookId) {
+    var self = this;
+    RPGACE.sb.select('bookworm_books', 'id=eq.' + bookId + '&limit=1').then(function(rows) {
+      var book = rows && rows[0];
+      if (!book) return;
+      RPGACE.sb.select('bookworm_chapters', 'book_id=eq.' + bookId + '&chapter_index=eq.' + book.current_chapter_index + '&limit=1')
+        .then(function(chRows) {
+          var chapter = chRows && chRows[0];
+          if (!chapter) {
+            self._markBookComplete(book);
+            return;
+          }
+          if (chapter.insights) {
+            self._renderInsightReview(book, chapter);
+          } else {
+            self._renderChapterRead(book, chapter);
+          }
+        });
+    });
+  },
+
+  // ── Chapter read view: full text, then a single "I've read this" button ──
+  _renderChapterRead: function(book, chapter) {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.id = 'bookworm-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = '📖 ' + book.title;
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.textContent = chapter.chapter_title;
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    var textBox = document.createElement('div');
+    textBox.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7;background:rgba(255,255,255,0.02);border-radius:8px;padding:14px;margin-bottom:16px;max-height:50vh;overflow-y:auto;';
+    textBox.textContent = chapter.raw_text;
+    box.appendChild(textBox);
+
+    var readBtn = document.createElement('button');
+    readBtn.textContent = "✓ I've Read This — Show Insights";
+    readBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    readBtn.onclick = function() {
+      readBtn.disabled = true; readBtn.textContent = '⏳ Analyzing chapter...';
+      self._analyzeChapter(book, chapter).then(function(updatedChapter) {
+        overlay.remove();
+        self._renderInsightReview(book, updatedChapter);
+      }).catch(function(e) {
+        readBtn.disabled = false; readBtn.textContent = "✓ I've Read This — Show Insights";
+        RPGACE.utils.toast('Error analyzing chapter: ' + e.message, '#E25454', 4000);
+      });
+    };
+    box.appendChild(readBtn);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Exit (progress is saved)';
+    closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.appendChild(closeBtn);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  // Chapter analysis: extract every distinct insight, find each one's
+  // most-related phylum (cascading through the other enabled phyla for
+  // anything that doesn't fit, then a final broad 21-phylum search for
+  // genuine orphans), and a Council-of-5 confidence score on every
+  // placement before it's ever shown to the user. Cached on
+  // bookworm_chapters.insights once done - never re-run on resume.
+  // ══════════════════════════════════════════════════════════════════
+  _analyzeChapter: function(book, chapter) {
+    var self = this;
+    var pp = RPGACE.modules.phylumPath;
+
+    var extractPrompt = 'This is one chapter of a book being studied for a music-production knowledge base.\n\n' +
+      'CHAPTER: "' + chapter.chapter_title + '"\n\n' +
+      'TEXT:\n' + chapter.raw_text.slice(0, 12000) + '\n\n' +
+      'List every genuinely distinct, teachable insight in this chapter - as many or as few as are actually present, do not pad or split one idea into several. Restate each in your own words as a standalone fact/technique, not a verbatim quote.\n\n' +
+      'Return ONLY JSON: {"insights": ["...", "..."]}';
+
+    return pp._callGroundWorkerJSON(extractPrompt, 1200).then(function(parsed) {
+      var insightTexts = parsed.insights || [];
+      if (!insightTexts.length) return { insights: [] };
+
+      var phylumScorePrompt = 'CHAPTER: "' + chapter.chapter_title + '"\n\nSUMMARY OF ITS INSIGHTS:\n' + insightTexts.join('\n- ') + '\n\n' +
+        'Which ONE of these phyla is this chapter MOST closely related to overall?\n' +
+        pp.ENABLED_PHYLA.map(function(n) { return n + '. ' + RPGACE.utils.phylumContext(n); }).join('\n') + '\n\n' +
+        'Return ONLY JSON: {"phylumNumber": N}';
+
+      return pp._callGroundWorkerJSON(phylumScorePrompt, 200).then(function(phylumParsed) {
+        var primaryPhylum = phylumParsed.phylumNumber;
+        var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
+        var resolved = [];
+        var chain = Promise.resolve();
+
+        insightTexts.forEach(function(insightText) {
+          chain = chain.then(function() {
+            return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla).then(function(placement) {
+              resolved.push(placement);
+            });
+          });
+        });
+
+        return chain.then(function() { return { insights: resolved }; });
+      });
+    }).then(function(result) {
+      return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+        insights: result.insights, status: 'in_progress', current_insight_index: 0
+      }).then(function() {
+        var updated = Object.assign({}, chapter, { insights: result.insights, current_insight_index: 0 });
+        return updated;
+      });
+    });
+  },
+
+  // Tries the primary phylum first, then each remaining enabled phylum in
+  // order, then a final broad 21-phylum search for genuine orphans.
+  // Every candidate placement gets scored (Council of 5, 1-10) before
+  // being accepted - a 5-8 score triggers a reword+retry (capped at 3
+  // attempts total), under 4 gets one "can this be upgraded at all" check
+  // before being flagged unplaceable rather than forced into a leaf.
+  _placeInsightCascade: function(insightText, primaryPhylum, remainingPhyla) {
+    var self = this;
+    var tryPhylum = function(phylumNumber, text, attemptsLeft) {
+      return self._decidePlacementScored(text, phylumNumber).then(function(decision) {
+        if (!decision.fits) return null;
+        if (decision.confidenceScore >= 9) return decision;
+        if (decision.confidenceScore >= 5 && attemptsLeft > 0) {
+          return self._rewordInsight(text).then(function(reworded) {
+            return tryPhylum(phylumNumber, reworded, attemptsLeft - 1);
+          });
+        }
+        if (decision.confidenceScore < 4) {
+          return self._checkUpgradeable(text, phylumNumber).then(function(upgraded) {
+            return upgraded ? self._decidePlacementScored(upgraded, phylumNumber) : null;
+          });
+        }
+        return decision; // ran out of reword attempts, best effort
+      }).catch(function(e) {
+        console.warn('[bookworm] placement attempt failed:', e.message);
+        return null;
+      });
+    };
+
+    var phylaToTry = [primaryPhylum].concat(remainingPhyla);
+    var chain = Promise.resolve(null);
+    phylaToTry.forEach(function(phylumNumber) {
+      chain = chain.then(function(found) {
+        if (found) return found;
+        return tryPhylum(phylumNumber, insightText, 3);
+      });
+    });
+
+    return chain.then(function(found) {
+      if (found) return Object.assign({ text: insightText, decision: 'pending' }, found);
+      return self._finalPlacementSearch(insightText).then(function(fallback) {
+        if (fallback) return Object.assign({ text: insightText, decision: 'pending' }, fallback);
+        return { text: insightText, decision: 'pending', fits: false, confidenceScore: 0 };
+      });
+    });
+  },
+
+  // Combined placement + fit-check + justification + confidence score in
+  // one call - keeps this to one Oracle round trip per attempt instead of
+  // separate placement/scoring calls, given how many of these can run per
+  // chapter (real cost/latency concern, flagged in patch notes).
+  _decidePlacementScored: function(insightText, phylumNumber) {
+    var pp = RPGACE.modules.phylumPath;
+    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
+      existing = existing || [];
+      var pathList = existing.length ? existing.map(function(n) { return '- ' + n.path; }).join('\n') : '(nothing mapped yet)';
+      var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
+        'A book insight: "' + insightText + '"\n\n' +
+        'EXISTING STRUCTURE in this phylum (root-first):\n' + pathList + '\n\n' +
+        'First decide: does this insight genuinely belong in THIS phylum at all (not just loosely related)? Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (or null for a new path), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10 for this placement.\n\n' +
+        'Return ONLY JSON: {"fits": true, "attachTo": "existing path or null", "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8}';
+      return pp._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
+        var attachNode = parsed.attachTo ? existing.find(function(n) { return n.path === parsed.attachTo; }) : null;
+        return {
+          fits: !!parsed.fits, phylumNumber: phylumNumber, attachNode: attachNode,
+          attachPath: attachNode ? attachNode.path : null,
+          newSteps: parsed.newSteps || [], explainers: parsed.explainers || [],
+          justification: parsed.justification || '', confidenceScore: parsed.confidenceScore || 0
+        };
+      });
+    });
+  },
+
+  _rewordInsight: function(insightText) {
+    var pp = RPGACE.modules.phylumPath;
+    var prompt = 'Reword this insight to be clearer and more specifically teachable, same meaning, more concrete:\n\n"' + insightText + '"\n\nReturn ONLY the reworded insight text, nothing else.';
+    return pp._callGroundWorkerText(prompt, 150);
+  },
+
+  _checkUpgradeable: function(insightText, phylumNumber) {
+    var pp = RPGACE.modules.phylumPath;
+    var prompt = 'This insight scored very low for taxonomy placement in ' + RPGACE.utils.phylumContext(phylumNumber) + ':\n\n"' + insightText + '"\n\n' +
+      'Is there a genuinely more specific/concrete version of this that WOULD be leaf-worthy, or is it too vague/generic to ever place well? If upgradeable, return the improved version. If not, return null.\n\n' +
+      'Return ONLY JSON: {"upgraded": "text or null"}';
+    return pp._callGroundWorkerJSON(prompt, 200).then(function(parsed) { return parsed.upgraded || null; }).catch(function() { return null; });
+  },
+
+  // Final fallback for insights that didn't fit any enabled phylum -
+  // broad search across all 21, not just the 10 currently enabled.
+  _finalPlacementSearch: function(insightText) {
+    var tt = RPGACE.modules.taxonomyTree;
+    var pp = RPGACE.modules.phylumPath;
+    var allPhylaList = Object.keys(tt.PHYLUM_NAMES).map(function(n) { return n + '. ' + tt.PHYLUM_NAMES[n] + ' (' + tt.PHYLUM_ENGLISH[n] + ')'; }).join('\n');
+    var prompt = 'This insight did not fit well in any of the currently-active phyla:\n\n"' + insightText + '"\n\n' +
+      'Given ALL 21 phyla below, which one genuinely fits best?\n' + allPhylaList + '\n\n' +
+      'Return ONLY JSON: {"phylumNumber": N, "justification": "..."}';
+    return pp._callGroundWorkerJSON(prompt, 300).then(function(parsed) {
+      if (!parsed.phylumNumber) return null;
+      return this._decidePlacementScored(insightText, parsed.phylumNumber);
+    }.bind(this)).catch(function() { return null; });
+  },
+
+  // ── Per-insight review: summary, path, justification, Approve/Reject/Edit ──
+  _renderInsightReview: function(book, chapter) {
+    var self = this;
+    var insights = chapter.insights || [];
+    var idx = chapter.current_insight_index || 0;
+
+    if (idx >= insights.length) {
+      self._completeChapter(book, chapter);
+      return;
+    }
+    var insight = insights[idx];
+    if (insight.decision === 'approved' || insight.decision === 'rejected' || insight.decision === 'edited') {
+      chapter = Object.assign({}, chapter, { current_insight_index: idx + 1 });
+      self._renderInsightReview(book, chapter);
+      return;
+    }
+
+    var overlay = document.createElement('div');
+    overlay.id = 'bookworm-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = '📖 ' + book.title + ' — ' + chapter.chapter_title + ' — Insight ' + (idx + 1) + '/' + insights.length;
+    box.appendChild(eyebrow);
+
+    if (!insight.fits) {
+      var unplaceableBox = document.createElement('div');
+      unplaceableBox.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);margin-bottom:14px;';
+      unplaceableBox.textContent = 'Could not find a confident home for this insight - skipped rather than forced into a leaf.';
+      box.appendChild(unplaceableBox);
+    }
+
+    var summary = document.createElement('div');
+    summary.style.cssText = 'font-size:13px;color:#E2E2EC;line-height:1.6;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,0.02);border-radius:8px;';
+    summary.textContent = insight.text;
+    box.appendChild(summary);
+
+    var tt = RPGACE.modules.taxonomyTree;
+    var pathLine = document.createElement('div');
+    pathLine.style.cssText = 'font-size:11px;color:#3DAA6E;margin-bottom:8px;';
+    pathLine.innerHTML = '<strong>Path:</strong> ' + (insight.phylumNumber ? (tt.PHYLUM_NAMES[insight.phylumNumber] || 'Phylum ' + insight.phylumNumber) : '?') +
+      (insight.attachPath ? '/' + insight.attachPath.split('/').slice(1).join('/') : '') +
+      (insight.newSteps && insight.newSteps.length ? '/' + insight.newSteps.join('/') : '');
+    box.appendChild(pathLine);
+
+    if (insight.justification) {
+      var justLine = document.createElement('div');
+      justLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);font-style:italic;margin-bottom:14px;';
+      justLine.textContent = insight.justification + (insight.confidenceScore ? ' (confidence ' + insight.confidenceScore + '/10)' : '');
+      box.appendChild(justLine);
+    }
+
+    var editWrap = document.createElement('div');
+    editWrap.style.cssText = 'display:none;margin-bottom:12px;';
+    var editInput = document.createElement('textarea');
+    editInput.placeholder = 'Your own path, slash-separated (e.g. Order/Class/Family)...';
+    editInput.style.cssText = 'width:100%;min-height:60px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;';
+    var editSubmit = document.createElement('button');
+    editSubmit.textContent = 'Use this path';
+    editSubmit.style.cssText = 'margin-top:6px;padding:6px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    editWrap.appendChild(editInput); editWrap.appendChild(editSubmit);
+    box.appendChild(editWrap);
+
+    var advance = function(decision, updates) {
+      var newInsight = Object.assign({}, insight, { decision: decision }, updates || {});
+      var newInsights = insights.slice();
+      newInsights[idx] = newInsight;
+      var newChapter = Object.assign({}, chapter, { insights: newInsights, current_insight_index: idx + 1 });
+      RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { insights: newInsights, current_insight_index: idx + 1 }).catch(function() {});
+      overlay.remove();
+      self._renderInsightReview(book, newChapter);
+    };
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+    var approveBtn = document.createElement('button');
+    approveBtn.textContent = '✓ Approve';
+    approveBtn.disabled = !insight.fits;
+    approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (insight.fits ? '1' : '0.4') + ';';
+    approveBtn.onclick = function() {
+      approveBtn.disabled = true; approveBtn.textContent = '⏳ Creating leaf...';
+      var pp = RPGACE.modules.phylumPath;
+      pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, insight.newSteps, insight.explainers, insight.text)
+        .then(function() { advance('approved'); })
+        .catch(function(e) { RPGACE.utils.toast('Error creating leaf: ' + e.message, '#E25454', 3500); approveBtn.disabled = false; approveBtn.textContent = '✓ Approve'; });
+    };
+    var rejectBtn = document.createElement('button');
+    rejectBtn.textContent = '✗ Reject';
+    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn.onclick = function() { advance('rejected'); };
+    var editBtn = document.createElement('button');
+    editBtn.textContent = '✎ Edit';
+    editBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(155,89,182,0.25);border-radius:8px;color:#9B59B6;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    editBtn.onclick = function() { editWrap.style.display = 'block'; };
+    editSubmit.onclick = function() {
+      var steps = editInput.value.split('/').map(function(s) { return s.trim(); }).filter(Boolean);
+      if (!steps.length) { RPGACE.utils.toast('Enter at least one path step', '#E25454', 2000); return; }
+      editSubmit.disabled = true; editSubmit.textContent = 'Creating...';
+      var pp = RPGACE.modules.phylumPath;
+      pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, steps, steps.map(function() { return ''; }), insight.text)
+        .then(function() { advance('edited', { newSteps: steps }); })
+        .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500); editSubmit.disabled = false; editSubmit.textContent = 'Use this path'; });
+    };
+
+    btnRow.appendChild(approveBtn); btnRow.appendChild(rejectBtn); btnRow.appendChild(editBtn);
+    box.appendChild(btnRow);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Exit (progress is saved)';
+    closeBtn.style.cssText = 'display:block;width:100%;margin-top:10px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.appendChild(closeBtn);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  _completeChapter: function(book, chapter) {
+    var self = this;
+    RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { status: 'complete' })
+      .then(function() {
+        var nextIndex = book.current_chapter_index + 1;
+        return RPGACE.sb.update('bookworm_books', 'id=eq.' + book.id, { current_chapter_index: nextIndex });
+      }).then(function() {
+        RPGACE.utils.toast('✓ Chapter complete: ' + chapter.chapter_title, '#3DAA6E', 3000);
+        self._refreshWidget();
+        self._openBook(book.id);
+      }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500); });
+  },
+
+  _markBookComplete: function(book) {
+    var self = this;
+    RPGACE.sb.select('bookworm_chapters', 'book_id=eq.' + book.id)
+      .then(function(chapters) {
+        chapters = chapters || [];
+        var totalInsights = 0;
+        var phyla = {};
+        chapters.forEach(function(c) {
+          (c.insights || []).forEach(function(i) {
+            if (i.decision === 'approved' || i.decision === 'edited') { totalInsights++; if (i.phylumNumber) phyla[i.phylumNumber] = true; }
+          });
+        });
+        return RPGACE.sb.insert('bibliography', {
+          book_id: book.id, title: book.title, source_url: book.source_url,
+          total_chapters: chapters.length, total_insights_placed: totalInsights,
+          phyla_touched: Object.keys(phyla).map(Number)
+        }).then(function() {
+          return RPGACE.sb.update('bookworm_books', 'id=eq.' + book.id, { status: 'complete', completed_at: new Date().toISOString() });
+        });
+      }).then(function() {
+        RPGACE.utils.toast('📚 ' + book.title + ' — complete! Added to Bibliography.', '#3DAA6E', 5000);
+        self._refreshWidget();
+        self._injectBibliographySection();
+      }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500); });
+  },
+
+  // ── Bibliography section on the Research page ─────────────────────
+  _injectBibliographySection: function() {
+    var self = this;
+    var existing = document.getElementById('bookworm-bibliography');
+    var page = document.getElementById('page-research') || document.getElementById('page-learning');
+    if (!page) return;
+    if (existing) existing.remove();
+
+    var wrap = document.createElement('div');
+    wrap.id = 'bookworm-bibliography';
+    wrap.style.cssText = 'background:rgba(155,89,182,0.03);border:1px solid rgba(155,89,182,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
+    var hdr = document.createElement('div');
+    hdr.className = 'section-title';
+    hdr.style.cssText = 'font-size:14px;margin-bottom:10px;';
+    hdr.textContent = '📚 Bibliography';
+    wrap.appendChild(hdr);
+
+    var list = document.createElement('div');
+    list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+    wrap.appendChild(list);
+    page.insertBefore(wrap, page.firstChild);
+
+    RPGACE.sb.select('bibliography', 'order=completed_at.desc').then(function(rows) {
+      rows = rows || [];
+      list.innerHTML = '';
+      if (!rows.length) { list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;">No completed books yet.</div>'; return; }
+      var tt = RPGACE.modules.taxonomyTree;
+      rows.forEach(function(row) {
+        var card = document.createElement('div');
+        card.style.cssText = 'padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;';
+        var nameEl = document.createElement('div');
+        nameEl.textContent = row.title;
+        nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;';
+        var subEl = document.createElement('div');
+        var phylaNames = (row.phyla_touched || []).map(function(n) { return tt ? tt.PHYLUM_NAMES[n] : n; }).join(', ');
+        subEl.textContent = row.total_chapters + ' chapters, ' + row.total_insights_placed + ' insights placed' + (phylaNames ? ' — ' + phylaNames : '');
+        subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
+        card.appendChild(nameEl); card.appendChild(subEl);
+        list.appendChild(card);
+      });
+    }).catch(function(e) { list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>'; });
+  },
+
+});
+/* ===END:bookworm=== */
 /* ===END_DOMAIN:LEARNING=== */
 
 /* ===DOMAIN:CONFIG=== */
