@@ -6724,9 +6724,24 @@ RPGACE.register('bookworm', {
       'List every genuinely distinct, teachable insight in this chapter - as many or as few as are actually present, do not pad or split one idea into several. Restate each in your own words as a standalone fact/technique, not a verbatim quote.\n\n' +
       'Return ONLY JSON: {"insights": ["...", "..."]}';
 
+    // Fixed same session as a real report: a 13-insight chapter took
+    // ~7 minutes before ANYTHING appeared, because the original version
+    // chained every insight's full placement cascade (each with up to 3
+    // reword-retry Oracle calls) before ever resolving. Now only the
+    // FIRST insight is awaited here - the rest continue in the
+    // background via _continueAnalyzingInBackground(), appending to
+    // Supabase as each one finishes, so the review UI can show insight 1
+    // immediately and poll for the next one instead of blocking on all
+    // of them.
     return pp._callGroundWorkerJSON(extractPrompt, 1200).then(function(parsed) {
       var insightTexts = parsed.insights || [];
-      if (!insightTexts.length) return { insights: [] };
+      if (!insightTexts.length) {
+        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+          insights: [], status: 'in_progress', current_insight_index: 0, analysis_complete: true
+        }).then(function() {
+          return Object.assign({}, chapter, { insights: [], current_insight_index: 0, analysis_complete: true });
+        });
+      }
 
       var phylumScorePrompt = 'CHAPTER: "' + chapter.chapter_title + '"\n\nSUMMARY OF ITS INSIGHTS:\n' + insightTexts.join('\n- ') + '\n\n' +
         'Which ONE of these phyla is this chapter MOST closely related to overall?\n' +
@@ -6736,26 +6751,50 @@ RPGACE.register('bookworm', {
       return pp._callGroundWorkerJSON(phylumScorePrompt, 200).then(function(phylumParsed) {
         var primaryPhylum = phylumParsed.phylumNumber;
         var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
-        var resolved = [];
-        var chain = Promise.resolve();
 
-        insightTexts.forEach(function(insightText) {
-          chain = chain.then(function() {
-            return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla).then(function(placement) {
-              resolved.push(placement);
+        return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla).then(function(firstPlacement) {
+          var insights = [firstPlacement];
+          var onlyOne = insightTexts.length === 1;
+          return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+            insights: insights, status: 'in_progress', current_insight_index: 0, analysis_complete: onlyOne
+          }).then(function() {
+            if (!onlyOne) {
+              self._continueAnalyzingInBackground(chapter.id, insightTexts.slice(1), primaryPhylum, remainingPhyla);
+            }
+            return Object.assign({}, chapter, { insights: insights, current_insight_index: 0, analysis_complete: onlyOne });
+          });
+        });
+      });
+    });
+  },
+
+  // Fire-and-forget: places insights 2..N one at a time, appending each
+  // to bookworm_chapters.insights as it completes rather than holding
+  // them all until the whole chapter is done. If anything in this chain
+  // fails partway, analysis_complete still gets set on whatever
+  // succeeded so far - without that, a mid-batch failure would leave the
+  // review UI's polling (_renderWaitingForNextInsight) waiting forever.
+  _continueAnalyzingInBackground: function(chapterId, remainingTexts, primaryPhylum, remainingPhyla) {
+    var self = this;
+    var chain = Promise.resolve();
+    remainingTexts.forEach(function(insightText, i) {
+      chain = chain.then(function() {
+        return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla).then(function(placement) {
+          return RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapterId + '&limit=1').then(function(rows) {
+            var current = rows && rows[0];
+            if (!current) return;
+            var insights = (current.insights || []).concat([placement]);
+            var isLast = (i === remainingTexts.length - 1);
+            return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, {
+              insights: insights, analysis_complete: isLast
             });
           });
         });
-
-        return chain.then(function() { return { insights: resolved }; });
       });
-    }).then(function(result) {
-      return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
-        insights: result.insights, status: 'in_progress', current_insight_index: 0
-      }).then(function() {
-        var updated = Object.assign({}, chapter, { insights: result.insights, current_insight_index: 0 });
-        return updated;
-      });
+    });
+    return chain.catch(function(e) {
+      console.warn('[bookworm] background insight analysis failed partway, marking complete with what succeeded so far:', e.message);
+      return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, { analysis_complete: true }).catch(function() {});
     });
   },
 
@@ -6906,7 +6945,11 @@ RPGACE.register('bookworm', {
     var idx = chapter.current_insight_index || 0;
 
     if (idx >= insights.length) {
-      self._completeChapter(book, chapter);
+      if (chapter.analysis_complete) {
+        self._completeChapter(book, chapter);
+      } else {
+        self._renderWaitingForNextInsight(book, chapter);
+      }
       return;
     }
     var insight = insights[idx];
@@ -7017,6 +7060,49 @@ RPGACE.register('bookworm', {
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+  },
+
+  // Shown when the next insight isn't ready yet - background analysis
+  // (_continueAnalyzingInBackground above) is still working on it. Polls
+  // Supabase every few seconds instead of blocking the whole chapter on
+  // every insight finishing before showing anything - real report: a
+  // 13-insight chapter took ~7 minutes before the FIRST insight appeared.
+  _renderWaitingForNextInsight: function(book, chapter) {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.id = 'bookworm-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(480px,95vw);font-family:Rajdhani,sans-serif;text-align:center;';
+    var msg = document.createElement('div');
+    msg.textContent = '⏳ Still analyzing the next insight in the background...';
+    msg.style.cssText = 'font-size:13px;color:rgba(226,226,236,0.6);margin-bottom:14px;';
+    box.appendChild(msg);
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Exit (progress is saved)';
+    closeBtn.style.cssText = 'padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    var stopped = false;
+    closeBtn.onclick = function() { stopped = true; overlay.remove(); };
+    box.appendChild(closeBtn);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+
+    var idx = chapter.current_insight_index || 0;
+    var poll = function() {
+      if (stopped) return;
+      RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapter.id + '&limit=1').then(function(rows) {
+        if (stopped) return;
+        var fresh = rows && rows[0];
+        if (!fresh) return;
+        if ((fresh.insights || []).length > idx || fresh.analysis_complete) {
+          overlay.remove();
+          self._renderInsightReview(book, fresh);
+        } else {
+          setTimeout(poll, 4000);
+        }
+      }).catch(function() { if (!stopped) setTimeout(poll, 4000); });
+    };
+    setTimeout(poll, 4000);
   },
 
   _completeChapter: function(book, chapter) {
