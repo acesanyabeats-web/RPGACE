@@ -6715,14 +6715,22 @@ RPGACE.register('bookworm', {
   // known upfront exactly like a URL-fetched book - the only difference
   // is each chapter's raw_text starts empty and gets filled in one at a
   // time as the user provides it (see _renderAddChapterText).
+  // Function 1 — Analyze Book Structure. Extended per direct request:
+  // beyond just the chapter list, also extracts per-chapter keywords and
+  // a best-guess phylum, giving _analyzeChapter() (Function 2) a real
+  // head start instead of re-deriving "which phylum" from scratch once
+  // per chapter - the two functions share this data on purpose rather
+  // than working in isolation.
   _startBookFromTOC: function(title, tocText) {
     var self = this;
     var pp = RPGACE.modules.phylumPath;
-    var prompt = 'This is a table of contents pasted from a physical book, listing chapter titles (and likely page numbers/dot leaders to ignore).\n\n' +
+    var phylumList = pp.ENABLED_PHYLA.map(function(n) { return n + '. ' + RPGACE.utils.phylumContext(n); }).join('\n');
+    var prompt = 'This is a table of contents pasted from a physical book, listing chapter titles/headings/sub-headings (and likely page numbers/dot leaders to ignore).\n\n' +
       'TEXT:\n' + tocText + '\n\n' +
-      'Extract the ordered list of REAL chapters (not sub-sections within a chapter, unless the contents page only lists sub-sections - use your judgement on what the actual chapter-level breakdown is).\n\n' +
-      'Return ONLY JSON: {"chapters": [{"title": "..."}]}';
-    return pp._callGroundWorkerJSON(prompt, 800).then(function(parsed) {
+      'Extract the ordered list of REAL chapters (not sub-sections within a chapter, unless the contents page only lists sub-sections - use your judgement on what the actual chapter-level breakdown is). For each chapter, also give: 3-6 keywords drawn from that chapter\'s heading/sub-heading text, and a best-guess phylum number from the list below based on those keywords (this is just a starting hint for later insight placement, not a final decision).\n\n' +
+      'PHYLA:\n' + phylumList + '\n\n' +
+      'Return ONLY JSON: {"chapters": [{"title": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
+    return pp._callGroundWorkerJSON(prompt, 1500).then(function(parsed) {
       var chapters = parsed.chapters || [];
       if (!chapters.length) throw new Error('Could not extract any chapters from that table of contents');
 
@@ -6738,7 +6746,10 @@ RPGACE.register('bookworm', {
         if (!book || !book.id) throw new Error('Book creation did not return an id');
 
         var chapterRows = chapters.map(function(c, i) {
-          return { book_id: book.id, chapter_index: i, chapter_title: c.title, raw_text: '', status: 'pending' };
+          return {
+            book_id: book.id, chapter_index: i, chapter_title: c.title, raw_text: '', status: 'pending',
+            keywords: c.keywords || [], suggested_phylum: pp.isEnabled(c.suggestedPhylum) ? c.suggestedPhylum : null
+          };
         });
         return fetch(RPGACE.sb.url('bookworm_chapters'), {
           method: 'POST',
@@ -6972,13 +6983,24 @@ RPGACE.register('bookworm', {
         });
       }
 
-      var phylumScorePrompt = 'CHAPTER: "' + chapter.chapter_title + '"\n\nSUMMARY OF ITS INSIGHTS:\n' + insightTexts.join('\n- ') + '\n\n' +
-        'Which ONE of these phyla is this chapter MOST closely related to overall?\n' +
-        pp.ENABLED_PHYLA.map(function(n) { return n + '. ' + RPGACE.utils.phylumContext(n); }).join('\n') + '\n\n' +
-        'Return ONLY JSON: {"phylumNumber": N}';
+      // Function 1 (_startBookFromTOC) already produced a keyword-based
+      // suggested_phylum for this chapter from its heading/sub-heading
+      // text - use it directly instead of re-running the same "which
+      // phylum" judgement call from scratch. Real merge point between
+      // the two functions, not just a UI convenience: Function 1's
+      // structural analysis speeds up and grounds Function 2's
+      // placement, one fewer Oracle round trip per chapter.
+      var primaryPhylumPromise = chapter.suggested_phylum
+        ? Promise.resolve(chapter.suggested_phylum)
+        : pp._callGroundWorkerJSON(
+            'CHAPTER: "' + chapter.chapter_title + '"\n\nSUMMARY OF ITS INSIGHTS:\n' + insightTexts.join('\n- ') + '\n\n' +
+            'Which ONE of these phyla is this chapter MOST closely related to overall?\n' +
+            pp.ENABLED_PHYLA.map(function(n) { return n + '. ' + RPGACE.utils.phylumContext(n); }).join('\n') + '\n\n' +
+            'Return ONLY JSON: {"phylumNumber": N}',
+            200
+          ).then(function(phylumParsed) { return phylumParsed.phylumNumber; });
 
-      return pp._callGroundWorkerJSON(phylumScorePrompt, 200).then(function(phylumParsed) {
-        var primaryPhylum = phylumParsed.phylumNumber;
+      return primaryPhylumPromise.then(function(primaryPhylum) {
         var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
 
         return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla).then(function(firstPlacement) {
