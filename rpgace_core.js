@@ -6571,6 +6571,20 @@ RPGACE.register('bookworm', {
   },
 
   // ── Start a new book: fetch + detect + slice chapters, create rows ──
+  // Fixed July 17: RPGACE.sb.insert() sends 'Prefer: return=minimal' and
+  // never parses the response as JSON (see RPGACE.sb definition) - it
+  // returns the raw, unparsed fetch Response, not the inserted row. Using
+  // it here meant book.id was always undefined, so every chapter insert
+  // was silently sent with book_id: undefined - failing the NOT NULL
+  // constraint server-side while the client never checked the response
+  // status, so nothing ever surfaced as an error. Confirmed live: 2 real
+  // book rows existed with 0 chapters each, both silently flipped to
+  // "complete" the moment _openBook() found no chapter at index 0 (see
+  // the fixed logic below). Now uses raw fetch with the same
+  // 'Prefer: return=representation' pattern already established by
+  // phylumPath._insertNewSteps()/_acceptConceptFusion() for exactly this
+  // reason, and checks response.ok at every write instead of assuming
+  // success.
   _startBook: function(url) {
     var self = this;
     return fetch('/api/bookworm-fetch', {
@@ -6580,15 +6594,31 @@ RPGACE.register('bookworm', {
       .then(function(result) {
         if (result.error) throw new Error(result.error);
         if (!result.chapters || !result.chapters.length) throw new Error('No chapters detected in this book');
-        return RPGACE.sb.insert('bookworm_books', {
-          title: result.title, source_url: url, current_chapter_index: 0, status: 'in_progress'
-        }).then(function(bookResult) {
-          var book = Array.isArray(bookResult) ? bookResult[0] : bookResult;
+
+        return fetch(RPGACE.sb.url('bookworm_books'), {
+          method: 'POST',
+          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+          body: JSON.stringify({ title: result.title, source_url: url, current_chapter_index: 0, status: 'in_progress' })
+        }).then(function(r) {
+          if (!r.ok) return r.text().then(function(t) { throw new Error('Book creation failed: ' + t.slice(0, 200)); });
+          return r.json();
+        }).then(function(bookRows) {
+          var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
+          if (!book || !book.id) throw new Error('Book creation did not return an id');
+
           var chapterRows = result.chapters.map(function(c) {
             return { book_id: book.id, chapter_index: c.index, chapter_title: c.title, raw_text: c.text, status: 'pending' };
           });
-          return RPGACE.sb.insert('bookworm_chapters', chapterRows).then(function() {
-            RPGACE.utils.toast('📖 ' + result.title + ' — ' + result.chapters.length + ' chapters detected', '#9B59B6', 4000);
+          return fetch(RPGACE.sb.url('bookworm_chapters'), {
+            method: 'POST',
+            headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+            body: JSON.stringify(chapterRows)
+          }).then(function(r) {
+            if (!r.ok) return r.text().then(function(t) { throw new Error('Chapter creation failed: ' + t.slice(0, 200)); });
+            return r.json();
+          }).then(function(insertedChapters) {
+            if (!insertedChapters || !insertedChapters.length) throw new Error('Chapters did not save correctly');
+            RPGACE.utils.toast('📖 ' + result.title + ' — ' + insertedChapters.length + ' chapters detected', '#9B59B6', 4000);
             self._refreshWidget();
             self._openBook(book.id);
           });
@@ -6597,14 +6627,25 @@ RPGACE.register('bookworm', {
   },
 
   // ── Open a book at its current checkpoint ─────────────────────────
+  // Fetches ALL of this book's chapters once (not just the current one)
+  // so a genuine zero-chapters book (only possible via the bug above, now
+  // fixed - kept as a defensive check) can be told apart from having
+  // legitimately finished every chapter. Previously both cases looked
+  // identical (no chapter row at the current index), so a broken book
+  // silently got marked "complete" instead of surfacing an error.
   _openBook: function(bookId) {
     var self = this;
     RPGACE.sb.select('bookworm_books', 'id=eq.' + bookId + '&limit=1').then(function(rows) {
       var book = rows && rows[0];
       if (!book) return;
-      RPGACE.sb.select('bookworm_chapters', 'book_id=eq.' + bookId + '&chapter_index=eq.' + book.current_chapter_index + '&limit=1')
-        .then(function(chRows) {
-          var chapter = chRows && chRows[0];
+      RPGACE.sb.select('bookworm_chapters', 'book_id=eq.' + bookId + '&order=chapter_index.asc')
+        .then(function(allChapters) {
+          allChapters = allChapters || [];
+          if (!allChapters.length) {
+            RPGACE.utils.toast('This book has no chapters stored - something went wrong when it was created. Delete it and try again.', '#E25454', 5500);
+            return;
+          }
+          var chapter = allChapters.find(function(c) { return c.chapter_index === book.current_chapter_index; });
           if (!chapter) {
             self._markBookComplete(book);
             return;
