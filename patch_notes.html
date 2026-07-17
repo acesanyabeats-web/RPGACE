@@ -84,6 +84,18 @@
   </div>
 
   <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🎧 July 17 — Magistra (Phylum 5) framework pass + an explicit Magistra/Mixtura overlap decision</div>
+    <div class="card-body">
+      Keyword sweep: 6 → 113 terms across 9 categories (Mastering Fundamentals, Loudness &amp; Metering, Limiting, Mastering EQ, Mastering Compression, Stereo &amp; Width in Mastering, Dynamics &amp; Character, Export &amp; Delivery, Genre-Specific UK Drill &amp; Trap Mastering, DAW/Plugin-specific).<br><br>
+      Same collision-check discipline as Phylums 3/4, testing a flagged concern that "balance"/"character"/"warmth" (mastering terms) could bleed into visual/cinematic grading language ("colour balance", "visual character", "warm tones") — zero bare instances of any of those words (plus space/depth/clarity) exist anywhere across all 21 phyla, confirming the pattern held for a 3rd time running: the compound-phrase convention already prevents it.<br><br>
+      <strong>Real, explicit decision made this pass:</strong> Magistra and Mixtura share 14 exact bare terms — the heaviest overlap of any two phyla found across this whole exercise, because mastering is genuinely downstream of mixing (EQ/compression/limiting vocabulary spans both). Asked directly whether Magistra should escalate rather than duplicate — made the call: removed <code>loudness war</code> and <code>streaming loudness target</code> from Mixtura's list (these are final-delivery/mastering-stage concerns, not mixing ones, even though the original draft included both) and kept them exclusive to Magistra. Left the genuinely dual-stage terms as-is in both phyla — <code>limiter</code>, <code>headroom</code>, <code>glue compression</code>, and shared plugins (<code>Maximus</code>, <code>Fruity Limiter</code>, <code>Fruity Multiband Compressor</code>) really are used at both the mixing and mastering stage, so matching both is correct signal, not a bug.<br><br>
+      <strong>No data repair needed</strong> — Phylum 5 had zero pre-existing rows.<br><br>
+      <strong>Tree build:</strong> 54 new rows across 6 Orders (Loudness &amp; Metering; Limiting; Mastering EQ &amp; Tonal Balance; Mastering Compression &amp; Glue; Mastering Character/Width &amp; Dynamics; Export/Delivery &amp; Genre-Specific Mastering).<br><br>
+      <strong><code>ENABLED_PHYLA</code> extended to <code>[1,2,3,4,5]</code></strong> — Magistra pushed live the same session it was built, same pattern as the Percussio/Sonus Designatio/Mixtura batch. 5 of 21 phyla now covered by Phylum Path.
+    </div>
+  </div>
+
+  <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🎚️ July 17 — Mixtura (Phylum 4) framework pass + Phylum Path enabled for Percussio, Sonus Designatio & Mixtura together</div>
     <div class="card-body">
       Keyword sweep: 8 → 151 terms across 8 categories (Gain Staging &amp; Levels, EQ, Compression, Spatial &amp; Stereo Processing, Reverb &amp; Delay in Mix Context, Mix Bus &amp; Signal Flow, Balance &amp; Space, Genre-Specific UK Drill &amp; Trap Mixing, DAW/FL Studio &amp; Plugin-specific).<br><br>
@@ -534,8 +546,8 @@
   </div>
 
   <div class="card">
-    <div class="card-title">4-phylum Phylum Path (Compositio, Percussio, Sonus Designatio, Mixtura) not yet hand-tested <span class="badge open">SMOKE TEST</span></div>
-    <div class="card-body">All 4 phyla are now enabled (<code>ENABLED_PHYLA: [1,2,3,4]</code>) and their trees/keyword lists built, but nothing has been clicked through by hand this session. Needs: confirm the phylum switcher shows all 4 pills correctly in both the side panel and nav-tab page; confirm switching phylum actually re-fetches the right tree and updates the header/purpose/placeholder text; confirm auto-detect correctly names whichever phylum matched (not always Compositio); place a real insight in each of Percussio/Sonus Designatio/Mixtura and confirm it routes/attaches sensibly; and spot-check a few of the 122 new nodes built this session (39 Percussio + 42 Sonus Designatio + 41 Mixtura) for quality before treating any of them as a template for Phylum 5.</div>
+    <div class="card-title">5-phylum Phylum Path (Compositio, Percussio, Sonus Designatio, Mixtura, Magistra) not yet hand-tested <span class="badge open">SMOKE TEST</span></div>
+    <div class="card-body">All 5 phyla are now enabled (<code>ENABLED_PHYLA: [1,2,3,4,5]</code>) and their trees/keyword lists built, but nothing has been clicked through by hand this session. Needs: confirm the phylum switcher shows all 5 pills correctly in both the side panel and nav-tab page; confirm switching phylum actually re-fetches the right tree and updates the header/purpose/placeholder text; confirm auto-detect correctly names whichever phylum matched (not always Compositio); place a real insight in each of the 4 new phyla and confirm it routes/attaches sensibly; and spot-check a sample of the 176 new nodes built this session (39 Percussio + 42 Sonus Designatio + 41 Mixtura + 54 Magistra) for quality before treating any of them as a template for Phylum 6.</div>
   </div>
 </div>
 
