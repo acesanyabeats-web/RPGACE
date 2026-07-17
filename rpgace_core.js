@@ -6873,12 +6873,31 @@ RPGACE.register('bookworm', {
     chapterTextInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:12px;';
     box.appendChild(chapterTextInput);
 
+    var warningBox = document.createElement('div');
+    warningBox.style.cssText = 'display:none;font-size:11px;color:#E25454;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:6px;padding:8px 10px;margin-bottom:10px;';
+    box.insertBefore(warningBox, chapterTextInput.nextSibling);
+
     var addBtn = document.createElement('button');
     addBtn.textContent = '✍️ Save this chapter\'s text';
     addBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    var confirmedAnyway = false;
     addBtn.onclick = function() {
       var text = chapterTextInput.value.trim();
       if (!text) { RPGACE.utils.toast('Add the chapter\'s text first', '#E25454', 2000); return; }
+
+      // Real, repeated live mistake: the table of contents (dot-leader
+      // lines ending in a page number, e.g. "Title . . . . . 12") got
+      // pasted here as the chapter's actual text, twice. Catch that
+      // pattern before saving instead of relying on the user to notice.
+      if (!confirmedAnyway && self._looksLikeTableOfContents(text)) {
+        warningBox.textContent = '⚠️ This looks like a table of contents (section titles with page numbers), not the chapter\'s actual prose. Click Save again to save it anyway, or replace it with the real chapter text.';
+        warningBox.style.display = 'block';
+        confirmedAnyway = true;
+        return;
+      }
+      confirmedAnyway = false;
+      warningBox.style.display = 'none';
+
       addBtn.disabled = true; addBtn.textContent = '⏳ Saving...';
       RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { raw_text: text }).then(function() {
         overlay.remove();
@@ -6898,6 +6917,22 @@ RPGACE.register('bookworm', {
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
+  },
+
+  // Heuristic guard against the repeated live mistake of pasting a table
+  // of contents instead of a chapter's actual body text: TOC entries
+  // reliably look like "Section Title . . . . . 12" (dot-leaders ending
+  // in a page number) or "Section Title    12" (title, whitespace, bare
+  // number at end of line) - real prose essentially never has multiple
+  // lines shaped like that. 3+ matching lines is treated as a strong
+  // signal, not proof - the caller still lets the user save anyway on a
+  // second click rather than hard-blocking it.
+  _looksLikeTableOfContents: function(text) {
+    var lines = text.split('\n');
+    var tocLikeLines = lines.filter(function(line) {
+      return /\.{3,}\s*\d{1,4}\s*$/.test(line) || /\S {2,}\d{1,4}\s*$/.test(line);
+    });
+    return tocLikeLines.length >= 3;
   },
 
   // ══════════════════════════════════════════════════════════════════
