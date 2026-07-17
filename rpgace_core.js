@@ -2313,39 +2313,42 @@ RPGACE.register('taxonomyReviewQueue', {
           pathEl.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;line-height:1.5;';
           pathEl.textContent = p.proposed_path;
           var isPhylumPath = !!(p.proposed_steps && p.proposed_steps.engine === 'phylum_path');
+          var isConceptFusion = !!(p.proposed_steps && p.proposed_steps.engine === 'concept_fusion');
           var srcEl = document.createElement('div');
-          srcEl.style.cssText = 'font-size:9px;color:' + (isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
-          srcEl.textContent = (isPhylumPath ? '🧬 Phylum Path · ' : '') + (sourceLabels[p.source_type] || p.source_type);
+          srcEl.style.cssText = 'font-size:9px;color:' + (isConceptFusion ? 'rgba(52,152,219,0.7)' : isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
+          srcEl.textContent = isConceptFusion ? '🌌 Concept Fusion' : (isPhylumPath ? '🧬 Phylum Path · ' : '') + (sourceLabels[p.source_type] || p.source_type);
           head.appendChild(pathEl); head.appendChild(srcEl);
           row.appendChild(head);
 
-          if (p.matched_existing_node_id && !isPhylumPath) {
+          if (p.matched_existing_node_id && !isPhylumPath && !isConceptFusion) {
             var warn = document.createElement('div');
             warn.style.cssText = 'font-size:10px;color:#E25454;margin-bottom:8px;';
             warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
             row.appendChild(warn);
           }
 
+          // Concept Fusion cards show the synthesis text - the whole
+          // point of the proposal is "why does this merge deserve to be
+          // its own new leaf," not just a path string.
+          if (isConceptFusion && p.proposed_steps && p.proposed_steps.synthesis) {
+            var synthEl = document.createElement('div');
+            synthEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
+            synthEl.textContent = p.proposed_steps.synthesis;
+            row.appendChild(synthEl);
+          }
+
           var btnRow = document.createElement('div');
           btnRow.style.cssText = 'display:flex;gap:6px;';
 
           var acceptBtn = document.createElement('button');
-          acceptBtn.textContent = '✓ Accept';
+          acceptBtn.textContent = isConceptFusion ? '✓ Create Merged Leaf' : '✓ Accept';
           acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
           acceptBtn.onclick = function() {
             row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
-            if (isPhylumPath) { self._acceptPhylumPathProposal(p); }
+            if (isConceptFusion) { self._acceptConceptFusion(p); }
+            else if (isPhylumPath) { self._acceptPhylumPathProposal(p); }
             else { RPGACE.modules.taxonomyTree._acceptLineage(self._toProposal(p)); }
             row.remove();
-          };
-
-          var editBtn = document.createElement('button');
-          editBtn.textContent = '✎ Edit';
-          editBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          editBtn.onclick = function() {
-            overlay.remove();
-            if (isPhylumPath) { self._editPhylumPathProposal(p); }
-            else { RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p)); }
           };
 
           var rejectBtn = document.createElement('button');
@@ -2356,7 +2359,22 @@ RPGACE.register('taxonomyReviewQueue', {
             row.remove();
           };
 
-          btnRow.appendChild(acceptBtn); btnRow.appendChild(editBtn); btnRow.appendChild(rejectBtn);
+          btnRow.appendChild(acceptBtn);
+          // Concept Fusion is just Accept/Reject, same as fusion links
+          // below - the proposal is a full node + 2 backlinks, not an
+          // editable multi-step path, so there's nothing granular to edit.
+          if (!isConceptFusion) {
+            var editBtn = document.createElement('button');
+            editBtn.textContent = '✎ Edit';
+            editBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            editBtn.onclick = function() {
+              overlay.remove();
+              if (isPhylumPath) { self._editPhylumPathProposal(p); }
+              else { RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p)); }
+            };
+            btnRow.appendChild(editBtn);
+          }
+          btnRow.appendChild(rejectBtn);
           row.appendChild(btnRow);
           box.appendChild(row);
         });
@@ -2455,6 +2473,52 @@ RPGACE.register('taxonomyReviewQueue', {
     } else {
       finish(null);
     }
+  },
+
+  // ── Concept Fusion proposals: create the new merged node under         ──
+  // ── whichever branch the ground worker picked as attach point, then    ──
+  // ── write 2 confirmed taxonomy_links rows connecting it back to BOTH   ──
+  // ── source branches - the merged node is discoverable from either      ──
+  // ── side, not owned by just one. Same chained-insert convention as     ──
+  // ── phylumPath._insertNewSteps (Prefer:return=representation, since    ──
+  // ── RPGACE.sb.insert() defaults to return=minimal).                    ──
+  _acceptConceptFusion: function(p) {
+    var ps = p.proposed_steps || {};
+    if (!ps.attachToId || !ps.otherNodeId || !ps.newName) return;
+
+    RPGACE.sb.select('taxonomy_tree', 'id=eq.' + ps.attachToId + '&limit=1')
+      .then(function(rows) {
+        var attachNode = rows && rows[0];
+        if (!attachNode) return;
+
+        return fetch(RPGACE.sb.url('taxonomy_tree'), {
+          method: 'POST',
+          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
+          body: JSON.stringify({
+            parent_id: attachNode.id,
+            depth: attachNode.depth + 1,
+            name: ps.newName,
+            phylum_number: attachNode.phylum_number,
+            path: attachNode.path + '/' + ps.newName,
+            node_type: 'leaf',
+            explainer: ps.synthesis || '',
+            sources: [{ type: 'concept_fusion', id: null }]
+          }),
+        }).then(function(r) { return r.json(); }).then(function(result) {
+          var newNode = Array.isArray(result) ? result[0] : result;
+          if (!newNode || !newNode.id) return;
+          return RPGACE.sb.insert('taxonomy_links', [
+            { node_a_id: newNode.id, node_b_id: attachNode.id, link_insight: ps.synthesis || '', status: 'confirmed' },
+            { node_a_id: newNode.id, node_b_id: ps.otherNodeId, link_insight: ps.synthesis || '', status: 'confirmed' }
+          ]).catch(function() {});
+        });
+      })
+      .then(function() {
+        RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+      })
+      .catch(function(e) {
+        console.warn('[taxonomyReviewQueue] concept-fusion accept failed:', e.message);
+      });
   },
 
   // ── Edit before accepting: reuses phylumPath's own confirm/edit popup ──
@@ -5672,10 +5736,111 @@ RPGACE.register('phylumPath', {
             }
           }).then(function() {
             RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#3DAA6E', 4000);
+            // Fire-and-forget, same pattern as _findFusionLinks - a missed
+            // concept-fusion pass shouldn't block the article save itself.
+            self._findConceptFusion(node, text);
           });
         });
       }).catch(function(e) {
         RPGACE.utils.toast('Error generating article: ' + e.message, '#E25454', 3500);
+      });
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  // July 17: Concept Fusion - distinct from _findFusionLinks() above.
+  // That system links a single new LEAF insight to other specific leaves
+  // (narrow, technique-level connections). This instead looks at a whole
+  // BRANCH's synthesized article (Genus/Family/Order/Class - anything
+  // above a leaf) once _generateArticle() writes it, and asks whether
+  // merging that branch's actual concept with a distant branch anywhere
+  // else in the tree (any rank, any phylum - Genus-to-Family, Family-to-
+  // Order, whatever genuinely fits) would produce a NEW teachable idea
+  // neither branch covers alone. If so, it doesn't just link the two -
+  // it proposes a brand new taxonomy leaf representing the merge itself,
+  // staged through the same taxonomy_proposals confirm/reject review as
+  // every other tree write (engine: 'concept_fusion'), plus 2
+  // taxonomy_links rows connecting the new node back to both sources
+  // once accepted. Cross-phylum only, matching the "discipline far away"
+  // framing - same-phylum branch relationships are already just tree
+  // structure. Scoped to node_type==='branch' (Order/Class/Family/Genus)
+  // so it never fires on a plain leaf article, where _findFusionLinks
+  // already owns the narrower connection job.
+  // ══════════════════════════════════════════════════════════════════
+  _findConceptFusion: function(node, articleText) {
+    var self = this;
+    if (!node || node.node_type !== 'branch') return Promise.resolve();
+
+    return RPGACE.sb.select('taxonomy_tree', 'select=id,name,path,phylum_number,depth,node_type,explainer&order=phylum_number.asc,path.asc')
+      .then(function(allNodes) {
+        allNodes = allNodes || [];
+        var tt = RPGACE.modules.taxonomyTree;
+        var others = allNodes.filter(function(n) {
+          return n.node_type === 'branch' && n.phylum_number !== node.phylum_number;
+        });
+        if (!others.length) return;
+
+        var pathList = others.map(function(n) {
+          var phName = tt ? (tt.PHYLUM_NAMES[n.phylum_number] || ('Phylum ' + n.phylum_number)) : ('Phylum ' + n.phylum_number);
+          return '- [' + phName + '] ' + n.path + (n.explainer ? ' — ' + n.explainer : '');
+        }).join('\n');
+
+        var extractorPrompt = 'You are a fast triage pass looking for concept-fusion candidates across disciplines.\n\n' +
+          'BRANCH CONCEPT: "' + node.name + '" (' + node.path + ')\n' +
+          'ITS SYNTHESIZED ARTICLE:\n' + (articleText || '').slice(0, 1500) + '\n\n' +
+          'OTHER BRANCHES ACROSS THE TAXONOMY (different phyla only):\n' + pathList + '\n\n' +
+          'Shortlist up to 5 branches whose core concept, combined with this one, might form a genuinely new teachable idea neither branch covers alone - not just related topics.\n\n' +
+          'Return ONLY JSON: {"candidates": ["path1", "path2"]}';
+
+        return self._callExtractor(extractorPrompt, 350)
+          .catch(function(e) {
+            console.warn('[phylumPath] concept-fusion extractor failed, ground worker scans cold:', e.message);
+            return null;
+          })
+          .then(function(shortlist) {
+            var candidateBlock = (shortlist && shortlist.candidates && shortlist.candidates.length)
+              ? '\n\nA FASTER TRIAGE PASS ALREADY SHORTLISTED THESE (verify and refine, do not just accept blindly):\n' + shortlist.candidates.join('\n')
+              : '';
+
+            var prompt = 'You are a private tutor with a PhD across all music production disciplines, looking specifically for a "concept fusion" - two branches from DIFFERENT parts of the taxonomy whose core ideas genuinely combine into a NEW teachable concept, distinct from either branch alone. This is a higher bar than a simple connection: the merge itself should be worth its own leaf, giving a producer a real new angle neither discipline provides in isolation.\n\n' +
+              'BRANCH CONCEPT: "' + node.name + '" (' + node.path + ')\n' +
+              'ITS SYNTHESIZED ARTICLE:\n' + (articleText || '').slice(0, 2000) + '\n\n' +
+              'OTHER BRANCHES (different phyla only):\n' + pathList + candidateBlock + '\n\n' +
+              'Decide: is there ONE genuine fusion here, or none? Zero is a completely fine answer - most branches will not have one. If yes:\n' +
+              '- TARGET PATH: the exact existing path string of the other branch to merge with.\n' +
+              '- ATTACH UNDER: "source" or "target" - whichever branch is the more natural home for the new merged concept.\n' +
+              '- NEW NAME: a short, specific name for the new merged concept (this becomes a new taxonomy leaf).\n' +
+              '- SYNTHESIS: 2-3 sentences explaining what the merged concept actually is and how it gives a producer a genuinely new angle.\n\n' +
+              'Return ONLY JSON: {"found": true/false, "targetPath": "...", "attachUnder": "source", "newName": "...", "synthesis": "..."}';
+
+            return self._callGroundWorkerJSON(prompt, 600);
+          })
+          .then(function(parsed) {
+            if (!parsed || !parsed.found || !parsed.targetPath || !parsed.newName) return;
+            var target = others.find(function(n) { return n.path === parsed.targetPath; });
+            if (!target) return;
+
+            var attachNode = (parsed.attachUnder === 'target') ? target : node;
+            var otherNode = (parsed.attachUnder === 'target') ? node : target;
+
+            return RPGACE.sb.insert('taxonomy_proposals', {
+              source_type: 'phylum_path_concept_fusion',
+              source_id: node.id,
+              proposed_path: attachNode.path + '/' + parsed.newName,
+              phylum_number: attachNode.phylum_number,
+              proposed_steps: {
+                engine: 'concept_fusion',
+                attachToId: attachNode.id,
+                otherNodeId: otherNode.id,
+                newName: parsed.newName,
+                synthesis: parsed.synthesis || ''
+              },
+              status: 'pending'
+            }).catch(function(e) {
+              console.warn('[phylumPath] concept-fusion proposal write failed:', e.message);
+            });
+          });
+      }).catch(function(e) {
+        console.warn('[phylumPath] concept-fusion search failed:', e.message);
       });
   },
 
