@@ -87,10 +87,12 @@ async function detectChaptersByOracle(apiKey, fullText) {
   // Still a prefix, not the whole book - a genuine limit, not a
   // guaranteed-sufficient window for every book's front matter length.
   const prefix = fullText.slice(0, 25000);
-  const prompt = 'This is the beginning of a book, likely including front matter (title page, table of contents, possibly an expanded per-chapter topic/summary index).\n\n' +
+  const prompt = 'This is the beginning of a book or book-summary document, likely including front matter (title page, table of contents, possibly per-chapter recap sections).\n\n' +
     'TEXT:\n' + prefix + '\n\n' +
-    'List the book\'s REAL chapters in reading order. Two decoys to watch for and NOT use: (1) the table of contents itself, which lists every chapter by number and title but is not the chapter; (2) some books also have an expanded "chapter summary" or topic-index section listing sub-topics per chapter - also not the real chapter.\n\n' +
-    'For each REAL chapter, give an EXACT short string (8-12 words) copied verbatim from the START OF THE CHAPTER\'S OWN OPENING PARAGRAPH - actual prose, not the heading/title text itself, since the heading text also appears in the table of contents and would match the wrong location.\n\n' +
+    'List the book\'s REAL chapters in reading order, ONE entry per chapter number - never split a single chapter into multiple entries and never skip a chapter that has real content.\n\n' +
+    'One genuine decoy to exclude: a table of contents / index that just LISTS every chapter by number and title with no real content of its own (e.g. a plain list of "Chapter N: Title" lines, or just chapter titles with page numbers) - that block is not a chapter.\n\n' +
+    'IMPORTANT - this is NOT a decoy: some chapters may ONLY have an abbreviated "Chapter N Summary" recap (a short bullet/table recap of that chapter\'s key points), with no separate full-prose version anywhere - for example if fuller narrative text is paywalled or cut off after an early chapter. If that recap is the ONLY content available for that chapter number, it IS that chapter and must get its own entry. Only skip a "Chapter N Summary" if a FULLER narrative version of that SAME chapter number also exists elsewhere in the text - in that case use the fuller version instead, not both.\n\n' +
+    'For each chapter, give an EXACT short string (8-12 words) copied verbatim from the very start of that chapter\'s own real content (its opening prose sentence, or its recap table\'s first real line if that\'s all it has) - not the heading/title text itself, since heading text can also appear in the table of contents and would match the wrong location.\n\n' +
     'Return ONLY JSON: {"chapters": [{"title": "...", "searchString": "..."}]}';
 
   const reply = await callClaude(apiKey, [{ role: 'user', content: prompt }], '', 1500);
