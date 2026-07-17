@@ -4080,6 +4080,20 @@ RPGACE.register('taxonomyTree', {
     21:'Deliberate catch-all for anything that doesn\'t fit elsewhere yet.',
   },
 
+  // Larger-scope groupings of the 21 phyla, derived directly from the
+  // PHYLUM_PURPOSE lines above (Craft phyla vs the Knowledge phyla they
+  // draw on vs Visual identity vs Business/Distribution vs Tech/Misc).
+  // Built July 17 so the phylum switcher can render as a grouped list
+  // instead of one flat undifferentiated row - real UX gap found hand-
+  // testing the nav tab with 10 phyla already live.
+  PHYLUM_SCOPE_GROUPS: [
+    { label: 'Craft & Production', phyla: [1, 2, 3, 4, 5, 6, 7] },
+    { label: 'Knowledge & Mind', phyla: [8, 9, 10, 12] },
+    { label: 'Visual & Creative Identity', phyla: [11, 14] },
+    { label: 'Business & Distribution', phyla: [13, 15, 16, 17, 18, 19] },
+    { label: 'Technology & Misc', phyla: [20, 21] },
+  ],
+
   // Rank naming, by depth. This convention previously only existed as a
   // display-only array in taxonomy_map.html - Phylum Path is the first live
   // app feature that reasons about rank names, not just raw depth integers.
@@ -4895,7 +4909,12 @@ RPGACE.register('phylumPath', {
   // self.PHYLUM_NUM dynamically already, so this is just: update the
   // constant, refresh whichever labels were set at initial render, then
   // re-fetch. Silently no-ops for a phylum that isn't enabled.
-  _switchPhylum: function(num) {
+  // focusId is optional - when a caller already knows which node it wants
+  // to land on after the switch (e.g. _jumpToNode() following a fusion
+  // link across phyla), pass it through here so the nav-tab page loads
+  // straight to that node instead of the phylum root, avoiding a wasted
+  // extra fetch/race between two _loadNodesAndRender calls.
+  _switchPhylum: function(num, focusId) {
     if (!this.isEnabled(num) || this.PHYLUM_NUM === num) return;
     this.PHYLUM_NUM = num;
 
@@ -4909,7 +4928,10 @@ RPGACE.register('phylumPath', {
       var tt0 = RPGACE.modules.taxonomyTree;
       if (textarea) textarea.placeholder = 'Paste or describe a specific teaching insight - a fact, technique, or observation about ' + (tt0 ? tt0.PHYLUM_NAMES[num] : 'this phylum') + '...';
       panel.querySelectorAll('.pp-switch-pill').forEach(function(p) {
-        p.style.opacity = (parseInt(p.dataset.num, 10) === num) ? '1' : '0.4';
+        var active = (parseInt(p.dataset.num, 10) === num);
+        p.style.opacity = active ? '1' : '0.65';
+        p.style.background = active ? 'rgba(61,170,110,0.14)' : 'rgba(255,255,255,0.02)';
+        p.style.borderColor = active ? 'rgba(61,170,110,0.4)' : 'rgba(61,170,110,0.15)';
       });
       this._renderTree();
     }
@@ -4919,33 +4941,56 @@ RPGACE.register('phylumPath', {
     var pageSwitcher = document.getElementById('pp-phylum-switcher');
     if (pageSwitcher) {
       pageSwitcher.querySelectorAll('.pp-switch-pill').forEach(function(p) {
-        p.style.opacity = (parseInt(p.dataset.num, 10) === num) ? '1' : '0.4';
+        var active = (parseInt(p.dataset.num, 10) === num);
+        p.style.opacity = active ? '1' : '0.65';
+        p.style.background = active ? 'rgba(61,170,110,0.14)' : 'rgba(255,255,255,0.02)';
+        p.style.borderColor = active ? 'rgba(61,170,110,0.4)' : 'rgba(61,170,110,0.15)';
       });
       // Only re-fetch the drill-down view if it's the actually-visible
       // page - avoids a wasted background Supabase call when the switch
       // came from the side panel instead (the nav-tab page div persists
       // in the DOM once injected, whether visible or not).
       var page = document.getElementById('page-' + RPGACE.CONFIG.pages.phylumPath);
-      if (page && page.classList.contains('active')) this._loadNodesAndRender(null);
+      if (page && page.classList.contains('active')) this._loadNodesAndRender(focusId || null);
     }
   },
 
-  // Builds the shared phylum-switcher pill row (one pill per ENABLED_PHYLA
-  // entry) - used identically by the side panel and the nav-tab page so
-  // there's one switcher implementation, not two.
+  // Builds the shared phylum-switcher (one row per ENABLED_PHYLA entry,
+  // grouped under PHYLUM_SCOPE_GROUPS headers) - used identically by the
+  // side panel and the nav-tab page so there's one switcher implementation,
+  // not two. Rewritten July 17 from a flat wrap of pills (cramped once 10
+  // phyla were live, no grouping, small tap targets) into a vertical
+  // grouped list - bigger clickable rows, grouped by larger scope so the
+  // full 21-phylum future doesn't just become one long undifferentiated
+  // row of pills either.
   _renderPhylumSwitcher: function() {
     var self = this;
     var tt = RPGACE.modules.taxonomyTree;
     var wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;';
-    this.ENABLED_PHYLA.forEach(function(num) {
-      var pill = document.createElement('button');
-      pill.className = 'pp-switch-pill';
-      pill.dataset.num = num;
-      pill.textContent = tt ? tt.PHYLUM_NAMES[num] : ('Phylum ' + num);
-      pill.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (num === self.PHYLUM_NUM ? '1' : '0.4') + ';';
-      pill.onclick = function() { self._switchPhylum(num); };
-      wrap.appendChild(pill);
+    wrap.style.cssText = 'margin-bottom:12px;';
+    var groups = (tt && tt.PHYLUM_SCOPE_GROUPS) ? tt.PHYLUM_SCOPE_GROUPS : [{ label: 'Phyla', phyla: this.ENABLED_PHYLA }];
+    groups.forEach(function(group) {
+      var enabledInGroup = group.phyla.filter(function(n) { return self.isEnabled(n); });
+      if (!enabledInGroup.length) return;
+      var lbl = document.createElement('div');
+      lbl.textContent = group.label;
+      lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin:10px 0 4px;';
+      wrap.appendChild(lbl);
+      enabledInGroup.forEach(function(num) {
+        var active = (num === self.PHYLUM_NUM);
+        var row = document.createElement('button');
+        row.className = 'pp-switch-pill';
+        row.dataset.num = num;
+        row.style.cssText = 'display:block;width:100%;text-align:left;padding:8px 12px;margin-bottom:4px;background:' + (active ? 'rgba(61,170,110,0.14)' : 'rgba(255,255,255,0.02)') + ';border:1px solid rgba(61,170,110,' + (active ? '0.4' : '0.15') + ');border-radius:7px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (active ? '1' : '0.65') + ';';
+        var nameEl = document.createElement('div');
+        nameEl.textContent = tt ? tt.PHYLUM_NAMES[num] : ('Phylum ' + num);
+        var glossEl = document.createElement('div');
+        glossEl.textContent = tt ? (tt.PHYLUM_ENGLISH[num] || '') : '';
+        glossEl.style.cssText = 'font-size:10px;font-weight:400;color:rgba(226,226,236,0.4);margin-top:1px;';
+        row.appendChild(nameEl); row.appendChild(glossEl);
+        row.onclick = function() { self._switchPhylum(num); };
+        wrap.appendChild(row);
+      });
     });
     return wrap;
   },
@@ -5655,15 +5700,18 @@ RPGACE.register('phylumPath', {
 
   // ── Article generation, any rank (or the phylum root itself if node   ──
   // ── is null) - manual button trigger only, per the questionnaire.     ──
-  // ── Reuses saveOracleToEncyclopedia() + the same taxonomy_node_id      ──
-  // ── linking pattern F7's encTaxonomyLink already established, instead  ──
-  // ── of inventing new article storage.                                 ──
-  _generateArticle: function(node) {
+  // ── Split July 17 into text-generation (this function) + a confirm    ──
+  // ── popup + save (_generateArticle below) - the original version      ──
+  // ── wrote straight to Encyclopedia with zero human checkpoint, the    ──
+  // ── one Phylum Path Oracle call that had never gotten the same        ──
+  // ── review-before-write treatment as insight placement did back in    ──
+  // ── Phase 1. Real gap found hand-testing the drill-down live.         ──
+  _generateArticleText: function(node) {
     var self = this;
     var phylumNumber = node ? node.phylum_number : self.PHYLUM_NUM;
     RPGACE.utils.toast('📄 Gathering content...', '#9B59B6', 2500);
 
-    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
+    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
       .then(function(allNodes) {
         allNodes = allNodes || [];
         var relevant = node
@@ -5725,25 +5773,91 @@ RPGACE.register('phylumPath', {
             return self._callGroundWorkerText(prompt, 1000);
           })
           .then(function(text) {
-          var articleTitle = title + ' — ' + rankLabel + ' Reference';
-          if (typeof saveOracleToEncyclopedia !== 'function') {
-            RPGACE.utils.toast('Article generated but saveOracleToEncyclopedia() not found', '#E25454', 3500);
-            return;
-          }
-          return saveOracleToEncyclopedia(articleTitle, text).then(function() {
-            if (node) {
-              return RPGACE.sb.update('encyclopedia', 'title=eq.' + encodeURIComponent(articleTitle), { taxonomy_node_id: node.id }).catch(function() {});
-            }
-          }).then(function() {
-            RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#3DAA6E', 4000);
-            // Fire-and-forget, same pattern as _findFusionLinks - a missed
-            // concept-fusion pass shouldn't block the article save itself.
-            self._findConceptFusion(node, text);
+            var articleTitle = title + ' — ' + rankLabel + ' Reference';
+            return { articleTitle: articleTitle, text: text };
           });
-        });
-      }).catch(function(e) {
-        RPGACE.utils.toast('Error generating article: ' + e.message, '#E25454', 3500);
       });
+  },
+
+  // Confirm/deny popup shown between article generation and saving - same
+  // checkpoint pattern as _showPlacementConfirm, just simpler (nothing to
+  // edit, an article is either worth keeping or it isn't). Approve saves
+  // to Encyclopedia + links taxonomy_node_id + fires the existing Concept
+  // Fusion pass; Deny discards and does nothing.
+  _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = 'Phylum Path · Confirm Article';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:12px;';
+    title.textContent = articleTitle;
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.15);border-radius:8px;padding:14px;margin-bottom:16px;';
+    body.textContent = text;
+    box.appendChild(body);
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+    var approveBtn = document.createElement('button');
+    approveBtn.textContent = '✓ Save to Encyclopedia';
+    approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    approveBtn.onclick = function() { overlay.remove(); onApprove(); };
+    var denyBtn = document.createElement('button');
+    denyBtn.textContent = '✗ Discard';
+    denyBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    denyBtn.onclick = function() { overlay.remove(); if (onDeny) onDeny(); };
+    btnRow.appendChild(approveBtn); btnRow.appendChild(denyBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+  },
+
+  // Manual-button entry point - generates the text, shows the confirm
+  // popup, only saves on Approve. Returns a promise that resolves once
+  // the user has made a choice either way (approved or denied), same
+  // shape as _placeInsight's { inserted: bool } pattern, so the button's
+  // .then() (cache-clear + re-render) runs consistently regardless of
+  // which way the user went.
+  _generateArticle: function(node) {
+    var self = this;
+    return self._generateArticleText(node).then(function(result) {
+      var articleTitle = result.articleTitle, text = result.text;
+      return new Promise(function(resolve) {
+        self._showArticleConfirm(node, articleTitle, text,
+          function() {
+            if (typeof saveOracleToEncyclopedia !== 'function') {
+              RPGACE.utils.toast('Article generated but saveOracleToEncyclopedia() not found', '#E25454', 3500);
+              resolve({ saved: false });
+              return;
+            }
+            saveOracleToEncyclopedia(articleTitle, text).then(function() {
+              if (node) {
+                return RPGACE.sb.update('encyclopedia', 'title=eq.' + encodeURIComponent(articleTitle), { taxonomy_node_id: node.id }).catch(function() {});
+              }
+            }).then(function() {
+              RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#3DAA6E', 4000);
+              // Fire-and-forget, same pattern as _findFusionLinks - a missed
+              // concept-fusion pass shouldn't block the article save itself.
+              self._findConceptFusion(node, text);
+              resolve({ saved: true });
+            });
+          },
+          function() {
+            RPGACE.utils.toast('Article discarded', 'rgba(226,226,236,0.5)', 2500);
+            resolve({ saved: false });
+          }
+        );
+      });
+    }).catch(function(e) {
+      RPGACE.utils.toast('Error generating article: ' + e.message, '#E25454', 3500);
+    });
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -5942,6 +6056,16 @@ RPGACE.register('phylumPath', {
         seg.onclick = function() { self._loadNodesAndRender(n.id); };
         crumb.appendChild(seg);
       });
+      // Explicit "up one level" affordance - previously the only way back
+      // was clicking a specific breadcrumb word, easy to miss (especially
+      // on mobile). Real gap found hand-testing the drill-down live.
+      if (focus) {
+        var backBtn = document.createElement('button');
+        backBtn.textContent = '⬅ Back';
+        backBtn.style.cssText = 'display:block;margin-top:8px;padding:5px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        backBtn.onclick = function() { self._loadNodesAndRender(focus.parent_id || null); };
+        crumb.appendChild(backBtn);
+      }
     }
 
     // ── Siblings ("scope" — Circles' rabbit-hole concept, browse ──
@@ -6083,10 +6207,11 @@ RPGACE.register('phylumPath', {
   // ── connections (see _findFusionLinks above). Rendered symmetrically   ──
   // ── from either side of a link since taxonomy_links doesn't privilege  ──
   // ── node_a over node_b - whichever node you're looking at, the OTHER   ──
-  // ── one is what gets shown. Only same-phylum links are clickable to    ──
-  // ── jump to directly (Phylum Path itself is still Phylum-1-only), but  ──
-  // ── cross-phylum links still display so the connection itself is real  ──
-  // ── and visible even before that phylum has its own Phylum Path view.  ──
+  // ── one is what gets shown. Every link is now clickable (July 17 -     ──
+  // ── previously only same-phylum links were, cross-phylum ones just    ──
+  // ── displayed inert) and opens the interlink article popup below       ──
+  // ── instead of jumping straight there, so the connection itself gets   ──
+  // ── explained before you navigate away from either side.               ──
   _renderFusionLinks: function(focus, wrap) {
     var self = this;
     wrap.innerHTML = '';
@@ -6095,7 +6220,7 @@ RPGACE.register('phylumPath', {
         links = links || [];
         if (!links.length) return;
         var otherIds = links.map(function(l) { return l.node_a_id === focus.id ? l.node_b_id : l.node_a_id; });
-        return RPGACE.sb.select('taxonomy_tree', 'id=in.(' + otherIds.join(',') + ')&select=id,name,path,phylum_number').then(function(nodes) {
+        return RPGACE.sb.select('taxonomy_tree', 'id=in.(' + otherIds.join(',') + ')&select=id,name,path,phylum_number,explainer').then(function(nodes) {
           var byId = {};
           (nodes || []).forEach(function(n) { byId[n.id] = n; });
           var tt = RPGACE.modules.taxonomyTree;
@@ -6110,8 +6235,7 @@ RPGACE.register('phylumPath', {
             var other = byId[otherId];
             if (!other) return;
             var row = document.createElement('div');
-            var sameP = other.phylum_number === self.PHYLUM_NUM;
-            row.style.cssText = 'padding:10px 12px;margin-bottom:6px;background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);border-radius:8px;' + (sameP ? 'cursor:pointer;' : '');
+            row.style.cssText = 'padding:10px 12px;margin-bottom:6px;background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);border-radius:8px;cursor:pointer;';
 
             var phName = tt ? (tt.PHYLUM_NAMES[other.phylum_number] || ('Phylum ' + other.phylum_number)) : ('Phylum ' + other.phylum_number);
             var pathEl = document.createElement('div');
@@ -6126,11 +6250,129 @@ RPGACE.register('phylumPath', {
               row.appendChild(insightEl);
             }
 
-            if (sameP) row.onclick = function() { self._loadNodesAndRender(other.id); };
+            row.onclick = function() { self._showLinkArticle(l, focus, other); };
             wrap.appendChild(row);
           });
         });
       }).catch(function() {});
+  },
+
+  // Jumps the nav-tab page to a specific node, switching phylum first if
+  // needed - shared by the interlink popup's two exit buttons below.
+  _jumpToNode: function(node) {
+    if (node.phylum_number !== this.PHYLUM_NUM) {
+      this._switchPhylum(node.phylum_number, node.id);
+    } else {
+      this._loadNodesAndRender(node.id);
+    }
+  },
+
+  // Generates (or reuses a cached) short synthesis article specifically
+  // about HOW two fusion-linked nodes connect, not either one alone -
+  // lazy + cached on taxonomy_links.link_article, same "check cache first,
+  // only call Oracle on demand" convention as _articleSection's node
+  // articles. Single-tier ground-worker call (no extractor pass) since
+  // this is a narrow, already-scoped synthesis, not a whole branch.
+  _generateLinkArticle: function(link, nodeA, nodeB) {
+    var self = this;
+    var tt = RPGACE.modules.taxonomyTree;
+    var phA = tt ? (tt.PHYLUM_NAMES[nodeA.phylum_number] || ('Phylum ' + nodeA.phylum_number)) : ('Phylum ' + nodeA.phylum_number);
+    var phB = tt ? (tt.PHYLUM_NAMES[nodeB.phylum_number] || ('Phylum ' + nodeB.phylum_number)) : ('Phylum ' + nodeB.phylum_number);
+    var prompt = 'You are a private tutor with a PhD in music production, explaining a genuine cross-discipline connection to a student.\n\n' +
+      'Two separately-classified taxonomy concepts have been linked as a "fusion connection":\n\n' +
+      'A) [' + phA + '] ' + nodeA.path + '\n' + (nodeA.explainer || '') + '\n\n' +
+      'B) [' + phB + '] ' + nodeB.path + '\n' + (nodeB.explainer || '') + '\n\n' +
+      'The confirmed reason they connect: "' + (link.link_insight || '') + '"\n\n' +
+      'Write a short synthesis (under 300 words) explaining HOW these two ideas genuinely combine or reinforce each other in practice, with one concrete example a producer could apply. This is specifically about the connection between them, not a general overview of either concept alone.';
+
+    return self._callGroundWorkerText(prompt, 600).then(function(text) {
+      return RPGACE.sb.update('taxonomy_links', 'id=eq.' + link.id, {
+        link_article: { generated: text, generated_at: new Date().toISOString() }
+      }).then(function() { return text; });
+    });
+  },
+
+  // Popup shown when a fusion-connection row is clicked - the interlink
+  // article itself (cached or generate-on-demand), plus 2 exit buttons
+  // jumping into either source node's own location, per the explicit ask
+  // that a fusion article should have "an exit button into both parent
+  // folders it is made from."
+  _showLinkArticle: function(link, focus, other) {
+    var self = this;
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(52,152,219,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+
+    var eyebrow = document.createElement('div');
+    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(52,152,219,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.textContent = '🔗 Fusion Connection';
+    var title = document.createElement('div');
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    title.textContent = focus.name + ' ↔ ' + other.name;
+    box.appendChild(eyebrow); box.appendChild(title);
+
+    if (link.link_insight) {
+      var insight = document.createElement('div');
+      insight.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);font-style:italic;margin-bottom:14px;';
+      insight.textContent = link.link_insight;
+      box.appendChild(insight);
+    }
+
+    var articleWrap = document.createElement('div');
+    articleWrap.style.cssText = 'margin-bottom:16px;';
+    box.appendChild(articleWrap);
+
+    var renderArticleBox = function(label, cached) {
+      articleWrap.innerHTML = '';
+      if (cached) {
+        var cbox = document.createElement('div');
+        cbox.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;background:rgba(52,152,219,0.05);border:1px solid rgba(52,152,219,0.15);border-radius:8px;padding:14px;margin-bottom:8px;';
+        cbox.textContent = cached;
+        articleWrap.appendChild(cbox);
+      }
+      var genBtn = document.createElement('button');
+      genBtn.textContent = label;
+      genBtn.style.cssText = 'padding:6px 14px;background:rgba(52,152,219,0.08);border:1px solid rgba(52,152,219,0.25);border-radius:6px;color:#3498DB;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      genBtn.onclick = function() {
+        genBtn.disabled = true; genBtn.textContent = '⏳ Generating...';
+        self._generateLinkArticle(link, focus, other).then(function(text) {
+          renderArticleBox('🔄 Refresh Interlink Article', text);
+        }).catch(function(e) {
+          RPGACE.utils.toast('Error generating interlink article: ' + e.message, '#E25454', 3500);
+          genBtn.disabled = false; genBtn.textContent = label;
+        });
+      };
+      articleWrap.appendChild(genBtn);
+    };
+    renderArticleBox(link.link_article && link.link_article.generated ? '🔄 Refresh Interlink Article' : '📄 Generate Interlink Article', link.link_article ? link.link_article.generated : null);
+
+    var exitLbl = document.createElement('div');
+    exitLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:6px;';
+    exitLbl.textContent = 'Exit into either side this is made from';
+    box.appendChild(exitLbl);
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+    var focusBtn = document.createElement('button');
+    focusBtn.textContent = '↳ ' + focus.name;
+    focusBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:8px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    focusBtn.onclick = function() { overlay.remove(); self._jumpToNode(focus); };
+    var otherBtn = document.createElement('button');
+    otherBtn.textContent = '↳ ' + other.name;
+    otherBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:8px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    otherBtn.onclick = function() { overlay.remove(); self._jumpToNode(other); };
+    btnRow.appendChild(focusBtn); btnRow.appendChild(otherBtn);
+    box.appendChild(btnRow);
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = '✗ Close';
+    closeBtn.style.cssText = 'display:block;margin-top:10px;padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.appendChild(closeBtn);
+
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
   },
 
 });
