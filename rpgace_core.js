@@ -4815,10 +4815,9 @@ RPGACE.register('phylumPath', {
   // Every phylum Phylum Path actually covers (placement, auto-detect,
   // nav-tab browsing, fusion-link search). Extend this list once a phylum
   // clears framework steps 1-4 (spec, keyword sweep, tree build, data
-  // repair) - Percussio (2) added July 17, Sonus Designatio (3) and
-  // Mixtura (4) added the same day per explicit instruction to push all
-  // three together rather than one-at-a-time review.
-  ENABLED_PHYLA: [1, 2, 3, 4],
+  // repair) - Percussio (2), Sonus Designatio (3), Mixtura (4) and now
+  // Magistra (5) all added July 17, pushed live as each was built.
+  ENABLED_PHYLA: [1, 2, 3, 4, 5],
 
   // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
   // silentPropose() check this before running their own flat top-down
@@ -6574,15 +6573,65 @@ RPGACE.register('config', {
         {t:'ducking',w:1},{t:'sidechain ducking',w:2},{t:'layering in the mix',w:2},{t:'mix clarity',w:2},{t:'mix depth',w:2},
         {t:'front-to-back depth',w:2},{t:'width vs depth',w:2},
         // Genre-Specific / UK Drill & Trap Mixing
+        // (loudness war / streaming loudness target deliberately live in
+        // Magistra only, not here - July 17 explicit-overlap decision:
+        // those are final-delivery/mastering-stage concerns, not mixing
+        // ones, even though the original draft list included both here.)
         {t:'drill mix',w:2},{t:'trap mix',w:2},{t:'808 glue',w:2},{t:'vocal sit',w:2},{t:'vocal pocket',w:2},{t:'beat pocket',w:2},
-        {t:'hi-hat clarity',w:2},{t:'kick and 808 relationship',w:2},{t:'mix reference',w:2},{t:'reference track',w:2},{t:'loudness war',w:2},
-        {t:'streaming loudness target',w:2},
+        {t:'hi-hat clarity',w:2},{t:'kick and 808 relationship',w:2},{t:'mix reference',w:2},{t:'reference track',w:2},
         // DAW/FL Studio & Plugin-specific
         {t:'fruity parametric eq 2',w:2},{t:'fruity limiter',w:2},{t:'fruity compressor',w:2},{t:'maximus',w:2},
         {t:'fruity multiband compressor',w:2},{t:'fruity balance',w:2},{t:'mixer insert',w:2},{t:'mixer channel',w:2},{t:'fl mixer',w:2},
         {t:'pro-q',w:2},{t:'pro-c',w:2},{t:'pro-l',w:2},{t:'ott',w:2},{t:'klanghelm mjuc',w:2},
       ] },
-      { num: 5,  name: 'Magistra',              keywords: [{t:'master',w:2},{t:'lufs',w:2},{t:'limiter',w:2},{t:'loudness',w:2},{t:'stem',w:1},{t:'final mix',w:2}] },
+      { num: 5,  name: 'Magistra',              keywords: [
+        // Mastering Fundamentals — July 17, fifth Phylum Development
+        // Framework pass. Deliberately qualifies almost every term shared
+        // with Mixtura (EQ/compression/limiting) with "mastering" as a
+        // prefix rather than duplicating Mixtura's bare terms wholesale -
+        // Magistra and Mixtura are still the heaviest overlap of any two
+        // phyla (mastering is downstream of mixing, so real vocabulary
+        // legitimately spans both), but this keeps Magistra's own list
+        // focused on mastering-specific escalations, not a copy of Mixtura.
+        {t:'mastering',w:2},{t:'master',w:2},{t:'master chain',w:2},{t:'mastering chain',w:2},{t:'final mix',w:2},{t:'pre-master',w:2},
+        {t:'mastering engineer',w:2},{t:'mastering session',w:2},{t:'reference master',w:2},{t:'master bus processing',w:2},
+        {t:'mastering signal flow',w:2},
+        // Loudness & Metering
+        {t:'loudness',w:2},{t:'lufs',w:2},{t:'integrated lufs',w:2},{t:'short-term lufs',w:2},{t:'momentary lufs',w:2},{t:'true peak',w:2},
+        {t:'dbtp',w:2},{t:'rms',w:2},{t:'loudness normalization',w:2},{t:'loudness war',w:2},{t:'streaming loudness target',w:2},
+        {t:'spotify loudness',w:2},{t:'apple music loudness',w:2},{t:'youtube loudness',w:2},{t:'loudness matching',w:2},
+        {t:'perceived loudness',w:2},{t:'headroom',w:2},{t:'ceiling',w:1},
+        // Limiting
+        {t:'limiter',w:2},{t:'limiting',w:1},{t:'brickwall limiter',w:2},{t:'master limiter',w:2},{t:'lookahead',w:1},
+        {t:'lookahead limiting',w:2},{t:'transparent limiting',w:2},{t:'limiting artifacts',w:2},{t:'pumping',w:1},{t:'isp',w:2},
+        {t:'inter-sample peak',w:2},{t:'clip protection',w:2},{t:'soft clipping',w:2},{t:'hard clipping',w:2},
+        // Mastering EQ
+        {t:'mastering eq',w:2},{t:'linear phase eq',w:2},{t:'tonal balance',w:2},{t:'tonal correction',w:2},{t:'low end control',w:2},
+        {t:'high end sheen',w:2},{t:'master eq curve',w:2},{t:'subtractive mastering eq',w:2},{t:'broad strokes eq',w:2},
+        {t:'surgical eq',w:2},{t:'frequency balance',w:2},
+        // Mastering Compression
+        {t:'mastering compression',w:2},{t:'glue compression',w:2},{t:'multiband mastering compression',w:2},{t:'gentle compression',w:2},
+        {t:'mastering ratio',w:2},{t:'slow attack mastering',w:2},{t:'transparent compression',w:2},{t:'mastering bus glue',w:2},
+        // Stereo & Width in Mastering
+        {t:'mastering width',w:2},{t:'stereo enhancement',w:2},{t:'mid-side mastering',w:2},{t:'m/s eq',w:2},{t:'width automation',w:2},
+        {t:'mono compatibility check',w:2},{t:'phase check',w:2},{t:'correlation meter',w:2},
+        // Dynamics & Character
+        {t:'dynamic range',w:2},{t:'dynamic range compression',w:2},{t:'dr value',w:2},{t:'punch retention',w:2},
+        {t:'transient preservation',w:2},{t:'loudness vs dynamics tradeoff',w:2},{t:'mastering character',w:2},
+        {t:'tape emulation mastering',w:2},{t:'analog warmth',w:2},{t:'digital mastering',w:2},{t:'hybrid mastering',w:2},
+        // Export & Delivery
+        {t:'export settings',w:2},{t:'bit depth',w:2},{t:'sample rate',w:2},{t:'dither',w:1},{t:'dithering',w:2},{t:'wav export',w:2},
+        {t:'16-bit',w:2},{t:'24-bit',w:2},{t:'44.1khz',w:2},{t:'48khz',w:2},{t:'ddp',w:2},{t:'master file delivery',w:2},
+        {t:'distributor loudness specs',w:2},{t:'platform-specific master',w:2},
+        // Genre-Specific / UK Drill & Trap Mastering
+        {t:'loud drill master',w:2},{t:'competitive loudness',w:2},{t:'streaming-ready master',w:2},{t:'club-ready master',w:2},
+        {t:'radio-ready master',w:2},{t:'drill low end translation',w:2},{t:'808 translation across systems',w:2},
+        {t:'phone speaker translation',w:2},{t:'car system translation',w:2},
+        // DAW/FL Studio & Plugin-specific
+        {t:'fruity limiter',w:2},{t:'maximus',w:2},{t:'ozone',w:2},{t:'fruity multiband compressor',w:2},{t:'mastering plugin chain',w:2},
+        {t:'fruity stereo enhancer',w:2},{t:'lufs meter plugin',w:2},{t:'youlean loudness meter',w:2},
+        {t:'stem',w:1},
+      ] },
       { num: 6,  name: 'Instrumentarium',       keywords: [{t:'fl studio',w:2},{t:'vst',w:2},{t:'plugin',w:2},{t:'daw',w:2},{t:'workflow',w:1},{t:'edison',w:2},{t:'mixer',w:1},{t:'piano roll',w:2}] },
       { num: 7,  name: 'Sensus Auris',          keywords: [{t:'critical listening',w:2},{t:'reference track',w:2},{t:'a/b',w:2},{t:'monitor',w:1},{t:'speaker',w:1}] },
       { num: 8,  name: 'Anatomia',              keywords: [{t:'music theory',w:2},{t:'interval',w:2},{t:'mode',w:1},{t:'minor',w:1},{t:'major',w:1},{t:'degree',w:1},{t:'tension',w:1}] },
