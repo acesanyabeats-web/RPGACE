@@ -83,6 +83,16 @@
     <div class="card-body">This doc had grown to 1200+ lines of mostly-historical content (July 1/6 day logs, obsolete 23-module architecture diagrams, ~15 stale/duplicate "Still Open" cards). Per a direct ask to reduce Oversight volume: everything before July 12 — the July 6 day log, the July 1 day log + technical detail (summary/shipped/regression/root-cause/lessons), the July 1 architecture diagrams, and the stale/superseded/duplicate portion of "Still Open" — now lives in <a href="patch_notes_archive.html"><strong>patch_notes_archive.html</strong></a>, each item re-tagged with what actually happened since. This live doc keeps only the current roadmap (F0-F18) and genuinely-open items going forward.</div>
   </div>
 
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🐛 July 17 — Bookworm's first real hand-test found a genuine bug: "Chapter 0 of 0", clicking a book did nothing</div>
+    <div class="card-body">
+      First real usage (pasting the actual "Music Theory for Computer Musicians" PDF URL) surfaced a real defect within minutes, confirmed live in Supabase: both attempts created a <code>bookworm_books</code> row with <strong>0 chapters</strong>, both silently flipped to <code>status: 'complete'</code> the moment the book was opened.<br><br>
+      <strong>Root cause:</strong> <code>RPGACE.sb.insert()</code> sends <code>Prefer: return=minimal</code> and never parses the response as JSON — it returns the raw, unparsed <code>fetch()</code> Response, not the inserted row. <code>_startBook()</code> used it expecting <code>book.id</code> back, so <code>book.id</code> was always <code>undefined</code> — every chapter row got inserted with <code>book_id: undefined</code>, failing the NOT NULL constraint server-side, while the client never checked the response status and just moved on as if it had succeeded. Clicking the resulting "book" then found no chapter row at index 0 and silently called <code>_markBookComplete()</code> — which is exactly why it "disappeared" (flipped out of the in-progress list) with nothing visibly happening.<br><br>
+      <strong>Fix:</strong> both inserts in <code>_startBook()</code> now use raw <code>fetch()</code> with <code>Prefer: return=representation</code> — the same pattern <code>phylumPath._insertNewSteps()</code>/<code>_acceptConceptFusion()</code> already established for exactly this reason — and check <code>response.ok</code> at every write, throwing a clear error instead of continuing silently. <code>_openBook()</code> also now fetches all of a book's chapters up front so a genuine zero-chapter book (only possible via this bug, now fixed) surfaces a real error instead of being treated identically to a legitimately finished book.<br><br>
+      The 2 broken book rows and their corresponding junk <code>bibliography</code> rows were deleted directly from Supabase. Real validation of the "surface a clear error, don't fake success" principle already stated when this feature shipped — the very first hand-test proved why that mattered.
+    </div>
+  </div>
+
   <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Auto-detect badge fixed (1-click confirm, was 2) + Bookworm now triggerable from Oracle chat</div>
     <div class="card-body">
