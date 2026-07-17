@@ -84,6 +84,18 @@
   </div>
 
   <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">📚 July 17 — Phyla 6-10 batch: Instrumentarium, Sensus Auris, Anatomia, Historia & Psychologia, all pushed live at once</div>
+    <div class="card-body">
+      Five phyla run through the framework in one batch rather than one at a time: <strong>Instrumentarium</strong> (FL Studio/VSTs/DAW workflow, 8→98 terms), <strong>Sensus Auris</strong> (critical listening/reference, 5→64 terms), <strong>Anatomia</strong> (music theory fundamentals, 7→93 terms), <strong>Historia</strong> (producer history/influences, 5→63 terms), <strong>Psychologia</strong> (creative psychology/flow, 6→66 terms).<br><br>
+      <strong>Your Historia/Psychologia overlap flag, checked directly:</strong> "influence"/"legacy"/"authenticity" were the specific risk words named (historical-context language vs. creative-psychology language). Result: <strong>zero exact shared bare terms</strong> between the two — <code>influence</code> only lives in Historia, <code>authenticity</code> only in Psychologia, <code>legacy</code> and <code>character</code> don't exist as bare terms anywhere. Fourth phylum-pair check in a row confirming the same underlying pattern: this codebase's compound-phrase convention already does the protective work these intuitions are worried about.<br><br>
+      <strong>Real overlap found instead, and confirmed as by-design rather than a bug:</strong> Anatomia shares 20 exact terms with Compositio — the largest raw overlap count of the whole exercise. Checked against this project's own <code>PHYLUM_PURPOSE</code> entry for Anatomia ("the underlying theory knowledge the other Craft phyla draw on") — this overlap is the literal intended relationship between the two phyla, not a collision to fix. Smaller genuine overlaps also found: Percussio/Anatomia (rhythm notation - time signature, note durations), Instrumentarium/Sonus Designatio and Instrumentarium/Percussio (shared plugin names - Sytrus, Fruity Slicer, FPC - genuinely both DAW-workflow tools and sound-design/drum tools).<br><br>
+      <strong>Data repair:</strong> Anatomia had 2 broken branches (5 rows) with the same pre-July-12 flat-<code>parent_id</code> pattern — backfilled, zero orphans. Instrumentarium's 2 existing branches were already correctly chained. The other 3 phyla had zero pre-existing rows.<br><br>
+      <strong>Tree build:</strong> 149 new rows across the 5 phyla (26 Instrumentarium + 36 Sensus Auris + 14 Anatomia + 32 Historia + 41 Psychologia), bringing each phylum's total to 35/36/25/32/41 respectively (Instrumentarium and Anatomia already had 9 and 11 pre-existing rows before this pass) — extending Instrumentarium's 2 existing Orders and Anatomia's "Theory Meta-Knowledge" branch, building the rest from scratch.<br><br>
+      <strong><code>ENABLED_PHYLA</code> extended to <code>[1..10]</code></strong> — all 5 pushed live the same session they were built. <strong>10 of 21 phyla — exactly half — now covered by Phylum Path.</strong>
+    </div>
+  </div>
+
+  <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🎧 July 17 — Magistra (Phylum 5) framework pass + an explicit Magistra/Mixtura overlap decision</div>
     <div class="card-body">
       Keyword sweep: 6 → 113 terms across 9 categories (Mastering Fundamentals, Loudness &amp; Metering, Limiting, Mastering EQ, Mastering Compression, Stereo &amp; Width in Mastering, Dynamics &amp; Character, Export &amp; Delivery, Genre-Specific UK Drill &amp; Trap Mastering, DAW/Plugin-specific).<br><br>
@@ -546,8 +558,8 @@
   </div>
 
   <div class="card">
-    <div class="card-title">5-phylum Phylum Path (Compositio, Percussio, Sonus Designatio, Mixtura, Magistra) not yet hand-tested <span class="badge open">SMOKE TEST</span></div>
-    <div class="card-body">All 5 phyla are now enabled (<code>ENABLED_PHYLA: [1,2,3,4,5]</code>) and their trees/keyword lists built, but nothing has been clicked through by hand this session. Needs: confirm the phylum switcher shows all 5 pills correctly in both the side panel and nav-tab page; confirm switching phylum actually re-fetches the right tree and updates the header/purpose/placeholder text; confirm auto-detect correctly names whichever phylum matched (not always Compositio); place a real insight in each of the 4 new phyla and confirm it routes/attaches sensibly; and spot-check a sample of the 176 new nodes built this session (39 Percussio + 42 Sonus Designatio + 41 Mixtura + 54 Magistra) for quality before treating any of them as a template for Phylum 6.</div>
+    <div class="card-title">10-phylum Phylum Path (half of all 21) not yet hand-tested <span class="badge open">SMOKE TEST</span></div>
+    <div class="card-body">All 10 phyla are now enabled (<code>ENABLED_PHYLA: [1..10]</code>) and their trees/keyword lists built, but nothing has been clicked through by hand this session. Needs: confirm the phylum switcher shows all 10 pills correctly (and stays usable, not cramped) in both the side panel and nav-tab page; confirm switching phylum actually re-fetches the right tree and updates the header/purpose/placeholder text; confirm auto-detect correctly names whichever phylum matched, not always Compositio; place a real insight in a sample of the new phyla and confirm it routes/attaches sensibly; and spot-check a sample of the 345 new nodes built this session (39 Percussio + 42 Sonus Designatio + 41 Mixtura + 54 Magistra + 35 Instrumentarium + 36 Sensus Auris + 25 Anatomia + 32 Historia + 41 Psychologia) for quality before continuing to the remaining 11 phyla.</div>
   </div>
 </div>
 
