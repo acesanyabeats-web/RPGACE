@@ -84,6 +84,15 @@
   </div>
 
   <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🐛 July 17 — Auto-detect badge fixed (1-click confirm, was 2) + Bookworm now triggerable from Oracle chat</div>
+    <div class="card-body">
+      Two real gaps found from a live report of "no pop-up showed up" after clicking "🧬 Add to Phylum Path?" on an Oracle response.<br><br>
+      <strong>1. Auto-detect badge fix:</strong> the badge's click handler used to just open the side panel pre-filled with the response text — the actual placement decision + confirm popup only ran after a SECOND click on "Place this insight" inside that panel. Easy to miss entirely, which is exactly what got reported. <code>phylumPath._checkLastResponse()</code>'s badge now calls <code>_placeInsight()</code> directly, going straight to the confirm popup in one click.<br><br>
+      <strong>2. Bookworm added as an Oracle-chat input, not just the Dashboard widget:</strong> new <code>bookworm._patchChatTrigger()</code>, same <code>TRIGGER_PREFIXES</code>/<code>window.sendChat</code>-wrap pattern <code>scheduleOracle</code> already established — typing <code>bookworm: &lt;url&gt;</code> or <code>study this book: &lt;url&gt;</code> in any Oracle chat surface routes straight into <code>_startBook()</code> instead of a normal chat turn. Falls through to the original <code>sendChat</code> for anything that doesn't match, chainable with <code>scheduleOracle</code>'s own wrap.
+    </div>
+  </div>
+
+  <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">📖 July 17 — Bookworm shipped: whole-book ingestion into Phylum Path, chapter by chapter</div>
     <div class="card-body">
       New Dashboard feature for working through books/massive texts, spec locked after several rounds of real correction (kept as a durable Q&A record in <code>bookworm_spec_backlog.txt</code> at repo root, specifically because a first pass at capturing the spec wrongly substituted recommended defaults for the user's actual answers — won't happen again, logged so it's recoverable even if a session drops context).<br><br>

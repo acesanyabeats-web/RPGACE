@@ -5164,9 +5164,18 @@ RPGACE.register('phylumPath', {
     var badge = document.createElement('button');
     badge.textContent = '🧬 Add to Phylum Path? (' + m.name + ')';
     badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    // Fixed July 17: this used to just open the side panel pre-filled,
+    // requiring a SECOND click on "Place this insight" inside it before
+    // decidePlacement()/the confirm popup ever ran - easy to miss (a real
+    // report: "no pop-up showed up" after clicking this badge). Now goes
+    // straight to placement decision + the confirm popup in one click,
+    // matching what the badge visually promises.
     badge.onclick = function() {
       badge.remove();
-      self.open(text.slice(0, 2000), m.num);
+      RPGACE.utils.toast('🧬 Deciding placement...', '#3DAA6E', 2500);
+      self._placeInsight(text.slice(0, 2000), m.num).catch(function(e) {
+        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+      });
     };
     lastMsg.appendChild(badge);
   },
@@ -6406,15 +6415,52 @@ RPGACE.register('phylumPath', {
 // pattern (_insertNewSteps) rather than duplicating that plumbing.
 RPGACE.register('bookworm', {
 
+  TRIGGER_PREFIXES: ['bookworm:', 'study this book:'],
+
   init: function() {
     var self = this;
     RPGACE.hooks.on('rpgace:ready', function() {
       setTimeout(function() { self._injectDashboardWidget(); self._injectBibliographySection(); }, 1700);
+      setTimeout(function() { self._patchChatTrigger(); }, 1700);
     });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) self._injectDashboardWidget();
       if (name === RPGACE.CONFIG.pages.research) self._injectBibliographySection();
     });
+  },
+
+  // ── Entry point: the main Oracle chat, not just the Dashboard widget ──
+  // July 17, added per direct request ("include oracle in ai advisor as
+  // an input too") - same TRIGGER_PREFIXES/window.sendChat-wrap pattern
+  // scheduleOracle already established (rpgace_core.js's scheduleOracle
+  // module), so a prefixed message in ANY Oracle chat surface routes
+  // straight into _startBook() instead of a normal chat turn. Falls
+  // through to the original sendChat for anything that doesn't match,
+  // same chainable-wrap convention scheduleOracle's wrap already uses -
+  // safe to coexist with that wrap and any other already on window.sendChat.
+  _patchChatTrigger: function() {
+    var self = this;
+    if (typeof window.sendChat !== 'function' || window._bookwormChatPatched) return;
+    window._bookwormChatPatched = true;
+    var origSend = window.sendChat;
+    window.sendChat = function() {
+      var input = document.getElementById('chat-input');
+      var val = input ? input.value.trim() : '';
+      var lower = val.toLowerCase();
+      var matchedPrefix = self.TRIGGER_PREFIXES.find(function(p) { return lower.indexOf(p) === 0; });
+      if (matchedPrefix) {
+        var url = val.slice(matchedPrefix.length).trim();
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        if (!url) { RPGACE.utils.toast('Add a book URL after "' + matchedPrefix + '"', '#E25454', 2500); return; }
+        RPGACE.utils.toast('📖 Fetching + detecting chapters...', '#9B59B6', 3000);
+        self._startBook(url).catch(function(e) {
+          RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4000);
+        });
+        return;
+      }
+      return origSend.apply(this, arguments);
+    };
   },
 
   // ── Dashboard widget: in-progress books (progress bar each) + start-new-book input ──
