@@ -6831,12 +6831,28 @@ RPGACE.register('bookworm', {
     var phylumList = pp.ENABLED_PHYLA.map(function(n) { return n + '. ' + RPGACE.utils.phylumContext(n); }).join('\n');
     var prompt = 'This is a table of contents pasted from a physical book, listing chapter titles/headings/sub-headings (and likely page numbers/dot leaders to ignore).\n\n' +
       'TEXT:\n' + tocText + '\n\n' +
-      'Extract the ordered list of REAL chapters (not sub-sections within a chapter, unless the contents page only lists sub-sections - use your judgement on what the actual chapter-level breakdown is). For each chapter, also give: 3-6 keywords drawn from that chapter\'s heading/sub-heading text, and a best-guess phylum number from the list below based on those keywords (this is just a starting hint for later insight placement, not a final decision).\n\n' +
+      'Extract the ordered list of REAL chapters (not sub-sections within a chapter, unless the contents page only lists sub-sections - use your judgement on what the actual chapter-level breakdown is). CRITICAL: every top-level "Chapter N" entry you can find MUST get its own output entry, with no gaps in the chapter numbers - never drop or merge a numbered chapter just because you are unsure whether it is "substantial enough", and never silently skip one to save space. If you are running low on output room, shorten titles/keywords first - never shorten the LIST of chapters. For each chapter, also give: 3-6 keywords drawn from that chapter\'s heading/sub-heading text, and a best-guess phylum number from the list below based on those keywords (this is just a starting hint for later insight placement, not a final decision).\n\n' +
       'PHYLA:\n' + phylumList + '\n\n' +
       'Return ONLY JSON: {"chapters": [{"title": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
-    return pp._callGroundWorkerJSON(prompt, 1500).then(function(parsed) {
+    // Defensive count check (real bug found July 17: 19 of 26 real chapters
+    // came back as valid-looking JSON, 7 missing, scattered not a tail
+    // cutoff - the model was silently judging some numbered chapters as
+    // "not real chapters" rather than hitting a hard token limit). Scan the
+    // raw pasted text for explicit "Chapter N" mentions as a floor - if the
+    // model returned meaningfully fewer chapters than that, fail loud
+    // instead of silently proceeding with a partial book (rule: never
+    // silently swallow a failed/partial result).
+    var mentionedNumbers = {};
+    var chNumPattern = /chapter\s+(\d+)/gi;
+    var cm;
+    while ((cm = chNumPattern.exec(tocText)) !== null) { mentionedNumbers[cm[1]] = true; }
+    var mentionedCount = Object.keys(mentionedNumbers).length;
+    return pp._callGroundWorkerJSON(prompt, 3000).then(function(parsed) {
       var chapters = parsed.chapters || [];
       if (!chapters.length) throw new Error('Could not extract any chapters from that table of contents');
+      if (mentionedCount > 0 && chapters.length < mentionedCount) {
+        RPGACE.utils.toast('Heads up: this table of contents mentions ' + mentionedCount + ' chapter numbers, but only ' + chapters.length + ' were extracted. Check the list below carefully before starting - some chapters may be missing.', '#E2A83D', 7000);
+      }
 
       return fetch(RPGACE.sb.url('bookworm_books'), {
         method: 'POST',

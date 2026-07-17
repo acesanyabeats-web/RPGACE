@@ -1,0 +1,144 @@
+RPGACE — Handoff backlog for Fable 5, July 17 2026
+Created because Alex asked: "why is it all taking so long, tell me how to make
+this faster and easier, give all the problems in a list for fable to solve in
+a step by step plan I can feed back to Claude Code."
+
+This is a durable .txt per this project's own rule (spec/backlog decisions get
+recorded verbatim in a committed file, not left in chat memory). Fable: read
+this, plus CLAUDE.md and system_flow_map.md, then hand back a step-by-step
+plan Alex can paste into a Claude Code session to execute.
+
+====================================================================
+WHY THIS HAS BEEN SLOW — real reasons, not excuses
+====================================================================
+1. Bookworm was built from a cold idea to a full working pipeline (chapter
+   detection, per-insight placement cascade, Council-of-5 scoring, streaming
+   analysis, 3 entry points) in one continuous session. That's a big build,
+   and every real hand-test against a real book surfaced a genuinely new bug
+   — "Chapter 0 of 0", TOC-as-chapter-1 (twice), 87 fake chapters, cumulative
+   repeated taxonomy paths, a 7-minute wait before the first insight, and now
+   the 19-of-26-chapters bug. Each one was real and needed fixing; the volume
+   of them in one sitting is what made it feel endless.
+2. One diagnostic mismatch cost several rounds: for a while, fixes were
+   landing correctly in the manual-TOC-paste flow while Alex kept re-testing
+   through the original "📖 Start" URL button with a different URL each time
+   — a different code path entirely. Neither side noticed for a few rounds.
+   Querying Supabase directly (source_url, chapter counts) is what finally
+   caught it — that's now a standing rule in CLAUDE.md.
+3. Long conversations lose fidelity. By the time this session got long, both
+   sides were re-explaining context that should have been durable (this is
+   exactly why bookworm_spec_backlog.txt and this file exist — chat memory
+   is not durable storage).
+
+====================================================================
+HOW TO MAKE THE NEXT SESSION FASTER — concrete, for Alex
+====================================================================
+1. When reporting a bug, say EXACTLY which button/entry point you used and
+   paste the exact URL or text you typed, not just the resulting screen.
+   ("I clicked 📖 Start and pasted <url>" vs "I pasted the TOC" are different
+   code paths in Bookworm — the July 17 confusion was entirely this.)
+2. One bug at a time. If a fix doesn't work, say so and stop there — don't
+   layer a second new ask (copyright link, new UI merge request, etc.) on
+   top of an unresolved bug in the same breath. Each layered ask restarts
+   context-gathering.
+3. Let a diagnosis finish before redirecting. "Query Supabase directly" is
+   now a standing rule precisely because guessing from a symptom description
+   alone burned multiple rounds this session.
+4. Big multi-part asks (3+ new pieces, like the Function1/Function2 merge)
+   go through a spec pass first — that's already a project rule, and it's
+   the rule that saved the most confusion this session, not the one that
+   caused it.
+5. Say "update oversight" / "end session" explicitly when you're done for
+   the day — that's still the only reliable trigger (no auto-hook exists).
+
+====================================================================
+THE PROBLEM LIST — prioritized, for Fable to turn into a step-by-step plan
+====================================================================
+
+TIER 1 — real open bugs, blocking Bookworm actually working end to end
+1. [JUST FIXED July 17, needs re-test] TOC-paste extraction dropped 7 of 26
+   real chapters, scattered not a tail cutoff. Fixed: tightened prompt in
+   both _startBookFromTOC (rpgace_core.js) and detectChaptersByOracle
+   (api/bookworm-fetch.js) to forbid dropping numbered chapters, raised
+   max_tokens on both calls, added a code-level toast warning if extracted
+   count is meaningfully below the number of "Chapter N" mentions found in
+   the raw pasted text. NEEDS: re-test against the real 26-chapter book to
+   confirm this actually holds.
+2. [NEVER TESTED] PDF-upload path (_startBookFromPDF, PDF.js 3.11.174) has
+   never been clicked once in a real browser. This is the single highest-
+   value untested piece — it's the legitimate path for Alex's own purchased
+   ebook that started this whole thread.
+3. [NEVER CONFIRMED] _looksLikeTableOfContents() warning heuristic — built
+   to stop the "pasted a TOC as chapter text" mistake from happening a
+   third time, never re-tested since.
+4. [NEVER ACHIEVED] No single real book has been walked completely through
+   the whole Bookworm pipeline (structure → every chapter → every insight
+   placed) start to finish. This is the actual acceptance test for the
+   whole feature — everything else is necessary but not sufficient.
+
+TIER 2 — known architecture bugs, not Bookworm-specific
+5. Oracle 504 timeout on long responses. Root cause confirmed: callClaude()
+   is one blocking non-streaming call. A prior streaming attempt was
+   reverted — dead code + restoreSendChat neutralizer still present in
+   rpgace_core.js. Needs a deliberate streaming/chunking redesign, not
+   another token trim (the current workaround pattern across the whole
+   codebase — 700 tokens works, 1200 truncates, 1800+ fails outright — is a
+   band-aid, not a fix).
+6. ~25 unaudited occurrences of `hooks.on('rpgace:ready', ...)` in
+   rpgace_core.js. The bug shape (confirmed twice already in phylumPath):
+   any module subscribing to 'rpgace:ready' from inside its OWN init() is
+   too late to ever fire, silently, forever. Needs: grep every occurrence,
+   check whether it's inside that module's own init() (buggy) or genuinely
+   elsewhere (fine), fix each buggy one by calling the function directly.
+7. `_generateNodeContent`'s empty deep_content mystery — partially resolved
+   in a prior session, never fully verified fixed.
+
+TIER 3 — real features, discussed/speced but not built
+8. Bookworm card-list UI (ConID-card pattern) for Live Study Books —
+   render chapters as cards (title, status chip, action button) instead of
+   one modal at a time. Data layer already supports it; this is purely the
+   render layer, reusing existing _openBook/_renderInsightReview logic.
+9. Shared `RPGACE.ui.popup({eyebrow, title, body, buttons})` helper —
+   ~10 modules currently hand-build the same overlay scaffolding. Migrate
+   opportunistically, not all at once.
+10. Percussio (Phylum 2) framework pass 2: `phylumPath.PHYLUM_NUM` is still
+    a single hardcoded `1`, threaded through ~10 places. Needs generalizing
+    to "currently active phylum" before Percussio (or any 2nd phylum) can
+    actually be enabled for the Phylum Path pipeline, not just have its
+    tree/keywords built.
+11. Taxonomy Sorting Agent — one classification agent, AI cost confined to
+    exactly 2 touchpoints (classification call + justification text),
+    still confirmed-not-built.
+12. Claude general-knowledge audit (3 parts, spec'd in the plan file: expand
+    tree from general training with a tagged zone, relevance/alignment
+    scoring against the user's specific genre, confidence/contradiction
+    audit against real gathered insights) — deliberately deferred, no
+    design decisions made yet.
+13. RPGACE_ORACLE_NOTES.md — referenced in CLAUDE.md's new Oracle-editable-
+    plan boundary but doesn't exist yet; create on first use (when the
+    in-app Oracle first proposes a plan change).
+
+TIER 4 — never hand-tested (old, not from this session, still open)
+14. F16 (Beatstars auto-listing), F17 (video pipeline 5 stages), F18 (auto
+    visual treatment checkbox) — all shipped, none hand-tested.
+15. Highlight-to-Phylum-Path button — built, last test was ambiguous.
+16. n8n rota-sync (F10) — built and importable, never run unattended against
+    the real Fourth login flow.
+17. Phyla 11-21 — 10 of 21 phyla have never been run through the 7-step
+    Phylum Development Framework at all (Phylum 1 done+enabled, Phylum 2/
+    Percussio has steps 1-3 done per the plan file, not yet enabled).
+
+====================================================================
+SUGGESTED ORDER (Fable: adjust as you see fit, this is a starting proposal)
+====================================================================
+Do Tier 1 first, in order — it's the one feature (Bookworm) that's had the
+most investment this session and is closest to a real, provable win. Item 4
+(one real book, start to finish) is the actual finish line; 1-3 are what's
+blocking it. Tier 2 items are standing architectural debt — pick these up
+when Bookworm isn't mid-hand-test, since fixing them mid-Bookworm-test would
+be exactly the "layering asks" problem flagged above. Tier 3 and 4 are real
+but lower urgency than getting Bookworm to a genuine end-to-end win — per
+the project's own governing rule, "does this get a beat made or video posted
+in 48 hours" doesn't strictly apply to infrastructure, but Bookworm has
+already absorbed a full session without a completed real-world proof point,
+which is its own signal to finish it before starting new tiers.
