@@ -1,0 +1,181 @@
+RPGACE — MASTER EXECUTION PLAN (Fable 5, July 17 2026)
+Response to fable_handoff_backlog.txt. This is the step-by-step plan Alex
+asked for: each SESSION below is one sitting with ONE goal, an exact
+paste-able prompt to start it, and a hard pass/fail line so it's obvious
+when it's finished. Do them in order unless a session's own text says it
+can float.
+
+THE ONE STRUCTURAL RULE THIS PLAN ENFORCES
+The backlog's honest diagnosis was: sessions got slow because many goals
+ran in one sitting and bug reports didn't name their entry point. So:
+one session = one goal = one pass/fail. If something unrelated breaks
+mid-session, it gets a one-line note added to this file's PARKING LOT
+(bottom) and the session stays on its goal.
+
+BUG-REPORT TEMPLATE (use every time — this alone saves the most rounds)
+  1. Which button/entry point, exactly (e.g. "✍️ paste TOC", "📖 Start
+     URL", "📎 PDF upload", chapter-text box)
+  2. What you typed/pasted/selected (the actual URL, file name, or text)
+  3. What you expected vs what appeared (screenshot or paste the screen)
+That's it. With those 3 lines, diagnosis starts at the right code path
+immediately instead of 3 rounds in.
+
+====================================================================
+PHASE A — BOOKWORM TO THE FINISH LINE (Tier 1, do first)
+Finish line = one real book walked start to finish. Sessions A1-A3 are
+the blockers; A4 is the finish line itself.
+====================================================================
+
+── SESSION A1: Re-test TOC extraction (the 19-of-26 fix) ──
+WHO: Alex hand-tests, Claude on standby for a same-session fix.
+ALEX DOES: on rpgace.vercel.app, click "✍️ Or paste a table of
+  contents", enter the book title, paste the SAME full 26-chapter TOC
+  as before, submit. Count the chapters on the "📚 Contents Found"
+  screen. Do NOT click "▶ Start Chapter 1" yet if the count is wrong —
+  click "Exit", delete the book with 🗑, and report.
+PASS: all 26 chapters listed, correct titles, no amber warning toast.
+FAIL: paste-able prompt for Claude:
+  "Session A1, TOC re-test failed. Entry point: paste-TOC form. I pasted
+  the full 26-chapter TOC for Music Theory for Computer Musicians. Got
+  [N] chapters, missing: [list numbers]. Amber warning toast [did/did
+  not] appear. Diagnose _startBookFromTOC in rpgace_core.js against
+  this evidence — the July 17 fix (prompt tightening + max_tokens 3000
+  + count-check toast) did not hold. Query Supabase if needed. One fix,
+  then I re-test."
+
+── SESSION A2: First-ever click of the PDF upload path ──
+WHO: Alex hand-tests. Highest-value untested piece in the whole app.
+ALEX DOES: click "📎 Or upload your own purchased ebook PDF", pick the
+  purchased ebook PDF from the laptop, wait. Expected: a processing
+  state, then the same "📚 Contents Found" screen with ~26 chapters
+  WITH real text already attached (unlike the TOC path, chapters from
+  a PDF should not ask you to paste text later).
+PASS: Contents Found shows the right chapters; opening chapter 1 goes
+  straight to the read/analyze screen (not "paste this chapter's text").
+LIKELY FAILURE POINTS (so a report can name them): (a) nothing happens
+  at all = PDF.js CDN script failed to load (_ensurePdfJs); (b) hangs
+  forever = extraction loop stuck on a large file; (c) garbled/empty
+  chapters = PDF text extraction produced junk this book's layout.
+FAIL: prompt for Claude:
+  "Session A2, PDF upload failed. Entry point: 📎 PDF upload. File:
+  [name, size, page count if known]. Symptom: [a/b/c above, or
+  describe + screenshot]. Browser console errors: [paste any red
+  lines]. This path has never run before — diagnose _startBookFromPDF
+  and _ensurePdfJs from this evidence before changing anything."
+
+── SESSION A3: One full chapter, end to end ──
+(Whichever of A1/A2 passed decides the entry point — prefer the PDF
+book since its chapters already have text.)
+ALEX DOES: open chapter 1, read screen → analyze. First insight should
+  appear in under ~1 minute (streaming fix), rest fill in behind it.
+  Approve/Reject/Edit each insight honestly — don't rubber-stamp, the
+  placement quality data matters. Complete the chapter.
+  If on the TOC-path book: pasting chapter text here is also the live
+  test of the _looksLikeTableOfContents warning — once, deliberately
+  paste the TOC into the chapter-text box first to confirm the warning
+  fires, then paste the real chapter text. That closes backlog item 3
+  for free.
+PASS: chapter marked complete; approved insights visible in the
+  taxonomy (spot-check one in Phylum Path drill-down); no silent
+  failures.
+FAIL: use the bug-report template; name which insight/step it died on.
+
+── SESSION A4: THE FINISH LINE — whole book, Bibliography entry ──
+Not one sitting — this is chapters 2 through 26 across as many short
+sittings as it takes (the checkpoint/resume design exists for exactly
+this). Rule: no new features, no side quests, until this book is done.
+PASS: book status complete, Bibliography card on the Research page
+  showing total chapters + insights placed + phyla touched. This is
+  the acceptance test for all of Bookworm.
+THEN: say "update oversight" — Bookworm's truth-table row finally
+  flips to genuinely verified, and the Session-Ended-Here red card
+  gets its closing note.
+
+====================================================================
+PHASE B — ARCHITECTURE DEBT (Tier 2)
+Do these BETWEEN Phase-A sittings, never during one. B1 and B3 are
+Claude-solo (no hand-test needed) — good for days Alex has no time.
+====================================================================
+
+── SESSION B1 (Claude-solo, safe): the rpgace:ready audit ──
+Paste-able prompt:
+  "Session B1 from fable_master_plan.txt: audit every occurrence of
+  hooks.on('rpgace:ready', ...) in rpgace_core.js (~25). For each,
+  determine if it is called from inside that same module's own init()
+  (the confirmed silent-never-fires bug shape) or from elsewhere
+  (fine). Fix only the buggy ones by calling the function directly,
+  exactly as the two phylumPath fixes did. node --check after every
+  edit. List every site with its verdict in the commit message and a
+  patch_notes card. Change nothing else."
+PASS: audit list produced, buggy sites fixed, app loads normally after
+  deploy (Alex does a 2-minute smoke: open app, check nav tabs +
+  dashboard widgets all appear on a fresh incognito load).
+
+── SESSION B2 (needs a decision first): the real 504 fix ──
+Do NOT start this as a coding session. Start it as a 10-minute spec
+session — the prior streaming attempt was reverted, so a second blind
+attempt is banned by the project's own rules. Paste-able prompt:
+  "Session B2 spec pass, from fable_master_plan.txt: the Oracle 504.
+  Present me 2-3 concrete options (SSE streaming in api/oracle.js;
+  chunked multi-call generation; or hybrid) with what each changes in
+  main.js/rpgace_core.js, what could break, and your recommendation.
+  Include cleaning up the dead streaming code + restoreSendChat
+  neutralizer in the same work. Record my answers verbatim in a
+  committed txt file before writing any code."
+PASS (spec): decision recorded. PASS (build, separate sitting): a
+  deliberately long Oracle ask (the old Church Modes article case)
+  completes without 504, and the 700/1200/1800 token band-aids can be
+  lifted where they were pure workaround.
+
+── SESSION B3 (Claude-solo, small): deep_content verification ──
+Paste-able prompt:
+  "Session B3: verify whether _generateNodeContent's empty deep_content
+  bug is actually fixed. Query Supabase directly: which taxonomy_tree
+  rows have deep_content populated vs empty, grouped by created-date
+  and code path. Report findings only — no code changes unless the
+  evidence shows it still failing."
+
+====================================================================
+PHASE C — FEATURES (Tier 3, only after A4 is done)
+====================================================================
+
+── SESSION C1: Bookworm card-list UI (ConID pattern) ──
+The biggest UX win available; render-layer only. Prompt:
+  "Session C1: replace Bookworm's one-modal-at-a-time flow with a
+  ConID-style card list for Live Study Books — one card per chapter
+  (title, status chip, context-sensitive action button) calling the
+  existing _openBook/_renderInsightReview logic. Data layer unchanged.
+  Thumb-sized targets (mobile-first rule). Grep for existing render
+  patterns before writing new ones."
+
+── SESSION C2: RPGACE.ui.popup shared helper ──
+Build the helper + migrate ONLY Bookworm's popups to it as the proof
+case. Other modules migrate opportunistically later, never big-bang.
+
+── SESSION C3: PHYLUM_NUM generalization + enable Percussio ──
+Prerequisite for any second phylum. Spec pass first (it threads through
+~10 places, half assuming a single fixed constant), then build, then
+framework steps 6-7 for Percussio (fusion pass + hand-test).
+
+── SESSIONS C4+: Taxonomy Sorting Agent, general-knowledge audit ──
+Both are spec-session-first by standing rule. Don't open these until
+C1-C3 are done — they're the deepest water in the backlog.
+
+── (RPGACE_ORACLE_NOTES.md needs no session — it gets created the
+   first time the in-app Oracle proposes a plan change, per CLAUDE.md.)
+
+====================================================================
+PHASE D — OLD UNTESTED ITEMS (Tier 4, batch them)
+====================================================================
+One "testing day" sitting, using the existing smoke-test task list:
+F18 checkbox → F17 pipeline stages → F16 Beatstars button → Visual
+Oracle labeling → highlight-to-Phylum-Path retest. Report each with
+the template; fixes get their own follow-up sitting, not inline.
+F10 (n8n) stays parked until a laptop session — it's local-only.
+Phyla 11-21 framework passes resume after C3, one phylum at a time,
+per the confirmed pacing rule.
+
+====================================================================
+PARKING LOT (add one-liners here mid-session instead of derailing)
+====================================================================
+(empty)
