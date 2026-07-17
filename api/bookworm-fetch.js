@@ -23,18 +23,47 @@ async function fetchFullText(url) {
 // line (start of line, reasonably short) matching "Chapter N", "Chapter
 // <roman numeral>", or "Ch. N", optionally followed by ": Title" on the
 // same line.
+//
+// Real bugs found on the first two hand-tests:
+// 1. A book's own Table of Contents lists every chapter by name/number
+//    too ("Chapter 1: Introduction"), so this matched the TOC's listing
+//    before the real heading later in the body. Fixed: drop matches whose
+//    captured title is itself a front/back-matter label ("Contents",
+//    "Index", ...), and when the same chapter number matches more than
+//    once, keep only the LAST occurrence - the real heading is always
+//    further into the document than its own TOC listing.
+// 2. Far more serious: 87 "chapters" detected on a real book. PDF-to-text
+//    conversion breaks flowing prose across many short lines (following
+//    the original page's line wraps, not sentence boundaries), so an
+//    in-text reference like "...as covered in Chapter 5 of this book..."
+//    can land on its own short line purely by coincidence of the layout,
+//    indistinguishable from a real heading to a loose pattern. Fixed:
+//    require a blank line immediately BEFORE the candidate heading line -
+//    real headings in converted documents are reliably set off with
+//    whitespace, continuous prose is not. This alone won't be perfect for
+//    every PDF's formatting, which is why the caller falls back to
+//    detectChaptersByOracle() below whenever the regex result still looks
+//    implausible (see MAX_PLAUSIBLE_CHAPTERS in the handler).
+const FRONT_MATTER_TITLES = /^(table of )?contents$|^index$|^copyright$|^acknowledge?ments$/i;
+
 function detectChaptersByRegex(fullText) {
-  const pattern = /^[ \t]*(chapter\s+(\d+|[ivxlcdm]+)|ch\.\s*\d+)\s*[:\-.]?\s*(.{0,80})?$/gim;
-  const matches = [];
+  const pattern = /(^|\n)[ \t]*\r?\n[ \t]*(chapter\s+(\d+|[ivxlcdm]+)|ch\.\s*\d+)\s*[:\-.]?\s*(.{0,80})?$/gim;
+  const byNumber = new Map();
   let m;
   while ((m = pattern.exec(fullText)) !== null) {
-    const title = (m[3] || '').trim();
-    matches.push({
-      offset: m.index,
-      title: title ? (m[1] + ': ' + title).trim() : m[1].trim()
+    const title = (m[4] || '').trim();
+    if (FRONT_MATTER_TITLES.test(title)) continue;
+    const key = (m[3] || m[2]).toLowerCase();
+    // Offset should point at the heading itself, not the blank line
+    // captured before it - recover it by finding where group 2 starts
+    // within the matched span.
+    const headingOffset = m.index + m[0].indexOf(m[2], m[1].length);
+    byNumber.set(key, {
+      offset: headingOffset,
+      title: title ? (m[2] + ': ' + title).trim() : m[2].trim()
     });
   }
-  return matches;
+  return Array.from(byNumber.values());
 }
 
 // Fallback when regex finds too few boundaries (< 2) - ask Oracle to read
@@ -80,8 +109,14 @@ export default async function handler(req, res) {
 
     const fullText = await fetchFullText(url);
 
+    // 40 is a deliberately generous ceiling - real books occasionally run
+    // 30+ chapters, but 87 (the count that surfaced the mid-sentence false-
+    // positive bug above) is well past what a regex heuristic should be
+    // trusted for. Past this point, prefer Oracle's semantic read of the
+    // text over more pattern-matching.
+    const MAX_PLAUSIBLE_CHAPTERS = 40;
     let boundaries = detectChaptersByRegex(fullText);
-    if (boundaries.length < 2) {
+    if (boundaries.length < 2 || boundaries.length > MAX_PLAUSIBLE_CHAPTERS) {
       boundaries = await detectChaptersByOracle(apiKey, fullText);
     }
     if (boundaries.length < 1) {
@@ -89,10 +124,28 @@ export default async function handler(req, res) {
     }
     boundaries.sort(function (a, b) { return a.offset - b.offset; });
 
-    const chapters = boundaries.map(function (b, i) {
+    const sliced = boundaries.map(function (b, i) {
       const end = (i + 1 < boundaries.length) ? boundaries[i + 1].offset : fullText.length;
-      return { index: i, title: b.title, text: fullText.slice(b.offset, end).trim() };
+      return { title: b.title, text: fullText.slice(b.offset, end).trim() };
     }).filter(function (c) { return c.text.length > 0; });
+
+    // A genuine chapter has real body content - anything left this short
+    // after the front-matter filter above is still probably a fragment
+    // (a stray heading match, a half-page transition), not something
+    // worth its own read-and-analyze cycle. Merge it forward into the
+    // next chapter instead of creating a near-empty row (the exact
+    // failure mode found on the first hand-test - a "Contents" chapter
+    // with nothing real to show in the read popup).
+    const MIN_CHAPTER_LENGTH = 400;
+    const merged = [];
+    for (let i = 0; i < sliced.length; i++) {
+      if (sliced[i].text.length < MIN_CHAPTER_LENGTH && i + 1 < sliced.length) {
+        sliced[i + 1] = { title: sliced[i + 1].title, text: sliced[i].text + '\n\n' + sliced[i + 1].text };
+        continue;
+      }
+      merged.push(sliced[i]);
+    }
+    const chapters = merged.map(function (c, i) { return { index: i, title: c.title, text: c.text }; });
 
     return res.status(200).json({
       success: true,
