@@ -40,10 +40,14 @@ async function fetchFullText(url) {
 //    indistinguishable from a real heading to a loose pattern. Fixed:
 //    require a blank line immediately BEFORE the candidate heading line -
 //    real headings in converted documents are reliably set off with
-//    whitespace, continuous prose is not. This alone won't be perfect for
-//    every PDF's formatting, which is why the caller falls back to
-//    detectChaptersByOracle() below whenever the regex result still looks
-//    implausible (see MAX_PLAUSIBLE_CHAPTERS in the handler).
+//    whitespace, continuous prose is not.
+// 3. Still not enough on a 3rd hand-test: the same book ALSO had an
+//    expanded per-chapter topic-summary section using "Chapter N: ..."
+//    formatting too, which this function can't distinguish from a real
+//    heading by pattern alone. This is why detectChaptersByOracle() below
+//    is now the PRIMARY method (semantic reading comprehension can tell a
+//    decoy apart from a real heading; a regex fundamentally cannot) -
+//    this function is kept only as a fallback for when that call fails.
 const FRONT_MATTER_TITLES = /^(table of )?contents$|^index$|^copyright$|^acknowledge?ments$/i;
 
 function detectChaptersByRegex(fullText) {
@@ -66,18 +70,30 @@ function detectChaptersByRegex(fullText) {
   return Array.from(byNumber.values());
 }
 
-// Fallback when regex finds too few boundaries (< 2) - ask Oracle to read
-// a prefix of the text (enough to usually cover a table of contents) and
-// propose a chapter list with a short exact search string per chapter so
-// we can still locate it via indexOf in the full text.
+// PRIMARY detection method as of the 3rd hand-test round (was a rare
+// fallback for an implausible regex result - promoted after the regex
+// approach failed 3 times running on the same real book, each a
+// different failure shape: a Table of Contents listing every chapter by
+// number+title, AND a separate expanded "Chapter N Summary" topic-index
+// section that ALSO uses "Chapter N: ..." formatting. A blind pattern
+// match cannot tell a real heading apart from either decoy - this is
+// exactly the kind of judgment call that needs actual reading
+// comprehension, which is why regex is now the fallback, not the other
+// way around.
 async function detectChaptersByOracle(apiKey, fullText) {
-  const prefix = fullText.slice(0, 6000);
-  const prompt = 'This is the beginning of a book (possibly including a table of contents).\n\n' +
+  // 25000 chars (up from the original 6000) - real evidence showed this
+  // book's front matter alone (title page, table of contents, AND an
+  // expanded per-chapter topic-summary section) ran well past 6000 chars.
+  // Still a prefix, not the whole book - a genuine limit, not a
+  // guaranteed-sufficient window for every book's front matter length.
+  const prefix = fullText.slice(0, 25000);
+  const prompt = 'This is the beginning of a book, likely including front matter (title page, table of contents, possibly an expanded per-chapter topic/summary index).\n\n' +
     'TEXT:\n' + prefix + '\n\n' +
-    'List the book\'s chapters in order. For each, give an EXACT short string (5-10 words) that would appear at the very start of that chapter in the full text, so it can be located with a plain text search - not a paraphrase, the literal heading text if you can identify it.\n\n' +
+    'List the book\'s REAL chapters in reading order. Two decoys to watch for and NOT use: (1) the table of contents itself, which lists every chapter by number and title but is not the chapter; (2) some books also have an expanded "chapter summary" or topic-index section listing sub-topics per chapter - also not the real chapter.\n\n' +
+    'For each REAL chapter, give an EXACT short string (8-12 words) copied verbatim from the START OF THE CHAPTER\'S OWN OPENING PARAGRAPH - actual prose, not the heading/title text itself, since the heading text also appears in the table of contents and would match the wrong location.\n\n' +
     'Return ONLY JSON: {"chapters": [{"title": "...", "searchString": "..."}]}';
 
-  const reply = await callClaude(apiKey, [{ role: 'user', content: prompt }], '', 800);
+  const reply = await callClaude(apiKey, [{ role: 'user', content: prompt }], '', 1500);
   const jsonMatch = reply.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Oracle chapter-detection returned no JSON');
   const parsed = JSON.parse(jsonMatch[0]);
@@ -86,6 +102,27 @@ async function detectChaptersByOracle(apiKey, fullText) {
     return { offset: offset >= 0 ? offset : null, title: c.title };
   }).filter(function (c) { return c.offset !== null; });
   return chapters;
+}
+
+// Defensive backstop regardless of which detection method ran: a real
+// Table of Contents or topic-index decoy shows up as a tight RUN of
+// boundaries clustered close together (each entry only a line or two
+// apart) - something a real chapter's actual body content basically
+// never does. Drops any run of 3+ boundaries that are all within
+// MIN_GAP characters of the previous one, keeping only the first of
+// that run (the rest are almost certainly decoys, not real chapters).
+function dropClusteredBoundaries(boundaries) {
+  const MIN_GAP = 600;
+  const sorted = boundaries.slice().sort(function (a, b) { return a.offset - b.offset; });
+  const kept = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const last = kept[kept.length - 1];
+    if (last && sorted[i].offset - last.offset < MIN_GAP) {
+      continue; // within a tight run of the last KEPT boundary - skip
+    }
+    kept.push(sorted[i]);
+  }
+  return kept;
 }
 
 function guessTitleFromURL(url) {
@@ -109,20 +146,21 @@ export default async function handler(req, res) {
 
     const fullText = await fetchFullText(url);
 
-    // 40 is a deliberately generous ceiling - real books occasionally run
-    // 30+ chapters, but 87 (the count that surfaced the mid-sentence false-
-    // positive bug above) is well past what a regex heuristic should be
-    // trusted for. Past this point, prefer Oracle's semantic read of the
-    // text over more pattern-matching.
-    const MAX_PLAUSIBLE_CHAPTERS = 40;
-    let boundaries = detectChaptersByRegex(fullText);
-    if (boundaries.length < 2 || boundaries.length > MAX_PLAUSIBLE_CHAPTERS) {
+    // Oracle-primary as of the 3rd hand-test round (see detectChaptersByOracle
+    // above for why) - regex is now only a fallback for when the Oracle call
+    // itself fails outright or returns too few chapters to be useful.
+    let boundaries;
+    try {
       boundaries = await detectChaptersByOracle(apiKey, fullText);
+      if (boundaries.length < 2) boundaries = detectChaptersByRegex(fullText);
+    } catch (e) {
+      console.warn('Bookworm: Oracle chapter-detection failed, falling back to regex:', e.message);
+      boundaries = detectChaptersByRegex(fullText);
     }
     if (boundaries.length < 1) {
       throw new Error('Could not detect any chapter boundaries in this book');
     }
-    boundaries.sort(function (a, b) { return a.offset - b.offset; });
+    boundaries = dropClusteredBoundaries(boundaries);
 
     const sliced = boundaries.map(function (b, i) {
       const end = (i + 1 < boundaries.length) ? boundaries[i + 1].offset : fullText.length;
