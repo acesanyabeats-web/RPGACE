@@ -6548,20 +6548,50 @@ RPGACE.register('bookworm', {
             var book = row.book, total = row.total;
             var pct = total ? Math.round((book.current_chapter_index / total) * 100) : 0;
             var card = document.createElement('div');
-            card.style.cssText = 'padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;';
+            card.style.cssText = 'padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;';
+
+            var topRow = document.createElement('div');
+            topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;';
             var nameEl = document.createElement('div');
             nameEl.textContent = book.title;
-            nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;margin-bottom:4px;';
+            nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;flex:1;';
+            // Delete button - real request after duplicate/dud books piled
+            // up in this list from earlier detection-bug retries (each
+            // retry creates a genuinely new book row, nothing gets
+            // cleaned up automatically). Two clicks required (arms, then
+            // confirms) since deletion isn't reversible - no separate
+            // popup needed for something this low-risk-but-permanent.
+            var delBtn = document.createElement('button');
+            delBtn.textContent = '🗑';
+            delBtn.title = 'Delete this book';
+            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';
+            var armed = false;
+            delBtn.onclick = function(e) {
+              e.stopPropagation();
+              if (!armed) {
+                armed = true;
+                delBtn.textContent = '❌ Confirm';
+                delBtn.style.color = '#E25454';
+                setTimeout(function() { armed = false; delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)'; }, 3000);
+                return;
+              }
+              RPGACE.sb.del('bookworm_books', 'id=eq.' + book.id).then(function() {
+                RPGACE.utils.toast('🗑 Deleted: ' + book.title, 'rgba(226,226,236,0.5)', 2500);
+                self._refreshWidget();
+              }).catch(function(err) { RPGACE.utils.toast('Error: ' + err.message, '#E25454', 3500); });
+            };
+            topRow.appendChild(nameEl); topRow.appendChild(delBtn);
+            topRow.onclick = function() { self._openBook(book.id); };
+
             var barOuter = document.createElement('div');
-            barOuter.style.cssText = 'height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-bottom:4px;';
+            barOuter.style.cssText = 'height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin:4px 0;';
             var barInner = document.createElement('div');
             barInner.style.cssText = 'height:100%;width:' + pct + '%;background:#9B59B6;';
             barOuter.appendChild(barInner);
             var subEl = document.createElement('div');
             subEl.textContent = 'Chapter ' + Math.min(book.current_chapter_index + 1, total) + ' of ' + total;
             subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
-            card.appendChild(nameEl); card.appendChild(barOuter); card.appendChild(subEl);
-            card.onclick = function() { self._openBook(book.id); };
+            card.appendChild(topRow); card.appendChild(barOuter); card.appendChild(subEl);
             list.appendChild(card);
           });
         });
