@@ -95,6 +95,16 @@
     </div>
   </div>
 
+  <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🔁 July 18 — Rebuild re-tested: chapters 1-13 (incl. 6, 10) now correct and in order; added a "recircle" loop for a NEW failure mode found</div>
+    <div class="card-body">
+      Real re-test confirmed the rebuild above works as designed: chapters 1 through 13 — including 6 and 10, which had failed on every single prior attempt — came back correct and in the right order, no end-of-list dumping. 4 chapters (14, 15, 20, 26) were still missing, but for a genuinely NEW reason: not the mechanical text search failing (the fix already built for that), but the model's own first-pass table-of-contents READ skipping those numbers entirely, before the mechanical step ever got a chance to look for them.<br><br>
+      <strong>Alex's proposed fix, built as specified:</strong> a "negative feedback loop" — since the chapter list is numbered, any gap in the number sequence is a real, checkable signal. <code>detectChapterListByOracle</code> now checks for exactly that, and if found, "recircles" — re-sends the model the SAME already-visible table-of-contents text, asking specifically for the numbers it skipped. This is fundamentally different from (and safe in a way) the OLD removed gap-fill retry: it only ever asks the model to re-read text it has already fully seen, never to recall body content beyond its window — the same proven-reliable "read a list" task, just asked twice if needed. Recovered chapters are merged back in and re-sorted by number so they land in correct chronological order for the confirm screen, not appended at the end.<br><br>
+      Also added: if a chapter is STILL missing even after the recircle (a genuine, rare remainder), and separately if the TOC read a chapter correctly but the mechanical search still can't find its real heading, both now surface as their own distinct, honestly-worded warning — two different failure modes, no longer able to silently mask each other.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. This closes the specific gap found in this test round; whether it holds for chapters 14/15/20/26 (or reveals yet another distinct failure shape) needs one more real PDF-upload test to confirm.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Bug fix: TOC-paste extraction silently dropped 7 of 26 real chapters (scattered, not a tail cutoff)</div>
     <div class="card-body">

@@ -111,7 +111,50 @@ async function detectChapterListByOracle(apiKey, fullText, phylumList) {
   const jsonMatch = reply.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Oracle table-of-contents read returned no JSON');
   const parsed = JSON.parse(jsonMatch[0]);
-  return (parsed.chapters || []).filter(function (c) { return c && c.number && c.title; });
+  let chapters = (parsed.chapters || []).filter(function (c) { return c && c.number && c.title; });
+
+  // Negative-feedback recircle loop (added July 18, per Alex's direct
+  // design): a real re-test after the rebuild above still skipped 4
+  // numbered chapters (14, 15, 20, 26) - not because the mechanical text
+  // search failed to find their heading, but because the model's OWN
+  // first-pass TOC read never included them in its returned list at all.
+  // Different failure mode from the one the rebuild fixed, needs its own
+  // check: the chapter list is numbered, so any gap in the number
+  // sequence is a real, checkable signal, not a guess. Unlike the OLD
+  // (removed) gap-fill retry, this is safe - it re-asks the model to
+  // re-read the EXACT SAME already-fully-visible TOC text for numbers it
+  // skipped, never asking it to recall body content it hasn't seen. Kept
+  // to one retry round: if a number is still missing after this, it's
+  // logged and surfaced as a real gapWarning rather than looped forever.
+  const nums = chapters.map(function (c) { return c.number; });
+  if (nums.length) {
+    const maxNum = Math.max.apply(null, nums);
+    const foundSet = {}; nums.forEach(function (n) { foundSet[n] = true; });
+    const missingNums = [];
+    for (let n = 1; n <= maxNum; n++) { if (!foundSet[n]) missingNums.push(n); }
+    if (missingNums.length) {
+      try {
+        const recirclePrompt = 'Same table of contents excerpt as before:\n\nTEXT:\n' + prefix + '\n\n' +
+          'On a first read, chapter number(s) ' + missingNums.join(', ') + ' were skipped even though this is the same table of contents text. Re-scan it specifically for those chapter numbers and return an entry for each one you can genuinely find listed there (only omit a number if it truly is not in this table of contents - double check before omitting). Same fields as before: title, pageNumber if shown, 3-6 keywords, suggestedPhylum.' + phylumBlock + '\n\n' +
+          'Return ONLY JSON: {"chapters": [{"number": N, "title": "...", "pageNumber": N, "keywords": ["...", "..."], "suggestedPhylum": N}]}';
+        const recircleReply = await callClaude(apiKey, [{ role: 'user', content: recirclePrompt }], '', 1200);
+        const recircleMatch = recircleReply.match(/\{[\s\S]*\}/);
+        if (recircleMatch) {
+          const recircleParsed = JSON.parse(recircleMatch[0]);
+          const recovered = (recircleParsed.chapters || []).filter(function (c) { return c && c.number && c.title; });
+          console.warn('Bookworm DIAG: TOC recircle for chapter(s) [' + missingNums.join(',') + '] - recovered ' + recovered.length + ' of ' + missingNums.length);
+          // Inject recovered chapters back into chronological order rather
+          // than appending them at the end - the confirm screen and every
+          // downstream step assume chapters arrive in reading order.
+          chapters = chapters.concat(recovered).sort(function (a, b) { return a.number - b.number; });
+        }
+      } catch (e) {
+        console.warn('Bookworm: TOC recircle failed:', e.message);
+      }
+    }
+  }
+
+  return chapters;
 }
 
 // Purely mechanical, no model involvement: given the chapter list the
@@ -240,8 +283,20 @@ export default async function handler(req, res) {
       chapterList = await detectChapterListByOracle(apiKey, fullText, phylumList);
       if (chapterList.length < 2) throw new Error('Oracle table-of-contents read returned too few chapters');
 
+      // Two DISTINCT failure modes, each needs its own visibility rather
+      // than one silently masking the other: (1) the recircle loop inside
+      // detectChapterListByOracle already tried once to recover any number
+      // missing from the TOC read itself - if it's STILL missing here,
+      // that's a real gap, not something the mechanical step below can
+      // ever fix (it can only find headings for chapters it's TOLD about).
+      const gotNums = chapterList.map(function (c) { return c.number; });
+      const maxGotNum = gotNums.length ? Math.max.apply(null, gotNums) : 0;
+      const gotSet = {}; gotNums.forEach(function (n) { gotSet[n] = true; });
+      const stillMissingFromTOC = [];
+      for (let n = 1; n <= maxGotNum; n++) { if (!gotSet[n]) stillMissingFromTOC.push(n); }
+
       const offsetByNumber = resolveChapterHeadingsMechanically(fullText, chapterList);
-      const unresolved = [];
+      const unresolved = []; // (2) TOC read them fine, but no real heading found in the text
       boundaries = chapterList.map(function (c) {
         const offset = offsetByNumber[c.number];
         if (offset === undefined) { unresolved.push(c.number); return null; }
@@ -249,9 +304,17 @@ export default async function handler(req, res) {
         return { offset: offset, title: titleOut, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
       }).filter(Boolean);
 
+      const warnings = [];
+      if (stillMissingFromTOC.length) {
+        console.warn('Bookworm DIAG: chapter(s) [' + stillMissingFromTOC.join(',') + '] still missing from the TOC read even after the recircle retry.');
+        warnings.push('chapter(s) ' + stillMissingFromTOC.join(', ') + ' could not be found in the table of contents at all, even after a re-scan');
+      }
       if (unresolved.length) {
         console.warn('Bookworm DIAG: mechanical resolution could not find a real heading for chapter(s) [' + unresolved.join(',') + '] - the TOC read them correctly but no matching "Chapter N <title>" occurrence was found in the extracted text past the previous chapter\'s position.');
-        gapWarning = 'Chapter number(s) ' + unresolved.join(', ') + ' were listed in the table of contents but their real heading could not be located in the extracted text. Check the list below carefully before starting.';
+        warnings.push('chapter(s) ' + unresolved.join(', ') + ' were listed in the table of contents but their real heading could not be located in the extracted text');
+      }
+      if (warnings.length) {
+        gapWarning = 'Heads up: ' + warnings.join('; ') + '. Check the list below carefully before starting.';
       }
       if (boundaries.length < 2) throw new Error('Mechanical resolution found too few real chapter headings');
     } catch (e) {
