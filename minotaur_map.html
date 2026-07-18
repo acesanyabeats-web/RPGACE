@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — The Minotaur Map</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.09); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.5); --thread:#C9A84C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7;padding:0 0 80px}
+  .hero{padding:56px 24px 32px;text-align:center;border-bottom:1px solid var(--border);background:radial-gradient(ellipse at top,rgba(201,168,76,0.06),transparent 70%)}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+  .hero h1{font-family:Georgia,serif;font-size:34px;color:#E2E2EC;margin-bottom:12px}
+  .hero h1 .bull{font-size:30px;margin-right:8px}
+  .hero p{max-width:680px;margin:0 auto;color:var(--dim);font-size:13px;line-height:1.8}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:32px auto 8px;max-width:900px}
+  .legend-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:11px;color:var(--dim)}
+  .legend-item .sym{font-size:14px}
+
+  .section-label{text-align:center;margin:48px 0 20px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+
+  /* ── Maze structure ─────────────────────────────────────── */
+  .maze{display:flex;flex-direction:column;align-items:center;gap:0}
+  .row{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;width:100%;position:relative}
+  .connector{width:2px;height:28px;background:repeating-linear-gradient(to bottom,var(--thread) 0 6px,transparent 6px 12px);margin:0 auto}
+  .connector.wide{align-self:center}
+
+  .room{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;min-width:150px;max-width:200px;text-align:center;position:relative}
+  .room.entrance{border-color:rgba(74,144,226,0.35);background:rgba(74,144,226,0.05)}
+  .room.fork{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.05);border-radius:6px}
+  .room.hub{border-color:rgba(155,89,182,0.5);background:rgba(155,89,182,0.08);min-width:260px;max-width:340px;padding:20px}
+  .room.checkpoint{border-color:rgba(226,84,84,0.35);background:rgba(226,84,84,0.05)}
+  .room.exit{border-color:rgba(61,170,110,0.5);background:rgba(61,170,110,0.08)}
+  .room.isolated{border-color:rgba(42,191,176,0.35);background:rgba(42,191,176,0.05)}
+
+  .room .sym{font-size:20px;display:block;margin-bottom:6px}
+  .room .name{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .room .detail{font-size:10.5px;color:var(--dim);line-height:1.5}
+  .room .tag{display:inline-block;font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:8px;margin-top:6px;background:rgba(255,255,255,0.06);color:var(--dim)}
+
+  .fork-branches{display:flex;gap:36px;justify-content:center;margin-top:4px}
+  .fork-branches .branch{display:flex;flex-direction:column;align-items:center;font-size:10px;color:var(--dim)}
+  .fork-branches .branch .yn{font-weight:700;letter-spacing:1px;margin-bottom:2px}
+  .fork-branches .branch.yes .yn{color:var(--green)}
+  .fork-branches .branch.no .yn{color:var(--red)}
+
+  .wing-header{text-align:center;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:36px 0 4px}
+  .wing-header.a{color:var(--blue)}
+  .wing-header.b{color:var(--purple)}
+  .wing-header.c{color:var(--teal)}
+
+  .merge-note{text-align:center;font-size:10.5px;color:var(--dim);max-width:420px;margin:10px auto;font-style:italic}
+
+  .exit-row .room.exit{min-width:150px}
+
+  .footnote{max-width:760px;margin:56px auto 0;padding:20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--dim);line-height:1.8}
+  .footnote strong{color:#E2E2EC}
+  .footnote code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:#B8C4D4}
+
+  @media (max-width:700px){
+    .room{min-width:120px;font-size:11px}
+    .room.hub{min-width:200px}
+    .fork-branches{gap:18px}
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">RPGACE Oversight — 6th document</div>
+  <h1><span class="bull">🐂</span>The Minotaur Map</h1>
+  <p>A mental-map reading of RPGACE's information architecture, in the shape of a labyrinth. <strong>The Minotaur is the information itself</strong> — a real user input (a chat message, a book, a URL, a shift) — wandering the maze from an entrance door, through chambers where it is read, judged, and transformed, to the one exit where it finally re-emerges as something Alex actually sees on screen. Every wall is a real module boundary; every fork is a real yes/no decision RPGACE's code actually makes.</p>
+</div>
+
+<div class="wrap">
+
+  <div class="legend">
+    <div class="legend-item"><span class="sym">🚪</span> Entrance — where a real input enters the maze</div>
+    <div class="legend-item"><span class="sym">🔀</span> Fork — a real yes/no decision in the code</div>
+    <div class="legend-item"><span class="sym">🏛️</span> Chamber — where information is processed or stored</div>
+    <div class="legend-item"><span class="sym">🚧</span> Checkpoint — a human (Alex) must pass the Minotaur through</div>
+    <div class="legend-item"><span class="sym">🏆</span> Exit — where the Minotaur finally reaches daylight: rendered on screen</div>
+  </div>
+
+  <div class="section-label">— The Labyrinth —</div>
+
+  <!-- WING A: Taxonomy contributors -->
+  <div class="wing-header a">Wing A — Everything that wants to teach the Taxonomy Tree something</div>
+
+  <div class="row">
+    <div class="room entrance"><span class="sym">🚪</span><div class="name">Oracle Chat</div><div class="detail">auto-detect badge on a real insight</div></div>
+    <div class="room entrance"><span class="sym">🚪</span><div class="name">Content Intelligence</div><div class="detail">competitor URL → scout/analyst</div></div>
+    <div class="room entrance"><span class="sym">🚪</span><div class="name">Encyclopedia Sync</div><div class="detail">saved article → silent propose</div></div>
+    <div class="room entrance"><span class="sym">🚪</span><div class="name">Bookworm</div><div class="detail">book chapter → per-insight cascade</div></div>
+    <div class="room entrance"><span class="sym">🚪</span><div class="name">Phylum Path (manual)</div><div class="detail">Alex types an insight directly</div></div>
+  </div>
+  <div class="connector wide"></div>
+
+  <div class="row">
+    <div class="room fork"><span class="sym">🔀</span><div class="name">Phylum enabled for this insight?</div>
+      <div class="fork-branches">
+        <div class="branch yes"><span class="yn">YES</span>Phylum Path's 5-check reasoning</div>
+        <div class="branch no"><span class="yn">NO</span>legacy flat top-down path</div>
+      </div>
+    </div>
+  </div>
+  <div class="connector wide"></div>
+
+  <div class="row">
+    <div class="room checkpoint"><span class="sym">🚧</span><div class="name">Review Queue</div><div class="detail">Confirm / Edit / Reject — every write gets a human checkpoint, no exceptions</div><div class="tag">taxonomy_proposals</div></div>
+  </div>
+  <div class="connector wide"></div>
+
+  <div class="row">
+    <div class="room hub"><span class="sym">🏛️</span><div class="name">THE GREAT HALL — Taxonomy Tree</div><div class="detail">The maze's true center. Phylum → Order → Class → Family → Genus → Species → Variant. Every confirmed insight from Wing A is chained here, parent_id-linked. Fusion links connect leaves across phyla like secret doors between corridors.</div><div class="tag">taxonomy_tree</div></div>
+  </div>
+  <div class="connector wide"></div>
+
+  <div class="row">
+    <div class="room fork"><span class="sym">🔀</span><div class="name">Article already generated for this node?</div>
+      <div class="fork-branches">
+        <div class="branch no"><span class="yn">NO</span>generate on manual request</div>
+        <div class="branch yes"><span class="yn">YES</span>serve cached article</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="merge-note">↓ Every path through the Great Hall re-emerges through the same door — the drill-down navigator.</div>
+
+  <!-- WING B: Oracle conversational -->
+  <div class="wing-header b">Wing B — Plain conversation, grounded by the same Hall</div>
+  <div class="row">
+    <div class="room entrance"><span class="sym">🚪</span><div class="name">Oracle Chat</div><div class="detail">any normal message</div></div>
+  </div>
+  <div class="connector wide"></div>
+  <div class="row">
+    <div class="room fork"><span class="sym">🔀</span><div class="name">Does the question need real taxonomy context?</div>
+      <div class="fork-branches">
+        <div class="branch yes"><span class="yn">YES</span>reads live 21-phylum list from the Hall — never invents one</div>
+        <div class="branch no"><span class="yn">NO</span>answers from general reasoning</div>
+      </div>
+    </div>
+  </div>
+  <div class="connector wide"></div>
+  <div class="row">
+    <div class="room"><span class="sym">🏛️</span><div class="name">callClaude()</div><div class="detail">single blocking call — the known 504-risk chamber on long answers</div></div>
+  </div>
+
+  <!-- WING C: Schedule, isolated -->
+  <div class="wing-header c">Wing C — A separate corridor that never enters the Great Hall</div>
+  <div class="row">
+    <div class="room entrance isolated"><span class="sym">🚪</span><div class="name">Schedule Oracle</div><div class="detail">URL, pasted text, or a direct question — 3 entry points, fully independent of Wings A/B</div></div>
+  </div>
+  <div class="connector wide"></div>
+  <div class="row">
+    <div class="room isolated"><span class="sym">🏛️</span><div class="name">scout → analyst</div><div class="detail">ingestion + reasoning, capped 8000-char fetch</div></div>
+  </div>
+  <div class="connector wide"></div>
+  <div class="row">
+    <div class="room fork"><span class="sym">🔀</span><div class="name">3 options worth surfacing?</div>
+      <div class="fork-branches">
+        <div class="branch yes"><span class="yn">YES</span>sequential reveal, one at a time</div>
+        <div class="branch no"><span class="yn">NO</span>"nothing useful found" toast</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">— Where the Minotaur Finally Reaches Daylight —</div>
+
+  <div class="row exit-row">
+    <div class="room exit"><span class="sym">🏆</span><div class="name">Chat bubble</div><div class="detail">Wing B's exit</div></div>
+    <div class="room exit"><span class="sym">🏆</span><div class="name">Taxonomy drill-down</div><div class="detail">Wing A's exit — Phylum Path nav tab</div></div>
+    <div class="room exit"><span class="sym">🏆</span><div class="name">Dashboard widget</div><div class="detail">Encyclopedia card, ConID card, Bibliography entry</div></div>
+    <div class="room exit"><span class="sym">🏆</span><div class="name">Schedule reveal</div><div class="detail">Wing C's exit — never crosses into the other two</div></div>
+  </div>
+
+  <div class="footnote">
+    <strong>Reading this map honestly:</strong> this is a mental-map-level representation of RPGACE's <em>primary</em> information corridors — the same scope <code>system_flow_map.md</code> (the 5th oversight doc) covers in Mermaid-diagram form, redrawn here as a single spatial metaphor rather than separate per-pipeline diagrams. It intentionally does not attempt to draw every sub-corridor (Fusion Links' cross-phylum search, Concept Fusion's branch-merging, the ~25 unaudited <code>hooks.on('rpgace:ready')</code> sites) — those live in <code>system_flow_map.md</code>'s dedicated diagrams and the built/unverified/not-built truth table. Update this map whenever a NEW wing is added (a new entrance, a new hub, a new exit) — not for every internal patch inside an existing corridor, which is what <code>patch_notes.html</code> is for.
+  </div>
+
+</div>
+</body>
+</html>

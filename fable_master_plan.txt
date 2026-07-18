@@ -195,63 +195,50 @@ Confirmed via the manual/TOC-paste book ("...- Michael Hewit"): full
 titles/keywords/phylum guesses, no gaps. The self-healing retry in
 _startBookFromTOC works correctly on a real full-length TOC. Closed.
 
-── SESSION A2: First-ever click of the PDF upload path — ⚠️ STILL NOT CLEARED (rebuilt July 18) ──
-WHO: Alex hand-tests. Highest-value untested piece in the whole app.
-4 fix attempts across July 18 (whitespace-fuzzy match, gap-fill retry,
-bounded structural fallback) each improved the missing-chapter count but
-never fully closed it, and the exact missing/misordered set kept
-shifting between runs. Alex diagnosed the real pattern: the manual
-TOC-paste path has NEVER failed, because it only ever asks the model to
-read a clean TOC, never to recall body text it hasn't seen - the URL/PDF
-path's searchString mechanism did exactly that, and confirmed via Vercel
-logs, sometimes couldn't (the model was reconstructing a plausible guess
-from a chapter's own TOC sub-headings when its real content lay beyond
-the 25000-char viewing window).
-REBUILT from scratch per Alex's own proposed architecture: model's ONLY
-job is now reading the TOC (detectChapterListByOracle - number, title,
-page number, keywords, phylum, NO body-text recall at all); finding each
-chapter's real heading is now a separate, fully mechanical, deterministic
-step (resolveChapterHeadingsMechanically) that searches the real
-extracted text directly, declusters the front-matter TOC mentions, and
-walks chapters in reading order - never asks the model to "remember"
-anything. NOT YET HAND-TESTED - this is a genuine rebuild, not another
-incremental patch.
-ALEX DOES NEXT: delete the old PDF book (🗑), upload the same PDF fresh,
-  count the chapters on "📚 Contents Found" AND check the order is
-  correct (1,2,3...26 in sequence, nothing at the end out of place).
-PASS: all 27 real chapters (Introduction + 1-26) detected, correct
-  order, no amber warning; chapter 1 opens straight into read/analyze
-  with real text already attached; insight review works the same smooth
-  way the manual book's Introduction chapter already proved out.
-FAIL: paste-able prompt for Claude:
-  "Session A2 retest failed after the July 18 rebuild. Entry point: 📎
-  PDF upload (fresh). Got [N] chapters, missing: [numbers], order:
-  [correct/wrong - describe]. Check Vercel runtime logs for 'Bookworm
-  DIAG: mechanical resolution could not find a real heading for
-  chapter(s)...' - this now tells you exactly which chapters the
-  mechanical text search itself couldn't find, which is real evidence
-  about this book's specific text formatting, not model unreliability.
-  Read that log line before proposing another fix."
-NOT YET DONE, logged as a deliberate scope cut, not dropped: using the
-TOC's own page numbers to narrow PDF.js's per-page extraction (part of
-Alex's original ask) - requires inferring the offset between a book's
-printed page numbers and the PDF file's actual page index, a real
-source of risk not worth taking blind in the same pass as the rebuild
-above. Worth a dedicated follow-up once the current rebuild is confirmed
-working.
+── SESSION A2: First-ever click of the PDF upload path — ✅ PASSED July 18, FOR REAL ──
+Highest-value untested piece in the whole app, and the longest single
+debugging arc of this whole project: 8 real rounds, each diagnosed from
+actual evidence (Vercel logs, direct Supabase queries, and - decisively,
+more than once - Alex's own pasted raw extracted text), never a second
+blind guess after a failed fix. Final result: 26 of 26 chapters,
+Introduction through Conclusion, correct titles, correct order, zero
+warnings. CLOSED.
+What actually shipped, proven not just built: detectChapterListByOracle()
+(model reads the TOC only - number, title, page number, keywords, phylum
+- self-verifies against 5 explicit checks before answering, recircles on
+any numbering gap by re-reading the SAME already-visible text) +
+resolveChapterHeadingsMechanically() (100% deterministic: character-fuzzy
+title matching tolerant of BOTH word-joining and word-splitting PDF
+artifacts found in this real book, strict reading-order-bounded
+assignment immune to later cross-references, title-only fallback for a
+chapter that doesn't restate its own number near its title). The old
+searchString/body-text-recall mechanism and its gap-fill retry are gone
+entirely - removed, not just superseded.
+STILL OPEN (this is the real next session's starting point, not chapter
+detection - that's done): the chapter-by-chapter read -> insight ->
+approve/reject loop has never been walked on the ACTUAL PDF book -
+Session A3 below only ever ran on the manual/TOC-paste book. Walk THIS
+book, chapter 1 through however far a sitting goes, exactly like A3
+already proved out.
+NOT DONE, logged as a deliberate scope cut, not dropped: page-number-
+assisted PDF.js extraction (part of Alex's original ask) - requires
+inferring the offset between a book's printed page numbers and the PDF
+file's actual page index, real risk not worth taking blind. Worth a
+dedicated follow-up, lower priority now that mechanical text search alone
+proved sufficient.
 
-── SESSION A3: One full chapter, end to end — ✅ PASSED July 18, WRONG BOOK ──
+── SESSION A3: One full chapter, end to end — ✅ PASSED July 18, on the WRONG book — REDO ON THE REAL ONE NEXT ──
 Real, genuine pass: the manual/TOC-paste book's "Introduction" chapter
 was read, analyzed (streaming wait-screen confirmed working smoothly),
 3 insights generated, 1 rejected (bad placement, correctly judged not
 worth forcing), 2 approved and written live to taxonomy_tree. First
 time this entire loop has worked end to end in Bookworm's history.
-CAVEAT: this was the manual book, not the PDF book - Session A2's PDF
-path has never been walked chapter-by-chapter at all. Once A2 passes
-on the PDF book, re-run this exact same walkthrough there too - Alex's
-own words: "I want auto to run exactly the same, but just with whole
-text from PDF... if done correctly, it will be so smooth" - that IS
-Session A2+A3 combined, the real next step, not a new feature to build.
+NOW THAT A2 IS GENUINELY DONE: re-run this exact same walkthrough on the
+real PDF book (delete any stale test books first) - Alex's own words:
+"I want auto to run exactly the same, but just with whole text from
+PDF... if done correctly, it will be so smooth" - chapter detection is
+now solid enough that this should just work. This is THE concrete next
+step for the next session, full stop.
 
 ── SESSION A4: THE FINISH LINE — whole book, Bibliography entry ──
 Not one sitting — this is chapters 2 through 26 across as many short

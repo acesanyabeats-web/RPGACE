@@ -144,6 +144,15 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🏁 July 18 — FINISH LINE: all 26 chapters, correct titles, correct order, zero warnings — Bookworm's PDF-upload chapter detection is DONE</div>
+    <div class="card-body">
+      Real, complete, confirmed pass: <strong>26 of 26 chapters</strong>, Introduction through Conclusion, every title accurate, every one in correct reading order, no amber warning. This closes the single longest debugging arc of Bookworm's entire build — starting from a "19 of 26" silent partial failure, through 8 separate rounds of real-evidence-driven diagnosis (deployment-branch mismatch, a second untouched code path, exact-match anchoring failing against PDF.js's inconsistent word-joining AND word-splitting, ordering overshoot into cross-references, TOC-read omissions, and finally two remaining stragglers needing a title-only fallback) to a title-only fallback closing the last gap. Every round was diagnosed from real evidence — Vercel logs, direct Supabase queries, and (decisively, more than once) Alex's own pasted raw extracted text — never a second blind guess after a failed fix, holding the line on this project's own standing rule throughout.<br><br>
+      <strong>What's now genuinely proven, not just built:</strong> <code>detectChapterListByOracle()</code> (model reads the TOC only, self-verifies against 5 explicit checks, recircles on any numbering gap) + <code>resolveChapterHeadingsMechanically()</code> (fully deterministic text search: character-fuzzy title matching tolerant of both word-joining and word-splitting PDF artifacts, strict reading-order-bounded assignment immune to cross-references, title-only fallback for chapters that don't restate their number) is a real, working, evidence-hardened pipeline for the PDF-upload and URL-fetch entry points — the same reliability bar the manual-TOC-paste path already held, now met by the harder path too.<br><br>
+      <strong>Still open, unchanged from earlier today:</strong> the chapter-by-chapter read → insight → approve/reject loop has never been walked on THIS (the PDF) book specifically — only on the manual book, back at the start of today's session. That walkthrough (Session A3 in <code>fable_master_plan.txt</code>) is the next real step, not chapter detection — which, as of this card, is done.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Bug fix: TOC-paste extraction silently dropped 7 of 26 real chapters (scattered, not a tail cutoff)</div>
     <div class="card-body">
