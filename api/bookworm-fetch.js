@@ -192,20 +192,23 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
   const MIN_GAP = 600;
   const allMatches = [];
   chapterList.forEach(function (c) {
-    const titleWords = (c.title || '').replace(/^chapter\s+\d+\s*[:\-]?\s*/i, '').trim().split(/\s+/).slice(0, 4).filter(Boolean);
-    if (!titleWords.length) return;
-    // Real evidence (Alex pasted the raw extracted TOC text directly, July
-    // 18): this book's real heading text has ZERO space in places a human
-    // reader sees a space - "Chapter14", "AdditiveRhythms" - not a PDF.js
-    // quirk unique to this book, a genuine PDF-encoding pattern (many PDFs
-    // position glyphs precisely instead of using an actual space character
-    // for stylized headings). \s* (zero-or-more) instead of \s+
-    // (one-or-more) between "chapter"/number and between title words
-    // handles both cases with one pattern. (?!\d) instead of \b after the
-    // number specifically allows a letter to immediately follow with zero
-    // separation ("Chapter14Additive...") while still refusing to match "14"
-    // as a false-positive prefix of a longer number like "140".
-    const titlePattern = titleWords.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s*');
+    const cleanTitle = (c.title || '').replace(/^chapter\s+\d+\s*[:\-]?\s*/i, '').trim();
+    if (!cleanTitle) return;
+    // Real evidence, found directly from Alex's own raw-text paste (July
+    // 18) - TWO distinct, unpredictable PDF-extraction corruptions occur
+    // in the SAME book, on different pages: words joined with NO space
+    // ("Chapter14", "AdditiveRhythms"), and words SPLIT apart with an
+    // inserted extra space in the middle ("Addi tive", "M odes" for
+    // "Modes"). Fixing only the joined case (\s* between words) wasn't
+    // enough - "Additive" as one literal token still can't match "Addi
+    // tive" split apart. Real fix: build the pattern CHARACTER by
+    // character with optional whitespace allowed between every pair,
+    // not just between words - matches "Additive", "AdditiveRhythms",
+    // and "Addi tive" all with the same pattern, since none of them are
+    // predictable in advance.
+    const titleChars = cleanTitle.slice(0, 20).split('').filter(function (ch) { return !/\s/.test(ch); });
+    if (!titleChars.length) return;
+    const titlePattern = titleChars.map(function (ch) { return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s*');
     let re;
     try { re = new RegExp('chapter\\s*' + c.number + '(?!\\d)[\\s\\S]{0,80}?' + titlePattern, 'gi'); } catch (e) { return; }
     let m;
