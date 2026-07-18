@@ -106,6 +106,15 @@
   </div>
 
   <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">🔍 July 18 — Re-tested: same 4 chapters (14, 15, 20, 26) failed again, but for a THIRD distinct reason — checked logs directly instead of guessing</div>
+    <div class="card-body">
+      Real re-test, identical missing set (14, 15, 20, 26) to the previous round. Checked Vercel logs directly rather than assuming the recircle loop had failed: it hadn't — the log showed "the TOC read them correctly" for all 4, meaning the recircle succeeded (or wasn't even needed this time) and the failure is now specifically in <code>resolveChapterHeadingsMechanically</code>'s structural text search, a third distinct failure shape from the two already handled (TOC omission, and — from July 17 — the old searchString unreliability this whole rebuild replaced).<br><br>
+      Rather than guess at why the number+title pattern search is failing for exactly these 4 (adjacent misses at 14/15, isolated misses at 20/26 — no obvious pattern yet), added targeted diagnostic logging: for each chapter the mechanical step can't resolve, logs how many number+title matches exist in the WHOLE document versus how many fall after the previously-resolved chapter's position, plus — separately — whether a BARE "Chapter N" (no title match required) exists past that cursor, and if so, the real 200 characters of context there. This will show directly whether the heading exists but the title text doesn't match closely enough (a title-wording mismatch), or whether it's genuinely absent from the searchable region entirely.<br><br>
+      <strong>No fix attempted this round</strong> — per this project's own rule, real evidence first. Next test's Vercel logs will show exactly what's happening at chapters 14, 15, 20, and 26's real positions in the text.
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Bug fix: TOC-paste extraction silently dropped 7 of 26 real chapters (scattered, not a tail cutoff)</div>
     <div class="card-body">
       First bug reported after the model switch: pasting the real 26-chapter table of contents into Bookworm's manual TOC-paste flow (<code>_startBookFromTOC</code>) returned a clean-looking, valid 19-chapter result — but chapters 6, 10, 12, 13, 15, 18, and 24 were missing, scattered through the list rather than a contiguous cut-off tail. Confirmed against real source before touching anything (this project's own rule): <code>_startBookFromTOC</code> (rpgace_core.js) called <code>_callGroundWorkerJSON(prompt, 1500)</code> — a real max_tokens ceiling, but the scattered gap pattern points more at the prompt's own ambiguous "use your judgement on what the actual chapter-level breakdown is" instruction causing the model to silently judge some numbered chapters as not-real-chapters, rather than a hard token cutoff (which would drop a contiguous tail, not scattered middle entries).<br><br>

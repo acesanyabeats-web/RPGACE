@@ -209,12 +209,38 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
   const offsetByNumber = {};
   let cursor = -1;
   chapterList.forEach(function (c) {
+    let found = false;
     for (let i = 0; i < kept.length; i++) {
       if (kept[i].number === c.number && kept[i].offset > cursor) {
         offsetByNumber[c.number] = kept[i].offset;
         cursor = kept[i].offset;
+        found = true;
         break;
       }
+    }
+    if (!found) {
+      // DIAGNOSTIC (added July 18, after a re-test showed the same 4
+      // chapters failing mechanical resolution twice running): is the
+      // number+title pattern genuinely absent past the cursor, or does it
+      // exist but got declustered/rejected for some other reason? Separately,
+      // does a BARE "Chapter N" (no title requirement) exist past the
+      // cursor at all - if yes, the real heading exists but this book's
+      // formatting puts more than 80 chars between the number and title
+      // (or the title itself doesn't match closely enough), not that the
+      // heading is missing entirely.
+      const rawForNumber = allMatches.filter(function (m) { return m.number === c.number; });
+      const pastCursor = rawForNumber.filter(function (m) { return m.offset > cursor; });
+      let bareContext = 'none found past cursor';
+      const bareRe = new RegExp('chapter\\s+' + c.number + '\\b', 'gi');
+      let bm; let bareOffset = -1;
+      while ((bm = bareRe.exec(fullText)) !== null) {
+        if (bm.index > cursor) { bareOffset = bm.index; break; }
+        if (bm.index === bareRe.lastIndex) bareRe.lastIndex++;
+      }
+      if (bareOffset >= 0) {
+        bareContext = 'offset ' + bareOffset + ': "' + fullText.slice(bareOffset, bareOffset + 200).replace(/\s+/g, ' ') + '"';
+      }
+      console.warn('Bookworm DIAG: chapter ' + c.number + ' ("' + c.title + '") - ' + rawForNumber.length + ' number+title match(es) total, ' + pastCursor.length + ' past cursor (' + cursor + '). Bare "Chapter ' + c.number + '" past cursor: ' + bareContext);
     }
   });
   return offsetByNumber;
