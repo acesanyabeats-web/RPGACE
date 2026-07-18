@@ -92,6 +92,14 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">🔁 July 17 — Bookworm self-healing retry: TOC extraction now auto-fixes its own gaps instead of only warning</div>
+    <div class="card-body">
+      Built without a live hand-test available this pass (no browser access this session) — a real code-level hardening of the fix above, not a substitute for actually re-testing it. Previously the count-check toast (added in the fix above) only <em>warned</em> Alex that chapters were missing, leaving a manual re-paste as the only recovery. <code>_startBookFromTOC</code> now computes the specific missing chapter number(s) (comparing "Chapter N" mentions in the raw pasted text against numbers parsed out of the model's returned chapter titles), and if any are missing, fires one targeted retry call asking the model specifically for those numbers, merges the result back into the chapter list, and re-sorts by chapter number. The count-check toast still fires — now only if chapters remain missing <em>after</em> the retry, or if the retry call itself fails outright — so the fail-loud guarantee holds either way.<br><br>
+      <strong>Still needs a real hand-test</strong> to confirm the retry actually recovers real missing chapters rather than just returning the same gap twice — this is Session A1 in <code>fable_master_plan.txt</code>, unchanged as the next real step.
+    </div>
+  </div>
+
   <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🗺️ July 17 (Fable 5) — Full system audit: CLAUDE.md rewritten + system_flow_map.md created as the 5th Oversight doc</div>
     <div class="card-body">

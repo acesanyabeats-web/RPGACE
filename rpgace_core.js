@@ -6847,11 +6847,31 @@ RPGACE.register('bookworm', {
     var cm;
     while ((cm = chNumPattern.exec(tocText)) !== null) { mentionedNumbers[cm[1]] = true; }
     var mentionedCount = Object.keys(mentionedNumbers).length;
-    return pp._callGroundWorkerJSON(prompt, 3000).then(function(parsed) {
-      var chapters = parsed.chapters || [];
-      if (!chapters.length) throw new Error('Could not extract any chapters from that table of contents');
-      if (mentionedCount > 0 && chapters.length < mentionedCount) {
-        RPGACE.utils.toast('Heads up: this table of contents mentions ' + mentionedCount + ' chapter numbers, but only ' + chapters.length + ' were extracted. Check the list below carefully before starting - some chapters may be missing.', '#E2A83D', 7000);
+
+    function numbersFoundIn(list) {
+      var found = {};
+      list.forEach(function(c) {
+        var m = /chapter\s+(\d+)/i.exec(c.title || '');
+        if (m) found[m[1]] = true;
+      });
+      return found;
+    }
+    function chapterNumOf(c) {
+      var m = /chapter\s+(\d+)/i.exec(c.title || '');
+      return m ? parseInt(m[1], 10) : NaN;
+    }
+
+    function commitChapters(finalChapters, stillMissing) {
+      // Order by parsed chapter number where every chapter parsed cleanly
+      // (a targeted retry can append entries out of original order) -
+      // falls back to as-returned order if numbers can't be parsed
+      // reliably, rather than risk a wrong sort on unnumbered titles.
+      var allParsed = finalChapters.every(function(c) { return !isNaN(chapterNumOf(c)); });
+      if (allParsed) {
+        finalChapters = finalChapters.slice().sort(function(a, b) { return chapterNumOf(a) - chapterNumOf(b); });
+      }
+      if (stillMissing.length) {
+        RPGACE.utils.toast('Heads up: chapter(s) ' + stillMissing.join(', ') + ' from this table of contents could not be extracted, even after a retry. Check the list below carefully before starting - you may need to add any missing chapter manually later.', '#E2A83D', 8000);
       }
 
       return fetch(RPGACE.sb.url('bookworm_books'), {
@@ -6865,7 +6885,7 @@ RPGACE.register('bookworm', {
         var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
         if (!book || !book.id) throw new Error('Book creation did not return an id');
 
-        var chapterRows = chapters.map(function(c, i) {
+        var chapterRows = finalChapters.map(function(c, i) {
           return {
             book_id: book.id, chapter_index: i, chapter_title: c.title, raw_text: '', status: 'pending',
             keywords: c.keywords || [], suggested_phylum: pp.isEnabled(c.suggestedPhylum) ? c.suggestedPhylum : null
@@ -6883,6 +6903,37 @@ RPGACE.register('bookworm', {
           self._refreshWidget();
           self._renderStructureFound(book, insertedChapters);
         });
+      });
+    }
+
+    return pp._callGroundWorkerJSON(prompt, 3000).then(function(parsed) {
+      var chapters = parsed.chapters || [];
+      if (!chapters.length) throw new Error('Could not extract any chapters from that table of contents');
+
+      var missing = Object.keys(mentionedNumbers).filter(function(n) { return !numbersFoundIn(chapters)[n]; });
+      if (!mentionedCount || !missing.length) return commitChapters(chapters, []);
+
+      // Self-healing retry (added July 17, alongside the count-check toast):
+      // rather than just warning and leaving Alex to notice and manually
+      // fix a shortfall, ask the model specifically for the chapter
+      // numbers it missed on the first pass and merge the result in - one
+      // targeted retry costs far less than a full re-paste, and per the
+      // project's "fail loud, don't silently proceed with a partial
+      // result" rule the toast still fires if the retry itself comes up
+      // short.
+      var retryPrompt = 'Same table of contents as before:\n\nTEXT:\n' + tocText + '\n\n' +
+        'On a first extraction pass, chapter number(s) ' + missing.join(', ') + ' were missed entirely. Re-scan the text specifically for those chapter numbers and return an entry for each one you can genuinely find (only omit a number if it truly does not appear in this text at all - double check before omitting). Same fields as before: title, 3-6 keywords, suggestedPhylum.\n\n' +
+        'PHYLA:\n' + phylumList + '\n\n' +
+        'Return ONLY JSON: {"chapters": [{"title": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
+      return pp._callGroundWorkerJSON(retryPrompt, 1200).then(function(retryParsed) {
+        var merged = chapters.concat(retryParsed.chapters || []);
+        var stillMissing = missing.filter(function(n) { return !numbersFoundIn(merged)[n]; });
+        return commitChapters(merged, stillMissing);
+      }).catch(function() {
+        // Retry call itself failed (network/parse) - proceed with the
+        // original list rather than blocking book creation entirely, but
+        // still warn honestly that the gap is unresolved.
+        return commitChapters(chapters, missing);
       });
     });
   },
