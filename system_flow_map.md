@@ -316,13 +316,15 @@ flowchart TD
 - Fusion links: creation, review, display (6 confirmed links live)
 - Review queue with all 3 proposal types + link cards
 - Bookworm: streaming analysis (verified <1 min to first insight), delete button, checkpoint/resume, Oracle-primary chapter detection (verified on the real book's chapter list), placement-path sanitizer
+- **Bookworm full insight-review loop, July 18: `_analyzeChapter` → Council-of-5 scored placement → Approve/Reject/Edit checkpoint → live `taxonomy_tree` write, confirmed end-to-end on a real chapter** (1 genuine reject, 2 genuine approvals) — manual/TOC-paste book only, see caveat below
+- TOC-paste chapter detection (`_startBookFromTOC`) — confirmed correct on a real full 27-chapter book, July 18
 - Grounded Oracle (no more invented phyla), request cross-wiring guard
 - Content Intelligence end-to-end; cross-device sync (shifts, agendas)
 
 ### Built but NEVER verified — treat as unconfirmed, test before building on
-- **PDF upload path (`_startBookFromPDF`, PDF.js CDN 3.11.174)** — never clicked once. HIGHEST-PRIORITY TEST.
+- **PDF upload path (`_startBookFromPDF`, PDF.js CDN 3.11.174)** — structure extraction attempted twice July 18, both times lost chapters to a whitespace-matching bug now fixed (`findOffset`) but **not yet re-tested**; the chapter-by-chapter read/insight loop has never run on a PDF-sourced book at all (July 18's successful full-chapter walkthrough was on the manual/TOC book, not this one). STILL the HIGHEST-PRIORITY TEST.
 - `_looksLikeTableOfContents()` warning heuristic — never observed catching the real mistake
-- Bookworm end-to-end: **no book has ever completed the full pipeline** (every attempt hit a then-fixed bug first)
+- Bookworm end-to-end: **no book has ever completed the full pipeline** (every attempt hit a then-fixed bug first; July 18 completed one chapter, not a whole book)
 - Bibliography section render (no completed book exists to show)
 - `bookworm:` chat trigger; browser-side render of concept-fusion/fusion-link review cards; interlink article popup; grouped phylum switcher; drill-down Back button — all built this session, none re-clicked after building
 - F16 Beatstars listing, F17 video pipeline stages, F18 auto visual treatment, highlight-to-Phylum-Path button (pending since July 13-15)

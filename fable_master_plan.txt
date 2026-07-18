@@ -189,59 +189,50 @@ Finish line = one real book walked start to finish. Sessions A1-A3 are
 the blockers; A4 is the finish line itself.
 ====================================================================
 
-── SESSION A1: Re-test TOC extraction (the 19-of-26 fix) ──
-WHO: Alex hand-tests, Claude on standby for a same-session fix.
-ALEX DOES: on rpgace.vercel.app, click "✍️ Or paste a table of
-  contents", enter the book title, paste the SAME full 26-chapter TOC
-  as before, submit. Count the chapters on the "📚 Contents Found"
-  screen. Do NOT click "▶ Start Chapter 1" yet if the count is wrong —
-  click "Exit", delete the book with 🗑, and report.
-PASS: all 26 chapters listed, correct titles, no amber warning toast.
-FAIL: paste-able prompt for Claude:
-  "Session A1, TOC re-test failed. Entry point: paste-TOC form. I pasted
-  the full 26-chapter TOC for Music Theory for Computer Musicians. Got
-  [N] chapters, missing: [list numbers]. Amber warning toast [did/did
-  not] appear. Diagnose _startBookFromTOC in rpgace_core.js against
-  this evidence — the July 17 fix (prompt tightening + max_tokens 3000
-  + count-check toast) did not hold. Query Supabase if needed. One fix,
-  then I re-test."
+── SESSION A1: Re-test TOC extraction (the 19-of-26 fix) — ✅ PASSED July 18 ──
+Confirmed via the manual/TOC-paste book ("...- Michael Hewit"): full
+27 chapters (Introduction + Chapters 1-26), fully sequential, correct
+titles/keywords/phylum guesses, no gaps. The self-healing retry in
+_startBookFromTOC works correctly on a real full-length TOC. Closed.
 
-── SESSION A2: First-ever click of the PDF upload path ──
+── SESSION A2: First-ever click of the PDF upload path — ⚠️ STILL NOT CLEARED ──
 WHO: Alex hand-tests. Highest-value untested piece in the whole app.
-ALEX DOES: click "📎 Or upload your own purchased ebook PDF", pick the
-  purchased ebook PDF from the laptop, wait. Expected: a processing
-  state, then the same "📚 Contents Found" screen with ~26 chapters
-  WITH real text already attached (unlike the TOC path, chapters from
-  a PDF should not ask you to paste text later).
-PASS: Contents Found shows the right chapters; opening chapter 1 goes
-  straight to the read/analyze screen (not "paste this chapter's text").
-LIKELY FAILURE POINTS (so a report can name them): (a) nothing happens
-  at all = PDF.js CDN script failed to load (_ensurePdfJs); (b) hangs
-  forever = extraction loop stuck on a large file; (c) garbled/empty
-  chapters = PDF text extraction produced junk this book's layout.
-FAIL: prompt for Claude:
-  "Session A2, PDF upload failed. Entry point: 📎 PDF upload. File:
-  [name, size, page count if known]. Symptom: [a/b/c above, or
-  describe + screenshot]. Browser console errors: [paste any red
-  lines]. This path has never run before — diagnose _startBookFromPDF
-  and _ensurePdfJs from this evidence before changing anything."
+Attempted twice July 18, both times returned only 19 of 27 chapters
+(missing 6,10,12,13,15,18,24) despite a server-side gap-retry fix.
+Root cause finally found via Vercel runtime logs (not another guess):
+chapter anchoring used an EXACT text match between the model's
+reconstructed "verbatim opening line" and the PDF-extracted text, and
+PDF.js's whitespace-collapsing extraction breaks that exact match just
+often enough to silently drop chapters - in both the original detection
+AND the retry. Fixed with a whitespace-flexible fallback match
+(findOffset, api/bookworm-fetch.js) - NOT YET RE-TESTED.
+ALEX DOES NEXT: delete the old 19-chapter PDF book (🗑), upload the same
+  PDF fresh, count the chapters on "📚 Contents Found". Then, if that's
+  right, walk chapter 1 exactly like Session A3 below (this is now the
+  real, still-outstanding A2+A3 combined test on the actual PDF book).
+PASS: all real chapters detected (27 for this book); chapter 1 opens
+  straight into read/analyze with real text already attached, no paste
+  prompt; insight review works the same smooth way the manual book's
+  Introduction chapter just did.
+FAIL: paste-able prompt for Claude:
+  "Session A2 retest failed. Entry point: 📎 PDF upload (fresh, after
+  deleting the old book). Got [N] chapters, missing: [numbers]. Check
+  Vercel runtime logs for the 'gap-fill retry' diagnostic line - it now
+  reports exactly how many of the retry's chapters anchored vs got
+  dropped. Use that number before guessing further."
 
-── SESSION A3: One full chapter, end to end ──
-(Whichever of A1/A2 passed decides the entry point — prefer the PDF
-book since its chapters already have text.)
-ALEX DOES: open chapter 1, read screen → analyze. First insight should
-  appear in under ~1 minute (streaming fix), rest fill in behind it.
-  Approve/Reject/Edit each insight honestly — don't rubber-stamp, the
-  placement quality data matters. Complete the chapter.
-  If on the TOC-path book: pasting chapter text here is also the live
-  test of the _looksLikeTableOfContents warning — once, deliberately
-  paste the TOC into the chapter-text box first to confirm the warning
-  fires, then paste the real chapter text. That closes backlog item 3
-  for free.
-PASS: chapter marked complete; approved insights visible in the
-  taxonomy (spot-check one in Phylum Path drill-down); no silent
-  failures.
-FAIL: use the bug-report template; name which insight/step it died on.
+── SESSION A3: One full chapter, end to end — ✅ PASSED July 18, WRONG BOOK ──
+Real, genuine pass: the manual/TOC-paste book's "Introduction" chapter
+was read, analyzed (streaming wait-screen confirmed working smoothly),
+3 insights generated, 1 rejected (bad placement, correctly judged not
+worth forcing), 2 approved and written live to taxonomy_tree. First
+time this entire loop has worked end to end in Bookworm's history.
+CAVEAT: this was the manual book, not the PDF book - Session A2's PDF
+path has never been walked chapter-by-chapter at all. Once A2 passes
+on the PDF book, re-run this exact same walkthrough there too - Alex's
+own words: "I want auto to run exactly the same, but just with whole
+text from PDF... if done correctly, it will be so smooth" - that IS
+Session A2+A3 combined, the real next step, not a new feature to build.
 
 ── SESSION A4: THE FINISH LINE — whole book, Bibliography entry ──
 Not one sitting — this is chapters 2 through 26 across as many short

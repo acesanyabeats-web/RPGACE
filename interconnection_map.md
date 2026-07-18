@@ -212,6 +212,14 @@ Full detail in `patch_notes.html`'s Tier 6. One-line summary per item, each exte
 
 ---
 
+## Bookworm ↔ Phylum Path — first confirmed live pipeline run (July 18)
+
+Real milestone, not a code-reading inference: Bookworm's insight-review loop (`_analyzeChapter` → `_placeInsightCascade` → `_decidePlacementScored`'s Council-of-5 scored reasoning → `_renderInsightReview`'s Approve/Reject/Edit checkpoint → `phylumPath._insertNewSteps` writing the chained `taxonomy_tree` rows) was walked end to end for the first time, on a real chapter, with a genuine reject (bad placement, correctly judged not worth forcing into an unbuilt phylum branch) and two real approvals landing live in the tree. Confirms every piece of that chain — not just each piece independently — actually composes correctly in production.
+
+Also confirmed same day: `api/bookworm-fetch.js`'s chapter-boundary anchoring (`fullText.indexOf(c.searchString)`) is a structurally different reliability case for PDF-sourced text than for Jina-fetched URL text, because PDF.js's `content.items.map(i => i.str).join(' ')` extraction collapses real line breaks into single spaces — a model's reconstructed "verbatim" search string can mismatch on whitespace alone. New `findOffset()` helper falls back to a whitespace-flexible regex match rather than failing outright. Worth remembering for any future text-anchoring work against PDF-extracted content elsewhere in RPGACE (Bookworm is currently the only feature that does this, but the same PDF.js pattern would hit the same issue anywhere else it's reused).
+
+---
+
 ## Standing rule: Oversight
 
 Every documentation update applies to all 4 Oversight docs by default, not only when explicitly requested — same discipline as code changes, formalized for docs. **Oversight** = Patch Notes (full narrative + F-series roadmap), this Interconnection Map (structural touchpoints, standing sections updated in place), the Full Manual (`manual.html`, polished quick-reference), and Taxonomy Map (`taxonomy_map.html`, queries `taxonomy_tree` live from Supabase every load — never needs a manual data update, only touched if its own code/columns change). See `CLAUDE.md`'s Oversight section for the durable version of this rule.

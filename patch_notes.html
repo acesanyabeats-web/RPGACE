@@ -129,6 +129,22 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">✅ July 18 — First-ever real milestone: a full Bookworm chapter walked start to finish, insights approved and placed live</div>
+    <div class="card-body">
+      Real, genuine win, first time in this feature's history: the "Introduction" chapter of Music Theory for Computer Musicians was read, analyzed, and its 3 insights individually reviewed — 1 rejected (a placement into a not-yet-built phylum branch, correctly judged not worth forcing), 2 approved and written live into <code>taxonomy_tree</code> via the full Council-of-5 scored placement pipeline. The streaming "⏳ Still analyzing the next insight in the background..." UX (built July 17 to fix the old 7-minute wait) was confirmed working live and well-received. One approved insight was explicitly flagged as a reusable framework rule for Oracle's own reasoning going forward, not just a taxonomy leaf.<br><br>
+      <strong>Important clarification for whoever picks this up next:</strong> this walkthrough was on the <strong>manual/TOC-paste book</strong> ("...- Michael Hewit" title), not the PDF-upload book (plain "Music Theory for Computer Musicians" title, the one just patched for the whitespace-matching bug above) — confirmed by chapter 1 immediately asking for pasted text afterward, which only happens on the manual path. <strong>The PDF-upload path's chapter-completion flow has still never been walked at all</strong> — that remains the real next step, and per Alex's own framing at session end, is expected to be the same smooth experience just witnessed, minus any manual pasting, once a fresh PDF upload is tested against the whitespace-matching fix.
+    </div>
+  </div>
+
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🛑 July 18 — Session ended here: real progress, one real milestone, one real fix still unverified</div>
+    <div class="card-body">
+      Picked up from July 17's "switching to Fable" session-end card. This session: (1) diagnosed and fixed a genuine deployment-process gap — fixes were being pushed to the feature branch but never merged to <code>main</code>, so Alex was hand-testing unfixed production code twice in a row; now a standing rule (CLAUDE.md + <code>fable_master_plan.txt</code>) to always merge to main before asking for a test. (2) Found and fixed that the July 17 chapter-gap retry only ever covered the manual-TOC-paste path, not the URL/PDF path — ported the same self-healing logic there, adapted for scanning a whole book (numeric-sequence gap detection instead of a raw mention count). (3) Found the REAL root cause of the PDF path's repeated 19-of-27 failure via Vercel's runtime logs (not another guess): exact-substring chapter anchoring failing against PDF.js's whitespace-collapsed text extraction — fixed with a whitespace-flexible fallback match (<code>findOffset</code>). (4) First-ever full chapter walked end-to-end with real insights approved and placed (see card above) — genuine, confirmed, worth celebrating — but on the manual-paste book, not the PDF book the fixes in this session were actually aimed at.<br><br>
+      <strong>Honest state:</strong> the PDF-upload path should now work correctly end-to-end (structure detection + real per-chapter text + the same smooth insight-review loop just proven live) but this has <strong>never actually been tested</strong> — <code>fable_master_plan.txt</code> Session A2 is still the next real step: fresh PDF upload, confirm all real chapters detected, confirm chapter 1 opens straight into reading (not a paste prompt), then walk it the same way the manual book was just walked.
+    </div>
+  </div>
+
   <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🗺️ July 17 (Fable 5) — Full system audit: CLAUDE.md rewritten + system_flow_map.md created as the 5th Oversight doc</div>
     <div class="card-body">
