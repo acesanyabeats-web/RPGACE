@@ -101,7 +101,7 @@ async function detectChaptersByOracle(apiKey, fullText, phylumList) {
   if (!jsonMatch) throw new Error('Oracle chapter-detection returned no JSON');
   const parsed = JSON.parse(jsonMatch[0]);
   const chapters = (parsed.chapters || []).map(function (c) {
-    const offset = fullText.indexOf(c.searchString);
+    const offset = findOffset(fullText, c.searchString);
     return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
   }).filter(function (c) { return c.offset !== null; });
   return chapters;
@@ -126,6 +126,39 @@ function dropClusteredBoundaries(boundaries) {
     kept.push(sorted[i]);
   }
   return kept;
+}
+
+// Real bug found July 18, confirmed via Vercel runtime logs: a real
+// PDF-upload request returned 200 with no errors/warnings logged, yet
+// still silently dropped 7 of 27 chapters even after the gap-fill retry
+// ran. Root cause: chapter anchoring here relies on an EXACT substring
+// match (fullText.indexOf(c.searchString)) between the model's
+// "verbatim opening sentence" and the raw extracted text. PDF.js joins
+// every text item with a single space (content.items.map(i => i.str)
+// .join(' ')), collapsing the PDF's real line breaks/hyphenation -  a
+// model reconstructing a "verbatim" sentence from that can easily
+// introduce a whitespace difference invisible to a human reading it but
+// fatal to exact indexOf(). URL-fetched (Jina) text is normal prose and
+// mostly avoids this; PDF-extracted text hits it far more, which is
+// exactly the pattern seen (PDF path repeatedly short, URL path never
+// reported this specific failure shape). Fix: fall back to a
+// whitespace-flexible regex match (words joined by \s+) instead of
+// giving up outright on an exact-match miss - finds a true offset into
+// the ORIGINAL fullText directly, no separate normalized-text mapping
+// needed.
+function findOffset(fullText, searchString) {
+  if (!searchString) return -1;
+  const exact = fullText.indexOf(searchString);
+  if (exact >= 0) return exact;
+  const words = searchString.trim().split(/\s+/).filter(Boolean);
+  if (words.length < 3) return -1; // too short to fuzzy-match safely
+  const pattern = words.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s+');
+  try {
+    const m = new RegExp(pattern, 'i').exec(fullText);
+    return m ? m.index : -1;
+  } catch (e) {
+    return -1;
+  }
 }
 
 function guessTitleFromURL(url) {
@@ -206,10 +239,12 @@ export default async function handler(req, res) {
           const retryMatch = retryReply.match(/\{[\s\S]*\}/);
           if (retryMatch) {
             const retryParsed = JSON.parse(retryMatch[0]);
+            const rawRetryCount = (retryParsed.chapters || []).length;
             const retryBoundaries = (retryParsed.chapters || []).map(function (c) {
-              const offset = fullText.indexOf(c.searchString);
+              const offset = findOffset(fullText, c.searchString);
               return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
             }).filter(function (c) { return c.offset !== null; });
+            console.warn('Bookworm: gap-fill retry for chapters [' + missingNums.join(',') + '] - model returned ' + rawRetryCount + ', ' + retryBoundaries.length + ' anchored successfully (rest dropped by offset-match failure)');
             boundaries = dropClusteredBoundaries(boundaries.concat(retryBoundaries));
           }
         } catch (e) {
