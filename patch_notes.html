@@ -100,6 +100,14 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">✅ July 17 — Pure-logic test of the retry/merge/sort code (no browser/API access this session)</div>
+    <div class="card-body">
+      With no live app or Oracle API reachable from this session, verified the JS <em>around</em> the AI call rather than the AI call itself: reimplemented <code>numbersFoundIn</code>/<code>chapterNumOf</code>/the sort-if-all-parsed logic from the retry fix above in an isolated Node script and ran 5 synthetic scenarios against it — no missing chapters (pass-through), the real bug shape (19-of-26, scattered gaps at 6/10/12/13/15/18/24, successful retry merges to a clean 1-26 ascending sequence), a partial retry that only recovers some of the missing chapters (toast correctly narrows to name only the ones still missing), a retry that fails outright (falls back to the original list + original missing set, matching the <code>.catch()</code> branch), and a list with an unparseable title (correctly left unsorted rather than partially/wrongly reordered). All 12 assertions passed.<br><br>
+      <strong>What this does and doesn't prove:</strong> confirms the merge/dedup/sort/toast-wording logic has no bugs of its own waiting to surface during a hand-test. It does <em>not</em> test whether the model's retry call actually finds real missing chapters when asked — that's a live-API behavior question only a real hand-test (Session A1) can answer. Test script kept in the scratchpad, not committed to the repo (no lasting value once A1 is confirmed).
+    </div>
+  </div>
+
   <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🗺️ July 17 (Fable 5) — Full system audit: CLAUDE.md rewritten + system_flow_map.md created as the 5th Oversight doc</div>
     <div class="card-body">
