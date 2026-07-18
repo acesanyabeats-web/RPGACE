@@ -146,6 +146,15 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">🐛 July 18 — Root-cause fix worked (all 7 chapters recovered), but landed out of order — fixed with a bounded search</div>
+    <div class="card-body">
+      Re-test confirmed the structural fix's core idea was right: all 7 previously-missing chapters (6, 10, 12, 13, 15, 18, 24) were recovered. But they landed at the END of the list instead of their correct reading-order position — a real bug in <code>findChapterHeadingOffset</code>'s "take the LAST match in the whole document" heuristic. If a later chapter ever references an earlier one by number (e.g. "...as covered in Chapter 6, Intervals are foundational to...", common in a real textbook), that unbounded search would grab the cross-reference instead of the real heading, since it only knew to skip the FIRST occurrence (the TOC), not to stay within the correct neighborhood.<br><br>
+      <strong>Fixed:</strong> new <code>resolveChapterOffsets()</code> — a shared two-pass resolver used by both the initial detection and the gap-fill retry. Pass 1 resolves everything <code>findOffset()</code> can via exact/fuzzy text match and records those as trusted anchors. Pass 2 bounds <code>findChapterHeadingOffset</code>'s structural search to fall strictly between the nearest lower and higher trusted anchor, so a stray later cross-reference outside that neighborhood can never be picked by mistake. The gap-fill retry now seeds this with the first pass's entire known-good chapter set for the tightest possible bounds, and its JSON schema returns an explicit chapter <code>number</code> field for reliable pairing instead of relying on title-text parsing.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. Real confidence this closes the loop — the recovery mechanism was already proven working, this only corrects where in the list the recovered chapters land — but still needs one more fresh PDF-upload test to confirm all 27 chapters come back both complete AND in correct order.
+    </div>
+  </div>
+
   <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">✅ July 18 — First-ever real milestone: a full Bookworm chapter walked start to finish, insights approved and placed live</div>
     <div class="card-body">

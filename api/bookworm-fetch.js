@@ -100,15 +100,47 @@ async function detectChaptersByOracle(apiKey, fullText, phylumList) {
   const jsonMatch = reply.match(/\{[\s\S]*\}/);
   if (!jsonMatch) throw new Error('Oracle chapter-detection returned no JSON');
   const parsed = JSON.parse(jsonMatch[0]);
-  const chapters = (parsed.chapters || []).map(function (c) {
-    let offset = findOffset(fullText, c.searchString);
-    if (offset < 0) {
-      const m = /chapter\s+(\d+)/i.exec(c.title || '');
-      if (m) offset = findChapterHeadingOffset(fullText, parseInt(m[1], 10), c.title);
+  return resolveChapterOffsets(fullText, parsed.chapters || []);
+}
+
+// Two-pass offset resolution, shared by the initial detection and the
+// gap-fill retry. Pass 1 resolves everything findOffset() can (exact or
+// whitespace-fuzzy searchString match) and records number->offset for
+// every success - these are trusted anchors. Pass 2 uses ONLY those
+// trusted anchors to bound findChapterHeadingOffset()'s structural search
+// for whatever's left, so it can never overshoot into an unrelated LATER
+// cross-reference to that chapter number elsewhere in the book (the real
+// bug found July 18 - taking the single last match in the WHOLE document
+// pulled in a later back-reference instead of the real heading, landing
+// recovered chapters at the end of the list instead of their real
+// position). Bounding the search to [nearest lower known offset, nearest
+// higher known offset] keeps the match in the correct neighborhood.
+function resolveChapterOffsets(fullText, entries, externalKnown) {
+  const withNums = entries.map(function (c) {
+    const m = /chapter\s+(\d+)/i.exec(c.title || '');
+    return { raw: c, num: c.number || (m ? parseInt(m[1], 10) : null) };
+  });
+  const known = Object.assign({}, externalKnown); // number -> offset, trusted anchors only
+  const pass1 = withNums.map(function (e) {
+    const offset = findOffset(fullText, e.raw.searchString);
+    if (offset >= 0 && e.num) known[e.num] = offset;
+    return { e: e, offset: offset };
+  });
+  const knownNums = Object.keys(known).map(Number).sort(function (a, b) { return a - b; });
+  const resolved = pass1.map(function (p) {
+    let offset = p.offset;
+    if (offset < 0 && p.e.num) {
+      let minOffset = 0, maxOffset = fullText.length;
+      for (let i = 0; i < knownNums.length; i++) {
+        if (knownNums[i] < p.e.num) minOffset = known[knownNums[i]];
+        if (knownNums[i] > p.e.num) { maxOffset = known[knownNums[i]]; break; }
+      }
+      offset = findChapterHeadingOffset(fullText, p.e.num, p.e.raw.title, minOffset, maxOffset);
     }
-    return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
+    const titleOut = p.e.num && !/chapter\s+\d+/i.test(p.e.raw.title || '') ? ('Chapter ' + p.e.num + ': ' + p.e.raw.title) : p.e.raw.title;
+    return { offset: offset >= 0 ? offset : null, title: titleOut, keywords: p.e.raw.keywords || [], suggestedPhylum: p.e.raw.suggestedPhylum || null };
   }).filter(function (c) { return c.offset !== null; });
-  return chapters;
+  return resolved;
 }
 
 // Real root cause found July 18 via direct log evidence: for a book whose
@@ -127,18 +159,29 @@ async function detectChaptersByOracle(apiKey, fullText, phylumList) {
 // Fix: since the model DOES correctly read the chapter's number and title
 // from the TOC (that part never failed), search fullText directly and
 // mechanically for a real heading occurrence of "Chapter N" near that
-// title text, taking the LAST match - a real chapter heading always
-// appears later in the document than its own front-matter TOC listing
-// (same principle detectChaptersByRegex already uses for decoy filtering).
-function findChapterHeadingOffset(fullText, chapterNum, title) {
+// title text - a real chapter heading always appears later in the
+// document than its own front-matter TOC listing (same principle
+// detectChaptersByRegex already uses for decoy filtering).
+//
+// minOffset/maxOffset (added after a real bug: taking the single LAST
+// match in the WHOLE document pulled in a later back-reference to that
+// chapter instead of the real heading, e.g. "...as covered in Chapter 6,
+// Intervals are..." appearing much further into the book - landing
+// recovered chapters at the end of the list instead of their real
+// position) bound the search to the neighborhood between the nearest
+// chapters already anchored with real confidence, so a stray later
+// mention outside that neighborhood can never be picked by mistake.
+function findChapterHeadingOffset(fullText, chapterNum, title, minOffset, maxOffset) {
   const titleWords = (title || '').replace(/^chapter\s+\d+\s*[:\-]?\s*/i, '').trim().split(/\s+/).slice(0, 4).filter(Boolean);
   if (!titleWords.length) return -1;
   const titlePattern = titleWords.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s+');
+  const lo = typeof minOffset === 'number' ? minOffset : 0;
+  const hi = typeof maxOffset === 'number' ? maxOffset : fullText.length;
   try {
     const re = new RegExp('chapter\\s+' + chapterNum + '\\b[\\s\\S]{0,80}?' + titlePattern, 'gi');
     let m, last = null;
     while ((m = re.exec(fullText)) !== null) {
-      last = m;
+      if (m.index >= lo && m.index < hi) last = m;
       if (m.index === re.lastIndex) re.lastIndex++; // guard against zero-width match loops
     }
     return last ? last.index : -1;
@@ -312,19 +355,21 @@ export default async function handler(req, res) {
           if (retryMatch) {
             const retryParsed = JSON.parse(retryMatch[0]);
             const rawRetryCount = (retryParsed.chapters || []).length;
-            const retryBoundaries = (retryParsed.chapters || []).map(function (c) {
-              let offset = findOffset(fullText, c.searchString);
-              if (offset < 0) {
-                const num = c.number || (/chapter\s+(\d+)/i.exec(c.title || '') || [])[1];
-                if (num) offset = findChapterHeadingOffset(fullText, num, c.title);
-              }
-              if (offset < 0) {
-                console.warn('Bookworm DIAG: retry chapter "' + c.title + '" not anchored even with structural fallback - model\'s searchString: "' + (c.searchString || '').slice(0, 150) + '"');
-              }
-              const titleOut = c.number && !/chapter\s+\d+/i.test(c.title || '') ? ('Chapter ' + c.number + ': ' + c.title) : c.title;
-              return { offset: offset >= 0 ? offset : null, title: titleOut, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
-            }).filter(function (c) { return c.offset !== null; });
-            console.warn('Bookworm: gap-fill retry for chapters [' + missingNums.join(',') + '] - model returned ' + rawRetryCount + ', ' + retryBoundaries.length + ' anchored successfully (rest dropped by offset-match failure)');
+            // Seed with the first pass's already-anchored chapters so the
+            // structural fallback bounds against the WHOLE known-good set,
+            // not just the other retried chapters - the tightest possible
+            // neighborhood, and how the out-of-order bug (July 18) was fixed.
+            const externalKnown = {};
+            boundaries.forEach(function (b) {
+              const n = chapterNumOfBoundary(b);
+              if (n !== null) externalKnown[n] = b.offset;
+            });
+            const retryBoundaries = resolveChapterOffsets(fullText, retryParsed.chapters || [], externalKnown);
+            const droppedCount = rawRetryCount - retryBoundaries.length;
+            if (droppedCount > 0) {
+              console.warn('Bookworm DIAG: gap-fill retry for [' + missingNums.join(',') + '] - ' + droppedCount + ' of ' + rawRetryCount + ' still could not be anchored even with the structural fallback');
+            }
+            console.warn('Bookworm: gap-fill retry for chapters [' + missingNums.join(',') + '] - model returned ' + rawRetryCount + ', ' + retryBoundaries.length + ' anchored successfully');
             boundaries = dropClusteredBoundaries(boundaries.concat(retryBoundaries));
           }
         } catch (e) {
