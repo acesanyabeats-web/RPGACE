@@ -172,6 +172,58 @@ export default async function handler(req, res) {
     }
     boundaries = dropClusteredBoundaries(boundaries);
 
+    // Self-healing retry (added July 17), ported from the manual TOC-paste
+    // path's fix (_startBookFromTOC in rpgace_core.js) - that fix only ever
+    // covered the manual-paste entry point, NOT this URL/PDF-upload path,
+    // which is why the exact same missing-chapters bug reproduced
+    // identically on a real hand-test after the other path was already
+    // fixed. Can't reuse the manual path's "scan raw text for Chapter N
+    // mentions" trick directly here - fullText is the WHOLE BOOK, so a
+    // literal mention-count would hit false positives from in-body
+    // references and running headers, not just real headings. Instead:
+    // check for GAPS in the numeric sequence of chapter numbers actually
+    // found (e.g. found 1-5,7-9,11... - missing 6,10) - a much more
+    // reliable signal against a real chapter list than a raw mention count.
+    function chapterNumOfBoundary(b) {
+      const m = /chapter\s+(\d+)/i.exec(b.title || '');
+      return m ? parseInt(m[1], 10) : null;
+    }
+    const foundNums = boundaries.map(chapterNumOfBoundary).filter(function (n) { return n !== null; });
+    let gapWarning = null;
+    if (foundNums.length >= 2) {
+      const maxNum = Math.max.apply(null, foundNums);
+      const foundSet = {}; foundNums.forEach(function (n) { foundSet[n] = true; });
+      const missingNums = [];
+      for (let n = 1; n <= maxNum; n++) { if (!foundSet[n]) missingNums.push(n); }
+      if (missingNums.length) {
+        try {
+          const prefix = fullText.slice(0, 25000);
+          const phylumBlock = phylumList ? '\n\nPHYLA (for the suggestedPhylum field below):\n' + phylumList : '';
+          const retryPrompt = 'Same book excerpt as before:\n\nTEXT:\n' + prefix + '\n\n' +
+            'On a first extraction pass, chapter number(s) ' + missingNums.join(', ') + ' were missed entirely. Re-scan specifically for those chapter numbers and return an entry for each one you can genuinely find in this text (only omit a number if it truly does not appear at all - double check before omitting). Same fields as before: title, an EXACT short searchString (8-12 words verbatim from that chapter\'s own opening content), 3-6 keywords, suggestedPhylum.' + phylumBlock + '\n\n' +
+            'Return ONLY JSON: {"chapters": [{"title": "...", "searchString": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
+          const retryReply = await callClaude(apiKey, [{ role: 'user', content: retryPrompt }], '', 1500);
+          const retryMatch = retryReply.match(/\{[\s\S]*\}/);
+          if (retryMatch) {
+            const retryParsed = JSON.parse(retryMatch[0]);
+            const retryBoundaries = (retryParsed.chapters || []).map(function (c) {
+              const offset = fullText.indexOf(c.searchString);
+              return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
+            }).filter(function (c) { return c.offset !== null; });
+            boundaries = dropClusteredBoundaries(boundaries.concat(retryBoundaries));
+          }
+        } catch (e) {
+          console.warn('Bookworm: gap-fill retry failed:', e.message);
+        }
+        const afterNums = boundaries.map(chapterNumOfBoundary).filter(function (n) { return n !== null; });
+        const afterSet = {}; afterNums.forEach(function (n) { afterSet[n] = true; });
+        const stillMissing = missingNums.filter(function (n) { return !afterSet[n]; });
+        if (stillMissing.length) {
+          gapWarning = 'Chapter number(s) ' + stillMissing.join(', ') + ' could not be found in this text, even after a retry - check the extracted chapter list carefully before starting.';
+        }
+      }
+    }
+
     const sliced = boundaries.map(function (b, i) {
       const end = (i + 1 < boundaries.length) ? boundaries[i + 1].offset : fullText.length;
       return { title: b.title, text: fullText.slice(b.offset, end).trim(), keywords: b.keywords || [], suggestedPhylum: b.suggestedPhylum || null };
@@ -200,7 +252,8 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       title: providedTitle || guessTitleFromURL(url || 'Untitled Book.pdf'),
-      chapters: chapters
+      chapters: chapters,
+      warning: gapWarning
     });
   } catch (err) {
     console.error('Bookworm fetch error:', err.message);

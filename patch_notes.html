@@ -108,6 +108,15 @@
     </div>
   </div>
 
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🐛 July 18 — Real gap found: the self-healing retry only ever covered ONE of Bookworm's two chapter-detection code paths</div>
+    <div class="card-body">
+      Alex re-tested and got the <em>exact byte-for-byte identical</em> 19-of-26 result, no warning toast, after the retry fix was already confirmed live on <code>main</code>. Diagnosed properly instead of guessing a third time: the retry logic (missing-number detection + targeted retry call + toast) was only ever added to <code>_startBookFromTOC</code> (rpgace_core.js) — the manual "✍️ paste a table of contents" entry point. The original <strong>"📖 Start" URL/PDF path</strong> (<code>detectChaptersByOracle</code> in <code>api/bookworm-fetch.js</code>) only got the July 17 prompt-tightening and higher max_tokens — it never got the retry mechanism or any warning. If that's the entry point being used, the identical-output-with-no-warning symptom is exactly what the code as shipped would produce, not a sign the fix silently failed.<br><br>
+      <strong>Fixed:</strong> ported the same self-healing pattern into <code>api/bookworm-fetch.js</code>'s <code>handler()</code>, adapted for this path's different shape — since <code>fullText</code> here is the WHOLE book (not a clean pasted TOC), scanning for raw "Chapter N" mentions would hit false positives from in-body references and running headers. Instead it checks for <strong>gaps in the numeric sequence</strong> of chapter numbers actually detected (e.g. found 1-5, 7-9, 11... → gap at 6, 10) — a far more reliable signal against a real chapter list. On a detected gap, one targeted retry re-scans the same 25000-char prefix specifically for the missing numbers, merges any recovered boundaries back in before the slicing/merge-forward pipeline runs (so they get identical offset-based treatment to every other chapter), and returns a <code>warning</code> field in the JSON response if anything is still missing after the retry. <code>_createBookFromExtraction</code> (shared by both the URL and PDF-upload paths) now shows that warning as the same amber toast the manual-paste path already had.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested (no browser/API access this session). This closes the known gap between the two entry points, but Session A1 in <code>fable_master_plan.txt</code> is still the real verification — re-test using whichever button ("✍️ paste TOC" or "📖 Start") reproduces the bug, and say explicitly which one so a third round doesn't repeat this exact mix-up.
+    </div>
+  </div>
+
   <div class="card gold" style="margin-bottom:20px;">
     <div class="card-title">🗺️ July 17 (Fable 5) — Full system audit: CLAUDE.md rewritten + system_flow_map.md created as the 5th Oversight doc</div>
     <div class="card-body">

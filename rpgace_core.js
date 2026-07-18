@@ -6778,6 +6778,13 @@ RPGACE.register('bookworm', {
     if (result.error) throw new Error(result.error);
     if (!result.chapters || !result.chapters.length) throw new Error('No chapters detected in this book');
     var pp = RPGACE.modules.phylumPath;
+    // Surfaces api/bookworm-fetch.js's server-side gap-detection retry
+    // (added July 17, same self-healing pattern as _startBookFromTOC's
+    // client-side check) - the retry already ran server-side; this just
+    // makes any still-unresolved gap visible instead of silently proceeding.
+    if (result.warning) {
+      RPGACE.utils.toast(result.warning, '#E2A83D', 8000);
+    }
 
     return fetch(RPGACE.sb.url('bookworm_books'), {
       method: 'POST',
