@@ -195,31 +195,50 @@ Confirmed via the manual/TOC-paste book ("...- Michael Hewit"): full
 titles/keywords/phylum guesses, no gaps. The self-healing retry in
 _startBookFromTOC works correctly on a real full-length TOC. Closed.
 
-── SESSION A2: First-ever click of the PDF upload path — ⚠️ STILL NOT CLEARED ──
+── SESSION A2: First-ever click of the PDF upload path — ⚠️ STILL NOT CLEARED (rebuilt July 18) ──
 WHO: Alex hand-tests. Highest-value untested piece in the whole app.
-Attempted twice July 18, both times returned only 19 of 27 chapters
-(missing 6,10,12,13,15,18,24) despite a server-side gap-retry fix.
-Root cause finally found via Vercel runtime logs (not another guess):
-chapter anchoring used an EXACT text match between the model's
-reconstructed "verbatim opening line" and the PDF-extracted text, and
-PDF.js's whitespace-collapsing extraction breaks that exact match just
-often enough to silently drop chapters - in both the original detection
-AND the retry. Fixed with a whitespace-flexible fallback match
-(findOffset, api/bookworm-fetch.js) - NOT YET RE-TESTED.
-ALEX DOES NEXT: delete the old 19-chapter PDF book (🗑), upload the same
-  PDF fresh, count the chapters on "📚 Contents Found". Then, if that's
-  right, walk chapter 1 exactly like Session A3 below (this is now the
-  real, still-outstanding A2+A3 combined test on the actual PDF book).
-PASS: all real chapters detected (27 for this book); chapter 1 opens
-  straight into read/analyze with real text already attached, no paste
-  prompt; insight review works the same smooth way the manual book's
-  Introduction chapter just did.
+4 fix attempts across July 18 (whitespace-fuzzy match, gap-fill retry,
+bounded structural fallback) each improved the missing-chapter count but
+never fully closed it, and the exact missing/misordered set kept
+shifting between runs. Alex diagnosed the real pattern: the manual
+TOC-paste path has NEVER failed, because it only ever asks the model to
+read a clean TOC, never to recall body text it hasn't seen - the URL/PDF
+path's searchString mechanism did exactly that, and confirmed via Vercel
+logs, sometimes couldn't (the model was reconstructing a plausible guess
+from a chapter's own TOC sub-headings when its real content lay beyond
+the 25000-char viewing window).
+REBUILT from scratch per Alex's own proposed architecture: model's ONLY
+job is now reading the TOC (detectChapterListByOracle - number, title,
+page number, keywords, phylum, NO body-text recall at all); finding each
+chapter's real heading is now a separate, fully mechanical, deterministic
+step (resolveChapterHeadingsMechanically) that searches the real
+extracted text directly, declusters the front-matter TOC mentions, and
+walks chapters in reading order - never asks the model to "remember"
+anything. NOT YET HAND-TESTED - this is a genuine rebuild, not another
+incremental patch.
+ALEX DOES NEXT: delete the old PDF book (🗑), upload the same PDF fresh,
+  count the chapters on "📚 Contents Found" AND check the order is
+  correct (1,2,3...26 in sequence, nothing at the end out of place).
+PASS: all 27 real chapters (Introduction + 1-26) detected, correct
+  order, no amber warning; chapter 1 opens straight into read/analyze
+  with real text already attached; insight review works the same smooth
+  way the manual book's Introduction chapter already proved out.
 FAIL: paste-able prompt for Claude:
-  "Session A2 retest failed. Entry point: 📎 PDF upload (fresh, after
-  deleting the old book). Got [N] chapters, missing: [numbers]. Check
-  Vercel runtime logs for the 'gap-fill retry' diagnostic line - it now
-  reports exactly how many of the retry's chapters anchored vs got
-  dropped. Use that number before guessing further."
+  "Session A2 retest failed after the July 18 rebuild. Entry point: 📎
+  PDF upload (fresh). Got [N] chapters, missing: [numbers], order:
+  [correct/wrong - describe]. Check Vercel runtime logs for 'Bookworm
+  DIAG: mechanical resolution could not find a real heading for
+  chapter(s)...' - this now tells you exactly which chapters the
+  mechanical text search itself couldn't find, which is real evidence
+  about this book's specific text formatting, not model unreliability.
+  Read that log line before proposing another fix."
+NOT YET DONE, logged as a deliberate scope cut, not dropped: using the
+TOC's own page numbers to narrow PDF.js's per-page extraction (part of
+Alex's original ask) - requires inferring the offset between a book's
+printed page numbers and the PDF file's actual page index, a real
+source of risk not worth taking blind in the same pass as the rebuild
+above. Worth a dedicated follow-up once the current rebuild is confirmed
+working.
 
 ── SESSION A3: One full chapter, end to end — ✅ PASSED July 18, WRONG BOOK ──
 Real, genuine pass: the manual/TOC-paste book's "Introduction" chapter
