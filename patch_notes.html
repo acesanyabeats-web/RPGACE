@@ -129,6 +129,14 @@
     </div>
   </div>
 
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-title">🔍 July 18 — Re-tested: whitespace fix alone did NOT recover the missing chapters; added forensic logging instead of a 4th blind fix</div>
+    <div class="card-body">
+      Re-test came back with the <strong>exact same 7 missing chapters (6, 10, 12, 13, 15, 18, 24)</strong> as every prior attempt — the amber warning toast did fire this time (confirming the gap-detection and fail-loud path work correctly), but the retry still couldn't recover them even with the whitespace-flexible <code>findOffset</code> fix live. Three independent Oracle calls losing the identical set rules out random model variance — something structural about how these specific chapters appear in the extracted text is the real cause, not yet known.<br><br>
+      Per this project's own rule (one failed fix = stop, get real evidence, don't patch blind again), no further fix was attempted. Instead added forensic diagnostic logging to <code>api/bookworm-fetch.js</code>: for each missing chapter number, logs whether "Chapter N" literally appears anywhere in the extracted <code>fullText</code> at all, whether it falls within the 25000-char prefix window the model can actually see, and the real surrounding text context — plus logs the retry model's attempted (and failed) <code>searchString</code> for each chapter it still couldn't anchor. Next real PDF-upload test will populate Vercel's runtime logs with actual forensic evidence (not a guess) about why these 7 specific chapters keep failing — check those logs before attempting another fix.
+    </div>
+  </div>
+
   <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">✅ July 18 — First-ever real milestone: a full Bookworm chapter walked start to finish, insights approved and placed live</div>
     <div class="card-body">

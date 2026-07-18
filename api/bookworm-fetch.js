@@ -229,8 +229,30 @@ export default async function handler(req, res) {
       const missingNums = [];
       for (let n = 1; n <= maxNum; n++) { if (!foundSet[n]) missingNums.push(n); }
       if (missingNums.length) {
+        const prefix = fullText.slice(0, 25000);
+        // DIAGNOSTIC (added July 18, after the whitespace-fix alone failed
+        // to recover the exact same missing set on a real re-test - three
+        // independent Oracle calls losing the identical 7 chapter numbers
+        // rules out random variance, so this logs real forensic data
+        // instead of guessing a 4th blind fix. For each missing number:
+        // does "Chapter N" literally appear anywhere in fullText at all
+        // (if not, the real heading text differs from that pattern
+        // entirely - roman numeral, spelled-out number, no heading), and
+        // if it does, is it even within the 25000-char prefix the model
+        // can see, plus the real surrounding text so any formatting quirk
+        // (running header, table layout, page-break artifact) is visible
+        // directly in Vercel logs rather than inferred.
+        missingNums.forEach(function (n) {
+          const re = new RegExp('chapter\\s+' + n + '\\b', 'i');
+          const fullIdx = fullText.search(re);
+          if (fullIdx < 0) {
+            console.warn('Bookworm DIAG: "Chapter ' + n + '" does not literally appear anywhere in fullText - real heading text differs from that pattern.');
+          } else {
+            const context = fullText.slice(Math.max(0, fullIdx - 40), fullIdx + 160).replace(/\s+/g, ' ');
+            console.warn('Bookworm DIAG: "Chapter ' + n + '" found at offset ' + fullIdx + ' of ' + fullText.length + ' (in 25000-char prefix: ' + (fullIdx < 25000) + '). Context: "' + context + '"');
+          }
+        });
         try {
-          const prefix = fullText.slice(0, 25000);
           const phylumBlock = phylumList ? '\n\nPHYLA (for the suggestedPhylum field below):\n' + phylumList : '';
           const retryPrompt = 'Same book excerpt as before:\n\nTEXT:\n' + prefix + '\n\n' +
             'On a first extraction pass, chapter number(s) ' + missingNums.join(', ') + ' were missed entirely. Re-scan specifically for those chapter numbers and return an entry for each one you can genuinely find in this text (only omit a number if it truly does not appear at all - double check before omitting). Same fields as before: title, an EXACT short searchString (8-12 words verbatim from that chapter\'s own opening content), 3-6 keywords, suggestedPhylum.' + phylumBlock + '\n\n' +
@@ -242,6 +264,9 @@ export default async function handler(req, res) {
             const rawRetryCount = (retryParsed.chapters || []).length;
             const retryBoundaries = (retryParsed.chapters || []).map(function (c) {
               const offset = findOffset(fullText, c.searchString);
+              if (offset < 0) {
+                console.warn('Bookworm DIAG: retry chapter "' + c.title + '" not anchored - model\'s searchString: "' + (c.searchString || '').slice(0, 150) + '"');
+              }
               return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
             }).filter(function (c) { return c.offset !== null; });
             console.warn('Bookworm: gap-fill retry for chapters [' + missingNums.join(',') + '] - model returned ' + rawRetryCount + ', ' + retryBoundaries.length + ' anchored successfully (rest dropped by offset-match failure)');
