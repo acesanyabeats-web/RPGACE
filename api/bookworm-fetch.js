@@ -101,10 +101,50 @@ async function detectChaptersByOracle(apiKey, fullText, phylumList) {
   if (!jsonMatch) throw new Error('Oracle chapter-detection returned no JSON');
   const parsed = JSON.parse(jsonMatch[0]);
   const chapters = (parsed.chapters || []).map(function (c) {
-    const offset = findOffset(fullText, c.searchString);
+    let offset = findOffset(fullText, c.searchString);
+    if (offset < 0) {
+      const m = /chapter\s+(\d+)/i.exec(c.title || '');
+      if (m) offset = findChapterHeadingOffset(fullText, parseInt(m[1], 10), c.title);
+    }
     return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
   }).filter(function (c) { return c.offset !== null; });
   return chapters;
+}
+
+// Real root cause found July 18 via direct log evidence: for a book whose
+// front matter (detailed table of contents, dot-leader page listings) fills
+// the ENTIRE 25000-char prefix the model can see, the model never actually
+// reads that chapter's real opening prose - it only sees the chapter's TOC
+// entry (number + title + sub-section names + page numbers). Asked for a
+// "verbatim opening sentence" it has never read, it reconstructs a
+// plausible-sounding guess from the TOC's own sub-heading vocabulary (real
+// example logged: "working out intervals compound intervals exercises
+// understanding intervals" for a chapter titled "Intervals" - literally
+// just that chapter's TOC sub-headings strung together, not real prose).
+// That guess correctly fails to string-match anywhere in the real text,
+// because it was never real. No amount of retrying the SAME question fixes
+// this - the model needs a different tool, not a second guess.
+// Fix: since the model DOES correctly read the chapter's number and title
+// from the TOC (that part never failed), search fullText directly and
+// mechanically for a real heading occurrence of "Chapter N" near that
+// title text, taking the LAST match - a real chapter heading always
+// appears later in the document than its own front-matter TOC listing
+// (same principle detectChaptersByRegex already uses for decoy filtering).
+function findChapterHeadingOffset(fullText, chapterNum, title) {
+  const titleWords = (title || '').replace(/^chapter\s+\d+\s*[:\-]?\s*/i, '').trim().split(/\s+/).slice(0, 4).filter(Boolean);
+  if (!titleWords.length) return -1;
+  const titlePattern = titleWords.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s+');
+  try {
+    const re = new RegExp('chapter\\s+' + chapterNum + '\\b[\\s\\S]{0,80}?' + titlePattern, 'gi');
+    let m, last = null;
+    while ((m = re.exec(fullText)) !== null) {
+      last = m;
+      if (m.index === re.lastIndex) re.lastIndex++; // guard against zero-width match loops
+    }
+    return last ? last.index : -1;
+  } catch (e) {
+    return -1;
+  }
 }
 
 // Defensive backstop regardless of which detection method ran: a real
@@ -254,20 +294,35 @@ export default async function handler(req, res) {
         });
         try {
           const phylumBlock = phylumList ? '\n\nPHYLA (for the suggestedPhylum field below):\n' + phylumList : '';
+          // Real cause confirmed July 18 (see findChapterHeadingOffset above):
+          // when a chapter's real content lies beyond the 25000-char prefix,
+          // the model has never actually read it and can only guess at a
+          // "verbatim" opening line from its own TOC sub-headings - asking
+          // it AGAIN with the same limited view doesn't fix that. This retry
+          // is kept as a secondary attempt (still useful if the miss was a
+          // genuine one-off rather than a window-visibility problem), but
+          // the real recovery mechanism is the structural title+number
+          // search below, which doesn't depend on the model seeing content
+          // it structurally cannot see.
           const retryPrompt = 'Same book excerpt as before:\n\nTEXT:\n' + prefix + '\n\n' +
-            'On a first extraction pass, chapter number(s) ' + missingNums.join(', ') + ' were missed entirely. Re-scan specifically for those chapter numbers and return an entry for each one you can genuinely find in this text (only omit a number if it truly does not appear at all - double check before omitting). Same fields as before: title, an EXACT short searchString (8-12 words verbatim from that chapter\'s own opening content), 3-6 keywords, suggestedPhylum.' + phylumBlock + '\n\n' +
-            'Return ONLY JSON: {"chapters": [{"title": "...", "searchString": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
+            'On a first extraction pass, chapter number(s) ' + missingNums.join(', ') + ' were missed entirely. Re-scan specifically for those chapter numbers and return an entry for each one you can genuinely find in this text (only omit a number if it truly does not appear at all - double check before omitting). Include the chapter NUMBER as its own field this time, not just embedded in the title. Same fields as before otherwise: title, an EXACT short searchString (8-12 words verbatim from that chapter\'s own opening content), 3-6 keywords, suggestedPhylum.' + phylumBlock + '\n\n' +
+            'Return ONLY JSON: {"chapters": [{"number": N, "title": "...", "searchString": "...", "keywords": ["...", "..."], "suggestedPhylum": N}]}';
           const retryReply = await callClaude(apiKey, [{ role: 'user', content: retryPrompt }], '', 1500);
           const retryMatch = retryReply.match(/\{[\s\S]*\}/);
           if (retryMatch) {
             const retryParsed = JSON.parse(retryMatch[0]);
             const rawRetryCount = (retryParsed.chapters || []).length;
             const retryBoundaries = (retryParsed.chapters || []).map(function (c) {
-              const offset = findOffset(fullText, c.searchString);
+              let offset = findOffset(fullText, c.searchString);
               if (offset < 0) {
-                console.warn('Bookworm DIAG: retry chapter "' + c.title + '" not anchored - model\'s searchString: "' + (c.searchString || '').slice(0, 150) + '"');
+                const num = c.number || (/chapter\s+(\d+)/i.exec(c.title || '') || [])[1];
+                if (num) offset = findChapterHeadingOffset(fullText, num, c.title);
               }
-              return { offset: offset >= 0 ? offset : null, title: c.title, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
+              if (offset < 0) {
+                console.warn('Bookworm DIAG: retry chapter "' + c.title + '" not anchored even with structural fallback - model\'s searchString: "' + (c.searchString || '').slice(0, 150) + '"');
+              }
+              const titleOut = c.number && !/chapter\s+\d+/i.test(c.title || '') ? ('Chapter ' + c.number + ': ' + c.title) : c.title;
+              return { offset: offset >= 0 ? offset : null, title: titleOut, keywords: c.keywords || [], suggestedPhylum: c.suggestedPhylum || null };
             }).filter(function (c) { return c.offset !== null; });
             console.warn('Bookworm: gap-fill retry for chapters [' + missingNums.join(',') + '] - model returned ' + rawRetryCount + ', ' + retryBoundaries.length + ' anchored successfully (rest dropped by offset-match failure)');
             boundaries = dropClusteredBoundaries(boundaries.concat(retryBoundaries));
