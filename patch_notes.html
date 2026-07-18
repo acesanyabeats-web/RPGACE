@@ -114,6 +114,17 @@
     </div>
   </div>
 
+  <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🎯 July 18 — Real root cause found directly, no diagnostic round needed: PDF text loses spaces at word boundaries</div>
+    <div class="card-body">
+      Alex pasted the actual raw extracted table-of-contents text directly, and it showed the answer immediately — no need to wait for the logging added last round. The real heading text has <strong>zero space</strong> in places a human reader sees one: <code>Chapter14</code>, <code>AdditiveRhythms</code>, <code>MusicalSound</code>. Not a bug specific to this book or a PDF.js quirk — a genuine PDF-encoding pattern (many PDFs position glyphs precisely for a stylized heading instead of using an actual space character), and it clearly varies page-by-page within the same book, which is exactly why some chapters resolved fine and others didn't: <code>resolveChapterHeadingsMechanically</code>'s regex required real whitespace (<code>chapter\s+14</code>) between "chapter" and the number and between title words, so anywhere the real text joined them with zero space, it could never match, regardless of chapter number.<br><br>
+      <strong>Fixed:</strong> both regex patterns changed from requiring whitespace (<code>\s+</code>) to tolerating zero-or-more (<code>\s*</code>), and the number's trailing <code>\b</code> boundary replaced with <code>(?!\d)</code> — a plain word boundary fails when a letter follows a digit with no separator at all ("Chapter14Additive..."), since both sides count as "word" characters to <code>\b</code>; <code>(?!\d)</code> only refuses a match if ANOTHER digit follows (guarding against "14" false-matching inside "140"), while correctly allowing a letter to follow immediately.<br><br>
+      Also strengthened <code>detectChapterListByOracle</code>'s prompt with an explicit self-verification pass before it answers — 5 concrete checks (completeness/no gaps, title accuracy, correct order, no duplication, page numbers captured) mirroring this project's Council-of-5 rigor, applied concretely to this one task rather than as theater — plus an explicit heads-up in the prompt itself that PDF-extracted text can lose spaces this way, so the model doesn't misread a joined word as a different chapter title.<br><br>
+      <strong>Scope note:</strong> every test so far has used the PDF-upload path specifically (PDF.js extraction) — Jina (the separate "📖 Start" URL-fetch path) has not been exercised at all today. This fix applies to both since they share the same detection functions, but Jina's own text-spacing behavior is unverified without a live URL test.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. Real confidence this is the actual mechanism (Alex's own raw-text evidence proves the zero-space pattern exists, not an inference) — needs one more PDF-upload test to confirm all 26 chapters now resolve.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Bug fix: TOC-paste extraction silently dropped 7 of 26 real chapters (scattered, not a tail cutoff)</div>
     <div class="card-body">

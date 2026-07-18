@@ -101,9 +101,16 @@ async function detectChapterListByOracle(apiKey, fullText, phylumList) {
   // since nothing past this call ever asks for that.
   const prefix = fullText.slice(0, 25000);
   const phylumBlock = phylumList ? '\n\nPHYLA (for the suggestedPhylum field below):\n' + phylumList : '';
-  const prompt = 'This is the beginning of a book, likely including a title page and a table of contents (chapter numbers, titles, sub-headings, page numbers, possibly dot leaders).\n\n' +
+  // Self-verification pass built into the prompt itself (added July 18,
+  // per Alex's ask for real rigor on this specific step - reading a TOC
+  // correctly is the one thing this whole rebuild depends on, so it earns
+  // the same 5-angle scrutiny this project already applies to real
+  // architecture decisions, reframed for this concrete task rather than
+  // theater): completeness, accuracy, order, no-duplication, page numbers.
+  const prompt = 'This is the beginning of a book, likely including a title page and a table of contents (chapter numbers, titles, sub-headings, page numbers, possibly dot leaders). Text extracted from a PDF can lose spaces between words that had visible spacing in the original ("Chapter14", "AdditiveRhythms") - read past that, it does not change what the real chapter numbers and titles are.\n\n' +
     'TEXT:\n' + prefix + '\n\n' +
     'Read ONLY the table of contents and list every real chapter in reading order - the chapter NUMBER, its TITLE, and its PAGE NUMBER if one is shown. Do not skip any numbered chapter, and do not merge two chapters into one entry, even if you are unsure how substantial a chapter is - the table of contents tells you what chapters exist, that is enough.\n\n' +
+    'Before answering, verify your own list against these 5 checks: (1) COMPLETENESS - does every chapter number from 1 up to the highest one you found appear exactly once, no gaps? (2) ACCURACY - does each title match what is actually printed, not a paraphrase or summary of it? (3) ORDER - are your entries in the same order the chapters are printed in? (4) NO DUPLICATION - no chapter number listed twice, no two chapters merged into one entry? (5) PAGE NUMBERS - did you capture the printed page number for each chapter where one is shown? If checking these reveals a gap or a mistake, go back and fix it before responding - do not describe the checks in your answer, just make sure they are all true of the final list.\n\n' +
     'For each chapter, also give 3-6 keywords drawn from its title/sub-heading text, and (if a phylum list is given below) a best-guess suggestedPhylum number - just a starting hint for later insight placement, not a final decision.' + phylumBlock + '\n\n' +
     'Return ONLY JSON: {"chapters": [{"number": N, "title": "...", "pageNumber": N, "keywords": ["...", "..."], "suggestedPhylum": N}]}';
 
@@ -187,9 +194,20 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
   chapterList.forEach(function (c) {
     const titleWords = (c.title || '').replace(/^chapter\s+\d+\s*[:\-]?\s*/i, '').trim().split(/\s+/).slice(0, 4).filter(Boolean);
     if (!titleWords.length) return;
-    const titlePattern = titleWords.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s+');
+    // Real evidence (Alex pasted the raw extracted TOC text directly, July
+    // 18): this book's real heading text has ZERO space in places a human
+    // reader sees a space - "Chapter14", "AdditiveRhythms" - not a PDF.js
+    // quirk unique to this book, a genuine PDF-encoding pattern (many PDFs
+    // position glyphs precisely instead of using an actual space character
+    // for stylized headings). \s* (zero-or-more) instead of \s+
+    // (one-or-more) between "chapter"/number and between title words
+    // handles both cases with one pattern. (?!\d) instead of \b after the
+    // number specifically allows a letter to immediately follow with zero
+    // separation ("Chapter14Additive...") while still refusing to match "14"
+    // as a false-positive prefix of a longer number like "140".
+    const titlePattern = titleWords.map(function (w) { return w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s*');
     let re;
-    try { re = new RegExp('chapter\\s+' + c.number + '\\b[\\s\\S]{0,80}?' + titlePattern, 'gi'); } catch (e) { return; }
+    try { re = new RegExp('chapter\\s*' + c.number + '(?!\\d)[\\s\\S]{0,80}?' + titlePattern, 'gi'); } catch (e) { return; }
     let m;
     while ((m = re.exec(fullText)) !== null) {
       allMatches.push({ number: c.number, offset: m.index });
@@ -231,7 +249,7 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
       const rawForNumber = allMatches.filter(function (m) { return m.number === c.number; });
       const pastCursor = rawForNumber.filter(function (m) { return m.offset > cursor; });
       let bareContext = 'none found past cursor';
-      const bareRe = new RegExp('chapter\\s+' + c.number + '\\b', 'gi');
+      const bareRe = new RegExp('chapter\\s*' + c.number + '(?!\\d)', 'gi');
       let bm; let bareOffset = -1;
       while ((bm = bareRe.exec(fullText)) !== null) {
         if (bm.index > cursor) { bareOffset = bm.index; break; }
