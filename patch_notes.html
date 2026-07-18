@@ -161,6 +161,15 @@
     </div>
   </div>
 
+  <div class="card gold" style="margin-bottom:20px;">
+    <div class="card-title">🐂 July 18 — Minotaur Map rebuilt: now a direct plain-language translation of system_flow_map.md's actual Mermaid, not a separately-invented representation</div>
+    <div class="card-body">
+      Real design flaw caught before it became a real problem: the first version of <code>minotaur_map.html</code> was built independently from its own "maze/wing" structure, describing the same architecture as <code>system_flow_map.md</code> but not actually derived from it — exactly the kind of silent-drift risk that had just caused the Dashboard's stale doc-links bug. Alex's fix: Mermaid stays the precise, technical version ("for the nerds"); Minotaur becomes its direct plain-language translation, using a river metaphor — tributaries (input sources), rivers (pipelines), estuaries (convergence points like the Taxonomy Tree), the sea (final rendered output) — with shapes still matching Mermaid's own stadium/rectangle/diamond/cylinder/dashed convention exactly, just relabelled in plain narrative language instead of code terms.<br><br>
+      Rebuilt section-by-section, each one a traced translation of one specific numbered diagram in <code>system_flow_map.md</code> (River I ↔ §1 top-level map, River II ↔ §2 Oracle chat, River III ↔ §3 Phylum Path placement + the insight-cascade sub-diagram, River IV ↔ §4 article/concept-fusion, River V ↔ §5 the full Bookworm pipeline, River VI ↔ §6 review queue, River VII ↔ §7 Content Intelligence/Schedule, plus a "dry riverbeds" section ↔ §8 planned features) — same nodes, same forks, same order as the real Mermaid source, no code terms, no invented structure.<br><br>
+      <strong>Standing rule now written into the page itself:</strong> if <code>system_flow_map.md</code>'s Mermaid changes, Minotaur must be re-translated in the same session — never edited independently of it. <code>interconnection_map.md</code> keeps its own distinct role (the prose log of <em>why</em> each connection exists), rather than being folded into or replaced by Minotaur — three oversight docs describing the same real system from three genuinely different, complementary angles.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Bug fix: TOC-paste extraction silently dropped 7 of 26 real chapters (scattered, not a tail cutoff)</div>
     <div class="card-body">

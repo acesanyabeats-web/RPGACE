@@ -7,68 +7,71 @@
 <style>
   :root {
     --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
-    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0; --amber:#E2A83D;
     --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
     --border:rgba(255,255,255,0.09); --text:rgba(226,226,236,0.88);
-    --dim:rgba(226,226,236,0.5); --thread:#C9A84C;
+    --dim:rgba(226,226,236,0.5);
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7;padding:0 0 80px}
-  .hero{padding:56px 24px 32px;text-align:center;border-bottom:1px solid var(--border);background:radial-gradient(ellipse at top,rgba(201,168,76,0.06),transparent 70%)}
+  .hero{padding:56px 24px 28px;text-align:center;border-bottom:1px solid var(--border);background:radial-gradient(ellipse at top,rgba(74,144,226,0.07),transparent 70%)}
   .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
-  .hero h1{font-family:Georgia,serif;font-size:34px;color:#E2E2EC;margin-bottom:12px}
-  .hero h1 .bull{font-size:30px;margin-right:8px}
-  .hero p{max-width:680px;margin:0 auto;color:var(--dim);font-size:13px;line-height:1.8}
-  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
+  .hero h1{font-family:Georgia,serif;font-size:32px;color:#E2E2EC;margin-bottom:12px}
+  .hero h1 .bull{font-size:28px;margin-right:8px}
+  .hero p{max-width:720px;margin:0 auto;color:var(--dim);font-size:13px;line-height:1.8}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
 
-  .legend{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:32px auto 8px;max-width:900px}
-  .legend-item{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:11px;color:var(--dim)}
-  .legend-item .sym{font-size:14px}
+  .keys{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;margin:32px auto 12px;max-width:920px}
+  .key-group{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:260px}
+  .key-group .kg-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+  .key-row{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--dim);margin-bottom:8px}
+  .key-row:last-child{margin-bottom:0}
+  .key-shape{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:36px;height:22px;font-size:9px}
+  .shape-rect{background:rgba(74,144,226,0.15);border:1.5px solid var(--blue);border-radius:5px}
+  .shape-diamond{width:26px;height:26px;background:rgba(201,168,76,0.18);border:1.5px solid var(--gold);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+  .shape-stadium{background:rgba(61,170,110,0.18);border:1.5px solid var(--green);border-radius:20px}
+  .shape-cyl{background:rgba(155,89,182,0.18);border:1.5px solid var(--purple);border-radius:5px 5px 10px 10px}
+  .shape-dashed{background:transparent;border:1.5px dashed var(--dim);border-radius:5px}
 
-  .section-label{text-align:center;margin:48px 0 20px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+  .river-label{text-align:center;margin:52px 0 4px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  .river-title{text-align:center;font-family:Georgia,serif;font-size:20px;color:#E2E2EC;margin-bottom:6px}
+  .river-sub{text-align:center;font-size:11px;color:var(--dim);max-width:600px;margin:0 auto 24px;font-style:italic}
 
-  /* ── Maze structure ─────────────────────────────────────── */
-  .maze{display:flex;flex-direction:column;align-items:center;gap:0}
-  .row{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;width:100%;position:relative}
-  .connector{width:2px;height:28px;background:repeating-linear-gradient(to bottom,var(--thread) 0 6px,transparent 6px 12px);margin:0 auto}
-  .connector.wide{align-self:center}
+  .flow{display:flex;flex-direction:column;align-items:center;gap:0}
+  .lane{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;width:100%}
+  .arrow-down{width:2px;height:24px;background:linear-gradient(var(--teal),var(--teal));position:relative;margin:2px auto}
+  .arrow-down::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--teal)}
 
-  .room{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;min-width:150px;max-width:200px;text-align:center;position:relative}
-  .room.entrance{border-color:rgba(74,144,226,0.35);background:rgba(74,144,226,0.05)}
-  .room.fork{border-color:rgba(201,168,76,0.4);background:rgba(201,168,76,0.05);border-radius:6px}
-  .room.hub{border-color:rgba(155,89,182,0.5);background:rgba(155,89,182,0.08);min-width:260px;max-width:340px;padding:20px}
-  .room.checkpoint{border-color:rgba(226,84,84,0.35);background:rgba(226,84,84,0.05)}
-  .room.exit{border-color:rgba(61,170,110,0.5);background:rgba(61,170,110,0.08)}
-  .room.isolated{border-color:rgba(42,191,176,0.35);background:rgba(42,191,176,0.05)}
+  .node{padding:12px 16px;text-align:center;position:relative}
+  .node.rect{background:rgba(74,144,226,0.08);border:1.5px solid rgba(74,144,226,0.4);border-radius:8px;min-width:150px;max-width:220px}
+  .node.stadium{background:rgba(61,170,110,0.1);border:1.5px solid rgba(61,170,110,0.45);border-radius:22px;min-width:140px;max-width:200px}
+  .node.cyl{background:rgba(155,89,182,0.1);border:1.5px solid rgba(155,89,182,0.4);border-radius:6px 6px 14px 14px;min-width:140px;max-width:200px}
+  .node.dashed{background:transparent;border:1.5px dashed rgba(226,226,236,0.3);border-radius:8px;min-width:150px;max-width:220px;opacity:0.85}
+  .node .t{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+  .node .d{font-size:10px;color:var(--dim);line-height:1.5}
 
-  .room .sym{font-size:20px;display:block;margin-bottom:6px}
-  .room .name{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
-  .room .detail{font-size:10.5px;color:var(--dim);line-height:1.5}
-  .room .tag{display:inline-block;font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 6px;border-radius:8px;margin-top:6px;background:rgba(255,255,255,0.06);color:var(--dim)}
+  .fork{background:rgba(201,168,76,0.08);border:1.5px solid rgba(201,168,76,0.45);border-radius:10px;padding:12px 18px;text-align:center;min-width:180px;max-width:320px}
+  .fork .t{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:2px}
+  .branches{display:flex;gap:32px;justify-content:center;margin-top:6px;flex-wrap:wrap}
+  .branch{display:flex;flex-direction:column;align-items:center;font-size:10px;color:var(--dim);max-width:180px}
+  .branch .yn{font-weight:700;letter-spacing:1px;margin-bottom:3px;padding:1px 8px;border-radius:8px}
+  .branch.yes .yn{color:var(--green);background:rgba(61,170,110,0.12)}
+  .branch.no .yn{color:var(--red);background:rgba(226,84,84,0.12)}
 
-  .fork-branches{display:flex;gap:36px;justify-content:center;margin-top:4px}
-  .fork-branches .branch{display:flex;flex-direction:column;align-items:center;font-size:10px;color:var(--dim)}
-  .fork-branches .branch .yn{font-weight:700;letter-spacing:1px;margin-bottom:2px}
-  .fork-branches .branch.yes .yn{color:var(--green)}
-  .fork-branches .branch.no .yn{color:var(--red)}
+  .estuary{background:rgba(42,191,176,0.08);border:2px solid rgba(42,191,176,0.5);border-radius:14px;padding:18px 22px;text-align:center;min-width:220px;max-width:360px}
+  .estuary .t{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:4px}
+  .estuary .d{font-size:11px;color:var(--dim);line-height:1.6}
 
-  .wing-header{text-align:center;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:36px 0 4px}
-  .wing-header.a{color:var(--blue)}
-  .wing-header.b{color:var(--purple)}
-  .wing-header.c{color:var(--teal)}
+  .correspond{font-size:9.5px;color:rgba(226,226,236,0.35);text-align:center;margin-top:6px}
+  .correspond code{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.04);padding:1px 5px;border-radius:3px}
 
-  .merge-note{text-align:center;font-size:10.5px;color:var(--dim);max-width:420px;margin:10px auto;font-style:italic}
-
-  .exit-row .room.exit{min-width:150px}
-
-  .footnote{max-width:760px;margin:56px auto 0;padding:20px 24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--dim);line-height:1.8}
+  .footnote{max-width:800px;margin:60px auto 0;padding:22px 26px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--dim);line-height:1.8}
   .footnote strong{color:#E2E2EC}
   .footnote code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:#B8C4D4}
 
   @media (max-width:700px){
-    .room{min-width:120px;font-size:11px}
-    .room.hub{min-width:200px}
-    .fork-branches{gap:18px}
+    .node,.fork,.estuary{min-width:130px;font-size:11px}
+    .branches{gap:16px}
   }
 </style>
 </head>
@@ -77,113 +80,316 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight — 6th document</div>
   <h1><span class="bull">🐂</span>The Minotaur Map</h1>
-  <p>A mental-map reading of RPGACE's information architecture, in the shape of a labyrinth. <strong>The Minotaur is the information itself</strong> — a real user input (a chat message, a book, a URL, a shift) — wandering the maze from an entrance door, through chambers where it is read, judged, and transformed, to the one exit where it finally re-emerges as something Alex actually sees on screen. Every wall is a real module boundary; every fork is a real yes/no decision RPGACE's code actually makes.</p>
+  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart.</p>
 </div>
 
 <div class="wrap">
 
-  <div class="legend">
-    <div class="legend-item"><span class="sym">🚪</span> Entrance — where a real input enters the maze</div>
-    <div class="legend-item"><span class="sym">🔀</span> Fork — a real yes/no decision in the code</div>
-    <div class="legend-item"><span class="sym">🏛️</span> Chamber — where information is processed or stored</div>
-    <div class="legend-item"><span class="sym">🚧</span> Checkpoint — a human (Alex) must pass the Minotaur through</div>
-    <div class="legend-item"><span class="sym">🏆</span> Exit — where the Minotaur finally reaches daylight: rendered on screen</div>
-  </div>
-
-  <div class="section-label">— The Labyrinth —</div>
-
-  <!-- WING A: Taxonomy contributors -->
-  <div class="wing-header a">Wing A — Everything that wants to teach the Taxonomy Tree something</div>
-
-  <div class="row">
-    <div class="room entrance"><span class="sym">🚪</span><div class="name">Oracle Chat</div><div class="detail">auto-detect badge on a real insight</div></div>
-    <div class="room entrance"><span class="sym">🚪</span><div class="name">Content Intelligence</div><div class="detail">competitor URL → scout/analyst</div></div>
-    <div class="room entrance"><span class="sym">🚪</span><div class="name">Encyclopedia Sync</div><div class="detail">saved article → silent propose</div></div>
-    <div class="room entrance"><span class="sym">🚪</span><div class="name">Bookworm</div><div class="detail">book chapter → per-insight cascade</div></div>
-    <div class="room entrance"><span class="sym">🚪</span><div class="name">Phylum Path (manual)</div><div class="detail">Alex types an insight directly</div></div>
-  </div>
-  <div class="connector wide"></div>
-
-  <div class="row">
-    <div class="room fork"><span class="sym">🔀</span><div class="name">Phylum enabled for this insight?</div>
-      <div class="fork-branches">
-        <div class="branch yes"><span class="yn">YES</span>Phylum Path's 5-check reasoning</div>
-        <div class="branch no"><span class="yn">NO</span>legacy flat top-down path</div>
-      </div>
+  <div class="keys">
+    <div class="key-group">
+      <div class="kg-title">Shape key (matches Mermaid's own convention exactly)</div>
+      <div class="key-row"><div class="key-shape shape-stadium"></div> Spring / river mouth — where information enters or finally exits</div>
+      <div class="key-row"><div class="key-shape shape-rect"></div> Chamber — a real place along the river where information is read, judged, or changed</div>
+      <div class="key-row"><div class="key-shape shape-diamond"></div> Fork — a real yes/no decision the code actually makes</div>
+      <div class="key-row"><div class="key-shape shape-cyl"></div> Reservoir — a Supabase table, where information is stored and can be drawn from later</div>
+      <div class="key-row"><div class="key-shape shape-dashed"></div> Dry riverbed — planned, not yet dug (not built)</div>
     </div>
-  </div>
-  <div class="connector wide"></div>
-
-  <div class="row">
-    <div class="room checkpoint"><span class="sym">🚧</span><div class="name">Review Queue</div><div class="detail">Confirm / Edit / Reject — every write gets a human checkpoint, no exceptions</div><div class="tag">taxonomy_proposals</div></div>
-  </div>
-  <div class="connector wide"></div>
-
-  <div class="row">
-    <div class="room hub"><span class="sym">🏛️</span><div class="name">THE GREAT HALL — Taxonomy Tree</div><div class="detail">The maze's true center. Phylum → Order → Class → Family → Genus → Species → Variant. Every confirmed insight from Wing A is chained here, parent_id-linked. Fusion links connect leaves across phyla like secret doors between corridors.</div><div class="tag">taxonomy_tree</div></div>
-  </div>
-  <div class="connector wide"></div>
-
-  <div class="row">
-    <div class="room fork"><span class="sym">🔀</span><div class="name">Article already generated for this node?</div>
-      <div class="fork-branches">
-        <div class="branch no"><span class="yn">NO</span>generate on manual request</div>
-        <div class="branch yes"><span class="yn">YES</span>serve cached article</div>
-      </div>
+    <div class="key-group">
+      <div class="kg-title">Metaphor key</div>
+      <div class="key-row">🐂 <strong style="color:#E2E2EC">The Minotaur</strong> — the actual information travelling the system right now</div>
+      <div class="key-row">🌊 <strong style="color:#E2E2EC">Tributary</strong> — one specific input source feeding a river</div>
+      <div class="key-row">🌀 <strong style="color:#E2E2EC">Estuary</strong> — where multiple rivers converge into one shared current</div>
+      <div class="key-row">🏖️ <strong style="color:#E2E2EC">The Sea</strong> — the final output Alex actually sees</div>
     </div>
   </div>
 
-  <div class="merge-note">↓ Every path through the Great Hall re-emerges through the same door — the drill-down navigator.</div>
+  <!-- ═══════════════ RIVER I — top-level map ═══════════════ -->
+  <div class="river-label">River I</div>
+  <div class="river-title">🌊 The Great Confluence</div>
+  <div class="river-sub">Where every kind of information enters RPGACE, and the two great estuaries it all eventually reaches</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §1, "Top-Level System Map"</div>
 
-  <!-- WING B: Oracle conversational -->
-  <div class="wing-header b">Wing B — Plain conversation, grounded by the same Hall</div>
-  <div class="row">
-    <div class="room entrance"><span class="sym">🚪</span><div class="name">Oracle Chat</div><div class="detail">any normal message</div></div>
+  <div class="flow">
+    <div class="lane">
+      <div class="node stadium"><div class="t">💬 A chat message</div></div>
+      <div class="node stadium"><div class="t">🎛️ An Oracle panel</div></div>
+      <div class="node stadium"><div class="t">🎥 A competitor's video URL</div></div>
+      <div class="node stadium"><div class="t">📅 Something for the schedule</div></div>
+      <div class="node stadium"><div class="t">📖 A whole book</div></div>
+      <div class="node stadium"><div class="t">✍️ Something typed by hand</div></div>
+      <div class="node stadium"><div class="t">👆 Highlighted text</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">The Oracle</div><div class="d">reads the message, reasons about it, replies</div></div>
+      <div class="node rect"><div class="t">The Watching Eye</div><div class="d">scans every Oracle reply for a teachable insight</div></div>
+      <div class="node rect"><div class="t">The Judgment Chamber</div><div class="d">decides which branch of the Tree an idea truly belongs to</div></div>
+      <div class="node rect"><div class="t">The Confluence Pool</div><div class="d">everything waiting for Alex's own eyes before it's trusted</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="estuary"><div class="t">🌀 The Great Tree</div><div class="d">Every confirmed idea, from every river, is carved in here — the one shared memory all of RPGACE draws from</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node cyl"><div class="t">💧 Waiting Pool</div><div class="d">staged, unconfirmed</div></div>
+      <div class="node cyl"><div class="t">💧 The Bridges</div><div class="d">links between distant branches</div></div>
+      <div class="node cyl"><div class="t">💧 The Library</div><div class="d">full written articles</div></div>
+      <div class="node cyl"><div class="t">💧 The Project Ledger</div><div class="d">content pieces in progress</div></div>
+      <div class="node cyl"><div class="t">💧 The Bookshelf</div><div class="d">books being studied</div></div>
+      <div class="node cyl"><div class="t">💧 The Bibliography</div><div class="d">books finished</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node stadium"><div class="t">🏖️ Drill-down view</div></div>
+      <div class="node stadium"><div class="t">🏖️ Dashboard widgets</div></div>
+      <div class="node stadium"><div class="t">🏖️ Encyclopedia page</div></div>
+      <div class="node stadium"><div class="t">🏖️ Live taxonomy map</div></div>
+    </div>
   </div>
-  <div class="connector wide"></div>
-  <div class="row">
-    <div class="room fork"><span class="sym">🔀</span><div class="name">Does the question need real taxonomy context?</div>
-      <div class="fork-branches">
-        <div class="branch yes"><span class="yn">YES</span>reads live 21-phylum list from the Hall — never invents one</div>
-        <div class="branch no"><span class="yn">NO</span>answers from general reasoning</div>
+
+  <!-- ═══════════════ RIVER II — Oracle chat ═══════════════ -->
+  <div class="river-label">River II</div>
+  <div class="river-title">💬 The Oracle Current</div>
+  <div class="river-sub">What happens between typing a message and seeing a reply</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §2, "Oracle Chat Request Flow"</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">You send a message</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Is the Oracle already mid-reply to something else?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>a toast asks you to wait</div><div class="branch no"><span class="yn">NO</span>continue</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Does the message start with a special word — "bookworm:" or "schedule oracle:"?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>diverted straight into River V or the Schedule river</div><div class="branch no"><span class="yn">NO</span>treated as an ordinary question</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The Oracle answers</div><div class="d">told the real, live list of all 21 disciplines first, so it can never invent one that doesn't exist</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Did the reply actually come back in time?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>known open wound — long answers can time out</div><div class="branch yes"><span class="yn">YES</span>the reply is shown</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="fork"><div class="t">Does the reply contain a teachable insight?</div>
+        <div class="branches"><div class="branch yes"><span class="yn">YES</span>a small badge appears — one tap sends it to the Judgment Chamber</div><div class="branch no"><span class="yn">NO</span>nothing extra shown</div></div>
+      </div>
+      <div class="fork"><div class="t">Does it read like a batch of content ideas?</div>
+        <div class="branches"><div class="branch yes"><span class="yn">YES</span>a "save these ideas" button appears</div><div class="branch no"><span class="yn">NO</span>nothing extra shown</div></div>
       </div>
     </div>
   </div>
-  <div class="connector wide"></div>
-  <div class="row">
-    <div class="room"><span class="sym">🏛️</span><div class="name">callClaude()</div><div class="detail">single blocking call — the known 504-risk chamber on long answers</div></div>
+
+  <!-- ═══════════════ RIVER III — Phylum Path placement ═══════════════ -->
+  <div class="river-label">River III</div>
+  <div class="river-title">🌳 The Judgment Chamber</div>
+  <div class="river-sub">How RPGACE decides exactly where a new idea belongs in the Great Tree — and how confident it is in that decision</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §3, "Phylum Path Insight Placement" + its insight-cascade sub-diagram</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="node stadium"><div class="t">Manual entry</div></div>
+      <div class="node stadium"><div class="t">Badge tapped</div></div>
+      <div class="node stadium"><div class="t">Highlight sent over</div></div>
+      <div class="node stadium"><div class="t">An older proposal</div></div>
+      <div class="node stadium"><div class="t">A Bookworm insight</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">A fast scout reads the discipline's whole shape first</div><div class="d">then a second, slower pass reasons through 5 real questions: is this its own clear idea? does it duplicate something? is it usable tonight? does it fit cleanly? will it still make sense once 20 more ideas land nearby?</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The Confirmation Gate</div><div class="d">shows exactly where it would attach and what new branches it would create — editable, insertable, deletable — before anything is real</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Do you accept it?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>nothing is written, nothing lost</div><div class="branch yes"><span class="yn">YES</span>carved into the Great Tree, properly linked to its parent branch</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">A teaching page is written for it</div></div>
+      <div class="node rect"><div class="t">The whole Tree is quietly searched for hidden bridges to distant branches</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Found a genuine bridge worth building?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES, 0-3</span>waits in the Confluence Pool for confirmation</div><div class="branch no"><span class="yn">NO</span>nothing more happens</div></div>
+    </div></div>
   </div>
 
-  <!-- WING C: Schedule, isolated -->
-  <div class="wing-header c">Wing C — A separate corridor that never enters the Great Hall</div>
-  <div class="row">
-    <div class="room entrance isolated"><span class="sym">🚪</span><div class="name">Schedule Oracle</div><div class="detail">URL, pasted text, or a direct question — 3 entry points, fully independent of Wings A/B</div></div>
+  <div class="river-label" style="margin-top:44px">River III, continued</div>
+  <div class="river-title">⚖️ The Council's Verdict</div>
+  <div class="river-sub">Once a home is proposed, how confident RPGACE is before ever showing it to you</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">An idea, and its first proposed home</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">How strong is the fit, out of 10?</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">9-10</span>shown to you immediately</div>
+        <div class="branch no"><span class="yn">5-8</span>reworded and tried again, up to 3 times</div>
+        <div class="branch no"><span class="yn">under 4</span>checked for a sharper version first</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Still no good home in this discipline?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>tries every other enabled discipline in turn</div><div class="branch no"><span class="yn">NO</span>a home was found</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Still nowhere, after trying ALL 21 disciplines?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>shown honestly as "no home found" — never forced somewhere wrong</div><div class="branch no"><span class="yn">NO</span>shown to you with its real home</div></div>
+    </div></div>
   </div>
-  <div class="connector wide"></div>
-  <div class="row">
-    <div class="room isolated"><span class="sym">🏛️</span><div class="name">scout → analyst</div><div class="detail">ingestion + reasoning, capped 8000-char fetch</div></div>
+
+  <!-- ═══════════════ RIVER IV — Article + Concept Fusion ═══════════════ -->
+  <div class="river-label">River IV</div>
+  <div class="river-title">📚 The Library Current</div>
+  <div class="river-sub">How a branch of the Tree becomes a real, readable article — and how two distant branches sometimes merge into something new</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §4, "Article Generation + Concept Fusion"</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">"Write this up" is pressed</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Already written before?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>shown instantly, with a refresh option</div><div class="branch no"><span class="yn">NO</span>gathers everything beneath this branch and writes it fresh</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Save it to the Library?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>discarded</div><div class="branch yes"><span class="yn">YES</span>saved, linked back to its branch</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Is this a whole branch, not just a single leaf?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>every OTHER discipline's branches are quietly considered as a possible merge</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Does merging with a distant branch create a genuinely new, teachable idea?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>waits in the Confluence Pool as a proposed new leaf</div></div>
+    </div></div>
   </div>
-  <div class="connector wide"></div>
-  <div class="row">
-    <div class="room fork"><span class="sym">🔀</span><div class="name">3 options worth surfacing?</div>
-      <div class="fork-branches">
-        <div class="branch yes"><span class="yn">YES</span>sequential reveal, one at a time</div>
-        <div class="branch no"><span class="yn">NO</span>"nothing useful found" toast</div>
+
+  <!-- ═══════════════ RIVER V — Bookworm ═══════════════ -->
+  <div class="river-label">River V</div>
+  <div class="river-title">📖 The Bookworm River</div>
+  <div class="river-sub">The longest river in RPGACE — a whole book, carried from its cover to a finished shelf entry</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §5, "Bookworm (whole-book → taxonomy pipeline)" + its insight-cascade sub-diagram (which is the same shape as River III's Council's Verdict above)</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="node stadium"><div class="t">🌊 A pasted web link</div></div>
+      <div class="node stadium"><div class="t">🌊 A hand-typed contents page</div></div>
+      <div class="node stadium"><div class="t">🌊 Your own purchased PDF</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The whole book's text is fetched or read</div><div class="d">a purchased PDF is read entirely in your own browser — the file itself never leaves your device</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The book's own table of contents is read</div><div class="d">RPGACE only ever asks for the chapter list here — never asked to recall text it hasn't actually seen</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">Each real chapter's true starting page is found</div><div class="d">a plain mechanical search through the book's real text — never a guess, tolerant of the odd ways a PDF can mangle spacing between words</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Found at least one real chapter?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>an honest error, never a fake success</div><div class="branch yes"><span class="yn">YES</span>continue</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node stadium"><div class="t">"Here's what I found" — a full chapter list shown for you to confirm before anything else happens</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Does this chapter already have its real text?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>asks you to paste it — and warns if what you paste still looks like a contents page, not real chapter text</div><div class="branch yes"><span class="yn">YES</span>opens straight into reading</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">You read the chapter once</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">Every real insight in it is found</div><div class="d">the first one is judged right away (River III's "Council's Verdict"); the rest keep being judged quietly in the background so you're never staring at a blank screen</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">For each insight — your verdict?</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">APPROVE</span>carved into the Great Tree as its own new branch</div>
+        <div class="branch no"><span class="yn">REJECT</span>skipped, nothing lost</div>
+        <div class="branch no"><span class="yn">EDIT</span>your own path used instead</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Any more chapters left in this book?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>the next chapter opens the same way</div><div class="branch no"><span class="yn">NO</span>the book is finished</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node cyl"><div class="t">💧 The Bibliography</div><div class="d">chapters read, insights kept, disciplines it touched</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node stadium"><div class="t">🏖️ Shown on the Research page</div></div></div>
+  </div>
+
+  <!-- ═══════════════ RIVER VI — Review queue ═══════════════ -->
+  <div class="river-label">River VI</div>
+  <div class="river-title">🌀 The Confluence Pool</div>
+  <div class="river-sub">Everything waiting for Alex's own judgment, from every river, gathers in one place</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §6, "Review Queue"</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="node cyl"><div class="t">💧 Waiting Pool</div></div>
+      <div class="node cyl"><div class="t">💧 The Bridges (pending)</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">A badge shows how many are waiting</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">What kind of thing is waiting?</div>
+      <div class="branches">
+        <div class="branch no"><span class="yn">an old-style idea</span>plain accept / edit / reject</div>
+        <div class="branch no"><span class="yn">a Judgment Chamber idea</span>labelled clearly, reconnects to its real branch on accept</div>
+        <div class="branch no"><span class="yn">a merged-branch idea</span>"create the merged branch" / reject</div>
+        <div class="branch no"><span class="yn">a hidden bridge</span>confirm / reject only</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="estuary"><div class="t">🌀 The Great Tree</div><div class="d">every accepted idea and merged branch lands here</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node stadium"><div class="t">🏖️ Confirmed bridges appear in the drill-down view — click through to either side</div></div></div>
+  </div>
+
+  <!-- ═══════════════ RIVER VII — Content Intel + Schedule ═══════════════ -->
+  <div class="river-label">River VII</div>
+  <div class="river-title">🎥📅 Two Independent Streams</div>
+  <div class="river-sub">Content Intelligence still feeds the Great Tree; Schedule Oracle never does — its own separate river, start to finish</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §7, "Content Intelligence & Schedule Oracle ingestion"</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="node stadium"><div class="t">A competitor's video URL</div><div class="d">⚠ needs the laptop running</div></div>
+      <div class="node stadium"><div class="t">A URL or pasted text for the schedule</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">Analysed, scored, watchlisted</div></div>
+      <div class="node rect"><div class="t">Fetched and read (capped shorter than Bookworm's own uncapped fetch)</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">Proposed to the Confluence Pool</div><div class="d">joins River VI</div></div>
+      <div class="fork"><div class="t">Did the fetch actually work?</div>
+        <div class="branches"><div class="branch no"><span class="yn">NO</span>known open wound — silently shows "unavailable"</div><div class="branch yes"><span class="yn">YES</span>analysed, then 3 options revealed one at a time: schedule it, save it, or teach it</div></div>
       </div>
     </div>
   </div>
 
-  <div class="section-label">— Where the Minotaur Finally Reaches Daylight —</div>
+  <!-- ═══════════════ Planned / dry riverbeds ═══════════════ -->
+  <div class="river-label">Not yet dug</div>
+  <div class="river-title">🏜️ The Dry Riverbeds</div>
+  <div class="river-sub">Planned channels, and exactly where they would join the rivers that already flow</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §8, "PLANNED features and where they attach"</div>
 
-  <div class="row exit-row">
-    <div class="room exit"><span class="sym">🏆</span><div class="name">Chat bubble</div><div class="detail">Wing B's exit</div></div>
-    <div class="room exit"><span class="sym">🏆</span><div class="name">Taxonomy drill-down</div><div class="detail">Wing A's exit — Phylum Path nav tab</div></div>
-    <div class="room exit"><span class="sym">🏆</span><div class="name">Dashboard widget</div><div class="detail">Encyclopedia card, ConID card, Bibliography entry</div></div>
-    <div class="room exit"><span class="sym">🏆</span><div class="name">Schedule reveal</div><div class="detail">Wing C's exit — never crosses into the other two</div></div>
+  <div class="flow">
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ Card-list view for Bookworm chapters</div><div class="d">would join River V, replacing one popup-at-a-time with a real list</div></div>
+      <div class="node dashed"><div class="t">🏜️ One dedicated sorting agent</div><div class="d">would feed the Great Tree, replacing the Judgment Chamber for non-book inputs</div></div>
+      <div class="node dashed"><div class="t">🏜️ A general-knowledge audit</div><div class="d">would write into the Great Tree under its own clearly-tagged zone</div></div>
+    </div>
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ Schedule Oracle, phase 2</div><div class="d">joins River VII's schedule stream</div></div>
+      <div class="node dashed"><div class="t">🏜️ 11 more disciplines</div><div class="d">extends the Judgment Chamber's reach</div></div>
+      <div class="node dashed"><div class="t">🏜️ Other book formats (EPUB, etc.)</div><div class="d">a new spring feeding River V</div></div>
+    </div>
   </div>
 
   <div class="footnote">
-    <strong>Reading this map honestly:</strong> this is a mental-map-level representation of RPGACE's <em>primary</em> information corridors — the same scope <code>system_flow_map.md</code> (the 5th oversight doc) covers in Mermaid-diagram form, redrawn here as a single spatial metaphor rather than separate per-pipeline diagrams. It intentionally does not attempt to draw every sub-corridor (Fusion Links' cross-phylum search, Concept Fusion's branch-merging, the ~25 unaudited <code>hooks.on('rpgace:ready')</code> sites) — those live in <code>system_flow_map.md</code>'s dedicated diagrams and the built/unverified/not-built truth table. Update this map whenever a NEW wing is added (a new entrance, a new hub, a new exit) — not for every internal patch inside an existing corridor, which is what <code>patch_notes.html</code> is for.
+    <strong>How this map stays honest:</strong> every river above is a direct plain-language translation of the numbered Mermaid diagram it references — same nodes, same forks, same order, just without code syntax. If <code>system_flow_map.md</code>'s Mermaid changes (a new node, a new fork, a new hub), <strong>this page must be re-translated in the same session</strong> — never edited independently, or the two will quietly drift the way the Dashboard's own doc-links widget once did. <code>interconnection_map.md</code> stays the third, complementary view: where <code>system_flow_map.md</code> is the precise technical diagram and this page is the plain-language spatial one, <code>interconnection_map.md</code> is the running prose log of WHY each connection exists and what it reuses — all three describe the same real system from a different angle, on purpose, not by accident.
   </div>
 
 </div>
