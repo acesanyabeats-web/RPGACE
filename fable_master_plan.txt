@@ -12,6 +12,20 @@ one session = one goal = one pass/fail. If something unrelated breaks
 mid-session, it gets a one-line note added to this file's PARKING LOT
 (bottom) and the session stays on its goal.
 
+DEPLOYMENT RULE (added July 17, learned the hard way, applies to every model)
+A fix pushed only to a feature/working branch (e.g.
+claude/rpgace-master-steps-uobp98) never reaches rpgace.vercel.app —
+production deploys from `main`. Confirmed real: the TOC-extraction fix
+sat on a feature branch for a full round while Alex re-tested against
+unfixed production code, reproducing the identical bug with no warning
+toast, because the retry logic had never actually gone live. Standing
+rule per Alex's explicit instruction: **whenever a fix is ready for
+Alex to hand-test, merge it into `main` and push `main` BEFORE asking
+for the test** — never hand off "please test this" while the change
+only exists on a side branch. If main and the working branch have
+diverged (not just a clean fast-forward), say so and resolve it before
+asking for a test, don't push a merge conflict live.
+
 BUG-REPORT TEMPLATE (use every time — this alone saves the most rounds)
   1. Which button/entry point, exactly (e.g. "✍️ paste TOC", "📖 Start
      URL", "📎 PDF upload", chapter-text box)
