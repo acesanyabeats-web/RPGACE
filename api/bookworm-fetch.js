@@ -188,9 +188,42 @@ async function detectChapterListByOracle(apiKey, fullText, phylumList) {
 // in real prose (you cite chapters you've already covered, not ones still
 // to come), so this greedy, strictly-increasing assignment naturally
 // lands on the real heading and never on a later back-reference.
+function charFuzzyPattern(text, maxChars) {
+  const chars = text.slice(0, maxChars || 20).split('').filter(function (ch) { return !/\s/.test(ch); });
+  if (!chars.length) return null;
+  return chars.map(function (ch) { return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s*');
+}
+
+function collectMatches(fullText, pattern) {
+  const out = [];
+  let re;
+  try { re = new RegExp(pattern, 'gi'); } catch (e) { return out; }
+  let m;
+  while ((m = re.exec(fullText)) !== null) {
+    out.push(m.index);
+    if (m.index === re.lastIndex) re.lastIndex++; // guard against zero-width match loops
+  }
+  return out;
+}
+
+function declusterByOffset(matches, minGap) {
+  const sorted = matches.slice().sort(function (a, b) { return a.offset - b.offset; });
+  const kept = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const last = kept[kept.length - 1];
+    if (last && sorted[i].offset - last.offset < minGap) continue;
+    kept.push(sorted[i]);
+  }
+  return kept;
+}
+
 function resolveChapterHeadingsMechanically(fullText, chapterList) {
   const MIN_GAP = 600;
-  const allMatches = [];
+  const allMatches = [];      // primary: "Chapter N ... Title" (real evidence: two
+  const titleOnlyMatches = []; // fallback: title alone, no "Chapter N" required -
+  // for a chapter whose real heading doesn't restate "Chapter N" near its
+  // title at all (found real evidence for this on the book's own
+  // concluding chapter, which likely just says "Conclusion").
   chapterList.forEach(function (c) {
     const cleanTitle = (c.title || '').replace(/^chapter\s+\d+\s*[:\-]?\s*/i, '').trim();
     if (!cleanTitle) return;
@@ -206,27 +239,23 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
     // not just between words - matches "Additive", "AdditiveRhythms",
     // and "Addi tive" all with the same pattern, since none of them are
     // predictable in advance.
-    const titleChars = cleanTitle.slice(0, 20).split('').filter(function (ch) { return !/\s/.test(ch); });
-    if (!titleChars.length) return;
-    const titlePattern = titleChars.map(function (ch) { return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('\\s*');
-    let re;
-    try { re = new RegExp('chapter\\s*' + c.number + '(?!\\d)[\\s\\S]{0,80}?' + titlePattern, 'gi'); } catch (e) { return; }
-    let m;
-    while ((m = re.exec(fullText)) !== null) {
-      allMatches.push({ number: c.number, offset: m.index });
-      if (m.index === re.lastIndex) re.lastIndex++; // guard against zero-width match loops
+    const titlePattern = charFuzzyPattern(cleanTitle, 20);
+    if (!titlePattern) return;
+    // Gap between number and title widened 80->200: a running header or
+    // repeated page-footer text (this book's own front matter shows one -
+    // "Contents xi", "MusicTheoryforComputerMusicians") can land between
+    // the chapter number and its title on a real heading page.
+    collectMatches(fullText, 'chapter\\s*' + c.number + '(?!\\d)[\\s\\S]{0,200}?' + titlePattern)
+      .forEach(function (offset) { allMatches.push({ number: c.number, offset: offset }); });
+    // Only bother with a title-only fallback if the title is distinctive
+    // enough to not risk matching common prose by coincidence.
+    if (cleanTitle.replace(/\s/g, '').length >= 6) {
+      collectMatches(fullText, titlePattern)
+        .forEach(function (offset) { titleOnlyMatches.push({ number: c.number, offset: offset }); });
     }
   });
-  allMatches.sort(function (a, b) { return a.offset - b.offset; });
-  // Same declustering rule as dropClusteredBoundaries: a tight run of 2+
-  // matches within MIN_GAP chars of each other is the front-matter TOC,
-  // not real headings - strip it, keeping the number attached.
-  const kept = [];
-  for (let i = 0; i < allMatches.length; i++) {
-    const last = kept[kept.length - 1];
-    if (last && allMatches[i].offset - last.offset < MIN_GAP) continue;
-    kept.push(allMatches[i]);
-  }
+  const kept = declusterByOffset(allMatches, MIN_GAP);
+  const keptTitleOnly = declusterByOffset(titleOnlyMatches, MIN_GAP);
   const offsetByNumber = {};
   let cursor = -1;
   chapterList.forEach(function (c) {
@@ -237,6 +266,17 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
         cursor = kept[i].offset;
         found = true;
         break;
+      }
+    }
+    if (!found) {
+      for (let i = 0; i < keptTitleOnly.length; i++) {
+        if (keptTitleOnly[i].number === c.number && keptTitleOnly[i].offset > cursor) {
+          offsetByNumber[c.number] = keptTitleOnly[i].offset;
+          cursor = keptTitleOnly[i].offset;
+          found = true;
+          console.warn('Bookworm DIAG: chapter ' + c.number + ' resolved via title-only fallback (no "Chapter N" found near its title) at offset ' + keptTitleOnly[i].offset);
+          break;
+        }
       }
     }
     if (!found) {

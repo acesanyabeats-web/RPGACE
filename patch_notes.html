@@ -135,6 +135,15 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">✅ July 18 — Re-tested: 24 of 26 chapters now correct, including 14 (which had failed every prior round) — 2 stragglers get a title-only fallback</div>
+    <div class="card-body">
+      Real re-test confirmed the character-by-character fix works: chapter 14 resolved correctly for the first time. Only 15 and 26 remained. Checked the logs for both rather than guess: chapter 26 ("Conclusion") had zero occurrences of "Chapter 26" anywhere in the searchable text at all — not a spacing problem, its real heading apparently never restates "Chapter 26" verbatim near the title (plausible for a short concluding chapter). Chapter 15's real heading similarly couldn't be found anywhere in the region between chapter 14 and the next confirmed reference — a different formatting convention on that specific page, not yet fully understood.<br><br>
+      <strong>Added, evidence-motivated rather than blind:</strong> (1) the gap tolerance between the chapter number and its title widened from 80 to 200 characters — this book's own front matter shows repeated running-header text ("Contents xi", the book's own title) that could plausibly land between a real number and title on some pages. (2) A genuine <strong>title-only fallback</strong>: if no "Chapter N + title" match can be found past the previous chapter's position, fall back to searching for the title text ALONE (still character-fuzzy, still required to come after the previous chapter — never able to grab something out of order), for exactly the case just found on chapter 26's likely formatting. Restricted to titles with 6+ real characters to avoid false-positive matches on short, common words.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. This directly targets the two known remaining stragglers with real evidence behind each change, not guesswork — but whether it actually closes the gap for THIS book's specific chapter 15/26 formatting needs one more test to confirm.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 17 — Bug fix: TOC-paste extraction silently dropped 7 of 26 real chapters (scattered, not a tail cutoff)</div>
     <div class="card-body">
