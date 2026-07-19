@@ -3919,6 +3919,496 @@ RPGACE.register('intelDelete', {
 });
 /* ===END:intelDelete=== */
 
+/* ===MODULE:intelDedup=== */
+// July 19 — root-cause fix for the duplicate Content Intelligence rows
+// (real evidence: one video cached 5 times; 24 dup rows total). Cause:
+// main.js's mergeByUrl dedups by EXACT url string only - mismatched
+// formats (youtu.be vs watch?v=, trailing params, m.youtube.com) never
+// match, and importIntelJSON skips dedup entirely; bad rows then persist
+// forever because the cache itself is merged back in on every 30s sync.
+// Fix: normalized-URL + title-fallback dedup applied to the localStorage
+// caches, once on init and after every sync (chainable wrap). main.js
+// untouched (frozen).
+RPGACE.register('intelDedup', {
+
+  normUrl: function(raw) {
+    if (!raw) return '';
+    var s = String(raw).trim();
+    s = s.replace(/^https?:\/\//i, '');
+    s = s.replace(/^www\./i, '');
+    s = s.replace(/^m\.youtube\.com/i, 'youtube.com');
+    s = s.split('#')[0];
+    var m = s.match(/^youtu\.be\/([A-Za-z0-9_-]{5,20})/i);
+    if (m) return 'youtube.com/watch?v=' + m[1];
+    m = s.match(/^youtube\.com\/shorts\/([A-Za-z0-9_-]{5,20})/i);
+    if (m) return 'youtube.com/watch?v=' + m[1];
+    if (/^youtube\.com\/watch/i.test(s)) {
+      var vm = s.match(/[?&]v=([A-Za-z0-9_-]{5,20})/);
+      return vm ? 'youtube.com/watch?v=' + vm[1] : s.split('?')[0].toLowerCase();
+    }
+    s = s.split('?')[0];
+    s = s.replace(/\/+$/, '');
+    return s.toLowerCase();
+  },
+
+  dedupKey: function(r) {
+    var u = this.normUrl(r && r.url);
+    if (u) return u;
+    return 'title:' + String((r && r.title) || '').replace('☁️', '').trim().toLowerCase();
+  },
+
+  // Deterministic keep-rule when two rows share a key: richest row wins
+  // (has the full insights payload), then the one deletable server-side
+  // (has a Supabase id), then the newer. Backfills id/url onto the
+  // winner so dedup never loses delete-ability or the original link.
+  _pick: function(a, b) {
+    var keep, lose;
+    var aRich = !!(a.insights && a.insights.encyclopedia_entry);
+    var bRich = !!(b.insights && b.insights.encyclopedia_entry);
+    if (aRich !== bRich) { keep = aRich ? a : b; }
+    else if (!!a.id !== !!b.id) { keep = a.id ? a : b; }
+    else {
+      var ad = new Date(a.date || a.created_at || 0).getTime();
+      var bd = new Date(b.date || b.created_at || 0).getTime();
+      keep = bd > ad ? b : a;
+    }
+    lose = (keep === a) ? b : a;
+    if (!keep.id && lose.id) keep.id = lose.id;
+    if (!keep.url && lose.url) keep.url = lose.url;
+    return keep;
+  },
+
+  dedupArray: function(arr) {
+    var self = this;
+    var map = {};
+    var order = [];
+    (arr || []).forEach(function(r) {
+      if (!r) return;
+      var key = self.dedupKey(r);
+      if (map[key] === undefined) { map[key] = r; order.push(key); }
+      else { map[key] = self._pick(map[key], r); }
+    });
+    return order.map(function(k) { return map[k]; });
+  },
+
+  _safeSet: function(key, arr, cap, halfCap) {
+    try { localStorage.setItem(key, JSON.stringify(arr.slice(0, cap))); }
+    catch (e1) {
+      try { localStorage.setItem(key, JSON.stringify(arr.slice(0, halfCap))); }
+      catch (e2) { console.warn('[intelDedup] quota:', e2.message); }
+    }
+  },
+
+  purge: function() {
+    var reports = [];
+    var wl = [];
+    try { reports = JSON.parse(localStorage.getItem('rpgace_intel_insights') || '[]'); } catch (e) { reports = []; }
+    try { wl = JSON.parse(localStorage.getItem('rpgace_intel_watchlist') || '[]'); } catch (e) { wl = []; }
+    reports = this.dedupArray(reports);
+    wl = this.dedupArray(wl);
+    this._safeSet('rpgace_intel_insights', reports, 200, 100);
+    this._safeSet('rpgace_intel_watchlist', wl, 100, 50);
+    this._writeStats(reports, wl);
+    return reports;
+  },
+
+  // Rewrites #intel-stats with DEDUPED counts - syncIntelData writes it
+  // from the raw merged array mid-flight; this runs after and corrects it
+  // (same markup as main.js:4271).
+  _writeStats: function(reports, wl) {
+    var el = document.getElementById('intel-stats');
+    if (!el) return;
+    var scores = reports.map(function(r) { return r.score || 0; }).filter(Boolean);
+    var avg = scores.length ? (scores.reduce(function(a, b) { return a + b; }, 0) / scores.length).toFixed(1) : 0;
+    el.innerHTML = '<span style="color:var(--gold)">📊 ' + reports.length + ' analysed</span> · <span style="color:var(--purple)">⭐ ' + wl.length + ' watchlist</span> · <span style="color:var(--green)">avg ' + avg + '/10</span>';
+  },
+
+  init: function() {
+    var self = this;
+    setTimeout(function() {
+      self.purge();
+      if (typeof window.loadIntelInsights === 'function') window.loadIntelInsights();
+    }, 1600);
+    function patch() {
+      if (typeof window.syncIntelData !== 'function' || window._intelDedupPatched) return;
+      window._intelDedupPatched = true;
+      var orig = window.syncIntelData;
+      window.syncIntelData = function() {
+        var result = orig.apply(this, arguments);
+        if (result && typeof result.then === 'function') {
+          return result.then(function() {
+            var deduped = self.purge();
+            if (typeof window.loadIntelInsights === 'function') window.loadIntelInsights();
+            return deduped;
+          });
+        }
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+  },
+
+});
+/* ===END:intelDedup=== */
+
+/* ===MODULE:videoSummary=== */
+// July 19 — the "Video Summary" page (approved plan, spec answers
+// recorded there): replaces the Insights tab's flat rows with per-video
+// summary cards. Collapsed card = video meta + its TOP 3 insights ranked
+// by the unified scored engine's stored confidence, each with insight
+// text, taxonomy path, and justification. Expanding shows ALL insights
+// as readable prose, then a grouped Taxonomy placements section. Old
+// videos (no per-insight proposals) get a per-video "🧬 Run Phylum Path"
+// retro button (max 4 sequential calls, explicit click only). ZERO
+// Oracle calls in the render path - Council-of-5 presence comes from the
+// stored justification/confidenceScore, never re-computed.
+//
+// DELIBERATE: cards use the .vs-card CLASS, never inline
+// background:var(--panel2)+margin-bottom:12px styles, and every card has
+// an id - this makes intelDelete's legacy insight-UI selector match 0
+// cards and its MutationObserver ignore our renders, cleanly retiring
+// that module's master-toggle/collapsed-list without editing it (its
+// watchlist delete, bibliography section, and _deleteUnified stay in
+// active use - our 🗑 calls _deleteUnified directly).
+RPGACE.register('videoSummary', {
+
+  PROPOSALS_TTL: 30000,
+  _proposals: null, // null = never loaded (distinct from [] = loaded, none)
+  _proposalsAt: 0,
+  _fetching: false,
+  _expanded: {},
+
+  _esc: function(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  },
+  _key: function(r) { return RPGACE.modules.intelDedup.dedupKey(r); },
+  _sid: function(key) {
+    var h = 5381;
+    for (var i = 0; i < key.length; i++) h = ((h << 5) + h + key.charCodeAt(i)) | 0;
+    return 'vs' + (h >>> 0).toString(36);
+  },
+  _reports: function() {
+    try { return JSON.parse(localStorage.getItem('rpgace_intel_insights') || '[]'); } catch (e) { return []; }
+  },
+  _cleanTitle: function(r) { return String((r && r.title) || 'Untitled').replace('☁️', '').trim(); },
+  _conf: function(p) { return (p.proposed_steps && Number(p.proposed_steps.confidenceScore)) || 0; },
+  _coerce: function(b) {
+    return typeof b === 'object' && b !== null ? (b.insight || b.technique || b.tip || b.steal || JSON.stringify(b)) : String(b);
+  },
+
+  _fetchProposals: function(force) {
+    var self = this;
+    if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve(this._proposals || []);
+    if (force && RPGACE.cache && RPGACE.cache.clear) RPGACE.cache.clear('taxonomy_proposals');
+    this._fetching = true;
+    return RPGACE.sb.select('taxonomy_proposals', 'source_type=eq.content_intelligence&select=id,source_id,proposed_path,proposed_steps,status,created_at&order=created_at.desc&limit=1000')
+      .then(function(rows) {
+        self._proposals = rows || [];
+        self._proposalsAt = Date.now();
+        self._fetching = false;
+        return self._proposals;
+      }).catch(function(e) {
+        self._fetching = false;
+        console.warn('[videoSummary] proposals fetch failed:', e.message);
+        return self._proposals || []; // keep last-known - never null-out on failure
+      });
+  },
+
+  _proposalsFor: function(key) {
+    var self = this;
+    var dd = RPGACE.modules.intelDedup;
+    var out = (this._proposals || []).filter(function(p) {
+      if (!p.source_id) return false;
+      var pk = String(p.source_id).indexOf('title:') === 0
+        ? String(p.source_id).toLowerCase()
+        : dd.normUrl(p.source_id);
+      return pk === key;
+    });
+    out.sort(function(a, b) { return self._conf(b) - self._conf(a); });
+    return out;
+  },
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.loadIntelInsights !== 'function' || window._videoSummaryPatched) return;
+      window._videoSummaryPatched = true;
+      var orig = window.loadIntelInsights;
+      window.loadIntelInsights = function() {
+        try { self._render(); }
+        catch (e) {
+          console.warn('[videoSummary] render failed, falling back:', e.message);
+          return orig.apply(this, arguments);
+        }
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+    setTimeout(function() { if (typeof window.loadIntelInsights === 'function') window.loadIntelInsights(); }, 1700);
+  },
+
+  _injectStyles: function() {
+    if (document.getElementById('vs-styles')) return;
+    var st = document.createElement('style');
+    st.id = 'vs-styles';
+    st.textContent =
+      '.vs-card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:11px}' +
+      '.vs-clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}' +
+      '.vs-btn{background:none;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;min-height:38px}' +
+      '.vs-chip{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-right:4px}';
+    document.head.appendChild(st);
+  },
+
+  _render: function() {
+    var self = this;
+    this._injectStyles();
+    var el = document.getElementById('intel-insights-content');
+    if (!el) return;
+    var reports = this._reports();
+    if (!reports.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">No insights yet.<br><br>Run the Intel script and paste a URL.<br>Reports appear here automatically within 30 seconds.</div>';
+      return;
+    }
+    el.innerHTML = reports.map(function(r) { return self._cardHtml(r); }).join('');
+    this._bindDelegation(el);
+    RPGACE.ui.batchList(el, 8);
+    this._maybeRefresh();
+  },
+
+  _maybeRefresh: function() {
+    if (this._fetching) return;
+    if (Date.now() - this._proposalsAt <= this.PROPOSALS_TTL) return;
+    var self = this;
+    this._fetchProposals(false).then(function() { self._render(); });
+  },
+
+  _statusChip: function(status) {
+    if (status === 'pending') return '<span class="vs-chip" style="background:rgba(201,168,76,0.15);color:var(--gold)">⏳ pending</span>';
+    if (status === 'accepted') return '<span class="vs-chip" style="background:rgba(61,170,110,0.15);color:var(--green)">✓ accepted</span>';
+    if (status === 'rejected') return '<span class="vs-chip" style="background:rgba(226,84,84,0.15);color:var(--red)">✗ rejected</span>';
+    return '<span class="vs-chip" style="background:rgba(255,255,255,0.06);color:var(--muted)">' + this._esc(status || '?') + '</span>';
+  },
+
+  _placementRowHtml: function(p, clamp) {
+    var steps = p.proposed_steps || {};
+    return '<div style="border-left:2px solid rgba(155,89,182,0.4);padding-left:10px;margin-bottom:8px">' +
+      '<div' + (clamp ? ' class="vs-clamp2"' : '') + ' style="font-size:12px;color:var(--text)">' + this._esc(steps.insightText) + '</div>' +
+      '<div style="font-size:11px;color:var(--gold)">' + this._esc(p.proposed_path) + '</div>' +
+      (steps.justification ? '<div style="font-size:11px;color:var(--muted);font-style:italic">' + this._esc(steps.justification) + '</div>' : '') +
+      '<span class="vs-chip" style="background:rgba(155,89,182,0.15);color:var(--purple)">⚖ ' + this._conf(p) + '/10</span>' +
+      this._statusChip(p.status) +
+      '</div>';
+  },
+
+  _headerHtml: function(r) {
+    var score = r.score || 0;
+    var bar = '█'.repeat(score) + '░'.repeat(Math.max(0, 10 - score));
+    var scoreColor = score >= 7 ? 'var(--green)' : score >= 5 ? 'var(--gold)' : 'var(--red)';
+    var when = '';
+    try { when = new Date(r.date || r.created_at).toLocaleDateString(); } catch (e) {}
+    return '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+      '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">' + this._esc(this._cleanTitle(r)) + '</div>' +
+      '<div style="font-size:11px;color:var(--muted)">' + this._esc(r.creator || '') + ' · ' + this._esc(r.platform || '') + ' · ' + this._esc(when) + '</div></div>' +
+      '<div style="text-align:right;margin-left:12px"><div style="font-size:18px;font-weight:700;color:' + scoreColor + '">' + score + '/10</div>' +
+      '<div style="font-size:10px;color:var(--muted);font-family:monospace">' + bar + '</div></div></div>';
+  },
+
+  _verdictHtml: function(r) {
+    var v = r.insights && r.insights.verdict_summary;
+    return v ? '<div style="font-size:12px;color:var(--gold2);margin-bottom:8px;font-style:italic">"' + this._esc(v) + '"</div>' : '';
+  },
+
+  _legacyBulletsHtml: function(r) {
+    var self = this;
+    var kl = (r.insights && r.insights.encyclopedia_entry && r.insights.encyclopedia_entry.key_learnings) || [];
+    var bullets = kl.slice(0, 3).map(function(b) { return '• ' + self._esc(self._coerce(b)); }).join('<br>');
+    var html = bullets ? '<div style="font-size:12px;color:var(--muted)">' + bullets + '</div>' : '';
+    if (this._proposals === null) {
+      html += '<div style="font-size:10px;color:var(--muted);margin-top:4px">taxonomy placements loading…</div>';
+    }
+    return html;
+  },
+
+  _bulletGroupHtml: function(label, items) {
+    var self = this;
+    if (!items || !items.length) return '';
+    return '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 4px">' + label + '</div>' +
+      '<div style="font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7">' +
+      items.map(function(b) { return '• ' + self._esc(self._coerce(b)); }).join('<br>') + '</div>';
+  },
+
+  _proseHtml: function(r) {
+    var ins = r.insights || {};
+    var enc = ins.encyclopedia_entry || {};
+    var html = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 6px">Summary</div>';
+    html += this._verdictHtml(r);
+    if (enc.summary) html += '<div style="font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;margin-bottom:6px">' + this._esc(enc.summary) + '</div>';
+    html += this._bulletGroupHtml('Key learnings', enc.key_learnings);
+    html += this._bulletGroupHtml('Production techniques', ins.production_techniques);
+    html += this._bulletGroupHtml('What to steal', ins.what_to_steal);
+    return html;
+  },
+
+  _placementsHtml: function(props, sid) {
+    var self = this;
+    var html = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin:14px 0 6px">Taxonomy placements</div>';
+    if (props.length) {
+      html += props.map(function(p) { return self._placementRowHtml(p, false); }).join('');
+    } else if (this._proposals === null) {
+      html += '<div style="font-size:10px;color:var(--muted)">taxonomy placements loading…</div>';
+    } else {
+      html += '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">No placements yet — this video was analysed before per-insight placement existed.</div>' +
+        '<button class="vs-btn" data-vs-action="retro" id="vs-retro-x-' + sid + '" style="color:var(--purple);border-color:rgba(155,89,182,0.4)">🧬 Run Phylum Path</button>';
+    }
+    return html;
+  },
+
+  _footerHtml: function(r, expanded, showRetro, sid) {
+    var html = '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">' +
+      '<button class="vs-btn" data-vs-action="toggle">' + (expanded ? '▴ Collapse' : '▾ Details') + '</button>' +
+      '<button class="vs-btn" data-vs-action="enc">📖 Encyclopedia</button>';
+    if (r.url) html += '<a class="vs-btn" style="text-decoration:none;color:var(--muted);display:inline-flex;align-items:center" href="' + this._esc(r.url) + '" target="_blank">🔗 Original</a>';
+    if (showRetro) html += '<button class="vs-btn" data-vs-action="retro" id="vs-retro-' + sid + '" style="color:var(--purple);border-color:rgba(155,89,182,0.4)">🧬 Run Phylum Path</button>';
+    html += '<button class="vs-btn" data-vs-action="del" style="color:rgba(226,84,84,0.8)">🗑</button></div>';
+    return html;
+  },
+
+  _cardHtml: function(r) {
+    var self = this;
+    var key = this._key(r);
+    var sid = this._sid(key);
+    var title = this._cleanTitle(r);
+    var props = this._proposalsFor(key);
+    var expanded = !!this._expanded[key];
+    var showRetro = this._proposals !== null && props.length === 0;
+
+    var collapsedBody;
+    if (props.length) {
+      collapsedBody = this._verdictHtml(r) + props.slice(0, 3).map(function(p) { return self._placementRowHtml(p, true); }).join('');
+    } else {
+      collapsedBody = this._verdictHtml(r) + this._legacyBulletsHtml(r);
+    }
+
+    return '<div class="vs-card" id="vs-card-' + sid + '" data-vs-key="' + this._esc(key) + '" data-intel-title="' + this._esc(title) + '">' +
+      '<div id="vs-collapsed-' + sid + '" style="display:' + (expanded ? 'none' : 'block') + '">' +
+        this._headerHtml(r) + collapsedBody + this._footerHtml(r, false, showRetro, sid) +
+      '</div>' +
+      '<div id="vs-expanded-' + sid + '" style="display:' + (expanded ? 'block' : 'none') + '">' +
+        this._headerHtml(r) + this._proseHtml(r) + this._placementsHtml(props, sid) + this._footerHtml(r, true, false, sid) +
+      '</div>' +
+      '</div>';
+  },
+
+  _bindDelegation: function(el) {
+    if (el._vsDelegated) return;
+    el._vsDelegated = true;
+    var self = this;
+    el.addEventListener('click', function(ev) {
+      var btn = ev.target.closest ? ev.target.closest('[data-vs-action]') : null;
+      if (!btn) return;
+      var card = btn.closest('.vs-card');
+      if (!card) return;
+      var key = card.getAttribute('data-vs-key');
+      var action = btn.getAttribute('data-vs-action');
+      if (action === 'toggle') self._toggle(key, card);
+      else if (action === 'enc') self._saveEnc(key);
+      else if (action === 'retro') self._runRetro(key, btn);
+      else if (action === 'del') self._delete(key, card);
+    });
+  },
+
+  _toggle: function(key, card) {
+    this._expanded[key] = !this._expanded[key];
+    var coll = card.querySelector('[id^="vs-collapsed-"]');
+    var exp = card.querySelector('[id^="vs-expanded-"]');
+    if (coll) coll.style.display = this._expanded[key] ? 'none' : 'block';
+    if (exp) exp.style.display = this._expanded[key] ? 'block' : 'none';
+  },
+
+  _findByKey: function(key) {
+    var arr = this._reports();
+    var dd = RPGACE.modules.intelDedup;
+    for (var i = 0; i < arr.length; i++) {
+      if (dd.dedupKey(arr[i]) === key) return { entry: arr[i], idx: i };
+    }
+    return null;
+  },
+
+  // Kills the old index bug: the index is computed against the LIVE
+  // storage array at click time - the same array main.js's frozen
+  // saveIntelToEncyclopedia re-reads - never baked into render order.
+  _saveEnc: function(key) {
+    var found = this._findByKey(key);
+    if (!found) { RPGACE.utils.toast('Report no longer in cache', 'rgba(226,84,84,0.85)', 2500); return; }
+    if (typeof window.saveIntelToEncyclopedia === 'function') window.saveIntelToEncyclopedia(found.idx);
+  },
+
+  _delete: function(key, card) {
+    var found = this._findByKey(key);
+    if (!found) { if (card) card.remove(); return; }
+    var title = this._cleanTitle(found.entry);
+    var del = RPGACE.modules.intelDelete;
+    var self = this;
+    if (del && del._deleteUnified) {
+      del._deleteUnified(found.entry, title, card, null);
+    } else if (window.confirm('Delete "' + title + '"?')) {
+      var arr = this._reports();
+      arr.splice(found.idx, 1);
+      try { localStorage.setItem('rpgace_intel_insights', JSON.stringify(arr)); } catch (e) {}
+      self._render();
+    }
+  },
+
+  // On-demand retro-analysis for pre-per-insight-loop videos (confirmed
+  // answer: per video, never bulk). Sequential silentPropose chain - the
+  // unified scored engine does the placement + justification + score;
+  // proposals land in the Dashboard review queue like any other.
+  _runRetro: function(key, btn) {
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = '🧬 Analysing…';
+    var self = this;
+    var reset = function(label) { btn.disabled = false; btn.textContent = label || '🧬 Run Phylum Path'; };
+    var found = this._findByKey(key);
+    if (!found) { RPGACE.utils.toast('Report no longer in cache', 'rgba(226,84,84,0.85)', 2500); reset(); return; }
+    if (!RPGACE.modules.taxonomyTree || !RPGACE.utils._quickPhylaScan) { RPGACE.utils.toast('Taxonomy engine not ready', 'rgba(226,84,84,0.85)', 2500); reset(); return; }
+    var r = found.entry;
+    var ins = r.insights || {};
+    var enc = ins.encyclopedia_entry || {};
+    var texts = [].concat(enc.key_learnings || []).concat(ins.production_techniques || [])
+      .map(function(t) { return String(self._coerce(t)).trim(); })
+      .filter(function(t) { return t.length >= 40; })
+      .slice(0, 4);
+    if (!texts.length) { RPGACE.utils.toast('No substantial insights stored for this video', 'rgba(226,84,84,0.85)', 3000); reset(); return; }
+    var sourceId = r.url || ('title:' + this._cleanTitle(r).toLowerCase());
+    var queued = 0;
+    var chain = Promise.resolve();
+    texts.forEach(function(t) {
+      chain = chain.then(function() {
+        var m = RPGACE.utils._quickPhylaScan(t);
+        if (!m.length) return;
+        return RPGACE.modules.taxonomyTree.silentPropose(t.slice(0, 400), m[0].num, 'content_intelligence', sourceId)
+          .then(function() { queued++; })
+          .catch(function(e) { console.warn('[videoSummary] retro propose failed:', e.message); });
+      });
+    });
+    chain.then(function() {
+      // Append to ciAutoPropose's guard so the 30s scan never re-proposes
+      // a video the user just retro-analysed (same key format it uses).
+      var guard = localStorage.getItem('rpgace_ci_proposed') || '';
+      var gk = r.url || r.title;
+      if (gk && guard.indexOf('|' + gk + '|') === -1) {
+        try { localStorage.setItem('rpgace_ci_proposed', guard + '|' + gk + '|'); } catch (e) {}
+      }
+      RPGACE.utils.toast(queued ? ('🌳 ' + queued + ' placement' + (queued > 1 ? 's' : '') + ' queued for review') : 'No phylum match found in stored insights', 'rgba(155,89,182,0.85)', 3500);
+      return self._fetchProposals(true);
+    }).then(function() { self._render(); });
+  },
+
+});
+/* ===END:videoSummary=== */
+
 /* ===MODULE:taxonomySync=== */
 RPGACE.register('taxonomySync', {
 
