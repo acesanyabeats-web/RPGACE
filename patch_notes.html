@@ -183,6 +183,17 @@
     </div>
   </div>
 
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🎯 July 19 — Chapter 1's "fix" was actively wrong-directioned: it was landing on a running header on chapter 1's OWN LAST PAGE, silently discarding ~25,000 real characters, not just mislabeling them</div>
+    <div class="card-body">
+      Re-tested again with the new silent-swallow logging in place (previous card). This time chapter 1 itself vanished from the confirm list (25 chapters, starting at "Chapter 2"). The new merge-forward log immediately explained why: <code>"Chapter 1: Musical Sound" merged forward into "Chapter 2: The Notes" - only 67 chars between its offset and the next chapter's</code>. Alex pasted the real saved text for what became "Chapter 2" — it began with <code>"Chapter 1   M usical Sound   15   This page intentionally left blank   2   The Notes..."</code> — confirming exactly what those 67 characters were: a running header from chapter 1's LAST page (page 15) plus a blank-page marker, immediately followed by chapter 2's real opening.<br><br>
+      <strong>Real diagnosis:</strong> the July 18 chapter-1 fix picked the LAST "chapter N ... title" match still before chapter 2's position, on the reasoning "prefer the later real occurrence over the earlier TOC one" — the same principle that works correctly for every OTHER chapter. For chapter 1 specifically this was wrong-directioned: the "later" match it found wasn't the true opening, it was a running header repeating near the very END of chapter 1. Because that offset already sat so close to chapter 2, chapter 1's sliced text was only ~67 characters — which then triggered the &lt;400-char merge-forward step and erased chapter 1's row entirely, along with essentially all of its real content (~25,000 characters between its true opening and this running header), not merely mislabeling it as previously thought.<br><br>
+      <strong>Fixed, corrected direction:</strong> chapter 1's true opening is the FIRST genuine occurrence after the front-matter TOC cluster, not the LAST occurrence before the next chapter. Now pools every one of chapter 1's own raw candidates across all 3 tiers (bare/kept/title-only), sorts by offset, drops whatever clusters tightly (within 600 chars, same threshold used everywhere else in this file) with the earliest one — the TOC entry — and takes the first survivor instead of the last.<br><br>
+      <strong>Also added, per this project's "get real evidence, don't patch blind a second time" rule:</strong> a diagnostic log dumping every one of chapter 1's raw candidate offsets with ~60 characters of surrounding context, so if this still isn't right on the next test, the actual text at each candidate position is visible immediately instead of needing another guess-and-check round.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. This is the second attempt at chapter 1 specifically — if it's still wrong, the new diagnostic log should make the real shape of the problem obvious rather than requiring a third blind guess.
+    </div>
+  </div>
+
   <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">📖 July 19 — Bookworm: chapter tick list, click-to-jump re-entry, and background extraction with Exit-to-Dashboard</div>
     <div class="card-body">

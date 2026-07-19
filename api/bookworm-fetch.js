@@ -362,31 +362,53 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
   // OTHER chapter is protected from anchoring on its own TOC mention
   // because it must land after the PREVIOUS chapter's resolved offset -
   // but the very first chapter in the book has no previous chapter, so
-  // its search floor was wide open (cursor started at -1), and the first
-  // "Chapter 1 ... title" match in the whole document is almost always
-  // the TOC listing itself, which by definition comes before the real
-  // content. Fix, run only after the full forward pass above so the
-  // SECOND chapter's real position is already known: re-derive the first
-  // chapter's offset as the LAST candidate that still falls BEFORE the
-  // second chapter's real position - bounded so it can never overshoot
-  // into chapter 2, preferring the latest (real) occurrence over the
-  // earliest (TOC) one, the same "prefer later" principle this whole
-  // pipeline is already built on for every other chapter.
+  // its search floor was wide open (cursor started at -1). This applies
+  // to ALL THREE tiers, not just the "chapter N ... title" one - the bare
+  // "N Title" tier is equally unprotected, and real evidence (July 19)
+  // confirmed it: the DIAG log showed offsetByNumber[1] already sitting
+  // at the TOC's own offset BEFORE this pass ran, meaning tier 1 (or 2)
+  // had already latched onto the earliest mention with no protection.
+  //
+  // The FIRST version of this fix (July 18) picked the LAST "chapter N
+  // ... title" match before chapter 2's position, reasoning "prefer the
+  // later occurrence over the earlier TOC one" - the same principle used
+  // successfully everywhere else in this pipeline. Real evidence (July
+  // 19, chapter 1 opened and read directly) proved this wrong-directioned
+  // for THIS class of bug specifically: the "later" match it found was a
+  // running header on chapter 1's OWN LAST PAGE, not the true opening -
+  // and because that offset was still so close to chapter 2, the
+  // downstream merge-forward step only kept ~67 real characters,
+  // silently discarding essentially all of chapter 1's real content, not
+  // just mislabeling it.
+  //
+  // Corrected direction: the true opening is the FIRST genuine occurrence
+  // AFTER the tight front-matter cluster (TOC entry + any immediately-
+  // adjacent mentions), not the LAST occurrence before the next chapter.
+  // Pool every one of chapter 1's own candidates across all three tiers,
+  // sort by offset, drop whatever clusters tightly with the very first
+  // (TOC) one using the same MIN_GAP already used everywhere else in this
+  // file, and take the first survivor - never the last.
   if (chapterList.length > 1) {
     const firstNum = chapterList[0].number;
-    const secondNum = chapterList[1].number;
-    const firstOffset = offsetByNumber[firstNum];
-    const secondOffset = offsetByNumber[secondNum];
-    if (firstOffset !== undefined && secondOffset !== undefined) {
-      let better = null;
-      for (let j = 0; j < kept.length; j++) {
-        if (kept[j].number === firstNum && kept[j].offset > firstOffset && kept[j].offset < secondOffset) {
-          better = kept[j].offset; // keep scanning - want the LAST qualifying one
-        }
-      }
-      if (better !== null) {
-        console.warn('Bookworm DIAG: chapter ' + firstNum + ' corrected from its own TOC mention (offset ' + firstOffset + ') to its real heading (offset ' + better + ')');
-        offsetByNumber[firstNum] = better;
+    const secondOffset = offsetByNumber[chapterList[1].number];
+    const ownCandidates = bareOpeningMatches.concat(allMatches).concat(titleOnlyMatches)
+      .filter(function (m) { return m.number === firstNum; })
+      .map(function (m) { return m.offset; })
+      .sort(function (a, b) { return a - b; });
+    // Diagnostic (added July 19, per this project's "get real evidence,
+    // don't patch blind a second time" rule): dump every raw candidate
+    // with surrounding context so the NEXT test shows definitively what
+    // text actually exists at each one, rather than reasoning about it
+    // in the abstract again.
+    console.warn('Bookworm DIAG: chapter ' + firstNum + ' has ' + ownCandidates.length + ' raw candidate offset(s) across all 3 tiers: ' +
+      ownCandidates.map(function (o) { return o + ' ["' + fullText.slice(Math.max(0, o - 15), o + 45).replace(/\s+/g, ' ') + '"]'; }).join(' | '));
+    if (ownCandidates.length) {
+      const earliest = ownCandidates[0];
+      const survivor = ownCandidates.find(function (o) { return o - earliest >= MIN_GAP; });
+      const priorOffset = offsetByNumber[firstNum];
+      if (survivor !== undefined && (secondOffset === undefined || survivor < secondOffset) && survivor !== priorOffset) {
+        console.warn('Bookworm DIAG: chapter ' + firstNum + ' re-anchored from offset ' + priorOffset + ' to its true opening at offset ' + survivor + ' (earliest survivor after the front-matter cluster, not the latest before the next chapter).');
+        offsetByNumber[firstNum] = survivor;
       }
     }
   }
