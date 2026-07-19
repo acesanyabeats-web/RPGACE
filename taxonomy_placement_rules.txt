@@ -136,7 +136,17 @@ per decision, one place to fix.
 CONFIRMED GARBAGE IN THE LIVE TREE (found by this audit; deletion
 needs Alex's explicit go — taxonomy rule: AI proposes, human confirms)
 ------------------------------------------------------------
-G1. The depth-14 corruption chain: 12 rows under
+G1. ✅ CLEANED July 19 (confirmed by Alex: "clean the tree"). Count
+    correction: the chain was 11 rows, not 12 as first reported. The
+    real insight was re-placed first as ONE leaf (per R4 - closed and
+    open spacing are facets of one concept): "Closed vs. Open Chord
+    Spacing" under the real Chord Voicing & Inversion node, sources
+    field noting the re-placement. Then the whole chain was deleted by
+    its unique corrupted path prefix in the same transaction, after
+    verifying zero fusion links, zero outside children, and zero
+    encyclopedia refs pointed at it. Post-check: 0 rows anywhere in
+    the tree above depth 6.
+    Original finding - the depth-14 corruption chain: rows under
     "Compositio/Harmony/Chord Vocabulary & Construction/Chord Voicing
     & Inversion/Compositio/..." (ids 09bd31a5..., 0276e435...,
     a1433e0e..., 8b6b00c1..., 06138675..., 86bb6469..., 8c37c7fd...,
