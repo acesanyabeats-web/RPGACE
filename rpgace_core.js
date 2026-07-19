@@ -7215,6 +7215,69 @@ RPGACE.register('bookworm', {
     });
   },
 
+  // Splits text into chunks safe to round-trip through one Oracle call
+  // without hitting the documented 504 bug (CLAUDE.md: response length
+  // scales the failure - 700 tokens works, 1200 truncates, 1800 fails
+  // outright). A whole chapter is far past that, so each chunk is capped
+  // small enough that even a same-length reformatted output stays well
+  // under the proven-safe zone. Only ever breaks on whitespace - never
+  // mid-word, so no chunk boundary can itself introduce a word-splitting
+  // artifact of the exact kind this feature is trying to fix.
+  _chunkTextForFormatting: function(text, maxChunkChars) {
+    var words = text.split(/(\s+)/); // keep whitespace tokens so rejoining is exact
+    var chunks = [];
+    var current = '';
+    words.forEach(function(token) {
+      if (current.length + token.length > maxChunkChars && current.length > 0) {
+        chunks.push(current);
+        current = token;
+      } else {
+        current += token;
+      }
+    });
+    if (current) chunks.push(current);
+    return chunks;
+  },
+
+  // ── Reader-friendly formatting: whitespace/paragraph cleanup ONLY  ──
+  // (added July 19, per direct request) - fixes PDF-extraction artifacts
+  // (words split apart by a stray space, e.g. "M usical" -> "Musical";
+  // irregular whitespace; missing paragraph breaks) without changing,
+  // adding, removing, or reordering a single word. Chunked (see
+  // _chunkTextForFormatting above) to stay clear of the documented 504
+  // bug rather than risk it on a full chapter in one call. Cached to
+  // bookworm_chapters.formatted_text so it only ever runs once per
+  // chapter - re-opening the chapter reuses the cached version.
+  _formatChapterForReading: function(chapter) {
+    var self = this;
+    if (chapter.formatted_text) return Promise.resolve(chapter.formatted_text);
+    var pp = RPGACE.modules.phylumPath;
+    var chunks = self._chunkTextForFormatting(chapter.raw_text, 1800);
+    var results = new Array(chunks.length);
+    var chain = Promise.resolve();
+    chunks.forEach(function(chunk, i) {
+      chain = chain.then(function() {
+        var prompt = 'This is raw text extracted from a PDF book page. It has whitespace artifacts from PDF extraction: some words got split apart by a stray inserted space (e.g. "M usical" should read "Musical", "T his" should read "This"), and there may be irregular multiple spaces or missing paragraph breaks.\n\n' +
+          'TEXT:\n' + chunk + '\n\n' +
+          'Reformat this text for reading comfort ONLY. STRICT RULES: (1) Do NOT add, remove, reorder, paraphrase, or reword ANY word - every single word from the original must appear, unchanged, in the exact same order. (2) ONLY fix: words split apart by a stray space (rejoin into the real word), irregular/multiple whitespace (normalize), and paragraph breaks (blank line) at natural boundaries. (3) Keep every figure caption, footnote, exercise number, and page artifact exactly as worded - just give normal spacing, never delete anything.\n\n' +
+          'Before answering, verify: (1) same words, same order, nothing added or removed; (2) every split-word join forms a real recognizable word, not a guess; (3) paragraph breaks sit at genuine boundaries; (4) no whitespace artifact left unfixed; (5) nothing lost at the start/end of this excerpt. Fix any failed check before responding.\n\n' +
+          'Return ONLY the reformatted text - no explanation, no markdown, no commentary.';
+        return pp._callGroundWorkerText(prompt, 900).then(function(cleaned) {
+          results[i] = cleaned.trim() || chunk;
+        }).catch(function(e) {
+          console.warn('[bookworm] formatting chunk ' + i + ' failed, keeping raw:', e.message);
+          results[i] = chunk;
+        });
+      });
+    });
+    return chain.then(function() {
+      var formatted = results.join('\n\n');
+      return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { formatted_text: formatted })
+        .then(function() { return formatted; })
+        .catch(function() { return formatted; }); // still usable even if the cache write fails
+    });
+  },
+
   // ── Chapter read view: full text, then a single "I've read this" button ──
   _renderChapterRead: function(book, chapter) {
     var self = this;
@@ -7234,8 +7297,39 @@ RPGACE.register('bookworm', {
 
     var textBox = document.createElement('div');
     textBox.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7;background:rgba(255,255,255,0.02);border-radius:8px;padding:14px;margin-bottom:16px;max-height:50vh;overflow-y:auto;';
+    var showingFormatted = false;
     textBox.textContent = chapter.raw_text;
     box.appendChild(textBox);
+
+    var formatBtn = document.createElement('button');
+    formatBtn.textContent = chapter.formatted_text ? '✨ Show Reader-Friendly Version' : '✨ Clean Up Formatting for Reading';
+    formatBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    formatBtn.onclick = function() {
+      if (showingFormatted) {
+        textBox.textContent = chapter.raw_text;
+        showingFormatted = false;
+        formatBtn.textContent = '✨ Show Reader-Friendly Version';
+        return;
+      }
+      if (chapter.formatted_text) {
+        textBox.textContent = chapter.formatted_text;
+        showingFormatted = true;
+        formatBtn.textContent = '📄 Show Original';
+        return;
+      }
+      formatBtn.disabled = true; formatBtn.textContent = '⏳ Formatting for readability...';
+      self._formatChapterForReading(chapter).then(function(formatted) {
+        chapter.formatted_text = formatted;
+        textBox.textContent = formatted;
+        showingFormatted = true;
+        formatBtn.disabled = false;
+        formatBtn.textContent = '📄 Show Original';
+      }).catch(function(e) {
+        formatBtn.disabled = false; formatBtn.textContent = '✨ Clean Up Formatting for Reading';
+        RPGACE.utils.toast('Error formatting: ' + e.message, '#E25454', 3500);
+      });
+    };
+    box.appendChild(formatBtn);
 
     var readBtn = document.createElement('button');
     readBtn.textContent = "✓ I've Read This — Show Insights";

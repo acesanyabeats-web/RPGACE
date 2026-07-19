@@ -205,6 +205,17 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">✨ July 19 — Bookworm chapter-1 fix CONFIRMED working + new reader-friendly formatting feature (word-preservation guaranteed, chunked to dodge the 504 bug)</div>
+    <div class="card-body">
+      Alex re-tested the chapter-1 anchor fix (previous red card) and confirmed real prose from the true opening through to the end - "looks proper." This closes the chapter-1 debugging arc for real, not just per-diagnosis.<br><br>
+      <strong>New: "✨ Clean Up Formatting for Reading" button</strong> in the chapter-read view. Direct request: reformat the raw extracted text for reading comfort - fix words split apart by stray PDF-extraction whitespace ("M usical" → "Musical"), normalize irregular spacing, add paragraph breaks - <strong>without changing a single word</strong>. Real architectural risk flagged before building: running a whole chapter through one Oracle call for this would walk straight into the project's own documented, still-open 504 bug (response length scales the failure - 700 tokens works, 1200 truncates, 1800 fails outright; a full chapter is far past that). Built <code>_chunkTextForFormatting()</code> instead - splits only on whitespace (never mid-word, so no chunk boundary can introduce the exact artifact this feature fixes) into ~1800-character windows, each processed by its own Oracle call (<code>max_tokens: 900</code>, comfortably inside the proven-safe zone) with an explicit 5-check self-verification (same words/order, only genuine split-word joins, natural paragraph breaks, no artifact left unfixed, nothing lost at chunk edges). Cached to a new <code>bookworm_chapters.formatted_text</code> column (migration applied directly) so it only ever runs once per chapter - toggles between raw/formatted afterward with zero extra calls.<br><br>
+      <strong>Also answered directly (not built, no code change):</strong> confirmed background chapter extraction genuinely continues regardless of page navigation (SPA CSS toggling, not a reload) as long as the browser tab stays open, and the chapter list built last round already serves as the "return to queue" - clicking an in-progress chapter resumes exactly where it left off. Honest limitation flagged: this is a client-side promise chain, not a server job - closing the tab mid-analysis stops it for good with no auto-resume, leaving that chapter polling forever if reopened. Not fixed, flagged for a future decision.<br><br>
+      <strong>Security finding surfaced, not fixed:</strong> direct Supabase query (unrelated to this feature, found while adding the new column) confirmed <code>bookworm_books</code>, <code>bookworm_chapters</code>, and <code>bibliography</code> all have Row Level Security <strong>disabled</strong> - fully exposed to anyone with the (public-by-design) Supabase key, not just the app. CLAUDE.md's security note previously claimed the Supabase key was safe because everything was "RLS-protected" - corrected, since that was no longer an accurate blanket claim. Not auto-fixed (enabling RLS without real policies would break the app's own reads/writes) - needs a deliberate policy-design pass.<br><br>
+      <strong>Honest flag:</strong> the formatting feature itself is not yet hand-tested.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 18 — Dashboard's own "Oversight" widget was stale at 4 docs, a full day after the 5th shipped</div>
     <div class="card-body">
