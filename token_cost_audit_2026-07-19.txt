@@ -1,0 +1,116 @@
+============================================================
+TOKEN COST AUDIT — July 19, 2026
+============================================================
+Trigger (Alex, verbatim): "I had 10 pounds on Claude API, then it went
+down to 0 very quickly when testing taxonomy and doing chapter
+analysis. go through all oversight docs to find the expensive culprits,
+and find a way to make it cheaper without diminishing the function and
+output quality."
+
+All numbers below measured from the live database and real code, not
+estimated from memory.
+
+------------------------------------------------------------
+WHERE THE £10 WENT — culprits, ranked
+------------------------------------------------------------
+C1. FUSION LINKS (worst): _findFusionLinks auto-fires after EVERY
+    approved insight and sent ALL 491 nodes' full slash-joined paths —
+    58,561 chars ≈ ~16,000 input tokens — TWICE: once to the Fable
+    extractor (premium pricing) as a "triage" pass, once to the ground
+    worker. ≈32k tokens per approval, a large share at premium rates,
+    growing linearly with the tree. Ten approvals ≈ 320k tokens.
+
+C2. PLACEMENT RETRY LOOP: the accept gate was confidence ≥9; anything
+    scoring 5-8 triggered up to 2 reword+retry rounds, EACH re-sending
+    the phylum's full path listing (Compositio: 10,592 chars ≈ ~2.9k
+    tokens/call). Real approval history showed 7-8-scored placements
+    were approved as-is every time — the retries tripled cost without
+    changing outcomes.
+
+C3. CASCADE BREADTH: on fits:false the cascade walked ALL other enabled
+    phyla sequentially (up to 10 tree-dump calls per insight), including
+    phyla with zero keyword overlap that were never going to win.
+
+C4. PATH-LISTING FORMAT: every structure listing printed each node's
+    FULL ancestor chain per line. Sum of names alone = 19,957 chars vs
+    58,561 for paths — the format itself carried ~3x redundancy.
+
+C5. READER FORMATTING: ~14 Sonnet calls per chapter (chapter text
+    round-tripped in and out) for a purely mechanical whitespace job.
+
+Not culprits (checked, already cheap): _finalPlacementSearch (phylum
+names only, 300 tokens), oracleTreeGrounding (≤6 leaf explainers,
+keyword-gated), chapter insight extraction (one 12k-char call per
+chapter), TOC detection (one-two calls per book).
+
+------------------------------------------------------------
+DECISIONS (AskUserQuestion, answers verbatim July 19)
+------------------------------------------------------------
+Q1 accept gate → "Accept 7+, reword only 4-6 (Recommended)"
+Q2 fusion links → "Keep auto, but 94% cheaper (Recommended)"
+Q3 Haiku tier → "Yes — Haiku for mechanical jobs (Recommended)"
+
+------------------------------------------------------------
+CHANGES SHIPPED (all in rpgace_core.js; api/oracle.js untouched —
+it already forwards a per-call `model` param)
+------------------------------------------------------------
+F1. _findFusionLinks rewritten: Fable triage call DELETED; free
+    client-side keyword prefilter (word overlap vs the new node's name +
+    two nearest ancestors) sends only the top 60 candidates as numbered
+    "[Phylum] Name" lines; model returns the number, mapped back
+    client-side; if <3 candidates score any overlap the Oracle call is
+    skipped entirely. ~32k → ~1-2k tokens per approval (~94% cut), all
+    on the ground worker. Auto-fire kept per Q2.
+F2. Accept gate 9→7; reword band now 4-6; <4 upgrade-check unchanged.
+    Council scoring itself unchanged. (Q1)
+F3. Cascade capped: non-primary phyla pre-ranked by _quickPhylaScan
+    (free), only the top 2 WITH keyword hits tried before
+    _finalPlacementSearch. Worst case 10 tree-dumps → 3.
+F4. decidePlacementScored structure listing: numbered, indented NAME
+    tree (indent = depth, * = leaf) instead of full paths — same
+    complete structural information, ~65% fewer chars (verified >45%
+    smaller in the headless test on a realistic 91-node deep tree;
+    ratio improves with depth). attachTo is now the node NUMBER
+    (path/name string still accepted as fallback) — also more robust
+    than exact-string path matching.
+F5. Mechanical Haiku tier (Q3): phylumPath.MECHANICAL_MODEL =
+    'claude-haiku-4-5-20251001'. Routed there: reader formatting
+    (_formatChapterForReading), _rewordInsight, _checkUpgradeable.
+    ~1/4 the per-token price on those calls. _callGroundWorkerJSON/Text
+    gained an optional third `model` param (backward compatible).
+    CLAUDE.md model section updated to the three-tier rule.
+
+------------------------------------------------------------
+ESTIMATED EFFECT (per 6-insight approved chapter)
+------------------------------------------------------------
+Before: ~60k placement (retries) + ~192k fusion (part premium) + misc
+        ≈ ~260k tokens, significant premium-model share.
+After:  ~18k placement + ~9k fusion + misc ≈ ~30-35k tokens, premium
+        model only for TOC extraction. Roughly 8-10x cheaper per
+        chapter; the mechanical calls that remain are on Haiku.
+
+------------------------------------------------------------
+VERIFICATION
+------------------------------------------------------------
+node --check passes. 10/10 headless checks on the SHIPPED code
+(functions sliced from rpgace_core.js by marker and eval'd): placement
+tree block >45% smaller on a realistic deep tree; attachTo:17 resolves
+to existing[16]; name-string fallback resolves; priorLeaves block
+preserved; fusion prompt >75% smaller than the old full dump; ≤60
+candidates; numbered link maps to the correct node id; zero-overlap
+node skips the Oracle call entirely.
+
+NOT yet hand-tested live: the next chapter analysis + insight approvals
+will exercise F1-F4 for real; the next "Clean Up Formatting" click
+exercises F5. Watch for: placements still landing sensibly (the
+numbered-tree prompt is new), fusion suggestions still appearing on
+genuinely-related insights.
+
+------------------------------------------------------------
+FUTURE OPTION, deliberately not built (complexity vs gain after F1-F5)
+------------------------------------------------------------
+Anthropic prompt caching (cache_control on a system block carrying the
+tree listing) would cut repeat-call input cost ~90% within a 5-min
+window. api/oracle.js + _context.js callClaude would pass an array-form
+`system` through unchanged, so it's a client-side change when wanted.
+Revisit if the tree grows past ~1500 nodes.

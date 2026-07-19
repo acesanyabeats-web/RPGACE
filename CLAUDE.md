@@ -64,7 +64,8 @@ Deployed at rpgace.vercel.app, also in this project root:
 7. **Fail loud**: surface errors as toasts; never silently swallow a failed write or fake success/progress. Bookworm's first hand-test proved why.
 8. **Confirm destructive actions**: two-click arm/confirm (pattern: Bookworm's 🗑, 3s timeout) — no heavy modal needed.
 9. **Chat triggers**: chainable `window.sendChat` wrap with a `TRIGGER_PREFIXES` array and a `window._xPatched` guard flag (patterns: scheduleOracle, bookworm). Wraps must fall through to the original for non-matching input.
-10. **Model IDs**: ground worker is always `claude-sonnet-4-6`. Never `claude-sonnet-4-20250514`, never `claude-3-5-sonnet`, never guess a new identifier.
+10. **Model IDs**: ground worker is always `claude-sonnet-4-6`; purely MECHANICAL text jobs (formatting cleanup, one-line rewording — no judgment) may use `phylumPath.MECHANICAL_MODEL` (`claude-haiku-4-5-20251001`, added July 19 with explicit confirmation). Never `claude-sonnet-4-20250514`, never `claude-3-5-sonnet`, never guess a new identifier.
+11. **Token cost is a design constraint** (July 19, after £10 burned in one test session — full audit: `token_cost_audit_2026-07-19.txt`): never send full slash-joined path listings in prompts (use numbered indented name trees); prefilter candidate lists with the free keyword scan before any Oracle call; skip the call outright when the prefilter finds nothing; never add a second premium-model "triage" call in front of a ground-worker call.
 
 ## Website/HTML optimization backlog (from the July 17 audit — real, prioritized)
 1. **Replace modal-chain UX with card lists** wherever a process has listable state: Bookworm chapters should render as ConID-style cards (title, status chip, context-sensitive action button) instead of one modal at a time. The data layer already supports it — purely a render-layer change calling the same `_openBook`/`_renderInsightReview` logic.
@@ -97,9 +98,9 @@ Direct, unhedged technical correction over polite hedging. Council of 5 + GODMOD
 ## Oversight logging — NOT automatic, confirmed limitation
 No hook exists for "device changed" or auto-updates on session open (investigated and ruled out July 8). The working pattern: Alex explicitly says "update oversight" / "end session" / "log this session" at the end of any work session — a deliberate action, which is the more reliable design.
 
-## Known working API model
-Always use: claude-sonnet-4-6 (ground worker) and claude-fable-5 (extractor only).
-Never use: claude-sonnet-4-20250514 (wrong), claude-3-5-sonnet (wrong).
+## Known working API models — THREE tiers as of July 19 (Alex-confirmed)
+Always use: claude-sonnet-4-6 (ground worker — judgment work: placement, scoring, teaching, fusion), claude-fable-5 (extractor only — outlining), claude-haiku-4-5-20251001 (mechanical tier ONLY — whitespace/formatting cleanup, one-line rewording; `phylumPath.MECHANICAL_MODEL`).
+Never use: claude-sonnet-4-20250514 (wrong), claude-3-5-sonnet (wrong). Never route judgment work to the mechanical tier.
 
 ## Security note (July 12, still standing)
 This repo is **public** on GitHub. The old CLAUDE.md's Passwords & Secrets section was exposed in git history — deliberately absent here. If the app password (`CORRECT_PW` in main.js) or the Composio key haven't been rotated since, treat that as still outstanding. The Supabase key is a publishable key by design, meant to be safe under RLS — **but not every table actually has RLS turned on.** Confirmed via direct query, July 19: `bookworm_books`, `bookworm_chapters`, and `bibliography` all have RLS **disabled** — fully readable/writable by anyone with the (public) key, not just from within the app. Not fixed yet — enabling RLS on these without real policies would break the app's own reads/writes, so this needs a deliberate policy design pass, not a blind `ENABLE ROW LEVEL SECURITY`. Treat "RLS-protected" as a per-table fact to verify, not a blanket assumption, going forward. `.env.local` was untracked + gitignored (expired Vercel OIDC token).

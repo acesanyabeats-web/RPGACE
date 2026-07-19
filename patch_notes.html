@@ -217,6 +217,20 @@
   </div>
 
   <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">💷 July 19 — TOKEN COST RETUNE: found where £10 of API credit went and cut per-chapter cost ~8-10x without touching output quality</div>
+    <div class="card-body">
+      Direct request after £10 of API credit vanished during taxonomy testing + chapter analysis. Full audit with live-measured numbers + verbatim confirmed decisions: <code>token_cost_audit_2026-07-19.txt</code> (new committed doc). Summary:<br><br>
+      <strong>Culprit #1 — Fusion links:</strong> auto-fired after every approved insight, sending ALL 491 nodes' full paths (~16k tokens) TWICE — once to Fable at premium pricing as a "triage" pass. ~32k tokens per approval. <strong>Fixed:</strong> Fable triage call deleted outright; free keyword prefilter sends only the top 60 topically-overlapping candidates as numbered names; the call is skipped entirely when nothing plausibly fuses. ~94% cut, auto-fire kept (Alex's choice).<br>
+      <strong>Culprit #2 — placement retry loop:</strong> accept gate was 9+, so nearly every insight (real history: they score 7-8 and get approved as-is) burned 2 extra full-tree retry rounds. <strong>Fixed:</strong> accept 7+, reword only 4-6 (Alex's choice) — Council scoring itself unchanged.<br>
+      <strong>Culprit #3 — cascade breadth:</strong> fits:false walked all 10 enabled phyla, full tree each. <strong>Fixed:</strong> free keyword pre-rank, top 2 candidates only, then the cheap names-only orphan fallback.<br>
+      <strong>Culprit #4 — the listing format itself:</strong> full slash-joined paths carry ~3x redundancy vs names (58.5k vs 20k chars tree-wide). <strong>Fixed:</strong> the unified engine now sends a numbered, indented name tree (~65% smaller) and the model returns the node NUMBER — cheaper and more robust than exact path-string matching (string fallback kept).<br>
+      <strong>Culprit #5 — formatting on Sonnet:</strong> ~14 calls/chapter of purely mechanical whitespace work. <strong>Fixed:</strong> new third model tier (Alex's choice): <code>MECHANICAL_MODEL = claude-haiku-4-5-20251001</code> for formatting + the tiny reword/upgrade helpers, ~1/4 the price. CLAUDE.md's model rule updated to three tiers, plus a new standing "token cost is a design constraint" rule.<br><br>
+      <strong>Estimated effect:</strong> a 6-insight approved chapter drops from ~260k tokens (part premium-priced) to ~30-35k, premium only for TOC extraction — roughly 8-10x cheaper.<br><br>
+      <strong>Verified before shipping:</strong> 10/10 headless checks on the actual shipped code (tree block &gt;45% smaller on a realistic deep tree, numeric attach resolution + string fallback, fusion prompt &gt;75% smaller, ≤60 candidates, correct link mapping, zero-overlap skip). <strong>Honest flag:</strong> not yet exercised live — the next chapter analysis and Clean-Up-Formatting click are the real test; watch that placements still land sensibly under the numbered-tree prompt.
+    </div>
+  </div>
+
+  <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">📹 July 19 — VIDEO SUMMARY PAGE: the Insights tab reborn as per-video cards with the engine's own top-3 placements + root-cause duplicate fix</div>
     <div class="card-body">
       Direct request ("i cant really call them insights — make this a video summary page") — planned first (approved plan, spec answers recorded there), then built as two new modules. Zero main.js/index.html edits.<br><br>

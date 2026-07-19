@@ -5741,9 +5741,19 @@ RPGACE.register('phylumPath', {
     });
   },
 
+  // Third model tier, added July 19 with Alex's explicit confirmation
+  // (token-cost retune): purely MECHANICAL text jobs - whitespace/
+  // formatting cleanup, one-line rewording - go to Haiku at ~1/4 the
+  // ground worker's price. Judgment work (placement, scoring, teaching,
+  // fusion) stays on the ground worker; outlining stays on the extractor.
+  // CLAUDE.md's model section documents all three.
+  MECHANICAL_MODEL: 'claude-haiku-4-5-20251001',
+
   // Ground worker calls omit `model` entirely - api/oracle.js defaults to
-  // the existing verified-working MODEL constant when none is given.
-  _callGroundWorkerJSON: function(prompt, maxTokens) {
+  // the existing verified-working MODEL constant when none is given. The
+  // optional `model` param (July 19) lets mechanical callers pass
+  // MECHANICAL_MODEL; api/oracle.js forwards it as-is.
+  _callGroundWorkerJSON: function(prompt, maxTokens, model) {
     return fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -5751,6 +5761,7 @@ RPGACE.register('phylumPath', {
         messages: [{ role: 'user', content: prompt }],
         system: 'You return only valid JSON, no markdown formatting, no explanation text.',
         max_tokens: maxTokens,
+        model: model || undefined,
       })
     }).then(function(r) { return r.json(); }).then(function(data) {
       var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
@@ -5761,13 +5772,14 @@ RPGACE.register('phylumPath', {
     });
   },
 
-  _callGroundWorkerText: function(prompt, maxTokens) {
+  _callGroundWorkerText: function(prompt, maxTokens, model) {
     return fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messages: [{ role: 'user', content: prompt }],
         max_tokens: maxTokens,
+        model: model || undefined,
       })
     }).then(function(r) { return r.json(); }).then(function(data) {
       return (data.content || []).map(function(c) { return c.text || ''; }).join('');
@@ -6072,23 +6084,49 @@ RPGACE.register('phylumPath', {
     var self = this;
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
       existing = existing || [];
-      var pathList = existing.length ? existing.map(function(n) { return '- ' + n.path; }).join('\n') : '(nothing mapped yet - this will be the first entry)';
+      // TOKEN-COST RETUNE July 19: the structure listing used to print
+      // every node's FULL slash-joined path - each line repeating its
+      // entire ancestor chain (Compositio alone: ~10.6k chars ≈ ~2.9k
+      // tokens PER CALL, and this is the most-called prompt in the app).
+      // Now: an indented, NUMBERED name tree - same complete structural
+      // information (order=path.asc keeps children under parents, indent
+      // shows depth), ~65% fewer tokens. The model returns the NUMBER of
+      // the attach node instead of copying a path string character-for-
+      // character - cheaper AND more robust (no exact-string mismatch
+      // failures). Path strings still accepted as a fallback for safety.
+      var pathList = existing.length
+        ? existing.map(function(n, i) {
+            var indent = '';
+            for (var d = 0; d < (n.depth || 0); d++) indent += ' ';
+            return (i + 1) + '.' + indent + n.name + (n.node_type === 'leaf' ? ' *' : '');
+          }).join('\n')
+        : '(nothing mapped yet - this will be the first entry)';
       var priorBlock = (priorLeaves && priorLeaves.length)
         ? '\n\nLEAVES ALREADY CREATED BY THIS SAME BATCH/CHAPTER (in addition to the structure above):\n- ' + priorLeaves.join('\n- ') + '\n'
         : '';
       var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
         'An insight to place: "' + insightText + '"\n\n' +
-        'EXISTING STRUCTURE in this phylum (root-first):\n' + pathList + priorBlock + '\n\n' +
+        'EXISTING STRUCTURE in this phylum (numbered; indentation = depth under the phylum root; * marks a leaf):\n' + pathList + priorBlock + '\n\n' +
         'First decide honestly: does this insight genuinely belong in THIS phylum - not just loosely related? If it would sit more naturally in a DIFFERENT discipline, return fits:false rather than stretching a justification to make it fit here. A placement that needs a creative argument to defend is a wrong placement.\n\n' +
-        'Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (or null for a new path), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10.\n\n' +
+        'Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (the NUMBER of the existing node from the list above, or null for a new path from the phylum root), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10.\n\n' +
         'HARD RULES, each from a real corruption found in this tree:\n' +
         '1. NAMING: every step name is a general CONCEPT label - never a video/song/book title, never an artist name, never a year, never platform text like "| FL Studio Tutorial". If the insight text is itself a content title, name the leaf after the TECHNIQUE it teaches.\n' +
         '2. NO NEAR-DUPLICATE SIBLINGS: if an existing leaf (or a batch leaf listed above) already covers this concept or a facet of it, attach to/extend THAT area - do not create another sibling restating it. Several narrow facets of one concept belong as ONE leaf, not five.\n' +
         '3. STEPS ARE SINGLE RANKS: each newSteps entry is ONE new rank\'s own name - never a "/"-joined path, never a restatement of the attach path or any earlier step, never two ideas joined by "; then" or similar.\n' +
         '4. DEPTH: the rank chain is Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) - a placement may NEVER exceed depth 6. Prefer 1-2 new steps; more than 3 is almost always padding.\n\n' +
-        'Return ONLY JSON: {"fits": true, "attachTo": "existing path or null", "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8}';
+        'Return ONLY JSON: {"fits": true, "attachTo": 12, "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8} (attachTo: node NUMBER or null)';
       return self._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
-        var attachNode = parsed.attachTo ? existing.find(function(n) { return n.path === parsed.attachTo; }) : null;
+        var attachNode = null;
+        if (parsed.attachTo !== null && parsed.attachTo !== undefined && parsed.attachTo !== '') {
+          var idx = parseInt(parsed.attachTo, 10);
+          if (!isNaN(idx) && idx >= 1 && idx <= existing.length) {
+            attachNode = existing[idx - 1];
+          } else if (typeof parsed.attachTo === 'string') {
+            // Fallback: a model that answers with a path or bare name
+            // string instead of the number still resolves.
+            attachNode = existing.find(function(n) { return n.path === parsed.attachTo || n.name === parsed.attachTo; }) || null;
+          }
+        }
         var sanitized = self.sanitizePlacement(
           attachNode ? attachNode.path : '',
           attachNode ? attachNode.depth : 0,
@@ -6352,6 +6390,23 @@ RPGACE.register('phylumPath', {
   // existing tree this pass (same precedent as Phylum Path's original
   // "new insights only" scope decision).
   // ══════════════════════════════════════════════════════════════════
+  // TOKEN-COST RETUNE July 19 (confirmed by Alex, the single biggest
+  // culprit in the £10 burn): the old version sent EVERY node's full path
+  // (~58.5k chars ≈ ~16k tokens at 491 nodes) TWICE per approved insight -
+  // once to the Fable extractor (premium pricing) and once to the ground
+  // worker. ~32k tokens per approval, growing with the tree. Now:
+  // 1. The Fable triage call is GONE - one ground-worker call does the job.
+  // 2. A free client-side keyword prefilter scores every candidate by word
+  //    overlap with the new node's name/leaf context and sends only the
+  //    top 60 - a genuine fusion needs topical overlap to exist at all, so
+  //    zero-overlap candidates were pure token padding.
+  // 3. Candidates are sent as NUMBERED [Phylum] Name lines (not full
+  //    paths); the model returns the number, mapped back client-side -
+  //    more robust than exact-path-string matching too.
+  // 4. If fewer than 3 candidates score any overlap, the call is SKIPPED
+  //    entirely - nothing plausibly fuses, so spend nothing.
+  // Net: ~32k tokens (part premium) → ~1-2k (ground worker only), ~94% cut,
+  // with auto-fire behavior kept per Alex's explicit choice.
   _findFusionLinks: function(node, phylumNumber) {
     var self = this;
     if (!node) return Promise.resolve();
@@ -6371,42 +6426,45 @@ RPGACE.register('phylumPath', {
         });
         if (!others.length) return;
 
-        var pathList = others.map(function(n) {
+        // Free keyword prefilter: score candidates by shared words (>3
+        // chars) with the new node's name + its two nearest ancestors.
+        var ctxWords = (node.name + ' ' + (node.path || '').split('/').slice(-3).join(' '))
+          .toLowerCase().split(/\W+/).filter(function(w) { return w.length > 3; });
+        var uniq = {};
+        ctxWords = ctxWords.filter(function(w) { if (uniq[w]) return false; uniq[w] = true; return true; });
+        var scored = others.map(function(n) {
+          var hay = n.name.toLowerCase();
+          var score = 0;
+          ctxWords.forEach(function(w) { if (hay.indexOf(w) !== -1) score++; });
+          return { n: n, score: score };
+        }).filter(function(s) { return s.score > 0; })
+          .sort(function(a, b) { return b.score - a.score; })
+          .slice(0, 60);
+        if (scored.length < 3) return; // nothing plausibly fuses - spend nothing
+
+        var candidates = scored.map(function(s) { return s.n; });
+        var candList = candidates.map(function(n, i) {
           var phName = tt ? (tt.PHYLUM_NAMES[n.phylum_number] || ('Phylum ' + n.phylum_number)) : ('Phylum ' + n.phylum_number);
-          return '- [' + phName + '] ' + n.path;
+          return (i + 1) + '. [' + phName + '] ' + n.name;
         }).join('\n');
 
-        var extractorPrompt = 'You are a fast triage pass looking for cross-discipline connections.\n\n' +
-          'NEW NODE: "' + node.name + '" (' + node.path + ')\n\n' +
-          'ALL OTHER EXISTING NODES IN THE TAXONOMY:\n' + pathList + '\n\n' +
-          'Shortlist up to 5 existing paths that seem like genuine fusion-discipline candidates - real, non-obvious connections worth a closer look (a "this + that combine into a specific technique or system" relationship), not just loose topic overlap.\n\n' +
-          'Return ONLY JSON: {"candidates": ["path1", "path2"]}';
+        var prompt = 'You are a private tutor with a PhD across all music production disciplines, looking for genuine "fusion discipline" connections - places where two separately-classified ideas actually combine into a real technique, system, or craft angle a producer could use, not just two things that happen to share a topic.\n\n' +
+          'NEW NODE just added: "' + node.name + '" (' + node.path + ')\n\n' +
+          'CANDIDATE NODES (numbered, pre-filtered for topical overlap; [Phylum] Name):\n' + candList + '\n\n' +
+          'Pick 0-3 REAL connections only - it is fine to return zero if nothing genuinely fuses. For each real connection, write a one-sentence insight explaining exactly HOW/WHY the two connect (this note will be shown on both nodes, so phrase it as the shared idea, not "node A relates to node B").\n\n' +
+          'Return ONLY JSON: {"links": [{"n": 12, "insight": "..."}]}';
 
-        return self._callExtractor(extractorPrompt, 300)
-          .catch(function(e) {
-            console.warn('[phylumPath] fusion-link extractor failed, ground worker scans cold:', e.message);
-            return null;
-          })
-          .then(function(shortlist) {
-            var candidateBlock = (shortlist && shortlist.candidates && shortlist.candidates.length)
-              ? '\n\nA FASTER TRIAGE PASS ALREADY SHORTLISTED THESE AS WORTH CHECKING (verify and refine, do not just accept blindly):\n' + shortlist.candidates.join('\n')
-              : '';
-
-            var prompt = 'You are a private tutor with a PhD across all music production disciplines, looking for genuine "fusion discipline" connections - places where two separately-classified ideas actually combine into a real technique, system, or craft angle a producer could use, not just two things that happen to share a topic.\n\n' +
-              'NEW NODE just added: "' + node.name + '" (' + node.path + ')\n\n' +
-              'ALL OTHER EXISTING NODES IN THE TAXONOMY:\n' + pathList + candidateBlock + '\n\n' +
-              'Pick 0-3 REAL connections only - it is fine to return zero if nothing genuinely fuses. For each real connection, write a one-sentence insight explaining exactly HOW/WHY the two connect (this note will be shown on both nodes, so phrase it as the shared idea, not "node A relates to node B").\n\n' +
-              'Return ONLY JSON: {"links": [{"path": "exact existing path string", "insight": "..."}]}';
-
-            return self._callGroundWorkerJSON(prompt, 500);
-          })
+        return self._callGroundWorkerJSON(prompt, 500)
           .then(function(parsed) {
             var links = (parsed && parsed.links) || [];
             if (!links.length) return;
 
             var chain = Promise.resolve();
             links.forEach(function(link) {
-              var match = others.find(function(n) { return n.path === link.path; });
+              var li = parseInt(link.n, 10);
+              var match = (!isNaN(li) && li >= 1 && li <= candidates.length)
+                ? candidates[li - 1]
+                : candidates.find(function(n) { return n.path === link.path || n.name === link.path; });
               if (!match) return;
               chain = chain.then(function() {
                 return RPGACE.sb.insert('taxonomy_links', {
@@ -8063,7 +8121,8 @@ RPGACE.register('bookworm', {
           'Reformat this text for reading comfort ONLY. STRICT RULES: (1) Do NOT add, remove, reorder, paraphrase, or reword ANY word - every single word from the original must appear, unchanged, in the exact same order. (2) ONLY fix: words split apart by a stray space (rejoin into the real word), irregular/multiple whitespace (normalize), and paragraph breaks (blank line) at natural boundaries. (3) Keep every figure caption, footnote, exercise number, and page artifact exactly as worded - just give normal spacing, never delete anything.\n\n' +
           'Before answering, verify: (1) same words, same order, nothing added or removed; (2) every split-word join forms a real recognizable word, not a guess; (3) paragraph breaks sit at genuine boundaries; (4) no whitespace artifact left unfixed; (5) nothing lost at the start/end of this excerpt. Fix any failed check before responding.\n\n' +
           'Return ONLY the reformatted text - no explanation, no markdown, no commentary.';
-        return pp._callGroundWorkerText(prompt, 900).then(function(cleaned) {
+        // Mechanical whitespace job → Haiku tier (July 19, ~1/4 cost).
+        return pp._callGroundWorkerText(prompt, 900, pp.MECHANICAL_MODEL).then(function(cleaned) {
           results[i] = cleaned.trim() || chunk;
         }).catch(function(e) {
           console.warn('[bookworm] formatting chunk ' + i + ' failed, keeping raw:', e.message);
@@ -8419,19 +8478,30 @@ RPGACE.register('bookworm', {
     });
   },
 
-  // Tries the primary phylum first, then each remaining enabled phylum in
-  // order, then a final broad 21-phylum search for genuine orphans.
-  // Every candidate placement gets scored (Council of 5, 1-10) before
-  // being accepted - a 5-8 score triggers a reword+retry (capped at 3
-  // attempts total), under 4 gets one "can this be upgraded at all" check
-  // before being flagged unplaceable rather than forced into a leaf.
+  // Tries the primary phylum first, then keyword-ranked candidates, then a
+  // final broad 21-phylum search for genuine orphans.
+  //
+  // TOKEN-COST RETUNE July 19 (confirmed by Alex after £10 of API credit
+  // burned in one testing session): two changes, both evidence-backed.
+  // 1. Accept gate 9→7. Real approval history showed every 7-8-scored
+  //    placement was approved as-is - the old ≥5 reword band re-sent the
+  //    full phylum tree up to 2 extra times per insight (3x cost) without
+  //    changing outcomes. Now: ≥7 accepted, 4-6 gets the reword loop,
+  //    <4 gets the upgrade check. Council scoring itself is unchanged.
+  // 2. Cascade breadth capped: instead of walking ALL other enabled phyla
+  //    (each attempt = that phylum's full tree in the prompt), non-primary
+  //    candidates are pre-ranked by the free keyword scan and only the top
+  //    2 with actual keyword hits are tried before falling through to
+  //    _finalPlacementSearch (which is a cheap phylum-NAMES-only call).
+  //    A phylum with zero keyword overlap was never going to win a
+  //    fits/confidence contest it charges full price to enter.
   _placeInsightCascade: function(insightText, primaryPhylum, remainingPhyla, priorLeaves) {
     var self = this;
     var tryPhylum = function(phylumNumber, text, attemptsLeft) {
       return self._decidePlacementScored(text, phylumNumber, priorLeaves).then(function(decision) {
         if (!decision.fits) return null;
-        if (decision.confidenceScore >= 9) return decision;
-        if (decision.confidenceScore >= 5 && attemptsLeft > 0) {
+        if (decision.confidenceScore >= 7) return decision;
+        if (decision.confidenceScore >= 4 && attemptsLeft > 0) {
           return self._rewordInsight(text).then(function(reworded) {
             return tryPhylum(phylumNumber, reworded, attemptsLeft - 1);
           });
@@ -8448,7 +8518,14 @@ RPGACE.register('bookworm', {
       });
     };
 
-    var phylaToTry = [primaryPhylum].concat(remainingPhyla);
+    var ranked = [];
+    if (RPGACE.utils._quickPhylaScan) {
+      var hits = RPGACE.utils._quickPhylaScan(insightText); // sorted by hits desc, free
+      ranked = hits.map(function(m) { return m.num; })
+        .filter(function(n) { return n !== primaryPhylum && remainingPhyla.indexOf(n) !== -1; })
+        .slice(0, 2);
+    }
+    var phylaToTry = [primaryPhylum].concat(ranked);
     var chain = Promise.resolve(null);
     phylaToTry.forEach(function(phylumNumber) {
       chain = chain.then(function(found) {
@@ -8499,10 +8576,13 @@ RPGACE.register('bookworm', {
     return RPGACE.modules.phylumPath.decidePlacementScored(insightText, phylumNumber, priorLeaves);
   },
 
+  // Both routed to the Haiku mechanical tier July 19 - one-line rewording
+  // is not judgment work, and these fire inside the retry loop where
+  // every token multiplies.
   _rewordInsight: function(insightText) {
     var pp = RPGACE.modules.phylumPath;
     var prompt = 'Reword this insight to be clearer and more specifically teachable, same meaning, more concrete:\n\n"' + insightText + '"\n\nReturn ONLY the reworded insight text, nothing else.';
-    return pp._callGroundWorkerText(prompt, 150);
+    return pp._callGroundWorkerText(prompt, 150, pp.MECHANICAL_MODEL);
   },
 
   _checkUpgradeable: function(insightText, phylumNumber) {
@@ -8510,7 +8590,7 @@ RPGACE.register('bookworm', {
     var prompt = 'This insight scored very low for taxonomy placement in ' + RPGACE.utils.phylumContext(phylumNumber) + ':\n\n"' + insightText + '"\n\n' +
       'Is there a genuinely more specific/concrete version of this that WOULD be leaf-worthy, or is it too vague/generic to ever place well? If upgradeable, return the improved version. If not, return null.\n\n' +
       'Return ONLY JSON: {"upgraded": "text or null"}';
-    return pp._callGroundWorkerJSON(prompt, 200).then(function(parsed) { return parsed.upgraded || null; }).catch(function() { return null; });
+    return pp._callGroundWorkerJSON(prompt, 200, pp.MECHANICAL_MODEL).then(function(parsed) { return parsed.upgraded || null; }).catch(function() { return null; });
   },
 
   // Final fallback for insights that didn't fit any enabled phylum -
