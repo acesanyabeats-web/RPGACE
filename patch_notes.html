@@ -217,6 +217,19 @@
   </div>
 
   <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🗂️ July 19 — Research page redesign: sub-tabs, batched lists, searchable Beat Log picker + intel duplicates purged</div>
+    <div class="card-body">
+      Direct request ("this whole page is very clunky, lets redesign") — spec'd with 3 confirmed answers first: <strong>sub-tabs within Research</strong> (one section visible at a time), <strong>show 8 + "Show more"</strong> for long lists, <strong>searchable picker</strong> for Beat Log's taxonomy nodes.<br><br>
+      <strong>Data fix first (real evidence):</strong> the insights list held <strong>24 duplicate rows</strong> — 15 titles duplicated, one video 5 times over. Deduped directly in Supabase keeping the watchlisted/newest copy of each: 59 → 35 reports, zero information lost. A third of the perceived clutter was duplicate data, not layout.<br><br>
+      <strong>New <code>researchTabs</code> module:</strong> a tab bar (🧠 Intelligence / 🎬 Video Finder / 💡 Idea Bank / 🎼 Corpus / 🥁 Beat Log / 🔀 Workshop / 📚 Bibliography) shows exactly one section at a time, remembering the last active tab. Pure runtime layer — static index.html untouched per the standing landmine rules; injected panels are re-resolved at staggered delays so late-injecting ones sort into their tab instead of leaking. A section that can't be found stays visible — the fallback is always the old behavior, never a hidden-forever section.<br><br>
+      <strong>Long lists:</strong> shared <code>RPGACE.ui.batchList</code> helper — newest 8 rows + "Show more (N hidden)", applied to the insights list (re-applied after every 30s sync re-render via a chainable wrap on <code>loadIntelInsights</code>, so background refreshes don't collapse what you expanded) and the 32-track reference corpus.<br><br>
+      <strong>Beat Log picker:</strong> the taxonomy-node chip wall (would be 470 visible buttons as the tree grows) replaced by a search box — chips appear only when matching your query (2+ chars) or already selected. Selection mechanism unchanged, so the Log Beat read path needed zero edits.<br><br>
+      <strong>Injection-before-login, investigated with real code evidence:</strong> already true — the password gate is a pure overlay, <code>#app</code> exists in the DOM from load, <code>rpgace:ready</code> fires at load+150ms independent of login, and all module injection timers (1300-1700ms) complete before any human finishes typing the password. What pops in late is DATA (each widget's Supabase fetch), which this redesign reduces by rendering one section at a time.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested — first click-through should check each tab shows its own section, "Show more" batches correctly, and the Beat Log search reveals/hides chips properly.
+    </div>
+  </div>
+
+  <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">🧠 July 19 — TOP PRIORITY SHIPPED: Oracle chat now READS the taxonomy tree — grounded answers, library references, gaps become learning prompts</div>
     <div class="card-body">
       The moment the tree stops being a filing cabinet and starts being a brain — named top priority by Alex and spec'd with 3 confirmed answers first (verbatim record: <code>oracle_grounding_spec.txt</code>): trigger = keyword match only (zero cost on unrelated chat), depth = leaf names + explainers only (never deep_content — stays clear of the 504 danger zone), gap behavior = say "not in your RPGACE library yet" and offer to place it via Phylum Path.<br><br>

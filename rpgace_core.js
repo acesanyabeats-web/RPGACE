@@ -2341,6 +2341,170 @@ RPGACE.register('oracleTreeGrounding', {
 });
 /* ===END:oracleTreeGrounding=== */
 
+/* ===MODULE:researchTabs=== */
+// July 19 — Research page redesign (confirmed answers, recorded in the
+// patch notes card: sub-tabs within Research / show-8-plus-Show-more
+// lists / searchable Beat Log picker). The page previously rendered SIX
+// full-depth sections stacked in one scroll - Content Intelligence,
+// Video Finder, Idea Bank, Reference Corpus, Beat Log, Video Workshop,
+// plus Bookworm's Bibliography - all at once. Now a tab bar at the top
+// shows exactly one section at a time. Pure runtime layer: static
+// index.html untouched (per the standing landmine rules), injected
+// panels located by id, static panels by their h3 text. A section that
+// can't be found simply stays visible - the fallback is the old
+// behavior, never a hidden-forever section.
+RPGACE.register('researchTabs', {
+
+  TABS: [
+    { key: 'intel',    label: '🧠 Intelligence' },
+    { key: 'finder',   label: '🎬 Video Finder' },
+    { key: 'ideas',    label: '💡 Idea Bank' },
+    { key: 'corpus',   label: '🎼 Corpus' },
+    { key: 'beatlog',  label: '🥁 Beat Log' },
+    { key: 'workshop', label: '🔀 Workshop' },
+    { key: 'biblio',   label: '📚 Bibliography' },
+  ],
+
+  init: function() {
+    var self = this;
+    // Injected sibling panels land at various timers (1300-1700ms) -
+    // re-apply visibility at staggered delays so a panel injected AFTER
+    // the first pass still gets sorted into its tab instead of leaking
+    // into whatever tab is active. Idempotent, cheap (pure DOM checks).
+    [1200, 2500, 4500, 8000].forEach(function(ms) {
+      setTimeout(function() { self._inject(); self._apply(); }, ms);
+    });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.research) { self._inject(); self._apply(); }
+    });
+  },
+
+  // Section roots resolved fresh on every apply - injected panels may
+  // not exist yet on early passes, and that must never break anything.
+  _resolveSections: function() {
+    var page = document.getElementById('page-learning');
+    if (!page) return {};
+    var out = {};
+    var panels = page.querySelectorAll('.learn-panel');
+    Array.prototype.forEach.call(panels, function(p) {
+      var h3 = p.querySelector('h3');
+      var txt = h3 ? h3.textContent : '';
+      if (txt.indexOf('CONTENT INTELLIGENCE') !== -1) out.intel = p;
+      else if (txt.indexOf('VIDEO FINDER') !== -1) out.finder = p;
+    });
+    if (document.getElementById('video-workshop-panel')) out.workshop = document.getElementById('video-workshop-panel');
+    if (document.getElementById('cp-idea-bank')) out.ideas = document.getElementById('cp-idea-bank');
+    if (document.getElementById('ref-corpus-panel')) out.corpus = document.getElementById('ref-corpus-panel');
+    if (document.getElementById('beat-log-panel')) out.beatlog = document.getElementById('beat-log-panel');
+    if (document.getElementById('bookworm-bibliography')) out.biblio = document.getElementById('bookworm-bibliography');
+    return out;
+  },
+
+  _activeTab: function() {
+    return localStorage.getItem('rpgace_research_tab') || 'intel';
+  },
+
+  _inject: function() {
+    var self = this;
+    if (document.getElementById('research-tab-bar')) return;
+    var page = document.getElementById('page-learning');
+    if (!page) return;
+    var anchor = page.querySelector('.section-title');
+    if (!anchor) return;
+
+    var bar = document.createElement('div');
+    bar.id = 'research-tab-bar';
+    bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 18px 0;';
+    self.TABS.forEach(function(t) {
+      var btn = document.createElement('button');
+      btn.dataset.tabKey = t.key;
+      btn.textContent = t.label;
+      // Thumb-sized targets per the standing mobile-first rule.
+      btn.style.cssText = 'padding:9px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:rgba(226,226,236,0.5);';
+      btn.onclick = function() {
+        localStorage.setItem('rpgace_research_tab', t.key);
+        self._apply();
+      };
+      bar.appendChild(btn);
+    });
+    anchor.parentElement.insertBefore(bar, anchor.nextSibling);
+  },
+
+  _apply: function() {
+    var bar = document.getElementById('research-tab-bar');
+    if (!bar) return;
+    var active = this._activeTab();
+    var sections = this._resolveSections();
+    Array.prototype.forEach.call(bar.children, function(btn) {
+      var on = btn.dataset.tabKey === active;
+      btn.style.background = on ? 'rgba(155,89,182,0.15)' : 'rgba(255,255,255,0.03)';
+      btn.style.borderColor = on ? 'rgba(155,89,182,0.45)' : 'rgba(255,255,255,0.1)';
+      btn.style.color = on ? '#B07CC6' : 'rgba(226,226,236,0.5)';
+    });
+    Object.keys(sections).forEach(function(key) {
+      sections[key].style.display = (key === active) ? '' : 'none';
+    });
+    // Batch the long lists inside the newly-visible tab (show-8 rule).
+    if (active === 'intel') RPGACE.ui.batchList(document.getElementById('intel-insights-content'), 8);
+    if (active === 'corpus') RPGACE.ui.batchList(document.getElementById('rc-list'), 8);
+  },
+
+});
+/* ===END:researchTabs=== */
+
+/* ===MODULE:uiBatchList=== */
+// Shared show-N-plus-"Show more" helper for long lists (July 19,
+// Research redesign confirmed answer). Idempotent: safe to re-apply
+// after any re-render; remembers how far the user expanded via a
+// property on the container element itself, so a background re-render
+// (e.g. Content Intelligence's 30s sync) doesn't collapse the list
+// back down while they're reading it.
+RPGACE.ui = RPGACE.ui || {};
+RPGACE.ui.batchList = function(container, batchSize) {
+  if (!container) return;
+  var old = container.querySelector('.rpgace-show-more');
+  if (old) old.remove();
+  var kids = Array.prototype.slice.call(container.children);
+  if (kids.length <= batchSize) {
+    kids.forEach(function(k) { k.style.display = ''; });
+    return;
+  }
+  var visible = container._rpgaceVisibleCount || batchSize;
+  kids.forEach(function(k, i) { k.style.display = i < visible ? '' : 'none'; });
+  if (visible < kids.length) {
+    var btn = document.createElement('button');
+    btn.className = 'rpgace-show-more';
+    btn.textContent = '▼ Show more (' + (kids.length - visible) + ' hidden)';
+    btn.style.cssText = 'display:block;width:100%;padding:9px;margin-top:4px;background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.15);border-radius:8px;color:rgba(226,226,236,0.5);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    btn.onclick = function() {
+      container._rpgaceVisibleCount = visible + batchSize;
+      RPGACE.ui.batchList(container, batchSize);
+    };
+    container.appendChild(btn);
+  }
+};
+
+// Re-batch the intel insights list after every re-render (its 30s sync
+// polling rebuilds innerHTML, which would otherwise un-hide everything).
+// Chainable wrap, same guard convention as every other wrap in this file.
+RPGACE.register('intelListBatcher', {
+  init: function() {
+    function patch() {
+      if (typeof window.loadIntelInsights !== 'function' || window._intelBatchPatched) return;
+      window._intelBatchPatched = true;
+      var orig = window.loadIntelInsights;
+      window.loadIntelInsights = function() {
+        var result = orig.apply(this, arguments);
+        RPGACE.ui.batchList(document.getElementById('intel-insights-content'), 8);
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+  },
+});
+/* ===END:uiBatchList=== */
+
 /* ===MODULE:taxonomyReviewQueue=== */
 // F6: Dashboard indicator + batch review popup for taxonomy_proposals rows
 // queued silently by F4 (ciAutoPropose) and F5 (encSync._autoPropose).
@@ -9491,17 +9655,38 @@ RPGACE.register('beatLog', {
     });
     panel.appendChild(grid);
 
-    // Taxonomy nodes multi-select
+    // Taxonomy nodes picker — REDESIGNED July 19 (Research redesign,
+    // confirmed answer: "Searchable picker"). The old version rendered
+    // EVERY node as a visible chip up-front - by 470 tree rows that was
+    // a wall of buttons dominating the whole form. Now: a search box;
+    // chips only show when they match the query or are already selected.
+    // The selection mechanism (dataset.active on chips in #bl-tax-grid)
+    // is UNCHANGED, so the Log Beat read path needs no edits.
     var taxWrap = document.createElement('div');
     taxWrap.style.cssText = 'margin-bottom:14px;';
     var taxLbl = document.createElement('div');
     taxLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
     taxLbl.textContent = 'Taxonomy Nodes Applied';
+    var taxSearch = document.createElement('input');
+    taxSearch.type = 'text';
+    taxSearch.id = 'bl-tax-search';
+    taxSearch.placeholder = '🔍 Type to search nodes — selected ones stay visible...';
+    taxSearch.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
     var taxGrid = document.createElement('div');
     taxGrid.id = 'bl-tax-grid';
     taxGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
-    taxWrap.appendChild(taxLbl); taxWrap.appendChild(taxGrid);
+    taxWrap.appendChild(taxLbl); taxWrap.appendChild(taxSearch); taxWrap.appendChild(taxGrid);
     panel.appendChild(taxWrap);
+
+    var applyTaxFilter = function() {
+      var q = taxSearch.value.trim().toLowerCase();
+      Array.prototype.forEach.call(taxGrid.children, function(chip) {
+        var selected = chip.dataset.active === '1';
+        var matches = q.length >= 2 && (chip.dataset.concept || '').toLowerCase().indexOf(q) !== -1;
+        chip.style.display = (selected || matches) ? '' : 'none';
+      });
+    };
+    taxSearch.oninput = applyTaxFilter;
 
     // Load taxonomy nodes
     RPGACE.sb.select('taxonomy_nodes', 'order=phylum_number.asc&limit=50')
@@ -9518,9 +9703,11 @@ RPGACE.register('beatLog', {
             chip.style.background = active ? 'rgba(255,255,255,0.03)' : 'rgba(201,168,76,0.12)';
             chip.style.borderColor = active ? 'rgba(255,255,255,0.08)' : 'rgba(201,168,76,0.4)';
             chip.style.color = active ? 'rgba(226,226,236,0.5)' : '#C9A84C';
+            applyTaxFilter();
           };
           taxGrid.appendChild(chip);
         });
+        applyTaxFilter(); // hide everything until searched/selected
       }).catch(function() {});
 
     // Extra fields row
