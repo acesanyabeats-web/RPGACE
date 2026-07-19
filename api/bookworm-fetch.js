@@ -304,6 +304,41 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
       console.warn('Bookworm DIAG: chapter ' + c.number + ' ("' + c.title + '") - ' + rawForNumber.length + ' number+title match(es) total, ' + pastCursor.length + ' past cursor (' + cursor + '). Bare "Chapter ' + c.number + '" past cursor: ' + bareContext);
     }
   });
+
+  // Real bug found July 18 (a real hand-test opened chapter 1 and saw its
+  // own table-of-contents sub-heading listing, not real prose): every
+  // OTHER chapter is protected from anchoring on its own TOC mention
+  // because it must land after the PREVIOUS chapter's resolved offset -
+  // but the very first chapter in the book has no previous chapter, so
+  // its search floor was wide open (cursor started at -1), and the first
+  // "Chapter 1 ... title" match in the whole document is almost always
+  // the TOC listing itself, which by definition comes before the real
+  // content. Fix, run only after the full forward pass above so the
+  // SECOND chapter's real position is already known: re-derive the first
+  // chapter's offset as the LAST candidate that still falls BEFORE the
+  // second chapter's real position - bounded so it can never overshoot
+  // into chapter 2, preferring the latest (real) occurrence over the
+  // earliest (TOC) one, the same "prefer later" principle this whole
+  // pipeline is already built on for every other chapter.
+  if (chapterList.length > 1) {
+    const firstNum = chapterList[0].number;
+    const secondNum = chapterList[1].number;
+    const firstOffset = offsetByNumber[firstNum];
+    const secondOffset = offsetByNumber[secondNum];
+    if (firstOffset !== undefined && secondOffset !== undefined) {
+      let better = null;
+      for (let j = 0; j < kept.length; j++) {
+        if (kept[j].number === firstNum && kept[j].offset > firstOffset && kept[j].offset < secondOffset) {
+          better = kept[j].offset; // keep scanning - want the LAST qualifying one
+        }
+      }
+      if (better !== null) {
+        console.warn('Bookworm DIAG: chapter ' + firstNum + ' corrected from its own TOC mention (offset ' + firstOffset + ') to its real heading (offset ' + better + ')');
+        offsetByNumber[firstNum] = better;
+      }
+    }
+  }
+
   return offsetByNumber;
 }
 

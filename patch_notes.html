@@ -153,6 +153,16 @@
     </div>
   </div>
 
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🐛 July 18 — Real bug found AFTER the "finish line": chapter 1's actual body text was its own table of contents, invisible until someone actually read it</div>
+    <div class="card-body">
+      The "26 of 26 chapters" pass confirmed titles, keywords, and order were all correct — but that screen never showed the actual sliced body text, only metadata. Opening chapter 1 to read it revealed the real content was the book's own dot-leader sub-heading list ("Music versus Noise . . . 1", "Pitch (Frequency) . . . 3"...), not real prose.<br><br>
+      <strong>Root cause:</strong> every chapter after the first is protected from anchoring on its own table-of-contents mention because <code>resolveChapterHeadingsMechanically</code> requires its match to land after the PREVIOUS chapter's already-resolved position. Chapter 1 has no previous chapter — its search floor starts wide open — so the very first "Chapter 1 ... title" occurrence in the whole document gets picked, which is almost always the TOC listing itself, since by definition the TOC comes before the real content. This bug was invisible in every prior test because the confirm screen never rendered the actual chapter text, only title/keyword metadata, which was never affected.<br><br>
+      <strong>Fixed:</strong> once the SECOND chapter is resolved, the first chapter's offset is re-derived as the LAST candidate match that still falls before the second chapter's real position — bounded so it can never overshoot into chapter 2, correctly preferring the later (real) occurrence over the earliest (TOC) one. Same "prefer later, but bounded" principle already used everywhere else in this pipeline, just finally applied to the one chapter structurally exempt from the normal cursor protection.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. Worth checking specifically whether any OTHER chapter besides 1 could theoretically hit a similar edge case (e.g. a chapter whose real heading and TOC mention are unusually close together) — not observed in this book, but this specific class of bug (correct metadata, wrong underlying offset) was only found because a human actually read the output, not because any earlier test surfaced it structurally.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 18 — Dashboard's own "Oversight" widget was stale at 4 docs, a full day after the 5th shipped</div>
     <div class="card-body">
