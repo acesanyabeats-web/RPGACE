@@ -183,6 +183,17 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">📖 July 19 — Bookworm: chapter tick list, click-to-jump re-entry, and background extraction with Exit-to-Dashboard</div>
+    <div class="card-body">
+      3-piece UI request, spec'd with 2 quick clarifying questions first (see <code>bookworm_spec_backlog.txt</code>, Round 2) rather than guessed at, per this project's own rule for multi-piece asks. All three build directly on plumbing that already existed — no new Supabase columns needed.<br><br>
+      <strong>1. Tick list per chapter:</strong> reuses the existing <code>bookworm_chapters.status</code> field (already tracked as pending/in_progress/complete for every chapter regardless of source) plus <code>raw_text</code>/<code>insights</code> presence to show ✅ complete, 🔄 in progress, ✍️ needs chapter text (TOC-manual books), or ⏳ not started, per chapter.<br><br>
+      <strong>2. Clickable re-entry list:</strong> clicking a book card on the Dashboard now opens a full chapter list (<code>_renderChapterList</code>) instead of jumping straight into whichever chapter was last active — every chapter is clickable straight there. Clicking a COMPLETE chapter opens a new read-only view (<code>_renderChapterSummary</code>) of its insights and what was decided on each (approved/rejected/edited) — confirmed answer: nothing there can be re-run or re-approved, it's a historical record only. The old "jump straight to the current checkpoint" behavior is kept as a separate internal function (<code>_openCurrentChapter</code>) for flows that should still auto-continue without showing the list every time: starting a fresh book, saving a TOC-manual chapter's pasted text, and auto-advancing right after a chapter completes.<br><br>
+      <strong>3. Background extraction:</strong> clicking "I've Read This — Show Insights" no longer holds the overlay open waiting even for the first insight — confirmed answer distinguishes this from the insight review popup itself, which keeps its existing wait-based behavior unchanged. Now it toasts, closes, and navigates straight to the Dashboard while <code>_analyzeChapter</code> keeps running in the background (extending the same backgrounding principle already used for insight 2+ since July 17, to insight 1 as well). Every "Exit" button across the whole module (structure-found, chapter-read, add-chapter-text, insight-review, waiting-for-next-insight, plus the 2 new screens) now actually navigates to the Dashboard via a shared <code>_goToDashboard()</code> helper, instead of just removing the overlay and leaving whatever page happened to be underneath.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 18 — Dashboard's own "Oversight" widget was stale at 4 docs, a full day after the 5th shipped</div>
     <div class="card-body">

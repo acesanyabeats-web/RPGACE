@@ -137,3 +137,61 @@ ALL FOUR QUESTIONS ANSWERED. Building now. Nothing in this file should
 ever be silently overwritten with a "recommended" guess again — if
 something comes up mid-build that's genuinely unclear, ask in plain
 text and wait, don't substitute.
+
+============================================================
+ROUND 2 — July 19: chapter tick list, clickable re-entry, background
+extraction with Exit-to-Dashboard
+============================================================
+Direct request: "when contents analyzed, it creates tick list on each
+chapter to show extracted or not. also when clicking the book to
+re-enter bookworm, the list appears that is clickable to any chapter.
+Also when extracting from chapters, make the extraction possible to
+run in background with an exit button that leads back to dashboard"
+
+Q1 — ANSWERED: clicking an already-COMPLETE chapter in the new
+clickable list — what should happen?
+"Read-only insight summary" — opens a view showing that chapter's
+insights and what was decided (approved/rejected/edited) for each;
+nothing re-runs, nothing can be re-approved. Built as
+_renderChapterSummary().
+
+Q2 — ANSWERED: when you click "I've Read This — Show Insights", should
+it wait to show insight 1, or go straight to background + Dashboard?
+Verbatim: "same waiting pop-up when insight approved, denied, but with
+exit button, when extracting chapters go straight to dashboard" —
+interpreted as: the per-insight approve/reject review popup keeps its
+existing wait-based behavior unchanged (still shows insight 1 as soon
+as it's ready, still has the "waiting for next insight" polling
+screen for insights 2+) — but the CHAPTER EXTRACTION step itself
+(clicking "I've Read This" to kick off _analyzeChapter) no longer
+waits even for insight 1: it closes the overlay and navigates to
+Dashboard immediately, with analysis continuing fully in the
+background (it already ran in the background past insight 1 before
+this change — see _continueAnalyzingInBackground, built July 17 - this
+extends that same principle to insight 1 as well).
+
+BUILT this round (rpgace_core.js, bookworm module):
+- _goToDashboard() — shared helper, every Bookworm overlay's "Exit"
+  button now navigates to the Dashboard page (main.js's showPage())
+  instead of just removing the overlay and leaving whatever page was
+  underneath.
+- _openBook(bookId) — re-entry point (Dashboard widget's book-card
+  click) now shows a full chapter list (_renderChapterList) instead of
+  jumping straight to the current checkpoint. Every chapter gets a
+  status tick reusing the EXISTING bookworm_chapters.status field
+  (pending/in_progress/complete) plus raw_text/insights presence -
+  no new columns needed. Click any chapter to jump straight there.
+- _openCurrentChapter(bookId) — the OLD _openBook logic, kept
+  separately for internal "keep going" flows that should still jump
+  straight to the current checkpoint without showing the list every
+  time: starting a fresh book, saving a TOC-manual chapter's pasted
+  text, and auto-advancing after a chapter completes.
+- _renderChapterSummary(book, chapter) — read-only view for a
+  complete chapter's insights and their final decisions, per Q1.
+- _renderChapterRead's "I've Read This" button — per Q2, now
+  fire-and-forget: toasts, closes the overlay, navigates to Dashboard,
+  and lets _analyzeChapter run without the UI awaiting it. Errors
+  still surface as a toast (not tied to the overlay's lifetime).
+
+Not yet hand-tested — flag honestly, same as every other Bookworm
+round in this file.
