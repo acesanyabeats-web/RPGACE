@@ -173,6 +173,16 @@
     </div>
   </div>
 
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🔍 July 19 — Re-test of the bare-heading fix: chapter 2 vanished with ZERO log trace — 3 silent-swallow paths found and closed, real cause not yet confirmed</div>
+    <div class="card-body">
+      Re-tested the bare "N Title" heading fix (previous card) fresh, on the same book. Result: 25 chapters instead of 26 — chapter 1 through 26 all present <strong>except chapter 2</strong>, which simply isn't in the confirm list at all (jumps straight from "Chapter 1" to "Chapter 3"). Checked Vercel's runtime logs for this exact request before guessing: <strong>no warning fired anywhere</strong> — not the "still missing from the TOC read" warning, not the "mechanical resolution could not find a heading" warning, nothing. A chapter disappeared with no trace at all, which per this project's own rule ("query real evidence, don't patch blind") meant finding out WHERE it was being swallowed before touching anything.<br><br>
+      <strong>Found 3 genuinely silent code paths</strong>, any of which could do this with zero log output: (1) the TOC recircle retry's own JSON-parse check had no <code>else</code> branch — if the model's recircle reply had no parseable JSON in it at all, the retry just silently gave up with nothing logged; (2) <code>dropClusteredBoundaries()</code> — despite its own comment explicitly saying it's a "defensive backstop for the regex-fallback path" — was actually being called <strong>unconditionally</strong> on both paths, including the TOC-based one, where <code>resolveChapterHeadingsMechanically</code> already declusters its own candidates per-tier before ever assigning a final offset; running it a second time on the final cross-chapter result risked silently deleting a genuine short chapter whose real heading just happens to land within 600 characters of the previous chapter's, with no warning; (3) the &lt;400-char merge-forward step (for near-empty fragment chapters) also logged nothing when it fired.<br><br>
+      <strong>Fixed all 3</strong>: added the missing else-branch log to the recircle check; scoped <code>dropClusteredBoundaries()</code> to the regex-fallback path only (matching what its own comment already claimed), since the TOC-based path's per-tier declustering makes a second pass redundant and dangerous; added a log line to the merge-forward step. No behavior change beyond that scoping fix — this is instrumentation plus one real scoping bug, not a guess at "the" fix.<br><br>
+      <strong>Honest flag:</strong> the <code>dropClusteredBoundaries</code> scoping fix is the leading suspect (unconditional call directly contradicting its own stated purpose, on a request where chapter 1's offset had just been corrected to sit close to where chapter 2's real heading would be) but is <em>not confirmed</em> as the actual cause of chapter 2 vanishing specifically — that requires one more real test with these logs in place to see which one (if any) fires for chapter 2. Not yet hand-tested.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 18 — Dashboard's own "Oversight" widget was stale at 4 docs, a full day after the 5th shipped</div>
     <div class="card-body">

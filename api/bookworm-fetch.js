@@ -154,6 +154,11 @@ async function detectChapterListByOracle(apiKey, fullText, phylumList) {
           // than appending them at the end - the confirm screen and every
           // downstream step assume chapters arrive in reading order.
           chapters = chapters.concat(recovered).sort(function (a, b) { return a.number - b.number; });
+        } else {
+          // Was previously a silent no-op if the recircle reply had no JSON
+          // block at all (e.g. the model replied in plain prose) - a real,
+          // untraceable way for a chapter to vanish with zero log evidence.
+          console.warn('Bookworm DIAG: TOC recircle for chapter(s) [' + missingNums.join(',') + '] returned no parseable JSON - reply started: "' + recircleReply.slice(0, 150).replace(/\s+/g, ' ') + '"');
         }
       } catch (e) {
         console.warn('Bookworm: TOC recircle failed:', e.message);
@@ -403,6 +408,17 @@ function dropClusteredBoundaries(boundaries) {
   for (let i = 0; i < sorted.length; i++) {
     const last = kept[kept.length - 1];
     if (last && sorted[i].offset - last.offset < MIN_GAP) {
+      // Real bug found July 19: this was being called unconditionally on
+      // BOTH paths (see handler below), including the TOC-based path where
+      // resolveChapterHeadingsMechanically already declusters candidates
+      // per-tier before ever assigning a final offset. Running it again
+      // here on the final cross-chapter result can silently delete a
+      // genuine short chapter whose real heading just happens to land
+      // within 600 chars of the previous chapter's - with zero log trace,
+      // which is exactly how chapter 2 vanished from a real 26-chapter
+      // book with no warning anywhere. Logged now so this is never silent
+      // again; also scoped to the regex-fallback path only (see handler).
+      console.warn('Bookworm DIAG: dropClusteredBoundaries removed "' + sorted[i].title + '" (offset ' + sorted[i].offset + ') - within ' + MIN_GAP + ' chars of "' + last.title + '" (offset ' + last.offset + ')');
       continue; // within a tight run of the last KEPT boundary - skip
     }
     kept.push(sorted[i]);
@@ -448,6 +464,7 @@ export default async function handler(req, res) {
     let chapterList;
     let gapWarning = null;
     let boundaries;
+    let usedRegexFallback = false;
     try {
       chapterList = await detectChapterListByOracle(apiKey, fullText, phylumList);
       if (chapterList.length < 2) throw new Error('Oracle table-of-contents read returned too few chapters');
@@ -490,11 +507,19 @@ export default async function handler(req, res) {
       console.warn('Bookworm: TOC-based detection failed, falling back to regex:', e.message);
       boundaries = detectChaptersByRegex(fullText);
       gapWarning = null;
+      usedRegexFallback = true;
     }
     if (boundaries.length < 1) {
       throw new Error('Could not detect any chapter boundaries in this book');
     }
-    boundaries = dropClusteredBoundaries(boundaries);
+    // Only the regex-fallback path needs this decluttering pass (see
+    // dropClusteredBoundaries's comment) - the TOC-based path already
+    // declusters its own candidates per-tier before assigning any final
+    // offset, so re-running this here on already-resolved real chapters
+    // risked silently deleting a genuine short chapter (real bug, July 19).
+    if (usedRegexFallback) {
+      boundaries = dropClusteredBoundaries(boundaries);
+    }
 
     const sliced = boundaries.map(function (b, i) {
       const end = (i + 1 < boundaries.length) ? boundaries[i + 1].offset : fullText.length;
@@ -512,6 +537,7 @@ export default async function handler(req, res) {
     const merged = [];
     for (let i = 0; i < sliced.length; i++) {
       if (sliced[i].text.length < MIN_CHAPTER_LENGTH && i + 1 < sliced.length) {
+        console.warn('Bookworm DIAG: "' + sliced[i].title + '" merged forward into "' + sliced[i + 1].title + '" - only ' + sliced[i].text.length + ' chars between its offset and the next chapter\'s (< ' + MIN_CHAPTER_LENGTH + ' minimum).');
         sliced[i + 1] = Object.assign({}, sliced[i + 1], { text: sliced[i].text + '\n\n' + sliced[i + 1].text });
         continue;
       }
