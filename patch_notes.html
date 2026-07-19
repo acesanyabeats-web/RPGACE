@@ -163,6 +163,16 @@
     </div>
   </div>
 
+  <div class="card red" style="margin-bottom:20px;">
+    <div class="card-title">🎯 July 18/19 — The above fix still failed, but confirmed genuinely live 70 seconds before the test — real cause is deeper: this book's true chapter heading has no word "Chapter" at all</div>
+    <div class="card-body">
+      Checked Vercel's deployment log against this book's exact <code>created_at</code> before assuming the fix had failed again — it was live 70 seconds before the test ran, ruling out a deploy-timing issue outright. Alex then pasted the actual real opening of chapter 1 directly, and it revealed something neither prior fix accounted for: <strong>this book's true chapter-opening heading is a BARE "N Title" line — "1 Musical Sound," no word "Chapter" anywhere</strong> — immediately followed by real prose. "Chapter 1 Musical Sound" only reappears afterward as a repeating running header on every subsequent page within the same chapter (visible directly in the pasted text: alternating page headers of "N / Music Theory for Computer Musicians" and "Chapter 1 Musical Sound"). Searching only for "chapter N ... title" could never find the true opening — only the TOC entry or a later running header — which is exactly why bounding chapter 1 against chapter 2's position still failed: the "better" candidate my fix found was still just a running header, not the real start.<br><br>
+      <strong>Fixed:</strong> added a new, higher-priority bare "N Title" pattern (number immediately followed by the title, only whitespace between, no word "chapter" required) as the FIRST candidate source tried for every chapter — the real canonical heading marker for this book's typesetting convention, with "chapter N ... title" now the fallback for books that genuinely do restate "Chapter N" at their true opening. Explicitly excludes matches that are really just the tail of a "Chapter N" occurrence (the TOC's own joined form "Chapter1MusicalSound" literally contains "1MusicalSound" as a substring) by checking the ~12 characters immediately before the number for the word "chapter."<br><br>
+      <strong>Worth being honest about the implication:</strong> if this book's true heading convention really is "bare number + title," every chapter (not just chapter 1) may have been silently starting a few lines late this whole time — landing on the first running header rather than the true first line — without ever being obviously wrong enough to notice, the way chapter 1's TOC-anchor was. This fix should correct that for every chapter, not just chapter 1, but that specific claim is unverified until chapters beyond 1 are actually read and compared against the real book.<br><br>
+      <strong>Not yet hand-tested.</strong>
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 18 — Dashboard's own "Oversight" widget was stale at 4 docs, a full day after the 5th shipped</div>
     <div class="card-body">

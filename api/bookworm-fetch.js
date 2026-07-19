@@ -219,9 +219,11 @@ function declusterByOffset(matches, minGap) {
 
 function resolveChapterHeadingsMechanically(fullText, chapterList) {
   const MIN_GAP = 600;
-  const allMatches = [];      // primary: "Chapter N ... Title" (real evidence: two
-  const titleOnlyMatches = []; // fallback: title alone, no "Chapter N" required -
-  // for a chapter whose real heading doesn't restate "Chapter N" near its
+  const bareOpeningMatches = []; // NEW, highest priority - see comment below
+  const allMatches = [];      // "Chapter N ... Title" - a running header, NOT
+  // necessarily the true opening (real evidence, see below)
+  const titleOnlyMatches = []; // fallback: title alone, no number required -
+  // for a chapter whose real heading doesn't restate its number near its
   // title at all (found real evidence for this on the book's own
   // concluding chapter, which likely just says "Conclusion").
   chapterList.forEach(function (c) {
@@ -241,6 +243,38 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
     // predictable in advance.
     const titlePattern = charFuzzyPattern(cleanTitle, 20);
     if (!titlePattern) return;
+
+    // Real discovery, July 18/19 (chapter 1 kept anchoring on its own TOC
+    // entry even after fixing that specifically): Alex pasted the actual
+    // real chapter-1 opening text, and this book's TRUE heading convention
+    // is a BARE "N Title" line ("1 Musical Sound", no word "chapter" at
+    // all) - "Chapter N Title" only reappears afterward as a repeating
+    // running header on later pages within the SAME chapter. Searching only
+    // for "chapter N ... title" can never find the true opening at all -
+    // it can only ever land on the TOC entry or on some later running
+    // header, which is why chapter 1 specifically (whose TOC entry has no
+    // earlier chapter to protect against) kept failing even after being
+    // bounded against chapter 2. This bare pattern is tried FIRST, as the
+    // real primary heading marker, with "chapter N ... title" now treated
+    // as the fallback (still needed for books that genuinely do say
+    // "Chapter N" at their true opening).
+    // Excludes matches that are really just the tail of a "Chapter N"
+    // occurrence (the TOC's joined form "Chapter1MusicalSound" literally
+    // contains "1MusicalSound" as a substring) by checking the ~12
+    // characters immediately before the number for the word "chapter".
+    const bareRe = new RegExp('(\\d+)(?!\\d)\\s{0,10}' + titlePattern, 'gi');
+    let bm;
+    while ((bm = bareRe.exec(fullText)) !== null) {
+      const numStr = bm[1];
+      if (parseInt(numStr, 10) === c.number) {
+        const precedingText = fullText.slice(Math.max(0, bm.index - 12), bm.index);
+        if (!/chapter\s*$/i.test(precedingText)) {
+          bareOpeningMatches.push({ number: c.number, offset: bm.index });
+        }
+      }
+      if (bm.index === bareRe.lastIndex) bareRe.lastIndex++;
+    }
+
     // Gap between number and title widened 80->200: a running header or
     // repeated page-footer text (this book's own front matter shows one -
     // "Contents xi", "MusicTheoryforComputerMusicians") can land between
@@ -254,18 +288,31 @@ function resolveChapterHeadingsMechanically(fullText, chapterList) {
         .forEach(function (offset) { titleOnlyMatches.push({ number: c.number, offset: offset }); });
     }
   });
+  const keptBare = declusterByOffset(bareOpeningMatches, MIN_GAP);
   const kept = declusterByOffset(allMatches, MIN_GAP);
   const keptTitleOnly = declusterByOffset(titleOnlyMatches, MIN_GAP);
   const offsetByNumber = {};
   let cursor = -1;
   chapterList.forEach(function (c) {
     let found = false;
-    for (let i = 0; i < kept.length; i++) {
-      if (kept[i].number === c.number && kept[i].offset > cursor) {
-        offsetByNumber[c.number] = kept[i].offset;
-        cursor = kept[i].offset;
+    // Tried first: the bare "N Title" true-opening pattern - the real
+    // canonical heading marker, when this book's formatting uses one.
+    for (let i = 0; i < keptBare.length; i++) {
+      if (keptBare[i].number === c.number && keptBare[i].offset > cursor) {
+        offsetByNumber[c.number] = keptBare[i].offset;
+        cursor = keptBare[i].offset;
         found = true;
         break;
+      }
+    }
+    if (!found) {
+      for (let i = 0; i < kept.length; i++) {
+        if (kept[i].number === c.number && kept[i].offset > cursor) {
+          offsetByNumber[c.number] = kept[i].offset;
+          cursor = kept[i].offset;
+          found = true;
+          break;
+        }
       }
     }
     if (!found) {
