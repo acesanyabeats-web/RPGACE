@@ -2183,25 +2183,56 @@ RPGACE.register('ciAutoPropose', {
     setTimeout(patch, 1500);
   },
 
+  // REWRITTEN July 19 (Fable audit follow-up, confirmed by Alex): the
+  // old version proposed ONE title-led 300-char blob per video - which
+  // is exactly why YouTube-sourced leaves were video titles instead of
+  // concepts, and why a video never got book-depth treatment despite
+  // intel_reports ALREADY storing per-video key_learnings and
+  // production_techniques arrays from the analysis. Now each stored
+  // insight is proposed individually through the same unified scored
+  // engine book insights use - same rules, same justification, same
+  // confidence. Caps keep sync cost bounded: still max 5 new videos per
+  // scan, max 3 insights per video, max 9 total proposals per scan.
   _scan: function(all) {
     if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) return;
     var guard = localStorage.getItem('rpgace_ci_proposed') || '';
     var queued = 0, checked = 0;
+    var MAX_VIDEOS = 5, MAX_PER_VIDEO = 3, MAX_TOTAL = 9;
     all.forEach(function(r) {
-      if (checked >= 5) return;
+      if (checked >= MAX_VIDEOS || queued >= MAX_TOTAL) return;
       var key = r.url || r.title;
       if (!key || guard.indexOf('|' + key + '|') !== -1) return;
       checked++;
       guard += '|' + key + '|';
+
+      // Per-insight loop: the real analysed content, never the title.
+      var insightTexts = []
+        .concat((r.insights && r.insights.key_learnings) || [])
+        .concat((r.insights && r.insights.production_techniques) || [])
+        .map(function(t) { return String(t || '').trim(); })
+        .filter(function(t) { return t.length >= 40; }); // substantial only
+
+      if (insightTexts.length) {
+        insightTexts.slice(0, MAX_PER_VIDEO).forEach(function(insightText) {
+          if (queued >= MAX_TOTAL) return;
+          var m = RPGACE.utils._quickPhylaScan(insightText);
+          if (!m.length) return;
+          RPGACE.modules.taxonomyTree.silentPropose(insightText.slice(0, 400), m[0].num, 'content_intelligence', r.url || null)
+            .catch(function(err) { console.warn('[ciAutoPropose] silentPropose failed:', err.message); });
+          queued++;
+        });
+        return;
+      }
+
+      // Fallback for older reports with no stored insight arrays: the
+      // old blob behavior, minus the title/creator (the audit-confirmed
+      // source of title-shaped placements) - summary text only.
       var enc = r.insights && r.insights.encyclopedia_entry;
-      var blob = [r.title, r.creator, enc && enc.summary,
-        ((r.insights && r.insights.key_learnings) || []).join(' '),
-        ((r.insights && r.insights.production_techniques) || []).join(' ')]
-        .filter(Boolean).join(' ');
+      var blob = [enc && enc.summary].filter(Boolean).join(' ');
       if (blob.length < 60) return;
       var matches = RPGACE.utils._quickPhylaScan(blob);
       if (matches.length === 0) return;
-      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'content_intelligence', r.url || null)
+      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 400), matches[0].num, 'content_intelligence', r.url || null)
         .catch(function(err) { console.warn('[ciAutoPropose] silentPropose failed:', err.message); });
       queued++;
     });
@@ -2335,6 +2366,18 @@ RPGACE.register('taxonomyReviewQueue', {
             synthEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
             synthEl.textContent = p.proposed_steps.synthesis;
             row.appendChild(synthEl);
+          }
+
+          // July 19: phylum_path cards now show the scored engine's own
+          // reasoning - the justification and 1-10 confidence were being
+          // computed on every silent proposal but thrown away before the
+          // one human who has to judge the card ever saw them.
+          if (isPhylumPath && p.proposed_steps && (p.proposed_steps.justification || p.proposed_steps.confidenceScore)) {
+            var justEl = document.createElement('div');
+            justEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:8px;font-style:italic;';
+            var score = p.proposed_steps.confidenceScore;
+            justEl.textContent = (p.proposed_steps.justification || '') + (score ? ' (confidence ' + score + '/10)' : '');
+            row.appendChild(justEl);
           }
 
           var btnRow = document.createElement('div');
@@ -4416,6 +4459,11 @@ RPGACE.register('taxonomyTree', {
           newSteps: decision.newSteps,
           explainers: decision.explainers,
           insightText: topicText,
+          // July 19: the scored engine's reasoning now rides along so the
+          // review queue can SHOW it - previously the decision used the
+          // score internally but threw the evidence away before review.
+          justification: decision.justification || '',
+          confidenceScore: decision.confidenceScore || 0,
         },
         phylum_number: phylumNumber,
         matched_existing_node_id: decision.attachNode ? decision.attachNode.id : null,

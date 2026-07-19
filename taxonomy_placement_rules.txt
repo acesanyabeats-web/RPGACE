@@ -155,15 +155,41 @@ G1. ✅ CLEANED July 19 (confirmed by Alex: "clean the tree"). Count
     Character and Practical Application") should be re-placed properly
     as a leaf under the REAL "Chord Voicing & Inversion" node before
     the chain is deleted.
-G2. The three video-title leaves + their single-purpose parent chains
-    (Mixtura jazz-sample chain, Venditionis funnel chain, Contentum
-    Instagram chain) — candidates for the established case-study
-    pattern (encyclopedia + concept-named leaf) instead.
-G3. Chapter 13's overlapping inversion siblings — candidates for a
-    merge into 1-2 leaves (e.g. "Chord Inversions: Types, Notation &
-    Stability" + keep "Inversions & Bass Line Voice Leading" branch).
-G4. Chapter 1's Anatomia shoehorns — "Pitch as Frequency: Hz, Octaves
-    & the Physics of Sound" sitting under a SOLFEGE vocabulary node,
-    and physics-of-tone content under "Scope and Boundary Analysis" —
-    candidates for re-homing once a proper acoustics/fundamentals
-    branch exists.
+G2. ✅ CLEANED July 19 (Alex: "execute G2 to G4"). All three video-title
+    leaves converted to the established case-study pattern: each became
+    an encyclopedia entry (source: 'taxonomy_case_study', full title +
+    explainer + preserved deep_content, linked via taxonomy_node_id to
+    its concept parent), the parent concept branch flipped to leaf
+    (each had exactly the title leaf as its only child - verified),
+    title leaf deleted. Checked first: zero children/links/enc refs on
+    all three.
+    Original finding: Mixtura jazz-sample chain, Venditionis funnel
+    chain, Contentum Instagram chain — video titles as tree nodes.
+G3. ✅ CLEANED July 19. The four overlapping inversion-facet leaves
+    merged into ONE: "Root Position, Inversions & Stability" (the only
+    one carrying generated deep_content and 2 fusion links) was KEPT
+    and renamed "Chord Inversions: Types, Notation & Stability" with a
+    consolidated explainer covering all four facets; the other three
+    (zero content, zero links - verified) deleted. "Inversions & Bass
+    Line Voice Leading" and "Octave Doubling & Register Filling"
+    branches kept as genuinely distinct applications.
+G4. ✅ CLEANED July 19. New proper home created: Anatomia/"Acoustics &
+    Sound Fundamentals" (Order) / "Physics of Musical Tone" (Class).
+    Moved there (parent_id + path + depth updated; fusion links on the
+    moved leaves survive because nodes were MOVED, not recreated):
+    "Pitch, Dynamic & Timbre" branch + its "Overtones & Timbre
+    Fingerprints" leaf, "Tone-Noise Distinction Vocabulary" leaf, and
+    "Pitch as Frequency: Hz, Octaves & the Physics of Sound" leaf
+    (formerly under a SOLFEGE vocabulary node). The emptied old
+    "Pitch vs Noise: The Physics of Tone" chain deleted. NOTE: Anatomia
+    (like all phyla) has NO depth-0 root row - phylum roots are
+    implicit; depth-1 Orders have parent_id NULL. Verified post-clean:
+    0 orphans, 0 broken fusion links, 0 rows above depth 6.
+G5. ✅ BONUS FIND, cleaned July 19: Wiley's "Eskimo" (2002) — a specific
+    SONG as a Historia leaf (pre-dated this audit's window; its own
+    explainer admitted "a single, specific historical instance rather
+    than a general vocabulary term"). Converted to a case-study
+    encyclopedia entry per the standing artist/song rule (the Dave x
+    Central Cee precedent), deep_content preserved, childless parent
+    "Era Vocabulary..." flipped to leaf. Tree-wide check after: zero
+    nodes matching title/year patterns remain.

@@ -216,6 +216,21 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">✅ July 19 — Tree cleanup G2-G5 executed + YouTube videos now get per-insight book-depth analysis + review queue shows the engine's own reasoning</div>
+    <div class="card-body">
+      All on Alex's explicit go ("execute G2 to G4, want taxonomy clean" + yes to both builds). Every delete preceded by reference checks (children / fusion links / encyclopedia refs); every verification query run against the live tree after.<br><br>
+      <strong>G2 — video-title leaves:</strong> all three converted to the established case-study pattern - encyclopedia entry (full title, explainer, preserved generated deep-content, linked to the concept node), parent concept branch flipped to leaf, title leaf deleted.<br>
+      <strong>G3 — inversion fragmentation:</strong> four overlapping sibling leaves merged into one, "Chord Inversions: Types, Notation &amp; Stability" - kept the one node carrying real generated content and 2 fusion links (so nothing needed re-pointing), consolidated all four explainers, deleted the three empty ones.<br>
+      <strong>G4 — Anatomia shoehorns re-homed:</strong> new proper branch created (Anatomia/Acoustics &amp; Sound Fundamentals/Physics of Musical Tone) and the chapter-1 physics content MOVED there (parent/path/depth updates, so all fusion links survive), including "Pitch as Frequency" which had been sitting under a solfege vocabulary node. Emptied old chain deleted.<br>
+      <strong>G5 — bonus find:</strong> a tree-wide title/year pattern sweep caught one more: Wiley's "Eskimo" (2002) as a Historia leaf - a specific song, converted to a case study per the standing artist/song rule (Dave x Central Cee precedent).<br>
+      <strong>Post-clean verification:</strong> 0 title/year-named nodes, 0 orphans, 0 broken fusion links, 0 rows above depth 6. 470 tree rows, 4 new case-study entries.<br><br>
+      <strong>Build 1 — YouTube per-insight loop (ciAutoPropose rewritten):</strong> <code>intel_reports</code> already stored per-video <code>key_learnings</code> + <code>production_techniques</code> arrays, but the old scan proposed ONE title-led 300-char blob per video - the root cause of title-shaped placements. Now each stored insight is proposed individually through the same unified scored engine book insights use (same rules/justification/confidence), with cost caps: max 5 new videos per sync, 3 insights per video, 9 proposals total. Fallback for old reports without insight arrays uses summary text only - never the title.<br><br>
+      <strong>Build 2 — review queue shows the reasoning:</strong> silent phylum-path proposals now store the engine's justification + 1-10 confidence in <code>proposed_steps</code>, and the review-queue card renders them - previously computed on every proposal and thrown away before the one human judging the card ever saw them.<br><br>
+      <strong>Honest flag:</strong> neither build hand-tested yet; next Content Intelligence sync will exercise Build 1 for real.
+    </div>
+  </div>
+
   <div class="card red" style="margin-bottom:20px;">
     <div class="card-title">🧹 July 19 — TREE AUDIT: real garbage found (a depth-14 corruption chain, video-title leaves, sibling fragmentation, phylum shoehorning) → placement rules compiled + ALL three placement pipelines unified into one</div>
     <div class="card-body">
