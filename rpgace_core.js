@@ -4332,64 +4332,22 @@ RPGACE.register('taxonomyTree', {
   // phylumPath has taken over, delegate the actual placement DECISION to
   // its structure-aware 5-check reasoning instead - this function's job
   // becomes "how did the insight get here," not "where does it go."
+  // UNIFIED July 19 (Fable audit): the old flat-prompt body that lived
+  // here is deleted, not just bypassed. Real evidence from the tree audit:
+  // it produced literal VIDEO TITLES as leaf names ("How to Make a Jazz
+  // Sampled Type Beat for Nemzzz, Knucks & Hurricane Wisdom | FL Studio
+  // Tutorial", two beat-selling chains with "(2022)"/"(2025)" in the
+  // node names), invented parallel one-off branch chains per video with
+  // zero fit-challenge (the phylum was pre-assumed), no confidence score,
+  // and no stored justification - measurably the worst of the three
+  // placement pipelines that existed. ALL placement decisions now go
+  // through phylumPath.decidePlacementScored (one engine, one prompt,
+  // one call - also cheaper than this path's 800-token flat call plus
+  // decidePlacement's old extractor+worker two-call chain). The enabled-
+  // phyla gate is gone too: the scored engine is structure-aware for any
+  // phylum, including a completely empty one.
   proposeLineage: function(topicText, phylumNumber, sourceType, sourceId) {
-    var self = this;
-    var pp = RPGACE.modules.phylumPath;
-    if (pp && pp.isEnabled(phylumNumber)) {
-      return self._proposeLineageViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
-    }
-    var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
-
-    RPGACE.utils.toast('🌳 Generating taxonomy lineage...', '#9B59B6', 2500);
-
-    var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
-      'ROOT ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
-      'TOPIC TO PLACE: "' + topicText + '"\n\n' +
-      'This phylum has already been confirmed as a plausible fit for this topic. ' +
-      'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
-      'Use as many or as few steps as genuinely needed — could be 2 steps, could be 10. ' +
-      'Each step should be a real conceptual grouping, not padding.\n\n' +
-      'Only the Phylum name uses Latin. Every other step uses plain, clear English.\n\n' +
-      'Return ONLY a JSON object, no other text, in this exact format:\n' +
-      '{"path": ["Step1Name","Step2Name","Step3Name","FinalTopicName"], ' +
-      '"explainers": ["what Step1 covers and how its children relate","...", "..."], ' +
-      '"is_leaf_specific": true}\n\n' +
-      'The path array should NOT include the phylum name itself (that is depth 0, already known). ' +
-      'Start from depth 1. The last item in path should be the specific topic itself.';
-
-    fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        system: 'You return only valid JSON, no markdown formatting, no explanation text.',
-        max_tokens: 800
-      })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
-      var cleaned = raw.replace(/```json|```/g, '').trim();
-      var match = cleaned.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error('No JSON found in response');
-      var parsed = JSON.parse(match[0]);
-
-      self._checkForMorph(phylumNumber, parsed.path, function(morphMatch, exactLeafMatch) {
-        self._showProposalPopup({
-          phylumNumber: phylumNumber,
-          phylumName: phylumName,
-          path: parsed.path,
-          explainers: parsed.explainers || [],
-          sourceType: sourceType,
-          sourceId: sourceId,
-          morphMatch: exactLeafMatch || morphMatch,
-          suggestUpdate: !!exactLeafMatch
-        });
-      });
-    })
-    .catch(function(err) {
-      RPGACE.utils.toast('Error generating lineage: ' + err.message, '#E25454', 3500);
-    });
+    return this._proposeLineageViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
   },
 
   // ── Interactive placement via Phylum Path's structure-aware engine ──
@@ -4418,63 +4376,20 @@ RPGACE.register('taxonomyTree', {
   // ── immediately. Used by unattended triggers (Content Intelligence      ──
   // ── pipeline completion, Encyclopedia sync) that must not block on a    ──
   // ── human decision mid-pipeline.                                       ──
+  // UNIFIED July 19 (Fable audit): same deletion + reasoning as
+  // proposeLineage above - the old flat body here was the SILENT variant
+  // of the same worst-of-three pipeline (video-title leaves, pre-assumed
+  // phylum fit, no score, no justification), and being silent made it
+  // more dangerous, not less: its garbage only surfaced at review time,
+  // titled exactly like a plausible proposal. All decisions now flow
+  // through phylumPath.decidePlacementScored via the ViaPhylumPath
+  // variant below, for every phylum.
+  // Note on error handling, carried over: deliberately no .catch() here -
+  // errors propagate to the caller. ciAutoPropose/encSync's batch scans
+  // swallow per-item failures on purpose; encTaxonomyLink's per-entry
+  // button attaches its own .catch() for real user feedback.
   silentPropose: function(topicText, phylumNumber, sourceType, sourceId) {
-    var self = this;
-    var pp = RPGACE.modules.phylumPath;
-    if (pp && pp.isEnabled(phylumNumber)) {
-      return self._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
-    }
-    var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
-    var prompt = 'You are building a hierarchical taxonomy tree for a music production knowledge base.\n\n' +
-      'ROOT ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
-      'TOPIC TO PLACE: "' + topicText + '"\n\n' +
-      'This phylum has already been confirmed as a plausible fit for this topic. ' +
-      'Generate a drill-down path from the Phylum down to this specific topic as the final leaf. ' +
-      'Use as many or as few steps as genuinely needed — could be 2 steps, could be 10. ' +
-      'Each step should be a real conceptual grouping, not padding.\n\n' +
-      'Only the Phylum name uses Latin. Every other step uses plain, clear English.\n\n' +
-      'Return ONLY a JSON object, no other text, in this exact format:\n' +
-      '{"path": ["Step1Name","Step2Name","Step3Name","FinalTopicName"], ' +
-      '"explainers": ["what Step1 covers and how its children relate","...", "..."], ' +
-      '"is_leaf_specific": true}\n\n' +
-      'The path array should NOT include the phylum name itself (that is depth 0, already known). ' +
-      'Start from depth 1. The last item in path should be the specific topic itself.';
-
-    return fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        system: 'You return only valid JSON, no markdown formatting, no explanation text.',
-        max_tokens: 800
-      })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
-      var cleaned = raw.replace(/```json|```/g, '').trim();
-      var match = cleaned.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error('No JSON found in response');
-      var parsed = JSON.parse(match[0]);
-
-      return new Promise(function(resolve, reject) {
-        self._checkForMorph(phylumNumber, parsed.path, function(morphMatch, exactLeafMatch) {
-          var matched = exactLeafMatch || morphMatch;
-          RPGACE.sb.insert('taxonomy_proposals', {
-            source_type: sourceType,
-            source_id: sourceId,
-            proposed_path: phylumName + ' → ' + parsed.path.join(' → '),
-            proposed_steps: { path: parsed.path, explainers: parsed.explainers || [] },
-            phylum_number: phylumNumber,
-            matched_existing_node_id: matched ? matched.id : null,
-          }).then(resolve).catch(reject);
-        });
-      });
-    });
-    // Note: deliberately no .catch() here - errors propagate to the caller.
-    // ciAutoPropose/encSync's batch scans swallow per-item failures on
-    // purpose (one bad report shouldn't stop the loop); encTaxonomyLink's
-    // per-entry button attaches its own .catch() to show real user feedback.
+    return this._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
   },
 
   // ── Silent placement via Phylum Path's structure-aware engine ──────
@@ -5335,63 +5250,107 @@ RPGACE.register('phylumPath', {
   // proposeLineage/silentPropose once routed here) own what happens next.
   // Split out July 15 so the old top-down system can reuse this same
   // structure-aware decision instead of its own duplicate-blind one.
-  decidePlacement: function(insightText, phylumNumber) {
+  // ══════════════════════════════════════════════════════════════════
+  // UNIFIED PLACEMENT ENGINE — July 19, from the Fable tree audit.
+  // Before this there were THREE different placement pipelines with
+  // measurably different output quality (real evidence, queried from the
+  // live tree): taxonomyTree's flat prompt (worst: video-title leaves,
+  // pre-assumed fit, no score, no justification), this module's old
+  // two-call decidePlacement (middle: 5 checks but no score, no stored
+  // justification, extra extractor call = extra cost), and bookworm's
+  // scored cascade (best-logged: 5 checks + numeric confidence +
+  // justification + reword loop). Everything now routes here — the
+  // best-logged version, generalized — one prompt, one call, one place
+  // to fix. The audit's confirmed failure modes are addressed as
+  // EXPLICIT RULES in the prompt below, each tied to a real observed
+  // failure, plus mechanical guards in sanitizePlacement/_insertNewSteps
+  // that hold even if a model regression slips past the wording.
+  // priorLeaves: optional array of leaf names already created by the
+  // same batch (e.g. earlier insights from the same book chapter) —
+  // audit finding: without this, one chapter about inversions created
+  // 5+ overlapping sibling leaves, each individually scored 9/10,
+  // because every insight was placed blind to its siblings.
+  decidePlacementScored: function(insightText, phylumNumber, priorLeaves) {
     var self = this;
-    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
-      .then(function(existing) {
-        existing = existing || [];
-        var pathList = existing.length
-          ? existing.map(function(n) { return '- ' + n.path; }).join('\n')
-          : '(nothing mapped yet - this will be the first entry)';
-
-        var extractorPrompt = 'You are a fast triage pass for a taxonomy-placement system.\n\n' +
-          'PHYLUM: ' + RPGACE.utils.phylumContext(phylumNumber) + '\n' +
-          'INSIGHT: "' + insightText + '"\n\n' +
-          'EXISTING PATHS (root-first):\n' + pathList + '\n\n' +
-          'Produce a short plan for a more thorough reasoner to verify and execute:\n' +
-          '- CORE IDEA: the one genuinely distinct teachable concept here, one sentence.\n' +
-          '- CANDIDATE PATHS: up to 3 existing paths above that seem most topically related (exact strings, or an empty array if none are close).\n' +
-          '- LIKELY DEPTH: your best-guess number of new ranks needed (1-4).\n\n' +
-          'Return ONLY JSON: {"coreIdea": "...", "candidatePaths": ["...", "..."], "likelyDepth": 2}';
-
-        return self._callExtractor(extractorPrompt, 250)
-          .catch(function(e) {
-            console.warn('[phylumPath] decidePlacement extractor failed, ground worker decides alone:', e.message);
-            return null;
-          })
-          .then(function(plan) {
-            var planBlock = plan
-              ? '\n\nA FASTER TRIAGE PASS ALREADY SUGGESTED THIS (a starting hint - verify and override anything wrong, do not just accept it):\n' +
-                '- Core idea: ' + plan.coreIdea + '\n' +
-                '- Candidate existing paths: ' + ((plan.candidatePaths && plan.candidatePaths.length) ? plan.candidatePaths.join(', ') : '(none suggested)') + '\n' +
-                '- Likely depth: ' + plan.likelyDepth + '\n'
-              : '';
-
-            var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
-              'A student/producer just learned this insight:\n"' + insightText + '"\n\n' +
-              'EXISTING STRUCTURE already mapped in this phylum (paths shown root-first):\n' + pathList + planBlock + '\n\n' +
-              'Decide where this insight belongs using these 5 checks, in order:\n' +
-              '1. Pedagogical clarity — is each rank one genuinely distinct, teachable idea, not padding?\n' +
-              '2. Non-redundancy — would merging two adjacent ranks lose anything real?\n' +
-              '3. Practical applicability — can this cash out into an actual FL Studio move tonight?\n' +
-              '4. Structural fit — does this attach cleanly to an EXISTING path above, or does it need a new one?\n' +
-              '5. Expansion headroom — will this path still make sense once 20 more insights land under it?\n\n' +
-              'Then decide:\n' +
-              '- ATTACH POINT: the exact existing path string this insight should extend (copy one from the list above EXACTLY, character for character), or null if this needs a brand new path.\n' +
-              '- NEW STEPS: the additional rank names needed from the attach point down to a specific, concrete leaf representing this insight. Use as many or as few as genuinely needed - could be 1, could be several. Do NOT repeat ranks that already exist in the attach point.\n' +
-              '- One-sentence explainer per new step.\n\n' +
-              'Return ONLY JSON, no markdown, no other text:\n' +
-              '{"attachTo": "existing path string or null", "newSteps": ["Step1", "Step2"], "explainers": ["...", "..."]}';
-
-            return self._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
-              var attachNode = null;
-              if (parsed.attachTo) {
-                attachNode = existing.find(function(n) { return n.path === parsed.attachTo; });
-              }
-              return { attachNode: attachNode, newSteps: parsed.newSteps || [], explainers: parsed.explainers || [] };
-            });
-          });
+    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
+      existing = existing || [];
+      var pathList = existing.length ? existing.map(function(n) { return '- ' + n.path; }).join('\n') : '(nothing mapped yet - this will be the first entry)';
+      var priorBlock = (priorLeaves && priorLeaves.length)
+        ? '\n\nLEAVES ALREADY CREATED BY THIS SAME BATCH/CHAPTER (in addition to the structure above):\n- ' + priorLeaves.join('\n- ') + '\n'
+        : '';
+      var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
+        'An insight to place: "' + insightText + '"\n\n' +
+        'EXISTING STRUCTURE in this phylum (root-first):\n' + pathList + priorBlock + '\n\n' +
+        'First decide honestly: does this insight genuinely belong in THIS phylum - not just loosely related? If it would sit more naturally in a DIFFERENT discipline, return fits:false rather than stretching a justification to make it fit here. A placement that needs a creative argument to defend is a wrong placement.\n\n' +
+        'Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (or null for a new path), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10.\n\n' +
+        'HARD RULES, each from a real corruption found in this tree:\n' +
+        '1. NAMING: every step name is a general CONCEPT label - never a video/song/book title, never an artist name, never a year, never platform text like "| FL Studio Tutorial". If the insight text is itself a content title, name the leaf after the TECHNIQUE it teaches.\n' +
+        '2. NO NEAR-DUPLICATE SIBLINGS: if an existing leaf (or a batch leaf listed above) already covers this concept or a facet of it, attach to/extend THAT area - do not create another sibling restating it. Several narrow facets of one concept belong as ONE leaf, not five.\n' +
+        '3. STEPS ARE SINGLE RANKS: each newSteps entry is ONE new rank\'s own name - never a "/"-joined path, never a restatement of the attach path or any earlier step, never two ideas joined by "; then" or similar.\n' +
+        '4. DEPTH: the rank chain is Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) - a placement may NEVER exceed depth 6. Prefer 1-2 new steps; more than 3 is almost always padding.\n\n' +
+        'Return ONLY JSON: {"fits": true, "attachTo": "existing path or null", "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8}';
+      return self._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
+        var attachNode = parsed.attachTo ? existing.find(function(n) { return n.path === parsed.attachTo; }) : null;
+        var sanitized = self.sanitizePlacement(
+          attachNode ? attachNode.path : '',
+          attachNode ? attachNode.depth : 0,
+          parsed.newSteps || []
+        );
+        return {
+          fits: !!parsed.fits, phylumNumber: phylumNumber, attachNode: attachNode,
+          attachPath: attachNode ? attachNode.path : null,
+          newSteps: sanitized.steps,
+          explainers: parsed.explainers || [],
+          justification: parsed.justification || '', confidenceScore: parsed.confidenceScore || 0
+        };
       });
+    });
+  },
+
+  // Mechanical guard for placement steps - holds even when a prompt
+  // regression (or a raw human paste in an Edit box, the actual cause of
+  // the depth-14 corruption found July 19) slips garbage past the model
+  // rules. Splits path-like steps, drops steps that restate any rank
+  // already in the attach path or an earlier step, and hard-caps the
+  // final depth at 6 (Variant) - on overflow it keeps the LAST step (the
+  // actual content leaf) plus as many leading intermediates as fit,
+  // because losing an intermediate grouping is recoverable while losing
+  // the leaf loses the insight itself.
+  sanitizePlacement: function(attachPath, attachDepth, newSteps) {
+    var cleaned = [];
+    var notes = [];
+    var soFarLower = (attachPath || '').split('/').map(function(s) { return s.trim().toLowerCase(); }).filter(Boolean);
+    (newSteps || []).forEach(function(step) {
+      if (!step) return;
+      var parts = String(step).split('/').map(function(s) { return s.trim(); }).filter(Boolean);
+      if (parts.length > 1) notes.push('split path-like step "' + String(step).slice(0, 60) + '"');
+      parts.forEach(function(candidate) {
+        if (soFarLower.indexOf(candidate.toLowerCase()) !== -1) {
+          notes.push('dropped duplicate rank "' + candidate.slice(0, 60) + '"');
+          return;
+        }
+        cleaned.push(candidate);
+        soFarLower.push(candidate.toLowerCase());
+      });
+    });
+    var maxNew = 6 - (attachDepth || 0);
+    if (maxNew < 1) maxNew = 1;
+    if (cleaned.length > maxNew) {
+      var leaf = cleaned[cleaned.length - 1];
+      cleaned = cleaned.slice(0, maxNew - 1).concat([leaf]);
+      notes.push('trimmed to depth cap 6 (kept leaf)');
+    }
+    return { steps: cleaned, notes: notes };
+  },
+
+  // Back-compat wrapper - callers that only need {attachNode, newSteps,
+  // explainers} (the confirm-popup flow, proposeLineage delegation) get
+  // the same shape as before, now with the scored engine's justification
+  // and confidence riding along for free. The old two-call extractor+
+  // worker body is deleted, not kept - one call is cheaper and the
+  // scored prompt is strictly more rigorous.
+  decidePlacement: function(insightText, phylumNumber) {
+    return this.decidePlacementScored(insightText, phylumNumber, null);
   },
 
   // ── Confirm/deny/modify checkpoint ──────────────────────────────────
@@ -5513,6 +5472,22 @@ RPGACE.register('phylumPath', {
   _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText) {
     var self = this;
     if (!newSteps.length) return Promise.reject(new Error('Oracle returned no new steps to place this insight'));
+
+    // Choke-point guard (July 19, from the Fable tree audit): EVERY
+    // taxonomy write from every pipeline lands here, so sanitize here -
+    // not only in the model-output path. The depth-14 corruption chain
+    // ("...Chord Voicing & Inversion/Compositio/Harmony/...", 12 garbage
+    // rows) got in through Bookworm's Edit box, which split raw human
+    // input on "/" and passed it straight in - the model-side sanitizer
+    // never saw it. A guard at the single write site can't be bypassed
+    // by any current or future caller.
+    var guarded = self.sanitizePlacement(attachNode ? attachNode.path : '', attachNode ? attachNode.depth : 0, newSteps);
+    if (guarded.notes.length) {
+      console.warn('[phylumPath] sanitizePlacement corrected a placement at insert time:', guarded.notes.join('; '));
+      RPGACE.utils.toast('⚠️ Placement auto-corrected: ' + guarded.notes.join('; '), '#E2A83D', 5000);
+    }
+    newSteps = guarded.steps;
+    if (!newSteps.length) return Promise.reject(new Error('Placement rejected: every step duplicated an existing rank in the attach path'));
 
     var tt = RPGACE.modules.taxonomyTree;
     var phylumLatin = tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber);
@@ -7546,7 +7521,7 @@ RPGACE.register('bookworm', {
         return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
           pending_insight_texts: insightTexts.slice(1), suggested_phylum: primaryPhylum, analysis_heartbeat: new Date().toISOString()
         }).then(function() {
-          return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla).then(function(firstPlacement) {
+          return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla, []).then(function(firstPlacement) {
             var insights = [firstPlacement];
             var onlyOne = insightTexts.length === 1;
             return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
@@ -7575,10 +7550,25 @@ RPGACE.register('bookworm', {
   // resume from a DIFFERENT tab/session possible.
   _continueAnalyzingInBackground: function(chapterId, remainingTexts, primaryPhylum, remainingPhyla) {
     var self = this;
-    var chain = Promise.resolve();
+    // Batch-dedup awareness (July 19, Fable audit): seed the running list
+    // of leaf names this chapter has already created (works on resume
+    // too, where earlier placements aren't in this tab's memory), then
+    // append locally as each new one lands. Passed into every placement
+    // call so the model can attach to / extend a sibling it just made
+    // instead of minting near-duplicate siblings - the audit found one
+    // chapter had created 5+ overlapping inversion leaves this way, each
+    // individually scored 9/10 because each was placed blind.
+    var placedLeaves = [];
+    var chain = RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapterId + '&limit=1').then(function(rows) {
+      var current = rows && rows[0];
+      ((current && current.insights) || []).forEach(function(ins) {
+        if (ins.newSteps && ins.newSteps.length) placedLeaves.push(ins.newSteps[ins.newSteps.length - 1]);
+      });
+    }).catch(function() {});
     remainingTexts.forEach(function(insightText, i) {
       chain = chain.then(function() {
-        return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla).then(function(placement) {
+        return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla, placedLeaves.slice()).then(function(placement) {
+          if (placement.newSteps && placement.newSteps.length) placedLeaves.push(placement.newSteps[placement.newSteps.length - 1]);
           return RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapterId + '&limit=1').then(function(rows) {
             var current = rows && rows[0];
             if (!current) return;
@@ -7637,10 +7627,10 @@ RPGACE.register('bookworm', {
   // being accepted - a 5-8 score triggers a reword+retry (capped at 3
   // attempts total), under 4 gets one "can this be upgraded at all" check
   // before being flagged unplaceable rather than forced into a leaf.
-  _placeInsightCascade: function(insightText, primaryPhylum, remainingPhyla) {
+  _placeInsightCascade: function(insightText, primaryPhylum, remainingPhyla, priorLeaves) {
     var self = this;
     var tryPhylum = function(phylumNumber, text, attemptsLeft) {
-      return self._decidePlacementScored(text, phylumNumber).then(function(decision) {
+      return self._decidePlacementScored(text, phylumNumber, priorLeaves).then(function(decision) {
         if (!decision.fits) return null;
         if (decision.confidenceScore >= 9) return decision;
         if (decision.confidenceScore >= 5 && attemptsLeft > 0) {
@@ -7650,7 +7640,7 @@ RPGACE.register('bookworm', {
         }
         if (decision.confidenceScore < 4) {
           return self._checkUpgradeable(text, phylumNumber).then(function(upgraded) {
-            return upgraded ? self._decidePlacementScored(upgraded, phylumNumber) : null;
+            return upgraded ? self._decidePlacementScored(upgraded, phylumNumber, priorLeaves) : null;
           });
         }
         return decision; // ran out of reword attempts, best effort
@@ -7697,49 +7687,18 @@ RPGACE.register('bookworm', {
   // (strips any step that's really a multi-segment path or repeats
   // something already in the attach path) so a future prompt regression
   // can't corrupt the tree even if it slips past the wording again.
-  _decidePlacementScored: function(insightText, phylumNumber) {
-    var self = this;
-    var pp = RPGACE.modules.phylumPath;
-    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
-      existing = existing || [];
-      var pathList = existing.length ? existing.map(function(n) { return '- ' + n.path; }).join('\n') : '(nothing mapped yet)';
-      var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
-        'A book insight: "' + insightText + '"\n\n' +
-        'EXISTING STRUCTURE in this phylum (root-first):\n' + pathList + '\n\n' +
-        'First decide: does this insight genuinely belong in THIS phylum at all (not just loosely related)? Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (or null for a new path), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10 for this placement.\n\n' +
-        'IMPORTANT about newSteps: each entry must be ONLY the single new rank\'s own name - never a "/"-joined path, never a restatement of the attachTo path or any earlier step. Do NOT repeat any rank that already exists in the attach point.\n\n' +
-        'Return ONLY JSON: {"fits": true, "attachTo": "existing path or null", "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8}';
-      return pp._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
-        var attachNode = parsed.attachTo ? existing.find(function(n) { return n.path === parsed.attachTo; }) : null;
-        return {
-          fits: !!parsed.fits, phylumNumber: phylumNumber, attachNode: attachNode,
-          attachPath: attachNode ? attachNode.path : null,
-          newSteps: self._sanitizeNewSteps(attachNode ? attachNode.path : '', parsed.newSteps || []),
-          explainers: parsed.explainers || [],
-          justification: parsed.justification || '', confidenceScore: parsed.confidenceScore || 0
-        };
-      });
-    });
-  },
-
-  // Defensive backstop for the bug above: a step that contains "/" is
-  // really a multi-segment path, not a single rank name - keep only its
-  // final segment. A step that exactly restates something already in the
-  // attach path (case-insensitive) is dropped entirely rather than
-  // creating a duplicate rank.
-  _sanitizeNewSteps: function(attachPath, newSteps) {
-    var cleaned = [];
-    var soFarLower = (attachPath || '').split('/').map(function(s) { return s.trim().toLowerCase(); });
-    (newSteps || []).forEach(function(step) {
-      if (!step) return;
-      var parts = String(step).split('/').map(function(s) { return s.trim(); }).filter(Boolean);
-      var candidate = parts[parts.length - 1];
-      if (!candidate) return;
-      if (soFarLower.indexOf(candidate.toLowerCase()) !== -1) return;
-      cleaned.push(candidate);
-      soFarLower.push(candidate.toLowerCase());
-    });
-    return cleaned;
+  // UNIFIED July 19 (Fable audit): the scored placement engine that
+  // lived here (5 checks + numeric confidence + justification) was the
+  // best-logged of the three pipelines that existed, so it was promoted
+  // to phylumPath.decidePlacementScored as THE single placement engine
+  // for every source (book, Oracle chat, Content Intelligence,
+  // Encyclopedia sync). This is now a thin delegate kept only so the
+  // cascade code above reads unchanged. The old local _sanitizeNewSteps
+  // was folded into phylumPath.sanitizePlacement (now also enforced at
+  // the _insertNewSteps choke point, which the old one never covered -
+  // that gap is exactly how the depth-14 Edit-box corruption got in).
+  _decidePlacementScored: function(insightText, phylumNumber, priorLeaves) {
+    return RPGACE.modules.phylumPath.decidePlacementScored(insightText, phylumNumber, priorLeaves);
   },
 
   _rewordInsight: function(insightText) {

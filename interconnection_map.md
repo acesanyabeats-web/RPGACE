@@ -222,6 +222,12 @@ Also confirmed same day: `api/bookworm-fetch.js`'s chapter-boundary anchoring (`
 
 ---
 
+## Unified placement engine — July 19 (Fable tree audit)
+
+The three separate placement pipelines are now ONE. Previously: `taxonomyTree.proposeLineage`/`silentPropose` ran their own flat prompt for non-enabled phyla (no fit challenge, no score, no justification — the tree audit traced every video-title leaf and both parallel beat-selling branch chains to exactly this path), `phylumPath.decidePlacement` ran a two-call extractor+worker chain (5 checks but nothing logged), and bookworm ran its own scored variant (5 checks + numeric confidence + stored justification — measurably the best-logged). Now: `phylumPath.decidePlacementScored(insightText, phylumNumber, priorLeaves)` is the single engine; `decidePlacement` is a thin wrapper over it; bookworm's `_decidePlacementScored` delegates to it; both `taxonomyTree` entry functions route unconditionally through their ViaPhylumPath variants (the enabled-phyla gate is gone — the engine is structure-aware for any phylum, including empty ones) and their old flat bodies are deleted. Every placement decision is now exactly one ground-worker call. Mechanical guard: `phylumPath.sanitizePlacement` runs both on every engine decision AND inside `_insertNewSteps` — the single write choke point — so path-like steps, duplicate ranks, and depth>6 placements are stopped regardless of caller, including raw human input from Edit boxes (the actual entry vector of the depth-14 corruption chain the audit found). Rules + evidence: `taxonomy_placement_rules.txt` (committed, repo root).
+
+---
+
 ## Standing rule: Oversight
 
 Every documentation update applies to all 4 Oversight docs by default, not only when explicitly requested — same discipline as code changes, formalized for docs. **Oversight** = Patch Notes (full narrative + F-series roadmap), this Interconnection Map (structural touchpoints, standing sections updated in place), the Full Manual (`manual.html`, polished quick-reference), and Taxonomy Map (`taxonomy_map.html`, queries `taxonomy_tree` live from Supabase every load — never needs a manual data update, only touched if its own code/columns change). See `CLAUDE.md`'s Oversight section for the durable version of this rule.

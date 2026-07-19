@@ -1,0 +1,159 @@
+============================================================
+TAXONOMY PLACEMENT RULES — compiled July 19, 2026 (Fable audit)
+============================================================
+Origin: a real audit of everything written to taxonomy_tree during the
+July 18-19 Bookworm + Content Intelligence sessions, judged against the
+tree itself and the stored insight data (direct Supabase queries, not
+memory). Each rule below is tied to a REAL corruption or quality gap
+found in the live tree — none are hypothetical.
+
+These rules are enforced in three layers:
+  LAYER 1 (prompt): phylumPath.decidePlacementScored — the ONE unified
+    placement engine every source now routes through (book insights,
+    Oracle chat, highlight button, Content Intelligence, Encyclopedia
+    sync). The rules appear verbatim as HARD RULES in its prompt.
+  LAYER 2 (mechanical, model output): sanitizePlacement() runs on every
+    engine decision before it's shown or stored.
+  LAYER 3 (mechanical, choke point): _insertNewSteps() re-runs
+    sanitizePlacement on whatever it's given, no matter which caller —
+    including raw human input from Edit boxes. This layer cannot be
+    bypassed by a prompt regression, a new feature, or a paste mistake.
+
+------------------------------------------------------------
+THE RULES
+------------------------------------------------------------
+R1. STEPS ARE SINGLE RANKS, NEVER PATHS.
+    Each new step is one rank's own name. Never a "/"-joined path,
+    never a restatement of the attach path, never two ideas joined by
+    "; then" or similar.
+    Evidence: the depth-14 corruption chain (12 garbage rows) —
+    ".../Chord Voicing & Inversion/Compositio/Harmony/Chord Vocabulary
+    & Construction/..." including a node literally named "Closed
+    Spacing — Sonic Character and Practical Application; then
+    Compositio". Entry vector: Bookworm's Edit box split raw human
+    input on "/" and inserted it with zero sanitization. Fixed at
+    Layer 3 (the only layer that catches human input).
+
+R2. DEPTH NEVER EXCEEDS 6 (VARIANT).
+    Phylum(0)→Order→Class→Family→Genus→Species→Variant(6). Prefer 1-2
+    new steps per placement; more than 3 is almost always padding.
+    Evidence: same corruption chain reached depth 14. Layer 3 now
+    hard-caps: on overflow, the LAST step (the content leaf) is kept
+    and intermediates are trimmed, loudly.
+
+R3. LEAF NAMES ARE CONCEPT LABELS — NEVER CONTENT TITLES.
+    No video/song/book titles, no artist names, no years, no platform
+    text ("| FL Studio Tutorial"). If the input text is itself a title,
+    the leaf is named after the TECHNIQUE it teaches; the title belongs
+    in sources/encyclopedia (the existing case-study pattern).
+    Evidence: three real leaves — "How to Make a Jazz Sampled Type Beat
+    for Nemzzz, Knucks & Hurricane Wisdom | FL Studio Tutorial"
+    (Mixtura), "Sell Beats For A Living Using Content-First Brand
+    Building (2022)" (Venditionis Beatorum), "Cheatcode For Finding
+    Artists On Instagram... (2025)" (Contentum). All from the old flat
+    Content-Intelligence prompt, whose literal instruction was "The
+    last item in path should be the specific topic itself" — with the
+    video title as the topic. That prompt is deleted.
+
+R4. NO NEAR-DUPLICATE SIBLINGS / NO TOPIC FRAGMENTATION.
+    If an existing leaf (or a leaf created moments ago by the same
+    batch) already covers a concept or a facet of it, attach/extend
+    there. Several narrow facets of one concept are ONE leaf, not five.
+    Evidence: Chapter 13 (inversions) created 5+ overlapping siblings
+    under Chord Voicing & Inversion — "Root Position, Inversions &
+    Stability", "Inversion Types & Bass-Note Stability", "Inversion
+    Derivation & Systematic Voice Shifting", "Slash Chord Notation &
+    Inversion Naming", "Inversions & Bass Line Voice Leading" — each
+    individually scored 9/10, because each insight was placed blind to
+    its siblings. Fixed two ways: the batch's own leaf names are now
+    passed into every placement call (priorLeaves), and the rule is
+    explicit in the prompt.
+
+R5. NO PHYLUM SHOEHORNING — fits:false IS A GOOD ANSWER.
+    The engine must decide "does this belong in THIS phylum" honestly,
+    and return fits:false rather than stretch. A placement that needs
+    a creative argument to defend is a wrong placement.
+    Evidence: Chapter 1's physics-of-sound content (Hz, overtones,
+    timbre) landed under Anatomia/"Theory Meta-Knowledge/Scope and
+    Boundary Analysis/Theory vs Composition Distinction/..." at
+    confidence 7-8, with a justification that ADMITTED the stretch
+    ("...the framework depends on but never explicitly states...").
+    Structural cause: the chapter's suggested_phylum locks the
+    cascade's FIRST attempt, and the old prompt asked "does it fit
+    here" (a yes/no the model is biased to answer yes) instead of
+    demanding honesty about better homes elsewhere. Residual risk
+    honestly flagged: the cascade still tries the suggested phylum
+    first, so the prompt-level honesty instruction is the main defense.
+
+R6. NO PARALLEL TAXONOMIES FOR THE SAME TOPIC ACROSS PHYLA.
+    Before inventing a new multi-step branch chain, the engine sees the
+    phylum's existing structure AND the batch's recent additions.
+    Evidence: "Business Models for Beat Selling/Full-Time Beat Selling
+    Strategies/Audience Warming and Funnel-Based Sales" (Venditionis
+    Beatorum, phylum 16) and "Beat Selling & Producer Business/Finding
+    & Targeting Artists/Platform-Based Artist Discovery Systems"
+    (Contentum, phylum 13) — the same topic, two phyla, both invented
+    within a day by the old flat prompt, which pre-assumed whatever
+    phylum it was handed. Unifying on one engine that challenges fit
+    (R5) is the structural fix; cross-phylum dedup remains a known
+    open gap (a future Taxonomy Sorting Agent concern, already in the
+    backlog).
+
+R7. ONE ENGINE, EVERYWHERE.
+    All placement decisions go through phylumPath.decidePlacementScored.
+    The three-pipeline era (taxonomyTree flat prompt / phylumPath
+    two-call decidePlacement / bookworm scored cascade) is over: the
+    flat prompt bodies are DELETED, decidePlacement is a wrapper over
+    the scored engine, bookworm delegates to it. This is also cheaper:
+    the flat path's 800-token call and decidePlacement's extra
+    extractor triage call are both gone — every decision is now exactly
+    one ground-worker call with the same 700-token cap.
+
+------------------------------------------------------------
+SOURCE-QUALITY DEVIATION VERDICT (the comparison Alex asked for)
+------------------------------------------------------------
+BOOK (Bookworm scored cascade):
+  - Insight quality: BEST. Atomic, restated, teachable facts.
+  - Justification: present, cites the 5 checks, numeric confidence —
+    but becomes post-hoc rationalization when shoehorning (R5).
+  - Pathing: good within the right phylum; failure modes were
+    fragmentation (R4) and first-phylum shoehorning (R5).
+ORACLE CHAT / HIGHLIGHT (old decidePlacement):
+  - Insight quality: good (concept-named leaves).
+  - Justification: NONE STORED, no confidence score — the 5 checks ran
+    but their outcome was invisible. Also cost 2 calls per decision.
+CONTENT INTELLIGENCE / YOUTUBE (old flat proposeLineage/silentPropose):
+  - WORST ON EVERY AXIS. No fit challenge (phylum pre-assumed), no
+    score, no justification, leaf = video title (R3), invented one-off
+    branch chains per video (R6), and its silent variant surfaced the
+    garbage only at review time looking exactly like a plausible
+    proposal.
+RESOLUTION: everything now routes through the best-logged system
+(the scored engine), per direct instruction — one prompt, one call
+per decision, one place to fix.
+
+------------------------------------------------------------
+CONFIRMED GARBAGE IN THE LIVE TREE (found by this audit; deletion
+needs Alex's explicit go — taxonomy rule: AI proposes, human confirms)
+------------------------------------------------------------
+G1. The depth-14 corruption chain: 12 rows under
+    "Compositio/Harmony/Chord Vocabulary & Construction/Chord Voicing
+    & Inversion/Compositio/..." (ids 09bd31a5..., 0276e435...,
+    a1433e0e..., 8b6b00c1..., 06138675..., 86bb6469..., 8c37c7fd...,
+    615e36c2..., 7051e9ed..., 179b0493..., 94c76641...). The one real
+    piece of content buried at the bottom ("Open Spacing — Sonic
+    Character and Practical Application") should be re-placed properly
+    as a leaf under the REAL "Chord Voicing & Inversion" node before
+    the chain is deleted.
+G2. The three video-title leaves + their single-purpose parent chains
+    (Mixtura jazz-sample chain, Venditionis funnel chain, Contentum
+    Instagram chain) — candidates for the established case-study
+    pattern (encyclopedia + concept-named leaf) instead.
+G3. Chapter 13's overlapping inversion siblings — candidates for a
+    merge into 1-2 leaves (e.g. "Chord Inversions: Types, Notation &
+    Stability" + keep "Inversions & Bass Line Voice Leading" branch).
+G4. Chapter 1's Anatomia shoehorns — "Pitch as Frequency: Hz, Octaves
+    & the Physics of Sound" sitting under a SOLFEGE vocabulary node,
+    and physics-of-tone content under "Scope and Boundary Analysis" —
+    candidates for re-homing once a proper acoustics/fundamentals
+    branch exists.

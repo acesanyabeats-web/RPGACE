@@ -129,18 +129,14 @@ flowchart TD
     E1([Manual panel: Place this insight]) --> DP
     E2([Auto-detect badge click]) --> DP
     E3([Highlight → Send to Phylum Path]) --> PANEL[Panel opens prefilled] --> DP
-    E4([proposeLineage/silentPropose<br/>for any enabled phylum]) --> DP
+    E4([proposeLineage/silentPropose<br/>ALL phyla — old flat prompt DELETED July 19]) --> DP
     E5([Bookworm approve — diagram 5]) --> INS
 
-    DP[decidePlacement:<br/>1. fetch phylum's full tree fresh<br/>2. extractor pass - Fable 5 outline<br/>3. ground-worker 5-check decision] --> EXOK{Extractor<br/>succeeded?}
-    EXOK -->|no| COLD[Ground worker decides alone<br/>fallback, never blocks]
-    EXOK -->|yes| HINT[Outline passed as<br/>verify-and-override hint]
-    COLD --> DECIDE
-    HINT --> DECIDE
-    DECIDE[Result: attachNode + newSteps + explainers] --> CONFIRM[_showPlacementConfirm popup<br/>editable steps, insert/delete rows]
+    DP[decidePlacementScored — THE unified engine, July 19:<br/>1. fetch phylum's full tree fresh<br/>2. ONE ground-worker call: fits? + 5 checks +<br/>hard rules from the tree audit + justification + score 1-10<br/>3. sanitizePlacement mechanical guard] --> DECIDE
+    DECIDE[Result: fits + attachNode + newSteps +<br/>explainers + justification + confidence] --> CONFIRM[_showPlacementConfirm popup<br/>editable steps, insert/delete rows]
     CONFIRM --> USER{User choice?}
     USER -->|Reject| STOP([nothing written])
-    USER -->|Accept| INS[_insertNewSteps:<br/>chained inserts, return=representation,<br/>parent_id linked correctly]
+    USER -->|Accept| INS[_insertNewSteps:<br/>sanitizePlacement re-run at choke point<br/>depth cap 6 — catches raw Edit-box input too<br/>chained inserts, return=representation,<br/>parent_id linked correctly]
     INS --> TREE[(taxonomy_tree)]
     INS --> CONTENT[_generateInsightContent<br/>3-layer teaching → deep_content]
     INS --> FUSION[_findFusionLinks fire-and-forget:<br/>scan ENTIRE tree all phyla]
