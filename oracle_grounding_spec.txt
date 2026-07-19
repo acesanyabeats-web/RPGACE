@@ -1,0 +1,57 @@
+============================================================
+ORACLE TREE GROUNDING — SPEC RECORD (July 19, 2026)
+============================================================
+Feature: Oracle chat READS the taxonomy tree (previously it could only
+write into it). Named top priority by Alex in the same message that
+confirmed the YouTube per-insight loop and review-queue reasoning
+display: "we -yes and make top".
+
+Origin of the ask (Alex, verbatim): "will oracle chat use taxonomy and
+phylum path to become better, thus making all oracle buttons better too
+with idea creation with learning facilitated?"
+
+------------------------------------------------------------
+SPEC QUESTIONS + ANSWERS (3 asked, all answered July 19)
+------------------------------------------------------------
+Q1. When should Oracle chat pull taxonomy-tree content into answers?
+A1. "Keyword match only (Recommended)" — retrieval fires only when the
+    message matches phylum/leaf keywords (the existing _quickPhylaScan
+    machinery). Zero extra cost on unrelated chat.
+
+Q2. How much tree content should be injected per answer?
+A2. "Names + explainers (Recommended)" — top matching leaves' paths and
+    one-sentence explainers (~200-400 tokens). Never deep_content, per
+    the documented 504/length danger zone.
+
+Q3. When the tree has nothing relevant, what should Oracle do?
+A3. "Say so + offer to learn it (Recommended)" — answer from general
+    knowledge but explicitly note "this isn't in your library yet" and
+    offer to place it via Phylum Path. Every gap becomes a learning
+    prompt that feeds the tree.
+
+------------------------------------------------------------
+BUILT (same session): oracleTreeGrounding module, rpgace_core.js
+------------------------------------------------------------
+- Chainable wrap on window.callOracle (main.js's single Oracle funnel)
+  — NO main.js edit needed, same _xPatched guard + fall-through
+  convention as the scheduleOracle/bookworm sendChat wraps.
+- Persona-gated: only fires when the system prompt contains a
+  conversational persona marker ("You are the Oracle —" for main chat,
+  the Prod Oracle teacher persona) — never touches JSON/placement/
+  formatter calls, which have their own system prompts. This is what
+  makes "all oracle buttons better": any surface speaking through a
+  conversational persona gets grounding automatically.
+- Retrieval: _quickPhylaScan on the user's latest message → top 2
+  matched phyla → their leaves (name/path/explainer only) → ranked by
+  word overlap with the question → top 6 injected, with an instruction
+  to ground in them first, reference them by name, and offer Phylum
+  Path placement for anything not covered.
+- Gap case: keyword match but no relevant leaves → a NOTE block telling
+  Oracle to say the topic isn't in the library yet + offer to learn it.
+- Failure-safe: any retrieval error falls through to the original call
+  with the original prompt — grounding can never break chat.
+
+Not yet hand-tested. Real test: ask Oracle a question about a topic
+with known tree leaves (e.g. chord inversions) and confirm the answer
+references the actual leaf names; then ask about something unmapped and
+confirm the "not in your library yet" offer appears.

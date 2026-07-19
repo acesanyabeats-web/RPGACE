@@ -217,6 +217,16 @@
   </div>
 
   <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🧠 July 19 — TOP PRIORITY SHIPPED: Oracle chat now READS the taxonomy tree — grounded answers, library references, gaps become learning prompts</div>
+    <div class="card-body">
+      The moment the tree stops being a filing cabinet and starts being a brain — named top priority by Alex and spec'd with 3 confirmed answers first (verbatim record: <code>oracle_grounding_spec.txt</code>): trigger = keyword match only (zero cost on unrelated chat), depth = leaf names + explainers only (never deep_content — stays clear of the 504 danger zone), gap behavior = say "not in your RPGACE library yet" and offer to place it via Phylum Path.<br><br>
+      <strong>How:</strong> new <code>oracleTreeGrounding</code> module — a chainable wrap on <code>window.callOracle</code> (the single funnel every Oracle surface uses), no main.js edit needed. Persona-gated so it only fires on conversational calls (main chat, Prod Oracle teaching persona) — never on JSON/placement/formatter calls. When a message matches phylum keywords, the top 2 phyla's leaves are ranked by word overlap and the 6 most relevant (path + explainer, ~200-400 tokens) are injected with an instruction to ground the answer in them FIRST, reference them by name so Alex sees his own library working, then add general knowledge on top. Any retrieval failure falls through to the untouched original call — grounding can never break chat.<br><br>
+      <strong>Why this makes "all oracle buttons better":</strong> anything that speaks through a conversational persona now gets Alex's own gathered knowledge in context automatically — and every question the library CAN'T answer produces an explicit offer to learn it, feeding the tree.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested. Real test: ask about chord inversions (known leaves exist) — the answer should cite actual leaf names; ask about something unmapped — the "not in your library yet" offer should appear.
+    </div>
+  </div>
+
+  <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">✅ July 19 — Tree cleanup G2-G5 executed + YouTube videos now get per-insight book-depth analysis + review queue shows the engine's own reasoning</div>
     <div class="card-body">
       All on Alex's explicit go ("execute G2 to G4, want taxonomy clean" + yes to both builds). Every delete preceded by reference checks (children / fusion links / encyclopedia refs); every verification query run against the live tree after.<br><br>

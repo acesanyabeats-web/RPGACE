@@ -2245,6 +2245,102 @@ RPGACE.register('ciAutoPropose', {
 });
 /* ===END:ciAutoPropose=== */
 
+/* ===MODULE:oracleTreeGrounding=== */
+// July 19 — TOP PRIORITY per Alex ("yes and make top"): Oracle chat now
+// READS the taxonomy tree, not just writes into it. Spec answers
+// recorded verbatim in oracle_grounding_spec.txt: trigger = keyword
+// match only (zero cost on unrelated chat), depth = leaf names +
+// explainers only (never deep_content - stays far from the 504/length
+// danger zone), gap behavior = say "not in your library yet" and offer
+// to place it via Phylum Path (every gap becomes a learning prompt).
+//
+// Mechanism: a chainable wrap on window.callOracle (main.js global, the
+// single funnel every Oracle surface uses) - NO main.js edit needed.
+// Gated by persona marker so it fires ONLY for conversational surfaces
+// (main chat's ORACLE_SYS, Prod Oracle's teaching persona) - never for
+// JSON/placement/formatter calls, which have their own system prompts.
+// Same _xPatched guard + fall-through convention as scheduleOracle's
+// and bookworm's sendChat wraps.
+RPGACE.register('oracleTreeGrounding', {
+
+  PERSONA_MARKERS: ['You are the Oracle —', "You are Alex's personal 300IQ music production teacher"],
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.callOracle !== 'function' || window._treeGroundingPatched) return;
+      window._treeGroundingPatched = true;
+      var orig = window.callOracle;
+      window.callOracle = function(messages, system, maxTokens) {
+        var isConversational = typeof system === 'string' && self.PERSONA_MARKERS.some(function(m) { return system.indexOf(m) !== -1; });
+        if (!isConversational || !messages || !messages.length) {
+          return orig.apply(this, arguments);
+        }
+        var lastUser = null;
+        for (var i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].role === 'user') { lastUser = String(messages[i].content || ''); break; }
+        }
+        if (!lastUser) return orig.apply(this, arguments);
+        var args = arguments;
+        var callerThis = this;
+        // Retrieval failure must NEVER break chat - fall through to the
+        // original call with the original system prompt on any error.
+        return self._buildGroundingBlock(lastUser).catch(function() { return ''; }).then(function(block) {
+          if (block) {
+            return orig.call(callerThis, messages, system + block, maxTokens);
+          }
+          return orig.apply(callerThis, args);
+        });
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+  },
+
+  // Keyword-match trigger: reuses the same phyla-keyword machinery the
+  // auto-detect badge already uses. No match = empty block = the call
+  // proceeds untouched, costing nothing.
+  _buildGroundingBlock: function(userText) {
+    var self = this;
+    if (!RPGACE.utils._quickPhylaScan) return Promise.resolve('');
+    var matches = RPGACE.utils._quickPhylaScan(userText);
+    if (!matches.length) return Promise.resolve('');
+    var phylaNums = matches.slice(0, 2).map(function(m) { return m.num; });
+    return RPGACE.sb.select('taxonomy_tree',
+      'phylum_number=in.(' + phylaNums.join(',') + ')&node_type=eq.leaf&select=name,path,explainer&limit=200'
+    ).then(function(leaves) {
+      leaves = leaves || [];
+      if (!leaves.length) return self._gapOnlyBlock();
+      // Rank leaves by word overlap with the question - crude but free,
+      // and enough to pick the 6 most relevant out of a phylum's leaves.
+      var qWords = userText.toLowerCase().split(/\W+/).filter(function(w) { return w.length > 3; });
+      var scored = leaves.map(function(l) {
+        var hay = (l.name + ' ' + (l.explainer || '')).toLowerCase();
+        var score = 0;
+        qWords.forEach(function(w) { if (hay.indexOf(w) !== -1) score++; });
+        return { leaf: l, score: score };
+      }).sort(function(a, b) { return b.score - a.score; });
+      var top = scored.filter(function(s) { return s.score > 0; }).slice(0, 6);
+      if (!top.length) return self._gapOnlyBlock();
+      var lines = top.map(function(s) {
+        return '- ' + s.leaf.path + (s.leaf.explainer ? ' — ' + s.leaf.explainer : '');
+      }).join('\n');
+      return '\n\n---\nALEX\'S OWN KNOWLEDGE LIBRARY (real, personally gathered insights from the RPGACE taxonomy tree relevant to this message):\n' + lines + '\n' +
+        'Ground your answer in these first - reference them by name so Alex sees his own library working - then add general knowledge on top. ' +
+        'If the specific thing asked about is NOT covered by the entries above, say briefly that it isn\'t in his RPGACE library yet and offer to place it via Phylum Path so it gets learned properly.';
+    });
+  },
+
+  // The matched phylum has no relevant leaves at all - still worth
+  // telling Oracle, per the confirmed gap behavior: the honest "not in
+  // your library yet" + offer to learn is the answer, not silence.
+  _gapOnlyBlock: function() {
+    return '\n\n---\nNOTE: this message matches topics in RPGACE\'s taxonomy, but no gathered insight in Alex\'s own knowledge library covers it yet. Answer from general knowledge, but say briefly that this isn\'t in his RPGACE library yet and offer to place it via Phylum Path so it gets learned properly.';
+  },
+
+});
+/* ===END:oracleTreeGrounding=== */
+
 /* ===MODULE:taxonomyReviewQueue=== */
 // F6: Dashboard indicator + batch review popup for taxonomy_proposals rows
 // queued silently by F4 (ciAutoPropose) and F5 (encSync._autoPropose).
