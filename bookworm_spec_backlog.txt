@@ -195,3 +195,69 @@ BUILT this round (rpgace_core.js, bookworm module):
 
 Not yet hand-tested — flag honestly, same as every other Bookworm
 round in this file.
+
+============================================================
+ROUND 3 — July 19: hardening background analysis against a closed tab
++ background leaf-creation queue for Approve
+============================================================
+Two direct requests in one message, both about background-job
+durability:
+1. Confirmed as a real gap in Round 2's answer ("say the word if you
+   want that hardened") — "Yes please."
+2. "when clicked green button, go straight to next insight for
+   approval, let create leaf go down a pipeline with a queue in
+   background and creation in background to continue working"
+
+New Supabase columns (migration applied directly):
+bookworm_chapters.pending_insight_texts (jsonb, default '[]') and
+bookworm_chapters.analysis_heartbeat (timestamptz). No new column
+needed for per-insight leaf status - insights is already jsonb, so
+each insight object just gets a leafStatus field ('pending'/'created'/
+'failed').
+
+BUILT this round (rpgace_core.js, bookworm module):
+- _analyzeChapter now persists the FULL remaining insight-text list
+  (pending_insight_texts) and the resolved primaryPhylum
+  (suggested_phylum) up front, before placing even the first insight -
+  this is the durable checkpoint a resume reads back.
+- _continueAnalyzingInBackground drops each insight's text from
+  pending_insight_texts as it's placed, and stamps analysis_heartbeat
+  after every step.
+- _resumeChapterAnalysis(book, chapter) - reads pending_insight_texts +
+  suggested_phylum FRESH from Supabase (never JS memory) and re-enters
+  _continueAnalyzingInBackground. Same function now serves both live
+  continuation and resume from a totally different tab/session.
+- _renderWaitingForNextInsight now shows a "▶ Resume Analysis" button
+  once analysis_heartbeat has gone stale for 45+ seconds with no
+  progress - hidden while things are still genuinely running.
+- Honest, NOT solved: no server-side lock exists. If the original tab
+  is actually still alive and just slow (not truly stalled), clicking
+  Resume could run two chains over the same remaining insights at
+  once. The heartbeat threshold makes this unlikely in practice but
+  this is a single-user personal tool, not a distributed system - true
+  mutual exclusion wasn't built, and would need a real backend job
+  queue to do properly.
+- approveBtn.onclick now calls advance('approved', {leafStatus:
+  'pending'}) IMMEDIATELY (moves to the next insight without waiting),
+  then _queueLeafCreation(chapterId, idx, insight) - the actual
+  _insertNewSteps call, chained on a single shared queue (_leafQueue)
+  so concurrent approvals never run the chained parent_id insert
+  against itself. On success/failure the insight's leafStatus gets
+  patched to 'created'/'failed' via _patchChapterInsightAt.
+- _patchChapterInsightAt(chapterId, idx, patchFn, extraFields) - safe
+  read-modify-write for one insight, itself serialized through a
+  second shared chain (_chapterWriteQueue). Needed because advance()'s
+  own write and the later leaf-creation write both touch the same
+  insights array asynchronously - without shared serialization, the
+  later one could read a stale array and clobber the earlier one.
+  advance() itself now goes through this too, not a blind overwrite.
+- _renderChapterSummary (the read-only complete-chapter view) now
+  shows "(leaf still writing...)" / "(⚠️ leaf write failed)" next to
+  any approved/edited insight whose background write hasn't landed
+  cleanly yet, plus a "🔁 Retry Leaf Creation" button on failed ones -
+  per this project's "fail loud, never silently swallow a failed
+  write" rule, a complete chapter's summary shouldn't imply every
+  approved insight definitely made it into taxonomy_tree if one
+  didn't.
+
+Not yet hand-tested.

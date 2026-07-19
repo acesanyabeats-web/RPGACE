@@ -7141,19 +7141,47 @@ RPGACE.register('bookworm', {
       noneEl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.4);';
       list.appendChild(noneEl);
     }
-    insights.forEach(function(insight) {
+    insights.forEach(function(insight, i) {
       var row = document.createElement('div');
       row.style.cssText = 'padding:9px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);border-radius:6px;';
       var decisionTag = { approved: '✓ Approved', rejected: '✗ Rejected', edited: '✎ Edited' }[insight.decision] || insight.decision || '—';
       var decisionColor = insight.decision === 'rejected' ? '#E25454' : '#3DAA6E';
+      // leafStatus (added July 19, alongside the background leaf-creation
+      // queue) - an approved insight's decision can be set well before its
+      // actual taxonomy_tree write lands or fails in the background, so
+      // this view (the one place a chapter's insights are reviewed after
+      // the fact) surfaces that honestly rather than showing "Approved"
+      // as if the leaf definitely exists.
+      var leafTag = '';
+      if (insight.decision === 'approved' || insight.decision === 'edited') {
+        if (insight.leafStatus === 'pending') leafTag = ' <span style="color:#E2A83D;">(leaf still writing...)</span>';
+        else if (insight.leafStatus === 'failed') leafTag = ' <span style="color:#E25454;">(⚠️ leaf write failed)</span>';
+      }
       var head = document.createElement('div');
-      head.innerHTML = '<span style="color:' + decisionColor + ';font-weight:700;">' + decisionTag + '</span>' +
+      head.innerHTML = '<span style="color:' + decisionColor + ';font-weight:700;">' + decisionTag + '</span>' + leafTag +
         (insight.phylumNumber && tt ? ' <span style="color:rgba(155,89,182,0.7);">— ' + (tt.PHYLUM_NAMES[insight.phylumNumber] || 'Phylum ' + insight.phylumNumber) + '</span>' : '');
       head.style.cssText = 'font-size:11px;margin-bottom:4px;';
       var textEl = document.createElement('div');
       textEl.textContent = insight.text;
       textEl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.7);line-height:1.5;';
       row.appendChild(head); row.appendChild(textEl);
+      if (insight.leafStatus === 'failed') {
+        var retryBtn = document.createElement('button');
+        retryBtn.textContent = '🔁 Retry Leaf Creation';
+        retryBtn.style.cssText = 'margin-top:6px;padding:5px 10px;background:rgba(226,84,84,0.1);border:1px solid rgba(226,84,84,0.3);border-radius:6px;color:#E25454;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        retryBtn.onclick = function() {
+          retryBtn.disabled = true; retryBtn.textContent = '⏳ Retrying...';
+          self._patchChapterInsightAt(chapter.id, i, function(current) { return Object.assign({}, current, { leafStatus: 'pending' }); })
+            .then(function() { return self._queueLeafCreation(chapter.id, i, insight); })
+            .then(function() {
+              retryBtn.textContent = '✓ Retried - reopen to confirm';
+            }).catch(function(e) {
+              retryBtn.disabled = false; retryBtn.textContent = '🔁 Retry Leaf Creation';
+              RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+            });
+        };
+        row.appendChild(retryBtn);
+      }
       list.appendChild(row);
     });
     box.appendChild(list);
@@ -7507,16 +7535,28 @@ RPGACE.register('bookworm', {
       return primaryPhylumPromise.then(function(primaryPhylum) {
         var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
 
-        return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla).then(function(firstPlacement) {
-          var insights = [firstPlacement];
-          var onlyOne = insightTexts.length === 1;
-          return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
-            insights: insights, status: 'in_progress', current_insight_index: 0, analysis_complete: onlyOne
-          }).then(function() {
-            if (!onlyOne) {
-              self._continueAnalyzingInBackground(chapter.id, insightTexts.slice(1), primaryPhylum, remainingPhyla);
-            }
-            return Object.assign({}, chapter, { insights: insights, current_insight_index: 0, analysis_complete: onlyOne });
+        // Persist the FULL remaining insight-text list and the resolved
+        // primaryPhylum up front (added July 19, per direct request to
+        // harden against a closed tab) - this is what _resumeChapterAnalysis
+        // reads back if the browser tab that started this closes mid-batch.
+        // Without this, the raw insight texts only ever lived in JS memory -
+        // if the tab closed, anything not yet placed was gone for good,
+        // with no way to resume without re-extracting from scratch and
+        // losing whatever the user had already reviewed.
+        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+          pending_insight_texts: insightTexts.slice(1), suggested_phylum: primaryPhylum, analysis_heartbeat: new Date().toISOString()
+        }).then(function() {
+          return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla).then(function(firstPlacement) {
+            var insights = [firstPlacement];
+            var onlyOne = insightTexts.length === 1;
+            return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+              insights: insights, status: 'in_progress', current_insight_index: 0, analysis_complete: onlyOne, analysis_heartbeat: new Date().toISOString()
+            }).then(function() {
+              if (!onlyOne) {
+                self._continueAnalyzingInBackground(chapter.id, insightTexts.slice(1), primaryPhylum, remainingPhyla);
+              }
+              return Object.assign({}, chapter, { insights: insights, current_insight_index: 0, analysis_complete: onlyOne, pending_insight_texts: insightTexts.slice(1) });
+            });
           });
         });
       });
@@ -7529,6 +7569,10 @@ RPGACE.register('bookworm', {
   // fails partway, analysis_complete still gets set on whatever
   // succeeded so far - without that, a mid-batch failure would leave the
   // review UI's polling (_renderWaitingForNextInsight) waiting forever.
+  // Also used by _resumeChapterAnalysis - identical logic, just called
+  // with remainingTexts freshly read from pending_insight_texts instead
+  // of the original tab's in-memory list, which is exactly what makes a
+  // resume from a DIFFERENT tab/session possible.
   _continueAnalyzingInBackground: function(chapterId, remainingTexts, primaryPhylum, remainingPhyla) {
     var self = this;
     var chain = Promise.resolve();
@@ -7540,8 +7584,13 @@ RPGACE.register('bookworm', {
             if (!current) return;
             var insights = (current.insights || []).concat([placement]);
             var isLast = (i === remainingTexts.length - 1);
+            // Drop the just-placed text from the persisted pending list -
+            // this is the resumable checkpoint; slice(1) is safe because
+            // this same insightText was always pending_insight_texts[0]
+            // (both derived from, and kept in lockstep with, remainingTexts).
+            var stillPending = (current.pending_insight_texts || []).slice(1);
             return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, {
-              insights: insights, analysis_complete: isLast
+              insights: insights, analysis_complete: isLast, pending_insight_texts: stillPending, analysis_heartbeat: new Date().toISOString()
             });
           });
         });
@@ -7550,6 +7599,35 @@ RPGACE.register('bookworm', {
     return chain.catch(function(e) {
       console.warn('[bookworm] background insight analysis failed partway, marking complete with what succeeded so far:', e.message);
       return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, { analysis_complete: true }).catch(function() {});
+    });
+  },
+
+  // ── Resume a stalled chapter's background analysis (added July 19) ──
+  // Reads pending_insight_texts + suggested_phylum FRESH from Supabase
+  // (never from JS memory - the whole point is this can run in a NEW tab
+  // after the original one closed) and re-enters the exact same
+  // _continueAnalyzingInBackground chain. Known residual limitation,
+  // honestly flagged rather than solved: there's no server-side lock, so
+  // if the ORIGINAL tab is actually still alive and just slow (not truly
+  // stalled), clicking Resume could run two chains over the same
+  // remaining insights at once. The heartbeat timestamp is meant to make
+  // that rare (the UI only offers Resume once the heartbeat has gone
+  // stale for a while) but this is a single-user personal tool, not a
+  // distributed system - true mutual exclusion isn't built here.
+  _resumeChapterAnalysis: function(book, chapter) {
+    var self = this;
+    var pp = RPGACE.modules.phylumPath;
+    return RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapter.id + '&limit=1').then(function(rows) {
+      var fresh = rows && rows[0];
+      if (!fresh) return;
+      var pending = fresh.pending_insight_texts || [];
+      if (!pending.length) {
+        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { analysis_complete: true });
+      }
+      var primaryPhylum = fresh.suggested_phylum;
+      var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
+      RPGACE.utils.toast('📖 Resuming analysis of "' + chapter.chapter_title + '" (' + pending.length + ' insight(s) left)...', '#9B59B6', 3500);
+      return self._continueAnalyzingInBackground(chapter.id, pending, primaryPhylum, remainingPhyla);
     });
   },
 
@@ -7693,6 +7771,67 @@ RPGACE.register('bookworm', {
     }.bind(this)).catch(function() { return null; });
   },
 
+  // Safe read-modify-write for a single insight inside
+  // bookworm_chapters.insights (added July 19, alongside the background
+  // leaf-creation queue below). Always enqueued onto a single shared
+  // chain (_chapterWriteQueue) so two writes to the same chapter's
+  // insights array can never race each other - critical once approving
+  // an insight advances the UI immediately while the actual taxonomy
+  // write finishes later in the background: without this, the later
+  // write could read a stale array (missing the just-set decision) and
+  // clobber it when it writes back.
+  _patchChapterInsightAt: function(chapterId, idx, patchFn, extraFields) {
+    var self = this;
+    self._chapterWriteQueue = (self._chapterWriteQueue || Promise.resolve()).then(function() {
+      return RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapterId + '&limit=1').then(function(rows) {
+        var current = rows && rows[0];
+        if (!current) return;
+        var insights = (current.insights || []).slice();
+        if (idx >= insights.length) return;
+        insights[idx] = patchFn(insights[idx]);
+        var body = Object.assign({ insights: insights }, extraFields || {});
+        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, body);
+      });
+    });
+    return self._chapterWriteQueue;
+  },
+
+  // ── Background leaf-creation queue (added July 19, per direct request) ──
+  // Approving an insight now advances the review UI immediately instead
+  // of waiting on this - the actual taxonomy_tree write happens here,
+  // queued. A single shared chain (_leafQueue, not per-chapter) so
+  // _insertNewSteps's chained parent_id inserts never run concurrently
+  // with themselves, regardless of how fast someone clicks through
+  // several approvals in a row. The final status patch goes through
+  // _patchChapterInsightAt above, which is itself globally serialized -
+  // together these guarantee the eventual "created"/"failed" write can
+  // never race or clobber the "approved" decision advance() already set.
+  _queueLeafCreation: function(chapterId, idx, insight) {
+    var self = this;
+    var pp = RPGACE.modules.phylumPath;
+    self._leafQueue = (self._leafQueue || Promise.resolve()).then(function() {
+      return pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, insight.newSteps, insight.explainers, insight.text)
+        .then(function() {
+          return self._patchChapterInsightAt(chapterId, idx, function(current) {
+            return Object.assign({}, current, { leafStatus: 'created' });
+          });
+        })
+        .catch(function(e) {
+          // Fail loud (per this project's own rule) rather than silently
+          // dropping an approved insight that never actually made it into
+          // taxonomy_tree - the toast survives even though the review
+          // popup for this specific insight is long gone by the time this
+          // resolves.
+          console.warn('[bookworm] queued leaf creation failed for insight ' + idx + ':', e.message);
+          RPGACE.utils.toast('⚠️ Leaf creation failed for an approved insight ("' + (insight.text || '').slice(0, 60) + '...") - reopen this chapter to check it.', '#E25454', 6000);
+          return self._patchChapterInsightAt(chapterId, idx, function(current) {
+            return Object.assign({}, current, { leafStatus: 'failed' });
+          }).catch(function() {});
+        });
+    });
+    return self._leafQueue;
+  },
+
   // ── Per-insight review: summary, path, justification, Approve/Reject/Edit ──
   _renderInsightReview: function(book, chapter) {
     var self = this;
@@ -7768,7 +7907,13 @@ RPGACE.register('bookworm', {
       var newInsights = insights.slice();
       newInsights[idx] = newInsight;
       var newChapter = Object.assign({}, chapter, { insights: newInsights, current_insight_index: idx + 1 });
-      RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { insights: newInsights, current_insight_index: idx + 1 }).catch(function() {});
+      // Safe read-modify-write (added July 19, alongside the background
+      // leaf-creation queue below) instead of blindly overwriting the
+      // whole insights array from this closure - the queue writes to the
+      // same array asynchronously, sometime after the UI has already
+      // moved on to a later insight, so a blind write here could clobber
+      // a leaf-creation result that landed first.
+      self._patchChapterInsightAt(chapter.id, idx, function() { return newInsight; }, { current_insight_index: idx + 1 }).catch(function() {});
       overlay.remove();
       self._renderInsightReview(book, newChapter);
     };
@@ -7780,11 +7925,13 @@ RPGACE.register('bookworm', {
     approveBtn.disabled = !insight.fits;
     approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (insight.fits ? '1' : '0.4') + ';';
     approveBtn.onclick = function() {
-      approveBtn.disabled = true; approveBtn.textContent = '⏳ Creating leaf...';
-      var pp = RPGACE.modules.phylumPath;
-      pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, insight.newSteps, insight.explainers, insight.text)
-        .then(function() { advance('approved'); })
-        .catch(function(e) { RPGACE.utils.toast('Error creating leaf: ' + e.message, '#E25454', 3500); approveBtn.disabled = false; approveBtn.textContent = '✓ Approve'; });
+      // Advances to the next insight IMMEDIATELY (added July 19, per
+      // direct request) - the actual taxonomy_tree write no longer blocks
+      // the review flow. Queued instead (_queueLeafCreation) so several
+      // approvals in a row never run _insertNewSteps concurrently with
+      // itself (it does a chained parent_id insert - unsafe to overlap).
+      advance('approved', { leafStatus: 'pending' });
+      self._queueLeafCreation(chapter.id, idx, insight);
     };
     var rejectBtn = document.createElement('button');
     rejectBtn.textContent = '✗ Reject';
@@ -7833,6 +7980,19 @@ RPGACE.register('bookworm', {
     msg.textContent = '⏳ Still analyzing the next insight in the background...';
     msg.style.cssText = 'font-size:13px;color:rgba(226,226,236,0.6);margin-bottom:14px;';
     box.appendChild(msg);
+
+    // Resume button (added July 19, per direct request to harden against
+    // a closed tab): background analysis is a client-side promise chain,
+    // not a server job - if the tab that started it closes, this screen
+    // would otherwise poll forever with nothing actually running. Hidden
+    // until the heartbeat (_continueAnalyzingInBackground/_analyzeChapter
+    // update it after every insight) has gone stale for a while, so a
+    // chapter that's just genuinely slow doesn't get falsely flagged.
+    var resumeBtn = document.createElement('button');
+    resumeBtn.textContent = '▶ Resume Analysis';
+    resumeBtn.style.cssText = 'display:none;width:100%;margin-bottom:10px;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    box.appendChild(resumeBtn);
+
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Exit to Dashboard';
     closeBtn.style.cssText = 'padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
@@ -7843,6 +8003,7 @@ RPGACE.register('bookworm', {
     document.body.appendChild(overlay);
 
     var idx = chapter.current_insight_index || 0;
+    var STALL_MS = 45000;
     var poll = function() {
       if (stopped) return;
       RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapter.id + '&limit=1').then(function(rows) {
@@ -7852,9 +8013,23 @@ RPGACE.register('bookworm', {
         if ((fresh.insights || []).length > idx || fresh.analysis_complete) {
           overlay.remove();
           self._renderInsightReview(book, fresh);
-        } else {
-          setTimeout(poll, 4000);
+          return;
         }
+        var heartbeatMs = fresh.analysis_heartbeat ? new Date(fresh.analysis_heartbeat).getTime() : 0;
+        var staleFor = heartbeatMs ? (Date.now() - heartbeatMs) : 0;
+        if (heartbeatMs && staleFor > STALL_MS) {
+          msg.textContent = '⏳ No progress in over ' + Math.round(staleFor / 1000) + 's - looks stalled (likely the tab that started this was closed).';
+          resumeBtn.style.display = 'block';
+          resumeBtn.onclick = function() {
+            resumeBtn.disabled = true; resumeBtn.textContent = '⏳ Resuming...';
+            self._resumeChapterAnalysis(book, fresh).catch(function(e) {
+              RPGACE.utils.toast('Error resuming: ' + e.message, '#E25454', 3500);
+            }).then(function() {
+              if (resumeBtn.isConnected) { resumeBtn.disabled = false; resumeBtn.textContent = '▶ Resume Analysis'; }
+            });
+          };
+        }
+        setTimeout(poll, 4000);
       }).catch(function() { if (!stopped) setTimeout(poll, 4000); });
     };
     setTimeout(poll, 4000);

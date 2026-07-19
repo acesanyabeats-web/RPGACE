@@ -216,6 +216,17 @@
     </div>
   </div>
 
+  <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🔧 July 19 — Hardened background analysis against a closed tab + backgrounded leaf creation on Approve</div>
+    <div class="card-body">
+      Two direct requests: (1) harden the tab-close gap flagged in the previous card ("Yes please"), (2) make Approve advance immediately instead of waiting on the taxonomy write, with leaf creation queued in the background.<br><br>
+      <strong>1. Resumable background analysis.</strong> Previously, the raw insight-text list only ever lived in JS memory - if the tab that started analysis closed, whatever hadn't been placed yet was gone for good, and reopening that chapter would just poll forever. Now <code>_analyzeChapter</code> persists the full remaining insight list (<code>pending_insight_texts</code>, new jsonb column) and the resolved phylum up front, before placing even the first insight, and <code>_continueAnalyzingInBackground</code> drops each one off as it's placed and stamps a heartbeat (<code>analysis_heartbeat</code>, new column). A new <code>_resumeChapterAnalysis()</code> reads that state FRESH from Supabase (never JS memory) and re-enters the same background chain - works from a completely different tab/session. The "still analyzing" screen now shows a "▶ Resume Analysis" button once the heartbeat's gone stale for 45+ seconds with no progress. <strong>Honest limitation, not solved:</strong> there's no server-side lock - if the original tab is actually still alive and just slow, clicking Resume could run two chains over the same insights at once. The heartbeat threshold makes this unlikely but doesn't eliminate it; true mutual exclusion would need a real backend job queue, out of scope for a single-user personal tool right now.<br><br>
+      <strong>2. Backgrounded leaf creation.</strong> Approving an insight used to block the whole review flow on <code>_insertNewSteps</code>'s taxonomy_tree write before showing the next insight. Now it advances immediately and queues the actual write (<code>_queueLeafCreation</code>, one shared chain so concurrent approvals never run the chained parent_id insert against itself). Found a real race while building this: the queued write and the immediate "advance" write both touch the same chapter's insights array asynchronously, so a naive version could let the later one clobber the earlier one. Fixed with <code>_patchChapterInsightAt</code> - a safe read-modify-write for one insight, itself serialized through a second shared chain, so ordering is always correct regardless of which finishes first in real time.<br><br>
+      Each insight now carries a <code>leafStatus</code> ('pending'/'created'/'failed'). Per this project's "fail loud, never silently swallow a failed write" rule, the read-only complete-chapter summary now shows "(leaf still writing...)" or "(⚠️ leaf write failed)" next to any approved/edited insight whose background write hasn't landed cleanly, with a "🔁 Retry Leaf Creation" button on failed ones - a complete chapter's summary shouldn't imply every approved insight definitely made it into the tree if one didn't.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested.
+    </div>
+  </div>
+
   <div class="card" style="margin-bottom:20px;">
     <div class="card-title">🐛 July 18 — Dashboard's own "Oversight" widget was stale at 4 docs, a full day after the 5th shipped</div>
     <div class="card-body">
