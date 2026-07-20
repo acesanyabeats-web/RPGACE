@@ -4197,13 +4197,22 @@ RPGACE.register('dashDeck', {
     return holder;
   },
 
-  _stashBookworm: function() {
+  // force=true skips the open-popup guard - used ONLY by the popup's own
+  // onClose. Review finding (Sonnet, commit 3ee8f7c): at the moment
+  // onClose fires the widget is still inside the CLOSING overlay, so the
+  // ".dd-overlay" guard (correct for the periodic sweep, which must never
+  // yank the widget out of a popup the user is actively using) wrongly
+  // blocked the rescue too - overlay.remove() then destroyed the live
+  // widget, and the next dashboard visit rebuilt it from scratch, losing
+  // in-flight UI state. The guard can't tell "open" from "closing", so
+  // the close path passes force=true.
+  _stashBookworm: function(force) {
     var w = document.getElementById('bookworm-widget');
     if (!w) return;
     var holder = this._ensureHolder();
     if (!holder) return;
-    if (w.parentNode === holder) return;               // already stashed
-    if (w.closest && w.closest('.dd-overlay')) return; // inside an open popup — leave it
+    if (w.parentNode === holder) return;                         // already stashed
+    if (!force && w.closest && w.closest('.dd-overlay')) return; // inside an open popup — leave it
     holder.appendChild(w);
   },
 
@@ -4221,7 +4230,7 @@ RPGACE.register('dashDeck', {
       accent: 'var(--purple)',
       width: '640px',
       closeLabel: 'Close',
-      onClose: function() { self._stashBookworm(); }
+      onClose: function() { self._stashBookworm(true); }
     });
     if (w) {
       w.style.marginBottom = '0';
