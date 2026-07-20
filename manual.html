@@ -203,6 +203,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   <table>
     <tr><th>Button</th><th>Domain</th><th>Chain</th></tr>
     <tr><td>☰ Left Nav Drawer</td><td>GLOBAL</td><td>New July 20 (<code>leftNav</code> module) — replaces the old top <code>.nav-tabs</code> bar entirely. Hamburger in the slim sticky <code>.nav</code> shell slides in a left drawer (document.body-appended, z-index 10110/backdrop 10100) listing all 9 top-level pages; Research Lab and Schedule expand inline into their sub-navs. Not yet hand-tested live.</td></tr>
+    <tr><td>🃏 Dashboard command deck (11 cards)</td><td>GLOBAL</td><td>New July 20 (<code>dashDeck</code> module) — the rebuilt dashboard. 11 command cards in three thematic rows (learning/building, daily-use, knowledge-storage) plus a "Needs you now" panel. Each card either <code>showPage()</code>s to its page or opens a widget popup: card → <code>showPage(target)</code> for full pages, or card → <code>openWidgetPopup(id)</code> for the relocated Bookworm / Knowledge Gaps / Content Pipeline widgets (live DOM nodes moved in, stashed back on close). Not yet hand-tested (July 20).</td></tr>
     <tr><td>🎛 Prod. Oracle</td><td>ORACLE</td><td>14 commands → fillGaps → sendToOracle → chat display</td></tr>
     <tr><td>🎬 YouTube Oracle</td><td>ORACLE</td><td>8 commands → same chain</td></tr>
     <tr><td>📸 Insta-Oracle</td><td>ORACLE</td><td>13 commands → same chain</td></tr>
