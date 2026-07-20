@@ -3935,9 +3935,32 @@ RPGACE.register('dashDeck', {
   init: function() {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.dashboard) setTimeout(function() { self._inject(); }, 200);
+      if (name === RPGACE.CONFIG.pages.dashboard) setTimeout(function() { self._inject(); self._relocateQuestBoard(); }, 200);
     });
-    [1400, 3000].forEach(function(ms) { setTimeout(function() { self._inject(); }, ms); });
+    [1400, 3000].forEach(function(ms) { setTimeout(function() { self._inject(); self._relocateQuestBoard(); }, ms); });
+  },
+
+  // ── Pass 2 (July 20): the daily/weekly quest board used to render on the
+  // ── dashboard alongside this deck — debulked into the Agenda page
+  // ── (#page-quests), which already holds the career/health/lifestyle Quest
+  // ── Board directly below. Moves the LIVE nodes (never rebuilds), so
+  // ── buildAllQuests()'s getElementById lookups keep resolving and all
+  // ── button handlers (btn.closest('.quest-card')) stay intact. Idempotent —
+  // ── safe to call on every dashboard visit.
+  _relocateQuestBoard: function() {
+    var dq = document.getElementById('daily-quests');
+    var wq = document.getElementById('weekly-quests');
+    var pageQuests = document.getElementById('page-quests');
+    var anchor = document.getElementById('career-quests');
+    if (!dq || !wq || !pageQuests || !anchor) return;
+    if (dq.closest && dq.closest('#page-quests')) return; // already relocated
+    var anchorWrap = anchor.parentElement || anchor;
+    [dq, wq].forEach(function(grid) {
+      var heading = grid.previousElementSibling;
+      var moveHeading = !!(heading && heading.classList && heading.classList.contains('section-title'));
+      if (moveHeading) pageQuests.insertBefore(heading, anchorWrap);
+      pageQuests.insertBefore(grid, anchorWrap);
+    });
   },
 
   _injectStyles: function() {
@@ -3952,6 +3975,7 @@ RPGACE.register('dashDeck', {
       '.dd-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,transform .15s;animation:ddRiseIn .35s ease both;cursor:pointer}' +
       '.dd-card:nth-child(2){animation-delay:.05s}.dd-card:nth-child(3){animation-delay:.1s}.dd-card:nth-child(4){animation-delay:.15s}' +
       '.dd-card:nth-child(5){animation-delay:.2s}.dd-card:nth-child(6){animation-delay:.25s}.dd-card:nth-child(7){animation-delay:.3s}.dd-card:nth-child(8){animation-delay:.35s}' +
+      '.dd-card:nth-child(9){animation-delay:.4s}.dd-card:nth-child(10){animation-delay:.45s}.dd-card:nth-child(11){animation-delay:.5s}' +
       '.dd-card:hover{border-color:var(--border2);transform:translateY(-2px)}.dd-card:active{transform:translateY(0)}' +
       '.dd-eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
       '.dd-card h3{font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:Rajdhani,sans-serif}' +
@@ -3980,7 +4004,7 @@ RPGACE.register('dashDeck', {
       '.dd-pop-rdesc{font-size:11px;color:var(--muted);line-height:1.4}' +
       '.dd-pop-sec .dd-pop-rtitle{font-size:12px;color:var(--muted);font-weight:600}' +
       '.dd-chip{display:inline-block;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700}' +
-      '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}.dd-pop-row{min-height:44px}}' +
+      '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}.dd-pop-row{min-height:44px}#kg-grid{grid-template-columns:1fr !important}}' +
       '@media (prefers-reduced-motion:reduce){.dd-card,#dd-needs{animation:none !important}}';
     document.head.appendChild(st);
   },
@@ -3988,15 +4012,22 @@ RPGACE.register('dashDeck', {
   // Verbatim Morning Brief prompt (P1) — prefilled into #chat-input, never auto-sent.
   MORNING_PROMPT: '🌅 MORNING BRIEF — give me today\'s brief: 1) my top 3 priorities from quests and agenda, 2) everything currently waiting on me (pending taxonomy reviews, in-progress book chapters), 3) one beat-making focus for today based on my recent learning, 4) one content idea worth filming today. Keep it tight and actionable.',
 
+  // Order (July 20, Pass 2 — Fable's grouping): learning/building row, then
+  // daily-use row, then knowledge-storage row. Oversight moved to last slot;
+  // Agenda/Encyclopedia/Journal added as simple showPage navigation cards,
+  // mirroring Oracle's own pattern (no popup needed — each is a full page).
   MODULES: [
     { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research); } },
     { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
     { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Your knowledge tree: browse phyla, approve placements, confirm fusions.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
+    { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { var d = RPGACE.modules.dashDeck; d._prefillOracle(d.MORNING_PROMPT); } },
-    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
     { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
     { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
+    { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
+    { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
+    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
   ],
 
   _inject: function() {
@@ -4071,6 +4102,36 @@ RPGACE.register('dashDeck', {
     try { set('morningBrief', new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })); } catch (e) { set('morningBrief', 'Today'); }
     // Oversight: the seven living docs are always current — static label.
     set('oversight', '7 docs · always latest');
+    // Agenda: QUESTS is a main.js top-level const — not a window property in
+    // classic (non-module) scripts, but visible as a bare identifier to any
+    // script sharing the page's top-level scope, which rpgace_core.js does.
+    try {
+      if (typeof QUESTS !== 'undefined' && QUESTS) {
+        var doneCount = 0, totalCount = 0;
+        Object.keys(QUESTS).forEach(function(k) {
+          (QUESTS[k] || []).forEach(function(q) { totalCount++; if (q.done) doneCount++; });
+        });
+        set('agenda', doneCount + '/' + totalCount + ' quests done today');
+      } else { set('agenda', 'Quest board ready'); }
+    } catch (e) { set('agenda', 'Quest board ready'); }
+    // Encyclopedia: rpgace_encyclopedia is stored two ways historically —
+    // a JSON entries array (newer path) or a raw compiled HTML string
+    // (addToEncyclopedia/exportEncyclopedia, older path) — parse defensively.
+    try {
+      var encRaw = localStorage.getItem('rpgace_encyclopedia');
+      if (!encRaw) { set('encyclopedia', 'No entries yet'); }
+      else {
+        var encParsed = null;
+        try { encParsed = JSON.parse(encRaw); } catch (e2) {}
+        if (Array.isArray(encParsed)) { set('encyclopedia', encParsed.length + ' entr' + (encParsed.length === 1 ? 'y' : 'ies')); }
+        else { set('encyclopedia', 'Notes compiled'); }
+      }
+    } catch (e) { set('encyclopedia', '—'); }
+    // Journal: always a JSON array (main.js:2108/2218/3656/3716/3721/3788).
+    try {
+      var jRaw = JSON.parse(localStorage.getItem('rpgace_journal') || '[]');
+      set('journal', (Array.isArray(jRaw) ? jRaw.length : 0) + ' entries logged');
+    } catch (e) { set('journal', '—'); }
     if (!RPGACE.sb || !RPGACE.sb.select) { set('gaps', '—'); set('pipeline', '—'); return; }
     // Knowledge Gaps: count of tracked gaps. Aligned July 20 to match the
     // widget's own #kg-badge, which is fed by taxonomySync.getTopGaps —
