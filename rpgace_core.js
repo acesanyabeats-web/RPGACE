@@ -3919,6 +3919,176 @@ RPGACE.register('intelDelete', {
 });
 /* ===END:intelDelete=== */
 
+/* ===MODULE:dashDeck=== */
+// July 20 — Dashboard pass 1 of the DESIGN.md restructure (spec approved
+// by Alex; structure from aingertomlin.co.nz, skin 100% existing RPGACE
+// tokens - zero new colors/fonts, L1 interactions only). The one-scroll
+// contract: character HUD (existing, untouched) answers "who am I";
+// this module injects the 2x2 MODULE GRID ("what are my tools" - four
+// cards, each eyebrow → name → one line → one live stat → one gold
+// Enter link) directly under it, then ONE narrative-left/checklist-
+// right split-section ("what needs me now") fed by live data. Existing
+// widgets below are untouched in pass 1 - widget-by-widget
+// consolidation is pass 2, after hand-test.
+RPGACE.register('dashDeck', {
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.dashboard) setTimeout(function() { self._inject(); }, 200);
+    });
+    [1400, 3000].forEach(function(ms) { setTimeout(function() { self._inject(); }, ms); });
+  },
+
+  _injectStyles: function() {
+    if (document.getElementById('dd-styles')) return;
+    var st = document.createElement('style');
+    st.id = 'dd-styles';
+    st.textContent =
+      ':root{--dd-gold-rgb:201,168,76;--dd-purple-rgb:155,110,200;--dd-green-rgb:76,175,130;--dd-blue-rgb:74,140,204}' +
+      '@keyframes ddRiseIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}' +
+      '#dd-deck{max-width:1080px;margin:0 auto 20px auto}' +
+      '#dd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}' +
+      '.dd-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,transform .15s;animation:ddRiseIn .35s ease both;cursor:pointer}' +
+      '.dd-card:nth-child(2){animation-delay:.05s}.dd-card:nth-child(3){animation-delay:.1s}.dd-card:nth-child(4){animation-delay:.15s}' +
+      '.dd-card:hover{border-color:var(--border2);transform:translateY(-2px)}.dd-card:active{transform:translateY(0)}' +
+      '.dd-eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
+      '.dd-card h3{font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:Rajdhani,sans-serif}' +
+      '.dd-card p{font-size:12px;color:var(--muted);line-height:1.6}' +
+      '.dd-glance{font-size:11px;color:var(--muted)}' +
+      '.dd-go{margin-top:auto;font-size:12px;font-weight:700;color:var(--gold);min-height:38px;display:inline-flex;align-items:center;gap:6px}' +
+      '.dd-card:hover .dd-go{color:var(--gold2)}' +
+      '#dd-needs{display:grid;grid-template-columns:1.4fr 1fr;gap:24px;padding:20px 0;border-top:1px solid var(--border);animation:ddRiseIn .35s ease both;animation-delay:.2s}' +
+      '#dd-needs .dd-story h2{font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);margin-bottom:8px;font-family:Rajdhani,sans-serif}' +
+      '#dd-needs .dd-story p{font-size:13px;color:var(--muted);line-height:1.65;max-width:56ch}' +
+      '.dd-glancebox{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}' +
+      '.dd-glancebox .dd-gtitle{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}' +
+      '.dd-glancebox ul{margin:0;padding:0}' +
+      '.dd-glancebox li{list-style:none;font-size:12px;font-weight:600;line-height:1.7;color:var(--text);cursor:pointer;min-height:30px;display:flex;align-items:center}' +
+      '.dd-glancebox li::before{content:"\\2726";color:var(--gold);margin-right:8px}' +
+      '.dd-glancebox li:hover{color:var(--gold2)}' +
+      '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}}' +
+      '@media (prefers-reduced-motion:reduce){.dd-card,#dd-needs{animation:none !important}}';
+    document.head.appendChild(st);
+  },
+
+  MODULES: [
+    { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research); } },
+    { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { var w = document.getElementById('bookworm-widget'); if (w) w.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Your knowledge tree: browse phyla, approve placements, confirm fusions.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); } },
+    { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
+  ],
+
+  _inject: function() {
+    if (document.getElementById('dd-deck')) { this._refreshGlance(); return; }
+    var page = document.getElementById('page-dashboard');
+    if (!page) return;
+    this._injectStyles();
+    var self = this;
+
+    var deck = document.createElement('div');
+    deck.id = 'dd-deck';
+    var grid = document.createElement('div');
+    grid.id = 'dd-grid';
+    this.MODULES.forEach(function(m) {
+      var card = document.createElement('div');
+      card.className = 'dd-card';
+      card.id = 'dd-card-' + m.key;
+      var eb = document.createElement('div');
+      eb.className = 'dd-eyebrow';
+      eb.style.color = m.color;
+      eb.textContent = m.emoji + ' Module';
+      var h = document.createElement('h3');
+      h.textContent = m.name;
+      var p = document.createElement('p');
+      p.textContent = m.desc;
+      var gl = document.createElement('div');
+      gl.className = 'dd-glance';
+      gl.id = 'dd-glance-' + m.key;
+      gl.textContent = '…';
+      var go = document.createElement('div');
+      go.className = 'dd-go';
+      go.textContent = 'Enter →';
+      card.appendChild(eb); card.appendChild(h); card.appendChild(p); card.appendChild(gl); card.appendChild(go);
+      card.onclick = m.go;
+      grid.appendChild(card);
+    });
+    deck.appendChild(grid);
+
+    var needs = document.createElement('div');
+    needs.id = 'dd-needs';
+    needs.innerHTML = '<div class="dd-story"><h2>⚑ Needs you now</h2><p id="dd-needs-story">Checking live state…</p></div>' +
+      '<div class="dd-glancebox"><div class="dd-gtitle">At a glance</div><ul id="dd-needs-list"></ul></div>';
+    deck.appendChild(needs);
+
+    // The character HUD (.char-header) is GLOBAL - it sits above the page
+    // divs in index.html (verified line 42), so it is already the hero on
+    // every page. The deck therefore goes in as page-dashboard's FIRST
+    // child: hero (global) → module grid → needs-you → existing widgets.
+    page.insertBefore(deck, page.firstChild);
+
+    this._refreshGlance();
+  },
+
+  // Live stats - cheap reads only (localStorage + two cached Supabase
+  // selects that other dashboard widgets already make, so RPGACE.cache
+  // usually serves them without extra network).
+  _refreshGlance: function() {
+    var set = function(key, text) {
+      var el = document.getElementById('dd-glance-' + key);
+      if (el) el.textContent = text;
+    };
+    try {
+      var reports = JSON.parse(localStorage.getItem('rpgace_intel_insights') || '[]');
+      var wl = JSON.parse(localStorage.getItem('rpgace_intel_watchlist') || '[]');
+      set('research', reports.length + ' analysed · ' + wl.length + ' watchlist');
+    } catch (e) { set('research', '—'); }
+    set('oracle', 'Grounded in your tree · gaps become quests');
+    if (!RPGACE.sb || !RPGACE.sb.select) return;
+    RPGACE.sb.select('bookworm_books', 'status=eq.in_progress&select=id,title,current_chapter_index').then(function(books) {
+      books = books || [];
+      set('bookworm', books.length ? (books.length + ' book' + (books.length > 1 ? 's' : '') + ' in progress') : 'No books in progress');
+      var story = document.getElementById('dd-needs-story');
+      var list = document.getElementById('dd-needs-list');
+      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id').then(function(props) {
+        props = props || [];
+        set('taxonomy', props.length + ' placement' + (props.length === 1 ? '' : 's') + ' awaiting review');
+        if (!story || !list) return;
+        var bits = [];
+        list.innerHTML = '';
+        var addItem = function(text, onclick) {
+          var li = document.createElement('li');
+          li.textContent = text;
+          li.onclick = onclick;
+          list.appendChild(li);
+        };
+        if (props.length) {
+          bits.push(props.length + ' taxonomy placement' + (props.length === 1 ? '' : 's') + ' waiting for your judgement');
+          addItem('Review ' + props.length + ' pending placement' + (props.length === 1 ? '' : 's'), function() {
+            var rq = RPGACE.modules.taxonomyReviewQueue;
+            if (rq && rq._openQueue) rq._openQueue(); else if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.dashboard);
+          });
+        }
+        books.forEach(function(b) {
+          bits.push('"' + b.title + '" is mid-read');
+          addItem('Continue: ' + (b.title.length > 34 ? b.title.slice(0, 34) + '…' : b.title), function() {
+            var bw = RPGACE.modules.bookworm;
+            if (bw && bw._openBook) bw._openBook(b.id);
+          });
+        });
+        if (!bits.length) {
+          story.textContent = 'All clear — nothing is waiting on you. Make a beat, analyse a video, or open a chapter.';
+          addItem('Open Research Lab', function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research); });
+        } else {
+          story.textContent = bits.join('. ') + '.';
+        }
+      }).catch(function() { set('taxonomy', '—'); });
+    }).catch(function() { set('bookworm', '—'); });
+  },
+
+});
+/* ===END:dashDeck=== */
+
 /* ===MODULE:intelDedup=== */
 // July 19 — root-cause fix for the duplicate Content Intelligence rows
 // (real evidence: one video cached 5 times; 24 dup rows total). Cause:

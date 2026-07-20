@@ -217,6 +217,16 @@
   </div>
 
   <div class="card green" style="margin-bottom:20px;">
+    <div class="card-title">🏛️ July 20 — DESIGN.md + Dashboard pass 1: Ainger-Tomlin structural discipline in RPGACE's own skin (new web-design skill's spec-first flow)</div>
+    <div class="card-body">
+      Alex installed the <code>web-design</code> Claude Code skill (spec-first: DESIGN.md → confirm → code) and picked aingertomlin.co.nz as the structural reference — "keep the video gamey feel of RPGACE design, dont change it. just the simplicity of the web structure."<br><br>
+      <strong>DESIGN.md</strong> (new committed doc, approved before any code): the reference's structure only — one-scroll who/what/what-needs-me, 2×2 module cards (eyebrow → name → one line → one stat → one gold link), narrative-left/"At a glance"-checklist-right sections, strict per-section color discipline (neutrals + gold + max ONE module accent) — expressed entirely in RPGACE's EXISTING tokens read from the real style.css: zero new colors, zero new fonts (Cinzel/Rajdhani untouched), interaction hard-capped at L1 (existing hovers/toasts kept, soft entrance fade only, no scroll effects — it's a working tool).<br><br>
+      <strong>Built (pass 1, Dashboard, approved scope):</strong> new <code>dashDeck</code> module — the 2×2 module grid (🧠 Research Lab / 📖 Bookworm / 🌳 Taxonomy &amp; Review / ⚡ Oracle, each with a LIVE glance stat: analysed+watchlist counts, in-progress books, pending placements) inserted as page-dashboard's first section (the character HUD is global and already serves as the hero), followed by one "⚑ Needs you now" split-section whose narrative and gold-ticked checklist are fed by live data (pending review placements → opens the review queue; each in-progress book → opens its chapter list). Stats reuse localStorage + the two Supabase selects other widgets already make (RPGACE.cache serves them) — zero new Oracle calls, near-zero new network. Existing widgets below untouched in pass 1; widget-by-widget consolidation into split-sections is pass 2, after hand-test. Zero index.html/main.js edits.<br><br>
+      <strong>Honest flag:</strong> not yet hand-tested — check the grid renders under the HUD, cards navigate (Research/Taxonomy/Oracle pages, Bookworm scrolls to its widget), glance stats fill in, the checklist items open the right flows, and mobile (≤600px) stacks to one column with the checklist above the narrative.
+    </div>
+  </div>
+
+  <div class="card green" style="margin-bottom:20px;">
     <div class="card-title">💷 July 19 — TOKEN COST RETUNE: found where £10 of API credit went and cut per-chapter cost ~8-10x without touching output quality</div>
     <div class="card-body">
       Direct request after £10 of API credit vanished during taxonomy testing + chapter analysis. Full audit with live-measured numbers + verbatim confirmed decisions: <code>token_cost_audit_2026-07-19.txt</code> (new committed doc). Summary:<br><br>
