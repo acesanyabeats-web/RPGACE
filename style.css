@@ -30,11 +30,10 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
 /* NAV */
 #app{display:none}
 .nav{background:var(--darker);border-bottom:1px solid var(--border);display:flex;align-items:center;position:sticky;top:0;z-index:100}
-.nav-brand{padding:0 20px;font-family:'Cinzel',serif;font-size:13px;color:var(--gold);letter-spacing:2px;white-space:nowrap;border-right:1px solid var(--border)}
-.nav-tabs{display:flex;flex:1;overflow-x:auto}
-.nav-tab{padding:14px 16px;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;text-transform:uppercase;font-family:'Rajdhani',sans-serif}
-.nav-tab:hover{color:var(--text);background:var(--panel)}
-.nav-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.nav-brand{padding:14px 20px;font-family:'Cinzel',serif;font-size:13px;color:var(--gold);letter-spacing:2px;white-space:nowrap}
+/* .nav-tabs / .nav-tab removed July 20 — the top tab bar is replaced by the
+   leftNav slide-out drawer (module in rpgace_core.js). The hamburger toggle
+   (#ln-burger) is injected into .nav at runtime and styled from #ln-styles. */
 
 /* PAGES */
 .page{display:none;padding:20px;max-width:1100px;margin:0 auto}
@@ -342,9 +341,7 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
 @media (max-width: 768px) {
   body { font-size: 14px; }
   .app { flex-direction: column; height: auto; min-height: 100vh; }
-  .sidebar { width: 100%; min-height: auto; padding: 8px; flex-direction: row; flex-wrap: wrap; gap: 3px; border-right: none; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; background: var(--bg); }
-  .sidebar .logo, .sidebar .divider, .sidebar .nav-section { display: none; }
-  .nav-tab { padding: 10px 14px; font-size: 11px; letter-spacing: 0; flex: 0 0 auto; text-align: center; border-radius: 6px; }
+  /* .sidebar (orphaned, unused anywhere in markup) and .nav-tab removed July 20. */
   .main { padding: 10px; overflow-x: hidden; }
   .hud { padding: 10px; flex-wrap: wrap; gap: 8px; }
   .level-badge { font-size: 20px; }
@@ -388,16 +385,9 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
   .agents-grid { grid-template-columns: 1fr; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .skills-grid { grid-template-columns: 1fr; }
-  .nav-tab { font-size: 10px; padding: 9px 12px; }
 }
-/* Real scroll-arrow buttons dynamically injected either side of .nav-tabs
-   (rpgace_core.js) for narrow screens - drag-to-scroll alone was hard to
-   press/use reliably on a touchscreen thin nav strip. */
-@media (max-width: 768px) {
-  .nav-scroll-arrow { display: flex !important; }
-}
-.nav-scroll-arrow { display: none; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; background: var(--darker); color: var(--muted); cursor: pointer; font-size: 16px; border: none; }
-.nav-scroll-arrow:active { color: var(--gold); }
+/* .nav-scroll-arrow rules removed July 20 — the .nav-tabs bar they wrapped
+   is gone, replaced by the leftNav slide-out drawer (rpgace_core.js). */
 
 .agenda-card{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:10px}
 .agenda-card.done{opacity:.45;border-left-color:var(--muted)}

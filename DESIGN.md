@@ -132,7 +132,7 @@ All values are RPGACE's EXISTING tokens (style.css `:root`), re-declared with te
 
 **Status chip** (existing convention, formalized): pill, 10px/700, `rgba(semantic,.15)` bg + semantic color text; states: pending=warning, done=success, failed=error, info=info.
 
-**Nav**: unchanged — existing sticky `.nav` + `.nav-tab` (this spec does not touch navigation).
+**Nav** (amended July 20, per Alex's explicit request): the top `.nav-tab` bar is retired. Navigation is a **left slide-out drawer** (`leftNav` module in rpgace_core.js): a hamburger button (`#ln-burger`, 44×44) lives in the slim sticky `.nav` shell beside the brand; clicking it slides a drawer in from the left (`translateX(-100%)→0`, .28s ease) over a dimming backdrop. The drawer lists all 9 top-level pages, with expandable sub-navs for Research Lab (its 7 tabs) and Schedule (daily/weekly/monthly/import). Drawer styling uses existing tokens only (`--darker` bg, `--border`, `--gold` active/hover, `--muted` idle), Cinzel for the brand row, Rajdhani + uppercase for items (matching the old `.nav-tab` type tier), and the single permitted overlay shadow `0 12px 40px rgba(0,0,0,.5)` (§6 L3). z-index: backdrop 10100, panel 10110.
 
 ## 5. Layout Principles
 
@@ -179,7 +179,7 @@ Flat-first (existing app has no shadow system — keep it that way):
 3. Don't embed forms/inputs inside module-grid cards — cards navigate, pages act.
 4. Don't nest panels inside panels more than one level (`--surface` → `--surface-alt` max).
 5. Don't add scroll-jacking, parallax, WebGL, or cursor effects — L1 is a hard cap here.
-6. Don't touch the nav, the password gate, or the character HUD's internals.
+6. Don't touch the password gate or the character HUD's internals. (The nav was deliberately replaced by the left slide-out drawer on July 20 — see §4 Nav; that change is done and is the new baseline.)
 7. Don't add a static `<script>` tag to index.html (two-script rule) — all wiring stays in rpgace_core.js modules.
 8. Don't use emoji as icons in NEW glance-box checklists (existing emoji module titles stay — identity).
 
@@ -189,4 +189,4 @@ Flat-first (existing app has no shadow system — keep it that way):
 - ≤600px: module grid → 1 column; `.split-sec` → single column with glance-box ABOVE narrative (scan first on mobile); container padding 12px.
 - Touch targets ≥ 44px on mobile for links/buttons; card link rows get full-width tap area.
 - No horizontal overflow at 390px (existing verification standard).
-- Sticky nav unchanged; long lists keep the existing show-8/"Show more" batching.
+- Sticky `.nav` shell stays; navigation is the left slide-out drawer (§4 Nav) — its panel is `width:min(280px,85vw)` so it never overflows a narrow (390px) viewport, and every drawer row is ≥44px tall for thumb targets. Long lists keep the existing show-8/"Show more" batching.

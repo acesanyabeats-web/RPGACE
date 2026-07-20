@@ -2372,10 +2372,10 @@ RPGACE.register('researchTabs', {
     // the first pass still gets sorted into its tab instead of leaking
     // into whatever tab is active. Idempotent, cheap (pure DOM checks).
     [1200, 2500, 4500, 8000].forEach(function(ms) {
-      setTimeout(function() { self._inject(); self._apply(); }, ms);
+      setTimeout(function() { self._apply(); }, ms);
     });
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.research) { self._inject(); self._apply(); }
+      if (name === RPGACE.CONFIG.pages.research) { self._apply(); }
     });
     // Any panel injected AFTER the tab bar last computed visibility (including
     // bookworm's synchronous bibliography re-append on every page:show) fires
@@ -2437,17 +2437,23 @@ RPGACE.register('researchTabs', {
     anchor.parentElement.insertBefore(bar, anchor.nextSibling);
   },
 
+  // July 20: made tolerant of the in-page bar being absent. The flat
+  // in-page tab bar (_inject) is no longer injected — the drawer's nested
+  // Research sub-nav (leftNav module) drives tab changes now. The section
+  // show/hide logic must therefore run whether or not #research-tab-bar
+  // exists; only the bar-button styling loop is guarded behind it.
   _apply: function() {
-    var bar = document.getElementById('research-tab-bar');
-    if (!bar) return;
     var active = this._activeTab();
     var sections = this._resolveSections();
-    Array.prototype.forEach.call(bar.children, function(btn) {
-      var on = btn.dataset.tabKey === active;
-      btn.style.background = on ? 'rgba(155,89,182,0.15)' : 'rgba(255,255,255,0.03)';
-      btn.style.borderColor = on ? 'rgba(155,89,182,0.45)' : 'rgba(255,255,255,0.1)';
-      btn.style.color = on ? '#B07CC6' : 'rgba(226,226,236,0.5)';
-    });
+    var bar = document.getElementById('research-tab-bar');
+    if (bar) {
+      Array.prototype.forEach.call(bar.children, function(btn) {
+        var on = btn.dataset.tabKey === active;
+        btn.style.background = on ? 'rgba(155,89,182,0.15)' : 'rgba(255,255,255,0.03)';
+        btn.style.borderColor = on ? 'rgba(155,89,182,0.45)' : 'rgba(255,255,255,0.1)';
+        btn.style.color = on ? '#B07CC6' : 'rgba(226,226,236,0.5)';
+      });
+    }
     Object.keys(sections).forEach(function(key) {
       sections[key].style.display = (key === active) ? '' : 'none';
     });
@@ -2456,8 +2462,275 @@ RPGACE.register('researchTabs', {
     if (active === 'corpus') RPGACE.ui.batchList(document.getElementById('rc-list'), 8);
   },
 
+  // Public entry point used by the leftNav drawer's Research sub-nav.
+  // Persists the choice (same localStorage key the old in-page bar used),
+  // navigates to the Research page if we're not already there, re-sorts the
+  // panels into the chosen tab, and fires research:tab-changed so leftNav
+  // can re-highlight its active sub-item. Named-event convention per CLAUDE.md
+  // (never a second MutationObserver on the same node).
+  show: function(key) {
+    localStorage.setItem('rpgace_research_tab', key);
+    var page = document.getElementById('page-learning');
+    var onResearch = page && page.classList.contains('active');
+    if (!onResearch && typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+    this._apply();
+    RPGACE.hooks.fire('research:tab-changed');
+  },
+
 });
 /* ===END:researchTabs=== */
+
+/* ===MODULE:leftNav=== */
+// Left slide-out navigation drawer (July 20). Replaces the old top
+// .nav-tabs bar entirely (Alex's explicit request: "make the nav a menu on
+// the left that has a button that brings it out with all the doms and sub
+// doms. get rid of original nav with the left drop down list.").
+//
+// Owns: a hamburger toggle injected into the slim sticky .nav shell, the
+// slide-out drawer panel, its backdrop, active-page highlighting, and the
+// Research Lab / Schedule nested sub-navs. ALL overlay DOM is created via
+// document.createElement and appended to document.body — never inside a
+// .page div (the standing z-index click-intercept landmine).
+//
+// z-index: backdrop 10100, panel 10110 — above the app's 9998/9999 side
+// panels + toasts (nav always reachable to escape an open side panel) but
+// below dashDeck's 99999 popups (an open popup still wins if both are up;
+// the drawer's plain showPage swap under it is accepted existing behaviour).
+//
+// Every nav row is wired via .onclick (JS property), NEVER an inline
+// onclick="..." HTML attribute — main.js's frozen legacy [onclick*="..."]
+// selectors must never match the drawer's buttons.
+RPGACE.register('leftNav', {
+
+  // Top-level drawer items. `page` = a RPGACE.CONFIG.pages value.
+  // `subKind` (optional): 'research' renders the 7 research tabs as sub-rows,
+  // 'sched' renders the 4 schedule views (with their `sub` array).
+  _items: function() {
+    var P = RPGACE.CONFIG.pages;
+    return [
+      { label: 'Dashboard',        page: P.dashboard },
+      { label: '📋 Agenda',        page: P.agenda },
+      { label: 'Schedule',         page: P.schedule, subKind: 'sched', sub: [
+          { label: 'Daily (24hr)',   key: 'daily' },
+          { label: 'Weekly',         key: 'weekly' },
+          { label: 'Monthly',        key: 'monthly' },
+          { label: '⬆ Import Shifts', key: 'import' },
+      ] },
+      { label: 'AI Advisor',       page: P.oracle },
+      { label: '⚡ Agents',        page: P.agents },
+      { label: '🔬 Research Lab',  page: P.research, subKind: 'research' },
+      { label: '📖 Encyclopedia',  page: P.encyclopedia },
+      { label: '📓 Journal',       page: P.journal },
+      { label: '🧬 Phylum Path',   page: P.phylumPath },
+    ];
+  },
+
+  init: function() {
+    var self = this;
+    self._injectStyles();
+    self._injectHamburger();
+    // The .nav shell is static HTML, but re-try once in case of any late
+    // paint; idempotent (guarded on #ln-burger).
+    setTimeout(function() { self._injectHamburger(); }, 400);
+    self._buildDrawer();
+    // Active-page highlight sync. TOP-LEVEL listeners — NOT nested inside
+    // another hook's callback (the mid-fire forEach landmine: a listener
+    // added after rpgace:ready already fired would silently never run).
+    RPGACE.hooks.on('page:show', function() { self._syncActive(); });
+    RPGACE.hooks.on('research:tab-changed', function() { self._syncActive(); });
+    // Escape closes the drawer.
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' || e.keyCode === 27) self.close();
+    });
+  },
+
+  _injectStyles: function() {
+    if (document.getElementById('ln-styles')) return;
+    var st = document.createElement('style');
+    st.id = 'ln-styles';
+    st.textContent = [
+      '#ln-burger{width:44px;height:44px;min-width:44px;display:flex;align-items:center;justify-content:center;background:none;border:none;color:var(--gold);font-size:20px;line-height:1;cursor:pointer;font-family:Rajdhani,sans-serif}',
+      '#ln-burger:hover{color:var(--gold2)}',
+      '#ln-backdrop{position:fixed;inset:0;background:rgba(8,8,16,0.6);z-index:10100;display:none;opacity:0;transition:opacity .28s ease}',
+      '#ln-backdrop.open{opacity:1}',
+      '#ln-drawer{position:fixed;top:0;left:0;height:100vh;width:min(280px,85vw);max-width:85vw;background:var(--darker);border-right:1px solid var(--border);z-index:10110;display:none;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.5);transform:translateX(-100%);transition:transform .28s ease;font-family:Rajdhani,sans-serif;overflow-y:auto;overflow-x:hidden}',
+      '#ln-drawer.open{transform:translateX(0)}',
+      '#ln-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 8px 12px 16px;border-bottom:1px solid var(--border);flex-shrink:0}',
+      '#ln-hdr .ln-brand{font-family:Cinzel,serif;font-size:14px;color:var(--gold);letter-spacing:2px;white-space:nowrap}',
+      '.ln-close{width:44px;height:44px;background:none;border:none;color:var(--muted);font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}',
+      '.ln-close:hover{color:var(--text)}',
+      '#ln-list{display:flex;flex-direction:column;padding:8px 0}',
+      '.ln-item{display:flex;align-items:center;width:100%;min-height:44px;padding:10px 18px;background:none;border:none;border-left:3px solid transparent;color:var(--muted);font-family:Rajdhani,sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;text-align:left;cursor:pointer;transition:color .2s,background .2s,border-color .2s}',
+      '.ln-item:hover{color:var(--text);background:var(--panel)}',
+      '.ln-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--panel)}',
+      '.ln-sub{display:flex;flex-direction:column;background:var(--dark)}',
+      '.ln-subitem{display:flex;align-items:center;width:100%;min-height:44px;padding:8px 16px 8px 34px;background:none;border:none;border-left:3px solid transparent;color:var(--muted);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;text-align:left;cursor:pointer;transition:color .2s,background .2s,border-color .2s}',
+      '.ln-subitem:hover{color:var(--text);background:var(--panel)}',
+      '.ln-subitem.active{color:var(--gold);border-left-color:var(--gold)}',
+      '@media (prefers-reduced-motion: reduce){#ln-drawer,#ln-backdrop{transition:none}}',
+    ].join('');
+    document.head.appendChild(st);
+  },
+
+  _injectHamburger: function() {
+    if (document.getElementById('ln-burger')) return;
+    var nav = document.querySelector('.nav');
+    if (!nav) return;
+    var self = this;
+    var btn = document.createElement('button');
+    btn.id = 'ln-burger';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Open navigation menu');
+    btn.textContent = '☰';
+    btn.onclick = function() { self.toggle(); };
+    nav.insertBefore(btn, nav.firstChild);
+  },
+
+  _buildDrawer: function() {
+    if (document.getElementById('ln-drawer')) return;
+    var self = this;
+    // Backdrop
+    var back = document.createElement('div');
+    back.id = 'ln-backdrop';
+    back.onclick = function() { self.close(); };
+    document.body.appendChild(back);
+    // Panel
+    var panel = document.createElement('div');
+    panel.id = 'ln-drawer';
+    panel.setAttribute('role', 'navigation');
+    var hdr = document.createElement('div');
+    hdr.id = 'ln-hdr';
+    var brand = document.createElement('span');
+    brand.className = 'ln-brand';
+    brand.textContent = '⚔ RPGACE';
+    var close = document.createElement('button');
+    close.className = 'ln-close';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Close navigation menu');
+    close.textContent = '×';
+    close.onclick = function() { self.close(); };
+    hdr.appendChild(brand);
+    hdr.appendChild(close);
+    panel.appendChild(hdr);
+    var list = document.createElement('div');
+    list.id = 'ln-list';
+    self._items().forEach(function(it) { self._renderItem(list, it); });
+    panel.appendChild(list);
+    document.body.appendChild(panel);
+  },
+
+  _renderItem: function(list, it) {
+    var self = this;
+    var row = document.createElement('button');
+    row.className = 'ln-item';
+    row.type = 'button';
+    row.dataset.page = it.page;
+    row.textContent = it.label;
+    row.onclick = function() { self._go(it.page); };
+    list.appendChild(row);
+
+    if (it.subKind === 'research') {
+      var rWrap = document.createElement('div');
+      rWrap.className = 'ln-sub';
+      var rt = RPGACE.modules.researchTabs;
+      (rt && rt.TABS ? rt.TABS : []).forEach(function(t) {
+        var s = document.createElement('button');
+        s.className = 'ln-subitem';
+        s.type = 'button';
+        s.dataset.researchTab = t.key;
+        s.textContent = t.label;
+        s.onclick = function() {
+          if (RPGACE.modules.researchTabs) RPGACE.modules.researchTabs.show(t.key);
+          self.close();
+        };
+        rWrap.appendChild(s);
+      });
+      list.appendChild(rWrap);
+    } else if (it.subKind === 'sched') {
+      var sWrap = document.createElement('div');
+      sWrap.className = 'ln-sub';
+      (it.sub || []).forEach(function(t) {
+        var s = document.createElement('button');
+        s.className = 'ln-subitem';
+        s.type = 'button';
+        s.dataset.schedView = t.key;
+        s.textContent = t.label;
+        s.onclick = function() {
+          self._go(it.page);
+          // Let showPage settle, then switch the in-page schedule view.
+          if (typeof showSched === 'function') setTimeout(function() { showSched(t.key); }, 140);
+        };
+        sWrap.appendChild(s);
+      });
+      list.appendChild(sWrap);
+    }
+  },
+
+  // Navigate to a page then close. Phylum Path's page shell is injected at
+  // runtime (~1500ms after load) by phylumPath._injectPageShell — main.js's
+  // showPage has no null guard on the target div, so guard here.
+  _go: function(page) {
+    if (page === RPGACE.CONFIG.pages.phylumPath && !document.getElementById('page-' + page)) {
+      if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast('Phylum Path still loading — try again in a moment', '#C9A84C', 2500);
+      return;
+    }
+    if (typeof showPage === 'function') showPage(page);
+    this.close();
+  },
+
+  toggle: function() {
+    var panel = document.getElementById('ln-drawer');
+    if (!panel) { this._buildDrawer(); panel = document.getElementById('ln-drawer'); }
+    if (panel && panel.classList.contains('open')) this.close(); else this.open();
+  },
+
+  open: function() {
+    var panel = document.getElementById('ln-drawer');
+    var back = document.getElementById('ln-backdrop');
+    if (!panel || !back) { this._buildDrawer(); panel = document.getElementById('ln-drawer'); back = document.getElementById('ln-backdrop'); }
+    if (!panel || !back) return;
+    this._syncActive();
+    back.style.display = 'block';
+    panel.style.display = 'flex';
+    // Force layout, then add .open on the next frame so the slide animates.
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        back.classList.add('open');
+        panel.classList.add('open');
+      });
+    });
+  },
+
+  close: function() {
+    var panel = document.getElementById('ln-drawer');
+    var back = document.getElementById('ln-backdrop');
+    if (!panel || !back) return;
+    panel.classList.remove('open');
+    back.classList.remove('open');
+    setTimeout(function() {
+      if (panel && !panel.classList.contains('open')) panel.style.display = 'none';
+      if (back && !back.classList.contains('open')) back.style.display = 'none';
+    }, 300);
+  },
+
+  _syncActive: function() {
+    var panel = document.getElementById('ln-drawer');
+    if (!panel) return;
+    var activeDiv = document.querySelector('.page.active');
+    var activePage = activeDiv ? activeDiv.id.replace('page-', '') : null;
+    Array.prototype.forEach.call(panel.querySelectorAll('.ln-item'), function(r) {
+      r.classList.toggle('active', r.dataset.page === activePage);
+    });
+    var rt = RPGACE.modules.researchTabs;
+    var activeTab = (rt && rt._activeTab) ? rt._activeTab() : null;
+    var onResearch = activePage === RPGACE.CONFIG.pages.research;
+    Array.prototype.forEach.call(panel.querySelectorAll('.ln-subitem[data-research-tab]'), function(s) {
+      s.classList.toggle('active', onResearch && s.dataset.researchTab === activeTab);
+    });
+  },
+
+});
+/* ===END:leftNav=== */
 
 /* ===MODULE:uiBatchList=== */
 // Shared show-N-plus-"Show more" helper for long lists (July 19,
@@ -6444,7 +6717,10 @@ RPGACE.register('phylumPath', {
     });
     self._patchTextSelect();
     // Phase 2 (July 15): dedicated nav tab + full drill-down page.
-    setTimeout(function() { self._injectNavTab(); self._injectPageShell(); }, 1500);
+    // July 20: _injectNavTab() call removed — the old top nav-tabs bar is
+    // gone; the leftNav drawer owns Phylum Path's nav entry now. The page
+    // shell injection stays (unrelated, still required).
+    setTimeout(function() { self._injectPageShell(); }, 1500);
   },
 
   // ── Highlight-any-text entry point ──────────────────────────────────
@@ -9764,30 +10040,10 @@ RPGACE.register('config', {
       if (RPGACE.utils._initPhylaObserver) RPGACE.utils._initPhylaObserver();
     }, 500);
 
-    // July 16: nav-scroll arrows — .nav-tabs is a horizontally-scrollable
-    // flex row on mobile (drag-to-scroll only), found hard to press/use
-    // reliably on a touchscreen, especially once Phylum Path became the
-    // 9th tab. Dynamically wraps the existing .nav-tabs with tap targets
-    // either side instead of touching main.js's nav markup - CSS in
-    // style.css hides these on desktop widths (display:none by default,
-    // shown only under the same 768px breakpoint the nav-tab sizing uses).
-    setTimeout(function() {
-      var tabs = document.querySelector('.nav-tabs');
-      if (!tabs || tabs.dataset.scrollArrowsAdded) return;
-      tabs.dataset.scrollArrowsAdded = '1';
-      var nav = tabs.parentElement;
-      if (!nav) return;
-      var leftBtn = document.createElement('button');
-      leftBtn.className = 'nav-scroll-arrow';
-      leftBtn.textContent = '‹';
-      leftBtn.onclick = function() { tabs.scrollBy({ left: -120, behavior: 'smooth' }); };
-      var rightBtn = document.createElement('button');
-      rightBtn.className = 'nav-scroll-arrow';
-      rightBtn.textContent = '›';
-      rightBtn.onclick = function() { tabs.scrollBy({ left: 120, behavior: 'smooth' }); };
-      nav.insertBefore(leftBtn, tabs);
-      nav.appendChild(rightBtn);
-    }, 600);
+    // July 20: nav-scroll-arrow injection removed — the old .nav-tabs bar it
+    // wrapped is gone (replaced by the leftNav slide-out drawer). The
+    // orphaned .nav-scroll-arrow CSS was removed from style.css in the same
+    // pass.
 
     // Intel UI: hide main.js container, show our collapsed list instead
     function applyIntelUI() {
