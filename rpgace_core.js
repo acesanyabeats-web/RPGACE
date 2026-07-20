@@ -4000,7 +4000,7 @@ RPGACE.register('dashDeck', {
   ],
 
   _inject: function() {
-    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._refreshGlance(); return; }
+    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._refreshGlance(); return; }
     var page = document.getElementById('page-dashboard');
     if (!page) return;
     this._injectStyles();
@@ -4048,6 +4048,8 @@ RPGACE.register('dashDeck', {
     page.insertBefore(deck, page.firstChild);
 
     this._stashBookworm();
+    this._stashWidget('kg-panel');
+    this._stashWidget('cpl-widget');
     this._refreshGlance();
   },
 
@@ -4070,8 +4072,12 @@ RPGACE.register('dashDeck', {
     // Oversight: the seven living docs are always current — static label.
     set('oversight', '7 docs · always latest');
     if (!RPGACE.sb || !RPGACE.sb.select) { set('gaps', '—'); set('pipeline', '—'); return; }
-    // Knowledge Gaps: count of tracked gaps (taxonomy_nodes.gap_score > 0).
-    RPGACE.sb.select('taxonomy_nodes', 'select=id&gap_score=gt.0').then(function(g) {
+    // Knowledge Gaps: count of tracked gaps. Aligned July 20 to match the
+    // widget's own #kg-badge, which is fed by taxonomySync.getTopGaps —
+    // filter is applied_in_beat=false (plus gap_score>0: a 0-gap isn't a
+    // gap). Previously counted gap_score>0 regardless of applied state, so
+    // the card face and the popup badge disagreed (Fable finding).
+    RPGACE.sb.select('taxonomy_nodes', 'select=id&gap_score=gt.0&applied_in_beat=eq.false').then(function(g) {
       g = g || [];
       set('gaps', g.length + ' gap' + (g.length === 1 ? '' : 's') + ' tracked');
     }).catch(function() { set('gaps', '—'); });
@@ -4216,6 +4222,65 @@ RPGACE.register('dashDeck', {
     holder.appendChild(w);
   },
 
+  // ── GENERIC relocation infra (July 20, Pass 1) — same live-node-move
+  // ── pattern proven by _ensureHolder/_stashBookworm, generalised so the
+  // ── Knowledge Gap Tracker (#kg-panel) and Content Production Live
+  // ── (#cpl-widget) widgets can live in their dashDeck card popups too.
+  // ── One shared hidden holder (#dd-stash-holder) parks any relocated
+  // ── widget while its popup is closed. The bookworm path deliberately
+  // ── keeps its own proven _ensureHolder/_stashBookworm untouched.
+  //
+  // A follow-up pass wanting to relocate the quest board can reuse this
+  // trio verbatim: _ensureStash() (holder), _stashWidget(id,force)
+  // (move-back), _widgetPopups + closeWidgetPopup(id) (let a widget's own
+  // action button dismiss the hosting popup before it navigates / opens a
+  // higher-priority overlay).
+  _widgetPopups: {}, // widgetId -> pop.close fn, registered while its popup is open
+
+  _ensureStash: function() {
+    var holder = document.getElementById('dd-stash-holder');
+    if (!holder) {
+      var page = document.getElementById('page-dashboard');
+      if (!page) return null;
+      holder = document.createElement('div');
+      holder.id = 'dd-stash-holder';
+      holder.style.display = 'none';
+      page.appendChild(holder);
+    }
+    return holder;
+  },
+
+  // force=true skips the open-popup guard — used ONLY by a popup's own
+  // onClose, where the widget is still inside the CLOSING overlay so the
+  // .dd-overlay guard would otherwise wrongly block the rescue and
+  // overlay.remove() would destroy the live node. Same reasoning as
+  // _stashBookworm's force param (review finding, commit 3ee8f7c).
+  _stashWidget: function(id, force) {
+    var w = document.getElementById(id);
+    if (!w) return;
+    var holder = this._ensureStash();
+    if (!holder) return;
+    if (w.parentNode === holder) return;                         // already stashed
+    if (!force && w.closest && w.closest('.dd-overlay')) return; // inside an open popup — leave it
+    holder.appendChild(w);
+  },
+
+  // Called from inside a relocated widget's own action handler (Study Now,
+  // Oracle session, Beatstars Listing) BEFORE it navigates or opens a
+  // drawer/overlay — otherwise that surface renders BEHIND the still-open
+  // dashDeck popup (kg's Feynman drawer is z-index 9999 < the popup's
+  // 99999; showPage('advisor') just swaps pages under the overlay).
+  // Running pop.close() here fires the popup's onClose (force-stashes the
+  // widget back to the holder) then removes the overlay. Returns true if a
+  // popup was actually closed. Safe no-op when no popup hosts the widget
+  // (e.g. the widget is still on the raw dashboard) — the caller proceeds
+  // either way.
+  closeWidgetPopup: function(id) {
+    var fn = this._widgetPopups[id];
+    if (fn) { try { fn(); } catch (e) {} return true; }
+    return false;
+  },
+
   _openBookworm: function() {
     var self = this;
     var w = document.getElementById('bookworm-widget');
@@ -4291,111 +4356,101 @@ RPGACE.register('dashDeck', {
     addGroup('Working specs', secondary, true);
   },
 
-  // ── P4 Knowledge Gaps popup: top 8 tracked gaps (taxonomy_nodes.concept +
-  // ── gap_score). Row click prefills Oracle with a grounded teach prompt.
+  // ── P4 Knowledge Gaps popup. July 20 Pass 1: relocates the LIVE Knowledge
+  // ── Gap Tracker widget (#kg-panel, module knowledgeGap) into this card's
+  // ── popup — the node is MOVED, never rebuilt, so its badge/refresh and
+  // ── both row actions (Study Now, Apply Tonight) keep their real handlers.
+  // ── Parked in #dd-stash-holder while the popup is closed. The old bespoke
+  // ── gap-list query that used to live here is gone — the widget already
+  // ── renders the same data (taxonomySync.getTopGaps) with richer rows.
   _openGaps: function() {
     var self = this;
-    var pop = self._popup({ eyebrow: '🕳️ Knowledge Gaps', title: 'What your library doesn\'t know yet', accent: 'var(--green)', width: '600px' });
-    var body = pop.box;
-    var loading = document.createElement('div');
-    loading.style.cssText = 'color:var(--muted);font-size:12px;padding:12px 0';
-    loading.textContent = 'Loading gaps…';
-    body.appendChild(loading);
-    if (!RPGACE.sb || !RPGACE.sb.select) { loading.textContent = 'Gap data unavailable right now.'; return; }
-    RPGACE.sb.select('taxonomy_nodes', 'select=concept,gap_score&gap_score=gt.0&order=gap_score.desc&limit=8').then(function(rows) {
-      rows = rows || [];
-      body.innerHTML = '';
-      if (!rows.length) {
-        var e = document.createElement('div');
-        e.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;line-height:1.6';
-        e.textContent = 'No gaps tracked yet — gap scores populate as you study.';
-        body.appendChild(e);
-        return;
+    var w = document.getElementById('kg-panel');
+    if (!w) {
+      var kg = RPGACE.modules.knowledgeGap;
+      if (kg && kg._inject) { try { kg._inject(); } catch (e) {} }
+      w = document.getElementById('kg-panel');
+    }
+    var pop = self._popup({
+      eyebrow: '🕳️ Knowledge Gaps',
+      title: 'What your library doesn\'t know yet',
+      accent: 'var(--green)',
+      width: '680px',
+      closeLabel: 'Close',
+      onClose: function() {
+        self._stashWidget('kg-panel', true);
+        delete self._widgetPopups['kg-panel'];
       }
-      rows.forEach(function(r) {
-        var name = String(r.concept == null ? 'Untitled' : r.concept);
-        var disp = name.length > 60 ? name.slice(0, 60) + '…' : name;
-        var row = document.createElement('div');
-        row.className = 'dd-pop-row';
-        var tw = document.createElement('div');
-        tw.style.cssText = 'flex:1;min-width:0';
-        var t = document.createElement('div');
-        t.className = 'dd-pop-rtitle';
-        t.textContent = disp;
-        tw.appendChild(t);
-        var chip = document.createElement('div');
-        chip.className = 'dd-chip';
-        chip.style.cssText = 'flex-shrink:0;background:rgba(var(--dd-green-rgb),.15);color:var(--green)';
-        chip.textContent = 'gap ' + r.gap_score;
-        row.appendChild(tw); row.appendChild(chip);
-        row.onclick = function() {
-          pop.close();
-          self._prefillOracle('Teach me: ' + name + '. Ground it in my RPGACE library first, then fill the gaps from general knowledge — and offer to place anything new via Phylum Path.');
-        };
-        body.appendChild(row);
-      });
-    }).catch(function() {
-      body.innerHTML = '';
-      var e = document.createElement('div');
-      e.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0';
-      e.textContent = 'Couldn\'t load gaps right now.';
-      body.appendChild(e);
     });
+    self._widgetPopups['kg-panel'] = pop.close;
+    if (w) {
+      w.style.marginBottom = '0';
+      pop.box.appendChild(w);
+      // Refresh on open so the relocated widget shows current gaps.
+      var kg2 = RPGACE.modules.knowledgeGap;
+      if (kg2 && kg2._load) { try { kg2._load(); } catch (e) {} }
+    } else {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
+      msg.textContent = 'Knowledge Gap Tracker is still loading — close this and try again in a moment.';
+      pop.box.appendChild(msg);
+    }
   },
 
-  // ── P5 Content Pipeline popup: productions list + Idea Bank shortcut.
-  // ── Video Pipeline is deliberately deferred (footer note).
+  // ── P5 Content Pipeline popup. July 20 Pass 1: relocates the LIVE Content
+  // ── Production Live widget (#cpl-widget, module contentProductionLive)
+  // ── into this card's popup — node MOVED, never rebuilt, so every row
+  // ── action (edit title, swap ConID, mark status, post details, Oracle
+  // ── session, Beatstars listing, platform links) keeps its real handler.
+  // ── Parked in #dd-stash-holder while closed. The "💡 Open Idea Bank"
+  // ── button + the deferred-Video-Pipeline footer stay as dashDeck-owned
+  // ── chrome, rendered BELOW the relocated widget inside the same box.
   _openPipeline: function() {
     var self = this;
-    var pop = self._popup({ eyebrow: '🎬 Content Pipeline', title: 'Ideas → productions → posts', accent: 'var(--purple)', width: '600px' });
-    var body = pop.box;
-    var loading = document.createElement('div');
-    loading.style.cssText = 'color:var(--muted);font-size:12px;padding:12px 0';
-    loading.textContent = 'Loading…';
-    body.appendChild(loading);
-    var render = function(prods) {
-      body.innerHTML = '';
-      if (!prods.length) {
-        var e = document.createElement('div');
-        e.style.cssText = 'color:var(--muted);font-size:13px;padding:12px 0;line-height:1.6';
-        e.textContent = 'No productions yet — activate a ConID from the Idea Bank.';
-        body.appendChild(e);
-      } else {
-        prods.forEach(function(p) {
-          var row = document.createElement('div');
-          row.className = 'dd-pop-row';
-          row.style.cursor = 'default';
-          var t = document.createElement('div');
-          t.className = 'dd-pop-rtitle';
-          t.style.cssText = 'flex:1;min-width:0';
-          t.textContent = String(p.title == null ? 'Untitled' : p.title);
-          var isIdea = String(p.status || '') === 'Idea';
-          var chip = document.createElement('div');
-          chip.className = 'dd-chip';
-          chip.style.cssText = 'flex-shrink:0;' + (isIdea ? 'background:var(--panel2);color:var(--muted)' : 'background:rgba(var(--dd-gold-rgb),.15);color:var(--gold)');
-          chip.textContent = String(p.status || '—');
-          row.appendChild(t); row.appendChild(chip);
-          body.appendChild(row);
-        });
+    var w = document.getElementById('cpl-widget');
+    if (!w) {
+      var cpl = RPGACE.modules.contentProductionLive;
+      if (cpl && cpl._injectDashboardWidget) { try { cpl._injectDashboardWidget(); } catch (e) {} }
+      w = document.getElementById('cpl-widget');
+    }
+    var pop = self._popup({
+      eyebrow: '🎬 Content Pipeline',
+      title: 'Ideas → productions → posts',
+      accent: 'var(--purple)',
+      width: '680px',
+      closeLabel: 'Close',
+      onClose: function() {
+        self._stashWidget('cpl-widget', true);
+        delete self._widgetPopups['cpl-widget'];
       }
-      var btn = document.createElement('button');
-      btn.textContent = '💡 Open Idea Bank';
-      btn.style.cssText = 'display:block;width:100%;margin-top:14px;padding:11px;min-height:44px;background:rgba(var(--dd-gold-rgb),.15);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      btn.onclick = function() {
-        localStorage.setItem('rpgace_research_tab', 'ideas');
-        pop.close();
-        if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
-      };
-      body.appendChild(btn);
-      var foot = document.createElement('div');
-      foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-      foot.textContent = '🎥 Video Pipeline joins this flow after taxonomy + web-design phases — by design.';
-      body.appendChild(foot);
+    });
+    self._widgetPopups['cpl-widget'] = pop.close;
+    var body = pop.box;
+    if (w) {
+      w.style.marginBottom = '0';
+      body.appendChild(w);
+      var cpl2 = RPGACE.modules.contentProductionLive;
+      if (cpl2 && cpl2._refreshWidget) { try { cpl2._refreshWidget(); } catch (e) {} }
+    } else {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
+      msg.textContent = 'Content Pipeline is still loading — close this and try again in a moment.';
+      body.appendChild(msg);
+    }
+    // dashDeck-owned chrome below the relocated widget.
+    var btn = document.createElement('button');
+    btn.textContent = '💡 Open Idea Bank';
+    btn.style.cssText = 'display:block;width:100%;margin-top:14px;padding:11px;min-height:44px;background:rgba(var(--dd-gold-rgb),.15);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    btn.onclick = function() {
+      localStorage.setItem('rpgace_research_tab', 'ideas');
+      pop.close();
+      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
     };
-    if (!RPGACE.sb || !RPGACE.sb.select) { render([]); return; }
-    RPGACE.sb.select('content_productions', 'select=id,title,status').then(function(rows) {
-      render(rows || []);
-    }).catch(function() { render([]); });
+    body.appendChild(btn);
+    var foot = document.createElement('div');
+    foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
+    foot.textContent = '🎥 Video Pipeline joins this flow after taxonomy + web-design phases — by design.';
+    body.appendChild(foot);
   },
 
 });
@@ -5183,16 +5238,26 @@ RPGACE.register('knowledgeGap', {
     emptyState.textContent = 'No taxonomy nodes yet. Sync your encyclopedia first.';
     panel.appendChild(emptyState);
 
-    // Insert before the first section-title (quest grid)
-    var firstTitle = page.querySelector('.section-title');
-    if (firstTitle) {
-      page.insertBefore(panel, firstTitle);
-    } else {
-      page.insertBefore(panel, page.firstChild);
+    // July 20 Pass 1: this widget now lives inside dashDeck's Knowledge Gaps
+    // card popup (_openGaps relocates the live node in/out). Inject straight
+    // into the shared hidden stash holder so it is never visible on the raw
+    // dashboard — dashDeck owns showing it. Prefer dashDeck's holder helper;
+    // fall back to creating the same-id holder ourselves if dashDeck hasn't
+    // run yet (id is shared, so whoever wins, both target it).
+    var holder = document.getElementById('dd-stash-holder');
+    if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
+      holder = RPGACE.modules.dashDeck._ensureStash();
     }
+    if (!holder) {
+      holder = document.createElement('div');
+      holder.id = 'dd-stash-holder';
+      holder.style.display = 'none';
+      page.appendChild(holder);
+    }
+    holder.appendChild(panel);
 
     self._load();
-    console.log('[RPGACE:knowledgeGap] Panel injected');
+    console.log('[RPGACE:knowledgeGap] Panel injected (stashed for dashDeck popup)');
   },
 
   _load: function() {
@@ -5273,6 +5338,16 @@ RPGACE.register('knowledgeGap', {
       studyBtn.style.cssText = 'flex:1;padding:6px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.7);font-size:10px;font-weight:600;cursor:pointer;font-family:Rajdhani,sans-serif;';
       studyBtn.textContent = '🧠 Study Now';
       studyBtn.onclick = function() {
+        // If this widget is currently hosted inside dashDeck's Knowledge Gaps
+        // popup, close that popup FIRST — feynman.start opens #feynman-panel
+        // at z-index 9999, below the popup overlay's 99999, so it would open
+        // invisibly behind it otherwise. closeWidgetPopup stashes this live
+        // node back to the holder (node moved, not destroyed) then removes the
+        // overlay, so the closures below stay valid. No-op if no popup hosts
+        // it (widget opened some other way).
+        if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+          RPGACE.modules.dashDeck.closeWidgetPopup('kg-panel');
+        }
         if (typeof RPGACE.modules.feynman !== 'undefined' && typeof RPGACE.modules.feynman.start === 'function') {
           RPGACE.modules.feynman.start(node.concept, 'knowledgeGap');
         } else {
@@ -11678,6 +11753,12 @@ RPGACE.register('contentProductionLive', {
           '4. LICENCE TERMS BLOCK — formatted as it should appear in the listing, based on the licence terms given above.\n\n' +
           'Be specific and pre-filled for @AceSanyaBeats / UK hip hop — no placeholders.';
 
+        // Close the hosting dashDeck popup first — showPage('advisor') would
+        // otherwise swap the page UNDER the still-open overlay. No-op when
+        // opened outside the popup.
+        if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+          RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+        }
         if (typeof showPage === 'function') showPage('advisor');
         setTimeout(function() {
           self._activeConID = row.con_id;
@@ -11724,16 +11805,25 @@ RPGACE.register('contentProductionLive', {
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
     widget.appendChild(list);
 
-    // Insert after Knowledge Gap Tracker
-    var kgPanel = document.getElementById('kg-panel');
-    if (kgPanel && kgPanel.nextSibling) {
-      page.insertBefore(widget, kgPanel.nextSibling);
-    } else {
-      page.insertBefore(widget, page.firstChild);
+    // July 20 Pass 1: this widget now lives inside dashDeck's Content Pipeline
+    // card popup (_openPipeline relocates the live node in/out). Inject
+    // straight into the shared hidden stash holder — dashDeck owns showing
+    // it. Prefer dashDeck's holder helper; fall back to the same-id holder if
+    // dashDeck hasn't run yet.
+    var holder = document.getElementById('dd-stash-holder');
+    if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
+      holder = RPGACE.modules.dashDeck._ensureStash();
     }
+    if (!holder) {
+      holder = document.createElement('div');
+      holder.id = 'dd-stash-holder';
+      holder.style.display = 'none';
+      page.appendChild(holder);
+    }
+    holder.appendChild(widget);
 
     self._refreshWidget();
-    console.log('[contentProductionLive] Dashboard widget injected');
+    console.log('[contentProductionLive] Dashboard widget injected (stashed for dashDeck popup)');
   },
 
   _refreshWidget: function() {
@@ -11924,6 +12014,12 @@ RPGACE.register('contentProductionLive', {
           oracleBtn.onclick = function() {
             self._activeConID = row.con_id;
             self._activeId = row.id;
+            // Close the hosting dashDeck popup first — showPage('advisor')
+            // would otherwise swap the page UNDER the still-open overlay.
+            // No-op when opened outside the popup.
+            if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+              RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+            }
             if (typeof showPage === 'function') showPage('advisor');
             setTimeout(function() {
               self._injectOracleBar();
@@ -12280,10 +12376,20 @@ RPGACE.register('videoPipeline', {
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
     widget.appendChild(list);
 
+    // NOTE (July 20 Pass 1): #cpl-widget was relocated into dashDeck's
+    // Content Pipeline card popup and now lives in the hidden stash holder,
+    // so it is no longer a child of #page-dashboard. Anchoring insertBefore
+    // to a node that is not this page's child throws NotFoundError, which
+    // would break vp-widget injection outright. Guard: only anchor to
+    // cpl-widget when it really is a child of this page; otherwise fall back
+    // to vp's own existing top-of-dashboard placement. vp-widget is otherwise
+    // untouched (still a visible dashboard widget) — this is a defensive
+    // guard made necessary by cpl-widget's relocation, not a redesign.
     var cplWidget = document.getElementById('cpl-widget');
-    if (cplWidget && cplWidget.nextSibling) {
+    var cplOnPage = cplWidget && cplWidget.parentElement === page;
+    if (cplOnPage && cplWidget.nextSibling) {
       page.insertBefore(widget, cplWidget.nextSibling);
-    } else if (cplWidget) {
+    } else if (cplOnPage) {
       page.insertBefore(widget, cplWidget);
     } else {
       page.insertBefore(widget, page.firstChild);
@@ -13436,6 +13542,13 @@ RPGACE.register('docsLinks', {
   },
 
   _inject: function() {
+    // Neutered 2026-07-20 — this widget's content is now a strict subset of
+    // dashDeck's Oversight card popup (_openOversight), which also has 6
+    // additional working-spec docs this widget never had. Keep this module
+    // registered (marker convention) but inert. IMPORTANT: if a new oversight
+    // doc ships, add it to dashDeck._openOversight's list, not here — this
+    // array is now dead code kept only as an audit trail.
+    return;
     if (document.getElementById('docs-links-box')) return;
     var page = document.getElementById('page-dashboard');
     if (!page) return;
