@@ -2377,6 +2377,13 @@ RPGACE.register('researchTabs', {
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) { self._inject(); self._apply(); }
     });
+    // Any panel injected AFTER the tab bar last computed visibility (including
+    // bookworm's synchronous bibliography re-append on every page:show) fires
+    // this named event; re-sort visibility so the new panel lands in its own
+    // tab instead of leaking into whatever tab is active. Top-level listener
+    // (NOT nested inside another hook) so it isn't lost to the mid-fire
+    // forEach landmine. _apply is idempotent and cheap.
+    RPGACE.hooks.on('research:panel-injected', function() { self._apply(); });
   },
 
   // Section roots resolved fresh on every apply - injected panels may
@@ -7868,10 +7875,11 @@ RPGACE.register('bookworm', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._injectDashboardWidget(); self._injectBibliographySection(); }, 1700);
-      setTimeout(function() { self._patchChatTrigger(); }, 1700);
-    });
+    // 'rpgace:ready' has always already fired by the time init() runs
+    // (hooks.fire uses forEach; a mid-fire listener never gets revisited).
+    // Call directly at the same delay instead of via the dead listener.
+    setTimeout(function() { self._injectDashboardWidget(); self._injectBibliographySection(); }, 1700);
+    setTimeout(function() { self._patchChatTrigger(); }, 1700);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) self._injectDashboardWidget();
       if (name === RPGACE.CONFIG.pages.research) self._injectBibliographySection();
@@ -9549,7 +9557,11 @@ RPGACE.register('bookworm', {
     var list = document.createElement('div');
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
     wrap.appendChild(list);
-    page.insertBefore(wrap, page.firstChild);
+    // Append at end of the Research page as a direct child sibling of the
+    // other panels - NOT page.firstChild, which put it above the page title
+    // and the tab bar on every visit (Bug B).
+    page.appendChild(wrap);
+    RPGACE.hooks.fire('research:panel-injected');
 
     RPGACE.sb.select('bibliography', 'order=completed_at.desc').then(function(rows) {
       rows = rows || [];
@@ -10720,9 +10732,8 @@ RPGACE.register('beatLog', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._inject(); }, 900);
-    });
+    // 'rpgace:ready' already fired before init() runs - call directly.
+    setTimeout(function() { self._inject(); }, 900);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._inject(); }, 400);
@@ -10740,12 +10751,6 @@ RPGACE.register('beatLog', {
                document.querySelector('[id*="research"]') ||
                document.querySelector('[id*="learning"]');
     if (!page) return;
-
-    // Find Video Workshop section (section 3) to inject before it
-    var sections = page.querySelectorAll('.section-title, h2, h3');
-    var videoSection = Array.from(sections).find(function(s) {
-      return s.textContent.includes('VIDEO WORKSHOP') || s.textContent.includes('Video Workshop');
-    });
 
     var panel = document.createElement('div');
     panel.id = 'beat-log-panel';
@@ -10991,12 +10996,12 @@ RPGACE.register('beatLog', {
     output.style.cssText = 'margin-top:16px;display:none;';
     panel.appendChild(output);
 
-    // Insert into page
-    if (videoSection && videoSection.parentElement) {
-      videoSection.parentElement.insertBefore(panel, videoSection);
-    } else {
-      page.insertBefore(panel, page.firstChild);
-    }
+    // Append as a direct child of the Research page - NOT before the Video
+    // Workshop heading, which lives inside #video-workshop-panel and made
+    // this panel a DESCENDANT of it, so hiding Workshop hid Beat Log too
+    // (Bug A).
+    page.appendChild(panel);
+    RPGACE.hooks.fire('research:panel-injected');
 
     console.log('[RPGACE:beatLog] Panel injected');
   },
@@ -11448,9 +11453,8 @@ RPGACE.register('refCorpus', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._inject(); }, 1100);
-    });
+    // 'rpgace:ready' already fired before init() runs - call directly.
+    setTimeout(function() { self._inject(); }, 1100);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._inject(); }, 500);
@@ -11548,13 +11552,11 @@ RPGACE.register('refCorpus', {
     listWrap.appendChild(listHeader);
     panel.appendChild(listWrap);
 
-    // Insert before beat log panel
-    var beatLogPanel = document.getElementById('beat-log-panel');
-    if (beatLogPanel) {
-      beatLogPanel.parentElement.insertBefore(panel, beatLogPanel);
-    } else {
-      page.insertBefore(panel, page.firstChild);
-    }
+    // Append as a direct child of the Research page. Previously inserted
+    // before #beat-log-panel, which (while beat-log was itself nested inside
+    // #video-workshop-panel) landed this inside that panel too (Bug A).
+    page.appendChild(panel);
+    RPGACE.hooks.fire('research:panel-injected');
 
     self._loadList();
     console.log('[RPGACE:refCorpus] Panel injected');
@@ -12704,13 +12706,12 @@ RPGACE.register('conidPot', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() {
-        self._injectSaveBtn();
-        self._patchTextSelect();
-        self._updateBriefRotationLabel();
-      }, 1800);
-    });
+    // 'rpgace:ready' already fired before init() runs - call directly.
+    setTimeout(function() {
+      self._injectSaveBtn();
+      self._patchTextSelect();
+      self._updateBriefRotationLabel();
+    }, 1800);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._injectSaveBtn(); }, 500);
@@ -13093,15 +13094,11 @@ RPGACE.register('conidPot', {
     panel.appendChild(eyebrow); panel.appendChild(titleEl); panel.appendChild(sub);
     panel.appendChild(filterRow); panel.appendChild(list);
 
-    // Insert before Video Workshop or Beat Log
-    var beatLog = document.getElementById('beat-log-panel');
-    var refCorpus = document.getElementById('ref-corpus-panel');
-    var anchor = refCorpus || beatLog;
-    if (anchor) {
-      anchor.parentElement.insertBefore(panel, anchor);
-    } else {
-      page.insertBefore(panel, page.firstChild);
-    }
+    // Append as a direct child of the Research page. Previously inserted
+    // before ref-corpus / beat-log, which (while those were nested inside
+    // #video-workshop-panel) landed this inside that panel too (Bug A).
+    page.appendChild(panel);
+    RPGACE.hooks.fire('research:panel-injected');
 
     self._refreshIdeaBank('All');
   },
