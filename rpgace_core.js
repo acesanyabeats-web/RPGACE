@@ -3951,6 +3951,7 @@ RPGACE.register('dashDeck', {
       '#dd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}' +
       '.dd-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s,transform .15s;animation:ddRiseIn .35s ease both;cursor:pointer}' +
       '.dd-card:nth-child(2){animation-delay:.05s}.dd-card:nth-child(3){animation-delay:.1s}.dd-card:nth-child(4){animation-delay:.15s}' +
+      '.dd-card:nth-child(5){animation-delay:.2s}.dd-card:nth-child(6){animation-delay:.25s}.dd-card:nth-child(7){animation-delay:.3s}.dd-card:nth-child(8){animation-delay:.35s}' +
       '.dd-card:hover{border-color:var(--border2);transform:translateY(-2px)}.dd-card:active{transform:translateY(0)}' +
       '.dd-eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
       '.dd-card h3{font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:Rajdhani,sans-serif}' +
@@ -3967,20 +3968,39 @@ RPGACE.register('dashDeck', {
       '.dd-glancebox li{list-style:none;font-size:12px;font-weight:600;line-height:1.7;color:var(--text);cursor:pointer;min-height:30px;display:flex;align-items:center}' +
       '.dd-glancebox li::before{content:"\\2726";color:var(--gold);margin-right:8px}' +
       '.dd-glancebox li:hover{color:var(--gold2)}' +
-      '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}}' +
+      // Shared popup scaffolding (P2-P5): overlay + box use existing tokens
+      // only; L3 overlay shadow is the single permitted shadow (DESIGN.md §6).
+      '.dd-pop-box{box-shadow:0 12px 40px rgba(0,0,0,.5)}' +
+      '.dd-pop-gtitle{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px 0}' +
+      '.dd-pop-gtitle:first-child{margin-top:0}' +
+      '.dd-pop-row{display:flex;align-items:center;gap:10px;min-height:40px;padding:9px 11px;margin-bottom:6px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s}' +
+      '.dd-pop-row:hover{border-color:var(--border2)}' +
+      '.dd-pop-row:hover .dd-pop-rtitle{color:var(--gold2)}' +
+      '.dd-pop-rtitle{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}' +
+      '.dd-pop-rdesc{font-size:11px;color:var(--muted);line-height:1.4}' +
+      '.dd-pop-sec .dd-pop-rtitle{font-size:12px;color:var(--muted);font-weight:600}' +
+      '.dd-chip{display:inline-block;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700}' +
+      '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}.dd-pop-row{min-height:44px}}' +
       '@media (prefers-reduced-motion:reduce){.dd-card,#dd-needs{animation:none !important}}';
     document.head.appendChild(st);
   },
 
+  // Verbatim Morning Brief prompt (P1) — prefilled into #chat-input, never auto-sent.
+  MORNING_PROMPT: '🌅 MORNING BRIEF — give me today\'s brief: 1) my top 3 priorities from quests and agenda, 2) everything currently waiting on me (pending taxonomy reviews, in-progress book chapters), 3) one beat-making focus for today based on my recent learning, 4) one content idea worth filming today. Keep it tight and actionable.',
+
   MODULES: [
     { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research); } },
-    { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { var w = document.getElementById('bookworm-widget'); if (w) w.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+    { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
     { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Your knowledge tree: browse phyla, approve placements, confirm fusions.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
+    { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { var d = RPGACE.modules.dashDeck; d._prefillOracle(d.MORNING_PROMPT); } },
+    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
+    { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
+    { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
   ],
 
   _inject: function() {
-    if (document.getElementById('dd-deck')) { this._refreshGlance(); return; }
+    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._refreshGlance(); return; }
     var page = document.getElementById('page-dashboard');
     if (!page) return;
     this._injectStyles();
@@ -4027,6 +4047,7 @@ RPGACE.register('dashDeck', {
     // child: hero (global) → module grid → needs-you → existing widgets.
     page.insertBefore(deck, page.firstChild);
 
+    this._stashBookworm();
     this._refreshGlance();
   },
 
@@ -4044,7 +4065,24 @@ RPGACE.register('dashDeck', {
       set('research', reports.length + ' analysed · ' + wl.length + ' watchlist');
     } catch (e) { set('research', '—'); }
     set('oracle', 'Grounded in your tree · gaps become quests');
-    if (!RPGACE.sb || !RPGACE.sb.select) return;
+    // Morning Brief: today's date, weekday-first (synchronous, no data call).
+    try { set('morningBrief', new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })); } catch (e) { set('morningBrief', 'Today'); }
+    // Oversight: the seven living docs are always current — static label.
+    set('oversight', '7 docs · always latest');
+    if (!RPGACE.sb || !RPGACE.sb.select) { set('gaps', '—'); set('pipeline', '—'); return; }
+    // Knowledge Gaps: count of tracked gaps (taxonomy_nodes.gap_score > 0).
+    RPGACE.sb.select('taxonomy_nodes', 'select=id&gap_score=gt.0').then(function(g) {
+      g = g || [];
+      set('gaps', g.length + ' gap' + (g.length === 1 ? '' : 's') + ' tracked');
+    }).catch(function() { set('gaps', '—'); });
+    // Content Pipeline: idea-bank count + production count (cheap id-only reads).
+    RPGACE.sb.select('conid_pot', 'select=id').then(function(ideas) {
+      ideas = ideas || [];
+      RPGACE.sb.select('content_productions', 'select=id').then(function(prods) {
+        prods = prods || [];
+        set('pipeline', ideas.length + ' idea' + (ideas.length === 1 ? '' : 's') + ' · ' + prods.length + ' production' + (prods.length === 1 ? '' : 's'));
+      }).catch(function() { set('pipeline', ideas.length + ' ideas'); });
+    }).catch(function() { set('pipeline', '—'); });
     RPGACE.sb.select('bookworm_books', 'status=eq.in_progress&select=id,title,current_chapter_index').then(function(books) {
       books = books || [];
       set('bookworm', books.length ? (books.length + ' book' + (books.length > 1 ? 's' : '') + ' in progress') : 'No books in progress');
@@ -4084,6 +4122,271 @@ RPGACE.register('dashDeck', {
         }
       }).catch(function() { set('taxonomy', '—'); });
     }).catch(function() { set('bookworm', '—'); });
+  },
+
+  // ── Shared popup scaffolding (P2-P5). Overlay appended to document.body
+  // ── per the standing landmine rule; box uses existing tokens only. Copies
+  // ── the bookworm _renderChapterList overlay pattern, DESIGN.md-skinned.
+  // ── close() runs opts.onClose BEFORE removing the overlay so a relocated
+  // ── live node (the bookworm widget) can be moved out first, never destroyed.
+  _popup: function(opts) {
+    opts = opts || {};
+    var overlay = document.createElement('div');
+    overlay.className = 'dd-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    var box = document.createElement('div');
+    box.className = 'dd-pop-box';
+    box.style.cssText = 'background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px 28px;width:min(' + (opts.width || '600px') + ',95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+    if (opts.eyebrow) {
+      var eb = document.createElement('div');
+      eb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;color:' + (opts.accent || 'var(--gold)') + ';';
+      eb.textContent = opts.eyebrow;
+      box.appendChild(eb);
+    }
+    if (opts.title) {
+      var ti = document.createElement('div');
+      ti.style.cssText = 'font-size:15px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:14px;';
+      ti.textContent = opts.title;
+      box.appendChild(ti);
+    }
+    var body = document.createElement('div');
+    box.appendChild(body);
+    var close = function() {
+      if (opts.onClose) { try { opts.onClose(); } catch (e) {} }
+      overlay.remove();
+    };
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = opts.closeLabel || 'Close';
+    closeBtn.style.cssText = 'display:block;width:100%;margin-top:16px;padding:11px;min-height:40px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = close;
+    box.appendChild(closeBtn);
+    overlay.onclick = function(e) { if (e.target === overlay) close(); };
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    return { overlay: overlay, box: body, close: close };
+  },
+
+  // ── Navigate to Oracle and prefill (never send) #chat-input. Same
+  // ── mechanism reused by P1 (Morning Brief) and P4 (Knowledge Gaps).
+  _prefillOracle: function(prompt) {
+    if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle);
+    setTimeout(function() {
+      var ci = document.getElementById('chat-input');
+      if (!ci) return;
+      ci.value = prompt;
+      ci.dispatchEvent(new Event('input', { bubbles: true }));
+      ci.focus();
+    }, 400);
+  },
+
+  // ── P3 Bookworm relocation. The live #bookworm-widget node is MOVED
+  // ── (never cloned/rebuilt) between an open popup and a hidden holder so
+  // ── getElementById('bookworm-widget') always succeeds (the bookworm
+  // ── module no-ops its re-inject when the node exists) and all its
+  // ── listeners + refresh cycle keep working.
+  _ensureHolder: function() {
+    var holder = document.getElementById('dd-bw-holder');
+    if (!holder) {
+      var page = document.getElementById('page-dashboard');
+      if (!page) return null;
+      holder = document.createElement('div');
+      holder.id = 'dd-bw-holder';
+      holder.style.display = 'none';
+      page.appendChild(holder);
+    }
+    return holder;
+  },
+
+  _stashBookworm: function() {
+    var w = document.getElementById('bookworm-widget');
+    if (!w) return;
+    var holder = this._ensureHolder();
+    if (!holder) return;
+    if (w.parentNode === holder) return;               // already stashed
+    if (w.closest && w.closest('.dd-overlay')) return; // inside an open popup — leave it
+    holder.appendChild(w);
+  },
+
+  _openBookworm: function() {
+    var self = this;
+    var w = document.getElementById('bookworm-widget');
+    if (!w) {
+      var bw = RPGACE.modules.bookworm;
+      if (bw && bw._injectDashboardWidget) { try { bw._injectDashboardWidget(); } catch (e) {} }
+      w = document.getElementById('bookworm-widget');
+    }
+    var pop = self._popup({
+      eyebrow: '📖 Bookworm',
+      title: 'Work through books, chapter by chapter',
+      accent: 'var(--purple)',
+      width: '640px',
+      closeLabel: 'Close',
+      onClose: function() { self._stashBookworm(); }
+    });
+    if (w) {
+      w.style.marginBottom = '0';
+      pop.box.appendChild(w);
+    } else {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
+      msg.textContent = 'Bookworm is still loading — close this and try again in a moment.';
+      pop.box.appendChild(msg);
+    }
+  },
+
+  // ── P2 Oversight popup: the seven primary living docs + working specs,
+  // ── each opening in a new tab (same-origin relative URL).
+  _openOversight: function() {
+    var pop = this._popup({ eyebrow: '📚 Oversight', title: 'The seven living docs', accent: 'var(--blue)', width: '620px' });
+    var body = pop.box;
+    var primary = [
+      { icon: '📓', title: 'Patch Notes', desc: 'Build history', href: '/patch_notes.html' },
+      { icon: '🔗', title: 'Interconnection Map', desc: 'Module touchpoints', href: '/interconnection_map.md' },
+      { icon: '📘', title: 'Full Manual', desc: 'Button + table reference', href: '/manual.html' },
+      { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load', href: '/taxonomy_map.html' },
+      { icon: '🗺️', title: 'System Flow Map', desc: 'Pipeline flow diagrams', href: '/system_flow_map.md' },
+      { icon: '🐂', title: 'Minotaur Map', desc: 'The labyrinth mental-map', href: '/minotaur_map.html' },
+      { icon: '⚖️', title: 'Placement Rules', desc: 'The 7th doc', href: '/taxonomy_placement_rules.txt' }
+    ];
+    var secondary = [
+      { icon: '📐', title: 'DESIGN.md', desc: 'Structural restructure spec', href: '/DESIGN.md' },
+      { icon: '💰', title: 'Token Cost Audit', desc: 'token_cost_audit_2026-07-19.txt', href: '/token_cost_audit_2026-07-19.txt' },
+      { icon: '🔮', title: 'Oracle Grounding Spec', desc: 'oracle_grounding_spec.txt', href: '/oracle_grounding_spec.txt' },
+      { icon: '📖', title: 'Bookworm Spec Backlog', desc: 'bookworm_spec_backlog.txt', href: '/bookworm_spec_backlog.txt' },
+      { icon: '🗂️', title: 'Fable Master Plan', desc: 'fable_master_plan.txt', href: '/fable_master_plan.txt' },
+      { icon: '📝', title: 'Session Handover', desc: 'session_handover_2026-07-19.md', href: '/session_handover_2026-07-19.md' }
+    ];
+    var addGroup = function(gtitle, arr, isSec) {
+      var gt = document.createElement('div');
+      gt.className = 'dd-pop-gtitle';
+      gt.textContent = gtitle;
+      body.appendChild(gt);
+      arr.forEach(function(d) {
+        var row = document.createElement('div');
+        row.className = 'dd-pop-row' + (isSec ? ' dd-pop-sec' : '');
+        var tw = document.createElement('div');
+        tw.style.cssText = 'flex:1;min-width:0';
+        var t = document.createElement('div');
+        t.className = 'dd-pop-rtitle';
+        t.textContent = d.icon + ' ' + d.title;
+        var ds = document.createElement('div');
+        ds.className = 'dd-pop-rdesc';
+        ds.textContent = d.desc;
+        tw.appendChild(t); tw.appendChild(ds);
+        row.appendChild(tw);
+        row.onclick = function() { window.open(d.href, '_blank', 'noopener'); };
+        body.appendChild(row);
+      });
+    };
+    addGroup('Primary — the seven', primary, false);
+    addGroup('Working specs', secondary, true);
+  },
+
+  // ── P4 Knowledge Gaps popup: top 8 tracked gaps (taxonomy_nodes.concept +
+  // ── gap_score). Row click prefills Oracle with a grounded teach prompt.
+  _openGaps: function() {
+    var self = this;
+    var pop = self._popup({ eyebrow: '🕳️ Knowledge Gaps', title: 'What your library doesn\'t know yet', accent: 'var(--green)', width: '600px' });
+    var body = pop.box;
+    var loading = document.createElement('div');
+    loading.style.cssText = 'color:var(--muted);font-size:12px;padding:12px 0';
+    loading.textContent = 'Loading gaps…';
+    body.appendChild(loading);
+    if (!RPGACE.sb || !RPGACE.sb.select) { loading.textContent = 'Gap data unavailable right now.'; return; }
+    RPGACE.sb.select('taxonomy_nodes', 'select=concept,gap_score&gap_score=gt.0&order=gap_score.desc&limit=8').then(function(rows) {
+      rows = rows || [];
+      body.innerHTML = '';
+      if (!rows.length) {
+        var e = document.createElement('div');
+        e.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;line-height:1.6';
+        e.textContent = 'No gaps tracked yet — gap scores populate as you study.';
+        body.appendChild(e);
+        return;
+      }
+      rows.forEach(function(r) {
+        var name = String(r.concept == null ? 'Untitled' : r.concept);
+        var disp = name.length > 60 ? name.slice(0, 60) + '…' : name;
+        var row = document.createElement('div');
+        row.className = 'dd-pop-row';
+        var tw = document.createElement('div');
+        tw.style.cssText = 'flex:1;min-width:0';
+        var t = document.createElement('div');
+        t.className = 'dd-pop-rtitle';
+        t.textContent = disp;
+        tw.appendChild(t);
+        var chip = document.createElement('div');
+        chip.className = 'dd-chip';
+        chip.style.cssText = 'flex-shrink:0;background:rgba(var(--dd-green-rgb),.15);color:var(--green)';
+        chip.textContent = 'gap ' + r.gap_score;
+        row.appendChild(tw); row.appendChild(chip);
+        row.onclick = function() {
+          pop.close();
+          self._prefillOracle('Teach me: ' + name + '. Ground it in my RPGACE library first, then fill the gaps from general knowledge — and offer to place anything new via Phylum Path.');
+        };
+        body.appendChild(row);
+      });
+    }).catch(function() {
+      body.innerHTML = '';
+      var e = document.createElement('div');
+      e.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0';
+      e.textContent = 'Couldn\'t load gaps right now.';
+      body.appendChild(e);
+    });
+  },
+
+  // ── P5 Content Pipeline popup: productions list + Idea Bank shortcut.
+  // ── Video Pipeline is deliberately deferred (footer note).
+  _openPipeline: function() {
+    var self = this;
+    var pop = self._popup({ eyebrow: '🎬 Content Pipeline', title: 'Ideas → productions → posts', accent: 'var(--purple)', width: '600px' });
+    var body = pop.box;
+    var loading = document.createElement('div');
+    loading.style.cssText = 'color:var(--muted);font-size:12px;padding:12px 0';
+    loading.textContent = 'Loading…';
+    body.appendChild(loading);
+    var render = function(prods) {
+      body.innerHTML = '';
+      if (!prods.length) {
+        var e = document.createElement('div');
+        e.style.cssText = 'color:var(--muted);font-size:13px;padding:12px 0;line-height:1.6';
+        e.textContent = 'No productions yet — activate a ConID from the Idea Bank.';
+        body.appendChild(e);
+      } else {
+        prods.forEach(function(p) {
+          var row = document.createElement('div');
+          row.className = 'dd-pop-row';
+          row.style.cursor = 'default';
+          var t = document.createElement('div');
+          t.className = 'dd-pop-rtitle';
+          t.style.cssText = 'flex:1;min-width:0';
+          t.textContent = String(p.title == null ? 'Untitled' : p.title);
+          var isIdea = String(p.status || '') === 'Idea';
+          var chip = document.createElement('div');
+          chip.className = 'dd-chip';
+          chip.style.cssText = 'flex-shrink:0;' + (isIdea ? 'background:var(--panel2);color:var(--muted)' : 'background:rgba(var(--dd-gold-rgb),.15);color:var(--gold)');
+          chip.textContent = String(p.status || '—');
+          row.appendChild(t); row.appendChild(chip);
+          body.appendChild(row);
+        });
+      }
+      var btn = document.createElement('button');
+      btn.textContent = '💡 Open Idea Bank';
+      btn.style.cssText = 'display:block;width:100%;margin-top:14px;padding:11px;min-height:44px;background:rgba(var(--dd-gold-rgb),.15);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.onclick = function() {
+        localStorage.setItem('rpgace_research_tab', 'ideas');
+        pop.close();
+        if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+      };
+      body.appendChild(btn);
+      var foot = document.createElement('div');
+      foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
+      foot.textContent = '🎥 Video Pipeline joins this flow after taxonomy + web-design phases — by design.';
+      body.appendChild(foot);
+    };
+    if (!RPGACE.sb || !RPGACE.sb.select) { render([]); return; }
+    RPGACE.sb.select('content_productions', 'select=id,title,status').then(function(rows) {
+      render(rows || []);
+    }).catch(function() { render([]); });
   },
 
 });
@@ -13134,29 +13437,31 @@ RPGACE.register('docsLinks', {
 
     var label = document.createElement('div');
     label.style.cssText = 'font-family:Cinzel,serif;font-size:10px;color:rgba(226,226,236,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;';
-    label.textContent = '📚 Oversight — 6 Docs, Always Latest';
+    label.textContent = '📚 Oversight — 7 Docs, Always Latest';
     box.appendChild(label);
 
     var row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
 
-    // "Oversight" = these 6 documents, treated as one group. Patch Notes,
+    // "Oversight" = these 7 documents, treated as one group. Patch Notes,
     // Interconnection Map, and Full Manual are hand-updated session logs;
     // Taxonomy Map queries Supabase live on every load and never goes stale
     // on its own. System Flow Map (Mermaid diagrams) and Minotaur Map (the
-    // labyrinth mental-map visual) were added July 17/18 - this list is the
-    // real, live source of what "Oversight" links to, so it must be updated
-    // the same session any new doc is added, not left to drift (found stale
-    // at 4 on July 18 despite 2 more docs already existing for a day).
-    // All 6 get updated together at the end of every session (see
-    // CLAUDE.md's Oversight section for the convention).
+    // labyrinth mental-map visual) were added July 17/18; Placement Rules
+    // (the 7th doc) was wired in here July 20 after it was reported missing
+    // ("cant find 7th doc") - this list is the real, live source of what
+    // "Oversight" links to, so it must be updated the same session any new
+    // doc is added, not left to drift (found stale at 4 on July 18 despite 2
+    // more docs already existing for a day). All 7 get updated together at
+    // the end of every session (see CLAUDE.md's Oversight section).
     var links = [
       { label: '📓 Patch Notes', href: '/patch_notes.html', color: '#C9A84C' },
       { label: '🔗 Interconnection Map', href: '/interconnection_map.md', color: '#4A90E2' },
       { label: '📘 Full Manual', href: '/manual.html', color: '#9B59B6' },
       { label: '🌳 Taxonomy Map', href: '/taxonomy_map.html', color: '#2ABFB0' },
       { label: '🗺️ System Flow Map', href: '/system_flow_map.md', color: '#E2A83D' },
-      { label: '🐂 Minotaur Map', href: '/minotaur_map.html', color: '#E25454' }
+      { label: '🐂 Minotaur Map', href: '/minotaur_map.html', color: '#E25454' },
+      { label: '⚖️ Placement Rules', href: '/taxonomy_placement_rules.txt', color: '#4A90E2' }
     ];
 
     links.forEach(function(l) {
