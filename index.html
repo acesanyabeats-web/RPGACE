@@ -124,9 +124,11 @@
     </div>
     <div class="chat-msgs" id="chat-msgs"></div>
     <div class="chat-footer">
-      <!-- INSTA-ORACLE command panel -->
-      <div id="prod-oracle-panel" style="display:none;background:linear-gradient(135deg,rgba(74,144,226,.06),rgba(156,39,176,.06));border:1px solid rgba(74,144,226,.25);border-radius:10px;padding:14px;margin-bottom:10px">
-  <div style="font-family:'Cinzel',serif;font-size:11px;color:#4A90E2;letter-spacing:1px;margin-bottom:12px">🎛 PROD. BY ORACLE — TEACHING COMMANDS</div>
+      <!-- PROD. BY ORACLE command panel (July 20: colors moved to style.css
+           tokens, buttons wrapped in a 2-col grid — see .prod-cmd-grid) -->
+      <div id="prod-oracle-panel" style="display:none">
+  <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--blue);letter-spacing:1px;margin-bottom:12px">🎛 PROD. BY ORACLE — TEACHING COMMANDS</div>
+  <div class="prod-cmd-grid">
   <button class="prod-cmd-btn" onclick="fireProdCommand(1)"><span class="cmd-num">1 · MASTER LEARNING</span>Start a personalised production lesson</button>
   <button class="prod-cmd-btn" onclick="fireProdCommand(2)"><span class="cmd-num">2 · INSTANT UNDERSTANDING</span>3-layer explanation of any concept</button>
   <button class="prod-cmd-btn" onclick="fireProdCommand(3)"><span class="cmd-num">3 · SOCRATIC TEACHING</span>Learn through questions only</button>
@@ -135,28 +137,32 @@
   <button class="prod-cmd-btn" onclick="fireProdCommand(6)"><span class="cmd-num">6 · TEACH IT BACK</span>Score your understanding 1-10</button>
   <button class="prod-cmd-btn" onclick="fireProdCommand(7)"><span class="cmd-num">7 · PERMANENT KNOWLEDGE</span>Build a retention system</button>
   <button class="prod-cmd-btn" onclick="fireBeatAnalysis()" style="border-color:rgba(201,168,76,.4);color:var(--gold);background:rgba(201,168,76,.08)"><span class="cmd-num" style="color:rgba(201,168,76,.7)">8 · BEAT ANALYSIS</span>Scan my knowledge base + find gaps</button>
+  </div>
 </div>
-<div id="insta-oracle-panel" style="display:none;background:linear-gradient(135deg,rgba(131,58,180,.08),rgba(193,53,132,.08));border:1px solid rgba(193,53,132,.25);border-radius:10px;padding:12px;margin-bottom:10px">
-        <div style="font-size:11px;color:#E1306C;font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">📸 INSTA-ORACLE — 7 GROWTH COMMANDS</div>
+<!-- INSTA-ORACLE command panel (July 20: colors moved to style.css tokens —
+     was hardcoded Instagram-brand pink, a real "new hex" DESIGN.md violation) -->
+<div id="insta-oracle-panel" style="display:none">
+        <div style="font-size:11px;color:var(--purple);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">📸 INSTA-ORACLE — 7 GROWTH COMMANDS</div>
         <div style="display:flex;flex-wrap:wrap;gap:6px">
-          <button onclick="fireInstaCommand(1)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">1 · Content Angle</button>
-          <button onclick="fireInstaCommand(2)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">2 · 15 Hooks</button>
-          <button onclick="fireInstaCommand(3)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">3 · Week of Content</button>
-          <button onclick="fireInstaCommand(4)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">4 · Caption Writer</button>
-          <button onclick="fireInstaCommand(5)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">5 · Algorithm Audit</button>
-          <button onclick="fireInstaCommand(6)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">6 · Profile Audit</button>
-          <button onclick="fireInstaCommand(7)" style="background:rgba(225,48,108,.12);border:1px solid rgba(225,48,108,.3);color:#E1306C;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600">7 · Growth System</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(1)">1 · Content Angle</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(2)">2 · 15 Hooks</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(3)">3 · Week of Content</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(4)">4 · Caption Writer</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(5)">5 · Algorithm Audit</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(6)">6 · Profile Audit</button>
+          <button class="insta-cmd-btn" onclick="fireInstaCommand(7)">7 · Growth System</button>
           <button onclick="toggleInstaPanel()" style="background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;margin-left:auto">✕ Close</button>
         </div>
       </div>
+      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">⚡ Quick Actions</div>
       <div class="quick-row">
         <span class="quick-label">Quick:</span>
         <button class="agent-btn" onclick="quickPrompt('Give me 3 new career quests for today')">📋 New quests</button>
         <button class="agent-btn" onclick="quickPrompt('Draft a collab outreach email to a music producer in my niche')">📧 Draft email</button>
         <button class="agent-btn" onclick="quickPrompt('Save my progress today as a Notion page')">📓 Log to Notion</button>
         <button class="agent-btn" onclick="quickPrompt('Check my YouTube stats')">🎬 YT stats</button>
-        <button class="agent-btn" onclick="toggleProdOraclePanel()" style="border-color:rgba(74,144,226,.4);color:#4A90E2;background:rgba(74,144,226,.08)">🎛 Prod. Oracle</button>
-        <button class="agent-btn" onclick="toggleInstaPanel()" style="border-color:rgba(193,53,132,.4);color:#E1306C;background:rgba(193,53,132,.08)">📸 Insta-Oracle</button>
+        <button class="agent-btn" onclick="toggleProdOraclePanel()" style="border-color:rgba(var(--blue-rgb),.4);color:var(--blue);background:rgba(var(--blue-rgb),.08)">🎛 Prod. Oracle</button>
+        <button class="agent-btn" onclick="toggleInstaPanel()" style="border-color:rgba(var(--purple-rgb),.4);color:var(--purple);background:rgba(var(--purple-rgb),.08)">📸 Insta-Oracle</button>
       </div>
       <div class="chat-input-row">
         <textarea class="chat-input" id="chat-input" rows="2" placeholder="Ask for quests, tips, or use Agent mode to control your apps..."></textarea>

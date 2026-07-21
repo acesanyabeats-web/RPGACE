@@ -6,6 +6,9 @@
   --text:#d4daf5;--muted:#6a7099;
   --green:#4caf82;--blue:#4a8ccc;--red:#cc4a4a;--purple:#9b6ec8;--orange:#cc7a3a;
   --hp-col:#e05555;--mp-col:#5588ee;--xp-col:#c9a84c;
+  /* RGB triplets for rgba() — July 20 page-restructure pass, matching the
+     values DESIGN.md already declared for its own token re-export */
+  --blue-rgb:74,140,204;--purple-rgb:155,110,200;--green-rgb:76,175,130;--red-rgb:204,74,74;
   font-family:'Rajdhani',sans-serif;
 }
 body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
@@ -433,8 +436,23 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
   white-space:nowrap;
 }
 
-/* ── PROD. BY ORACLE ── */
-#prod-oracle-panel{display:none;background:linear-gradient(135deg,rgba(74,144,226,.06),rgba(156,39,176,.06));border:1px solid rgba(74,144,226,.25);border-radius:10px;padding:14px;margin-bottom:10px}
-.prod-cmd-btn{background:rgba(74,144,226,.08);border:1px solid rgba(74,144,226,.25);color:#4A90E2;border-radius:7px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;text-align:left;width:100%;margin-bottom:6px;transition:all .15s}
-.prod-cmd-btn:hover{background:rgba(74,144,226,.18);border-color:rgba(74,144,226,.5)}
-.prod-cmd-btn .cmd-num{font-size:10px;color:rgba(74,144,226,.7);display:block;margin-bottom:2px}
+/* ── PROD. BY ORACLE (July 20 restructure — DESIGN.md token discipline:
+   snapped the pre-existing hardcoded #4A90E2/rgba(74,144,226,..) to the
+   real --blue token they were always approximating; container's own
+   display is toggled inline by frozen main.js (style.display='block'),
+   so the 2-col layout lives on an inner .prod-cmd-grid wrapper instead
+   of the panel itself, which must stay a plain block) ── */
+#prod-oracle-panel{display:none;background:linear-gradient(135deg,rgba(var(--blue-rgb),.06),rgba(var(--purple-rgb),.06));border:1px solid rgba(var(--blue-rgb),.25);border-radius:10px;padding:14px;margin-bottom:10px}
+.prod-cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+@media (max-width:600px){.prod-cmd-grid{grid-template-columns:1fr}}
+.prod-cmd-btn{background:rgba(var(--blue-rgb),.08);border:1px solid rgba(var(--blue-rgb),.25);color:var(--blue);border-radius:7px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700;text-align:left;width:100%;min-height:44px;transition:all .15s}
+.prod-cmd-btn:hover{background:rgba(var(--blue-rgb),.18);border-color:rgba(var(--blue-rgb),.5)}
+.prod-cmd-btn .cmd-num{font-size:10px;color:rgba(var(--blue-rgb),.7);display:block;margin-bottom:2px}
+
+/* ── INSTA-ORACLE (July 20 restructure — same token discipline: the
+   Instagram-brand pink #E1306C/#833AB4 predates DESIGN.md and is a real
+   "new hex color" by its own rule; snapped to --purple, RPGACE's existing
+   social/creative-content accent used elsewhere for Research/Bookworm) ── */
+#insta-oracle-panel{display:none;background:linear-gradient(135deg,rgba(var(--purple-rgb),.08),rgba(var(--purple-rgb),.04));border:1px solid rgba(var(--purple-rgb),.25);border-radius:10px;padding:12px;margin-bottom:10px}
+.insta-cmd-btn{background:rgba(var(--purple-rgb),.12);border:1px solid rgba(var(--purple-rgb),.3);color:var(--purple);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:600;min-height:32px}
+.insta-cmd-btn:hover{background:rgba(var(--purple-rgb),.22)}
