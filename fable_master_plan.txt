@@ -214,12 +214,19 @@ assignment immune to later cross-references, title-only fallback for a
 chapter that doesn't restate its own number near its title). The old
 searchString/body-text-recall mechanism and its gap-fill retry are gone
 entirely - removed, not just superseded.
-STILL OPEN (this is the real next session's starting point, not chapter
-detection - that's done): the chapter-by-chapter read -> insight ->
-approve/reject loop has never been walked on the ACTUAL PDF book -
-Session A3 below only ever ran on the manual/TOC-paste book. Walk THIS
-book, chapter 1 through however far a sitting goes, exactly like A3
-already proved out.
+STILL OPEN — CORRECTED July 20 (GODMODE audit, re-verified against live
+Supabase): the read -> insight -> approve/reject loop HAS now been walked
+on the ACTUAL PDF book. bookworm_chapters for book_id 70fd8faa-...531baa
+("Music Theory for Computer Musicians") shows chapter_index 7/9/12
+(= human chapters 8/10/13) all status=complete with 17/10/12 insights
+(39 total), plus chapter 1 (index 0) in_progress at 6 insights. So the
+combined run is no longer the open item — it already happened July 19.
+BUT it ran on the OLD pre-retune / pre-July-20-UI engine (these are
+literally the garbage runs — ch-13 fragmentation, ch-1 shoehorning —
+that triggered the July 19 tree audit + token retune). The real remaining
+test is therefore NARROWED: one CLEAN chapter through the POST-retune
+unified engine + the July 20 dashboard/nav UI (resume chapter 1, or open
+the next unstudied chapter), NOT a from-scratch first-ever combined run.
 NOT DONE, logged as a deliberate scope cut, not dropped: page-number-
 assisted PDF.js extraction (part of Alex's original ask) - requires
 inferring the offset between a book's printed page numbers and the PDF
@@ -239,6 +246,13 @@ real PDF book (delete any stale test books first) - Alex's own words:
 PDF... if done correctly, it will be so smooth" - chapter detection is
 now solid enough that this should just work. This is THE concrete next
 step for the next session, full stop.
+UPDATE July 20 (GODMODE audit): this walkthrough DID mechanically run on
+the real PDF book July 19 (chapters 8/10/13 complete, 39 insights) — but
+on the OLD pre-retune engine, and the output was the garbage that
+triggered the retune. So A3-on-the-real-book is no longer "never run";
+the remaining test is one CLEAN chapter through the retuned engine + the
+July 20 UI, not the combined loop from scratch. See A2's STILL OPEN block
+above for the Supabase evidence.
 
 ── SESSION A4: THE FINISH LINE — whole book, Bibliography entry ──
 Not one sitting — this is chapters 2 through 26 across as many short
@@ -312,7 +326,11 @@ The biggest UX win available; render-layer only. Prompt:
 Build the helper + migrate ONLY Bookworm's popups to it as the proof
 case. Other modules migrate opportunistically later, never big-bang.
 
-── SESSION C3: PHYLUM_NUM generalization + enable Percussio ──
+── SESSION C3: PHYLUM_NUM generalization + enable Percussio — ✅ SHIPPED July 17 ──
+Verified live July 20: ENABLED_PHYLA:[1..10] in rpgace_core.js (~line 6510)
+— the generalization landed and 10 phyla are enabled through the full
+7-step framework, so this session is done, not pending. (Original plan
+text kept for reference below.)
 Prerequisite for any second phylum. Spec pass first (it threads through
 ~10 places, half assuming a single fixed constant), then build, then
 framework steps 6-7 for Percussio (fusion pass + hand-test).
@@ -338,4 +356,12 @@ per the confirmed pacing rule.
 ====================================================================
 PARKING LOT (add one-liners here mid-session instead of derailing)
 ====================================================================
-(empty)
+- [July 20 audit] 107-item review-queue backlog never logged anywhere:
+  60 pending taxonomy_proposals + 47 pending fusion links = 107 items
+  awaiting human review. Needs a dedicated review sitting at some point.
+- [July 20 audit] video_jobs = 0 rows — Beat Log has never once
+  persisted a beat. The feature exists but has zero real data behind it.
+- [July 20 audit] duplicate bookworm_books row for "Music Theory for
+  Computer Musicians" (id 87268196-...845513f, all chapters pending,
+  zero real progress) — harmless; real progress lives on the OTHER
+  book_id 70fd8faa-...531baa. Delete the stale dupe before A3-clean.
