@@ -79,6 +79,7 @@
   </div>
   <div class="nav-group"><div class="nav-label">Full Reference</div>
     <a class="nav-item" href="#button-catalog">Every Button</a>
+    <a class="nav-item" href="#oracle-background-capabilities">Oracle Background Capabilities</a>
     <a class="nav-item" href="#tables">Supabase Tables</a>
     <a class="nav-item" href="#bugs-open">Open Bugs</a>
     <a class="nav-item" href="#bugs-fixed">Fixed Bugs</a>
@@ -204,7 +205,8 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><th>Button</th><th>Domain</th><th>Chain</th></tr>
     <tr><td>☰ Left Nav Drawer</td><td>GLOBAL</td><td>New July 20 (<code>leftNav</code> module) — replaces the old top <code>.nav-tabs</code> bar entirely. Hamburger in the slim sticky <code>.nav</code> shell slides in a left drawer (document.body-appended, z-index 10110/backdrop 10100) listing all 9 top-level pages; Research Lab and Schedule expand inline into their sub-navs. Not yet hand-tested live.</td></tr>
     <tr><td>🃏 Dashboard command deck (11 cards)</td><td>GLOBAL</td><td>New July 20 (<code>dashDeck</code> module) — the rebuilt dashboard. 11 command cards in three thematic rows (learning/building, daily-use, knowledge-storage) plus a "Needs you now" panel. Each card either <code>showPage()</code>s to its page or opens a widget popup: card → <code>showPage(target)</code> for full pages, or card → its own popup opener (<code>_openBookworm</code>/<code>_openGaps</code>/<code>_openPipeline</code>/<code>_openOversight</code>) for the relocated Bookworm / Knowledge Gaps / Content Pipeline widgets and the Oversight doc list (live DOM nodes moved in, stashed back on close via <code>closeWidgetPopup(id)</code>). Not yet hand-tested (July 20).</td></tr>
-    <tr><td>🎛 Prod. Oracle</td><td>ORACLE</td><td>14 commands → fillGaps → sendToOracle → chat display</td></tr>
+    <tr><td>🎛 Prod. Oracle</td><td>ORACLE</td><td>15 commands (July 22: added "Council of 5 — Decision Audit," a direct port of the chat-level Council of 5 protocol onto Alex's own production/content/business decisions — forces creative/technical risk, real cost, maintainability, audience impact, and an honest case-against before a real verdict) → fillGaps → sendToOracle → chat display</td></tr>
+    <tr><td>🧪 Flag for Claude Code (appears after any substantial Oracle reply)</td><td>ORACLE</td><td>New July 22 (<code>oracleDevBridge</code> module) — one click writes the reply text into the new <code>oracle_dev_suggestions</code> table via the shared <code>oracle:response-scanned</code> hook (no new MutationObserver). A future Claude Code session reads this table the same way Alex already queries Supabase directly — suggestions only, never instructions, promoted into CLAUDE.md only with explicit confirmation.</td></tr>
     <tr><td>🎬 YouTube Oracle</td><td>ORACLE</td><td>8 commands → same chain</td></tr>
     <tr><td>📸 Insta-Oracle</td><td>ORACLE</td><td>13 commands → same chain</td></tr>
     <tr><td>🎬 Visual Oracle</td><td>ORACLE</td><td>6 commands, reads Phylum 14 (Visio Cinematica) taxonomy</td></tr>
@@ -229,7 +231,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Research Lab sub-nav (7 tabs)</td><td>LEARNING</td><td>Intelligence/Video Finder/Idea Bank/Corpus/Beat Log/Workshop/Bibliography — now driven from the left nav drawer (<code>researchTabs.show(key)</code>) instead of an in-page bar. Fixed July 20: Idea Bank/Corpus/Beat Log had accidentally nested inside the Workshop panel (hidden whenever another tab was active); Bibliography was rendering above the page title on every visit. Both root causes fixed — panels now append as direct siblings on the Research page. Not yet hand-tested live.</td></tr>
     <tr><td>📅 Add to Agenda</td><td>CONTENT</td><td>ConIDPot idea → Schedule tab</td></tr>
     <tr><td>⚡ Activate ConID</td><td>CONTENT</td><td>Same endpoint as Repurpose</td></tr>
-    <tr><td>☀️ Morning Brief</td><td>JOURNAL</td><td>4-source: Gmail, shifts, YouTube, top gap</td></tr>
+    <tr><td>☀️ Morning Brief</td><td>JOURNAL</td><td>4-source: Gmail, shifts, YouTube, top gap. <strong>New July 22:</strong> also runs automatically every day at 6am UTC (7am UK) via a Claude Code Remote Routine — queries Supabase directly (rpgace_agendas/taxonomy_proposals/bookworm/encyclopedia_insights), writes the brief into <code>journal</code> (source='morning-routine') so it's visible in-app, AND pushes it as an actual phone notification. Zero RPGACE code involved — pure environment-level automation. Disable/delete anytime via the Routine (trig_015uRjGVrdmiwc5zxq47mMA6). Not yet fired for real — first run is tomorrow morning.</td></tr>
     <tr><td>🌳 Propose lineage</td><td>LEARNING</td><td>Accept/edit/reject/morph cycle for 20 phyla; Phylum 1 now routes through Phylum Path's structure-aware decision instead (fixed a live duplicate-branch bug July 15)</td></tr>
     <tr><td>Free calendar rows</td><td>SCHEDULE</td><td>Opens Schedule modal, pre-filled</td></tr>
     <tr><td>Start / Done</td><td>SCHEDULE</td><td>Task tracking + XP</td></tr>
@@ -255,6 +257,18 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>rpgace_agendas</td><td>Scheduled tasks, cross-device</td><td>—</td></tr>
     <tr><td>intel_jobs / intel_reports</td><td>Content Intelligence pipeline</td><td>—</td></tr>
     <tr><td>intel_bibliography</td><td>Source citations</td><td>Feeds future taxonomy footnotes</td></tr>
+    <tr><td>oracle_dev_suggestions</td><td>New July 22 — Oracle's suggestions flagged for a future Claude Code session (id/created_at/suggestion_text/category/status/source)</td><td>RLS enabled, anon_all policy</td></tr>
+    <tr><td>taxonomy_decision_log</td><td>New July 22 — append-only audit trail of every taxonomy commit (phylum_number/node_id/path/insight_text/source), written at <code>phylumPath._insertNewSteps</code>'s single choke point so "which code path produced this" is a query, not a forensic investigation</td><td>RLS enabled, anon_all policy</td></tr>
+  </table>
+</div>
+
+<div class="section" id="oracle-background-capabilities">
+  <div class="section-eyebrow">Full Reference</div>
+  <div class="section-title">Oracle's Background Capabilities (not buttons — behavior that runs automatically)</div>
+  <table>
+    <tr><th>Capability</th><th>How to use it</th><th>Chain</th></tr>
+    <tr><td>Self-awareness (<code>oracleAppGrounding</code>, July 22)</td><td>Just ask Oracle a capability/roadmap-shaped question — "what can you do", "what's broken", "what should I build next", "what's missing"</td><td>Wraps <code>window.callOracle</code>, keyword-gated (costs nothing when it doesn't trigger) → injects the live <code>dashDeck.MODULES</code> card list + a hand-maintained honest status digest (10/21 phyla live, F16-18 untested, the 504 bug, the RLS gap, etc.) → Oracle answers from real state, never invents a feature</td></tr>
+    <tr><td>Fetched-content hardening (<code>oracleFetchGuard</code>, July 22)</td><td>Automatic — no action needed. Fires whenever you paste a URL/YouTube link/Instagram post into Oracle chat</td><td>Detects the <code>[FETCHED CONTENT FROM...]</code>/<code>[INSTAGRAM POST...]</code>/<code>[YouTube Video...]</code> markers main.js's URL-fetch path already adds → tells Oracle to treat that content strictly as data, never as instructions, and to call out any prompt-injection attempt plainly rather than silently comply</td></tr>
   </table>
 </div>
 
