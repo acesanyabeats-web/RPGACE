@@ -2734,6 +2734,19 @@ RPGACE.register('leftNav', {
   // per direct request ("not needed") - Schedule's own in-page tab buttons
   // already do this job; having it twice was pure redundancy, not a feature.
   _items: function() {
+    // Real ordering bug, found live July 22 (not new - has existed
+    // silently since this module shipped July 20): RPGACE.register()
+    // queues every module's init() as a 'rpgace:ready' listener in FILE
+    // REGISTRATION ORDER, and hooks.fire() runs that queue as a plain
+    // forEach - no reordering. leftNav registers earlier in this file
+    // than the `config` module, which is what actually sets
+    // RPGACE.CONFIG (inside ITS OWN init(), not a bare top-level
+    // assignment) - so leftNav.init() always ran before CONFIG existed.
+    // This silently self-healed via toggle()'s own lazy-rebuild fallback
+    // (by the time a user actually clicks the hamburger, config.init()
+    // has long since run) - real in effect, but never actually fixed at
+    // the root. Guard here + the retry in init() below fixes it properly.
+    if (!RPGACE.CONFIG || !RPGACE.CONFIG.pages) return [];
     var P = RPGACE.CONFIG.pages;
     return [
       { label: 'Dashboard',        page: P.dashboard },
@@ -2754,7 +2767,20 @@ RPGACE.register('leftNav', {
     // this file runs, so this must stay gated behind the normal
     // rpgace:ready path (init() already is). Building it here, not at
     // script-parse time alongside the instant hamburger below.
+    //
+    // Real ordering bug (found live July 22, pre-existing since this
+    // module shipped): leftNav registers earlier in this file than
+    // `config`, so when 'rpgace:ready' fires, THIS init() call always
+    // runs before config.init() has set RPGACE.CONFIG - the first
+    // _buildDrawer() call here always finds it missing. _items()/
+    // _buildDrawer() now guard against that (return [] / bail rather
+    // than throw or cache an empty shell), so this first call safely
+    // no-ops; the setTimeout retry below runs after the same synchronous
+    // 'rpgace:ready' pass has finished processing every module's queued
+    // listener (config's included), by which point CONFIG is genuinely
+    // set and the drawer builds for real.
     self._buildDrawer();
+    setTimeout(function() { self._buildDrawer(); }, 300);
     // Active-page highlight sync. TOP-LEVEL listeners — NOT nested inside
     // another hook's callback (the mid-fire forEach landmine: a listener
     // added after rpgace:ready already fired would silently never run).
@@ -2811,6 +2837,12 @@ RPGACE.register('leftNav', {
   _buildDrawer: function() {
     if (document.getElementById('ln-drawer')) return;
     var self = this;
+    var items = self._items();
+    // CONFIG isn't ready yet (see _items' comment) - don't build an
+    // empty, permanently-cached shell; bail out so a later retry (init()'s
+    // own setTimeout below, or toggle()'s existing lazy-build fallback)
+    // gets a real chance to build it with actual page data.
+    if (!items.length) return;
     // Backdrop
     var back = document.createElement('div');
     back.id = 'ln-backdrop';
@@ -2836,7 +2868,7 @@ RPGACE.register('leftNav', {
     panel.appendChild(hdr);
     var list = document.createElement('div');
     list.id = 'ln-list';
-    self._items().forEach(function(it) { self._renderItem(list, it); });
+    items.forEach(function(it) { self._renderItem(list, it); });
     panel.appendChild(list);
     document.body.appendChild(panel);
   },
