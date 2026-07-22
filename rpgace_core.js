@@ -2784,6 +2784,7 @@ RPGACE.register('leftNav', {
       { label: '📖 Encyclopedia',  page: P.encyclopedia },
       { label: '📓 Journal',       page: P.journal },
       { label: '🧬 Phylum Path',   page: P.phylumPath },
+      { label: '📜 Chronicles',    page: P.chronicles },
     ];
   },
 
@@ -10198,6 +10199,7 @@ RPGACE.register('config', {
         encyclopedia: 'encyclopedia',
         journal:      'journal',
         phylumPath:   'phylumpath',
+        chronicles:   'chronicles',
       },
       mainFns: {
         prodOracle:  'toggleProdOraclePanel',
@@ -10290,7 +10292,7 @@ RPGACE.register('config', {
       // the app to know. Table is read-often/tiny, not write-heavy in the
       // app's own sense, but the same "never guaranteed fresh" problem
       // applies - excluded from caching for the same reason as the others.
-      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs','rpgace_shifts'];
+      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs','rpgace_shifts','chronicles_finance'];
       if (noCache.indexOf(table) !== -1) return _origSelect(table, params);
       var cached = RPGACE.cache.get(cacheKey);
       if (cached) return Promise.resolve(cached);
@@ -14821,7 +14823,12 @@ RPGACE.register('careerStatCard', {
       safe(sb.select('encyclopedia_insights', 'select=source_entry_title,insight_text,macro_category,micro_categories,created_at&order=created_at.desc&limit=200')),
       safe(sb.select('taxonomy_proposals', 'select=proposed_path,proposed_steps,phylum_number,source_type,source_id,reviewed_at,created_at&status=eq.accepted&order=created_at.desc&limit=200')),
       safe(sb.select('bookworm_chapters', 'select=chapter_title,status,created_at&status=eq.complete&order=created_at.desc&limit=200')),
-      safe(sb.select('reference_tracks', 'select=title,artist,bpm,key,scale,energy,mood,genre,notes,analysed,created_at&order=created_at.desc&limit=200'))
+      safe(sb.select('reference_tracks', 'select=title,artist,bpm,key,scale,energy,mood,genre,notes,analysed,created_at&order=created_at.desc&limit=200')),
+      // Chronicles finance ledger (July 22, chronicles_spec_backlog.txt) -
+      // deliberately NOT folded into the totalXP/growthTotal weights below.
+      // Confirmed via interrogation: this is a separate visibility lane,
+      // not part of the career-score formula.
+      safe(sb.select('chronicles_finance', 'select=*&order=entry_date.desc,created_at.desc&limit=500'))
     ]).then(function(results) {
       return {
         content: Array.isArray(results[0]) ? results[0] : [],
@@ -14829,7 +14836,8 @@ RPGACE.register('careerStatCard', {
         insights: Array.isArray(results[2]) ? results[2] : [],
         proposals: Array.isArray(results[3]) ? results[3] : [],
         chapters: Array.isArray(results[4]) ? results[4] : [],
-        tracks: Array.isArray(results[5]) ? results[5] : []
+        tracks: Array.isArray(results[5]) ? results[5] : [],
+        finance: Array.isArray(results[6]) ? results[6] : []
       };
     });
   },
@@ -14935,15 +14943,37 @@ RPGACE.register('careerStatCard', {
     });
   },
 
+  // July 22, round 3: renamed "Recent Wins" -> "The Chronicles" (Alex's own
+  // name for the whole group), and added a real "View Full Log" nav button
+  // - the group's real expand point, opening the new dedicated
+  // #page-chronicles page (chroniclesLog module) rather than growing this
+  // dashboard preview indefinitely. See chronicles_spec_backlog.txt.
   _ensureWinsContainer: function() {
     var existing = document.getElementById('career-recent-wins');
     if (existing) return existing;
-    var header = document.querySelector('.char-header');
-    if (!header || !header.parentNode) return null;
+    var charHeader = document.querySelector('.char-header');
+    if (!charHeader || !charHeader.parentNode) return null;
+
+    var titleRow = document.createElement('div');
+    titleRow.style.cssText = 'max-width:1100px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;';
+    var titleText = document.createElement('div');
+    titleText.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);';
+    titleText.textContent = '📜 The Chronicles';
+    var viewBtn = document.createElement('button');
+    viewBtn.textContent = 'View Full Log →';
+    viewBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    viewBtn.onclick = function() {
+      var pageId = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.chronicles : null;
+      if (pageId && typeof showPage === 'function') showPage(pageId);
+    };
+    titleRow.appendChild(titleText); titleRow.appendChild(viewBtn);
+
     var el = document.createElement('div');
     el.id = 'career-recent-wins';
-    el.style.cssText = 'max-width:1100px;margin:0 auto 20px;padding:0 20px;display:flex;flex-wrap:wrap;gap:8px;';
-    header.parentNode.insertAdjacentElement('afterend', el);
+    el.style.cssText = 'max-width:1100px;margin:6px auto 20px;padding:0 20px;display:flex;flex-wrap:wrap;gap:8px;';
+
+    charHeader.parentNode.insertAdjacentElement('afterend', titleRow);
+    titleRow.insertAdjacentElement('afterend', el);
     return el;
   },
 
@@ -14958,11 +14988,11 @@ RPGACE.register('careerStatCard', {
   // helper that already exists in this file - reused rather than hand-
   // rolling a second one, per the standing "grep before new UI behaviour,
   // this project has a history of duplicate implementations" rule).
-  _renderWins: function(data, shipped, ideas) {
+  // Shared by the dashboard preview (_renderWins, top 5) and the full
+  // Chronicles log page (chroniclesLog, all of them) - one place builds
+  // the item list so both surfaces can never drift out of sync.
+  _buildItems: function(data, shipped, ideas) {
     var self = this;
-    var container = self._ensureWinsContainer();
-    if (!container) return;
-
     var items = [];
     shipped.forEach(function(r) { items.push({ t: r.created_at, icon: '🚀', label: 'Shipped: ' + (r.title || 'content'), type: 'content_shipped', row: r }); });
     ideas.forEach(function(r) { items.push({ t: r.created_at, icon: '💡', label: 'Idea logged: ' + (r.title || 'content'), type: 'content_idea', row: r }); });
@@ -14970,9 +15000,20 @@ RPGACE.register('careerStatCard', {
     data.insights.forEach(function(r) { items.push({ t: r.created_at, icon: '🧠', label: 'Insight: ' + (r.source_entry_title || 'captured'), type: 'insight', row: r }); });
     data.proposals.forEach(function(r) { items.push({ t: r.created_at, icon: '🌳', label: 'Taxonomy: ' + self._proposalShortName(r), type: 'proposal', row: r }); });
     data.tracks.forEach(function(r) { items.push({ t: r.created_at, icon: '🎧', label: 'Reference logged: ' + (r.title || 'track'), type: 'track', row: r }); });
-
+    (data.finance || []).forEach(function(r) {
+      var isSale = r.type === 'sale';
+      items.push({ t: r.created_at, icon: isSale ? '💰' : '🧾', label: (isSale ? 'Sale: ' : 'Expense: ') + (r.item || r.category) + ' (£' + r.amount + ')', type: isSale ? 'finance_sale' : 'finance_expense', row: r });
+    });
     items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
-    items = items.slice(0, 5);
+    return items;
+  },
+
+  _renderWins: function(data, shipped, ideas) {
+    var self = this;
+    var container = self._ensureWinsContainer();
+    if (!container) return;
+
+    var items = self._buildItems(data, shipped, ideas).slice(0, 5);
 
     container.innerHTML = '';
     if (!items.length) {
@@ -15083,6 +15124,21 @@ RPGACE.register('careerStatCard', {
         ]
       };
     }
+    if (it.type === 'finance_sale' || it.type === 'finance_expense') {
+      var isSale = it.type === 'finance_sale';
+      return {
+        eyebrow: isSale ? '💰 Chronicles — Sale' : '🧾 Chronicles — Expense',
+        title: esc(r.item || r.category || 'Entry'),
+        rows: [
+          ['What was done', esc(r.item || r.category) + ' — £' + r.amount],
+          ['Outcome', (isSale ? 'Real income logged' : 'Real spend logged') + (r.category ? ' under "' + esc(r.category) + '"' : '')],
+          ['Where stored', 'chronicles_finance table • ' + esc(r.entry_date || '')],
+          ['Why significant', isSale
+            ? 'Real revenue toward your music career — feeds the honest Output-lane picture, not a vanity number.'
+            : (r.notes ? esc(r.notes) : 'Tracked for your own visibility — keep the real receipt for actual tax filing; this is not a substitute for bookkeeping.')]
+        ]
+      };
+    }
     return { eyebrow: it.icon + ' Activity', title: it.label, rows: [['What was done', esc(it.label)], ['Outcome', '—'], ['Where stored', '—'], ['Why significant', '—']] };
   },
 
@@ -15098,3 +15154,205 @@ RPGACE.register('careerStatCard', {
   }
 });
 /* ===END:careerStatCard=== */
+
+/* ===MODULE:chroniclesLog=== */
+// July 22, round 3 — Alex: "call this whole group the chronicles, that can
+// have an expand button that shows logs of what's done, this can then be
+// tied to future accounting and logistics metrics for drum kit and beat
+// sales, spending on equipment for tax write off etc." Interrogated first
+// (real answers recorded verbatim in chronicles_spec_backlog.txt) rather
+// than guessing at scope, since this touches real financial record-keeping:
+// full log page (not just a bigger inline list), a personal-visibility-only
+// finance tracker (not bookkeeping-grade), a SEPARATE finance ledger table
+// (chronicles_finance - not inside Phylum 17 Negotium, which stays reserved
+// for conceptual business/tax knowledge and is deliberately untouched here),
+// manual entry only (no BeatStars/bank integration in this pass).
+//
+// Page injected at runtime (same proven pattern as phylumPath._injectPageShell
+// - main.js's showPage() only needs an element with a matching #page-<name>
+// id and class="page" to exist by click time, it doesn't care when or how
+// it was created). No main.js edit.
+RPGACE.register('chroniclesLog', {
+  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense'],
+  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses' },
+  CATEGORY_SUGGESTIONS: ['Equipment', 'Software & Plugins', 'Drum Kits & Samples', 'Studio & Rent', 'Marketing', 'Beat Sale', 'Sample Pack Sale', 'Mixing/Mastering Service', 'Travel', 'Other'],
+
+  init: function() {
+    var self = this;
+    self._activeFilter = 'all';
+    self._searchText = '';
+    self._injectPageShell();
+    RPGACE.hooks.on('page:show', function(name) {
+      var pageId = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.chronicles : null;
+      if (pageId && name === pageId) self._render();
+    });
+  },
+
+  _injectPageShell: function() {
+    var self = this;
+    if (!RPGACE.CONFIG || !RPGACE.CONFIG.pages) return;
+    var pageId = 'page-' + RPGACE.CONFIG.pages.chronicles;
+    if (document.getElementById(pageId)) return;
+    var app = document.getElementById('app');
+    if (!app) return;
+
+    var page = document.createElement('div');
+    page.className = 'page';
+    page.id = pageId;
+    page.innerHTML =
+      '<div class="section-title">📜 The Chronicles — Full Log</div>' +
+      '<div id="chron-summary" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;"></div>' +
+      '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">' +
+        '<input id="chron-search" type="text" placeholder="Search the log…" style="flex:1;min-width:180px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;">' +
+        '<button id="chron-add-btn" style="padding:8px 14px;background:var(--gold);border:none;border-radius:8px;color:#000;font-weight:700;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;">+ Log Sale / Expense</button>' +
+      '</div>' +
+      '<div id="chron-filters" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;"></div>' +
+      '<div id="chron-list"></div>';
+    app.appendChild(page);
+
+    var searchInp = page.querySelector('#chron-search');
+    searchInp.addEventListener('input', function() { self._searchText = searchInp.value.toLowerCase(); self._renderList(); });
+    page.querySelector('#chron-add-btn').addEventListener('click', function() { self._showAddForm(); });
+  },
+
+  _renderFilterChips: function() {
+    var self = this;
+    var el = document.getElementById('chron-filters');
+    if (!el) return;
+    el.innerHTML = '';
+    self.FILTERS.forEach(function(f) {
+      var active = f === self._activeFilter;
+      var b = document.createElement('button');
+      b.textContent = self.FILTER_LABELS[f] || f;
+      b.style.cssText = 'padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;border:1px solid ' + (active ? 'var(--gold)' : 'var(--border)') + ';background:' + (active ? 'var(--gold)' : 'var(--panel2)') + ';color:' + (active ? '#000' : 'var(--muted)') + ';';
+      b.onclick = function() { self._activeFilter = f; self._renderFilterChips(); self._renderList(); };
+      el.appendChild(b);
+    });
+  },
+
+  _render: function() {
+    var self = this;
+    var csc = RPGACE.modules.careerStatCard;
+    if (!csc) return;
+    csc._fetchAll().then(function(data) {
+      var shipped = data.content.filter(function(r) { return csc._isShipped(r); });
+      var ideas = data.content.filter(function(r) { return !csc._isShipped(r); });
+      self._allItems = csc._buildItems(data, shipped, ideas);
+      self._renderSummary(data.finance || []);
+      self._renderFilterChips();
+      self._renderList();
+    }).catch(function(e) {
+      console.warn('[RPGACE:chroniclesLog] render failed', e.message);
+    });
+  },
+
+  _renderSummary: function(finance) {
+    var el = document.getElementById('chron-summary');
+    if (!el) return;
+    var sales = finance.filter(function(r) { return r.type === 'sale'; });
+    var expenses = finance.filter(function(r) { return r.type === 'expense'; });
+    var totalSales = sales.reduce(function(s, r) { return s + Number(r.amount || 0); }, 0);
+    var totalExpenses = expenses.reduce(function(s, r) { return s + Number(r.amount || 0); }, 0);
+    var byCat = {};
+    expenses.forEach(function(r) { var c = r.category || 'Other'; byCat[c] = (byCat[c] || 0) + Number(r.amount || 0); });
+    var catLine = Object.keys(byCat).sort(function(a, b) { return byCat[b] - byCat[a]; })
+      .map(function(c) { return c + ': £' + byCat[c].toFixed(2); }).join(' • ') || 'No expenses logged yet';
+
+    function chip(label, val, color) {
+      return '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;min-width:110px">'
+        + '<div style="font-family:Cinzel,serif;font-size:17px;color:' + color + '">' + val + '</div>'
+        + '<div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px">' + label + '</div></div>';
+    }
+    el.innerHTML = chip('Total Sales', '£' + totalSales.toFixed(2), 'var(--green)')
+      + chip('Total Expenses', '£' + totalExpenses.toFixed(2), 'var(--red)')
+      + chip('Net', (totalSales - totalExpenses >= 0 ? '£' : '-£') + Math.abs(totalSales - totalExpenses).toFixed(2), 'var(--gold)')
+      + '<div style="flex-basis:100%;font-size:11px;color:var(--muted);padding:4px 2px">Expenses by category: ' + catLine.replace(/</g, '&lt;') + '</div>'
+      + '<div style="flex-basis:100%;font-size:10px;color:var(--muted);font-style:italic;padding:0 2px">Personal visibility tracker only — not bookkeeping-grade. Keep real receipts for actual tax filing.</div>';
+  },
+
+  _renderList: function() {
+    var self = this;
+    var listEl = document.getElementById('chron-list');
+    if (!listEl || !self._allItems) return;
+    var q = self._searchText;
+    var filtered = self._allItems.filter(function(it) {
+      if (self._activeFilter !== 'all' && it.type !== self._activeFilter) return false;
+      if (q && it.label.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    listEl.innerHTML = '';
+    if (!filtered.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'font-size:12px;color:var(--muted);padding:20px 0;text-align:center';
+      empty.textContent = 'Nothing matches yet.';
+      listEl.appendChild(empty);
+      return;
+    }
+    filtered.forEach(function(it) {
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer;';
+      row.onmouseenter = function() { row.style.background = 'var(--panel2)'; };
+      row.onmouseleave = function() { row.style.background = 'transparent'; };
+      var icon = document.createElement('span'); icon.style.fontSize = '14px'; icon.textContent = it.icon;
+      var label = document.createElement('span'); label.style.cssText = 'flex:1;font-size:12px;color:var(--text);'; label.textContent = it.label;
+      var date = document.createElement('span'); date.style.cssText = 'font-size:11px;color:var(--muted);'; date.textContent = RPGACE.modules.careerStatCard._relTime(it.t);
+      row.appendChild(icon); row.appendChild(label); row.appendChild(date);
+      row.onclick = function() { RPGACE.modules.careerStatCard._showDetail(it); };
+      listEl.appendChild(row);
+    });
+  },
+
+  _showAddForm: function() {
+    var self = this;
+    var dd = RPGACE.modules.dashDeck;
+    if (!dd || !dd._popup) { console.warn('[RPGACE:chroniclesLog] dashDeck._popup unavailable'); return; }
+    var pop = dd._popup({ eyebrow: '📜 The Chronicles', title: 'Log a real sale or expense', width: '480px', accent: 'var(--gold)' });
+    var today = new Date().toISOString().slice(0, 10);
+    var datalistOpts = self.CATEGORY_SUGGESTIONS.map(function(c) { return '<option value="' + c + '">'; }).join('');
+    pop.box.innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:10px;">' +
+        '<label style="font-size:11px;color:var(--muted)">Type<select id="cf-type" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;">' +
+          '<option value="expense">🧾 Expense (equipment, plugins, etc.)</option>' +
+          '<option value="sale">💰 Sale (beat sold, drum kit sold, etc.)</option>' +
+        '</select></label>' +
+        '<label style="font-size:11px;color:var(--muted)">Date<input id="cf-date" type="date" value="' + today + '" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;"></label>' +
+        '<label style="font-size:11px;color:var(--muted)">Item<input id="cf-item" type="text" placeholder="e.g. Ableton Move, Custom drum kit" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;"></label>' +
+        '<label style="font-size:11px;color:var(--muted)">Category<input id="cf-category" type="text" list="cf-cat-list" placeholder="e.g. Equipment" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;"><datalist id="cf-cat-list">' + datalistOpts + '</datalist></label>' +
+        '<label style="font-size:11px;color:var(--muted)">Amount (£)<input id="cf-amount" type="number" min="0" step="0.01" placeholder="e.g. 149.99" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;"></label>' +
+        '<label style="font-size:11px;color:var(--muted)">Notes (optional)<textarea id="cf-notes" rows="2" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;resize:vertical;"></textarea></label>' +
+        '<div id="cf-error" style="color:#E25454;font-size:11px;display:none;"></div>' +
+        '<button id="cf-submit" style="padding:10px;background:var(--gold);border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;">Save to Chronicles</button>' +
+      '</div>';
+
+    pop.box.querySelector('#cf-submit').onclick = function() {
+      var g = function(id) { var el = pop.box.querySelector(id); return el ? el.value.trim() : ''; };
+      var errEl = pop.box.querySelector('#cf-error');
+      var item = g('#cf-item'), amountRaw = g('#cf-amount'), date = g('#cf-date');
+      var amount = parseFloat(amountRaw);
+      if (!item || !amountRaw || isNaN(amount) || amount < 0) {
+        errEl.textContent = 'Item and a valid amount are required.';
+        errEl.style.display = 'block';
+        return;
+      }
+      var row = {
+        type: g('#cf-type') || 'expense',
+        entry_date: date || today,
+        item: item,
+        category: g('#cf-category') || 'Other',
+        amount: amount,
+        notes: g('#cf-notes') || null
+      };
+      RPGACE.sb.insert('chronicles_finance', row).then(function(resp) {
+        if (!resp.ok) throw new Error('insert failed: ' + resp.status);
+        RPGACE.cache.clear('chronicles_finance');
+        if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast('✓ Logged to Chronicles', 'var(--gold)', 2200);
+        pop.close();
+        self._render();
+      }).catch(function(e) {
+        errEl.textContent = 'Save failed: ' + e.message;
+        errEl.style.display = 'block';
+      });
+    };
+  }
+});
+/* ===END:chroniclesLog=== */

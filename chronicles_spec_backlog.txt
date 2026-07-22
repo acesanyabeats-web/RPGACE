@@ -1,0 +1,83 @@
+CHRONICLES — SPEC BACKLOG
+Recorded July 22, 2026. Verbatim Q&A from AskUserQuestion, per CLAUDE.md rule 5
+("record real answers verbatim... never substitute recommended defaults for
+the user's actual answers").
+
+ORIGINAL REQUEST (verbatim):
+"call this whole group the chronicles, that can have an expand button that
+shows logs of what's done, this can then be tied to future accounting and
+logistics metrics for drum kit and beat sales, spending on equipment for tax
+write off etc, this could be its own phylum too. /Godmode and /interrogation
+to understand my idea, then council of 5 all inputs and /Godmode again
+(/Omnitrix if you let me off with a workaround without using tokens, closest
+method possible) to get the implementation as meticulous and spotless and
+perfect as possible"
+
+GODMODE EVIDENCE GATHERED BEFORE ASKING:
+- Phylum 17 "Negotium" already exists in the phyla config (keywords:
+  invoice, contract, accounting, tax, budget, business) but has never been
+  built out via the 7-step Phylum Development Framework (only phyla 1-10 are
+  live in ENABLED_PHYLA).
+- content_productions already has price + licence_type columns, and an F16
+  Beatstars listing generator reads them - but that's an asking price on a
+  listing, not a confirmed completed sale, and F16 has never been
+  hand-tested.
+- Zero existing infrastructure for equipment/expense tracking - fully
+  greenfield.
+
+QUESTIONS ASKED + REAL ANSWERS:
+Q1: The "expand button" on Chronicles - what should it actually open?
+A1: "Full Chronicles log page" - a dedicated panel/page, full all-time
+    history, searchable, filterable by type. Not just a bigger inline list.
+
+Q2: How rigorous does the accounting/tax-write-off tracking need to be?
+A2: "Personal visibility tracker (recommended)" - rough real numbers for
+    Alex's own sense of trends. NOT meant to be filed with HMRC directly -
+    real bookkeeping still happens separately at tax time. No audit trail /
+    correction history / export requirement.
+
+Q3: Where should real sale/expense records actually live?
+A3: "Separate finance ledger (recommended)" - a new dedicated table for real
+    transactions (date, item, amount, category, sale vs expense). Phylum 17
+    Negotium stays for CONCEPTUAL knowledge (tax rules, business strategy
+    insights) - explicitly NOT the same thing as transaction rows, kept
+    separate. Negotium itself is OUT OF SCOPE for this build.
+
+Q4: How will sales/spending data actually get entered?
+A4: "Manual entry only (recommended for now)" - a simple form: date, item,
+    amount, category, sale/expense. No external integration (no BeatStars
+    API, no bank import) in this pass.
+
+COUNCIL OF 5 - SCOPE LOCKED FROM THE ABOVE:
+1. Rename existing "Recent Wins" dashboard feed group -> "📜 The Chronicles",
+   keep the always-visible 5-item dashboard preview (already justified
+   earlier this session: "put it where it's already visible").
+2. Add a real "View Full Log ->" button/nav entry opening a new dedicated
+   #page-chronicles page: full-history list (reuses existing _fetchAll,
+   200-row limit per table already covers real row counts comfortably),
+   text search, type filter chips, every row clickable into the SAME detail
+   popup logic already built (careerStatCard._showDetail / _detailFor) -
+   reused, not duplicated.
+3. New Supabase table for the finance ledger (name: chronicles_finance).
+   Columns: id, created_at, entry_date, type (sale|expense), category,
+   item, amount, notes. RLS enabled, anon_all policy (matches this
+   session's established pattern for oracle_dev_suggestions /
+   taxonomy_decision_log).
+4. Manual-entry form (date/item/amount/category/type/notes) via the shared
+   dashDeck._popup, writing directly to chronicles_finance.
+5. Chronicles page shows simple summary stat chips: Total Sales, Total
+   Expenses, Net, expense-by-category breakdown. No CSV export, no
+   correction/audit trail, no external sale-source integration - explicitly
+   ruled out by A2/A4 above, not a missed requirement.
+6. Phylum 17 Negotium: NOT built out in this pass. Flagged as a real,
+   separate future item (conceptual business/tax knowledge, not
+   transaction records) - do not conflate with #3 above.
+7. content_productions.price/licence_type: left exactly as-is, not wired
+   into the new ledger in this pass (A4 said manual-only) - flagged as a
+   possible future integration, not built.
+
+BUILD METHOD: Sonnet-direct (no Fable dispatch), per the user's explicit
+"workaround without using tokens, closest method possible" - matches the
+existing Omnitrix July-20 rebalance (Sonnet is the default researcher/
+planner/builder for Tier 2 tasks; Fable is reserved for large audits or
+explicit requests by name).
