@@ -14816,12 +14816,12 @@ RPGACE.register('careerStatCard', {
     var sb = RPGACE.sb;
     var safe = function(p) { return p.catch(function() { return []; }); };
     return Promise.all([
-      safe(sb.select('content_productions', 'select=status,youtube_url,instagram_url,tiktok_url,title,created_at&order=created_at.desc&limit=200')),
-      safe(sb.select('journal', 'select=title,created_at&order=created_at.desc&limit=200')),
-      safe(sb.select('encyclopedia_insights', 'select=source_entry_title,created_at&order=created_at.desc&limit=200')),
-      safe(sb.select('taxonomy_proposals', 'select=created_at&status=eq.accepted&order=created_at.desc&limit=200')),
+      safe(sb.select('content_productions', 'select=con_id,status,youtube_url,instagram_url,tiktok_url,title,idea,notes,created_at&order=created_at.desc&limit=200')),
+      safe(sb.select('journal', 'select=title,content,source,created_at&order=created_at.desc&limit=200')),
+      safe(sb.select('encyclopedia_insights', 'select=source_entry_title,insight_text,macro_category,micro_categories,created_at&order=created_at.desc&limit=200')),
+      safe(sb.select('taxonomy_proposals', 'select=proposed_path,proposed_steps,phylum_number,source_type,source_id,reviewed_at,created_at&status=eq.accepted&order=created_at.desc&limit=200')),
       safe(sb.select('bookworm_chapters', 'select=chapter_title,status,created_at&status=eq.complete&order=created_at.desc&limit=200')),
-      safe(sb.select('reference_tracks', 'select=title,artist,created_at&order=created_at.desc&limit=200'))
+      safe(sb.select('reference_tracks', 'select=title,artist,bpm,key,scale,energy,mood,genre,notes,analysed,created_at&order=created_at.desc&limit=200'))
     ]).then(function(results) {
       return {
         content: Array.isArray(results[0]) ? results[0] : [],
@@ -14947,31 +14947,153 @@ RPGACE.register('careerStatCard', {
     return el;
   },
 
+  // July 22, round 2: Alex's real complaint was the taxonomy rows in this
+  // feed all read as the same generic "Taxonomy insight placed" line with
+  // nothing to click into. taxonomy_proposals actually stores rich real
+  // content per row (proposed_path, proposed_steps.insightText/synthesis/
+  // justification/confidenceScore, source_type/source_id) - it was just
+  // never being read. Each feed row is now a real DOM node (not an innerHTML
+  // string) carrying its full source row, clickable into a detail popup
+  // built from RPGACE.modules.dashDeck._popup (the one shared overlay
+  // helper that already exists in this file - reused rather than hand-
+  // rolling a second one, per the standing "grep before new UI behaviour,
+  // this project has a history of duplicate implementations" rule).
   _renderWins: function(data, shipped, ideas) {
     var self = this;
     var container = self._ensureWinsContainer();
     if (!container) return;
 
     var items = [];
-    shipped.forEach(function(r) { items.push({ t: r.created_at, icon: '🚀', label: 'Shipped: ' + (r.title || 'content') }); });
-    ideas.forEach(function(r) { items.push({ t: r.created_at, icon: '💡', label: 'Idea logged: ' + (r.title || 'content') }); });
-    data.journal.forEach(function(r) { items.push({ t: r.created_at, icon: '📓', label: 'Journal: ' + (r.title || 'entry') }); });
-    data.insights.forEach(function(r) { items.push({ t: r.created_at, icon: '🧠', label: 'Insight: ' + (r.source_entry_title || 'captured') }); });
-    data.proposals.forEach(function(r) { items.push({ t: r.created_at, icon: '🌳', label: 'Taxonomy insight placed' }); });
-    data.tracks.forEach(function(r) { items.push({ t: r.created_at, icon: '🎧', label: 'Reference logged: ' + (r.title || 'track') }); });
+    shipped.forEach(function(r) { items.push({ t: r.created_at, icon: '🚀', label: 'Shipped: ' + (r.title || 'content'), type: 'content_shipped', row: r }); });
+    ideas.forEach(function(r) { items.push({ t: r.created_at, icon: '💡', label: 'Idea logged: ' + (r.title || 'content'), type: 'content_idea', row: r }); });
+    data.journal.forEach(function(r) { items.push({ t: r.created_at, icon: '📓', label: 'Journal: ' + (r.title || 'entry'), type: 'journal', row: r }); });
+    data.insights.forEach(function(r) { items.push({ t: r.created_at, icon: '🧠', label: 'Insight: ' + (r.source_entry_title || 'captured'), type: 'insight', row: r }); });
+    data.proposals.forEach(function(r) { items.push({ t: r.created_at, icon: '🌳', label: 'Taxonomy: ' + self._proposalShortName(r), type: 'proposal', row: r }); });
+    data.tracks.forEach(function(r) { items.push({ t: r.created_at, icon: '🎧', label: 'Reference logged: ' + (r.title || 'track'), type: 'track', row: r }); });
 
     items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
     items = items.slice(0, 5);
 
+    container.innerHTML = '';
     if (!items.length) {
-      container.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:4px 0">No real activity logged yet — your first win will show up here.</div>';
+      var empty = document.createElement('div');
+      empty.style.cssText = 'font-size:11px;color:var(--muted);padding:4px 0';
+      empty.textContent = 'No real activity logged yet — your first win will show up here.';
+      container.appendChild(empty);
       return;
     }
 
-    container.innerHTML = items.map(function(it) {
-      return '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--text);display:flex;gap:6px;align-items:center">'
-        + '<span>' + it.icon + '</span><span>' + it.label.replace(/</g, '&lt;') + '</span>'
-        + '<span style="color:var(--muted)">• ' + self._relTime(it.t) + '</span></div>';
+    items.forEach(function(it) {
+      var chip = document.createElement('div');
+      chip.style.cssText = 'background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--text);display:flex;gap:6px;align-items:center;cursor:pointer;';
+      chip.onmouseenter = function() { chip.style.borderColor = 'var(--gold)'; };
+      chip.onmouseleave = function() { chip.style.borderColor = 'var(--border)'; };
+      var iconSpan = document.createElement('span'); iconSpan.textContent = it.icon;
+      var labelSpan = document.createElement('span'); labelSpan.textContent = it.label;
+      var timeSpan = document.createElement('span'); timeSpan.style.color = 'var(--muted)'; timeSpan.textContent = '• ' + self._relTime(it.t);
+      chip.appendChild(iconSpan); chip.appendChild(labelSpan); chip.appendChild(timeSpan);
+      chip.onclick = function() { self._showDetail(it); };
+      container.appendChild(chip);
+    });
+  },
+
+  // proposed_steps' shape varies by engine (phylum_path / concept_fusion /
+  // plain path-array) - this pulls a short human name out of whichever
+  // shape is actually present, for the feed row label.
+  _proposalShortName: function(r) {
+    function truncate(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+    var ps = (r && r.proposed_steps) || {};
+    if (ps.insightText) return truncate(ps.insightText, 60);
+    if (ps.newName) return truncate(ps.newName, 60);
+    if (r && r.proposed_path) { var segs = r.proposed_path.split(/→|\//); return truncate(segs[segs.length - 1].trim(), 60); }
+    return 'new branch added';
+  },
+
+  _esc: function(s) { return String(s == null ? '' : s).replace(/</g, '&lt;'); },
+
+  // Builds the {what, outcome, whereStored, whySignificant} shape every
+  // detail popup renders, from whichever real row type was clicked.
+  _detailFor: function(it) {
+    var self = this, r = it.row, esc = function(s) { return self._esc(s); };
+    if (it.type === 'proposal') {
+      var ps = r.proposed_steps || {};
+      var what = ps.insightText || ps.newName || (ps.explainers && ps.explainers[0]) || 'New taxonomy branch added';
+      var whySig = ps.justification || ps.synthesis || (ps.explainers && ps.explainers.join(' ')) || null;
+      if (ps.confidenceScore) whySig = (whySig ? whySig + ' ' : '') + '(confidence ' + ps.confidenceScore + '/10)';
+      var sourceLine = 'Auto-detected during real Phylum Path work';
+      if (r.source_type === 'content_intelligence' && r.source_id && /^https?:\/\//.test(r.source_id)) {
+        sourceLine = 'Sourced from: <a href="' + esc(r.source_id) + '" target="_blank" rel="noopener" style="color:var(--gold)">' + esc(r.source_id) + '</a>';
+      } else if (r.source_type === 'phylum_path_concept_fusion') {
+        sourceLine = 'Synthesised by merging two existing tree branches (Concept Fusion)';
+      }
+      return {
+        eyebrow: '🌳 Phylum ' + (r.phylum_number != null ? r.phylum_number : '?') + ' • Taxonomy Tree',
+        title: 'Taxonomy insight accepted',
+        rows: [
+          ['What was done', esc(what)],
+          ['Outcome', 'Accepted into the tree' + (r.reviewed_at ? ' on ' + r.reviewed_at.slice(0, 10) : '')],
+          ['Where stored', esc(r.proposed_path || '—')],
+          ['Why significant', whySig ? esc(whySig) : 'Fills a real gap identified in your knowledge tree.'],
+          ['Source', sourceLine]
+        ]
+      };
+    }
+    if (it.type === 'journal') {
+      return {
+        eyebrow: '📓 Journal', title: r.title || 'Journal entry',
+        rows: [
+          ['What was done', esc(r.content || '—')],
+          ['Outcome', 'Logged to your Journal'],
+          ['Where stored', 'journal table'],
+          ['Why significant', 'Source: ' + esc(r.source || 'manual')]
+        ]
+      };
+    }
+    if (it.type === 'insight') {
+      return {
+        eyebrow: '🧠 Encyclopedia', title: 'Insight captured',
+        rows: [
+          ['What was done', esc(r.insight_text || '—')],
+          ['Outcome', 'Captured under ' + esc(r.macro_category || 'general')],
+          ['Where stored', 'Encyclopedia • source: ' + esc(r.source_entry_title || '—')],
+          ['Why significant', (r.micro_categories && r.micro_categories.length) ? 'Tags: ' + esc(r.micro_categories.join(', ')) : 'A real, reviewed piece of learning added to your library.']
+        ]
+      };
+    }
+    if (it.type === 'content_shipped' || it.type === 'content_idea') {
+      var shipped = it.type === 'content_shipped';
+      return {
+        eyebrow: shipped ? '🚀 Content — Shipped' : '💡 Content — Idea', title: r.title || 'Content production',
+        rows: [
+          ['What was done', esc(r.idea || r.title || '—')],
+          ['Outcome', shipped ? 'Posted to a real platform' : 'Logged to the content pipeline, not yet posted'],
+          ['Where stored', 'content_productions #' + (r.con_id != null ? r.con_id : '?')],
+          ['Why significant', shipped ? 'This is the governing-rule metric — a real beat/video that reached an audience.' : (r.notes ? esc(r.notes) : 'A real step toward shipping — turn this into a posted piece to move the Output lane.')]
+        ]
+      };
+    }
+    if (it.type === 'track') {
+      return {
+        eyebrow: '🎧 Reference Library', title: (r.artist ? r.artist + ' — ' : '') + (r.title || 'track'),
+        rows: [
+          ['What was done', 'Logged as a reference track' + (r.analysed ? ' and analysed' : '')],
+          ['Outcome', [r.bpm ? r.bpm + ' BPM' : null, r.key ? r.key + ' ' + (r.scale || '') : null].filter(Boolean).join(' • ') || '—'],
+          ['Where stored', 'reference_tracks table'],
+          ['Why significant', [r.mood, r.genre].filter(Boolean).join(' • ') || (r.notes ? esc(r.notes) : 'Builds your real reference library for future productions.')]
+        ]
+      };
+    }
+    return { eyebrow: it.icon + ' Activity', title: it.label, rows: [['What was done', esc(it.label)], ['Outcome', '—'], ['Where stored', '—'], ['Why significant', '—']] };
+  },
+
+  _showDetail: function(it) {
+    var dd = RPGACE.modules.dashDeck;
+    if (!dd || !dd._popup) { console.warn('[RPGACE:careerStatCard] dashDeck._popup unavailable'); return; }
+    var d = this._detailFor(it);
+    var pop = dd._popup({ eyebrow: d.eyebrow, title: d.title, width: '560px', accent: 'var(--gold)' });
+    pop.box.innerHTML = d.rows.map(function(row) {
+      return '<div style="margin-bottom:12px"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">' + row[0] + '</div>'
+        + '<div style="font-size:13px;color:var(--text);line-height:1.5">' + row[1] + '</div></div>';
     }).join('');
   }
 });

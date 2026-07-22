@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🌳 July 22 — Recent Wins feed rows are now a real clickable log (what/outcome/where/why), not a repeated generic line</div>
+    <div class="card-body">
+      Direct follow-up to the stat card rebuild: Alex's real complaint was every taxonomy row in the new feed read as the same generic "🌳 Taxonomy insight placed" five times in a row, with nothing to click into.<br><br>
+      <strong>GODMODE finding:</strong> <code>taxonomy_proposals</code> already stores rich real content per row that the feed was never reading — <code>proposed_path</code> (the full tree breadcrumb), <code>proposed_steps</code> (a jsonb blob shaped differently per engine: <code>phylum_path</code> gives <code>insightText</code>/<code>justification</code>/<code>confidenceScore</code>; <code>concept_fusion</code> gives <code>newName</code>/<code>synthesis</code>; plain path proposals give <code>explainers</code>), and <code>source_type</code>/<code>source_id</code> (often a real YouTube URL the insight came from). None of it was being selected — the feed only ever fetched <code>created_at</code>.<br><br>
+      <strong>Council of 5 — reuse before build:</strong> rather than hand-roll a second popup implementation (this project has a real, logged history of duplicate UI implementations), the detail view reuses <code>dashDeck._popup</code> — the one shared overlay helper that already exists in this file — instead of adding a third/fourth one-off. Each feed row is now a real DOM node (not an innerHTML string) carrying its full source row, so a click can open a detail popup built from that row's actual data.<br><br>
+      <strong>Every feed row type</strong> (not just taxonomy — journal, encyclopedia insights, shipped/idea content, reference tracks) now has a real per-type detail formatter showing <strong>What was done / Outcome / Where stored / Why significant</strong>, plus a real clickable source link when one exists (e.g. the YouTube video a taxonomy insight was extracted from — opens in a new tab with <code>rel="noopener"</code>).<br><br>
+      <strong>Aintergration note:</strong> not actually applicable here — no third-party tool/skill/framework is involved, this is internal reuse of RPGACE's own existing popup infrastructure. Said plainly rather than forcing a verdict where none is needed.<br><br>
+      <code>node --check rpgace_core.js</code> clean. Verified with a real headless Playwright run: injected a real-shaped taxonomy proposal row (matching an actual accepted row's structure, confirmed via direct Supabase query) directly through the new click handler — popup rendered correctly with all four fields plus a genuine clickable <code>&lt;a target="_blank" rel="noopener"&gt;</code> source link, zero page errors. <strong>Not yet hand-tested against live data by Alex.</strong>
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">⚔ July 22 — GODMODE/Council of 5/Aintergration: the profile stat card was 100% cosmetic — rebuilt to run on real, persisted career-path data</div>
     <div class="card-body">
