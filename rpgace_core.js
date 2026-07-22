@@ -2652,11 +2652,20 @@ RPGACE.register('researchTabs', {
     anchor.parentElement.insertBefore(bar, anchor.nextSibling);
   },
 
-  // July 20: made tolerant of the in-page bar being absent. The flat
-  // in-page tab bar (_inject) is no longer injected — the drawer's nested
-  // Research sub-nav (leftNav module) drives tab changes now. The section
-  // show/hide logic must therefore run whether or not #research-tab-bar
-  // exists; only the bar-button styling loop is guarded behind it.
+  // July 22 (QoL request: "get rid of research tab as a wrapper, just keep
+  // the sub doms on display, keep research lab as-is internal structure") —
+  // the tab-gating that hid all but the active section is removed. All
+  // sections now render simultaneously, same one-page layout Research Lab
+  // used before the July 19 sub-tab redesign, but keeping every fix that
+  // shipped since (panel-injection root causes, batchList collapsing).
+  // This also resolves a real bug the tab-gating created as a side effect:
+  // taxonomyTree's "🌳 Add to Taxonomy Tree" button (a genuine page-level
+  // utility, injected once as a sibling of #cp-idea-bank) was never part of
+  // _resolveSections()'s tracked list, so it never got hidden when another
+  // tab was active — it just sat there permanently visible, LOOKING like a
+  // per-tab duplicate bug across every tab even though it was always a
+  // single DOM node. With no more hiding, it's simply correct: one
+  // page-level button, exactly as its own code already intended.
   _apply: function() {
     var active = this._activeTab();
     var sections = this._resolveSections();
@@ -2669,26 +2678,28 @@ RPGACE.register('researchTabs', {
         btn.style.color = on ? '#B07CC6' : 'rgba(226,226,236,0.5)';
       });
     }
-    Object.keys(sections).forEach(function(key) {
-      sections[key].style.display = (key === active) ? '' : 'none';
-    });
-    // Batch the long lists inside the newly-visible tab (show-8 rule).
-    if (active === 'intel') RPGACE.ui.batchList(document.getElementById('intel-insights-content'), 8);
-    if (active === 'corpus') RPGACE.ui.batchList(document.getElementById('rc-list'), 8);
+    Object.keys(sections).forEach(function(key) { sections[key].style.display = ''; });
+    // Batch the long lists (July 22: tightened 8→5, a direct QoL request -
+    // "this list needs to be further collapsable, takes too long to load
+    // and read" - same helper, just a smaller default reveal).
+    RPGACE.ui.batchList(document.getElementById('intel-insights-content'), 5);
+    RPGACE.ui.batchList(document.getElementById('rc-list'), 5);
   },
 
   // Public entry point used by the leftNav drawer's Research sub-nav.
-  // Persists the choice (same localStorage key the old in-page bar used),
-  // navigates to the Research page if we're not already there, re-sorts the
-  // panels into the chosen tab, and fires research:tab-changed so leftNav
-  // can re-highlight its active sub-item. Named-event convention per CLAUDE.md
-  // (never a second MutationObserver on the same node).
+  // July 22: since every section is now always visible, this is no longer
+  // a visibility switch - it's a jump-to-section scroll, so the sub-nav
+  // stays genuinely useful navigation instead of becoming dead UI once the
+  // tab-gating it used to drive was removed.
   show: function(key) {
     localStorage.setItem('rpgace_research_tab', key);
     var page = document.getElementById('page-learning');
     var onResearch = page && page.classList.contains('active');
     if (!onResearch && typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
     this._apply();
+    var sections = this._resolveSections();
+    var target = sections[key];
+    if (target) setTimeout(function() { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, onResearch ? 0 : 200);
     RPGACE.hooks.fire('research:tab-changed');
   },
 
@@ -2718,20 +2729,17 @@ RPGACE.register('researchTabs', {
 RPGACE.register('leftNav', {
 
   // Top-level drawer items. `page` = a RPGACE.CONFIG.pages value.
-  // `subKind` (optional): 'research' renders the 7 research tabs as sub-rows,
-  // 'sched' renders the 4 schedule views (with their `sub` array).
+  // `subKind` (optional): 'research' renders the 7 research tabs as sub-rows.
+  // July 22 QoL: Schedule's own sub-nav (Daily/Weekly/Monthly/Import) removed
+  // per direct request ("not needed") - Schedule's own in-page tab buttons
+  // already do this job; having it twice was pure redundancy, not a feature.
   _items: function() {
     var P = RPGACE.CONFIG.pages;
     return [
       { label: 'Dashboard',        page: P.dashboard },
       { label: '📋 Agenda',        page: P.agenda },
-      { label: 'Schedule',         page: P.schedule, subKind: 'sched', sub: [
-          { label: 'Daily (24hr)',   key: 'daily' },
-          { label: 'Weekly',         key: 'weekly' },
-          { label: 'Monthly',        key: 'monthly' },
-          { label: '⬆ Import Shifts', key: 'import' },
-      ] },
-      { label: 'AI Advisor',       page: P.oracle },
+      { label: 'Schedule',         page: P.schedule },
+      { label: 'Oracle AI',        page: P.oracle },
       { label: '⚡ Agents',        page: P.agents },
       { label: '🔬 Research Lab',  page: P.research, subKind: 'research' },
       { label: '📖 Encyclopedia',  page: P.encyclopedia },
@@ -2742,12 +2750,6 @@ RPGACE.register('leftNav', {
 
   init: function() {
     var self = this;
-    self._injectStyles();
-    self._injectHamburger();
-    // The .nav shell is static HTML, but re-try once in case of any late
-    // paint; idempotent (guarded on #ln-burger).
-    setTimeout(function() { self._injectHamburger(); }, 400);
-    self._buildDrawer();
     // Active-page highlight sync. TOP-LEVEL listeners — NOT nested inside
     // another hook's callback (the mid-fire forEach landmine: a listener
     // added after rpgace:ready already fired would silently never run).
@@ -2861,23 +2863,6 @@ RPGACE.register('leftNav', {
         rWrap.appendChild(s);
       });
       list.appendChild(rWrap);
-    } else if (it.subKind === 'sched') {
-      var sWrap = document.createElement('div');
-      sWrap.className = 'ln-sub';
-      (it.sub || []).forEach(function(t) {
-        var s = document.createElement('button');
-        s.className = 'ln-subitem';
-        s.type = 'button';
-        s.dataset.schedView = t.key;
-        s.textContent = t.label;
-        s.onclick = function() {
-          self._go(it.page);
-          // Let showPage settle, then switch the in-page schedule view.
-          if (typeof showSched === 'function') setTimeout(function() { showSched(t.key); }, 140);
-        };
-        sWrap.appendChild(s);
-      });
-      list.appendChild(sWrap);
     }
   },
 
@@ -2945,6 +2930,24 @@ RPGACE.register('leftNav', {
   },
 
 });
+// July 22 QoL fix ("left sidebar takes ages to load"): the hamburger's
+// anchor, .nav, is static HTML present in index.html from first paint -
+// it doesn't depend on main.js's initApp() or any dynamic render. But
+// _injectHamburger/_buildDrawer previously only ran inside init(), which
+// RPGACE.register() gates behind 'rpgace:ready' - itself gated behind the
+// full window 'load' event (every image/font/script finished) + 150ms +
+// waiting for every module registered earlier in this file to finish its
+// own init(). None of that is needed just to make the sidebar clickable.
+// Since main.js + rpgace_core.js load at the very end of <body>, the DOM
+// (including .nav) is already fully parsed by the time this line runs -
+// build the visible drawer immediately instead of waiting in line behind
+// ~14 other modules and a full page-load event. init() still runs later
+// for the hook-wiring (page:show sync, Escape-to-close) - both calls are
+// idempotent (guarded on getElementById checks), so running this twice is
+// harmless.
+RPGACE.modules.leftNav._injectStyles();
+RPGACE.modules.leftNav._injectHamburger();
+RPGACE.modules.leftNav._buildDrawer();
 /* ===END:leftNav=== */
 
 /* ===MODULE:uiBatchList=== */
@@ -2990,7 +2993,7 @@ RPGACE.register('intelListBatcher', {
       var orig = window.loadIntelInsights;
       window.loadIntelInsights = function() {
         var result = orig.apply(this, arguments);
-        RPGACE.ui.batchList(document.getElementById('intel-insights-content'), 8);
+        RPGACE.ui.batchList(document.getElementById('intel-insights-content'), 5);
         return result;
       };
     }
@@ -5265,7 +5268,7 @@ RPGACE.register('videoSummary', {
     }
     el.innerHTML = reports.map(function(r) { return self._cardHtml(r); }).join('');
     this._bindDelegation(el);
-    RPGACE.ui.batchList(el, 8);
+    RPGACE.ui.batchList(el, 5);
     this._maybeRefresh();
   },
 
@@ -14264,5 +14267,65 @@ RPGACE.register('shiftSync', {
 
 });
 /* ===END:shiftSync=== */
+
+/* ===MODULE:scheduleFixes=== */
+// July 22, 2 real QoL bugs found by GODMODE evidence pass, both root-caused
+// against real main.js source rather than guessed:
+//
+// 1) "Daily view is missing its ◄Prev/date/Next► nav on first load, only
+//    appears after cycling through Weekly and back." Root cause:
+//    showPage('schedule') never calls showSched() at all - it just leaves
+//    whatever #sched-X div is already marked visible in static HTML on
+//    screen, raw. Only an explicit showSched('daily') call runs
+//    initDailyNav()/renderDailyGrid() (main.js, lines ~1960/~1848), which
+//    is what actually builds the Prev/Next header. Fix: fire it once,
+//    shortly after arriving at the Schedule page - the exact same call a
+//    manual Daily-tab click already makes, just triggered automatically.
+//
+// 2) "Clicking Daily/Weekly gives XP, this needs to stop." Root cause:
+//    showSched('daily'|'weekly') both schedule a call to
+//    autoApplyStoredShifts() (main.js), which re-populates the grid from
+//    already-stored shifts on every view - a pure redisplay, not a new
+//    import. But it calls the SAME applyShifts() the real Import Shifts
+//    flow uses, and applyShifts() unconditionally ends with addXP(30) -
+//    so every single schedule view was re-awarding the one-time import
+//    bonus. Can't edit applyShifts (main.js, frozen) to add a "skip XP"
+//    flag without breaking real imports elsewhere. Fix: since
+//    autoApplyStoredShifts() is fully synchronous (no await/promise),
+//    wrap window.autoApplyStoredShifts to swap addXP to a no-op only for
+//    the duration of that one synchronous call, then restore it - real
+//    imports (parseICS/parseCSV/parseText → applyShifts, called directly,
+//    never through this wrapper) are completely unaffected and still earn
+//    their XP normally.
+RPGACE.register('scheduleFixes', {
+
+  init: function() {
+    var self = this;
+    self._patchAutoApply();
+    setTimeout(function() { self._patchAutoApply(); }, 1500);
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.schedule) {
+        setTimeout(function() { if (typeof window.showSched === 'function') window.showSched('daily'); }, 200);
+      }
+    });
+  },
+
+  _patchAutoApply: function() {
+    if (typeof window.autoApplyStoredShifts !== 'function' || window._autoApplyXPPatched) return;
+    window._autoApplyXPPatched = true;
+    var orig = window.autoApplyStoredShifts;
+    window.autoApplyStoredShifts = function() {
+      var realAddXP = window.addXP;
+      if (typeof realAddXP === 'function') window.addXP = function() {};
+      try {
+        return orig.apply(this, arguments);
+      } finally {
+        window.addXP = realAddXP;
+      }
+    };
+  },
+
+});
+/* ===END:scheduleFixes=== */
 
 /* ===END_DOMAIN:SCHEDULE=== */
