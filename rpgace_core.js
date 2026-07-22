@@ -709,10 +709,15 @@ RPGACE.register('prodOraclePanel', {
     var cmd = this.CMDS[i];
     if (!cmd) return;
     this._close();
+    // July 22 — Council of 5 specifically can use the real conversation
+    // as its context instead of Alex re-typing a summary of what was
+    // discussed (see fillGaps' new opts.allowConversationCapture). Opted
+    // in by name, not by index, so reordering CMDS can't silently break it.
+    var opts = (cmd[0] === 'Council of 5 — Decision Audit') ? { allowConversationCapture: true } : {};
     RPGACE.utils.fillGaps(cmd[1], function(filled) {
       RPGACE.utils.sendToOracle(filled);
       RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
-    });
+    }, opts);
   },
 
 });
@@ -11041,7 +11046,30 @@ RPGACE.register('config', {
     };
 
     // Utility: detect [PLACEHOLDER] in prompt, show step-by-step fill overlay
-    RPGACE.utils.fillGaps = function(prompt, onComplete) {
+    // July 22 — shared by every module that calls fillGaps (40+ command
+    // entries across prodOraclePanel/instaOraclePanel/visualOracle/
+    // youtubeOracle) - reused here rather than duplicated, since the
+    // streaming sendChat intercept already walks #chat-msgs the same way
+    // to rebuild conversation history from the DOM.
+    RPGACE.utils._captureChatHistory = function(maxChars) {
+      maxChars = maxChars || 6000;
+      var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box');
+      if (!chatBox) return '';
+      var lines = [];
+      Array.from(chatBox.children).forEach(function(el) {
+        var cls = el.className || '';
+        var txt = (el.textContent || '').trim();
+        if (!txt) return;
+        if (cls.indexOf('user') !== -1) lines.push('You: ' + txt);
+        else if (cls.indexOf('ai') !== -1) lines.push('Oracle: ' + txt);
+      });
+      var full = lines.join('\n\n');
+      if (full.length > maxChars) full = '...(earlier messages truncated)...\n\n' + full.slice(-maxChars);
+      return full;
+    };
+
+    RPGACE.utils.fillGaps = function(prompt, onComplete, opts) {
+      opts = opts || {};
       var regex = /\[([^\]]+)\]/g;
       var gaps = [];
       var match;
@@ -11089,6 +11117,24 @@ RPGACE.register('config', {
       var nextBtn = document.createElement('button');
       nextBtn.style.cssText = 'background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold,#C9A84C);border-radius:6px;padding:8px 20px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;';
 
+      // July 22 — opt-in only (opts.allowConversationCapture), so the
+      // other 40+ command entries that already use fillGaps are completely
+      // unaffected. Built for Council of 5's "audit this conversation
+      // instead of me re-typing it" ask.
+      var captureBtn = null;
+      if (opts.allowConversationCapture) {
+        captureBtn = document.createElement('button');
+        captureBtn.textContent = '📋 Use this conversation';
+        captureBtn.title = 'Fill this in with our chat so far, instead of typing your own answer';
+        captureBtn.style.cssText = 'background:none;border:1px solid rgba(74,144,226,.3);color:#4A90E2;border-radius:6px;padding:8px 14px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-right:auto;';
+        captureBtn.onclick = function() {
+          var captured = RPGACE.utils._captureChatHistory();
+          if (!captured) { RPGACE.utils.toast('⚠️ No conversation to capture yet', '#E2A83D', 2500); return; }
+          inp.value = 'Here is our recent conversation for you to review — audit whatever decision or direction it converges on:\n\n' + captured;
+          advance();
+        };
+      }
+
       function showGap(i) {
         var g = gaps[i];
         counter.textContent = 'Step ' + (i+1) + ' of ' + gaps.length;
@@ -11116,6 +11162,7 @@ RPGACE.register('config', {
         if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); advance(); }
       });
 
+      if (captureBtn) btnRow.appendChild(captureBtn);
       btnRow.appendChild(cancelBtn);
       btnRow.appendChild(nextBtn);
       box.appendChild(eyebrow);
