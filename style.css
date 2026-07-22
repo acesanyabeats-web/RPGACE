@@ -50,7 +50,7 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
 .char-info .subtitle{font-size:13px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
 .bars{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .bar-row{display:flex;align-items:center;gap:10px;font-size:12px}
-.bar-label{width:28px;color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.5px}
+.bar-label{width:54px;color:var(--muted);font-weight:600;font-size:10px;letter-spacing:.5px}
 .bar-track{flex:1;height:10px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;border:1px solid var(--border)}
 .bar-fill{height:100%;border-radius:5px;transition:width .6s ease}
 .bar-fill.hp{background:linear-gradient(90deg,var(--hp-col),#ff8080)}

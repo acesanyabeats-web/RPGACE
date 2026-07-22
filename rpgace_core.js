@@ -14742,3 +14742,237 @@ RPGACE.register('pwaInstall', {
 });
 RPGACE.modules.pwaInstall._register();
 /* ===END:pwaInstall=== */
+
+/* ===MODULE:careerStatCard=== */
+// July 22 GODMODE finding: the profile card's HP/MP bars are 100% inert
+// (hardcoded widths, never touched by any function anywhere in main.js or
+// this file - confirmed by grep, not assumed) and "Streak" is a hardcoded
+// literal "1", also never updated. XP/Level/"Done" DO have real code
+// (STATE.xp/totalXP/tasksCompleted, addXP(), levelUp() in main.js) but
+// STATE lives only in memory with zero persistence anywhere (no
+// localStorage, no Supabase write) - it silently resets to zero on every
+// single page load. Meanwhile real, persisted evidence of career-path
+// progress already sits unused in Supabase: content_productions (the
+// actual governing-rule metric - beats/videos actually shipped),
+// journal, encyclopedia_insights, taxonomy_proposals, bookworm_chapters,
+// reference_tracks. This module replaces the inert/ephemeral numbers with
+// a real, honestly-computed career score derived from that real data,
+// re-rendered on every load - nothing here is faked to look better than
+// it is. Confirmed via direct Supabase query (not guessed) that
+// content_productions currently has 0 rows actually posted to a real
+// platform - the Output lane will genuinely read 0 until that changes.
+// That is deliberate, not a bug: inflating it would just be a shinier
+// version of the exact problem being fixed.
+//
+// Council of 5 "why not to build this" considered and addressed:
+// - Goodhart's-law risk (gaming the tree for XP instead of shipping real
+//   content) is why Output (real shipped content) and Growth (learning/
+//   knowledge-tree activity) are kept as SEPARATE lanes, not one blended
+//   number - Alex can see at a glance whether he's actually shipping or
+//   just building/studying, matching CLAUDE.md's own governing-rule
+//   structure (shipping is primary; RPGACE-building is a named exception)
+//   instead of smoothing the two together into one misleading composite.
+// - Considered and explicitly rejected: variable-ratio/randomised reward
+//   schedules (the mobile-game "loot box" pattern) - genuinely effective
+//   at driving compulsive engagement, but that's an anti-pattern for a
+//   personal productivity tool whose own governing rule is about real
+//   output, not engagement-farming. Not built, on purpose.
+// - bookworm_chapters is counted toward the cumulative Growth total but
+//   deliberately EXCLUDED from the streak calculation and the recent-wins
+//   feed: confirmed via direct query that all of a book's chapter rows
+//   share one bulk-insert created_at timestamp from TOC detection, not
+//   the real per-chapter analysis time - using it for "recent activity"
+//   would show a misleading date.
+// - LEVEL_TITLES/xp bands are a deliberate LOCAL copy of main.js's real
+//   ones, not a live cross-script reference - main.js is frozen and its
+//   top-level consts aren't meant to be reached into from here; a small
+//   duplicated array is more robust and easier for a future session to
+//   follow than relying on classic-script global-scope leakage.
+RPGACE.register('careerStatCard', {
+  WEIGHTS: {
+    contentShipped: 100,
+    contentIdea: 5,
+    journalEntry: 8,
+    insight: 4,
+    proposalAccepted: 6,
+    chapterComplete: 15,
+    referenceTrack: 3
+  },
+  LEVEL_TITLES: ['Novice Producer','Content Apprentice','Rising Creator','Consistent Grinder','Viral Contender','Established Creator','Platform Veteran','The Producer','Elite Creator'],
+  // Cumulative XP ceiling per level - running total of main.js's own
+  // per-level requirements ([500,1200,2200,3500,5000,7000,9500,12500]),
+  // reused so a "Level" here means the same thing on the same scale.
+  CUM_BANDS: [500,1700,3900,7400,12400,19400,28900,41400],
+
+  init: function() {
+    var self = this;
+    self._render();
+    setTimeout(function() { self._render(); }, 1500);
+    RPGACE.hooks.on('xp:awarded', function() { self._render(); });
+    RPGACE.hooks.on('page:show', function() { self._render(); });
+  },
+
+  _fetchAll: function() {
+    var sb = RPGACE.sb;
+    var safe = function(p) { return p.catch(function() { return []; }); };
+    return Promise.all([
+      safe(sb.select('content_productions', 'select=status,youtube_url,instagram_url,tiktok_url,title,created_at&order=created_at.desc&limit=200')),
+      safe(sb.select('journal', 'select=title,created_at&order=created_at.desc&limit=200')),
+      safe(sb.select('encyclopedia_insights', 'select=source_entry_title,created_at&order=created_at.desc&limit=200')),
+      safe(sb.select('taxonomy_proposals', 'select=created_at&status=eq.accepted&order=created_at.desc&limit=200')),
+      safe(sb.select('bookworm_chapters', 'select=chapter_title,status,created_at&status=eq.complete&order=created_at.desc&limit=200')),
+      safe(sb.select('reference_tracks', 'select=title,artist,created_at&order=created_at.desc&limit=200'))
+    ]).then(function(results) {
+      return {
+        content: Array.isArray(results[0]) ? results[0] : [],
+        journal: Array.isArray(results[1]) ? results[1] : [],
+        insights: Array.isArray(results[2]) ? results[2] : [],
+        proposals: Array.isArray(results[3]) ? results[3] : [],
+        chapters: Array.isArray(results[4]) ? results[4] : [],
+        tracks: Array.isArray(results[5]) ? results[5] : []
+      };
+    });
+  },
+
+  _isShipped: function(row) {
+    return !!(row.youtube_url || row.instagram_url || row.tiktok_url || (row.status && /posted/i.test(row.status)));
+  },
+
+  _dateStr: function(iso) { return iso ? iso.slice(0, 10) : null; },
+
+  _computeStreak: function(data) {
+    var days = {};
+    var addAll = function(rows) { rows.forEach(function(r) { var d = data.self._dateStr(r.created_at); if (d) days[d] = true; }); };
+    addAll(data.content); addAll(data.journal); addAll(data.insights); addAll(data.proposals); addAll(data.tracks);
+    var today = new Date();
+    var toKey = function(d) { return d.toISOString().slice(0, 10); };
+    var todayKey = toKey(today);
+    var yest = new Date(today.getTime() - 86400000);
+    var yestKey = toKey(yest);
+    if (!days[todayKey] && !days[yestKey]) return 0;
+    var cursor = days[todayKey] ? today : yest;
+    var count = 0;
+    while (days[toKey(cursor)]) {
+      count++;
+      cursor = new Date(cursor.getTime() - 86400000);
+    }
+    return count;
+  },
+
+  _relTime: function(iso) {
+    var diff = Date.now() - new Date(iso).getTime();
+    var mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    return Math.floor(hrs / 24) + 'd ago';
+  },
+
+  _levelFor: function(totalXP) {
+    var bands = this.CUM_BANDS;
+    for (var i = 0; i < bands.length; i++) {
+      if (totalXP < bands[i]) {
+        var floor = i === 0 ? 0 : bands[i - 1];
+        return { levelNum: i + 1, title: this.LEVEL_TITLES[i], floor: floor, ceil: bands[i] };
+      }
+    }
+    var last = bands.length - 1;
+    return { levelNum: bands.length + 1, title: this.LEVEL_TITLES[this.LEVEL_TITLES.length - 1], floor: bands[last], ceil: bands[last] + 10000 };
+  },
+
+  _render: function() {
+    var self = this;
+    self._fetchAll().then(function(data) {
+      data.self = self; // let _computeStreak reuse _dateStr without rebinding
+      var W = self.WEIGHTS;
+      var shipped = data.content.filter(function(r) { return self._isShipped(r); });
+      var ideas = data.content.filter(function(r) { return !self._isShipped(r); });
+
+      var totalXP = shipped.length * W.contentShipped
+        + ideas.length * W.contentIdea
+        + data.journal.length * W.journalEntry
+        + data.insights.length * W.insight
+        + data.proposals.length * W.proposalAccepted
+        + data.chapters.length * W.chapterComplete
+        + data.tracks.length * W.referenceTrack;
+
+      var lvl = self._levelFor(totalXP);
+      var streak = self._computeStreak(data);
+      var totalActions = shipped.length + ideas.length + data.journal.length + data.insights.length + data.proposals.length + data.chapters.length + data.tracks.length;
+      var growthTotal = data.journal.length + data.insights.length + data.proposals.length + data.chapters.length + data.tracks.length;
+
+      // Output lane: real shipped count only - the honest, ungamed number.
+      var outMilestone = Math.max(3, Math.ceil((shipped.length + 1) / 3) * 3);
+      var outBar = document.getElementById('output-bar'), outVal = document.getElementById('output-val');
+      if (outBar) outBar.style.width = Math.min(100, Math.round(shipped.length / outMilestone * 100)) + '%';
+      if (outVal) outVal.textContent = shipped.length + ' / ' + outMilestone + ' shipped';
+
+      // Growth lane: combined small-wins volume.
+      var groMilestone = Math.max(50, Math.ceil((growthTotal + 1) / 50) * 50);
+      var groBar = document.getElementById('growth-bar'), groVal = document.getElementById('growth-val');
+      if (groBar) groBar.style.width = Math.min(100, Math.round(growthTotal / groMilestone * 100)) + '%';
+      if (groVal) groVal.textContent = growthTotal + ' / ' + groMilestone;
+
+      // XP lane: real cumulative career score, progress within current level.
+      var xpBar = document.getElementById('xp-bar'), xpVal = document.getElementById('xp-val');
+      var bandWidth = lvl.ceil - lvl.floor;
+      var withinLevel = totalXP - lvl.floor;
+      if (xpBar) xpBar.style.width = Math.min(100, Math.round(withinLevel / bandWidth * 100)) + '%';
+      if (xpVal) xpVal.textContent = withinLevel + ' / ' + bandWidth;
+
+      var charTitle = document.getElementById('char-title');
+      if (charTitle) charTitle.innerHTML = lvl.title + ' • Level <span id="lvl-display">' + lvl.levelNum + '</span>';
+
+      var statTasks = document.getElementById('stat-tasks'); if (statTasks) statTasks.textContent = totalActions;
+      var statStreak = document.getElementById('stat-streak'); if (statStreak) statStreak.textContent = streak;
+      var statLvl = document.getElementById('stat-lvl'); if (statLvl) statLvl.textContent = lvl.levelNum;
+      var statXp = document.getElementById('stat-xp'); if (statXp) statXp.textContent = totalXP;
+
+      self._renderWins(data, shipped, ideas);
+    }).catch(function(e) {
+      console.warn('[RPGACE:careerStatCard] render failed, leaving prior display untouched', e.message);
+    });
+  },
+
+  _ensureWinsContainer: function() {
+    var existing = document.getElementById('career-recent-wins');
+    if (existing) return existing;
+    var header = document.querySelector('.char-header');
+    if (!header || !header.parentNode) return null;
+    var el = document.createElement('div');
+    el.id = 'career-recent-wins';
+    el.style.cssText = 'max-width:1100px;margin:0 auto 20px;padding:0 20px;display:flex;flex-wrap:wrap;gap:8px;';
+    header.parentNode.insertAdjacentElement('afterend', el);
+    return el;
+  },
+
+  _renderWins: function(data, shipped, ideas) {
+    var self = this;
+    var container = self._ensureWinsContainer();
+    if (!container) return;
+
+    var items = [];
+    shipped.forEach(function(r) { items.push({ t: r.created_at, icon: '🚀', label: 'Shipped: ' + (r.title || 'content') }); });
+    ideas.forEach(function(r) { items.push({ t: r.created_at, icon: '💡', label: 'Idea logged: ' + (r.title || 'content') }); });
+    data.journal.forEach(function(r) { items.push({ t: r.created_at, icon: '📓', label: 'Journal: ' + (r.title || 'entry') }); });
+    data.insights.forEach(function(r) { items.push({ t: r.created_at, icon: '🧠', label: 'Insight: ' + (r.source_entry_title || 'captured') }); });
+    data.proposals.forEach(function(r) { items.push({ t: r.created_at, icon: '🌳', label: 'Taxonomy insight placed' }); });
+    data.tracks.forEach(function(r) { items.push({ t: r.created_at, icon: '🎧', label: 'Reference logged: ' + (r.title || 'track') }); });
+
+    items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
+    items = items.slice(0, 5);
+
+    if (!items.length) {
+      container.innerHTML = '<div style="font-size:11px;color:var(--muted);padding:4px 0">No real activity logged yet — your first win will show up here.</div>';
+      return;
+    }
+
+    container.innerHTML = items.map(function(it) {
+      return '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--text);display:flex;gap:6px;align-items:center">'
+        + '<span>' + it.icon + '</span><span>' + it.label.replace(/</g, '&lt;') + '</span>'
+        + '<span style="color:var(--muted)">• ' + self._relTime(it.t) + '</span></div>';
+    }).join('');
+  }
+});
+/* ===END:careerStatCard=== */
