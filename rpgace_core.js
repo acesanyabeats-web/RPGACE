@@ -2342,6 +2342,165 @@ RPGACE.register('oracleTreeGrounding', {
 });
 /* ===END:oracleTreeGrounding=== */
 
+/* ===MODULE:oracleAppGrounding=== */
+// July 22 — Phase 1 of Alex's "Oracle as orchestrator" request. GODMODE
+// evidence pass found Oracle had ZERO awareness of RPGACE's own dashboard
+// or its 34 internal modules - the only "orchestrator" that existed was
+// /api/orchestrate.js's fixed 6-action Composio whitelist for EXTERNAL
+// services (Gmail/Notion/YouTube/Instagram/GitHub/Canva), nothing about
+// RPGACE itself. Council of 5 verdict: read-only self-awareness is safe
+// and valuable (same risk profile as oracleTreeGrounding, already
+// shipped); autonomous action-triggering across internal modules is a
+// real risk (several modules write/delete data, exactly why CLAUDE.md's
+// human-checkpoint-on-every-taxonomy-write rule exists) and was
+// deliberately NOT built here - parked as a future idea per Alex's
+// explicit call, see CLAUDE.md's Judgment Funnel notes on this session.
+//
+// Same wrap-window.callOracle pattern as oracleTreeGrounding (own guard
+// flag, own keyword gate, fails open on any error) - composes safely
+// with that module's wrap regardless of init order, same as every other
+// chained sendChat/callOracle wrap already in this file.
+RPGACE.register('oracleAppGrounding', {
+
+  PERSONA_MARKERS: ['You are the Oracle —', "You are Alex's personal 300IQ music production teacher"],
+
+  // Cheap free keyword gate (rule 11 - never pay tokens on every message
+  // for a block only relevant sometimes). Deliberately broad since a
+  // missed trigger just means Oracle answers without this context, same
+  // safe-fallback shape as everywhere else this pattern is used.
+  TRIGGER_KEYWORDS: [
+    'what can you do', 'what can rpgace', 'what can this app', 'what features',
+    'what have you built', "what's built", 'whats built', "what's missing",
+    'whats missing', 'not built yet', 'what should i work on', 'what should i build',
+    'what should we build', 'known bug', 'known issue', "what's broken", 'whats broken',
+    'underused', 'limitation', 'self audit', 'self-audit', 'dashboard card',
+    'what modules', 'roadmap', 'unlock', 'capabilit', 'what are you capable',
+    'what is rpgace', 'suggest a fix', 'suggest an improvement',
+  ],
+
+  // Hand-maintained condensed digest, not live-parsed from the oversight
+  // docs - deliberately, to avoid a second live source of truth alongside
+  // system_flow_map.md's actual built/not-built table (the July 20 audit
+  // found stale-doc drift three separate times; a second copy invites a
+  // fourth). Whoever updates CLAUDE.md's "Current state"/"Known open
+  // bugs"/"Biggest confirmed-not-built items" sections should update this
+  // string in the same session - same discipline as every other oversight
+  // doc, just condensed for token cost (rule 11).
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): 10 of 21 knowledge Phyla are live in Phylum Path. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. Known open bugs: Oracle chat can time out (504) on long responses; F11 can silently show "Content Unavailable" on a failed fetch instead of erroring loudly. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent yet; phyla 11-21 have no framework pass yet; 3 Supabase tables (bookworm_books, bookworm_chapters, bibliography) have Row Level Security disabled, meaning they are technically writable by anyone with the public key, not just from inside the app.',
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.callOracle !== 'function' || window._appGroundingPatched) return;
+      window._appGroundingPatched = true;
+      var orig = window.callOracle;
+      window.callOracle = function(messages, system, maxTokens) {
+        var isConversational = typeof system === 'string' && self.PERSONA_MARKERS.some(function(m) { return system.indexOf(m) !== -1; });
+        if (!isConversational || !messages || !messages.length) {
+          return orig.apply(this, arguments);
+        }
+        var lastUser = null;
+        for (var i = messages.length - 1; i >= 0; i--) {
+          if (messages[i].role === 'user') { lastUser = String(messages[i].content || ''); break; }
+        }
+        if (!lastUser) return orig.apply(this, arguments);
+        var lower = lastUser.toLowerCase();
+        var matched = self.TRIGGER_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
+        if (!matched) return orig.apply(this, arguments);
+        var block = self._buildBlock();
+        return orig.call(this, messages, system + block, maxTokens);
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+  },
+
+  _buildBlock: function() {
+    var dd = RPGACE.modules && RPGACE.modules.dashDeck;
+    var cardLines = '';
+    if (dd && dd.MODULES) {
+      cardLines = dd.MODULES.map(function(m) { return '- ' + m.name + ': ' + m.desc; }).join('\n');
+    }
+    return '\n\n---\n' + this.SELF_KNOWLEDGE +
+      (cardLines ? '\n\nRPGACE\'s live dashboard cards right now:\n' + cardLines : '') +
+      '\n\nIf Alex asks what to build/fix next, give ONE concrete, specific suggestion grounded in the real gaps above - not a generic list.';
+  },
+
+});
+/* ===END:oracleAppGrounding=== */
+
+/* ===MODULE:oracleDevBridge=== */
+// July 22 — Phase 2 of the same request: the "Oracle suggests back to
+// Claude Code" bridge CLAUDE.md already specs (RPGACE_ORACLE_NOTES.md)
+// but which was never built, and which can't work exactly as originally
+// written - Oracle runs as a stateless Vercel serverless function with no
+// persistent or git-writable filesystem, so it can never literally edit
+// a markdown file. Corrected transport: a Supabase table, the same way
+// everything else in this app persists anything. Requires the
+// oracle_dev_suggestions table to exist - see patch_notes for the exact
+// migration and Alex's confirmation before it was applied.
+//
+// UX: reuses the existing 'oracle:response-scanned' hook (fired once per
+// completed Oracle reply, already relied on by phylumPath's auto-detect
+// badge) instead of installing a second MutationObserver on the chat box -
+// the exact duplication CLAUDE.md's landmines already flag as a bug found
+// and fixed once. A manual click is the human checkpoint here (same
+// philosophy as the taxonomy-write checkpoint, scaled down since this is
+// an append-only text log, not a destructive or structural change) -
+// nothing gets written to Supabase without Alex choosing to flag it.
+RPGACE.register('oracleDevBridge', {
+
+  TABLE: 'oracle_dev_suggestions',
+
+  init: function() {
+    var self = this;
+    setTimeout(function() { self._hook(); }, 1300);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._hook(); }, 1300); });
+  },
+
+  _hook: function() {
+    if (window._oracleDevBridgeHooked) return;
+    window._oracleDevBridgeHooked = true;
+    RPGACE.hooks.on('oracle:response-scanned', function(text, lastMsg) {
+      if (!text || text.length < 40 || !lastMsg || !lastMsg.parentNode) return;
+      if (lastMsg.nextElementSibling && lastMsg.nextElementSibling.classList && lastMsg.nextElementSibling.classList.contains('odb-flag-btn')) return;
+      var btn = document.createElement('button');
+      btn.className = 'odb-flag-btn';
+      btn.textContent = '🧪 Flag for Claude Code';
+      btn.style.cssText = 'display:inline-block;background:none;border:1px solid rgba(74,144,226,.3);color:#4A90E2;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin:2px 0 8px 0;';
+      btn.onclick = function() { RPGACE.modules.oracleDevBridge._flag(text, btn); };
+      lastMsg.insertAdjacentElement('afterend', btn);
+    });
+  },
+
+  _flag: function(text, btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Logging...';
+    fetch(SUPABASE_URL + '/rest/v1/' + this.TABLE, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify([{ suggestion_text: text.slice(0, 4000), category: 'oracle-flagged', status: 'new', source: 'oracle' }])
+    }).then(function(r) {
+      if (!r.ok) return r.text().then(function(t) { throw new Error('HTTP ' + r.status + ': ' + t.slice(0,150)); });
+      return r.json();
+    }).then(function() {
+      btn.textContent = '✓ Sent to Claude Code';
+      RPGACE.utils.toast('🧪 Logged for the next Claude Code session', 'rgba(74,144,226,0.9)', 2400);
+    }).catch(function(e) {
+      btn.disabled = false;
+      btn.textContent = '🧪 Flag for Claude Code';
+      RPGACE.utils.toast('⚠️ Could not log: ' + e.message, '#E25454', 3200);
+    });
+  },
+
+});
+/* ===END:oracleDevBridge=== */
+
 /* ===MODULE:researchTabs=== */
 // July 19 — Research page redesign (confirmed answers, recorded in the
 // patch notes card: sub-tabs within Research / show-8-plus-Show-more
