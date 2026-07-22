@@ -10,12 +10,29 @@
 (function (global) {
   'use strict';
 
-  /* ─── WAIT FOR INITAPP TO COMPLETE ────────────────────── */
+  /* ─── WAIT FOR THE DOM, NOT FOR EVERY IMAGE/FONT ────────
+     July 22 GODMODE finding ("clicking the left nav does nothing for the
+     first ~10s after login"): this used to gate on window 'load'
+     (document.readyState==='complete') - which waits for EVERY
+     subresource on the page (fonts, images) to finish downloading, not
+     just the DOM. The original comment's premise ("give initApp() time
+     to run") doesn't actually hold: initApp() is called from
+     checkPassword() - gated by LOGIN, a user-timed action completely
+     decoupled from page-load timing. It can run seconds after window
+     'load', or long before it if login is instant. Every module below
+     already has to tolerate 'ready fired before initApp() finished'
+     (that's what the various 1200-8000ms retry delays scattered through
+     this file are actually for) - so there was never a real dependency
+     on waiting for images/fonts specifically, just unnecessary latency
+     stacked on top of an already-necessary retry pattern. main.js and
+     this script both load at the very end of <body>, so by the time this
+     line executes the DOM is already fully parsed - 'interactive' (or
+     later) is the real signal needed, not 'complete'. */
   function onReady(fn) {
-    if (document.readyState === 'complete') {
-      setTimeout(fn, 150); // give initApp() time to run
+    if (document.readyState !== 'loading') {
+      setTimeout(fn, 50);
     } else {
-      global.addEventListener('load', function () { setTimeout(fn, 150); });
+      global.addEventListener('DOMContentLoaded', function () { setTimeout(fn, 50); });
     }
   }
 
@@ -2906,8 +2923,15 @@ RPGACE.register('leftNav', {
   // Navigate to a page then close. Phylum Path's page shell is injected at
   // runtime (~1500ms after load) by phylumPath._injectPageShell — main.js's
   // showPage has no null guard on the target div, so guard here.
+  // July 22 GODMODE finding: this unconditionally dereferenced
+  // RPGACE.CONFIG.pages.phylumPath for EVERY click, regardless of which
+  // page was clicked - if CONFIG somehow wasn't ready yet at click time,
+  // this threw before ever reaching showPage()/this.close(), so the click
+  // did nothing at all, silently, no error shown. Guarded defensively -
+  // same principle as _items()'s guard just above.
   _go: function(page) {
-    if (page === RPGACE.CONFIG.pages.phylumPath && !document.getElementById('page-' + page)) {
+    var pp = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.phylumPath : null;
+    if (pp && page === pp && !document.getElementById('page-' + page)) {
       if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast('Phylum Path still loading — try again in a moment', '#C9A84C', 2500);
       return;
     }
