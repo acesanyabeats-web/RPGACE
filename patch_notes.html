@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card blue" style="margin-bottom:30px;">
+    <div class="card-title">🌉 July 20 — Aintergration packaged as a Claude-Code-wide skill, with a "download to RPGACE" bridge</div>
+    <div class="card-body">
+      Follow-up to the Omnitrix/Council-of-5/GODMODE personal skills built moments earlier. Aintergration deliberately did NOT go into that same general skill — it's framed as Claude-Code-wide rather than folded in, because it needs to be usable in sessions that have nothing to do with RPGACE (researching whether some tool helps Claude Code generally) while still naming RPGACE as the one standing project whose findings are worth carrying forward.<br><br>
+      New <code>~/.claude/skills/aintergration/SKILL.md</code>: same GODMODE-then-Council-of-5 procedure, same two-target structure (Claude Code itself / RPGACE specifically), same non-negotiable safety boundary (a tool engineered to evade safety classifiers is a direct refusal, not a verdict-tier question — carried over exactly from the real case this happened on, Worked Precedent 3). The new part: an explicit "download" mechanic — when a finding assessed in some OTHER session turns out relevant to RPGACE, the skill produces a portable, ready-to-log verdict in the same "Worked precedent N" format this file already uses, so a future RPGACE session can log it directly rather than the research being lost to a different session's context.<br><br>
+      RPGACE's own project-scoped skill (<code>RPGACE/.claude/skills/omnitrix/SKILL.md</code>) now cross-references this bridge in its Aintergration section, so the two stay connected rather than silently diverging.
+    </div>
+  </div>
+
+<div class="card blue" style="margin-bottom:30px;">
     <div class="card-title">🛠️ July 20 — Omnitrix reweighted + packaged as real Skills (project + personal)</div>
     <div class="card-body">
       Two changes, both about making the Invokable Frameworks section actually work as designed rather than living as prose Alex has to trust me to remember.<br><br>
