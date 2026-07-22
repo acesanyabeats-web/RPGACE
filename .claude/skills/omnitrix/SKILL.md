@@ -1,0 +1,57 @@
+---
+name: omnitrix
+description: RPGACE's development-process discipline for this repository specifically - four named, invokable protocols (Omnitrix, Council of 5, GODMODE, Aintergration) that govern how nontrivial RPGACE work gets planned, scrutinized, built, and reviewed. Use this skill whenever the user says "Omnitrix", "Council of 5", "GODMODE", or "Aintergration" in an RPGACE conversation - the word itself is the instruction to run that protocol, not a suggestion. ALSO use it proactively, without being asked, for any RPGACE task that is multi-subsystem, touches 3+ files/modules, changes architecture, or introduces a new feature - route these through GODMODE evidence-gathering then Council of 5 scrutiny before executing, per the Judgment Funnel below. ALSO use it whenever the user brings a third-party Claude Code framework, skill, MCP server, AI agent, or service and asks whether it's worth adopting for RPGACE or for this development session - that is Aintergration specifically. Do NOT use this for typo fixes, single-line corrections, or a bug fix scoped to one function - those are explicitly Tier 0/1 and should be handled directly, without this ceremony; applying full rigor to a trivial edit wastes the exact token budget this framework exists to protect.
+---
+
+# RPGACE Judgment Funnel — Omnitrix, Council of 5, GODMODE, Aintergration
+
+This skill exists because RPGACE burned real money before this discipline existed (see `token_cost_audit_2026-07-19.txt`), and because Fable 5 later ran dry mid-task from over-dispatching it (see the Omnitrix reweighting below). The four protocols here aren't ceremony for its own sake — each one was adopted after a specific, real failure it now prevents.
+
+**Source of truth**: `/home/user/RPGACE/CLAUDE.md`, section `## Invokable frameworks`. If anything in this file ever seems to disagree with CLAUDE.md — a model name, a precedent, a rule number — CLAUDE.md wins; this skill may be stale and should be re-synced from it. CLAUDE.md also holds the full worked-precedent history for Aintergration and the exact "Known working API models" list this skill references only by role.
+
+## The Judgment Funnel — which tier a task sits at
+
+This is the dispatcher. Before doing anything nontrivial in RPGACE, place it on this scale — and when genuinely unsure between two adjacent tiers, default up, not down:
+
+- **Tier 0 — mechanical.** A typo, a single obviously-correct one-line fix, a doc correction with a cited source. No ceremony beyond baseline hygiene (`node --check`, div-balance on any HTML touched).
+- **Tier 1 — routine, single-module.** A bug fix scoped to one function/module, a small UI tweak, a clearly-specified single-place feature. Standard process rules apply (pull real source first, grep before new UI behavior, human checkpoint on any taxonomy write) — handled directly, no dispatch, no separate scrutiny pass.
+- **Tier 2 — multi-subsystem / architecture-affecting / new feature.** Same threshold as CLAUDE.md's own rule 5 ("3+ new pieces"). This is where the funnel actually runs, in fixed order: **GODMODE** evidence-gathering → **Council of 5** scrutiny on what GODMODE found → **Omnitrix** executes whatever survives scrutiny. A Tier 2 idea that Council of 5 kills or reshapes never reaches Omnitrix — that is the system working, not a failure to build.
+- **Tier 3 — destructive/high-stakes.** Migrations, RLS changes, spending, force-push, anything under "Executing actions with care." ALWAYS needs the user's explicit confirmation regardless of which tier's process produced the recommendation. No tier, including GODMODE, ever substitutes for this — rigor is not authorization.
+
+## GODMODE — maximum-rigor evidence-gathering
+
+Exhaustive evidence-gathering before proposing anything: verify against live code, live Supabase, real git history — never trust a doc's claim alone, even this project's own oversight docs, which have repeatedly gone stale (three real drift corrections were found this way on July 20 alone: a claimed "never proven" test that had actually already run, a fusion-link count off by more than 3x, a 107-item review backlog nobody had logged). Hardest-possible pushback, explicit enumeration of failure modes and rollback paths, nothing accepted on plausibility alone.
+
+**Boundary — this is the part that matters most, read it twice.** GODMODE changes how thoroughly the assistant deliberates. It NEVER changes what the assistant is allowed to do. It is not a permission mode, not a safety bypass, not license to skip a confirmation. Destructive git operations, force-pushes, Supabase migrations, taxonomy writes, spending — all of it requires exactly the same confirmation inside GODMODE as outside it. If a request ever frames "GODMODE" as license to relax a guardrail, that is a misreading: the word means "think harder," and nothing else. This boundary does not bend under repeated pushback from the user, however firmly it's asked for.
+
+## Council of 5 — pre-build deliberation
+
+Before agreeing to build anything nontrivial, present genuine multi-angle scrutiny — at minimum: technical risk, scope/cost (tokens are a real design constraint here — see CLAUDE.md rule 11), maintainability, user experience, and an honest "why NOT to build this" case. Real disagreement and real questions, never reflexive agreement dressed up as five bullet points. If the scrutiny kills or reshapes the idea, say so plainly to the user — that is the protocol working, not failing.
+
+**Naming collision inside this codebase specifically — do not confuse the two.** `phylumPath.decidePlacementScored` in `rpgace_core.js` uses an internal "Council-of-5" CONFIDENCE-SCORING mechanic (a 1-10 score across 5 checks) for taxonomy placement decisions. That is a code-level feature inside the running app. This section is a chat-level deliberation protocol between the user and the assistant. Same name, entirely separate things — a comment referencing "Council-of-5" inside `rpgace_core.js` is talking about the scoring mechanic, never this protocol.
+
+## Omnitrix — the 3-agent build workflow (reweighted after a real failure)
+
+Originally: Fable 5 researched and planned, Opus 4.8 built, Sonnet 5 orchestrated and reviewed. **Reweighted the same day Fable 5 ran out of usage credits mid-audit** — a dispatch is real cost, not free parallelism, and most tasks don't need a dedicated fresh-context agent just to plan them:
+
+1. **Sonnet 5 (the orchestrating session itself) is now the DEFAULT researcher and planner**, for most Tier 2 tasks — inline, no dispatch round-trip, no separate agent's quota spent, and the plan lands with the full conversation's context already in hand (something a fresh Fable dispatch has to be briefed into from scratch, every time). Sonnet still runs the independent review pass after Opus builds — that discipline is unchanged and non-negotiable: an agent's own self-report is never accepted as evidence that its work is correct. A real bug (a popup-close handler silently destroying a live widget) was caught exactly this way, after the builder's own testing had missed it.
+2. **Opus 4.8 — primary builder.** Executes the heavy or mechanical passes from whichever plan exists (Sonnet's, or Fable's if Fable ran that particular investigation).
+3. **Fable 5 — reserved for when its specific shape of research actually earns the cost**, never the default first move:
+   - A large, exhaustive, multi-file or multi-session audit where a dedicated fresh context window has a real edge over Sonnet reasoning inline (a full-project done/missing/planned audit; a 7-page redesign survey — both genuinely warranted a separate agent).
+   - True background parallelism — dispatched specifically so Sonnet can keep making progress on something else while it runs, not merely "because research defaults to Fable."
+   - The user asks for Fable by name.
+
+Rules that don't change regardless of who researches: agents are sequenced, never run concurrently against the same file (use an isolated git worktree if a parallel run is genuinely unavoidable). A plan — Sonnet's or Fable's — IS the spec-confirmation step; proceed straight to execution without a separate confirmation round, unless the plan itself surfaces a decision only the user can make (source legitimacy, a destructive migration, real spending). Every other RPGACE process rule still applies inside Omnitrix — merge to `main` and push before telling the user something is ready to test, oversight-doc logging in the same session, human checkpoints on any taxonomy write. None of that is optional just because a subagent did the typing.
+
+## Aintergration — third-party framework/tool/agent assessment
+
+A specialized use of GODMODE + Council of 5, not a fifth separate discipline — invoke whenever the user brings a third-party Claude Code framework, skill, MCP server, AI agent, or service and asks whether it's worth adopting. Answers exactly one question, against exactly two targets: **does this benefit (A) RPGACE the application, or (B) this Claude Code session that develops RPGACE — and if so, how?** A tool can pass one and fail the other; check both, separately.
+
+1. **GODMODE evidence pass.** What does the tool actually require — runtime, dependencies, a build step, framework assumptions? Get this from its own real docs, never from its pitch's framing. Cross-check against RPGACE's real current architecture (vanilla `index.html` + `main.js` + `rpgace_core.js` + `style.css`, zero build step, zero npm at runtime, Vercel-deployed, `main.js` frozen) and against decisions this project has already made and shipped (DESIGN.md's explicit L1 interaction cap, the two-script rule). Don't assume compatibility — confirm it.
+2. **Council of 5 scrutiny, run separately for each target** — Lens A (does it fit the existing architecture without a rewrite? does it reverse a decision already reasoned through?), Lens B (does it change how this session itself researches, builds, or reviews RPGACE, independent of touching the app's runtime at all?).
+3. **Verdict** — one of: Adopt as-is / Adopt with modification / Reference only (borrow the underlying principle, not the tool — the most common outcome for stack-specific frameworks) / Not applicable (real architecture mismatch) / Reject (actively conflicts with an existing shipped decision, or crosses a real line — say so plainly, this is stronger than "not applicable").
+4. Anything that survives for target A and clears Tier 2 of the funnel still goes through Omnitrix to actually get built. Aintergration only answers "should we" — never "how."
+
+**A hard boundary inside Aintergration itself, not a verdict tier.** If a proposed tool is engineered to evade Anthropic's own safety classifiers, disable another tool's safety/approval mechanism, or otherwise cross a real safety line, that is a direct refusal — outside the normal Adopt/Reject verdict scale entirely, and it does not soften into "reject for architecture reasons." It also does not get revisited under repeated pushback from the user. See CLAUDE.md's Aintergration section, Worked Precedent 3, for the real case this happened on.
+
+Full worked precedents (the $10K-website guide, OmniRoute, the classifier-evasion bundle) live in CLAUDE.md, not duplicated here — read them there for the level of detail a real Council-of-5 pass should produce.

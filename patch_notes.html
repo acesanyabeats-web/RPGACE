@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card blue" style="margin-bottom:30px;">
+    <div class="card-title">🛠️ July 20 — Omnitrix reweighted + packaged as real Skills (project + personal)</div>
+    <div class="card-body">
+      Two changes, both about making the Invokable Frameworks section actually work as designed rather than living as prose Alex has to trust me to remember.<br><br>
+      <strong>Reweighting:</strong> Omnitrix originally defaulted to dispatching Fable 5 for research/planning on every Tier 2 task. After Fable ran dry mid-audit earlier this session, the default flipped — Sonnet 5 (this session) now does the research/planning directly, inline, for most Tier 2 work; Fable is reserved for genuinely large multi-file/multi-session audits, true background parallelism, or when Alex asks for it by name. The independent-review step after Opus builds is unchanged — that's the part that actually catches mistakes.<br><br>
+      <strong>Packaged as Skills:</strong> built two, using the same skill name deliberately so Claude Code's own scoping rule resolves the right one automatically — <code>RPGACE/.claude/skills/omnitrix/SKILL.md</code> (project-scoped, versioned in this repo, all four protocols including Aintergration, RPGACE-tuned with real model names and file references) and <code>~/.claude/skills/omnitrix/SKILL.md</code> (personal/global, the three general-purpose protocols only — no Aintergration, model-agnostic, for any future project). Both built directly from CLAUDE.md's real text (not paraphrased), which remains the source of truth — the skills exist for reliable triggering, not as a fork. Skipped the skill-creator's full test/eval/benchmark loop deliberately: this is packaging already-proven, already-specified content, not validating new uncertain behavior, and spinning up parallel subagent runs to build a skill about not over-dispatching agents would have been its own small irony.
+    </div>
+  </div>
+
+<div class="card blue" style="margin-bottom:30px;">
     <div class="card-title">🧩 July 20 — Aintergration: a 4th named framework for assessing third-party Claude Code tools/agents/frameworks against RPGACE</div>
     <div class="card-body">
       Alex brought a "$10K Website in Claude Code" guide (Framer Motion + Next.js/Tailwind + a generic frontend-design skill + 21st.dev components) and asked whether it's useful for RPGACE or for this dev session — and asked for a reusable, named assessment protocol so future third-party tools/agents/services get the same rigor. <strong>Aintergration</strong> (CLAUDE.md, new subsection under Invokable Frameworks) is built ON TOP of GODMODE + Council of 5, not a duplicate: GODMODE gathers real evidence on what the tool actually requires vs. RPGACE's real architecture, then Council of 5 scrutinizes it against TWO separate targets — (A) RPGACE the app, (B) this Claude Code dev/orchestration session — since a tool can pass one and fail the other.<br><br>
