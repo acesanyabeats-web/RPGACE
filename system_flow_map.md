@@ -329,10 +329,15 @@ flowchart TD
 - `bookworm:` chat trigger; browser-side render of concept-fusion/fusion-link review cards; interlink article popup; grouped phylum switcher; drill-down Back button — all built this session, none re-clicked after building
 - F16 Beatstars listing, F17 video pipeline stages, F18 auto visual treatment, highlight-to-Phylum-Path button (pending since July 13-15)
 - n8n rota sync (F10) — importable, never test-run
+- **Oracle self-awareness + Claude Code bridge (July 22, 6 pieces, none hand-tested):** `oracleAppGrounding` (dashboard/status grounding), `oracleFetchGuard` (fetched-content prompt-injection hardening), `oracleDevBridge` (Flag-for-Claude-Code button + `oracle_dev_suggestions` table), `taxonomy_decision_log` audit-log write hook at `_insertNewSteps`, Council of 5's conversation-capture button (`fillGaps` `opts.allowConversationCapture`), and the daily Morning Brief Routine (fires for real tomorrow morning for the first time). `node --check` clean on every pass; zero of it clicked through live yet.
 
 ### Claimed/discussed but NOT built — do not trust any doc that implies otherwise
 - Live-study **card-list UI** (ConID-card pattern for Bookworm chapters) — explicitly deferred today
 - Taxonomy Sorting Agent; Claude general-knowledge audit (3 parts); Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; phyla 11-21 framework passes; `hooks.on('rpgace:ready')` ~25-site audit; Oracle 504 root fix (streaming/chunking); dead streaming-code cleanup (`restoreSendChat`)
+- **Server-side API authentication** — every `/api/*.js` endpoint is currently callable by anyone who finds the URL (confirmed July 22, `Access-Control-Allow-Origin:'*'`, zero header/token check anywhere). Needs a real design pass (shared-secret header, sequenced carefully with a Vercel env var so nothing breaks live) — not a drive-by fix.
+- **`CORRECT_PW` moved server-side** — currently readable via view-source regardless of where it's stored, since the check runs entirely in client JS; the real fix is the same server-side auth decision as the API-auth item above, not a simple env-var move.
+- **XSS/DOM-injection audit of `innerHTML` call sites** — flagged July 22, not investigated. Distinct from the (fixed) prompt-injection risk: whether any fetched external content (Jina text, YouTube transcripts, Oracle's own rendered replies) ever reaches an `innerHTML` assignment unescaped is a real open question.
+- **Website performance audit** — no Lighthouse/PageSpeed run has ever been done; `rpgace_core.js` alone is ~14,000 lines.
 
 ### Known open bugs
 - Oracle 504 on long responses (root cause known: single blocking non-streaming `callClaude`; mitigated by token trims only)

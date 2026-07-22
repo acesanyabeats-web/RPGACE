@@ -73,6 +73,26 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🏁 July 22 — Session ended here: the whole system-design book processed (3 batches, ~150 chapters), Council of 5 shipped as a real Oracle command, Oracle gained self-awareness + a two-way Claude Code bridge, 2 real security gaps found — ALL six oversight docs updated, NOTHING hand-tested yet</div>
+    <div class="card-body">
+      Honest finish-line summary, same format as July 20's. Everything below is live on <code>main</code>, <code>node --check</code>-clean, div-balance-clean, and cross-checked against real source before being logged — but zero of it has been clicked through in a real browser.<br><br>
+      <strong>Shipped and untested:</strong><br>
+      1. <strong>Council of 5 — Decision Audit</strong>, 15th Prod. Oracle command, direct port of the chat-level protocol onto Alex's own decisions.<br>
+      2. <strong>Council of 5's conversation-capture button</strong> — audits a real conversation instead of a typed summary.<br>
+      3. <strong>oracleAppGrounding</strong> — Oracle's dashboard/status self-awareness, keyword-gated.<br>
+      4. <strong>oracleFetchGuard</strong> — prompt-injection hardening on fetched web/YouTube/Instagram content.<br>
+      5. <strong>oracleDevBridge</strong> — the "🧪 Flag for Claude Code" button + <code>oracle_dev_suggestions</code> table.<br>
+      6. <strong>taxonomy_decision_log</strong> — append-only audit trail at the real taxonomy-commit choke point.<br>
+      7. <strong>A real Morning Brief Routine</strong> — fires for the first time tomorrow morning, 7am UK.<br>
+      8. <strong>Session-start check</strong> for Oracle's flagged suggestions, added to CLAUDE.md.<br><br>
+      <strong>Found, not fixed — flagged plainly, needs a dedicated pass:</strong> every <code>/api/*.js</code> endpoint has zero server-side auth (bigger exposure than the known RLS gap); <code>CORRECT_PW</code> is readable via view-source regardless of storage location, since the check is entirely client-side — these are one architecture decision, not two quick fixes. Also newly flagged this session: a possible XSS/DOM-injection risk in <code>innerHTML</code> call sites (never audited), and RPGACE's real website performance has never once been measured.<br><br>
+      <strong>Confirmed, not found:</strong> Alex confirmed directly there is no Supabase backup/PITR at all — a real, settled fact now, Alex's call on if/when to fix (Tier 3, spending).<br><br>
+      <strong>All six oversight docs touched this session</strong> — CLAUDE.md (Current State rewritten + 3 new Aintergration Worked Precedents, 4-6), <code>patch_notes.html</code> (this card + 5 more today), <code>manual.html</code> (button catalog + new "Oracle Background Capabilities" section + 2 new table rows), <code>system_flow_map.md</code> (truth table additions), <code>interconnection_map.md</code> (new Oracle-self-awareness-and-bridge paragraph), and <code>minotaur_map.html</code> (a genuinely new River VIII — the first wing in the whole map where information leaves RPGACE entirely and reaches a different world, a future Claude Code session, instead of ending at Alex's screen).<br><br>
+      <strong>Next session's real priority, in order:</strong> hand-test all 8 items above on the live app; then decide on the held-back API-auth + password fix (needs a careful, sequenced design pass, not a rushed edit); the rest of the backlog (XSS audit, performance audit, DR/backup decision) waits on Alex's direction.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">📋 July 22 — Council of 5 can now audit the real conversation, not just a typed decision; session-start check for Oracle's flagged suggestions added</div>
     <div class="card-body">
