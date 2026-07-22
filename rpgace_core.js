@@ -634,9 +634,10 @@ RPGACE.register('prodOraclePanel', {
     ['Best Resources', 'Find the 5 best resources for learning [TYPE A PRODUCTION SKILL OR CONCEPT] specifically for FL Studio and UK hip hop production. For each: what it is, why it is the best for this topic, what level it targets, what I will learn that I cannot get elsewhere, and how long it takes to extract the value.'],
     ['Research Questions', 'Generate 10 strong research questions about [TYPE A PRODUCTION TOPIC] for FL Studio and UK hip hop production. Each must be specific, actionable in FL Studio, capable of producing a tutorial insight, and relevant to my genre. After the 10 questions, tell me which 3 to research first and why.'],
     ['Productize Yourself', 'Help me turn my production knowledge into a product. MY CORE SKILL: [TYPE YOUR STRONGEST PRODUCTION SKILL]. MY AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats. Give me 3 product formats scored by effort and revenue potential. For the highest scorer: outline, launch positioning, and 7-day launch plan.'],
+    ['Council of 5 — Decision Audit', 'Run a real Council of 5 audit on a decision I am weighing, not a pep talk. THE DECISION: [DESCRIBE WHAT YOU ARE ABOUT TO DO — e.g. buying a plugin, changing your upload schedule, taking a collab, switching a mixing workflow]. Give me exactly five things, in order: 1) CREATIVE/TECHNICAL RISK — what could genuinely fail to deliver the sound or result I expect. 2) REAL COST — actual time and money, worst case not best case. 3) MAINTAINABILITY — does this become a repeatable part of my workflow or a one-off headache. 4) AUDIENCE & ALGORITHM IMPACT — how this actually lands with my audience and the platform, not how I hope it lands. 5) THE HONEST CASE AGAINST — the single strongest reason not to do this at all. Then give a real verdict: worth it, worth it with changes, or not worth it right now — and do not soften the verdict just because I clearly want to do it.'],
   ],
 
-  ICONS: ['??','??','❓','??','??','??','??','??','⏰','✅','??','??','??','??'],
+  ICONS: ['??','??','❓','??','??','??','??','??','⏰','✅','??','??','??','??','⚖️'],
 
   init: function() {
     var self = this;
@@ -671,7 +672,7 @@ RPGACE.register('prodOraclePanel', {
     lb.textContent = 'PROD. BY ORACLE';
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
-    sub.textContent = 'FL Studio · UK Hip Hop · 14 Commands';
+    sub.textContent = 'FL Studio · UK Hip Hop · 15 Commands';
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
@@ -684,7 +685,7 @@ RPGACE.register('prodOraclePanel', {
     var body = document.createElement('div');
     body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
     var note = document.createElement('div');
-    note.textContent = '14 COMMANDS · PRE-FILLED FOR YOUR SESSION';
+    note.textContent = '15 COMMANDS · PRE-FILLED FOR YOUR SESSION';
     note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
     body.appendChild(note);
 
