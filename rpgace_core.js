@@ -2749,6 +2749,12 @@ RPGACE.register('leftNav', {
 
   init: function() {
     var self = this;
+    // _buildDrawer() reads RPGACE.CONFIG.pages via _items() - CONFIG isn't
+    // defined until the `config` module's own registration further down
+    // this file runs, so this must stay gated behind the normal
+    // rpgace:ready path (init() already is). Building it here, not at
+    // script-parse time alongside the instant hamburger below.
+    self._buildDrawer();
     // Active-page highlight sync. TOP-LEVEL listeners — NOT nested inside
     // another hook's callback (the mid-fire forEach landmine: a listener
     // added after rpgace:ready already fired would silently never run).
@@ -2932,21 +2938,25 @@ RPGACE.register('leftNav', {
 // July 22 QoL fix ("left sidebar takes ages to load"): the hamburger's
 // anchor, .nav, is static HTML present in index.html from first paint -
 // it doesn't depend on main.js's initApp() or any dynamic render. But
-// _injectHamburger/_buildDrawer previously only ran inside init(), which
-// RPGACE.register() gates behind 'rpgace:ready' - itself gated behind the
-// full window 'load' event (every image/font/script finished) + 150ms +
-// waiting for every module registered earlier in this file to finish its
-// own init(). None of that is needed just to make the sidebar clickable.
-// Since main.js + rpgace_core.js load at the very end of <body>, the DOM
-// (including .nav) is already fully parsed by the time this line runs -
-// build the visible drawer immediately instead of waiting in line behind
-// ~14 other modules and a full page-load event. init() still runs later
-// for the hook-wiring (page:show sync, Escape-to-close) - both calls are
-// idempotent (guarded on getElementById checks), so running this twice is
-// harmless.
+// _injectHamburger previously only ran inside init(), gated behind the
+// full 'rpgace:ready' cascade for no real reason - neither
+// _injectStyles() nor _injectHamburger() touch RPGACE.CONFIG or any
+// other module's exports, so both are safe to run immediately at
+// script-parse time, making the toggle button clickable well before the
+// rest of the app finishes initializing.
+//
+// _buildDrawer() is deliberately NOT called here (real bug, found live
+// July 22): it reads RPGACE.CONFIG.pages via _items(), and CONFIG isn't
+// defined until the `config` module's own registration further down this
+// same file runs. Calling it this early threw uncaught mid-script and
+// silently aborted every module registration after this point in the
+// file (uiBatchList, config itself, dashDeck, taxonomyTree, phylumPath,
+// bookworm, and everything else — confirmed live: only 15 of ~40 modules
+// had registered when this broke). _buildDrawer() stays on the normal
+// init()-gated path; toggle()'s own existing lazy-build fallback already
+// covers the rare case of a click landing before init() has run.
 RPGACE.modules.leftNav._injectStyles();
 RPGACE.modules.leftNav._injectHamburger();
-RPGACE.modules.leftNav._buildDrawer();
 /* ===END:leftNav=== */
 
 /* ===MODULE:uiBatchList=== */
