@@ -384,6 +384,16 @@
     console.log('[RPGACE] Foundation layer active. Hooks wired. Modules:', Object.keys(R.modules));
     R._ready = true;
     R.hooks.fire('rpgace:ready');
+
+    // July 22: reveal the login gate only once every module has actually
+    // registered (this exact point) - the boot loader in index.html covers
+    // the whole screen from first paint until this line runs, so the login
+    // screen itself never appears mid-race. A pure-CSS 6s fallback in
+    // index.html's <style> block covers the case this line never runs at all.
+    try {
+      var _boot = document.getElementById('rpgace-boot-loader');
+      if (_boot) _boot.classList.add('rpgace-boot-hidden');
+    } catch (e) { console.warn('[RPGACE] boot loader hide failed', e.message); }
   /* ── YouTube Oracle button injection (direct, no module dependency) ── */
   setTimeout(function() {
     var _ytBtnInject = function() {
@@ -14705,3 +14715,30 @@ RPGACE.register('journalQoL', {
 /* ===END:journalQoL=== */
 
 /* ===END_DOMAIN:SCHEDULE=== */
+
+/* ===MODULE:pwaInstall=== */
+// July 22: makes RPGACE a real installable PWA (Android/desktop "Add to
+// Home Screen"/"Install app"). Registration has zero dependency on
+// RPGACE.CONFIG or login state, so it runs immediately at parse time
+// rather than waiting behind the rpgace:ready gate - the earlier a
+// browser sees a valid SW + manifest, the sooner it offers the install
+// prompt. Belongs in rpgace_core.js (not a new <script> tag - see the
+// "never add a static script tag" landmine) since it's plain JS logic,
+// not an external library needing its own file.
+RPGACE.register('pwaInstall', {
+  init: function() {
+    // No-op: registration already ran below, outside init(). This module
+    // exists mainly so failures show up in RPGACE's normal module-init
+    // logging/console conventions rather than as a silent bare call.
+  },
+  _register: function() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('/sw.js').then(function(reg) {
+      console.log('[RPGACE] Service worker registered', reg.scope);
+    }).catch(function(err) {
+      console.warn('[RPGACE] Service worker registration failed', err.message);
+    });
+  }
+});
+RPGACE.modules.pwaInstall._register();
+/* ===END:pwaInstall=== */

@@ -6,8 +6,41 @@
 <title>RPGACE — Life RPG Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="/icons/favicon-16.png" sizes="16x16">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="theme-color" content="#0d0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+/* Boot loader: shown at first paint, before any script runs, so the login
+   gate never appears until rpgace_core.js confirms every module has
+   registered (see the 'rpgace:ready' hide call in rpgace_core.js). The
+   keyframe below is a pure-CSS hard ceiling with zero JS dependency - if
+   script execution ever stalls or fails, this guarantees the login screen
+   still becomes reachable instead of trapping the user behind a spinner. */
+#rpgace-boot-loader{position:fixed;inset:0;z-index:999999;background:#0d0f14;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+  animation:rpgace-boot-fallback 0s 6s forwards;}
+#rpgace-boot-loader.rpgace-boot-hidden{display:none;}
+#rpgace-boot-loader .rpgace-boot-spinner{width:44px;height:44px;border-radius:50%;
+  border:3px solid #2a3050;border-top-color:#c9a84c;animation:rpgace-boot-spin 0.9s linear infinite;}
+#rpgace-boot-loader .rpgace-boot-text{color:#c9a84c;font-family:'Rajdhani',sans-serif;
+  font-weight:600;letter-spacing:2px;font-size:13px;text-transform:uppercase;}
+@keyframes rpgace-boot-spin{to{transform:rotate(360deg);}}
+@keyframes rpgace-boot-fallback{to{display:none;}}
+</style>
 </head>
 <body>
+
+<!-- BOOT LOADER - hidden by rpgace_core.js once 'rpgace:ready' fires (all
+     modules registered); pure-CSS 6s fallback above as a safety net. -->
+<div id="rpgace-boot-loader">
+  <div class="rpgace-boot-spinner"></div>
+  <div class="rpgace-boot-text">⚔ Loading RPGACE…</div>
+</div>
 
 <!-- PASSWORD GATE -->
 <div id="gate">
@@ -417,7 +450,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 <div class="xp-toast" id="xp-toast">+50 XP</div>
 
 <script src="main.js?v=20260716a"></script>
-  <script src="rpgace_core.js?v=20260722b"></script>
+  <script src="rpgace_core.js?v=20260722c"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
