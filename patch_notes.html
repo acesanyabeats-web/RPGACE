@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🐢 July 22 — Real root cause found for "left nav doesn't respond for ~10s after login": onReady() was waiting for the wrong signal, not just for leftNav specifically</div>
+    <div class="card-body">
+      Alex's report: page loads, dashboard scrolls fine, but clicking anything in the left list does nothing for the first ~10 seconds. GODMODE evidence pass instead of another guess.<br><br>
+      <strong>Real root cause:</strong> <code>onReady()</code> — the function every one of ~40 modules' <code>init()</code> calls wait behind via <code>rpgace:ready</code> — gated on <code>document.readyState==='complete'</code> (the <code>window</code> <code>'load'</code> event), which waits for EVERY subresource on the page (every image, every font) to finish downloading, not just the DOM. The comment justifying this said "give initApp() time to run" — checked <code>checkPassword()</code> in main.js directly: <code>initApp()</code> is called from the login handler, gated entirely by WHEN Alex logs in, completely decoupled from page-load timing. It can run long after <code>window.load</code> already fired, or need to run before it ever will. There was never a real dependency on waiting for images/fonts — just unnecessary latency stacked in front of every module's startup, worst-case as long as the slowest image/font on the page takes.<br><br>
+      <strong>Fix:</strong> <code>onReady()</code> now checks <code>document.readyState !== 'loading'</code> (DOMContentLoaded-equivalent — fires once the DOM itself is parsed, which it already is by the time <code>rpgace_core.js</code> runs, since both scripts load at the very end of <code>&lt;body&gt;</code>) instead of waiting for full <code>'complete'</code>, cutting the delay from <code>window.load + 150ms</code> to effectively <code>DOMContentLoaded + 50ms</code>. This is a systemic fix — every module's startup timing improves, not just leftNav's.<br><br>
+      <strong>Second, separate bug found in the same pass:</strong> <code>leftNav._go(page)</code> unconditionally dereferenced <code>RPGACE.CONFIG.pages.phylumPath</code> on every single click, regardless of which page was clicked. If <code>RPGACE.CONFIG</code> ever wasn't ready yet at click time, this threw before ever calling <code>showPage()</code> — the click would silently do nothing, no error shown, no toast, exactly matching Alex's description. Guarded defensively, same pattern as <code>_items()</code>'s existing CONFIG guard.<br><br>
+      <strong>Stale cache-busting version found again</strong> — the version string was bumped once already today (<code>?v=20260722a</code>) after the earlier incident, but <code>rpgace_core.js</code> changed again after that bump for this fix, so it was bumped a second time to <code>?v=20260722b</code>. Repeating the lesson from earlier today: bump this every time <code>rpgace_core.js</code> changes, not just once per day.<br><br>
+      <code>node --check rpgace_core.js</code> clean. Merged to <code>main</code> and pushed before this card was written, per the standing rule. <strong>Not yet hand-tested</strong> — needs a real hard-refresh + login + immediate click-through from Alex to confirm the lag is actually gone.
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🚨 July 22 — Real bug caught live: the "instant sidebar" fix briefly broke the whole app, root-caused and properly fixed; stale cache-busting version found and bumped</div>
     <div class="card-body">
