@@ -2740,7 +2740,6 @@ RPGACE.register('leftNav', {
       { label: '📋 Agenda',        page: P.agenda },
       { label: 'Schedule',         page: P.schedule },
       { label: 'Oracle AI',        page: P.oracle },
-      { label: '⚡ Agents',        page: P.agents },
       { label: '🔬 Research Lab',  page: P.research, subKind: 'research' },
       { label: '📖 Encyclopedia',  page: P.encyclopedia },
       { label: '📓 Journal',       page: P.journal },
@@ -10205,8 +10204,17 @@ RPGACE.register('config', {
     var _origSelect = RPGACE.sb.select.bind(RPGACE.sb);
     RPGACE.sb.select = function(table, params) {
       var cacheKey = table + '|' + (params || '');
-      // Don't cache writes-heavy tables
-      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs'];
+      // Don't cache writes-heavy tables. rpgace_shifts added July 22:
+      // confirmed real shifts get written by an external local Python
+      // script (browser-use automation scraping Alex's rota, outside the
+      // app entirely) - a write path this cache's own busting can never
+      // see or invalidate, since RPGACE.cache.clear() only ever fires from
+      // this app's OWN insert/update/delete wrappers. Any external write
+      // could sit behind up to 60s of stale cached reads with no way for
+      // the app to know. Table is read-often/tiny, not write-heavy in the
+      // app's own sense, but the same "never guaranteed fresh" problem
+      // applies - excluded from caching for the same reason as the others.
+      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs','rpgace_shifts'];
       if (noCache.indexOf(table) !== -1) return _origSelect(table, params);
       var cached = RPGACE.cache.get(cacheKey);
       if (cached) return Promise.resolve(cached);
@@ -14327,5 +14335,307 @@ RPGACE.register('scheduleFixes', {
 
 });
 /* ===END:scheduleFixes=== */
+
+/* ===MODULE:agentsIntoOracle=== */
+// July 22 QoL request: "fold [Agents] into Oracle AI." GODMODE evidence
+// pass first - the Agents page (main.js AGENT_ACTIONS + buildAgentActions())
+// is real, not empty: 8 genuine one-click Composio actions with per-action
+// XP, a connected-apps status bar, and an activity log. The actual
+// complaint was 3 of those 8 actions overlapping with Oracle's own
+// .quick-row buttons (draft email, YT stats, log to Notion) making a
+// whole separate nav page feel redundant - not that the content itself
+// was worthless. Council of 5 verdict: fold it in physically rather than
+// rebuild it - buildAgentActions() (main.js, frozen) just does
+// document.getElementById('agent-actions') and fills it, so it works
+// regardless of where that element physically lives in the DOM. Reuses
+// the exact "move live DOM nodes" pattern dashDeck already established
+// for Bookworm/Knowledge Gaps/Content Pipeline (_stashWidget/_ensureStash) -
+// just a one-way permanent move here, not a toggle in/out of a popup.
+RPGACE.register('agentsIntoOracle', {
+
+  init: function() {
+    var self = this;
+    self._relocate();
+    setTimeout(function() { self._relocate(); }, 1500);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._relocate(); }, 1500); });
+  },
+
+  _relocate: function() {
+    if (document.getElementById('agents-in-oracle')) return; // already moved
+    var agentsPage = document.getElementById('page-agents');
+    var oraclePage = document.getElementById('page-advisor');
+    if (!agentsPage || !oraclePage) return;
+
+    var wrapper = document.createElement('div');
+    wrapper.id = 'agents-in-oracle';
+    wrapper.style.cssText = 'margin-top:24px;padding-top:20px;border-top:1px solid var(--border)';
+
+    var heading = document.createElement('div');
+    heading.className = 'section-title';
+    heading.textContent = '⚡ Agent Actions';
+    wrapper.appendChild(heading);
+
+    // Move everything except the old page's own top title - Oracle's page
+    // already has its own, no need for a second one.
+    Array.prototype.slice.call(agentsPage.children).forEach(function(k) {
+      if (k.classList && k.classList.contains('section-title') && k.textContent.indexOf('Composio Agent Control Centre') !== -1) return;
+      wrapper.appendChild(k);
+    });
+
+    oraclePage.appendChild(wrapper);
+  },
+
+});
+/* ===END:agentsIntoOracle=== */
+
+/* ===MODULE:encyclopediaQoL=== */
+// July 22 QoL request: "no real search, disconnected from taxonomy tree,
+// no sense of what's actually been used." GODMODE evidence pass found:
+// - Search: Encyclopedia only ever had category filter + sort-workflow
+//   tabs (main.js setEncCategory/setEncSort) - no keyword search existed.
+// - Taxonomy: encTaxonomyLink (this file) already tracks/shows link status
+//   via entry.taxonomy_node_id - genuinely NOT disconnected - but the
+//   status badge only ever appears in the EXPANDED per-entry view, so
+//   Alex would have to open every card individually to see it. That's a
+//   real visibility gap, not a missing feature.
+// - Usage tracking ("what's actually been used"): confirmed via schema
+//   check - the encyclopedia table has no applied/used column at all.
+//   A real tracking mechanism needs a new column (a migration, Tier 3) -
+//   deliberately NOT added here without Alex's explicit go; flagged in
+//   patch_notes instead of guessed at.
+//
+// Search implementation: filters ALREADY-RENDERED cards by textContent
+// match rather than re-deriving main.js's own filter/sort logic - avoids
+// duplicating frozen-file behaviour, and re-applies after every
+// re-render (wraps window.renderEncEntries, same established pattern as
+// encTaxonomyLink just above) so it survives category/sort clicks.
+RPGACE.register('encyclopediaQoL', {
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.renderEncEntries !== 'function' || window._encQoLPatched) return;
+      window._encQoLPatched = true;
+      var orig = window.renderEncEntries;
+      window.renderEncEntries = function() {
+        var result = orig.apply(this, arguments);
+        setTimeout(function() {
+          self._injectTaxBadges();
+          self._applySearch();
+        }, 60);
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
+    setTimeout(function() { self._injectSearchBar(); }, 1500);
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.encyclopedia) setTimeout(function() { self._injectSearchBar(); }, 300);
+    });
+  },
+
+  _injectSearchBar: function() {
+    if (document.getElementById('enc-search-input')) return;
+    var countEl = document.getElementById('enc-count');
+    var controlsRow = countEl ? countEl.parentElement : null;
+    if (!controlsRow) return;
+    var self = this;
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'enc-search-input';
+    input.placeholder = '🔍 Search entries...';
+    input.style.cssText = 'flex:1;min-width:160px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:Rajdhani,sans-serif;outline:none';
+    input.addEventListener('input', function() { self._applySearch(); });
+    controlsRow.insertBefore(input, countEl);
+  },
+
+  _applySearch: function() {
+    var input = document.getElementById('enc-search-input');
+    var term = input ? input.value.trim().toLowerCase() : '';
+    var cards = document.querySelectorAll('#enc-output > div[id^="enc-card-"]');
+    Array.prototype.forEach.call(cards, function(card) {
+      var match = !term || card.textContent.toLowerCase().indexOf(term) !== -1;
+      card.style.display = match ? '' : 'none';
+    });
+  },
+
+  // Surfaces the SAME entry.taxonomy_node_id status encTaxonomyLink
+  // already tracks, but in the always-visible header row instead of only
+  // after expanding - the data-entry-id attribute is already present in
+  // each card's expanded section (just visually hidden, not absent from
+  // the DOM), so this reads it directly rather than recomputing anything.
+  _injectTaxBadges: function() {
+    var cards = document.querySelectorAll('#enc-output > div[id^="enc-card-"]');
+    Array.prototype.forEach.call(cards, function(card) {
+      if (card.dataset.taxBadge) return;
+      card.dataset.taxBadge = '1';
+      var idHolder = card.querySelector('[data-entry-id]');
+      var id = idHolder ? idHolder.getAttribute('data-entry-id') : null;
+      var entry = (window.ENC_ALL_ENTRIES || []).find(function(e) { return String(e.id || e.created_at) === String(id); });
+      // Header row is the div with the toggleEncEntry onclick; its first
+      // child wraps [title div, meta div] - meta is that wrapper's last
+      // child. Explicit structural knowledge from the real markup, not a
+      // generic nth-child guess that could match the wrong nested div.
+      var headerRow = card.querySelector('[onclick^="toggleEncEntry"]');
+      var metaRow = headerRow && headerRow.firstElementChild && headerRow.firstElementChild.lastElementChild;
+      if (!entry || !metaRow) return;
+      var badge = document.createElement('span');
+      if (entry.taxonomy_node_id) {
+        badge.textContent = ' · 🌳 Linked';
+        badge.style.color = '#3DAA6E';
+      } else {
+        badge.textContent = ' · ○ Not yet placed';
+        badge.style.color = 'rgba(226,226,236,0.35)';
+      }
+      metaRow.appendChild(badge);
+    });
+  },
+
+});
+/* ===END:encyclopediaQoL=== */
+
+/* ===MODULE:journalQoL=== */
+// July 22 QoL request: "no search or filtering, doesn't surface the new
+// audit trails, no tagging/categorisation." GODMODE evidence pass: the
+// journal table's real column is `source` (schedule/feynman/oracle/
+// beatLog/contentProductionLive/morning-routine/manual, confirmed by
+// direct query) - already an implicit category, just never surfaced as
+// filterable tags in the UI. No stable per-card id/class exists in
+// refreshJournalDisplay's render (main.js, frozen) - unlike Encyclopedia,
+// which tags each card with enc-card-${safeId} - so search/filter here
+// works purely by textContent match over #journal-output's direct
+// children rather than an id-based lookup; simpler, and doesn't require
+// touching or duplicating the frozen render function.
+RPGACE.register('journalQoL', {
+
+  SOURCES: ['schedule', 'feynman', 'oracle', 'beatLog', 'contentProductionLive', 'morning-routine', 'manual'],
+
+  init: function() {
+    var self = this;
+    function patch() {
+      if (typeof window.refreshJournalDisplay !== 'function' || window._journalQoLPatched) return;
+      window._journalQoLPatched = true;
+      var orig = window.refreshJournalDisplay;
+      window.refreshJournalDisplay = function() {
+        var result = orig.apply(this, arguments);
+        Promise.resolve(result).then(function() {
+          setTimeout(function() {
+            self._injectAuditEntries();
+            self._applyFilter();
+          }, 80);
+        });
+        return result;
+      };
+    }
+    patch();
+    setTimeout(patch, 1500);
+    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
+    setTimeout(function() { self._injectControls(); }, 1500);
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.journal) setTimeout(function() { self._injectControls(); }, 300);
+    });
+  },
+
+  _injectControls: function() {
+    if (document.getElementById('journal-search-input')) return;
+    var countEl = document.getElementById('journal-count');
+    var controlsRow = countEl ? countEl.parentElement : null;
+    if (!controlsRow) return;
+    var self = this;
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.id = 'journal-search-input';
+    input.placeholder = '🔍 Search journal...';
+    input.style.cssText = 'flex:1;min-width:160px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:Rajdhani,sans-serif;outline:none';
+    input.addEventListener('input', function() { self._applyFilter(); });
+    controlsRow.insertBefore(input, countEl);
+
+    var chipRow = document.createElement('div');
+    chipRow.id = 'journal-source-chips';
+    chipRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px';
+    var allChip = self._makeChip('all', 'All');
+    chipRow.appendChild(allChip);
+    self.SOURCES.forEach(function(s) { chipRow.appendChild(self._makeChip(s, s)); });
+    controlsRow.insertAdjacentElement('afterend', chipRow);
+    self._activeSource = 'all';
+  },
+
+  _makeChip: function(key, label) {
+    var self = this;
+    var btn = document.createElement('button');
+    btn.dataset.sourceKey = key;
+    btn.textContent = label;
+    btn.style.cssText = 'padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.03);color:rgba(226,226,236,0.5)';
+    btn.onclick = function() {
+      self._activeSource = key;
+      Array.prototype.forEach.call(document.querySelectorAll('#journal-source-chips button'), function(b) {
+        var on = b.dataset.sourceKey === key;
+        b.style.background = on ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.03)';
+        b.style.borderColor = on ? 'rgba(201,168,76,0.45)' : 'rgba(255,255,255,0.1)';
+        b.style.color = on ? 'var(--gold)' : 'rgba(226,226,236,0.5)';
+      });
+      self._applyFilter();
+    };
+    return btn;
+  },
+
+  _applyFilter: function() {
+    var input = document.getElementById('journal-search-input');
+    var term = input ? input.value.trim().toLowerCase() : '';
+    var source = this._activeSource || 'all';
+    var cards = document.querySelectorAll('#journal-output > div');
+    Array.prototype.forEach.call(cards, function(card) {
+      var text = card.textContent.toLowerCase();
+      var matchesTerm = !term || text.indexOf(term) !== -1;
+      var matchesSource = source === 'all' || text.indexOf(source.toLowerCase()) !== -1;
+      card.style.display = (matchesTerm && matchesSource) ? '' : 'none';
+    });
+  },
+
+  // Surfaces taxonomy_decision_log + oracle_dev_suggestions (both built
+  // earlier this session) as readable, clearly-tagged, READ-ONLY entries
+  // in the Journal feed - this is exactly the "running log" page these
+  // two append-only tables were missing a human-readable home in.
+  // Fetched fresh each render (both tables are tiny; no caching concern),
+  // prepended above the real journal entries, visually distinguished so
+  // they're never confused with something Alex wrote or can delete.
+  _injectAuditEntries: function() {
+    var el = document.getElementById('journal-output');
+    if (!el || el.querySelector('.journal-audit-entry')) return;
+    if (el.textContent.indexOf('Your Journal is Empty') !== -1) return;
+
+    var self = this;
+    Promise.all([
+      RPGACE.sb.select('taxonomy_decision_log', 'order=created_at.desc&limit=10').catch(function() { return []; }),
+      RPGACE.sb.select('oracle_dev_suggestions', 'order=created_at.desc&limit=10').catch(function() { return []; }),
+    ]).then(function(results) {
+      var decisions = results[0] || [];
+      var suggestions = results[1] || [];
+      var rows = decisions.map(function(d) {
+        return { date: (d.created_at || '').slice(0, 10), label: '🧬 Taxonomy Decision', color: '#3DAA6E', text: 'Placed at ' + (d.path || '') + (d.insight_text ? ': ' + d.insight_text.slice(0, 140) : '') };
+      }).concat(suggestions.map(function(s) {
+        return { date: (s.created_at || '').slice(0, 10), label: '🧪 Oracle Suggestion', color: '#4A90E2', text: (s.suggestion_text || '').slice(0, 200), status: s.status };
+      }));
+      if (!rows.length) return;
+      rows.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      var html = rows.map(function(r) {
+        return '<div class="journal-audit-entry" style="background:var(--panel2);border:1px solid var(--border);border-left:3px solid ' + r.color + ';border-radius:10px;padding:14px 16px;margin-bottom:12px;opacity:0.9">'
+          + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'
+          + '<div style="font-family:Cinzel,serif;font-size:12px;color:' + r.color + ';font-weight:600">' + r.label + (r.status ? ' — ' + r.status : '') + '</div>'
+          + '<div style="font-size:10px;color:var(--muted)">📅 ' + (r.date || '') + '</div>'
+          + '</div>'
+          + '<div style="font-size:12px;color:var(--text);line-height:1.6;margin-top:6px">' + r.text.replace(/</g, '&lt;') + '</div>'
+          + '</div>';
+      }).join('');
+      el.insertAdjacentHTML('afterbegin', html);
+      self._applyFilter();
+    });
+  },
+
+});
+/* ===END:journalQoL=== */
 
 /* ===END_DOMAIN:SCHEDULE=== */
