@@ -233,3 +233,39 @@ BUILD METHOD (Round 3): Sonnet-direct for the evidence-check above;
 the broader /5thDimension audit this feeds into is Fable-dispatched (see
 its own session note) - a genuinely large, multi-file, multi-session audit
 per Omnitrix's own rebalance criteria, not a routine fix.
+
+================================================================================
+ROUND 4 — July 23, 2026. Fable ran dry a SECOND time (first was July 20's
+full-project audit) - real, worth logging as a standing pattern, not a
+one-off.
+
+The Fable-model background dispatch for /5thDimension's Phase 1+2 evidence
+audit (fifth_dimension_phase1_2_report_2026-07-23.md) failed immediately
+with "You're out of usage credits." Per the standing rule already in
+CLAUDE.md ("do not substitute a different model into the Fable role
+without Alex's explicit say-so; report the failure and ask") - reported it
+plainly rather than silently swapping models.
+
+Alex's verbatim answer: "just use sonnet for it instead, log use of fable
+for the future."
+
+ACTION TAKEN: re-dispatched the identical Phase 1+2 task to a Sonnet-model
+background agent (explicit model:"sonnet"), same self-contained prompt,
+same deliverable file path. Sonnet is already this project's default
+researcher/planner for most Tier 2 work per the July 20 Omnitrix rebalance
+- using it here isn't a downgrade of rigor, just a different model doing
+the same evidence-gathering job Fable would have.
+
+STANDING PATTERN NOW WORTH NAMING (not just this one incident): Fable 5's
+usage-credit ceiling has now caused a real mid-task failure TWICE in this
+project (July 20's full-project audit dispatch, and this one). Both times
+the correct response was: report the failure honestly, get Alex's explicit
+say-so before substituting a different model, then proceed. Both times
+Alex chose to substitute rather than run `/usage-credits` or wait. Future
+sessions: this is a real, recurring operational constraint on Fable
+dispatches specifically (not Sonnet or Opus) - budget for it when deciding
+whether a task is worth a Fable dispatch at all versus just doing it
+Sonnet-direct from the start (per Omnitrix's own "most tasks don't need a
+dedicated fresh-context agent" reasoning) - Fable's fresh-context edge is
+real for genuinely large audits, but it comes with this real failure mode
+that Sonnet/Opus dispatches don't share.
