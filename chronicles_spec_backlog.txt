@@ -197,3 +197,39 @@ as Round 1 (routine fix + diagnostic addition, not a large audit needing a
 dedicated fresh-context pass) and matches the existing Omnitrix rebalance
 (Fable reserved for large audits, true background parallelism, or Alex's
 explicit requests by name).
+
+================================================================================
+ROUND 3 — July 23, 2026. Real perfWatch data point, honestly still open.
+
+Alex's verbatim report: "app froze for 23.000 ms when swiped left for nav
+list." This is perfWatch's own toast firing for real (the exact "Nms"
+format it was built to report) - the diagnostic worked as designed. This
+arrived AFTER the same-day Round 3 Research Lab lazy-loading fix
+(research_lab_lazyload_spec_backlog.txt), which targeted a real, separate
+contributor to the broader post-login freeze (6 sub-modules injecting/
+fetching regardless of active page). That fix does NOT appear to have
+closed this specific freeze - the swipe-to-open-nav gesture triggering it
+is new, more specific information.
+
+Real evidence checked before writing anything further (not another blind
+guess): re-read leftNav._initSwipeGesture() - touchstart/touchend only,
+{passive:true}, no preventDefault, no per-move work. Grepped the entire
+codebase for any 'touchmove' or scroll listener that could make a DRAG
+gesture specifically (as opposed to a tap, which was already Playwright-
+verified fast in Round 2) trigger extra work - none exist anywhere in
+rpgace_core.js or main.js. No new candidate found this pass.
+
+STATUS: genuinely still open. NOT re-guessed at a second/third time
+tonight, per the standing "one failed fix = stop, get real evidence" rule
+- instead folded into the /5thDimension built-vs-reported evidence pass
+(see CLAUDE.md's Invokable Frameworks section, new July 23 entry) as a
+real "still broken" finding to carry forward, rather than patched blind
+under time pressure while Alex is tired. The remaining honest candidate
+from earlier in this file - main.js's synchronous initApp() calls - still
+stands as the most likely deeper cause, still requires Alex's explicit
+sign-off before touching the FROZEN file, still not done without it.
+
+BUILD METHOD (Round 3): Sonnet-direct for the evidence-check above;
+the broader /5thDimension audit this feeds into is Fable-dispatched (see
+its own session note) - a genuinely large, multi-file, multi-session audit
+per Omnitrix's own rebalance criteria, not a routine fix.
