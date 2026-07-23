@@ -14899,10 +14899,28 @@ RPGACE.register('careerStatCard', {
     RPGACE.hooks.on('page:show', function() { self._render(); });
   },
 
+  // July 23 — real bug found while investigating a reported 10-20s post-
+  // login freeze (worse on mobile: couldn't scroll at all; on desktop,
+  // nav/cards wouldn't click but the page could still scroll). Traced the
+  // real call pattern: init() calls _fetchAll() immediately, again at
+  // 1500ms, and again on every single page:show - plus the new July 23
+  // boot-loader prefetch calls it once more before login even completes.
+  // Multiple waves of 8 Supabase calls each, fired close enough together
+  // that NONE of them can benefit from RPGACE.cache yet (a cache entry
+  // only exists once a call actually resolves) - up to 32 near-simultaneous
+  // requests to the same origin. Browsers cap concurrent connections per
+  // origin (~6 in Chrome), so the later calls queue behind the earlier
+  // ones - on a slower/higher-latency mobile connection this queueing
+  // alone could plausibly stretch into many real seconds. Deduplicating
+  // concurrent calls to share one real in-flight request fixes this
+  // directly, regardless of whether it's the whole story.
+  _inflightFetch: null,
   _fetchAll: function() {
+    if (this._inflightFetch) return this._inflightFetch;
+    var self = this;
     var sb = RPGACE.sb;
     var safe = function(p) { return p.catch(function() { return []; }); };
-    return Promise.all([
+    this._inflightFetch = Promise.all([
       safe(sb.select('content_productions', 'select=con_id,status,youtube_url,instagram_url,tiktok_url,title,idea,notes,created_at&order=created_at.desc&limit=200')),
       safe(sb.select('journal', 'select=title,content,source,created_at&order=created_at.desc&limit=200')),
       safe(sb.select('encyclopedia_insights', 'select=source_entry_title,insight_text,macro_category,micro_categories,created_at&order=created_at.desc&limit=200')),
@@ -14933,6 +14951,12 @@ RPGACE.register('careerStatCard', {
         systemUpdates: Array.isArray(results[7]) ? results[7] : []
       };
     });
+    // Clear the in-flight lock once settled (success or failure) so a
+    // later real refresh (cache expired, 60s+ later) can fetch again -
+    // this dedup is only meant to collapse calls that land in the same
+    // narrow window, not permanently share one stale result.
+    this._inflightFetch.then(function() { self._inflightFetch = null; }, function() { self._inflightFetch = null; });
+    return this._inflightFetch;
   },
 
   _isShipped: function(row) {
