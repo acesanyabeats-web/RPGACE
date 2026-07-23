@@ -1,10 +1,11 @@
 // AGENT 4 — DATA EXECUTOR
 // Job: Fire Composio actions only. Cannot generate content or talk to users.
-import { setCORS, callComposio, ACCOUNTS, BASE_URL } from './_context.js';
+import { setCORS, requireAuth, callComposio, ACCOUNTS, BASE_URL } from './_context.js';
 
 export default async function handler(req, res){
   setCORS(res);
   if(req.method === 'OPTIONS') return res.status(200).end();
+  if (!requireAuth(req, res)) return;
   if(req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {

@@ -269,3 +269,98 @@ Sonnet-direct from the start (per Omnitrix's own "most tasks don't need a
 dedicated fresh-context agent" reasoning) - Fable's fresh-context edge is
 real for genuinely large audits, but it comes with this real failure mode
 that Sonnet/Opus dispatches don't share.
+
+================================================================================
+ROUND 5 — July 23, 2026. Alex's real answers to the /5thDimension Phase 5
+forks, recorded verbatim, and the resulting build.
+
+VERBATIM (Alex, answering the three forks posed at the end of
+fifth_dimension_phase3_4_debate_2026-07-23.md):
+"1. do now 2. reduplication is always a priority, whether functions or
+transportation or changing data, same processes must go through one
+pipeline or function if steps are identical 3. yes make live, always
+automate where it makes improvements"
+
+INTERPRETATION (stated plainly, not silently assumed): #1 is unambiguous -
+build the API-auth + password fix now. #2 answers a DIFFERENT, broader
+question than the one asked (was it throughput or priority for the
+taxonomy backlog) - Alex instead stated a general architecture PRINCIPLE:
+eliminate reduplication everywhere, always, promoted to CLAUDE.md rule 8.
+#3 is unambiguous - build the live-grounding rewiring, and treat
+"automate where it improves things" as a standing default going forward,
+not a one-off approval.
+
+#1 BUILT THIS ROUND (Tier 3, real production security fix):
+- api/auth.js (new): server-side password check against process.env.
+  CORRECT_PW, returns process.env.RPGACE_API_SECRET on success. Neither
+  value is hardcoded anywhere in committed code (this repo is public -
+  a hardcoded fallback would be exactly as exposed as the old client-side
+  CORRECT_PW was).
+- api/_context.js: new requireAuth(req,res) checking the X-RPGACE-Auth
+  header against RPGACE_API_SECRET, called by every other endpoint;
+  setCORS() now allows that header through CORS preflight too.
+- rpgace_core.js: new authGate module - verify(pw) calls /api/auth and
+  stores the returned secret; a single global fetch() wrap attaches it
+  to every /api/* call site (main.js's 15 + rpgace_core.js's own 11 -
+  one real choke point, not 26 edits, directly applying #2's principle
+  to this exact build).
+- main.js (FROZEN, one deliberate logged exception): checkPassword() no
+  longer holds CORRECT_PW as a literal string or compares it locally -
+  it awaits authGate.verify(pw) instead. The literal password value is
+  gone from every file shipped to the browser.
+- Fixed a real latent bug found while touching the checkPassword wrap
+  (rpgace_core.js): it used to fire 'rpgace:login' unconditionally 700ms
+  after ANY checkPassword() call, including a WRONG password - now it
+  awaits the real result and only fires on genuine success.
+
+APPLYING #2 (REDUPLICATION) FOUND A REAL, CONCRETE BUG WHILE BUILDING #1:
+api/composio.js had its own hand-rolled CORS header block AND its own
+divergent ACCOUNTS map (with a "UPDATED June 28 2026 - verified tool
+names from app.composio.dev" comment) instead of importing _context.js's
+shared ones. The two maps had drifted: composio.js's gmail/instagram ids
+were the newer, correct ones; _context.js's were stale. executor.js and
+orchestrate.js both call callComposio() (which reads _context.js's
+ACCOUNTS) - meaning any Gmail/Instagram action routed through those two
+files had silently been hitting the WRONG connected-account id since
+June 28, with no error surfaced anywhere. Fixed: _context.js's ACCOUNTS
+updated to the correct values, TOOL_ALIASES moved there too (so every
+caller benefits, not just composio.js), composio.js rewritten to import
+from _context.js instead of keeping its own copy. api/search.js's
+separately-duplicated CORS block fixed the same way. Logged as CLAUDE.md
+rule 8 (verbatim quote + this exact finding as the worked example).
+
+#3 (LIVE-GROUNDING REWIRE): NOT YET BUILT this round - explicitly
+deferred to its own pass rather than rushed alongside #1/#2 in the same
+already-large turn. Real next step, not abandoned.
+
+TESTING DONE (real, not assumed): all 12 touched api/*.js files pass
+`node --check` (package.json has "type":"module"). Built a minimal
+Vercel-shaped mock server (no real Vercel CLI available in this sandbox)
+that dynamically imports the REAL api/auth.js and exercises the REAL
+requireAuth()/setCORS() from _context.js - confirmed wrong password
+rejected, correct password returns the secret, a protected endpoint
+401s without the header and succeeds with it. Then a real headless
+Playwright run through the ACTUAL login UI (not a hand-written stand-in):
+wrong password shows the real error and stores no secret, correct
+password hides the gate and stores the secret, and a genuine fetch('/api/
+oracle') call made from the live page correctly carried the X-RPGACE-Auth
+header via the global wrap - proof the fix works end-to-end, not just in
+isolation.
+
+REAL DEPLOYMENT BLOCKER, NOT YET RESOLVED: this cannot go live without
+Alex setting TWO Vercel environment variables first:
+  CORRECT_PW = (the real password, moved out of main.js)
+  RPGACE_API_SECRET = (a new random shared secret, e.g. openssl rand -hex 32)
+Until both exist in Vercel, deploying this code would break login and
+every /api/* call in production (no fallback value exists anywhere in
+committed code, deliberately, since this repo is public). This is sitting
+on the feature branch (claude/rpgace-master-steps-uobp98), NOT merged to
+main, specifically because merging would go live immediately per the
+standing "merge to main = it's live" reality - a deliberate, reasoned
+exception to the usual "merge before telling Alex to test" rule, since
+that rule's actual intent (never leave Alex unable to use his own real
+app) is better served by waiting here than by following its letter.
+
+BUILD METHOD: Sonnet-direct - a real Tier 3 security fix touching a
+FROZEN file plus 12 api files plus rpgace_core.js, not a large audit
+needing Fable.

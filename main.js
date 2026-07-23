@@ -4,10 +4,16 @@ const CONFIG = {
 };
 
 // ── PASSWORD ──
-const CORRECT_PW = 'jddj12alexpillBDE';
-function checkPassword(){
+// July 23, 2026 — deliberate, logged FROZEN-file exception (Alex-
+// authorized Tier 3 security fix, see patch_notes.html same session).
+// The real check moved server-side (api/auth.js + rpgace_core.js's
+// authGate module) — the password itself is no longer a string shipped
+// to the browser and readable via view-source.
+async function checkPassword(){
   const val=document.getElementById('pw-input').value;
-  if(val===CORRECT_PW){
+  const verify=window.RPGACE_verifyPassword;
+  const ok=verify?await verify(val):false;
+  if(ok){
     const gate=document.getElementById('gate');
     gate.style.opacity='0';gate.style.transition='opacity .5s';
     setTimeout(()=>{gate.style.display='none';document.getElementById('app').style.display='block';initApp();},500);
@@ -16,6 +22,7 @@ function checkPassword(){
     inp.classList.add('error');document.getElementById('gate-error').textContent='✗ Access denied.';
     setTimeout(()=>{inp.classList.remove('error');document.getElementById('gate-error').textContent='';},1500);
   }
+  return ok;
 }
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('gate').style.display!=='none')checkPassword();});
 function togglePwVis(){const i=document.getElementById('pw-input');i.type=i.type==='password'?'text':'password';}

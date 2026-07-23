@@ -373,14 +373,23 @@
        module (July 23) to do its one-time deep-link routing. checkPassword
        itself (main.js, frozen) fades #gate over 500ms then calls initApp()
        - the 700ms delay here gives that real sequence room to finish
-       before pathRouter reads which page should actually be showing. */
+       before pathRouter reads which page should actually be showing.
+       July 23 (authGate fix): checkPassword() is now async (it calls the
+       real server-side check via authGate.verify() instead of comparing
+       a local constant) and returns the real true/false result. This wrap
+       now awaits that result and only fires 'rpgace:login' on an actual
+       successful login - the previous version fired unconditionally,
+       even on a wrong password, a real latent bug caught while making
+       this change rather than knowingly carried forward. */
     if (typeof checkPassword === 'function') {
       var _origCheckPassword = checkPassword;
       global.checkPassword = function () {
         var result;
         try { result = _origCheckPassword.apply(this, arguments); }
         catch (e) { console.warn('[RPGACE wrap:checkPassword]', e.message); }
-        setTimeout(function() { R.hooks.fire('rpgace:login'); }, 700);
+        Promise.resolve(result).then(function(ok) {
+          if (ok) setTimeout(function() { R.hooks.fire('rpgace:login'); }, 700);
+        }).catch(function(e) { console.warn('[RPGACE wrap:checkPassword]', e.message); });
         return result;
       };
     }
@@ -14903,6 +14912,90 @@ RPGACE.register('pwaInstall', {
 });
 RPGACE.modules.pwaInstall._register();
 /* ===END:pwaInstall=== */
+
+/* ===MODULE:authGate=== */
+// July 23 — Tier 3 security fix, Alex-authorized ("do now"). Real problem
+// (confirmed by the /5thDimension Phase 1 audit): CORRECT_PW lived as a
+// plain string in main.js, shipped to every browser and trivially
+// readable via view-source; separately, every /api/*.js endpoint had
+// ZERO server-side auth - anyone who found the URL could invoke Oracle/
+// Composio actions directly, bypassing the password screen entirely.
+// Both are fixed by the SAME mechanism: the real password check now
+// happens server-side (api/auth.js, comparing against process.env.
+// CORRECT_PW - never shipped to the client), and on success the server
+// hands back a shared secret (process.env.RPGACE_API_SECRET) that gets
+// attached to every subsequent /api/* call via the single fetch() wrap
+// below - not 26 separate call-site edits (main.js's own 15 + this
+// file's 11), one real choke point, matching Alex's own "same steps
+// must go through one pipeline" rule from this same session.
+// main.js's checkPassword() (FROZEN, one deliberate logged exception,
+// see patch_notes.html) now calls window.RPGACE_verifyPassword(pw)
+// instead of comparing a local constant - CORRECT_PW itself is removed
+// from main.js entirely, so the real value is never shipped to a browser.
+// Runs immediately at parse time (like pwaInstall just above), not
+// gated behind rpgace:ready - it needs to exist before any human could
+// plausibly type a password and hit Enter.
+RPGACE.register('authGate', {
+  init: function() {
+    // No-op: setup runs immediately below, outside init() - same
+    // reasoning as pwaInstall's own no-op init().
+  },
+
+  _apiSecret: null,
+
+  // Called by main.js's wrapped checkPassword(). Returns a real
+  // true/false the wrap can act on, unlike the old synchronous
+  // client-side compare this replaces.
+  verify: function(pw) {
+    var self = this;
+    return fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    }).then(function(res) {
+      return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+    }).then(function(r) {
+      if (r.ok && r.data && r.data.ok && r.data.secret) {
+        self._apiSecret = r.data.secret;
+        return true;
+      }
+      return false;
+    }).catch(function(e) {
+      console.warn('[RPGACE authGate] verify failed', e.message);
+      return false;
+    });
+  },
+
+  // Global fetch() wrap: attaches the shared secret to every /api/*
+  // request except /api/auth itself (which doesn't have the secret yet -
+  // that's the whole point of it). Installed once, immediately, so it
+  // covers every one of the ~26 real call sites across main.js and this
+  // file without touching any of them individually - real reduplication
+  // avoidance, not just a security fix.
+  _installFetchWrap: function() {
+    var self = this;
+    if (window._authGateFetchPatched) return;
+    window._authGateFetchPatched = true;
+    var origFetch = window.fetch.bind(window);
+    window.fetch = function(input, init) {
+      try {
+        var url = typeof input === 'string' ? input : (input && input.url);
+        if (url && url.indexOf('/api/') === 0 && url !== '/api/auth' && self._apiSecret) {
+          init = init || {};
+          if (init.headers instanceof Headers) {
+            init.headers.set('X-RPGACE-Auth', self._apiSecret);
+          } else {
+            init.headers = Object.assign({}, init.headers || {}, { 'X-RPGACE-Auth': self._apiSecret });
+          }
+        }
+      } catch (e) { /* never let the wrap itself break a real request */ }
+      return origFetch(input, init);
+    };
+  }
+});
+RPGACE.modules.authGate._installFetchWrap();
+window.RPGACE_verifyPassword = function(pw) { return RPGACE.modules.authGate.verify(pw); };
+/* ===END:authGate=== */
 
 /* ===MODULE:careerStatCard=== */
 // July 22 GODMODE finding: the profile card's HP/MP bars are 100% inert

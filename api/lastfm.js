@@ -1,5 +1,5 @@
 // LASTFM — Artist discovery via tag and style matching
-import { setCORS } from './_context.js';
+import { setCORS, requireAuth } from './_context.js';
 
 const BASE = 'https://ws.audioscrobbler.com/2.0/';
 
@@ -16,6 +16,7 @@ async function lfm(params) {
 export default async function handler(req, res) {
   setCORS(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (!requireAuth(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
