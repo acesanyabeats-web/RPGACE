@@ -4761,6 +4761,12 @@ RPGACE.register('dashDeck', {
     try { set('morningBrief', new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })); } catch (e) { set('morningBrief', 'Today'); }
     // Oversight: the seven living docs are always current — static label.
     set('oversight', '7 docs · always latest');
+    // Chronicles: static label, deliberately no extra Supabase call here —
+    // careerStatCard._fetchAll() (shared with this card's popup) already
+    // covers the real count once its own promise resolves; a second glance-
+    // only fetch would just be one more request in the exact pile the
+    // request-storm fix (July 23) was built to shrink.
+    set('chronicles', 'Every real win, sale, and expense');
     // Agenda: QUESTS is a main.js top-level const — not a window property in
     // classic (non-module) scripts, but visible as a bare identifier to any
     // script sharing the page's top-level scope, which rpgace_core.js does.
@@ -15053,8 +15059,13 @@ RPGACE.register('careerStatCard', {
       var statStreak = document.getElementById('stat-streak'); if (statStreak) statStreak.textContent = streak;
       var statLvl = document.getElementById('stat-lvl'); if (statLvl) statLvl.textContent = lvl.levelNum;
       var statXp = document.getElementById('stat-xp'); if (statXp) statXp.textContent = totalXP;
-
-      self._renderWins(data, shipped, ideas);
+      // July 23: the standalone "Recent Wins" header+feed that used to sit
+      // here (._renderWins/._ensureWinsContainer) is gone - real feedback
+      // from Alex, this was a bespoke treatment that didn't match the
+      // other 11 dashDeck cards visually. Chronicles now lives ONLY as a
+      // real card in that grid (dashDeck.MODULES 'chronicles' entry ->
+      // chroniclesLog._openCard()), reusing this exact _buildItems/
+      // _showDetail logic for its popup preview - removed, not duplicated.
     }).catch(function(e) {
       console.warn('[RPGACE:careerStatCard] render failed, leaving prior display untouched', e.message);
     });
@@ -15065,35 +15076,6 @@ RPGACE.register('careerStatCard', {
   // - the group's real expand point, opening the new dedicated
   // #page-chronicles page (chroniclesLog module) rather than growing this
   // dashboard preview indefinitely. See chronicles_spec_backlog.txt.
-  _ensureWinsContainer: function() {
-    var existing = document.getElementById('career-recent-wins');
-    if (existing) return existing;
-    var charHeader = document.querySelector('.char-header');
-    if (!charHeader || !charHeader.parentNode) return null;
-
-    var titleRow = document.createElement('div');
-    titleRow.style.cssText = 'max-width:1100px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;';
-    var titleText = document.createElement('div');
-    titleText.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);';
-    titleText.textContent = '📜 The Chronicles';
-    var viewBtn = document.createElement('button');
-    viewBtn.textContent = 'View Full Log →';
-    viewBtn.style.cssText = 'background:none;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    viewBtn.onclick = function() {
-      var pageId = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.chronicles : null;
-      if (pageId && typeof showPage === 'function') showPage(pageId);
-    };
-    titleRow.appendChild(titleText); titleRow.appendChild(viewBtn);
-
-    var el = document.createElement('div');
-    el.id = 'career-recent-wins';
-    el.style.cssText = 'max-width:1100px;margin:6px auto 20px;padding:0 20px;display:flex;flex-wrap:wrap;gap:8px;';
-
-    charHeader.parentNode.insertAdjacentElement('afterend', titleRow);
-    titleRow.insertAdjacentElement('afterend', el);
-    return el;
-  },
-
   // July 22, round 2: Alex's real complaint was the taxonomy rows in this
   // feed all read as the same generic "Taxonomy insight placed" line with
   // nothing to click into. taxonomy_proposals actually stores rich real
@@ -15105,9 +15087,9 @@ RPGACE.register('careerStatCard', {
   // helper that already exists in this file - reused rather than hand-
   // rolling a second one, per the standing "grep before new UI behaviour,
   // this project has a history of duplicate implementations" rule).
-  // Shared by the dashboard preview (_renderWins, top 5) and the full
-  // Chronicles log page (chroniclesLog, all of them) - one place builds
-  // the item list so both surfaces can never drift out of sync.
+  // Shared by the Chronicles dashboard-card popup (chroniclesLog._openCard,
+  // top 5) and the full Chronicles log page (chroniclesLog, all of them) -
+  // one place builds the item list so both surfaces can never drift out of sync.
   _buildItems: function(data, shipped, ideas) {
     var self = this;
     var items = [];
@@ -15126,36 +15108,6 @@ RPGACE.register('careerStatCard', {
     });
     items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
     return items;
-  },
-
-  _renderWins: function(data, shipped, ideas) {
-    var self = this;
-    var container = self._ensureWinsContainer();
-    if (!container) return;
-
-    var items = self._buildItems(data, shipped, ideas).slice(0, 5);
-
-    container.innerHTML = '';
-    if (!items.length) {
-      var empty = document.createElement('div');
-      empty.style.cssText = 'font-size:11px;color:var(--muted);padding:4px 0';
-      empty.textContent = 'No real activity logged yet — your first win will show up here.';
-      container.appendChild(empty);
-      return;
-    }
-
-    items.forEach(function(it) {
-      var chip = document.createElement('div');
-      chip.style.cssText = 'background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--text);display:flex;gap:6px;align-items:center;cursor:pointer;';
-      chip.onmouseenter = function() { chip.style.borderColor = 'var(--gold)'; };
-      chip.onmouseleave = function() { chip.style.borderColor = 'var(--border)'; };
-      var iconSpan = document.createElement('span'); iconSpan.textContent = it.icon;
-      var labelSpan = document.createElement('span'); labelSpan.textContent = it.label;
-      var timeSpan = document.createElement('span'); timeSpan.style.color = 'var(--muted)'; timeSpan.textContent = '• ' + self._relTime(it.t);
-      chip.appendChild(iconSpan); chip.appendChild(labelSpan); chip.appendChild(timeSpan);
-      chip.onclick = function() { self._showDetail(it); };
-      container.appendChild(chip);
-    });
   },
 
   // proposed_steps' shape varies by engine (phylum_path / concept_fusion /
@@ -15674,3 +15626,47 @@ RPGACE.register('pathRouter', {
   }
 });
 /* ===END:pathRouter=== */
+
+/* ===MODULE:perfWatch=== */
+// July 23 — real-evidence infra, not a fix. Alex reported the leftNav
+// drawer's exit button and dashDeck popups' Close button "freeze" on his
+// real phone/laptop, AFTER the request-storm dedup fix (careerStatCard
+// _inflightFetch) already shipped. A synthetic Playwright pass (headless
+// desktop AND mobile-viewport touch taps, real hit-testing via
+// elementFromPoint at the button's exact screen coordinates) found the
+// close handlers themselves wired correctly and instant in both cases —
+// but that sandbox's network can't reach Supabase at all (every request
+// fails instantly), so it cannot reproduce a REAL slow-network / real-CPU
+// main-thread block the way Alex's actual device would. Per this file's
+// own "one failed fix = stop, get real evidence, don't patch blind a
+// second time" rule: rather than guess a second blind fix, this ships a
+// passive PerformanceObserver('longtask') watcher — standard browser API,
+// zero behavior change, fails silently where unsupported — that surfaces
+// any real main-thread block over 500ms as BOTH a console.warn (for a
+// plugged-in debug session) and a visible toast (since Alex is testing on
+// a phone, not with devtools open). Next time the freeze recurs, it should
+// self-report its own real duration instead of needing another guess.
+RPGACE.register('perfWatch', {
+  init: function() {
+    try {
+      if (typeof PerformanceObserver === 'undefined') return;
+      var obs = new PerformanceObserver(function(list) {
+        list.getEntries().forEach(function(entry) {
+          if (entry.duration < 500) return;
+          var ms = Math.round(entry.duration);
+          console.warn('[RPGACE perfWatch] main thread blocked for ' + ms + 'ms', entry);
+          try {
+            if (RPGACE.utils && RPGACE.utils.toast) {
+              RPGACE.utils.toast('⚠️ App froze for ' + ms + 'ms (logged)', '#E25454', 4000);
+            }
+          } catch (e2) {}
+        });
+      });
+      obs.observe({ type: 'longtask', buffered: true });
+    } catch (e) {
+      // 'longtask' unsupported on this browser (e.g. Safari) - silent,
+      // this is diagnostic-only and must never itself break anything.
+    }
+  }
+});
+/* ===END:perfWatch=== */
