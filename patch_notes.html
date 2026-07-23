@@ -73,6 +73,15 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🏁 July 23 — SESSION CLOSED. Real state: docs live, code held back.</div>
+    <div class="card-body">
+      Nine dated rounds this session (see below): the lag/freeze investigation and `perfWatch` diagnostic, Chronicles corrected to real card-only after Alex caught the standalone feed still showing, Research Lab's real single-tab lazy loading restored (reversing a July 22 decision, plus a genuine dead tab-bar bug fixed), a brand-new <code>/5thDimension</code> meta-protocol built and run once (near-zero real doc-vs-code drift found — a genuinely good result), the API-auth + password security fix built and tested end-to-end, a real reduplication bug found in <code>api/composio.js</code> while applying the new deduplication rule, Oracle's self-awareness partially made live, and the Minotaur Map restructured into real chronological order with a new bird's-eye-view diagram.<br><br>
+      <strong>Unlike July 22, NOT everything from today is on `main`.</strong> The API-auth fix (<code>api/auth.js</code>, <code>requireAuth()</code>, <code>authGate</code>, the one deliberate <code>main.js</code> exception) is built, tested (a mock Vercel-shaped server + real headless Playwright through the actual login flow), and honest — but deliberately held on the feature branch until Alex sets two Vercel env vars, since deploying without them would break login/every API call in production. A real process mistake happened and was caught mid-session: most of today's doc work sat unmerged behind that same pending code, meaning the Minotaur Map restructure Alex explicitly asked for was invisible on the live site — Alex caught it himself, not a self-catch. Fixed by splitting every documentation-only file from the application code and pushing the docs straight to <code>main</code> directly, with zero changes to <code>main.js</code>/<code>rpgace_core.js</code>/any <code>api/*.js</code> file. <strong>All six oversight docs, patch_notes.html's nine rounds, and Chronicles' <code>system_updates</code> rows are genuinely live and current as of this line — the code fix alone is what's still waiting.</strong><br><br>
+      Real open items carried forward: the swipe-gesture freeze (confirmed 23s via <code>perfWatch</code>) is unsolved; <code>system_flow_map.md</code>'s own module inventory is stale (51+ real, ~30 shown); the broader RLS-permissiveness finding needs a real policy pass; Oracle 504 streaming fix and the XSS/<code>innerHTML</code> audit remain untouched; the journal/Chronicles/Minotaur cross-feed idea Alex raised needs its own dedicated pass. See CLAUDE.md's urgent flag for the one action that unblocks the rest.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🗺️ July 23 (Round 9) — Minotaur Map restructured into real chronological order + a new bird's-eye-view diagram</div>
     <div class="card-body">
