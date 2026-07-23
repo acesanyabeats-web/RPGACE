@@ -1,0 +1,75 @@
+JOURNAL / CHRONICLES / MINOTAUR CROSS-FEED — DEFERRED IDEA, NOT YET SCOPED
+Recorded July 23, 2026. Verbatim, per Alex's own explicit instruction this
+session ("paste my answers as txt to not lose them") and CLAUDE.md rule 5
+(record real answers verbatim, never substitute a recommended default).
+
+STATUS: NOT BUILT. NOT YET GIVEN ITS OWN GODMODE/interrogation pass. This
+file exists purely so the idea survives to a future session instead of
+being lost inside an answer to an unrelated AskUserQuestion round (it was
+raised as a tangent inside the answer to Q2 of the Research Lab lazy-load
+spec - see research_lab_lazyload_spec_backlog.txt - and deliberately NOT
+folded into that build, since this is a genuinely separate, multi-
+subsystem idea and CLAUDE.md rule 5 requires 3+ new pieces to be spec'd
+and confirmed first, not built inline as a footnote to a different task.
+
+VERBATIM (Alex, July 23, answering a question about Research Lab tab
+caching, but raising this instead/in addition):
+"i say 1, then journal can save what done so i can go back to certain
+frameworks or ideas that were in convo, needs work from brainstorming to
+tie these. I would also like chronicles to feed off minotaur map and other
+oversight docs in measured doses (minotaur because chronicles needs to be
+readable, and minotaur is best candidate to feed that info through
+/Scope) (and oversight to feed from chronicles to keep timeline straight
+between Alex - RPGACE self awareness - Oracle self awareness - and claude
+code (you now)"
+
+WHAT THIS SEEMS TO DESCRIBE (a first read, NOT a locked interpretation -
+real interrogation is still owed before building anything):
+1. Journal should save "what's done" in a way that lets Alex go back and
+   find specific frameworks or ideas that came up in a past conversation
+   (Oracle chat, presumably) - today's journal is a running log, not
+   obviously structured around "frameworks/ideas from a specific
+   conversation" as a retrievable unit. Alex's own words: "needs work from
+   brainstorming to tie these" - he is flagging this as unresolved/half-
+   formed, not a locked spec.
+2. Chronicles should pull a readable digest FROM minotaur_map.html and the
+   other oversight docs, "in measured doses" - i.e. not a raw dump, some
+   kind of summarization/selection step - explicitly suggesting /scope (the
+   evidence-gathering skill already built this session) as the mechanism
+   that does that selection, since minotaur_map is named as "best candidate"
+   specifically because Chronicles needs to stay readable and minotaur is
+   already the most narrative/readable of the six oversight docs.
+3. Oversight docs should ALSO feed FROM Chronicles - a bidirectional
+   relationship, not one-way - so that four separate "narrators" of
+   RPGACE's own history (Alex himself, RPGACE's own in-app self-awareness,
+   Oracle's self-awareness grounding, and Claude Code / this assistant)
+   stay on one consistent timeline of what actually happened, rather than
+   four separately-drifting accounts.
+
+REAL OPEN QUESTIONS THIS IDEA RAISES (none answered yet - listed honestly
+rather than guessed at):
+- Is "journal" here the existing #page-journal feature, or a new concept
+  tied specifically to Oracle conversations? Today's journal has no link
+  to specific chat sessions/frameworks discussed.
+- What does "measured doses" mean operationally - a scheduled digest job,
+  an on-open summarization, a fixed word/item cap per pull? /scope already
+  organizes evidence into grouped categories - would Chronicles literally
+  invoke /scope, or would this need a lighter always-on version of the same
+  idea?
+- What does "oversight to feed from chronicles" concretely change day to
+  day - does system_updates (already Chronicles-visible) already partially
+  satisfy this, or is more direct doc-writing intended (e.g. patch_notes.html
+  auto-drafting from Chronicles rows)? The former already exists; the
+  latter would be a real, separate architecture decision (auto-writing to
+  a doc from app data is a new pattern this project hasn't done before).
+- Scope/cost: this is easily a 3+ new pieces ask (journal restructuring,
+  a minotaur->Chronicles digest mechanism, an oversight<-Chronicles
+  feedback path) - squarely CLAUDE.md rule 5 territory, needing its own
+  dedicated GODMODE evidence pass + Council of 5 scrutiny + a real
+  interrogation round before any build decision, not a default guessed in
+  under time pressure from a different task's question.
+
+NEXT STEP: a future session (or a later point in this one, if Alex asks)
+should open this specifically with GODMODE + interrogation, exactly like
+the Chronicles finance ledger and Research Lab lazy-load ideas both were,
+rather than defaulting to an implementation now.

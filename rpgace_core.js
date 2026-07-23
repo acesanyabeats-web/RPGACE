@@ -1151,9 +1151,11 @@ RPGACE.register('contentRepurpose', {
       if (name === 'agents') {
         setTimeout(function() { self._injectAgentButtons(); }, 400);
       }
-      if (name === RPGACE.CONFIG.pages.research) {
-        setTimeout(function() { self._injectVideoWorkshopBtn(); }, 400);
-      }
+    });
+    // July 23 — gated behind researchTabs' 'research:tab-active', key
+    // 'workshop', same reasoning as the other research sub-panel fixes.
+    RPGACE.hooks.on('research:tab-active', function(key) {
+      if (key === 'workshop') setTimeout(function() { self._injectVideoWorkshopBtn(); }, 400);
     });
   },
 
@@ -2625,47 +2627,66 @@ RPGACE.register('oracleFetchGuard', {
 /* ===END:oracleFetchGuard=== */
 
 /* ===MODULE:researchTabs=== */
-// July 19 — Research page redesign (confirmed answers, recorded in the
-// patch notes card: sub-tabs within Research / show-8-plus-Show-more
-// lists / searchable Beat Log picker). The page previously rendered SIX
-// full-depth sections stacked in one scroll - Content Intelligence,
-// Video Finder, Idea Bank, Reference Corpus, Beat Log, Video Workshop,
-// plus Bookworm's Bibliography - all at once. Now a tab bar at the top
-// shows exactly one section at a time. Pure runtime layer: static
-// index.html untouched (per the standing landmine rules), injected
-// panels located by id, static panels by their h3 text. A section that
-// can't be found simply stays visible - the fallback is the old
-// behavior, never a hidden-forever section.
+// July 19 — Research page redesign, tab bar showing one section at a time.
+// July 22 — Alex asked for the opposite ("get rid of research tab as a
+// wrapper, just keep the sub doms on display") — tab-gating removed, all
+// 7 sections rendered simultaneously.
+// July 23 — REAL REVERSAL, confirmed by Alex this round: real evidence
+// (reading every research sub-module's init) showed at least 6 separate
+// modules (refCorpus, beatLog, conidPot's Idea Bank, bookworm's
+// Bibliography section, contentRepurpose's Workshop button, plus this
+// module's own _apply cascade) each inject their own widget AND fire a
+// real Supabase fetch, all within the same ~900-1800ms post-boot window,
+// REGARDLESS of which page is even showing (`.page` divs exist in the DOM
+// at all times, just hidden via CSS — `document.getElementById('page-
+// learning')` succeeds even when Research Lab was never opened). Alex
+// reported a real 12-23 SECOND freeze opening the left nav shortly after
+// login — squarely inside that same window. Real single-tab lazy loading
+// is back, now built the RIGHT way: each of those 6 modules' own fetch/
+// inject only fires the first time ITS OWN tab becomes active (via the new
+// 'research:tab-active' hook below), not at raw boot regardless of page,
+// and not simultaneously with the other 5 the first time Research Lab is
+// opened either. Per Alex's own answer this round: cached for the session
+// once loaded (switching tabs back and forth after the first real load is
+// instant, no repeat fetch) — an in-page tab bar stays for quick switching
+// (his other explicit answer), it doesn't force a round-trip through the
+// dashboard card's popup every time.
 RPGACE.register('researchTabs', {
 
+  // `desc` added July 23 — single source of truth for the new Research Lab
+  // dashboard-card popup's sub-nav cards (dashDeck._openResearch), so the
+  // tab bar and the popup can never drift out of sync with each other.
   TABS: [
-    { key: 'intel',    label: '🧠 Intelligence' },
-    { key: 'finder',   label: '🎬 Video Finder' },
-    { key: 'ideas',    label: '💡 Idea Bank' },
-    { key: 'corpus',   label: '🎼 Corpus' },
-    { key: 'beatlog',  label: '🥁 Beat Log' },
-    { key: 'workshop', label: '🔀 Workshop' },
-    { key: 'biblio',   label: '📚 Bibliography' },
+    { key: 'intel',    label: '📁 File Analyzer', desc: 'Paste a URL — YouTube, TikTok, Instagram — auto-analysed into scored insights.' },
+    { key: 'finder',   label: '🎬 Video Finder',  desc: 'Search YouTube without an API key.' },
+    { key: 'ideas',    label: '💡 Idea Bank',      desc: 'Every banked idea, one searchable list.' },
+    { key: 'corpus',   label: '🎼 Corpus',         desc: 'Reference tracks your beats get matched against.' },
+    { key: 'beatlog',  label: '🥁 Beat Log',       desc: 'Log beats, auto-match artist targets.' },
+    { key: 'workshop', label: '🔀 Workshop',       desc: 'Turn a beat into a real video pipeline.' },
+    { key: 'biblio',   label: '📚 Bibliography',   desc: 'Every completed Bookworm book, one shelf.' },
   ],
+
+  // Tab keys already given their one real load this session — checked
+  // before firing 'research:tab-active' so a tab switched back to never
+  // re-fetches/re-fires, matching Alex's "cache for the session" answer.
+  _firedKeys: {},
 
   init: function() {
     var self = this;
-    // Injected sibling panels land at various timers (1300-1700ms) -
-    // re-apply visibility at staggered delays so a panel injected AFTER
-    // the first pass still gets sorted into its tab instead of leaking
-    // into whatever tab is active. Idempotent, cheap (pure DOM checks).
+    // July 23 real find (GODMODE): _inject() - the function that actually
+    // BUILDS the #research-tab-bar DOM element - was never called anywhere
+    // in the codebase. init() only ever called _apply() (which sorts
+    // visibility of an already-built bar), so the in-page tab bar has
+    // never actually existed in the live app. Now genuinely load-bearing
+    // since Alex explicitly asked to keep it for quick tab switching -
+    // fixed by calling _inject() alongside _apply() everywhere the latter
+    // already ran.
     [1200, 2500, 4500, 8000].forEach(function(ms) {
-      setTimeout(function() { self._apply(); }, ms);
+      setTimeout(function() { self._inject(); self._apply(); }, ms);
     });
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.research) { self._apply(); }
+      if (name === RPGACE.CONFIG.pages.research) { self._inject(); self._apply(); }
     });
-    // Any panel injected AFTER the tab bar last computed visibility (including
-    // bookworm's synchronous bibliography re-append on every page:show) fires
-    // this named event; re-sort visibility so the new panel lands in its own
-    // tab instead of leaking into whatever tab is active. Top-level listener
-    // (NOT nested inside another hook) so it isn't lost to the mid-fire
-    // forEach landmine. _apply is idempotent and cheap.
     RPGACE.hooks.on('research:panel-injected', function() { self._apply(); });
   },
 
@@ -2679,7 +2700,7 @@ RPGACE.register('researchTabs', {
     Array.prototype.forEach.call(panels, function(p) {
       var h3 = p.querySelector('h3');
       var txt = h3 ? h3.textContent : '';
-      if (txt.indexOf('CONTENT INTELLIGENCE') !== -1) out.intel = p;
+      if (txt.indexOf('FILE ANALYZER') !== -1) out.intel = p;
       else if (txt.indexOf('VIDEO FINDER') !== -1) out.finder = p;
     });
     if (document.getElementById('video-workshop-panel')) out.workshop = document.getElementById('video-workshop-panel');
@@ -2720,21 +2741,13 @@ RPGACE.register('researchTabs', {
     anchor.parentElement.insertBefore(bar, anchor.nextSibling);
   },
 
-  // July 22 (QoL request: "get rid of research tab as a wrapper, just keep
-  // the sub doms on display, keep research lab as-is internal structure") —
-  // the tab-gating that hid all but the active section is removed. All
-  // sections now render simultaneously, same one-page layout Research Lab
-  // used before the July 19 sub-tab redesign, but keeping every fix that
-  // shipped since (panel-injection root causes, batchList collapsing).
-  // This also resolves a real bug the tab-gating created as a side effect:
-  // taxonomyTree's "🌳 Add to Taxonomy Tree" button (a genuine page-level
-  // utility, injected once as a sibling of #cp-idea-bank) was never part of
-  // _resolveSections()'s tracked list, so it never got hidden when another
-  // tab was active — it just sat there permanently visible, LOOKING like a
-  // per-tab duplicate bug across every tab even though it was always a
-  // single DOM node. With no more hiding, it's simply correct: one
-  // page-level button, exactly as its own code already intended.
+  // July 23 — real single-tab visibility is back (see module header for
+  // why). Also the one real trigger point for lazy per-tab loading: the
+  // FIRST time a key becomes active, fire 'research:tab-active' so that
+  // tab's own module does its one real inject+fetch — never again this
+  // session (the _firedKeys guard), and never for the other 6 tabs at once.
   _apply: function() {
+    var self = this;
     var active = this._activeTab();
     var sections = this._resolveSections();
     var bar = document.getElementById('research-tab-bar');
@@ -2746,7 +2759,13 @@ RPGACE.register('researchTabs', {
         btn.style.color = on ? '#B07CC6' : 'rgba(226,226,236,0.5)';
       });
     }
-    Object.keys(sections).forEach(function(key) { sections[key].style.display = ''; });
+    Object.keys(sections).forEach(function(key) {
+      sections[key].style.display = (key === active) ? '' : 'none';
+    });
+    if (!self._firedKeys[active]) {
+      self._firedKeys[active] = true;
+      RPGACE.hooks.fire('research:tab-active', active);
+    }
     // Batch the long lists (July 22: tightened 8→5, a direct QoL request -
     // "this list needs to be further collapsable, takes too long to load
     // and read" - same helper, just a smaller default reveal).
@@ -2754,16 +2773,14 @@ RPGACE.register('researchTabs', {
     RPGACE.ui.batchList(document.getElementById('rc-list'), 5);
   },
 
-  // Public entry point used by the leftNav drawer's Research sub-nav.
-  // July 22: since every section is now always visible, this is no longer
-  // a visibility switch - it's a jump-to-section scroll, so the sub-nav
-  // stays genuinely useful navigation instead of becoming dead UI once the
-  // tab-gating it used to drive was removed.
+  // Public entry point used by the leftNav drawer's Research sub-nav AND
+  // the new Research Lab dashboard-card popup's sub-cards.
   show: function(key) {
     localStorage.setItem('rpgace_research_tab', key);
     var page = document.getElementById('page-learning');
     var onResearch = page && page.classList.contains('active');
     if (!onResearch && typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+    this._inject();
     this._apply();
     var sections = this._resolveSections();
     var target = sections[key];
@@ -3250,7 +3267,7 @@ RPGACE.register('taxonomyReviewQueue', {
           return;
         }
 
-        var sourceLabels = { content_intelligence: '📹 Content Intelligence', encyclopedia: '📖 Encyclopedia', oracle: '💬 Oracle', manual: '✎ Manual' };
+        var sourceLabels = { content_intelligence: '📁 File Analyzer', encyclopedia: '📖 Encyclopedia', oracle: '💬 Oracle', manual: '✎ Manual' };
 
         rows.forEach(function(p) {
           var row = document.createElement('div');
@@ -4675,7 +4692,7 @@ RPGACE.register('dashDeck', {
   // Agenda/Encyclopedia/Journal added as simple showPage navigation cards,
   // mirroring Oracle's own pattern (no popup needed — each is a full page).
   MODULES: [
-    { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research); } },
+    { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { RPGACE.modules.dashDeck._openResearch(); } },
     { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
     { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Your knowledge tree: browse phyla, approve placements, confirm fusions.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
@@ -5032,6 +5049,43 @@ RPGACE.register('dashDeck', {
       msg.textContent = 'Bookworm is still loading — close this and try again in a moment.';
       pop.box.appendChild(msg);
     }
+  },
+
+  // ── Research Lab card popup (July 23) — Alex's explicit ask: instead of
+  // ── jumping straight into the page, the card opens a scrollable list of
+  // ── its 7 sub-navs as their own cards (same request as this project's
+  // ── established card->popup->list pattern, e.g. _openOversight just
+  // ── above). Reuses researchTabs.TABS as the single source of truth (so
+  // ── this list and the in-page tab bar can never drift apart) and the
+  // ── same .dd-pop-row/.dd-pop-rtitle/.dd-pop-rdesc styling _openOversight
+  // ── already established, rather than a third one-off list layout.
+  // ── Clicking a sub-card closes this popup and calls researchTabs.show(key)
+  // ── - real single-tab lazy loading (see researchTabs' own July 23 note)
+  // ── means only that one tab's widget actually loads, not all 7 at once.
+  _openResearch: function() {
+    var pop = this._popup({ eyebrow: '🧠 Research Lab', title: 'Pick a sub-nav', accent: 'var(--purple)', width: '520px' });
+    var body = pop.box;
+    var rt = RPGACE.modules.researchTabs;
+    var tabs = (rt && rt.TABS) ? rt.TABS : [];
+    tabs.forEach(function(t) {
+      var row = document.createElement('div');
+      row.className = 'dd-pop-row';
+      var tw = document.createElement('div');
+      tw.style.cssText = 'flex:1;min-width:0';
+      var ti = document.createElement('div');
+      ti.className = 'dd-pop-rtitle';
+      ti.textContent = t.label;
+      var ds = document.createElement('div');
+      ds.className = 'dd-pop-rdesc';
+      ds.textContent = t.desc || '';
+      tw.appendChild(ti); tw.appendChild(ds);
+      row.appendChild(tw);
+      row.onclick = function() {
+        pop.close();
+        if (rt && rt.show) rt.show(t.key);
+      };
+      body.appendChild(row);
+    });
   },
 
   // ── P2 Oversight popup: the seven primary living docs + working specs,
@@ -8553,16 +8607,24 @@ RPGACE.register('bookworm', {
 
   TRIGGER_PREFIXES: ['bookworm:', 'study this book:'],
 
+  // July 23 — _injectBibliographySection() used to also run unconditionally
+  // 1700ms after every boot AND on every page:show->research, regardless of
+  // active tab - one of the real contributors found to the reported 12-23s
+  // freeze. The dashboard widget stays exactly as it was (it's not a
+  // research-tab thing); the bibliography section is now gated behind
+  // researchTabs' 'research:tab-active' hook, key 'biblio'.
   init: function() {
     var self = this;
     // 'rpgace:ready' has always already fired by the time init() runs
     // (hooks.fire uses forEach; a mid-fire listener never gets revisited).
     // Call directly at the same delay instead of via the dead listener.
-    setTimeout(function() { self._injectDashboardWidget(); self._injectBibliographySection(); }, 1700);
+    setTimeout(function() { self._injectDashboardWidget(); }, 1700);
     setTimeout(function() { self._patchChatTrigger(); }, 1700);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) self._injectDashboardWidget();
-      if (name === RPGACE.CONFIG.pages.research) self._injectBibliographySection();
+    });
+    RPGACE.hooks.on('research:tab-active', function(key) {
+      if (key === 'biblio') self._injectBibliographySection();
     });
   },
 
@@ -11442,14 +11504,14 @@ RPGACE.register('beatLog', {
     'Nostalgic': ['boom bap'], 'Tense': ['dark trap', 'drill'],
   },
 
+  // July 23 — same real freeze finding as refCorpus: this injected (and
+  // fetched) 900ms after every boot regardless of page. Gated behind
+  // researchTabs' 'research:tab-active' now — only the first real open of
+  // the 'beatlog' tab triggers it.
   init: function() {
     var self = this;
-    // 'rpgace:ready' already fired before init() runs - call directly.
-    setTimeout(function() { self._inject(); }, 900);
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.research) {
-        setTimeout(function() { self._inject(); }, 400);
-      }
+    RPGACE.hooks.on('research:tab-active', function(key) {
+      if (key === 'beatlog') setTimeout(function() { self._inject(); }, 100);
     });
   },
 
@@ -12163,14 +12225,16 @@ RPGACE.register('beatLog', {
 /* ===MODULE:refCorpus=== */
 RPGACE.register('refCorpus', {
 
+  // July 23 — this used to inject (and fetch reference_tracks) 1100ms
+  // after EVERY boot, regardless of whether Research Lab was even open
+  // (`.page` divs exist in the DOM at all times, just hidden via CSS) -
+  // one of ~6 real contributors found to the reported 12-23s post-login
+  // freeze. Now gated behind researchTabs' 'research:tab-active' hook,
+  // which only fires the first time the 'corpus' tab is actually opened.
   init: function() {
     var self = this;
-    // 'rpgace:ready' already fired before init() runs - call directly.
-    setTimeout(function() { self._inject(); }, 1100);
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.research) {
-        setTimeout(function() { self._inject(); }, 500);
-      }
+    RPGACE.hooks.on('research:tab-active', function(key) {
+      if (key === 'corpus') setTimeout(function() { self._inject(); }, 100);
     });
   },
 
@@ -13428,9 +13492,12 @@ RPGACE.register('conidPot', {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._injectSaveBtn(); }, 500);
       }
-      if (name === RPGACE.CONFIG.pages.research) {
-        setTimeout(function() { self._injectIdeaBank(); }, 500);
-      }
+    });
+    // July 23 — _injectIdeaBank() used to fire on every page:show->research
+    // regardless of active tab, a real contributor to the reported 12-23s
+    // freeze. Gated behind researchTabs' 'research:tab-active', key 'ideas'.
+    RPGACE.hooks.on('research:tab-active', function(key) {
+      if (key === 'ideas') setTimeout(function() { self._injectIdeaBank(); }, 500);
     });
   },
 

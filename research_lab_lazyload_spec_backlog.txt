@@ -1,0 +1,126 @@
+RESEARCH LAB LAZY-LOAD + FILE ANALYZER RENAME — SPEC BACKLOG
+Recorded July 23, 2026. Verbatim Q&A from AskUserQuestion, per CLAUDE.md rule 5
+("record real answers verbatim... never substitute recommended defaults for
+the user's actual answers").
+
+ORIGINAL REQUEST (verbatim):
+"app lagged for 23,000ms when on phone to open left nav, on computer 12,000ms;
+i think research lab card should have a pop-up with scrollable list of
+additional cards for each sub-nav (intelligence - rename to file analyzer
+since it does urls, youtube, insta, tiktok and other videos, bookworm etc.)
+research lab as a dom should only show one sub-nav at a time to ease loading.
+/Godmode and /interrogation, then /omnitrix and council of 5 output qualities
+of all before aforementioned outputs for implementing all ideas."
+
+GODMODE EVIDENCE GATHERED BEFORE ASKING:
+- Read researchTabs (rpgace_core.js) directly. Real finding: a July 22 QoL
+  request ("get rid of research tab as a wrapper, just keep the sub doms on
+  display") had removed single-tab visibility gating entirely - all 7
+  Research Lab sections (File Analyzer, Video Finder, Idea Bank, Corpus,
+  Beat Log, Workshop, Bibliography) rendered simultaneously. Today's request
+  is a real, deliberate REVERSAL of that July 22 decision, not a fresh ask -
+  flagged plainly rather than silently overwritten.
+- Traced every research sub-module's init(): at least 6 of them
+  (refCorpus, beatLog, conidPot's Idea Bank injector, bookworm's
+  Bibliography section, contentRepurpose's Workshop button) each fired
+  their own inject + a real Supabase fetch on an unconditional early
+  setTimeout (900-1800ms after boot) AND/OR on every page:show->research -
+  entirely REGARDLESS of which page was actually active, because `.page`
+  divs exist in the DOM at all times (just display:none when inactive).
+  This means ~6 real widget-builds + Supabase fetches were firing in the
+  same ~900-1800ms post-boot window every single login, whether or not
+  Research Lab was ever opened - a real, substantial, previously
+  undiagnosed contributor to background main-thread + network load,
+  landing squarely inside the window Alex reported the 12-23s freeze in.
+- Separately found (not part of this ask, but load-bearing for it):
+  researchTabs._inject() - the function that actually BUILDS the
+  #research-tab-bar DOM element - was never called anywhere in the whole
+  codebase. init() only ever called _apply() (which sorts visibility of an
+  ALREADY-built bar). The in-page tab bar has never actually existed in the
+  live app. Fixed as part of this same pass since Alex's own answer below
+  depends on it working.
+
+QUESTIONS ASKED + REAL ANSWERS:
+Q1: Once inside a single sub-nav view, how do you switch to a different one?
+A1: "Keep an in-page tab bar" - a lightweight tab bar stays inside Research
+    Lab for instant switching, gated so only the active tab's DOM/data loads.
+
+Q2: When you switch away from a sub-nav and back later, should it refetch or
+    stay cached?
+A2: "1" (Cache for the session) - PLUS a substantial separate idea raised in
+    the same answer, recorded verbatim and NOT acted on in this pass (see
+    journal_chronicles_oversight_crossfeed_spec_backlog.txt - this is a
+    genuinely new, separate, multi-subsystem ask that needs its own
+    dedicated GODMODE/interrogation round, not folded quietly into this
+    Research Lab build):
+    "i say 1, then journal can save what done so i can go back to certain
+    frameworks or ideas that were in convo, needs work from brainstorming to
+    tie these. I would also like chronicles to feed off minotaur map and
+    other oversight docs in measured doses (minotaur because chronicles
+    needs to be readable, and minotaur is best candidate to feed that info
+    through /Scope) (and oversight to feed from chronicles to keep timeline
+    straight between Alex - RPGACE self awareness - Oracle self awareness -
+    and claude code (you now)"
+
+Q3: The Intelligence -> File Analyzer rename - display label only?
+A3: "Yes, label only (Recommended)" - internal main.js function names
+    (submitIntelURL, intel-* element ids) and the ciAutoPropose module name
+    stay exactly as they are.
+
+WHAT SHIPPED (this pass):
+1. researchTabs: real single-tab visibility restored (`_apply()` now sets
+   display:none on every section except the active one, reversing July
+   22's "show all"). A new `_firedKeys` map + a new 'research:tab-active'
+   hook fire the FIRST time each tab becomes active - never again this
+   session (real cache-for-session, per A2's "1").
+2. Fixed the real dead-_inject() bug above so the in-page tab bar (A1)
+   actually exists and works.
+3. Gated the 6 real over-eager injectors behind 'research:tab-active':
+   refCorpus (key 'corpus'), beatLog (key 'beatlog'), conidPot's Idea Bank
+   injector (key 'ideas'), bookworm's Bibliography section (key 'biblio'),
+   contentRepurpose's Workshop button (key 'workshop'). Each module's OWN
+   inject/fetch logic is untouched - only WHEN it's called changed.
+   phylumPath's "Add to Taxonomy Tree" button deliberately left ungated -
+   it's a real page-level utility, not a per-tab one (the July 22 comment
+   already established this; gating it would reintroduce the exact bug
+   that comment describes fixing).
+4. New dashDeck._openResearch() popup: Research Lab's dashboard card now
+   opens a scrollable list of its 7 sub-navs as their own cards (reusing
+   researchTabs.TABS as the single source of truth, plus the exact
+   .dd-pop-row/.dd-pop-rtitle/.dd-pop-rdesc styling _openOversight already
+   established - no new one-off list layout). Clicking a sub-card closes
+   the popup and calls researchTabs.show(key).
+5. File Analyzer rename (A3, label-only): index.html's h3 heading, the
+   sourceLabels display map (rpgace_core.js line ~3265, the DB value
+   `content_intelligence` itself untouched), researchTabs.TABS' label (also
+   feeds the leftNav drawer's Research sub-nav automatically). Historical
+   docs (patch_notes.html, manual.html, archived files) deliberately NOT
+   rewritten - they describe what the feature was called at the time,
+   per this project's own never-silently-rewrite-history convention.
+
+VERIFIED (Playwright, headless, real DOM/localStorage checks - this
+sandbox's network can't reach Supabase, so fetch success/failure itself
+isn't testable here, only the gating/lazy-load logic around it):
+- Before ever opening Research Lab: zero of the 6 gated sub-panels exist
+  in the DOM.
+- Research Lab card -> popup shows all 7 correctly-labeled sub-cards.
+- Clicking "Corpus" navigates, activates only 'corpus', injects ONLY the
+  corpus panel (beatlog/ideas untouched).
+- Switching to "Beat Log" via the (now-real) in-page tab bar hides corpus,
+  shows+injects beatlog.
+- Switching back to "Corpus": _firedKeys unchanged (no re-fire), corpus
+  reappears, beatlog hides - real cache-for-session behavior confirmed.
+- phylumPath's "Add to Taxonomy Tree" button stays visible throughout,
+  confirming it wasn't accidentally caught by the new gating.
+- node --check rpgace_core.js clean.
+
+BUILD METHOD: Sonnet-direct (no Fable dispatch) - a real bug investigation
++ moderate multi-module refactor, not a large audit needing a dedicated
+fresh-context pass; matches the existing Omnitrix rebalance.
+
+STILL OPEN, NOT GUESSED: this cannot be proven to fully explain the
+reported 12-23s freeze without Alex reproducing on his real device (this
+sandbox's network to Supabase is blocked entirely). The perfWatch
+diagnostic (shipped earlier this session) stays in place - if the freeze
+recurs, its toast will report the real duration, telling us whether this
+fix closed the gap or whether a further cause remains.
