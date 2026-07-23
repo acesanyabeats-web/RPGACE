@@ -2418,7 +2418,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): 10 of 21 knowledge Phyla are live in Phylum Path. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. Known open bugs: Oracle chat can time out (504) on long responses; F11 can silently show "Content Unavailable" on a failed fetch instead of erroring loudly. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent yet; phyla 11-21 have no framework pass yet; 3 Supabase tables (bookworm_books, bookworm_chapters, bibliography) have Row Level Security disabled, meaning they are technically writable by anyone with the public key, not just from inside the app.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): 10 of 21 knowledge Phyla are live in Phylum Path. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - none of this July 22 work is hand-tested by Alex yet. Known open bugs: Oracle chat can time out (504) on long responses; F11 can silently show "Content Unavailable" on a failed fetch instead of erroring loudly. Known SECURITY gaps, not yet fixed: every /api/*.js endpoint has zero server-side auth (bigger exposure than the RLS gap below); the app password is a client-side-only check, readable via view-source; no Supabase backup/PITR exists at all. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent yet; phyla 11-21 have no framework pass yet; 3 Supabase tables (bookworm_books, bookworm_chapters, bibliography) have Row Level Security disabled, meaning they are technically writable by anyone with the public key, not just from inside the app.',
 
   init: function() {
     var self = this;
@@ -10292,7 +10292,7 @@ RPGACE.register('config', {
       // the app to know. Table is read-often/tiny, not write-heavy in the
       // app's own sense, but the same "never guaranteed fresh" problem
       // applies - excluded from caching for the same reason as the others.
-      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs','rpgace_shifts','chronicles_finance'];
+      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs','rpgace_shifts','chronicles_finance','system_updates'];
       if (noCache.indexOf(table) !== -1) return _origSelect(table, params);
       var cached = RPGACE.cache.get(cacheKey);
       if (cached) return Promise.resolve(cached);
@@ -14828,7 +14828,14 @@ RPGACE.register('careerStatCard', {
       // deliberately NOT folded into the totalXP/growthTotal weights below.
       // Confirmed via interrogation: this is a separate visibility lane,
       // not part of the career-score formula.
-      safe(sb.select('chronicles_finance', 'select=*&order=entry_date.desc,created_at.desc&limit=500'))
+      safe(sb.select('chronicles_finance', 'select=*&order=entry_date.desc,created_at.desc&limit=500')),
+      // Claude Code / RPGACE system updates (July 22) - every real dev-session
+      // change to RPGACE now gets a row here too, so Chronicles is a single
+      // real timeline of BOTH Alex's own actions AND what Claude Code shipped
+      // on the app, per Alex's explicit "make these updates known in
+      // chronicles from now on." See CLAUDE.md's "Chronicles system-update
+      // logging" rule for the standing convention future sessions follow.
+      safe(sb.select('system_updates', 'select=*&order=created_at.desc&limit=200'))
     ]).then(function(results) {
       return {
         content: Array.isArray(results[0]) ? results[0] : [],
@@ -14837,7 +14844,8 @@ RPGACE.register('careerStatCard', {
         proposals: Array.isArray(results[3]) ? results[3] : [],
         chapters: Array.isArray(results[4]) ? results[4] : [],
         tracks: Array.isArray(results[5]) ? results[5] : [],
-        finance: Array.isArray(results[6]) ? results[6] : []
+        finance: Array.isArray(results[6]) ? results[6] : [],
+        systemUpdates: Array.isArray(results[7]) ? results[7] : []
       };
     });
   },
@@ -15004,6 +15012,9 @@ RPGACE.register('careerStatCard', {
       var isSale = r.type === 'sale';
       items.push({ t: r.created_at, icon: isSale ? '💰' : '🧾', label: (isSale ? 'Sale: ' : 'Expense: ') + (r.item || r.category) + ' (£' + r.amount + ')', type: isSale ? 'finance_sale' : 'finance_expense', row: r });
     });
+    (data.systemUpdates || []).forEach(function(r) {
+      items.push({ t: r.created_at, icon: '🛠️', label: 'Claude Code: ' + (r.title || 'system update'), type: 'system_update', row: r });
+    });
     items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
     return items;
   },
@@ -15134,8 +15145,20 @@ RPGACE.register('careerStatCard', {
           ['Outcome', (isSale ? 'Real income logged' : 'Real spend logged') + (r.category ? ' under "' + esc(r.category) + '"' : '')],
           ['Where stored', 'chronicles_finance table • ' + esc(r.entry_date || '')],
           ['Why significant', isSale
-            ? 'Real revenue toward your music career — feeds the honest Output-lane picture, not a vanity number.'
+            ? 'Real revenue toward your music career. Kept as its own visibility lane, deliberately separate from the Output score above — a sale and a shipped video are different real wins.'
             : (r.notes ? esc(r.notes) : 'Tracked for your own visibility — keep the real receipt for actual tax filing; this is not a substitute for bookkeeping.')]
+        ]
+      };
+    }
+    if (it.type === 'system_update') {
+      return {
+        eyebrow: '🛠️ Claude Code — RPGACE System Update',
+        title: esc(r.title || 'System update'),
+        rows: [
+          ['What was done', esc(r.summary || r.title || '—')],
+          ['Outcome', 'Shipped to main by a Claude Code dev session'],
+          ['Where stored', 'system_updates table • category: ' + esc(r.category || 'feature')],
+          ['Why significant', 'Real infrastructure/behaviour change to RPGACE itself, logged here so app-side activity and dev-side activity share one real timeline.']
         ]
       };
     }
@@ -15173,8 +15196,8 @@ RPGACE.register('careerStatCard', {
 // id and class="page" to exist by click time, it doesn't care when or how
 // it was created). No main.js edit.
 RPGACE.register('chroniclesLog', {
-  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense'],
-  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses' },
+  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense', 'system_update'],
+  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System' },
   CATEGORY_SUGGESTIONS: ['Equipment', 'Software & Plugins', 'Drum Kits & Samples', 'Studio & Rent', 'Marketing', 'Beat Sale', 'Sample Pack Sale', 'Mixing/Mastering Service', 'Travel', 'Other'],
 
   init: function() {
