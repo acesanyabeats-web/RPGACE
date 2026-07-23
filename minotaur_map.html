@@ -465,6 +465,37 @@
     <div class="lane"><div class="estuary"><div class="t">🌊 Joins the Confluence</div><div class="d">Alex's own activity and the river system's own upkeep, one shared current for the first time</div></div></div>
   </div>
 
+  <div class="river-label">River X</div>
+  <div class="river-title">🔒 The Gatekeeper's Checkpoint</div>
+  <div class="river-sub">Every chamber in the labyrinth that used to have no door at all now has one real guarded gate — built July 23, waiting on Alex to hand the gatekeeper the key before it actually locks</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code>'s new API-auth entries in §10 + <code>interconnection_map.md</code>'s "API auth architecture" section (both July 23)</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">🚪 Alex, at the entrance</div><div class="d">types the real password, once</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The gatekeeper checks it himself now</div><div class="d">before: the entrance itself held a copy of the true password in plain sight, readable by anyone who looked closely at the gate's own stonework - now the gatekeeper holds it, out of sight, and checks in private</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Correct?</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">YES</span>the gatekeeper hands Alex a single sealed token - not the password itself, just proof he already showed it once</div>
+        <div class="branch no"><span class="yn">NO</span>turned away, exactly as before</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The token rides along automatically</div><div class="d">every chamber Alex visits from here on - Oracle's hall, the Composio bridges, every real request - the token goes with him without him ever having to carry it himself, one real hand-off point instead of tying it to every single door individually</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">A stranger reaches a chamber door directly (never through the entrance)</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">has the token</span>let through - it can only be gotten from the gatekeeper, honestly</div>
+        <div class="branch no"><span class="yn">no token</span>every chamber door now turns them away - before this river was dug, EVERY chamber door stood wide open to anyone who found it, whether or not they'd ever met the gatekeeper at all</div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="flow" style="margin-top:28px">
+    <div class="lane"><div class="node rect"><div class="t">🗝️ Two real keys, not yet cut</div><div class="d">the gatekeeper's private password-copy and the one sealed-token design both need a real key Alex has to forge himself and hand over (two Vercel environment variables) - until then this whole river is dug but dry, the gate built but not yet swung shut</div></div></div>
+  </div>
+
   <!-- ═══════════════ Planned / dry riverbeds ═══════════════ -->
   <div class="river-label">Not yet dug</div>
   <div class="river-title">🏜️ The Dry Riverbeds</div>
