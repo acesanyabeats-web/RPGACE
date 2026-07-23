@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🚪 July 23 — Real 10-20s post-login lag fixed, real pushState URLs, Chronicles folded into a dashboard card, swipeable left nav</div>
+    <div class="card-body">
+      Four items cleared by Council of 5 as low-risk from a 5-item batch Alex raised (PWA feeling web-like, the lag, multi-page URLs/file-splitting, Chronicles reorg, swipeable nav) — the two genuinely open questions (what "web-like" means, whether Chronicles content belongs literally inside the nav drawer) held for direct interrogation rather than guessed at; the file-splitting half of the URL ask deliberately deferred as its own future pass (too high-risk to bundle with four other changes).<br><br>
+      <strong>Lag root cause:</strong> <code>careerStatCard._fetchAll()</code> (8 Supabase calls) only ran after login. Since the login gate is purely visual (no server-side check), the boot loader now prefetches and warms <code>RPGACE.cache</code> before ever revealing the gate — trades a longer pre-login wait for an instant post-login dashboard, per Alex's own stated preference. Hard ceiling raised to 20s (JS) / 22s (CSS fallback) to match his stated tolerance.<br><br>
+      <strong>Real URLs:</strong> new <code>pathRouter</code> module — <code>vercel.json</code>'s catch-all already serves <code>index.html</code> for any path, so this needed zero server changes. Wraps <code>checkPassword</code> for one-time deep-link routing after login, listens to the existing <code>page:show</code> hook for pushState, handles back/forward via popstate.<br><br>
+      <strong>Chronicles</strong> is now the dashboard's 12th card, reusing the exact <code>_buildItems</code>/<code>_showDetail</code> logic already shared between the dashboard feed and full log page.<br><br>
+      <strong>Swipeable nav:</strong> touchstart/touchend gesture detection (not live finger-tracking — reuses the existing slide animation for a smaller, safer build).<br><br>
+      <strong>Two real bugs caught during testing, not reported by Alex:</strong> <code>pathRouter</code>'s popstate listener used <code>global.addEventListener</code>, but the outer IIFE actually closes at line 510 and this module is defined ~15,000 lines later — <code>global</code> was out of scope entirely, and the listener silently never attached (console: "Module init failed: pathRouter — global is not defined"). Fixed to <code>window.addEventListener</code>. Separately: going back to a history entry with no page state (the root URL) left the wrong page showing — fixed with a dashboard default.<br><br>
+      <code>node --check rpgace_core.js</code> clean. All four verified via real Playwright runs, including a real mobile-viewport touch simulation for the swipe gesture — zero page errors. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🏁 July 22 — SESSION CLOSED. July 23 starts fresh.</div>
     <div class="card-body">
