@@ -15379,3 +15379,74 @@ RPGACE.register('chroniclesLog', {
   }
 });
 /* ===END:chroniclesLog=== */
+
+/* ===MODULE:jargonEncyclopedia=== */
+// July 22 — "biggest confirmed-not-built items" list (CLAUDE.md) named a
+// Taxonomy Sorting Agent and a Jargon Encyclopedia as blocked on it. Real
+// GODMODE finding before building anything: tracing the actual call chain
+// (bookworm._decidePlacementScored -> phylumPath.decidePlacementScored,
+// the exact same function encSync/ciAutoPropose already call) shows book
+// and non-book inputs already share ONE placement engine - the July 19
+// unification already did this. The Jargon Encyclopedia was never actually
+// blocked on new agent logic, just on a read-only view existing at all.
+// Built as a Postgres view (jargon_encyclopedia, security_invoker) over
+// taxonomy_tree's real leaf rows - zero new writes, same live-query-every-
+// load convention taxonomy_map.html already uses. Injected as a button
+// into Phylum Path's EXISTING page shell (not a new nav entry/page) per
+// Alex's explicit "build in to the existing rather than build on top."
+RPGACE.register('jargonEncyclopedia', {
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('page:show', function(name) {
+      var pageId = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.phylumPath : null;
+      if (pageId && name === pageId) setTimeout(function() { self._injectButton(); }, 200);
+    });
+    setTimeout(function() { self._injectButton(); }, 2000);
+  },
+
+  _injectButton: function() {
+    if (document.getElementById('jargon-enc-btn')) return;
+    var title = document.getElementById('pp-phylum-title');
+    if (!title || !title.parentNode) return;
+    var self = this;
+    var btn = document.createElement('button');
+    btn.id = 'jargon-enc-btn';
+    btn.textContent = '📖 Jargon Encyclopedia';
+    btn.style.cssText = 'margin-bottom:10px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
+    btn.onclick = function() { self._openGlossary(); };
+    title.insertAdjacentElement('afterend', btn);
+  },
+
+  _openGlossary: function() {
+    var self = this;
+    var dd = RPGACE.modules.dashDeck;
+    if (!dd || !dd._popup) return;
+    var pop = dd._popup({ eyebrow: '📖 Every leaf term across your tree', title: 'Jargon Encyclopedia', width: '640px', accent: 'var(--gold)' });
+    pop.box.innerHTML = '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;"><div id="jarg-list" style="max-height:50vh;overflow-y:auto;">Loading…</div>';
+    var listEl = pop.box.querySelector('#jarg-list');
+    var searchInp = pop.box.querySelector('#jarg-search');
+    RPGACE.sb.select('jargon_encyclopedia', 'select=name,path,explainer,phylum_number&order=name.asc&limit=1000').then(function(rows) {
+      rows = rows || [];
+      self._allTerms = rows;
+      self._renderTerms(listEl, rows);
+      searchInp.addEventListener('input', function() {
+        var q = searchInp.value.toLowerCase();
+        var filtered = rows.filter(function(r) { return (r.name || '').toLowerCase().indexOf(q) !== -1; });
+        self._renderTerms(listEl, filtered);
+      });
+    }).catch(function(e) {
+      listEl.textContent = 'Load failed: ' + e.message;
+    });
+  },
+
+  _renderTerms: function(listEl, rows) {
+    if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No terms match.</div>'; return; }
+    listEl.innerHTML = rows.map(function(r) {
+      return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
+        + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.name || '').replace(/</g, '&lt;') + '</div>'
+        + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</div>'
+        + '</div>';
+    }).join('');
+  }
+});
+/* ===END:jargonEncyclopedia=== */
