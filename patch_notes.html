@@ -619,6 +619,11 @@
   <div class="section-title">Still Open</div>
   <div class="section-sub">Curated July 14 — moved ~15 stale/superseded/duplicate cards out to <a href="patch_notes_archive.html">the archive</a>. What remains here is genuinely current: live tech debt, live infra, and the smoke-test backlog for everything shipped July 12-14 but not yet hand-tested.</div>
 
+<div class="card red">
+    <div class="card-title">🚨 ACTION NEEDED FROM ALEX — set 2 Vercel env vars to ship the API-auth fix <span class="badge open">URGENT, LOGGED JULY 23</span></div>
+    <div class="card-body">The API-auth + password security fix (built + tested July 23, "Round 6") is finished but sitting on the <code>claude/rpgace-master-steps-uobp98</code> branch, <strong>not live</strong>. It needs two Vercel environment variables set first — Project → Settings → Environment Variables: <code>CORRECT_PW</code> (your real app password, moving it off the client) and <code>RPGACE_API_SECRET</code> (a new random secret — e.g. run <code>openssl rand -hex 32</code> and paste the result). Once both are set, tell the next Claude Code session and it merges to <code>main</code> — that's the point it goes live. Merging before that breaks login and every API call in production.</div>
+  </div>
+
 <div class="card">
     <div class="card-title">Streaming Oracle intercept <span class="badge open">TECH DEBT</span></div>
     <div class="card-body">Currently neutralised via <code>restoreSendChat</code> setting <code>streamOracle = null</code> at module init. Functionally stable and confirmed working, but this is a workaround sitting on top of dead streaming code rather than a full clean revert. <strong>Concrete removal task:</strong> delete the dead Edge-runtime streaming code from <code>api/oracle.js</code> history (already reverted to the stable version, but the streaming attempt's client-side hooks in <code>config</code> module — <code>RPGACE.streamOracle</code> definition itself — are still present and unused); delete the <code>restoreSendChat</code> module entirely once confirmed nothing still references <code>streamOracle</code>; re-run <code>rpgace_build.py check</code> to confirm no orphaned calls remain.</div>

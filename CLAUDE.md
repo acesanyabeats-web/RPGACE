@@ -2,6 +2,13 @@
 Read automatically by Claude Code at the start of every session in this folder.
 **Rewritten July 17, 2026** from a full audit of all oversight docs + live code, per Alex's direct request. This file + `system_flow_map.md` (the 5th oversight doc: full Mermaid flow diagrams, complete built/not-built truth table) + `minotaur_map.html` (the 6th, added July 18: the same primary information flows redrawn as a single spatial labyrinth metaphor) together form the master development plan. Read `system_flow_map.md` before any architectural work — it shows where every piece of information is pulled, processed, transported, and output, plus where planned features attach.
 
+## 🚨 URGENT — ACTION NEEDED FROM ALEX (logged July 23, do this before anything else this session)
+The real API-auth + password security fix (built July 23, on branch `claude/rpgace-master-steps-uobp98`, see patch_notes.html "Round 6") is **finished and tested but NOT merged to `main` / NOT live** — it is blocked on Alex setting **two Vercel environment variables** (Project → Settings → Environment Variables):
+- `CORRECT_PW` = the real app password (moves it off the client, out of `main.js`)
+- `RPGACE_API_SECRET` = a new random secret, e.g. run `openssl rand -hex 32` and paste the output
+
+**Once both are set, tell whichever Claude Code session is running** and it will merge the branch to `main` — that is the point it goes live. Do NOT merge before both env vars exist, or login and every `/api/*` call breaks in production. If this line is still here, it means the env vars are still not confirmed set — ask Alex directly rather than assuming.
+
 ## Who you're working with
 Alex (@AceSanyaBeats), UK music producer, Derby. Building RPGACE — a personal AI operating system for music production and content creation. Solo project.
 
