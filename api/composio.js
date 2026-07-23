@@ -1,4 +1,4 @@
-// July 23 — reduplication fix (Alex-confirmed standing rule: "same
+// July 23 — deduplication fix (Alex-confirmed standing rule: "same
 // processes must go through one pipeline or function if steps are
 // identical"). This file used to hand-roll its own CORS headers and its
 // own ACCOUNTS/TOOL_ALIASES maps instead of importing the shared ones

@@ -30,7 +30,7 @@ COMPOSIO API: https://backend.composio.dev/api/v3.1
 
 const PG = 'pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1';
 
-// July 23 — reduplication fix (Alex-confirmed standing rule: "same
+// July 23 — deduplication fix (Alex-confirmed standing rule: "same
 // processes must go through one pipeline or function if steps are
 // identical"). This map used to have a SECOND, drifted copy hand-rolled
 // inside composio.js with its own "UPDATED June 28 2026 — verified tool
@@ -51,7 +51,7 @@ export const ACCOUNTS = {
   notion:    { id: 'ca_Qfjy_TRBQA7T',  user_id: 'notionACE' }
 };
 
-// Moved from composio.js (same reduplication fix) so callComposio() below
+// Moved from composio.js (same deduplication fix) so callComposio() below
 // applies it for EVERY caller (executor.js, orchestrate.js, composio.js),
 // not just the one file that happened to remember tool names change.
 export const TOOL_ALIASES = {

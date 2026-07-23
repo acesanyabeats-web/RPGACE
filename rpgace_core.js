@@ -14970,8 +14970,9 @@ RPGACE.register('authGate', {
   // request except /api/auth itself (which doesn't have the secret yet -
   // that's the whole point of it). Installed once, immediately, so it
   // covers every one of the ~26 real call sites across main.js and this
-  // file without touching any of them individually - real reduplication
-  // avoidance, not just a security fix.
+  // file without touching any of them individually - real deduplication
+  // (one shared pipeline instead of many hand-rolled copies), not just a
+  // security fix.
   _installFetchWrap: function() {
     var self = this;
     if (window._authGateFetchPatched) return;

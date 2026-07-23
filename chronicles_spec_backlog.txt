@@ -285,7 +285,8 @@ INTERPRETATION (stated plainly, not silently assumed): #1 is unambiguous -
 build the API-auth + password fix now. #2 answers a DIFFERENT, broader
 question than the one asked (was it throughput or priority for the
 taxonomy backlog) - Alex instead stated a general architecture PRINCIPLE:
-eliminate reduplication everywhere, always, promoted to CLAUDE.md rule 8.
+eliminate duplication everywhere, always, promoted to CLAUDE.md rule 8
+(term corrected next round to "deduplication" - see Round 6 below).
 #3 is unambiguous - build the live-grounding rewiring, and treat
 "automate where it improves things" as a standing default going forward,
 not a one-off approval.
@@ -313,7 +314,7 @@ not a one-off approval.
   after ANY checkPassword() call, including a WRONG password - now it
   awaits the real result and only fires on genuine success.
 
-APPLYING #2 (REDUPLICATION) FOUND A REAL, CONCRETE BUG WHILE BUILDING #1:
+APPLYING #2 (DEDUPLICATION) FOUND A REAL, CONCRETE BUG WHILE BUILDING #1:
 api/composio.js had its own hand-rolled CORS header block AND its own
 divergent ACCOUNTS map (with a "UPDATED June 28 2026 - verified tool
 names from app.composio.dev" comment) instead of importing _context.js's
@@ -364,3 +365,68 @@ app) is better served by waiting here than by following its letter.
 BUILD METHOD: Sonnet-direct - a real Tier 3 security fix touching a
 FROZEN file plus 12 api files plus rpgace_core.js, not a large audit
 needing Fable.
+
+================================================================================
+ROUND 6 — July 23, 2026. Term correction: "reduplication" -> "deduplication."
+
+VERBATIM (Alex): "in the last prompt I meant reduplication, not
+reduplication." (his own clarification contains the same typo twice - the
+real intended correction, confirmed by context, is deduplication, not
+reduplication - "reduplication" is a real English word but means the
+repetition/doubling of something, the OPPOSITE of what Round 5's rule was
+actually about; "deduplication" is the correct term, and the one this
+codebase's own code already uses, e.g. the intelDedup module.)
+
+GODMODE + /scope evidence pass before editing anything: grepped the
+entire repo (case-insensitive) for "reduplicat". Found exactly 11
+occurrences across 6 files - CLAUDE.md, patch_notes.html,
+chronicles_spec_backlog.txt, rpgace_core.js, api/_context.js,
+api/composio.js - ALL introduced this same session (zero occurrences in
+any older doc: manual.html, interconnection_map.md, system_flow_map.md,
+minotaur_map.html, patch_notes_archive.html all clean). Confirmed the
+word was NEVER used as a real code identifier (function/variable/module
+name) anywhere - every occurrence sits inside a comment or doc prose.
+
+COUNCIL OF 5 COST VERDICT: functionally free to fix. Zero runtime risk
+(nothing named "reduplicat*" in real code), zero historical debt (confined
+entirely to this session's own new writing), zero external
+dependents (not referenced by any other doc, table, or skill file). The
+only real judgment call: verbatim quotes of Alex's own words (his July 23
+answer, and this correction itself) must NOT be silently rewritten -
+kept exactly as-said, with a brief clarifying note next to each so a
+future reader isn't confused why the quote and the surrounding prose use
+different words.
+
+FIXED: all of this session's own prose/comments corrected from
+"reduplication" to "deduplication" in CLAUDE.md rule 8, patch_notes.html,
+this file, rpgace_core.js's authGate comment, and api/_context.js's /
+api/composio.js's July 23 comments. Verbatim quotes (both of Alex's,
+including this correction's own re-quote of his original wording) kept
+exactly as typed.
+
+EXTENDED PER ALEX'S ASK ("so that taxonomy and other reduplication [sic]
+functions can be included in this model"): CLAUDE.md rule 8 rewritten to
+explicitly name the real, ALREADY-EXISTING taxonomy-domain instance of
+this same principle - the placement engine's per-chapter leaf-name dedup
+(_continueAnalyzingInBackground's "batch-dedup awareness," July 19,
+prevents a chapter from minting near-duplicate taxonomy leaves for the
+same concept) - alongside intelDedup, so the rule now covers two real,
+already-distinct patterns (CODE duplication like the composio.js bug, and
+DATA deduplication like intelDedup/taxonomy leaf-dedup) instead of reading
+as if it only meant one. Explicitly noted what this does NOT include:
+taxonomy_nodes vs. taxonomy_tree is a deliberate, already-reasoned
+architecture split (interconnection_map.md's own words), not an
+accidental duplication - conflating the two would misapply the rule to
+something that was never a mistake.
+
+/5thDimension NOT run at full weight for this: a straight terminology
+correction with zero functional risk is Tier 0/1 by the Judgment Funnel's
+own definition ("typo/formatting fixes... no ceremony" - applying full
+6-phase rigor here would waste the exact budget that framework exists to
+protect). Did the real, honest version of what was asked instead: a real
+GODMODE evidence pass (the grep above) and a real Council-of-5-shaped cost
+verdict, both stated plainly, without spinning up the full protocol
+apparatus for a find-and-replace.
+
+BUILD METHOD: Sonnet-direct, no Fable (per Alex's explicit "without
+fable").
