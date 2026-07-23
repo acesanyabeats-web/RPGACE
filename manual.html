@@ -238,6 +238,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Start / Done</td><td>SCHEDULE</td><td>Task tracking + XP</td></tr>
     <tr><td>📜 The Chronicles (nav) / View Full Log →</td><td>GLOBAL</td><td>New July 22 (<code>careerStatCard</code> + <code>chroniclesLog</code>) — renamed from "Recent Wins." Dashboard preview shows the 5 most recent real actions across 8 Supabase tables; the button opens a full <code>#page-chronicles</code> log page (search box, type filter chips, full history). Every row, dashboard or full page, opens the same click-through detail popup (What was done / Outcome / Where stored / Why significant), reusing <code>dashDeck._popup</code>. Not yet hand-tested.</td></tr>
     <tr><td>+ Log Sale / Expense</td><td>CHRONICLES</td><td>New July 22 — form (date/item/category/amount/notes) on the Chronicles page, writes to the new <code>chronicles_finance</code> table. Personal-visibility tracker only, explicitly not bookkeeping-grade (confirmed via interrogation) — real receipts still needed for actual tax filing. Not yet hand-tested.</td></tr>
+    <tr><td>📖 Jargon Encyclopedia</td><td>LEARNING</td><td>New July 22 — button inside Phylum Path's existing page (not a new nav entry). Real GODMODE finding first: the planned "Taxonomy Sorting Agent" was already effectively built (book and non-book inputs share one placement engine, confirmed via the real call chain) — only the glossary itself was missing. Opens a searchable popup over the new <code>jargon_encyclopedia</code> view (every leaf term across the tree). Not yet hand-tested.</td></tr>
   </table>
 </div>
 
@@ -264,6 +265,8 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>taxonomy_decision_log</td><td>New July 22 — append-only audit trail of every taxonomy commit (phylum_number/node_id/path/insight_text/source), written at <code>phylumPath._insertNewSteps</code>'s single choke point so "which code path produced this" is a query, not a forensic investigation</td><td>RLS enabled, anon_all policy</td></tr>
     <tr><td>chronicles_finance</td><td>New July 22 — real sale/expense rows (entry_date/type/category/item/amount/notes) for The Chronicles' personal-visibility finance ledger</td><td>RLS enabled, anon_all policy</td></tr>
     <tr><td>system_updates</td><td>New July 22 — every real Claude Code change to RPGACE (title/summary/category), so Chronicles shows dev-side activity alongside Alex's own — standing rule: any session shipping a real change logs a row here</td><td>RLS enabled, anon_all policy</td></tr>
+    <tr><td>book_knowledge <em>(view)</em></td><td>New July 22 — real, structured, queryable book-derived knowledge: unnests <code>bookworm_chapters.insights</code> (approved only), joined with <code>bookworm_books</code> for title. Zero new writes — reads data Bookworm already produces.</td><td>security_invoker view over existing RLS/permissions</td></tr>
+    <tr><td>jargon_encyclopedia <em>(view)</em></td><td>New July 22 — read-only glossary over real leaf-level taxonomy_tree rows (<code>node_type='leaf' AND status='accepted'</code>). Same live-query-every-load convention as <code>taxonomy_map.html</code>.</td><td>security_invoker view over existing RLS/permissions</td></tr>
   </table>
 </div>
 
@@ -365,7 +368,7 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   </div>
   <div class="card gold">
     <div class="card-title">f — Competitor/book insight pipeline</div>
-    <div class="card-body">Worked template: insight → taxonomy leaf node → structured summary (what/how/used-on-what) → clickable footnote via <code>intel_bibliography</code>. Feeds directly into the Taxonomy Sorting Agent once built.</div>
+    <div class="card-body">Worked template: insight → taxonomy leaf node → structured summary (what/how/used-on-what) → clickable footnote via <code>intel_bibliography</code>. The shared placement engine this needs already exists (confirmed July 22 — book and non-book inputs already route through the same function) — this is now just the bibliography-footnote UI work, not blocked on anything.</div>
   </div>
 </div>
 

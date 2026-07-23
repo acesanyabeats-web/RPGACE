@@ -280,12 +280,13 @@ flowchart TD
         RVW[Per-insight review popups]
         TREE[(taxonomy_tree)]
         DP[decidePlacement]
+        BK[(book_knowledge view<br/>July 22)]
+        JE[(jargon_encyclopedia view<br/>July 22)]
     end
 
     subgraph PLANNED[Planned — attach points shown]
         CARDS[/"Live-study card list UI<br/>ConID-card pattern: per-chapter cards,<br/>edit title, status, context action.<br/>REPLACES the modal-per-step flow,<br/>calls the SAME _openBook/_renderInsightReview logic"/]
-        TSA[/"Taxonomy Sorting Agent<br/>one classification agent, cost confined to<br/>2 touchpoints. Would absorb/replace<br/>decidePlacement's role for non-book inputs"/]
-        AUDIT[/"Claude general-knowledge audit (3 parts):<br/>a. seed tree from general knowledge — tagged zone<br/>b. genre-relevance scoring<br/>c. assumption vs contradiction check vs gathered data"/]
+        DEBATE[/"/debate skill run on a real topic:<br/>Claude's general knowledge vs.<br/>a specific gathered tree insight —<br/>comparison only, never auto-writes"/]
         F12[/"Schedule Oracle Phase 2:<br/>carousel, two-tier session memory, auto-routing"/]
         PHYLA11[/"Phyla 11-21 through the<br/>7-step Development Framework"/]
         EPUB[/"EPUB/other-format upload<br/>same _createBookFromExtraction path<br/>as PDF upload"/]
@@ -293,13 +294,16 @@ flowchart TD
 
     CARDS -.->|renders| BWPIPE
     CARDS -.->|reuses| RVW
-    TSA -.->|feeds| TREE
-    TSA -.->|replaces for chat/CI inputs| DP
-    AUDIT -.->|tagged writes| TREE
+    DP -.->|already shared by book + non-book, July 19| BWPIPE
+    BK -.->|unnests, read-only| BWPIPE
+    JE -.->|selects leaves, read-only| TREE
+    DEBATE -.->|compares against, never writes| TREE
     PHYLA11 -.->|extends ENABLED_PHYLA| DP
     EPUB -.->|new entry point| BWPIPE
     F12 -.->|extends| SO2[Schedule Oracle]
 ```
+
+**July 22 correction**: the "Taxonomy Sorting Agent" and "Claude general-knowledge audit" nodes that used to sit in the PLANNED subgraph above are gone — tracing the real call chain showed `decidePlacement` already IS the one shared engine for book and non-book inputs (no separate agent was ever needed), and the general-knowledge audit was redesigned around `/debate` (comparison only, gated behind an explicit human decision to ever write anything) rather than the original 3-part tree-seeding design. `book_knowledge` and `jargon_encyclopedia` — what the Sorting Agent was actually described as blocking — are both shipped, read-only Postgres views over data already written by the existing pipeline above.
 
 ---
 
@@ -353,6 +357,8 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 - Bibliography section render (no completed book exists to show)
 - `bookworm:` chat trigger; browser-side render of concept-fusion/fusion-link review cards; interlink article popup; grouped phylum switcher; drill-down Back button — all built this session, none re-clicked after building
 - F16 Beatstars listing, F17 video pipeline stages, F18 auto visual treatment, highlight-to-Phylum-Path button (pending since July 13-15)
+- **`book_knowledge` + `jargon_encyclopedia` views + the Jargon Encyclopedia button (July 22)** — real row counts confirmed via direct query (33/150), `security_definer_view` lint found and fixed, real headless Playwright run confirmed the button/popup/graceful-failure path — but never clicked through by Alex in a real browser.
+- **`/debate` skill (July 22)** — built and code-reviewed, never actually run on a real topic yet (Alex asked to hold off rather than pick one this pass).
 - n8n rota sync (F10) — importable, never test-run
 - **Oracle self-awareness + Claude Code bridge (July 22, 6 pieces, none hand-tested):** `oracleAppGrounding` (dashboard/status grounding), `oracleFetchGuard` (fetched-content prompt-injection hardening), `oracleDevBridge` (Flag-for-Claude-Code button + `oracle_dev_suggestions` table), `taxonomy_decision_log` audit-log write hook at `_insertNewSteps`, Council of 5's conversation-capture button (`fillGaps` `opts.allowConversationCapture`), and the daily Morning Brief Routine (fires for real tomorrow morning for the first time). `node --check` clean on every pass; zero of it clicked through live yet.
 - **Nav-lag root cause fixed twice, same day (July 22)** — a live crash from an early sidebar fix (module registration aborted mid-parse) was reverted, then root-caused for real (`leftNav`/`config` init-order race, defensive guard + retry added). A separate, deeper report ("nav doesn't respond for ~10s after login") traced `onReady()` to gating the whole module-registration cascade behind `window.load` (every image/font) instead of `DOMContentLoaded` — a systemic fix improving every module's startup, verified via real headless Playwright runs (not just code review, unlike the July 20 entries above).
@@ -362,7 +368,8 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 
 ### Claimed/discussed but NOT built — do not trust any doc that implies otherwise
 - Live-study **card-list UI** (ConID-card pattern for Bookworm chapters) — explicitly deferred today
-- Taxonomy Sorting Agent; Claude general-knowledge audit (3 parts); Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; phyla 11-21 framework passes; `hooks.on('rpgace:ready')` ~25-site audit; Oracle 504 root fix (streaming/chunking); dead streaming-code cleanup (`restoreSendChat`)
+- Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; phyla 11-21 framework passes; `hooks.on('rpgace:ready')` ~25-site audit; Oracle 504 root fix (streaming/chunking); dead streaming-code cleanup (`restoreSendChat`)
+- ~~Taxonomy Sorting Agent; Claude general-knowledge audit (3 parts)~~ — **moved July 22**: see the "Built but NEVER verified" section below (`book_knowledge`/`jargon_encyclopedia` views + the `/debate` skill).
 - **Server-side API authentication** — every `/api/*.js` endpoint is currently callable by anyone who finds the URL (confirmed July 22, `Access-Control-Allow-Origin:'*'`, zero header/token check anywhere). Needs a real design pass (shared-secret header, sequenced carefully with a Vercel env var so nothing breaks live) — not a drive-by fix.
 - **`CORRECT_PW` moved server-side** — currently readable via view-source regardless of where it's stored, since the check runs entirely in client JS; the real fix is the same server-side auth decision as the API-auth item above, not a simple env-var move.
 - **XSS/DOM-injection audit of `innerHTML` call sites** — flagged July 22, not investigated. Distinct from the (fixed) prompt-injection risk: whether any fetched external content (Jina text, YouTube transcripts, Oracle's own rendered replies) ever reaches an `innerHTML` assignment unescaped is a real open question.
