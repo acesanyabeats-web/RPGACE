@@ -269,3 +269,202 @@ Sonnet-direct from the start (per Omnitrix's own "most tasks don't need a
 dedicated fresh-context agent" reasoning) - Fable's fresh-context edge is
 real for genuinely large audits, but it comes with this real failure mode
 that Sonnet/Opus dispatches don't share.
+
+================================================================================
+ROUND 5 — July 23, 2026. Alex's real answers to the /5thDimension Phase 5
+forks, recorded verbatim, and the resulting build.
+
+VERBATIM (Alex, answering the three forks posed at the end of
+fifth_dimension_phase3_4_debate_2026-07-23.md):
+"1. do now 2. reduplication is always a priority, whether functions or
+transportation or changing data, same processes must go through one
+pipeline or function if steps are identical 3. yes make live, always
+automate where it makes improvements"
+
+INTERPRETATION (stated plainly, not silently assumed): #1 is unambiguous -
+build the API-auth + password fix now. #2 answers a DIFFERENT, broader
+question than the one asked (was it throughput or priority for the
+taxonomy backlog) - Alex instead stated a general architecture PRINCIPLE:
+eliminate duplication everywhere, always, promoted to CLAUDE.md rule 8
+(term corrected next round to "deduplication" - see Round 6 below).
+#3 is unambiguous - build the live-grounding rewiring, and treat
+"automate where it improves things" as a standing default going forward,
+not a one-off approval.
+
+#1 BUILT THIS ROUND (Tier 3, real production security fix):
+- api/auth.js (new): server-side password check against process.env.
+  CORRECT_PW, returns process.env.RPGACE_API_SECRET on success. Neither
+  value is hardcoded anywhere in committed code (this repo is public -
+  a hardcoded fallback would be exactly as exposed as the old client-side
+  CORRECT_PW was).
+- api/_context.js: new requireAuth(req,res) checking the X-RPGACE-Auth
+  header against RPGACE_API_SECRET, called by every other endpoint;
+  setCORS() now allows that header through CORS preflight too.
+- rpgace_core.js: new authGate module - verify(pw) calls /api/auth and
+  stores the returned secret; a single global fetch() wrap attaches it
+  to every /api/* call site (main.js's 15 + rpgace_core.js's own 11 -
+  one real choke point, not 26 edits, directly applying #2's principle
+  to this exact build).
+- main.js (FROZEN, one deliberate logged exception): checkPassword() no
+  longer holds CORRECT_PW as a literal string or compares it locally -
+  it awaits authGate.verify(pw) instead. The literal password value is
+  gone from every file shipped to the browser.
+- Fixed a real latent bug found while touching the checkPassword wrap
+  (rpgace_core.js): it used to fire 'rpgace:login' unconditionally 700ms
+  after ANY checkPassword() call, including a WRONG password - now it
+  awaits the real result and only fires on genuine success.
+
+APPLYING #2 (DEDUPLICATION) FOUND A REAL, CONCRETE BUG WHILE BUILDING #1:
+api/composio.js had its own hand-rolled CORS header block AND its own
+divergent ACCOUNTS map (with a "UPDATED June 28 2026 - verified tool
+names from app.composio.dev" comment) instead of importing _context.js's
+shared ones. The two maps had drifted: composio.js's gmail/instagram ids
+were the newer, correct ones; _context.js's were stale. executor.js and
+orchestrate.js both call callComposio() (which reads _context.js's
+ACCOUNTS) - meaning any Gmail/Instagram action routed through those two
+files had silently been hitting the WRONG connected-account id since
+June 28, with no error surfaced anywhere. Fixed: _context.js's ACCOUNTS
+updated to the correct values, TOOL_ALIASES moved there too (so every
+caller benefits, not just composio.js), composio.js rewritten to import
+from _context.js instead of keeping its own copy. api/search.js's
+separately-duplicated CORS block fixed the same way. Logged as CLAUDE.md
+rule 8 (verbatim quote + this exact finding as the worked example).
+
+#3 (LIVE-GROUNDING REWIRE): NOT YET BUILT this round - explicitly
+deferred to its own pass rather than rushed alongside #1/#2 in the same
+already-large turn. Real next step, not abandoned.
+
+TESTING DONE (real, not assumed): all 12 touched api/*.js files pass
+`node --check` (package.json has "type":"module"). Built a minimal
+Vercel-shaped mock server (no real Vercel CLI available in this sandbox)
+that dynamically imports the REAL api/auth.js and exercises the REAL
+requireAuth()/setCORS() from _context.js - confirmed wrong password
+rejected, correct password returns the secret, a protected endpoint
+401s without the header and succeeds with it. Then a real headless
+Playwright run through the ACTUAL login UI (not a hand-written stand-in):
+wrong password shows the real error and stores no secret, correct
+password hides the gate and stores the secret, and a genuine fetch('/api/
+oracle') call made from the live page correctly carried the X-RPGACE-Auth
+header via the global wrap - proof the fix works end-to-end, not just in
+isolation.
+
+REAL DEPLOYMENT BLOCKER, NOT YET RESOLVED: this cannot go live without
+Alex setting TWO Vercel environment variables first:
+  CORRECT_PW = (the real password, moved out of main.js)
+  RPGACE_API_SECRET = (a new random shared secret, e.g. openssl rand -hex 32)
+Until both exist in Vercel, deploying this code would break login and
+every /api/* call in production (no fallback value exists anywhere in
+committed code, deliberately, since this repo is public). This is sitting
+on the feature branch (claude/rpgace-master-steps-uobp98), NOT merged to
+main, specifically because merging would go live immediately per the
+standing "merge to main = it's live" reality - a deliberate, reasoned
+exception to the usual "merge before telling Alex to test" rule, since
+that rule's actual intent (never leave Alex unable to use his own real
+app) is better served by waiting here than by following its letter.
+
+BUILD METHOD: Sonnet-direct - a real Tier 3 security fix touching a
+FROZEN file plus 12 api files plus rpgace_core.js, not a large audit
+needing Fable.
+
+================================================================================
+ROUND 6 — July 23, 2026. Term correction: "reduplication" -> "deduplication."
+
+VERBATIM (Alex): "in the last prompt I meant reduplication, not
+reduplication." (his own clarification contains the same typo twice - the
+real intended correction, confirmed by context, is deduplication, not
+reduplication - "reduplication" is a real English word but means the
+repetition/doubling of something, the OPPOSITE of what Round 5's rule was
+actually about; "deduplication" is the correct term, and the one this
+codebase's own code already uses, e.g. the intelDedup module.)
+
+GODMODE + /scope evidence pass before editing anything: grepped the
+entire repo (case-insensitive) for "reduplicat". Found exactly 11
+occurrences across 6 files - CLAUDE.md, patch_notes.html,
+chronicles_spec_backlog.txt, rpgace_core.js, api/_context.js,
+api/composio.js - ALL introduced this same session (zero occurrences in
+any older doc: manual.html, interconnection_map.md, system_flow_map.md,
+minotaur_map.html, patch_notes_archive.html all clean). Confirmed the
+word was NEVER used as a real code identifier (function/variable/module
+name) anywhere - every occurrence sits inside a comment or doc prose.
+
+COUNCIL OF 5 COST VERDICT: functionally free to fix. Zero runtime risk
+(nothing named "reduplicat*" in real code), zero historical debt (confined
+entirely to this session's own new writing), zero external
+dependents (not referenced by any other doc, table, or skill file). The
+only real judgment call: verbatim quotes of Alex's own words (his July 23
+answer, and this correction itself) must NOT be silently rewritten -
+kept exactly as-said, with a brief clarifying note next to each so a
+future reader isn't confused why the quote and the surrounding prose use
+different words.
+
+FIXED: all of this session's own prose/comments corrected from
+"reduplication" to "deduplication" in CLAUDE.md rule 8, patch_notes.html,
+this file, rpgace_core.js's authGate comment, and api/_context.js's /
+api/composio.js's July 23 comments. Verbatim quotes (both of Alex's,
+including this correction's own re-quote of his original wording) kept
+exactly as typed.
+
+EXTENDED PER ALEX'S ASK ("so that taxonomy and other reduplication [sic]
+functions can be included in this model"): CLAUDE.md rule 8 rewritten to
+explicitly name the real, ALREADY-EXISTING taxonomy-domain instance of
+this same principle - the placement engine's per-chapter leaf-name dedup
+(_continueAnalyzingInBackground's "batch-dedup awareness," July 19,
+prevents a chapter from minting near-duplicate taxonomy leaves for the
+same concept) - alongside intelDedup, so the rule now covers two real,
+already-distinct patterns (CODE duplication like the composio.js bug, and
+DATA deduplication like intelDedup/taxonomy leaf-dedup) instead of reading
+as if it only meant one. Explicitly noted what this does NOT include:
+taxonomy_nodes vs. taxonomy_tree is a deliberate, already-reasoned
+architecture split (interconnection_map.md's own words), not an
+accidental duplication - conflating the two would misapply the rule to
+something that was never a mistake.
+
+/5thDimension NOT run at full weight for this: a straight terminology
+correction with zero functional risk is Tier 0/1 by the Judgment Funnel's
+own definition ("typo/formatting fixes... no ceremony" - applying full
+6-phase rigor here would waste the exact budget that framework exists to
+protect). Did the real, honest version of what was asked instead: a real
+GODMODE evidence pass (the grep above) and a real Council-of-5-shaped cost
+verdict, both stated plainly, without spinning up the full protocol
+apparatus for a find-and-replace.
+
+BUILD METHOD: Sonnet-direct, no Fable (per Alex's explicit "without
+fable").
+
+================================================================================
+ROUND 8 — July 23, 2026. Item #3 (Oracle live-grounding) built, per Alex's
+"yes make live, always automate where it makes improvements" - Omnitrix,
+no Fable, same reasoning as Round 5-7 (Sonnet-direct suits this size of
+build; Fable reserved for genuinely large audits).
+
+WHAT WAS BUILT: oracleAppGrounding's SELF_KNOWLEDGE block (the hand-
+maintained text injected into Oracle's system prompt) was explicitly
+flagged by the /5thDimension audit as "hand-maintained... not live"
+(interconnection_map.md's own words). Rather than rewrite the whole block
+into a live-generated string (the riskier approach the Phase 3-4 debate's
+own honest counter-case argued against - a live query that silently
+fails and shows stale-looking data is worse than an honestly-stale note,
+because it LOOKS current), added a new _liveFactsLine() that appends real
+numbers ALONGSIDE the existing text, never replacing it:
+- Real live module count (Object.keys(RPGACE.modules).length) - free, no
+  network cost, always exactly accurate. Fixes the audit's own finding
+  that CLAUDE.md's "roughly 40+" was stale-low.
+- Real pending taxonomy-review count, fetched live from Supabase
+  (taxonomy_proposals?status=eq.pending), cached 10 minutes.
+Both fail open: if the fetch hasn't resolved yet or fails, that specific
+line is omitted, never replaced with a stale or guessed value - the exact
+"never show data that only LOOKS current" guardrail the debate called for.
+
+NOT DONE, stated honestly: RLS-status live-querying (Supabase's advisor
+API isn't reachable from client-side browser JS - would need a dedicated
+server endpoint, a separate build). system_flow_map.md's own header-date
+staleness (says "July 17," body clearly edited through July 22, also
+found by the audit) is still open - not fixed blind without a real
+re-verification pass of the whole inventory; flagged, not silently
+patched with an unverified new date.
+
+TESTED: real Playwright run confirms the live block includes the real
+module count on the very first call, and correctly OMITS the taxonomy
+count when the fetch hasn't resolved (this sandbox's network can't reach
+Supabase at all, which is itself a live proof the fail-open path works,
+not just a theoretical claim). node --check clean.

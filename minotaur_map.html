@@ -62,6 +62,17 @@
   .estuary .t{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:4px}
   .estuary .d{font-size:11px;color:var(--dim);line-height:1.6}
 
+  .river-block{background:rgba(201,168,76,0.06);border:2px solid rgba(201,168,76,0.4);border-radius:14px;padding:16px 20px;text-align:center;min-width:190px;max-width:260px}
+  .river-block .rn{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+  .river-block .t{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .river-block .d{font-size:10.5px;color:var(--dim);line-height:1.5}
+  .river-block.entry{border-color:rgba(61,170,110,0.45);background:rgba(61,170,110,0.06)}
+  .river-block.entry .rn{color:var(--green)}
+  .river-block.gate{border-color:rgba(226,84,84,0.45);background:rgba(226,84,84,0.06)}
+  .river-block.gate .rn{color:var(--red)}
+  .river-block.sea{border-color:rgba(42,191,176,0.5);background:rgba(42,191,176,0.08)}
+  .river-block.sea .rn{color:var(--teal)}
+
   .correspond{font-size:9.5px;color:rgba(226,226,236,0.35);text-align:center;margin-top:6px}
   .correspond code{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.04);padding:1px 5px;border-radius:3px}
 
@@ -70,7 +81,7 @@
   .footnote code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:#B8C4D4}
 
   @media (max-width:700px){
-    .node,.fork,.estuary{min-width:130px;font-size:11px}
+    .node,.fork,.estuary,.river-block{min-width:130px;font-size:11px}
     .branches{gap:16px}
   }
 </style>
@@ -80,7 +91,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight — 6th document</div>
   <h1><span class="bull">🐂</span>The Minotaur Map</h1>
-  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart.</p>
+  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart. <strong>Restructured July 23</strong> so the ten rivers now read in real chronological order — the actual step-by-step journey a piece of information takes, start to finish, not the order each piece was originally built in.</p>
 </div>
 
 <div class="wrap">
@@ -103,10 +114,90 @@
     </div>
   </div>
 
-  <!-- ═══════════════ RIVER I — top-level map ═══════════════ -->
+  <!-- ═══════════════ BIRD'S-EYE VIEW — new July 23 ═══════════════ -->
+  <div class="river-label">The whole system, zoomed out</div>
+  <div class="river-title">🗺️ The Greater River System — Bird's-Eye View</div>
+  <div class="river-sub">The same ten rivers below, but each one drawn as a single block — no internal forks, no internal chambers, just how the rivers themselves feed into each other, gate to sea. Read this first; read the detailed rivers below it for the real step-by-step version of any one river.</div>
+  <div class="correspond">↔ a genuinely new diagram, not a translation of one <code>system_flow_map.md</code> section — it exists only on this page, as the map-of-the-map</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="river-block gate"><div class="rn">River I</div><div class="t">🔒 The Gatekeeper's Checkpoint</div><div class="d">Alex proves who he is, once, before anything else can happen</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block"><div class="rn">River II</div><div class="t">🌊 The Great Confluence</div><div class="d">the orientation map — every way water can enter, and the two great estuaries it all eventually reaches</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block entry"><div class="rn">River III</div><div class="t">💬 The Oracle Current</div><div class="d">a chat message, in and out</div></div>
+      <div class="river-block entry"><div class="rn">River IV</div><div class="t">📖 The Bookworm River</div><div class="d">a whole book, cover to shelf</div></div>
+      <div class="river-block entry"><div class="rn">River V</div><div class="t">🎥📅 Two Independent Streams</div><div class="d">competitor research + the schedule, running in parallel</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block"><div class="rn">River VI</div><div class="t">🌳 The Judgment Chamber</div><div class="d">where any idea from II, IV, or V gets a real home decided, with a real confidence score</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block"><div class="rn">River VII</div><div class="t">📚 The Library Current</div><div class="d">a placed idea becomes a real article; distant branches sometimes merge into something new</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block"><div class="rn">River VIII</div><div class="t">🌀 The Confluence Pool</div><div class="d">everything still uncertain, from every river above, waits here for Alex's own eyes</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block"><div class="rn">River IX</div><div class="t">🪞🌉 The Mirror and the Far Shore</div><div class="d">Oracle reflects on all of the above; some water leaves RPGACE entirely, to a future Claude Code session</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="river-block sea"><div class="rn">River X</div><div class="t">📜 The Confluence of Chronicles</div><div class="d">every river above, and the Far Shore's own water flowing back — one shared estuary Alex can see and click into</div></div>
+    </div>
+  </div>
+
+  <div class="flow" style="margin-top:20px">
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ The Dry Riverbeds</div><div class="d">planned channels, not yet dug — shown in full detail at the bottom of this page</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RIVER I — Gatekeeper's Checkpoint (was River X) ═══════════════ -->
   <div class="river-label">River I</div>
+  <div class="river-title">🔒 The Gatekeeper's Checkpoint</div>
+  <div class="river-sub">The real first step of every visit — nothing else in this whole map happens until this river is crossed</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code>'s API-auth entries in §10 + <code>interconnection_map.md</code>'s "API auth architecture" section (both July 23)</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">🚪 Alex, at the entrance</div><div class="d">types the real password, once</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The gatekeeper checks it himself now</div><div class="d">before: the entrance itself held a copy of the true password in plain sight, readable by anyone who looked closely at the gate's own stonework - now the gatekeeper holds it, out of sight, and checks in private</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Correct?</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">YES</span>the gatekeeper hands Alex a single sealed token - not the password itself, just proof he already showed it once</div>
+        <div class="branch no"><span class="yn">NO</span>turned away, exactly as before</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The token rides along automatically</div><div class="d">every chamber Alex visits from here on - Oracle's hall, the Composio bridges, every real request - the token goes with him without him ever having to carry it himself, one real hand-off point instead of tying it to every single door individually</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">A stranger reaches a chamber door directly (never through the entrance)</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">has the token</span>let through - it can only be gotten from the gatekeeper, honestly</div>
+        <div class="branch no"><span class="yn">no token</span>every chamber door now turns them away - before this river was dug, EVERY chamber door stood wide open to anyone who found it, whether or not they'd ever met the gatekeeper at all</div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="flow" style="margin-top:28px">
+    <div class="lane"><div class="node rect"><div class="t">🗝️ Two real keys, not yet cut</div><div class="d">the gatekeeper's private password-copy and the one sealed-token design both need a real key Alex has to forge himself and hand over (two Vercel environment variables) - until then this whole river is dug but dry, the gate built but not yet swung shut</div></div></div>
+  </div>
+
+  <!-- ═══════════════ RIVER II — top-level map (was River I) ═══════════════ -->
+  <div class="river-label">River II</div>
   <div class="river-title">🌊 The Great Confluence</div>
-  <div class="river-sub">Where every kind of information enters RPGACE, and the two great estuaries it all eventually reaches</div>
+  <div class="river-sub">Once through the gate: every kind of information that can enter RPGACE, and the two great estuaries it all eventually reaches</div>
   <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §1, "Top-Level System Map"</div>
 
   <div class="flow">
@@ -148,10 +239,10 @@
     </div>
   </div>
 
-  <!-- ═══════════════ RIVER II — Oracle chat ═══════════════ -->
-  <div class="river-label">River II</div>
+  <!-- ═══════════════ RIVER III — Oracle chat (was River II) ═══════════════ -->
+  <div class="river-label">River III</div>
   <div class="river-title">💬 The Oracle Current</div>
-  <div class="river-sub">What happens between typing a message and seeing a reply</div>
+  <div class="river-sub">The most common entry point — what happens between typing a message and seeing a reply</div>
   <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §2, "Oracle Chat Request Flow"</div>
 
   <div class="flow">
@@ -162,7 +253,7 @@
     </div></div>
     <div class="arrow-down"></div>
     <div class="lane"><div class="fork"><div class="t">Does the message start with a special word — "bookworm:" or "schedule oracle:"?</div>
-      <div class="branches"><div class="branch yes"><span class="yn">YES</span>diverted straight into River V or the Schedule river</div><div class="branch no"><span class="yn">NO</span>treated as an ordinary question</div></div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>diverted straight into River IV (Bookworm) or River V's Schedule stream</div><div class="branch no"><span class="yn">NO</span>treated as an ordinary question</div></div>
     </div></div>
     <div class="arrow-down"></div>
     <div class="lane"><div class="node rect"><div class="t">The Oracle answers</div><div class="d">told the real, live list of all 21 disciplines first, so it can never invent one that doesn't exist</div></div></div>
@@ -173,7 +264,7 @@
     <div class="arrow-down"></div>
     <div class="lane">
       <div class="fork"><div class="t">Does the reply contain a teachable insight?</div>
-        <div class="branches"><div class="branch yes"><span class="yn">YES</span>a small badge appears — one tap sends it to the Judgment Chamber</div><div class="branch no"><span class="yn">NO</span>nothing extra shown</div></div>
+        <div class="branches"><div class="branch yes"><span class="yn">YES</span>a small badge appears — one tap sends it to River VI, the Judgment Chamber</div><div class="branch no"><span class="yn">NO</span>nothing extra shown</div></div>
       </div>
       <div class="fork"><div class="t">Does it read like a batch of content ideas?</div>
         <div class="branches"><div class="branch yes"><span class="yn">YES</span>a "save these ideas" button appears</div><div class="branch no"><span class="yn">NO</span>nothing extra shown</div></div>
@@ -181,94 +272,11 @@
     </div>
   </div>
 
-  <!-- ═══════════════ RIVER III — Phylum Path placement ═══════════════ -->
-  <div class="river-label">River III</div>
-  <div class="river-title">🌳 The Judgment Chamber</div>
-  <div class="river-sub">How RPGACE decides exactly where a new idea belongs in the Great Tree — and how confident it is in that decision</div>
-  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §3, "Phylum Path Insight Placement" + its insight-cascade sub-diagram</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node stadium"><div class="t">Manual entry</div></div>
-      <div class="node stadium"><div class="t">Badge tapped</div></div>
-      <div class="node stadium"><div class="t">Highlight sent over</div></div>
-      <div class="node stadium"><div class="t">An older proposal</div></div>
-      <div class="node stadium"><div class="t">A Bookworm insight</div></div>
-    </div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">A fast scout reads the discipline's whole shape first</div><div class="d">then a second, slower pass reasons through 5 real questions: is this its own clear idea? does it duplicate something? is it usable tonight? does it fit cleanly? will it still make sense once 20 more ideas land nearby?</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">The Confirmation Gate</div><div class="d">shows exactly where it would attach and what new branches it would create — editable, insertable, deletable — before anything is real</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Do you accept it?</div>
-      <div class="branches"><div class="branch no"><span class="yn">NO</span>nothing is written, nothing lost</div><div class="branch yes"><span class="yn">YES</span>carved into the Great Tree, properly linked to its parent branch</div></div>
-    </div></div>
-    <div class="arrow-down"></div>
-    <div class="lane">
-      <div class="node rect"><div class="t">A teaching page is written for it</div></div>
-      <div class="node rect"><div class="t">The whole Tree is quietly searched for hidden bridges to distant branches</div></div>
-    </div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Found a genuine bridge worth building?</div>
-      <div class="branches"><div class="branch yes"><span class="yn">YES, 0-3</span>waits in the Confluence Pool for confirmation</div><div class="branch no"><span class="yn">NO</span>nothing more happens</div></div>
-    </div></div>
-  </div>
-
-  <div class="river-label" style="margin-top:44px">River III, continued</div>
-  <div class="river-title">⚖️ The Council's Verdict</div>
-  <div class="river-sub">Once a home is proposed, how confident RPGACE is before ever showing it to you</div>
-
-  <div class="flow">
-    <div class="lane"><div class="node stadium"><div class="t">An idea, and its first proposed home</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">How strong is the fit, out of 10?</div>
-      <div class="branches">
-        <div class="branch yes"><span class="yn">9-10</span>shown to you immediately</div>
-        <div class="branch no"><span class="yn">5-8</span>reworded and tried again, up to 3 times</div>
-        <div class="branch no"><span class="yn">under 4</span>checked for a sharper version first</div>
-      </div>
-    </div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Still no good home in this discipline?</div>
-      <div class="branches"><div class="branch yes"><span class="yn">YES</span>tries every other enabled discipline in turn</div><div class="branch no"><span class="yn">NO</span>a home was found</div></div>
-    </div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Still nowhere, after trying ALL 21 disciplines?</div>
-      <div class="branches"><div class="branch yes"><span class="yn">YES</span>shown honestly as "no home found" — never forced somewhere wrong</div><div class="branch no"><span class="yn">NO</span>shown to you with its real home</div></div>
-    </div></div>
-  </div>
-
-  <!-- ═══════════════ RIVER IV — Article + Concept Fusion ═══════════════ -->
+  <!-- ═══════════════ RIVER IV — Bookworm (was River V) ═══════════════ -->
   <div class="river-label">River IV</div>
-  <div class="river-title">📚 The Library Current</div>
-  <div class="river-sub">How a branch of the Tree becomes a real, readable article — and how two distant branches sometimes merge into something new</div>
-  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §4, "Article Generation + Concept Fusion"</div>
-
-  <div class="flow">
-    <div class="lane"><div class="node stadium"><div class="t">"Write this up" is pressed</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Already written before?</div>
-      <div class="branches"><div class="branch yes"><span class="yn">YES</span>shown instantly, with a refresh option</div><div class="branch no"><span class="yn">NO</span>gathers everything beneath this branch and writes it fresh</div></div>
-    </div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Save it to the Library?</div>
-      <div class="branches"><div class="branch no"><span class="yn">NO</span>discarded</div><div class="branch yes"><span class="yn">YES</span>saved, linked back to its branch</div></div>
-    </div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Is this a whole branch, not just a single leaf?</div>
-      <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>every OTHER discipline's branches are quietly considered as a possible merge</div></div>
-    </div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="fork"><div class="t">Does merging with a distant branch create a genuinely new, teachable idea?</div>
-      <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>waits in the Confluence Pool as a proposed new leaf</div></div>
-    </div></div>
-  </div>
-
-  <!-- ═══════════════ RIVER V — Bookworm ═══════════════ -->
-  <div class="river-label">River V</div>
   <div class="river-title">📖 The Bookworm River</div>
-  <div class="river-sub">The longest river in RPGACE — a whole book, carried from its cover to a finished shelf entry</div>
-  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §5, "Bookworm (whole-book → taxonomy pipeline)" + its insight-cascade sub-diagram (which is the same shape as River III's Council's Verdict above)</div>
+  <div class="river-sub">Another major entry point — the longest river in RPGACE, a whole book carried from its cover to a finished shelf entry</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §5, "Bookworm (whole-book → taxonomy pipeline)" + its insight-cascade sub-diagram (which is the same shape as River VI's "Council's Verdict" below)</div>
 
   <div class="flow">
     <div class="lane">
@@ -295,7 +303,7 @@
     <div class="arrow-down"></div>
     <div class="lane"><div class="node rect"><div class="t">You read the chapter once</div></div></div>
     <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">Every real insight in it is found</div><div class="d">the first one is judged right away (River III's "Council's Verdict"); the rest keep being judged quietly in the background so you're never staring at a blank screen</div></div></div>
+    <div class="lane"><div class="node rect"><div class="t">Every real insight in it is found</div><div class="d">the first one is judged right away (River VI's "Council's Verdict", below); the rest keep being judged quietly in the background so you're never staring at a blank screen</div></div></div>
     <div class="arrow-down"></div>
     <div class="lane"><div class="fork"><div class="t">For each insight — your verdict?</div>
       <div class="branches">
@@ -314,10 +322,118 @@
     <div class="lane"><div class="node stadium"><div class="t">🏖️ Shown on the Research page</div></div></div>
   </div>
 
-  <!-- ═══════════════ RIVER VI — Review queue ═══════════════ -->
+  <!-- ═══════════════ RIVER V — Content Intel + Schedule (was River VII) ═══════════════ -->
+  <div class="river-label">River V</div>
+  <div class="river-title">🎥📅 Two Independent Streams</div>
+  <div class="river-sub">The third entry point — Content Intelligence still feeds the Great Tree; Schedule Oracle never does — its own separate river, start to finish</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §7, "Content Intelligence & Schedule Oracle ingestion"</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="node stadium"><div class="t">A competitor's video URL</div><div class="d">⚠ needs the laptop running</div></div>
+      <div class="node stadium"><div class="t">A URL or pasted text for the schedule</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">Analysed, scored, watchlisted</div></div>
+      <div class="node rect"><div class="t">Fetched and read (capped shorter than Bookworm's own uncapped fetch)</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">Proposed to River VIII, the Confluence Pool</div></div>
+      <div class="fork"><div class="t">Did the fetch actually work?</div>
+        <div class="branches"><div class="branch no"><span class="yn">NO</span>known open wound — silently shows "unavailable"</div><div class="branch yes"><span class="yn">YES</span>analysed, then 3 options revealed one at a time: schedule it, save it, or teach it</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ RIVER VI — Phylum Path placement (was River III) ═══════════════ -->
   <div class="river-label">River VI</div>
+  <div class="river-title">🌳 The Judgment Chamber</div>
+  <div class="river-sub">Where ideas from the three entry rivers above (Oracle, Bookworm, Content Intel) converge — how RPGACE decides exactly where a new idea belongs in the Great Tree, and how confident it is</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §3, "Phylum Path Insight Placement" + its insight-cascade sub-diagram</div>
+
+  <div class="flow">
+    <div class="lane">
+      <div class="node stadium"><div class="t">Manual entry</div></div>
+      <div class="node stadium"><div class="t">Badge tapped</div></div>
+      <div class="node stadium"><div class="t">Highlight sent over</div></div>
+      <div class="node stadium"><div class="t">An older proposal</div></div>
+      <div class="node stadium"><div class="t">A Bookworm insight</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">A fast scout reads the discipline's whole shape first</div><div class="d">then a second, slower pass reasons through 5 real questions: is this its own clear idea? does it duplicate something? is it usable tonight? does it fit cleanly? will it still make sense once 20 more ideas land nearby?</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">The Confirmation Gate</div><div class="d">shows exactly where it would attach and what new branches it would create — editable, insertable, deletable — before anything is real</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Do you accept it?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>nothing is written, nothing lost</div><div class="branch yes"><span class="yn">YES</span>carved into the Great Tree, properly linked to its parent branch</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node rect"><div class="t">A teaching page is written for it</div></div>
+      <div class="node rect"><div class="t">The whole Tree is quietly searched for hidden bridges to distant branches</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Found a genuine bridge worth building?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES, 0-3</span>waits in River VIII, the Confluence Pool, for confirmation</div><div class="branch no"><span class="yn">NO</span>nothing more happens</div></div>
+    </div></div>
+  </div>
+
+  <div class="river-label" style="margin-top:44px">River VI, continued</div>
+  <div class="river-title">⚖️ The Council's Verdict</div>
+  <div class="river-sub">Once a home is proposed, how confident RPGACE is before ever showing it to you</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">An idea, and its first proposed home</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">How strong is the fit, out of 10?</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">9-10</span>shown to you immediately</div>
+        <div class="branch no"><span class="yn">5-8</span>reworded and tried again, up to 3 times</div>
+        <div class="branch no"><span class="yn">under 4</span>checked for a sharper version first</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Still no good home in this discipline?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>tries every other enabled discipline in turn</div><div class="branch no"><span class="yn">NO</span>a home was found</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Still nowhere, after trying ALL 21 disciplines?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>shown honestly as "no home found" — never forced somewhere wrong</div><div class="branch no"><span class="yn">NO</span>shown to you with its real home</div></div>
+    </div></div>
+  </div>
+
+  <!-- ═══════════════ RIVER VII — Article + Concept Fusion (was River IV) ═══════════════ -->
+  <div class="river-label">River VII</div>
+  <div class="river-title">📚 The Library Current</div>
+  <div class="river-sub">Downstream of a real placement — how a branch of the Tree becomes a real, readable article, and how two distant branches sometimes merge into something new</div>
+  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §4, "Article Generation + Concept Fusion"</div>
+
+  <div class="flow">
+    <div class="lane"><div class="node stadium"><div class="t">"Write this up" is pressed</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Already written before?</div>
+      <div class="branches"><div class="branch yes"><span class="yn">YES</span>shown instantly, with a refresh option</div><div class="branch no"><span class="yn">NO</span>gathers everything beneath this branch and writes it fresh</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Save it to the Library?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>discarded</div><div class="branch yes"><span class="yn">YES</span>saved, linked back to its branch</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Is this a whole branch, not just a single leaf?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>every OTHER discipline's branches are quietly considered as a possible merge</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Does merging with a distant branch create a genuinely new, teachable idea?</div>
+      <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>waits in River VIII, the Confluence Pool, as a proposed new leaf</div></div>
+    </div></div>
+  </div>
+
+  <!-- ═══════════════ RIVER VIII — Review queue (was River VI) ═══════════════ -->
+  <div class="river-label">River VIII</div>
   <div class="river-title">🌀 The Confluence Pool</div>
-  <div class="river-sub">Everything waiting for Alex's own judgment, from every river, gathers in one place</div>
+  <div class="river-sub">Everything still uncertain, from every river above, gathers in one place, waiting for Alex's own judgment</div>
   <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §6, "Review Queue"</div>
 
   <div class="flow">
@@ -344,35 +460,10 @@
     <div class="lane"><div class="node stadium"><div class="t">🏖️ Confirmed bridges appear in the drill-down view — click through to either side</div></div></div>
   </div>
 
-  <!-- ═══════════════ RIVER VII — Content Intel + Schedule ═══════════════ -->
-  <div class="river-label">River VII</div>
-  <div class="river-title">🎥📅 Two Independent Streams</div>
-  <div class="river-sub">Content Intelligence still feeds the Great Tree; Schedule Oracle never does — its own separate river, start to finish</div>
-  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §7, "Content Intelligence & Schedule Oracle ingestion"</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node stadium"><div class="t">A competitor's video URL</div><div class="d">⚠ needs the laptop running</div></div>
-      <div class="node stadium"><div class="t">A URL or pasted text for the schedule</div></div>
-    </div>
-    <div class="arrow-down"></div>
-    <div class="lane">
-      <div class="node rect"><div class="t">Analysed, scored, watchlisted</div></div>
-      <div class="node rect"><div class="t">Fetched and read (capped shorter than Bookworm's own uncapped fetch)</div></div>
-    </div>
-    <div class="arrow-down"></div>
-    <div class="lane">
-      <div class="node rect"><div class="t">Proposed to the Confluence Pool</div><div class="d">joins River VI</div></div>
-      <div class="fork"><div class="t">Did the fetch actually work?</div>
-        <div class="branches"><div class="branch no"><span class="yn">NO</span>known open wound — silently shows "unavailable"</div><div class="branch yes"><span class="yn">YES</span>analysed, then 3 options revealed one at a time: schedule it, save it, or teach it</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════ RIVER VIII — Oracle self-awareness + Claude Code bridge ═══════════════ -->
-  <div class="river-label">River VIII</div>
+  <!-- ═══════════════ RIVER IX — Oracle self-awareness + Claude Code bridge (was River VIII) ═══════════════ -->
+  <div class="river-label">River IX</div>
   <div class="river-title">🪞🌉 The Mirror and the Far Shore</div>
-  <div class="river-sub">Oracle learns to see its own reflection — and for the first time, water leaves RPGACE entirely, carried to a different world: a future Claude Code session</div>
+  <div class="river-sub">Oracle learns to see its own reflection on everything above — and for the first time, water leaves RPGACE entirely, carried to a different world: a future Claude Code session</div>
   <div class="correspond">↔ direct translation of <code>interconnection_map.md</code>'s "Oracle self-awareness + two-way Claude Code bridge" paragraph (July 22) — new enough it has no dedicated <code>system_flow_map.md</code> numbered section yet</div>
 
   <div class="flow">
@@ -418,9 +509,10 @@
     </div>
   </div>
 
-  <div class="river-label">River IX</div>
+  <!-- ═══════════════ RIVER X — Chronicles (was River IX) ═══════════════ -->
+  <div class="river-label">River X</div>
   <div class="river-title">📜 The Confluence of Chronicles</div>
-  <div class="river-sub">Every river in this map that used to end quietly in Supabase now also flows into one shared estuary Alex can actually see and click into — and for the first time, water from the Far Shore (River VIII) flows back the other way, into this same estuary too</div>
+  <div class="river-sub">The final estuary — every river above that used to end quietly in Supabase now also flows into one shared place Alex can actually see and click into, and water from the Far Shore (River IX) flows back the other way, into this same estuary too</div>
   <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §9, "The Chronicles" + <code>interconnection_map.md</code>'s "shared aggregation touchpoint" paragraph (both July 22)</div>
 
   <div class="flow">
@@ -456,7 +548,7 @@
   </div>
 
   <div class="flow" style="margin-top:28px">
-    <div class="lane"><div class="node stadium"><div class="t">🌉 Water that once left for the Far Shore (River VIII)</div></div></div>
+    <div class="lane"><div class="node stadium"><div class="t">🌉 Water that once left for the Far Shore (River IX)</div></div></div>
     <div class="arrow-down"></div>
     <div class="lane"><div class="node rect"><div class="t">Now some of it flows back</div><div class="d">a real change a Claude Code session made to RPGACE itself</div></div></div>
     <div class="arrow-down"></div>
@@ -473,21 +565,22 @@
 
   <div class="flow">
     <div class="lane">
-      <div class="node dashed"><div class="t">🏜️ Card-list view for Bookworm chapters</div><div class="d">would join River V, replacing one popup-at-a-time with a real list</div></div>
+      <div class="node dashed"><div class="t">🏜️ Card-list view for Bookworm chapters</div><div class="d">would join River IV, replacing one popup-at-a-time with a real list</div></div>
     </div>
     <div class="lane">
-      <div class="node rect"><div class="t">💧 Dug already, July 22: the Judgment Chamber already serves everyone</div><div class="d">tracing the real current showed River III (the Judgment Chamber) already carries both book water (River V) and non-book water to the same Great Tree — there was no second chamber left to build. Two small new springs off the Great Tree instead: 📖 book_knowledge (every carved idea, with which book it came from) and 📖 jargon_encyclopedia (every carved idea's name alone, as a plain dictionary) — both just new ways of looking at water already in the Tree, nothing new poured in.</div></div>
+      <div class="node rect"><div class="t">💧 Dug already, July 22: the Judgment Chamber already serves everyone</div><div class="d">tracing the real current showed River VI (the Judgment Chamber) already carries both book water (River IV) and non-book water to the same Great Tree — there was no second chamber left to build. Two small new springs off the Great Tree instead: 📖 book_knowledge (every carved idea, with which book it came from) and 📖 jargon_encyclopedia (every carved idea's name alone, as a plain dictionary) — both just new ways of looking at water already in the Tree, nothing new poured in.</div></div>
       <div class="node rect"><div class="t">⚖️ Redirected, not dug: the general-knowledge audit</div><div class="d">Alex said plainly: nothing from Claude's own general memory gets carved into the Great Tree without being earned first. A new dry channel exists for this instead - the <code>/debate</code> skill - where general knowledge and a real carved idea are set against each other and argued out, never poured into the Tree just by being compared. Built, not yet run.</div></div>
     </div>
     <div class="lane">
-      <div class="node dashed"><div class="t">🏜️ Schedule Oracle, phase 2</div><div class="d">joins River VII's schedule stream</div></div>
+      <div class="node dashed"><div class="t">🏜️ Schedule Oracle, phase 2</div><div class="d">joins River V's schedule stream</div></div>
       <div class="node dashed"><div class="t">🏜️ 11 more disciplines</div><div class="d">extends the Judgment Chamber's reach</div></div>
-      <div class="node dashed"><div class="t">🏜️ Other book formats (EPUB, etc.)</div><div class="d">a new spring feeding River V</div></div>
+      <div class="node dashed"><div class="t">🏜️ Other book formats (EPUB, etc.)</div><div class="d">a new spring feeding River IV</div></div>
     </div>
   </div>
 
   <div class="footnote">
     <strong>How this map stays honest:</strong> every river above is a direct plain-language translation of the numbered Mermaid diagram it references — same nodes, same forks, same order, just without code syntax. If <code>system_flow_map.md</code>'s Mermaid changes (a new node, a new fork, a new hub), <strong>this page must be re-translated in the same session</strong> — never edited independently, or the two will quietly drift the way the Dashboard's own doc-links widget once did. <code>interconnection_map.md</code> stays the third, complementary view: where <code>system_flow_map.md</code> is the precise technical diagram and this page is the plain-language spatial one, <code>interconnection_map.md</code> is the running prose log of WHY each connection exists and what it reuses — all three describe the same real system from a different angle, on purpose, not by accident.
+    <br><br><strong>July 23 restructure:</strong> the ten rivers were renumbered into real chronological order (the actual step-by-step journey information takes: gate → orientation → the three entry rivers → judgment → article generation → review queue → self-awareness → final Chronicles estuary) — previously they were ordered by when each was originally built, which read as a build log, not a journey. A new bird's-eye-view diagram was added above, showing the same ten rivers zoomed all the way out to just river-to-river flow, with no internal detail, so the whole system's shape can be seen in one glance before descending into any one river's real step-by-step detail.
   </div>
 
 </div>
