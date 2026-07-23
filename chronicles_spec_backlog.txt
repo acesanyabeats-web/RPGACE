@@ -430,3 +430,41 @@ apparatus for a find-and-replace.
 
 BUILD METHOD: Sonnet-direct, no Fable (per Alex's explicit "without
 fable").
+
+================================================================================
+ROUND 8 — July 23, 2026. Item #3 (Oracle live-grounding) built, per Alex's
+"yes make live, always automate where it makes improvements" - Omnitrix,
+no Fable, same reasoning as Round 5-7 (Sonnet-direct suits this size of
+build; Fable reserved for genuinely large audits).
+
+WHAT WAS BUILT: oracleAppGrounding's SELF_KNOWLEDGE block (the hand-
+maintained text injected into Oracle's system prompt) was explicitly
+flagged by the /5thDimension audit as "hand-maintained... not live"
+(interconnection_map.md's own words). Rather than rewrite the whole block
+into a live-generated string (the riskier approach the Phase 3-4 debate's
+own honest counter-case argued against - a live query that silently
+fails and shows stale-looking data is worse than an honestly-stale note,
+because it LOOKS current), added a new _liveFactsLine() that appends real
+numbers ALONGSIDE the existing text, never replacing it:
+- Real live module count (Object.keys(RPGACE.modules).length) - free, no
+  network cost, always exactly accurate. Fixes the audit's own finding
+  that CLAUDE.md's "roughly 40+" was stale-low.
+- Real pending taxonomy-review count, fetched live from Supabase
+  (taxonomy_proposals?status=eq.pending), cached 10 minutes.
+Both fail open: if the fetch hasn't resolved yet or fails, that specific
+line is omitted, never replaced with a stale or guessed value - the exact
+"never show data that only LOOKS current" guardrail the debate called for.
+
+NOT DONE, stated honestly: RLS-status live-querying (Supabase's advisor
+API isn't reachable from client-side browser JS - would need a dedicated
+server endpoint, a separate build). system_flow_map.md's own header-date
+staleness (says "July 17," body clearly edited through July 22, also
+found by the audit) is still open - not fixed blind without a real
+re-verification pass of the whole inventory; flagged, not silently
+patched with an unverified new date.
+
+TESTED: real Playwright run confirms the live block includes the real
+module count on the very first call, and correctly OMITS the taxonomy
+count when the fetch hasn't resolved (this sandbox's network can't reach
+Supabase at all, which is itself a live proof the fail-open path works,
+not just a theoretical claim). node --check clean.

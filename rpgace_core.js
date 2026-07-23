@@ -2500,13 +2500,55 @@ RPGACE.register('oracleAppGrounding', {
     setTimeout(patch, 1500);
   },
 
+  // July 23 — "make live" (Alex-confirmed: "yes make live, always automate
+  // where it makes improvements", following /5thDimension's finding that
+  // this whole block is "hand-maintained... not live" per interconnection_
+  // map.md's own words). Deliberately NOT a wholesale rewrite of
+  // SELF_KNOWLEDGE into a live-generated string - the /5thDimension debate's
+  // own honest counter-case stands: a live query that silently fails and
+  // shows stale-looking data is worse than an honestly-stale hand-written
+  // note, because it LOOKS current. Instead, only the specific numbers that
+  // actually go stale fast get a real live source, added ALONGSIDE the
+  // existing qualitative text, and only when a real value is actually in
+  // hand - if the cache is empty (first call, or the last fetch failed),
+  // this block is simply omitted, never replaced with a guess. Same
+  // fails-open philosophy this module's own header comment already states.
+  _liveCache: { taxonomyPending: null, fetchedAt: 0 },
+  _LIVE_TTL_MS: 10 * 60 * 1000,
+
+  _refreshLiveFacts: function() {
+    var self = this;
+    if (Date.now() - self._liveCache.fetchedAt < self._LIVE_TTL_MS) return;
+    if (!RPGACE.sb || !RPGACE.sb.select) return;
+    self._liveCache.fetchedAt = Date.now(); // claim the slot before the await resolves - avoids a duplicate fetch if triggered twice quickly
+    RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id').then(function(rows) {
+      self._liveCache.taxonomyPending = (rows || []).length;
+    }).catch(function() { /* fails open - next _buildBlock() just omits this line */ });
+  },
+
+  _liveFactsLine: function() {
+    var self = this;
+    var moduleCount = RPGACE.modules ? Object.keys(RPGACE.modules).length : null;
+    var bits = [];
+    // Module count is genuinely free and always-accurate - no network,
+    // no cache, no staleness possible (fixes the /5thDimension Phase 1
+    // finding that CLAUDE.md's own "roughly 40+" prose was stale-low).
+    if (moduleCount) bits.push(moduleCount + ' real modules registered right now');
+    if (typeof self._liveCache.taxonomyPending === 'number') {
+      bits.push(self._liveCache.taxonomyPending + ' taxonomy proposals pending review, queried live just now');
+    }
+    return bits.length ? '\n\nLIVE FACTS (queried this moment, not hand-written): ' + bits.join('; ') + '.' : '';
+  },
+
   _buildBlock: function() {
+    this._refreshLiveFacts();
     var dd = RPGACE.modules && RPGACE.modules.dashDeck;
     var cardLines = '';
     if (dd && dd.MODULES) {
       cardLines = dd.MODULES.map(function(m) { return '- ' + m.name + ': ' + m.desc; }).join('\n');
     }
     return '\n\n---\n' + this.SELF_KNOWLEDGE +
+      this._liveFactsLine() +
       (cardLines ? '\n\nRPGACE\'s live dashboard cards right now:\n' + cardLines : '') +
       '\n\nIf Alex asks what to build/fix next, give ONE concrete, specific suggestion grounded in the real gaps above - not a generic list.';
   },
