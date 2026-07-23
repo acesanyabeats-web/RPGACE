@@ -74,6 +74,16 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🗺️ July 23 (Round 9) — Minotaur Map restructured into real chronological order + a new bird's-eye-view diagram</div>
+    <div class="card-body">
+      Alex asked for two things: the ten rivers reordered to make real step-by-step chronological sense (they'd been ordered by when each was originally built, which reads as a build log, not a journey), and a new, much-lower-detail diagram showing just how the rivers themselves flow into each other, as a "bigger picture" companion to the detailed page.<br><br>
+      <strong>Reordered</strong> River I-X into the real journey a piece of information actually takes: <strong>I</strong> The Gatekeeper's Checkpoint (login — the true first step, was River X) → <strong>II</strong> The Great Confluence (orientation, was River I) → <strong>III</strong> The Oracle Current, <strong>IV</strong> The Bookworm River, <strong>V</strong> Two Independent Streams (the three real entry points, previously scattered as II/V/VII) → <strong>VI</strong> The Judgment Chamber + Council's Verdict (where those three converge to get placed, was River III) → <strong>VII</strong> The Library Current (article generation downstream of placement, was River IV) → <strong>VIII</strong> The Confluence Pool (review queue, was River VI) → <strong>IX</strong> The Mirror and the Far Shore (Oracle self-awareness, was River VIII) → <strong>X</strong> The Confluence of Chronicles (the final estuary everything reaches, was River IX). Every internal cross-reference between rivers (e.g. "diverted into River V," "waits in River VI") was individually checked and updated to the new numbers, including fixing "above"/"below" direction language where the reorder flipped which river now comes first.<br><br>
+      <strong>New bird's-eye-view diagram</strong> added right after the legend, before any detailed river — the same ten rivers, each drawn as a single block with no internal forks or chambers, just river-to-river flow from the Gatekeeper's Checkpoint down to the Confluence of Chronicles. A genuinely new diagram, not a translation of an existing <code>system_flow_map.md</code> section (noted honestly in its own <code>.correspond</code> line) — it exists only on this page, as the map-of-the-map.<br><br>
+      Div-balance clean (639 open/close tags matched). Every river cross-reference re-checked by grep after the reorder, not just assumed correct.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔮 July 23 (Round 8) — Oracle's self-awareness partially made live: real module count + a live taxonomy-backlog number, without discarding the hand-maintained baseline</div>
     <div class="card-body">
       Alex's confirmed answer to /5thDimension's third fork: "yes make live, always automate where it makes improvements." <code>oracleAppGrounding</code>'s <code>SELF_KNOWLEDGE</code> block was explicitly flagged by the audit as "hand-maintained... not live" (interconnection_map.md's own words) — and the Phase 3-4 debate's own honest counter-case stood too: a live query that silently fails and shows stale-looking data is worse than an honestly-stale note, because it LOOKS current. Built the version that gets the real benefit without that risk.<br><br>
