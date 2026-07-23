@@ -1,0 +1,298 @@
+DAILY PRIORITIES DEBATE — "MOST PRODUCTIVE DAY IN RPGACE HISTORY"
+Run 2026-07-23 (session restart, later same day). Sonnet 5, no Fable dispatch
+(per Alex's explicit "/Omnitrix without fable" — Fable's real usage-credit
+failure rate this project, now twice-confirmed, makes a dispatch here a bad
+bet even before considering speed).
+
+Format, exactly as Alex specified: GODMODE evidence-gathering produces Team
+1's real candidate Top 10. Team 2 argues for real items Team 1 left out,
+using the same rigor (GODMODE/Omnitrix/scope). A real /debate (attack, then
+defend) runs on the genuinely contested points between them — not padded to
+cover items that don't actually disagree. Council of 5 cleans up both
+cases. The reconciled result goes through /5thDimension's reconciliation
+lens. A final Council of 5 pass locks in the actual list.
+
+================================================================================
+GODMODE EVIDENCE PASS (shared by both teams — the real backlog, checked live,
+not recalled from memory)
+
+Checked before either team wrote a word:
+- git: API-auth fix (7 commits) still unmerged to main — confirmed via
+  `git log origin/main..origin/claude/rpgace-master-steps-uobp98`. Still
+  blocked on Alex's two Vercel env vars; no new session has changed this.
+- oracle_dev_suggestions: 0 new rows.
+- taxonomy_proposals pending: 60 — UNCHANGED since July 20, confirmed flat
+  for the fourth day running.
+- bookworm_books in_progress: 1. bookworm_chapters: 3/26 complete.
+  bibliography: 0 rows — no book has ever finished the pipeline, still true.
+  chronicles_finance: 0 rows — built July 22, never used.
+- system_updates: 19 real rows, Chronicles' own feed confirmed live and
+  current.
+- Real, still-open items named plainly in CLAUDE.md/patch_notes.html as of
+  last session's close: swipe-gesture freeze (23s, perfWatch-confirmed, root
+  cause unknown); system_flow_map.md §0 stale module inventory (~30 shown,
+  51+ real); RLS permissive-everywhere finding (every "enabled" table is
+  actually USING(true)); Oracle 504 streaming fix; XSS/innerHTML audit;
+  RLS-status live-querying (needs a server endpoint); journal/Chronicles/
+  Minotaur cross-feed idea (its own spec-backlog file, real open questions
+  unanswered); F16/F17/F18 never hand-tested since July 13; Bookworm's
+  chapter-loop never proven on the PDF-upload path specifically; Composio
+  key rotation flagged since July 12, never confirmed done; no Lighthouse/
+  PageSpeed audit ever run; `/debate` skill built July 22, never run on a
+  real topic; phyla 11-21 (11 of 21 disciplines) never given a framework
+  pass; Bookworm card-list UI (ConID-card pattern) flagged since July 17,
+  still one-modal-at-a-time.
+
+================================================================================
+TEAM 1 — THE PROPOSED TOP 10
+
+1. Confirm the API-auth env-var status with Alex; merge to main the moment
+   both are set. Highest real-world impact of anything in the backlog — a
+   genuine security exposure with a fix already built and tested, blocked
+   on one manual step outside Claude Code's control.
+2. RLS policy design pass — scoped to the 3 fully-disabled tables
+   (bookworm_books, bookworm_chapters, bibliography) specifically, not the
+   full permissive-everywhere problem (that's a separate, bigger item).
+   Real, achievable in a session; the disabled tables are strictly worse
+   than the merely-permissive ones.
+3. Oracle 504 streaming/chunking fix — the single oldest-standing, most
+   directly user-facing bug in the whole backlog (first named in patch
+   notes from mid-July, still a "known open bug" every session since).
+4. Bookworm: run one real chapter through the PDF-upload book's insight-
+   review loop. Closes the single oldest "never proven together" gap
+   (open since July 18-19) with a real usage session, not new code.
+5. XSS/innerHTML audit of fetched-external-content call sites. Real,
+   bounded, security-relevant, never started despite being named twice.
+6. Journal/Chronicles/Minotaur cross-feed — a real GODMODE + interrogation
+   pass on Alex's own idea, resolving its real open questions (is "journal"
+   the existing feature or something new; what does "measured doses" mean
+   operationally; what does the feedback path concretely change) before
+   any build decision.
+7. Resolve the taxonomy backlog fork directly with Alex — is the flat
+   60-item queue a throughput problem or a priority problem — then act on
+   whichever answer comes back. Four days flat is real signal something
+   needs to change, one way or the other.
+8. One more real diagnostic attempt on the swipe-gesture freeze, using a
+   DIFFERENT method than last time (grep found nothing — this round asks
+   Alex to reproduce with the browser's own Performance/Profiler panel
+   open, real timeline data instead of another code-reading pass).
+9. F16/F17/F18 hand-testing. Cheap, bounded, closes three real "never
+   verified" items in under an hour combined.
+10. Hygiene bundle: system_flow_map.md's real module re-verification +
+    header-date fix, the two "bibliography" tables' naming clarity, and
+    the intelListBatcher/uiBatchList naming mismatch. Bundled deliberately
+    (per the Judgment Funnel's own warning against ceremony on trivial
+    fixes) rather than four separate line items.
+
+================================================================================
+TEAM 2 — THE CASE FOR WHAT GOT LEFT OUT
+
+A. Composio key rotation. Flagged July 12, still not confirmed done as of
+   last session's close — 11+ days a live credential has sat un-rotated
+   with zero cost to rotating it. REAL ARGUMENT: this is cheaper than half
+   of Team 1's list and has been waiting LONGER than anything on it except
+   the API-auth fix itself. Leaving a known, actionable security item
+   unrotated for the longest stretch of any backlog item, in favor of
+   auditing things that aren't confirmed problems yet (XSS), is a real
+   priority-ordering mistake.
+B. A Lighthouse/PageSpeed audit. Never run, ever, despite rpgace_core.js
+   alone sitting at 15,700+ lines. REAL ARGUMENT: this is the cheapest
+   possible item in the ENTIRE backlog (one command, ~2 minutes) and is
+   the only item on either list that could surface genuinely NEW findings
+   neither team has evidence for yet — every other item is a known,
+   already-diagnosed problem. Council of 5's own "gather evidence before
+   proposing" principle argues FOR running this, not leaving it out.
+C. Running `/debate` on a real topic. Built July 22, sitting completely
+   unused. REAL ARGUMENT: shipping a tool and never using it is worse than
+   not building it — at minimum it should be pointed at one of TODAY's own
+   real forks (the RLS design question, or the journal/Chronicles idea)
+   to validate the investment instead of building a second unused tool
+   session after session.
+D. The Bookworm card-list UI (ConID-card pattern). Flagged since July 17 -
+   the SINGLE oldest named UX debt item in this entire project, older than
+   everything on Team 1's list except the 504 bug. REAL ARGUMENT: Team 1's
+   item 4 (prove the pipeline on a PDF book) tests the DATA layer; this is
+   the actual UX Alex looks at every time he uses Bookworm, and it's been
+   waiting six days longer than the API-auth gap that made Team 1's #1 spot.
+E. Finishing the live-grounding rewire (RLS-status live-querying + a doc-
+   freshness auto-stamp). REAL ARGUMENT: Alex already said yes to this
+   whole item ("make live, automate where it improves things") - Team 1's
+   list treats it as fully done via the partial July 23 build, but the
+   RLS-status and doc-freshness halves were explicitly deferred, not
+   finished. Leaving a partially-shipped, already-approved feature
+   unfinished in favor of NEW audits is a real inconsistency.
+F. Phyla 11-21 (11 of 21 disciplines never built). REAL ARGUMENT: RPGACE's
+   own governing rule is "does this result in a beat made or video posted."
+   Team 1's list is almost entirely infrastructure/security/audit work -
+   real, but none of it directly grows the knowledge base Alex actually
+   teaches himself from day to day. At least one of the ten slots should
+   go to something that grows real content coverage, not just hardens or
+   verifies what already exists.
+
+================================================================================
+THE DEBATE — real tension only, per /debate's own guardrail
+
+ROUND 1 — Team 2 attacks Team 1's list as infrastructure-heavy at the
+expense of the governing rule.
+Team 2: Six of Team 1's ten items (2, 3, 5, 6, 8, 10) are audits,
+diagnostics, or infrastructure hardening. Zero of Team 1's ten items result
+in a beat made or a video posted within 48 hours - the plain text of
+RPGACE's own governing rule. The "RPGACE infrastructure itself is exempt"
+clause was written for things like the boot loader and PWA install - genuine
+system-level work with no other path - not to wave through an entire day of
+audits while phyla 11-21 sit untouched and Bookworm's UI hasn't moved since
+July 17.
+
+Team 1 defends: The exemption clause exists precisely because a security
+fix, a fix to bugs affecting daily USE of the app (Oracle 504s, a genuine
+23-second UI freeze), and closing a data-integrity gap (Bookworm's own
+core pipeline never proven end to end on its primary intended source
+format) are not optional housekeeping - they're the difference between "the
+tool works" and "the tool has known cracks." A beat made in a tool that
+still 504s on long Oracle replies, or freezes for 23 seconds on basic
+navigation, is not obviously better served by more taxonomy content than by
+fixing what's actively broken. Item 4 specifically (Bookworm/PDF proof) is
+real production-pipeline verification, not audit theater.
+
+ROUND 2 — Team 1 attacks Team 2's items C and F as lower real urgency
+than they're framed.
+Team 1: Item C (run /debate on a real topic) has no concrete failure mode
+if left undone another day - "a tool sits unused" is not the same class of
+problem as "a security credential sits unrotated" or "a pipeline is
+unproven." Bundling it as equally urgent inflates the case. Item F (phyla
+11-21) is a real, big, multi-session undertaking by this project's own
+established pattern (each phylum pass takes real spec+build+test effort,
+per the 7-step Development Framework already on record) - it does not fit
+"today," and forcing one slot for it risks either rushing a real knowledge-
+tree addition (directly against rule 4's human-checkpoint discipline) or
+starting something that can't finish today, leaving it half-open.
+
+Team 2 defends: Item C was never argued as URGENT - it was argued as
+CHEAP AND ALREADY-BUILT, a different case entirely: it costs nothing to
+attach it as a lens on whichever real decision Team 1's own list already
+has to make today (e.g. run /debate ON the RLS design question in item 2,
+folding the two together rather than treating them as competing slots).
+That's a real merge, not a retreat. Item F's real counter: it doesn't need
+to be a FULL phylum pass to earn a slot - even just picking which phylum
+is next and doing real GODMODE evidence-gathering on it (the way Team 1's
+own item 6 treats the cross-feed idea - resolve real open questions,
+don't demand a finished build) is a legitimate, bounded "today" scope for
+a content-growing item, and the list currently has zero of those.
+
+ROUND 3 — Team 2 attacks the specific ORDER of Team 1's list: items A
+(Composio rotation) and B (Lighthouse audit) are cheaper and older than
+several of Team 1's top slots, yet excluded entirely.
+Team 2: There is no real argument against including a task that takes two
+minutes (item B) and one that's pure config change (item A, assuming the
+key is already available to rotate) purely on the grounds of "the list is
+full." A true Top 10 built on real GODMODE evidence should not exclude the
+two cheapest, oldest-standing items in the entire backlog in favor of
+newer, larger items with real but not obviously GREATER urgency.
+
+Team 1 defends: This is the strongest attack in the whole debate and does
+not fully survive interrogation on Team 1's side. Team 1 concedes items A
+and B specifically - real, cheap, genuinely overdue, and there is no honest
+technical-risk or scope argument against including both. This is exactly
+what real interrogation is supposed to surface: a gap in the original list,
+not a reason to defend it as-is.
+
+================================================================================
+COUNCIL OF 5 — CLEANING UP BOTH CASES
+
+Real, surviving points from Team 1: items 1, 2, 3, 4, 5 stand entirely -
+no real counter-argument in the debate weakened any of them (security fix
+blocked on Alex, a scoped RLS pass, the oldest user-facing bug, closing the
+Bookworm proof gap, a bounded security audit). Item 8 (swipe freeze,
+different method) stands - real, bounded, low-cost to attempt. Item 9
+(F16/17/18) stands - genuinely cheap and closes real gaps. Item 10
+(hygiene bundle) stands, appropriately sized as one slot not four.
+
+Real, surviving points from Team 2: item A (Composio rotation) and item B
+(Lighthouse audit) survive completely - Team 1 conceded these in Round 3,
+and the concession was honest, not a formality. Item D (Bookworm card-list
+UI) has real weight (genuinely the oldest named UX debt) but competes
+directly for attention with item 4 (Bookworm PDF proof) on the SAME
+subsystem in the SAME day - Council of 5 judgment: doing both in one day
+risks neither getting real attention; the PROOF item (4) is more load-
+bearing (a broken/unproven pipeline is a worse state than an ugly-but-
+working one) and should come first, with the UI item flagged as the
+IMMEDIATE next-session priority rather than squeezed into today. Item E
+(finish live-grounding) is real but genuinely smaller in scope than a full
+slot - foldable into item 10's hygiene bundle rather than needing its own.
+Item F (phyla 11-21) - Round 2's compromise holds: not a full phylum build,
+but real GODMODE evidence-gathering on which phylum is next, scoped
+exactly like item 6's treatment of the cross-feed idea. Item C (run
+/debate on a real topic) - Round 2's merge holds: fold it into item 2 as
+the METHOD (use /debate to weigh two real RLS-policy design approaches),
+not a separate slot.
+
+Verdict: the list grows real content (items A, B) and drops nothing that
+survived real interrogation - two swaps, not a rewrite. Team 2's Round 3
+attack was the one that actually moved the outcome; Team 1's own defense
+in Round 1 held completely; Round 2 produced two genuine merges rather
+than a winner/loser.
+
+================================================================================
+/5thDimension RECONCILIATION (Phase 3/4 lens, no Fable, applied to this
+debate specifically rather than the whole project)
+
+Checked against Alex's real stated goals before finalizing: the governing
+rule (beat/video within 48h, infrastructure exempt), the standing "don't
+patch blind" rule (item 8's swipe-freeze re-attempt uses a genuinely
+different method, not a repeat guess), rule 5 (item 6's cross-feed idea
+gets evidence-gathering + interrogation, not a build decision), and rule 8
+(the new deduplication principle - item 10's hygiene bundle is a direct,
+correctly-scoped application of it). No item on the final list requires
+Alex's explicit Tier-3 sign-off to START (item 2's RLS work is design/
+interrogation today, not flipping a live policy switch without him) -
+item 1 remains the sole item gated on Alex's own action.
+
+Honest counter-case, stated rather than suppressed: a list this broad (10
+real items) risks shallow progress on all ten rather than real completion
+on a few. Flagged plainly for Alex's own final call, not decided here.
+
+================================================================================
+FINAL COUNCIL OF 5 — THE ACTUAL LIST FOR TODAY
+
+1. Confirm API-auth env-var status with Alex; merge the moment both exist.
+2. RLS policy design for the 3 disabled tables — using /debate to weigh
+   two real design approaches before picking one (Team 2's item C, merged
+   in as method, not a separate slot).
+3. Oracle 504 streaming/chunking fix.
+4. Bookworm: prove the chapter-loop on the real PDF-upload book, one
+   chapter, end to end.
+5. XSS/innerHTML audit of fetched-external-content call sites.
+6. Journal/Chronicles/Minotaur cross-feed — GODMODE + interrogation only,
+   resolving its real open questions, no build decision yet.
+7. Resolve the taxonomy-backlog fork with Alex directly (throughput vs.
+   priority), then act on the real answer.
+8. Composio key rotation — Team 2's item A, added on its own merit.
+9. Lighthouse/PageSpeed audit — Team 2's item B, added on its own merit;
+   cheapest item on the list, genuinely never done.
+10. Hygiene bundle: system_flow_map.md re-verification + header-date fix,
+    the two "bibliography" tables' naming clarity, intelListBatcher's
+    naming mismatch, PLUS the live-grounding rewire's two unfinished
+    pieces (RLS-status live-querying, doc-freshness auto-stamp) folded in
+    as the same kind of small, safe, already-approved cleanup.
+
+DROPPED FOR TODAY, NAMED HONESTLY, NOT SILENTLY LOST:
+- Swipe-gesture freeze diagnostic (item 8 in Team 1's original list) -
+  genuinely real, but the list above already has a full day's real work;
+  this needs Alex's own reproduction with the Performance panel open
+  regardless of when it's attempted, so deferring it costs nothing extra
+  today specifically. First priority for the NEXT session once today's
+  list is worked through.
+- Bookworm card-list UI (Team 2's item D) - real oldest-named UX debt,
+  deliberately placed as the explicit next-session priority per the
+  Council of 5 verdict above, not dropped from the backlog.
+- Phyla 11-21 (Team 2's item F) - the Round 2 compromise (real evidence-
+  gathering on which phylum is next) is genuine work but the list above
+  is already full; carried forward as the next real candidate once
+  something on today's ten completes early.
+
+F16/F17/F18 hand-testing (Team 1's original item 9) - real and cheap, but
+in the final Council of 5 pass this reads as the most easily fit into
+spare time BETWEEN the ten items above rather than needing its own
+numbered slot - kept as a standing "if there's a real gap in the day,
+do these" rather than a committed slot, so the numbered ten stays honest
+about what's actually being committed to.
