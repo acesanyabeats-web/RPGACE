@@ -369,6 +369,22 @@
       };
     }
 
+    /* checkPassword → fires 'rpgace:login' once, for the new pathRouter
+       module (July 23) to do its one-time deep-link routing. checkPassword
+       itself (main.js, frozen) fades #gate over 500ms then calls initApp()
+       - the 700ms delay here gives that real sequence room to finish
+       before pathRouter reads which page should actually be showing. */
+    if (typeof checkPassword === 'function') {
+      var _origCheckPassword = checkPassword;
+      global.checkPassword = function () {
+        var result;
+        try { result = _origCheckPassword.apply(this, arguments); }
+        catch (e) { console.warn('[RPGACE wrap:checkPassword]', e.message); }
+        setTimeout(function() { R.hooks.fire('rpgace:login'); }, 700);
+        return result;
+      };
+    }
+
     /* saveToJournal → fires 'journal:saved' for cross-system sync */
     if (typeof saveToJournal === 'function') {
       var _origSaveJournal = saveToJournal;
@@ -385,15 +401,40 @@
     R._ready = true;
     R.hooks.fire('rpgace:ready');
 
-    // July 22: reveal the login gate only once every module has actually
-    // registered (this exact point) - the boot loader in index.html covers
-    // the whole screen from first paint until this line runs, so the login
-    // screen itself never appears mid-race. A pure-CSS 6s fallback in
-    // index.html's <style> block covers the case this line never runs at all.
+    // July 23: real finding from Alex - after login, several dashboard
+    // DOMs (the career stat card, Chronicles feed) took 10-20s to actually
+    // populate, because careerStatCard._fetchAll() (8 separate Supabase
+    // calls) only ever ran AFTER login, on the same rpgace:ready cascade
+    // that first shows the dashboard. The login gate is a purely visual
+    // overlay (no server-side check - CORRECT_PW is client-side only, a
+    // known separate finding) so nothing actually requires waiting for
+    // login to start these fetches. Alex's own preference, stated
+    // directly: wait longer BEFORE the login screen appears, not after
+    // logging in when he's ready to click. So the boot loader now also
+    // warms RPGACE.cache with this same prefetch before ever revealing the
+    // gate - careerStatCard's own later _render() call reads the already-
+    // cached results (same query strings = same cache key) instead of
+    // re-fetching, so post-login the dashboard populates instantly.
+    var _hideBoot = function() {
+      try {
+        var _boot = document.getElementById('rpgace-boot-loader');
+        if (_boot) _boot.classList.add('rpgace-boot-hidden');
+      } catch (e) { console.warn('[RPGACE] boot loader hide failed', e.message); }
+    };
+    var _bootHidden = false;
+    var _hideBootOnce = function() { if (_bootHidden) return; _bootHidden = true; _hideBoot(); };
+    // Hard ceiling: never make Alex wait more than ~20s even on a dead
+    // network - matches his own stated tolerance, and guarantees the gate
+    // is always reachable (fail loud, never trap a user), independent of
+    // index.html's own pure-CSS 6s->22s fallback below.
+    setTimeout(_hideBootOnce, 20000);
     try {
-      var _boot = document.getElementById('rpgace-boot-loader');
-      if (_boot) _boot.classList.add('rpgace-boot-hidden');
-    } catch (e) { console.warn('[RPGACE] boot loader hide failed', e.message); }
+      if (R.modules.careerStatCard && R.modules.careerStatCard._fetchAll) {
+        R.modules.careerStatCard._fetchAll().then(_hideBootOnce).catch(_hideBootOnce);
+      } else {
+        _hideBootOnce();
+      }
+    } catch (e) { _hideBootOnce(); }
   /* ── YouTube Oracle button injection (direct, no module dependency) ── */
   setTimeout(function() {
     var _ytBtnInject = function() {
@@ -2818,6 +2859,49 @@ RPGACE.register('leftNav', {
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' || e.keyCode === 27) self.close();
     });
+    self._initSwipeGesture();
+  },
+
+  // July 23 — swipe from the left edge to mid-screen opens the drawer,
+  // matching native app drawer conventions. Deliberately NOT a live
+  // finger-follow drag (that needs converting the drawer's CSS transition
+  // into a JS-driven transform mid-gesture, real extra complexity) - a
+  // simple start/end-position swipe reusing the EXISTING open()/close()
+  // slide animation is the smaller, safer build for the same real result.
+  _initSwipeGesture: function() {
+    var self = this;
+    var startX = null, startY = null, tracking = false;
+    var EDGE_ZONE = 28, OPEN_THRESHOLD = 70, CLOSE_THRESHOLD = 60;
+
+    document.addEventListener('touchstart', function(e) {
+      if (!e.touches || !e.touches.length) return;
+      var t = e.touches[0];
+      var panel = document.getElementById('ln-drawer');
+      var isOpen = panel && panel.classList.contains('open');
+      // Only start tracking a gesture that could plausibly be "ours":
+      // either starting right at the left edge (to open), or starting
+      // anywhere while the drawer is already open (to close it).
+      if (t.clientX <= EDGE_ZONE || isOpen) {
+        startX = t.clientX; startY = t.clientY; tracking = true;
+      } else {
+        tracking = false;
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', function(e) {
+      if (!tracking || startX === null) { tracking = false; return; }
+      var t = (e.changedTouches && e.changedTouches[0]) || null;
+      tracking = false;
+      if (!t) return;
+      var dx = t.clientX - startX, dy = t.clientY - startY;
+      // Ignore mostly-vertical gestures (a normal scroll), only react to a
+      // real horizontal swipe.
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      var panel = document.getElementById('ln-drawer');
+      var isOpen = panel && panel.classList.contains('open');
+      if (!isOpen && dx > OPEN_THRESHOLD) self.open();
+      else if (isOpen && dx < -CLOSE_THRESHOLD) self.close();
+    }, { passive: true });
   },
 
   _injectStyles: function() {
@@ -4602,6 +4686,7 @@ RPGACE.register('dashDeck', {
     { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
     { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
     { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
+    { key: 'chronicles', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📜', name: 'The Chronicles', desc: 'Every real win, sale, and expense — one searchable log.', go: function() { RPGACE.modules.chroniclesLog._openCard(); } },
   ],
 
   _inject: function() {
@@ -15376,6 +15461,42 @@ RPGACE.register('chroniclesLog', {
         errEl.style.display = 'block';
       });
     };
+  },
+
+  // July 23 — folded into the dashDeck card grid, same popup pattern as
+  // Oversight/Knowledge Gaps: a compact preview (top 5, same shared
+  // _buildItems/detail-popup logic the dashboard feed and full log page
+  // already use) plus a real button into the full #page-chronicles page.
+  _openCard: function() {
+    var self = this;
+    var dd = RPGACE.modules.dashDeck;
+    var csc = RPGACE.modules.careerStatCard;
+    if (!dd || !dd._popup || !csc) return;
+    var pop = dd._popup({ eyebrow: '📜 The Chronicles', title: 'Recent activity', accent: 'var(--gold)', width: '520px' });
+    pop.box.innerHTML = '<div id="dd-chron-list" style="font-size:12px;color:var(--muted)">Loading…</div><button id="dd-chron-full" style="margin-top:14px;width:100%;padding:10px;background:var(--gold);border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;">View Full Log →</button>';
+    pop.box.querySelector('#dd-chron-full').onclick = function() {
+      pop.close();
+      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.chronicles);
+    };
+    csc._fetchAll().then(function(data) {
+      var shipped = data.content.filter(function(r) { return csc._isShipped(r); });
+      var ideas = data.content.filter(function(r) { return !csc._isShipped(r); });
+      var items = csc._buildItems(data, shipped, ideas).slice(0, 5);
+      var listEl = pop.box.querySelector('#dd-chron-list');
+      if (!listEl) return;
+      if (!items.length) { listEl.textContent = 'No real activity logged yet.'; return; }
+      listEl.innerHTML = '';
+      items.forEach(function(it) {
+        var row = document.createElement('div');
+        row.style.cssText = 'display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:12px;color:var(--text);';
+        row.innerHTML = '<span>' + it.icon + '</span><span style="flex:1">' + String(it.label).replace(/</g, '&lt;') + '</span><span style="color:var(--muted);font-size:11px">' + csc._relTime(it.t) + '</span>';
+        row.onclick = function() { csc._showDetail(it); };
+        listEl.appendChild(row);
+      });
+    }).catch(function(e) {
+      var listEl = pop.box.querySelector('#dd-chron-list');
+      if (listEl) listEl.textContent = 'Load failed: ' + e.message;
+    });
   }
 });
 /* ===END:chroniclesLog=== */
@@ -15450,3 +15571,82 @@ RPGACE.register('jargonEncyclopedia', {
   }
 });
 /* ===END:jargonEncyclopedia=== */
+
+/* ===MODULE:pathRouter=== */
+// July 23 — Alex: "make rpgace a multi-page URL." Real GODMODE finding
+// before building: vercel.json's catch-all rewrite ("/(.*)" -> "/index.html")
+// already serves index.html for ANY path today, so a real URL per page
+// needs zero server-side change - purely client-side pushState routing on
+// top of the existing showPage()/page:show wrap. Council of 5 deliberately
+// DECOUPLED this from the bigger, separate "split rpgace_core.js into
+// multiple files" ask - that's a much higher-risk refactor (~40
+// interdependent modules, a fragile already-documented rpgace:ready timing
+// pattern) held back for its own dedicated pass, not bundled in here.
+RPGACE.register('pathRouter', {
+  _syncingFromHistory: false,
+
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:login', function() { self._routeFromCurrentURL(); });
+    RPGACE.hooks.on('page:show', function(name) { self._pushIfNeeded(name); });
+    // NOTE: not `global.addEventListener` - this module is defined AFTER
+    // the outer IIFE's own closing `})(window);` (line 510), so the IIFE's
+    // `global` parameter is out of scope here entirely. Real bug found via
+    // testing (the listener silently never attached, "global is not
+    // defined" in the module-init failure log) - every other module past
+    // that point correctly uses `window`/bare globals instead.
+    window.addEventListener('popstate', function(e) {
+      // Going back to the root URL (no page pushed onto that history
+      // entry, e.g. the very first page load) has neither e.state.page
+      // nor a recognizable path - falling through would silently leave
+      // whatever page was already showing on screen, un-navigated.
+      // Default to the dashboard in that case rather than doing nothing.
+      var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
+      var name = (e.state && e.state.page) || self._slugFromPath(location.pathname) || (pages && pages.dashboard);
+      if (!name) return;
+      self._syncingFromHistory = true;
+      if (typeof showPage === 'function') showPage(name);
+      self._syncingFromHistory = false;
+    });
+  },
+
+  _validSlugs: function() {
+    var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
+    if (!pages) return [];
+    return Object.keys(pages).map(function(k) { return pages[k]; });
+  },
+
+  _slugFromPath: function(pathname) {
+    var slug = (pathname || '/').replace(/^\/+/, '').replace(/\/+$/, '');
+    return this._validSlugs().indexOf(slug) !== -1 ? slug : null;
+  },
+
+  // Runs once, right after real login (never before - #app is hidden and
+  // showPage() has nothing to act on pre-login). Reads whatever page the
+  // URL already names (a bookmark, a shared link, a hard refresh on a
+  // deep page) and shows it instead of always defaulting to the dashboard.
+  _routeFromCurrentURL: function() {
+    var slug = this._slugFromPath(location.pathname);
+    if (slug && typeof showPage === 'function') {
+      showPage(slug);
+    } else {
+      // No recognizable page in the URL (a fresh "/" visit) - dashboard is
+      // already showing from the raw HTML default, but give this root
+      // entry real state too, so a later "back" to it lands on a properly
+      // recognized page instead of relying on the popstate fallback.
+      var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
+      if (pages && pages.dashboard) {
+        try { history.replaceState({ page: pages.dashboard }, '', location.pathname); } catch (e) {}
+      }
+    }
+  },
+
+  _pushIfNeeded: function(name) {
+    if (this._syncingFromHistory) return;
+    if (!name) return;
+    var target = '/' + name;
+    if (location.pathname === target) return;
+    try { history.pushState({ page: name }, '', target); } catch (e) {}
+  }
+});
+/* ===END:pathRouter=== */

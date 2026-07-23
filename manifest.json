@@ -1,10 +1,12 @@
 {
+  "id": "/",
   "name": "RPGACE — Life RPG Hub",
   "short_name": "RPGACE",
   "description": "Personal AI operating system for music production and content creation.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait-primary",
   "background_color": "#0d0f14",
   "theme_color": "#0d0f14",

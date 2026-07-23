@@ -17,13 +17,19 @@
 <style>
 /* Boot loader: shown at first paint, before any script runs, so the login
    gate never appears until rpgace_core.js confirms every module has
-   registered (see the 'rpgace:ready' hide call in rpgace_core.js). The
+   registered AND the dashboard's own data prefetch has resolved (see the
+   'rpgace:ready' hide call in rpgace_core.js - July 23: now also warms
+   RPGACE.cache before revealing the gate, so post-login the dashboard
+   populates instantly instead of taking 10-20s, per Alex's own stated
+   preference to wait longer up front rather than after logging in). The
    keyframe below is a pure-CSS hard ceiling with zero JS dependency - if
    script execution ever stalls or fails, this guarantees the login screen
-   still becomes reachable instead of trapping the user behind a spinner. */
+   still becomes reachable instead of trapping the user behind a spinner.
+   Set slightly above rpgace_core.js's own 20s JS-side hard timeout so the
+   JS path fires first in the normal case; this is the true last resort. */
 #rpgace-boot-loader{position:fixed;inset:0;z-index:999999;background:#0d0f14;
   display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
-  animation:rpgace-boot-fallback 0s 6s forwards;}
+  animation:rpgace-boot-fallback 0s 22s forwards;}
 #rpgace-boot-loader.rpgace-boot-hidden{display:none;}
 #rpgace-boot-loader .rpgace-boot-spinner{width:44px;height:44px;border-radius:50%;
   border:3px solid #2a3050;border-top-color:#c9a84c;animation:rpgace-boot-spin 0.9s linear infinite;}
@@ -450,7 +456,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 <div class="xp-toast" id="xp-toast">+50 XP</div>
 
 <script src="main.js?v=20260716a"></script>
-  <script src="rpgace_core.js?v=20260722h"></script>
+  <script src="rpgace_core.js?v=20260723a"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
