@@ -303,7 +303,32 @@ flowchart TD
 
 ---
 
-## 9. Built vs NOT built — the truth table (July 17, post-audit)
+## 9. The Chronicles (activity-log aggregation + finance ledger) — added July 22
+
+```mermaid
+flowchart TD
+    T1[(content_productions)] --> AGG[careerStatCard._fetchAll<br/>+ chroniclesLog._render]
+    T2[(journal)] --> AGG
+    T3[(encyclopedia_insights)] --> AGG
+    T4[(taxonomy_proposals<br/>status: accepted)] --> AGG
+    T5[(bookworm_chapters<br/>status: complete)] --> AGG
+    T6[(reference_tracks)] --> AGG
+    T7[(chronicles_finance<br/>NEW — sale/expense rows)] --> AGG
+    T8[(system_updates<br/>NEW — Claude Code's own changes)] --> AGG
+    AGG --> BUILD[_buildItems<br/>merge + sort by date]
+    BUILD --> DASH[Dashboard preview<br/>top 5, always visible]
+    BUILD --> LOG[#page-chronicles<br/>full history, search, type filters]
+    DASH --> CLICK{Row clicked}
+    LOG --> CLICK
+    CLICK --> DETAIL[_showDetail → _detailFor<br/>What/Outcome/Where/Why per source type]
+    FORM[+ Log Sale/Expense form] -->|manual entry only| T7
+```
+
+Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' display but is deliberately **excluded** from the career-score XP/Level formula computed in the same `_fetchAll` pass — confirmed via interrogation this is a separate visibility lane. `bookworm_chapters` feeds the cumulative Growth *count* but is excluded from the streak/recent-activity date logic (its `created_at` is a bulk-insert timestamp from TOC detection, not real per-chapter completion time — would show a misleading date otherwise).
+
+---
+
+## 10. Built vs NOT built — the truth table (July 17, post-audit)
 
 ### Built AND verified working (hand-tested or confirmed live)
 - 10-phylum Phylum Path: switcher, drill-down, placement, confirm popups, auto-detect badge (1-click as of today)
@@ -330,6 +355,10 @@ flowchart TD
 - F16 Beatstars listing, F17 video pipeline stages, F18 auto visual treatment, highlight-to-Phylum-Path button (pending since July 13-15)
 - n8n rota sync (F10) — importable, never test-run
 - **Oracle self-awareness + Claude Code bridge (July 22, 6 pieces, none hand-tested):** `oracleAppGrounding` (dashboard/status grounding), `oracleFetchGuard` (fetched-content prompt-injection hardening), `oracleDevBridge` (Flag-for-Claude-Code button + `oracle_dev_suggestions` table), `taxonomy_decision_log` audit-log write hook at `_insertNewSteps`, Council of 5's conversation-capture button (`fillGaps` `opts.allowConversationCapture`), and the daily Morning Brief Routine (fires for real tomorrow morning for the first time). `node --check` clean on every pass; zero of it clicked through live yet.
+- **Nav-lag root cause fixed twice, same day (July 22)** — a live crash from an early sidebar fix (module registration aborted mid-parse) was reverted, then root-caused for real (`leftNav`/`config` init-order race, defensive guard + retry added). A separate, deeper report ("nav doesn't respond for ~10s after login") traced `onReady()` to gating the whole module-registration cascade behind `window.load` (every image/font) instead of `DOMContentLoaded` — a systemic fix improving every module's startup, verified via real headless Playwright runs (not just code review, unlike the July 20 entries above).
+- **RPGACE is now an installable PWA (July 22)** — `manifest.json` + `sw.js` (network-first, deliberately not cache-first) + generated icon set + a boot-loader overlay gating the login screen until every module has registered. Verified end-to-end via headless Playwright (boot loader hides, gate appears, login succeeds, nav responds instantly) — **never installed on a real Android device by Alex yet.**
+- **Career stat card + The Chronicles (July 22)** — the profile card's HP/MP/Streak (confirmed 100% cosmetic, never touched by any code) and XP/Level (in-memory only, reset every load) replaced with a real weighted score from Supabase (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). "Recent Wins" renamed The Chronicles, given a full searchable `#page-chronicles` log page with click-through detail on every real entry, plus a new `chronicles_finance` ledger table for personal-visibility sale/expense tracking. Verified via real headless Playwright runs (navigation, form validation, network-failure fallback) — **never viewed in a real browser by Alex.**
+- **`/scope` skill + `system_updates` table (July 22)** — a reusable oversight-evidence-gathering skill, and a new Supabase table so Chronicles now also shows Claude Code's own real changes to RPGACE, not just Alex's in-app activity. This whole truth-table update was itself produced using `/scope`'s own methodology.
 
 ### Claimed/discussed but NOT built — do not trust any doc that implies otherwise
 - Live-study **card-list UI** (ConID-card pattern for Bookworm chapters) — explicitly deferred today

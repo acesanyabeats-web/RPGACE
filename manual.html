@@ -236,6 +236,8 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>🌳 Propose lineage</td><td>LEARNING</td><td>Accept/edit/reject/morph cycle for 20 phyla; Phylum 1 now routes through Phylum Path's structure-aware decision instead (fixed a live duplicate-branch bug July 15)</td></tr>
     <tr><td>Free calendar rows</td><td>SCHEDULE</td><td>Opens Schedule modal, pre-filled</td></tr>
     <tr><td>Start / Done</td><td>SCHEDULE</td><td>Task tracking + XP</td></tr>
+    <tr><td>📜 The Chronicles (nav) / View Full Log →</td><td>GLOBAL</td><td>New July 22 (<code>careerStatCard</code> + <code>chroniclesLog</code>) — renamed from "Recent Wins." Dashboard preview shows the 5 most recent real actions across 8 Supabase tables; the button opens a full <code>#page-chronicles</code> log page (search box, type filter chips, full history). Every row, dashboard or full page, opens the same click-through detail popup (What was done / Outcome / Where stored / Why significant), reusing <code>dashDeck._popup</code>. Not yet hand-tested.</td></tr>
+    <tr><td>+ Log Sale / Expense</td><td>CHRONICLES</td><td>New July 22 — form (date/item/category/amount/notes) on the Chronicles page, writes to the new <code>chronicles_finance</code> table. Personal-visibility tracker only, explicitly not bookkeeping-grade (confirmed via interrogation) — real receipts still needed for actual tax filing. Not yet hand-tested.</td></tr>
   </table>
 </div>
 
@@ -260,6 +262,8 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>intel_bibliography</td><td>Source citations</td><td>Feeds future taxonomy footnotes</td></tr>
     <tr><td>oracle_dev_suggestions</td><td>New July 22 — Oracle's suggestions flagged for a future Claude Code session (id/created_at/suggestion_text/category/status/source)</td><td>RLS enabled, anon_all policy</td></tr>
     <tr><td>taxonomy_decision_log</td><td>New July 22 — append-only audit trail of every taxonomy commit (phylum_number/node_id/path/insight_text/source), written at <code>phylumPath._insertNewSteps</code>'s single choke point so "which code path produced this" is a query, not a forensic investigation</td><td>RLS enabled, anon_all policy</td></tr>
+    <tr><td>chronicles_finance</td><td>New July 22 — real sale/expense rows (entry_date/type/category/item/amount/notes) for The Chronicles' personal-visibility finance ledger</td><td>RLS enabled, anon_all policy</td></tr>
+    <tr><td>system_updates</td><td>New July 22 — every real Claude Code change to RPGACE (title/summary/category), so Chronicles shows dev-side activity alongside Alex's own — standing rule: any session shipping a real change logs a row here</td><td>RLS enabled, anon_all policy</td></tr>
   </table>
 </div>
 
@@ -316,6 +320,9 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
     <tr><td>Phylum Path could only ever cover one phylum (Compositio)</td><td>PHYLUM_NUM was a single hardcoded scalar, not a parameter - generalized July 17 into ENABLED_PHYLA + mutable active-phylum state, switched via a new phylum-switcher pill UI; Percussio now live alongside Compositio</td></tr>
     <tr><td>Sonus Designatio's "Synthesizers" branch had flat parent_id (5 rows)</td><td>Same pre-July-12 bug pattern as Phylum 1's original data - backfilled July 17 via path-matching (regexp_replace to derive the parent path), zero orphans remaining</td></tr>
     <tr><td>Mixtura's "Vocal Processing" branch had flat parent_id (3 rows)</td><td>Same recurring pre-July-12 pattern, third phylum found with it - backfilled July 17 the same way, zero orphans remaining</td></tr>
+    <tr><td>Left nav briefly stopped responding for ~10s after login, then caused a live crash</td><td>An early fix made <code>leftNav._buildDrawer()</code> run outside the <code>rpgace:ready</code> gate, aborting module registration mid-parse — reverted immediately, then root-caused for real as a <code>leftNav</code>/<code>config</code> file-order race (guard + retry added). A second, deeper report led to the real systemic cause: <code>onReady()</code> gated every module's startup behind the <code>window.load</code> event (every image/font) instead of <code>DOMContentLoaded</code> — the real dependency (login) was always decoupled from page-load timing. Fixed July 22, verified via real headless Playwright runs.</td></tr>
+    <tr><td>Profile stat card's HP/MP/Streak did nothing, XP/Level reset every page load</td><td>Confirmed via grep: zero code anywhere ever touched the HP/MP bars or Streak chip; XP/Level lived only in in-memory <code>STATE</code> with no persistence. Rebuilt July 22 onto real Supabase-derived data (Output/Growth lanes) instead.</td></tr>
+    <tr><td>Finance detail popup claimed sales fed the career-score Output lane</td><td>The code deliberately does NOT do this (finance is a separate visibility lane, confirmed via interrogation) — a real doc-vs-code inconsistency caught and fixed during this same July 22 sweep, before Alex ever saw it.</td></tr>
   </table>
 </div>
 
