@@ -1,11 +1,12 @@
 // AGENT 1 — CONTENT SCOUT
 // Job: Detect if input is URL, fetch it via Jina, identify content type
 // Cannot: analyse content, save anything, fire Composio
-import { setCORS, fetchURL, isURL, callClaude, RPGACE_CONTEXT } from './_context.js';
+import { setCORS, requireAuth, fetchURL, isURL, callClaude, RPGACE_CONTEXT } from './_context.js';
 
 export default async function handler(req, res){
   setCORS(res);
   if(req.method === 'OPTIONS') return res.status(200).end();
+  if (!requireAuth(req, res)) return;
   if(req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
