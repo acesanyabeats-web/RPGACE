@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔓 July 23 (Round 10) — API-auth fix LIVE on main; new /Routine skill; Bookworm chapter proven end-to-end</div>
+    <div class="card-body">
+      New session opened same day. Alex confirmed both Vercel env vars (<code>CORRECT_PW</code> — a genuinely new value, not the old exposed one — and <code>RPGACE_API_SECRET</code>) are set, clearing the one blocker logged at the previous session's close. Merged <code>claude/rpgace-master-steps-uobp98</code> into <code>main</code> and pushed (<code>node --check</code> clean on <code>main.js</code> and <code>rpgace_core.js</code> post-merge) — the server-side password check, <code>requireAuth()</code> on every <code>/api/*.js</code> endpoint, and <code>authGate</code>'s shared-secret fetch wrap are now genuinely live, not just tested.<br><br>
+      <strong>Bookworm's real chapter-loop proof, closed out.</strong> Alex pasted real review-queue output: Chapter 13 ("Chordal Inversions, Octave Doubling, and Spacing") of the actual PDF-uploaded "Music Theory for Computer Musicians" book — 12 insights approved, 1 edited, through the real UI. This is the concrete "one clean chapter through the current engine" proof that chapter-detection and the insight-review loop have now genuinely run together on a real PDF book, closing an item that had been open since the July 20 audit.<br><br>
+      <strong>Deferred today, named honestly:</strong> the Oracle 504 streaming fix and the XSS/<code>innerHTML</code> audit — both need real Claude API calls to build/verify against, and Alex is out of API credits until reset. Logged for next session, not silently dropped.<br><br>
+      <strong>New: a `/Routine` skill</strong> (<code>.claude/skills/Routine/SKILL.md</code>), named and defined by Alex this session — packages a two-team debate (GODMODE+Council-of-5 evidence-based Top 10 vs. a real counter-case for left-out items) through <code>/Debate</code> (Omnitrix without Fable by default) and <code>/5thDimension</code> reconciliation into a standing session-opener, so the daily-priorities exercise Alex ran today doesn't need to be re-typed from scratch every session. Added to CLAUDE.md's session-start checks alongside the existing <code>oracle_dev_suggestions</code> pull. First real run produced today's reconciled Top 10 (see <code>daily_priorities_debate_2026-07-23.txt</code>): API-auth confirm (done, this card), RLS policy design, Oracle 504 fix, Bookworm proof (done, this card), XSS audit, journal/Chronicles/Minotaur cross-feed interrogation, taxonomy backlog fork, Composio key rotation, Lighthouse audit, and a hygiene bundle.
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🏁 July 23 — SESSION CLOSED. Real state: docs live, code held back.</div>
     <div class="card-body">
@@ -638,9 +648,14 @@
   <div class="section-title">Still Open</div>
   <div class="section-sub">Curated July 14 — moved ~15 stale/superseded/duplicate cards out to <a href="patch_notes_archive.html">the archive</a>. What remains here is genuinely current: live tech debt, live infra, and the smoke-test backlog for everything shipped July 12-14 but not yet hand-tested.</div>
 
-<div class="card red">
-    <div class="card-title">🚨 ACTION NEEDED FROM ALEX — set 2 Vercel env vars to ship the API-auth fix <span class="badge open">URGENT, LOGGED JULY 23</span></div>
-    <div class="card-body">The API-auth + password security fix (built + tested July 23, "Round 6") is finished but sitting on the <code>claude/rpgace-master-steps-uobp98</code> branch, <strong>not live</strong>. It needs two Vercel environment variables set first — Project → Settings → Environment Variables: <code>CORRECT_PW</code> (your real app password, moving it off the client) and <code>RPGACE_API_SECRET</code> (a new random secret — e.g. run <code>openssl rand -hex 32</code> and paste the result). Once both are set, tell the next Claude Code session and it merges to <code>main</code> — that's the point it goes live. Merging before that breaks login and every API call in production.</div>
+<div class="card">
+    <div class="card-title">Oracle 504 on long responses — still not fixed <span class="badge open">DEFERRED JULY 23 (Round 10) — NO API CREDITS</span></div>
+    <div class="card-body">Root cause named since July 18 (single blocking non-streaming <code>callClaude</code>; needs real streaming/chunking, not another token trim). Deliberately not attempted this session — real streaming work needs live Claude API calls to build and verify against, and Alex is out of API credits until reset. Next session with credits available: pick this up first, per today's <code>/Routine</code>-produced Top 10.</div>
+  </div>
+
+<div class="card">
+    <div class="card-title">XSS / innerHTML audit of fetched external content — still not started <span class="badge open">DEFERRED JULY 23 (Round 10) — NO API CREDITS</span></div>
+    <div class="card-body">Flagged July 22 (Aintergration book batch 3): <code>oracleFetchGuard</code> hardens Oracle against fetched content manipulating the MODEL, but does nothing for fetched content injecting raw HTML/script into the PAGE via <code>innerHTML</code>. Whether any real call site renders un-escaped fetched-external text (Jina page text, YouTube transcripts, Oracle's own markdown reply) was never checked. Deferred alongside the 504 fix — same credits constraint, and the two pair naturally as one Oracle-hardening pass next session.</div>
   </div>
 
 <div class="card">
