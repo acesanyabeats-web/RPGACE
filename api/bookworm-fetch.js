@@ -6,7 +6,7 @@
 // over: Jina reliably returning a full book-length PDF's text in one
 // response, within Vercel's function time/payload limits, is unverified -
 // if it fails, this returns a clear error instead of silently truncating.
-import { setCORS, requireAuth, callClaude } from './_context.js';
+import { setCORS, callClaude } from './_context.js';
 
 async function fetchFullText(url) {
   const jinaURL = 'https://r.jina.ai/' + url;
@@ -458,7 +458,6 @@ function guessTitleFromURL(url) {
 export default async function handler(req, res) {
   setCORS(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (!requireAuth(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {

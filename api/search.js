@@ -1,11 +1,11 @@
 // /api/search — YouTube search without API key
 // Uses YouTube's undocumented search endpoint + oEmbed for metadata
-import { setCORS, requireAuth } from './_context.js';
 
 export default async function handler(req, res){
-  setCORS(res);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if(req.method === 'OPTIONS') return res.status(200).end();
-  if (!requireAuth(req, res)) return;
   if(req.method !== 'POST') return res.status(405).end();
 
   const { query } = req.body || {};
