@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🔒 July 24 (Round 12) — Approach B phase 1 built: authenticated write-proxy for bookworm_*/bibliography/taxonomy_*, held (not deployed)</div>
+    <div class="card-body">
+      Alex asked for real restriction on top of the Round 11 RLS parity fix — Approach B, phased rather than attempted across all 24 tables at once. Real evidence gathered first: ~57 write call sites exist app-wide across ~13 tables, essentially the whole app's write path — confirmed via grep before committing to any scope. Alex chose to phase it, starting with `bookworm_*`/`taxonomy_*`/`bibliography` (7 tables).<br><br>
+      <strong>Built:</strong> new `api/data-write.js` — a single generic authenticated write endpoint (allowlisted tables, `requireAuth()`-gated) using the Supabase **service-role key** server-side, which bypasses RLS entirely. New `RPGACE.sb.secureWrite(table, operation, payload, match)` client helper routes through it via the existing `authGate` fetch wrap (gets the shared-secret header for free, zero new client auth code). All 32 real write call sites for the 7 phase-1 tables migrated off `RPGACE.sb.insert/update/del` — confirmed zero direct-anon writes remain for these tables via grep. `node --check` clean throughout.<br><br>
+      <strong>Deliberately NOT merged to `main`.</strong> Unlike the RLS parity fix, this isn't safe to deploy the moment it's written: every migrated write now depends on a THIRD Vercel env var, `SUPABASE_SERVICE_ROLE_KEY`, existing — deploying before that's set would break every bookworm/taxonomy write in production immediately, independent of any RLS change (which hasn't been applied to these 7 tables yet on purpose — anon can still write directly today, only the app's code path has changed). Held on `claude/rpgace-master-steps-uobp98` until Alex sets the env var AND the endpoint is independently verified against production — same discipline as the auth-secret incident earlier this session, not repeating that mistake on a bigger, riskier change. The actual RLS restriction (locking anon out of writes on these 7 tables) is a separate, later step once the new path is proven live, not bundled into this same push.<br><br>
+      Remaining ~17 tables' write call sites are explicitly out of scope for this phase, per Alex's own phased choice — not silent scope-creep.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧹 July 24 (Round 11) — RLS parity fix (items 2 done), honest partial Lighthouse audit (item 9), hygiene bundle (item 10)</div>
     <div class="card-body">
