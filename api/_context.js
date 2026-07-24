@@ -30,14 +30,38 @@ COMPOSIO API: https://backend.composio.dev/api/v3.1
 
 const PG = 'pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1';
 
+// July 23 — deduplication fix (Alex-confirmed standing rule: "same
+// processes must go through one pipeline or function if steps are
+// identical"). This map used to have a SECOND, drifted copy hand-rolled
+// inside composio.js with its own "UPDATED June 28 2026 — verified tool
+// names from app.composio.dev" comment — that copy had CORRECTED gmail
+// and instagram ids/user_ids that this file had never received, meaning
+// executor.js/orchestrate.js (which both call callComposio() below) had
+// silently been using stale, likely-wrong connected-account ids for
+// gmail/instagram since June 28 while composio.js's own direct calls
+// used the right ones. This file is now the single source of truth —
+// composio.js imports from here instead of keeping its own copy.
 export const ACCOUNTS = {
-  gmail:     { id: 'ca_7oagofAi-tkv',  user_id: PG },
+  gmail:     { id: 'ca_p2wfPZctumH_', user_id: 'AceSanyaBeats.com' },
   youtube:   { id: 'ca_yfUI2ySIgkat',  user_id: PG },
-  instagram: { id: 'ca_PZCS9R3VR5xG',  user_id: PG },
+  instagram: { id: 'ca_BuczS_wYvxRd', user_id: PG },
   github:    { id: 'ca_0dwb1yCGD-Dk',  user_id: PG },
   canva:     { id: 'ca_9U6ZLJW-DxFg',  user_id: PG },
   supadata:  { id: 'ca_rxEcC9_UzPkL',  user_id: PG },
   notion:    { id: 'ca_Qfjy_TRBQA7T',  user_id: 'notionACE' }
+};
+
+// Moved from composio.js (same deduplication fix) so callComposio() below
+// applies it for EVERY caller (executor.js, orchestrate.js, composio.js),
+// not just the one file that happened to remember tool names change.
+export const TOOL_ALIASES = {
+  'GITHUB_CREATE_A_REPOSITORY':            'GITHUB_CREATE_A_REPOSITORY_FOR_THE_AUTHENTICATED_USER',
+  'GITHUB_CREATE_REPOSITORY':              'GITHUB_CREATE_A_REPOSITORY_FOR_THE_AUTHENTICATED_USER',
+  'CANVA_LIST_DESIGNS':                    'CANVA_LIST_USER_DESIGNS',
+  'CANVA_GET_DESIGNS':                     'CANVA_LIST_USER_DESIGNS',
+  'INSTAGRAM_BASIC_DISPLAY_MEDIA_DETAILS': 'INSTAGRAM_GET_IG_USER_MEDIA',
+  'INSTAGRAM_GET_MEDIA':                   'INSTAGRAM_GET_IG_USER_MEDIA',
+  'INSTAGRAM_GET_USER_MEDIA':              'INSTAGRAM_GET_IG_USER_MEDIA',
 };
 
 export const MODEL    = 'claude-sonnet-4-6';
@@ -69,7 +93,8 @@ export async function callClaude(apiKey, messages, system='', maxTokens=1000, mo
   return data.content.map(c => c.text || '').join('');
 }
 
-export async function callComposio(composioKey, tool, input){
+export async function callComposio(composioKey, rawTool, input){
+  const tool = TOOL_ALIASES[rawTool] || rawTool;
   const appKey = tool.split('_')[0].toLowerCase();
   const account = ACCOUNTS[appKey];
   if(!account) throw new Error(`No account configured for app "${appKey}"`);
@@ -94,7 +119,28 @@ export async function callComposio(composioKey, tool, input){
 export function setCORS(res){
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // X-RPGACE-Auth added July 23 for requireAuth() below - without it the
+  // browser's CORS preflight rejects the custom header before it ever
+  // reaches this handler.
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-RPGACE-Auth');
+}
+
+// July 23 — real server-side auth (Alex-authorized Tier 3 fix). Every
+// /api/*.js endpoint except api/auth.js itself calls this right after
+// setCORS()/the OPTIONS short-circuit. Previously there was NO check at
+// all here — anyone who found an endpoint's URL could invoke Oracle/
+// Composio actions directly, bypassing the password screen entirely
+// (confirmed by the /5thDimension Phase 1 audit, reading these exact
+// files). One shared function so every endpoint enforces the identical
+// rule, rather than 10 separate hand-rolled checks that could drift.
+export function requireAuth(req, res){
+  const configured = process.env.RPGACE_API_SECRET;
+  const given = req.headers['x-rpgace-auth'];
+  if (!configured || !given || given !== configured) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return false;
+  }
+  return true;
 }
 
 export async function fetchURL(url){

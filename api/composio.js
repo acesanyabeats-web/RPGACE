@@ -1,38 +1,23 @@
+// July 23 — deduplication fix (Alex-confirmed standing rule: "same
+// processes must go through one pipeline or function if steps are
+// identical"). This file used to hand-roll its own CORS headers and its
+// own ACCOUNTS/TOOL_ALIASES maps instead of importing the shared ones
+// from _context.js - and the two copies had drifted apart (this file's
+// gmail/instagram ids were newer and correct; _context.js's were stale,
+// meaning executor.js/orchestrate.js were silently using the wrong
+// connected-account ids for those two apps). _context.js is now the
+// single source of truth for all of it; this file only keeps what's
+// genuinely unique to it (the 'verify' action, a real second feature
+// callComposio() doesn't cover).
+import { setCORS, requireAuth, ACCOUNTS, TOOL_ALIASES, BASE_URL } from './_context.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  setCORS(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+  if (!requireAuth(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // UPDATED June 28 2026 — verified tool names from app.composio.dev
-  const SHARED = 'pg-test-abb2beca-619d-46dd-b1b9-aa0df04efae1';
-  const ACCOUNTS = {
-    gmail:     { id: 'ca_p2wfPZctumH_', user_id: 'AceSanyaBeats.com' },
-    github:    { id: 'ca_0dwb1yCGD-Dk', user_id: SHARED },
-    youtube:   { id: 'ca_yfUI2ySIgkat', user_id: SHARED },
-    instagram: { id: 'ca_BuczS_wYvxRd', user_id: SHARED },
-    canva:     { id: 'ca_9U6ZLJW-DxFg', user_id: SHARED },
-    notion:    { id: 'ca_Qfjy_TRBQA7T', user_id: 'notionACE' },
-    supadata:  { id: 'ca_rxEcC9_UzPkL', user_id: SHARED },
-  };
-
-  // Verified v3.1 tool names from app.composio.dev June 28 2026
-  const TOOL_ALIASES = {
-    // GitHub — old name broke in v3.1
-    'GITHUB_CREATE_A_REPOSITORY':            'GITHUB_CREATE_A_REPOSITORY_FOR_THE_AUTHENTICATED_USER',
-    'GITHUB_CREATE_REPOSITORY':              'GITHUB_CREATE_A_REPOSITORY_FOR_THE_AUTHENTICATED_USER',
-    // Canva — old name broke in v3.1
-    'CANVA_LIST_DESIGNS':                    'CANVA_LIST_USER_DESIGNS',
-    'CANVA_GET_DESIGNS':                     'CANVA_LIST_USER_DESIGNS',
-    // Instagram — Basic Display API deprecated by Meta Dec 2024
-    // Now uses Graph API via Composio
-    'INSTAGRAM_BASIC_DISPLAY_MEDIA_DETAILS': 'INSTAGRAM_GET_IG_USER_MEDIA',
-    'INSTAGRAM_GET_MEDIA':                   'INSTAGRAM_GET_IG_USER_MEDIA',
-    'INSTAGRAM_GET_USER_MEDIA':              'INSTAGRAM_GET_IG_USER_MEDIA',
-  };
-
-  const BASE = 'https://backend.composio.dev/api/v3.1';
+  const BASE = BASE_URL;
 
   try {
     const composioKey = process.env.COMPOSIO_API_KEY;

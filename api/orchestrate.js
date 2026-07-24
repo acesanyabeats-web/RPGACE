@@ -1,5 +1,5 @@
 // ORCHESTRATOR — Oracle + Agent bridge
-import { setCORS, callClaude, callComposio, RPGACE_CONTEXT } from './_context.js';
+import { setCORS, requireAuth, callClaude, callComposio, RPGACE_CONTEXT } from './_context.js';
 
 const ORACLE_SYSTEM = `${RPGACE_CONTEXT}
 
@@ -37,6 +37,7 @@ Be direct. Motivating. One sharp line at the end.`;
 export default async function handler(req, res){
   setCORS(res);
   if(req.method === 'OPTIONS') return res.status(200).end();
+  if (!requireAuth(req, res)) return;
   if(req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
