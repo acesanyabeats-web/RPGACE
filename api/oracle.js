@@ -4,6 +4,14 @@ import { setCORS, requireAuth, callClaude, MODEL } from './_context.js';
 // Raises the Vercel serverless function timeout ceiling - was using the
 // account's default limit, which is too short for long, detailed responses
 // (e.g. multi-layer teaching explanations), causing 504 Gateway Timeout.
+// July 24 audit fix: vercel.json's own functions block ALSO set this
+// file's maxDuration, to 30 - a divergent, silently-conflicting second
+// copy of one setting (rule 8, config layer) sitting right next to the
+// documented, still-unfixed Oracle 504 bug this comment describes.
+// Removed from vercel.json; this export is the single source of truth,
+// per Vercel's own docs ("the standard approach for functions in the
+// /api directory"). Whether the drift was ever the ACTUAL cause of the
+// 504 is unconfirmed - this closes the drift regardless.
 export const config = {
   maxDuration: 60,
 };

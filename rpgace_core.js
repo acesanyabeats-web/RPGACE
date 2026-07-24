@@ -191,9 +191,24 @@
     },
 
     /* Fire all handlers for an event */
+    // July 24 audit fix: iterates a snapshot (.slice()), not the live
+    // array. Two real hazards this closes, found the same session:
+    // (1) the already-documented one - on() pushing onto this array
+    // mid-fire (e.g. a module subscribing to 'rpgace:ready' from inside
+    // its own init()) never got visited, since forEach doesn't revisit
+    // appended entries; (2) a sharper one - on() also SORTS this array
+    // in place (line below), and sorting a live array mid-forEach can
+    // move not-yet-visited entries past the iteration cursor, silently
+    // skipping them. Currently masked because every real call site uses
+    // the same default priority (10) and Array.prototype.sort is stable,
+    // but a single future hooks.on(event, fn, 5) call from inside any
+    // init() would reintroduce the exact "N modules silently never
+    // registered" failure mode the July 22 leftNav incident already cost
+    // this project once. Iterating a snapshot fixes both at the same
+    // choke point, one fix instead of two.
     fire: function (event) {
       var args = Array.prototype.slice.call(arguments, 1);
-      (this._reg[event] || []).forEach(function (h) {
+      (this._reg[event] || []).slice().forEach(function (h) {
         try { h.handler.apply(null, args); }
         catch (e) { console.warn('[RPGACE.hooks.fire]', event, e.message); }
       });
@@ -201,7 +216,7 @@
 
     /* Pipe: each handler receives and returns the value, transforming it */
     pipe: function (event, value) {
-      return (this._reg[event] || []).reduce(function (acc, h) {
+      return (this._reg[event] || []).slice().reduce(function (acc, h) {
         try { return h.handler(acc); }
         catch (e) { return acc; }
       }, value);
@@ -241,6 +256,16 @@
      Shared helpers used across all modules.
      ══════════════════════════════════════════════════════════ */
   R.utils = {
+
+    // July 24 audit fix (rule 8, dedup): two independent _esc() helpers
+    // existed (videoSummary, careerStatCard) - the second escaped only
+    // '<', unsafe if its output ever lands in an attribute context (a
+    // real "&gt;\"" payload would pass it through untouched). One shared
+    // implementation here; both modules now delegate to this instead of
+    // keeping their own copy that could drift further.
+    escapeHtml: function (s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    },
 
     /* YYYY-MM-DD string from a Date object */
     dateStr: function (d) {
@@ -587,13 +612,19 @@ RPGACE.register('youtubeOracle', {
 
   ICONS: ['??','??','??','??','??','??','??','??'],
 
+  // July 24 audit fix: both real boot paths were dead. The rpgace:ready
+  // listener below ran too late (registered from inside init(), which
+  // only runs because ready already fired - see RPGACE.hooks landmine).
+  // The page:show check used the bare literal 'oracle', but real page
+  // ids come from index.html/main.js (this page is 'advisor') - it
+  // never matched. The button only ever appeared via a separate
+  // hand-rolled duplicate injector elsewhere in the file; this is the
+  // one real fix, not a second copy.
   init: function() {
     var self = this;
+    setTimeout(function() { self._btn(); }, 800);
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'oracle') setTimeout(function() { self._btn(); }, 600);
-    });
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._btn(); }, 800);
+      if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._btn(); }, 600);
     });
   },
 
@@ -720,7 +751,6 @@ RPGACE.register('prodOraclePanel', {
   init: function() {
     var self = this;
     setTimeout(function() { self._intercept(); }, 1200);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._intercept(); }, 1200); });
   },
 
   _intercept: function() {
@@ -825,7 +855,6 @@ RPGACE.register('instaOraclePanel', {
   init: function() {
     var self = this;
     setTimeout(function() { self._intercept(); }, 1400);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._intercept(); }, 1400); });
   },
 
   _intercept: function() {
@@ -905,9 +934,7 @@ RPGACE.register('instaOraclePanel', {
 RPGACE.register('quickActions', {
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._setup(); }, 600);
-    });
+    setTimeout(function() { self._setup(); }, 600);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._setup(); }, 300);
@@ -1021,7 +1048,6 @@ RPGACE.register('visualOracle', {
   init: function() {
     var self = this;
     setTimeout(function() { self._inject(); }, 1400);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._inject(); }, 1400); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._inject(); }, 600);
     });
@@ -1148,12 +1174,10 @@ RPGACE.register('contentRepurpose', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() {
-        self._restructureQuickBar();
-        self._injectAgentButtons();
-      }, 1500);
-    });
+    setTimeout(function() {
+      self._restructureQuickBar();
+      self._injectAgentButtons();
+    }, 1500);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._restructureQuickBar(); }, 400);
@@ -2149,9 +2173,6 @@ RPGACE.register('encSync', {
   init: function() {
     var self = this;
     setTimeout(function() { self._patch(); }, 800);
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._patch(); }, 800);
-    });
   },
 
   _clearBacklog: function() {
@@ -2582,7 +2603,6 @@ RPGACE.register('oracleDevBridge', {
   init: function() {
     var self = this;
     setTimeout(function() { self._hook(); }, 1300);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._hook(); }, 1300); });
   },
 
   _hook: function() {
@@ -3602,7 +3622,6 @@ RPGACE.register('encTaxonomyLink', {
     }
     patch();
     setTimeout(patch, 1500);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
   },
 
   _injectButtons: function() {
@@ -3716,7 +3735,6 @@ RPGACE.register('agendaReminder', {
     }
     patch();
     setTimeout(patch, 1500);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
   },
 
   _injectButtons: function() {
@@ -3807,7 +3825,6 @@ RPGACE.register('scheduleOracle', {
   init: function() {
     var self = this;
     setTimeout(function() { self._injectEntryPoints(); }, 1400);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._injectEntryPoints(); }, 1400); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectEntryPoints(); }, 600);
     });
@@ -4044,44 +4061,50 @@ RPGACE.register('scheduleOracle', {
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
 
-  SB_URL: 'https://gripopghczmrbrhqtqbm.supabase.co',
-  SB_KEY: 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf',
   BIB:    'rpgace_intel_bibliography',
 
+  // July 24 audit fix: the entire body below (the 500/1200/3000ms inject
+  // passes, the bib-section timeout, AND the MutationObserver that
+  // auto-detects newly added cards) used to live inside a dead
+  // rpgace:ready listener - none of it ever ran. The MutationObserver in
+  // particular meant new cards appearing on the research page without a
+  // page navigation (page:show) never got their delete/watchlist buttons
+  // injected at all. Also removed SB_URL/SB_KEY (confirmed unused via
+  // grep - _sbDel/_sbInsert below already route through
+  // RPGACE.sb.secureWrite, never these) and replaced the bare 'learning'/
+  // 'research' literal check with the shared RPGACE.CONFIG.pages.research
+  // constant per the project's own page-name convention.
   init: function() {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'learning' || name === 'research') {
+      if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._injectAll(); }, 400);
       }
       if (name === 'encyclopedia') {
         setTimeout(function() { self._injectBibSection(); }, 500);
       }
     });
-    RPGACE.hooks.on('rpgace:ready', function() {
-      [500, 1200, 3000].forEach(function(d) {
-        setTimeout(function() { self._injectAll(); }, d);
-      });
-      setTimeout(function() { self._injectBibSection(); }, 1500);
-      var _obsTimer = null;
-      var obs = new MutationObserver(function(muts) {
-        // Only fire for actual new card nodes, not our own injections
-        var relevant = muts.some(function(m) {
-          return Array.from(m.addedNodes).some(function(n) {
-            return n.nodeType === 1 && !n.dataset.di4 && !n.dataset.dw4 && !n.id;
-          });
-        });
-        if (!relevant) return;
-        if (_obsTimer) clearTimeout(_obsTimer);
-        _obsTimer = setTimeout(function() { self._injectAll(); }, 300);
-      });
-      // Only watch the research page container, not entire body
-      var researchPage = document.getElementById('page-research') ||
-                         document.getElementById('page-learning') ||
-                         document.body;
-      obs.observe(researchPage, { childList: true, subtree: true });
-
+    [500, 1200, 3000].forEach(function(d) {
+      setTimeout(function() { self._injectAll(); }, d);
     });
+    setTimeout(function() { self._injectBibSection(); }, 1500);
+    var _obsTimer = null;
+    var obs = new MutationObserver(function(muts) {
+      // Only fire for actual new card nodes, not our own injections
+      var relevant = muts.some(function(m) {
+        return Array.from(m.addedNodes).some(function(n) {
+          return n.nodeType === 1 && !n.dataset.di4 && !n.dataset.dw4 && !n.id;
+        });
+      });
+      if (!relevant) return;
+      if (_obsTimer) clearTimeout(_obsTimer);
+      _obsTimer = setTimeout(function() { self._injectAll(); }, 300);
+    });
+    // Only watch the research page container, not entire body
+    var researchPage = document.getElementById('page-research') ||
+                       document.getElementById('page-learning') ||
+                       document.body;
+    obs.observe(researchPage, { childList: true, subtree: true });
   },
 
   /* ── Supabase helpers ─────────────────────────── */
@@ -5420,9 +5443,7 @@ RPGACE.register('videoSummary', {
   _fetching: false,
   _expanded: {},
 
-  _esc: function(s) {
-    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  },
+  _esc: function(s) { return RPGACE.utils.escapeHtml(s); },
   _key: function(r) { return RPGACE.modules.intelDedup.dedupKey(r); },
   _sid: function(key) {
     var h = 5381;
@@ -5789,9 +5810,7 @@ RPGACE.register('taxonomySync', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._injectUI(); }, 800);
-    });
+    setTimeout(function() { self._injectUI(); }, 800);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._injectUI(); }, 400);
@@ -5968,9 +5987,7 @@ RPGACE.register('knowledgeGap', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._inject(); }, 1000);
-    });
+    setTimeout(function() { self._inject(); }, 1000);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._inject();
@@ -6238,9 +6255,7 @@ RPGACE.register('taxonomyTree', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._injectManualButton(); }, 1300);
-    });
+    setTimeout(function() { self._injectManualButton(); }, 1300);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._injectManualButton(); }, 500);
@@ -6887,6 +6902,17 @@ RPGACE.register('taxonomyTree', {
   // doesn't fully fix it, the timeout needs its own dedicated pass
   // (streaming, or splitting into 2 sequential calls), not another blind
   // prompt trim.
+  // July 24 audit fix: this used to hand-roll its own fetch('/api/oracle')
+  // instead of routing through phylumPath's shared ground-worker
+  // functions (rule 3 violation) - two real consequences, both fixed by
+  // switching to _callGroundWorkerText: (1) it never checked for
+  // data.error, so on any Anthropic failure it wrote
+  // {generated: '', ...} to taxonomy_tree and logged success - the
+  // likely real mechanism behind this column's long-standing "empty
+  // deep_content" mystery (previously blamed on the 504 alone, never
+  // confirmed); (2) it bypassed the credit-exhaustion detector entirely,
+  // so a real outage here never surfaced anywhere, not even a fallback
+  // queue row.
   _generateNodeContent: function(node) {
     var prompt = 'You are a neuro-optimized tutor AND a world-class expert in "' + node.name + '".\n\n' +
       'Context: this is a node in a music production taxonomy tree, path: ' + node.path + '. ' +
@@ -6896,24 +6922,11 @@ RPGACE.register('taxonomyTree', {
       '2. THE ACTUAL TECHNICAL CONTENT — since this is a specific leaf topic, give me the real, specific information (exact notes/settings/techniques/chord identities as relevant), not general theory\n\n' +
       'Be specific and technical, but concise — this is a reference entry, not a full course.';
 
-    fetch('/api/oracle', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: prompt }],
-        system: '',
-        max_tokens: 900
-      })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
+    RPGACE.modules.phylumPath._callGroundWorkerText(prompt, 900).then(function(text) {
       return RPGACE.sb.secureWrite('taxonomy_tree', 'update', { deep_content: { generated: text, generated_at: new Date().toISOString() } }, 'id=eq.' + node.id);
-    })
-    .then(function() {
+    }).then(function() {
       console.log('[taxonomyTree] Content generated for node:', node.name);
-    })
-    .catch(function(e) {
+    }).catch(function(e) {
       console.warn('[taxonomyTree] Content generation failed:', e.message);
     });
   },
@@ -10674,7 +10687,7 @@ RPGACE.register('config', {
       // the app to know. Table is read-often/tiny, not write-heavy in the
       // app's own sense, but the same "never guaranteed fresh" problem
       // applies - excluded from caching for the same reason as the others.
-      var noCache = ['content_productions','conid_pot','journal_entries','intel_jobs','rpgace_shifts','chronicles_finance','system_updates'];
+      var noCache = ['content_productions','conid_pot','journal','intel_jobs','rpgace_shifts','chronicles_finance','system_updates'];
       if (noCache.indexOf(table) !== -1) return _origSelect(table, params);
       var cached = RPGACE.cache.get(cacheKey);
       if (cached) return Promise.resolve(cached);
@@ -10699,6 +10712,20 @@ RPGACE.register('config', {
     RPGACE.sb.update = function(table, filter, patch) {
       RPGACE.cache.clear(table);
       return _origUpdate(table, filter, patch);
+    };
+
+    // Bust cache on secureWrite too (real bug found in a July 24 audit):
+    // secureWrite was added the same day as Approach B's write-proxy but
+    // never wrapped like insert/update/del above - 66 real call sites
+    // across 15 tables (taxonomy_tree/proposals/links, bookworm_books/
+    // chapters, etc.) were silently serving up to 60s of stale cached
+    // reads after every write, e.g. an approved taxonomy_proposals row
+    // still showing "pending" in the review queue. Same fix shape as the
+    // one already documented on RPGACE.cache.clear() above.
+    var _origSecureWrite = RPGACE.sb.secureWrite.bind(RPGACE.sb);
+    RPGACE.sb.secureWrite = function(table, operation, payload, match) {
+      RPGACE.cache.clear(table);
+      return _origSecureWrite(table, operation, payload, match);
     };
 
     // Streaming Oracle client — replaces callOracle for new callers
@@ -12729,9 +12756,7 @@ RPGACE.register('contentProductionLive', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._injectDashboardWidget(); }, 1600);
-    });
+    setTimeout(function() { self._injectDashboardWidget(); }, 1600);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._injectDashboardWidget();
@@ -13371,9 +13396,7 @@ RPGACE.register('videoPipeline', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._injectWidget(); }, 1700);
-    });
+    setTimeout(function() { self._injectWidget(); }, 1700);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) self._injectWidget();
     });
@@ -14153,10 +14176,15 @@ RPGACE.register('conidPot', {
               setTimeout(function() { RPGACE.utils.sendToOracle('Help me develop this content idea for @AceSanyaBeats:\n\n"' + row.title + '"\n\n' + (row.idea_text || '').slice(0, 500)); }, 300);
             }},
             { label: '📅 Add to Agenda', color: '#C9A84C', action: function() {
-              var agendas = JSON.parse(localStorage.getItem('rpgace_sched_agendas') || '[]');
+              // July 24 audit fix: routed through RPGACE.DB.get/set instead
+              // of raw localStorage (rule 8 - DB.SCHEMA already declares
+              // 'sched' as this exact key) - the raw call used to skip
+              // R.hooks.fire('db:change', ...), so any future listener on
+              // that hook would never learn this write happened.
+              var agendas = RPGACE.DB.get('sched');
               var today = new Date().toISOString().split('T')[0];
               agendas.push({ id: 'cp_' + Date.now(), date: today, hour: 14, title: 'Content: ' + row.title.slice(0,40), description: 'Film and post: ' + row.title, category: 'content', estimated_mins: 60, xp: 80 });
-              localStorage.setItem('rpgace_sched_agendas', JSON.stringify(agendas));
+              RPGACE.DB.set('sched', agendas);
               RPGACE.utils.toast('📅 Added to agenda: ' + row.title.slice(0,30), '#C9A84C', 2500);
             }},
             { label: '⚡ Activate ConID', color: '#9B59B6', action: function() {
@@ -14297,12 +14325,10 @@ RPGACE.register('morningBrief', {
 
   init: function() {
     var self = this;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() {
-        self._injectButton();
-        self._autoRun();
-      }, 1200);
-    });
+    setTimeout(function() {
+      self._injectButton();
+      self._autoRun();
+    }, 1200);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._injectButton();
@@ -14533,9 +14559,6 @@ RPGACE.register('suppressQuestPopup', {
   init: function() {
     var self = this;
     self._suppress();
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._suppress(); }, 500);
-    });
   },
   _suppress: function() {
     if (window._questSuppressed) return;
@@ -14555,16 +14578,18 @@ RPGACE.register('suppressQuestPopup', {
 
 /* ===MODULE:restoreSendChat=== */
 RPGACE.register('restoreSendChat', {
+  // July 24 audit fix: the re-apply pass below used to live inside a dead
+  // rpgace:ready listener. Harmless in practice (this module already
+  // registers after config in file order, so the direct pass above always
+  // wins), but the intent was clearly a real second guard against a
+  // future registration-order change - now it actually runs.
   init: function() {
     // Run immediately — must fire before any user interaction
     RPGACE.streamOracle = null;
     window._sendChatPatched = false;
-    RPGACE.hooks.on('rpgace:ready', function() {
-      // Re-apply in case config module re-sets streamOracle after ready
-      RPGACE.streamOracle = null;
-      window._sendChatPatched = false;
-      console.log('[RPGACE] streamOracle neutralised');
-    });
+    RPGACE.streamOracle = null;
+    window._sendChatPatched = false;
+    console.log('[RPGACE] streamOracle neutralised');
   }
 });
 /* ===END:restoreSendChat=== */
@@ -14659,9 +14684,6 @@ RPGACE.register('shiftSync', {
     // hook as a secondary path in case timing differs on some page loads.
     setTimeout(function() { self._syncFromSupabase(); }, 1200);
 
-    RPGACE.hooks.on('rpgace:ready', function() {
-      setTimeout(function() { self._syncFromSupabase(); }, 900);
-    });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.schedule) {
         setTimeout(function() { self._syncFromSupabase(); }, 300);
@@ -14680,8 +14702,12 @@ RPGACE.register('shiftSync', {
           var shifts = rows.map(function(r) {
             return { date: r.date, day: r.day, role: r.role, start: r.start, end: r.end, hours: r.hours };
           });
-          var before = JSON.parse(localStorage.getItem('rpgace_shifts') || '[]').length;
-          localStorage.setItem('rpgace_shifts', JSON.stringify(shifts));
+          // July 24 audit fix: routed through RPGACE.DB.get/set (rule 8 -
+          // DB.SCHEMA already declares 'shifts' as this exact key) so
+          // R.hooks.fire('db:change', ...) actually fires on this sync -
+          // the raw localStorage call used to skip it silently.
+          var before = RPGACE.DB.get('shifts').length;
+          RPGACE.DB.set('shifts', shifts);
           console.log('[shiftSync] Synced ' + shifts.length + ' shifts from Supabase (was ' + before + ' in localStorage)');
           if (typeof window.autoApplyStoredShifts === 'function') window.autoApplyStoredShifts();
         }
@@ -14700,7 +14726,7 @@ RPGACE.register('shiftSync', {
     RPGACE.sb.select('rpgace_agendas', 'order=date.asc&limit=300')
       .then(function(rows) {
         rows = rows || [];
-        localStorage.setItem('rpgace_sched_agendas', JSON.stringify(rows));
+        RPGACE.DB.set('sched', rows); // July 24 audit fix - see shifts sync above, same reasoning
         console.log('[shiftSync] Synced ' + rows.length + ' agendas from Supabase');
         if (typeof window.buildMonthSlots === 'function') { try { window.buildMonthSlots(); } catch(e){} }
         if (typeof window.buildWeekSlots === 'function') { try { window.buildWeekSlots(); } catch(e){} }
@@ -14795,7 +14821,6 @@ RPGACE.register('agentsIntoOracle', {
     var self = this;
     self._relocate();
     setTimeout(function() { self._relocate(); }, 1500);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(function() { self._relocate(); }, 1500); });
   },
 
   _relocate: function() {
@@ -14866,7 +14891,6 @@ RPGACE.register('encyclopediaQoL', {
     }
     patch();
     setTimeout(patch, 1500);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
     setTimeout(function() { self._injectSearchBar(); }, 1500);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.encyclopedia) setTimeout(function() { self._injectSearchBar(); }, 300);
@@ -14969,7 +14993,6 @@ RPGACE.register('journalQoL', {
     }
     patch();
     setTimeout(patch, 1500);
-    RPGACE.hooks.on('rpgace:ready', function() { setTimeout(patch, 500); });
     setTimeout(function() { self._injectControls(); }, 1500);
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.journal) setTimeout(function() { self._injectControls(); }, 300);
@@ -15476,7 +15499,7 @@ RPGACE.register('careerStatCard', {
     return 'new branch added';
   },
 
-  _esc: function(s) { return String(s == null ? '' : s).replace(/</g, '&lt;'); },
+  _esc: function(s) { return RPGACE.utils.escapeHtml(s); },
 
   // Builds the {what, outcome, whereStored, whySignificant} shape every
   // detail popup renders, from whichever real row type was clicked.

@@ -58,9 +58,6 @@
     }
   ],
   "functions": {
-    "api/oracle.js": {
-      "maxDuration": 30
-    },
     "api/orchestrate.js": {
       "maxDuration": 30
     },
