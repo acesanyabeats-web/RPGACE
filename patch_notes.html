@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔒 July 24 (Round 20) — RLS flip DONE and independently verified: Approach B now delivers real protection for the first time</div>
+    <div class="card-body">
+      Step 2 of the Alex-confirmed plan, right after Round 19's main.js migration. 17 tables flipped from blanket <code>anon_all</code> to <code>anon_read_only</code> (SELECT only) + <code>authenticated_all</code> (service-role writes only): <code>bookworm_books</code>, <code>bookworm_chapters</code>, <code>bibliography</code>, <code>taxonomy_tree</code>, <code>taxonomy_proposals</code>, <code>taxonomy_links</code>, <code>taxonomy_nodes</code>, <code>encyclopedia</code>, <code>encyclopedia_insights</code>, <code>reference_tracks</code>, <code>conid_pot</code>, <code>content_productions</code>, <code>video_jobs</code>, <code>chronicles_finance</code>, <code>oracle_dev_suggestions</code>, <code>taxonomy_decision_log</code>, <code>rpgace_agendas</code>.<br><br>
+      <strong>6 real, deliberate exclusions, staying anon_all</strong>: <code>journal</code> (Morning Brief Routine), <code>intel_jobs</code>/<code>intel_reports</code>/<code>intel_watchlist</code> (a local Python server on Alex's own machine, port 7842 — confirmed via the Round 19 audit), <code>intel_bibliography</code> (write pattern unconfirmed — <code>local_server.py</code> isn't in this repo, couldn't check, excluded out of caution rather than guessed at), and the already-documented <code>oracle_fallback_queue</code>.<br><br>
+      <strong>Real, independent verification — not a doc claim</strong>: a direct <code>pg_policy</code> catalog query confirms zero write-granting policies remain for <code>anon</code> on any of the 17 tables — stronger proof than an HTTP test, since it reads Postgres's own authoritative policy state. A live external write-attempt test was also tried (a real unauthenticated <code>curl</code> POST) but blocked by this session's own outbound proxy, which doesn't whitelist raw requests to Supabase directly — a tooling limit, not a gap in the RLS check itself. <code>/api/data-write</code> re-confirmed still returning a genuine <code>401</code> in production after the flip.<br><br>
+      <strong>This closes the loop the whole day's</strong> <code>/Routine</code> <strong>interconnection debate opened</strong>: Approach B's write-proxy existed for three sessions delivering zero actual restriction (both debate teams found this independently, live). It now does.
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🧊 July 24 (Round 19) — FROZEN-file exception: main.js migrated to the authenticated write-proxy (logged, Alex-confirmed)</div>
     <div class="card-body">
