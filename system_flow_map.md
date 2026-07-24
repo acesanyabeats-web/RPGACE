@@ -1,5 +1,5 @@
 # RPGACE — System Flow Map
-**The 5th Oversight doc.** Created July 17, 2026 from a full audit of all oversight files + the live codebase (`main.js`, `rpgace_core.js`, `api/*`, `index.html`). Diagrams are Mermaid — render on GitHub, in VS Code, or any Mermaid viewer. Every diagram follows the same convention: **rectangles = processing**, **diamonds = yes/no decisions**, **cylinders = data stores**, **stadiums = entry/exit points**, **dashed boxes = PLANNED, not built**.
+**The 5th Oversight doc.** Created July 17, 2026 from a full audit of all oversight files + the live codebase (`main.js`, `rpgace_core.js`, `api/*`, `index.html`). **Last re-verified July 24, 2026** (hygiene pass, item 10 of the `/Routine`-produced daily Top 10) — the body has been edited well past the creation date on multiple sessions since; this line now gets bumped whenever a real re-verification pass runs, not just on creation. Diagrams are Mermaid — render on GitHub, in VS Code, or any Mermaid viewer. Every diagram follows the same convention: **rectangles = processing**, **diamonds = yes/no decisions**, **cylinders = data stores**, **stadiums = entry/exit points**, **dashed boxes = PLANNED, not built**.
 
 Companion to CLAUDE.md (the operational guide). Update BOTH when architecture changes.
 
@@ -7,7 +7,7 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 
 ## 0. Verified Component Inventory
 
-**Known stale, flagged not silently fixed (July 23):** the `/5thDimension` audit found real module count is 51+ (`RPGACE.modules` at runtime), while the table below still lists the July 17 count (~30). A full re-verification pass is still owed — see §10's "Claimed/discussed but NOT built" entry on this exact gap. Newer modules confirmed real this session alone: `authGate`, `pathRouter`, `perfWatch`, `researchTabs`, `chroniclesLog`, `careerStatCard`, `dashDeck`, `leftNav`, `oracleAppGrounding`, `oracleDevBridge`, `oracleFetchGuard`, `pwaInstall` — not yet folded into the domain table below.
+**Module count corrected July 24 with real evidence** (`grep -c "RPGACE.register("` against actual name-bearing calls, excluding comment mentions): **52 real registered modules** in `rpgace_core.js`, not the July 17 table's stale ~30, and more precise than the earlier "51+" estimate. Newer modules confirmed real: `authGate`, `pathRouter`, `perfWatch`, `researchTabs`, `chroniclesLog`, `careerStatCard`, `dashDeck`, `leftNav`, `oracleAppGrounding`, `oracleDevBridge`, `oracleFetchGuard`, `pwaInstall` — not yet folded into the domain table below (a full per-module table rebuild is a bigger task than this hygiene pass scoped for; the count itself is now real and current).
 
 ### Domains and modules (from `rpgace_core.js` markers, verified by grep July 17 — SEE STALE NOTE ABOVE)
 
