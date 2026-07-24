@@ -3385,7 +3385,7 @@ RPGACE.register('taxonomyReviewQueue', {
           rejectBtn.textContent = '✗ Reject';
           rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#E25454;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           rejectBtn.onclick = function() {
-            RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'rejected', reviewed_at: new Date().toISOString() }).catch(function() {});
+            RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
             row.remove();
           };
 
@@ -3455,7 +3455,7 @@ RPGACE.register('taxonomyReviewQueue', {
             acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
             acceptBtn2.onclick = function() {
               row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
-              RPGACE.sb.update('taxonomy_links', 'id=eq.' + l.id, { status: 'confirmed', reviewed_at: new Date().toISOString() }).catch(function() {});
+              RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'confirmed', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
               row.remove();
             };
 
@@ -3463,7 +3463,7 @@ RPGACE.register('taxonomyReviewQueue', {
             rejectBtn2.textContent = '✗ Reject';
             rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#E25454;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             rejectBtn2.onclick = function() {
-              RPGACE.sb.update('taxonomy_links', 'id=eq.' + l.id, { status: 'rejected', reviewed_at: new Date().toISOString() }).catch(function() {});
+              RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
               row.remove();
             };
 
@@ -3493,7 +3493,7 @@ RPGACE.register('taxonomyReviewQueue', {
     var finish = function(attachNode) {
       pp._insertNewSteps(p.phylum_number, attachNode, ps.newSteps || [], ps.explainers || [], ps.insightText || '')
         .then(function() {
-          RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+          RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
         });
     };
     if (ps.attachToId) {
@@ -3521,10 +3521,7 @@ RPGACE.register('taxonomyReviewQueue', {
         var attachNode = rows && rows[0];
         if (!attachNode) return;
 
-        return fetch(RPGACE.sb.url('taxonomy_tree'), {
-          method: 'POST',
-          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-          body: JSON.stringify({
+        return RPGACE.sb.secureWrite('taxonomy_tree', 'insert', {
             parent_id: attachNode.id,
             depth: attachNode.depth + 1,
             name: ps.newName,
@@ -3533,18 +3530,17 @@ RPGACE.register('taxonomyReviewQueue', {
             node_type: 'leaf',
             explainer: ps.synthesis || '',
             sources: [{ type: 'concept_fusion', id: null }]
-          }),
-        }).then(function(r) { return r.json(); }).then(function(result) {
+          }).then(function(result) {
           var newNode = Array.isArray(result) ? result[0] : result;
           if (!newNode || !newNode.id) return;
-          return RPGACE.sb.insert('taxonomy_links', [
+          return RPGACE.sb.secureWrite('taxonomy_links', 'insert', [
             { node_a_id: newNode.id, node_b_id: attachNode.id, link_insight: ps.synthesis || '', status: 'confirmed' },
             { node_a_id: newNode.id, node_b_id: ps.otherNodeId, link_insight: ps.synthesis || '', status: 'confirmed' }
           ]).catch(function() {});
         });
       })
       .then(function() {
-        RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+        RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
       })
       .catch(function(e) {
         console.warn('[taxonomyReviewQueue] concept-fusion accept failed:', e.message);
@@ -3561,7 +3557,7 @@ RPGACE.register('taxonomyReviewQueue', {
       pp._showPlacementConfirm(p.phylum_number, attachNode, (ps.newSteps || []).slice(), (ps.explainers || []).slice(), ps.insightText || '',
         function(finalSteps, finalExplainers) {
           pp._insertNewSteps(p.phylum_number, attachNode, finalSteps, finalExplainers, ps.insightText || '').then(function() {
-            RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + p.id, { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+            RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
           });
         }
       );
@@ -5937,7 +5933,7 @@ RPGACE.register('taxonomySync', {
       applied_in_beat: false,
     };
 
-    RPGACE.sb.insert('taxonomy_nodes', node)
+    RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', node)
       .then(function() {
         // Stagger requests to avoid Supabase rate limits
         setTimeout(function() {
@@ -6588,7 +6584,7 @@ RPGACE.register('taxonomyTree', {
       var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
       var base = decision.attachNode ? decision.attachNode.path : phylumName;
       var previewPath = base + (decision.newSteps.length ? '/' + decision.newSteps.join('/') : '');
-      return RPGACE.sb.insert('taxonomy_proposals', {
+      return RPGACE.sb.secureWrite('taxonomy_proposals', 'insert', {
         source_type: sourceType,
         source_id: sourceId,
         proposed_path: previewPath.replace(/\//g, ' → '),
@@ -6844,10 +6840,7 @@ RPGACE.register('taxonomyTree', {
         // the next step - RPGACE.sb.insert() defaults to Prefer:return=minimal
         // (empty body), which silently broke this into a flat set of orphan
         // nodes (parent_id always null) for any path longer than one step.
-        return fetch(RPGACE.sb.url('taxonomy_tree'), {
-          method: 'POST',
-          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-          body: JSON.stringify({
+        return RPGACE.sb.secureWrite('taxonomy_tree', 'insert', {
             parent_id: currentParent,
             depth: i + 1,
             name: stepName,
@@ -6857,8 +6850,7 @@ RPGACE.register('taxonomyTree', {
             node_type: isLeaf ? 'leaf' : 'branch',
             explainer: proposal.explainers[i] || '',
             sources: [{ type: proposal.sourceType, id: proposal.sourceId }],
-          }),
-        }).then(function(r) { return r.json(); }).then(function(result) {
+          }).then(function(result) {
           var row = Array.isArray(result) ? result[0] : result;
           if (row && row.id) parentId = row.id;
           if (isLeaf && row) {
@@ -6881,8 +6873,9 @@ RPGACE.register('taxonomyTree', {
       // F6: if this lineage came from the review queue, close the loop on
       // the taxonomy_proposals row it originated from.
       if (proposal.queuedProposalId) {
-        RPGACE.sb.update('taxonomy_proposals', 'id=eq.' + proposal.queuedProposalId,
-          { status: 'accepted', reviewed_at: new Date().toISOString() }).catch(function() {});
+        RPGACE.sb.secureWrite('taxonomy_proposals', 'update',
+          { status: 'accepted', reviewed_at: new Date().toISOString() },
+          'id=eq.' + proposal.queuedProposalId).catch(function() {});
       }
     }).catch(function(e) {
       RPGACE.utils.toast('Error saving lineage: ' + e.message, '#E25454', 3500);
@@ -7733,10 +7726,7 @@ RPGACE.register('phylumPath', {
         var currentParent = parentId;
         var currentDepth = baseDepth + i + 1;
 
-        return fetch(RPGACE.sb.url('taxonomy_tree'), {
-          method: 'POST',
-          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-          body: JSON.stringify({
+        return RPGACE.sb.secureWrite('taxonomy_tree', 'insert', {
             parent_id: currentParent,
             depth: currentDepth,
             name: stepName,
@@ -7746,8 +7736,7 @@ RPGACE.register('phylumPath', {
             node_type: isLast ? 'leaf' : 'branch',
             explainer: explainers[i] || '',
             sources: [{ type: 'phylum_path', id: null }],
-          }),
-        }).then(function(r) { return r.json(); }).then(function(result) {
+          }).then(function(result) {
           var row = Array.isArray(result) ? result[0] : result;
           if (row && row.id) parentId = row.id;
           if (isLast) finalRow = row;
@@ -7878,7 +7867,7 @@ RPGACE.register('phylumPath', {
                 : candidates.find(function(n) { return n.path === link.path || n.name === link.path; });
               if (!match) return;
               chain = chain.then(function() {
-                return RPGACE.sb.insert('taxonomy_links', {
+                return RPGACE.sb.secureWrite('taxonomy_links', 'insert', {
                   node_a_id: node.id,
                   node_b_id: match.id,
                   link_insight: link.insight || '',
@@ -7941,9 +7930,9 @@ RPGACE.register('phylumPath', {
         return self._callGroundWorkerText(prompt, 700);
       })
       .then(function(text) {
-        return RPGACE.sb.update('taxonomy_tree', 'id=eq.' + node.id, {
+        return RPGACE.sb.secureWrite('taxonomy_tree', 'update', {
           deep_content: { generated: text, generated_at: new Date().toISOString() }
-        });
+        }, 'id=eq.' + node.id);
       }).catch(function(e) {
         console.warn('[phylumPath] content generation failed:', e.message);
       });
@@ -8187,7 +8176,7 @@ RPGACE.register('phylumPath', {
             var attachNode = (parsed.attachUnder === 'target') ? target : node;
             var otherNode = (parsed.attachUnder === 'target') ? node : target;
 
-            return RPGACE.sb.insert('taxonomy_proposals', {
+            return RPGACE.sb.secureWrite('taxonomy_proposals', 'insert', {
               source_type: 'phylum_path_concept_fusion',
               source_id: node.id,
               proposed_path: attachNode.path + '/' + parsed.newName,
@@ -8537,9 +8526,9 @@ RPGACE.register('phylumPath', {
       'Write a short synthesis (under 300 words) explaining HOW these two ideas genuinely combine or reinforce each other in practice, with one concrete example a producer could apply. This is specifically about the connection between them, not a general overview of either concept alone.';
 
     return self._callGroundWorkerText(prompt, 600).then(function(text) {
-      return RPGACE.sb.update('taxonomy_links', 'id=eq.' + link.id, {
+      return RPGACE.sb.secureWrite('taxonomy_links', 'update', {
         link_article: { generated: text, generated_at: new Date().toISOString() }
-      }).then(function() { return text; });
+      }, 'id=eq.' + link.id).then(function() { return text; });
     });
   },
 
@@ -8905,7 +8894,7 @@ RPGACE.register('bookworm', {
                 setTimeout(function() { armed = false; delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)'; }, 3000);
                 return;
               }
-              RPGACE.sb.del('bookworm_books', 'id=eq.' + book.id).then(function() {
+              RPGACE.sb.secureWrite('bookworm_books', 'delete', null, 'id=eq.' + book.id).then(function() {
                 RPGACE.utils.toast('🗑 Deleted: ' + book.title, 'rgba(226,226,236,0.5)', 2500);
                 self._refreshWidget();
               }).catch(function(err) { RPGACE.utils.toast('Error: ' + err.message, '#E25454', 3500); });
@@ -9552,7 +9541,7 @@ RPGACE.register('bookworm', {
     });
     return chain.then(function() {
       var formatted = results.join('\n\n');
-      return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { formatted_text: formatted })
+      return RPGACE.sb.secureWrite('bookworm_chapters', 'update', { formatted_text: formatted }, 'id=eq.' + chapter.id)
         .then(function() { return formatted; })
         .catch(function() { return formatted; }); // still usable even if the cache write fails
     });
@@ -9694,7 +9683,7 @@ RPGACE.register('bookworm', {
       warningBox.style.display = 'none';
 
       addBtn.disabled = true; addBtn.textContent = '⏳ Saving...';
-      RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { raw_text: text }).then(function() {
+      RPGACE.sb.secureWrite('bookworm_chapters', 'update', { raw_text: text }, 'id=eq.' + chapter.id).then(function() {
         overlay.remove();
         self._openCurrentChapter(book.id);
       }).catch(function(e) {
@@ -9760,9 +9749,9 @@ RPGACE.register('bookworm', {
     return pp._callGroundWorkerJSON(extractPrompt, 1200).then(function(parsed) {
       var insightTexts = parsed.insights || [];
       if (!insightTexts.length) {
-        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
           insights: [], status: 'in_progress', current_insight_index: 0, analysis_complete: true
-        }).then(function() {
+        }, 'id=eq.' + chapter.id).then(function() {
           return Object.assign({}, chapter, { insights: [], current_insight_index: 0, analysis_complete: true });
         });
       }
@@ -9795,15 +9784,15 @@ RPGACE.register('bookworm', {
         // if the tab closed, anything not yet placed was gone for good,
         // with no way to resume without re-extracting from scratch and
         // losing whatever the user had already reviewed.
-        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
           pending_insight_texts: insightTexts.slice(1), suggested_phylum: primaryPhylum, analysis_heartbeat: new Date().toISOString()
-        }).then(function() {
+        }, 'id=eq.' + chapter.id).then(function() {
           return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla, []).then(function(firstPlacement) {
             var insights = [firstPlacement];
             var onlyOne = insightTexts.length === 1;
-            return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, {
+            return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
               insights: insights, status: 'in_progress', current_insight_index: 0, analysis_complete: onlyOne, analysis_heartbeat: new Date().toISOString()
-            }).then(function() {
+            }, 'id=eq.' + chapter.id).then(function() {
               if (!onlyOne) {
                 self._continueAnalyzingInBackground(chapter.id, insightTexts.slice(1), primaryPhylum, remainingPhyla);
               }
@@ -9856,16 +9845,16 @@ RPGACE.register('bookworm', {
             // this same insightText was always pending_insight_texts[0]
             // (both derived from, and kept in lockstep with, remainingTexts).
             var stillPending = (current.pending_insight_texts || []).slice(1);
-            return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, {
+            return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
               insights: insights, analysis_complete: isLast, pending_insight_texts: stillPending, analysis_heartbeat: new Date().toISOString()
-            });
+            }, 'id=eq.' + chapterId);
           });
         });
       });
     });
     return chain.catch(function(e) {
       console.warn('[bookworm] background insight analysis failed partway, marking complete with what succeeded so far:', e.message);
-      return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, { analysis_complete: true }).catch(function() {});
+      return RPGACE.sb.secureWrite('bookworm_chapters', 'update', { analysis_complete: true }, 'id=eq.' + chapterId).catch(function() {});
     });
   },
 
@@ -9889,7 +9878,7 @@ RPGACE.register('bookworm', {
       if (!fresh) return;
       var pending = fresh.pending_insight_texts || [];
       if (!pending.length) {
-        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { analysis_complete: true });
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'update', { analysis_complete: true }, 'id=eq.' + chapter.id);
       }
       var primaryPhylum = fresh.suggested_phylum;
       var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
@@ -10047,7 +10036,7 @@ RPGACE.register('bookworm', {
         if (idx >= insights.length) return;
         insights[idx] = patchFn(insights[idx]);
         var body = Object.assign({ insights: insights }, extraFields || {});
-        return RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapterId, body);
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'update', body, 'id=eq.' + chapterId);
       });
     });
     return self._chapterWriteQueue;
@@ -10294,10 +10283,10 @@ RPGACE.register('bookworm', {
 
   _completeChapter: function(book, chapter) {
     var self = this;
-    RPGACE.sb.update('bookworm_chapters', 'id=eq.' + chapter.id, { status: 'complete' })
+    RPGACE.sb.secureWrite('bookworm_chapters', 'update', { status: 'complete' }, 'id=eq.' + chapter.id)
       .then(function() {
         var nextIndex = book.current_chapter_index + 1;
-        return RPGACE.sb.update('bookworm_books', 'id=eq.' + book.id, { current_chapter_index: nextIndex });
+        return RPGACE.sb.secureWrite('bookworm_books', 'update', { current_chapter_index: nextIndex }, 'id=eq.' + book.id);
       }).then(function() {
         RPGACE.utils.toast('✓ Chapter complete: ' + chapter.chapter_title, '#3DAA6E', 3000);
         self._refreshWidget();
@@ -10317,12 +10306,12 @@ RPGACE.register('bookworm', {
             if (i.decision === 'approved' || i.decision === 'edited') { totalInsights++; if (i.phylumNumber) phyla[i.phylumNumber] = true; }
           });
         });
-        return RPGACE.sb.insert('bibliography', {
+        return RPGACE.sb.secureWrite('bibliography', 'insert', {
           book_id: book.id, title: book.title, source_url: book.source_url,
           total_chapters: chapters.length, total_insights_placed: totalInsights,
           phyla_touched: Object.keys(phyla).map(Number)
         }).then(function() {
-          return RPGACE.sb.update('bookworm_books', 'id=eq.' + book.id, { status: 'complete', completed_at: new Date().toISOString() });
+          return RPGACE.sb.secureWrite('bookworm_books', 'update', { status: 'complete', completed_at: new Date().toISOString() }, 'id=eq.' + book.id);
         });
       }).then(function() {
         RPGACE.utils.toast('📚 ' + book.title + ' — complete! Added to Bibliography.', '#3DAA6E', 5000);
@@ -10442,6 +10431,23 @@ RPGACE.register('config', {
         return fetch(RPGACE.sb.url(table), {
           method: 'POST', headers: RPGACE.sb.headers(),
           body: JSON.stringify(row),
+        });
+      },
+      // Routes a write through /api/data-write (service-role key, bypasses
+      // RLS) instead of the anon key hitting Supabase directly - for tables
+      // where anon has been locked to read-only (Approach B, phased July 24).
+      // Always returns the written row(s) (return=representation server-side),
+      // unlike insert()/update() above which default to return=minimal.
+      secureWrite: function(table, operation, payload, match) {
+        return fetch('/api/data-write', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ table: table, operation: operation, payload: payload, match: match }),
+        }).then(function(r) {
+          return r.json().then(function(body) {
+            if (!r.ok) throw new Error((body && body.error) || 'secureWrite failed');
+            return body.data;
+          });
         });
       },
       select: function(table, params) {
@@ -12113,7 +12119,7 @@ RPGACE.register('beatLog', {
       RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
         .then(function(rows) {
           if (rows && rows.length > 0) return; // already exists
-          RPGACE.sb.insert('taxonomy_nodes', {
+          RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
             concept:       a.name,
             phylum_number: 12,
             phylum_name:   'Fons Educationis',
