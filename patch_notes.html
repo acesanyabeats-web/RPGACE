@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ July 24 (Round 22) — No more post-login pop-in (all boot-time injectors gated) + taxonomy review-queue badge fixed for real</div>
+    <div class="card-body">
+      Alex, verbatim: "no loads should happen after login, only before." Real systemic pattern: ~24 modules each independently used <code>setTimeout(fn, 600-3000ms)</code> inside their own <code>init()</code> to inject dashboard/page UI — firing after the boot loader already hid and the user was looking at the loaded app, every login. Fix: a new shared gate, <code>RPGACE._bootTasks</code>/<code>RPGACE.registerBootTask(fn)</code>, generalizing the one existing precedent (<code>careerStatCard._fetchAll()</code>, July 23) to every real boot-time injector in the file. The boot loader's hide logic now does <code>Promise.all(R._bootTasks)</code> before hiding instead of waiting on just one module. Deliberately untouched: <code>page:show</code>/<code>research:tab-active</code>-gated re-injection — the existing, already-decided lazy-load pattern for not-yet-visited pages (July 22) is a different, legitimate thing from boot-time pop-in.
+      <br><br>
+      <strong>Same pass, real bug found:</strong> the taxonomy review-queue badge Alex reported "still not there" (after an earlier same-day anchor fix) was calling <code>page.insertBefore(badge, dd-needs)</code> — but <code>#dd-needs</code> is a child of <code>#dd-deck</code>, not a direct child of <code>#page-dashboard</code>, so <code>insertBefore</code> threw <code>NotFoundError</code> on every single run, silently swallowed by the trailing <code>.catch()</code>. The earlier fix never actually worked live. Per the standing rule (one failed fix = stop, get real evidence, don't patch blind a second time), this was <strong>not</strong> re-patched — the floating-badge module was deleted and folded into <code>dashDeck</code>'s already-working "Needs you now" list, which also closed a real second gap: that list only ever counted <code>taxonomy_proposals</code>, never <code>taxonomy_links</code> (pending fusion links) — two hand-rolled copies of one feature, one broken, one incomplete (rule 8). <code>taxonomyReviewQueue</code> keeps <code>_openQueue()</code> and its accept/reject popup logic, which <code>dashDeck</code>'s list item already calls into.
+      <br><br>
+      Committed <code>14c7ebe</code>, pushed to <code>main</code> and merged to <code>claude/rpgace-master-steps-uobp98</code>, confirmed <code>READY</code> on production via Vercel's own deployment record. <strong>Not yet hand-tested by Alex</strong> — needs a real login to confirm no more pop-in and that the "Needs you now" item shows the corrected combined count.
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">📋 July 24 (Round 21) — Future batch spec for the 6 excluded tables, real open questions recorded (not built)</div>
     <div class="card-body">
