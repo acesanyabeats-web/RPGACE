@@ -162,6 +162,42 @@
     function(v) { if (R.STATE) R.STATE.pendingSched = v; });
 
   /* ══════════════════════════════════════════════════════════
+     BOOT TASK GATE — July 24, Alex's own direct standing rule:
+     "no loads should happen after login, only before." Real precedent
+     already existed for exactly ONE module (careerStatCard's dashboard
+     prefetch, built July 23) but was never generalized - every OTHER
+     module still injected its own dashboard-visible content via a bare
+     setTimeout(fn, 1200-3000ms) fired from inside its own init(), which
+     runs AFTER 'rpgace:ready' - meaning it runs AFTER the boot loader
+     already hid and the user is already looking at the page. That's
+     the real mechanism behind the visible pop-in this was built to end.
+
+     Any module whose init() does real boot-time work that should finish
+     BEFORE the user ever sees the app calls R.registerBootTask(fn) -
+     fn must return a Promise (or a plain value). The boot loader
+     (below, near 'rpgace:ready') waits on Promise.all of every
+     registered task before hiding, same 20s hard-ceiling safety net as
+     before. A task that rejects is caught and logged, never allowed to
+     block every other module's own gate (fail open, per rule 7 - a
+     slow/broken module delays the loader at most until the ceiling,
+     never breaks it for everyone else).
+
+     This does NOT apply to page:show-triggered re-injection (visiting
+     a page you haven't been to yet) - that's a real, deliberate,
+     already-decided lazy-load pattern (Research Lab's own single-tab
+     loading, for one) and is a different thing from content silently
+     popping in on a page the user is ALREADY looking at. Only the
+     boot-time (rpgace:ready-triggered) half of each module's own
+     injection logic moves onto this gate.
+     ══════════════════════════════════════════════════════════ */
+  R._bootTasks = [];
+  R.registerBootTask = function (fn) {
+    var result;
+    try { result = fn(); } catch (e) { result = Promise.reject(e); }
+    R._bootTasks.push(Promise.resolve(result));
+  };
+
+  /* ══════════════════════════════════════════════════════════
      HOOK SYSTEM
      Register handlers on named events.
      New features hook in here — no more string replacement.
@@ -462,13 +498,17 @@
     // is always reachable (fail loud, never trap a user), independent of
     // index.html's own pure-CSS 6s->22s fallback below.
     setTimeout(_hideBootOnce, 20000);
+    // careerStatCard's own prefetch folded into the same array every
+    // other module's registerBootTask() call now feeds, instead of
+    // being a special case (rule 8 - one shared gate, not two).
     try {
       if (R.modules.careerStatCard && R.modules.careerStatCard._fetchAll) {
-        R.modules.careerStatCard._fetchAll().then(_hideBootOnce).catch(_hideBootOnce);
-      } else {
-        _hideBootOnce();
+        R._bootTasks.push(R.modules.careerStatCard._fetchAll());
       }
-    } catch (e) { _hideBootOnce(); }
+    } catch (e) {}
+    Promise.all(R._bootTasks.map(function(p) {
+      return Promise.resolve(p).catch(function(e) { console.warn('[RPGACE] a boot task failed:', e && e.message); });
+    })).then(_hideBootOnce).catch(_hideBootOnce);
   /* ── YouTube Oracle button injection (direct, no module dependency) ── */
   setTimeout(function() {
     var _ytBtnInject = function() {
@@ -622,7 +662,7 @@ RPGACE.register('youtubeOracle', {
   // one real fix, not a second copy.
   init: function() {
     var self = this;
-    setTimeout(function() { self._btn(); }, 800);
+    RPGACE.registerBootTask(function() { return self._btn(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._btn(); }, 600);
     });
@@ -934,7 +974,7 @@ RPGACE.register('instaOraclePanel', {
 RPGACE.register('quickActions', {
   init: function() {
     var self = this;
-    setTimeout(function() { self._setup(); }, 600);
+    RPGACE.registerBootTask(function() { return self._setup(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._setup(); }, 300);
@@ -1047,7 +1087,7 @@ RPGACE.register('visualOracle', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._inject(); }, 1400);
+    RPGACE.registerBootTask(function() { return self._inject(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._inject(); }, 600);
     });
@@ -1174,10 +1214,10 @@ RPGACE.register('contentRepurpose', {
 
   init: function() {
     var self = this;
-    setTimeout(function() {
+    RPGACE.registerBootTask(function() {
       self._restructureQuickBar();
       self._injectAgentButtons();
-    }, 1500);
+    });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._restructureQuickBar(); }, 400);
@@ -3251,7 +3291,7 @@ RPGACE.register('taxonomyReviewQueue', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._inject(); }, 1400);
+    RPGACE.registerBootTask(function() { return self._inject(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === 'dashboard') setTimeout(function() { self._inject(); }, 400);
     });
@@ -3279,7 +3319,9 @@ RPGACE.register('taxonomyReviewQueue', {
     // July 16: badge count now also includes pending taxonomy_links
     // (fusion-link candidates) alongside taxonomy_proposals - same
     // review queue, same badge, different card type per row.
-    Promise.all([
+    // July 24: returned so R.registerBootTask can genuinely wait for
+    // these reads to resolve before the boot loader hides.
+    return Promise.all([
       RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id&limit=200'),
       RPGACE.sb.select('taxonomy_links', 'status=eq.pending&select=id&limit=200')
     ]).then(function(results) {
@@ -4100,10 +4142,15 @@ RPGACE.register('intelDelete', {
         setTimeout(function() { self._injectBibSection(); }, 500);
       }
     });
-    [500, 1200, 3000].forEach(function(d) {
-      setTimeout(function() { self._injectAll(); }, d);
+    // July 24 - the [500,1200,3000] retry staggering existed to catch
+    // cards that populate asynchronously after render; the MutationObserver
+    // below already covers that case (new cards trigger a fresh _injectAll),
+    // so one boot-gated call is enough - it no longer needs to race the
+    // user's own post-login clock.
+    RPGACE.registerBootTask(function() {
+      self._injectAll();
+      self._injectBibSection();
     });
-    setTimeout(function() { self._injectBibSection(); }, 1500);
     var _obsTimer = null;
     var obs = new MutationObserver(function(muts) {
       // Only fire for actual new card nodes, not our own injections
@@ -4670,12 +4717,17 @@ RPGACE.register('intelDelete', {
 // consolidation is pass 2, after hand-test.
 RPGACE.register('dashDeck', {
 
+  // July 24: the [1400, 3000] dual-timer retry is gone - #page-dashboard
+  // is static HTML already present at parse time (not dynamically
+  // created), so there was never a real reason to retry at two delays.
+  // One immediate call via registerBootTask, gated behind the boot
+  // loader instead of firing after the user already sees the page.
   init: function() {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) setTimeout(function() { self._inject(); self._relocateQuestBoard(); }, 200);
     });
-    [1400, 3000].forEach(function(ms) { setTimeout(function() { self._inject(); self._relocateQuestBoard(); }, ms); });
+    RPGACE.registerBootTask(function() { self._inject(); self._relocateQuestBoard(); });
   },
 
   // ── Pass 2 (July 20): the daily/weekly quest board used to render on the
@@ -5826,7 +5878,7 @@ RPGACE.register('taxonomySync', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._injectUI(); }, 800);
+    RPGACE.registerBootTask(function() { return self._injectUI(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._injectUI(); }, 400);
@@ -6003,7 +6055,7 @@ RPGACE.register('knowledgeGap', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._inject(); }, 1000);
+    RPGACE.registerBootTask(function() { return self._inject(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._inject();
@@ -6271,7 +6323,7 @@ RPGACE.register('taxonomyTree', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._injectManualButton(); }, 1300);
+    RPGACE.registerBootTask(function() { return self._injectManualButton(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.research) {
         setTimeout(function() { self._injectManualButton(); }, 500);
@@ -12776,7 +12828,7 @@ RPGACE.register('contentProductionLive', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._injectDashboardWidget(); }, 1600);
+    RPGACE.registerBootTask(function() { return self._injectDashboardWidget(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._injectDashboardWidget();
@@ -13416,7 +13468,7 @@ RPGACE.register('videoPipeline', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._injectWidget(); }, 1700);
+    RPGACE.registerBootTask(function() { return self._injectWidget(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) self._injectWidget();
     });
@@ -14345,10 +14397,10 @@ RPGACE.register('morningBrief', {
 
   init: function() {
     var self = this;
-    setTimeout(function() {
+    RPGACE.registerBootTask(function() {
       self._injectButton();
       self._autoRun();
-    }, 1200);
+    });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._injectButton();
