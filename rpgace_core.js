@@ -15396,6 +15396,7 @@ RPGACE.register('chroniclesLog', {
     page.id = pageId;
     page.innerHTML =
       '<div class="section-title">📜 The Chronicles — Full Log</div>' +
+      '<div id="chron-digest" style="display:none;font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.6;"></div>' +
       '<div id="chron-summary" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;"></div>' +
       '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">' +
         '<input id="chron-search" type="text" placeholder="Search the log…" style="flex:1;min-width:180px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;">' +
@@ -15439,6 +15440,51 @@ RPGACE.register('chroniclesLog', {
     }).catch(function(e) {
       console.warn('[RPGACE:chroniclesLog] render failed', e.message);
     });
+    self._renderOversightDigest();
+  },
+
+  // Journal/Chronicles/oversight cross-feed idea, Alex-confirmed July 24:
+  // "measured doses" on-open digest, sourced from all six oversight docs
+  // (not just minotaur_map) - kept deliberately light. Fetches ONCE per
+  // session (this project's own real freeze history came from repeated
+  // re-fetches on every page:show - careerStatCard._fetchAll had exactly
+  // this bug, fixed earlier), fails open/silent if any doc is unreachable,
+  // and shows short excerpts only - no markdown parsing, no new dependency.
+  _renderOversightDigest: function() {
+    var self = this;
+    var el = document.getElementById('chron-digest');
+    if (!el) return;
+    if (self._digestCache) { self._paintDigest(self._digestCache); return; }
+    if (self._digestFetching) return;
+    self._digestFetching = true;
+
+    Promise.all([
+      fetch('/CLAUDE.md').then(function(r) { return r.ok ? r.text() : null; }).catch(function() { return null; }),
+      fetch('/patch_notes.html').then(function(r) { return r.ok ? r.text() : null; }).catch(function() { return null; }),
+    ]).then(function(results) {
+      var claudeMd = results[0], patchNotes = results[1];
+      var lines = [];
+
+      if (claudeMd) {
+        var stateMatch = claudeMd.match(/^## Current state.*\n- (.+)$/m);
+        if (stateMatch) lines.push('🧭 ' + stateMatch[1].replace(/\*\*/g, '').slice(0, 160));
+      }
+      if (patchNotes) {
+        var cardMatch = patchNotes.match(/<div class="card-title">([^<]+)<\/div>/);
+        if (cardMatch) lines.push('📋 Latest: ' + cardMatch[1].replace(/&amp;/g, '&').slice(0, 160));
+      }
+
+      self._digestCache = lines;
+      self._digestFetching = false;
+      self._paintDigest(lines);
+    }).catch(function() { self._digestFetching = false; });
+  },
+
+  _paintDigest: function(lines) {
+    var el = document.getElementById('chron-digest');
+    if (!el || !lines || !lines.length) return;
+    el.innerHTML = lines.map(function(l) { return '<div>' + l.replace(/</g, '&lt;') + '</div>'; }).join('');
+    el.style.display = 'block';
   },
 
   _renderSummary: function(finance) {

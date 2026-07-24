@@ -41,6 +41,18 @@
       "destination": "/icons/$1"
     },
     {
+      "source": "/CLAUDE.md",
+      "destination": "/CLAUDE.md"
+    },
+    {
+      "source": "/interconnection_map.md",
+      "destination": "/interconnection_map.md"
+    },
+    {
+      "source": "/system_flow_map.md",
+      "destination": "/system_flow_map.md"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
