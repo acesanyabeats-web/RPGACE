@@ -728,6 +728,18 @@
   <div class="section-title">Still Open</div>
   <div class="section-sub">Curated July 14 — moved ~15 stale/superseded/duplicate cards out to <a href="patch_notes_archive.html">the archive</a>. What remains here is genuinely current: live tech debt, live infra, and the smoke-test backlog for everything shipped July 12-14 but not yet hand-tested.</div>
 
+<div class="card red">
+    <div class="card-title">Claude Code fallback lane — real, deployed, but genuinely UNVERIFIED behavior <span class="badge open">JULY 24 — NEEDS A REAL CREDIT-EXHAUSTION EVENT TO PROVE</span></div>
+    <div class="card-body">
+      Deployment itself is confirmed real, not assumed: Vercel shows commit <code>5887545</code> <code>READY</code> on production, and <code>/api/data-write</code> still returns a genuine <code>401</code> unauthenticated (the write-proxy's own gate is intact). What's genuinely unverified is the FEATURE'S behavior, not its presence in production:<br><br>
+      <strong>1. The credit-exhaustion detector has never seen a real failure.</strong> <code>phylumPath._isCreditExhaustionError</code>'s string match ("credit balance" / "insufficient credit") is a best guess at Anthropic's real error wording, checked only against the code that propagates it, never against a live failure. Fails open by design — a wrong guess means the feature silently never triggers, never a crash — but this means nobody knows yet whether it actually catches the real thing.<br><br>
+      <strong>2. A parse failure on a fallback answer leaves a row silently stuck</strong>, retried every 5 minutes by <code>_checkFallbackAnswers</code>, failing the same way each time with only a <code>console.warn</code> — no toast, nothing Alex would notice without opening devtools or querying Supabase directly.<br><br>
+      <strong>3. A real future landmine, written into CLAUDE.md's landmines section</strong>: <code>oracle_fallback_queue</code> must never be folded into a future Approach B RLS-restriction batch without also giving the Fallback Drain Routine (which writes back via the plain anon key, no service-role access) a way to still write to it — doing so would silently break the whole lane with no visible error.<br><br>
+      <strong>4. Bookworm's auto-resume only covers a cascade's FIRST placement attempt per phylum</strong> — a failure during a reword-retry or upgrade-check sub-call isn't queued/resumed, by design, not a bug.<br><br>
+      None of these are reasons the build is wrong — they're exactly what "not yet hand-tested against a genuine credit-exhaustion event" honestly means. First real signal: whenever Alex's API credits actually run low, check <code>oracle_fallback_queue</code> and the Routine's own run history, don't assume it worked.
+    </div>
+  </div>
+
 <div class="card">
     <div class="card-title">Oracle 504 on long responses — still not fixed <span class="badge open">DEFERRED JULY 23 (Round 10) — NO API CREDITS</span></div>
     <div class="card-body">Root cause named since July 18 (single blocking non-streaming <code>callClaude</code>; needs real streaming/chunking, not another token trim). Deliberately not attempted this session — real streaming work needs live Claude API calls to build and verify against, and Alex is out of API credits until reset. Next session with credits available: pick this up first, per today's <code>/Routine</code>-produced Top 10.</div>
