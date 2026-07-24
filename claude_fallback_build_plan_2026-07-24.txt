@@ -1,0 +1,400 @@
+CLAUDE-FALLBACK BUILD PLAN — 2026-07-24
+Real GODMODE evidence + Council of 5 + /5thDimension reconciliation, per Alex's
+explicit request ("next step now, /scope and /Godmode, then council of 5
+alongside /5thDimension to get best output"). Verbatim spec record per rule 5
+(3+ new pieces: new table, modified shared functions, new Routine).
+
+════════════════════════════════════════════════════════════════════
+PHASE 1 — /scope: real evidence gathered before any plan was written
+════════════════════════════════════════════════════════════════════
+
+1. Read rpgace_core.js lines 7048-7110 directly (not from memory/docs).
+   Real finding: _callExtractor, _callGroundWorkerJSON, _callGroundWorkerText
+   ALL do `fetch(...).then(r => r.json())` with NO check of `r.ok` or
+   `data.error` before parsing `data.content`. Consequence, confirmed by
+   reading api/oracle.js's own catch block (`res.status(500).json({error:
+   err.message})`):
+     - _callGroundWorkerText on ANY API failure today returns an empty
+       string SILENTLY — not a rejected promise. This is a real
+       pre-existing bug, already violating CLAUDE.md rule 7 ("fail loud").
+     - _callGroundWorkerJSON/_callExtractor throw a generic "No JSON found
+       in ... response" — the real error text (e.g. a credit-exhaustion
+       message) never reaches the caller today.
+   This means credit-exhaustion detection is IMPOSSIBLE to add without
+   first fixing this real latent bug — it's a genuine prerequisite, not
+   scope creep riding along with this feature.
+
+2. Queried live Supabase RLS state directly (pg_class/pg_policy), not
+   assumed from CLAUDE.md's own prose:
+     journal:                  rls_enabled=true, policy=anon_all (USING true)
+     oracle_dev_suggestions:   rls_enabled=true, policy=anon_all (USING true)
+     taxonomy_decision_log:    rls_enabled=true, policy=anon_all (USING true)
+     chronicles_finance:       rls_enabled=true, policy=anon_all_chronicles_finance
+   Real finding: all four still permit unrestricted anon read+write, even
+   though 3 of them are already listed in api/data-write.js's ALLOWED_TABLES
+   from Approach B phase 3. Confirms interconnection_map.md's own note that
+   Approach B so far only migrated CLIENT call sites to secureWrite — actual
+   RLS restriction is a separate, later, not-yet-done step for these tables.
+
+3. Called list_triggers directly and read the real Morning Brief Routine's
+   full job_config. Confirmed: it runs in a fresh session with NO MCP
+   connector access, uses raw curl against Supabase's REST API with the
+   real publishable/anon key (safe — already public client-side), writes
+   to `journal` via POST with Prefer: return=minimal, and is on
+   notifications:{push:true}. This is a real, already-proven, reusable
+   pattern for a second Routine — no new secret-sharing needed, since the
+   RLS finding above confirms anon-key writes still work on every
+   candidate table.
+
+4. Grepped the whole repo for oracle_fallback_queue / fallback_queue /
+   FALLBACK_QUEUE — zero hits anywhere. Confirmed this is a genuinely
+   fresh build, nothing partially started.
+
+5. Read oracle_dev_suggestions' real column schema (information_schema)
+   to use as the template for the new table's shape, per rule 8
+   (reuse an existing shape rather than invent a new one):
+     id uuid pk default gen_random_uuid(), created_at timestamptz default
+     now(), + table-specific text/status columns.
+
+════════════════════════════════════════════════════════════════════
+PHASE 2 — Council of 5 scrutiny
+════════════════════════════════════════════════════════════════════
+
+1. TECHNICAL RISK. Real risk if credit-exhaustion detection is done
+   carelessly: false negatives (never catches it — no worse than today)
+   or false positives (misclassifies an unrelated real error as credit
+   exhaustion, silently queuing garbage instead of surfacing a real bug
+   to Alex via a toast). Mitigation: match only on Anthropic's own
+   documented insufficient-credit phrasing (case-insensitive "credit
+   balance" / "insufficient credit"), and on ANY non-match, rethrow the
+   original error completely unchanged — behavior for every other error
+   type stays identical to today. Cannot be tested against a real credit
+   exhaustion event without actually draining credits — flagged honestly,
+   fails open (worse case is "doesn't catch it," never "queues wrongly").
+
+2. SCOPE/COST. Touches 3 shared functions used across Bookworm, Content
+   Intelligence, and Taxonomy placement — the edit must be surgical
+   (append detection + enqueue, not restructure the functions). New table
+   costs nothing until actually used. New Routine costs nothing while
+   dormant (hourly poll of an empty table is free-tier trivial).
+
+3. MAINTAINABILITY. Two Routines will now exist (Morning Brief + this
+   new Fallback Drain) — naming and structure kept deliberately parallel
+   so a future session recognizes the pattern instantly. Table schema
+   reuses oracle_dev_suggestions' shape rather than inventing a new one
+   (rule 8).
+
+4. UX / HONESTY. This MVP does NOT auto-resume the original caller — no
+   code exists yet to poll the queue and re-inject an answer back into
+   whatever Bookworm/Content-Intelligence/Taxonomy job originally asked.
+   The real value on day one is: Alex (or a future Claude Code session)
+   can see what got queued and what was answered, not that the app keeps
+   working invisibly the moment credits run out. This must be stated
+   plainly, not oversold — matches the original /debate verdict exactly
+   ("adopt with modification... never a live-chat replacement").
+
+5. WHY NOT BUILD THIS NOW (honest counter-case). Alex isn't currently out
+   of credits — there is no live trigger condition today. Building this
+   preemptively risks becoming another built-but-unverified piece sitting
+   dormant, the same pattern already true of F16-18. Counter-argument:
+   cost while dormant is genuinely near-zero, the design is fresh in this
+   session right now (cheaper to build today than re-derive during a
+   future real outage), and Alex already said "sounds good" to the idea
+   specifically — this plan is executing an already-made decision, not
+   re-opening whether to build it.
+
+════════════════════════════════════════════════════════════════════
+PHASE 3 — /5thDimension reconciliation (scaled to this task's real size,
+not the full whole-project audit — evidence was already gathered above)
+════════════════════════════════════════════════════════════════════
+
+- Built vs. reported: no drift found. Everything assumed in this plan
+  (Routine config, RLS state, function internals) was independently
+  re-verified against live sources in Phase 1, not recalled from a doc.
+- The one real fork only Alex can resolve: should this first pass ALSO
+  wire an auto-resume path (the queue-drain Routine writing the answer
+  somewhere the ORIGINAL Bookworm/Content-Intelligence/Taxonomy job would
+  actually see and continue from), or stay MVP-only (queued + answered,
+  visible on inspection, no automatic resume)? This is a real scope
+  decision, not a rubber-stamp — auto-resume requires a second piece of
+  work (a poll-and-resume step inside whichever module called the ground
+  worker) that doesn't exist yet and wasn't part of the original /debate
+  verdict.
+- Anchored to Alex's real goal: yes. Matches his own framing exactly
+  ("would be an awesome update... possibly a river") and the already-
+  adopted verdict from the OpenMontage/Claude-fallback judgment session
+  (openmontage_and_claude_fallback_spec_backlog_2026-07-24.txt): async
+  fallback lane for background jobs only, reusing proven infrastructure.
+
+════════════════════════════════════════════════════════════════════
+FINAL BUILDABLE PLAN
+════════════════════════════════════════════════════════════════════
+
+1. Fix the real pre-existing bug in all 3 shared ground-worker functions:
+   check `data.error` (and non-ok response) before parsing `data.content`;
+   on error, throw a real Error carrying the actual message — never
+   silently return empty string or a generic parse error.
+2. Add a small shared helper (e.g. `phylumPath._isCreditExhaustionError`)
+   matching known Anthropic insufficient-credit phrasing, conservative,
+   fails open.
+3. On a detected credit-exhaustion error: insert a row into
+   `oracle_fallback_queue` via `RPGACE.sb.secureWrite('oracle_fallback_queue',
+   'insert', {...})` (prompt, which of the 3 tiers called it, max_tokens,
+   model, status:'pending') — then STILL rethrow the original error, so
+   the calling module's existing fail-loud toast (rule 7) is unaffected.
+   The queue row is a side channel, never a silent swallow.
+4. Add 'oracle_fallback_queue' to api/data-write.js's ALLOWED_TABLES.
+5. TIER 3 — needs Alex's fresh explicit confirmation, separate from his
+   general "sounds good": create oracle_fallback_queue via
+   apply_migration. Columns modeled on oracle_dev_suggestions: id uuid pk,
+   created_at timestamptz, prompt text, tier text, max_tokens int,
+   model text, status text default 'pending', answer text nullable,
+   answered_at timestamptz nullable. Standard anon_all RLS (matches every
+   other table's real default — no special restriction needed given the
+   Phase-1 RLS finding above).
+6. Create a second Claude Code Remote Routine ("RPGACE Fallback Drain"),
+   hourly, create_new_session_on_fire:true, curl-only prompt mirroring
+   Morning Brief's exact real pattern: SELECT pending rows via the anon
+   key, answer each with the Routine's own separate Claude access, PATCH
+   the row with the answer + status:'answered'.
+7. Explicitly OUT OF SCOPE for this pass unless Alex says otherwise:
+   auto-resuming the original caller. Flagged honestly per Phase 3 above,
+   not silently dropped.
+
+STATUS: plan complete, not yet executed. Step 5 (the migration) is the
+one real blocking Tier-3 decision.
+
+════════════════════════════════════════════════════════════════════
+ADDENDUM — /debate: "auto-resume" explained clearly, MVP-only vs. wired-back
+(Alex asked for this after the Tier-3 table confirmation, since he wasn't
+sure what "auto-resume" meant in practice. Table was created in the
+meantime — see below.)
+════════════════════════════════════════════════════════════════════
+
+REAL EVIDENCE CHECKED FIRST (per CLAUDE.md's own building-guide rule 6):
+grepped the existing "long AI jobs stream, continue in background, poll
+from UI" pattern (_analyzeChapter/_continueAnalyzingInBackground/
+analysis_complete/analysis_heartbeat, rpgace_core.js ~9643-10180). Real
+finding: this existing pattern is a SAME-SESSION JS retry loop — the
+browser tab stays open (or gets reopened) and a setTimeout-driven chain
+keeps calling the ground worker again until analysis_complete flips true.
+It is NOT an example of a completely separate process answering a
+question hours or days later and something else noticing. That distinct
+timing is exactly what the fallback lane introduces, and it's the real
+source of the friction below.
+
+WHAT EACH OPTION ACTUALLY MEANS, CONCRETELY:
+
+MVP-only: a Bookworm chapter analysis (or Content Intelligence proposal,
+or taxonomy score) fails today because credits are out. The toast fires
+exactly like it does today. A row lands in oracle_fallback_queue. An
+hour later (or whenever the drain Routine next fires), that row gets a
+real Claude-generated answer written into its `answer` column. Nothing
+else happens automatically. Alex, or a future Claude Code session, opens
+the table, reads the answer, and manually decides what to do with it —
+paste it back in, re-trigger the original action by hand, etc.
+
+Auto-resume: the same failure and queueing happens, but additionally,
+whichever module made the original call (Bookworm/Content-Intelligence/
+Taxonomy) would need NEW code that, the next time its own status-polling
+runs (the existing analysis_heartbeat-style check, or an equivalent for
+Content Intelligence/Taxonomy), notices "oh, there's now an answered
+fallback row for this," and feeds that answer back into its own pipeline
+automatically — e.g. Bookworm parses it into insights[] and continues
+_continueAnalyzingInBackground's chain, Content Intelligence inserts the
+resulting proposal row itself, Taxonomy placement runs the answer through
+decidePlacementScored as if it were a live response. This requires the
+app to actually be opened again after the fallback has been answered —
+it is not something that happens with no app involvement at all, since
+RPGACE's own client JS is what would have to notice and act on it.
+
+DEBATE — ATTACK PHASE:
+
+Round 1A (FOR auto-resume, attacking MVP-only): MVP-only makes the
+queued answer functionally inert without a human noticing it and
+manually redoing the original task by hand. CLAUDE.md's rule 6 exists
+specifically so Alex never has to babysit a long AI job — leaving this
+one failure path as a dead end that requires manual intervention is a
+real, avoidable regression against that same standing principle.
+
+Round 1B (FOR MVP-only, attacking auto-resume): the existing polling
+pattern this would need to extend is a same-session retry loop, not a
+"resume from a completely different execution context, possibly days
+later" mechanism — those are genuinely different problems. Building
+real resume logic means teaching THREE separate modules (Bookworm's
+chapter continuation, Content Intelligence's proposal pipeline, Taxonomy's
+placement scoring) each how to recognize an answered fallback row and
+feed it back into their own, different, pipeline shapes. That's three
+real integration points to build and hand-test, for a scenario (Alex
+completely out of credits) that hasn't happened even once yet.
+
+Round 2A (auto-resume counter-attacks): the "three separate integration
+points" objection is overstated, because all three callers already share
+the exact same 3 ground-worker functions (rule 3: "reuse phylumPath.
+_callExtractor / _callGroundWorkerJSON / _callGroundWorkerText — never
+hand-roll another fetch"). If credit-exhaustion detection already lives
+at that one shared choke point (which this plan already does), a "was
+this queued, is it now answered" check can live at the exact same choke
+point too — the low-level plumbing is genuinely once, not three times.
+
+Round 2B (MVP-only counter-attacks back): true for the low-level check,
+but using the answer once it comes back is NOT shared — Bookworm needs to
+re-parse it into insights[] and resume a specific recursive chain,
+Content Intelligence needs its own proposal-insert shape, and Taxonomy
+placement's result still has to land in the human-checkpointed review
+queue either way (rule 4: "every taxonomy write gets a human checkpoint
+... no exceptions"). So even a fully-wired auto-resume for Taxonomy
+doesn't remove the human step there — it only automates getting the
+proposal INTO the queue faster, which narrows how much "auto" actually
+buys for that specific caller.
+
+DEFENSE PHASE:
+
+Auto-resume defends: the taxonomy human-checkpoint point is fair but
+doesn't kill the case — it just clarifies that "auto-resume" for
+Taxonomy means "auto-generates the review-queue proposal," never
+"auto-writes the tree." That's not a new risk; it's the same rule that
+already applies to every placement regardless of fallback.
+
+MVP-only defends: the real case for MVP-only isn't that auto-resume is
+impossible — it's that this exact session already found three separate
+real gaps hiding inside earlier "fully migrated" claims (Approach B
+phases 1-3) specifically from moving across multiple tables/call sites
+at once instead of proving one path first. Building and shipping three
+new integration points in one pass, for a scenario that hasn't happened
+yet, repeats the same shape of risk this session already paid for once.
+
+COUNCIL OF 5 — CLEAN SUMMARY (both cases, no declared winner, per this
+skill's own design — Alex chooses):
+
+- Real cost of MVP-only: a queued answer that needs a human (or a future
+  Claude Code session) to notice and act on manually. Real benefit: ships
+  today, zero new integration risk, matches this session's own hard-won
+  lesson about proving one path before expanding.
+- Real cost of full auto-resume: three separate new integration points
+  (Bookworm resume logic, Content Intelligence resume logic, Taxonomy
+  resume-into-review-queue logic), each needing its own real hand-test,
+  none of which can be tested against a genuine credit-exhaustion event
+  without actually running out of credits again. Real benefit: the
+  fallback becomes genuinely "invisible" to Alex for whichever callers
+  get it, closer to the original pitch ("would be an awesome update").
+- A real middle path Council of 5 surfaced, not originally offered as an
+  option: wire auto-resume for ONE caller only — Bookworm, since it's the
+  most mature pipeline and already has the closest-matching existing
+  polling shape (analysis_heartbeat) to extend — and leave Content
+  Intelligence/Taxonomy on MVP-only (queued+answered, manual pickup) for
+  now. This gets a real, working end-to-end proof on the lowest-risk
+  caller without committing to three simultaneous new integrations.
+
+STATUS: awaiting Alex's actual choice between MVP-only / full auto-resume
+/ the Bookworm-only middle path. Table (step 5) is already created and
+confirmed (see below) — this choice only affects the ground-worker
+function edit and whether Bookworm also gets a resume-check added.
+
+════════════════════════════════════════════════════════════════════
+BUILD EXECUTED — 2026-07-24, same session
+════════════════════════════════════════════════════════════════════
+
+Alex's actual scope choice: "do 2 [Bookworm-only auto-resume], then
+mature the rest of the 2 pipelines [Content Intelligence, Taxonomy] in
+the same way as bookworm to prepare for same procedure."
+
+Real evidence check before building (per CLAUDE.md rule 1, pull real
+source first): grepped Content Intelligence (ciAutoPropose._scan →
+taxonomyTree.silentPropose → _silentProposeViaPhylumPath → phylumPath.
+decidePlacement) and confirmed it is a SINGLE atomic ground-worker call
+per insight, not a multi-step chain like Bookworm's - it has no
+heartbeat/pending-list machinery to "mature" in the literal Bookworm
+sense because it doesn't have Bookworm's problem (many sequential steps
+that could take minutes). Copying Bookworm's heavier per-chapter
+heartbeat pattern onto a single-shot call would be complexity with no
+matching problem. The real, correctly-scoped equivalent: since CI/
+Taxonomy calls already route through the SAME 3 shared ground-worker
+functions (rule 3), they already got the SAME credit-exhaustion
+detection + fallback enqueue "for free" the moment the shared functions
+were fixed - no separate 2nd/3rd implementation needed. What Bookworm-
+grade "maturing" genuinely meant for these two: (a) visibility - a
+previously 100%-silent failure (ciAutoPropose's .catch only ever did
+console.warn, never even a toast) now gets a real toast via the shared
+_queueFallback choke point, same as every other caller; (b) resumability
+- a new taxonomyTree._resumeSilentProposeFromFallback, dispatched by the
+same phylumPath._checkFallbackAnswers sweep Bookworm uses, since a
+silent propose is atomic (no partial chain to resume, just one insert
+that never happened) - simpler than Bookworm's resume, correctly so.
+
+REAL BUG FOUND AND FIXED WHILE BUILDING (not in the original plan):
+_placeInsightCascade's tryPhylum() had its own .catch() that turned
+EVERY error, including what would become a real credit-exhaustion
+failure, into `return null` ("insight doesn't fit this phylum") - which
+meant the cascade would silently burn through every remaining phylum/
+reword attempt and could score a real insight as garbage
+(confidenceScore:0, wrongly recorded as "doesn't fit") instead of ever
+surfacing the real failure. Fixed: a tagged fallbackQueued error is now
+rethrown instead of swallowed, so _continueAnalyzingInBackground can
+stop cleanly and mark the chapter "waiting on fallback" instead of
+silently corrupting it with false negatives.
+
+WHAT WAS ACTUALLY BUILT:
+1. phylumPath._isCreditExhaustionError / _queueFallback - shared choke
+   point, all 3 ground-worker functions route through it.
+2. _callExtractor/_callGroundWorkerJSON/_callGroundWorkerText: real
+   pre-existing bug fixed (never checked data.error before parsing
+   content - _callGroundWorkerText used to silently return '' on ANY
+   API failure). New optional 4th context param, populated only by
+   callers with something real to resume.
+3. decidePlacementScored split into itself + _resolvePlacementDecision
+   (shared) + resumeFallbackPlacement (re-fetches current tree, resolves
+   an externally-answered row the same way a live call would) - one
+   function for "turn a parsed answer into a decision," used by both the
+   live path and the resume path.
+4. Bookworm: _placeInsightCascade/tryPhylum thread chapterId + real
+   context through; the tryPhylum swallow-bug fixed; _analyzeChapter's
+   first-insight call and _continueAnalyzingInBackground's chain both
+   distinguish "credit-exhaustion, queued" (mark fallback_pending, leave
+   pending_insight_texts correct, don't mark analysis_complete) from a
+   real terminal failure (unchanged existing behavior). New
+   bookworm._resumeFromFallback resolves one queued insight and re-enters
+   the SAME _continueAnalyzingInBackground chain for whatever's left.
+5. taxonomyTree: _silentProposeViaPhylumPath now builds real context and
+   passes it through; _insertProposalFromDecision split out so the exact
+   same insert logic runs live or resumed; new
+   _resumeSilentProposeFromFallback.
+6. phylumPath._checkFallbackAnswers: a single cheap SELECT every 5
+   minutes (+ once ~4s after boot + on every page:show) for
+   status=answered/resumed_at IS NULL rows, dispatched by context.type.
+   A row with no recognized type is left alone - inspectable, never
+   acted on blind.
+7. Migration: oracle_fallback_queue gained `context jsonb` +
+   `resumed_at timestamptz`; bookworm_chapters gained
+   `fallback_pending boolean default false`.
+8. New Claude Code Remote Routine "RPGACE Fallback Drain"
+   (trig_01QxebLsiPMVksNSVjNECdbD), hourly, create_new_session_on_fire,
+   curl-only against Supabase REST with the real publishable key -
+   mirrors the Morning Brief Routine's exact proven pattern. Reads
+   pending rows, answers each with its own separate Claude access using
+   the row's own stored prompt (so the answer parses exactly like a live
+   ground-worker response would), PATCHes status=answered.
+9. node --check clean on rpgace_core.js and api/data-write.js throughout.
+
+HONEST SCOPE LIMITS, STATED PLAINLY:
+- Bookworm auto-resume works at the granularity of _placeInsightCascade's
+  FIRST attempt on the primary phylum. If credit exhaustion hits during a
+  reword-retry or upgrade-check sub-call (separate prompts inside the
+  cascade, not routed through a context), that specific failure is NOT
+  queued/resumed - it falls through to the pre-existing "return null"
+  behavior (same as before this build, not a regression, just not
+  extended to every sub-stage of the cascade). The dominant real-world
+  case (a fresh chapter's next insight failing on its very first
+  placement attempt) IS covered.
+- No new UI was built to show "fallback_pending" chapters differently
+  from "analysis in progress" - the existing chapter list would show it
+  as still in_progress. A future pass could surface fallback_pending as
+  its own visible status if this gets real use.
+- Resume has no server-side lock (matches this project's own accepted,
+  already-documented tradeoff on _resumeChapterAnalysis - single-user
+  personal tool, not a distributed system).
+
+STATUS: built, syntax-verified, migrations applied, Routine created. Not
+yet hand-tested against a real credit-exhaustion event (can't force one
+without actually draining Alex's real API credits) - same honest
+limitation flagged throughout the original debate. Merged to main next.

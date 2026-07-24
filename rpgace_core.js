@@ -6538,32 +6538,72 @@ RPGACE.register('taxonomyTree', {
   _silentProposeViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
     var self = this;
     var pp = RPGACE.modules.phylumPath;
-    return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
-      var phylumName = self.PHYLUM_NAMES[phylumNumber] || 'Unknown';
-      var base = decision.attachNode ? decision.attachNode.path : phylumName;
-      var previewPath = base + (decision.newSteps.length ? '/' + decision.newSteps.join('/') : '');
-      return RPGACE.sb.secureWrite('taxonomy_proposals', 'insert', {
-        source_type: sourceType,
-        source_id: sourceId,
-        proposed_path: previewPath.replace(/\//g, ' → '),
-        proposed_steps: {
-          engine: 'phylum_path',
-          attachToId: decision.attachNode ? decision.attachNode.id : null,
-          newSteps: decision.newSteps,
-          explainers: decision.explainers,
-          insightText: topicText,
-          // July 19: the scored engine's reasoning now rides along so the
-          // review queue can SHOW it - previously the decision used the
-          // score internally but threw the evidence away before review.
-          justification: decision.justification || '',
-          confidenceScore: decision.confidenceScore || 0,
-        },
-        phylum_number: phylumNumber,
-        matched_existing_node_id: decision.attachNode ? decision.attachNode.id : null,
-      });
+    // July 24 - Claude fallback build: this is a genuinely SILENT/
+    // background caller (ciAutoPropose's batch scan, encSync's auto-
+    // propose) with no live user watching for a toast - exactly the
+    // shape of call worth tracking through the fallback queue, unlike
+    // Phylum Path's own foreground confirm-popup flow where a user just
+    // got a visible error and can retry by hand. Passing this context is
+    // what lets _resolvePlacementDecision's shared insert logic below be
+    // reused automatically once an external Routine answers it.
+    var fallbackContext = { type: 'silent_propose', topicText: topicText, phylumNumber: phylumNumber, sourceType: sourceType, sourceId: sourceId };
+    return pp.decidePlacement(topicText, phylumNumber, fallbackContext).then(function(decision) {
+      return self._insertProposalFromDecision(decision, phylumNumber, sourceType, sourceId, topicText);
     });
     // Same no-.catch() contract as silentPropose() above - errors
     // propagate to the caller's own error handling.
+  },
+
+  // Split out of _silentProposeViaPhylumPath above (July 24, Claude-
+  // fallback build) so the exact same insert can run either right after
+  // a live decidePlacement call (above) or later, once
+  // taxonomyTree._resumeSilentProposeFromFallback resolves a decision
+  // from an externally-answered fallback row - one shared function per
+  // rule 8, not two copies that could drift.
+  _insertProposalFromDecision: function(decision, phylumNumber, sourceType, sourceId, topicText) {
+    var phylumName = this.PHYLUM_NAMES[phylumNumber] || 'Unknown';
+    var base = decision.attachNode ? decision.attachNode.path : phylumName;
+    var previewPath = base + (decision.newSteps.length ? '/' + decision.newSteps.join('/') : '');
+    return RPGACE.sb.secureWrite('taxonomy_proposals', 'insert', {
+      source_type: sourceType,
+      source_id: sourceId,
+      proposed_path: previewPath.replace(/\//g, ' → '),
+      proposed_steps: {
+        engine: 'phylum_path',
+        attachToId: decision.attachNode ? decision.attachNode.id : null,
+        newSteps: decision.newSteps,
+        explainers: decision.explainers,
+        insightText: topicText,
+        // July 19: the scored engine's reasoning now rides along so the
+        // review queue can SHOW it - previously the decision used the
+        // score internally but threw the evidence away before review.
+        justification: decision.justification || '',
+        confidenceScore: decision.confidenceScore || 0,
+      },
+      phylum_number: phylumNumber,
+      matched_existing_node_id: decision.attachNode ? decision.attachNode.id : null,
+    });
+  },
+
+  // Resume the silent side of the Claude-fallback lane (July 24): given
+  // an answered oracle_fallback_queue row whose context.type is
+  // 'silent_propose', resolve the real decision from the fallback
+  // Routine's answer and insert it into taxonomy_proposals exactly like
+  // the live path would - unlike Bookworm's cascade, a silent propose is
+  // a single atomic call, so "resuming" it just means finishing the one
+  // insert that never happened, not continuing a multi-step chain.
+  _resumeSilentProposeFromFallback: function(row) {
+    var self = this;
+    var ctx = row.context || {};
+    RPGACE.modules.phylumPath.resumeFallbackPlacement(row.answer, ctx.phylumNumber).then(function(decision) {
+      return self._insertProposalFromDecision(decision, ctx.phylumNumber, ctx.sourceType, ctx.sourceId, ctx.topicText);
+    }).then(function() {
+      return RPGACE.sb.secureWrite('oracle_fallback_queue', 'update', { resumed_at: new Date().toISOString() }, 'id=eq.' + row.id);
+    }).then(function() {
+      RPGACE.utils.toast('🌉 A queued taxonomy proposal came back from the fallback lane and is now in the review queue', 'rgba(42,191,176,0.85)', 4500);
+    }).catch(function(e) {
+      console.warn('[taxonomyTree] fallback resume failed:', e.message);
+    });
   },
 
   // ── Check if any step in the proposed path already exists ────────
@@ -7045,7 +7085,42 @@ RPGACE.register('phylumPath', {
   // ══════════════════════════════════════════════════════════════════
   EXTRACTOR_MODEL: 'claude-fable-5',
 
-  _callExtractor: function(prompt, maxTokens) {
+  // July 24 — Claude Code fallback lane (judged same session, built after
+  // Alex's explicit go-ahead: table created, scope confirmed). Real
+  // pre-existing bug fixed here at the same time: none of these 3 shared
+  // functions ever checked `data.error` before this - api/oracle.js
+  // returns a real HTTP 500 with {error: message} on any Anthropic
+  // failure, but `data.content` on that shape is undefined, so
+  // _callGroundWorkerText used to silently resolve to an EMPTY STRING
+  // (never a rejected promise) and the JSON variants threw an opaque
+  // "No JSON found" - the real error text (e.g. a credit-exhaustion
+  // message) never reached any caller. Fixed by checking `data.error`
+  // first, always, in all 3.
+  //
+  // `context` is a new, OPTIONAL 4th/3rd param passed only by callers
+  // that can actually make use of a later fallback answer (Bookworm's
+  // chapter cascade, Content Intelligence's silent proposal path) -
+  // deliberately NOT populated for callers with nothing resumable to
+  // hand back to (e.g. a live Oracle chat message), so the queue only
+  // ever holds real, actionable rows instead of untraceable noise.
+  _isCreditExhaustionError: function(msg) {
+    if (!msg) return false;
+    var m = String(msg).toLowerCase();
+    return m.indexOf('credit balance') !== -1 || m.indexOf('insufficient credit') !== -1;
+  },
+
+  _queueFallback: function(prompt, tier, maxTokens, model, context) {
+    if (!context) return;
+    RPGACE.sb.secureWrite('oracle_fallback_queue', 'insert', [{
+      prompt: prompt, tier: tier, max_tokens: maxTokens, model: model || null,
+      status: 'pending', context: context
+    }]).then(function() {
+      RPGACE.utils.toast('🔌 API credits low — queued for Claude Code fallback (checked automatically)', 'rgba(201,168,76,0.85)', 4000);
+    }).catch(function(e) { console.warn('[phylumPath] fallback enqueue failed:', e.message); });
+  },
+
+  _callExtractor: function(prompt, maxTokens, context) {
+    var self = this;
     return fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -7056,6 +7131,14 @@ RPGACE.register('phylumPath', {
         model: this.EXTRACTOR_MODEL,
       })
     }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data && data.error) {
+        var err = new Error(data.error);
+        if (context && self._isCreditExhaustionError(data.error)) {
+          err.fallbackQueued = true;
+          self._queueFallback(prompt, 'extractor', maxTokens, self.EXTRACTOR_MODEL, context);
+        }
+        throw err;
+      }
       var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
       var cleaned = raw.replace(/```json|```/g, '').trim();
       var match = cleaned.match(/\{[\s\S]*\}/);
@@ -7076,7 +7159,8 @@ RPGACE.register('phylumPath', {
   // the existing verified-working MODEL constant when none is given. The
   // optional `model` param (July 19) lets mechanical callers pass
   // MECHANICAL_MODEL; api/oracle.js forwards it as-is.
-  _callGroundWorkerJSON: function(prompt, maxTokens, model) {
+  _callGroundWorkerJSON: function(prompt, maxTokens, model, context) {
+    var self = this;
     return fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -7087,6 +7171,14 @@ RPGACE.register('phylumPath', {
         model: model || undefined,
       })
     }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data && data.error) {
+        var err = new Error(data.error);
+        if (context && self._isCreditExhaustionError(data.error)) {
+          err.fallbackQueued = true;
+          self._queueFallback(prompt, 'ground_worker_json', maxTokens, model, context);
+        }
+        throw err;
+      }
       var raw = (data.content || []).map(function(c) { return c.text || ''; }).join('');
       var cleaned = raw.replace(/```json|```/g, '').trim();
       var match = cleaned.match(/\{[\s\S]*\}/);
@@ -7095,7 +7187,8 @@ RPGACE.register('phylumPath', {
     });
   },
 
-  _callGroundWorkerText: function(prompt, maxTokens, model) {
+  _callGroundWorkerText: function(prompt, maxTokens, model, context) {
+    var self = this;
     return fetch('/api/oracle', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -7105,8 +7198,44 @@ RPGACE.register('phylumPath', {
         model: model || undefined,
       })
     }).then(function(r) { return r.json(); }).then(function(data) {
+      if (data && data.error) {
+        var err = new Error(data.error);
+        if (context && self._isCreditExhaustionError(data.error)) {
+          err.fallbackQueued = true;
+          self._queueFallback(prompt, 'ground_worker_text', maxTokens, model, context);
+        }
+        throw err;
+      }
       return (data.content || []).map(function(c) { return c.text || ''; }).join('');
     });
+  },
+
+  // ── Fallback-answer sweep — called periodically while the app is open ──
+  // Checks oracle_fallback_queue for rows an external Claude Code Remote
+  // Routine has already answered, and dispatches each to whichever module
+  // knows how to resume that TYPE of call. Deliberately conservative: a
+  // row with no recognized context.type, or no context at all, is left
+  // alone - answered-but-unresumed is a safe, inspectable state, never a
+  // silent action on something this code doesn't understand.
+  _checkFallbackAnswers: function() {
+    var self = this;
+    if (self._fallbackSweepInFlight) return;
+    self._fallbackSweepInFlight = true;
+    RPGACE.sb.select('oracle_fallback_queue', 'status=eq.answered&resumed_at=is.null&order=created_at.asc&limit=10')
+      .then(function(rows) {
+        (rows || []).forEach(function(row) {
+          var ctx = row.context || {};
+          if (ctx.type === 'bookworm_chapter_insight' && RPGACE.modules.bookworm) {
+            RPGACE.modules.bookworm._resumeFromFallback(row);
+          } else if (ctx.type === 'silent_propose' && RPGACE.modules.taxonomyTree) {
+            RPGACE.modules.taxonomyTree._resumeSilentProposeFromFallback(row);
+          }
+          // Any other/no context: left answered, unresumed - inspectable
+          // manually, never acted on blind.
+        });
+      })
+      .catch(function(e) { console.warn('[phylumPath] fallback sweep failed:', e.message); })
+      .then(function() { self._fallbackSweepInFlight = false; });
   },
 
   init: function() {
@@ -7129,7 +7258,16 @@ RPGACE.register('phylumPath', {
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectButton(); }, 600);
       if (name === RPGACE.CONFIG.pages.phylumPath) self._loadNodesAndRender(self._focusNodeId);
+      self._checkFallbackAnswers();
     });
+    // Claude-fallback build (July 24): a cheap periodic check for any
+    // fallback_queue row an external Routine has already answered while
+    // this tab was open - a single SELECT every 5 minutes, never a busy
+    // poll. Also runs once shortly after boot and on every page:show
+    // above so a session that's been open a while doesn't wait a full
+    // 5 minutes to notice.
+    setTimeout(function() { self._checkFallbackAnswers(); }, 4000);
+    setInterval(function() { self._checkFallbackAnswers(); }, 5 * 60 * 1000);
     // Subscribes to the shared oracle:response-scanned hook instead of
     // installing a second MutationObserver on #send-btn - the original
     // version of this module did exactly that (duplicate observer +
@@ -7406,7 +7544,7 @@ RPGACE.register('phylumPath', {
   // audit finding: without this, one chapter about inversions created
   // 5+ overlapping sibling leaves, each individually scored 9/10,
   // because every insight was placed blind to its siblings.
-  decidePlacementScored: function(insightText, phylumNumber, priorLeaves) {
+  decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
     var self = this;
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
       existing = existing || [];
@@ -7441,31 +7579,64 @@ RPGACE.register('phylumPath', {
         '3. STEPS ARE SINGLE RANKS: each newSteps entry is ONE new rank\'s own name - never a "/"-joined path, never a restatement of the attach path or any earlier step, never two ideas joined by "; then" or similar.\n' +
         '4. DEPTH: the rank chain is Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) - a placement may NEVER exceed depth 6. Prefer 1-2 new steps; more than 3 is almost always padding.\n\n' +
         'Return ONLY JSON: {"fits": true, "attachTo": 12, "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8} (attachTo: node NUMBER or null)';
-      return self._callGroundWorkerJSON(prompt, 700).then(function(parsed) {
-        var attachNode = null;
-        if (parsed.attachTo !== null && parsed.attachTo !== undefined && parsed.attachTo !== '') {
-          var idx = parseInt(parsed.attachTo, 10);
-          if (!isNaN(idx) && idx >= 1 && idx <= existing.length) {
-            attachNode = existing[idx - 1];
-          } else if (typeof parsed.attachTo === 'string') {
-            // Fallback: a model that answers with a path or bare name
-            // string instead of the number still resolves.
-            attachNode = existing.find(function(n) { return n.path === parsed.attachTo || n.name === parsed.attachTo; }) || null;
-          }
-        }
-        var sanitized = self.sanitizePlacement(
-          attachNode ? attachNode.path : '',
-          attachNode ? attachNode.depth : 0,
-          parsed.newSteps || []
-        );
-        return {
-          fits: !!parsed.fits, phylumNumber: phylumNumber, attachNode: attachNode,
-          attachPath: attachNode ? attachNode.path : null,
-          newSteps: sanitized.steps,
-          explainers: parsed.explainers || [],
-          justification: parsed.justification || '', confidenceScore: parsed.confidenceScore || 0
-        };
+      return self._callGroundWorkerJSON(prompt, 700, undefined, fallbackContext).then(function(parsed) {
+        return self._resolvePlacementDecision(parsed, phylumNumber, existing);
       });
+    });
+  },
+
+  // Split out of decidePlacementScored above (July 24, Claude-fallback
+  // build) so the exact same "turn a parsed JSON answer into a real
+  // placement decision" logic can run either right after a live call
+  // (above) or later, against an answer an external Claude Code Remote
+  // Routine produced for a queued row (resumeFallbackPlacement below) -
+  // one shared function per rule 8, not two copies that could drift.
+  _resolvePlacementDecision: function(parsed, phylumNumber, existing) {
+    var attachNode = null;
+    if (parsed.attachTo !== null && parsed.attachTo !== undefined && parsed.attachTo !== '') {
+      var idx = parseInt(parsed.attachTo, 10);
+      if (!isNaN(idx) && idx >= 1 && idx <= existing.length) {
+        attachNode = existing[idx - 1];
+      } else if (typeof parsed.attachTo === 'string') {
+        // Fallback: a model that answers with a path or bare name
+        // string instead of the number still resolves.
+        attachNode = existing.find(function(n) { return n.path === parsed.attachTo || n.name === parsed.attachTo; }) || null;
+      }
+    }
+    var sanitized = this.sanitizePlacement(
+      attachNode ? attachNode.path : '',
+      attachNode ? attachNode.depth : 0,
+      parsed.newSteps || []
+    );
+    return {
+      fits: !!parsed.fits, phylumNumber: phylumNumber, attachNode: attachNode,
+      attachPath: attachNode ? attachNode.path : null,
+      newSteps: sanitized.steps,
+      explainers: parsed.explainers || [],
+      justification: parsed.justification || '', confidenceScore: parsed.confidenceScore || 0
+    };
+  },
+
+  // Given a fallback queue row's raw `answer` text (produced by a
+  // Claude Code Remote Routine re-sending the exact same stored prompt,
+  // never the app's own exhausted key) and the phylumNumber it was
+  // scoped to, re-fetches the CURRENT tree (it may have changed since
+  // the row was queued) and resolves the same decision shape the live
+  // path would have produced. Used by both bookworm._resumeFromFallback
+  // and taxonomyTree._resumeSilentProposeFromFallback.
+  resumeFallbackPlacement: function(rawAnswerText, phylumNumber) {
+    var self = this;
+    var parsed;
+    try {
+      var cleaned = String(rawAnswerText || '').replace(/```json|```/g, '').trim();
+      var match = cleaned.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error('No JSON found in fallback answer');
+      parsed = JSON.parse(match[0]);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+    return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
+      return self._resolvePlacementDecision(parsed, phylumNumber, existing || []);
     });
   },
 
@@ -7511,8 +7682,8 @@ RPGACE.register('phylumPath', {
   // and confidence riding along for free. The old two-call extractor+
   // worker body is deleted, not kept - one call is cheaper and the
   // scored prompt is strictly more rigorous.
-  decidePlacement: function(insightText, phylumNumber) {
-    return this.decidePlacementScored(insightText, phylumNumber, null);
+  decidePlacement: function(insightText, phylumNumber, fallbackContext) {
+    return this.decidePlacementScored(insightText, phylumNumber, null, fallbackContext);
   },
 
   // ── Confirm/deny/modify checkpoint ──────────────────────────────────
@@ -9700,7 +9871,7 @@ RPGACE.register('bookworm', {
         return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
           pending_insight_texts: insightTexts.slice(1), suggested_phylum: primaryPhylum, analysis_heartbeat: new Date().toISOString()
         }, 'id=eq.' + chapter.id).then(function() {
-          return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla, []).then(function(firstPlacement) {
+          return self._placeInsightCascade(insightTexts[0], primaryPhylum, remainingPhyla, [], chapter.id).then(function(firstPlacement) {
             var insights = [firstPlacement];
             var onlyOne = insightTexts.length === 1;
             return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
@@ -9711,6 +9882,24 @@ RPGACE.register('bookworm', {
               }
               return Object.assign({}, chapter, { insights: insights, current_insight_index: 0, analysis_complete: onlyOne, pending_insight_texts: insightTexts.slice(1) });
             });
+          }).catch(function(e) {
+            // July 24 - Claude-fallback build: the very FIRST insight's
+            // placement failed on credit exhaustion, already queued by
+            // _placeInsightCascade above. pending_insight_texts already
+            // holds the full remaining list (written just above, before
+            // this call) - mark the chapter as waiting on the fallback
+            // lane instead of silently leaving it in a half-set state.
+            if (e.fallbackQueued) {
+              // The first insight never actually got placed - restore the
+              // FULL list as pending (the write above only dropped it
+              // optimistically, assuming success).
+              return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
+                status: 'in_progress', pending_insight_texts: insightTexts, fallback_pending: true, analysis_heartbeat: new Date().toISOString()
+              }, 'id=eq.' + chapter.id).then(function() {
+                return Object.assign({}, chapter, { pending_insight_texts: insightTexts, fallback_pending: true });
+              });
+            }
+            throw e;
           });
         });
       });
@@ -9746,7 +9935,7 @@ RPGACE.register('bookworm', {
     }).catch(function() {});
     remainingTexts.forEach(function(insightText, i) {
       chain = chain.then(function() {
-        return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla, placedLeaves.slice()).then(function(placement) {
+        return self._placeInsightCascade(insightText, primaryPhylum, remainingPhyla, placedLeaves.slice(), chapterId).then(function(placement) {
           if (placement.newSteps && placement.newSteps.length) placedLeaves.push(placement.newSteps[placement.newSteps.length - 1]);
           return RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapterId + '&limit=1').then(function(rows) {
             var current = rows && rows[0];
@@ -9766,9 +9955,63 @@ RPGACE.register('bookworm', {
       });
     });
     return chain.catch(function(e) {
+      // July 24 - Claude-fallback build: a credit-exhaustion failure is
+      // NOT the same as a real terminal failure. pending_insight_texts
+      // already correctly holds everything from the failed insight
+      // onward (it's only ever advanced on SUCCESS, in the .then() above)
+      // - marking fallback_pending instead of analysis_complete keeps the
+      // chapter honestly "waiting," not silently "done."
+      if (e.fallbackQueued) {
+        console.warn('[bookworm] background insight analysis paused on credit exhaustion, queued for fallback:', e.message);
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'update', { fallback_pending: true, analysis_heartbeat: new Date().toISOString() }, 'id=eq.' + chapterId).catch(function() {});
+      }
       console.warn('[bookworm] background insight analysis failed partway, marking complete with what succeeded so far:', e.message);
       return RPGACE.sb.secureWrite('bookworm_chapters', 'update', { analysis_complete: true }, 'id=eq.' + chapterId).catch(function() {});
     });
+  },
+
+  // ── Resume from the Claude-fallback lane (July 24) ──────────────────
+  // Companion to _resumeChapterAnalysis above, but triggered by an
+  // ANSWERED oracle_fallback_queue row (phylumPath._checkFallbackAnswers'
+  // sweep) rather than a stale-heartbeat click. Resolves the one insight
+  // that failed via phylumPath.resumeFallbackPlacement (re-fetches the
+  // current tree, resolves the fallback Routine's answer the same way a
+  // live call would), appends it, clears fallback_pending, then re-enters
+  // _continueAnalyzingInBackground for whatever's still left - reusing
+  // the exact same continuation chain the live path uses, not a second
+  // one. If ANOTHER insight also queued while this one was pending, this
+  // only resolves the one this row's context names; the next sweep picks
+  // up any others once they're answered too.
+  _resumeFromFallback: function(row) {
+    var self = this;
+    var ctx = row.context || {};
+    var chapterId = ctx.chapterId;
+    if (!chapterId) return;
+    // No server-side lock against a double-resume if two sweeps somehow
+    // overlap - same accepted, documented tradeoff as
+    // _resumeChapterAnalysis above ("single-user personal tool, not a
+    // distributed system"); resumed_at is marked as soon as this
+    // resolves, and the sweep only ever selects resumed_at IS NULL rows.
+    return RPGACE.modules.phylumPath.resumeFallbackPlacement(row.answer, ctx.phylumNumber).then(function(decision) {
+      return RPGACE.sb.select('bookworm_chapters', 'id=eq.' + chapterId + '&limit=1').then(function(rows) {
+        var current = rows && rows[0];
+        if (!current) return;
+        var placement = Object.assign({ text: ctx.insightText, decision: 'pending' }, decision);
+        var insights = (current.insights || []).concat([placement]);
+        var stillPending = (current.pending_insight_texts || []).filter(function(t) { return t !== ctx.insightText; });
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'update', {
+          insights: insights, pending_insight_texts: stillPending, fallback_pending: false,
+          analysis_complete: stillPending.length === 0, analysis_heartbeat: new Date().toISOString()
+        }, 'id=eq.' + chapterId).then(function() {
+          return RPGACE.sb.secureWrite('oracle_fallback_queue', 'update', { resumed_at: new Date().toISOString() }, 'id=eq.' + row.id);
+        }).then(function() {
+          RPGACE.utils.toast('📖 A queued Bookworm insight came back from the fallback lane and was placed', 'rgba(42,191,176,0.85)', 4500);
+          if (stillPending.length) {
+            self._continueAnalyzingInBackground(chapterId, stillPending, ctx.phylumNumber, RPGACE.modules.phylumPath.ENABLED_PHYLA.filter(function(n) { return n !== ctx.phylumNumber; }));
+          }
+        });
+      });
+    }).catch(function(e) { console.warn('[bookworm] fallback resume failed:', e.message); });
   },
 
   // ── Resume a stalled chapter's background analysis (added July 19) ──
@@ -9817,10 +10060,24 @@ RPGACE.register('bookworm', {
   //    _finalPlacementSearch (which is a cheap phylum-NAMES-only call).
   //    A phylum with zero keyword overlap was never going to win a
   //    fits/confidence contest it charges full price to enter.
-  _placeInsightCascade: function(insightText, primaryPhylum, remainingPhyla, priorLeaves) {
+  // chapterId (added July 24, Claude-fallback build): when present, a
+  // credit-exhaustion failure inside tryPhylum is tagged with enough
+  // context (chapterId, insightText, phylumNumber, priorLeaves) for
+  // phylumPath._queueFallback to enqueue a resumable row, and the error
+  // is RETHROWN instead of swallowed - real bug found in the same pass:
+  // tryPhylum's own .catch() used to turn ANY error, including a real
+  // credit-exhaustion failure, into `return null` ("doesn't fit"), which
+  // meant the cascade would silently keep burning attempts across every
+  // remaining phylum/reword-retry and could end up scoring a real
+  // insight as confidenceScore:0 garbage instead of surfacing the real
+  // failure. Now: a tagged fallbackQueued error is rethrown so the
+  // caller (_continueAnalyzingInBackground) can stop cleanly instead of
+  // poisoning the chapter with false "doesn't fit" placements.
+  _placeInsightCascade: function(insightText, primaryPhylum, remainingPhyla, priorLeaves, chapterId) {
     var self = this;
     var tryPhylum = function(phylumNumber, text, attemptsLeft) {
-      return self._decidePlacementScored(text, phylumNumber, priorLeaves).then(function(decision) {
+      var ctx = chapterId ? { type: 'bookworm_chapter_insight', chapterId: chapterId, insightText: insightText, phylumNumber: phylumNumber, priorLeaves: priorLeaves } : undefined;
+      return self._decidePlacementScored(text, phylumNumber, priorLeaves, ctx).then(function(decision) {
         if (!decision.fits) return null;
         if (decision.confidenceScore >= 7) return decision;
         if (decision.confidenceScore >= 4 && attemptsLeft > 0) {
@@ -9830,11 +10087,12 @@ RPGACE.register('bookworm', {
         }
         if (decision.confidenceScore < 4) {
           return self._checkUpgradeable(text, phylumNumber).then(function(upgraded) {
-            return upgraded ? self._decidePlacementScored(upgraded, phylumNumber, priorLeaves) : null;
+            return upgraded ? self._decidePlacementScored(upgraded, phylumNumber, priorLeaves, ctx) : null;
           });
         }
         return decision; // ran out of reword attempts, best effort
       }).catch(function(e) {
+        if (e.fallbackQueued) throw e; // real failure, queued for later - stop, don't guess
         console.warn('[bookworm] placement attempt failed:', e.message);
         return null;
       });
@@ -9894,8 +10152,8 @@ RPGACE.register('bookworm', {
   // was folded into phylumPath.sanitizePlacement (now also enforced at
   // the _insertNewSteps choke point, which the old one never covered -
   // that gap is exactly how the depth-14 Edit-box corruption got in).
-  _decidePlacementScored: function(insightText, phylumNumber, priorLeaves) {
-    return RPGACE.modules.phylumPath.decidePlacementScored(insightText, phylumNumber, priorLeaves);
+  _decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
+    return RPGACE.modules.phylumPath.decidePlacementScored(insightText, phylumNumber, priorLeaves, fallbackContext);
   },
 
   // Both routed to the Haiku mechanical tier July 19 - one-line rewording

@@ -40,6 +40,7 @@ const ALLOWED_TABLES = new Set([
   'chronicles_finance',
   'oracle_dev_suggestions',
   'taxonomy_decision_log',
+  'oracle_fallback_queue',
 ]);
 
 export default async function handler(req, res) {
