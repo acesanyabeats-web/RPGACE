@@ -30,12 +30,23 @@ REAL EVIDENCE GATHERED (GODMODE, before judging):
   produce TEXT only (listing copy, visual-treatment suggestions) - no
   confirmed working video-rendering engine exists in RPGACE today. Real,
   concrete capability gap.
-- RPGACE's architecture is deliberately zero-build-step vanilla JS +
-  Vercel serverless functions. OpenMontage's toolchain (Python+Node+
-  FFmpeg+its own venv) is a fundamentally different stack - the same
-  class of mismatch as Aintergration's own Worked Precedents 1
-  (Framer Motion/Next.js) and 2 (OmniRoute), both rejected for exactly
-  this reason.
+- CORRECTION (Alex caught this, July 24, re-verified via real repo
+  search): the first pass of this judgment overstated the toolchain
+  mismatch as "Python+Node+FFmpeg vs. RPGACE's zero-build vanilla JS."
+  Real evidence: Python genuinely IS part of RPGACE (`rpgace_build.py` +
+  ~100 one-off patch scripts in `scripts/`, this project's whole edit
+  history has used ad hoc Python); Node.js genuinely IS part of RPGACE
+  (`package.json` exists specifically because Vercel's `api/*.js`
+  functions run on a real Node.js runtime - confirmed via deployment
+  data showing `lambdaRuntimeStats: {"nodejs":11/12}`). FFmpeg alone is
+  genuinely absent (zero references anywhere in the repo). The real,
+  precise distinction is narrower than first stated: OpenMontage needs a
+  FORMALLY dependency-managed Python project (`requirements.txt`, its own
+  venv) and a real npm-managed Node subproject (`remotion-composer`) plus
+  the FFmpeg binary - a different SHAPE of usage (package-managed,
+  standalone) than RPGACE's own ad hoc no-package-manager scripts and
+  Vercel-only Node runtime, not an outright absence of the languages
+  themselves.
 
 /DEBATE:
 Team FOR: a genuine, confirmed capability hole exists (no real video
