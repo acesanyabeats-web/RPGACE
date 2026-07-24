@@ -7,12 +7,17 @@ import { setCORS, requireAuth } from './_context.js';
 const SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
 
 // Phase 1 (Alex-confirmed July 24): bookworm_* + bibliography + taxonomy_*.
-// Phase 2 batch 1 (July 24): intel_reports/intel_bibliography/encyclopedia,
-// migrated together with taxonomy_nodes since all four route through the
-// same intelDelete module's _sbDel/_sbInsert wrapper - a real gap found
-// while starting phase 2 (taxonomy_nodes writes via this wrapper were
-// never caught by phase 1's grep verification, which only searched for
-// literal RPGACE.sb.del/insert calls).
+// Phase 2 batch 1: intel_reports/intel_bibliography/encyclopedia, migrated
+// together with taxonomy_nodes via the intelDelete module's _sbDel/
+// _sbInsert wrapper. Phase 2 batch 2: reference_tracks/conid_pot/
+// content_productions/video_jobs - while migrating these, found a THIRD
+// raw-fetch pattern (RPGACE.CONFIG.supabase.url + '/rest/v1/...' inline,
+// distinct from both RPGACE.sb.* and _sbDel/_sbInsert) that phase 1's
+// verification never searched for - it had real remaining writes to
+// taxonomy_tree AND taxonomy_nodes despite both being claimed fully
+// migrated. Fixed at the same time (see rpgace_core.js for the real
+// call-site list); exhaustively re-checked via every known Supabase
+// write idiom in the file before considering this batch complete.
 // Add a table here only once its RLS policy has actually been flipped to
 // anon read-only AND every existing call site has been migrated to this
 // endpoint - never the other way around.
@@ -26,7 +31,12 @@ const ALLOWED_TABLES = new Set([
   'taxonomy_nodes',
   'intel_reports',
   'intel_bibliography',
+  'intel_watchlist',
   'encyclopedia',
+  'reference_tracks',
+  'conid_pot',
+  'content_productions',
+  'video_jobs',
 ]);
 
 export default async function handler(req, res) {

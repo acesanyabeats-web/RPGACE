@@ -5942,20 +5942,11 @@ RPGACE.register('taxonomySync', {
       .then(function(rows) {
         if (!rows || rows.length === 0) return;
         var id = rows[0].id;
-        fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/taxonomy_nodes?id=eq.' + id, {
-          method: 'PATCH',
-          headers: {
-            'apikey': RPGACE.CONFIG.supabase.key,
-            'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            study_count: (rows[0].study_count || 0) + 1,
-            gap_score: gapScore,
-            last_studied_at: new Date().toISOString()
-          })
-        });
+        RPGACE.sb.secureWrite('taxonomy_nodes', 'update', {
+          study_count: (rows[0].study_count || 0) + 1,
+          gap_score: gapScore,
+          last_studied_at: new Date().toISOString()
+        }, 'id=eq.' + id);
       })
       .catch(function(err) {
         console.warn('[taxonomySync] updateGapScore error:', err.message);
@@ -5968,16 +5959,7 @@ RPGACE.register('taxonomySync', {
       .then(function(rows) {
         if (!rows || rows.length === 0) return;
         var id = rows[0].id;
-        fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/taxonomy_nodes?id=eq.' + id, {
-          method: 'PATCH',
-          headers: {
-            'apikey': RPGACE.CONFIG.supabase.key,
-            'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ applied_in_beat: true })
-        });
+        RPGACE.sb.secureWrite('taxonomy_nodes', 'update', { applied_in_beat: true }, 'id=eq.' + id);
       });
   },
 
@@ -6631,16 +6613,8 @@ RPGACE.register('taxonomyTree', {
     RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#3DAA6E', 2500);
     var newExplainer = proposal.explainers[proposal.explainers.length - 1] || existingNode.explainer;
 
-    fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/taxonomy_tree?id=eq.' + existingNode.id, {
-      method: 'PATCH',
-      headers: {
-        'apikey': RPGACE.CONFIG.supabase.key,
-        'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({ explainer: newExplainer, updated_at: new Date().toISOString() })
-    }).then(function() {
+    RPGACE.sb.secureWrite('taxonomy_tree', 'update', { explainer: newExplainer, updated_at: new Date().toISOString() }, 'id=eq.' + existingNode.id)
+    .then(function() {
       RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#3DAA6E', 3000);
       self._generateNodeContent(existingNode);
     }).catch(function(e) {
@@ -6848,7 +6822,7 @@ RPGACE.register('taxonomyTree', {
             // its card can show "already linked" instead of the propose
             // button re-offering the same entry indefinitely.
             if (proposal.sourceType === 'encyclopedia' && proposal.sourceId) {
-              RPGACE.sb.update('encyclopedia', 'id=eq.' + proposal.sourceId, { taxonomy_node_id: row.id }).catch(function() {});
+              RPGACE.sb.secureWrite('encyclopedia', 'update', { taxonomy_node_id: row.id }, 'id=eq.' + proposal.sourceId).catch(function() {});
             }
           }
         });
@@ -6905,16 +6879,7 @@ RPGACE.register('taxonomyTree', {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       var text = (data.content || []).map(function(c) { return c.text || ''; }).join('');
-      return fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/taxonomy_tree?id=eq.' + node.id, {
-        method: 'PATCH',
-        headers: {
-          'apikey': RPGACE.CONFIG.supabase.key,
-          'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ deep_content: { generated: text, generated_at: new Date().toISOString() } })
-      });
+      return RPGACE.sb.secureWrite('taxonomy_tree', 'update', { deep_content: { generated: text, generated_at: new Date().toISOString() } }, 'id=eq.' + node.id);
     })
     .then(function() {
       console.log('[taxonomyTree] Content generated for node:', node.name);
@@ -8066,7 +8031,7 @@ RPGACE.register('phylumPath', {
             }
             saveOracleToEncyclopedia(articleTitle, text).then(function() {
               if (node) {
-                return RPGACE.sb.update('encyclopedia', 'title=eq.' + encodeURIComponent(articleTitle), { taxonomy_node_id: node.id }).catch(function() {});
+                return RPGACE.sb.secureWrite('encyclopedia', 'update', { taxonomy_node_id: node.id }, 'title=eq.' + encodeURIComponent(articleTitle)).catch(function() {});
               }
             }).then(function() {
               RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#3DAA6E', 4000);
@@ -9013,14 +8978,8 @@ RPGACE.register('bookworm', {
       RPGACE.utils.toast(result.warning, '#E2A83D', 8000);
     }
 
-    return fetch(RPGACE.sb.url('bookworm_books'), {
-      method: 'POST',
-      headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-      body: JSON.stringify({ title: result.title, source_url: sourceUrl, current_chapter_index: 0, status: 'in_progress' })
-    }).then(function(r) {
-      if (!r.ok) return r.text().then(function(t) { throw new Error('Book creation failed: ' + t.slice(0, 200)); });
-      return r.json();
-    }).then(function(bookRows) {
+    return RPGACE.sb.secureWrite('bookworm_books', 'insert', { title: result.title, source_url: sourceUrl, current_chapter_index: 0, status: 'in_progress' })
+    .then(function(bookRows) {
       var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
       if (!book || !book.id) throw new Error('Book creation did not return an id');
 
@@ -9030,14 +8989,8 @@ RPGACE.register('bookworm', {
           keywords: c.keywords || [], suggested_phylum: pp.isEnabled(c.suggestedPhylum) ? c.suggestedPhylum : null
         };
       });
-      return fetch(RPGACE.sb.url('bookworm_chapters'), {
-        method: 'POST',
-        headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-        body: JSON.stringify(chapterRows)
-      }).then(function(r) {
-        if (!r.ok) return r.text().then(function(t) { throw new Error('Chapter creation failed: ' + t.slice(0, 200)); });
-        return r.json();
-      }).then(function(insertedChapters) {
+      return RPGACE.sb.secureWrite('bookworm_chapters', 'insert', chapterRows)
+      .then(function(insertedChapters) {
         if (!insertedChapters || !insertedChapters.length) throw new Error('Chapters did not save correctly');
         self._refreshWidget();
         self._renderStructureFound(book, insertedChapters);
@@ -9108,14 +9061,8 @@ RPGACE.register('bookworm', {
         RPGACE.utils.toast('Heads up: chapter(s) ' + stillMissing.join(', ') + ' from this table of contents could not be extracted, even after a retry. Check the list below carefully before starting - you may need to add any missing chapter manually later.', '#E2A83D', 8000);
       }
 
-      return fetch(RPGACE.sb.url('bookworm_books'), {
-        method: 'POST',
-        headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-        body: JSON.stringify({ title: title, source_url: 'manual', current_chapter_index: 0, status: 'in_progress' })
-      }).then(function(r) {
-        if (!r.ok) return r.text().then(function(t) { throw new Error('Book creation failed: ' + t.slice(0, 200)); });
-        return r.json();
-      }).then(function(bookRows) {
+      return RPGACE.sb.secureWrite('bookworm_books', 'insert', { title: title, source_url: 'manual', current_chapter_index: 0, status: 'in_progress' })
+      .then(function(bookRows) {
         var book = Array.isArray(bookRows) ? bookRows[0] : bookRows;
         if (!book || !book.id) throw new Error('Book creation did not return an id');
 
@@ -9125,14 +9072,8 @@ RPGACE.register('bookworm', {
             keywords: c.keywords || [], suggested_phylum: pp.isEnabled(c.suggestedPhylum) ? c.suggestedPhylum : null
           };
         });
-        return fetch(RPGACE.sb.url('bookworm_chapters'), {
-          method: 'POST',
-          headers: Object.assign({}, RPGACE.sb.headers(), { 'Prefer': 'return=representation' }),
-          body: JSON.stringify(chapterRows)
-        }).then(function(r) {
-          if (!r.ok) return r.text().then(function(t) { throw new Error('Chapter creation failed: ' + t.slice(0, 200)); });
-          return r.json();
-        }).then(function(insertedChapters) {
+        return RPGACE.sb.secureWrite('bookworm_chapters', 'insert', chapterRows)
+        .then(function(insertedChapters) {
           if (!insertedChapters || !insertedChapters.length) throw new Error('Chapters did not save correctly');
           self._refreshWidget();
           self._renderStructureFound(book, insertedChapters);
@@ -11967,7 +11908,7 @@ RPGACE.register('beatLog', {
     output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">⚡ Logging beat and searching for artist matches...</div>';
 
     // 1. Save to Supabase video_jobs
-    RPGACE.sb.insert('video_jobs', {
+    RPGACE.sb.secureWrite('video_jobs', 'insert', {
       title:        form.title,
       status:       'beat_logged',
       script:       JSON.stringify(form),
@@ -12398,7 +12339,7 @@ RPGACE.register('refCorpus', {
       source:  'manual',
       analysed: false,
     };
-    RPGACE.sb.insert('reference_tracks', row)
+    RPGACE.sb.secureWrite('reference_tracks', 'insert', row)
       .then(function() {
         RPGACE.utils.toast('✅ Added: ' + artist + ' — ' + title, '#4A90E2', 2500);
         ['rc-artist','rc-title','rc-bpm','rc-key','rc-energy','rc-mood'].forEach(function(id) {
@@ -12433,7 +12374,7 @@ RPGACE.register('refCorpus', {
     RPGACE.utils.toast('Importing ' + rows.length + ' tracks...', '#4A90E2', 2000);
     var done = 0;
     rows.forEach(function(row) {
-      RPGACE.sb.insert('reference_tracks', row)
+      RPGACE.sb.secureWrite('reference_tracks', 'insert', row)
         .then(function() {
           done++;
           if (done === rows.length) {
@@ -12487,7 +12428,7 @@ RPGACE.register('refCorpus', {
           del.textContent = '×';
           del.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.2);cursor:pointer;font-size:14px;padding:0 4px;flex-shrink:0;';
           del.onclick = function() {
-            RPGACE.sb.del('reference_tracks', 'id=eq.' + row.id)
+            RPGACE.sb.secureWrite('reference_tracks', 'delete', null, 'id=eq.' + row.id)
               .then(function() { self._loadList(); })
               .catch(function(){});
           };
@@ -12561,7 +12502,7 @@ RPGACE.register('contentProductionLive', {
   // ── Create a new ConID entry ──────────────────────────────────
   createEntry: function(data) {
     var self = this;
-    RPGACE.sb.insert('content_productions', {
+    RPGACE.sb.secureWrite('content_productions', 'insert', {
       title:          data.title || 'Untitled Content Idea',
       idea:           data.idea || '',
       taxonomy_nodes: data.taxonomy_nodes || [],
@@ -12583,16 +12524,7 @@ RPGACE.register('contentProductionLive', {
 
   // ── Update an existing entry ──────────────────────────────────
   updateEntry: function(id, updates) {
-    return fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/content_productions?id=eq.' + id, {
-      method: 'PATCH',
-      headers: {
-        'apikey': RPGACE.CONFIG.supabase.key,
-        'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(updates)
-    });
+    return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + id);
   },
 
   // ── F16: Beatstars listing generator ──────────────────────────
@@ -13206,16 +13138,7 @@ RPGACE.register('videoPipeline', {
 
   updateEntry: function(id, updates) {
     updates.updated_at = new Date().toISOString();
-    return fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/video_jobs?id=eq.' + id, {
-      method: 'PATCH',
-      headers: {
-        'apikey': RPGACE.CONFIG.supabase.key,
-        'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(updates)
-    });
+    return RPGACE.sb.secureWrite('video_jobs', 'update', updates, 'id=eq.' + id);
   },
 
   _injectWidget: function() {
@@ -13319,7 +13242,7 @@ RPGACE.register('videoPipeline', {
     saveBtn.onclick = function() {
       var t = titleInp.value.trim();
       if (!t) { RPGACE.utils.toast('Add a title first', '#E25454', 2000); return; }
-      RPGACE.sb.insert('video_jobs', {
+      RPGACE.sb.secureWrite('video_jobs', 'insert', {
         title: t,
         status: 'raw_footage',
         raw_path: pathInp.value.trim() || null,
@@ -13643,7 +13566,7 @@ RPGACE.register('conidPot', {
     // Detect phyla from idea text
     var phylaNums = self._quickDetectPhyla(text);
 
-    RPGACE.sb.insert('conid_pot', {
+    RPGACE.sb.secureWrite('conid_pot', 'insert', {
       title:          title,
       idea_text:      text.slice(0, 3000),
       source:         source || 'manual',
@@ -13684,11 +13607,8 @@ RPGACE.register('conidPot', {
     mergeBtn.onclick = function() {
       // Merge: combine text, keep better title, add to merged_from
       var combinedText = existing.idea_text + '\n\n--- MERGED ---\n\n' + newText.slice(0, 1500);
-      fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/conid_pot?id=eq.' + existing.id, {
-        method: 'PATCH',
-        headers: { 'apikey': RPGACE.CONFIG.supabase.key, 'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-        body: JSON.stringify({ idea_text: combinedText, merged_from: [newTitle] })
-      }).then(function() {
+      RPGACE.sb.secureWrite('conid_pot', 'update', { idea_text: combinedText, merged_from: [newTitle] }, 'id=eq.' + existing.id)
+      .then(function() {
         RPGACE.utils.toast('🔀 Merged into: ' + existing.title, '#3DAA6E', 3000);
         self._refreshIdeaBank();
       });
@@ -13960,11 +13880,8 @@ RPGACE.register('conidPot', {
           starEl.style.cssText = 'font-size:11px;flex-shrink:0;cursor:pointer;';
           starEl.onclick = function(e) {
             e.stopPropagation();
-            fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/conid_pot?id=eq.' + row.id, {
-              method: 'PATCH',
-              headers: { 'apikey': RPGACE.CONFIG.supabase.key, 'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-              body: JSON.stringify({ starred: !row.starred })
-            }).then(function() { self._refreshIdeaBank(filter || 'All'); });
+            RPGACE.sb.secureWrite('conid_pot', 'update', { starred: !row.starred }, 'id=eq.' + row.id)
+              .then(function() { self._refreshIdeaBank(filter || 'All'); });
           };
 
           var titleEl = document.createElement('div');
@@ -14003,16 +13920,13 @@ RPGACE.register('conidPot', {
               if (RPGACE.modules.contentProductionLive) {
                 RPGACE.modules.contentProductionLive.createEntry({ title: row.title, idea: row.idea_text, taxonomy_nodes: row.phyla_detected || [], status: 'Idea' });
                 // Update pot status to activated
-                fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/conid_pot?id=eq.' + row.id, {
-                  method: 'PATCH',
-                  headers: { 'apikey': RPGACE.CONFIG.supabase.key, 'Authorization': 'Bearer ' + RPGACE.CONFIG.supabase.key, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-                  body: JSON.stringify({ status: 'activated' })
-                }).then(function() { self._refreshIdeaBank(filter || 'All'); });
+                RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated' }, 'id=eq.' + row.id)
+                  .then(function() { self._refreshIdeaBank(filter || 'All'); });
               }
             }},
             { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
               if (confirm('Delete "' + row.title + '"?')) {
-                RPGACE.sb.del('conid_pot', 'id=eq.' + row.id)
+                RPGACE.sb.secureWrite('conid_pot', 'delete', null, 'id=eq.' + row.id)
                   .then(function() { self._refreshIdeaBank(filter || 'All'); });
               }
             }},
