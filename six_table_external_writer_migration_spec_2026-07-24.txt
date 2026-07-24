@@ -1,0 +1,123 @@
+SIX-TABLE FUTURE RLS MIGRATION SPEC — 2026-07-24
+Real GODMODE evidence + open questions for Alex, per rule 5 (this is a
+real multi-subsystem decision — record his actual answers verbatim here,
+never substitute a recommended default). Written the same session the
+17-table RLS flip completed, covering the 6 tables deliberately excluded
+from that flip: journal, intel_jobs, intel_reports, intel_watchlist,
+intel_bibliography, oracle_fallback_queue.
+
+════════════════════════════════════════════════════════════════════
+WHY THESE 6 ARE DIFFERENT FROM THE 17 ALREADY FLIPPED
+════════════════════════════════════════════════════════════════════
+
+Every one of the 17 already-flipped tables is written ONLY by RPGACE's
+own client JS (rpgace_core.js / main.js), which already goes through the
+authenticated write-proxy (RPGACE.sb.secureWrite -> api/data-write.js ->
+SUPABASE_SERVICE_ROLE_KEY). Flipping their RLS cost nothing extra.
+
+These 6 tables each have a REAL WRITER OUTSIDE that path, confirmed by
+real evidence this session:
+
+1. journal — the "RPGACE Morning Brief" Claude Code Remote Routine
+   (trig_015uRjGVrdmiwc5zxq47mMA6, daily 6am UTC) curls Supabase's REST
+   API directly with the plain publishable/anon key
+   (sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf) and POSTs a real row
+   into journal every morning. Confirmed via list_triggers, reading the
+   Routine's own stored job_config in full.
+
+2. oracle_fallback_queue — the "RPGACE Fallback Drain" Routine
+   (trig_01QxebLsiPMVksNSVjNECdbD, hourly) does the same thing: curls
+   Supabase directly with the plain anon key to read pending rows and
+   PATCH answered ones.
+
+3. intel_jobs — a local Python server (local_server.py, port 7842,
+   living at C:\Users\acesa\RPGACE on Alex's own machine, NOT in this
+   git repo) claims queued jobs and writes status/progress/error
+   directly to Supabase. Confirmed via main.js's own
+   checkServerStatus()/submitIntelURL() functions, which talk to
+   LOCAL_SERVER (http://localhost:7842) and expect it to write these
+   rows independently.
+
+4. intel_reports, 5. intel_watchlist — main.js's pushLocalToSupabase()
+   (line ~4156, real code read this session) calls the local server's
+   own /push-to-supabase endpoint, which pushes local files into these
+   two tables directly with the anon key. Confirmed by a dedicated
+   read-only Opus 5 audit this session (real GODMODE evidence pass).
+
+6. intel_bibliography — NOT independently confirmed either way. The
+   audit found no direct evidence it's touched by local_server.py, but
+   also couldn't rule it out (that script's actual source isn't in this
+   repo, so it can't be grepped from a Claude Code session). Excluded
+   from the flip out of caution, not because it's confirmed to have an
+   external writer — a real, honest "don't know" rather than a guess.
+
+════════════════════════════════════════════════════════════════════
+WHAT WOULD ACTUALLY HAVE TO CHANGE TO FLIP THESE 6 TOO
+════════════════════════════════════════════════════════════════════
+
+Two real external writers, two different fixes needed:
+
+A) THE TWO CLAUDE CODE REMOTE ROUTINES (journal, oracle_fallback_queue)
+
+   Today: curl with the plain anon key directly to Supabase's REST API.
+   To keep working after an RLS flip, each Routine's own prompt/config
+   would need ONE of:
+     (a) The real RPGACE_API_SECRET, so it could POST to
+         https://rpgace.vercel.app/api/data-write instead of Supabase
+         directly (same shape as the app's own client calls) - this is
+         the smaller-blast-radius option (that endpoint only allows
+         inserts/updates/deletes on ALLOWED_TABLES, nothing else).
+     (b) The real SUPABASE_SERVICE_ROLE_KEY, curling Supabase directly
+         with it instead of the anon key - a MUCH bigger blast radius
+         (full database bypass of RLS on every table, not just these 2),
+         but avoids needing the app's own auth secret in a second place.
+
+   REAL OPEN QUESTION FOR ALEX: a Claude Code Remote Routine's stored
+   config lives on Anthropic's infrastructure, not in this public GitHub
+   repo - a different exposure surface than the "this repo is public"
+   risk CLAUDE.md's security note already discusses at length. Is Alex
+   comfortable embedding either secret (a) or (b) into a Routine's
+   config? If so, which secret - the narrower api-secret (a) or the
+   broader service-role key (b)? This is a real Tier-3-shaped decision,
+   not a default to pick silently.
+
+B) THE LOCAL PYTHON SERVER (intel_jobs, intel_reports, intel_watchlist,
+   possibly intel_bibliography)
+
+   Today: local_server.py runs on Alex's own machine and writes to
+   Supabase directly with the anon key. This file is NOT in this repo
+   (confirmed - CLAUDE.md places Python automation scripts at
+   C:\Users\acesa\RPGACE, a separate codebase this Claude Code session
+   has never had access to), so no session working in this repo can
+   read or edit its actual source.
+
+   To keep working after an RLS flip, that script would need to either:
+     (a) Call https://rpgace.vercel.app/api/data-write with the
+         RPGACE_API_SECRET instead of writing to Supabase directly, or
+     (b) Use the SUPABASE_SERVICE_ROLE_KEY directly (same two-way
+         tradeoff as the Routines above).
+   Since it's Alex's own local machine (not a public repo, not a
+   third-party-stored Routine config), giving it a secret via a local
+   .env file is a meaningfully smaller real exposure than either Routine
+   option above - but the actual code change has to happen in a
+   repository this session cannot see.
+
+   REAL OPEN QUESTION FOR ALEX: does he want to (1) bring the relevant
+   local_server.py write functions into a Claude Code session that has
+   access to that machine/repo so they can actually be rewritten, or
+   (2) write the instructions himself from this spec, or (3) leave
+   intel_jobs/intel_reports/intel_watchlist/intel_bibliography on
+   anon_all indefinitely (a real, valid choice - CLAUDE.md's own
+   standing lesson is that not every table needs Approach B's full
+   treatment, and this is lower-value data than taxonomy_tree/
+   bookworm_chapters).
+
+════════════════════════════════════════════════════════════════════
+STATUS
+════════════════════════════════════════════════════════════════════
+Not built. This is the real spec + open-questions record rule 5 requires
+before any of this gets executed - proceeding to actually contact either
+Routine's config or local_server.py without Alex's real answers to the
+two questions above would repeat exactly the mistake CLAUDE.md's own
+July 24 incident note warns against (treating an assumption as
+confirmation for a Tier-3-shaped action).

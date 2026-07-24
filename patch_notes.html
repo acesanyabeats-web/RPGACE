@@ -73,6 +73,13 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📋 July 24 (Round 21) — Future batch spec for the 6 excluded tables, real open questions recorded (not built)</div>
+    <div class="card-body">
+      Per rule 5, a dedicated spec file (<code>six_table_external_writer_migration_spec_2026-07-24.txt</code>) records why <code>journal</code>/<code>oracle_fallback_queue</code> (the 2 Claude Code Remote Routines, plain anon key) and <code>intel_jobs</code>/<code>intel_reports</code>/<code>intel_watchlist</code> (<code>local_server.py</code>, Alex's own machine, not in this repo) can't be flipped without a real change elsewhere first, plus 2 real open questions only Alex can answer: which secret (if any) a Routine's stored config should be trusted with, and whether to bring <code>local_server.py</code>'s actual source into a session that can edit it. <code>intel_bibliography</code> stays genuinely unconfirmed either way — recorded honestly, not guessed at.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔒 July 24 (Round 20) — RLS flip DONE and independently verified: Approach B now delivers real protection for the first time</div>
     <div class="card-body">
