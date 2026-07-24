@@ -7,6 +7,12 @@ import { setCORS, requireAuth } from './_context.js';
 const SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
 
 // Phase 1 (Alex-confirmed July 24): bookworm_* + bibliography + taxonomy_*.
+// Phase 2 batch 1 (July 24): intel_reports/intel_bibliography/encyclopedia,
+// migrated together with taxonomy_nodes since all four route through the
+// same intelDelete module's _sbDel/_sbInsert wrapper - a real gap found
+// while starting phase 2 (taxonomy_nodes writes via this wrapper were
+// never caught by phase 1's grep verification, which only searched for
+// literal RPGACE.sb.del/insert calls).
 // Add a table here only once its RLS policy has actually been flipped to
 // anon read-only AND every existing call site has been migrated to this
 // endpoint - never the other way around.
@@ -18,6 +24,9 @@ const ALLOWED_TABLES = new Set([
   'taxonomy_proposals',
   'taxonomy_links',
   'taxonomy_nodes',
+  'intel_reports',
+  'intel_bibliography',
+  'encyclopedia',
 ]);
 
 export default async function handler(req, res) {

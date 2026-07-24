@@ -4096,29 +4096,16 @@ RPGACE.register('intelDelete', {
   },
 
   /* ── Supabase helpers ─────────────────────────── */
+  // Routed through the authenticated write-proxy (Approach B phase 2) -
+  // real gap found July 24: taxonomy_nodes deletes via this wrapper were
+  // never caught by phase 1's grep verification since it only searched
+  // for literal RPGACE.sb.del/insert calls, not this module's own helper.
   _sbDel: function(table, filter) {
-    return fetch(this.SB_URL + '/rest/v1/' + table + '?' + filter, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': 'Bearer ' + this.SB_KEY,
-        'apikey': this.SB_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      }
-    });
+    return RPGACE.sb.secureWrite(table, 'delete', null, filter);
   },
 
   _sbInsert: function(table, row) {
-    return fetch(this.SB_URL + '/rest/v1/' + table, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + this.SB_KEY,
-        'apikey': this.SB_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify(row),
-    });
+    return RPGACE.sb.secureWrite(table, 'insert', row);
   },
 
   /* ── Inject buttons on both card types ─────────── */
