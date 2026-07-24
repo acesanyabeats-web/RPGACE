@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🏁 July 24 — SESSION CLOSED (second /Bedtime run this date). Real state: fallback lane built + deployed + gating-verified, real roadblocks named, one honest logging gap left open.</div>
+    <div class="card-body">
+      This is the second <code>/Bedtime</code> close-out today — the first (Round 10 era) covered the morning's auth/RLS/write-proxy work; this one covers everything after: the item 7 process debate, the OpenMontage/Claude-fallback judgment (adopt-as-separate-tool / adopt-with-modification), <code>/Routine</code>'s real second round, item 6's real pieces (vercel.json doc-access fix, Chronicles on-open digest, <code>/Routine</code> reverse-feed), a Chronicles cleanup pass (3 redundant rollup rows removed), the Minotaur Map diagram drawn before the code per Alex's own request, and the full Claude Code fallback lane build (Round 17, below) — followed by a dedicated oversight-roadblocks sweep.<br><br>
+      <strong>Real, independently verified, not just committed:</strong> Vercel confirms commit <code>5887545</code> <code>READY</code> on production; <code>/api/data-write</code> still returns a genuine <code>401</code> unauthenticated in production, same gating proof pattern used all session.<br><br>
+      <strong>Real gap, named honestly rather than smoothed over:</strong> mid-way through the oversight-roadblocks sweep, 3 consecutive Supabase tool calls (2 reads, 1 <code>system_updates</code> insert) were declined. Per this project's own standing rule (don't retry an identical denied action, adjust instead), that sweep's Chronicles row was never written — the four real roadblocks it found (untested credit-exhaustion string match, silent-stuck-row risk on a parse failure, the future-RLS landmine for the Fallback Drain Routine, Bookworm's partial cascade coverage) are recorded in <code>CLAUDE.md</code>, this file's Still Open section, and <code>interconnection_map.md</code>, but NOT yet in Chronicles/<code>system_updates</code>. Real next-session action item, not a silent drop.<br><br>
+      <strong>Genuinely still open, unchanged from before today:</strong> Oracle 504 fix + XSS/<code>innerHTML</code> audit (deferred, no API credits unless confirmed otherwise), Composio key rotation (needs Alex's action), the 77-item taxonomy backlog remainder (Alex's own manual review), the swipe-gesture freeze, Approach B's real authenticated write still not functionally confirmed end-to-end, and — the newest honest unknown — the entire Claude-fallback lane has never been exercised against a real credit-exhaustion event.<br><br>
+      Hands off to <code>/Routine</code> for the next session: pick up the missing Chronicles rows as a real (cheap) action item, alongside whatever the next Top 10 debate surfaces.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🌉 July 24 (Round 17) — Claude Code fallback lane: built for real, not just diagrammed</div>
     <div class="card-body">
