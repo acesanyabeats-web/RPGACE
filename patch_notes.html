@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎬 July 24 (Round 14) — Two ideas logged and judged (OpenMontage video pipeline, Claude-Code-via-Supabase fallback); /Routine's real second round</div>
+    <div class="card-body">
+      Alex pasted OpenMontage (open-source, agent-operated video production system, 41.7k stars) and asked whether it could serve RPGACE's Beat Log/Visual Oracle, plus a second idea: could RPGACE fall back to a Claude Code Remote session's own separate Claude access via a Supabase queue when the app's own API credits run dry. Both explicitly logged as ideas to judge, not build — ran through a real `/debate` (both sides given genuine cases) + Council of 5 + `/5thDimension` pass, recorded verbatim in <code>openmontage_and_claude_fallback_spec_backlog_2026-07-24.txt</code>.<br><br>
+      <strong>OpenMontage verdict:</strong> adopt as a separate operated tool, never an embedded RPGACE integration — real capability gap (RPGACE's own F16-F18 video pipeline is untested and text-only), but a genuine toolchain mismatch (Python+Node+FFmpeg vs. RPGACE's zero-build-step vanilla JS), same class as two already-rejected Aintergration precedents. Beat/Visual-Oracle sync is a real future enhancement, not automatic.<br><br>
+      <strong>Claude-fallback verdict:</strong> adopt with modification — a real async fallback lane for background AI jobs only, reusing the already-proven Morning Brief Routine pattern; explicitly NOT a live-chat replacement (Claude Code Remote's trigger minimum is hourly). Neither idea gets a new Minotaur River yet — that's earned only once something is actually built and used.<br><br>
+      <strong>`/Routine` also ran a real second round the same day</strong> (post-`/Bedtime`) — a genuine Team 2 counter-case won three concessions: dropped Approach B phase 2 for today (risk-stacking on a day that already had one incident), reframed this OpenMontage/Claude-fallback logging as a near-free "step 0" instead of a competing Top-10 slot, and folded older pending smoke tests into the F16-18 sweep rather than leaving them out via recency bias. Full reasoning in <code>daily_priorities_debate_2026-07-24.txt</code>.
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🏁 July 24 — SESSION CLOSED via the new /Bedtime skill. Real state: auth fix live + verified, RLS parity done, write-proxy live, taxonomy backlog triaged, two new session-bookend skills built.</div>
     <div class="card-body">

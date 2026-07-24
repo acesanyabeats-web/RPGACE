@@ -1,0 +1,150 @@
+OPENMONTAGE + CLAUDE-CODE-VIA-SUPABASE FALLBACK — TWO IDEAS LOGGED, JUDGED,
+NOT BUILT. Recorded July 24, 2026, per CLAUDE.md rule 5 (record real
+decisions verbatim in a committed .txt file, chat isn't durable storage).
+
+STATUS: NOT BUILT. Both judged via /debate + Council of 5 + /5thDimension
+per Alex's own explicit instruction. Real, actionable verdicts below - not
+guessed defaults.
+
+================================================================
+IDEA 1 — OPENMONTAGE (github.com/calesthio/OpenMontage)
+================================================================
+Alex's own framing (paraphrased from the pasted repo README + his
+message): "this would hugely help video pipeline for video creation, it
+could also work with visual oracle and beat log to sync with beat."
+
+WHAT IT IS (from the pasted README, not assumed): an open-source,
+agent-operated video production system - 12 pipelines (explainer,
+cinematic, documentary montage, etc.), 100+ Python tools, 700+ skill
+files. Works by being cloned as its own repo, driven directly by an AI
+coding assistant (Claude Code, Cursor, etc.) via YAML pipeline manifests
++ Markdown stage-director skills. Requires Python 3.10+, FFmpeg, Node
+18+, its own venv, and a Node/npm `remotion-composer` subproject. Has a
+genuine zero-API-key mode (Piper TTS, free stock/archive footage,
+Remotion composition) plus paid providers for AI-generated visuals/video.
+
+REAL EVIDENCE GATHERED (GODMODE, before judging):
+- RPGACE's own F16 (Beatstars listing)/F17 (video pipeline stages,
+  `video_jobs` table)/F18 (auto visual treatment) are real but NEVER
+  hand-tested (still in patch_notes.html's Still Open section) and
+  produce TEXT only (listing copy, visual-treatment suggestions) - no
+  confirmed working video-rendering engine exists in RPGACE today. Real,
+  concrete capability gap.
+- RPGACE's architecture is deliberately zero-build-step vanilla JS +
+  Vercel serverless functions. OpenMontage's toolchain (Python+Node+
+  FFmpeg+its own venv) is a fundamentally different stack - the same
+  class of mismatch as Aintergration's own Worked Precedents 1
+  (Framer Motion/Next.js) and 2 (OmniRoute), both rejected for exactly
+  this reason.
+
+/DEBATE:
+Team FOR: a genuine, confirmed capability hole exists (no real video
+rendering in RPGACE today). OpenMontage is mature (41.7k stars, active),
+free-tier-capable, and agent-operated by design - a Claude Code session
+could run it directly, TODAY, as a separate side-tool, with the finished
+.mp4 flowing back into RPGACE's Content Production/F17 tracking as a
+completed asset. Matches the governing 48-hour rule directly if Alex is
+making real promotional/beat videos now.
+
+Team AGAINST (real, not a strawman): standing up a second heavyweight
+toolchain is real ongoing maintenance overhead for a project whose
+explicit principle is minimalism/zero-build-step. Beat-syncing (BPM/key/
+mood from RPGACE's Beat Log flowing into an OpenMontage brief) is NOT
+automatic - it needs a real bridging step that doesn't exist and wasn't
+specified. Cloning and operating a third-party 700+-skill-file repo hands
+a coding agent broad read/execute scope and, with paid providers
+configured, real API keys - non-trivial even for a reputable public repo.
+
+VERDICT: Adopt as a SEPARATE OPERATED TOOL, NOT an embedded RPGACE
+integration. Real adoption path (unlike Precedents 1/2's outright
+rejections): operate OpenMontage in its own directory/environment
+whenever Alex wants an actual rendered video from a Beat Log entry or
+Visual Oracle brief; the finished asset gets logged into RPGACE's own
+F17/Content Production tracking by hand (or via a small future glue
+script) - never embedded into RPGACE's own Vercel runtime. Beat/Visual-
+Oracle sync is a real FUTURE enhancement, not automatic out of the box -
+stated honestly so it's never assumed working before it's built.
+
+================================================================
+IDEA 2 — "CAN RPGACE USE CLAUDE CODE THROUGH SUPABASE WHEN API TOKENS
+ARE COMPLETELY OUT?"
+================================================================
+Alex's own framing (verbatim): "Can rpgace also use Claude code through
+supabase when API tokens are low out completely out? would be an awesome
+update, possibly a river."
+
+REAL EVIDENCE GATHERED:
+- Claude Code Remote's trigger infrastructure (`create_trigger`,
+  `fire_trigger`) already has a real, WORKING precedent in this exact
+  project: the daily Morning Brief Routine (`trig_015uRjGVrdmiwc5zxq47mMA6`,
+  built July 22) - curls Supabase directly, writes back into `journal`.
+  This is the exact mechanism this idea would reuse, not new
+  infrastructure.
+- `create_trigger`'s own real constraint: minimum interval is HOURLY.
+  A fallback lane built this way is asynchronous/batch, not synchronous.
+
+/DEBATE:
+Team FOR: directly reuses an already-proven pattern in this exact project
+- zero new infrastructure concepts, just a new Supabase queue table and a
+second Routine. Solves a real, recurring, already-documented pain
+(Anthropic API credits running out mid-project, more than once this
+session alone) by giving async/background AI jobs (taxonomy placement,
+Bookworm chapter analysis, Content Intelligence proposals - all already
+async by design) a second, completely separate quota lane to fall back
+to when the app's own key is dry.
+
+Team AGAINST: the hourly-minimum constraint means this is fundamentally a
+BATCH fallback, not a live one - it cannot make Oracle's interactive chat
+"still work instantly" when credits run out, and presenting it that way
+would be dishonest. It's also a real, if small, new moving part (a queue
+table, a Routine, RPGACE-side polling/UI changes to show "queued" instead
+of an instant reply) - not zero-cost, and only pays off exactly when the
+primary API is already down.
+
+VERDICT: Adopt WITH MODIFICATION - scope it explicitly as an ASYNC
+FALLBACK LANE for background AI jobs only (Bookworm/Content-Intelligence/
+taxonomy placement), never presented as a live-chat replacement. Real,
+buildable, reuses proven infrastructure. Not yet built - a real future
+session's work once Alex confirms he wants it.
+
+================================================================
+COUNCIL OF 5 — QUALITY CHECK ON BOTH DEBATES
+================================================================
+- Both debates gave the AGAINST side a real, non-strawman case
+  (toolchain mismatch/sync-isn't-automatic for Idea 1; hourly-latency
+  honesty for Idea 2) - PASS.
+- Evidence cited is real (actual smoke-test backlog state, actual
+  `create_trigger` constraint, actual prior Morning Brief precedent),
+  not assumed - PASS.
+- Neither verdict overclaims: Idea 1 is explicitly NOT an embedded
+  integration; Idea 2 is explicitly NOT a live-chat fix - PASS.
+
+================================================================
+/5THDIMENSION (no Fable) — fit against real RPGACE state/goals, and is
+"possibly a river" (Alex's own framing) warranted yet?
+================================================================
+Built vs. reported: F16-F18 real-but-untested (confirmed); no existing
+video-render engine (confirmed); Morning Brief Routine real and already
+documented (confirmed) - no drift between this judgment and real state.
+
+Rewiring debate: adding either idea as a new Minotaur River NOW would be
+premature - this project's own established discipline is to add a new
+river only once a flow is ACTUALLY BUILT AND USED, not speculatively.
+Both ideas stay logged as real, deliberately-unbuilt backlog items - same
+treatment the journal/Chronicles/Minotaur cross-feed idea already got.
+
+Anchored to Alex's real goals: both verdicts are scoped to what he can
+actually act on soon (operate OpenMontage whenever he next wants a real
+rendered video; build the Supabase fallback queue next time credits
+running out is actually inconvenient), not technical tidiness for its
+own sake.
+
+================================================================
+ACTION ITEMS
+================================================================
+1. This file is the durable record of both judgments.
+2. No `minotaur_map.html` change yet - no river until something is
+   actually built and used.
+3. No code changes - both ideas remain real, judged, deliberately-unbuilt
+   backlog items for a future session, per Alex's own explicit framing
+   ("I'm just logging these two ideas").
