@@ -46,30 +46,67 @@ real interrogation is still owed before building anything):
    stay on one consistent timeline of what actually happened, rather than
    four separately-drifting accounts.
 
-REAL OPEN QUESTIONS THIS IDEA RAISES (none answered yet - listed honestly
-rather than guessed at):
-- Is "journal" here the existing #page-journal feature, or a new concept
-  tied specifically to Oracle conversations? Today's journal has no link
-  to specific chat sessions/frameworks discussed.
-- What does "measured doses" mean operationally - a scheduled digest job,
-  an on-open summarization, a fixed word/item cap per pull? /scope already
-  organizes evidence into grouped categories - would Chronicles literally
-  invoke /scope, or would this need a lighter always-on version of the same
-  idea?
-- What does "oversight to feed from chronicles" concretely change day to
-  day - does system_updates (already Chronicles-visible) already partially
-  satisfy this, or is more direct doc-writing intended (e.g. patch_notes.html
-  auto-drafting from Chronicles rows)? The former already exists; the
-  latter would be a real, separate architecture decision (auto-writing to
-  a doc from app data is a new pattern this project hasn't done before).
-- Scope/cost: this is easily a 3+ new pieces ask (journal restructuring,
-  a minotaur->Chronicles digest mechanism, an oversight<-Chronicles
-  feedback path) - squarely CLAUDE.md rule 5 territory, needing its own
-  dedicated GODMODE evidence pass + Council of 5 scrutiny + a real
-  interrogation round before any build decision, not a default guessed in
-  under time pressure from a different task's question.
+REAL ANSWERS (Alex, July 24, real interrogation via AskUserQuestion):
 
-NEXT STEP: a future session (or a later point in this one, if Alex asks)
-should open this specifically with GODMODE + interrogation, exactly like
-the Chronicles finance ledger and Research Lab lazy-load ideas both were,
-rather than defaulting to an implementation now.
+Q1 - Is "journal" the existing #page-journal feature, or a new concept
+tied to Oracle conversations?
+A1 (verbatim): "Not sure yet — needs more brainstorming." PARKED. No
+build decision on the journal piece this round.
+
+Q2 - What does "measured doses" mean operationally?
+A2 (verbatim): "1 when mid session, 3 when /Bedtime for rpgace on all
+oversight, not just minotaur." Read as: TWO tiers, not one -
+(a) mid-session, Chronicles does a lightweight ON-OPEN read (option 1),
+pulling a short real digest, but from ALL SIX oversight docs, not just
+minotaur_map.html as originally floated; (b) at /Bedtime time (session
+close), a heavier full pull (option 3's /scope-style thoroughness)
+across the same six docs, not scoped narrowly to minotaur.
+
+Q3 - What should "oversight feeds from Chronicles" concretely change?
+A3 (verbatim): "1 and vice versa to get on same page both rpgace and
+Claude code." Read as: system_updates already satisfies Chronicles
+showing Claude Code's own work (option 1, confirmed sufficient) - but
+Alex ALSO wants the reverse that was in his original July 23 framing:
+real RPGACE-side activity that Claude Code did NOT originate (a beat
+logged, a taxonomy proposal Alex approved himself in the review queue, a
+journal entry, a finance ledger sale) should feed back INTO Claude Code's
+own oversight docs, so a fresh session (or Alex reading CLAUDE.md) knows
+what happened in the live app, not just what Claude Code itself did.
+
+REAL TECHNICAL EVIDENCE GATHERED BEFORE PROPOSING A DESIGN (GODMODE, not
+assumed):
+- `/Routine`'s own Step 1 evidence pass (`.claude/skills/Routine/SKILL.md`)
+  currently only names "Chronicles/system_updates" as a real evidence
+  source - NOT the other real RPGACE-activity tables (journal,
+  chronicles_finance, content_productions, taxonomy_proposals Alex
+  approved himself). Confirmed via reading the skill file directly: the
+  reverse-feed idea (A3) is genuinely not yet covered by any standing
+  process, only by ad hoc querying when a session happens to think to
+  check (this session's own item-7 taxonomy-backlog work being the one
+  real example so far).
+- A REAL BLOCKER for the Chronicles-reads-the-docs half (A2): checked
+  `vercel.json`'s rewrites directly - the catch-all
+  `"source": "/(.*)", "destination": "/index.html"` means a client-side
+  fetch for `/CLAUDE.md`, `/interconnection_map.md`, or
+  `/system_flow_map.md` today resolves to `index.html`, not the real
+  file. Chronicles (client-side JS) CANNOT read these three docs' live
+  content as things stand - this has to be solved first, and is a real
+  fork with two real options:
+  (a) sync doc content into a new Supabase table whenever Claude Code
+      edits a doc (new, standing discipline - every doc-edit session
+      would need to also write/update a Supabase row);
+  (b) add explicit `vercel.json` rewrite exceptions for just these three
+      filenames so they're served as real static files, bypassing the
+      SPA catch-all (cheap, but exposes raw doc content at a public URL -
+      no NEW real exposure since the repo is already public on GitHub,
+      just a second access path).
+  `patch_notes.html`/`manual.html`/`minotaur_map.html`/`taxonomy_map.html`
+  are NOT affected - they're already real deployed pages Chronicles
+  could read via a normal fetch today, no rewrite issue.
+
+STATUS: still not built - this now has a real, concrete confirmation
+question to bring back to Alex (the doc-access fork above) before any
+Chronicles UI work. The reverse-feed piece (A3) is comparatively cheap -
+a skill-file text edit to `/Routine`'s Step 1, no app code, no
+architecture fork - and could proceed with less ceremony if Alex confirms
+he wants it now.
