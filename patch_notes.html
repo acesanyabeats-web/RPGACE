@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🔍 July 24 (Round 15) — Approach B phase 2: a real gap found in phase 1's own "fully migrated" claim, fixed same session</div>
+    <div class="card-body">
+      Alex corrected an earlier claim (OpenMontage's Python/Node/FFmpeg toolchain framing — real check confirmed Python and Node.js genuinely exist in RPGACE already, just used differently; only FFmpeg is genuinely absent) and asked to start expanding the write-proxy to the remaining 17 tables, 3 at a time.<br><br>
+      <strong>Real, important finding while starting batch 1:</strong> this codebase has THREE distinct raw-fetch idioms for writing to Supabase — <code>RPGACE.sb.insert/update/del</code>, <code>fetch(RPGACE.sb.url(table))</code>, and a third, inline <code>RPGACE.CONFIG.supabase.url + '/rest/v1/...'</code> pattern. Phase 1's own verification only ever grepped the first two. Result: <strong><code>taxonomy_tree</code>, <code>taxonomy_nodes</code>, <code>bookworm_books</code>, and <code>bookworm_chapters</code> were never actually fully migrated</strong>, despite being logged "zero remaining direct writes, confirmed" in earlier rounds. Found and fixed the same session — an exhaustive re-check across all three idioms, for every table, before calling anything done this time.<br><br>
+      Also caught a real regression before it could ship: <code>intel_watchlist</code> was reachable through the already-migrated <code>intelDelete._sbDel</code> wrapper but missing from the write-proxy's allowlist — the next delete on that table would have 403'd. Fixed in the same pass.<br><br>
+      <strong>Net result: 15 of 24 tables now covered</strong> (7 from phase 1 + <code>intel_reports</code>/<code>intel_bibliography</code>/<code>intel_watchlist</code>/<code>encyclopedia</code>/<code>reference_tracks</code>/<code>conid_pot</code>/<code>content_productions</code>/<code>video_jobs</code> from phase 2), merged and deployed, gating re-verified. Real remaining candidates for a future batch: <code>chronicles_finance</code>, <code>oracle_dev_suggestions</code>, <code>taxonomy_decision_log</code> (each has exactly one real call site). <code>journal</code>, <code>rpgace_agendas</code>, <code>intel_jobs</code>, <code>encyclopedia_insights</code> have zero real client write call sites at all — nothing to migrate. <code>rpgace_shifts</code> is written externally (Python script); <code>system_updates</code> is Claude-Code-only via MCP.<br><br>
+      <strong>Standing lesson, written into CLAUDE.md:</strong> "zero remaining writes" needs to check every known write idiom in the file, not the most obvious one — a single grep pattern is not exhaustive verification, even when it looked thorough at the time.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎬 July 24 (Round 14) — Two ideas logged and judged (OpenMontage video pipeline, Claude-Code-via-Supabase fallback); /Routine's real second round</div>
     <div class="card-body">
