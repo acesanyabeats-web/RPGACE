@@ -3317,7 +3317,24 @@ RPGACE.register('taxonomyReviewQueue', {
     var closeBtn = document.createElement('button');
     closeBtn.textContent = '✕';
     closeBtn.style.cssText = 'position:sticky;float:right;top:0;background:none;border:none;color:rgba(226,226,236,0.4);font-size:16px;cursor:pointer;';
-    closeBtn.onclick = function() { overlay.remove(); self._inject(); };
+    // July 24 - self._inject() was a dead reference: this module's _inject
+    // was deleted in 14c7ebe when the broken floating badge was removed, so
+    // every popup close threw TypeError, invisibly (overlay.remove() had
+    // already run first, so nothing looked wrong on screen). Refresh
+    // dashDeck's glance instead, which is what the old _inject call was
+    // actually trying to do. Clear cache first - secureWrite goes through
+    // /api/data-write and never touches RPGACE.cache's busting wrappers, so
+    // these two tables can otherwise serve a 60s-stale count right after a
+    // review session (standing landmine).
+    closeBtn.onclick = function() {
+      overlay.remove();
+      if (RPGACE.cache && RPGACE.cache.clear) {
+        RPGACE.cache.clear('taxonomy_proposals');
+        RPGACE.cache.clear('taxonomy_links');
+      }
+      var d = RPGACE.modules.dashDeck;
+      if (d && d._refreshGlance) d._refreshGlance();
+    };
 
     overlay.appendChild(box);
     document.body.appendChild(overlay);
@@ -4728,7 +4745,7 @@ RPGACE.register('dashDeck', {
       '.dd-card:nth-child(2){animation-delay:.05s}.dd-card:nth-child(3){animation-delay:.1s}.dd-card:nth-child(4){animation-delay:.15s}' +
       '.dd-card:nth-child(5){animation-delay:.2s}.dd-card:nth-child(6){animation-delay:.25s}.dd-card:nth-child(7){animation-delay:.3s}.dd-card:nth-child(8){animation-delay:.35s}' +
       '.dd-card:nth-child(9){animation-delay:.4s}.dd-card:nth-child(10){animation-delay:.45s}.dd-card:nth-child(11){animation-delay:.5s}' +
-      '.dd-card:nth-child(12){animation-delay:.55s}.dd-card:nth-child(13){animation-delay:.6s}' +
+      '.dd-card:nth-child(12){animation-delay:.55s}' +
       '.dd-card:hover{border-color:var(--border2);transform:translateY(-2px)}.dd-card:active{transform:translateY(0)}' +
       '.dd-eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
       '.dd-card h3{font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:Rajdhani,sans-serif}' +
@@ -4769,18 +4786,35 @@ RPGACE.register('dashDeck', {
   // daily-use row, then knowledge-storage row. Oversight moved to last slot;
   // Agenda/Encyclopedia/Journal added as simple showPage navigation cards,
   // mirroring Oracle's own pattern (no popup needed — each is a full page).
+
+  // Live pending-review count (taxonomy_proposals + taxonomy_links), set by
+  // _refreshGlance. null until the first fetch resolves - see the Taxonomy &
+  // Review card's go() for why null routes to the queue, not the browse page.
+  _pendingReviewCount: null,
+
   MODULES: [
     { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { RPGACE.modules.dashDeck._openResearch(); } },
     { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
-    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Your knowledge tree: browse phyla, approve placements, confirm fusions.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); } },
-    // July 24 (Alex, second real report - the dd-needs-list line item wasn't
-    // enough, he wanted an actual card like the other 11) - a dedicated
-    // ENTER-able tile, distinct from "Taxonomy & Review" above: that one
-    // browses the tree (a destination page); this one is a direct action
-    // straight into the pending-approval popup, same shape as every other
-    // card here. Reuses taxonomyReviewQueue._openQueue() - no new popup
-    // logic, just a real, visible front door to it.
-    { key: 'reviewQueue', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📋', name: 'Review Queue', desc: 'Pending taxonomy placements and fusion links waiting on your approval.', go: function() { var rq = RPGACE.modules.taxonomyReviewQueue; if (rq && rq._openQueue) rq._openQueue(); } },
+    // July 24 round 3 (Alex: the two tiles read as duplicates). Merged back
+    // into ONE card. Round 2's separate 'reviewQueue' tile had the right
+    // diagnosis (review needed a real card, not a stat line) but the wrong
+    // shape: two adjacent tiles fed by the SAME pending count, one
+    // navigating, one acting, both showing the same number. This card is now
+    // primary-action = review, with Phylum Path browse as the empty-queue
+    // fallback. Browsing is never stranded - leftNav keeps its own
+    // '🧬 Phylum Path' entry. Also drops a real emoji collision: 📋 was used
+    // by both this tile and 'agenda'.
+    // _pendingReviewCount is set by _refreshGlance below. null = the count
+    // hasn't resolved yet, and an unresolved count deliberately opens the
+    // QUEUE rather than navigating away: _openQueue handles empty gracefully
+    // ("Nothing waiting - all caught up"), whereas navigating away from a
+    // click that meant "review" is the exact failure reported twice tonight.
+    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements and fusion links, or browse your knowledge tree.', go: function() {
+      var d = RPGACE.modules.dashDeck;
+      var rq = RPGACE.modules.taxonomyReviewQueue;
+      if (d && d._pendingReviewCount !== 0 && rq && rq._openQueue) { rq._openQueue(); return; }
+      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
+    } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
     { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { var d = RPGACE.modules.dashDeck; d._prefillOracle(d.MORNING_PROMPT); } },
@@ -4944,8 +4978,8 @@ RPGACE.register('dashDeck', {
         var props = results[0] || [];
         var links = results[1] || [];
         var total = props.length + links.length;
-        set('taxonomy', total + ' item' + (total === 1 ? '' : 's') + ' awaiting review');
-        set('reviewQueue', total ? (total + ' item' + (total === 1 ? '' : 's') + ' waiting') : 'All caught up');
+        RPGACE.modules.dashDeck._pendingReviewCount = total;
+        set('taxonomy', total ? (total + ' item' + (total === 1 ? '' : 's') + ' awaiting review') : 'All caught up · browse your tree');
         if (!story || !list) return;
         var bits = [];
         list.innerHTML = '';
