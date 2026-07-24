@@ -790,7 +790,7 @@ RPGACE.register('prodOraclePanel', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._intercept(); }, 1200);
+    RPGACE.registerBootTask(function() { return self._intercept(); });
   },
 
   _intercept: function() {
@@ -894,7 +894,7 @@ RPGACE.register('instaOraclePanel', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._intercept(); }, 1400);
+    RPGACE.registerBootTask(function() { return self._intercept(); });
   },
 
   _intercept: function() {
@@ -2212,7 +2212,7 @@ RPGACE.register('encSync', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._patch(); }, 800);
+    RPGACE.registerBootTask(function() { return self._patch(); });
   },
 
   _clearBacklog: function() {
@@ -2642,7 +2642,7 @@ RPGACE.register('oracleDevBridge', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._hook(); }, 1300);
+    RPGACE.registerBootTask(function() { return self._hook(); });
   },
 
   _hook: function() {
@@ -3282,67 +3282,29 @@ RPGACE.register('intelBatchList', {
 /* ===END:uiBatchList=== */
 
 /* ===MODULE:taxonomyReviewQueue=== */
-// F6: Dashboard indicator + batch review popup for taxonomy_proposals rows
-// queued silently by F4 (ciAutoPropose) and F5 (encSync._autoPropose).
-// Reuses taxonomyTree's existing _acceptLineage/_showProposalPopup instead
-// of rebuilding the accept/edit UI — same popup the manual + Oracle-badge
+// F6: batch review popup for taxonomy_proposals/taxonomy_links rows queued
+// silently by F4 (ciAutoPropose) and F5 (encSync._autoPropose). Reuses
+// taxonomyTree's existing _acceptLineage/_showProposalPopup instead of
+// rebuilding the accept/edit UI — same popup the manual + Oracle-badge
 // flows already use, just fed from a stored proposal instead of a fresh one.
+//
+// July 24 — the standalone dashboard badge this module used to inject
+// itself is REMOVED, not re-patched. Real root cause of Alex's "still not
+// there" report: _inject() called page.insertBefore(badge, dd-needs), but
+// #dd-needs is a child of #dd-deck, not a direct child of #page-dashboard
+// — insertBefore requires the reference node to be a child of the node
+// it's called on, so this threw NotFoundError every single run, silently
+// swallowed by the trailing .catch(). That's on top of dashDeck's own
+// dd-needs-list already independently tracking (an incomplete version of)
+// the same pending-review count — two hand-rolled copies of one feature,
+// one broken, one incomplete (rule 8). Fixed by deleting this one entirely
+// and folding a corrected, complete count (proposals + links) into
+// dashDeck._refreshGlance()'s existing dd-needs-list, which already had
+// live data, a working click-through to _openQueue() below, and a real
+// home labeled "Needs you now" — no second injection path to break again.
 RPGACE.register('taxonomyReviewQueue', {
 
-  init: function() {
-    var self = this;
-    RPGACE.registerBootTask(function() { return self._inject(); });
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'dashboard') setTimeout(function() { self._inject(); }, 400);
-    });
-  },
-
-  // July 24 real bug fix (Alex reported "it's not there" with 77 real
-  // pending items confirmed live in Supabase - not a data problem, a
-  // rendering one). Two real issues found by reading the code, not
-  // guessed: (1) the insertion anchor `.section-title` is a leftover
-  // from the pre-July-20 dashboard - it doesn't exist anywhere inside
-  // #page-dashboard's current dashDeck card layout, so this always fell
-  // through to the page.firstChild fallback; (2) the trailing
-  // .catch(function(){}) silently swallowed any real failure with zero
-  // visible symptom - the exact same fail-silent pattern already found
-  // and fixed elsewhere in this file today, just never touched here.
-  // Anchoring to #dd-needs (a real, stable element in the current
-  // dashDeck structure) instead of the dead selector, and logging real
-  // failures instead of eating them, so the NEXT report (if any) comes
-  // with real evidence instead of another blind guess.
-  _inject: function() {
-    var self = this;
-    var page = document.getElementById('page-dashboard');
-    if (!page) return;
-
-    // July 16: badge count now also includes pending taxonomy_links
-    // (fusion-link candidates) alongside taxonomy_proposals - same
-    // review queue, same badge, different card type per row.
-    // July 24: returned so R.registerBootTask can genuinely wait for
-    // these reads to resolve before the boot loader hides.
-    return Promise.all([
-      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id&limit=200'),
-      RPGACE.sb.select('taxonomy_links', 'status=eq.pending&select=id&limit=200')
-    ]).then(function(results) {
-        var total = (results[0] || []).length + (results[1] || []).length;
-        var existing = document.getElementById('taxproposal-badge');
-        if (total === 0) { if (existing) existing.remove(); return; }
-        if (existing) { existing.querySelector('.count').textContent = total; return; }
-
-        var badge = document.createElement('div');
-        badge.id = 'taxproposal-badge';
-        badge.style.cssText = 'background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.25);border-radius:10px;padding:12px 16px;margin-bottom:16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;';
-        badge.innerHTML = '<span style="color:#9B59B6;font-size:12px;font-weight:700;">🌳 <span class="count">' + total + '</span> taxonomy item' + (total > 1 ? 's' : '') + ' waiting</span><span style="color:rgba(155,89,182,0.5);font-size:11px;">Review →</span>';
-        badge.onclick = function() { self._openQueue(); };
-
-        var needsPanel = document.getElementById('dd-needs');
-        var deck = document.getElementById('dd-deck');
-        var anchor = needsPanel || deck || page.firstChild;
-        if (anchor) page.insertBefore(badge, anchor);
-        else page.appendChild(badge);
-      }).catch(function(e) { console.warn('[taxonomyReviewQueue] badge injection failed:', e.message); });
-  },
+  init: function() {},
 
   _openQueue: function() {
     var self = this;
@@ -3882,7 +3844,7 @@ RPGACE.register('scheduleOracle', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._injectEntryPoints(); }, 1400);
+    RPGACE.registerBootTask(function() { return self._injectEntryPoints(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._injectEntryPoints(); }, 600);
     });
@@ -4952,9 +4914,28 @@ RPGACE.register('dashDeck', {
       set('bookworm', books.length ? (books.length + ' book' + (books.length > 1 ? 's' : '') + ' in progress') : 'No books in progress');
       var story = document.getElementById('dd-needs-story');
       var list = document.getElementById('dd-needs-list');
-      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id').then(function(props) {
-        props = props || [];
-        set('taxonomy', props.length + ' placement' + (props.length === 1 ? '' : 's') + ' awaiting review');
+      // July 24 (Alex: "still not there" after the badge anchor fix) — real
+      // root cause was worse than a bad selector: taxonomyReviewQueue's
+      // floating badge called page.insertBefore(badge, dd-needs), but
+      // #dd-needs is a child of #dd-deck, not a direct child of
+      // #page-dashboard — insertBefore requires the reference node to be a
+      // child of the node it's called on, so this threw NotFoundError on
+      // every run, silently eaten by the trailing .catch(). Rather than
+      // patch the same broken floating-badge approach a second time (rule:
+      // one failed fix, get real evidence, don't patch blind again), the
+      // pending-review count is folded into THIS already-working
+      // dd-needs-list instead — also closing a real second gap: this list
+      // only ever counted taxonomy_proposals, never taxonomy_links (pending
+      // fusion links), so a real subset of the review queue was never
+      // surfaced anywhere. One shared count now, not two hand-rolled ones.
+      Promise.all([
+        RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id'),
+        RPGACE.sb.select('taxonomy_links', 'status=eq.pending&select=id')
+      ]).then(function(results) {
+        var props = results[0] || [];
+        var links = results[1] || [];
+        var total = props.length + links.length;
+        set('taxonomy', total + ' item' + (total === 1 ? '' : 's') + ' awaiting review');
         if (!story || !list) return;
         var bits = [];
         list.innerHTML = '';
@@ -4964,9 +4945,9 @@ RPGACE.register('dashDeck', {
           li.onclick = onclick;
           list.appendChild(li);
         };
-        if (props.length) {
-          bits.push(props.length + ' taxonomy placement' + (props.length === 1 ? '' : 's') + ' waiting for your judgement');
-          addItem('Review ' + props.length + ' pending placement' + (props.length === 1 ? '' : 's'), function() {
+        if (total) {
+          bits.push(total + ' taxonomy item' + (total === 1 ? '' : 's') + ' waiting for your judgement');
+          addItem('Review ' + total + ' pending taxonomy item' + (total === 1 ? '' : 's'), function() {
             var rq = RPGACE.modules.taxonomyReviewQueue;
             if (rq && rq._openQueue) rq._openQueue(); else if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.dashboard);
           });
@@ -5457,10 +5438,10 @@ RPGACE.register('intelDedup', {
 
   init: function() {
     var self = this;
-    setTimeout(function() {
+    RPGACE.registerBootTask(function() {
       self.purge();
       if (typeof window.loadIntelInsights === 'function') window.loadIntelInsights();
-    }, 1600);
+    });
     function patch() {
       if (typeof window.syncIntelData !== 'function' || window._intelDedupPatched) return;
       window._intelDedupPatched = true;
@@ -8847,9 +8828,10 @@ RPGACE.register('bookworm', {
     var self = this;
     // 'rpgace:ready' has always already fired by the time init() runs
     // (hooks.fire uses forEach; a mid-fire listener never gets revisited).
-    // Call directly at the same delay instead of via the dead listener.
-    setTimeout(function() { self._injectDashboardWidget(); }, 1700);
-    setTimeout(function() { self._patchChatTrigger(); }, 1700);
+    RPGACE.registerBootTask(function() {
+      self._injectDashboardWidget();
+      self._patchChatTrigger();
+    });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.dashboard) self._injectDashboardWidget();
     });
@@ -13789,11 +13771,11 @@ RPGACE.register('conidPot', {
   init: function() {
     var self = this;
     // 'rpgace:ready' already fired before init() runs - call directly.
-    setTimeout(function() {
+    RPGACE.registerBootTask(function() {
       self._injectSaveBtn();
       self._patchTextSelect();
       self._updateBriefRotationLabel();
-    }, 1800);
+    });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.oracle) {
         setTimeout(function() { self._injectSaveBtn(); }, 500);
@@ -14671,7 +14653,7 @@ RPGACE.register('docsLinks', {
 
   init: function() {
     var self = this;
-    setTimeout(function() { self._inject(); }, 1200);
+    RPGACE.registerBootTask(function() { return self._inject(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === 'dashboard') self._inject();
     });
@@ -14846,7 +14828,7 @@ RPGACE.register('scheduleFixes', {
   init: function() {
     var self = this;
     self._patchAutoApply();
-    setTimeout(function() { self._patchAutoApply(); }, 1500);
+    RPGACE.registerBootTask(function() { return self._patchAutoApply(); });
     RPGACE.hooks.on('page:show', function(name) {
       if (name === RPGACE.CONFIG.pages.schedule) {
         setTimeout(function() { if (typeof window.showSched === 'function') window.showSched('daily'); }, 200);
@@ -14892,7 +14874,7 @@ RPGACE.register('agentsIntoOracle', {
   init: function() {
     var self = this;
     self._relocate();
-    setTimeout(function() { self._relocate(); }, 1500);
+    RPGACE.registerBootTask(function() { return self._relocate(); });
   },
 
   _relocate: function() {
@@ -15349,7 +15331,7 @@ RPGACE.register('careerStatCard', {
   init: function() {
     var self = this;
     self._render();
-    setTimeout(function() { self._render(); }, 1500);
+    RPGACE.registerBootTask(function() { return self._render(); });
     RPGACE.hooks.on('xp:awarded', function() { self._render(); });
     RPGACE.hooks.on('page:show', function() { self._render(); });
   },
