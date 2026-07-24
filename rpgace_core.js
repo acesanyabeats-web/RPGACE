@@ -3257,6 +3257,20 @@ RPGACE.register('taxonomyReviewQueue', {
     });
   },
 
+  // July 24 real bug fix (Alex reported "it's not there" with 77 real
+  // pending items confirmed live in Supabase - not a data problem, a
+  // rendering one). Two real issues found by reading the code, not
+  // guessed: (1) the insertion anchor `.section-title` is a leftover
+  // from the pre-July-20 dashboard - it doesn't exist anywhere inside
+  // #page-dashboard's current dashDeck card layout, so this always fell
+  // through to the page.firstChild fallback; (2) the trailing
+  // .catch(function(){}) silently swallowed any real failure with zero
+  // visible symptom - the exact same fail-silent pattern already found
+  // and fixed elsewhere in this file today, just never touched here.
+  // Anchoring to #dd-needs (a real, stable element in the current
+  // dashDeck structure) instead of the dead selector, and logging real
+  // failures instead of eating them, so the NEXT report (if any) comes
+  // with real evidence instead of another blind guess.
   _inject: function() {
     var self = this;
     var page = document.getElementById('page-dashboard');
@@ -3280,10 +3294,12 @@ RPGACE.register('taxonomyReviewQueue', {
         badge.innerHTML = '<span style="color:#9B59B6;font-size:12px;font-weight:700;">🌳 <span class="count">' + total + '</span> taxonomy item' + (total > 1 ? 's' : '') + ' waiting</span><span style="color:rgba(155,89,182,0.5);font-size:11px;">Review →</span>';
         badge.onclick = function() { self._openQueue(); };
 
-        var firstChild = page.querySelector('.section-title') || page.firstChild;
-        if (firstChild) page.insertBefore(badge, firstChild);
+        var needsPanel = document.getElementById('dd-needs');
+        var deck = document.getElementById('dd-deck');
+        var anchor = needsPanel || deck || page.firstChild;
+        if (anchor) page.insertBefore(badge, anchor);
         else page.appendChild(badge);
-      }).catch(function() {});
+      }).catch(function(e) { console.warn('[taxonomyReviewQueue] badge injection failed:', e.message); });
   },
 
   _openQueue: function() {
