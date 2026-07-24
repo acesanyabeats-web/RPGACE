@@ -4728,6 +4728,7 @@ RPGACE.register('dashDeck', {
       '.dd-card:nth-child(2){animation-delay:.05s}.dd-card:nth-child(3){animation-delay:.1s}.dd-card:nth-child(4){animation-delay:.15s}' +
       '.dd-card:nth-child(5){animation-delay:.2s}.dd-card:nth-child(6){animation-delay:.25s}.dd-card:nth-child(7){animation-delay:.3s}.dd-card:nth-child(8){animation-delay:.35s}' +
       '.dd-card:nth-child(9){animation-delay:.4s}.dd-card:nth-child(10){animation-delay:.45s}.dd-card:nth-child(11){animation-delay:.5s}' +
+      '.dd-card:nth-child(12){animation-delay:.55s}.dd-card:nth-child(13){animation-delay:.6s}' +
       '.dd-card:hover{border-color:var(--border2);transform:translateY(-2px)}.dd-card:active{transform:translateY(0)}' +
       '.dd-eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
       '.dd-card h3{font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:Rajdhani,sans-serif}' +
@@ -4772,6 +4773,14 @@ RPGACE.register('dashDeck', {
     { key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { RPGACE.modules.dashDeck._openResearch(); } },
     { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
     { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Your knowledge tree: browse phyla, approve placements, confirm fusions.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); } },
+    // July 24 (Alex, second real report - the dd-needs-list line item wasn't
+    // enough, he wanted an actual card like the other 11) - a dedicated
+    // ENTER-able tile, distinct from "Taxonomy & Review" above: that one
+    // browses the tree (a destination page); this one is a direct action
+    // straight into the pending-approval popup, same shape as every other
+    // card here. Reuses taxonomyReviewQueue._openQueue() - no new popup
+    // logic, just a real, visible front door to it.
+    { key: 'reviewQueue', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📋', name: 'Review Queue', desc: 'Pending taxonomy placements and fusion links waiting on your approval.', go: function() { var rq = RPGACE.modules.taxonomyReviewQueue; if (rq && rq._openQueue) rq._openQueue(); } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
     { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { var d = RPGACE.modules.dashDeck; d._prefillOracle(d.MORNING_PROMPT); } },
@@ -4936,6 +4945,7 @@ RPGACE.register('dashDeck', {
         var links = results[1] || [];
         var total = props.length + links.length;
         set('taxonomy', total + ' item' + (total === 1 ? '' : 's') + ' awaiting review');
+        set('reviewQueue', total ? (total + ' item' + (total === 1 ? '' : 's') + ' waiting') : 'All caught up');
         if (!story || !list) return;
         var bits = [];
         list.innerHTML = '';
