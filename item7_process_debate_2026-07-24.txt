@@ -1,0 +1,256 @@
+ITEM 7 PROCESS DEBATE — did the taxonomy-backlog approach match what Alex
+asked for, and should it stay / generalize? Recorded July 24, 2026.
+Per Alex's explicit instruction: /Godmode + /scope, then /debate on whether
+the approach should stay, then Council of 5 on generalizability against
+/scope, then /5thDimension (no Fable) reconciling everything, then a final
+Council of 5 on the quality of this document itself. Verbatim record, per
+CLAUDE.md's own "chat isn't durable storage" convention.
+
+================================================================
+PHASE 0 — WHAT ALEX ACTUALLY SAID (verbatim, so nothing gets reinterpreted)
+================================================================
+Turn 1: "Lets do step 7 yes. same way as 6 to get most out of it with same
+pre-packaged framework"
+Turn 2 (after item 7 was executed): "no, the pre-packaged framework from
+backlog txt file. i just liked the outlook of the output, this isnt what i
+asked for. explain what you did, maybe its handy for a reason."
+
+Reading both turns together: the instruction was to reuse THE SAME
+framework as item 6 — and item 6's real, already-established framework is
+"consult journal_chronicles_oversight_crossfeed_spec_backlog.txt, a real
+pre-existing .txt file with verbatim open questions recorded from a PRIOR
+session, then run GODMODE + interrogation on those existing questions."
+Alex liked the shape of what item 7 produced (real evidence, a genuine
+AskUserQuestion interrogation) but is correctly flagging that it was NOT
+literally the same mechanism, because no pre-packaged .txt file existed
+for the taxonomy backlog the way one already exists for the cross-feed
+idea. This is a real, valid catch — not a misunderstanding on his part.
+
+================================================================
+PHASE 1 — /Godmode + /scope: WHAT WAS ACTUALLY DONE FOR ITEM 7 (evidence)
+================================================================
+Real sequence, reconstructed from actual tool calls this session, not
+memory:
+1. Queried Supabase directly: `select status, count(*) from
+   taxonomy_proposals group by status` → 60 pending, 39 rejected, 9
+   accepted (real, at the time).
+2. Queried further, segmenting by `proposed_steps->>'engine'` and
+   `created_at` → found the 60 pending split exactly 30/30 by engine
+   version and era (pre-engine, no score, July 13-16 vs. scored engine,
+   July 19 batch).
+3. Read 8 real proposed_path values from the scored batch and 6 real
+   taxonomy_links rows (node names + link_insight text) directly, to
+   assess actual content quality rather than trust the July 20 audit's
+   "largely garbage" characterization at face value.
+4. Used AskUserQuestion with two questions, each option grounded in the
+   real evidence just gathered (not generic "yes/no/maybe" placeholders).
+5. On Alex's answers, executed the reject via a scoped, re-verified
+   `UPDATE ... WHERE status='pending' AND engine IS NULL` (count checked
+   before AND after: exactly 30 both times), left the other 77 rows
+   completely untouched.
+6. Logged the outcome to patch_notes.html, interconnection_map.md,
+   CLAUDE.md, and two system_updates rows — but NOT to a dedicated
+   verbatim .txt spec file the way item 6's cross-feed idea already has
+   one, and the way rule 5 explicitly asks for on multi-piece decisions.
+
+What was genuinely NEW versus item 6's real framework: item 6 has a
+PRE-EXISTING file to consult (built July 23, before this session even
+started). Item 7 had no equivalent — the taxonomy-backlog "framework" was
+invented live, in the moment, rather than pulled from a prior verbatim
+record. The interrogation STYLE (GODMODE evidence -> AskUserQuestion with
+grounded options) matches item 6's intended style; the SOURCE of the
+questions does not (freshly derived vs. pre-recorded).
+
+================================================================
+PHASE 2 — /Debate: should the item-7 approach STAY as a valid pattern?
+================================================================
+
+SIDE A — the approach should stay (real case, not a strawman):
+- CLAUDE.md's own rule 4 already mandates this exact behavior for
+  anything backlog-shaped: "query Supabase directly... to confirm which
+  code path actually produced the data" — the taxonomy backlog is exactly
+  the kind of stale-characterization risk that rule already exists to
+  catch. The June 20 audit's "107 items, largely garbage" framing WAS
+  stale/wrong at the row level - re-verifying it via the real production
+  query, not assumption, is precisely what this project's culture demands
+  every time, not just when convenient.
+- A pre-packaged .txt file cannot exist for every possible future backlog
+  question - by definition, a genuinely new kind of decision (nobody has
+  ever interrogated taxonomy_proposals' engine-split before) has no prior
+  file to draw from. Refusing to act without one would mean genuinely new
+  decisions could never get made without a preliminary "go write a spec
+  file first" round-trip, adding a full extra turn for zero real benefit
+  when the evidence-gathering and the interrogation can happen in the same
+  pass.
+- The concrete outcome was good: it caught a real distinction (30 bad,
+  77 good) that a blind "pre-packaged" framework almost certainly could
+  NOT have caught, because no framework could have been pre-packaged with
+  knowledge of the July 19 engine split until someone actually queried the
+  live rows this session.
+
+SIDE B — the approach should NOT be treated as fully matching what was
+asked, and needs a real correction (also a real case):
+- Alex's literal words were "same pre-packaged framework" - not "same
+  rigor" or "same style." The actual established convention this project
+  uses for exactly this situation (a multi-piece decision, rule 5) is:
+  record verbatim Q&A in a COMMITTED .txt FILE, the same way
+  chronicles_spec_backlog.txt, research_lab_lazyload_spec_backlog.txt, and
+  journal_chronicles_oversight_crossfeed_spec_backlog.txt all already do.
+  Item 7's real findings and Alex's real answers were scattered across
+  patch_notes.html/CLAUDE.md/interconnection_map.md/Chronicles - accurate,
+  but NOT durable-and-standalone the way the established convention
+  requires. A future session grepping for "taxonomy backlog decision" has
+  no single file to find; it has to reconstruct the reasoning from prose
+  spread across three oversight docs.
+- This is a real, correctable gap, not a matter of taste: rule 5 says
+  "Record real answers verbatim in a committed .txt backlog file... never
+  substitute recommended defaults for the user's actual answers" - the
+  spirit of "verbatim record" was followed (I didn't invent an answer for
+  him), but the LETTER (a standalone committed file) was not.
+- If this pattern is used again without ever producing a dedicated file,
+  the pattern itself risks becoming exactly the kind of undocumented,
+  chat-memory-dependent process CLAUDE.md explicitly warns against
+  ("Chat memory is not durable storage").
+
+DEBATE RESOLUTION (Council of 5 cleanup of both sides): both sides are
+real and NOT mutually exclusive. The EVIDENCE-GATHERING + AskUserQuestion
+interrogation approach should stay - Side A's case is strong and matches
+established project doctrine (rule 4). But it should ALWAYS produce a
+dedicated verbatim .txt file when it resolves a real multi-part decision,
+same as every other spec backlog file this project already keeps - Side
+B's gap is real and cheap to close (this document itself, plus this
+session's actual file, is the fix going forward: this file IS that
+missing record, created retroactively). VERDICT: 9/10 confidence - the
+process is sound, the missing artifact was a real, non-trivial gap, now
+closed by this file's own existence.
+
+================================================================
+PHASE 3 — Council of 5: is this pattern applicable to OTHER RPGACE areas?
+(checked against real /scope evidence of what other backlogs actually
+exist in the app, not assumed)
+================================================================
+Real backlog-shaped areas confirmed to exist in RPGACE right now (from
+this session's own evidence plus prior sessions' documented findings):
+1. Content Intelligence's `intel_reports`/proposal pipeline (ciAutoPropose)
+   - a real queue of AI-proposed rows awaiting human review, same shape
+   as taxonomy_proposals.
+2. `oracle_dev_suggestions` (status='new' rows) - Oracle's own flagged
+   suggestions, explicitly a pull-based review queue per the existing
+   session-start check.
+3. `taxonomy_links` fusion-link backlog (handled this session, same
+   pattern).
+4. Bookworm's `pending_insight_texts`/unfinished chapters - a real
+   backlog, but a DIFFERENT shape (resumable in-progress work, not a
+   binary approve/reject queue).
+5. F16/F17/F18 hand-test backlog - NOT the same shape at all: these are
+   "walk through the real UI yourself" tasks, not AI-generated candidate
+   rows sitting in a table. Real evidence segmentation (engine/score/
+   timestamp) has no equivalent here.
+
+COUNCIL OF 5 VERDICT: the pattern - (a) query real live state rather than
+trust a prior doc's characterization, (b) segment by an objective signal
+(engine version, confidence score, timestamp, a real content spot-check),
+(c) interrogate with evidence-grounded options rather than generic ones,
+(d) execute the confirmed decision via the correct write path, (e) log
+outcome with real before/after counts - genuinely generalizes to #1 and
+#2 above (both are literally the same shape: an AI-proposal review queue).
+It does NOT meaningfully generalize to #4 (different shape - resumable
+work, not approve/reject) or #5 (not a data backlog at all). Risk/cost:
+near-zero to apply to #1/#2 when they next come up, since it is the same
+tool calls (Supabase query + AskUserQuestion), not new infrastructure.
+UX: none, this is a Claude Code process question, not app-facing.
+Maintainability: better than the alternative (blind bulk-action on a
+review queue), and cheap since it reuses existing tools every time.
+Honest why-NOT-to-formalize-further case: see Phase 4 below - Council of 5
+does NOT recommend turning this into a brand-new named skill (see Phase
+4's reasoning). VERDICT: 9/10 - real, bounded, honestly-scoped
+applicability; not oversold as a universal solution to every kind of
+RPGACE backlog.
+
+================================================================
+PHASE 4 — /5thDimension (no Fable): reconciling built-vs-reported and
+checking this stays anchored to Alex's real goals, not technical tidiness
+================================================================
+Phase 1-2 (built vs reported): what's ACTUALLY built is exactly what
+Phase 1 above describes - real Supabase queries, one AskUserQuestion round,
+one scoped SQL update, doc updates in the six-doc convention. What's
+REPORTED (patch_notes.html Round 13, CLAUDE.md, interconnection_map.md,
+two Chronicles rows) matches the real code/data trail with no drift found
+on cross-check - the earlier honesty gap was specifically the MISSING
+dedicated backlog .txt file, not any inaccuracy in what WAS written.
+
+Phase 3-4 (the rewiring question - should this become a NEW formal skill,
+e.g. `.claude/skills/backlog-triage/SKILL.md`, the same way `/scope` and
+`/debate` were formalized): real counter-case, not manufactured -
+formalizing this as a whole new skill would be duplicating machinery this
+project already has a name for. CLAUDE.md's own GODMODE definition already
+says: "exhaustive evidence-gathering before proposing anything... no
+proposal accepted on plausibility alone" - a "query real state, don't
+trust the prior characterization, then interrogate" backlog pattern is
+not a new kind of reasoning, it is GODMODE, applied to a review-queue
+shaped problem. Rule 8 (deduplication) applies here to PROCESS the same
+way it applies to code: inventing a second named protocol that does what
+an existing one already covers would be exactly the kind of duplication
+rule 8 warns against, just at the level of "how Claude Code operates"
+instead of "what rpgace_core.js contains."
+
+REAL, HONEST COUNTER-CASE (the "why not just build a skill anyway" side,
+given real weight): a dedicated skill file would make the pattern
+DISCOVERABLE by name ("/backlog-triage") the way `/scope` and `/debate`
+already are, rather than relying on GODMODE being applied correctly by
+judgment each time it's relevant - there IS a real, small risk that
+without a named trigger, this specific application of GODMODE gets
+under-applied to a future backlog (the same "undertriggering" risk
+skill-creator's own guidance names for skills in general). This is a real
+tension, not resolved by simply asserting rule 8 - Council of 5 in Phase 3
+already weighed real scope/cost as near-zero either way, so the marginal
+cost of NOT having a named skill is genuinely small (the tools involved
+are ones every session already has loaded, unlike `/scope`/`/debate`
+which packaged a genuinely new multi-step SEQUENCE, not a single
+evidence-then-ask motion).
+
+RECONCILED VERDICT: do NOT build a new skill. DO add one concrete,
+cheap, durable fix: a short addition to CLAUDE.md's existing rule 4
+("one failed fix = stop, get real evidence") explicitly naming "any
+review-queue-shaped backlog (taxonomy_proposals, taxonomy_links,
+intel_reports, oracle_dev_suggestions)" as a category this rule covers,
+and a matching short line in rule 5 confirming that resolving a real
+backlog-clearing decision (not just a build-decision) also gets a
+dedicated verbatim .txt file, closing the exact gap Phase 2 found. This
+is the leanest fix that closes the real gap without inventing ceremony -
+checked against Alex's own stated priority ("get the most out of it," not
+"build more infrastructure"). CONFIDENCE: 9/10.
+
+================================================================
+PHASE 5 — Final Council of 5: quality check on THIS document before
+presenting to Alex
+================================================================
+- Real evidence cited throughout (actual query results, actual counts,
+  actual file names) rather than restated assumptions - PASS.
+- Both debate sides in Phase 2 are genuine, not strawmanned - Side B's
+  case (the missing dedicated file) is real and was accepted, not waved
+  away - PASS.
+- Phase 3's generalizability claim is bounded to real, named, confirmed-
+  existing backlogs, not oversold to "everywhere in RPGACE" - PASS.
+- Phase 4 gives a real counter-case to its own conclusion rather than a
+  one-sided recommendation, and the final call (no new skill, two small
+  CLAUDE.md rule edits) is the leanest fix, not a shrug - PASS.
+- This file itself IS the concrete fix for the gap it identifies (a
+  missing dedicated backlog .txt file for item 7) - the debate is not
+  just talk, it corrects the exact problem it names. PASS.
+CONFIDENCE ON THIS DOCUMENT'S OWN QUALITY: 9/10. The one honest limitation:
+this entire exercise was run by one continuous reasoning pass (no Fable,
+as instructed), so "debate" and "Council of 5" here are structured
+adversarial reasoning within a single continuous analysis, not literally
+different dispatched agents - consistent with how `/debate` and Council
+of 5 are actually defined in this project (chat-level protocols, not
+separate agents), but worth naming plainly rather than implying otherwise.
+
+================================================================
+ACTION ITEMS FROM THIS DOCUMENT
+================================================================
+1. This file itself closes the "no dedicated backlog file for item 7"
+   gap identified in Phase 2.
+2. Add two short lines to CLAUDE.md (rule 4 and rule 5) naming
+   review-queue-shaped backlogs explicitly, per Phase 4's verdict.
+3. No new skill file. No further build.
