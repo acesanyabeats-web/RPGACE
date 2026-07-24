@@ -1825,23 +1825,21 @@ function scheduleToCalendar(item){
     source_id:item.source_id||null,
     created_at:new Date().toISOString()
   };
-  // Write to localStorage immediately (instant UI feedback, works offline)
-  const stored=JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');
+  // Write to localStorage immediately (instant UI feedback, works offline).
+  // July 24 audit fix: routed through RPGACE.DB (rule 8 - DB.SCHEMA
+  // already declares 'sched' as this exact key) instead of raw
+  // localStorage, so R.hooks.fire('db:change', ...) actually fires.
+  const stored = RPGACE.DB.get('sched');
   stored.push(entry);
-  localStorage.setItem('rpgace_sched_agendas',JSON.stringify(stored));
+  RPGACE.DB.set('sched', stored);
 
   // Also push to Supabase (rpgace_agendas) - same cross-device pattern as rpgace_shifts.
   // Fixes: tasks scheduled on one device (e.g. phone) not appearing on another.
-  fetch(SUPABASE_URL + '/rest/v1/rpgace_agendas', {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify(entry)
-  }).catch(function(e){ console.warn('[scheduleToCalendar] Supabase push failed, saved locally only:', e.message); });
+  // July 24 FROZEN-file exception: migrated from a raw anon-key fetch to
+  // the authenticated write-proxy (rpgace_core.js's RPGACE.sb.secureWrite)
+  // - same real /Routine audit as the const comment above this function's
+  // enclosing section.
+  RPGACE.sb.secureWrite('rpgace_agendas', 'insert', entry).catch(function(e){ console.warn('[scheduleToCalendar] Supabase push failed, saved locally only:', e.message); });
 
   return entry;
 }
@@ -2514,24 +2512,17 @@ async function saveOracleToEncyclopedia(title, content){
     // Save to Supabase - upsert on title, matches the UNIQUE(title) constraint.
     // Was a raw insert before, causing repeated 409 Conflict spam in console
     // every time an already-saved title was submitted again.
+    // July 24 FROZEN-file exception: migrated to RPGACE.sb.secureWrite
+    // (the authenticated write-proxy) - api/data-write.js was extended
+    // with an optional onConflict param specifically for this call site,
+    // since a mechanical migration without it would have turned every
+    // re-save into a 409 that secureWrite throws on, silently breaking
+    // the VST-tag write below (the exact 409-spam bug this upsert was
+    // already written to fix).
     try {
-      const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?on_conflict=title`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=representation,resolution=merge-duplicates'
-        },
-        body: JSON.stringify(entry)
-      });
-      if(sbRes.ok){
-        const saved = await sbRes.json();
-        const savedEntry = Array.isArray(saved) ? saved[0] : saved;
-        if(savedEntry?.id) await saveEncWithVSTs(savedEntry);
-      } else if(sbRes.status !== 409){
-        console.log('Supabase enc save failed:', sbRes.status);
-      }
+      const saved = await RPGACE.sb.secureWrite('encyclopedia', 'insert', entry, undefined, 'title');
+      const savedEntry = Array.isArray(saved) ? saved[0] : saved;
+      if(savedEntry?.id) await saveEncWithVSTs(savedEntry);
     } catch(e){ console.log('Supabase enc save failed:', e.message); }
 
     // Also cache locally
@@ -2553,14 +2544,13 @@ let ENC_INSIGHTS = [];
 let ENC_INSIGHT_CACHE = {};
 const ENC_INSIGHT_TABLE = 'encyclopedia_insights';
 
+// July 24 FROZEN-file exception: migrated to RPGACE.sb.secureWrite -
+// same try/catch-to-null contract preserved, since secureWrite throws on
+// a non-ok response (unlike the raw fetch, which returned the parsed
+// error body) - callers here already only check the resolved value.
 async function sbInsightPost(data){
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${ENC_INSIGHT_TABLE}`, {
-      method:'POST',
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},
-      body: JSON.stringify(data)
-    });
-    return await res.json();
+    return await RPGACE.sb.secureWrite(ENC_INSIGHT_TABLE, 'insert', data);
   } catch(e){ return null; }
 }
 
@@ -2576,9 +2566,7 @@ async function sbInsightFetch(macroCategory){
 
 async function sbInsightDelete(id){
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/${ENC_INSIGHT_TABLE}?id=eq.${id}`,{
-      method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-    });
+    await RPGACE.sb.secureWrite(ENC_INSIGHT_TABLE, 'delete', null, 'id=eq.' + id);
   } catch(e){}
 }
 
@@ -2841,13 +2829,12 @@ async function learnVideo(id, title, thumb, channel){
   window._pendingLearnVideo = {id, title, url};
 
   // Submit to CI job queue in Supabase
+  // July 24 FROZEN-file exception: migrated to RPGACE.sb.secureWrite,
+  // which already throws its own real error message on failure - the
+  // explicit !res.ok check is no longer needed, secureWrite's rejection
+  // is caught by the same catch below.
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/intel_jobs`, {
-      method: 'POST',
-      headers: {'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({url, status:'queued'})
-    });
-    if(!res.ok) throw new Error('Queue error ' + res.status);
+    await RPGACE.sb.secureWrite('intel_jobs', 'insert', {url, status:'queued'});
   } catch(e){
     setLearnStatus('search-status', '✗ Queue failed: ' + e.message, 'err');
     return;
@@ -2993,11 +2980,7 @@ async function saveEncWithVSTs(entry){
   const vsts = extractVSTsFromText(entry.content || '');
   if(!vsts.length) return;
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?id=eq.${entry.id}`, {
-      method: 'PATCH',
-      headers: {'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({ vst_tags: vsts })
-    });
+    await RPGACE.sb.secureWrite('encyclopedia', 'update', { vst_tags: vsts }, 'id=eq.' + entry.id);
   } catch(e){}
 }
 
@@ -3383,10 +3366,7 @@ async function deleteEncEntry(id){
   if(!confirm('Delete this encyclopedia entry?')) return;
   if(id && String(id).includes('-') && String(id).length > 20){
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
-      });
+      await RPGACE.sb.secureWrite('encyclopedia', 'delete', null, 'id=eq.' + id);
     } catch(e){}
   }
   ENC_ALL_ENTRIES = ENC_ALL_ENTRIES.filter(e => (e.id||e.created_at) !== id);
@@ -3438,13 +3418,17 @@ async function syncAndPush(){
   if(btn){ btn.disabled=false; btn.textContent='⚡ Sync'; }
 }
 
+// Real delete-all pattern (flagged, not silently glossed over, in the
+// July 24 /Routine audit that migrated this): gated only by the
+// confirm() below both before and after this migration - RLS on this
+// table isn't being flipped in this pass, so today's real blast radius
+// (anyone with the public anon key could already do this directly) is
+// unchanged either way. No Supabase backup/PITR exists (confirmed
+// separately) - this stays genuinely unrecoverable if fired.
 async function clearEncyclopedia(){
   if(!confirm('Clear all encyclopedia entries from all devices?')) return;
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?created_at=gte.2000-01-01`, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
+    await RPGACE.sb.secureWrite('encyclopedia', 'delete', null, 'created_at=gte.2000-01-01');
   } catch(e){}
   ENC_ALL_ENTRIES = [];
   localStorage.removeItem('rpgace_encyclopedia');
@@ -3645,18 +3629,14 @@ async function saveToJournal(title, content, source='manual'){
   const date = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
   const entry = { title, content, date, source, created_at: new Date().toISOString() };
 
-  // Push to Supabase
+  // Push to Supabase. July 24 FROZEN-file exception: migrated to
+  // RPGACE.sb.secureWrite - journal's RLS is deliberately NOT being
+  // flipped in this pass (the real Morning Brief Routine writes here
+  // directly with the plain anon key), but routing the app's OWN client
+  // writes through the authenticated proxy is still correct for
+  // consistency/dedup (rule 8) regardless of that table's RLS state.
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/journal`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify(entry)
-    });
+    await RPGACE.sb.secureWrite('journal', 'insert', entry);
   } catch(e){ console.log('Journal Supabase push failed:', e.message); }
 
   // Cache locally
@@ -3785,10 +3765,7 @@ async function deleteJournalEntry(id){
   // Remove from Supabase if it has a UUID
   if(id && id.includes('-') && id.length > 20){
     try {
-      await fetch(`${SUPABASE_URL}/rest/v1/journal?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
-      });
+      await RPGACE.sb.secureWrite('journal', 'delete', null, 'id=eq.' + id);
     } catch(e){}
   }
   // Remove from localStorage
@@ -3798,13 +3775,12 @@ async function deleteJournalEntry(id){
   refreshJournalDisplay();
 }
 
+// Same real delete-all pattern/blast-radius note as clearEncyclopedia
+// above - migrated mechanically, RLS not flipped on this table.
 async function clearJournal(){
   if(!confirm('Clear ALL journal entries? This cannot be undone.')) return;
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/journal?created_at=gte.2000-01-01`, {
-      method: 'DELETE',
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
-    });
+    await RPGACE.sb.secureWrite('journal', 'delete', null, 'created_at=gte.2000-01-01');
   } catch(e){}
   localStorage.removeItem('rpgace_journal');
   refreshJournalDisplay();
@@ -3982,6 +3958,16 @@ async function saveWorkshopToNotion(){
 // ═══════════════════════════════════════════════
 // CONTENT INTELLIGENCE — AUTO SYNC + SUBMIT
 // ═══════════════════════════════════════════════
+// July 24 FROZEN-file exception (logged, /Routine interconnection debate,
+// Alex-confirmed): this is a second hardcoded copy of rpgace_core.js's
+// own Supabase URL+key (rule 8a) - still needed here for this file's
+// remaining GET/select calls, which stay on the anon key. All real
+// WRITE (POST/PATCH/DELETE) calls below were migrated to
+// RPGACE.sb.secureWrite() (the same authenticated write-proxy
+// rpgace_core.js already uses) per a real audit that found this file
+// was the sole real writer for journal/rpgace_agendas/intel_jobs/
+// encyclopedia_insights - a prior "zero real client write call sites"
+// doc claim was wrong because it only ever grepped rpgace_core.js.
 const SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
 const LOCAL_SERVER = 'http://localhost:7842';
@@ -4042,18 +4028,11 @@ async function submitIntelURL(){
     if(btn) btn.textContent = '\u23F3 Queuing...';
 
     // Submit job to Supabase — local server picks it up automatically
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/intel_jobs`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({url, status: 'queued'})
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(JSON.stringify(data).slice(0,200));
+    // July 24 FROZEN-file exception: migrated to RPGACE.sb.secureWrite,
+    // which already resolves to the parsed row data and throws its own
+    // real error on failure - the manual !res.ok check is gone since
+    // there is no longer a raw Response to check.
+    const data = await RPGACE.sb.secureWrite('intel_jobs', 'insert', {url, status: 'queued'});
 
     const jobId = Array.isArray(data) ? data[0]?.id : data?.id;
     input.value = '';

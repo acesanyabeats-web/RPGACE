@@ -41,6 +41,18 @@ const ALLOWED_TABLES = new Set([
   'oracle_dev_suggestions',
   'taxonomy_decision_log',
   'oracle_fallback_queue',
+  // July 24 - main.js FROZEN-file migration (real /Routine audit): these
+  // 4 were the "zero real client write call sites" claim's real gap -
+  // the verifying grep never checked main.js, which is the sole writer
+  // for all 4. journal and intel_jobs also have real EXTERNAL writers
+  // (the Morning Brief Routine; a local Python server, port 7842) that
+  // hold only the plain anon key - being in this allowlist lets the
+  // app's OWN client route through here, but their RLS is deliberately
+  // NOT being flipped in the same pass, for exactly that reason.
+  'journal',
+  'encyclopedia_insights',
+  'rpgace_agendas',
+  'intel_jobs',
 ]);
 
 export default async function handler(req, res) {
@@ -56,7 +68,7 @@ export default async function handler(req, res) {
 
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { table, operation, payload, match } = body || {};
+    const { table, operation, payload, match, onConflict } = body || {};
 
     if (!ALLOWED_TABLES.has(table)) {
       return res.status(403).json({ error: 'Table not allowed: ' + table });
@@ -70,6 +82,18 @@ export default async function handler(req, res) {
 
     let url = SUPABASE_URL + '/rest/v1/' + table;
     let method;
+    // July 24 - real audit found saveOracleToEncyclopedia's upsert
+    // (?on_conflict=title, Prefer: resolution=merge-duplicates) has no
+    // equivalent here - a mechanical migration without this would turn
+    // every re-save of an existing title into a 409 that secureWrite
+    // throws on, silently breaking VST-tag writes that only ever ran
+    // after a successful save. Optional, only used by the one real
+    // upsert call site - every other insert is unaffected.
+    let prefer = 'return=representation';
+    if (operation === 'insert' && onConflict) {
+      url += '?on_conflict=' + onConflict;
+      prefer += ',resolution=merge-duplicates';
+    }
     if (operation === 'insert') method = 'POST';
     else if (operation === 'update') { method = 'PATCH'; url += '?' + match; }
     else { method = 'DELETE'; url += '?' + match; }
@@ -80,7 +104,7 @@ export default async function handler(req, res) {
         apikey: serviceKey,
         Authorization: 'Bearer ' + serviceKey,
         'Content-Type': 'application/json',
-        Prefer: 'return=representation',
+        Prefer: prefer,
       },
       body: operation === 'delete' ? undefined : JSON.stringify(payload),
     });

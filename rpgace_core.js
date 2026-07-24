@@ -10622,11 +10622,15 @@ RPGACE.register('config', {
       // where anon has been locked to read-only (Approach B, phased July 24).
       // Always returns the written row(s) (return=representation server-side),
       // unlike insert()/update() above which default to return=minimal.
-      secureWrite: function(table, operation, payload, match) {
+      // onConflict (5th, optional param, July 24): passes through to
+      // api/data-write.js for the one real upsert call site
+      // (saveOracleToEncyclopedia's ?on_conflict=title) - every other
+      // caller omits it and gets a plain insert, unchanged.
+      secureWrite: function(table, operation, payload, match, onConflict) {
         return fetch('/api/data-write', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: table, operation: operation, payload: payload, match: match }),
+          body: JSON.stringify({ table: table, operation: operation, payload: payload, match: match, onConflict: onConflict }),
         }).then(function(r) {
           return r.json().then(function(body) {
             if (!r.ok) throw new Error((body && body.error) || 'secureWrite failed');
@@ -10723,9 +10727,9 @@ RPGACE.register('config', {
     // still showing "pending" in the review queue. Same fix shape as the
     // one already documented on RPGACE.cache.clear() above.
     var _origSecureWrite = RPGACE.sb.secureWrite.bind(RPGACE.sb);
-    RPGACE.sb.secureWrite = function(table, operation, payload, match) {
+    RPGACE.sb.secureWrite = function(table, operation, payload, match, onConflict) {
       RPGACE.cache.clear(table);
-      return _origSecureWrite(table, operation, payload, match);
+      return _origSecureWrite(table, operation, payload, match, onConflict);
     };
 
     // Streaming Oracle client — replaces callOracle for new callers
