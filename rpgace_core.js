@@ -2603,19 +2603,8 @@ RPGACE.register('oracleDevBridge', {
   _flag: function(text, btn) {
     btn.disabled = true;
     btn.textContent = '⏳ Logging...';
-    fetch(SUPABASE_URL + '/rest/v1/' + this.TABLE, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify([{ suggestion_text: text.slice(0, 4000), category: 'oracle-flagged', status: 'new', source: 'oracle' }])
-    }).then(function(r) {
-      if (!r.ok) return r.text().then(function(t) { throw new Error('HTTP ' + r.status + ': ' + t.slice(0,150)); });
-      return r.json();
-    }).then(function() {
+    RPGACE.sb.secureWrite(this.TABLE, 'insert', [{ suggestion_text: text.slice(0, 4000), category: 'oracle-flagged', status: 'new', source: 'oracle' }])
+    .then(function() {
       btn.textContent = '✓ Sent to Claude Code';
       RPGACE.utils.toast('🧪 Logged for the next Claude Code session', 'rgba(74,144,226,0.9)', 2400);
     }).catch(function(e) {
@@ -7707,16 +7696,12 @@ RPGACE.register('phylumPath', {
         // it. Fire-and-forget, same as the fusion-link pass below - a
         // failed audit-log write must never block the real commit that
         // already succeeded.
-        fetch(RPGACE.sb.url('taxonomy_decision_log'), {
-          method: 'POST',
-          headers: RPGACE.sb.headers(),
-          body: JSON.stringify({
-            phylum_number: phylumNumber,
-            node_id: finalRow.id || null,
-            path: pathSoFar,
-            insight_text: (insightText || '').slice(0, 2000),
-            source: 'phylum_path',
-          }),
+        RPGACE.sb.secureWrite('taxonomy_decision_log', 'insert', {
+          phylum_number: phylumNumber,
+          node_id: finalRow.id || null,
+          path: pathSoFar,
+          insight_text: (insightText || '').slice(0, 2000),
+          source: 'phylum_path',
         }).catch(function() {});
         // Fire-and-forget - a missed fusion-link pass shouldn't block the
         // insight's own content generation, same pattern as F18's auto
@@ -15583,8 +15568,7 @@ RPGACE.register('chroniclesLog', {
         amount: amount,
         notes: g('#cf-notes') || null
       };
-      RPGACE.sb.insert('chronicles_finance', row).then(function(resp) {
-        if (!resp.ok) throw new Error('insert failed: ' + resp.status);
+      RPGACE.sb.secureWrite('chronicles_finance', 'insert', row).then(function() {
         RPGACE.cache.clear('chronicles_finance');
         if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast('✓ Logged to Chronicles', 'var(--gold)', 2200);
         pop.close();

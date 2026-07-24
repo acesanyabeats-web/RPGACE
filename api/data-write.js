@@ -37,6 +37,9 @@ const ALLOWED_TABLES = new Set([
   'conid_pot',
   'content_productions',
   'video_jobs',
+  'chronicles_finance',
+  'oracle_dev_suggestions',
+  'taxonomy_decision_log',
 ]);
 
 export default async function handler(req, res) {
