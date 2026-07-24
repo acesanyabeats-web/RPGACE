@@ -1,0 +1,137 @@
+DAILY TOP 10 — /Routine, July 24 2026 (second round, post-Bedtime)
+Real GODMODE evidence pass + Team1/Team2 debate + /5thDimension +
+Council of 5, per the /Routine skill's own fixed procedure.
+
+================================================================
+GODMODE EVIDENCE (git log, patch_notes.html Still Open, CLAUDE.md Current
+State, the rejected-but-drafted plan file)
+================================================================
+Today already shipped, verified: API-auth fix (incident, revert,
+re-verify, genuinely live), RLS parity fix (3 tables), Approach B phase 1
+write-proxy (7 tables, 32 call sites, deployed, gating-verified but NOT
+functionally confirmed by a real write yet), taxonomy backlog triage (30
+rejected, 77 left for Alex), the item-7 process debate, and two new
+skills (/Summary, /Bedtime) - /Bedtime already run once for real this
+session.
+
+Real still-open items confirmed via patch_notes.html + CLAUDE.md:
+Oracle 504 (deferred, credits), XSS audit (deferred, credits), item 6
+(cross-feed, real backlog file ready), item 8 (Composio rotation), the
+swipe-gesture freeze, F16/F17/F18 + several OLDER smoke tests
+(highlight-to-Phylum-Path button, 10-phylum browser click-through,
+multi-model pipeline/fusion-link/Percussio hand-tests), local_server.py
+not running, system_flow_map.md's per-module domain table still not
+rebuilt (only the count line was fixed).
+
+Plus: a fresh, real item from this exact conversation - Alex logged two
+ideas (OpenMontage video pipeline, Claude-Code-via-Supabase fallback) and
+asked for a full debate+Council-of-5+5thDimension judgment. That judgment
+was already drafted in full (plan file, now rejected at the approval gate
+- meaning the REASONING stands, only the write-to-disk step didn't
+happen yet).
+
+================================================================
+TEAM 1 — PROPOSED TOP 10
+================================================================
+1. Item 6: journal/Chronicles/Minotaur cross-feed - GODMODE+interrogation,
+   real pre-existing backlog file, carried over from yesterday, never
+   done.
+2. Confirm Approach B's real authenticated write succeeded - a genuine
+   loose end from today, blocks fully closing the security fix.
+3. Item 8: Composio key rotation - cheap, carried twice now.
+4. F16/F17/F18 hand-testing - cheap, bounded, closes 3 real
+   never-proven tags.
+5. Oracle 504 streaming fix - oldest-standing, most user-visible bug.
+6. XSS/innerHTML audit - pairs with #5, same hardening pass.
+7. Swipe-gesture freeze - real unsolved bug.
+8. Approach B phase 2 (remaining ~17 tables) - expand now that the
+   pattern is proven.
+9. Hygiene: rebuild system_flow_map.md's per-module table for real.
+10. Log the OpenMontage/Claude-fallback judgment.
+
+================================================================
+TEAM 2 — REAL COUNTER-CASE
+================================================================
+- Item 8 in Team 1's list (Approach B phase 2, all ~17 remaining tables)
+  is real risk-stacking: today already had one live incident (the
+  merge/revert) PLUS a first major write-proxy rollout. Attempting a
+  second, bigger expansion of the SAME architecture the same day, without
+  time to see phase 1 prove itself in actual use, is exactly the kind of
+  "don't patch blind a second time" risk this project's own rules warn
+  against - just applied to a bigger change, not a bug fix. Demote or
+  drop for today.
+- Item 10 (the OpenMontage/Claude-fallback logging) is nearly FREE - the
+  full debate reasoning is already drafted, this is a five-minute write-
+  and-commit, not comparable effort to item 6 or the Oracle 504 fix.
+  Ranking it #10 as if it competes for a slot wastes a real Top-10 slot;
+  it should be done immediately as a zero-cost first action, freeing a
+  slot for something Team 1 actually missed.
+- Team 1's #4 (F16/F17/F18) has recency bias: patch_notes.html's Still
+  Open section shows OLDER pending smoke tests Team 1 didn't mention at
+  all - "Highlight-to-Phylum-Path text-select button," "10-phylum Phylum
+  Path browser click-through," "Multi-model pipeline, fusion-link system,
+  Percussio's new tree/keywords." These have waited longer and are
+  equally real; folding F16-18 in with them as ONE combined smoke-test
+  sweep is more honest than treating the newest untested features as the
+  only priority.
+- `local_server.py` not running (real, cheap, zero Claude-Code cost -
+  Alex just needs to restart it) is a genuine INFRA item sitting in Still
+  Open that Team 1's list dropped entirely.
+
+================================================================
+DEBATE RESOLUTION
+================================================================
+- Team 2's risk-stacking case on Approach B phase 2: ACCEPTED. Dropped
+  from today's list, explicitly deferred to a future session once phase
+  1 has had real time to prove itself in actual use (not a rejection,
+  a sequencing correction).
+- Team 2's case on item 10 being oversized: ACCEPTED. Reframed as
+  "step 0" - executed immediately, not a competing Top-10 slot.
+- Team 2's recency-bias case: ACCEPTED. Combined into one real
+  "outstanding smoke-test sweep" covering F16/F17/F18 AND the older
+  pending ones, not just the newest.
+- local_server.py: ACCEPTED as a real, free addition.
+
+================================================================
+/5thDimension RECONCILIATION (no Fable)
+================================================================
+Built vs. reported: no drift found - everything in this list traces to a
+real patch_notes.html card, CLAUDE.md bullet, or this conversation's own
+content. Anchored to Alex's real goals: the governing 48-hour rule
+doesn't directly apply to most of these (RPGACE-infra is the standing
+exemption, per CLAUDE.md's own governing-rule carve-out) - items 2/3/7
+are direct security/infra closure, items 1/4/5/6 are real backlog clearing.
+Honest counter-case, same one raised in yesterday's Top-10 debate and
+still true: 9 real items plus a freebie risks shallow progress across
+all of them on a day that ALREADY shipped an enormous amount (auth fix,
+RLS parity, write-proxy, taxonomy triage, two new skills). Real
+resolution: tier the list rather than treat all 9 as equally "today."
+
+================================================================
+FINAL COUNCIL OF 5 — THE ACTUAL LIST
+================================================================
+STEP 0 (immediate, near-free): log the OpenMontage + Claude-Code-via-
+Supabase judgment for real (backlog file + doc updates + commit).
+
+TIER 1 (today's real priority):
+1. Item 6: journal/Chronicles/Minotaur cross-feed interrogation.
+2. Confirm Approach B's real authenticated write succeeded (needs
+   Alex to try one real review-queue action).
+3. Item 8: Composio key rotation.
+
+TIER 2 (pick up as time/energy allows, not guaranteed today):
+4. Outstanding smoke-test sweep (F16/F17/F18 + highlight-to-Phylum-Path
+   + 10-phylum browser click-through + multi-model/fusion-link/
+   Percussio hand-tests).
+5. Oracle 504 streaming fix (check real credit status first, don't
+   assume still blocked).
+6. XSS/innerHTML audit (same pass as #5).
+7. local_server.py restart + intel.bat python/py fix.
+8. Swipe-gesture freeze (needs Alex's own repro with perfWatch open).
+9. Hygiene: rebuild system_flow_map.md's per-module domain table for
+   real (only the count line was fixed earlier today).
+
+DROPPED FOR TODAY, NAMED HONESTLY:
+- Approach B phase 2 (remaining ~17 tables) - real risk-stacking concern,
+  deferred to a future session once phase 1 has proven itself in actual
+  use, not a rejection of the idea itself.
