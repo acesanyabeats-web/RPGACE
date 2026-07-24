@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🗺️ July 24 (Round 16) — Minotaur Map diagram for the Claude-fallback plan, drawn before it's built (Alex's own explicit request)</div>
+    <div class="card-body">
+      Before writing the actual fallback code, Alex asked for a real diagram so he could visualize the planned architecture first — a deliberate, named exception to this map's own standing rule ("a new river only once a flow is actually built and used, not speculatively"), stated as such directly in the diagram text itself rather than silently bent.<br><br>
+      <strong>Real design question resolved first:</strong> should this be a brand-new River XI, or fold into the existing River IX ("The Mirror and the Far Shore")? Evidence check: River IX already owns both ideas this reuses — water leaving RPGACE for a future Claude Code session, and a Routine reading a Supabase reservoir on its own clock (the real, already-built Morning Brief Routine, <code>trig_015uRjGVrdmiwc5zxq47mMA6</code>). Verdict: extend River IX via the existing "Dry Riverbeds" (planned/dashed) section rather than mint a new river — reuses an established pattern instead of inventing a new one, and keeps the "no speculative rivers" rule intact since nothing here claims to be built.<br><br>
+      Added to both <code>minotaur_map.html</code> (a new dashed flow: ground-worker call → credit-exhaustion fork → <code>oracle_fallback_queue</code> reservoir (not yet created) → a second hourly Routine draining it → answer written back, with the honest MVP caveat that nothing yet routes the answer back to the original waiting job) and <code>system_flow_map.md</code> §8's Mermaid (kept in sync in the same session, per this map's own footnote rule that the two must never drift). <strong>OpenMontage gets no diagram entry at all</strong> — its verdict was adopt-as-a-separate-tool, never an RPGACE-embedded flow, so it has nothing to attach to on this map.<br><br>
+      Div-balance checked clean on the HTML edit. Council of 5 pass on the diagram itself: real technical risk (none, docs-only), appropriately scoped (one flow, not overbuilt), cross-references real artifacts (the spec backlog file, the real trigger ID) so it won't drift, and is explicit that this is a deliberate one-time exception rather than a quiet rule change — 9/10, no real gaps found.
+    </div>
+  </div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🔍 July 24 (Round 15) — Approach B phase 2: a real gap found in phase 1's own "fully migrated" claim, fixed same session</div>
     <div class="card-body">

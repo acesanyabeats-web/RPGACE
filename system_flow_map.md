@@ -292,6 +292,7 @@ flowchart TD
         F12[/"Schedule Oracle Phase 2:<br/>carousel, two-tier session memory, auto-routing"/]
         PHYLA11[/"Phyla 11-21 through the<br/>7-step Development Framework"/]
         EPUB[/"EPUB/other-format upload<br/>same _createBookFromExtraction path<br/>as PDF upload"/]
+        FALLBACK[/"Claude Code fallback lane<br/>(judged July 24, not yet built —<br/>see openmontage_and_claude_fallback_<br/>spec_backlog_2026-07-24.txt)"/]
     end
 
     CARDS -.->|renders| BWPIPE
@@ -303,9 +304,14 @@ flowchart TD
     PHYLA11 -.->|extends ENABLED_PHYLA| DP
     EPUB -.->|new entry point| BWPIPE
     F12 -.->|extends| SO2[Schedule Oracle]
+    FALLBACK -.->|catches credit-exhaustion errors from| GW[the 3 shared ground-worker functions<br/>_callExtractor/_callGroundWorkerJSON/_callGroundWorkerText]
+    FALLBACK -.->|queues into, not yet migrated| FBQ[(oracle_fallback_queue<br/>NOT YET CREATED — Tier 3, needs<br/>Alex's explicit confirmation)]
+    FALLBACK -.->|drained by a 2nd hourly Routine, same mechanism as| MB[Morning Brief Routine<br/>trig_015uRjGVrdmiwc5zxq47mMA6]
 ```
 
 **July 22 correction**: the "Taxonomy Sorting Agent" and "Claude general-knowledge audit" nodes that used to sit in the PLANNED subgraph above are gone — tracing the real call chain showed `decidePlacement` already IS the one shared engine for book and non-book inputs (no separate agent was ever needed), and the general-knowledge audit was redesigned around `/debate` (comparison only, gated behind an explicit human decision to ever write anything) rather than the original 3-part tree-seeding design. `book_knowledge` and `jargon_encyclopedia` — what the Sorting Agent was actually described as blocking — are both shipped, read-only Postgres views over data already written by the existing pipeline above.
+
+**July 24 addition — Claude Code fallback lane, deliberately dashed.** Judged (not built) the same session as the OpenMontage verdict, via `/debate`+Council-of-5+`/5thDimension` (real record: `openmontage_and_claude_fallback_spec_backlog_2026-07-24.txt`). Scoped honestly as an async/batch fallback for background AI jobs only (Bookworm/Content-Intelligence/taxonomy placement) — never a live-chat replacement, since Claude Code Remote's `create_trigger` has a real hourly-minimum interval. Reuses River IX's own already-built mechanism (a Routine reading a Supabase reservoir on its own clock, same shape as the real Morning Brief Routine) rather than inventing a new one. The one real blocker: `oracle_fallback_queue` doesn't exist yet — creating it is a real Tier-3 Supabase migration that still needs Alex's own explicit go-ahead, separate from his "sounds good" on the idea in general. OpenMontage, judged the same session, does NOT appear anywhere in this diagram — its verdict was adopt as a fully separate operated tool, never an RPGACE-embedded flow, so it has no attach point here at all.
 
 ---
 
