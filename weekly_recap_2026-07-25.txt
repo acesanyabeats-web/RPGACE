@@ -1,0 +1,190 @@
+RPGACE — WEEKLY RECAP FOR /ROUTINE
+Written by /Bedtime (July 25, 2026, session end) specifically because Alex's
+weekly Claude API/Claude Code credit allowance is about to reset. Read this
+FIRST on the next session before /Routine re-derives the week from git log —
+it's the same real evidence /Routine's Team 1 evidence pass would gather
+anyway, pre-compiled so the next session can start strong instead of
+re-discovering a 138-commit week from scratch.
+
+Verified against real git log (--since="7 days ago" main) and real Supabase
+system_updates rows, not recalled from memory. Commit-date histogram:
+  2026-07-19: 15   2026-07-20: 11   2026-07-21: 3   2026-07-22: 23
+  2026-07-23: 30   2026-07-24: 36   2026-07-25: 20
+Total: 138 commits, July 19 01:20 UTC -> July 25 14:39 UTC.
+
+════════════════════════════════════════════════════════════════
+WHAT SHIPPED THIS WEEK, BY DAY (condensed — full detail in CLAUDE.md)
+════════════════════════════════════════════════════════════════
+
+July 19 — Token-cost audit (~8-10x per-chapter cost cut), taxonomy
+placement engine retuned and unified across book/non-book insight paths
+(the single decidePlacementScored function both Bookworm and Content
+Intelligence now share).
+
+July 20 (two sessions) — Dashboard rebuilt (dashDeck, 11→13 command
+cards), Research Lab lazy-loading fix + nav overhaul (leftNav drawer,
+pushState routing), Omnitrix formalized as the 3-agent workflow + the
+Judgment Funnel tiering, a full GODMODE project audit (found 3 real
+doc-drift corrections: Bookworm's insight loop had already run once,
+fusion links were 21/47 not "6", a 107-item review-queue backlog existed
+unlogged), AI Advisor page restructured onto real design tokens.
+
+July 22 — Council of 5 shipped as a real Oracle command. Aintergration
+applied to a ~150-chapter system-design book across 3 batches — found
+the real API-auth gap (zero server-side auth on any /api/*.js endpoint)
+and the client-side-password gap, both later fixed. Oracle gained real
+self-awareness (oracleAppGrounding), a fetch-content injection guard
+(oracleFetchGuard), a suggestion-back bridge (oracleDevBridge +
+oracle_dev_suggestions table), an append-only audit trail
+(taxonomy_decision_log), and a real pushed Morning Brief Routine. PWA
+install shipped. The career stat card was rebuilt onto real Supabase
+data (Output/Growth split lanes). Chronicles renamed and rebuilt into a
+full searchable log page + a personal finance ledger. /scope skill
+built. Jargon Encyclopedia + book_knowledge Postgres views shipped
+(zero new tables, reusing existing data).
+
+July 23 — A real incident and same-day recovery: the API-auth fix was
+merged on a bare "yes" mistaken for real confirmation the Vercel env
+vars were set, then reverted within the session once corrected — no
+lasting damage, standing lesson written into CLAUDE.md about what
+counts as real Tier-3 confirmation. Bookworm's PDF chapter-insight loop
+finally proven end-to-end (chapter 13, 12 insights approved). /Routine
+skill built and run for the first time (produced the first real
+two-team Top 10 debate).
+
+July 24 — API-auth confirmed genuinely LIVE this time (real 401 proof
+against production, not just "merged"). The "no loads after login" rule
+enforced project-wide via a new RPGACE.registerBootTask gate (~24
+modules migrated off ad hoc setTimeout injectors). The taxonomy
+review-queue button was fixed THREE times in one evening (a real
+insertBefore DOM bug, then a dead close-handler bug, then merged into
+one "Taxonomy & Review" dashboard card after Alex reported it still
+felt like two features) — each fix independently verified live, not
+assumed. A real Claude-Code-fallback lane was built for when API
+credits run low (oracle_fallback_queue + a Fallback Drain Routine).
+**The single biggest correction of the week**: Approach B's RLS
+restriction had been claimed "real" for days but a fresh independent
+audit found ALL 19 tables in the write-proxy allowlist still ran
+anon_all/USING(true) — zero actual protection existed despite three
+sessions of work. Fixed for real same day: main.js's 27 raw anon-key
+writes migrated first (to avoid breaking live writes), THEN RLS
+actually flipped on 17 tables, independently re-verified via a direct
+pg_policy catalog query (stronger proof than an HTTP test).
+
+July 25 (today, full session) — A real taxonomy review debate judged
+Alex's own 23/7 accept/reject decisions as sound, but found 42 of 47
+fusion-link confirms were a rapid clear-through via timestamp-gap
+analysis, not real review (a now-known-contaminated statistic, flagged
+not to be cited as a quality signal again). /Regeneration skill built
+(adopt-with-modification — the literal "always self-scores itself
+9/10" design was rejected as violating this project's own rule 4 and
+GODMODE boundary; built instead as a human-gated 3-tier audit). Its
+first real pass found and fixed 20 genuine taxonomy defects (14
+leaf-with-children, 2 duplicate-name clusters, 1 YouTube-title node) —
+13 legitimate phylum-11/13/16 seed nodes correctly left alone, not
+deleted just for pattern-matching. Aintergration reversed an earlier
+"Not applicable" verdict on emilkowalski/skills + pbakaus/impeccable
+once given real sources instead of a marketing page (named as its own
+rule-1 violation) — found and fixed a real WCAG contrast bug, a CI
+coverage gap, and a .gitignore gap in the process; installed 3 of 7
+Emil Kowalski skills. /Engineer skill built (bounded 3-pass loop with
+an Objective Completion Gate, replacing Alex's literal "zero bugs, 8/10
+minimum" unbounded-loop request). /DoNotDisturb (auto-approve all
+future permission prompts) was declined outright as a real safety
+boundary, with a scoped alternative offered instead. The 433-vs-198
+hardcoded-hex-color drift (flagged, not fixed, in the Aintergration
+pass) was closed for real: 326 of 433 hex occurrences reconciled to
+real style.css tokens. /improve-animations ran a full real audit and
+all 5 findings were executed same session (real easing tokens, 7
+duplicated drawer-panel code blocks collapsed into 1 shared helper, 3
+touch-unsafe hover-transform sites gated, 25 of 26 transition:all sites
+narrowed, 2 progress bars + 1 collapse panel moved off layout-triggering
+transitions — plus a real clipping bug fixed alongside). Alex reported
+seeing no visible change and was told honestly why (most of these were
+correctness/a11y/performance fixes, not a visual redesign — one
+concrete before/after did exist: no more content clipping in expanded
+insight cards). Finally, a new /impeccable skill was built wrapping
+Impeccable's free scanner (the full paid hook/23-command install hit a
+genuine HTTP 403 from Impeccable's own server, confirmed not a proxy
+issue) — RPGACE's own Oracle now passively surfaces recent Claude Code
+activity and the latest design-scan result via oracleAppGrounding,
+refreshed specifically when /Bedtime or /Summary run. First real scan
+logged: 58 anti-patterns found, none fixed yet.
+
+════════════════════════════════════════════════════════════════
+DEPLOYMENT STATE — verified, not assumed
+════════════════════════════════════════════════════════════════
+Latest commit (58e2296) confirmed READY on Vercel production via
+list_deployments, both main and claude/rpgace-master-steps-uobp98
+branches in sync, working tree clean, node --check passing on
+rpgace_core.js. Everything logged above is genuinely live on
+rpgace.vercel.app, not just committed.
+
+════════════════════════════════════════════════════════════════
+REAL, STILL-OPEN BACKLOG — the actual candidate list for next Top 10
+════════════════════════════════════════════════════════════════
+Deduplicated across the whole week's CLAUDE.md entries, not just
+today's. /Routine's next Team 1 pass should treat this as its real
+evidence base rather than re-deriving it:
+
+1. Oracle 504 streaming fix — deferred all week, needs real Claude API
+   calls to build/verify against credits.
+2. XSS/innerHTML audit of fetched external content (web/YouTube/
+   Instagram text reaching Oracle or the DOM unsanitized) — also
+   credit-gated, also deferred all week.
+3. journal/Chronicles/Minotaur cross-feed idea — raised July 23, never
+   had its GODMODE+interrogation pass. Real spec backlog file ready:
+   journal_chronicles_oversight_crossfeed_spec_backlog.txt.
+4. Composio key rotation — needs Alex's own action (not a code task).
+   Dropped from two separate Top-10 drafts this week before being
+   caught both times — a demonstrated recurring blind spot, not a
+   one-off; give it real weight next time, don't let it drop a third.
+5. Taxonomy backlog remainder (~57 of the original 107 pending items,
+   after this week's real fixes) — intentionally left for Alex's own
+   manual review, not something Claude Code should touch unprompted.
+6. The swipe-gesture freeze — still genuinely unsolved despite three
+   separate root-cause passes this week. The 3 layout-triggering
+   transition sites checked and ruled out (again) this session are now
+   converted to transform anyway (an unrelated performance win), but
+   the actual freeze cause remains unknown.
+7. Approach B: DELETE through the write-proxy, and the 6 deliberately-
+   excluded tables (journal, intel_jobs/reports/watchlist,
+   intel_bibliography, oracle_fallback_queue), remain unconfirmed/
+   unmigrated. Real spec written (six_table_external_writer_migration_
+   spec_2026-07-24.txt) but needs Alex's actual answers on 2 open
+   questions before any of it proceeds.
+8. F16 (Beatstars listing)/F17 (video pipeline stages)/F18 (auto visual
+   treatment) — real features, shipped, never hand-tested by Alex once
+   this entire week despite being on multiple prior Top-10 lists.
+9. Highlight-to-Phylum-Path text-selection button — same, never
+   hand-tested.
+10. A Lighthouse/PageSpeed audit — flagged as missing twice this week
+    (once in the July 22 Aintergration book pass, once in a /Routine
+    debate), never actually run.
+11. The 58 real design-quality findings from today's first /impeccable
+    scan (21 undersized-ui-text, 16 wide-tracking, 15 tiny-text, 2
+    low-contrast, 4 one-offs) — logged, zero fixed. A real, ready-made
+    next task if Alex wants a design-polish session.
+12. None of today's animation fixes or the new Oracle-grounding
+    extension have been hand-tested in a real browser yet — same
+    honest gap named when Alex asked why he didn't see visible change.
+13. The full Impeccable install (persistent hook + 23-command
+    apparatus) is blocked by a real HTTP 403 from Impeccable's own
+    server in this environment — worth a quick re-check next session
+    in case that's since resolved, but not worth re-attempting blind.
+
+════════════════════════════════════════════════════════════════
+FOR /ROUTINE, SPECIFICALLY
+════════════════════════════════════════════════════════════════
+Alex's own framing for this file: his weekly credit allowance is
+ending, and he wants to "start off strong" next time it resets. That
+means: don't spend the first chunk of the next fresh-credit session
+re-deriving what happened this week — read this file, confirm it's
+still accurate against a quick real git-log/system_updates check (it
+should be, nothing changes between sessions), and go straight into the
+Team 1 vs Team 2 debate over the 13 items above. Item 4 (Composio
+rotation) and item 6 (swipe freeze) are the two with the longest real
+tenure on this backlog without being resolved — worth asking directly
+whether they're still worth carrying forward a third/fourth time or
+should be explicitly deprioritized with a real reason, rather than
+silently re-appearing again.

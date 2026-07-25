@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🏁 July 25 — SESSION CLOSED via /Bedtime (with /Engineer, /scope, /Godmode). Real state: 8 real builds/fixes shipped and verified live, a full weekly recap written for the next /Routine.</div>
+    <div class="card-body">
+      Alex asked for a real close-out ahead of his weekly credit reset, specifically wanting the next `/Routine` to open with a weekly recap instead of re-deriving the week from scratch.
+      <br><br>
+      <strong>Real evidence gathered, not recalled from memory</strong> (GODMODE + `/scope`): 138 commits across July 19-25 (histogram: 15/11/3/23/30/36/20 per day), confirmed via <code>git log --since="7 days ago"</code>, cross-checked against <code>system_updates</code> category counts for the same window. Working tree clean, `node --check` passing, both branches in sync, latest commit (<code>58e2296</code>) confirmed <code>READY</code> on production via <code>list_deployments</code> — the real `/Engineer`-style Truth Check this close-out ran before calling anything done.
+      <br><br>
+      <strong>This session alone shipped 8 real things, all independently verified live</strong>: the 433-vs-198 color-drift fix (326 hex values reconciled), a full `/improve-animations` execution (5 real findings, 7 duplicated drawer blocks collapsed into 1 shared helper, touch-safe hover gating, a real clipping bug fixed alongside), and the `/impeccable` skill + Oracle-grounding extension (real HTTP 403 found on Impeccable's full installer, scope correctly narrowed to what actually works, first real design scan logged - 58 findings, none fixed yet).
+      <br><br>
+      <strong>New this close-out: <code>weekly_recap_2026-07-25.txt</code></strong> — a full day-by-day condensation of the entire week (not just today), plus a deduplicated 13-item still-open backlog compiled across all seven days' CLAUDE.md entries (Oracle 504, XSS audit, journal/Chronicles/Minotaur cross-feed, Composio rotation, taxonomy backlog remainder, the still-unsolved swipe freeze, Approach B's remaining gaps, F16/F17/F18 + highlight-button hand-tests, a never-run Lighthouse audit, today's 58 unfixed design findings, unfixed animation hand-tests, and the blocked Impeccable install). Two items (Composio rotation, the swipe freeze) are flagged by name as having been dropped from prior Top-10 lists more than once — a real pattern worth addressing directly next time, not letting quietly recur a third time.
+      <br><br>
+      Hands off to `/Routine`, which should read the new recap file first.
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 25 (Round 29) — /impeccable skill built, RPGACE Oracle wired into recent Claude Code activity + design-scan findings</div>
     <div class="card-body">
