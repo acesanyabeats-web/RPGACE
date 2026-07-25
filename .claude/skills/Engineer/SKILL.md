@@ -1,0 +1,72 @@
+---
+name: Engineer
+description: RPGACE's development-and-verification loop — one bounded pass takes a declared goal list through /scope+GODMODE evidence, Omnitrix execution (Opus builds, Sonnet reviews, no Fable by default), a Council of 5 report written from the real diff, and then an independent Truth Check that re-verifies that report's own claims against actual git/file/deployment state before anything is called done. Use this skill whenever Alex says "/Engineer", or asks for a full build-verify-report cycle on a real development task rather than a one-off edit. Named by Alex July 25. Do NOT use this for a typo, a one-line fix, or a single-function bug (Tier 0/1 — handle those directly), and do NOT use it as a planning ritual — that is /Routine's job; /Engineer executes a goal list that already exists.
+---
+
+# /Engineer — build it, then prove the report about it is true
+
+Alex's own framing (July 25, verbatim): *"using /Scope, /omnitrix and /5thDimension without fable with opus 5 where needed. then council of 5 all actions into a report for me to read. then verify report against /scope and /godmode to access truth between installed changes and actual changes, then /Debate again back into the first /Debate prompt of this prompt to start a loop."*
+
+The core insight is genuinely good and belongs to this project already: **a report about what was built is a claim, not evidence.** RPGACE has been burned by exactly that gap repeatedly — the July 23 Minotaur Map restructure that was "done" but sat unmerged and invisible on the live site; the taxonomy review-queue badge whose earlier fix "never actually worked live" because `insertBefore` threw on every run into a swallowed `.catch()`; Approach B phase 1, logged as complete for four tables that a later grep proved had never been migrated; the RLS flip that three sessions of docs described as delivering protection when a direct `pg_policy` query showed it had never been executed. Every one of those was a truthful-sounding report that reality disagreed with. **The Truth Check (Stage 5) is the whole point of this skill** — the build stages are just the thing it verifies.
+
+**Source of truth**: CLAUDE.md wins over this file if they ever disagree. Rule 4 (human checkpoint on consequential writes), rule 11 (token cost is a design constraint), the Judgment Funnel's Tier 3 rule, and the GODMODE boundary (*"rigor is not authorization"*) are not negotiable by this skill and shape its whole design — see Guardrails.
+
+## What this skill is NOT
+
+Alex's request described an unbounded loop that keeps re-executing and re-debating its own work, terminating only when it judges "all goals complete with zero bugs" and awards itself "8/10 on completion quality." Three parts of that are deliberately **not** built, for correctness reasons, not caution:
+
+- **Not an infinite self-authorizing loop.** A loop whose continue/stop decision comes from its own verdict has no external ground truth at any point, and it re-executes *code changes* — a strictly higher blast radius than the taxonomy writes rule 4 already forbids doing unattended. The same structural objection killed `/Regeneration`'s "always works" framing the same day, for the same reason. `/Engineer` runs bounded passes with a hard cap and stops.
+- **Not stopped by a self-assigned score.** "8/10 quality" produced by the same model class that did the work is self-grading with no independent check, and this exact mechanic has a documented failure in this codebase: `phylumPath.decidePlacementScored`'s Council-of-5 confidence score rated **9/10 on five duplicate leaves it should have rejected**. A score that high on output that wrong is not a stopping condition. (Naming collision, per CLAUDE.md: that scorer is a code-level mechanic inside the app; Council of 5 here is the chat-level deliberation protocol. Different things.)
+- **Not a certifier of "zero bugs."** No pass, however rigorous, can establish absence of bugs by reasoning. This project has no test suite (`package.json` is `{"type":"module"}`, nothing else) and its only CI step is a single `node --check main.js`. "Zero bugs" is replaced by the Objective Completion Gate below — a list of checks that either pass or fail against a machine, plus an explicit **UNTESTED** label on everything that genuinely needs Alex's hands.
+
+## One pass — the five stages, in order
+
+**Stage 1 — Goal contract.** Write the goals down *before* touching anything: a numbered list of what this pass is meant to achieve, each one phrased so it can later be marked done / not-done / descoped-with-reason. This stage exists because "all goals are complete" is unfalsifiable without a fixed list to check against — an undeclared goal list lets a pass declare victory by quietly forgetting an item. Assign each goal a Judgment Funnel tier while writing it; if any goal is Tier 3, say so here and get Alex's confirmation before the pass starts, not when the loop reaches it.
+
+**Stage 2 — Evidence (`/scope` + GODMODE).** Real current state only: `git log`, the actual source of every function about to be touched (rule 1 — never guess at internals), live Supabase where data is load-bearing, and a real grep for a second copy of anything about to be written (rule 8 — this project has a repeated history of duplicate implementations). Never a number or a status from an oversight doc.
+
+**Stage 3 — Omnitrix execution, without Fable by default.** Opus builds, Sonnet reviews line-by-line against the real diff. Fable is not the default researcher here (Omnitrix's own July 20 rebalance) and is doubly not the default in `/Engineer`, which is a build loop rather than an exhaustive multi-file audit. `/5thDimension` gets pulled in only when a goal is genuinely whole-project shaped — it is the heaviest protocol in the project and running it per pass on a normal build would be a rule-11 failure.
+
+**Stage 4 — Council of 5 report, written from the diff.** Produce the report Alex reads. It must be written **from `git diff` / `git status` output, not from memory of the session** — a report reconstructed from what the session intended is exactly the artifact the Truth Check exists to catch. Include: what changed and where (file + module + real line region), why, what it touched that wasn't planned, and the honest why-not / residual-risk case per Council of 5's own procedure.
+
+**Stage 5 — The Truth Check (`/scope` + GODMODE, independently).** Re-derive the real state from scratch and compare it against the Stage 4 report's claims — **both directions**:
+- every change the report claims → must be present in the actual diff / actual file / actual deployment;
+- every hunk in the actual diff → must be accounted for in the report. An unclaimed change is as much a defect as an unfulfilled claim; that is how you catch a fix that quietly touched a second module.
+
+Treat the report as a hostile witness. Do not re-read the session's own earlier tool output as evidence for this stage — re-run the commands. Then apply the Objective Completion Gate, and **stop**.
+
+## The Objective Completion Gate — the real pass/fail
+
+These replace "zero bugs." Each either passes or fails against something outside the model's own judgment. A pass is **complete** only when every applicable gate passes and every Stage 1 goal is explicitly resolved:
+
+- **G1 — Syntax.** `node --check rpgace_core.js` *and* `node --check main.js`, both clean. Both, always, locally — never delegated to CI. Worth knowing why: through commit `86ac08b`, `.github/workflows/deploy.yml`'s only check was `node --check main.js`, leaving the file that receives nearly every edit uncovered (a July 25 working-tree change adds `rpgace_core.js` to it). Either way CI runs *after* the push to `main` that already triggered the deploy, so it is a post-hoc alarm, not a gate — this stage is.
+- **G2 — index.html invariants** (only if it was touched): div balance, every `id="page-X"` inside `#app` before the script tags, and exactly two static `<script>` tags — `main.js` + `rpgace_core.js`, never a third (landmine: a third breaks the password gate via race conditions).
+- **G3 — Module convention.** New code sits inside `/* ===MODULE:x=== */` / `/* ===END:x=== */` markers and registers via `RPGACE.register()`. Any `main.js` edit is a deliberate FROZEN-file exception, logged in `patch_notes.html` the same session.
+- **G4 — Claim-to-diff reconciliation.** Stage 5's two-directional check comes back clean.
+- **G5 — Goal reconciliation.** Every Stage 1 goal marked done / not-done / descoped-with-reason. "Not done" is a valid honest outcome; a silently dropped goal is a gate failure.
+- **G6 — Deployment reality** (only if the pass merged to `main`): Vercel `list_deployments` shows the actual commit `READY` on production, and if an `/api/*` surface changed, a real HTTP probe confirms the new code path executes — the exact evidence pattern that verified the July 24 auth fix (a genuine `401` unauthenticated, a `405` on the wrong method), not a merge-and-hope.
+- **G7 — Cache-bust.** If `rpgace_core.js` changed, `index.html`'s `?v=` string moved in the same commit. This is a live failing example, not a hypothetical: `index.html` last changed at `115bef3`, a verified ancestor of `8bb5137` where `rpgace_core.js` last changed — the string has been stale since, which is precisely the stale-cache bug class CLAUDE.md already names.
+- **UNTESTED is a required label, not a failure.** Anything needing real human hands — a UI click-through, a real login, a live gesture repro — is reported as UNTESTED with the specific action Alex needs to take. Never rounded up to "verified." Same standing honesty convention as "NOTHING from July 20 is hand-tested."
+
+**The Council of 5 quality score is reported separately and authorizes nothing.** State it as a number with its reasoning, clearly marked informational, and state plainly when it disagrees with the gate — a high score alongside a failed gate is real information about the scorer, and is the single most useful thing this skill can tell Alex about whether to trust its own numbers.
+
+## Re-looping — capped, and only on objective failure
+
+If Stage 5 finds real remaining work, `/Engineer` may run another pass automatically **only** when all of these hold:
+
+1. The trigger is an **objectively-verified gate failure** (G1-G7) or an unresolved Stage 1 goal — never "the Council of 5 score was low," never "it could be better."
+2. The next pass introduces **no new scope**: same goal contract, same files, no new subsystem. Anything new is a fresh `/Engineer` invocation Alex starts, not a continuation this one grants itself.
+3. **Hard cap: 3 passes total.** Pass 3 ends by reporting to Alex regardless of state.
+4. **Per-defect cap: 2 attempts, which overrides the pass cap.** If the same defect survives a second fix attempt, the loop stops immediately even with passes remaining — that is rule 4's own hard-won rule (*"One failed fix = stop, get real evidence, don't patch blind a second time"*), and it is the specific rule that caught the review-queue badge being patched blind after an earlier fix had never worked live.
+5. **No Tier-3 action ever auto-continues** (see Guardrails).
+
+Both mechanisms are needed and neither substitutes for the other: the cap alone would let a pass burn three rounds on judgment calls Alex should have made, and "ask every time" alone would make the loop round-trip on a self-inflicted syntax error nobody needs to be consulted about. `/debate` is invoked between passes only when the Truth Check surfaces a genuine fork — two defensible ways to fix what it found — not as automatic ceremony on every loop (rule 11).
+
+## Guardrails
+
+- **Tier-3 actions always get a real, explicit, per-instance human checkpoint, mid-loop included.** Destructive git operations, force-push, migrations, RLS changes, spending, merging to a shared branch, anything hard to reverse. **A confidence score is evidence for Alex, never authorization. Same boundary as GODMODE's own: rigor is not permission.** No stage of this loop, no gate result, and no internal verdict — however confident, however many passes it survived — moves an item from "proposed" to "executed" on a Tier-3 action. The loop pauses and asks, every instance, every time.
+- **Never treat a pass's own report as evidence about itself.** Stage 5 re-runs commands; it does not re-read Stage 4. A skill that verified its report against its own memory would reproduce the exact drift class it was built to catch.
+- **Merge to `main` before telling Alex anything is ready to test.** `rpgace.vercel.app` deploys from `main`; a correct fix on a feature branch is not a fix he can test. Standing rule, confirmed the hard way more than once.
+- **Rule 4's checkpoint is untouched by this loop.** Taxonomy writes still stage through `taxonomy_proposals` / an inline confirm popup. `/Engineer` running with rigor is not an exemption from it.
+- **Every pass writes a dated record** — `engineer_pass_YYYY-MM-DD_NN.txt` at the repo root: goal contract, real diff summary, Council of 5 report, Truth Check findings, gate results, UNTESTED list. Chat is not durable storage (rule 5). Then log to `patch_notes.html` + a `system_updates` row the same session (rule 6).
+- **Declare cost before the pass, and don't grow it silently.** A pass that quietly expands past its Stage 1 contract is a rule-11 failure regardless of how good the extra work was.
