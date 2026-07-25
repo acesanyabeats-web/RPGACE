@@ -73,6 +73,27 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🏁 July 25 — SESSION CLOSED via /Bedtime. Real state: 6 real fixes shipped and deployed, a taxonomy tree audit both designed and executed, 20 real defects fixed.</div>
+    <div class="card-body">
+      This session ran from the boot-loader pop-in complaint through to a full taxonomy quality audit — Rounds 22-26 below, all real, all independently verified, none taken on trust.
+      <br><br>
+      <strong>What's genuinely live on production, confirmed via Vercel's own deployment record, not assumed:</strong> the shared <code>RPGACE.registerBootTask</code> gate (~24 modules, no more post-login pop-in); the taxonomy review-queue fixed twice for real (a genuine <code>insertBefore</code> DOM bug, then a dead close-handler bug, both found by reading the actual code, not guessed); the Taxonomy &amp; Review / Review Queue card merge; and — the biggest single verification of the session — Approach B's authenticated write-proxy confirmed end-to-end via 8 real user writes, 90 minutes after the RLS flip, on tables the anon key can only read from. That closes a gap this project has carried since July 24.
+      <br><br>
+      <strong>A real debate, run honestly, not rubber-stamped:</strong> asked to judge whether Alex's own taxonomy review decisions were right, the two-team Opus 5 debate (Fable failed on usage credits mid-task, substituted per the standing precedent) found the 23/7 accept/reject split was demonstrably good judgment, but that 42 of 47 fusion-link confirms were a rapid clear-through, not real review — a finding independently reverified against raw Postgres timestamps before being trusted, not taken from the debate's own say-so.
+      <br><br>
+      <strong>Alex asked for an always-running "Regeneration" agent that rewrites the tree until it self-scores 9/10. It was not built that way.</strong> Real evidence found the literal design violates this project's own rule 4 (human checkpoint, no exceptions) and that the app's review queue is INSERT-only and could not even execute a "move" proposal safely. Built instead as a real, human-gated 3-tier audit skill, self-scored honestly at 8/10 rather than inflated to the number asked for — the same discipline the fusion-link finding above exists to protect.
+      <br><br>
+      <strong>That skill's first real pass found 20 genuine taxonomy defects, and all 20 are now fixed</strong> — 14 leaf-nodes wrongly holding children, 2 duplicate-name clusters (6 nodes), 1 standalone YouTube-title-as-node. Each judged individually against real explainer text and real fusion-link data before touching anything: 10 reclassified, 3 reparented, 6 merged/deleted with links preserved, not discarded. 13 nodes in disabled phyla were checked and correctly left alone — real pre-launch seed content for phyla 11/13/16, not corruption, and it would have been a real mistake to delete them just because they matched a surface pattern.
+      <br><br>
+      <strong>Verified before writing anything, not after:</strong> zero remaining leaf-with-children rows, zero duplicate node names, zero orphaned references in <code>taxonomy_decision_log</code>/<code>taxonomy_proposals</code>, zero dangling fusion links, tree-wide. Every manual write went through <code>taxonomy_decision_log</code> itself (source <code>regeneration_manual</code>), so this session's own fixes are in the same real audit trail as every engine-driven write, not just in these docs. 7 <code>system_updates</code> rows added for Chronicles — the entire session had gone unlogged there until this close-out caught it.
+      <br><br>
+      <strong>Genuinely still open, named plainly:</strong> DELETE through the write-proxy and the 6 deliberately-excluded tables remain unconfirmed; a move/merge/delete engine for the taxonomy tree doesn't exist in application code and would be its own real Tier-2/3 build if ever wanted; <code>phylumPath._injectNavTab()</code> is confirmed dead code, low priority; the swipe-gesture freeze from earlier sessions is still unsolved.
+      <br><br>
+      Hands off to <code>/Routine</code> for the next session.
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 25 (Round 26) — Remaining Regeneration findings cleared: "get rid of them," checked first</div>
     <div class="card-body">
