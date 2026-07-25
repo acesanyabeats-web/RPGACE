@@ -11,3 +11,16 @@ RPGACE_ROADMAP.txt
 audit_report.txt
 .env.local
 a
+
+# Real gap found July 25 during the Impeccable/emilkowalski-skills
+# Aintergration pass: this repo is public, and neither of these was
+# covered - node_modules would get committed if any npx-based dev tool
+# (Impeccable's CLI, etc.) is ever run locally, and settings.local.json
+# is meant to be machine-local per Claude Code's own convention.
+node_modules/
+.claude/settings.local.json
+.impeccable/config.local.json
+.impeccable/hook.cache.json
+.impeccable/hook.pending.json
+.impeccable/*.png
+.impeccable/live/

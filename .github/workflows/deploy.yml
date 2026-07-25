@@ -11,7 +11,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Check JS syntax
-        run: node --check main.js && echo "JS syntax clean"
+        run: node --check main.js && node --check rpgace_core.js && echo "JS syntax clean"
+
+      # Advisory only, per the July 25 Aintergration pass on emilkowalski/skills +
+      # pbakaus/impeccable - real deterministic anti-pattern findings (contrast,
+      # layout-thrash transitions, oversized/undersized text) reported for a human
+      # to read, never blocking a deploy. See CLAUDE.md's Aintergration section.
+      - name: Design pattern check (advisory)
+        continue-on-error: true
+        run: npx --yes impeccable detect index.html style.css || true
 
       - name: Deploy to Vercel
         run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
