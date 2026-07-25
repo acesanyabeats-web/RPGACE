@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ July 25 (Round 28) — /improve-animations run for real: all 5 findings executed, judged by Council of 5, independently re-verified by /Engineer</div>
+    <div class="card-body">
+      Alex ran the newly-installed <code>/improve-animations</code> skill for a full audit, then asked for all 5 findings to be executed, the report judged by Council of 5 (<code>/scope</code>+<code>/Godmode</code>), independently re-verified by <code>/Engineer</code>'s Truth Check, and closed with <code>/Summary</code>.
+      <br><br>
+      <strong>5 real findings, all fixed same session</strong>: (1) zero <code>ease-out</code>/<code>ease-in-out</code> anywhere, 23 bare-<code>ease</code> sites — new <code>--ease-out</code>/<code>--ease-drawer</code> tokens added, every site swapped. (2) 6+ hand-duplicated drawer slide-in blocks — new shared <code>RPGACE.ui.slideInPanel</code>/<code>slideOutPanel</code> helper, 7 panels migrated (one more than the audit found: the <code>feynman</code> drawer). (3) 3 hover-transform sites with zero touch-device gating, including the primary dashboard nav — split into a gated transform half and an ungated color half. (4) <code>transition:all</code> on ~26 selectors — 25 narrowed to real properties, checked per-selector against actual state rules; 1 honest exception left (<code>#focus-concept-panel</code>, no confirmed transitionable property change anywhere). (5) 3 layout-triggering <code>width</code>/<code>max-height</code> transitions converted to <code>transform:scaleX()</code> — every real JS call site updated, plus a real second bug fixed alongside (a hardcoded 400px collapse-panel ceiling replaced with a measured <code>scrollHeight</code>).
+      <br><br>
+      <strong>Two real self-caught corrections, not left standing</strong>: the audit's "2 of 8 panels use double-rAF" claim was disproved by a fuller re-grep during execution (all 8 did); a plan note claiming two elements shared a transition was found to be about two unrelated elements. Both corrected in <code>plans/README.md</code>'s own execution notes.
+      <br><br>
+      <strong>Council of 5 verdict</strong>: PASS on risk/scope/maintainability/UX, with an honest why-not case kept in - none of this was hand-tested in a real browser, only grep/syntax-verified. <strong>/Engineer's Truth Check</strong> independently re-ran every claimed count against live grep (not the commit message) - all matched. Committed <code>fb4b738</code>, merged both branches, confirmed <code>READY</code> on production.
+    </div>
+</div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 25 (Round 27) — The 433-vs-198 color drift fixed for real, not left as the "flagged, not yet fixed" future project</div>
     <div class="card-body">
       Alex: "do it, /scope and /Godmode" — closing the one item Round 24's Aintergration audit had explicitly deferred. Real evidence first: <code>DESIGN.md</code>'s own documented semantic colors exactly match <code>style.css</code>'s real tokens, confirming the 433 hardcoded hexes in <code>rpgace_core.js</code> were the drift, not a second deliberate system.
