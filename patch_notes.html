@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">⚠️ July 25 (Round 24) — /Regeneration skill built: adopted with modification, real defects found, two things await Alex's word</div>
+    <div class="card-body">
+      Alex asked for an always-running "Regeneration" agent that keeps rewriting the taxonomy tree until it self-scores 9/10 via Council of 5. A real <code>/scope</code>+GODMODE→debate→<code>/5thDimension</code> pass (Opus 5) found the literal design violates rule 4 (every taxonomy write gets a human checkpoint, no exceptions) and the GODMODE boundary (rigor is never authorization) — and, decisively, that the review queue's three accept handlers all <code>INSERT</code>, none can re-parent or delete a node, so a "move this node" proposal would silently create a duplicate instead of moving anything, even with the rules relaxed.
+      <br><br>
+      <strong>Adopted with modification:</strong> <code>.claude/skills/Regeneration/SKILL.md</code>, project-scoped (not global), three tiers always run in order — Tier 0 (free deterministic SQL, catches structural defects with zero model calls), Tier 1 (bounded, batched-by-branch AI judgment reusing the placement engine's own 5-check rubric), Tier 2 (generative reorganisation, smallest/last/explicit-ask-only). Never writes to <code>taxonomy_tree</code> — proposes into the existing review queue or a plain report. Self-audited honestly at <strong>8/10, not the requested 9</strong>.
+      <br><br>
+      <strong>Real findings from the one pass already run:</strong> 14 nodes are <code>node_type='leaf'</code> with children (last night's manual debate found 1; free SQL found all 14 instantly), 3 duplicate node names (one a 3-way across phyla), a literal YouTube video title including the channel name sitting as a tree node, and 14 nodes in disabled phyla unreachable in the browse UI. Also confirmed dead: <code>phylumPath._injectNavTab()</code>, targeting a selector removed in the July 20 nav overhaul.
+      <br><br>
+      <strong>Awaiting Alex's word, not done in this pass:</strong> whether to run a real first Tier 0 sweep (free, read-only), and the still-pending "Non-Chordal Melody Layering" re-parent fix — now confirmed to need a real future move/merge engine in application code first, since the current review queue has no accept path that can execute it.
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 24 (Round 23) — Card dedup + a real dead-close bug fixed, and Approach B's authenticated write is finally confirmed end-to-end</div>
     <div class="card-body">
