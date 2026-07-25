@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ July 25 (Round 25) — 14 leaf-with-children defects fixed for real, applying Alex's own keep/delete rule per node</div>
+    <div class="card-body">
+      Alex's rule, verbatim: "if those make sense to last prompt framework, keep it, if not delete." Applied individually to all 14 nodes Round 24's Tier 0 pass found, by reading each parent's real explainer text.
+      <br><br>
+      <strong>10 reclassified <code>leaf</code>→<code>branch</code>, zero content changed</strong> — substantive conceptual explainers, children genuinely belong there, parent was just mislabeled: Theory vs Composition Distinction, Basic Triads &amp; Sevenths, Extended &amp; Altered Chords, Chord Voicing &amp; Inversion, Melodic Line Construction, Melodic Movement &amp; Ornament, Interval Character &amp; Emotional Quality (the legitimate original), Frequency Ratios &amp; Consonance-Dissonance Perception, Octave Equivalence &amp; the 2:1 Frequency Ratio, Perfect Consonances.
+      <br><br>
+      <strong>3 reparented</strong> out from under literal "Covers:"-list vocabulary leaves to a real depth-5 sibling slot: Non-Chordal Melody Layering (the fix from last night's debate, per Alex's explicit "2. do it"), Triad Anatomy: Root/Third/Fifth Functions, Beat-Position Anchoring in Minor Scale Melody.
+      <br><br>
+      <strong>1 duplicate merged</strong> — the depth-4 copy of Interval Character &amp; Emotional Quality (under Named Interval Vocabulary) duplicated the real depth-3 original. Its 3 fusion links were re-pointed onto the original before deletion, not discarded — the original now carries 6 confirmed links.
+      <br><br>
+      Applied via direct Supabase SQL (the app's own review queue is INSERT-only and can't execute a move/merge/delete — confirmed by the Regeneration skill's own guardrail). Verified before/after: zero remaining leaf-with-children rows tree-wide, zero orphaned references anywhere. Logged into <code>taxonomy_decision_log</code> itself (source <code>regeneration_manual</code>) so this shows up in the same real audit trail as every engine-driven write.
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">⚠️ July 25 (Round 24) — /Regeneration skill built: adopted with modification, real defects found, two things await Alex's word</div>
     <div class="card-body">
@@ -82,7 +97,7 @@
       <br><br>
       <strong>Real findings from the one pass already run:</strong> 14 nodes are <code>node_type='leaf'</code> with children (last night's manual debate found 1; free SQL found all 14 instantly), 3 duplicate node names (one a 3-way across phyla), a literal YouTube video title including the channel name sitting as a tree node, and 14 nodes in disabled phyla unreachable in the browse UI. Also confirmed dead: <code>phylumPath._injectNavTab()</code>, targeting a selector removed in the July 20 nav overhaul.
       <br><br>
-      <strong>Awaiting Alex's word, not done in this pass:</strong> whether to run a real first Tier 0 sweep (free, read-only), and the still-pending "Non-Chordal Melody Layering" re-parent fix — now confirmed to need a real future move/merge engine in application code first, since the current review queue has no accept path that can execute it.
+      <strong>Update, same session:</strong> Alex gave a direct per-node keep/delete rule and confirmed the reparent fix — all 14 leaf-with-children findings resolved via direct Supabase SQL, see Round 25 above. Still genuinely open: 2 more duplicate-name findings, the YouTube-title node, and the 14 disabled-phyla nodes.
     </div>
 </div>
 
