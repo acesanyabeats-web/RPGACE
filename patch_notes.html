@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ July 25 (Round 29) — /impeccable skill built, RPGACE Oracle wired into recent Claude Code activity + design-scan findings</div>
+    <div class="card-body">
+      Alex asked to bring Impeccable's functions in as a real skill and have RPGACE's own Oracle access it to comment on what it sees in the system. Real evidence first: <code>npx impeccable install</code> (the full hook + 23-command apparatus) hit a genuine <strong>HTTP 403 from Impeccable's own download server</strong> in this environment - confirmed not a proxy issue. A full install isn't currently possible here.
+      <br><br>
+      <strong>Two real clarifying questions asked before building, not guessed at</strong> - genuinely ambiguous scope (rule 5): should the skill wrap the free scan only given the 403 (yes), and what "Oracle access" actually meant (passive grounding, refreshed on <code>/Bedtime</code>/<code>/Summary</code>, plus visibility into recent Claude Code activity generally - not a new Oracle command).
+      <br><br>
+      <strong>Built</strong>: <code>.claude/skills/impeccable/SKILL.md</code> wraps the same <code>npx impeccable detect</code> invocation CI already uses. As a Bedtime/Summary sub-step it logs a <code>system_updates</code> row (<code>category:'design-scan'</code>) - reusing Chronicles' existing table, not a new one. <code>oracleAppGrounding</code>'s existing live-facts mechanism (same 10-min-cache, fails-open pattern already surfacing module/review counts) extended to also pull the 5 most recent <code>system_updates</code> rows and specifically surface the latest design scan.
+      <br><br>
+      <strong>Ran the scan for real, not shipped untested</strong>: 58 anti-patterns found (21 undersized-ui-text, 16 wide-tracking, 15 tiny-text, 2 low-contrast, 4 one-offs), plus 1 advisory em-dash note - logged as the first real design-scan row, not fixed this pass (a real future backlog). <code>node --check</code> clean, cache-bust bumped, committed <code>ef33f88</code>, confirmed <code>READY</code> on production.
+    </div>
+</div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 25 (Round 28) — /improve-animations run for real: all 5 findings executed, judged by Council of 5, independently re-verified by /Engineer</div>
     <div class="card-body">
       Alex ran the newly-installed <code>/improve-animations</code> skill for a full audit, then asked for all 5 findings to be executed, the report judged by Council of 5 (<code>/scope</code>+<code>/Godmode</code>), independently re-verified by <code>/Engineer</code>'s Truth Check, and closed with <code>/Summary</code>.
