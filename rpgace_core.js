@@ -709,7 +709,7 @@ RPGACE.register('youtubeOracle', {
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
     var ch = document.createElement('div');
     ch.textContent = '@AceSanyaBeats';
-    ch.style.cssText = 'font-size:13px;font-weight:700;color:#E2E2EC;';
+    ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
     ht.appendChild(lb); ht.appendChild(ch);
     var cb = document.createElement('button');
     cb.textContent = '×';
@@ -821,7 +821,7 @@ RPGACE.register('prodOraclePanel', {
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.textContent = 'FL Studio · UK Hip Hop · 16 Commands';
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
     cb.textContent = '×';
@@ -925,7 +925,7 @@ RPGACE.register('instaOraclePanel', {
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
     cb.textContent = '×';
@@ -1059,9 +1059,9 @@ RPGACE.register('quickActions', {
           title: title,
           markdown: '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.'
         }).then(function() {
-          RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B59B6', 3000);
+          RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B6EC8', 3000);
         }).catch(function(err) {
-          RPGACE.utils.toast('Notion failed: ' + err.message, '#E25454', 3000);
+          RPGACE.utils.toast('Notion failed: ' + err.message, '#CC4A4A', 3000);
         });
       });
     }
@@ -1101,7 +1101,7 @@ RPGACE.register('visualOracle', {
     btn.id = 'visual-oracle-btn';
     btn.className = 'agent-btn';
     btn.textContent = '🎬 Visual Oracle';
-    btn.style.cssText = 'border-color:rgba(155,89,182,0.4);color:#9B59B6;background:rgba(155,89,182,0.08);margin-left:4px;';
+    btn.style.cssText = 'border-color:rgba(155,89,182,0.4);color:#9B6EC8;background:rgba(155,89,182,0.08);margin-left:4px;';
     btn.onclick = function() { RPGACE.modules.visualOracle.open(); };
     row.appendChild(btn);
     console.log('[RPGACE:visualOracle] Button injected');
@@ -1127,7 +1127,7 @@ RPGACE.register('visualOracle', {
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.textContent = RPGACE.utils.phylumLabel(14) + ' · Filmmaker Library · 6 Commands';
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
     cb.textContent = '×';
@@ -1333,7 +1333,7 @@ RPGACE.register('contentRepurpose', {
     eyebrow.textContent = 'Content Repurpose · Step 14';
 
     var titleEl = document.createElement('div');
-    titleEl.style.cssText = 'font-size:18px;font-weight:700;color:#E2E2EC;margin-bottom:20px;';
+    titleEl.style.cssText = 'font-size:18px;font-weight:700;color:#D4DAF5;margin-bottom:20px;';
     titleEl.textContent = 'Repurpose an idea';
 
     box.appendChild(eyebrow); box.appendChild(titleEl);
@@ -1346,7 +1346,7 @@ RPGACE.register('contentRepurpose', {
     s1lbl.textContent = 'Step 1 — Oracle Contribution';
 
     var dropdown = document.createElement('select');
-    dropdown.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
+    dropdown.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
     var blankOpt = document.createElement('option');
     blankOpt.value = ''; blankOpt.textContent = oracleMsgs.length ? '— Select from recent Oracle responses —' : '— No Oracle conversation yet —';
     dropdown.appendChild(blankOpt);
@@ -1364,7 +1364,7 @@ RPGACE.register('contentRepurpose', {
     var oracleContrib = document.createElement('textarea');
     oracleContrib.id = 'cr-oracle-contrib';
     oracleContrib.placeholder = 'Select from dropdown above, or paste Oracle content here...';
-    oracleContrib.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;max-height:200px;overflow-y:auto;margin-bottom:10px;';
+    oracleContrib.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;max-height:200px;overflow-y:auto;margin-bottom:10px;';
 
     dropdown.onchange = function() {
       if (dropdown.value) oracleContrib.value = dropdown.value.slice(0, 1000);
@@ -1372,7 +1372,7 @@ RPGACE.register('contentRepurpose', {
 
     var acceptBtn = document.createElement('button');
     acceptBtn.textContent = '✓ Accept Oracle contribution';
-    acceptBtn.style.cssText = 'padding:8px 16px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    acceptBtn.style.cssText = 'padding:8px 16px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
 
     step1.appendChild(s1lbl); step1.appendChild(dropdown);
     step1.appendChild(oracleContribLbl); step1.appendChild(oracleContrib);
@@ -1391,7 +1391,7 @@ RPGACE.register('contentRepurpose', {
     var yourContrib = document.createElement('textarea');
     yourContrib.id = 'cr-your-contrib';
     yourContrib.placeholder = 'Add your personal angle, specific details, or additional context here (optional)...';
-    yourContrib.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;margin-bottom:10px;';
+    yourContrib.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;margin-bottom:10px;';
     var step2NextBtn = document.createElement('button');
     step2NextBtn.textContent = '→ Detect taxonomy';
     step2NextBtn.style.cssText = 'padding:8px 16px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:6px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
@@ -1412,7 +1412,7 @@ RPGACE.register('contentRepurpose', {
     phylaList.id = 'cr-phyla-list';
     var generateBtn = document.createElement('button');
     generateBtn.textContent = '⚡ Generate all platform outputs';
-    generateBtn.style.cssText = 'margin-top:14px;padding:10px 20px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    generateBtn.style.cssText = 'margin-top:14px;padding:10px 20px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     step3.appendChild(s3lbl); step3.appendChild(s3sub);
     step3.appendChild(phylaList); step3.appendChild(generateBtn);
     box.appendChild(step3);
@@ -1430,7 +1430,7 @@ RPGACE.register('contentRepurpose', {
     // ── Step 1 accept ──
     acceptBtn.onclick = function() {
       if (!oracleContrib.value.trim()) {
-        RPGACE.utils.toast('Add Oracle contribution first', '#E25454', 2000);
+        RPGACE.utils.toast('Add Oracle contribution first', '#CC4A4A', 2000);
         return;
       }
       step1.style.opacity = '0.5';
@@ -1477,7 +1477,7 @@ RPGACE.register('contentRepurpose', {
           var info = document.createElement('div');
           var nameEl = document.createElement('div');
           nameEl.style.cssText = 'font-size:12px;font-weight:700;color:' +
-            (item.type === 'gap' ? '#E25454' : item.type === 'confirmed' ? '#3DAA6E' : '#4A90E2') + ';';
+            (item.type === 'gap' ? '#CC4A4A' : item.type === 'confirmed' ? '#4CAF82' : '#4A8CCC') + ';';
           nameEl.textContent = (item.type === 'gap' ? '🔴 ' : item.type === 'confirmed' ? '✅ ' : '💡 ') +
             RPGACE.utils.phylumLabel(item.p.num) +
             (item.p.gapScore ? ' (Gap ' + parseFloat(item.p.gapScore).toFixed(1) + '/10)' : '');
@@ -1539,7 +1539,7 @@ RPGACE.register('contentRepurpose', {
             });
           }
 
-          RPGACE.utils.toast('⚡ Generating outputs + creating ConID entry', '#3DAA6E', 3000);
+          RPGACE.utils.toast('⚡ Generating outputs + creating ConID entry', '#4CAF82', 3000);
         });
       };
     };
@@ -1566,7 +1566,7 @@ RPGACE.register('contentRepurpose', {
       crBtn.id = 'cr-btn';
       crBtn.className = 'agent-btn';
       crBtn.textContent = '🔀 Repurpose';
-      crBtn.style.cssText = 'border-color:rgba(61,170,110,0.4);color:#3DAA6E;background:rgba(61,170,110,0.08);margin-left:4px;';
+      crBtn.style.cssText = 'border-color:rgba(61,170,110,0.4);color:#4CAF82;background:rgba(61,170,110,0.08);margin-left:4px;';
       crBtn.onclick = function() { self.openPopup(); };
       row.appendChild(crBtn);
     }
@@ -1605,13 +1605,13 @@ RPGACE.register('contentRepurpose', {
           parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
           title: 'RPGACE Session — ' + today,
           markdown: '## Session Log\n**Date:** ' + today + '\n\nLogged from RPGACE.'
-        }).then(function(){ RPGACE.utils.toast('📓 Logged to Notion', '#9B59B6', 3000); })
-          .catch(function(e){ RPGACE.utils.toast('Error: '+e.message, '#E25454', 3000); });
+        }).then(function(){ RPGACE.utils.toast('📓 Logged to Notion', '#9B6EC8', 3000); })
+          .catch(function(e){ RPGACE.utils.toast('Error: '+e.message, '#CC4A4A', 3000); });
       }},
       { label: '🎬 YT Stats', onclick: function() {
         RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
           .then(function(r){ var d=r.data||r; RPGACE.utils.sendToOracle('📊 YouTube Stats:\nChannel: '+(d.name||'AceSanya')+'\nVideos: '+(d.videoCount||0)+'\nViews: '+(d.viewCount||0)+'\n\nWhat are my 3 most important growth actions this week?'); if(typeof showPage==='function') showPage('advisor'); })
-          .catch(function(e){ RPGACE.utils.toast('Error: '+e.message,'#E25454',3000); });
+          .catch(function(e){ RPGACE.utils.toast('Error: '+e.message,'#CC4A4A',3000); });
       }},
     ];
 
@@ -1636,7 +1636,7 @@ RPGACE.register('contentRepurpose', {
     var btn = document.createElement('button');
     btn.id = 'vw-repurpose-btn';
     btn.textContent = '🔀 Repurpose for All Platforms';
-    btn.style.cssText = 'margin-top:10px;padding:9px 18px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
+    btn.style.cssText = 'margin-top:10px;padding:9px 18px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
     btn.onclick = function() { self.openPopup(); };
     vwSection.parentElement.insertBefore(btn, vwSection.nextSibling);
   },
@@ -1758,10 +1758,10 @@ RPGACE.register('feynman', {
     var offer = document.createElement('div');
     offer.id = 'feynman-offer';
     offer.style.cssText = 'background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:8px;padding:10px 14px;margin:8px 0;font-family:Rajdhani,sans-serif;font-size:12px;display:flex;align-items:center;gap:10px;';
-    offer.innerHTML = '<span style="color:#4A90E2;font-weight:700">\uD83E\uDDE0 Feynman Loop detected</span>'
+    offer.innerHTML = '<span style="color:#4A8CCC;font-weight:700">\uD83E\uDDE0 Feynman Loop detected</span>'
       + '<span style="color:rgba(226,226,236,0.6);flex:1">Study "' + concept + '" properly — explain it to verify you know it.</span>'
       + '<button onclick="RPGACE.modules.feynman.start(\'' + concept.replace(/'/g, "\\'") + '\',\'oracle\')" '
-      + 'style="background:rgba(74,144,226,0.2);border:1px solid #4A90E2;color:#4A90E2;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;white-space:nowrap">'
+      + 'style="background:rgba(74,144,226,0.2);border:1px solid #4A8CCC;color:#4A8CCC;border-radius:5px;padding:4px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;white-space:nowrap">'
       + 'Start Session</button>'
       + '<button onclick="this.parentElement.remove()" style="background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:14px">\u00D7</button>';
 
@@ -1802,7 +1802,7 @@ RPGACE.register('feynman', {
       + '<div style="color:rgba(226,226,236,0.7);font-size:12px;margin-bottom:20px">This is a learning session. How do you want to approach it?</div>'
       + '<div style="display:flex;flex-direction:column;gap:8px">'
       + '<button onclick="RPGACE.modules.feynman.start(\'' + agenda.title.replace(/'/g, "\\'") + '\',\'agenda\');document.getElementById(\'feynman-choice\').remove()" '
-      + 'style="background:rgba(74,144,226,0.15);border:1px solid rgba(74,144,226,0.4);color:#4A90E2;padding:10px 14px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;text-align:left">'
+      + 'style="background:rgba(74,144,226,0.15);border:1px solid rgba(74,144,226,0.4);color:#4A8CCC;padding:10px 14px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;text-align:left">'
       + '\uD83E\uDDE0 Feynman Loop — Test your understanding</button>'
       + '<button onclick="window._origStartDoNow(' + idx + ');document.getElementById(\'feynman-choice\').remove()" '
       + 'style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.7);padding:10px 14px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;text-align:left">'
@@ -1825,7 +1825,7 @@ RPGACE.register('feynman', {
       var concept = title.textContent.trim();
       var btn = document.createElement('button');
       btn.className = 'feynman-enc-btn';
-      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A90E2;padding:3px 8px;border-radius:4px;cursor:pointer;margin-left:8px;vertical-align:middle';
+      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A8CCC;padding:3px 8px;border-radius:4px;cursor:pointer;margin-left:8px;vertical-align:middle';
       btn.textContent = '\uD83E\uDDE0 Feynman';
       btn.onclick = function(e) {
         e.stopPropagation();
@@ -1845,7 +1845,7 @@ RPGACE.register('feynman', {
       if (!agenda || agenda.category !== 'learning') return;
       var btn = document.createElement('button');
       btn.className = 'feynman-card-btn';
-      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A90E2;padding:3px 8px;border-radius:4px;cursor:pointer;margin-top:4px;display:block';
+      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A8CCC;padding:3px 8px;border-radius:4px;cursor:pointer;margin-top:4px;display:block';
       btn.textContent = '\uD83E\uDDE0 Feynman Test';
       btn.onclick = function(e) {
         e.stopPropagation();
@@ -1893,27 +1893,27 @@ RPGACE.register('feynman', {
       '<div style="background:rgba(74,144,226,0.08);border-bottom:1px solid rgba(74,144,226,0.2);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">',
         '<div>',
           '<div style="font-family:Cinzel,serif;font-size:11px;color:rgba(74,144,226,0.7);letter-spacing:2px;text-transform:uppercase">Feynman Loop</div>',
-          '<div id="feynman-concept" style="font-size:15px;font-weight:700;color:#E2E2EC;margin-top:2px">' + concept + '</div>',
+          '<div id="feynman-concept" style="font-size:15px;font-weight:700;color:#D4DAF5;margin-top:2px">' + concept + '</div>',
         '</div>',
         '<div style="display:flex;align-items:center;gap:10px">',
-          '<div id="feynman-phase-badge" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#4A90E2;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:10px;padding:3px 10px">Phase 1/3</div>',
+          '<div id="feynman-phase-badge" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#4A8CCC;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:10px;padding:3px 10px">Phase 1/3</div>',
           '<button onclick="RPGACE.modules.feynman.closePanel()" style="background:none;border:none;color:rgba(226,226,236,0.4);cursor:pointer;font-size:18px;line-height:1">\u00D7</button>',
         '</div>',
       '</div>',
       /* Progress bar */
       '<div style="height:3px;background:rgba(255,255,255,0.05);flex-shrink:0">',
-        '<div id="feynman-progress" style="height:100%;background:#4A90E2;width:33%;transition:width .4s ease"></div>',
+        '<div id="feynman-progress" style="height:100%;background:#4A8CCC;width:33%;transition:width .4s ease"></div>',
       '</div>',
       /* Messages */
       '<div id="feynman-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px"></div>',
       /* Input area */
       '<div style="border-top:1px solid rgba(255,255,255,0.06);padding:12px;flex-shrink:0">',
         '<textarea id="feynman-input" placeholder="Type your explanation here..." rows="3" ',
-          'style="width:100%;background:#12121e;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#E2E2EC;',
+          'style="width:100%;background:#12121e;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#D4DAF5;',
           'padding:10px 12px;font-family:Rajdhani,sans-serif;font-size:13px;resize:none;outline:none;box-sizing:border-box"></textarea>',
         '<div style="display:flex;gap:8px;margin-top:8px">',
           '<button id="feynman-submit" onclick="RPGACE.modules.feynman.submit()" ',
-            'style="flex:1;background:rgba(74,144,226,0.2);border:1px solid rgba(74,144,226,0.5);color:#4A90E2;',
+            'style="flex:1;background:rgba(74,144,226,0.2);border:1px solid rgba(74,144,226,0.5);color:#4A8CCC;',
             'padding:9px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:13px;letter-spacing:1px">',
             'SUBMIT',
           '</button>',
@@ -1949,7 +1949,7 @@ RPGACE.register('feynman', {
         : 'background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.15);color:rgba(226,226,236,0.85);align-self:flex-end',
     ].join(';');
     /* Render basic markdown bold */
-    msg.innerHTML = text.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#E2E2EC">$1</strong>').replace(/\n/g, '<br>');
+    msg.innerHTML = text.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#D4DAF5">$1</strong>').replace(/\n/g, '<br>');
     msgs.appendChild(msg);
     msgs.scrollTop = msgs.scrollHeight;
   },
@@ -2080,14 +2080,14 @@ RPGACE.register('feynman', {
       '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:4px">Session saved</div>',
       '<div style="display:flex;gap:8px">',
         '<div style="flex:1;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:7px;padding:10px;text-align:center">',
-          '<div style="font-size:22px;font-weight:700;color:#4A90E2;font-family:Cinzel,serif">' + score + '<span style="font-size:12px">/10</span></div>',
+          '<div style="font-size:22px;font-weight:700;color:#4A8CCC;font-family:Cinzel,serif">' + score + '<span style="font-size:12px">/10</span></div>',
           '<div style="font-size:10px;color:rgba(226,226,236,0.5);margin-top:2px">Feynman Score</div>',
         '</div>',
         '<div style="flex:2;display:flex;flex-direction:column;gap:5px">',
           score < 7
             ? '<div style="font-size:11px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:5px;padding:6px 10px">\u23F0 Review scheduled in 3 days</div>'
-            : '<div style="font-size:11px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);color:#3DAA6E;border-radius:5px;padding:6px 10px">\u2713 Verified — follow-up in 7 days</div>',
-          '<div style="font-size:11px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.2);color:#4A90E2;border-radius:5px;padding:6px 10px">\uD83D\uDCD3 Saved to Journal</div>',
+            : '<div style="font-size:11px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);color:#4CAF82;border-radius:5px;padding:6px 10px">\u2713 Verified — follow-up in 7 days</div>',
+          '<div style="font-size:11px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.2);color:#4A8CCC;border-radius:5px;padding:6px 10px">\uD83D\uDCD3 Saved to Journal</div>',
         '</div>',
       '</div>',
       '<button onclick="RPGACE.modules.feynman.closePanel()" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);color:rgba(226,226,236,0.6);padding:8px;border-radius:7px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;font-size:12px;margin-top:2px">Close Panel</button>',
@@ -2174,7 +2174,7 @@ RPGACE.register('feynman', {
 
     RPGACE.utils.toast(
       '\uD83E\uDDE0 Session saved ' + session.score + '/10 \u00B7 Review in ' + daysOut + ' days',
-      '#4A90E2', 4000
+      '#4A8CCC', 4000
     );
 
     /* 5. Update taxonomy node in Supabase (non-blocking) */
@@ -2654,7 +2654,7 @@ RPGACE.register('oracleDevBridge', {
       var btn = document.createElement('button');
       btn.className = 'odb-flag-btn';
       btn.textContent = '🧪 Flag for Claude Code';
-      btn.style.cssText = 'display:inline-block;background:none;border:1px solid rgba(74,144,226,.3);color:#4A90E2;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin:2px 0 8px 0;';
+      btn.style.cssText = 'display:inline-block;background:none;border:1px solid rgba(74,144,226,.3);color:#4A8CCC;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin:2px 0 8px 0;';
       btn.onclick = function() { RPGACE.modules.oracleDevBridge._flag(text, btn); };
       lastMsg.insertAdjacentElement('afterend', btn);
     });
@@ -2670,7 +2670,7 @@ RPGACE.register('oracleDevBridge', {
     }).catch(function(e) {
       btn.disabled = false;
       btn.textContent = '🧪 Flag for Claude Code';
-      RPGACE.utils.toast('⚠️ Could not log: ' + e.message, '#E25454', 3200);
+      RPGACE.utils.toast('⚠️ Could not log: ' + e.message, '#CC4A4A', 3200);
     });
   },
 
@@ -3312,7 +3312,7 @@ RPGACE.register('taxonomyReviewQueue', {
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
     var box = document.createElement('div');
     box.style.cssText = 'position:relative;background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(640px,95vw);max-height:85vh;overflow-y:auto;';
-    box.innerHTML = '<div style="font-size:15px;font-weight:700;color:#E2E2EC;">Loading proposals...</div>';
+    box.innerHTML = '<div style="font-size:15px;font-weight:700;color:#D4DAF5;">Loading proposals...</div>';
 
     var closeBtn = document.createElement('button');
     closeBtn.textContent = '✕';
@@ -3352,7 +3352,7 @@ RPGACE.register('taxonomyReviewQueue', {
         title.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
         title.textContent = 'Taxonomy Review Queue';
         var sub = document.createElement('div');
-        sub.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+        sub.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
         var totalCount = rows.length + linkRows.length;
         sub.textContent = totalCount + ' item' + (totalCount !== 1 ? 's' : '') + ' waiting for review';
         box.appendChild(title); box.appendChild(sub);
@@ -3374,7 +3374,7 @@ RPGACE.register('taxonomyReviewQueue', {
           var head = document.createElement('div');
           head.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;';
           var pathEl = document.createElement('div');
-          pathEl.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;line-height:1.5;';
+          pathEl.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;line-height:1.5;';
           pathEl.textContent = p.proposed_path;
           var isPhylumPath = !!(p.proposed_steps && p.proposed_steps.engine === 'phylum_path');
           var isConceptFusion = !!(p.proposed_steps && p.proposed_steps.engine === 'concept_fusion');
@@ -3386,7 +3386,7 @@ RPGACE.register('taxonomyReviewQueue', {
 
           if (p.matched_existing_node_id && !isPhylumPath && !isConceptFusion) {
             var warn = document.createElement('div');
-            warn.style.cssText = 'font-size:10px;color:#E25454;margin-bottom:8px;';
+            warn.style.cssText = 'font-size:10px;color:#CC4A4A;margin-bottom:8px;';
             warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
             row.appendChild(warn);
           }
@@ -3418,7 +3418,7 @@ RPGACE.register('taxonomyReviewQueue', {
 
           var acceptBtn = document.createElement('button');
           acceptBtn.textContent = isConceptFusion ? '✓ Create Merged Leaf' : '✓ Accept';
-          acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
           acceptBtn.onclick = function() {
             row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
             if (isConceptFusion) { self._acceptConceptFusion(p); }
@@ -3429,7 +3429,7 @@ RPGACE.register('taxonomyReviewQueue', {
 
           var rejectBtn = document.createElement('button');
           rejectBtn.textContent = '✗ Reject';
-          rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#E25454;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           rejectBtn.onclick = function() {
             RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
             row.remove();
@@ -3484,7 +3484,7 @@ RPGACE.register('taxonomyReviewQueue', {
             var phA = tt ? (tt.PHYLUM_NAMES[a.phylum_number] || '') : '';
             var phB = tt ? (tt.PHYLUM_NAMES[b.phylum_number] || '') : '';
             var linkText = document.createElement('div');
-            linkText.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;line-height:1.5;margin-bottom:4px;';
+            linkText.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;line-height:1.5;margin-bottom:4px;';
             linkText.textContent = '[' + phA + '] ' + a.path + '  ⇄  [' + phB + '] ' + b.path;
             row.appendChild(linkText);
 
@@ -3498,7 +3498,7 @@ RPGACE.register('taxonomyReviewQueue', {
 
             var acceptBtn2 = document.createElement('button');
             acceptBtn2.textContent = '✓ Confirm Link';
-            acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
             acceptBtn2.onclick = function() {
               row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
               RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'confirmed', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
@@ -3507,7 +3507,7 @@ RPGACE.register('taxonomyReviewQueue', {
 
             var rejectBtn2 = document.createElement('button');
             rejectBtn2.textContent = '✗ Reject';
-            rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#E25454;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             rejectBtn2.onclick = function() {
               RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
               row.remove();
@@ -3522,7 +3522,7 @@ RPGACE.register('taxonomyReviewQueue', {
         box.innerHTML = '';
         box.appendChild(closeBtn);
         var err = document.createElement('div');
-        err.style.cssText = 'color:#E25454;font-size:12px;';
+        err.style.cssText = 'color:#CC4A4A;font-size:12px;';
         err.textContent = 'Could not load proposals.';
         box.appendChild(err);
       });
@@ -3696,7 +3696,7 @@ RPGACE.register('encTaxonomyLink', {
 
     if (entry.taxonomy_node_id) {
       var linked = document.createElement('span');
-      linked.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#3DAA6E;font-size:11px;font-family:Rajdhani,sans-serif;';
+      linked.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-family:Rajdhani,sans-serif;';
       linked.textContent = '🌳 Linked to Taxonomy Tree';
       if (anchor) anchor.insertAdjacentElement('beforebegin', linked); else expandedContainer.appendChild(linked);
       return;
@@ -3712,20 +3712,20 @@ RPGACE.register('encTaxonomyLink', {
 
     var btn = document.createElement('button');
     btn.textContent = '🌳 Propose to Taxonomy';
-    btn.style.cssText = 'background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);color:#9B59B6;border-radius:5px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-right:8px;';
+    btn.style.cssText = 'background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);color:#9B6EC8;border-radius:5px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-right:8px;';
     btn.onclick = function() { self._propose(entry, btn); };
     if (anchor) anchor.insertAdjacentElement('beforebegin', btn); else expandedContainer.appendChild(btn);
   },
 
   _propose: function(entry, btn) {
     if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) {
-      RPGACE.utils.toast('Taxonomy system not ready yet — try again in a moment', '#E25454', 2500);
+      RPGACE.utils.toast('Taxonomy system not ready yet — try again in a moment', '#CC4A4A', 2500);
       return;
     }
     var blob = (entry.title || '') + ' ' + (entry.content || '');
     var matches = RPGACE.utils._quickPhylaScan(blob);
     if (matches.length === 0) {
-      RPGACE.utils.toast('No clear phylum match for this entry — try "🌳 Add to Taxonomy Tree" on the Research tab instead', '#E25454', 3500);
+      RPGACE.utils.toast('No clear phylum match for this entry — try "🌳 Add to Taxonomy Tree" on the Research tab instead', '#CC4A4A', 3500);
       return;
     }
 
@@ -3742,7 +3742,7 @@ RPGACE.register('encTaxonomyLink', {
       .catch(function(err) {
         btn.disabled = false;
         btn.textContent = '🌳 Propose to Taxonomy';
-        RPGACE.utils.toast('Error generating proposal: ' + err.message, '#E25454', 3500);
+        RPGACE.utils.toast('Error generating proposal: ' + err.message, '#CC4A4A', 3500);
       });
   },
 
@@ -3800,7 +3800,7 @@ RPGACE.register('agendaReminder', {
     var stored = [];
     try { stored = JSON.parse(localStorage.getItem('rpgace_sched_agendas') || '[]'); } catch (e) {}
     var entry = stored.find(function(a) { return a.id === id; });
-    if (!entry) { RPGACE.utils.toast("Could not find this task's stored details", '#E25454', 2500); return; }
+    if (!entry) { RPGACE.utils.toast("Could not find this task's stored details", '#CC4A4A', 2500); return; }
 
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
@@ -3814,7 +3814,7 @@ RPGACE.register('agendaReminder', {
     eyebrow.textContent = '🔔 Reminder';
 
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:10px;';
+    title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:10px;';
     title.textContent = entry.title || 'Task';
 
     var meta = document.createElement('div');
@@ -3878,7 +3878,7 @@ RPGACE.register('scheduleOracle', {
         btn.id = 'sched-oracle-btn';
         btn.className = 'agent-btn';
         btn.textContent = '📅 Schedule Oracle';
-        btn.style.cssText = 'border-color:rgba(74,144,226,0.4);color:#4A90E2;background:rgba(74,144,226,0.08);margin-left:4px;';
+        btn.style.cssText = 'border-color:rgba(74,144,226,0.4);color:#4A8CCC;background:rgba(74,144,226,0.08);margin-left:4px;';
         btn.onclick = function() { self._openPanel(); };
         row.appendChild(btn);
       }
@@ -3901,7 +3901,7 @@ RPGACE.register('scheduleOracle', {
         // entirely removes the chance of that happening, no main.js edit
         // needed.
         if (window._oracleRequestInFlight) {
-          RPGACE.utils.toast('⏳ Oracle is still answering — wait for it to finish first', '#E25454', 2800);
+          RPGACE.utils.toast('⏳ Oracle is still answering — wait for it to finish first', '#CC4A4A', 2800);
           return;
         }
         var input = document.getElementById('chat-input');
@@ -3941,21 +3941,21 @@ RPGACE.register('scheduleOracle', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Schedule Oracle · Phase 1';
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
     title.textContent = 'What do you want to learn / schedule?';
 
     var input = document.createElement('textarea');
     input.id = 'sched-oracle-input';
     input.placeholder = 'Paste a YouTube link, a PDF link, or just type/paste text...';
     input.value = prefill || '';
-    input.style.cssText = 'width:100%;min-height:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:13px;padding:10px 12px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:14px;';
+    input.style.cssText = 'width:100%;min-height:100px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:13px;padding:10px 12px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:14px;';
 
     var goBtn = document.createElement('button');
     goBtn.textContent = '🔮 Ingest + Analyse';
-    goBtn.style.cssText = 'padding:10px 20px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:8px;color:#4A90E2;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    goBtn.style.cssText = 'padding:10px 20px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:8px;color:#4A8CCC;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     goBtn.onclick = function() {
       var text = input.value.trim();
-      if (!text) { RPGACE.utils.toast('Paste a link or type something first', '#E25454', 2000); return; }
+      if (!text) { RPGACE.utils.toast('Paste a link or type something first', '#CC4A4A', 2000); return; }
       overlay.remove();
       self._ingest(text);
     };
@@ -3977,7 +3977,7 @@ RPGACE.register('scheduleOracle', {
   // /api/analyst produces a type-aware structured analysis from it.
   _ingest: function(text) {
     var self = this;
-    RPGACE.utils.toast('🔮 Ingesting content...', '#4A90E2', 2500);
+    RPGACE.utils.toast('🔮 Ingesting content...', '#4A8CCC', 2500);
     fetch('/api/scout', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: text, type: 'auto' })
@@ -3985,7 +3985,7 @@ RPGACE.register('scheduleOracle', {
     .then(function(r) { return r.json(); })
     .then(function(scout) {
       if (scout.error) throw new Error(scout.error);
-      RPGACE.utils.toast('🔮 Analysing (' + scout.detectedType + ')...', '#4A90E2', 2500);
+      RPGACE.utils.toast('🔮 Analysing (' + scout.detectedType + ')...', '#4A8CCC', 2500);
       return fetch('/api/analyst', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: scout.content, detectedType: scout.detectedType, title: scout.title })
@@ -3995,7 +3995,7 @@ RPGACE.register('scheduleOracle', {
       });
     })
     .catch(function(e) {
-      RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+      RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
     });
   },
 
@@ -4011,8 +4011,8 @@ RPGACE.register('scheduleOracle', {
         action: function(done) {
           if (typeof saveOracleToEncyclopedia !== 'function') { done(); return; }
           saveOracleToEncyclopedia(data.title, '## ' + data.title + '\n\n' + data.analysis + (data.sourceURL ? '\n\n**Source:** ' + data.sourceURL : ''))
-            .then(function() { RPGACE.utils.toast('✅ Saved to Encyclopedia', '#3DAA6E', 2500); done(); })
-            .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3000); done(); });
+            .then(function() { RPGACE.utils.toast('✅ Saved to Encyclopedia', '#4CAF82', 2500); done(); })
+            .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3000); done(); });
         }
       },
       {
@@ -4034,10 +4034,10 @@ RPGACE.register('scheduleOracle', {
           if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) { done(); return; }
           var blob = data.title + ' ' + data.analysis;
           var matches = RPGACE.utils._quickPhylaScan(blob);
-          if (matches.length === 0) { RPGACE.utils.toast('No clear phylum match for this content', '#E25454', 2500); done(); return; }
+          if (matches.length === 0) { RPGACE.utils.toast('No clear phylum match for this content', '#CC4A4A', 2500); done(); return; }
           RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'schedule_oracle', null)
             .then(function() { RPGACE.utils.toast('🌳 Queued — review from Dashboard', 'rgba(155,89,182,0.85)', 3000); done(); })
-            .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3000); done(); });
+            .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3000); done(); });
         }
       }
     ];
@@ -4054,7 +4054,7 @@ RPGACE.register('scheduleOracle', {
       eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
       eyebrow.textContent = 'Option ' + (idx + 1) + ' of ' + steps.length;
       var stepTitle = document.createElement('div');
-      stepTitle.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:8px;';
+      stepTitle.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:8px;';
       stepTitle.textContent = s.icon + ' ' + s.title;
       var body = document.createElement('div');
       body.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.55);line-height:1.6;margin-bottom:18px;';
@@ -4067,12 +4067,12 @@ RPGACE.register('scheduleOracle', {
         overlay.remove();
         idx++;
         if (idx < steps.length) renderStep();
-        else RPGACE.utils.toast('✅ Schedule Oracle pass complete', '#4A90E2', 2500);
+        else RPGACE.utils.toast('✅ Schedule Oracle pass complete', '#4A8CCC', 2500);
       };
 
       var actionBtn = document.createElement('button');
       actionBtn.textContent = s.actionLabel;
-      actionBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      actionBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
       actionBtn.onclick = function() {
         actionBtn.disabled = true;
         actionBtn.textContent = 'Working...';
@@ -4253,7 +4253,7 @@ RPGACE.register('intelDelete', {
     ht.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);margin-bottom:4px;text-transform:uppercase;';
     ht.textContent = 'Encyclopedia Preview';
     var hs = document.createElement('div');
-    hs.style.cssText = 'font-size:13px;font-weight:700;color:#E2E2EC;line-height:1.3;max-width:440px;';
+    hs.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;line-height:1.3;max-width:440px;';
     hs.textContent = (entry.title || '').replace('☁️','').trim();
     htxt.appendChild(ht); htxt.appendChild(hs);
     var cb = document.createElement('button');
@@ -4410,7 +4410,7 @@ RPGACE.register('intelDelete', {
         link.href = entry.url;
         link.target = '_blank';
         link.textContent = '🔗 Original';
-        link.style.cssText = 'display:inline-block;margin-top:8px;font-size:11px;color:var(--blue,#4A90E2);text-decoration:none;';
+        link.style.cssText = 'display:inline-block;margin-top:8px;font-size:11px;color:var(--blue,#4A8CCC);text-decoration:none;';
         bodyInner.appendChild(link);
       }
 
@@ -4625,7 +4625,7 @@ RPGACE.register('intelDelete', {
     var box = document.createElement('div');
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(226,84,84,0.3);border-radius:10px;padding:24px 28px;width:min(360px,90vw);';
     function el(tag, css, txt) { var e=document.createElement(tag); e.style.cssText=css||''; if(txt!==undefined)e.textContent=txt; return e; }
-    box.appendChild(el('div','font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:6px;','Delete Report'));
+    box.appendChild(el('div','font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:6px;','Delete Report'));
     box.appendChild(el('div','font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:16px;line-height:1.4;', title.length>65?title.substring(0,65)+'...':title));
     box.appendChild(el('div','font-size:13px;font-weight:600;color:rgba(226,226,236,0.85);margin-bottom:8px;','Save URL to bibliography?'));
     box.appendChild(el('div','font-size:10px;color:rgba(201,168,76,0.55);margin-bottom:18px;font-family:monospace;word-break:break-all;', url?(url.length>60?url.substring(0,60)+'...':url):'No URL'));
@@ -5963,7 +5963,7 @@ RPGACE.register('taxonomySync', {
     RPGACE.sb.select('encyclopedia', 'order=created_at.desc&limit=50')
       .then(function(entries) {
         if (!entries || entries.length === 0) {
-          RPGACE.utils.toast('No encyclopedia entries found.', '#E25454', 3000);
+          RPGACE.utils.toast('No encyclopedia entries found.', '#CC4A4A', 3000);
           return;
         }
 
@@ -5994,7 +5994,7 @@ RPGACE.register('taxonomySync', {
           });
       })
       .catch(function(err) {
-        RPGACE.utils.toast('Sync error: ' + err.message, '#E25454', 4000);
+        RPGACE.utils.toast('Sync error: ' + err.message, '#CC4A4A', 4000);
         console.error('[taxonomySync] error:', err);
       });
   },
@@ -6193,7 +6193,7 @@ RPGACE.register('knowledgeGap', {
       var applied = node.applied_in_beat || false;
 
       // Gap colour: red > 7, gold 4-7, teal < 4
-      var gapColor = gap >= 7 ? '#E25454' : gap >= 4 ? '#C9A84C' : '#2ABFB0';
+      var gapColor = gap >= 7 ? '#CC4A4A' : gap >= 4 ? '#C9A84C' : '#2ABFB0';
       var gapBg = gap >= 7 ? 'rgba(226,84,84,0.06)' : gap >= 4 ? 'rgba(201,168,76,0.06)' : 'rgba(42,191,176,0.06)';
       var gapBorder = gap >= 7 ? 'rgba(226,84,84,0.2)' : gap >= 4 ? 'rgba(201,168,76,0.2)' : 'rgba(42,191,176,0.2)';
 
@@ -6205,7 +6205,7 @@ RPGACE.register('knowledgeGap', {
       phylumLabel.textContent = node.phylum_number ? RPGACE.utils.phylumLabel(node.phylum_number) : 'Phylum ? · Unknown';
 
       var conceptName = document.createElement('div');
-      conceptName.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:8px;line-height:1.3;';
+      conceptName.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;margin-bottom:8px;line-height:1.3;';
       conceptName.textContent = node.concept || 'Untitled';
 
       var statsRow = document.createElement('div');
@@ -6220,7 +6220,7 @@ RPGACE.register('knowledgeGap', {
       studiedStat.textContent = studied + 'x studied';
 
       var appliedStat = document.createElement('div');
-      appliedStat.style.cssText = 'font-size:10px;color:' + (applied ? '#3DAA6E' : 'rgba(226,226,236,0.2)') + ';';
+      appliedStat.style.cssText = 'font-size:10px;color:' + (applied ? '#4CAF82' : 'rgba(226,226,236,0.2)') + ';';
       appliedStat.textContent = applied ? '✓ applied' : '○ not applied';
 
       statsRow.appendChild(gapStat);
@@ -6259,7 +6259,7 @@ RPGACE.register('knowledgeGap', {
         if (typeof RPGACE.modules.taxonomySync !== 'undefined') {
           RPGACE.modules.taxonomySync.markApplied(node.concept);
           node.applied_in_beat = true;
-          appliedStat.style.color = '#3DAA6E';
+          appliedStat.style.color = '#4CAF82';
           appliedStat.textContent = '✓ applied';
         }
       };
@@ -6366,7 +6366,7 @@ RPGACE.register('taxonomyTree', {
     var btn = document.createElement('button');
     btn.id = 'taxtree-manual-btn';
     btn.textContent = '🌳 Add to Taxonomy Tree';
-    btn.style.cssText = 'padding:9px 18px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
+    btn.style.cssText = 'padding:9px 18px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
     btn.onclick = function() { self._openManualEntry(); };
 
     var anchor = document.getElementById('cp-idea-bank') || document.getElementById('beat-log-panel');
@@ -6385,24 +6385,24 @@ RPGACE.register('taxonomyTree', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Taxonomy Tree · Manual Entry';
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+    title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
     title.textContent = 'What topic do you want to add?';
 
     var input = document.createElement('input');
     input.type = 'text';
     input.placeholder = 'e.g. 1-1-3-4 chord progression in natural minor';
-    input.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:13px;padding:10px 12px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
+    input.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:13px;padding:10px 12px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
 
     var phylumSelect = document.createElement('select');
-    phylumSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
+    phylumSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
     var blank = document.createElement('option'); blank.value=''; blank.textContent='— which phylum does this belong to? —';
-    blank.style.color = '#E2E2EC'; blank.style.background = '#1a1a24';
+    blank.style.color = '#D4DAF5'; blank.style.background = '#1a1a24';
     phylumSelect.appendChild(blank);
     Object.keys(self.PHYLUM_ENGLISH).forEach(function(num) {
       var opt = document.createElement('option');
       opt.value = num;
       opt.textContent = RPGACE.utils.phylumLabel(num);
-      opt.style.color = '#E2E2EC'; opt.style.background = '#1a1a24';
+      opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
       phylumSelect.appendChild(opt);
     });
 
@@ -6420,7 +6420,7 @@ RPGACE.register('taxonomyTree', {
         .then(function(nodes) {
           nodes = nodes || [];
           if (nodes.length === 0) {
-            previewBox.innerHTML = '<div style="color:rgba(226,226,236,0.35);">Nothing in this phylum yet — you would be first to add here. Examples of what belongs: <strong style="color:#9B59B6;">' + self.PHYLUM_ENGLISH[num] + '</strong></div>';
+            previewBox.innerHTML = '<div style="color:rgba(226,226,236,0.35);">Nothing in this phylum yet — you would be first to add here. Examples of what belongs: <strong style="color:#9B6EC8;">' + self.PHYLUM_ENGLISH[num] + '</strong></div>';
             return;
           }
           previewBox.innerHTML = '<div style="color:rgba(155,89,182,0.7);font-weight:700;margin-bottom:4px;">Already in ' + self.PHYLUM_ENGLISH[num] + ':</div>' +
@@ -6432,12 +6432,12 @@ RPGACE.register('taxonomyTree', {
 
     var genBtn = document.createElement('button');
     genBtn.textContent = '🌳 Propose Lineage';
-    genBtn.style.cssText = 'padding:10px 20px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:8px;color:#9B59B6;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    genBtn.style.cssText = 'padding:10px 20px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:8px;color:#9B6EC8;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     genBtn.onclick = function() {
       var topic = input.value.trim();
       var phylum = parseInt(phylumSelect.value);
-      if (!topic) { RPGACE.utils.toast('Add a topic first', '#E25454', 2000); return; }
-      if (!phylum) { RPGACE.utils.toast('Select a phylum', '#E25454', 2000); return; }
+      if (!topic) { RPGACE.utils.toast('Add a topic first', '#CC4A4A', 2000); return; }
+      if (!phylum) { RPGACE.utils.toast('Select a phylum', '#CC4A4A', 2000); return; }
       overlay.remove();
       self.proposeLineage(topic, phylum, 'manual', null);
     };
@@ -6522,7 +6522,7 @@ RPGACE.register('taxonomyTree', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Oracle already named these — pick which to propose';
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
     title.textContent = phylumName + ' — ' + candidates.length + ' named nodes found';
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -6533,7 +6533,7 @@ RPGACE.register('taxonomyTree', {
       cb.type = 'checkbox'; cb.id = 'named-topic-' + i; cb.checked = true;
       cb.style.cssText = 'margin-top:3px;flex-shrink:0;';
       var label = document.createElement('div');
-      label.innerHTML = '<div style="font-size:12px;font-weight:600;color:#E2E2EC;">' + c.name + '</div>' +
+      label.innerHTML = '<div style="font-size:12px;font-weight:600;color:#D4DAF5;">' + c.name + '</div>' +
         '<div style="font-size:10px;color:rgba(226,226,236,0.35);margin-top:2px;">' + c.fullText.slice(0, 100) + '</div>';
       row.appendChild(cb); row.appendChild(label);
       box.appendChild(row);
@@ -6543,7 +6543,7 @@ RPGACE.register('taxonomyTree', {
     btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
     var proceedBtn = document.createElement('button');
     proceedBtn.textContent = '🌳 Propose selected';
-    proceedBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    proceedBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     proceedBtn.onclick = function() {
       var selected = candidates.filter(function(c, i) {
         var cb = document.getElementById('named-topic-' + i);
@@ -6602,7 +6602,7 @@ RPGACE.register('taxonomyTree', {
   // attach point.
   _proposeLineageViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
     var pp = RPGACE.modules.phylumPath;
-    RPGACE.utils.toast('🧬 Deciding placement (Phylum Path)...', '#3DAA6E', 2500);
+    RPGACE.utils.toast('🧬 Deciding placement (Phylum Path)...', '#4CAF82', 2500);
     return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
       pp._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, topicText,
         function(finalSteps, finalExplainers) {
@@ -6610,7 +6610,7 @@ RPGACE.register('taxonomyTree', {
         }
       );
     }).catch(function(err) {
-      RPGACE.utils.toast('Error generating placement: ' + err.message, '#E25454', 3500);
+      RPGACE.utils.toast('Error generating placement: ' + err.message, '#CC4A4A', 3500);
     });
   },
 
@@ -6747,15 +6747,15 @@ RPGACE.register('taxonomyTree', {
   // ── Update an existing node's content with a better-written version ──
   _updateExistingNode: function(existingNode, proposal) {
     var self = this;
-    RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#3DAA6E', 2500);
+    RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#4CAF82', 2500);
     var newExplainer = proposal.explainers[proposal.explainers.length - 1] || existingNode.explainer;
 
     RPGACE.sb.secureWrite('taxonomy_tree', 'update', { explainer: newExplainer, updated_at: new Date().toISOString() }, 'id=eq.' + existingNode.id)
     .then(function() {
-      RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#3DAA6E', 3000);
+      RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#4CAF82', 3000);
       self._generateNodeContent(existingNode);
     }).catch(function(e) {
-      RPGACE.utils.toast('Error updating node: ' + e.message, '#E25454', 3000);
+      RPGACE.utils.toast('Error updating node: ' + e.message, '#CC4A4A', 3000);
     });
   },
 
@@ -6771,7 +6771,7 @@ RPGACE.register('taxonomyTree', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Proposed Taxonomy Lineage · ' + proposal.sourceType;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
     title.textContent = RPGACE.utils.phylumLabel(proposal.phylumNumber);
     var purposeLine = document.createElement('div');
     purposeLine.style.cssText = 'font-size:10.5px;color:rgba(226,226,236,0.4);margin-bottom:14px;line-height:1.5;';
@@ -6792,10 +6792,10 @@ RPGACE.register('taxonomyTree', {
     if (proposal.morphMatch) {
       var morphNote = document.createElement('div');
       if (proposal.suggestUpdate) {
-        morphNote.style.cssText = 'background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#3DAA6E;';
+        morphNote.style.cssText = 'background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#4CAF82;';
         morphNote.innerHTML = '🔄 This exact leaf already exists: "<strong>' + proposal.morphMatch.name + '</strong>". This proposal looks like a refinement — accepting will <strong>update the existing node\'s content</strong> instead of creating a duplicate.';
       } else {
-        morphNote.style.cssText = 'background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#E25454;';
+        morphNote.style.cssText = 'background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#CC4A4A;';
         morphNote.innerHTML = '⚠️ A node named "<strong>' + proposal.morphMatch.name + '</strong>" already exists in this phylum. Consider attaching under it instead of creating a duplicate branch.';
       }
       box.appendChild(morphNote);
@@ -6816,7 +6816,7 @@ RPGACE.register('taxonomyTree', {
         var stepInput = document.createElement('input');
         stepInput.type = 'text';
         stepInput.value = step;
-        stepInput.style.cssText = 'flex:1;background:none;border:none;color:#E2E2EC;font-size:12px;font-family:Rajdhani,sans-serif;outline:none;';
+        stepInput.style.cssText = 'flex:1;background:none;border:none;color:#D4DAF5;font-size:12px;font-family:Rajdhani,sans-serif;outline:none;';
         stepInput.oninput = function() { proposal.path[i] = stepInput.value; if (typeof renderSummary === 'function') renderSummary(); updatePreview(); };
         var delBtn = document.createElement('button');
         delBtn.textContent = '×';
@@ -6864,7 +6864,7 @@ RPGACE.register('taxonomyTree', {
         var row = document.createElement('div');
         row.style.cssText = 'margin-bottom:10px;padding-bottom:10px;' + (i < proposal.path.length - 1 ? 'border-bottom:1px solid rgba(255,255,255,0.05);' : '');
         var nameLine = document.createElement('div');
-        nameLine.style.cssText = 'font-size:11px;font-weight:700;color:' + (isLeaf ? '#3DAA6E' : '#E2E2EC') + ';';
+        nameLine.style.cssText = 'font-size:11px;font-weight:700;color:' + (isLeaf ? '#4CAF82' : '#D4DAF5') + ';';
         nameLine.textContent = (isLeaf ? '🎯 ' : '📁 ') + stepName;
         row.appendChild(nameLine);
         var explainerText = proposal.explainers[i];
@@ -6896,7 +6896,7 @@ RPGACE.register('taxonomyTree', {
 
     var acceptBtn = document.createElement('button');
     acceptBtn.textContent = proposal.suggestUpdate ? '✓ Update Existing Node' : '✓ Accept & Generate Content';
-    acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     acceptBtn.onclick = function() {
       updatePreview();
       overlay.remove();
@@ -6909,7 +6909,7 @@ RPGACE.register('taxonomyTree', {
 
     var rejectBtn = document.createElement('button');
     rejectBtn.textContent = '✗ Reject';
-    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     rejectBtn.onclick = function() { overlay.remove(); };
 
     btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
@@ -6921,7 +6921,7 @@ RPGACE.register('taxonomyTree', {
   // ── Write accepted lineage into taxonomy_tree, generate content ──
   _acceptLineage: function(proposal) {
     var self = this;
-    RPGACE.utils.toast('🌳 Writing lineage + generating content...', '#3DAA6E', 3000);
+    RPGACE.utils.toast('🌳 Writing lineage + generating content...', '#4CAF82', 3000);
 
     var parentId = null;
     var pathSoFar = proposal.phylumName;
@@ -6967,7 +6967,7 @@ RPGACE.register('taxonomyTree', {
     });
 
     chain.then(function() {
-      RPGACE.utils.toast('✅ Taxonomy lineage saved: ' + pathSoFar, '#3DAA6E', 4000);
+      RPGACE.utils.toast('✅ Taxonomy lineage saved: ' + pathSoFar, '#4CAF82', 4000);
       // F6: if this lineage came from the review queue, close the loop on
       // the taxonomy_proposals row it originated from.
       if (proposal.queuedProposalId) {
@@ -6976,7 +6976,7 @@ RPGACE.register('taxonomyTree', {
           'id=eq.' + proposal.queuedProposalId).catch(function() {});
       }
     }).catch(function(e) {
-      RPGACE.utils.toast('Error saving lineage: ' + e.message, '#E25454', 3500);
+      RPGACE.utils.toast('Error saving lineage: ' + e.message, '#CC4A4A', 3500);
     });
   },
 
@@ -7163,7 +7163,7 @@ RPGACE.register('phylumPath', {
         var row = document.createElement('button');
         row.className = 'pp-switch-pill';
         row.dataset.num = num;
-        row.style.cssText = 'display:block;width:100%;text-align:left;padding:8px 12px;margin-bottom:4px;background:' + (active ? 'rgba(61,170,110,0.14)' : 'rgba(255,255,255,0.02)') + ';border:1px solid rgba(61,170,110,' + (active ? '0.4' : '0.15') + ');border-radius:7px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (active ? '1' : '0.65') + ';';
+        row.style.cssText = 'display:block;width:100%;text-align:left;padding:8px 12px;margin-bottom:4px;background:' + (active ? 'rgba(61,170,110,0.14)' : 'rgba(255,255,255,0.02)') + ';border:1px solid rgba(61,170,110,' + (active ? '0.4' : '0.15') + ');border-radius:7px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (active ? '1' : '0.65') + ';';
         var nameEl = document.createElement('div');
         nameEl.textContent = tt ? tt.PHYLUM_NAMES[num] : ('Phylum ' + num);
         var glossEl = document.createElement('div');
@@ -7413,11 +7413,11 @@ RPGACE.register('phylumPath', {
           popup.dataset.ppPatched = '1';
           var btn = document.createElement('button');
           btn.textContent = '🧬 Send to Phylum Path';
-          btn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
+          btn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
           btn.onclick = function() {
             var selectedText = window.getSelection ? window.getSelection().toString() : '';
             var text = selectedText || popup.dataset.selectedText || '';
-            if (!text) { RPGACE.utils.toast('Select some text first', '#E25454', 2000); return; }
+            if (!text) { RPGACE.utils.toast('Select some text first', '#CC4A4A', 2000); return; }
             self.open(text.slice(0, 2000));
           };
           var btnRow = popup.querySelector('div');
@@ -7438,7 +7438,7 @@ RPGACE.register('phylumPath', {
     btn.id = 'phylum-path-btn';
     btn.className = 'agent-btn';
     btn.textContent = '🧬 Phylum Path';
-    btn.style.cssText = 'border-color:rgba(61,170,110,0.4);color:#3DAA6E;background:rgba(61,170,110,0.08);margin-left:4px;';
+    btn.style.cssText = 'border-color:rgba(61,170,110,0.4);color:#4CAF82;background:rgba(61,170,110,0.08);margin-left:4px;';
     btn.onclick = function() { self.open(); };
     row.appendChild(btn);
   },
@@ -7458,7 +7458,7 @@ RPGACE.register('phylumPath', {
 
     var badge = document.createElement('button');
     badge.textContent = '🧬 Add to Phylum Path? (' + m.name + ')';
-    badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     // Fixed July 17: this used to just open the side panel pre-filled,
     // requiring a SECOND click on "Place this insight" inside it before
     // decidePlacement()/the confirm popup ever ran - easy to miss (a real
@@ -7467,9 +7467,9 @@ RPGACE.register('phylumPath', {
     // matching what the badge visually promises.
     badge.onclick = function() {
       badge.remove();
-      RPGACE.utils.toast('🧬 Deciding placement...', '#3DAA6E', 2500);
+      RPGACE.utils.toast('🧬 Deciding placement...', '#4CAF82', 2500);
       self._placeInsight(text.slice(0, 2000), m.num).catch(function(e) {
-        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
       });
     };
     lastMsg.appendChild(badge);
@@ -7498,7 +7498,7 @@ RPGACE.register('phylumPath', {
     var sub = document.createElement('div');
     sub.className = 'pp-panel-sub';
     sub.textContent = RPGACE.utils.phylumLabel(self.PHYLUM_NUM);
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
     cb.textContent = '×';
@@ -7532,15 +7532,15 @@ RPGACE.register('phylumPath', {
     textarea.placeholder = 'Paste or describe a specific teaching insight - a fact, technique, or observation about ' + (tt0 ? tt0.PHYLUM_NAMES[self.PHYLUM_NUM] : 'this phylum') + '...';
     textarea.value = prefillText || '';
     textarea.rows = 5;
-    textarea.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:10px;';
+    textarea.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:10px;';
     body.appendChild(textarea);
 
     var placeBtn = document.createElement('button');
     placeBtn.textContent = '🧬 Place this insight';
-    placeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:18px;';
+    placeBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:18px;';
     placeBtn.onclick = function() {
       var text = document.getElementById('phylum-path-input').value.trim();
-      if (!text) { RPGACE.utils.toast('Add an insight first', '#E25454', 2000); return; }
+      if (!text) { RPGACE.utils.toast('Add an insight first', '#CC4A4A', 2000); return; }
       placeBtn.disabled = true;
       placeBtn.textContent = '⏳ Placing...';
       self._placeInsight(text, self.PHYLUM_NUM).then(function(result) {
@@ -7553,7 +7553,7 @@ RPGACE.register('phylumPath', {
       }).catch(function(e) {
         placeBtn.disabled = false;
         placeBtn.textContent = '🧬 Place this insight';
-        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
       });
     };
     body.appendChild(placeBtn);
@@ -7563,7 +7563,7 @@ RPGACE.register('phylumPath', {
     // whole phylum" rather than one specific node).
     var phylumArticleBtn = document.createElement('button');
     phylumArticleBtn.textContent = '📄 Generate Phylum-Level Article';
-    phylumArticleBtn.style.cssText = 'width:100%;padding:8px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
+    phylumArticleBtn.style.cssText = 'width:100%;padding:8px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
     phylumArticleBtn.onclick = function() { self._generateArticle(null); };
     body.appendChild(phylumArticleBtn);
 
@@ -7608,17 +7608,17 @@ RPGACE.register('phylumPath', {
           rankLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);margin-bottom:2px;';
           rankLbl.textContent = (tt ? tt.rankNameForDepth(node.depth) : 'Depth ' + node.depth) + (node.node_type === 'leaf' ? ' · leaf' : '');
           var nameEl = document.createElement('div');
-          nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;margin-bottom:6px;';
+          nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;margin-bottom:6px;';
           nameEl.textContent = node.name;
           var artBtn = document.createElement('button');
           artBtn.textContent = '📄 Generate/Refresh Article';
-          artBtn.style.cssText = 'padding:3px 8px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:#9B59B6;font-size:9px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          artBtn.style.cssText = 'padding:3px 8px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:#9B6EC8;font-size:9px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           artBtn.onclick = function() { self._generateArticle(node); };
           row.appendChild(rankLbl); row.appendChild(nameEl); row.appendChild(artBtn);
           treeList.appendChild(row);
         });
       }).catch(function(e) {
-        treeList.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+        treeList.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
       });
   },
 
@@ -7815,7 +7815,7 @@ RPGACE.register('phylumPath', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Phylum Path · Confirm Placement';
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
     title.textContent = RPGACE.utils.phylumLabel(phylumNumber);
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -7846,7 +7846,7 @@ RPGACE.register('phylumPath', {
         depthLabel.textContent = (i + 1) + '.';
         var stepInput = document.createElement('input');
         stepInput.type = 'text'; stepInput.value = step;
-        stepInput.style.cssText = 'flex:1;background:none;border:none;color:#E2E2EC;font-size:12px;font-family:Rajdhani,sans-serif;outline:none;';
+        stepInput.style.cssText = 'flex:1;background:none;border:none;color:#D4DAF5;font-size:12px;font-family:Rajdhani,sans-serif;outline:none;';
         stepInput.oninput = function() { steps[i] = stepInput.value; updatePreview(); };
         var delBtn = document.createElement('button');
         delBtn.textContent = '×';
@@ -7870,15 +7870,15 @@ RPGACE.register('phylumPath', {
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
     var acceptBtn = document.createElement('button');
     acceptBtn.textContent = '✓ Accept & Generate Content';
-    acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     acceptBtn.onclick = function() {
-      if (!steps.length) { RPGACE.utils.toast('No steps left to place', '#E25454', 2500); return; }
+      if (!steps.length) { RPGACE.utils.toast('No steps left to place', '#CC4A4A', 2500); return; }
       overlay.remove();
       onAccept(steps, expl);
     };
     var rejectBtn = document.createElement('button');
     rejectBtn.textContent = '✗ Reject';
-    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     rejectBtn.onclick = function() { overlay.remove(); if (onReject) onReject(); };
     btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
     box.appendChild(btnRow);
@@ -7889,7 +7889,7 @@ RPGACE.register('phylumPath', {
   // ── Manual-panel entry point: decide, confirm, then insert ──────────
   _placeInsight: function(insightText, phylumNumber) {
     var self = this;
-    RPGACE.utils.toast('🧬 Deciding placement...', '#3DAA6E', 2500);
+    RPGACE.utils.toast('🧬 Deciding placement...', '#4CAF82', 2500);
 
     return self.decidePlacement(insightText, phylumNumber).then(function(decision) {
       return new Promise(function(resolve, reject) {
@@ -7963,7 +7963,7 @@ RPGACE.register('phylumPath', {
     });
 
     return chain.then(function() {
-      RPGACE.utils.toast('✅ Placed: ' + pathSoFar, '#3DAA6E', 4000);
+      RPGACE.utils.toast('✅ Placed: ' + pathSoFar, '#4CAF82', 4000);
       if (finalRow) {
         // July 22 — event-sourcing/audit-log idea from the book-batch
         // Aintergration pass (CLAUDE.md, Worked Precedent 4): every
@@ -8163,7 +8163,7 @@ RPGACE.register('phylumPath', {
   _generateArticleText: function(node) {
     var self = this;
     var phylumNumber = node ? node.phylum_number : self.PHYLUM_NUM;
-    RPGACE.utils.toast('📄 Gathering content...', '#9B59B6', 2500);
+    RPGACE.utils.toast('📄 Gathering content...', '#9B6EC8', 2500);
 
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc')
       .then(function(allNodes) {
@@ -8248,7 +8248,7 @@ RPGACE.register('phylumPath', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Phylum Path · Confirm Article';
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:12px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:12px;';
     title.textContent = articleTitle;
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -8261,11 +8261,11 @@ RPGACE.register('phylumPath', {
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
     var approveBtn = document.createElement('button');
     approveBtn.textContent = '✓ Save to Encyclopedia';
-    approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     approveBtn.onclick = function() { overlay.remove(); onApprove(); };
     var denyBtn = document.createElement('button');
     denyBtn.textContent = '✗ Discard';
-    denyBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    denyBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     denyBtn.onclick = function() { overlay.remove(); if (onDeny) onDeny(); };
     btnRow.appendChild(approveBtn); btnRow.appendChild(denyBtn);
     box.appendChild(btnRow);
@@ -8287,7 +8287,7 @@ RPGACE.register('phylumPath', {
         self._showArticleConfirm(node, articleTitle, text,
           function() {
             if (typeof saveOracleToEncyclopedia !== 'function') {
-              RPGACE.utils.toast('Article generated but saveOracleToEncyclopedia() not found', '#E25454', 3500);
+              RPGACE.utils.toast('Article generated but saveOracleToEncyclopedia() not found', '#CC4A4A', 3500);
               resolve({ saved: false });
               return;
             }
@@ -8296,7 +8296,7 @@ RPGACE.register('phylumPath', {
                 return RPGACE.sb.secureWrite('encyclopedia', 'update', { taxonomy_node_id: node.id }, 'title=eq.' + encodeURIComponent(articleTitle)).catch(function() {});
               }
             }).then(function() {
-              RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#3DAA6E', 4000);
+              RPGACE.utils.toast('✅ Article saved to Encyclopedia: ' + articleTitle, '#4CAF82', 4000);
               // Fire-and-forget, same pattern as _findFusionLinks - a missed
               // concept-fusion pass shouldn't block the article save itself.
               self._findConceptFusion(node, text);
@@ -8310,7 +8310,7 @@ RPGACE.register('phylumPath', {
         );
       });
     }).catch(function(e) {
-      RPGACE.utils.toast('Error generating article: ' + e.message, '#E25454', 3500);
+      RPGACE.utils.toast('Error generating article: ' + e.message, '#CC4A4A', 3500);
     });
   },
 
@@ -8474,7 +8474,7 @@ RPGACE.register('phylumPath', {
       .then(function(nodes) {
         self._renderDrillDown(nodes || [], focusId);
       }).catch(function(e) {
-        if (body) body.innerHTML = '<div style="color:#E25454;font-size:12px;">Load error: ' + e.message + '</div>';
+        if (body) body.innerHTML = '<div style="color:#CC4A4A;font-size:12px;">Load error: ' + e.message + '</div>';
       });
   },
 
@@ -8495,7 +8495,7 @@ RPGACE.register('phylumPath', {
       }
       var rootCrumb = document.createElement('span');
       rootCrumb.textContent = (tt ? tt.PHYLUM_NAMES[self.PHYLUM_NUM] : 'Phylum ' + self.PHYLUM_NUM);
-      rootCrumb.style.cssText = 'cursor:pointer;color:' + (!focus ? '#3DAA6E;font-weight:700;' : 'rgba(61,170,110,0.6);') + 'font-size:12px;';
+      rootCrumb.style.cssText = 'cursor:pointer;color:' + (!focus ? '#4CAF82;font-weight:700;' : 'rgba(61,170,110,0.6);') + 'font-size:12px;';
       rootCrumb.onclick = function() { self._loadNodesAndRender(null); };
       crumb.appendChild(rootCrumb);
       chain.forEach(function(n, i) {
@@ -8506,7 +8506,7 @@ RPGACE.register('phylumPath', {
         var seg = document.createElement('span');
         seg.textContent = n.name;
         var isLast = (i === chain.length - 1);
-        seg.style.cssText = 'cursor:pointer;color:' + (isLast ? '#3DAA6E;font-weight:700;' : 'rgba(61,170,110,0.6);') + 'font-size:12px;';
+        seg.style.cssText = 'cursor:pointer;color:' + (isLast ? '#4CAF82;font-weight:700;' : 'rgba(61,170,110,0.6);') + 'font-size:12px;';
         seg.onclick = function() { self._loadNodesAndRender(n.id); };
         crumb.appendChild(seg);
       });
@@ -8541,7 +8541,7 @@ RPGACE.register('phylumPath', {
         siblings.forEach(function(s) {
           var chip = document.createElement('button');
           chip.textContent = s.name;
-          chip.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#3DAA6E;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          chip.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           chip.onclick = function() { self._loadNodesAndRender(s.id); };
           row.appendChild(chip);
         });
@@ -8586,7 +8586,7 @@ RPGACE.register('phylumPath', {
         rankLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);';
         var nameLbl = document.createElement('div');
         nameLbl.textContent = c.name;
-        nameLbl.style.cssText = 'font-size:13px;font-weight:600;color:#E2E2EC;';
+        nameLbl.style.cssText = 'font-size:13px;font-weight:600;color:#D4DAF5;';
         left.appendChild(rankLbl); left.appendChild(nameLbl);
         var arrow = document.createElement('span');
         arrow.textContent = '→';
@@ -8627,7 +8627,7 @@ RPGACE.register('phylumPath', {
       }
       var btn = document.createElement('button');
       btn.textContent = label;
-      btn.style.cssText = 'padding:6px 14px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.style.cssText = 'padding:6px 14px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
       btn.onclick = function() {
         btn.disabled = true; btn.textContent = '⏳ Generating...';
         self._generateArticle(focus).then(function() {
@@ -8762,7 +8762,7 @@ RPGACE.register('phylumPath', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(52,152,219,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '🔗 Fusion Connection';
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
     title.textContent = focus.name + ' ↔ ' + other.name;
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -8793,7 +8793,7 @@ RPGACE.register('phylumPath', {
         self._generateLinkArticle(link, focus, other).then(function(text) {
           renderArticleBox('🔄 Refresh Interlink Article', text);
         }).catch(function(e) {
-          RPGACE.utils.toast('Error generating interlink article: ' + e.message, '#E25454', 3500);
+          RPGACE.utils.toast('Error generating interlink article: ' + e.message, '#CC4A4A', 3500);
           genBtn.disabled = false; genBtn.textContent = label;
         });
       };
@@ -8810,11 +8810,11 @@ RPGACE.register('phylumPath', {
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
     var focusBtn = document.createElement('button');
     focusBtn.textContent = '↳ ' + focus.name;
-    focusBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:8px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    focusBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:8px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     focusBtn.onclick = function() { overlay.remove(); self._jumpToNode(focus); };
     var otherBtn = document.createElement('button');
     otherBtn.textContent = '↳ ' + other.name;
-    otherBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:8px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    otherBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:8px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     otherBtn.onclick = function() { overlay.remove(); self._jumpToNode(other); };
     btnRow.appendChild(focusBtn); btnRow.appendChild(otherBtn);
     box.appendChild(btnRow);
@@ -8907,10 +8907,10 @@ RPGACE.register('bookworm', {
         var url = val.slice(matchedPrefix.length).trim();
         input.value = '';
         input.dispatchEvent(new Event('input', { bubbles: true }));
-        if (!url) { RPGACE.utils.toast('Add a book URL after "' + matchedPrefix + '"', '#E25454', 2500); return; }
-        RPGACE.utils.toast('📖 Fetching + detecting chapters...', '#9B59B6', 3000);
+        if (!url) { RPGACE.utils.toast('Add a book URL after "' + matchedPrefix + '"', '#CC4A4A', 2500); return; }
+        RPGACE.utils.toast('📖 Fetching + detecting chapters...', '#9B6EC8', 3000);
         self._startBook(url).catch(function(e) {
-          RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4000);
+          RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 4000);
         });
         return;
       }
@@ -8949,20 +8949,20 @@ RPGACE.register('bookworm', {
     urlInput.type = 'text';
     urlInput.id = 'bookworm-url-input';
     urlInput.placeholder = 'Paste a book URL (PDF or web page)...';
-    urlInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+    urlInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
     var startBtn = document.createElement('button');
     startBtn.textContent = '📖 Start';
-    startBtn.style.cssText = 'padding:8px 16px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    startBtn.style.cssText = 'padding:8px 16px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     startBtn.onclick = function() {
       var url = urlInput.value.trim();
-      if (!url) { RPGACE.utils.toast('Paste a book URL first', '#E25454', 2000); return; }
+      if (!url) { RPGACE.utils.toast('Paste a book URL first', '#CC4A4A', 2000); return; }
       startBtn.disabled = true; startBtn.textContent = '⏳ Fetching + detecting chapters...';
       self._startBook(url).then(function() {
         startBtn.disabled = false; startBtn.textContent = '📖 Start';
         urlInput.value = '';
       }).catch(function(e) {
         startBtn.disabled = false; startBtn.textContent = '📖 Start';
-        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4000);
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 4000);
       });
     };
     urlRow.appendChild(urlInput); urlRow.appendChild(startBtn);
@@ -8989,18 +8989,18 @@ RPGACE.register('bookworm', {
     var manualTitleInput = document.createElement('input');
     manualTitleInput.type = 'text';
     manualTitleInput.placeholder = 'Book title...';
-    manualTitleInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    manualTitleInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
     var manualTocInput = document.createElement('textarea');
     manualTocInput.placeholder = 'Paste the table of contents (chapter titles + numbers)...';
     manualTocInput.rows = 5;
-    manualTocInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:8px;';
+    manualTocInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:8px;';
     var manualStartBtn = document.createElement('button');
     manualStartBtn.textContent = '✍️ Extract chapters from this contents page';
-    manualStartBtn.style.cssText = 'width:100%;padding:8px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    manualStartBtn.style.cssText = 'width:100%;padding:8px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     manualStartBtn.onclick = function() {
       var title = manualTitleInput.value.trim();
       var toc = manualTocInput.value.trim();
-      if (!title || !toc) { RPGACE.utils.toast('Add a title and the table of contents first', '#E25454', 2500); return; }
+      if (!title || !toc) { RPGACE.utils.toast('Add a title and the table of contents first', '#CC4A4A', 2500); return; }
       manualStartBtn.disabled = true; manualStartBtn.textContent = '⏳ Extracting chapter list...';
       self._startBookFromTOC(title, toc).then(function() {
         manualStartBtn.disabled = false; manualStartBtn.textContent = '✍️ Extract chapters from this contents page';
@@ -9008,7 +9008,7 @@ RPGACE.register('bookworm', {
         manualForm.style.display = 'none';
       }).catch(function(e) {
         manualStartBtn.disabled = false; manualStartBtn.textContent = '✍️ Extract chapters from this contents page';
-        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4000);
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 4000);
       });
     };
     manualForm.appendChild(manualTitleInput); manualForm.appendChild(manualTocInput); manualForm.appendChild(manualStartBtn);
@@ -9040,7 +9040,7 @@ RPGACE.register('bookworm', {
         uploadInput.value = '';
       }).catch(function(e) {
         uploadLabel.textContent = '📎 Or upload your own purchased ebook PDF';
-        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 4500);
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 4500);
       });
     };
     uploadLabel.appendChild(uploadInput);
@@ -9088,7 +9088,7 @@ RPGACE.register('bookworm', {
             topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;';
             var nameEl = document.createElement('div');
             nameEl.textContent = book.title;
-            nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;flex:1;';
+            nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;';
             // Delete button - real request after duplicate/dud books piled
             // up in this list from earlier detection-bug retries (each
             // retry creates a genuinely new book row, nothing gets
@@ -9105,14 +9105,14 @@ RPGACE.register('bookworm', {
               if (!armed) {
                 armed = true;
                 delBtn.textContent = '❌ Confirm';
-                delBtn.style.color = '#E25454';
+                delBtn.style.color = '#CC4A4A';
                 setTimeout(function() { armed = false; delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)'; }, 3000);
                 return;
               }
               RPGACE.sb.secureWrite('bookworm_books', 'delete', null, 'id=eq.' + book.id).then(function() {
                 RPGACE.utils.toast('🗑 Deleted: ' + book.title, 'rgba(226,226,236,0.5)', 2500);
                 self._refreshWidget();
-              }).catch(function(err) { RPGACE.utils.toast('Error: ' + err.message, '#E25454', 3500); });
+              }).catch(function(err) { RPGACE.utils.toast('Error: ' + err.message, '#CC4A4A', 3500); });
             };
             topRow.appendChild(nameEl); topRow.appendChild(delBtn);
             topRow.onclick = function() { self._openBook(book.id); };
@@ -9123,7 +9123,7 @@ RPGACE.register('bookworm', {
             var barOuter = document.createElement('div');
             barOuter.style.cssText = 'height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin:4px 0;';
             var barInner = document.createElement('div');
-            barInner.style.cssText = 'height:100%;width:' + pct + '%;background:#9B59B6;';
+            barInner.style.cssText = 'height:100%;width:' + pct + '%;background:#9B6EC8;';
             barOuter.appendChild(barInner);
             var subEl = document.createElement('div');
             subEl.textContent = 'Chapter ' + Math.min(book.current_chapter_index + 1, total) + ' of ' + total;
@@ -9133,7 +9133,7 @@ RPGACE.register('bookworm', {
           });
         });
       }).catch(function(e) {
-        list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+        list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
       });
   },
 
@@ -9395,7 +9395,7 @@ RPGACE.register('bookworm', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📚 Contents Found — ' + book.title;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
     title.textContent = chapters.length + ' chapters extracted from the table of contents:';
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -9406,7 +9406,7 @@ RPGACE.register('bookworm', {
       row.style.cssText = 'padding:8px 10px;margin-bottom:4px;background:rgba(255,255,255,0.02);border-radius:6px;';
       var nameEl = document.createElement('div');
       nameEl.textContent = (c.chapter_index + 1) + '. ' + c.chapter_title;
-      nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;';
+      nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;';
       row.appendChild(nameEl);
       if (c.keywords && c.keywords.length) {
         var kwEl = document.createElement('div');
@@ -9420,7 +9420,7 @@ RPGACE.register('bookworm', {
 
     var startBtn = document.createElement('button');
     startBtn.textContent = '▶ Start Chapter 1';
-    startBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    startBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     startBtn.onclick = function() { overlay.remove(); self._openCurrentChapter(book.id); };
     box.appendChild(startBtn);
 
@@ -9463,7 +9463,7 @@ RPGACE.register('bookworm', {
         .then(function(allChapters) {
           allChapters = allChapters || [];
           if (!allChapters.length) {
-            RPGACE.utils.toast('This book has no chapters stored - something went wrong when it was created. Delete it and try again.', '#E25454', 5500);
+            RPGACE.utils.toast('This book has no chapters stored - something went wrong when it was created. Delete it and try again.', '#CC4A4A', 5500);
             return;
           }
           self._renderChapterList(book, allChapters);
@@ -9484,7 +9484,7 @@ RPGACE.register('bookworm', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
     title.textContent = 'Chapters — tap any to jump straight there';
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -9509,7 +9509,7 @@ RPGACE.register('bookworm', {
       textWrap.style.cssText = 'flex:1;min-width:0;';
       var nameEl = document.createElement('div');
       nameEl.textContent = (c.chapter_index + 1) + '. ' + c.chapter_title + (isCurrent ? ' — → Continue here' : '');
-      nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;';
+      nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;';
       var subEl = document.createElement('div');
       subEl.textContent = statusLabel;
       subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
@@ -9559,7 +9559,7 @@ RPGACE.register('bookworm', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '✅ ' + book.title;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
     title.textContent = chapter.chapter_title;
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -9576,7 +9576,7 @@ RPGACE.register('bookworm', {
       var row = document.createElement('div');
       row.style.cssText = 'padding:9px 10px;margin-bottom:6px;background:rgba(255,255,255,0.02);border-radius:6px;';
       var decisionTag = { approved: '✓ Approved', rejected: '✗ Rejected', edited: '✎ Edited' }[insight.decision] || insight.decision || '—';
-      var decisionColor = insight.decision === 'rejected' ? '#E25454' : '#3DAA6E';
+      var decisionColor = insight.decision === 'rejected' ? '#CC4A4A' : '#4CAF82';
       // leafStatus (added July 19, alongside the background leaf-creation
       // queue) - an approved insight's decision can be set well before its
       // actual taxonomy_tree write lands or fails in the background, so
@@ -9586,7 +9586,7 @@ RPGACE.register('bookworm', {
       var leafTag = '';
       if (insight.decision === 'approved' || insight.decision === 'edited') {
         if (insight.leafStatus === 'pending') leafTag = ' <span style="color:#E2A83D;">(leaf still writing...)</span>';
-        else if (insight.leafStatus === 'failed') leafTag = ' <span style="color:#E25454;">(⚠️ leaf write failed)</span>';
+        else if (insight.leafStatus === 'failed') leafTag = ' <span style="color:#CC4A4A;">(⚠️ leaf write failed)</span>';
       }
       var head = document.createElement('div');
       head.innerHTML = '<span style="color:' + decisionColor + ';font-weight:700;">' + decisionTag + '</span>' + leafTag +
@@ -9599,7 +9599,7 @@ RPGACE.register('bookworm', {
       if (insight.leafStatus === 'failed') {
         var retryBtn = document.createElement('button');
         retryBtn.textContent = '🔁 Retry Leaf Creation';
-        retryBtn.style.cssText = 'margin-top:6px;padding:5px 10px;background:rgba(226,84,84,0.1);border:1px solid rgba(226,84,84,0.3);border-radius:6px;color:#E25454;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        retryBtn.style.cssText = 'margin-top:6px;padding:5px 10px;background:rgba(226,84,84,0.1);border:1px solid rgba(226,84,84,0.3);border-radius:6px;color:#CC4A4A;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
         retryBtn.onclick = function() {
           retryBtn.disabled = true; retryBtn.textContent = '⏳ Retrying...';
           self._patchChapterInsightAt(chapter.id, i, function(current) { return Object.assign({}, current, { leafStatus: 'pending' }); })
@@ -9608,7 +9608,7 @@ RPGACE.register('bookworm', {
               retryBtn.textContent = '✓ Retried - reopen to confirm';
             }).catch(function(e) {
               retryBtn.disabled = false; retryBtn.textContent = '🔁 Retry Leaf Creation';
-              RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+              RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
             });
         };
         row.appendChild(retryBtn);
@@ -9619,7 +9619,7 @@ RPGACE.register('bookworm', {
 
     var backBtn = document.createElement('button');
     backBtn.textContent = '← Back to chapter list';
-    backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
     backBtn.onclick = function() { overlay.remove(); self._openBook(book.id); };
     box.appendChild(backBtn);
 
@@ -9650,7 +9650,7 @@ RPGACE.register('bookworm', {
         .then(function(allChapters) {
           allChapters = allChapters || [];
           if (!allChapters.length) {
-            RPGACE.utils.toast('This book has no chapters stored - something went wrong when it was created. Delete it and try again.', '#E25454', 5500);
+            RPGACE.utils.toast('This book has no chapters stored - something went wrong when it was created. Delete it and try again.', '#CC4A4A', 5500);
             return;
           }
           var chapter = allChapters.find(function(c) { return c.chapter_index === book.current_chapter_index; });
@@ -9751,7 +9751,7 @@ RPGACE.register('bookworm', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:14px;';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
     title.textContent = chapter.chapter_title;
     box.appendChild(eyebrow); box.appendChild(title);
 
@@ -9763,7 +9763,7 @@ RPGACE.register('bookworm', {
 
     var formatBtn = document.createElement('button');
     formatBtn.textContent = chapter.formatted_text ? '✨ Show Reader-Friendly Version' : '✨ Clean Up Formatting for Reading';
-    formatBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    formatBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     formatBtn.onclick = function() {
       if (showingFormatted) {
         textBox.textContent = chapter.raw_text;
@@ -9786,25 +9786,25 @@ RPGACE.register('bookworm', {
         formatBtn.textContent = '📄 Show Original';
       }).catch(function(e) {
         formatBtn.disabled = false; formatBtn.textContent = '✨ Clean Up Formatting for Reading';
-        RPGACE.utils.toast('Error formatting: ' + e.message, '#E25454', 3500);
+        RPGACE.utils.toast('Error formatting: ' + e.message, '#CC4A4A', 3500);
       });
     };
     box.appendChild(formatBtn);
 
     var readBtn = document.createElement('button');
     readBtn.textContent = "✓ I've Read This — Show Insights";
-    readBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    readBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     readBtn.onclick = function() {
       // Extraction runs in the background from the moment this is clicked
       // (added July 19, per direct request) - doesn't wait for insight 1
       // like the review flow still does further down the pipeline. Errors
       // still surface as a toast even though the overlay's already gone;
       // RPGACE.utils.toast isn't tied to this overlay's lifetime.
-      RPGACE.utils.toast('📖 Analyzing "' + chapter.chapter_title + '" in the background - check back via the book\'s chapter list when ready.', '#9B59B6', 4500);
+      RPGACE.utils.toast('📖 Analyzing "' + chapter.chapter_title + '" in the background - check back via the book\'s chapter list when ready.', '#9B6EC8', 4500);
       overlay.remove();
       self._goToDashboard();
       self._analyzeChapter(book, chapter).catch(function(e) {
-        RPGACE.utils.toast('Error analyzing "' + chapter.chapter_title + '": ' + e.message, '#E25454', 4500);
+        RPGACE.utils.toast('Error analyzing "' + chapter.chapter_title + '": ' + e.message, '#CC4A4A', 4500);
       });
     };
     box.appendChild(readBtn);
@@ -9835,7 +9835,7 @@ RPGACE.register('bookworm', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title;
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
     title.textContent = chapter.chapter_title;
     var sub = document.createElement('div');
     sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:14px;';
@@ -9845,20 +9845,20 @@ RPGACE.register('bookworm', {
     var chapterTextInput = document.createElement('textarea');
     chapterTextInput.placeholder = 'Paste or type this chapter\'s text...';
     chapterTextInput.rows = 8;
-    chapterTextInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:12px;';
+    chapterTextInput.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;margin-bottom:12px;';
     box.appendChild(chapterTextInput);
 
     var warningBox = document.createElement('div');
-    warningBox.style.cssText = 'display:none;font-size:11px;color:#E25454;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:6px;padding:8px 10px;margin-bottom:10px;';
+    warningBox.style.cssText = 'display:none;font-size:11px;color:#CC4A4A;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:6px;padding:8px 10px;margin-bottom:10px;';
     box.insertBefore(warningBox, chapterTextInput.nextSibling);
 
     var addBtn = document.createElement('button');
     addBtn.textContent = '✍️ Save this chapter\'s text';
-    addBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    addBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
     var confirmedAnyway = false;
     addBtn.onclick = function() {
       var text = chapterTextInput.value.trim();
-      if (!text) { RPGACE.utils.toast('Add the chapter\'s text first', '#E25454', 2000); return; }
+      if (!text) { RPGACE.utils.toast('Add the chapter\'s text first', '#CC4A4A', 2000); return; }
 
       // Real, repeated live mistake: the table of contents (dot-leader
       // lines ending in a page number, e.g. "Title . . . . . 12") got
@@ -9879,7 +9879,7 @@ RPGACE.register('bookworm', {
         self._openCurrentChapter(book.id);
       }).catch(function(e) {
         addBtn.disabled = false; addBtn.textContent = '✍️ Save this chapter\'s text';
-        RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500);
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
       });
     };
     box.appendChild(addBtn);
@@ -10145,7 +10145,7 @@ RPGACE.register('bookworm', {
       }
       var primaryPhylum = fresh.suggested_phylum;
       var remainingPhyla = pp.ENABLED_PHYLA.filter(function(n) { return n !== primaryPhylum; });
-      RPGACE.utils.toast('📖 Resuming analysis of "' + chapter.chapter_title + '" (' + pending.length + ' insight(s) left)...', '#9B59B6', 3500);
+      RPGACE.utils.toast('📖 Resuming analysis of "' + chapter.chapter_title + '" (' + pending.length + ' insight(s) left)...', '#9B6EC8', 3500);
       return self._continueAnalyzingInBackground(chapter.id, pending, primaryPhylum, remainingPhyla);
     });
   },
@@ -10347,7 +10347,7 @@ RPGACE.register('bookworm', {
           // popup for this specific insight is long gone by the time this
           // resolves.
           console.warn('[bookworm] queued leaf creation failed for insight ' + idx + ':', e.message);
-          RPGACE.utils.toast('⚠️ Leaf creation failed for an approved insight ("' + (insight.text || '').slice(0, 60) + '...") - reopen this chapter to check it.', '#E25454', 6000);
+          RPGACE.utils.toast('⚠️ Leaf creation failed for an approved insight ("' + (insight.text || '').slice(0, 60) + '...") - reopen this chapter to check it.', '#CC4A4A', 6000);
           return self._patchChapterInsightAt(chapterId, idx, function(current) {
             return Object.assign({}, current, { leafStatus: 'failed' });
           }).catch(function() {});
@@ -10396,13 +10396,13 @@ RPGACE.register('bookworm', {
     }
 
     var summary = document.createElement('div');
-    summary.style.cssText = 'font-size:13px;color:#E2E2EC;line-height:1.6;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,0.02);border-radius:8px;';
+    summary.style.cssText = 'font-size:13px;color:#D4DAF5;line-height:1.6;margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,0.02);border-radius:8px;';
     summary.textContent = insight.text;
     box.appendChild(summary);
 
     var tt = RPGACE.modules.taxonomyTree;
     var pathLine = document.createElement('div');
-    pathLine.style.cssText = 'font-size:11px;color:#3DAA6E;margin-bottom:8px;';
+    pathLine.style.cssText = 'font-size:11px;color:#4CAF82;margin-bottom:8px;';
     pathLine.innerHTML = '<strong>Path:</strong> ' + (insight.phylumNumber ? (tt.PHYLUM_NAMES[insight.phylumNumber] || 'Phylum ' + insight.phylumNumber) : '?') +
       (insight.attachPath ? '/' + insight.attachPath.split('/').slice(1).join('/') : '') +
       (insight.newSteps && insight.newSteps.length ? '/' + insight.newSteps.join('/') : '');
@@ -10419,10 +10419,10 @@ RPGACE.register('bookworm', {
     editWrap.style.cssText = 'display:none;margin-bottom:12px;';
     var editInput = document.createElement('textarea');
     editInput.placeholder = 'Your own path, slash-separated (e.g. Order/Class/Family)...';
-    editInput.style.cssText = 'width:100%;min-height:60px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;';
+    editInput.style.cssText = 'width:100%;min-height:60px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;';
     var editSubmit = document.createElement('button');
     editSubmit.textContent = 'Use this path';
-    editSubmit.style.cssText = 'margin-top:6px;padding:6px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    editSubmit.style.cssText = 'margin-top:6px;padding:6px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     editWrap.appendChild(editInput); editWrap.appendChild(editSubmit);
     box.appendChild(editWrap);
 
@@ -10447,7 +10447,7 @@ RPGACE.register('bookworm', {
     var approveBtn = document.createElement('button');
     approveBtn.textContent = '✓ Approve';
     approveBtn.disabled = !insight.fits;
-    approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (insight.fits ? '1' : '0.4') + ';';
+    approveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;opacity:' + (insight.fits ? '1' : '0.4') + ';';
     approveBtn.onclick = function() {
       // Advances to the next insight IMMEDIATELY (added July 19, per
       // direct request) - the actual taxonomy_tree write no longer blocks
@@ -10459,20 +10459,20 @@ RPGACE.register('bookworm', {
     };
     var rejectBtn = document.createElement('button');
     rejectBtn.textContent = '✗ Reject';
-    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#E25454;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     rejectBtn.onclick = function() { advance('rejected'); };
     var editBtn = document.createElement('button');
     editBtn.textContent = '✎ Edit';
-    editBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(155,89,182,0.25);border-radius:8px;color:#9B59B6;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    editBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(155,89,182,0.25);border-radius:8px;color:#9B6EC8;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     editBtn.onclick = function() { editWrap.style.display = 'block'; };
     editSubmit.onclick = function() {
       var steps = editInput.value.split('/').map(function(s) { return s.trim(); }).filter(Boolean);
-      if (!steps.length) { RPGACE.utils.toast('Enter at least one path step', '#E25454', 2000); return; }
+      if (!steps.length) { RPGACE.utils.toast('Enter at least one path step', '#CC4A4A', 2000); return; }
       editSubmit.disabled = true; editSubmit.textContent = 'Creating...';
       var pp = RPGACE.modules.phylumPath;
       pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, steps, steps.map(function() { return ''; }), insight.text)
         .then(function() { advance('edited', { newSteps: steps }); })
-        .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500); editSubmit.disabled = false; editSubmit.textContent = 'Use this path'; });
+        .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500); editSubmit.disabled = false; editSubmit.textContent = 'Use this path'; });
     };
 
     btnRow.appendChild(approveBtn); btnRow.appendChild(rejectBtn); btnRow.appendChild(editBtn);
@@ -10514,7 +10514,7 @@ RPGACE.register('bookworm', {
     // chapter that's just genuinely slow doesn't get falsely flagged.
     var resumeBtn = document.createElement('button');
     resumeBtn.textContent = '▶ Resume Analysis';
-    resumeBtn.style.cssText = 'display:none;width:100%;margin-bottom:10px;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B59B6;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    resumeBtn.style.cssText = 'display:none;width:100%;margin-bottom:10px;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     box.appendChild(resumeBtn);
 
     var closeBtn = document.createElement('button');
@@ -10547,7 +10547,7 @@ RPGACE.register('bookworm', {
           resumeBtn.onclick = function() {
             resumeBtn.disabled = true; resumeBtn.textContent = '⏳ Resuming...';
             self._resumeChapterAnalysis(book, fresh).catch(function(e) {
-              RPGACE.utils.toast('Error resuming: ' + e.message, '#E25454', 3500);
+              RPGACE.utils.toast('Error resuming: ' + e.message, '#CC4A4A', 3500);
             }).then(function() {
               if (resumeBtn.isConnected) { resumeBtn.disabled = false; resumeBtn.textContent = '▶ Resume Analysis'; }
             });
@@ -10566,10 +10566,10 @@ RPGACE.register('bookworm', {
         var nextIndex = book.current_chapter_index + 1;
         return RPGACE.sb.secureWrite('bookworm_books', 'update', { current_chapter_index: nextIndex }, 'id=eq.' + book.id);
       }).then(function() {
-        RPGACE.utils.toast('✓ Chapter complete: ' + chapter.chapter_title, '#3DAA6E', 3000);
+        RPGACE.utils.toast('✓ Chapter complete: ' + chapter.chapter_title, '#4CAF82', 3000);
         self._refreshWidget();
         self._openCurrentChapter(book.id);
-      }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500); });
+      }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500); });
   },
 
   _markBookComplete: function(book) {
@@ -10592,10 +10592,10 @@ RPGACE.register('bookworm', {
           return RPGACE.sb.secureWrite('bookworm_books', 'update', { status: 'complete', completed_at: new Date().toISOString() }, 'id=eq.' + book.id);
         });
       }).then(function() {
-        RPGACE.utils.toast('📚 ' + book.title + ' — complete! Added to Bibliography.', '#3DAA6E', 5000);
+        RPGACE.utils.toast('📚 ' + book.title + ' — complete! Added to Bibliography.', '#4CAF82', 5000);
         self._refreshWidget();
         self._injectBibliographySection();
-      }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3500); });
+      }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500); });
   },
 
   // ── Bibliography section on the Research page ─────────────────────
@@ -10634,7 +10634,7 @@ RPGACE.register('bookworm', {
         card.style.cssText = 'padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;';
         var nameEl = document.createElement('div');
         nameEl.textContent = row.title;
-        nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;';
+        nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;';
         var subEl = document.createElement('div');
         var phylaNames = (row.phyla_touched || []).map(function(n) { return tt ? tt.PHYLUM_NAMES[n] : n; }).join(', ');
         subEl.textContent = row.total_chapters + ' chapters, ' + row.total_insights_placed + ' insights placed' + (phylaNames ? ' — ' + phylaNames : '');
@@ -10642,7 +10642,7 @@ RPGACE.register('bookworm', {
         card.appendChild(nameEl); card.appendChild(subEl);
         list.appendChild(card);
       });
-    }).catch(function(e) { list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>'; });
+    }).catch(function(e) { list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>'; });
   },
 
 });
@@ -11564,7 +11564,7 @@ RPGACE.register('config', {
 
       var badge = document.createElement('button');
       badge.textContent = '🌿 ' + matches.length + ' topics';
-      badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
       badge.onclick = function() {
         if (document.getElementById('phyla-badge-detail-' + lastMsg.dataset.phylaScanned + '-open')) {
           var existing = badge.nextElementSibling;
@@ -11603,7 +11603,7 @@ RPGACE.register('config', {
             var topLine = document.createElement('div');
             topLine.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;';
             var label = document.createElement('span');
-            label.style.cssText = 'color:' + (isGap ? '#E25454' : '#3DAA6E') + ';font-weight:700;';
+            label.style.cssText = 'color:' + (isGap ? '#CC4A4A' : '#4CAF82') + ';font-weight:700;';
             label.textContent = (isGap ? '🔴 ' : '✅ ') + RPGACE.utils.phylumLabel(m.num);
             topLine.appendChild(label);
 
@@ -11617,7 +11617,7 @@ RPGACE.register('config', {
             if (plausible) {
               var proposeBtn = document.createElement('button');
               proposeBtn.textContent = '🌳 Propose lineage';
-              proposeBtn.style.cssText = 'padding:2px 8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:10px;color:#9B59B6;font-size:9px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+              proposeBtn.style.cssText = 'padding:2px 8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:10px;color:#9B6EC8;font-size:9px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
               proposeBtn.onclick = function() {
                 if (RPGACE.modules.taxonomyTree) {
                   var topicGuess = text.slice(0, 300);
@@ -11637,7 +11637,7 @@ RPGACE.register('config', {
             panel.appendChild(row);
           });
         }).catch(function() {
-          panel.innerHTML = '<div style="color:#E25454;">Could not load gap scores</div>';
+          panel.innerHTML = '<div style="color:#CC4A4A;">Could not load gap scores</div>';
         });
     };
 
@@ -11692,10 +11692,10 @@ RPGACE.register('config', {
       counter.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);margin-bottom:8px;';
 
       var label = document.createElement('div');
-      label.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:14px;line-height:1.4;';
+      label.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;line-height:1.4;';
 
       var inp = document.createElement('textarea');
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:13px;font-family:Rajdhani,sans-serif;padding:10px 12px;resize:vertical;min-height:70px;outline:none;';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:13px;font-family:Rajdhani,sans-serif;padding:10px 12px;resize:vertical;min-height:70px;outline:none;';
       inp.placeholder = 'Type your answer here...';
 
       var hint = document.createElement('div');
@@ -11722,7 +11722,7 @@ RPGACE.register('config', {
         captureBtn = document.createElement('button');
         captureBtn.textContent = '📋 Use this conversation';
         captureBtn.title = 'Fill this in with our chat so far, instead of typing your own answer';
-        captureBtn.style.cssText = 'background:none;border:1px solid rgba(74,144,226,.3);color:#4A90E2;border-radius:6px;padding:8px 14px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-right:auto;';
+        captureBtn.style.cssText = 'background:none;border:1px solid rgba(74,144,226,.3);color:#4A8CCC;border-radius:6px;padding:8px 14px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-right:auto;';
         captureBtn.onclick = function() {
           var captured = RPGACE.utils._captureChatHistory();
           if (!captured) { RPGACE.utils.toast('⚠️ No conversation to capture yet', '#E2A83D', 2500); return; }
@@ -11892,7 +11892,7 @@ RPGACE.register('beatLog', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
     eyebrow.textContent = 'Beat Log · ' + RPGACE.utils.phylumLabel(16);
     var titleText = document.createElement('div');
-    titleText.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;';
+    titleText.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;';
     titleText.textContent = 'Log a Beat';
     title.appendChild(eyebrow); title.appendChild(titleText);
     hdr.appendChild(title);
@@ -11970,7 +11970,7 @@ RPGACE.register('beatLog', {
         inp.placeholder = f.placeholder || '';
       }
       inp.id = f.id;
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
       wrap.appendChild(lbl); wrap.appendChild(inp);
       grid.appendChild(wrap);
     });
@@ -11992,7 +11992,7 @@ RPGACE.register('beatLog', {
     taxSearch.type = 'text';
     taxSearch.id = 'bl-tax-search';
     taxSearch.placeholder = '🔍 Type to search nodes — selected ones stay visible...';
-    taxSearch.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    taxSearch.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
     var taxGrid = document.createElement('div');
     taxGrid.id = 'bl-tax-grid';
     taxGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
@@ -12052,7 +12052,7 @@ RPGACE.register('beatLog', {
       f.options.forEach(function(o) {
         var opt = document.createElement('option'); opt.value=o; opt.textContent=o; sel.appendChild(opt);
       });
-      sel.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      sel.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
       wrap.appendChild(lbl); wrap.appendChild(sel);
       extraGrid.appendChild(wrap);
     });
@@ -12068,7 +12068,7 @@ RPGACE.register('beatLog', {
       var inp = document.createElement('input');
       inp.id = id; inp.type = 'text';
       inp.placeholder = i === 0 ? 'e.g. Central Cee — Obsessed With You' : 'e.g. C:\\Beats\\midnight_cipher.flp';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
       wrap.appendChild(lbl); wrap.appendChild(inp);
       refWrap.appendChild(wrap);
     });
@@ -12268,8 +12268,8 @@ RPGACE.register('beatLog', {
   _submit: function() {
     var self = this;
     var form = self._getForm();
-    if (!form.title) { RPGACE.utils.toast('Add a beat title first', '#E25454', 2000); return; }
-    if (!form.mood)  { RPGACE.utils.toast('Select a mood', '#E25454', 2000); return; }
+    if (!form.title) { RPGACE.utils.toast('Add a beat title first', '#CC4A4A', 2000); return; }
+    if (!form.mood)  { RPGACE.utils.toast('Select a mood', '#CC4A4A', 2000); return; }
 
     var output = document.getElementById('beat-log-output');
     output.style.display = 'block';
@@ -12400,7 +12400,7 @@ RPGACE.register('beatLog', {
       });
     })
     .catch(function(err) {
-      output.innerHTML = '<div style="color:#E25454;font-size:12px;padding:8px 0;">Search error: ' + err.message + '</div>';
+      output.innerHTML = '<div style="color:#CC4A4A;font-size:12px;padding:8px 0;">Search error: ' + err.message + '</div>';
     });
   },
 
@@ -12516,15 +12516,15 @@ RPGACE.register('beatLog', {
     var swatch = document.createElement('div');
     swatch.style.cssText = 'width:32px;height:32px;border-radius:6px;background:' + palette.hex + ';border:1px solid rgba(255,255,255,0.1);flex-shrink:0;';
     var palText = document.createElement('div');
-    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#E2E2EC;">' + palette.name + '</div><div style="font-size:10px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
+    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#D4DAF5;">' + palette.name + '</div><div style="font-size:10px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
     palRow.appendChild(swatch); palRow.appendChild(palText);
     output.appendChild(palRow);
 
     // Artist tiers
     var tiers = [
       { label: 'Major artists', color: '#C9A84C', artists: big },
-      { label: 'Emerging targets', color: '#3DAA6E', artists: emerging.slice(0, 8) },
-      { label: 'Underground', color: '#4A90E2', artists: underground },
+      { label: 'Emerging targets', color: '#4CAF82', artists: emerging.slice(0, 8) },
+      { label: 'Underground', color: '#4A8CCC', artists: underground },
     ];
 
     tiers.forEach(function(tier) {
@@ -12552,7 +12552,7 @@ RPGACE.register('beatLog', {
     // Save to Notion button
     var notionBtn = document.createElement('button');
     notionBtn.textContent = '📓 Save Artist List to Notion';
-    notionBtn.style.cssText = 'margin-top:10px;padding:8px 16px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    notionBtn.style.cssText = 'margin-top:10px;padding:8px 16px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     notionBtn.onclick = function() {
       var content = '## Beat: ' + form.title + '\n**Key:** ' + form.key + ' ' + form.scale + ' | **BPM:** ' + form.bpm + ' | **Mood:** ' + form.mood + '\n\n';
       content += '### Major Artists\n' + big.map(function(a){return '- [' + a.name + '](' + a.url + ')'}).join('\n') + '\n\n';
@@ -12562,9 +12562,9 @@ RPGACE.register('beatLog', {
         title: 'Beat Log: ' + form.title + ' — Artist Matches',
         markdown: content
       }).then(function() {
-        RPGACE.utils.toast('📓 Saved to Notion', '#9B59B6', 3000);
+        RPGACE.utils.toast('📓 Saved to Notion', '#9B6EC8', 3000);
       }).catch(function(e) {
-        RPGACE.utils.toast('Notion error: ' + e.message, '#E25454', 3000);
+        RPGACE.utils.toast('Notion error: ' + e.message, '#CC4A4A', 3000);
       });
     };
     output.appendChild(notionBtn);
@@ -12610,7 +12610,7 @@ RPGACE.register('refCorpus', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:4px;';
     eyebrow.textContent = 'Reference Corpus · ' + RPGACE.utils.phylumLabel(8) + ' + ' + RPGACE.utils.phylumLabel(17);
     var titleEl = document.createElement('div');
-    titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
     titleEl.textContent = 'Track Reference Library';
     var subEl = document.createElement('div');
     subEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:16px;';
@@ -12633,7 +12633,7 @@ RPGACE.register('refCorpus', {
     formFields.forEach(function(f) {
       var inp = document.createElement('input');
       inp.id = f.id; inp.type = f.type; inp.placeholder = f.placeholder;
-      inp.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:7px 10px;outline:none;font-family:Rajdhani,sans-serif;width:100%;';
+      inp.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:7px 10px;outline:none;font-family:Rajdhani,sans-serif;width:100%;';
       form.appendChild(inp);
     });
     panel.appendChild(form);
@@ -12645,7 +12645,7 @@ RPGACE.register('refCorpus', {
     var bulkArea = document.createElement('textarea');
     bulkArea.id = 'rc-bulk';
     bulkArea.placeholder = 'Nines, Money & Muscle, 92, D, 3, Melancholic\nDave, Titanium, 88, F#, 4, Cinematic\nKnucks, Seasons, 95, G, 3, Dark';
-    bulkArea.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#E2E2EC;font-size:11px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;margin-bottom:10px;';
+    bulkArea.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#D4DAF5;font-size:11px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;margin-bottom:10px;';
     panel.appendChild(bulkLbl);
     panel.appendChild(bulkArea);
 
@@ -12655,12 +12655,12 @@ RPGACE.register('refCorpus', {
 
     var addBtn = document.createElement('button');
     addBtn.textContent = '+ Add Track';
-    addBtn.style.cssText = 'padding:8px 16px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    addBtn.style.cssText = 'padding:8px 16px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     addBtn.onclick = function() { self._addSingle(); };
 
     var bulkBtn = document.createElement('button');
     bulkBtn.textContent = '⚡ Bulk Import';
-    bulkBtn.style.cssText = 'padding:8px 16px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    bulkBtn.style.cssText = 'padding:8px 16px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     bulkBtn.onclick = function() { self._bulkImport(); };
 
     var refreshBtn = document.createElement('button');
@@ -12696,7 +12696,7 @@ RPGACE.register('refCorpus', {
     var get = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
     var artist = get('rc-artist');
     var title  = get('rc-title');
-    if (!artist || !title) { RPGACE.utils.toast('Artist and title required', '#E25454', 2000); return; }
+    if (!artist || !title) { RPGACE.utils.toast('Artist and title required', '#CC4A4A', 2000); return; }
     var row = {
       artist:  artist,
       title:   title,
@@ -12709,19 +12709,19 @@ RPGACE.register('refCorpus', {
     };
     RPGACE.sb.secureWrite('reference_tracks', 'insert', row)
       .then(function() {
-        RPGACE.utils.toast('✅ Added: ' + artist + ' — ' + title, '#4A90E2', 2500);
+        RPGACE.utils.toast('✅ Added: ' + artist + ' — ' + title, '#4A8CCC', 2500);
         ['rc-artist','rc-title','rc-bpm','rc-key','rc-energy','rc-mood'].forEach(function(id) {
           var el = document.getElementById(id); if (el) el.value = '';
         });
         this._loadList();
       }.bind(this))
-      .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#E25454', 3000); });
+      .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3000); });
   },
 
   _bulkImport: function() {
     var self = this;
     var raw = document.getElementById('rc-bulk');
-    if (!raw || !raw.value.trim()) { RPGACE.utils.toast('Paste tracks first', '#E25454', 2000); return; }
+    if (!raw || !raw.value.trim()) { RPGACE.utils.toast('Paste tracks first', '#CC4A4A', 2000); return; }
     var lines = raw.value.trim().split('\n').filter(function(l) { return l.trim(); });
     var rows = lines.map(function(line) {
       var parts = line.split(',').map(function(p) { return p.trim(); });
@@ -12737,16 +12737,16 @@ RPGACE.register('refCorpus', {
       };
     }).filter(function(r) { return r.artist && r.title; });
 
-    if (rows.length === 0) { RPGACE.utils.toast('No valid rows found', '#E25454', 2000); return; }
+    if (rows.length === 0) { RPGACE.utils.toast('No valid rows found', '#CC4A4A', 2000); return; }
 
-    RPGACE.utils.toast('Importing ' + rows.length + ' tracks...', '#4A90E2', 2000);
+    RPGACE.utils.toast('Importing ' + rows.length + ' tracks...', '#4A8CCC', 2000);
     var done = 0;
     rows.forEach(function(row) {
       RPGACE.sb.secureWrite('reference_tracks', 'insert', row)
         .then(function() {
           done++;
           if (done === rows.length) {
-            RPGACE.utils.toast('✅ Imported ' + done + ' tracks', '#4A90E2', 3000);
+            RPGACE.utils.toast('✅ Imported ' + done + ' tracks', '#4A8CCC', 3000);
             raw.value = '';
             self._loadList();
           }
@@ -12781,7 +12781,7 @@ RPGACE.register('refCorpus', {
           item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
           var left = document.createElement('div');
           var name = document.createElement('div');
-          name.style.cssText = 'font-size:12px;color:#E2E2EC;font-weight:600;';
+          name.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;';
           name.textContent = row.artist + ' — ' + row.title;
           var meta = document.createElement('div');
           meta.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);';
@@ -12879,7 +12879,7 @@ RPGACE.register('contentProductionLive', {
       if (entry && entry.con_id) {
         self._activeConID = entry.con_id;
         self._activeId = entry.id;
-        RPGACE.utils.toast('📋 ConID #' + entry.con_id + ' created: ' + data.title, '#3DAA6E', 4000);
+        RPGACE.utils.toast('📋 ConID #' + entry.con_id + ' created: ' + data.title, '#4CAF82', 4000);
         self._refreshWidget();
         self._injectOracleBar();
       }
@@ -13025,10 +13025,10 @@ RPGACE.register('contentProductionLive', {
 
         rows.forEach(function(row) {
           var statusColors = {
-            'Idea': '#4A90E2', 'Scripted': '#C9A84C', 'Filmed': '#9B59B6',
-            'Edited': '#E25454', 'Posted': '#3DAA6E', 'Analysed': '#2ABFB0'
+            'Idea': '#4A8CCC', 'Scripted': '#C9A84C', 'Filmed': '#9B6EC8',
+            'Edited': '#CC4A4A', 'Posted': '#4CAF82', 'Analysed': '#2ABFB0'
           };
-          var color = statusColors[row.status] || '#4A90E2';
+          var color = statusColors[row.status] || '#4A8CCC';
 
           var item = document.createElement('div');
           item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
@@ -13041,7 +13041,7 @@ RPGACE.register('contentProductionLive', {
           idBadge.textContent = 'ConID #' + row.con_id;
 
           var titleSpan = document.createElement('span');
-          titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+          titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
           titleSpan.textContent = row.title;
 
           var statusBadge = document.createElement('span');
@@ -13077,13 +13077,13 @@ RPGACE.register('contentProductionLive', {
             var inp = document.createElement('input');
             inp.type = 'text';
             inp.value = row.title;
-            inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(61,170,110,0.3);border-radius:4px;color:#E2E2EC;font-size:11px;padding:3px 6px;outline:none;font-family:Rajdhani,sans-serif;';
+            inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(61,170,110,0.3);border-radius:4px;color:#D4DAF5;font-size:11px;padding:3px 6px;outline:none;font-family:Rajdhani,sans-serif;';
             titleWrap.replaceChild(inp, titleDisplay);
             inp.focus();
             inp.onblur = function() {
               var newTitle = inp.value.trim() || row.title;
               self.updateEntry(row.id, { title: newTitle }).then(function() {
-                RPGACE.utils.toast('✅ Title updated', '#3DAA6E', 2000);
+                RPGACE.utils.toast('✅ Title updated', '#4CAF82', 2000);
                 self._refreshWidget();
               });
             };
@@ -13094,7 +13094,7 @@ RPGACE.register('contentProductionLive', {
           // Swap button
           var swapBtn = document.createElement('button');
           swapBtn.textContent = '⇄ Swap ConID';
-          swapBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:5px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+          swapBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:5px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
           swapBtn.onclick = function() {
             // Load all ConIDs and show swap dropdown
             RPGACE.sb.select('content_productions', 'order=con_id.desc&limit=30')
@@ -13117,7 +13117,7 @@ RPGACE.register('contentProductionLive', {
                     dd.remove();
                     self._activeConID = entry.con_id;
                     self._activeId = entry.id;
-                    RPGACE.utils.toast('Switched to ConID #' + entry.con_id + ': ' + entry.title.slice(0,40), '#3DAA6E', 3000);
+                    RPGACE.utils.toast('Switched to ConID #' + entry.con_id + ': ' + entry.title.slice(0,40), '#4CAF82', 3000);
                     self._refreshWidget();
                   };
                   dd.appendChild(opt);
@@ -13168,7 +13168,7 @@ RPGACE.register('contentProductionLive', {
               var ytLink = document.createElement('a');
               ytLink.href = row.youtube_url; ytLink.target = '_blank';
               ytLink.textContent = '▶ YouTube';
-              ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#E25454;font-size:10px;text-decoration:none;';
+              ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#CC4A4A;font-size:10px;text-decoration:none;';
               actions.appendChild(ytLink);
             }
             if (row.instagram_url) {
@@ -13184,7 +13184,7 @@ RPGACE.register('contentProductionLive', {
           if (row.status === 'Filmed' || row.status === 'Edited') {
             var postBtn = document.createElement('button');
             postBtn.textContent = '📋 Add post details';
-            postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#3DAA6E;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             postBtn.onclick = function() { self._showPostDetails(row); };
             actions.appendChild(postBtn);
           }
@@ -13192,7 +13192,7 @@ RPGACE.register('contentProductionLive', {
           // Open in Oracle button
           var oracleBtn = document.createElement('button');
           oracleBtn.textContent = '💬 Oracle session';
-          oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A90E2;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           oracleBtn.onclick = function() {
             self._activeConID = row.con_id;
             self._activeId = row.id;
@@ -13224,7 +13224,7 @@ RPGACE.register('contentProductionLive', {
           list.appendChild(item);
         });
       }).catch(function(e) {
-        list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+        list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
       });
   },
 
@@ -13237,7 +13237,7 @@ RPGACE.register('contentProductionLive', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.25);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;';
 
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
     title.textContent = 'ConID #' + row.con_id + ' — Post Details';
     box.appendChild(title);
 
@@ -13255,7 +13255,7 @@ RPGACE.register('contentProductionLive', {
       lbl.textContent = f.label + ':';
       var inp = document.createElement('input');
       inp.id = f.id; inp.type = 'text'; inp.placeholder = f.placeholder;
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
       box.appendChild(lbl); box.appendChild(inp);
     });
 
@@ -13268,11 +13268,11 @@ RPGACE.register('contentProductionLive', {
     licLbl.textContent = 'Licence type (if selling this beat):';
     var licSelect = document.createElement('select');
     licSelect.id = 'pd-licence';
-    licSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+    licSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
     [['', '— not a beat sale —'], ['lease', 'Lease'], ['non-exclusive', 'Non-Exclusive'], ['exclusive', 'Exclusive']].forEach(function(o) {
       var opt = document.createElement('option');
       opt.value = o[0]; opt.textContent = o[1];
-      opt.style.color = '#E2E2EC'; opt.style.background = '#1a1a24';
+      opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
       licSelect.appendChild(opt);
     });
     box.appendChild(licLbl); box.appendChild(licSelect);
@@ -13282,14 +13282,14 @@ RPGACE.register('contentProductionLive', {
     priceLbl.textContent = 'Price (GBP):';
     var priceInp = document.createElement('input');
     priceInp.id = 'pd-price'; priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01'; priceInp.placeholder = 'e.g. 29.99';
-    priceInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+    priceInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
     box.appendChild(priceLbl); box.appendChild(priceInp);
 
     var btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
     var saveBtn = document.createElement('button');
     saveBtn.textContent = '💾 Save + Mark Posted';
-    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     saveBtn.onclick = function() {
       var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
       var priceVal = g('pd-price');
@@ -13307,10 +13307,10 @@ RPGACE.register('contentProductionLive', {
       self.updateEntry(row.id, updates).then(function() {
         overlay.remove();
         self._refreshWidget();
-        RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Posted', '#3DAA6E', 3000);
+        RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Posted', '#4CAF82', 3000);
         // Auto-post to Instagram if URL not provided
         if (!updates.instagram_url && updates.status === 'Posted') {
-          RPGACE.utils.toast('💡 Tip: Instagram auto-post available via Composio', '#9B59B6', 4000);
+          RPGACE.utils.toast('💡 Tip: Instagram auto-post available via Composio', '#9B6EC8', 4000);
         }
       });
     };
@@ -13342,7 +13342,7 @@ RPGACE.register('contentProductionLive', {
 
     var optionBBtn = document.createElement('button');
     optionBBtn.textContent = '🎬 Switch to Production Panel';
-    optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#3DAA6E;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     optionBBtn.onclick = function() { self._openProductionPanel(); };
 
     var endBtn = document.createElement('button');
@@ -13374,7 +13374,7 @@ RPGACE.register('contentProductionLive', {
     lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
     lb.textContent = 'CONTENT PRODUCTION LIVE · ConID #' + self._activeConID;
     var sub = document.createElement('div');
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#E2E2EC;';
+    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
     sub.textContent = 'Production Panel';
     htxt.appendChild(lb); htxt.appendChild(sub);
     var closeHdr = document.createElement('button');
@@ -13400,7 +13400,7 @@ RPGACE.register('contentProductionLive', {
       var phaseCard = document.createElement('div');
       phaseCard.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:10px;';
       var phTitle = document.createElement('div');
-      phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:6px;';
+      phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
       phTitle.textContent = ph.icon + ' ' + ph.title;
       var phDesc = document.createElement('div');
       phDesc.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:10px;';
@@ -13411,14 +13411,14 @@ RPGACE.register('contentProductionLive', {
         var pathInp = document.createElement('input');
         pathInp.type = 'text';
         pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
-        pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#E2E2EC;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+        pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
         var savePathBtn = document.createElement('button');
         savePathBtn.textContent = 'Save footage path';
-        savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#3DAA6E;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
         savePathBtn.onclick = function() {
           if (self._activeId && pathInp.value.trim()) {
             self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
-              .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#3DAA6E', 2000); });
+              .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#4CAF82', 2000); });
           }
         };
         phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
@@ -13433,7 +13433,7 @@ RPGACE.register('contentProductionLive', {
     // Switch back to Oracle button
     var backBtn = document.createElement('button');
     backBtn.textContent = '← Back to Oracle (Option A)';
-    backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
+    backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
     backBtn.onclick = function() {
       panel.style.transform = 'translateX(100%)';
       setTimeout(function(){ panel.remove(); }, 280);
@@ -13466,7 +13466,7 @@ RPGACE.register('contentProductionLive', {
       );
     }
 
-    RPGACE.utils.toast('✅ Session ended · Saved to Journal · ConID #' + self._activeConID, '#3DAA6E', 4000);
+    RPGACE.utils.toast('✅ Session ended · Saved to Journal · ConID #' + self._activeConID, '#4CAF82', 4000);
     self._activeConID = null;
     self._activeId = null;
     self._refreshWidget();
@@ -13531,7 +13531,7 @@ RPGACE.register('videoPipeline', {
     btnRow.style.cssText = 'display:flex;gap:6px;';
     var newBtn = document.createElement('button');
     newBtn.textContent = '+ New';
-    newBtn.style.cssText = 'background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:6px;color:#4A90E2;cursor:pointer;font-size:11px;font-weight:700;padding:4px 10px;font-family:Rajdhani,sans-serif;';
+    newBtn.style.cssText = 'background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:6px;color:#4A8CCC;cursor:pointer;font-size:11px;font-weight:700;padding:4px 10px;font-family:Rajdhani,sans-serif;';
     newBtn.onclick = function() { self._showNewJobForm(); };
     var refreshBtn = document.createElement('button');
     refreshBtn.textContent = '↻';
@@ -13578,7 +13578,7 @@ RPGACE.register('videoPipeline', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.25);border-radius:12px;padding:24px 28px;width:min(420px,95vw);';
 
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
     title.textContent = 'New Video Job';
     box.appendChild(title);
 
@@ -13587,7 +13587,7 @@ RPGACE.register('videoPipeline', {
     lbl.textContent = 'Title';
     var titleInp = document.createElement('input');
     titleInp.type = 'text'; titleInp.placeholder = 'e.g. Edison Tutorial Video';
-    titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
+    titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
     box.appendChild(lbl); box.appendChild(titleInp);
 
     var pathLbl = document.createElement('div');
@@ -13595,17 +13595,17 @@ RPGACE.register('videoPipeline', {
     pathLbl.textContent = 'Raw footage path (optional)';
     var pathInp = document.createElement('input');
     pathInp.type = 'text'; pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
-    pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
+    pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
     box.appendChild(pathLbl); box.appendChild(pathInp);
 
     var btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;';
     var saveBtn = document.createElement('button');
     saveBtn.textContent = '💾 Create';
-    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     saveBtn.onclick = function() {
       var t = titleInp.value.trim();
-      if (!t) { RPGACE.utils.toast('Add a title first', '#E25454', 2000); return; }
+      if (!t) { RPGACE.utils.toast('Add a title first', '#CC4A4A', 2000); return; }
       RPGACE.sb.secureWrite('video_jobs', 'insert', {
         title: t,
         status: 'raw_footage',
@@ -13614,9 +13614,9 @@ RPGACE.register('videoPipeline', {
       }).then(function() {
         overlay.remove();
         self._refreshWidget();
-        RPGACE.utils.toast('📹 Video job created: ' + t, '#4A90E2', 3000);
+        RPGACE.utils.toast('📹 Video job created: ' + t, '#4A8CCC', 3000);
       }).catch(function(e) {
-        RPGACE.utils.toast('Save error: ' + e.message, '#E25454', 3000);
+        RPGACE.utils.toast('Save error: ' + e.message, '#CC4A4A', 3000);
       });
     };
     var cancelBtn = document.createElement('button');
@@ -13646,19 +13646,19 @@ RPGACE.register('videoPipeline', {
 
         rows.forEach(function(row) { list.appendChild(self._renderRow(row)); });
       }).catch(function(e) {
-        list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+        list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
       });
   },
 
   _renderRow: function(row) {
     var self = this;
     var statusColors = {
-      beat_logged: '#C9A84C', raw_footage: '#4A90E2', edited: '#9B59B6',
-      rendered: '#E25454', exported: '#3DAA6E',
+      beat_logged: '#C9A84C', raw_footage: '#4A8CCC', edited: '#9B6EC8',
+      rendered: '#CC4A4A', exported: '#4CAF82',
     };
     var stageIdx = self.STAGES.indexOf(row.status);
     if (stageIdx === -1) stageIdx = 0;
-    var color = statusColors[row.status] || '#4A90E2';
+    var color = statusColors[row.status] || '#4A8CCC';
 
     var item = document.createElement('div');
     item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
@@ -13666,7 +13666,7 @@ RPGACE.register('videoPipeline', {
     var topRow = document.createElement('div');
     topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
     var titleSpan = document.createElement('span');
-    titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#E2E2EC;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     titleSpan.textContent = row.title;
     var statusBadge = document.createElement('span');
     statusBadge.style.cssText = 'font-size:9px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb', 'rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb', 'rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
@@ -13704,7 +13704,7 @@ RPGACE.register('videoPipeline', {
 
     var detailsBtn = document.createElement('button');
     detailsBtn.textContent = '📋 Paths + exports';
-    detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A90E2;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     detailsBtn.onclick = function() { self._showDetails(row); };
     actions.appendChild(detailsBtn);
 
@@ -13723,7 +13723,7 @@ RPGACE.register('videoPipeline', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.25);border-radius:12px;padding:24px 28px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;';
 
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:16px;';
+    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
     title.textContent = row.title;
     box.appendChild(title);
 
@@ -13739,7 +13739,7 @@ RPGACE.register('videoPipeline', {
       lbl.textContent = f.label;
       var inp = document.createElement('input');
       inp.id = f.id; inp.type = 'text'; inp.value = f.value || '';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
       box.appendChild(lbl); box.appendChild(inp);
     });
 
@@ -13756,7 +13756,7 @@ RPGACE.register('videoPipeline', {
       var inp = document.createElement('input');
       inp.id = 'vp-export-' + t; inp.type = 'text'; inp.value = exportPaths[t] || '';
       inp.placeholder = 'URL or file path';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#E2E2EC;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
       box.appendChild(lbl); box.appendChild(inp);
     });
 
@@ -13764,7 +13764,7 @@ RPGACE.register('videoPipeline', {
     btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
     var saveBtn = document.createElement('button');
     saveBtn.textContent = '💾 Save';
-    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A90E2;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     saveBtn.onclick = function() {
       var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
       var newExportPaths = {};
@@ -13782,7 +13782,7 @@ RPGACE.register('videoPipeline', {
       self.updateEntry(row.id, updates).then(function() {
         overlay.remove();
         self._refreshWidget();
-        RPGACE.utils.toast('✅ Video job updated', '#3DAA6E', 2500);
+        RPGACE.utils.toast('✅ Video job updated', '#4CAF82', 2500);
       });
     };
     var cancelBtn = document.createElement('button');
@@ -13856,7 +13856,7 @@ RPGACE.register('conidPot', {
     var titleInp = document.createElement('input');
     titleInp.type = 'text';
     titleInp.value = title;
-    titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.25);border-radius:6px;color:#E2E2EC;font-size:13px;font-weight:600;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
+    titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.25);border-radius:6px;color:#D4DAF5;font-size:13px;font-weight:600;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
 
     var previewLbl = document.createElement('div');
     previewLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
@@ -13943,7 +13943,7 @@ RPGACE.register('conidPot', {
       // Refresh idea bank if visible
       self._refreshIdeaBank();
     }).catch(function(e) {
-      RPGACE.utils.toast('Error saving: ' + e.message, '#E25454', 3000);
+      RPGACE.utils.toast('Error saving: ' + e.message, '#CC4A4A', 3000);
     });
   },
 
@@ -13955,25 +13955,25 @@ RPGACE.register('conidPot', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(226,84,84,0.25);border-radius:12px;padding:24px 28px;width:min(480px,95vw);';
 
     var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#E2E2EC;margin-bottom:8px;';
+    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:8px;';
     title.textContent = '⚠️ Similar idea found';
 
     var msg = document.createElement('div');
     msg.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);margin-bottom:16px;line-height:1.6;';
-    msg.innerHTML = 'Existing: <strong style="color:#C9A84C;">' + existing.title + '</strong><br>New: <strong style="color:#4A90E2;">' + newTitle + '</strong><br><br>Merge into one combined idea (best of both), or keep separate?';
+    msg.innerHTML = 'Existing: <strong style="color:#C9A84C;">' + existing.title + '</strong><br>New: <strong style="color:#4A8CCC;">' + newTitle + '</strong><br><br>Merge into one combined idea (best of both), or keep separate?';
 
     var btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
 
     var mergeBtn = document.createElement('button');
     mergeBtn.textContent = '🔀 Merge (recommended)';
-    mergeBtn.style.cssText = 'flex:1;padding:9px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#3DAA6E;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    mergeBtn.style.cssText = 'flex:1;padding:9px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     mergeBtn.onclick = function() {
       // Merge: combine text, keep better title, add to merged_from
       var combinedText = existing.idea_text + '\n\n--- MERGED ---\n\n' + newText.slice(0, 1500);
       RPGACE.sb.secureWrite('conid_pot', 'update', { idea_text: combinedText, merged_from: [newTitle] }, 'id=eq.' + existing.id)
       .then(function() {
-        RPGACE.utils.toast('🔀 Merged into: ' + existing.title, '#3DAA6E', 3000);
+        RPGACE.utils.toast('🔀 Merged into: ' + existing.title, '#4CAF82', 3000);
         self._refreshIdeaBank();
       });
       overlay.remove();
@@ -14046,7 +14046,7 @@ RPGACE.register('conidPot', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:90vh;overflow-y:auto;';
 
     var hdr = document.createElement('div');
-    hdr.style.cssText = 'font-size:15px;font-weight:700;color:#E2E2EC;margin-bottom:6px;';
+    hdr.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
     hdr.textContent = '💡 Select ideas to save (' + ideas.length + ' found)';
     var sub = document.createElement('div');
     sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:16px;';
@@ -14072,7 +14072,7 @@ RPGACE.register('conidPot', {
       var titleEl = document.createElement('input');
       titleEl.type = 'text';
       titleEl.value = idea.title;
-      titleEl.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px;color:#E2E2EC;font-size:12px;font-weight:600;padding:4px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:3px;';
+      titleEl.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px;color:#D4DAF5;font-size:12px;font-weight:600;padding:4px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:3px;';
       var preview = document.createElement('div');
       preview.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);';
       preview.textContent = idea.text.slice(0, 100) + '...';
@@ -14159,7 +14159,7 @@ RPGACE.register('conidPot', {
     eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
     eyebrow.textContent = 'Idea Bank · ConIDPot';
     var titleEl = document.createElement('div');
-    titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#E2E2EC;margin-bottom:4px;';
+    titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
     titleEl.textContent = 'Content Idea Bank';
     var sub = document.createElement('div');
     sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:14px;';
@@ -14249,7 +14249,7 @@ RPGACE.register('conidPot', {
           };
 
           var titleEl = document.createElement('div');
-          titleEl.style.cssText = 'flex:1;font-size:12px;font-weight:600;color:#E2E2EC;';
+          titleEl.style.cssText = 'flex:1;font-size:12px;font-weight:600;color:#D4DAF5;';
           titleEl.textContent = row.title;
 
           var sourceBadge = document.createElement('span');
@@ -14264,12 +14264,12 @@ RPGACE.register('conidPot', {
           actRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
 
           var connectors = [
-            { label: '🔀 Repurpose', color: '#3DAA6E', action: function() {
+            { label: '🔀 Repurpose', color: '#4CAF82', action: function() {
               if (RPGACE.modules.contentRepurpose) {
                 RPGACE.modules.contentRepurpose.openPopup(row.idea_text, row.title);
               }
             }},
-            { label: '💬 Oracle', color: '#4A90E2', action: function() {
+            { label: '💬 Oracle', color: '#4A8CCC', action: function() {
               if (typeof showPage === 'function') showPage('advisor');
               setTimeout(function() { RPGACE.utils.sendToOracle('Help me develop this content idea for @AceSanyaBeats:\n\n"' + row.title + '"\n\n' + (row.idea_text || '').slice(0, 500)); }, 300);
             }},
@@ -14285,7 +14285,7 @@ RPGACE.register('conidPot', {
               RPGACE.DB.set('sched', agendas);
               RPGACE.utils.toast('📅 Added to agenda: ' + row.title.slice(0,30), '#C9A84C', 2500);
             }},
-            { label: '⚡ Activate ConID', color: '#9B59B6', action: function() {
+            { label: '⚡ Activate ConID', color: '#9B6EC8', action: function() {
               if (RPGACE.modules.contentProductionLive) {
                 RPGACE.modules.contentProductionLive.createEntry({ title: row.title, idea: row.idea_text, taxonomy_nodes: row.phyla_detected || [], status: 'Idea' });
                 // Update pot status to activated
@@ -14313,7 +14313,7 @@ RPGACE.register('conidPot', {
           list.appendChild(item);
         });
       }).catch(function(e) {
-        list.innerHTML = '<div style="color:#E25454;font-size:11px;">Load error: ' + e.message + '</div>';
+        list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
       });
   },
 
@@ -14554,7 +14554,7 @@ RPGACE.register('morningBrief', {
 
       // handled inside ideaPromise above
     }).catch(function(err) {
-      output.innerHTML = '<div style="color:#E25454;font-size:12px;padding:8px 0;">Error: ' + err.message + '</div>';
+      output.innerHTML = '<div style="color:#CC4A4A;font-size:12px;padding:8px 0;">Error: ' + err.message + '</div>';
     });
   },
 
@@ -14740,12 +14740,12 @@ RPGACE.register('docsLinks', {
     // the end of every session (see CLAUDE.md's Oversight section).
     var links = [
       { label: '📓 Patch Notes', href: '/patch_notes.html', color: '#C9A84C' },
-      { label: '🔗 Interconnection Map', href: '/interconnection_map.md', color: '#4A90E2' },
-      { label: '📘 Full Manual', href: '/manual.html', color: '#9B59B6' },
+      { label: '🔗 Interconnection Map', href: '/interconnection_map.md', color: '#4A8CCC' },
+      { label: '📘 Full Manual', href: '/manual.html', color: '#9B6EC8' },
       { label: '🌳 Taxonomy Map', href: '/taxonomy_map.html', color: '#2ABFB0' },
       { label: '🗺️ System Flow Map', href: '/system_flow_map.md', color: '#E2A83D' },
-      { label: '🐂 Minotaur Map', href: '/minotaur_map.html', color: '#E25454' },
-      { label: '⚖️ Placement Rules', href: '/taxonomy_placement_rules.txt', color: '#4A90E2' }
+      { label: '🐂 Minotaur Map', href: '/minotaur_map.html', color: '#CC4A4A' },
+      { label: '⚖️ Placement Rules', href: '/taxonomy_placement_rules.txt', color: '#4A8CCC' }
     ];
 
     links.forEach(function(l) {
@@ -15044,7 +15044,7 @@ RPGACE.register('encyclopediaQoL', {
       var badge = document.createElement('span');
       if (entry.taxonomy_node_id) {
         badge.textContent = ' · 🌳 Linked';
-        badge.style.color = '#3DAA6E';
+        badge.style.color = '#4CAF82';
       } else {
         badge.textContent = ' · ○ Not yet placed';
         badge.style.color = 'rgba(226,226,236,0.35)';
@@ -15174,9 +15174,9 @@ RPGACE.register('journalQoL', {
       var decisions = results[0] || [];
       var suggestions = results[1] || [];
       var rows = decisions.map(function(d) {
-        return { date: (d.created_at || '').slice(0, 10), label: '🧬 Taxonomy Decision', color: '#3DAA6E', text: 'Placed at ' + (d.path || '') + (d.insight_text ? ': ' + d.insight_text.slice(0, 140) : '') };
+        return { date: (d.created_at || '').slice(0, 10), label: '🧬 Taxonomy Decision', color: '#4CAF82', text: 'Placed at ' + (d.path || '') + (d.insight_text ? ': ' + d.insight_text.slice(0, 140) : '') };
       }).concat(suggestions.map(function(s) {
-        return { date: (s.created_at || '').slice(0, 10), label: '🧪 Oracle Suggestion', color: '#4A90E2', text: (s.suggestion_text || '').slice(0, 200), status: s.status };
+        return { date: (s.created_at || '').slice(0, 10), label: '🧪 Oracle Suggestion', color: '#4A8CCC', text: (s.suggestion_text || '').slice(0, 200), status: s.status };
       }));
       if (!rows.length) return;
       rows.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
@@ -15925,7 +15925,7 @@ RPGACE.register('chroniclesLog', {
         '<label style="font-size:11px;color:var(--muted)">Category<input id="cf-category" type="text" list="cf-cat-list" placeholder="e.g. Equipment" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;"><datalist id="cf-cat-list">' + datalistOpts + '</datalist></label>' +
         '<label style="font-size:11px;color:var(--muted)">Amount (£)<input id="cf-amount" type="number" min="0" step="0.01" placeholder="e.g. 149.99" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;"></label>' +
         '<label style="font-size:11px;color:var(--muted)">Notes (optional)<textarea id="cf-notes" rows="2" style="width:100%;margin-top:4px;padding:8px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;resize:vertical;"></textarea></label>' +
-        '<div id="cf-error" style="color:#E25454;font-size:11px;display:none;"></div>' +
+        '<div id="cf-error" style="color:#CC4A4A;font-size:11px;display:none;"></div>' +
         '<button id="cf-submit" style="padding:10px;background:var(--gold);border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;">Save to Chronicles</button>' +
       '</div>';
 
@@ -16177,7 +16177,7 @@ RPGACE.register('perfWatch', {
           console.warn('[RPGACE perfWatch] main thread blocked for ' + ms + 'ms', entry);
           try {
             if (RPGACE.utils && RPGACE.utils.toast) {
-              RPGACE.utils.toast('⚠️ App froze for ' + ms + 'ms (logged)', '#E25454', 4000);
+              RPGACE.utils.toast('⚠️ App froze for ' + ms + 'ms (logged)', '#CC4A4A', 4000);
             }
           } catch (e2) {}
         });
