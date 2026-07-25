@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ July 25 (Round 27) — The 433-vs-198 color drift fixed for real, not left as the "flagged, not yet fixed" future project</div>
+    <div class="card-body">
+      Alex: "do it, /scope and /Godmode" — closing the one item Round 24's Aintergration audit had explicitly deferred. Real evidence first: <code>DESIGN.md</code>'s own documented semantic colors exactly match <code>style.css</code>'s real tokens, confirming the 433 hardcoded hexes in <code>rpgace_core.js</code> were the drift, not a second deliberate system.
+      <br><br>
+      <strong>A real alternative theory was checked and ruled out before touching anything</strong>: these same bright values also appear in <code>patch_notes.html</code>'s own separate <code>:root</code> block, which could have meant two intentionally-separate color systems. Checking actual usage showed most hardcoded occurrences are arguments to <code>RPGACE.utils.toast(msg, color, ms)</code>, which does <code>color + '40'</code> string concatenation for the alpha channel — a straight <code>var(--token)</code> substitution would have produced invalid CSS (<code>var(--red)40</code>) at these exact call sites. Fixed with a literal hex-value correction instead, syntactically identical to the drift, safe regardless of the concatenation.
+      <br><br>
+      <strong>5 color families reconciled, 326 of 433 occurrences</strong>: <code>#E25454→#CC4A4A</code> (94), <code>#E2E2EC→#D4DAF5</code> (90), <code>#3DAA6E→#4CAF82</code> (69), <code>#4A90E2→#4A8CCC</code> (43), <code>#9B59B6→#9B6EC8</code> (30). Gold (<code>#C9A84C</code>, 35 occurrences) left untouched — already an exact match. Total hex count confirmed unchanged (433→433) before/after, proving a pure value swap with no corruption. <code>node --check</code> clean; cache-bust bumped (<code>20260725a</code>→<code>20260725b</code>) per <code>/Engineer</code>'s own G7 gate.
+      <br><br>
+      Committed <code>c2bc324</code>/<code>2d4dac2</code>, merged to both branches, both confirmed <code>READY</code> on production via <code>list_deployments</code>. <strong>~72 remaining hex occurrences (21 distinct values with no matching token) deliberately left out of scope</strong> — promoting those to new named tokens is a real, separate future decision, not something to fold in silently.
+    </div>
+</div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 25 — Design-tool Aintergration reversed with real sources, real bugs fixed, /Engineer built, /DoNotDisturb declined</div>
     <div class="card-body">
       An earlier "Not applicable" verdict on a design-tool bundle (from an unverified Instagram/Notion page) was reversed once Alex supplied the real sources: <code>emilkowalski/skills</code> (20.7k stars) and <code>pbakaus/impeccable</code> (49.8k stars, actively maintained). The earlier rejection's load-bearing reason - a React/Framer-Motion requirement - is factually absent from both; neither touches RPGACE's shipped runtime. <strong>Standing lesson: the earlier verdict was itself a rule-1 violation</strong> (judged from a marketing page, not real source) - the same rule applies to judgment calls, not just code.
