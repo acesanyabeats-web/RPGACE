@@ -1,0 +1,196 @@
+TAXONOMY REVIEW SESSION — REAL /DEBATE RECORD — 2026-07-25
+Alex asked: "I have accepted most of the taxonomy suggestions, use /debate
+to determine whether I made right or wrong decisions" - full protocol
+stack (/scope, /Godmode, /Omnitrix, /5thDimension without Fable, Opus 5
+instead - Fable was tried first per Alex's "cheat to win" offer, hit its
+known usage-credit wall mid-task, substituted Opus per the standing
+precedent already logged in CLAUDE.md), then Council of 5 x2 (fact-check
+pass, then quality/implementability pass). Verbatim record per rule 5.
+
+════════════════════════════════════════════════════════════════════
+0. REAL SCOPE CORRECTION — the debate briefs undercounted the session
+════════════════════════════════════════════════════════════════════
+My own evidence-gathering (Sonnet) captured only the first ~7 minutes of
+the session (23:09-23:16 UTC) before dispatching the debate: 1 proposal
+accepted, 2 rejected, 5 links confirmed. Both debate teams independently
+re-queried Supabase and found the REAL session ran 23:09 -> 00:34 UTC
+(~85 minutes):
+
+  taxonomy_proposals: 23 accepted, 7 rejected (not 1/2)
+  taxonomy_links:     47 confirmed (not 5) - lifetime total now 68
+                       confirmed / 0 pending / 0 rejected, ever
+
+Independently re-verified by Sonnet directly against Postgres before
+trusting either agent's numbers - both match exactly.
+
+════════════════════════════════════════════════════════════════════
+1. TEAM FOR (Opus 5, after Fable hit its usage-credit wall mid-task and
+   was substituted per the standing CLAUDE.md precedent)
+════════════════════════════════════════════════════════════════════
+Core argument: the accept/reject boundary on PROPOSALS tracks a real,
+consistent, articulable rule - not a rubber stamp. All 7 rejects are
+independently verifiable structural failures:
+  - 2 bare-phylum proposals ("Percussio", "Compositio", zero steps)
+  - 1 with 21 path segments, catastrophic recursive self-repetition
+  - 1 with two parallel genre categories nested inside each other
+  - 1 with 9 segments, blowing past the tree's 7-rank chain
+  - 1 conflating a production technique with a marketing-timing concept
+  - 1 subordinating Trap under UK Drill (genre-mismatch nesting)
+All 23 accepts are well-formed, coherent, no repetition, no bare phyla,
+no rank violations. Item 7 (the marketing-timing reject) is cited as the
+strongest single piece of evidence: Alex REJECTED a beat-construction
+branch with release-timing bolted on, while in the SAME sitting ACCEPTING
+a genuinely different node about SEO-driven tutorial positioning under
+Content Strategy - same subject matter, opposite verdicts, decided on
+WHERE something belongs. That is real taxonomic judgment.
+
+On the 5 originally-briefed fusion links: all defended as genuine
+mechanism-based connections (prerequisite gates, causal chains), not
+topical coincidence - #4 (Overtones <-> 808 saturation, "giving small
+speakers something to reproduce when the sub is inaudible") singled out
+as the strongest.
+
+Honest concession (not defended): the 42-link rapid burst at 00:34 is
+real rubber-stamping IN PROCESS, even though the content held up on
+inspection when sampled. Distinguishes "right outcome, weak process"
+from "wrong outcome" - and recommends the confirm rate can no longer be
+read as a quality signal going forward.
+
+════════════════════════════════════════════════════════════════════
+2. TEAM AGAINST (Opus 5)
+════════════════════════════════════════════════════════════════════
+Found the same 42-link burst independently (before seeing FOR's numbers),
+plus one new fact FOR did not surface: 40 of the 46 inter-confirm gaps in
+that burst were under 3 seconds (minimum 0.177s) - not reading time for a
+"why these connect" insight, by any reasonable standard.
+
+The strongest structural objection: the ONE accepted proposal named in
+the original brief ("Non-Chordal Melody Layering") was placed one rank
+too deep, as a CHILD of "Voice Leading & Non-Chord Tone Vocabulary" (a
+depth-5 node whose own explainer is a literal keyword list: "Covers:
+harmonic, harmonization, counterpoint, voice leading, chord tone,
+non-chord tone, suspension, pedal tone, drone, harmonic rhythm") instead
+of as a depth-5 SIBLING alongside two structurally identical technique
+nodes already in that same branch ("Common Tone Retention...", "Smooth
+Voice Leading & Four-Voice Chord Connection"). Cites a real precedent for
+where this failure mode leads: "Interval Character & Emotional Quality"
+already exists TWICE in the tree (once as a real depth-3 branch with many
+children, once as a childless depth-4 leaf nested under a different
+Vocabulary node) - the same "Vocabulary leaf treated as a valid parent"
+error, already produced a real duplicate elsewhere.
+
+Individual link critique: links #1 and #3 (of the original 5) are weaker
+than #2/#4/#5 - #1 is near-tautological and intra-phylum (both nodes in
+Anatomia); #3 duplicates #5's underlying claim about overtones being the
+substrate of timbre work, without earning it the way #5 does. #2's
+insight text contains a real factual overreach ("mud" and "boxiness" are
+pitched-content problems, not noise-floor problems - only sibilance is
+genuinely noise-adjacent).
+
+════════════════════════════════════════════════════════════════════
+3. SONNET'S INDEPENDENT VERIFICATION (before trusting either agent)
+════════════════════════════════════════════════════════════════════
+Re-queried Supabase directly, not taking either team's numbers on faith:
+
+- 23 accepted / 7 rejected proposals, 23:09-00:34 UTC - CONFIRMED, exact
+  match to both teams.
+- The 7 rejected proposals' actual proposed_path text - CONFIRMED: every
+  one really is structurally broken as described (pulled the literal
+  21-segment repeating path, the nested-genre-category one, etc.)
+- The 47-link timing distribution - CONFIRMED directly via a lag()
+  window-function query: first 5 links paced 20-270 seconds apart
+  (23:09-23:15), then a gap of 4729 seconds (~79 min) to 00:34:30, then
+  42 links in 21 seconds flat, gaps mostly 0.177-1.1s, several under a
+  quarter-second. This is not manual per-item review by any reasonable
+  standard - independently verified, not just trusted from Team AGAINST.
+- The disputed placement claim - CONFIRMED by pulling the real explainer
+  text directly: "Voice Leading & Non-Chord Tone Vocabulary" (the parent
+  the engine chose) is a literal keyword list, not a conceptual
+  container; its two real depth-5 siblings ("Common Tone Retention...",
+  "Smooth Voice Leading...") are substantive technique nodes structurally
+  identical in kind to the accepted "Non-Chordal Melody Layering" node
+  (which itself has a real, substantive explainer about compositional
+  practice, not a synonym list). Team AGAINST's structural critique
+  holds up against the primary data - Team FOR's counter-argument
+  ("belongs under the vocabulary sibling, not the other two") conflates
+  "thematically about non-chord tones" with "should be a CHILD of the
+  vocabulary node," which is the actual placement error, not a defense
+  of it.
+- The "Interval Character & Emotional Quality" duplicate - CONFIRMED
+  directly: it exists at depth 3 (a real branch with multiple real
+  children) AND at depth 4, nested as the sole child of "Named Interval
+  Vocabulary" - a pre-existing instance of the exact same failure
+  pattern, not caused by tonight's session but corroborating the
+  broader risk Team AGAINST raised.
+
+════════════════════════════════════════════════════════════════════
+4. COUNCIL OF 5 PASS 1 — scrutinize the debate outcome (/scope+/Godmode)
+════════════════════════════════════════════════════════════════════
+- Evidence quality: HIGH. Both teams' load-bearing claims were
+  independently re-verified against Postgres directly, not accepted on
+  either agent's say-so. Where the two teams disagreed (the placement
+  question), the primary data resolves it, not vibes.
+- Real disagreement, not manufactured balance: FOR and AGAINST reached
+  genuinely different conclusions on the SAME accepted proposal and the
+  SAME 5 originally-briefed links, and neither folded without cause -
+  FOR conceded the 42-link burst; AGAINST conceded links #4 and #5 hold
+  up and explicitly declined to make a fragmentation charge it couldn't
+  support. That is the debate protocol working as designed.
+- Scope/cost: proportionate. No new infrastructure proposed by either
+  side; the only concrete write recommended (re-parenting one node) is a
+  single-row change, correctly flagged as needing Alex's go-ahead per
+  the taxonomy-write human-checkpoint rule (rule 4), not silently done.
+- Risk: the one real risk is treating the 68/68 lifetime fusion-link
+  confirm rate as a going-forward quality signal - both teams and this
+  synthesis agree that number is now known to be contaminated by a
+  rapid clear-through and should not be used that way again.
+
+════════════════════════════════════════════════════════════════════
+5. COUNCIL OF 5 PASS 2 — quality & implementability of the verdict
+════════════════════════════════════════════════════════════════════
+FINAL VERDICT, honest and split by what actually happened, not a single
+up/down grade:
+
+  PROPOSAL DECISIONS (23 accepted / 7 rejected): RIGHT. Demonstrably
+  discriminating judgment, verified against the actual rejected path
+  text, not assumed. Real taxonomic reasoning is visible (the release-
+  timing reject/accept pair). No proposal decision from tonight is
+  recommended for reversal.
+
+  THE ONE ACCEPTED PROPOSAL SINGLED OUT ("Non-Chordal Melody Layering"):
+  RIGHT to accept the underlying insight, WRONG placement - genuinely
+  misparented one rank too deep, under a glossary-list leaf instead of
+  as a depth-5 sibling of two structurally identical technique nodes.
+  Real, low-risk, single-row fix available (re-parent to depth 5 under
+  the "Counterpoint & Voice Leading" branch) - implementable in one
+  UPDATE once Alex confirms, per the standing taxonomy-write checkpoint
+  rule. Not a reason to have rejected the proposal; a reason to correct
+  where it landed.
+
+  FUSION LINK CONFIRMATIONS (47 total): OUTCOME held up on inspection
+  (no garbage found in either team's sampling), PROCESS did not for 42
+  of the 47 - independently confirmed sub-second-to-low-single-second
+  gaps between confirms make genuine per-item review implausible for
+  that portion. This is the one part of tonight that should NOT be
+  read as evidence of careful review, even though nothing bad was
+  found when checked after the fact.
+
+Implementability of the two concrete recommendations that survive
+scrutiny, in priority order:
+  1. Re-parent "Non-Chordal Melody Layering" (one row: parent_id + path
+     update) - needs Alex's explicit go-ahead first, real Tier-1
+     taxonomy write, not done in this pass.
+  2. Do NOT treat "100% link confirm rate" as a quality metric in future
+     oversight docs or Oracle self-awareness digests - it is now a known
+     contaminated statistic, not a real signal. Log this correction
+     wherever that rate has been cited approvingly before.
+  Lower priority, real but not urgent: dedupe "Interval Character &
+  Emotional Quality" (pre-existing, unrelated to tonight); consider the
+  review-queue's link-insight legibility (11px/60%-opacity text is a
+  real, if minor, contributor to the fast-click pattern) as a future QoL
+  item, not an emergency fix.
+
+STATUS: Debate complete, both Council of 5 passes complete. Recorded
+verbatim per rule 5. Re-parenting the one node is NOT executed pending
+Alex's explicit confirmation (rule 4 - taxonomy writes always get a
+human checkpoint, no exceptions for a debate's own conclusion).
