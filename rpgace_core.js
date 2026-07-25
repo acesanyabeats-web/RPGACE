@@ -2553,7 +2553,7 @@ RPGACE.register('oracleAppGrounding', {
   // hand - if the cache is empty (first call, or the last fetch failed),
   // this block is simply omitted, never replaced with a guess. Same
   // fails-open philosophy this module's own header comment already states.
-  _liveCache: { taxonomyPending: null, fetchedAt: 0 },
+  _liveCache: { taxonomyPending: null, recentUpdates: null, designScan: null, fetchedAt: 0 },
   _LIVE_TTL_MS: 10 * 60 * 1000,
 
   _refreshLiveFacts: function() {
@@ -2564,6 +2564,20 @@ RPGACE.register('oracleAppGrounding', {
     RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id').then(function(rows) {
       self._liveCache.taxonomyPending = (rows || []).length;
     }).catch(function() { /* fails open - next _buildBlock() just omits this line */ });
+    // July 25 (Alex-confirmed, both option 2 and 3 of the /impeccable
+    // build): Oracle should be able to see real recent Claude Code
+    // activity, not just app-side data. system_updates is already the
+    // one real log of every Claude Code change (Chronicles' own source) -
+    // reusing it here rather than inventing a second feed (rule 8). The
+    // most recent design-scan row (written by the /impeccable skill as a
+    // Bedtime/Summary sub-step, never by live app code) is called out
+    // separately since that's specifically what Alex asked Oracle to be
+    // able to comment on.
+    RPGACE.sb.select('system_updates', 'order=created_at.desc&limit=5&select=title,summary,category,created_at').then(function(rows) {
+      rows = rows || [];
+      self._liveCache.recentUpdates = rows;
+      self._liveCache.designScan = rows.find(function(r) { return r.category === 'design-scan'; }) || null;
+    }).catch(function() { /* fails open - same as every other line here */ });
   },
 
   _liveFactsLine: function() {
@@ -2576,6 +2590,13 @@ RPGACE.register('oracleAppGrounding', {
     if (moduleCount) bits.push(moduleCount + ' real modules registered right now');
     if (typeof self._liveCache.taxonomyPending === 'number') {
       bits.push(self._liveCache.taxonomyPending + ' taxonomy proposals pending review, queried live just now');
+    }
+    if (self._liveCache.recentUpdates && self._liveCache.recentUpdates.length) {
+      bits.push('most recent Claude Code changes to RPGACE: ' + self._liveCache.recentUpdates.map(function(r) { return '"' + r.title + '"'; }).join(', '));
+    }
+    if (self._liveCache.designScan) {
+      var dsSummary = String(self._liveCache.designScan.summary || '').slice(0, 200);
+      bits.push('latest design-quality scan on record: "' + self._liveCache.designScan.title + '" — ' + dsSummary);
     }
     return bits.length ? '\n\nLIVE FACTS (queried this moment, not hand-written): ' + bits.join('; ') + '.' : '';
   },
