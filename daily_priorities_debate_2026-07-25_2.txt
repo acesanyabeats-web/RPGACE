@@ -1,0 +1,149 @@
+DAILY PRIORITIES DEBATE — 2026-07-25 (second run this date, post-/Bedtime)
+Real /Routine run per its own procedure: GODMODE evidence -> Team 1 Top 10
+-> Team 2 counter-case -> /debate -> /5thDimension reconciliation -> final
+Council of 5 lock-in. Second /Routine run today is legitimate per the
+skill's own guardrail ("unless Alex explicitly asks for a re-plan") -
+this one fires because the prior session just closed via /Bedtime and a
+new session opened immediately after, the intended normal cadence, not a
+re-plan of the same day's work.
+
+════════════════════════════════════════════════════════════════════
+REAL EVIDENCE GATHERED FIRST (not assumed)
+════════════════════════════════════════════════════════════════════
+- git log since the last real oversight sweep: everything from
+  e25cb41 through 04b0049 (the whole prior session - boot-task gate,
+  taxonomy card fixes, Approach B confirmation, taxonomy review debate,
+  Regeneration skill build, 20 taxonomy defects fixed, /Bedtime close-out).
+- Live Supabase check: zero new journal/chronicles_finance/
+  content_productions rows and zero new taxonomy_proposals/taxonomy_links
+  reviewed_at activity in the last 2 hours/2 days respectively - no new
+  Alex-side activity to fold in since the last check (real, not assumed;
+  this session opened immediately after the last one closed).
+- patch_notes.html's "Still Open" section (real, not from memory):
+  Claude-fallback lane unverified against a real credit-exhaustion event,
+  Oracle 504 (deferred, credits), XSS/innerHTML audit (deferred, credits),
+  streaming-intercept dead code, local_server.py not running, F11
+  ingestion failure (July 13, still open), F16/F17/F18/phylum-labeling/
+  highlight-button smoke tests (all still pending), Oracle 504 reproduced
+  again July 15 with a concrete data point.
+- CLAUDE.md's own "Still open" lines: Composio key rotation (needs
+  Alex's action, open since July 12/13, already flagged twice before -
+  see the July 23 note below), the 77-item taxonomy backlog remainder
+  (Alex's own manual review, not a build item), swipe-gesture freeze.
+- Bedtime's own close-out (this file's immediate predecessor): DELETE
+  through the write-proxy unconfirmed, a real move/merge engine for the
+  taxonomy tree doesn't exist in application code, phylumPath's dead
+  _injectNavTab() (low priority), the Regeneration skill's own 8/10
+  self-audit named one concrete next step to raise it to 9 (a real Tier 1
+  validation pass on one phylum, checking score-convergence reliability).
+
+════════════════════════════════════════════════════════════════════
+TEAM 1 — evidence-based Top 10 (first draft)
+════════════════════════════════════════════════════════════════════
+1. Regeneration Tier 1 validation pass (one phylum, ~£0.50) - the skill's
+   own self-audit named this exact next step as the one thing that would
+   raise its reliability from 8/10 to 9/10; cheap, already-scoped,
+   directly continues the freshest real work.
+2. F11 ingestion failure fix - a failed YouTube fetch silently produces
+   garbage scheduled tasks instead of surfacing an error; open since
+   July 13, concrete fix path already named (/api/scout needs
+   failed-fetch detection).
+3. Verify DELETE through Approach B's write-proxy - the one remaining
+   unconfirmed piece of a major security build that's otherwise done.
+4. Oracle 504 streaming fix - long-standing (since July 18), high daily-
+   usability impact, deferred only by a credits gate worth re-checking.
+5. XSS/innerHTML audit of fetched external content - pairs with #4, same
+   credits gate, real unaudited attack surface.
+6. Streaming Oracle intercept dead-code cleanup - cheap, real tech debt.
+7. local_server.py restart - trivial, unblocks Content Intelligence
+   auto-push.
+8. 6-table external-writer migration spec - revisit the still-open
+   secrets question with Alex (he said "at laptop," worth checking now).
+9. Website Lighthouse/performance audit - cheap, never done, flagged
+   twice before (July 20, July 22) and never picked up.
+10. Smoke-test backlog (F16/F17/F18/phylum-labeling/highlight-button) -
+    5 real still-pending hand-tests, 2+ weeks old.
+
+════════════════════════════════════════════════════════════════════
+TEAM 2 — real counter-case, not manufactured
+════════════════════════════════════════════════════════════════════
+Two real objections, both with evidence, not invented for balance:
+
+1. **Composio key rotation is missing entirely, and this is the SAME
+   omission caught once before.** CLAUDE.md's own July 23 note records:
+   "Team 2 won a real concession (Composio key rotation + the Lighthouse
+   audit were wrongly left off Team 1's first draft for being 'cheap and
+   old' rather than urgent)." Two days later, Team 1's fresh evidence
+   pass dropped the exact same item again. This isn't a coincidence worth
+   waving through - "needs Alex's action" items don't show up in a git-log
+   evidence sweep the way code changes do, so Team 1's methodology has a
+   real, now-twice-demonstrated blind spot for exactly this category. It
+   must be added, not just noted as a near-miss.
+
+2. **Item 2 (F11) should outrank item 1 (Regeneration validation).** F11
+   is an ACTIVE bug silently corrupting real data every time it's hit
+   (a failed fetch produces a garbage scheduled task, not an error).
+   Regeneration's Tier 1 validation is reliability polish on an
+   already-shipped tool that already scored a real, defensible 8/10 -
+   valuable, but not urgent in the way a live data-corruption bug is.
+   Ranking a nice-to-have validation pass above a 12-day-old active bug
+   inverts real priority.
+
+════════════════════════════════════════════════════════════════════
+/DEBATE — resolution
+════════════════════════════════════════════════════════════════════
+Both Team 2 objections hold under real scrutiny, not just as-presented:
+- Composio: genuinely re-confirmed as a real backlog item (needs Alex to
+  actually rotate the key - Claude Code cannot do this step). Added,
+  ranked high given it's now been dropped twice and is a real security
+  exposure (the old key has been in this public repo's git history since
+  before July 12).
+- F11 vs. Regeneration ordering: Team 1's own reasoning (using the
+  skill's self-audit as a tiebreaker) is sound but mis-weighted -
+  "cheap and already-scoped" is a reason to keep something ON the list,
+  not a reason to rank it above an active bug. Reordered.
+
+════════════════════════════════════════════════════════════════════
+/5THDIMENSION RECONCILIATION
+════════════════════════════════════════════════════════════════════
+Checked against the governing 48-hour rule (RPGACE infra exempt, but
+real stakes still matter more than pure tidiness): F11's data corruption
+and Composio's security exposure are the two items with real
+consequences beyond internal cleanliness - correctly belong at the top.
+Oracle 504 affects Alex's actual daily tool usage, closer to the rule's
+spirit than most items here. Checked against recency bias specifically
+(a documented past failure mode of this project's own planning passes,
+per the July 24 Routine's own "don't always chase what's freshest"
+correction): F11 (12 days old) and Composio (13+ days old) correctly
+outrank continuing today's taxonomy-quality momentum further, even
+though that thread is fresh and the Regeneration work felt significant.
+No drift found between what's reported open and what's actually open -
+every item here traces to a real doc line or a real Supabase query, not
+a doc's own possibly-stale claim.
+
+════════════════════════════════════════════════════════════════════
+FINAL COUNCIL OF 5 LOCK-IN — the real Top 10
+════════════════════════════════════════════════════════════════════
+1. F11 ingestion failure fix (data corruption, 12 days open)
+2. Composio key rotation (security, needs Alex, dropped twice already)
+3. Verify DELETE through Approach B's write-proxy (closes the last
+   unconfirmed security piece)
+4. Oracle 504 streaming fix (check credit status first)
+5. XSS/innerHTML audit (pairs with #4)
+6. Regeneration Tier 1 validation pass, one phylum (~£0.50, raises the
+   skill's own self-audit score)
+7. Streaming Oracle intercept dead-code cleanup (cheap hygiene)
+8. local_server.py restart (trivial infra)
+9. 6-table external-writer migration - revisit secrets question with Alex
+10. Website Lighthouse/performance audit (cheap, long-overdue)
+
+DROPPED, NAMED HONESTLY, NOT SILENTLY: the 5 smoke tests (F16/F17/F18/
+phylum-labeling/highlight-button) - real but lower-stakes than the above;
+stale (2+ weeks) but nothing suggests active harm from leaving them
+unverified a little longer, unlike F11 which is actively producing bad
+data right now. Also deliberately not included: further taxonomy Tier 2
+generative reorganisation work - Regeneration's own design makes this
+explicit-ask-only, and no fresh ask was made this session.
+
+STATUS: Locked. Awaiting Alex's pick of which item to start on, or his
+own reordering.
