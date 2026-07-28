@@ -303,3 +303,48 @@ row appears with a linked video_jobs row and a real style_profiles row;
 firing a manual Visual Oracle command and using the save picker;
 running Storyboard Scene Builder against a production with a linked
 video job and confirming a real edl array lands on it.
+
+=====================================================================
+REAL HAND-TEST, SAME SESSION: a genuine bug found and fixed
+=====================================================================
+Alex logged a real beat from his phone ("No motivation", F Minor, 143
+BPM, Aggressive, licence "All types", Visual Treatment checkbox ON).
+Real evidence checked directly (not assumed):
+  - content_productions row #6 "No motivation" created correctly
+    (status 'Idea', licence_type 'All types', creative_docs.beat_meta
+    correctly recording visualTreatment:true).
+  - video_jobs row created and correctly linked via
+    content_production_id.
+  - BUT creative_docs.visual_treatment never populated, and
+    video_jobs.style_profile_id/edl stayed null.
+
+Root-caused with real evidence, not a second blind guess (rule 4):
+Vercel's own runtime request log for the exact test window
+(14:38:36-14:38:40 UTC) shows content_productions insert, video_jobs
+insert, the Last.fm search, and exactly ONE /api/oracle POST (the main
+beat-log prompt) - zero server errors, and no second /api/oracle call
+ever fired, then or later. Re-read the whole wrap chain
+(scheduleOracle's/bookworm's window.sendChat wraps both chain correctly
+via origSend.apply) and the new code's argument threading - both check
+out. Real suspect: _waitThenAutoVisualTreatment was a setTimeout poll
+chain on window._oracleRequestInFlight (up to 30s) - vulnerable to
+mobile Chrome's background-tab timer throttling silently stalling a
+setTimeout chain if the tab isn't foregrounded exactly when it needs to
+keep firing. This flow is used from a phone.
+
+Fixed: rebuilt _waitThenAutoVisualTreatment to be event-driven instead
+of poll-driven - reuses the same one-shot visualOracle
+._captureNextResponse() the save logic already depends on to wait for
+the main prompt's own 'oracle:response-scanned' firing (a real DOM-
+mutation-driven signal, not a timer) before starting the Visual
+Treatment call. Old poll kept only as a fallback if the shared hook
+module is ever unavailable. node --check clean.
+
+Honest limitation: the existing "No motivation" test row's own moment
+has passed - the fix can't retroactively populate it, since the
+original Oracle response already completed and there's no capture to
+attach to after the fact. Alex can either log a fresh beat to confirm
+the real fix, or use the manual Visual Oracle panel + "Save to Content
+Pipeline" picker against the existing #6 row (that path doesn't depend
+on this fix at all, since it's armed synchronously right before
+sending, never via a poll).

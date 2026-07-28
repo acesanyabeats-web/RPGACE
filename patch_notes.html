@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📱 July 28 (Round 39) — Real hand-test from Alex's phone caught a genuine bug in Round 38's auto Visual Treatment save: fixed with real evidence, not a second guess</div>
+    <div class="card-body">
+      Alex logged a real beat ("No motivation", Visual Treatment checkbox on) minutes after Round 38 shipped. Direct Supabase check confirmed the good news — the new `content_productions`/`video_jobs` link worked correctly, `visualTreatment:true` recorded — but the auto-save (`creative_docs.visual_treatment`, `style_profile_id`, `edl`) never landed.
+      <br><br>
+      Root-caused with real evidence (rule 4 — no second blind guess): Vercel's own runtime request log for the exact test window showed the content_productions/video_jobs writes, the Last.fm search, and exactly <strong>one</strong> `/api/oracle` call — the main beat-log prompt — with zero server errors and no second Oracle call ever firing, then or later. Re-read the whole `window.sendChat` wrap chain (`scheduleOracle`/`bookworm` both chain correctly) and the new code's own argument threading — both checked out clean. Real suspect: `_waitThenAutoVisualTreatment` was a `setTimeout` poll chain waiting up to 30s — vulnerable to mobile Chrome's background-tab timer throttling silently stalling a `setTimeout` chain if the tab isn't foregrounded exactly when it needs to keep firing. This exact flow is used from a phone.
+      <br><br>
+      Fixed by making the handoff event-driven instead of poll-driven: reuses the same one-shot `visualOracle._captureNextResponse()` the save logic already depends on, waiting for the main prompt's own `oracle:response-scanned` firing (a real DOM-mutation signal, not a timer) before starting the Visual Treatment call. The old poll stays only as a fallback if the shared hook is ever unavailable.
+      <br><br>
+      Honest limitation: the existing "No motivation" test row's own moment has passed — the fix can't retroactively populate it. Alex can log a fresh beat to confirm the real fix, or use the manual Visual Oracle save picker against the existing row (that path was never poll-based, so it isn't affected by this bug at all). `node --check` clean, cache-bust bumped. Full record: `content_pipeline_overseer_spec_backlog_2026-07-28.txt`.
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔗 July 28 (Round 38) — Content Pipeline overseer built: real schema link, Visual Treatment/Director Match/Storyboard finally save somewhere, style_profile_id and edl are no longer dead columns</div>
     <div class="card-body">

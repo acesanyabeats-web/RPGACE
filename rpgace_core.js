@@ -12773,18 +12773,44 @@ RPGACE.register('beatLog', {
   // manual trip through the Visual Oracle panel with placeholder-filling.
   // Grounded in the real F14 filmmaker library the same way Director
   // Match is, so Oracle picks a real director rather than inventing one.
+  // 2026-07-28 (real hand-test evidence): was a setTimeout poll on
+  // window._oracleRequestInFlight, up to 30s. Real evidence a beat logged
+  // from a phone never triggered the second (Visual Treatment) call at
+  // all: Vercel's own request logs for that exact window show exactly
+  // ONE /api/oracle POST (the main beat-log prompt) and zero more, ever -
+  // no server error, so the failure was client-side. The wrap chain and
+  // argument threading all check out on direct re-reading; the real
+  // suspect is that a chain of setTimeout callbacks is vulnerable to
+  // mobile Chrome's background-tab timer throttling silently stalling it
+  // for a long time (or indefinitely) if the tab isn't foregrounded right
+  // when the poll needs to keep firing - a real risk specifically because
+  // this flow is used from a phone. Rebuilt event-driven instead: reuses
+  // the same one-shot _captureNextResponse the save logic already relies
+  // on to wait for the main prompt's own 'oracle:response-scanned' firing
+  // (a real DOM-mutation-driven signal, not a timer) before starting the
+  // second call - removes the timer dependency for this handoff entirely.
   _waitThenAutoVisualTreatment: function(form, palette, cpId, videoJobId) {
     var self = this;
-    var waited = 0;
-    var poll = function() {
-      if (window._oracleRequestInFlight && waited < 30000) {
-        waited += 500;
-        setTimeout(poll, 500);
-        return;
-      }
-      self._autoVisualTreatment(form, palette, cpId, videoJobId);
-    };
-    setTimeout(poll, 500);
+    var vo = RPGACE.modules.visualOracle;
+    if (vo && vo._captureNextResponse) {
+      vo._captureNextResponse(function() {
+        self._autoVisualTreatment(form, palette, cpId, videoJobId);
+      });
+    } else {
+      // Fallback if the shared hook module isn't available for some
+      // reason - keep the old poll as a safety net rather than silently
+      // doing nothing.
+      var waited = 0;
+      var poll = function() {
+        if (window._oracleRequestInFlight && waited < 30000) {
+          waited += 500;
+          setTimeout(poll, 500);
+          return;
+        }
+        self._autoVisualTreatment(form, palette, cpId, videoJobId);
+      };
+      setTimeout(poll, 500);
+    }
   },
 
   // 2026-07-28 - now threads cpId/videoJobId through so the generated
