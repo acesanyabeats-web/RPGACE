@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔒 July 28 (Round 30) — Real XSS finding fixed: Oracle chat's <code>renderMarkdown()</code> injected unescaped HTML, closing the audit item flagged 3 separate times since July 22</div>
+    <div class="card-body">
+      Executing item 7 of the day's `/Routine` Top 10, the same "whether fetched external content ever reaches `innerHTML` unescaped" question CLAUDE.md had flagged and deferred since July 22 without ever being investigated. Real audit, not another guess: grepped every <code>innerHTML =</code> assignment across both files (217 total sites) for ones handling text likely to carry externally-sourced content, and found the actual bug — <code>main.js</code>'s <code>renderMarkdown(text)</code> is the render function behind EVERY Oracle chat message (used by <code>addMsg()</code> for every AI/system reply, <code>renderInstaMsg()</code> for Insta-Oracle, and <code>rpgace_core.js</code>'s streaming-message renderer via <code>window.renderMarkdown</code>) — and it ran its markdown regex replacements directly on the raw response text with zero HTML-escaping first. Since Oracle responses can carry fetched web/YouTube/Instagram content (per <code>oracleFetchGuard</code>'s own documented risk — that guard tells the model to treat fetched content as data, but can't stop the model quoting hostile HTML-like text back verbatim), any literal <code>&lt;script&gt;</code>/<code>&lt;img onerror=...&gt;</code>-shaped text arriving in a response would have rendered/executed directly in the chat DOM.
+      <br><br>
+      <strong>Fix, logged FROZEN-file exception</strong> (same pattern as `checkPassword()`'s prior exceptions): a new local <code>_escChatHtml()</code> escapes <code>&amp;</code>/<code>&lt;</code>/<code>&gt;</code> before <code>renderMarkdown</code>'s existing regex chain runs — verified the markdown syntax (<code>**bold**</code>, <code>*italic*</code>, `` `code` ``, headings, lists, `---`) is unaffected since none of those regexes touch the three escaped characters, and a test string containing a literal <code>&lt;script&gt;</code> tag now renders as inert escaped text instead of live markup. <code>node --check main.js</code> clean.
+      <br><br>
+      Real scope note: a second, lower-severity site (a local daily-log renderer, <code>main.js</code> ~line 1952) reads from <code>localStorage</code> only — the user's own device data, not externally-fetched content — left untouched as out of scope for this pass, same discipline as not over-fixing beyond the actual flagged risk.
+    </div>
+</div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🏁 July 25 — SESSION CLOSED via /Bedtime (with /Engineer, /scope, /Godmode). Real state: 8 real builds/fixes shipped and verified live, a full weekly recap written for the next /Routine.</div>
     <div class="card-body">

@@ -652,8 +652,20 @@ One sharp memorable line at the end of every reply.`;
   }
   document.getElementById('send-btn').disabled=false;
 }
+// July 28 FROZEN-file exception, logged in patch_notes.html: renderMarkdown
+// used to inject `text` straight into innerHTML with zero HTML-escaping.
+// Oracle responses can contain fetched web/YouTube/Instagram content
+// (oracleFetchGuard only tells the model to treat it as data, it can't stop
+// the model quoting hostile HTML-like text back verbatim) - a page or
+// transcript containing literal markup would render/execute in the chat
+// DOM. Escaping first, before the markdown regexes run, closes that without
+// touching the markdown syntax itself (none of `* ` `` ` `` `#` `-` are
+// HTML-escaped characters).
+function _escChatHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 function renderMarkdown(text){
-  return text
+  return _escChatHtml(text)
     .replace(/^### (.+)$/gm,'<strong style="color:var(--gold2);font-size:13px">$1</strong>')
     .replace(/^## (.+)$/gm,'<strong style="color:var(--gold);font-size:14px;display:block;margin-top:10px">$1</strong>')
     .replace(/^# (.+)$/gm,'<strong style="color:var(--gold);font-size:15px;display:block;margin-top:10px">$1</strong>')
