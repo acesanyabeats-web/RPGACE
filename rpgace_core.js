@@ -856,6 +856,18 @@ RPGACE.register('prodOraclePanel', {
     // discussed (see fillGaps' new opts.allowConversationCapture). Opted
     // in by name, not by index, so reordering CMDS can't silently break it.
     var opts = (cmd[0] === 'Council of 5 — Decision Audit') ? { allowConversationCapture: true } : {};
+    // July 28 real bug fix: this command's own prompt text told Oracle to
+    // "ground yourself using whatever real self-awareness data you
+    // actually have access to" but never contained any of
+    // oracleAppGrounding's keyword triggers, so the grounding block never
+    // fired - the exact command whose purpose is a grounded self-audit was
+    // the one that ran fully ungrounded. Force it in by name (same opt-in-
+    // by-name pattern as Council of 5's allowConversationCapture above)
+    // rather than relying on keyword luck. Council of 5 gets the same
+    // treatment - a real decision audit benefits from real app state too.
+    if ((cmd[0] === '5thDimension — Built vs Reported' || cmd[0] === 'Council of 5 — Decision Audit') && RPGACE.modules.oracleAppGrounding) {
+      RPGACE.modules.oracleAppGrounding.forceGroundNext();
+    }
     RPGACE.utils.fillGaps(cmd[1], function(filled) {
       RPGACE.utils.sendToOracle(filled);
       RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
@@ -2413,7 +2425,15 @@ RPGACE.register('oracleTreeGrounding', {
         // original call with the original system prompt on any error.
         return self._buildGroundingBlock(lastUser).catch(function() { return ''; }).then(function(block) {
           if (block) {
-            return orig.call(callerThis, messages, system + block, maxTokens);
+            // July 28: was orig.call(callerThis, messages, system+block,
+            // maxTokens) - a fixed 3-arg forward that silently dropped any
+            // 4th+ argument (main.js's callOracle gained an optional
+            // onChunk callback the same day for real streaming). Rebuild
+            // the full args array instead so a matched grounding block
+            // never silently reverts a streaming call to non-streaming.
+            var newArgs = Array.prototype.slice.call(args);
+            newArgs[1] = system + block;
+            return orig.apply(callerThis, newArgs);
           }
           return orig.apply(callerThis, args);
         });
@@ -2489,6 +2509,22 @@ RPGACE.register('oracleAppGrounding', {
 
   PERSONA_MARKERS: ['You are the Oracle —', "You are Alex's personal 300IQ music production teacher"],
 
+  // July 28 real bug found: prodOraclePanel's own "5thDimension — Built vs
+  // Reported" command literally instructs Oracle to "ground yourself using
+  // whatever real self-awareness data you actually have access to" - but
+  // its actual prompt text never contains any of the keywords below, so
+  // the exact command whose whole purpose is a grounded self-audit was the
+  // one command that NEVER received this module's grounding block. This is
+  // the real root cause of a live overclaim ("taxonomy tree structurally
+  // complete" for all 21 phyla when only 10 are) - not a missing live
+  // fact, the entire block was skipped. Fixed two ways: these commands now
+  // force-inject via forceGroundNext() (see prodOraclePanel.run()) rather
+  // than relying on keyword luck, AND 5thdimension-shaped phrases are
+  // added below as a real second line of defense if this method is ever
+  // called some other way.
+  _forceNext: false,
+  forceGroundNext: function() { this._forceNext = true; },
+
   // Cheap free keyword gate (rule 11 - never pay tokens on every message
   // for a block only relevant sometimes). Deliberately broad since a
   // missed trigger just means Oracle answers without this context, same
@@ -2499,6 +2535,7 @@ RPGACE.register('oracleAppGrounding', {
     'whats missing', 'not built yet', 'what should i work on', 'what should i build',
     'what should we build', 'known bug', 'known issue', "what's broken", 'whats broken',
     'underused', 'limitation', 'self audit', 'self-audit', 'dashboard card',
+    '5thdimension', 'built vs reported', 'ground yourself', 'self-awareness data',
     'what modules', 'roadmap', 'unlock', 'capabilit', 'what are you capable',
     'what is rpgace', 'suggest a fix', 'suggest an improvement',
   ],
@@ -2511,7 +2548,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): 10 of 21 knowledge Phyla are live in Phylum Path. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - none of this July 22 work is hand-tested by Alex yet. Known open bugs: Oracle chat can time out (504) on long responses (fix deferred, needs API credits); F11 can silently show "Content Unavailable" on a failed fetch instead of erroring loudly. SECURITY: the app password and every /api/*.js endpoint now go through real server-side checks (fixed and independently verified live July 24 - previously both were client-side/unauthenticated gaps); an XSS/innerHTML audit of fetched-external-content is still owed (deferred, needs API credits); no Supabase backup/PITR exists at all. All Supabase tables now have RLS enabled (fixed July 24), though every policy is still the same permissive USING(true) pattern app-wide - a deliberate, accepted tradeoff for a single-user tool, not a remaining gap on those 3 tables specifically. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent yet; phyla 11-21 have no framework pass yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): Exactly 10 of 21 knowledge Phyla (numbers 1-10) are actually built out via the Phylum Development Framework - phyla 11-21 exist only as names in the classification list, with no real tree content, no matter how "complete" the 21-name list itself looks. Never call the taxonomy tree "structurally complete" for all 21 - only 10 are. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); phyla 11-21 have no framework pass yet.',
 
   init: function() {
     var self = this;
@@ -2520,6 +2557,12 @@ RPGACE.register('oracleAppGrounding', {
       window._appGroundingPatched = true;
       var orig = window.callOracle;
       window.callOracle = function(messages, system, maxTokens) {
+        // Consume the force flag unconditionally, before any early return -
+        // otherwise a call that fails the persona/message check below would
+        // leave a stale true sitting around to wrongly force-ground some
+        // later, unrelated call.
+        var forced = self._forceNext;
+        self._forceNext = false;
         var isConversational = typeof system === 'string' && self.PERSONA_MARKERS.some(function(m) { return system.indexOf(m) !== -1; });
         if (!isConversational || !messages || !messages.length) {
           return orig.apply(this, arguments);
@@ -2530,10 +2573,17 @@ RPGACE.register('oracleAppGrounding', {
         }
         if (!lastUser) return orig.apply(this, arguments);
         var lower = lastUser.toLowerCase();
-        var matched = self.TRIGGER_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
+        var matched = forced || self.TRIGGER_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
         if (!matched) return orig.apply(this, arguments);
         var block = self._buildBlock();
-        return orig.call(this, messages, system + block, maxTokens);
+        // July 28: was orig.call(this, messages, system+block, maxTokens) -
+        // a fixed 3-arg forward that silently dropped any 4th+ argument
+        // (main.js's callOracle gained an optional onChunk callback the
+        // same day for real streaming). A matched grounding block should
+        // never silently turn a streaming call into a non-streaming one.
+        var newArgs = Array.prototype.slice.call(arguments);
+        newArgs[1] = system + block;
+        return orig.apply(this, newArgs);
       };
     }
     patch();
@@ -2588,6 +2638,14 @@ RPGACE.register('oracleAppGrounding', {
     // no cache, no staleness possible (fixes the /5thDimension Phase 1
     // finding that CLAUDE.md's own "roughly 40+" prose was stale-low).
     if (moduleCount) bits.push(moduleCount + ' real modules registered right now');
+    // July 28: free, always-accurate (reads the module's own live array,
+    // no network) - a second, independent line of defense against the
+    // exact overclaim this module's real bug caused ("structurally
+    // complete" for all 21 when only these are actually built).
+    var pp = RPGACE.modules && RPGACE.modules.phylumPath;
+    if (pp && Array.isArray(pp.ENABLED_PHYLA)) {
+      bits.push('phyla actually built out via the Development Framework right now: ' + pp.ENABLED_PHYLA.join(', ') + ' (the rest of the 21 named phyla have no tree content yet)');
+    }
     if (typeof self._liveCache.taxonomyPending === 'number') {
       bits.push(self._liveCache.taxonomyPending + ' taxonomy proposals pending review, queried live just now');
     }
@@ -2725,7 +2783,14 @@ RPGACE.register('oracleFetchGuard', {
         if (!lastUser) return orig.apply(this, arguments);
         var hit = self.MARKERS.some(function(m) { return lastUser.indexOf(m) !== -1; });
         if (!hit) return orig.apply(this, arguments);
-        return orig.call(this, messages, (system || '') + self.HARDENING_BLOCK, maxTokens);
+        // July 28: was orig.call(this, messages, ..., maxTokens) - a fixed
+        // 3-arg forward that silently dropped any 4th+ argument (main.js's
+        // callOracle gained an optional onChunk callback the same day for
+        // real streaming). Rebuild the full args array so a matched
+        // fetch-guard hardening block never silently drops streaming.
+        var newArgs = Array.prototype.slice.call(arguments);
+        newArgs[1] = (system || '') + self.HARDENING_BLOCK;
+        return orig.apply(this, newArgs);
       };
     }
     patch();

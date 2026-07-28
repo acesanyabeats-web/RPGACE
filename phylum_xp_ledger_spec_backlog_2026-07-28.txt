@@ -1,0 +1,139 @@
+PHYLUM XP LEDGER — LOGGED AS A REAL FUTURE UPDATE ALEX WANTS TO BUILD
+2026-07-28
+
+Alex's instruction, verbatim: "log phylum xp ledger as future update i want
+to make." This file is the rule-5 verbatim record (multi-subsystem idea,
+spec'd before building) — NOT built yet, NOT started, deliberately logged
+first per this project's own standing convention.
+
+════════════════════════════════════════════════════════════════
+WHERE THIS CAME FROM
+════════════════════════════════════════════════════════════════
+Alex ran Prod Oracle's "5thDimension — Built vs Reported" command through
+Insta-Oracle. Oracle's real proposal (flagged via "🧪 Flag for Claude
+Code", oracle_dev_suggestions row 37f1dc3e, 2026-07-28 01:40 UTC):
+
+"Connect the Phylum taxonomy directly to Quest generation with a
+bidirectional XP ledger. [...] every quest I generate should be tagged to
+exactly one Phylum at creation [...] That tag should increment a
+per-Phylum XP counter in the database. Alex's dashboard then shows not
+just total XP, but a spider/radar chart of XP across all 21 Phyla [...]
+This makes the taxonomy load-bearing rather than decorative."
+
+Oracle's own honest counter-case (same flag): if quest completion is
+inconsistently tracked, "a beautiful radar chart fed by incomplete data
+doesn't reveal your real skill gaps — it reveals your logging habits."
+
+A second flag (9c9283a1, 01:56 UTC, after Alex fed Oracle's own overclaim
+correction back to it) sharpened this further, unprompted: "This is more
+urgent than my rewire idea made it sound. [...] Dashboard XP display =
+fixed July 22, pulls from real Supabase activity tables. Quest Board
+addXP()/completeQuest() = pure in-memory STATE, resets every reload.
+These two systems think they're tracking the same thing but they're not
+connected. [...] The actual next move before the rewire idea: Wire
+completeQuest() to write to the same Supabase activity tables the
+dashboard already reads from. The read layer is already built. The write
+layer is the gap."
+
+════════════════════════════════════════════════════════════════
+GODMODE EVIDENCE — verified against real code, not taken on Oracle's word
+════════════════════════════════════════════════════════════════
+- `careerStatCard._fetchAll()` (rpgace_core.js ~15320) computes the real
+  Output/Growth score from 7 Supabase reads: `content_productions`,
+  `journal`, `encyclopedia_insights`, `taxonomy_proposals` (accepted only),
+  `bookworm_chapters` (complete only), `reference_tracks`, plus
+  `chronicles_finance`/`system_updates` explicitly excluded from the score
+  itself. Confirmed real, confirmed live since July 22.
+- Of those 6 scored tables, ONLY `taxonomy_proposals` carries a
+  `phylum_number` column. `content_productions`, `journal`,
+  `encyclopedia_insights`, `bookworm_chapters`, `reference_tracks` have no
+  phylum tag at all today.
+- `main.js`'s Quest Board (`QUESTS` object, `addXP()`, `completeQuest()`,
+  `acceptSuggestions()`) is confirmed 100% in-memory — no
+  `localStorage.setItem`, no Supabase write, anywhere in the chain. Every
+  quest completion is lost on reload. This is a real, separate,
+  currently-unfixed instance of the exact "cosmetic, non-persisted stat"
+  bug the July 22 audit already found and fixed for the dashboard's OWN
+  XP/Level display — that fix never touched the Quest Board.
+- `phylumPath.ENABLED_PHYLA` = `[1..10]` — only 10 of 21 phyla have real
+  tree content. Any per-Phylum breakdown UI needs to handle 11 empty/
+  unbuilt phyla gracefully (grey them out, don't fabricate a 0-value
+  wedge that implies "measured and found lacking").
+
+════════════════════════════════════════════════════════════════
+COUNCIL OF 5 — real scrutiny before any build decision
+════════════════════════════════════════════════════════════════
+Technical risk: LOW for the narrow version (a new table + a UI card).
+MODERATE-HIGH if scope grows to retrofitting phylum tags onto the 6
+existing career-score tables (a real schema migration across many
+tables, several already RLS-locked to a write-proxy).
+
+Real scope/cost: genuinely 4 real pieces — (1) persist quest completion
+somewhere real, (2) tag quests with a phylum at generation time, (3) a
+per-Phylum aggregation query/view, (4) a radar-chart UI. Squarely rule-5
+multi-subsystem territory — this file exists because of that, not
+despite it.
+
+Maintainability: clean if scoped to a new, dedicated `quest_completions`-
+shaped table (additive, doesn't touch the existing career-score formula
+or its 6 tables at all).
+
+UX: a real, motivating visualization once the underlying data is
+trustworthy — genuinely good idea, not just AI enthusiasm.
+
+Why NOT build it today: the real prerequisite (quest completion has zero
+persistence) is unresolved, and — this is the sharper point Oracle's own
+second flag raised unprompted — HOW to resolve it is itself a real fork
+with different architectural consequences, not a given.
+
+════════════════════════════════════════════════════════════════
+THE REAL FORK — needs Alex's actual answer, not a guessed default
+════════════════════════════════════════════════════════════════
+When a quest completes, should that write:
+
+  (A) to a NEW, dedicated table (e.g. `quest_completions`: quest_name,
+      phylum_number, xp, completed_at) — kept fully separate from the
+      6 tables the career score already reads. Narrower, safer, matches
+      Oracle's own literal proposal. Real upside: quest completion stays
+      an honest "did the app's suggested todo get done" signal, distinct
+      from the career score's stricter "real shipped work / real learning
+      depth" definition — which is exactly the separation the July 22
+      Output/Growth-lane split was designed to protect (a Goodhart's-law
+      concern already reasoned through once for this exact system; a
+      Phylum radar fed by quest-checkbox activity would repeat the same
+      class of gaming risk if it were folded into the real score instead
+      of kept as its own honest, separate signal).
+
+  (B) into the EXISTING career-score tables somehow, so quest completion
+      actually moves the real Output/Growth number. Bigger, blurrier -
+      quests are closer to a todo-list checkmark than "shipped content,"
+      and conflating the two would weaken the score's own real meaning.
+
+Recommendation (not yet acted on — Alex's call): (A). It's the
+lower-risk, more honest option, and it's what Oracle itself originally
+proposed before its own second, sharper flag started leaning toward
+"just wire completeQuest() into the dashboard's tables," which is
+actually option (B) in disguise — worth Alex knowing the two flags
+pointed in slightly different directions once you look at the literal
+mechanics, not just the prose.
+
+Other open questions before building, same rule-5 discipline:
+1. New dashboard card for the radar chart, or does it live on the
+   existing Phylum Path page?
+2. Backfill/estimate past (never-persisted) quest completions, or does
+   the ledger honestly start counting from zero the day it ships (no
+   fake history)?
+3. Should ALL 21 phyla show on the radar (11 permanently empty until
+   their framework pass runs) or only the 10 currently enabled ones?
+
+════════════════════════════════════════════════════════════════
+STATUS
+════════════════════════════════════════════════════════════════
+NOT BUILT. Logged as a real, confirmed future item per Alex's explicit
+"i want to make" — this file is the spec/confirm record rule 5 requires
+before any multi-subsystem build starts, not a decision to build now.
+The two real, SMALL, already-fixed pieces from the same investigation
+(the oracleAppGrounding force-grounding bug, the argument-forwarding
+regression across 3 Oracle wraps) are logged separately in
+patch_notes.html/CLAUDE.md — those were Tier 1 fixes, not part of this
+Tier 2 backlog item.
