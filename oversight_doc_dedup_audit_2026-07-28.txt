@@ -1,0 +1,125 @@
+OVERSIGHT-DOC DEDUPLICATION AUDIT — 2026-07-28
+
+Alex's request, verbatim: "i would like to update oversight, i feel that
+a lot of the documents have lost sight of what to write down and what to
+track. council of 5 on /Godmode and /Scope to see what is happening to
+the oversight docs, what deduplication of information and functions to
+do to all 7 docs. use /debate on all findings to decide what truly
+should be written down as a constant agenda and background work for all
+docs. use /5thDimension and /omnitrix without fable 5 (unless i have
+tokens) and use opus 5 to get best results."
+
+════════════════════════════════════════════════════════════════
+GODMODE EVIDENCE — real word/section counts, not impressions
+════════════════════════════════════════════════════════════════
+CLAUDE.md: ~20,110 words, 28 sections, 9 same-day "RESOLVED July 25"
+narrative blocks alone (added in one session).
+patch_notes.html: ~27,443 words — this IS the project's changelog,
+correctly sized for that job.
+interconnection_map.md: ~12,231 words, 28 dated headers — its own July
+14 format note explicitly says this file should describe CURRENT STATE
+only and never grow as a changelog, yet ~20 "built July NN" narrative
+sections had re-accumulated since.
+system_flow_map.md: self-admittedly stale in its own §0 — a note dated
+July 23 flagged the module inventory table as showing ~30 when the real
+count was 51+, and that note had sat unresolved for 5 days without the
+actual table ever being fixed.
+
+════════════════════════════════════════════════════════════════
+COUNCIL OF 5 — diagnosis
+════════════════════════════════════════════════════════════════
+Technical risk: none — this is a documentation change, zero application
+code touched.
+Scope/cost: real. Three docs (CLAUDE.md's Current State,
+interconnection_map.md, patch_notes.html) were independently narrating
+the same events in full prose — every incident got written up to 3
+times. This is the actual mechanism behind "lost sight of what to
+write down."
+Maintainability: each doc has a different, sensible PURPOSE
+(patch_notes.html = full narrative changelog; interconnection_map.md =
+structural touchpoints, present-tense; CLAUDE.md = operational rules +
+durable current-state facts; system_flow_map.md = diagrams + truth
+table) — the drift wasn't that any doc's purpose was wrong, it was that
+narrative content kept leaking into docs whose job was NOT narrative.
+UX (for Alex/future sessions reading these): tripled maintenance cost
+with no corresponding benefit — reading interconnection_map.md for "what
+talks to what" required wading through the RLS-flip incident story
+already fully told in patch_notes.html.
+Why NOT to prune: real risk of losing load-bearing facts (open items,
+landmines, still-unconfirmed things) by cutting too aggressively. Named
+explicitly as the thing to check for before any cut.
+
+════════════════════════════════════════════════════════════════
+/DEBATE — what should stay as a "constant agenda," what gets cut
+════════════════════════════════════════════════════════════════
+FOR keeping full narrative in CLAUDE.md/interconnection_map.md: easier
+to read one doc instead of cross-referencing patch_notes.html.
+AGAINST: this is precisely what caused the drift Alex is reporting —
+narrative duplicated across docs means any doc can silently go stale
+relative to the others, and there's no single source of truth for "what
+actually happened when."
+Resolution: patch_notes.html is the ONE place incident narrative lives.
+CLAUDE.md's Current State collapses to durable-fact bullets (still-open
+items, standing rules, things a future session needs to know without
+re-deriving) with a pointer to patch_notes.html for the story.
+interconnection_map.md returns to its own stated purpose — current
+architecture only, present tense, no dates in section headers unless
+the date itself is load-bearing (e.g., "confirmed July 24" as a
+verification timestamp, not a build-narrative label).
+
+════════════════════════════════════════════════════════════════
+/5THDIMENSION RECONCILIATION
+════════════════════════════════════════════════════════════════
+Built vs. reported: no drift found between what got pruned and what's
+actually true — every fact cut from CLAUDE.md/interconnection_map.md
+was independently re-confirmed as still present, either verbatim or
+condensed, before being called "durable." Two items were checked twice
+specifically because they're still genuinely open and easy to lose in
+a prune: (1) this week's animation/Oracle-grounding work has never been
+hand-tested in a real browser; (2) Alex has never explicitly confirmed
+the new server-side password's happy-path login works.
+Rewiring: system_flow_map.md's stale module-inventory note (open since
+July 23) was fixed in the same pass rather than re-flagged a second
+time — the actual table now lists all 52 modules by name and domain,
+not just the corrected count.
+Anchored to Alex's real ask: the goal was "what deduplication... what
+should be a constant agenda" — a standing rule was written into
+CLAUDE.md's Context/logging efficiency rules section (patch_notes.html
+is the sole home for incident narrative; interconnection_map.md and
+CLAUDE.md's Current State both point there rather than re-narrating)
+so this doesn't need to be re-solved from scratch next time drift
+re-accumulates.
+
+════════════════════════════════════════════════════════════════
+WHAT ACTUALLY CHANGED
+════════════════════════════════════════════════════════════════
+- CLAUDE.md: 9 "RESOLVED July 25/24" narrative blocks (lines 5-89)
+  collapsed into 10 durable-fact bullets under one condensed "Current
+  state" heading. New standing rule added to Context/logging efficiency
+  rules naming this convention going forward.
+- interconnection_map.md: ~20 dated "built July NN" sections (Bookworm
+  rebuild, unified placement engine, dashboard rebuild, nav rebuild,
+  Chronicles, Oracle self-awareness, API auth, RLS parity/flip/debate,
+  9 interconnection fixes, Claude Code fallback lane, Minotaur diagram,
+  Composio dedup, Research Lab lazy loading, boot-loader gate,
+  /Regeneration skill) condensed to current-architecture-only sections,
+  each pointing to patch_notes.html for full incident history. The
+  ~15 phylum-by-phylum "framework pass" build narratives inside
+  Taxonomy Tree Pipeline were condensed the same way. 340 lines → 245.
+- system_flow_map.md: §0's domain table rebuilt from a real grep of
+  every RPGACE.register() call (52 unique module names, all now listed
+  by domain, including a new DASHBOARD/NAV category for 7 modules that
+  didn't fit the existing 6). The self-flagged stale note is now
+  resolved rather than re-dated.
+- patch_notes.html, manual.html, taxonomy_map.html, minotaur_map.html:
+  left untouched this pass — real evidence check found these are
+  comparatively lean/stable relative to their own stated purpose
+  (patch_notes.html already IS the narrative log correctly; manual.html
+  is a polished quick-reference with no dated-narrative drift found;
+  taxonomy_map.html/minotaur_map.html only update on schema/wing
+  changes, neither of which happened this pass).
+
+Net: CLAUDE.md and interconnection_map.md are both substantially
+shorter and now match their own stated purposes. No durable fact was
+lost — every still-open item, landmine, and unconfirmed claim survived
+the prune, verified individually against the pre-prune text.
