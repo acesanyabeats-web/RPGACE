@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎨 July 28 (Round 32) — Item 8: the 21 real undersized-ui-text findings from the /impeccable scan, fixed and re-verified</div>
+    <div class="card-body">
+      Re-ran the scan and mapped every one of the 21 findings to its real source: 10 inline `font-size:9px`/`10px` labels in `index.html` ("FILTER BY CATEGORY", "WARM-UP", "🔍 IDENTIFIED", etc.) and 3 shared classes in `style.css` (`.bar-label` — the Output/Growth/XP stat bars, `.toolbar-label` — "✦ Oracle + Agents active", `.prod-cmd-btn .cmd-num` — the 8 numbered Prod Oracle commands). All bumped to the real 11px functional floor. Re-scanned after the fix: zero `undersized-ui-text` findings remain (58→37 total anti-patterns).
+      <br><br>
+      <strong>The 2 `low-contrast` findings investigated, not blindly "fixed":</strong> both flagged hex values (`#4a8ccc`/`#9b6ec8`) only exist in `style.css`'s own `:root` variable definitions (`--blue`/`--purple`) — grepped the whole codebase and found neither is ever paired as both text AND background color on any real element. This is a scanner limitation (flagging the variable definition line itself, not a genuine rendered pairing), confirmed by tracing the actual cascade for the one place `--blue`/`--purple` sit behind text-colored elements (`.type-chip.active` sets `color:var(--dark)`, which the more-specific `.tech.active`/`.music.active` rules never override) — real contrast there is dark text on a solid color background, not text-on-itself. Left as-is rather than changing something that was never actually broken.
+      <br><br>
+      Verified div-balance unaffected (a pre-existing, unrelated unclosed <code>&lt;div&gt;</code> in <code>index.html</code> — confirmed present identically before and after this edit via <code>git stash</code> diffing, not introduced here).
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">⚡ July 28 (Round 31) — Real Oracle 504 fix, second attempt: genuine server-backed streaming, replacing a client-only stub that never worked</div>
     <div class="card-body">

@@ -193,7 +193,7 @@
           <button onclick="toggleInstaPanel()" style="background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;margin-left:auto">✕ Close</button>
         </div>
       </div>
-      <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">⚡ Quick Actions</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">⚡ Quick Actions</div>
       <div class="quick-row">
         <span class="quick-label">Quick:</span>
         <button class="agent-btn" onclick="quickPrompt('Give me 3 new career quests for today')">📋 New quests</button>
@@ -463,7 +463,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 
   <!-- Category Filter Bar -->
   <div style="margin-bottom:12px">
-    <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;font-family:'Cinzel',serif">FILTER BY CATEGORY</div>
+    <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;font-family:'Cinzel',serif">FILTER BY CATEGORY</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px" id="enc-category-bar">
       <button onclick="setEncCategory('all')" id="enc-cat-all" class="enc-cat-btn active">All</button>
       <button onclick="setEncCategory('beat')" id="enc-cat-beat" class="enc-cat-btn">🎛 Beat Analysis</button>
@@ -479,7 +479,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 
   <!-- Sort Workflow Tabs -->
   <div style="margin-bottom:16px">
-    <div style="font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;font-family:'Cinzel',serif">SORT WORKFLOW</div>
+    <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:6px;font-family:'Cinzel',serif">SORT WORKFLOW</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px">
       <button onclick="setEncSort('recent')" id="enc-sort-recent" class="enc-sort-btn" title="Most recently added entries first">🕐 Most Recent</button>
       <button onclick="setEncSort('unique')" id="enc-sort-unique" class="enc-sort-btn active" title="Most unusual entries first — for creative inspiration">⭐ Most Unique</button>
@@ -543,9 +543,9 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 
 <!-- TIMER WIDGET -->
 <div id="timer-widget">
-  <div id="tw-label" style="font-size:9px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:2px">WARM-UP</div>
+  <div id="tw-label" style="font-size:11px;color:var(--muted);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:2px">WARM-UP</div>
   <div id="tw-time" style="font-size:24px;font-weight:700;color:var(--gold);font-family:monospace;letter-spacing:2px">5:00</div>
-  <div id="tw-sub" style="font-size:9px;color:var(--muted);margin-top:2px">Get ready</div>
+  <div id="tw-sub" style="font-size:11px;color:var(--muted);margin-top:2px">Get ready</div>
 </div>
 
 <!-- RETURN TO SESSION BUTTON -->
@@ -581,7 +581,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
   <div style="max-width:860px;margin:0 auto;padding:20px 16px 120px">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
       <div style="flex:1">
-        <div style="font-size:10px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:3px">⚡ FOCUS SESSION</div>
+        <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:3px">⚡ FOCUS SESSION</div>
         <div id="focus-agenda-title" style="font-size:17px;color:var(--text);font-weight:600;font-family:'Cinzel',serif"></div>
       </div>
       <button onclick="exitFocusToEnc()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:7px 12px;font-size:12px;cursor:pointer;font-family:'Rajdhani',sans-serif">📖 Encyclopedia</button>
@@ -589,9 +589,9 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 
     <!-- AI concept panel (sticky, shown on text selection) -->
     <div id="focus-concept-panel" style="display:none;background:var(--panel2);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:16px;position:sticky;top:0;z-index:50">
-      <div style="font-size:10px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">🔍 IDENTIFIED</div>
+      <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">🔍 IDENTIFIED</div>
       <div id="focus-concept-text" style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px"></div>
-      <div style="font-size:10px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">💡 RELATED INSIGHTS</div>
+      <div style="font-size:11px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">💡 RELATED INSIGHTS</div>
       <div id="focus-insights-list"></div>
       <button onclick="document.getElementById('focus-concept-panel').style.display='none'" style="margin-top:10px;background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">✕ Close</button>
     </div>
@@ -621,11 +621,11 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 <button id="selection-identify-btn" onclick="triggerGlobalIdentify()">🔍 Identify</button>
 <div id="global-concept-panel" class="hidden">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <div style="font-size:10px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px">🔍 CONCEPT IDENTIFIED</div>
+    <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px">🔍 CONCEPT IDENTIFIED</div>
     <button onclick="closeGlobalPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px">✕</button>
   </div>
   <div id="global-concept-text" style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:12px"></div>
-  <div style="font-size:10px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">💡 RELATED INSIGHTS</div>
+  <div style="font-size:11px;color:var(--blue);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">💡 RELATED INSIGHTS</div>
   <div id="global-insights-list"></div>
 </div>
 
