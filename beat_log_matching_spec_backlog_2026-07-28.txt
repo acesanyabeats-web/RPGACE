@@ -125,3 +125,65 @@ neither a silent call. Real fork for Alex:
       reasonably well from a sensibly-named export file.
 Not decided here - genuinely Alex's call given the real cost/scope
 difference between the two real options.
+
+=====================================================================
+RESOLVED, SAME DAY (/Routine item 5) — Alex chose (b): local librosa
+=====================================================================
+Alex's real answer via AskUserQuestion: "Local librosa (free)". Scope
+confirmed honestly: BPM + Major/Minor key only, real signal-processing
+limits - no genre/mood classifier built (that remains real future work,
+not silently implied by this build).
+
+REAL EVIDENCE gathered before building (rule 1/8 - never guessed):
+  - main.js:4057's LOCAL_SERVER constant is DEAD CODE - grepped, exactly
+    one match, the definition itself. The real, live pattern Content
+    Intelligence actually uses is NOT a direct browser->localhost fetch -
+    it's a Supabase async job queue (intel_jobs: id/created_at/url/
+    status/progress/error, RLS policy "anon_all" - confirmed via a real
+    pg_policies query, not assumed) that Alex's local_server.py polls on
+    its own clock and writes results back to. This is the exact reason
+    the new feature was built the same way rather than inventing a second
+    divergent pattern for talking to the same local server (rule 8).
+  - No Supabase Storage bucket existed anywhere in this project before
+    today (confirmed: storage.buckets was empty) - audio files are real
+    binary content, not JSON-appropriate, so a bucket is the correct new
+    piece of infrastructure, not an existing one being missed.
+
+BUILT (Tier-3 migration confirmed by Alex before applying):
+  - New table beat_audio_jobs (id uuid pk, created_at, filename,
+    storage_path, status, bpm numeric, musical_key text, error) - same
+    shape/purpose as intel_jobs. RLS: anon_all, same policy and same
+    reason as intel_jobs (local_server.py only ever holds the anon key,
+    never the service-role key).
+  - New Storage bucket "beat-audio" (private, anon RLS scoped to this
+    bucket only via storage.objects policy) for temp raw audio uploads.
+  - rpgace_core.js (beatLog module): both the drop-zone drop handler and
+    the file-picker onchange now also call the new
+    _tryRealAudioAnalysis(file) alongside the existing instant
+    _parseFilename() call - uploads the real File bytes to beat-audio,
+    inserts a beat_audio_jobs row with a CLIENT-GENERATED uuid (avoids
+    the RPGACE.sb.insert()-doesn't-return-the-row landmine entirely,
+    since the id is already known), then polls every 3s for up to 90s.
+    On status:'complete' it fills bl-bpm and, from musical_key (e.g.
+    "D Major"), bl-key (root note) + bl-scale (ONLY if Major/Minor -
+    exotic modes stay manual, an honest scope limit, not a bug). Fails
+    completely silently and leaves the filename-guess result standing if
+    local_server.py never picks the job up (not running, or Alex is on
+    his phone with the PC off) - same fail-open discipline as every other
+    async queue in this project.
+  - node --check rpgace_core.js clean, cache-bust bumped 20260728i ->
+    20260728j.
+
+THE REAL PYTHON, handed to Alex directly in chat (not written to any
+file in this repo - local_server.py lives at
+C:\Users\acesa\RPGACE\local_server.py, outside this repo, so this
+session cannot edit or run it; Alex merges it into his own polling loop
+himself). Uses librosa.beat.beat_track for BPM (real, built-in) and a
+chromagram + Krumhansl-Schmuckler major/minor key-profile correlation
+for key (librosa has no single built-in key-detection function - this is
+the standard, real technique for deriving one from its chroma features).
+
+UNTESTED end-to-end - this session has no Python/librosa environment and
+cannot run Alex's own local_server.py; needs his real hands: add the
+snippet, keep local_server.py running, drop a real audio file into Beat
+Log, confirm BPM/key land correctly a few seconds to ~90s later.

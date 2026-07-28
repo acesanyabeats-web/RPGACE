@@ -91,6 +91,21 @@
 </div>
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎧 July 28 (Round 42) — /Routine item 5: local librosa audio analysis built, real evidence changed the design from the naive assumption</div>
+    <div class="card-body">
+      Alex's answer to the Cyanite.ai-vs-librosa-vs-neither fork (logged Round 40): "Local librosa (free)."
+      <br><br>
+      <strong>Real evidence check first (rule 1/8) caught a wrong assumption before any code was written.</strong> Grepped for the existing local-server integration pattern (<code>main.js:4057</code>'s <code>LOCAL_SERVER</code> constant) expecting a direct browser→localhost fetch — found it's dead code, exactly one match, the definition itself. The real, live pattern Content Intelligence actually uses is a Supabase async job queue (<code>intel_jobs</code>, confirmed <code>anon_all</code> RLS via a direct <code>pg_policies</code> query) that <code>local_server.py</code> polls on its own clock. Building a direct-fetch design instead would have been a second, divergent, wrong pattern for talking to the same local server (rule 8) — caught before it happened, not after.
+      <br><br>
+      <strong>Built, following the real intel_jobs shape</strong>: new <code>beat_audio_jobs</code> table + a new <code>beat-audio</code> Storage bucket (Supabase Storage was completely unused in this project before today — confirmed empty), both <code>anon_all</code>, same reasoning as <code>intel_jobs</code> (local_server.py only ever holds the anon key). Tier-3 migration — confirmed with Alex before applying, not assumed from his earlier general "local librosa" answer. <code>rpgace_core.js</code>'s <code>beatLog</code> module gained <code>_tryRealAudioAnalysis</code>: uploads the real dropped/picked File's bytes, inserts a job row with a client-generated uuid (sidesteps the "insert doesn't return the row" landmine entirely), polls up to 90s, and on completion fills BPM + Key/Scale — honestly scoped to Major/Minor only, since that's what a chromagram + Krumhansl-Schmuckler correlation can actually discriminate; exotic modes (Dorian/Phrygian/etc) stay manual. Fails completely silently if local_server.py never picks the job up (not running, or Alex is on his phone with the PC off) — the instant filename-guess from <code>_parseFilename</code> is never blocked or overwritten.
+      <br><br>
+      The real Python (BPM via <code>librosa.beat.beat_track</code>, key via chroma + key-profile correlation, plus a job-poll/download/PATCH loop matching the new table) was handed to Alex directly as a file, since <code>local_server.py</code> lives outside this repo and can't be edited or run from this session. Full record: <code>beat_log_matching_spec_backlog_2026-07-28.txt</code>.
+      <br><br>
+      `node --check` clean, cache-bust bumped 20260728i→20260728j. <strong>Untested end-to-end</strong> — needs Alex to add the snippet to his own local_server.py, keep it running, and drop a real file into Beat Log.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎤 July 28 (Round 41) — Real accessibility need: Alex fractured his right hand, added voice input to Oracle chat via the browser's native Speech API</div>
     <div class="card-body">
       Alex fractured his right hand and asked whether voice-to-text was possible, both for talking to Claude Code and inside RPGACE itself.

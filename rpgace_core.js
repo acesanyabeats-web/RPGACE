@@ -12185,13 +12185,14 @@ RPGACE.register('beatLog', {
       var file = e.dataTransfer.files[0];
       if (!file) return;
       self._parseFilename(file.name, file.path || '');
+      self._tryRealAudioAnalysis(file);
     });
     dropZone.addEventListener('click', function() {
       var inp = document.createElement('input');
       inp.type = 'file';
       inp.accept = '.mp3,.wav,.flp,.aiff';
       inp.onchange = function() {
-        if (inp.files[0]) self._parseFilename(inp.files[0].name, '');
+        if (inp.files[0]) { self._parseFilename(inp.files[0].name, ''); self._tryRealAudioAnalysis(inp.files[0]); }
       };
       inp.click();
     });
@@ -12504,6 +12505,64 @@ RPGACE.register('beatLog', {
     }
 
     RPGACE.utils.toast('✅ Fields pre-filled from filename', '#C9A84C', 2000);
+  },
+
+  // Real audio analysis (July 28, item 5 - Alex chose local librosa over
+  // Cyanite.ai/neither, see beat_log_matching_spec_backlog_2026-07-28.txt).
+  // Async job-queue pattern, same shape as intel_jobs: upload the real
+  // File bytes to the beat-audio Storage bucket, insert a beat_audio_jobs
+  // row (client-generated uuid so we never hit the "insert doesn't return
+  // the row" landmine), poll for completion, then fill in ONLY what
+  // signal-processing can actually determine (BPM, Major/Minor) - exotic
+  // modes like Dorian/Phrygian stay manual, same honesty limit as the
+  // Cyanite research already logged. Entirely best-effort: if
+  // local_server.py never picks the job up (not running right now, or
+  // Alex is on his phone with the PC off), this just silently never
+  // finishes - _parseFilename's instant filename-guess already ran and is
+  // never blocked or overwritten by a failure here.
+  _tryRealAudioAnalysis: function(file) {
+    if (!file || !file.size) return;
+    var jobId = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+    var path = jobId + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    var base = RPGACE.CONFIG.supabase.url;
+    var key = RPGACE.CONFIG.supabase.key;
+
+    fetch(base + '/storage/v1/object/beat-audio/' + encodeURIComponent(path), {
+      method: 'POST',
+      headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    }).then(function(res) {
+      if (!res.ok) throw new Error('upload failed');
+      return RPGACE.sb.insert('beat_audio_jobs', {
+        id: jobId, filename: file.name, storage_path: path, status: 'queued',
+      });
+    }).then(function() {
+      beatLog._pollAudioJob(jobId, 0);
+    }).catch(function() {
+      // Fail open - filename-guess result stands, no toast, nothing shown.
+    });
+  },
+
+  _pollAudioJob: function(jobId, attempt) {
+    var self = this;
+    if (attempt > 30) return; // ~90s at 3s intervals, then give up silently
+    RPGACE.sb.select('beat_audio_jobs', 'id=eq.' + jobId + '&select=status,bpm,musical_key,error').then(function(rows) {
+      var row = rows && rows[0];
+      if (!row || row.status === 'queued' || row.status === 'processing') {
+        setTimeout(function() { self._pollAudioJob(jobId, attempt + 1); }, 3000);
+        return;
+      }
+      if (row.status === 'complete') {
+        if (row.bpm) { var bpmEl = document.getElementById('bl-bpm'); if (bpmEl) bpmEl.value = Math.round(row.bpm); }
+        if (row.musical_key) {
+          var parts = row.musical_key.split(' '); // e.g. "D Major"
+          var keyEl = document.getElementById('bl-key'); if (keyEl) keyEl.value = parts[0];
+          var scaleEl = document.getElementById('bl-scale'); if (scaleEl && (parts[1] === 'Major' || parts[1] === 'Minor')) scaleEl.value = parts[1];
+        }
+        RPGACE.utils.toast('🎧 Real audio analysis: ' + Math.round(row.bpm || 0) + ' BPM' + (row.musical_key ? ', ' + row.musical_key : ''), '#C9A84C', 3000);
+      }
+      // status 'error' - fails open silently, same as never picked up.
+    }).catch(function() { /* fail open */ });
   },
 
   _getForm: function() {
