@@ -12295,10 +12295,18 @@ RPGACE.register('beatLog', {
 
     // Extra fields row
     var extraGrid = document.createElement('div');
-    extraGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;';
+    extraGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;';
 
+    // 2026-07-28 (real hand-test feedback) - Genre added. It already had a
+    // real home (reference_tracks.genre existed but was never fed from
+    // either end - see refCorpus below), it just never had an entry point
+    // on the Beat Log form itself. Free text, not a select, matching the
+    // corpus panel's own free-text fields - genre in this space is fuzzy
+    // enough (UK Drill vs Drill vs UK Rap) that forcing a fixed list would
+    // just cause mismatches against whatever the corpus rows say.
     var extraFields = [
       { id: 'bl-rating',    label: 'Beat Rating (★)',    type: 'select', options: ['★','★★','★★★','★★★★','★★★★★'] },
+      { id: 'bl-genre',     label: 'Genre',              type: 'text', placeholder: 'e.g. UK Drill, Afrobeats, Boom Bap' },
       { id: 'bl-licence',   label: 'Licence Type',       type: 'select', options: ['Lease only','Exclusive available','Sync ready','All types'] },
       { id: 'bl-collab',    label: 'Collab Ready',       type: 'select', options: ['No','Yes — DM me','Yes — email only'] },
     ];
@@ -12307,15 +12315,23 @@ RPGACE.register('beatLog', {
       var lbl = document.createElement('label');
       lbl.textContent = f.label;
       lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
-      var sel = document.createElement('select');
-      sel.id = f.id;
-      var blank = document.createElement('option'); blank.value=''; blank.textContent='— select —';
-      sel.appendChild(blank);
-      f.options.forEach(function(o) {
-        var opt = document.createElement('option'); opt.value=o; opt.textContent=o; sel.appendChild(opt);
-      });
-      sel.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      wrap.appendChild(lbl); wrap.appendChild(sel);
+      var fieldEl;
+      if (f.type === 'text') {
+        fieldEl = document.createElement('input');
+        fieldEl.type = 'text';
+        fieldEl.id = f.id;
+        fieldEl.placeholder = f.placeholder || '';
+      } else {
+        fieldEl = document.createElement('select');
+        fieldEl.id = f.id;
+        var blank = document.createElement('option'); blank.value=''; blank.textContent='— select —';
+        fieldEl.appendChild(blank);
+        f.options.forEach(function(o) {
+          var opt = document.createElement('option'); opt.value=o; opt.textContent=o; fieldEl.appendChild(opt);
+        });
+      }
+      fieldEl.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;box-sizing:border-box;';
+      wrap.appendChild(lbl); wrap.appendChild(fieldEl);
       extraGrid.appendChild(wrap);
     });
 
@@ -12501,6 +12517,7 @@ RPGACE.register('beatLog', {
       scale:    get('bl-scale'),
       energy:   get('bl-energy'),
       mood:     get('bl-mood'),
+      genre:    get('bl-genre'),
       rating:   get('bl-rating'),
       licence:  get('bl-licence'),
       collab:   get('bl-collab'),
@@ -12513,7 +12530,7 @@ RPGACE.register('beatLog', {
   },
 
   _clearForm: function() {
-    ['bl-title','bl-key','bl-bpm','bl-scale','bl-energy','bl-mood','bl-rating','bl-licence','bl-collab','bl-ref-track','bl-fl-path'].forEach(function(id) {
+    ['bl-title','bl-key','bl-bpm','bl-scale','bl-energy','bl-mood','bl-genre','bl-rating','bl-licence','bl-collab','bl-ref-track','bl-fl-path'].forEach(function(id) {
       var el = document.getElementById(id); if (el) el.value = '';
     });
     document.querySelectorAll('#bl-tax-grid button[data-active="1"]').forEach(function(b) {
@@ -12626,7 +12643,7 @@ RPGACE.register('beatLog', {
 
     // First: check reference corpus for BPM/mood/scale matches
     var corpusPromise = (RPGACE.modules.refCorpus && typeof RPGACE.modules.refCorpus.findMatches === 'function')
-      ? RPGACE.modules.refCorpus.findMatches(form.bpm, form.mood, form.scale, form.energy)
+      ? RPGACE.modules.refCorpus.findMatches(form.bpm, form.mood, form.scale, form.energy, form.genre)
       : Promise.resolve([]);
 
     corpusPromise.then(function(corpusMatches) {
@@ -12895,27 +12912,78 @@ RPGACE.register('beatLog', {
       output.appendChild(section);
     });
 
-    // Save to Notion button
-    var notionBtn = document.createElement('button');
-    notionBtn.textContent = '📓 Save Artist List to Notion';
-    notionBtn.style.cssText = 'margin-top:10px;padding:8px 16px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:6px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    notionBtn.onclick = function() {
-      var content = '## Beat: ' + form.title + '\n**Key:** ' + form.key + ' ' + form.scale + ' | **BPM:** ' + form.bpm + ' | **Mood:** ' + form.mood + '\n\n';
-      content += '### Major Artists\n' + big.map(function(a){return '- [' + a.name + '](' + a.url + ')'}).join('\n') + '\n\n';
-      content += '### Emerging Targets\n' + emerging.map(function(a){return '- [' + a.name + '](' + a.url + ') — ' + Math.round(a.listeners/1000) + 'k listeners'}).join('\n') + '\n\n';
-      RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
-        parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
-        title: 'Beat Log: ' + form.title + ' — Artist Matches',
-        markdown: content
-      }).then(function() {
-        RPGACE.utils.toast('📓 Saved to Notion', '#9B6EC8', 3000);
-      }).catch(function(e) {
-        RPGACE.utils.toast('Notion error: ' + e.message, '#CC4A4A', 3000);
-      });
-    };
-    output.appendChild(notionBtn);
+    // 2026-07-28 (real hand-test feedback): "Save to Notion" replaced.
+    // Alex's own words: matches keep being the same handful of names, and
+    // he didn't want a Notion dump - he wanted the reference corpus
+    // actually built up in Supabase, which is the real fix for repeat
+    // matches (a thin corpus with only ~8 well-known names at ~140BPM/
+    // Aggressive is exactly why they kept recurring - see refCorpus
+    // .findMatches). This button grows that corpus directly from real
+    // matches instead, using the current beat's own real metadata as the
+    // anchor point for each artist - skips names already in the corpus so
+    // repeat beat-logs don't just pile up duplicates.
+    var corpusBtn = document.createElement('button');
+    corpusBtn.textContent = '💾 Add These Artists to Reference Corpus';
+    corpusBtn.style.cssText = 'margin-top:10px;padding:8px 16px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:6px;color:#4A8CCC;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    corpusBtn.onclick = function() { self._saveMatchesToCorpus(form, big, emerging, underground, corpusBtn); };
+    output.appendChild(corpusBtn);
 
     RPGACE.utils.toast('✅ Beat logged · ' + (big.length + emerging.length + underground.length) + ' artists found · Check Oracle for outputs', '#C9A84C', 5000);
+  },
+
+  _saveMatchesToCorpus: function(form, big, emerging, underground, btn) {
+    var allArtists = big.concat(emerging).concat(underground);
+    if (allArtists.length === 0) return;
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+    RPGACE.sb.select('reference_tracks', 'select=artist')
+      .then(function(existing) {
+        var existingNames = (existing || []).map(function(r) { return (r.artist || '').toLowerCase(); });
+        var newOnes = [];
+        var seen = {};
+        allArtists.forEach(function(a) {
+          var key = a.name.toLowerCase();
+          if (existingNames.indexOf(key) !== -1 || seen[key]) return;
+          seen[key] = true;
+          newOnes.push(a);
+        });
+
+        if (newOnes.length === 0) {
+          RPGACE.utils.toast('All these artists are already in your corpus', '#4A8CCC', 2500);
+          if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+          return;
+        }
+
+        var done = 0;
+        newOnes.forEach(function(a) {
+          RPGACE.sb.secureWrite('reference_tracks', 'insert', {
+            artist:   a.name,
+            title:    '(from beat match — ' + form.title + ')',
+            bpm:      parseInt(form.bpm) || null,
+            key:      form.key || null,
+            scale:    form.scale || null,
+            energy:   parseInt(form.energy) || null,
+            mood:     form.mood || null,
+            genre:    form.genre || null,
+            url:      a.url || null,
+            source:   'beat_match_growth',
+            analysed: false,
+          }).then(function() {
+            done++;
+            if (done === newOnes.length) {
+              RPGACE.utils.toast('✅ Added ' + done + ' new artist' + (done === 1 ? '' : 's') + ' to your corpus', '#4A8CCC', 3000);
+              if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+            }
+          }).catch(function() {
+            done++;
+            if (btn && done === newOnes.length) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+          });
+        });
+      })
+      .catch(function(e) {
+        RPGACE.utils.toast('Corpus save error: ' + e.message, '#CC4A4A', 3000);
+        if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+      });
   },
 
 });
@@ -12964,16 +13032,31 @@ RPGACE.register('refCorpus', {
     panel.appendChild(eyebrow); panel.appendChild(titleEl); panel.appendChild(subEl);
 
     // Add track form
+    // 2026-07-28 (real hand-test feedback): scale/genre/url added. scale and
+    // genre are real columns on reference_tracks that already existed
+    // (genre was even already selected by manual.html's dashboard query),
+    // but this form never collected either - a real evidence check found
+    // ALL 32 existing corpus rows have scale/genre stuck at null, which
+    // silently killed 2 of findMatches()'s own scoring dimensions and is
+    // the real reason matches kept surfacing the same ~8 names for any
+    // aggressive ~140BPM beat (the corpus just has no other way to tell
+    // those rows apart). url is a genuinely new column - "I can't even
+    // listen to it to see if it's similar" - lets a real reference link
+    // travel with the row. Auto-fit grid, not a fixed column count, so
+    // this doesn't overflow on a phone (the surface this was reported from).
     var form = document.createElement('div');
-    form.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 80px 80px 80px 1fr;gap:8px;margin-bottom:10px;align-items:end;';
+    form.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:10px;align-items:end;';
 
     var formFields = [
       { id: 'rc-artist', placeholder: 'Artist', type: 'text' },
       { id: 'rc-title',  placeholder: 'Track title', type: 'text' },
       { id: 'rc-bpm',    placeholder: 'BPM', type: 'number' },
       { id: 'rc-key',    placeholder: 'Key', type: 'text' },
+      { id: 'rc-scale',  placeholder: 'Scale', type: 'text' },
       { id: 'rc-energy', placeholder: 'Energy 1-5', type: 'number' },
       { id: 'rc-mood',   placeholder: 'Mood', type: 'text' },
+      { id: 'rc-genre',  placeholder: 'Genre', type: 'text' },
+      { id: 'rc-url',    placeholder: 'Listen link (optional)', type: 'text' },
     ];
 
     formFields.forEach(function(f) {
@@ -12987,10 +13070,10 @@ RPGACE.register('refCorpus', {
     // Bulk add textarea
     var bulkLbl = document.createElement('div');
     bulkLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.3);margin-bottom:5px;margin-top:10px;';
-    bulkLbl.textContent = 'Or bulk add — one per line: Artist, Track Title, BPM, Key, Energy, Mood';
+    bulkLbl.textContent = 'Or bulk add — one per line: Artist, Track Title, BPM, Key, Scale, Energy, Mood, Genre, Listen link (last 3 optional)';
     var bulkArea = document.createElement('textarea');
     bulkArea.id = 'rc-bulk';
-    bulkArea.placeholder = 'Nines, Money & Muscle, 92, D, 3, Melancholic\nDave, Titanium, 88, F#, 4, Cinematic\nKnucks, Seasons, 95, G, 3, Dark';
+    bulkArea.placeholder = 'Nines, Money & Muscle, 92, D, Minor, 3, Melancholic, UK Rap\nDave, Titanium, 88, F#, Major, 4, Cinematic, UK Hip Hop';
     bulkArea.style.cssText = 'width:100%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#D4DAF5;font-size:11px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:80px;margin-bottom:10px;';
     panel.appendChild(bulkLbl);
     panel.appendChild(bulkArea);
@@ -13048,15 +13131,18 @@ RPGACE.register('refCorpus', {
       title:   title,
       bpm:     parseInt(get('rc-bpm')) || null,
       key:     get('rc-key') || null,
+      scale:   get('rc-scale') || null,
       energy:  parseInt(get('rc-energy')) || null,
       mood:    get('rc-mood') || null,
+      genre:   get('rc-genre') || null,
+      url:     get('rc-url') || null,
       source:  'manual',
       analysed: false,
     };
     RPGACE.sb.secureWrite('reference_tracks', 'insert', row)
       .then(function() {
         RPGACE.utils.toast('✅ Added: ' + artist + ' — ' + title, '#4A8CCC', 2500);
-        ['rc-artist','rc-title','rc-bpm','rc-key','rc-energy','rc-mood'].forEach(function(id) {
+        ['rc-artist','rc-title','rc-bpm','rc-key','rc-scale','rc-energy','rc-mood','rc-genre','rc-url'].forEach(function(id) {
           var el = document.getElementById(id); if (el) el.value = '';
         });
         this._loadList();
@@ -13064,6 +13150,10 @@ RPGACE.register('refCorpus', {
       .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3000); });
   },
 
+  // 2026-07-28: bulk format extended to Artist, Title, BPM, Key, Scale,
+  // Energy, Mood, Genre, Listen link - the last 3 are optional so existing
+  // pasted lists in the old 6-field shape still import fine (parts[6-8]
+  // simply come back undefined -> null, never an error).
   _bulkImport: function() {
     var self = this;
     var raw = document.getElementById('rc-bulk');
@@ -13076,8 +13166,11 @@ RPGACE.register('refCorpus', {
         title:    parts[1] || '',
         bpm:      parseInt(parts[2]) || null,
         key:      parts[3] || null,
-        energy:   parseInt(parts[4]) || null,
-        mood:     parts[5] || null,
+        scale:    parts[4] || null,
+        energy:   parseInt(parts[5]) || null,
+        mood:     parts[6] || null,
+        genre:    parts[7] || null,
+        url:      parts[8] || null,
         source:   'bulk_import',
         analysed: false,
       };
@@ -13128,14 +13221,26 @@ RPGACE.register('refCorpus', {
           var left = document.createElement('div');
           var name = document.createElement('div');
           name.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;';
-          name.textContent = row.artist + ' — ' + row.title;
+          // 2026-07-28: a real listen link now travels with the row (the
+          // whole point being able to actually check similarity, not just
+          // read a name) - rendered as a clickable link, not plain text.
+          if (row.url) {
+            var link = document.createElement('a');
+            link.href = row.url; link.target = '_blank'; link.rel = 'noopener noreferrer';
+            link.style.cssText = 'color:#4A8CCC;text-decoration:none;';
+            link.textContent = '🔗 ' + row.artist + ' — ' + row.title;
+            name.appendChild(link);
+          } else {
+            name.textContent = row.artist + ' — ' + row.title;
+          }
           var meta = document.createElement('div');
           meta.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
           var parts = [];
           if (row.bpm) parts.push(row.bpm + ' BPM');
-          if (row.key) parts.push(row.key);
+          if (row.key) parts.push(row.key + (row.scale ? ' ' + row.scale : ''));
           if (row.energy) parts.push('Energy ' + row.energy);
           if (row.mood) parts.push(row.mood);
+          if (row.genre) parts.push(row.genre);
           meta.textContent = parts.join(' · ') || 'No metadata yet';
           left.appendChild(name); left.appendChild(meta);
           var del = document.createElement('button');
@@ -13154,8 +13259,15 @@ RPGACE.register('refCorpus', {
       });
   },
 
-  // Called by beatLog to find matching artists from corpus
-  findMatches: function(bpm, mood, scale, energy) {
+  // Called by beatLog to find matching artists from corpus.
+  // 2026-07-28 (real hand-test feedback): genre added as a real scoring
+  // dimension - the corpus already had this column (and scale, scored
+  // below), but real evidence showed every existing row had both stuck at
+  // null (the add-track UI never collected them), which flattened the
+  // corpus's own ability to tell apart two rows with the same BPM/mood/
+  // energy - the real reason matches kept surfacing the same handful of
+  // names for any aggressive ~140BPM beat.
+  findMatches: function(bpm, mood, scale, energy, genre) {
     var bpmNum = parseInt(bpm) || 130;
     var energyNum = parseInt(energy) || 3;
     var bpmRange = 15; // match within ±15 BPM
@@ -13178,6 +13290,7 @@ RPGACE.register('refCorpus', {
         if (row.mood && mood && row.mood.toLowerCase() === mood.toLowerCase()) score += 3;
         if (row.scale && scale && row.scale.toLowerCase() === scale.toLowerCase()) score += 2;
         if (row.energy && Math.abs(row.energy - energyNum) <= 1) score += 2;
+        if (row.genre && genre && row.genre.toLowerCase() === genre.toLowerCase()) score += 3;
         row._score = score;
         return row;
       });

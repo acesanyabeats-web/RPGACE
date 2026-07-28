@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎯 July 28 (Round 40) — Real root cause found for "matches are always the same": 2 dead scoring dimensions in the reference corpus, plus Genre added and Notion swapped for the real corpus</div>
+    <div class="card-body">
+      Alex's real feedback after logging a beat: matches keep repeating, no way to add Genre, doesn't want a Notion dump, wants to know if an AI can listen to a beat and extract its metadata.
+      <br><br>
+      <strong>Real root cause, not a guess.</strong> Read `refCorpus.findMatches()` in full, then queried the actual 32-row `reference_tracks` table directly: `scale` and `genre` both already exist as real columns, and `findMatches()` already scores `scale` — but every single one of the 32 rows has both stuck at `null`, because the corpus's own add-track UI never collected either. Hand-scored Alex's real beat (F Minor, 143 BPM, Energy 5, Aggressive) against the actual 32 rows using the real formula: an exact 5-way tie — Headie One, Stormzy, Ghetts, Skepta, Digga D — precisely the cluster from his screenshot, all logged at ~140BPM/Energy 5/Aggressive in the bulk-imported seed data. The corpus isn't broken or empty; it's just too thin on its own real discriminating dimensions for the single most common BPM/energy/mood bucket.
+      <br><br>
+      <strong>Fixed the actual gap, not just the symptom.</strong> Genre added to the Beat Log form itself (flows automatically into `content_productions.creative_docs.beat_meta`, no extra work needed there). The Reference Corpus add-track UI (manual + bulk import) now actually collects Scale, Genre, and a new `url` column (migration applied); `findMatches()` now scores genre too. The corpus list renders a real clickable 🔗 listen link when present.
+      <br><br>
+      <strong>"Save Artist List to Notion" replaced with "💾 Add These Artists to Reference Corpus"</strong> — directly answers "just make the reference corpus in supabase." Checks for existing artist names first (no duplicate pile-up on repeat beats), then inserts a real `reference_tracks` row per genuinely-new artist anchored to the current beat's own bpm/key/scale/energy/mood/genre. This is the real compounding fix: every beat logged from now on both matches against AND grows the corpus, so the same 5-way tie gets less likely over time as real, varied rows accumulate.
+      <br><br>
+      <strong>Real research on the audio-analysis AI question, not built.</strong> Cyanite.ai — real API, accepts direct upload of unreleased audio, returns genre/mood/BPM/key in one call, real cost €290/month. librosa — free, already name-dropped as "Phase 2" in the corpus panel's own existing copy, runs locally via `local_server.py`, reliable BPM/key but no built-in genre/mood classifier. A real spending/scope fork, not decided here — Alex's call. Full record: `beat_log_matching_spec_backlog_2026-07-28.txt`.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">📱 July 28 (Round 39) — Real hand-test from Alex's phone caught a genuine bug in Round 38's auto Visual Treatment save: fixed with real evidence, not a second guess</div>
     <div class="card-body">
       Alex logged a real beat ("No motivation", Visual Treatment checkbox on) minutes after Round 38 shipped. Direct Supabase check confirmed the good news — the new `content_productions`/`video_jobs` link worked correctly, `visualTreatment:true` recorded — but the auto-save (`creative_docs.visual_treatment`, `style_profile_id`, `edl`) never landed.

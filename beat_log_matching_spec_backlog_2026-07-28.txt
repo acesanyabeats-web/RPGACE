@@ -1,0 +1,127 @@
+Beat Log artist-matching + reference corpus — spec backlog
+2026-07-28
+
+Alex's real feedback (verbatim, from a real hand-test after logging "No
+Motivation"): "I don't like the artist and song choice, it's always the
+same, I can't even listen to it to see if it is similar, I should also
+be able to enter genre too. I'd like to find an ai that I can integrate
+into rpgace that will listen to the beat, and then distinguish all meta
+data for the beat. I also don't like the log to notion, just make the
+reference corpus in supabase. use /Engineer /scope and /Godmode to make
+it work, even /debate if needed"
+
+=====================================================================
+REAL ROOT CAUSE (GODMODE evidence, not assumed) — why matches "kept
+being the same"
+=====================================================================
+Read refCorpus.findMatches() and _searchArtists() in full, then queried
+the real reference_tracks table directly (32 rows). Confirmed:
+  - The table already HAS scale and genre columns, and findMatches()
+    already SCORES scale (+2) - it just never had any data to score,
+    because the corpus's own add-track UI (_addSingle/_bulkImport) never
+    collected either field. Every one of the 32 real rows has
+    scale=null and genre=null.
+  - Real consequence traced against Alex's actual beat ("No Motivation":
+    F Minor, 143 BPM, Energy 5, Aggressive): scoring the 32 real corpus
+    rows by hand against findMatches()'s own formula (bpm-proximity +
+    mood-match + energy-match, scale/genre contributing zero since both
+    are null everywhere) produces an exact 5-way tie at the top: Headie
+    One, Stormzy, Ghetts, Skepta, Digga D - all logged at ~138-140BPM/
+    Energy 5/Aggressive in the corpus's own bulk-imported seed data. This
+    is precisely the cluster that appeared in his screenshot. The corpus
+    isn't broken or empty (hasCorpus was true) - it's just too thin and
+    too flat on its own real discriminating dimensions for a beat that
+    happens to sit in the most common BPM/energy/mood bucket.
+  - This is a real, evidenced explanation, not "the corpus needs more
+    rows" as a vague guess - it names the exact two dead scoring
+    dimensions and the exact reason they went dead (a UI gap, not a
+    scoring-formula bug).
+
+=====================================================================
+BUILT THIS SESSION (rpgace_core.js, node --check clean)
+=====================================================================
+1. Genre added to the Beat Log form itself (new bl-genre free-text
+   field, next to Rating/Licence/Collab) - flows into form.genre, and
+   automatically lands in content_productions.creative_docs.beat_meta
+   (no extra work needed there - the whole form object is already
+   captured verbatim per the July 28 Content Pipeline overseer build).
+
+2. Reference Corpus add-track UI (manual + bulk import) extended to
+   actually collect Scale, Genre, and a new url column (migration
+   applied: reference_tracks.url text) - closes the real data gap named
+   above. Bulk-import format extended (Artist, Title, BPM, Key, Scale,
+   Energy, Mood, Genre, Listen link) with the last 3 kept optional so
+   existing pasted lists in the old 6-field shape still import cleanly.
+
+3. findMatches() now also scores genre (+3, same weight class as mood)
+   alongside the existing bpm/mood/scale/energy dimensions - real, not
+   cosmetic, since scale/genre will actually have data going forward.
+
+4. The corpus list view now renders a real clickable listen link (🔗)
+   when a row has one, and shows scale/genre in the meta line instead of
+   silently dropping them.
+
+5. "📓 Save Artist List to Notion" replaced with "💾 Add These Artists to
+   Reference Corpus" - directly answers "just make the reference corpus
+   in supabase." Real logic, not cosmetic: checks the corpus for
+   existing artist names first (case-insensitive) so repeat beat-logs
+   don't pile up duplicates, then inserts a real reference_tracks row per
+   genuinely-new artist, anchored to the CURRENT beat's own bpm/key/
+   scale/energy/mood/genre (source:'beat_match_growth') plus the
+   artist's real Last.fm url. This is the real, compounding fix for "it's
+   always the same" - every beat logged from now on both matches against
+   AND grows the corpus, so the same 5-way tie gets genuinely less likely
+   over time as more real, varied rows accumulate.
+
+Note on "can't even listen to it": the artist-name chips already linked
+out to each artist's real Last.fm page (a.url, pre-existing code, not
+new) - that part already worked. What was actually missing was a way to
+attach a SPECIFIC reference TRACK link, which Last.fm's tag-search
+doesn't return (artist-level data only, no per-track recommendation) -
+the new reference_tracks.url column is the real fix for that, since
+future corpus rows (added manually, or grown via the button above) can
+carry a real specific-track link that a future match will surface.
+
+=====================================================================
+REAL RESEARCH, NOT BUILT — audio-analysis AI (Aintergration-style
+verdict, genuine Tier 3 spending/architecture fork for Alex)
+=====================================================================
+Real web research (not recalled from memory, cited):
+
+Cyanite.ai (https://api-docs.cyanite.ai/docs/audio-analysis-v6-classifier/,
+https://cyanite.ai/faq/) - accepts direct MP3 upload of your OWN
+unreleased audio (up to 15 min, any bitrate; wav/mp4/flac for catalog-
+scale ingestion), returns genre, mood (aggressive/dark/energetic/etc,
+scored 0-1), BPM, key, instruments, energy in one GraphQL call, analysis
+in seconds. Real cost: EUR 290/month API fee (a free small test run is
+possible with an existing account first). This is a real, substantial
+recurring cost for a solo bedroom-producer project.
+
+librosa (open source) - already name-dropped in refCorpus's own existing
+panel copy as "Phase 2: librosa auto-analyses each track," i.e. this was
+already on the roadmap before today. Free, runs locally via the existing
+local_server.py Python script (already part of this project's real
+infrastructure), gives reliable BPM/key/tempo via real deterministic
+signal processing. Real limitation: no built-in genre/mood classifier -
+that half of what Alex asked for ("distinguish all metadata") would need
+real added ML work on top, not just calling a function.
+
+Spotify/Soundcharts/Tunebat (also surfaced in research) - all catalog-
+lookup tools (analyze/compare EXISTING released tracks), not upload-your-
+own-unreleased-audio tools - not applicable to analyzing Alex's own
+unmixed/unreleased FL Studio exports.
+
+Verdict, per Aintergration's own two-lens procedure: NOT adopted this
+session - a real Tier-3 spending decision (Cyanite) or a real added-scope
+decision (librosa + a genre/mood classifier built on top) either way,
+neither a silent call. Real fork for Alex:
+  (a) Pay for Cyanite (EUR 290/mo) - full metadata (genre+mood+BPM+key)
+      in one call, zero infra, real recurring cost.
+  (b) Build on librosa via local_server.py - free, gets BPM/key reliably
+      now, genre/mood would need a real separate build (a classifier,
+      not a quick add).
+  (c) Do neither for now - keep manual entry, since Beat Log's filename-
+      parser (_parseFilename) already extracts BPM/key/scale/mood/energy
+      reasonably well from a sensibly-named export file.
+Not decided here - genuinely Alex's call given the real cost/scope
+difference between the two real options.
