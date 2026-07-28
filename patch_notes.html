@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">⚙️ July 28 (Round 35) — /Engineer pass: videoPipeline given a real dashDeck home + 160 more undersized-text sites fixed (the population the static scanner can't see)</div>
+    <div class="card-body">
+      Full whole-project audit today (a real /scope of oversight + a real /scope of RPGACE itself, function-path tracing across the button catalog) surfaced two concrete, buildable Tier-1 goals — logged verbatim in <code>engineer_pass_2026-07-28_01.txt</code>, run as a real bounded <code>/Engineer</code> pass. Opus was requested for the audit's synthesis step but hit its session usage limit before returning anything; Sonnet substituted directly rather than wait or fabricate a result, same precedent this project already has for a dispatched model running dry.
+      <br><br>
+      <strong>Goal 1 — videoPipeline's own widget finally has a real home.</strong> `vp-widget` (F17's stage tracker) was still directly injecting into `#page-dashboard` the pre-July-20 way, never migrated when `dashDeck`'s card/popup system replaced the old dashboard — real evidence for why this mattered: `video_jobs` has 0 rows in production, consistent with a feature that's likely sat visually stray since the redesign. Fixed by giving it a real 13th dashDeck card + a new `_openVideoPipeline()` — a direct structural mirror of the already-proven `_openPipeline()` (same `_stashWidget`/`_widgetPopups` relocate-on-open/stash-on-close mechanism, no new pattern invented). Also caught and fixed a real, now-stale line inside `_openPipeline()` itself, which used to say Video Pipeline "joins this flow... by design" — no longer true once it has its own card.
+      <br><br>
+      <strong>Goal 2 — the undersized-text population the static scanner structurally can't see.</strong> Today's earlier `/impeccable` fix (21 findings) only ever covered `index.html`/`style.css` — it has no way to see text generated at runtime by `rpgace_core.js`'s own `document.createElement` calls, which is most of this app's actual UI. A real grep found <strong>163 instances</strong> of `font-size:9px`/`10px` across the file; checked each against the project's own stated exemptions (monospace/code context) and found exactly 3 legitimate ones. The other <strong>160</strong> bumped to the real 11px floor — built as a full-file diff first and verified (line count unchanged, only single-property substitutions, 3 exemptions correctly preserved) before touching the real file. One fix lands especially wide: `dashDeck._popup()`'s own shared eyebrow-label style was itself one of the 9px sites — fixing it corrects every one of dashDeck's ~13 popups at once.
+      <br><br>
+      <strong>Honest limitation, stated plainly (per the Objective Completion Gate's own UNTESTED requirement):</strong> neither goal has been visually confirmed in a real browser — this session has no login. Both are `node --check`-clean and traced against the real diff, not assumed.
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧭 July 28 (Round 34) — Real root cause found for Oracle's overclaim: the self-audit command never received its own grounding data. Plus a live regression across 3 Oracle wraps, fixed.</div>
     <div class="card-body">

@@ -1,0 +1,137 @@
+/ENGINEER PASS — 2026-07-28, Pass 01
+Goals 1 and 2 from today's Council-of-5/GODMODE/5thDimension synthesis.
+Opus was requested for the synthesis step but hit its session usage
+limit before returning (resets 5am UTC) — Sonnet substituted directly,
+same precedent this project has used before when a dispatched model
+runs dry mid-task.
+
+════════════════════════════════════════════════════════════════
+STAGE 1 — GOAL CONTRACT
+════════════════════════════════════════════════════════════════
+Goal 1 (Tier 1, single-module UI fix): Migrate videoPipeline's own
+dashboard widget (vp-widget, the F17 stage tracker) into dashDeck's
+existing card/popup relocation system. Real evidence for why: vp-widget
+was still directly injecting into #page-dashboard exactly the pre-July-20
+way, never migrated when dashDeck's card grid replaced the old dashboard;
+`video_jobs` has 0 real rows (confirmed via Supabase), consistent with a
+feature that's likely sat visually stray/non-integrated since the redesign.
+
+Goal 2 (Tier 1, mechanical CSS fix, real scope declared up front): audit
+rpgace_core.js's dynamically-generated UI (document.createElement-built
+markup) for undersized text below the project's real 11px functional
+floor — the static /impeccable scanner structurally cannot see this
+population since it only reads index.html/style.css.
+
+════════════════════════════════════════════════════════════════
+STAGE 2 — EVIDENCE
+════════════════════════════════════════════════════════════════
+- Read videoPipeline's full module body (rpgace_core.js ~13500-13810):
+  `_injectWidget()` appends directly to #page-dashboard; a defensive
+  comment already existed there anticipating cpl-widget's own relocation
+  but vp-widget itself was never given the same treatment.
+- Read dashDeck's existing, proven pattern for exactly this problem:
+  `_openPipeline()` (relocates cpl-widget into a popup, stashes back on
+  close via `_stashWidget(id, true)` + `_widgetPopups[id]`), the `MODULES`
+  card array (12 entries), and `_inject()`'s re-stash guard (already lists
+  kg-panel/cpl-widget).
+- Grepped the whole file for `font-size:\s*[0-9]+px` under 11: **163 real
+  instances** (96 at 10px, 67 at 9px). Cross-checked for the impeccable
+  rule's own stated exemptions (monospace/code context) — found exactly
+  3 legitimate exemptions (lines 4734, 4778, 5828, all `font-family:
+  monospace` URL/log displays). The other 160 are genuine functional UI
+  text (labels, section eyebrows, hints, status text) with no exemption.
+- Real bonus finding while reading `_popup()` (dashDeck's own shared popup
+  builder, used by every one of its ~13 cards): its own eyebrow-label
+  style was itself one of the 9px instances - fixing it once fixes the
+  eyebrow size for every dashDeck popup at once, not just one card.
+
+════════════════════════════════════════════════════════════════
+STAGE 3 — EXECUTION (Sonnet direct, no Fable, Opus unavailable this pass)
+════════════════════════════════════════════════════════════════
+Goal 1:
+- Added a new `videoPipeline` entry to dashDeck.MODULES (13th card,
+  emoji 📹, blue accent) calling a new `_openVideoPipeline()`.
+- `_openVideoPipeline()` written as a direct structural mirror of
+  `_openPipeline()` - relocate vp-widget into a popup on open, stash back
+  via `_stashWidget('vp-widget', true)` on close, same `_widgetPopups`
+  bookkeeping. No new mechanism invented (rule 8).
+- `_inject()`'s re-stash guard extended: `this._stashWidget('vp-widget');`
+  added alongside the existing kg-panel/cpl-widget calls.
+- Fixed a real, now-stale footer line inside `_openPipeline()` itself
+  ("Video Pipeline joins this flow... by design" - no longer true once
+  Video Pipeline has its own real card) and gave the new popup its own
+  accurate footer.
+- Deliberately did NOT touch `videoPipeline._injectWidget()`'s own
+  DOM-target logic - it still appends to #page-dashboard on first boot,
+  same as bookworm's and contentProductionLive's own widgets already do;
+  dashDeck's re-inject stash guard is what relocates it away, exactly the
+  proven existing pattern, not a new one for this widget specifically.
+
+Goal 2:
+- Built the fix as a full-file copy first, verified via diff before
+  touching the real file (160 single-property changes, all
+  `font-size:9px`/`font-size:10px` → `font-size:11px`, zero incidental
+  changes elsewhere - confirmed via `diff` spot-check and a line-count
+  match on the untouched file, 16240 lines both before and after).
+  Skipped all 3 monospace-context exemptions explicitly.
+- Applied to the real file, then re-verified: exactly 3 under-11px
+  instances remain (the same 3 exemptions), zero unintended matches.
+
+════════════════════════════════════════════════════════════════
+STAGE 4 — COUNCIL OF 5 REPORT (from the real diff, not memory)
+════════════════════════════════════════════════════════════════
+What changed: rpgace_core.js gained ~50 new lines (Goal 1: one new
+MODULES entry, one new _openVideoPipeline function, one stash-guard
+line, one corrected footer string) and 160 single-property CSS value
+changes (Goal 2). index.html's cache-bust bumped 20260728c->20260728d.
+
+What it touched that wasn't planned: nothing outside the two declared
+goals - Goal 2's diff is mechanically scoped to exactly the font-size
+values identified in Stage 2, no drive-by changes.
+
+Technical risk: LOW. Goal 1 reuses an already-proven relocation pattern
+verbatim rather than inventing new popup/stash logic - if it were going
+to break, `_openPipeline` would already be broken the same way. Goal 2
+is a pure CSS value bump with no logic change; the only way it could
+visually break something is if an 11px value now overflows a
+previously-9/10px-sized container - a real, honest residual risk, since
+this session has no login to check visually.
+
+Why NOT to worry about this being a regression: every one of the 160
+sites was ALREADY rendering functional text illegibly small per the
+project's own accepted 11px floor (the same standard already applied to
+the 21 static-file fixes earlier today) - even in the unlikely case a
+label now wraps where it didn't before, that's a strictly better failure
+mode than illegible text, and it's the same judgment call already made
+and accepted for the first 21 fixes.
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Docked 2 points specifically because neither goal has been visually
+confirmed in a real browser - the score reflects code-level confidence,
+not hand-tested confidence.
+
+════════════════════════════════════════════════════════════════
+STAGE 5 — TRUTH CHECK
+════════════════════════════════════════════════════════════════
+- `node --check rpgace_core.js` — clean (G1).
+- `index.html` untouched beyond the cache-bust line itself — no G2
+  invariants at risk.
+- New code sits inside the existing `dashDeck`/`videoPipeline` module
+  bodies via direct Edit-tool edits, established precedent per CLAUDE.md
+  (G3 — not a fresh `/* ===MODULE=== */` block since this extends two
+  already-registered modules, not a new one).
+- Claim-to-diff reconciliation (G4): every claim above traced to an
+  actual line region in the real diff; `git diff --stat` shows
+  rpgace_core.js changed with insertions/deletions consistent with both
+  goals combined (Goal 1's new function + Goal 2's 160 substitutions).
+- Goal reconciliation (G5): both Stage 1 goals fully done, none
+  descoped.
+- G6 (deployment reality) and G7 (cache-bust) — addressed at commit/push
+  time, verified via `list_deployments` in the same session this file
+  was written; see patch_notes.html/CLAUDE.md for the confirmed result.
+- **UNTESTED, both goals, explicitly labeled, not rounded up to
+  "verified"**: whether the new Video Pipeline card actually opens
+  correctly, relocates the real widget, and closes/stashes cleanly in a
+  real browser; whether any of the 160 newly-11px labels visually
+  overflow their containers. Both need Alex's own hands - no login this
+  session.

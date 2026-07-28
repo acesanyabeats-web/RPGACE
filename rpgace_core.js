@@ -705,7 +705,7 @@ RPGACE.register('youtubeOracle', {
     var ht = document.createElement('div');
     var lb = document.createElement('div');
     lb.textContent = 'YOUTUBE ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
     var ch = document.createElement('div');
     ch.textContent = '@AceSanyaBeats';
     ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
@@ -721,7 +721,7 @@ RPGACE.register('youtubeOracle', {
     body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
     var note = document.createElement('div');
     note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR CHANNEL';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
     body.appendChild(note);
 
     self.CMDS.forEach(function(cmd, i) {
@@ -813,7 +813,7 @@ RPGACE.register('prodOraclePanel', {
     var ht = document.createElement('div');
     var lb = document.createElement('div');
     lb.textContent = 'PROD. BY ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.65);margin-bottom:3px;';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.textContent = 'FL Studio · UK Hip Hop · 16 Commands';
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
@@ -829,7 +829,7 @@ RPGACE.register('prodOraclePanel', {
     body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
     var note = document.createElement('div');
     note.textContent = '16 COMMANDS · PRE-FILLED FOR YOUR SESSION';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
     body.appendChild(note);
 
     self.CMDS.forEach(function(cmd, i) {
@@ -927,7 +927,7 @@ RPGACE.register('instaOraclePanel', {
     var ht = document.createElement('div');
     var lb = document.createElement('div');
     lb.textContent = 'INSTA-ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
@@ -943,7 +943,7 @@ RPGACE.register('instaOraclePanel', {
     body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
     var note = document.createElement('div');
     note.textContent = '13 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
     body.appendChild(note);
 
     self.CMDS.forEach(function(cmd, i) {
@@ -1127,7 +1127,7 @@ RPGACE.register('visualOracle', {
     var ht = document.createElement('div');
     var lb = document.createElement('div');
     lb.textContent = 'VISUAL ORACLE';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.65);margin-bottom:3px;';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.textContent = RPGACE.utils.phylumLabel(14) + ' · Filmmaker Library · 6 Commands';
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
@@ -1144,12 +1144,12 @@ RPGACE.register('visualOracle', {
 
     var note = document.createElement('div');
     note.textContent = '6 COMMANDS · FILMMAKER LIBRARY · NEURAL FRAMES READY';
-    note.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
     body.appendChild(note);
 
     var phNote = document.createElement('div');
     phNote.textContent = RPGACE.utils.phylumContext(14);
-    phNote.style.cssText = 'font-size:10px;color:rgba(155,89,182,0.6);margin-bottom:14px;letter-spacing:1px;border-left:2px solid rgba(155,89,182,0.3);padding-left:8px;line-height:1.5;';
+    phNote.style.cssText = 'font-size:11px;color:rgba(155,89,182,0.6);margin-bottom:14px;letter-spacing:1px;border-left:2px solid rgba(155,89,182,0.3);padding-left:8px;line-height:1.5;';
     body.appendChild(phNote);
 
     self.CMDS.forEach(function(cmd, i) {
@@ -1329,7 +1329,7 @@ RPGACE.register('contentRepurpose', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.25);border-radius:14px;padding:28px 32px;width:min(620px,95vw);max-height:90vh;overflow-y:auto;position:relative;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Content Repurpose · Step 14';
 
     var titleEl = document.createElement('div');
@@ -1342,7 +1342,7 @@ RPGACE.register('contentRepurpose', {
     var step1 = document.createElement('div');
     step1.style.cssText = 'margin-bottom:20px;';
     var s1lbl = document.createElement('div');
-    s1lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(61,170,110,0.6);margin-bottom:8px;';
+    s1lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(61,170,110,0.6);margin-bottom:8px;';
     s1lbl.textContent = 'Step 1 — Oracle Contribution';
 
     var dropdown = document.createElement('select');
@@ -1358,7 +1358,7 @@ RPGACE.register('contentRepurpose', {
     });
 
     var oracleContribLbl = document.createElement('div');
-    oracleContribLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
+    oracleContribLbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
     oracleContribLbl.textContent = 'Oracle contribution:';
 
     var oracleContrib = document.createElement('textarea');
@@ -1383,10 +1383,10 @@ RPGACE.register('contentRepurpose', {
     var step2 = document.createElement('div');
     step2.style.cssText = 'margin-bottom:20px;display:none;';
     var s2lbl = document.createElement('div');
-    s2lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.6);margin-bottom:6px;';
+    s2lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.6);margin-bottom:6px;';
     s2lbl.textContent = 'Step 2 — Your Contribution';
     var yourContribLbl = document.createElement('div');
-    yourContribLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
+    yourContribLbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
     yourContribLbl.textContent = 'Your contribution:';
     var yourContrib = document.createElement('textarea');
     yourContrib.id = 'cr-your-contrib';
@@ -1403,7 +1403,7 @@ RPGACE.register('contentRepurpose', {
     var step3 = document.createElement('div');
     step3.style.cssText = 'margin-bottom:20px;display:none;';
     var s3lbl = document.createElement('div');
-    s3lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(74,144,226,0.6);margin-bottom:6px;';
+    s3lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(74,144,226,0.6);margin-bottom:6px;';
     s3lbl.textContent = 'Step 3 — Taxonomy Selection';
     var s3sub = document.createElement('div');
     s3sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:12px;';
@@ -1585,7 +1585,7 @@ RPGACE.register('contentRepurpose', {
     wrap.id = 'agent-quick-btns';
     wrap.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px 20px;margin-bottom:20px;';
     var lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(226,226,236,0.25);text-transform:uppercase;margin-bottom:12px;';
+    lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(226,226,236,0.25);text-transform:uppercase;margin-bottom:12px;';
     lbl.textContent = 'Quick Actions';
     var btnGrid = document.createElement('div');
     btnGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
@@ -1825,7 +1825,7 @@ RPGACE.register('feynman', {
       var concept = title.textContent.trim();
       var btn = document.createElement('button');
       btn.className = 'feynman-enc-btn';
-      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A8CCC;padding:3px 8px;border-radius:4px;cursor:pointer;margin-left:8px;vertical-align:middle';
+      btn.style.cssText = 'font-size:11px;font-family:Rajdhani,sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A8CCC;padding:3px 8px;border-radius:4px;cursor:pointer;margin-left:8px;vertical-align:middle';
       btn.textContent = '\uD83E\uDDE0 Feynman';
       btn.onclick = function(e) {
         e.stopPropagation();
@@ -1845,7 +1845,7 @@ RPGACE.register('feynman', {
       if (!agenda || agenda.category !== 'learning') return;
       var btn = document.createElement('button');
       btn.className = 'feynman-card-btn';
-      btn.style.cssText = 'font-size:10px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A8CCC;padding:3px 8px;border-radius:4px;cursor:pointer;margin-top:4px;display:block';
+      btn.style.cssText = 'font-size:11px;font-family:Rajdhani,sans-serif;font-weight:700;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);color:#4A8CCC;padding:3px 8px;border-radius:4px;cursor:pointer;margin-top:4px;display:block';
       btn.textContent = '\uD83E\uDDE0 Feynman Test';
       btn.onclick = function(e) {
         e.stopPropagation();
@@ -1895,7 +1895,7 @@ RPGACE.register('feynman', {
           '<div id="feynman-concept" style="font-size:15px;font-weight:700;color:#D4DAF5;margin-top:2px">' + concept + '</div>',
         '</div>',
         '<div style="display:flex;align-items:center;gap:10px">',
-          '<div id="feynman-phase-badge" style="font-size:10px;font-weight:700;letter-spacing:1px;color:#4A8CCC;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:10px;padding:3px 10px">Phase 1/3</div>',
+          '<div id="feynman-phase-badge" style="font-size:11px;font-weight:700;letter-spacing:1px;color:#4A8CCC;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:10px;padding:3px 10px">Phase 1/3</div>',
           '<button onclick="RPGACE.modules.feynman.closePanel()" style="background:none;border:none;color:rgba(226,226,236,0.4);cursor:pointer;font-size:18px;line-height:1">\u00D7</button>',
         '</div>',
       '</div>',
@@ -2068,11 +2068,11 @@ RPGACE.register('feynman', {
     var actions = document.createElement('div');
     actions.style.cssText = 'display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06)';
     actions.innerHTML = [
-      '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:4px">Session saved</div>',
+      '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.4);text-transform:uppercase;margin-bottom:4px">Session saved</div>',
       '<div style="display:flex;gap:8px">',
         '<div style="flex:1;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:7px;padding:10px;text-align:center">',
           '<div style="font-size:22px;font-weight:700;color:#4A8CCC;font-family:Cinzel,serif">' + score + '<span style="font-size:12px">/10</span></div>',
-          '<div style="font-size:10px;color:rgba(226,226,236,0.5);margin-top:2px">Feynman Score</div>',
+          '<div style="font-size:11px;color:rgba(226,226,236,0.5);margin-top:2px">Feynman Score</div>',
         '</div>',
         '<div style="flex:2;display:flex;flex-direction:column;gap:5px">',
           score < 7
@@ -3452,7 +3452,7 @@ RPGACE.register('taxonomyReviewQueue', {
         box.appendChild(closeBtn);
 
         var title = document.createElement('div');
-        title.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+        title.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
         title.textContent = 'Taxonomy Review Queue';
         var sub = document.createElement('div');
         sub.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
@@ -3482,14 +3482,14 @@ RPGACE.register('taxonomyReviewQueue', {
           var isPhylumPath = !!(p.proposed_steps && p.proposed_steps.engine === 'phylum_path');
           var isConceptFusion = !!(p.proposed_steps && p.proposed_steps.engine === 'concept_fusion');
           var srcEl = document.createElement('div');
-          srcEl.style.cssText = 'font-size:9px;color:' + (isConceptFusion ? 'rgba(52,152,219,0.7)' : isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
+          srcEl.style.cssText = 'font-size:11px;color:' + (isConceptFusion ? 'rgba(52,152,219,0.7)' : isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
           srcEl.textContent = isConceptFusion ? '🌌 Concept Fusion' : (isPhylumPath ? '🧬 Phylum Path · ' : '') + (sourceLabels[p.source_type] || p.source_type);
           head.appendChild(pathEl); head.appendChild(srcEl);
           row.appendChild(head);
 
           if (p.matched_existing_node_id && !isPhylumPath && !isConceptFusion) {
             var warn = document.createElement('div');
-            warn.style.cssText = 'font-size:10px;color:#CC4A4A;margin-bottom:8px;';
+            warn.style.cssText = 'font-size:11px;color:#CC4A4A;margin-bottom:8px;';
             warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
             row.appendChild(warn);
           }
@@ -3580,7 +3580,7 @@ RPGACE.register('taxonomyReviewQueue', {
             row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(52,152,219,0.04);border:1px solid rgba(52,152,219,0.2);border-radius:8px;';
 
             var head = document.createElement('div');
-            head.style.cssText = 'font-size:9px;font-weight:700;color:rgba(52,152,219,0.7);margin-bottom:6px;';
+            head.style.cssText = 'font-size:11px;font-weight:700;color:rgba(52,152,219,0.7);margin-bottom:6px;';
             head.textContent = '🔗 Fusion Link';
             row.appendChild(head);
 
@@ -3890,7 +3890,7 @@ RPGACE.register('agendaReminder', {
 
       var btn = document.createElement('button');
       btn.textContent = '🔔 Reminder';
-      btn.style.cssText = 'background:none;border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:4px;padding:3px 9px;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;';
+      btn.style.cssText = 'background:none;border:1px solid rgba(201,168,76,0.3);color:#C9A84C;border-radius:4px;padding:3px 9px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;font-weight:700;';
       btn.onclick = function(e) {
         e.stopPropagation();
         self._show(id);
@@ -3913,7 +3913,7 @@ RPGACE.register('agendaReminder', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:22px 26px;width:min(440px,95vw);';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;';
     eyebrow.textContent = '🔔 Reminder';
 
     var title = document.createElement('div');
@@ -4041,7 +4041,7 @@ RPGACE.register('scheduleOracle', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Schedule Oracle · Phase 1';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
@@ -4154,7 +4154,7 @@ RPGACE.register('scheduleOracle', {
       box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.3);border-radius:12px;padding:24px 28px;width:min(480px,95vw);';
 
       var eyebrow = document.createElement('div');
-      eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
+      eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
       eyebrow.textContent = 'Option ' + (idx + 1) + ' of ' + steps.length;
       var stepTitle = document.createElement('div');
       stepTitle.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:8px;';
@@ -4353,7 +4353,7 @@ RPGACE.register('intelDelete', {
     hdr.style.cssText = 'padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0;';
     var htxt = document.createElement('div');
     var ht = document.createElement('div');
-    ht.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);margin-bottom:4px;text-transform:uppercase;';
+    ht.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);margin-bottom:4px;text-transform:uppercase;';
     ht.textContent = 'Encyclopedia Preview';
     var hs = document.createElement('div');
     hs.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;line-height:1.3;max-width:440px;';
@@ -4436,7 +4436,7 @@ RPGACE.register('intelDelete', {
       // Expand indicator
       var expInd = document.createElement('span');
       expInd.textContent = '▸';
-      expInd.style.cssText = 'font-size:9px;color:var(--muted);flex-shrink:0;transition:transform .15s;';
+      expInd.style.cssText = 'font-size:11px;color:var(--muted);flex-shrink:0;transition:transform .15s;';
 
       var left = document.createElement('div');
       left.style.cssText = 'flex:1;min-width:0;';
@@ -4444,7 +4444,7 @@ RPGACE.register('intelDelete', {
       titleEl.style.cssText = 'font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
       titleEl.textContent = title;
       var meta = document.createElement('div');
-      meta.style.cssText = 'font-size:10px;color:var(--muted);margin-top:1px;';
+      meta.style.cssText = 'font-size:11px;color:var(--muted);margin-top:1px;';
       meta.textContent = (entry.creator || '') + (entry.date ? ' · ' + self._fmtDate(entry.date) : '');
       left.appendChild(titleEl); left.appendChild(meta);
 
@@ -4452,7 +4452,7 @@ RPGACE.register('intelDelete', {
       right.style.cssText = 'display:flex;align-items:center;gap:6px;flex-shrink:0;';
 
       var bar = document.createElement('div');
-      bar.style.cssText = 'font-size:9px;color:var(--muted);';
+      bar.style.cssText = 'font-size:11px;color:var(--muted);';
       bar.textContent = '█'.repeat(s) + '░'.repeat(10 - s);
 
       var scoreEl = document.createElement('div');
@@ -4636,7 +4636,7 @@ RPGACE.register('intelDelete', {
   _mkBtn: function(cb) {
     var btn = document.createElement('button');
     btn.textContent = 'DEL';
-    btn.style.cssText = 'background:rgba(226,84,84,0.12);border:1px solid rgba(226,84,84,0.35);color:rgba(226,84,84,0.85);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;display:block;';
+    btn.style.cssText = 'background:rgba(226,84,84,0.12);border:1px solid rgba(226,84,84,0.35);color:rgba(226,84,84,0.85);border-radius:4px;padding:3px 8px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;display:block;';
     btn.onclick = function(e) { e.stopPropagation(); cb(); };
     return btn;
   },
@@ -4759,8 +4759,8 @@ RPGACE.register('intelDelete', {
     s.style.cssText = 'margin-top:32px;border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;padding-bottom:32px;';
     var hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;';
-    var htxt = el('div','font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.7);text-transform:uppercase;','BIBLIOGRAPHY · ' + bib.length + ' SOURCES');
-    var clr = el('button','background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:4px;padding:3px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;','Clear');
+    var htxt = el('div','font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.7);text-transform:uppercase;','BIBLIOGRAPHY · ' + bib.length + ' SOURCES');
+    var clr = el('button','background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:4px;padding:3px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;','Clear');
     clr.onclick = function() { localStorage.removeItem('rpgace_intel_bibliography'); s.remove(); };
     hdr.appendChild(htxt); hdr.appendChild(clr); s.appendChild(hdr);
     function el(tag,css,txt){var e=document.createElement(tag);e.style.cssText=css||'';if(txt!==undefined)e.textContent=txt;return e;}
@@ -4851,7 +4851,7 @@ RPGACE.register('dashDeck', {
       '.dd-card:nth-child(12){animation-delay:.55s}' +
       '.dd-card:hover{border-color:var(--border2)}.dd-card:active{transform:translateY(0)}' +
       '@media (hover:hover) and (pointer:fine){.dd-card:hover{transform:translateY(-2px)}}' +
-      '.dd-eyebrow{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
+      '.dd-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase}' +
       '.dd-card h3{font-size:14px;font-weight:700;color:var(--text);letter-spacing:1px;font-family:Rajdhani,sans-serif}' +
       '.dd-card p{font-size:12px;color:var(--muted);line-height:1.6}' +
       '.dd-glance{font-size:11px;color:var(--muted)}' +
@@ -4861,7 +4861,7 @@ RPGACE.register('dashDeck', {
       '#dd-needs .dd-story h2{font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);margin-bottom:8px;font-family:Rajdhani,sans-serif}' +
       '#dd-needs .dd-story p{font-size:13px;color:var(--muted);line-height:1.65;max-width:56ch}' +
       '.dd-glancebox{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}' +
-      '.dd-glancebox .dd-gtitle{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}' +
+      '.dd-glancebox .dd-gtitle{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}' +
       '.dd-glancebox ul{margin:0;padding:0}' +
       '.dd-glancebox li{list-style:none;font-size:12px;font-weight:600;line-height:1.7;color:var(--text);cursor:pointer;min-height:30px;display:flex;align-items:center}' +
       '.dd-glancebox li::before{content:"\\2726";color:var(--gold);margin-right:8px}' +
@@ -4869,7 +4869,7 @@ RPGACE.register('dashDeck', {
       // Shared popup scaffolding (P2-P5): overlay + box use existing tokens
       // only; L3 overlay shadow is the single permitted shadow (DESIGN.md §6).
       '.dd-pop-box{box-shadow:0 12px 40px rgba(0,0,0,.5)}' +
-      '.dd-pop-gtitle{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px 0}' +
+      '.dd-pop-gtitle{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px 0}' +
       '.dd-pop-gtitle:first-child{margin-top:0}' +
       '.dd-pop-row{display:flex;align-items:center;gap:10px;min-height:40px;padding:9px 11px;margin-bottom:6px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s}' +
       '.dd-pop-row:hover{border-color:var(--border2)}' +
@@ -4877,7 +4877,7 @@ RPGACE.register('dashDeck', {
       '.dd-pop-rtitle{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}' +
       '.dd-pop-rdesc{font-size:11px;color:var(--muted);line-height:1.4}' +
       '.dd-pop-sec .dd-pop-rtitle{font-size:12px;color:var(--muted);font-weight:600}' +
-      '.dd-chip{display:inline-block;border-radius:10px;padding:2px 9px;font-size:10px;font-weight:700}' +
+      '.dd-chip{display:inline-block;border-radius:10px;padding:2px 9px;font-size:11px;font-weight:700}' +
       '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}.dd-pop-row{min-height:44px}#kg-grid{grid-template-columns:1fr !important}}' +
       '@media (prefers-reduced-motion:reduce){.dd-card,#dd-needs{animation:none !important}}';
     document.head.appendChild(st);
@@ -4924,6 +4924,14 @@ RPGACE.register('dashDeck', {
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { var d = RPGACE.modules.dashDeck; d._prefillOracle(d.MORNING_PROMPT); } },
     { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
     { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
+    // /Engineer Goal 1 (July 28) — videoPipeline's own vp-widget was never
+    // migrated into this card system when dashDeck was built July 20; it
+    // was still directly appending itself to #page-dashboard outside the
+    // grid, and video_jobs has 0 real rows (confirmed via Supabase), so
+    // this was almost certainly sitting as a stray, non-integrated block
+    // every time the dashboard rendered. Same relocate-on-open pattern as
+    // Content Pipeline above, not a new mechanism.
+    { key: 'videoPipeline', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📹', name: 'Video Pipeline', desc: 'Track a beat through raw footage, edit, render, and export — no rendering happens here, just the real stages.', go: function() { RPGACE.modules.dashDeck._openVideoPipeline(); } },
     { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
     { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
     { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
@@ -4931,7 +4939,7 @@ RPGACE.register('dashDeck', {
   ],
 
   _inject: function() {
-    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._refreshGlance(); return; }
+    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._stashWidget('vp-widget'); this._refreshGlance(); return; }
     var page = document.getElementById('page-dashboard');
     if (!page) return;
     this._injectStyles();
@@ -5132,7 +5140,7 @@ RPGACE.register('dashDeck', {
     box.style.cssText = 'background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px 28px;width:min(' + (opts.width || '600px') + ',95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
     if (opts.eyebrow) {
       var eb = document.createElement('div');
-      eb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;color:' + (opts.accent || 'var(--gold)') + ';';
+      eb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;color:' + (opts.accent || 'var(--gold)') + ';';
       eb.textContent = opts.eyebrow;
       box.appendChild(eb);
     }
@@ -5473,7 +5481,54 @@ RPGACE.register('dashDeck', {
     body.appendChild(btn);
     var foot = document.createElement('div');
     foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-    foot.textContent = '🎥 Video Pipeline joins this flow after taxonomy + web-design phases — by design.';
+    // July 28: this used to say "Video Pipeline joins this flow... by
+    // design" - stale the moment Video Pipeline got its own real card
+    // (below), since that footer implied it was still a future, unconnected
+    // concern rather than an actually-reachable popup.
+    foot.textContent = '🎥 Video Pipeline tracking lives in its own card, right below this one.';
+    body.appendChild(foot);
+  },
+
+  // /Engineer Goal 1 (July 28) — videoPipeline's vp-widget was never given
+  // a real dashDeck home when this popup system was built July 20; it kept
+  // directly injecting itself into #page-dashboard outside the card grid.
+  // Exact same relocate-on-open/stash-on-close pattern as _openPipeline
+  // above, applied to the one widget that was missed.
+  _openVideoPipeline: function() {
+    var self = this;
+    var w = document.getElementById('vp-widget');
+    if (!w) {
+      var vp = RPGACE.modules.videoPipeline;
+      if (vp && vp._injectWidget) { try { vp._injectWidget(); } catch (e) {} }
+      w = document.getElementById('vp-widget');
+    }
+    var pop = self._popup({
+      eyebrow: '📹 Video Pipeline',
+      title: 'Beat logged → raw → edited → rendered → exported',
+      accent: 'var(--blue)',
+      width: '680px',
+      closeLabel: 'Close',
+      onClose: function() {
+        self._stashWidget('vp-widget', true);
+        delete self._widgetPopups['vp-widget'];
+      }
+    });
+    self._widgetPopups['vp-widget'] = pop.close;
+    var body = pop.box;
+    if (w) {
+      w.style.marginBottom = '0';
+      body.appendChild(w);
+      var vp2 = RPGACE.modules.videoPipeline;
+      if (vp2 && vp2._refreshWidget) { try { vp2._refreshWidget(); } catch (e) {} }
+    } else {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
+      msg.textContent = 'Video Pipeline is still loading — close this and try again in a moment.';
+      body.appendChild(msg);
+    }
+    var foot = document.createElement('div');
+    foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
+    foot.textContent = 'No rendering happens here — this just tracks the real stages and where each file/URL actually lives.';
     body.appendChild(foot);
   },
 
@@ -5715,7 +5770,7 @@ RPGACE.register('videoSummary', {
       '.vs-card{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:11px}' +
       '.vs-clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}' +
       '.vs-btn{background:none;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;min-height:38px}' +
-      '.vs-chip{display:inline-block;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700;margin-right:4px}';
+      '.vs-chip{display:inline-block;border-radius:10px;padding:2px 8px;font-size:11px;font-weight:700;margin-right:4px}';
     document.head.appendChild(st);
   },
 
@@ -5784,7 +5839,7 @@ RPGACE.register('videoSummary', {
     var bullets = kl.slice(0, 3).map(function(b) { return '• ' + self._esc(self._coerce(b)); }).join('<br>');
     var html = bullets ? '<div style="font-size:12px;color:var(--muted)">' + bullets + '</div>' : '';
     if (this._proposals === null) {
-      html += '<div style="font-size:10px;color:var(--muted);margin-top:4px">taxonomy placements loading…</div>';
+      html += '<div style="font-size:11px;color:var(--muted);margin-top:4px">taxonomy placements loading…</div>';
     }
     return html;
   },
@@ -5792,7 +5847,7 @@ RPGACE.register('videoSummary', {
   _bulletGroupHtml: function(label, items) {
     var self = this;
     if (!items || !items.length) return '';
-    return '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 4px">' + label + '</div>' +
+    return '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 4px">' + label + '</div>' +
       '<div style="font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7">' +
       items.map(function(b) { return '• ' + self._esc(self._coerce(b)); }).join('<br>') + '</div>';
   },
@@ -5800,7 +5855,7 @@ RPGACE.register('videoSummary', {
   _proseHtml: function(r) {
     var ins = r.insights || {};
     var enc = ins.encyclopedia_entry || {};
-    var html = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 6px">Summary</div>';
+    var html = '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 6px">Summary</div>';
     html += this._verdictHtml(r);
     if (enc.summary) html += '<div style="font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;margin-bottom:6px">' + this._esc(enc.summary) + '</div>';
     html += this._bulletGroupHtml('Key learnings', enc.key_learnings);
@@ -5811,11 +5866,11 @@ RPGACE.register('videoSummary', {
 
   _placementsHtml: function(props, sid) {
     var self = this;
-    var html = '<div style="font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin:14px 0 6px">Taxonomy placements</div>';
+    var html = '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin:14px 0 6px">Taxonomy placements</div>';
     if (props.length) {
       html += props.map(function(p) { return self._placementRowHtml(p, false); }).join('');
     } else if (this._proposals === null) {
-      html += '<div style="font-size:10px;color:var(--muted)">taxonomy placements loading…</div>';
+      html += '<div style="font-size:11px;color:var(--muted)">taxonomy placements loading…</div>';
     } else {
       html += '<div style="font-size:12px;color:var(--muted);margin-bottom:6px">No placements yet — this video was analysed before per-insight placement existed.</div>' +
         '<button class="vs-btn" data-vs-action="retro" id="vs-retro-x-' + sid + '" style="color:var(--purple);border-color:rgba(155,89,182,0.4)">🧬 Run Phylum Path</button>';
@@ -6211,11 +6266,11 @@ RPGACE.register('knowledgeGap', {
 
     var badge = document.createElement('div');
     badge.id = 'kg-badge';
-    badge.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(42,191,176,0.7);background:rgba(42,191,176,0.08);border:1px solid rgba(42,191,176,0.2);border-radius:10px;padding:3px 10px;';
+    badge.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(42,191,176,0.7);background:rgba(42,191,176,0.08);border:1px solid rgba(42,191,176,0.2);border-radius:10px;padding:3px 10px;';
     badge.textContent = 'Loading...';
 
     var refreshBtn = document.createElement('button');
-    refreshBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);cursor:pointer;font-size:10px;padding:3px 10px;margin-left:8px;';
+    refreshBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);cursor:pointer;font-size:11px;padding:3px 10px;margin-left:8px;';
     refreshBtn.textContent = '↻';
     refreshBtn.onclick = function() { self._load(); };
 
@@ -6305,7 +6360,7 @@ RPGACE.register('knowledgeGap', {
       card.style.cssText = 'background:' + gapBg + ';border:1px solid ' + gapBorder + ';border-radius:8px;padding:14px 16px;position:relative;';
 
       var phylumLabel = document.createElement('div');
-      phylumLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + gapColor + ';opacity:0.7;margin-bottom:4px;';
+      phylumLabel.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + gapColor + ';opacity:0.7;margin-bottom:4px;';
       phylumLabel.textContent = node.phylum_number ? RPGACE.utils.phylumLabel(node.phylum_number) : 'Phylum ? · Unknown';
 
       var conceptName = document.createElement('div');
@@ -6316,15 +6371,15 @@ RPGACE.register('knowledgeGap', {
       statsRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:10px;';
 
       var gapStat = document.createElement('div');
-      gapStat.style.cssText = 'font-size:10px;color:' + gapColor + ';font-weight:700;';
+      gapStat.style.cssText = 'font-size:11px;color:' + gapColor + ';font-weight:700;';
       gapStat.textContent = 'Gap ' + gap.toFixed(1);
 
       var studiedStat = document.createElement('div');
-      studiedStat.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);';
+      studiedStat.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);';
       studiedStat.textContent = studied + 'x studied';
 
       var appliedStat = document.createElement('div');
-      appliedStat.style.cssText = 'font-size:10px;color:' + (applied ? '#4CAF82' : 'rgba(226,226,236,0.2)') + ';';
+      appliedStat.style.cssText = 'font-size:11px;color:' + (applied ? '#4CAF82' : 'rgba(226,226,236,0.2)') + ';';
       appliedStat.textContent = applied ? '✓ applied' : '○ not applied';
 
       statsRow.appendChild(gapStat);
@@ -6335,7 +6390,7 @@ RPGACE.register('knowledgeGap', {
       btnRow.style.cssText = 'display:flex;gap:6px;';
 
       var studyBtn = document.createElement('button');
-      studyBtn.style.cssText = 'flex:1;padding:6px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.7);font-size:10px;font-weight:600;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      studyBtn.style.cssText = 'flex:1;padding:6px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.7);font-size:11px;font-weight:600;cursor:pointer;font-family:Rajdhani,sans-serif;';
       studyBtn.textContent = '🧠 Study Now';
       studyBtn.onclick = function() {
         // If this widget is currently hosted inside dashDeck's Knowledge Gaps
@@ -6356,7 +6411,7 @@ RPGACE.register('knowledgeGap', {
       };
 
       var askBtn = document.createElement('button');
-      askBtn.style.cssText = 'flex:1;padding:6px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.7);font-size:10px;font-weight:600;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      askBtn.style.cssText = 'flex:1;padding:6px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.7);font-size:11px;font-weight:600;cursor:pointer;font-family:Rajdhani,sans-serif;';
       askBtn.textContent = '⚡ Apply Tonight';
       askBtn.onclick = function() {
         RPGACE.utils.sendToOracle('Give me one specific FL Studio exercise I can do tonight to apply this concept in a beat: ' + node.concept + '. Be specific, step-by-step, and give me an exact task I can complete in 30 minutes.');
@@ -6486,7 +6541,7 @@ RPGACE.register('taxonomyTree', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.25);border-radius:12px;padding:24px 28px;width:min(520px,95vw);';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Taxonomy Tree · Manual Entry';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
@@ -6623,7 +6678,7 @@ RPGACE.register('taxonomyTree', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:80vh;overflow-y:auto;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Oracle already named these — pick which to propose';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
@@ -6638,7 +6693,7 @@ RPGACE.register('taxonomyTree', {
       cb.style.cssText = 'margin-top:3px;flex-shrink:0;';
       var label = document.createElement('div');
       label.innerHTML = '<div style="font-size:12px;font-weight:600;color:#D4DAF5;">' + c.name + '</div>' +
-        '<div style="font-size:10px;color:rgba(226,226,236,0.35);margin-top:2px;">' + c.fullText.slice(0, 100) + '</div>';
+        '<div style="font-size:11px;color:rgba(226,226,236,0.35);margin-top:2px;">' + c.fullText.slice(0, 100) + '</div>';
       row.appendChild(cb); row.appendChild(label);
       box.appendChild(row);
     });
@@ -6872,7 +6927,7 @@ RPGACE.register('taxonomyTree', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Proposed Taxonomy Lineage · ' + proposal.sourceType;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
@@ -6915,7 +6970,7 @@ RPGACE.register('taxonomyTree', {
         var row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px;';
         var depthLabel = document.createElement('span');
-        depthLabel.style.cssText = 'font-size:9px;color:rgba(155,89,182,0.5);flex-shrink:0;min-width:16px;';
+        depthLabel.style.cssText = 'font-size:11px;color:rgba(155,89,182,0.5);flex-shrink:0;min-width:16px;';
         depthLabel.textContent = (i + 1) + '.';
         var stepInput = document.createElement('input');
         stepInput.type = 'text';
@@ -6954,7 +7009,7 @@ RPGACE.register('taxonomyTree', {
     // Restored: this was referenced (renderSteps calls it on every edit) but
     // had no definition anywhere in this function - dead calls found July 8.
     var summaryLabel = document.createElement('div');
-    summaryLabel.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(155,89,182,0.5);margin-bottom:6px;';
+    summaryLabel.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(155,89,182,0.5);margin-bottom:6px;';
     summaryLabel.textContent = 'What each step means';
     box.appendChild(summaryLabel);
 
@@ -6974,7 +7029,7 @@ RPGACE.register('taxonomyTree', {
         var explainerText = proposal.explainers[i];
         if (explainerText) {
           var explLine = document.createElement('div');
-          explLine.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.5);margin-top:3px;line-height:1.5;padding-left:' + (i * 10) + 'px;';
+          explLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);margin-top:3px;line-height:1.5;padding-left:' + (i * 10) + 'px;';
           explLine.textContent = explainerText;
           row.appendChild(explLine);
         }
@@ -7260,7 +7315,7 @@ RPGACE.register('phylumPath', {
       if (!enabledInGroup.length) return;
       var lbl = document.createElement('div');
       lbl.textContent = group.label;
-      lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin:10px 0 4px;';
+      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin:10px 0 4px;';
       wrap.appendChild(lbl);
       enabledInGroup.forEach(function(num) {
         var active = (num === self.PHYLUM_NUM);
@@ -7272,7 +7327,7 @@ RPGACE.register('phylumPath', {
         nameEl.textContent = tt ? tt.PHYLUM_NAMES[num] : ('Phylum ' + num);
         var glossEl = document.createElement('div');
         glossEl.textContent = tt ? (tt.PHYLUM_ENGLISH[num] || '') : '';
-        glossEl.style.cssText = 'font-size:10px;font-weight:400;color:rgba(226,226,236,0.4);margin-top:1px;';
+        glossEl.style.cssText = 'font-size:11px;font-weight:400;color:rgba(226,226,236,0.4);margin-top:1px;';
         row.appendChild(nameEl); row.appendChild(glossEl);
         row.onclick = function() { self._switchPhylum(num); };
         wrap.appendChild(row);
@@ -7562,7 +7617,7 @@ RPGACE.register('phylumPath', {
 
     var badge = document.createElement('button');
     badge.textContent = '🧬 Add to Phylum Path? (' + m.name + ')';
-    badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:12px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     // Fixed July 17: this used to just open the side panel pre-filled,
     // requiring a SECOND click on "Place this insight" inside it before
     // decidePlacement()/the confirm popup ever ran - easy to miss (a real
@@ -7597,7 +7652,7 @@ RPGACE.register('phylumPath', {
     var ht = document.createElement('div');
     var lb = document.createElement('div');
     lb.textContent = 'PHYLUM PATH';
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
     sub.className = 'pp-panel-sub';
     sub.textContent = RPGACE.utils.phylumLabel(self.PHYLUM_NUM);
@@ -7620,13 +7675,13 @@ RPGACE.register('phylumPath', {
     var purposeNote = document.createElement('div');
     purposeNote.className = 'pp-panel-purpose';
     purposeNote.textContent = RPGACE.utils.phylumContext(self.PHYLUM_NUM);
-    purposeNote.style.cssText = 'font-size:10px;color:rgba(61,170,110,0.6);margin-bottom:14px;letter-spacing:0.3px;line-height:1.5;border-left:2px solid rgba(61,170,110,0.3);padding-left:8px;';
+    purposeNote.style.cssText = 'font-size:11px;color:rgba(61,170,110,0.6);margin-bottom:14px;letter-spacing:0.3px;line-height:1.5;border-left:2px solid rgba(61,170,110,0.3);padding-left:8px;';
     body.appendChild(purposeNote);
 
     // Manual insight entry
     var entryLbl = document.createElement('div');
     entryLbl.textContent = 'Add an insight';
-    entryLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:6px;';
+    entryLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:6px;';
     body.appendChild(entryLbl);
 
     var tt0 = RPGACE.modules.taxonomyTree;
@@ -7672,7 +7727,7 @@ RPGACE.register('phylumPath', {
 
     var treeLbl = document.createElement('div');
     treeLbl.textContent = 'Current structure';
-    treeLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
+    treeLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
     body.appendChild(treeLbl);
 
     var treeList = document.createElement('div');
@@ -7705,14 +7760,14 @@ RPGACE.register('phylumPath', {
           var row = document.createElement('div');
           row.style.cssText = 'padding:8px 10px;border:1px solid rgba(255,255,255,0.05);border-radius:6px;margin-bottom:6px;background:rgba(255,255,255,0.02);';
           var rankLbl = document.createElement('div');
-          rankLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);margin-bottom:2px;';
+          rankLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);margin-bottom:2px;';
           rankLbl.textContent = (tt ? tt.rankNameForDepth(node.depth) : 'Depth ' + node.depth) + (node.node_type === 'leaf' ? ' · leaf' : '');
           var nameEl = document.createElement('div');
           nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;margin-bottom:6px;';
           nameEl.textContent = node.name;
           var artBtn = document.createElement('button');
           artBtn.textContent = '📄 Generate/Refresh Article';
-          artBtn.style.cssText = 'padding:3px 8px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:#9B6EC8;font-size:9px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          artBtn.style.cssText = 'padding:3px 8px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           artBtn.onclick = function() { self._generateArticle(node); };
           row.appendChild(rankLbl); row.appendChild(nameEl); row.appendChild(artBtn);
           treeList.appendChild(row);
@@ -7912,7 +7967,7 @@ RPGACE.register('phylumPath', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Phylum Path · Confirm Placement';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
@@ -7942,7 +7997,7 @@ RPGACE.register('phylumPath', {
         var row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px;';
         var depthLabel = document.createElement('span');
-        depthLabel.style.cssText = 'font-size:9px;color:rgba(61,170,110,0.5);flex-shrink:0;min-width:16px;';
+        depthLabel.style.cssText = 'font-size:11px;color:rgba(61,170,110,0.5);flex-shrink:0;min-width:16px;';
         depthLabel.textContent = (i + 1) + '.';
         var stepInput = document.createElement('input');
         stepInput.type = 'text'; stepInput.value = step;
@@ -8345,7 +8400,7 @@ RPGACE.register('phylumPath', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Phylum Path · Confirm Article';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:12px;';
@@ -8634,14 +8689,14 @@ RPGACE.register('phylumPath', {
       if (focus && siblings.length) {
         var lbl = document.createElement('div');
         lbl.textContent = 'Other ' + (tt ? tt.rankNameForDepth(focus.depth) : 'items') + ' here:';
-        lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.3);margin-bottom:6px;';
+        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.3);margin-bottom:6px;';
         sibWrap.appendChild(lbl);
         var row = document.createElement('div');
         row.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
         siblings.forEach(function(s) {
           var chip = document.createElement('button');
           chip.textContent = s.name;
-          chip.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          chip.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           chip.onclick = function() { self._loadNodesAndRender(s.id); };
           row.appendChild(chip);
         });
@@ -8675,7 +8730,7 @@ RPGACE.register('phylumPath', {
     if (children.length) {
       var childLbl = document.createElement('div');
       childLbl.textContent = focus ? 'Drill in' : 'Orders';
-      childLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin:16px 0 8px;';
+      childLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin:16px 0 8px;';
       body.appendChild(childLbl);
       children.forEach(function(c) {
         var row = document.createElement('div');
@@ -8683,7 +8738,7 @@ RPGACE.register('phylumPath', {
         var left = document.createElement('div');
         var rankLbl = document.createElement('div');
         rankLbl.textContent = (tt ? tt.rankNameForDepth(c.depth) : 'Depth ' + c.depth) + (c.node_type === 'leaf' ? ' · leaf' : '');
-        rankLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);';
+        rankLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(61,170,110,0.6);';
         var nameLbl = document.createElement('div');
         nameLbl.textContent = c.name;
         nameLbl.style.cssText = 'font-size:13px;font-weight:600;color:#D4DAF5;';
@@ -8781,7 +8836,7 @@ RPGACE.register('phylumPath', {
 
           var lbl = document.createElement('div');
           lbl.textContent = '🔗 Fusion connections';
-          lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(52,152,219,0.6);margin:14px 0 8px;';
+          lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(52,152,219,0.6);margin:14px 0 8px;';
           wrap.appendChild(lbl);
 
           links.forEach(function(l) {
@@ -8799,7 +8854,7 @@ RPGACE.register('phylumPath', {
 
             if (l.link_insight) {
               var insightEl = document.createElement('div');
-              insightEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.55);font-style:italic;';
+              insightEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);font-style:italic;';
               insightEl.textContent = l.link_insight;
               row.appendChild(insightEl);
             }
@@ -8859,7 +8914,7 @@ RPGACE.register('phylumPath', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(52,152,219,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(52,152,219,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(52,152,219,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '🔗 Fusion Connection';
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
@@ -8902,7 +8957,7 @@ RPGACE.register('phylumPath', {
     renderArticleBox(link.link_article && link.link_article.generated ? '🔄 Refresh Interlink Article' : '📄 Generate Interlink Article', link.link_article ? link.link_article.generated : null);
 
     var exitLbl = document.createElement('div');
-    exitLbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:6px;';
+    exitLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:6px;';
     exitLbl.textContent = 'Exit into either side this is made from';
     box.appendChild(exitLbl);
 
@@ -9033,7 +9088,7 @@ RPGACE.register('bookworm', {
     hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
     var titleEl = document.createElement('div');
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:3px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:3px;';
     eyebrow.textContent = 'Bookworm';
     var titleText = document.createElement('div');
     titleText.className = 'section-title';
@@ -9227,7 +9282,7 @@ RPGACE.register('bookworm', {
             barOuter.appendChild(barInner);
             var subEl = document.createElement('div');
             subEl.textContent = 'Chapter ' + Math.min(book.current_chapter_index + 1, total) + ' of ' + total;
-            subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
+            subEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
             card.appendChild(topRow); card.appendChild(barOuter); card.appendChild(subEl);
             list.appendChild(card);
           });
@@ -9492,7 +9547,7 @@ RPGACE.register('bookworm', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📚 Contents Found — ' + book.title;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
@@ -9511,7 +9566,7 @@ RPGACE.register('bookworm', {
       if (c.keywords && c.keywords.length) {
         var kwEl = document.createElement('div');
         kwEl.textContent = c.keywords.join(', ') + (c.suggested_phylum && tt ? ' — ' + tt.PHYLUM_NAMES[c.suggested_phylum] : '');
-        kwEl.style.cssText = 'font-size:10px;color:rgba(155,89,182,0.6);margin-top:2px;';
+        kwEl.style.cssText = 'font-size:11px;color:rgba(155,89,182,0.6);margin-top:2px;';
         row.appendChild(kwEl);
       }
       list.appendChild(row);
@@ -9581,7 +9636,7 @@ RPGACE.register('bookworm', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
@@ -9612,7 +9667,7 @@ RPGACE.register('bookworm', {
       nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;';
       var subEl = document.createElement('div');
       subEl.textContent = statusLabel;
-      subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
+      subEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
       textWrap.appendChild(nameEl); textWrap.appendChild(subEl);
       row.appendChild(tickEl); row.appendChild(textWrap);
 
@@ -9656,7 +9711,7 @@ RPGACE.register('bookworm', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '✅ ' + book.title;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
@@ -9699,7 +9754,7 @@ RPGACE.register('bookworm', {
       if (insight.leafStatus === 'failed') {
         var retryBtn = document.createElement('button');
         retryBtn.textContent = '🔁 Retry Leaf Creation';
-        retryBtn.style.cssText = 'margin-top:6px;padding:5px 10px;background:rgba(226,84,84,0.1);border:1px solid rgba(226,84,84,0.3);border-radius:6px;color:#CC4A4A;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        retryBtn.style.cssText = 'margin-top:6px;padding:5px 10px;background:rgba(226,84,84,0.1);border:1px solid rgba(226,84,84,0.3);border-radius:6px;color:#CC4A4A;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
         retryBtn.onclick = function() {
           retryBtn.disabled = true; retryBtn.textContent = '⏳ Retrying...';
           self._patchChapterInsightAt(chapter.id, i, function(current) { return Object.assign({}, current, { leafStatus: 'pending' }); })
@@ -9848,7 +9903,7 @@ RPGACE.register('bookworm', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
@@ -9932,7 +9987,7 @@ RPGACE.register('bookworm', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title;
     var title = document.createElement('div');
     title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
@@ -10484,7 +10539,7 @@ RPGACE.register('bookworm', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = '📖 ' + book.title + ' — ' + chapter.chapter_title + ' — Insight ' + (idx + 1) + '/' + insights.length;
     box.appendChild(eyebrow);
 
@@ -10738,7 +10793,7 @@ RPGACE.register('bookworm', {
         var subEl = document.createElement('div');
         var phylaNames = (row.phyla_touched || []).map(function(n) { return tt ? tt.PHYLUM_NAMES[n] : n; }).join(', ');
         subEl.textContent = row.total_chapters + ' chapters, ' + row.total_insights_placed + ' insights placed' + (phylaNames ? ' — ' + phylaNames : '');
-        subEl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);';
+        subEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
         card.appendChild(nameEl); card.appendChild(subEl);
         list.appendChild(card);
       });
@@ -11578,7 +11633,7 @@ RPGACE.register('config', {
 
       var badge = document.createElement('button');
       badge.textContent = '🌿 ' + matches.length + ' topics';
-      badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      badge.style.cssText = 'margin-top:6px;padding:3px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:12px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
       badge.onclick = function() {
         if (document.getElementById('phyla-badge-detail-' + lastMsg.dataset.phylaScanned + '-open')) {
           var existing = badge.nextElementSibling;
@@ -11604,7 +11659,7 @@ RPGACE.register('config', {
           nodes = nodes || [];
           panel.innerHTML = '';
           var countLabel = document.createElement('div');
-          countLabel.style.cssText = 'font-size:9px;color:rgba(226,226,236,0.25);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;';
+          countLabel.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.25);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;';
           countLabel.textContent = matches.length + ' topics detected · scroll for all';
           panel.appendChild(countLabel);
 
@@ -11631,7 +11686,7 @@ RPGACE.register('config', {
             if (plausible) {
               var proposeBtn = document.createElement('button');
               proposeBtn.textContent = '🌳 Propose lineage';
-              proposeBtn.style.cssText = 'padding:2px 8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:10px;color:#9B6EC8;font-size:9px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+              proposeBtn.style.cssText = 'padding:2px 8px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:10px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
               proposeBtn.onclick = function() {
                 if (RPGACE.modules.taxonomyTree) {
                   var topicGuess = text.slice(0, 300);
@@ -11699,11 +11754,11 @@ RPGACE.register('config', {
       box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:28px 32px;width:min(480px,90vw);';
 
       var eyebrow = document.createElement('div');
-      eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);margin-bottom:12px;text-transform:uppercase;';
+      eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);margin-bottom:12px;text-transform:uppercase;';
       eyebrow.textContent = 'FILL IN THE DETAILS';
 
       var counter = document.createElement('div');
-      counter.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);margin-bottom:8px;';
+      counter.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:8px;';
 
       var label = document.createElement('div');
       label.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;line-height:1.4;';
@@ -11713,7 +11768,7 @@ RPGACE.register('config', {
       inp.placeholder = 'Type your answer here...';
 
       var hint = document.createElement('div');
-      hint.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.25);margin-top:6px;margin-bottom:16px;';
+      hint.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.25);margin-top:6px;margin-bottom:16px;';
       hint.textContent = 'Ctrl+Enter to continue';
 
       var btnRow = document.createElement('div');
@@ -11903,7 +11958,7 @@ RPGACE.register('beatLog', {
     hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
     var title = document.createElement('div');
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
     eyebrow.textContent = 'Beat Log · ' + RPGACE.utils.phylumLabel(16);
     var titleText = document.createElement('div');
     titleText.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;';
@@ -11918,7 +11973,7 @@ RPGACE.register('beatLog', {
     dropZone.style.cssText = 'border:2px dashed rgba(201,168,76,0.2);border-radius:8px;padding:16px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color .2s;';
     var dropText = document.createElement('div');
     dropText.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.35);';
-    dropText.innerHTML = '🎵 Drop your .mp3 / .wav / .flp here to pre-fill fields from filename<br><span style="font-size:10px;opacity:0.6;">e.g. "140bpm_Dminor_dark_fire.mp3" → auto-fills BPM, key, scale, mood, energy</span>';
+    dropText.innerHTML = '🎵 Drop your .mp3 / .wav / .flp here to pre-fill fields from filename<br><span style="font-size:11px;opacity:0.6;">e.g. "140bpm_Dminor_dark_fire.mp3" → auto-fills BPM, key, scale, mood, energy</span>';
     dropZone.appendChild(dropText);
 
     dropZone.addEventListener('dragover', function(e) {
@@ -11966,7 +12021,7 @@ RPGACE.register('beatLog', {
       var wrap = document.createElement('div');
       var lbl = document.createElement('label');
       lbl.textContent = f.label;
-      lbl.style.cssText = 'display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
+      lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
       var inp;
       if (f.type === 'select') {
         inp = document.createElement('select');
@@ -12000,7 +12055,7 @@ RPGACE.register('beatLog', {
     var taxWrap = document.createElement('div');
     taxWrap.style.cssText = 'margin-bottom:14px;';
     var taxLbl = document.createElement('div');
-    taxLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
+    taxLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
     taxLbl.textContent = 'Taxonomy Nodes Applied';
     var taxSearch = document.createElement('input');
     taxSearch.type = 'text';
@@ -12031,7 +12086,7 @@ RPGACE.register('beatLog', {
           chip.dataset.nodeId = node.id;
           chip.dataset.concept = node.concept;
           chip.textContent = node.concept.slice(0, 30) + (node.concept.length > 30 ? '…' : '');
-          chip.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.5);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;transition:background .15s,border-color .15s,color .15s;';
+          chip.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.5);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;transition:background .15s,border-color .15s,color .15s;';
           chip.onclick = function() {
             var active = chip.dataset.active === '1';
             chip.dataset.active = active ? '0' : '1';
@@ -12058,7 +12113,7 @@ RPGACE.register('beatLog', {
       var wrap = document.createElement('div');
       var lbl = document.createElement('label');
       lbl.textContent = f.label;
-      lbl.style.cssText = 'display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
+      lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
       var sel = document.createElement('select');
       sel.id = f.id;
       var blank = document.createElement('option'); blank.value=''; blank.textContent='— select —';
@@ -12078,7 +12133,7 @@ RPGACE.register('beatLog', {
       var wrap = document.createElement('div');
       var lbl = document.createElement('label');
       lbl.textContent = i === 0 ? 'Reference Track / Inspiration' : 'FL Studio Project Path (optional)';
-      lbl.style.cssText = 'display:block;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
+      lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
       var inp = document.createElement('input');
       inp.id = id; inp.type = 'text';
       inp.placeholder = i === 0 ? 'e.g. Central Cee — Obsessed With You' : 'e.g. C:\\Beats\\midnight_cipher.flp';
@@ -12530,7 +12585,7 @@ RPGACE.register('beatLog', {
     var swatch = document.createElement('div');
     swatch.style.cssText = 'width:32px;height:32px;border-radius:6px;background:' + palette.hex + ';border:1px solid rgba(255,255,255,0.1);flex-shrink:0;';
     var palText = document.createElement('div');
-    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#D4DAF5;">' + palette.name + '</div><div style="font-size:10px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
+    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#D4DAF5;">' + palette.name + '</div><div style="font-size:11px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
     palRow.appendChild(swatch); palRow.appendChild(palText);
     output.appendChild(palRow);
 
@@ -12546,7 +12601,7 @@ RPGACE.register('beatLog', {
       var section = document.createElement('div');
       section.style.cssText = 'margin-bottom:12px;';
       var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + tier.color + ';margin-bottom:6px;';
+      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + tier.color + ';margin-bottom:6px;';
       lbl.textContent = tier.label + ' (' + tier.artists.length + ')';
       section.appendChild(lbl);
       var chips = document.createElement('div');
@@ -12621,7 +12676,7 @@ RPGACE.register('refCorpus', {
 
     // Header
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:4px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:4px;';
     eyebrow.textContent = 'Reference Corpus · ' + RPGACE.utils.phylumLabel(8) + ' + ' + RPGACE.utils.phylumLabel(17);
     var titleEl = document.createElement('div');
     titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
@@ -12654,7 +12709,7 @@ RPGACE.register('refCorpus', {
 
     // Bulk add textarea
     var bulkLbl = document.createElement('div');
-    bulkLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.3);margin-bottom:5px;margin-top:10px;';
+    bulkLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.3);margin-bottom:5px;margin-top:10px;';
     bulkLbl.textContent = 'Or bulk add — one per line: Artist, Track Title, BPM, Key, Energy, Mood';
     var bulkArea = document.createElement('textarea');
     bulkArea.id = 'rc-bulk';
@@ -12690,7 +12745,7 @@ RPGACE.register('refCorpus', {
     listWrap.id = 'rc-list';
     listWrap.style.cssText = 'max-height:240px;overflow-y:auto;';
     var listHeader = document.createElement('div');
-    listHeader.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(226,226,236,0.25);margin-bottom:8px;';
+    listHeader.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(226,226,236,0.25);margin-bottom:8px;';
     listHeader.textContent = 'Corpus · 0 tracks';
     listHeader.id = 'rc-list-header';
     listWrap.appendChild(listHeader);
@@ -12798,7 +12853,7 @@ RPGACE.register('refCorpus', {
           name.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;';
           name.textContent = row.artist + ' — ' + row.title;
           var meta = document.createElement('div');
-          meta.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);';
+          meta.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
           var parts = [];
           if (row.bpm) parts.push(row.bpm + ' BPM');
           if (row.key) parts.push(row.key);
@@ -12980,7 +13035,7 @@ RPGACE.register('contentProductionLive', {
     hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
     var titleEl = document.createElement('div');
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:3px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:3px;';
     eyebrow.textContent = 'Content Production Live';
     var titleText = document.createElement('div');
     titleText.className = 'section-title';
@@ -13051,7 +13106,7 @@ RPGACE.register('contentProductionLive', {
           topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
 
           var idBadge = document.createElement('span');
-          idBadge.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(61,170,110,0.7);background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:10px;padding:2px 7px;margin-right:8px;';
+          idBadge.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(61,170,110,0.7);background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:10px;padding:2px 7px;margin-right:8px;';
           idBadge.textContent = 'ConID #' + row.con_id;
 
           var titleSpan = document.createElement('span');
@@ -13059,7 +13114,7 @@ RPGACE.register('contentProductionLive', {
           titleSpan.textContent = row.title;
 
           var statusBadge = document.createElement('span');
-          statusBadge.style.cssText = 'font-size:9px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
+          statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
           statusBadge.textContent = row.status;
 
           topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
@@ -13108,7 +13163,7 @@ RPGACE.register('contentProductionLive', {
           // Swap button
           var swapBtn = document.createElement('button');
           swapBtn.textContent = '⇄ Swap ConID';
-          swapBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:5px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+          swapBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
           swapBtn.onclick = function() {
             // Load all ConIDs and show swap dropdown
             RPGACE.sb.select('content_productions', 'order=con_id.desc&limit=30')
@@ -13124,7 +13179,7 @@ RPGACE.register('contentProductionLive', {
                 (all || []).forEach(function(entry) {
                   var opt = document.createElement('div');
                   opt.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;color:rgba(226,226,236,0.7);';
-                  opt.innerHTML = '<span style="color:rgba(61,170,110,0.7);font-weight:700;margin-right:6px;">ConID #' + entry.con_id + '</span>' + entry.title.slice(0, 45) + (entry.title.length > 45 ? '...' : '') + '<span style="float:right;font-size:9px;color:rgba(226,226,236,0.3);">' + entry.status + '</span>';
+                  opt.innerHTML = '<span style="color:rgba(61,170,110,0.7);font-weight:700;margin-right:6px;">ConID #' + entry.con_id + '</span>' + entry.title.slice(0, 45) + (entry.title.length > 45 ? '...' : '') + '<span style="float:right;font-size:11px;color:rgba(226,226,236,0.3);">' + entry.status + '</span>';
                   opt.onmouseover = function() { opt.style.background = 'rgba(61,170,110,0.08)'; };
                   opt.onmouseout = function() { opt.style.background = 'none'; };
                   opt.onclick = function() {
@@ -13163,7 +13218,7 @@ RPGACE.register('contentProductionLive', {
             var nextStatus = statuses[statusIdx + 1];
             var advBtn = document.createElement('button');
             advBtn.textContent = '→ Mark ' + nextStatus;
-            advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             advBtn.onclick = function() {
               var updates = { status: nextStatus };
               if (nextStatus === 'Posted') updates.posted_at = new Date().toISOString();
@@ -13182,14 +13237,14 @@ RPGACE.register('contentProductionLive', {
               var ytLink = document.createElement('a');
               ytLink.href = row.youtube_url; ytLink.target = '_blank';
               ytLink.textContent = '▶ YouTube';
-              ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#CC4A4A;font-size:10px;text-decoration:none;';
+              ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#CC4A4A;font-size:11px;text-decoration:none;';
               actions.appendChild(ytLink);
             }
             if (row.instagram_url) {
               var igLink = document.createElement('a');
               igLink.href = row.instagram_url; igLink.target = '_blank';
               igLink.textContent = '📸 Instagram';
-              igLink.style.cssText = 'padding:4px 10px;background:rgba(193,53,132,0.08);border:1px solid rgba(193,53,132,0.2);border-radius:5px;color:#E1306C;font-size:10px;text-decoration:none;';
+              igLink.style.cssText = 'padding:4px 10px;background:rgba(193,53,132,0.08);border:1px solid rgba(193,53,132,0.2);border-radius:5px;color:#E1306C;font-size:11px;text-decoration:none;';
               actions.appendChild(igLink);
             }
           }
@@ -13198,7 +13253,7 @@ RPGACE.register('contentProductionLive', {
           if (row.status === 'Filmed' || row.status === 'Edited') {
             var postBtn = document.createElement('button');
             postBtn.textContent = '📋 Add post details';
-            postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             postBtn.onclick = function() { self._showPostDetails(row); };
             actions.appendChild(postBtn);
           }
@@ -13206,7 +13261,7 @@ RPGACE.register('contentProductionLive', {
           // Open in Oracle button
           var oracleBtn = document.createElement('button');
           oracleBtn.textContent = '💬 Oracle session';
-          oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           oracleBtn.onclick = function() {
             self._activeConID = row.con_id;
             self._activeId = row.id;
@@ -13229,7 +13284,7 @@ RPGACE.register('contentProductionLive', {
           if (row.licence_type) {
             var bsBtn = document.createElement('button');
             bsBtn.textContent = '🎧 Beatstars Listing';
-            bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
             actions.appendChild(bsBtn);
           }
@@ -13265,7 +13320,7 @@ RPGACE.register('contentProductionLive', {
 
     fields.forEach(function(f) {
       var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
       lbl.textContent = f.label + ':';
       var inp = document.createElement('input');
       inp.id = f.id; inp.type = 'text'; inp.placeholder = f.placeholder;
@@ -13278,7 +13333,7 @@ RPGACE.register('contentProductionLive', {
     // blank) - precondition for F16's Beatstars auto-listing, which reads
     // these two columns straight off content_productions.
     var licLbl = document.createElement('div');
-    licLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+    licLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
     licLbl.textContent = 'Licence type (if selling this beat):';
     var licSelect = document.createElement('select');
     licSelect.id = 'pd-licence';
@@ -13292,7 +13347,7 @@ RPGACE.register('contentProductionLive', {
     box.appendChild(licLbl); box.appendChild(licSelect);
 
     var priceLbl = document.createElement('div');
-    priceLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+    priceLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
     priceLbl.textContent = 'Price (GBP):';
     var priceInp = document.createElement('input');
     priceInp.id = 'pd-price'; priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01'; priceInp.placeholder = 'e.g. 29.99';
@@ -13356,12 +13411,12 @@ RPGACE.register('contentProductionLive', {
 
     var optionBBtn = document.createElement('button');
     optionBBtn.textContent = '🎬 Switch to Production Panel';
-    optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     optionBBtn.onclick = function() { self._openProductionPanel(); };
 
     var endBtn = document.createElement('button');
     endBtn.textContent = 'End session';
-    endBtn.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.3);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
+    endBtn.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.3);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
     endBtn.onclick = function() { self._endSession(); };
 
     left.appendChild(document.createElement('br'));
@@ -13385,7 +13440,7 @@ RPGACE.register('contentProductionLive', {
     hdr.style.cssText = 'background:rgba(61,170,110,0.06);border-bottom:1px solid rgba(61,170,110,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
     var htxt = document.createElement('div');
     var lb = document.createElement('div');
-    lb.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
     lb.textContent = 'CONTENT PRODUCTION LIVE · ConID #' + self._activeConID;
     var sub = document.createElement('div');
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
@@ -13427,7 +13482,7 @@ RPGACE.register('contentProductionLive', {
         pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
         var savePathBtn = document.createElement('button');
         savePathBtn.textContent = 'Save footage path';
-        savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
         savePathBtn.onclick = function() {
           if (self._activeId && pathInp.value.trim()) {
             self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
@@ -13530,7 +13585,7 @@ RPGACE.register('videoPipeline', {
     hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
     var titleEl = document.createElement('div');
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:3px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:3px;';
     eyebrow.textContent = 'Video Pipeline';
     var titleText = document.createElement('div');
     titleText.className = 'section-title';
@@ -13594,7 +13649,7 @@ RPGACE.register('videoPipeline', {
     box.appendChild(title);
 
     var lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+    lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
     lbl.textContent = 'Title';
     var titleInp = document.createElement('input');
     titleInp.type = 'text'; titleInp.placeholder = 'e.g. Edison Tutorial Video';
@@ -13602,7 +13657,7 @@ RPGACE.register('videoPipeline', {
     box.appendChild(lbl); box.appendChild(titleInp);
 
     var pathLbl = document.createElement('div');
-    pathLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+    pathLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
     pathLbl.textContent = 'Raw footage path (optional)';
     var pathInp = document.createElement('input');
     pathInp.type = 'text'; pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
@@ -13680,7 +13735,7 @@ RPGACE.register('videoPipeline', {
     titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
     titleSpan.textContent = row.title;
     var statusBadge = document.createElement('span');
-    statusBadge.style.cssText = 'font-size:9px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb', 'rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb', 'rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
+    statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb', 'rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb', 'rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
     statusBadge.textContent = self.STAGE_LABELS[row.status] || row.status;
     topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
     item.appendChild(topRow);
@@ -13703,7 +13758,7 @@ RPGACE.register('videoPipeline', {
       var nextStage = self.STAGES[stageIdx + 1];
       var advBtn = document.createElement('button');
       advBtn.textContent = '→ Mark ' + self.STAGE_LABELS[nextStage];
-      advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       advBtn.onclick = function() {
         self.updateEntry(row.id, { status: nextStage }).then(function() {
           self._refreshWidget();
@@ -13715,7 +13770,7 @@ RPGACE.register('videoPipeline', {
 
     var detailsBtn = document.createElement('button');
     detailsBtn.textContent = '📋 Paths + exports';
-    detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     detailsBtn.onclick = function() { self._showDetails(row); };
     actions.appendChild(detailsBtn);
 
@@ -13746,7 +13801,7 @@ RPGACE.register('videoPipeline', {
     ];
     pathFields.forEach(function(f) {
       var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
       lbl.textContent = f.label;
       var inp = document.createElement('input');
       inp.id = f.id; inp.type = 'text'; inp.value = f.value || '';
@@ -13755,14 +13810,14 @@ RPGACE.register('videoPipeline', {
     });
 
     var exportLbl = document.createElement('div');
-    exportLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;margin-top:16px;';
+    exportLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;margin-top:16px;';
     exportLbl.textContent = 'Export URLs / paths (4)';
     box.appendChild(exportLbl);
 
     var exportPaths = row.export_paths || {};
     self.EXPORT_TARGETS.forEach(function(t) {
       var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:4px;margin-top:8px;text-transform:capitalize;';
+      lbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:4px;margin-top:8px;text-transform:capitalize;';
       lbl.textContent = t;
       var inp = document.createElement('input');
       inp.id = 'vp-export-' + t; inp.type = 'text'; inp.value = exportPaths[t] || '';
@@ -13857,11 +13912,11 @@ RPGACE.register('conidPot', {
     box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(500px,95vw);';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:6px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:6px;';
     eyebrow.textContent = 'Save to Idea Bank · ConIDPot';
 
     var titleLbl = document.createElement('div');
-    titleLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+    titleLbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
     titleLbl.textContent = 'Idea title (edit if needed):';
 
     var titleInp = document.createElement('input');
@@ -13870,7 +13925,7 @@ RPGACE.register('conidPot', {
     titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.25);border-radius:6px;color:#D4DAF5;font-size:13px;font-weight:600;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
 
     var previewLbl = document.createElement('div');
-    previewLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
+    previewLbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:5px;';
     previewLbl.textContent = 'Idea content preview:';
 
     var preview = document.createElement('div');
@@ -14031,7 +14086,7 @@ RPGACE.register('conidPot', {
 
       var saveAllBtn = document.createElement('button');
       saveAllBtn.textContent = '💡 Save ideas to bank';
-      saveAllBtn.style.cssText = 'padding:4px 12px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:5px;color:#C9A84C;font-size:10px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      saveAllBtn.style.cssText = 'padding:4px 12px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:5px;color:#C9A84C;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
       saveAllBtn.onclick = function() {
         // Parse numbered ideas from this message
         var ideas = self._parseIdeas(txt);
@@ -14066,7 +14121,7 @@ RPGACE.register('conidPot', {
 
     var selectAll = document.createElement('button');
     selectAll.textContent = 'Select all';
-    selectAll.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:4px;color:rgba(226,226,236,0.4);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
+    selectAll.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:4px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:10px;';
     selectAll.onclick = function() {
       box.querySelectorAll('input[type="checkbox"]').forEach(function(cb) { cb.checked = true; });
     };
@@ -14085,7 +14140,7 @@ RPGACE.register('conidPot', {
       titleEl.value = idea.title;
       titleEl.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:4px;color:#D4DAF5;font-size:12px;font-weight:600;padding:4px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:3px;';
       var preview = document.createElement('div');
-      preview.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.3);';
+      preview.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
       preview.textContent = idea.text.slice(0, 100) + '...';
       info.appendChild(titleEl); info.appendChild(preview);
       row.appendChild(cb); row.appendChild(info);
@@ -14167,7 +14222,7 @@ RPGACE.register('conidPot', {
     panel.style.cssText = 'background:rgba(201,168,76,0.03);border:1px solid rgba(201,168,76,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
 
     var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:9px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
+    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
     eyebrow.textContent = 'Idea Bank · ConIDPot';
     var titleEl = document.createElement('div');
     titleEl.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
@@ -14185,7 +14240,7 @@ RPGACE.register('conidPot', {
       var btn = document.createElement('button');
       btn.textContent = f;
       btn.dataset.filter = f;
-      btn.style.cssText = 'padding:4px 10px;background:' + (f === activeFilter ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (f === activeFilter ? 'rgba(201,168,76,0.35)' : 'rgba(255,255,255,0.07)') + ';border-radius:12px;color:' + (f === activeFilter ? '#C9A84C' : 'rgba(226,226,236,0.4)') + ';font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.style.cssText = 'padding:4px 10px;background:' + (f === activeFilter ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (f === activeFilter ? 'rgba(201,168,76,0.35)' : 'rgba(255,255,255,0.07)') + ';border-radius:12px;color:' + (f === activeFilter ? '#C9A84C' : 'rgba(226,226,236,0.4)') + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       btn.onclick = function() {
         activeFilter = f;
         filterRow.querySelectorAll('button').forEach(function(b) {
@@ -14202,7 +14257,7 @@ RPGACE.register('conidPot', {
     // Add idea button
     var addBtn = document.createElement('button');
     addBtn.textContent = '+ Add idea manually';
-    addBtn.style.cssText = 'padding:4px 12px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.35);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    addBtn.style.cssText = 'padding:4px 12px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.35);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     addBtn.onclick = function() { self.saveIdea('', 'manual', ''); };
     filterRow.appendChild(addBtn);
 
@@ -14264,7 +14319,7 @@ RPGACE.register('conidPot', {
           titleEl.textContent = row.title;
 
           var sourceBadge = document.createElement('span');
-          sourceBadge.style.cssText = 'font-size:9px;color:rgba(226,226,236,0.25);flex-shrink:0;';
+          sourceBadge.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.25);flex-shrink:0;';
           sourceBadge.textContent = row.source || 'manual';
 
           topRow.appendChild(starEl); topRow.appendChild(titleEl); topRow.appendChild(sourceBadge);
@@ -14315,7 +14370,7 @@ RPGACE.register('conidPot', {
           connectors.forEach(function(c) {
             var btn = document.createElement('button');
             btn.textContent = c.label;
-            btn.style.cssText = 'padding:3px 9px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:5px;color:' + c.color + ';font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            btn.style.cssText = 'padding:3px 9px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:5px;color:' + c.color + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             btn.onclick = c.action;
             actRow.appendChild(btn);
           });
@@ -14342,10 +14397,10 @@ RPGACE.register('conidPot', {
 
     var label = document.createElement('span');
     label.id = 'mb-rotation-label';
-    label.style.cssText = 'font-size:10px;color:rgba(201,168,76,0.5);margin-left:10px;';
+    label.style.cssText = 'font-size:11px;color:rgba(201,168,76,0.5);margin-left:10px;';
     label.textContent = '· ' + rotation.label;
 
-    var autoLabel = briefWrap.querySelector('[style*="font-size:10px"]');
+    var autoLabel = briefWrap.querySelector('[style*="font-size:11px"]');
     if (autoLabel) autoLabel.appendChild(label);
   },
 
@@ -14466,7 +14521,7 @@ RPGACE.register('morningBrief', {
 
     var lastRun = localStorage.getItem(self.LAST_RUN_KEY);
     var autoLabel = document.createElement('div');
-    autoLabel.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.25);';
+    autoLabel.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.25);';
     autoLabel.textContent = lastRun ? 'Last run: ' + new Date(lastRun).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) : 'Auto-runs once per morning';
 
     btnRow.appendChild(btn);
@@ -14558,7 +14613,7 @@ RPGACE.register('morningBrief', {
 
         RPGACE.utils.sendToOracle(prompt);
         localStorage.setItem(self.LAST_RUN_KEY, new Date().toISOString());
-        var autoLabel = document.querySelector('#mb-wrap div[style*="font-size:10px"]');
+        var autoLabel = document.querySelector('#mb-wrap div[style*="font-size:11px"]');
         if (autoLabel) autoLabel.textContent = 'Last run: ' + new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
         output.innerHTML = '<div style="color:rgba(201,168,76,0.6);font-size:11px;padding:8px 0;">☀️ Morning Brief sent to Oracle ↑</div>';
       });
@@ -14713,7 +14768,7 @@ RPGACE.register('docsLinks', {
     box.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px 16px;margin-bottom:16px;';
 
     var label = document.createElement('div');
-    label.style.cssText = 'font-family:Cinzel,serif;font-size:10px;color:rgba(226,226,236,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;';
+    label.style.cssText = 'font-family:Cinzel,serif;font-size:11px;color:rgba(226,226,236,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;';
     label.textContent = '📚 Oversight — 7 Docs, Always Latest';
     box.appendChild(label);
 
@@ -15177,7 +15232,7 @@ RPGACE.register('journalQoL', {
         return '<div class="journal-audit-entry" style="background:var(--panel2);border:1px solid var(--border);border-left:3px solid ' + r.color + ';border-radius:10px;padding:14px 16px;margin-bottom:12px;opacity:0.9">'
           + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'
           + '<div style="font-family:Cinzel,serif;font-size:12px;color:' + r.color + ';font-weight:600">' + r.label + (r.status ? ' — ' + r.status : '') + '</div>'
-          + '<div style="font-size:10px;color:var(--muted)">📅 ' + (r.date || '') + '</div>'
+          + '<div style="font-size:11px;color:var(--muted)">📅 ' + (r.date || '') + '</div>'
           + '</div>'
           + '<div style="font-size:12px;color:var(--text);line-height:1.6;margin-top:6px">' + r.text.replace(/</g, '&lt;') + '</div>'
           + '</div>';
@@ -15700,7 +15755,7 @@ RPGACE.register('careerStatCard', {
     var d = this._detailFor(it);
     var pop = dd._popup({ eyebrow: d.eyebrow, title: d.title, width: '560px', accent: 'var(--gold)' });
     pop.box.innerHTML = d.rows.map(function(row) {
-      return '<div style="margin-bottom:12px"><div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">' + row[0] + '</div>'
+      return '<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">' + row[0] + '</div>'
         + '<div style="font-size:13px;color:var(--text);line-height:1.5">' + row[1] + '</div></div>';
     }).join('');
   }
@@ -15859,13 +15914,13 @@ RPGACE.register('chroniclesLog', {
     function chip(label, val, color) {
       return '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;min-width:110px">'
         + '<div style="font-family:Cinzel,serif;font-size:17px;color:' + color + '">' + val + '</div>'
-        + '<div style="font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px">' + label + '</div></div>';
+        + '<div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px">' + label + '</div></div>';
     }
     el.innerHTML = chip('Total Sales', '£' + totalSales.toFixed(2), 'var(--green)')
       + chip('Total Expenses', '£' + totalExpenses.toFixed(2), 'var(--red)')
       + chip('Net', (totalSales - totalExpenses >= 0 ? '£' : '-£') + Math.abs(totalSales - totalExpenses).toFixed(2), 'var(--gold)')
       + '<div style="flex-basis:100%;font-size:11px;color:var(--muted);padding:4px 2px">Expenses by category: ' + catLine.replace(/</g, '&lt;') + '</div>'
-      + '<div style="flex-basis:100%;font-size:10px;color:var(--muted);font-style:italic;padding:0 2px">Personal visibility tracker only — not bookkeeping-grade. Keep real receipts for actual tax filing.</div>';
+      + '<div style="flex-basis:100%;font-size:11px;color:var(--muted);font-style:italic;padding:0 2px">Personal visibility tracker only — not bookkeeping-grade. Keep real receipts for actual tax filing.</div>';
   },
 
   _renderList: function() {
