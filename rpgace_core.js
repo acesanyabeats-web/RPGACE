@@ -2663,7 +2663,15 @@ RPGACE.register('oracleDevBridge', {
   _flag: function(text, btn) {
     btn.disabled = true;
     btn.textContent = '⏳ Logging...';
-    RPGACE.sb.secureWrite(this.TABLE, 'insert', [{ suggestion_text: text.slice(0, 4000), category: 'oracle-flagged', status: 'new', source: 'oracle' }])
+    // July 28: the old 4000-char cap silently cut off a real flagged
+    // 5thDimension reply mid-sentence, with no indication to Alex that
+    // anything was lost - `suggestion_text` is a plain unbounded `text`
+    // column (confirmed via information_schema), so this was a client-
+    // side-only limit, not a real DB constraint. Raised to 8000 (comfortably
+    // covers a max_tokens:1200 reply) and now appends an explicit marker
+    // if a reply somehow still exceeds it, instead of a silent mid-word cut.
+    var toSave = text.length > 8000 ? (text.slice(0, 8000) + '\n\n[...truncated - original reply was ' + text.length + ' chars]') : text;
+    RPGACE.sb.secureWrite(this.TABLE, 'insert', [{ suggestion_text: toSave, category: 'oracle-flagged', status: 'new', source: 'oracle' }])
     .then(function() {
       btn.textContent = '✓ Sent to Claude Code';
       RPGACE.utils.toast('🧪 Logged for the next Claude Code session', 'rgba(74,144,226,0.9)', 2400);

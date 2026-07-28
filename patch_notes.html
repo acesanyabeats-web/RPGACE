@@ -73,6 +73,15 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">📡 July 28 (Round 33) — Real hand-test feedback acted on same-session: streaming was unreadable, and Oracle's own flagged 5thDimension reply exposed 2 real gaps</div>
+    <div class="card-body">
+      Alex used the new streaming Oracle for real and reported the text appearing "bit by bit, but not very readable" — a real, immediate hand-test finding on the just-shipped 504 fix. Root cause: <code>sendChat()</code>'s streaming preview used <code>.textContent</code>, which collapses every newline — a structured reply (headers, lists, paragraph breaks) streamed in as one unbroken wall of text until the FINAL render swap (<code>renderMarkdown()</code> → <code>innerHTML</code>) made it readable all at once. Fixed by running the same, already-XSS-safe <code>renderMarkdown()</code> on every chunk instead of just the final one — the preview now looks properly formatted the whole time it streams, not only at completion. Worst case (an incomplete <code>**bold</code> marker mid-word for one chunk) self-corrects the instant the closing marker streams in — a normal, acceptable streaming-UI artifact.
+      <br><br>
+      <strong>Separately, Alex used the new "🧪 Flag for Claude Code" button on Insta-Oracle's own 5thDimension self-audit</strong> — the first real use of the whole Oracle-dev-bridge loop this session. Reviewing it surfaced two real things: (1) a genuine <code>oracleDevBridge._flag()</code> bug — the flagged text was silently truncated at exactly 4000 characters mid-sentence, losing Oracle's own conclusion, with zero indication to Alex anything was cut. Fixed: raised to 8000 (comfortably covers a <code>max_tokens:1200</code> reply) with an explicit truncation marker if a reply still somehow exceeds it. (2) A real misalignment between what Oracle's self-audit claimed and actual code state — see the same-session chat reply for the full breakdown (Oracle called the 21-Phylum tree "structurally complete" when only 10 are actually built via the Development Framework; and Oracle's own "quest tracking might be unreliable" counter-case understated the real gap — the Quest Board's <code>addXP()</code>/<code>completeQuest()</code> has zero persistence at all today, a separate, still-unfixed instance of the same in-memory-only problem the July 22 career-score rebuild already fixed for the dashboard's own XP display).
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎨 July 28 (Round 32) — Item 8: the 21 real undersized-ui-text findings from the /impeccable scan, fixed and re-verified</div>
     <div class="card-body">

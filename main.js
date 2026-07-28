@@ -656,7 +656,15 @@ One sharp memorable line at the end of every reply.`;
         const preview=document.getElementById('oracle-stream-preview');
         if(preview){
           preview.style.color='var(--text)';
-          preview.textContent=fullSoFar;
+          // July 28 readability fix (Alex-reported: streamed text was
+          // unreadable) — .textContent collapsed every newline, so a
+          // structured reply (headers, lists, paragraph breaks) streamed
+          // in as one unbroken wall of text until the final render swap.
+          // renderMarkdown() is safe to call on every chunk now that it
+          // HTML-escapes first (today's XSS fix) — worst case, an
+          // incomplete **bold marker mid-word looks briefly odd for one
+          // chunk and self-corrects once the closing marker streams in.
+          try{ preview.innerHTML=renderMarkdown(fullSoFar); }catch(e){ preview.textContent=fullSoFar; }
           const msgs=document.getElementById('chat-msgs');
           if(msgs) msgs.scrollTop=99999;
         }
