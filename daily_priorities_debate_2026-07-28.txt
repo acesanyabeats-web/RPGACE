@@ -1,0 +1,130 @@
+DAILY PRIORITIES DEBATE — 2026-07-28 (first /Routine run since the
+weekly credit reset)
+Real /Routine run per its own procedure: GODMODE evidence -> Team 1 Top 10
+-> Team 2 counter-case -> /debate -> /5thDimension reconciliation -> final
+Council of 5 lock-in. Alex's own framing on invoking this: "finally we
+are back" — his weekly credit allowance had run out July 25, this is the
+first session since it reset.
+
+════════════════════════════════════════════════════════════════════
+REAL EVIDENCE — re-verified, not re-derived from scratch
+════════════════════════════════════════════════════════════════════
+`weekly_recap_2026-07-25.txt` (written by /Bedtime specifically for this
+moment) was read first, then checked against real current state rather
+than trusted on faith:
+- `git log 87a0478..HEAD` — zero commits. Working tree clean. No
+  divergence between local main and origin/main.
+- `system_updates` since the recap's timestamp (2026-07-25 14:39:09) —
+  exactly one row, the Bedtime close-out row itself. Zero new
+  Alex-side app activity in the 3-day gap.
+Conclusion: the recap's 13-item backlog is still 100% accurate. No
+re-derivation needed — this is exactly the scenario the recap file was
+built for. The only thing that materially changed is that Alex's Claude
+credits have now reset, which unblocks 2 items that were previously
+credit-gated (Oracle 504, XSS audit).
+
+════════════════════════════════════════════════════════════════════
+TEAM 1 — evidence-based draft Top 10 (GODMODE + Council of 5)
+════════════════════════════════════════════════════════════════════
+Built directly from the recap's 13-item backlog, prioritized by real
+leverage (now-unblocked > cheap-and-overdue > needs-Alex's-input):
+
+1. Oracle 504 streaming fix — now unblocked (credits reset), the
+   single oldest deferred real bug in the project (open since ~July 17).
+2. XSS/innerHTML audit of fetched external content — also now
+   unblocked, a real security gap open since July 22-23.
+3. Composio key rotation — cheap, security hygiene, explicitly flagged
+   in the recap as dropped from two prior Top-10 drafts.
+4. Full smoke-test sweep: F16 (Beatstars)/F17 (video pipeline)/F18
+   (visual treatment)/highlight-to-Phylum-Path button — 4 shipped
+   features, zero real hand-tests across multiple sessions.
+5. Lighthouse/PageSpeed audit — cheap, informative, flagged twice,
+   never run.
+6. Decide the swipe-gesture freeze's fate — a 4th diagnostic attempt
+   only if there's a genuinely new angle, otherwise deprioritize with a
+   real stated reason rather than let it silently recur a 4th time.
+7. Fix the highest-real-value subset of the 58 /impeccable design
+   findings (the 21 undersized-ui-text + 2 low-contrast — genuine
+   legibility/accessibility issues, not cosmetic).
+8. journal/Chronicles/Minotaur cross-feed — real GODMODE+interrogation
+   pass, spec backlog file already written and waiting since July 23.
+9. Re-check Impeccable's full install (hook + 23-command apparatus) —
+   the HTTP 403 was environment/network-specific, worth one quick retry
+   in case conditions changed, not worth more than that.
+10. Hand-test this week's shipped-but-unverified changes (the 5
+    /improve-animations fixes + the Oracle-grounding extension) in a
+    real browser — closes the loop on Alex's own "I don't see the
+    change" report from before the credit reset.
+
+════════════════════════════════════════════════════════════════════
+TEAM 2 — the honest counter-case
+════════════════════════════════════════════════════════════════════
+Team 2's real objection: Team 1's ordering front-loads the two biggest,
+most open-ended items (Oracle 504's streaming architecture, a full
+innerHTML/XSS audit) on the very first day back from a credit reset.
+Both are genuinely large — 504 needs real streaming/chunking work in
+`api/oracle.js` (a prior attempt was reverted, dead code still present),
+and the XSS audit means checking every `innerHTML` call site in a
+~16,000-line file for unsanitized externally-fetched content. Either one
+could plausibly eat the whole day's fresh budget, and if it does, items
+3-10 (all cheap, all overdue, several explicitly flagged as repeatedly
+dropped) get pushed again — the exact failure pattern the recap itself
+warned about for Composio rotation and the swipe freeze.
+
+Team 2's second point, sharper: item 10 (hand-testing this week's
+shipped work) is ranked LAST, but building or auditing anything new on
+top of unverified ground is backwards. If the animation/Oracle-grounding
+changes have a real bug, it should be caught before more work gets
+layered on top of the same files, not after.
+
+Team 2's proposed reorder: hand-test first (verify existing ground),
+then the cheap/overdue items (smoke tests, Composio, Lighthouse), THEN
+the two credit-gated big items with whatever budget remains — treating
+"unblocked" as "eligible," not "first."
+
+════════════════════════════════════════════════════════════════════
+/5thDimension RECONCILIATION
+════════════════════════════════════════════════════════════════════
+Team 2's case holds on both points — verify-before-building is a
+standing project discipline already (CLAUDE.md rule 1: pull real source
+before editing; the whole `/Engineer` Truth Check philosophy this week
+was built on exactly this principle), and there's no real reason to
+override it just because two items happen to be freshly unblocked.
+Reordered accordingly. Team 1's actual item selection (all 10) was
+correct and not contested — only the sequencing changed.
+
+════════════════════════════════════════════════════════════════════
+FINAL COUNCIL OF 5 LOCK-IN — TODAY'S CHECKLIST
+════════════════════════════════════════════════════════════════════
+1. Hand-test this week's shipped work first: the 5 /improve-animations
+   fixes (easing, drawer consolidation, touch-safe hover, transition
+   narrowing, progress-bar conversions) + the /impeccable Oracle-grounding
+   extension. Verify in a real browser before anything else gets built
+   on the same files.
+2. Full smoke-test sweep: F16 (Beatstars listing)/F17 (video pipeline
+   stages)/F18 (auto visual treatment)/highlight-to-Phylum-Path button.
+3. Composio key rotation — flagged twice as dropped; get this done today,
+   don't let a third drop happen (needs Alex's own action, not a build).
+4. Lighthouse/PageSpeed audit — cheap, never run, real signal on
+   whether rpgace_core.js's size (~16,000 lines) actually costs load time.
+5. Decide the swipe-gesture freeze explicitly: a genuinely new
+   diagnostic angle, or a real, stated deprioritization — not a silent
+   4th blind attempt.
+6. Oracle 504 streaming fix — now unblocked with fresh credits.
+7. XSS/innerHTML audit of fetched external content — now unblocked.
+8. Fix the 21 undersized-ui-text + 2 low-contrast findings from the
+   /impeccable scan (real accessibility issues, not cosmetic).
+9. journal/Chronicles/Minotaur cross-feed — real interrogation pass,
+   spec backlog file ready.
+10. Quick re-check of Impeccable's full install (hook + 23-command
+    apparatus) in case the July 25 HTTP 403 was transient.
+
+Explicitly NOT on this list, with real reasons (not silently dropped):
+taxonomy backlog remainder (~57 items) is intentionally Alex's own
+manual review; Approach B's remaining gaps (DELETE through the
+write-proxy, 6 excluded tables) are blocked on Alex's own answers to 2
+open questions from `six_table_external_writer_migration_spec_2026-07-24.txt`,
+not something to guess at.
+
+This is a planning ritual, not a build step — move straight into item 1
+once Alex confirms or reprioritizes, don't stall on more ceremony.
