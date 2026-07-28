@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎬 July 28 (Round 37) — /5thDimension: does the Content Pipeline progress bar connect Beat Log → Visual Oracle → Video Pipeline? Real answer: no, and here's exactly why</div>
+    <div class="card-body">
+      Alex asked whether the Visual Treatment Doc feeds into Video Pipeline, and whether Beat Log/Visual Oracle/Video Pipeline could all connect to Content Pipeline's own 6-stage progress bar. Real answer to the first question: <strong>no</strong> — confirmed by reading `beatLog._autoVisualTreatment()` in full: it's grounded in real Phylum-14 filmmaker data (50 real rows) but the result is only ever a chat message, never saved anywhere.
+      <br><br>
+      Ran a real `/5thDimension` pass: GODMODE evidence (live schema + row counts, not assumed) found <strong>three fully disconnected trackers</strong> over the same real journey — `video_jobs`/F17 (5-stage file-path tracker, 0 real rows), `content_productions`/Content Pipeline (Idea→Scripted→Filmed→Edited→Posted→Analysed, 5 real rows, already has real per-platform URL fields), and Visual Oracle's 6 F14 commands (pure chat, zero persistence). Zero foreign key between the two tables. Two dead `video_jobs` columns found (`style_profile_id`/`edl` — written null once, never touched again; no `style_profiles` table exists anywhere) — read as the ghost of a plan that was designed but never built.
+      <br><br>
+      <strong>A real mystery resolved with evidence, not assumed.</strong> `video_jobs` having 0 rows looked alarming at first — beatLog auto-creates a row on every real beat log — until cross-referencing dates: 5 real `journal` entries prove Beat Log has genuinely been used, but all 5 predate `video_jobs`'s July 20 creation. Not a live silent-write bug; the beat→video journey simply hasn't been walked since the table started existing.
+      <br><br>
+      Phase 4's rewiring debate + stage-by-stage plan was dispatched to Opus 5 (succeeded this time — no usage-limit failure, unlike two earlier attempts this session). Full record, including the debate transcript and 5 real forks put to Alex directly (video_jobs' fate; where saved creative docs live; how Visual Oracle picks its save target; whether Beat Log should create a `content_productions` row directly; the 2 dead columns' fate): <code>content_pipeline_overseer_spec_backlog_2026-07-28.txt</code>. <strong>Nothing built this round</strong> — per rule 5, a genuinely multi-subsystem change gets spec'd and confirmed before any code is touched.
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">🩹 July 28 (Round 36) — Real regression caught from Alex's own screenshot: Round 35's videoPipeline fix was incomplete, and Morning Brief turned out to be two competing implementations</div>
     <div class="card-body">

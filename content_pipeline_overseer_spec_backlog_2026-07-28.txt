@@ -1,0 +1,220 @@
+CONTENT PIPELINE AS OVERSEER — /5thDimension spec backlog
+2026-07-28
+
+Alex's original question (verbatim): "does the visual treatment doc then go
+through video pipeline to create a video based on the beat I made? could
+all these modules also connect to content pipeline? use /Engineer and
+/scope to assess what modules could be connect to each step of the
+progress bar in content pipeline, to make it an overseer from scratch to
+beat, idea to reality, from footage to final video for each platform.
+use /debate, /scope , /5thDimension and /omnitrix without fable with
+opus 5 and /interrogation to make it all work"
+
+Protocol actually run: real GODMODE code/schema evidence pass (Sonnet,
+direct source reads + live Supabase queries) -> /5thDimension Phase 4
+rewiring debate + plan dispatched to Opus 5 (succeeded, no usage-limit
+failure this time) -> a further real-evidence follow-up (Sonnet) that
+resolved a live-vs-historical question the debate itself flagged as
+blocking -> this file (the interrogation/fork-presentation step) ->
+Alex's real answers get appended below once given. NOT run: /Engineer
+(explicitly deferred - Engineer executes an already-confirmed goal list,
+this is still the planning/confirming stage per rule 5). NOT built:
+zero code changes in this pass. NOT run: Fable (not needed - Opus alone
+handled Phase 4 fine this time).
+
+=====================================================================
+DIRECT ANSWER TO ALEX'S FIRST QUESTION
+=====================================================================
+No. Confirmed by reading beatLog._autoVisualTreatment() (rpgace_core.js
+~line 12589) in full: the Visual Treatment Doc is built from real
+Phylum-14 filmmaker data (50 real taxonomy_nodes rows,
+source='f14_filmmaker_library' - not hallucinated) but the ONLY thing
+that happens with the result is RPGACE.utils.sendToOracle(prompt) - a
+chat message. It is never saved to the video_jobs row created in the
+same _submit() call, never linked to it, never touched again by any
+other code. Same is true of all 6 Visual Oracle commands (Director
+Match included) - pure prompt-fill-and-send, zero persistence.
+
+=====================================================================
+REAL EVIDENCE — THE CURRENT STATE (schema + row counts + grep, not
+assumed)
+=====================================================================
+Three separate systems track "a beat becomes a posted video," sharing
+ZERO foreign keys, zero shared status vocabulary, zero data:
+
+1. Beat Log (beatLog._submit(), ~line 12371) - on every real beat log,
+   inserts a video_jobs row (status:'beat_logged', script: the whole
+   beat form as JSON, edl: null, style_profile_id: null), fires Last.fm
+   matching + Oracle text generation, and optionally the Visual
+   Treatment Doc (chat-only, see above).
+2. Video Pipeline / F17 (videoPipeline module, ~line 13555) - pure
+   status tracker over video_jobs. Stages: beat_logged -> raw_footage
+   -> edited -> rendered -> exported. No rendering engine exists
+   anywhere in this codebase or is planned. video_jobs: 0 real rows.
+3. Content Pipeline / ConID (contentProductionLive, table
+   content_productions) - a DIFFERENT stage vocabulary: Idea ->
+   Scripted -> Filmed -> Edited -> Posted -> Analysed. Has real
+   per-platform fields video_jobs never got: youtube_url /
+   instagram_url / tiktok_url / platform_outputs (jsonb). Also has
+   licence_type/price (feeds F16 Beatstars Listing). content_productions:
+   5 real rows - this is the system with actual usage.
+
+Schema-level proof of zero connection (information_schema.columns, both
+tables, full column list pulled): video_jobs has no con_id or any
+column referencing content_productions; content_productions has no
+column referencing video_jobs.
+
+Two dead columns, confirmed by grep - every write site in the whole
+file listed, nothing else ever touches them:
+  - video_jobs.style_profile_id (uuid) - written null once, never read.
+    No style_profiles table exists anywhere (confirmed via
+    information_schema.tables, count=0).
+  - video_jobs.edl (jsonb) - written null once, never touched again.
+These read as the ghost of an unbuilt plan - something clearly meant to
+eventually hold a Director-Match/style artifact and an edit decision
+list, never wired.
+
+Idea Bank -> Content Pipeline is the ONE real existing cross-module
+link: conidPot rows (3 real) feed contentProductionLive.createEntry()
+with status:'Idea' (confirmed call site, ~line 14396).
+
+=====================================================================
+THE "video_jobs HAS 0 ROWS" MYSTERY — RESOLVED WITH REAL EVIDENCE, NOT
+ASSUMED (this was flagged by the debate as blocking and checked
+immediately after)
+=====================================================================
+Real query: journal entries with source='beatLog' - 5 real entries
+exist, proving Alex HAS used the real Beat Log UI multiple times. But
+cross-referencing dates: all 5 are dated on or before 2026-07-20, and
+ZERO are dated after. The video_jobs table itself was only created on
+July 20 (confirmed by an earlier session's own patch note: "video_jobs
+table... never actually existed in Supabase until this session").
+CONCLUSION: this is NOT a live silent-failure bug. It is fully and
+simply explained by "no real beat has been logged via the UI since the
+table started existing" - the beat -> video journey genuinely has
+never been exercised end-to-end, not because it's broken, but because
+it hasn't been tried since it became possible. This resolves the
+debate's own "diagnose before deciding" concession cleanly and removes
+it as a blocker.
+
+=====================================================================
+THE DEBATE (Opus 5, Phase 4) — condensed; full transcript in this
+session's chat log if ever needed again
+=====================================================================
+FOR rewiring: usage evidence is one-sided (5 real rows vs 0) -
+Content Pipeline is the system with actual usage and already owns the
+per-platform half of the journey Video Pipeline never reached. The
+Visual Treatment Doc is a real, active, present-tense loss - the same
+beat's video_jobs row exists in the same function call and the two are
+never linked. The two dead columns are the design's own confession that
+this was meant to be built. Linking work itself (a foreign key, moving
+a text blob) costs zero AI calls.
+
+AGAINST rewiring (the "diagnose first" argument won a real concession,
+resolved above; its other honest points stand): a schema merge risks
+losing video_jobs' four staged file-path fields
+(raw/edited/rendered/export_paths) that content_productions' single
+raw_footage_path field can't hold. The Visual Treatment fix does not
+require any merge decision at all - saving the Oracle response onto an
+existing row is a small, independent, zero-risk change that should
+happen regardless of what's decided about video_jobs.
+
+Council verdict: FOR wins on "save the Visual Treatment output" and "Content
+Pipeline is the real overseer, not video_jobs" - do these regardless of
+the fork below. AGAINST wins on "no schema merge should happen sight
+unseen" and "don't lose the staged-path granularity" - real, not token,
+objections.
+
+=====================================================================
+THE PLAN, STAGE BY STAGE (Content Pipeline's real progress bar: Idea ->
+Scripted -> Filmed -> Edited -> Posted -> Analysed)
+=====================================================================
+Idea: conidPot -> createEntry(status:'Idea'). Already wired. No change.
+
+Scripted: nothing writes here today. Real candidates: Beat Log's
+generated outputs (type-beat titles/Beatstars description/YouTube
+angle/outreach DMs), Visual Oracle's Visual Treatment Doc + Storyboard
+Scene Builder (Director Match + Mood Board Brief are also real
+per-project candidates; Copyright Risk Analyser + Neural Frames Prompt
+read more as one-off utilities). LOW-COST/HIGH-VALUE, do first: a
+"save to Content Pipeline" action on these Oracle responses. Needs
+either a new creative_docs jsonb column (cleaner, one migration on the
+5-row table) or appending to the existing notes field (zero migration,
+gets unreadable fast) - real fork, see below. Also needs Visual Oracle
+to know WHICH content_productions row to save to (a picker vs. an
+ambient active-production context) - a second real fork, see below.
+
+Filmed: this is where video_jobs lives or dies - depends entirely on
+Fork 1 below. What's clear regardless: content_productions'
+raw_footage_path (single text) is strictly less capable than
+video_jobs' four staged paths; whatever survives should keep that
+granularity.
+
+Edited/Posted: mostly already built, and this is the good news -
+youtube_url/instagram_url/tiktok_url/platform_outputs genuinely deliver
+"final video for each platform" already. F16 Beatstars Listing already
+fires off licence_type on the same row. What's actually missing: beat
+identity - a content_productions row today doesn't know which beat it
+is (key/bpm/mood/refTrack/taxNodes currently only live in
+video_jobs.script, on a table with 0 rows). Carrying beat metadata onto
+the production row is the single change that makes Content Pipeline a
+real "scratch to beat, idea to reality" overseer.
+
+Analysed: currently means nothing and can't yet - would need real
+platform stats (views/plays/saves) pulled from somewhere. Morning
+Brief pulling stats was a hope mentioned once in passing, never built,
+no platform API integration exists. FLAG, DON'T BUILD YET.
+
+Recommended sequencing, cheapest/most-confirmed-value first:
+1. Save Visual Treatment/Director Match/Storyboard output to a real
+   field (highest value-to-cost ratio found in this whole assessment -
+   fixes a real, live leak on a feature Alex has already used).
+2. Carry beat metadata onto the production row.
+3. THEN resolve the video_jobs fork below with the schema question
+   properly decided, not rushed.
+4. Speculative, flag only: stats ingestion for Analysed; anything
+   assuming a renderer exists (nothing does, none is planned - edl
+   should stay dead unless an external editor is genuinely wired in
+   later).
+
+=====================================================================
+REAL FORKS — ONLY ALEX CAN DECIDE (presented via AskUserQuestion in
+chat the same session; his actual answers appended below once given)
+=====================================================================
+FORK 1 - video_jobs' fate:
+  (a) Retire it - add staged path columns to content_productions,
+      Content Pipeline becomes the single overseer.
+  (b) Keep both - add video_jobs.con_id FK, Content Pipeline stays the
+      overseer, Video Pipeline becomes its detailed "Filmed" sub-tracker.
+  (c) Leave both as-is - only fix the Visual Treatment save, decide
+      nothing else yet.
+
+FORK 2 - where saved creative docs (Visual Treatment/Director
+Match/Storyboard output) actually live:
+  (a) Append to the existing content_productions.notes field - zero
+      migration, gets messy once several doc types land there.
+  (b) New content_productions.creative_docs jsonb column, keyed by doc
+      type - one small migration on the 5-row table, stays readable.
+
+FORK 3 - how Visual Oracle knows which production row to save to:
+  (a) An explicit picker shown at save time ("save to which
+      production?") - simpler to build, always correct.
+  (b) An ambient "active production" context the module reads - nicer
+      UX, more real work, and a real new state-management concept this
+      codebase doesn't currently have anywhere.
+
+FORK 4 (depends entirely on Fork 1's answer) - should Beat Log create a
+content_productions row directly (making Content Pipeline the true
+entry point for a new beat), instead of / as well as its video_jobs
+row? Biggest single lever on "idea to reality" - not decided here,
+follows from Fork 1.
+
+FORK 5 (low-priority, no urgency) - style_profile_id and edl: formally
+declare them dead design (do nothing, they cost nothing sitting unused)
+or resurrect them (implies building Director-Match persistence /
+external-editor integration - real new scope, not proposed for now).
+
+=====================================================================
+ALEX'S REAL ANSWERS (appended once given - not guessed, not defaulted)
+=====================================================================
+[pending]
