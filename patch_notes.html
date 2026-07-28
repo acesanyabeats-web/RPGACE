@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">⚡ July 28 (Round 31) — Real Oracle 504 fix, second attempt: genuine server-backed streaming, replacing a client-only stub that never worked</div>
+    <div class="card-body">
+      Item 6 of today's `/Routine` Top 10, now unblocked (credits reset). Alex asked to extend the Vercel function window or find a workaround. Real evidence-gathering first (per rule 4 — "one failed fix = stop, get real evidence" — this is literally the second attempt at this exact bug): read the dead `RPGACE.streamOracle`/`restoreSendChat` code CLAUDE.md already flagged as neutralised-not-removed, and found the actual reason the first attempt broke — <code>api/oracle.js</code> never looked at a <code>stream</code> field at all, so the client's SSE parser (waiting for <code>data: </code> lines) was consuming a single non-streaming JSON blob that never matched, producing a permanently empty buffer on every message. The client-side parsing logic itself was already correct against Anthropic's real wire format; it just never received real stream data.
+      <br><br>
+      <strong>The real fix, this time genuinely end-to-end:</strong> <code>api/oracle.js</code> now proxies Anthropic's actual SSE stream byte-for-byte when the caller sends <code>stream:true</code> (images excluded — a deliberate, named scope limit, not an oversight). <code>main.js</code>'s <code>callOracle()</code> gained an optional 4th <code>onChunk</code> parameter — every one of its ~20 other call sites is completely unaffected, since omitting it keeps the exact prior blocking behavior and return shape. <code>sendChat()</code>'s one direct-Oracle branch now passes a callback that progressively fills the existing typing-indicator bubble as text arrives — every other side effect (quest-suggestion parsing, XP, Save-to-Journal/Encyclopedia buttons, chat history) still runs unchanged on the final resolved text, since only the temporary preview element is touched mid-stream. This is deliberately narrower than the first attempt, which fully reimplemented <code>sendChat</code> in parallel and silently dropped all of that functionality — the exact failure class being avoided this time.
+      <br><br>
+      <strong>Dead code actually removed, not re-flagged a second time:</strong> <code>RPGACE.streamOracle</code>, its sendChat intercept, and the whole <code>restoreSendChat</code> module are deleted from <code>rpgace_core.js</code> (CLAUDE.md's own standing tech-debt item, closed rather than carried forward again) — keeping the old, differently-broken mechanism around risked a future session reviving the wrong one by mistake. Module count corrected 52→51 in <code>system_flow_map.md</code> as a direct consequence.
+      <br><br>
+      <strong><code>maxDuration</code> raised 60→300</strong> (Vercel's real Pro-plan ceiling) at Alex's explicit request — real evidence pending: if this account is on the Hobby plan, Vercel will reject the deploy and this needs reverting to 60. Either way, streaming is the more load-bearing half of the fix: even a response that still hits whichever ceiling applies now shows its content as it's generated, instead of a blank wait followed by nothing.
+      <br><br>
+      <strong>Honest limitation, stated plainly:</strong> this session has no login credentials for the live app and cannot hand-test the real chat UI. Everything above is `node --check`-clean and traced line-by-line against the real diff, not assumed — but real end-to-end verification (does the typing bubble actually fill in smoothly, does a genuinely long response now complete instead of 504'ing) needs Alex's own hand-test, the same real gap already named for this week's animation work.
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔒 July 28 (Round 30) — Real XSS finding fixed: Oracle chat's <code>renderMarkdown()</code> injected unescaped HTML, closing the audit item flagged 3 separate times since July 22</div>
     <div class="card-body">

@@ -10853,42 +10853,17 @@ RPGACE.register('config', {
       return _origSecureWrite(table, operation, payload, match, onConflict);
     };
 
-    // Streaming Oracle client — replaces callOracle for new callers
-    RPGACE.streamOracle = function(messages, system, onChunk, onDone) {
-      fetch('/api/oracle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: messages, system: system || '', stream: true })
-      }).then(function(res) {
-        var reader = res.body.getReader();
-        var decoder = new TextDecoder();
-        var buffer = '';
-        function pump() {
-          reader.read().then(function(result) {
-            if (result.done) { if (onDone) onDone(buffer); return; }
-            var chunk = decoder.decode(result.value);
-            var lines = chunk.split('\n');
-            lines.forEach(function(line) {
-              if (line.startsWith('data: ')) {
-                var data = line.slice(6);
-                if (data === '[DONE]') return;
-                try {
-                  var parsed = JSON.parse(data);
-                  if (parsed.type === 'content_block_delta' && parsed.delta && parsed.delta.text) {
-                    buffer += parsed.delta.text;
-                    if (onChunk) onChunk(parsed.delta.text, buffer);
-                  }
-                } catch(e) {}
-              }
-            });
-            pump();
-          }).catch(function(e) { console.warn('[RPGACE] stream error:', e.message); });
-        }
-        pump();
-      }).catch(function(e) { console.warn('[RPGACE] streamOracle error:', e.message); });
-    };
-
-    console.log('[RPGACE:config] Cache + streaming Oracle ready');
+    // July 28: RPGACE.streamOracle + the sendChat intercept that used to
+    // live here (and the restoreSendChat module that neutralised it) are
+    // removed entirely, not just deprecated - the real fix now lives
+    // directly in main.js's own callOracle()/sendChat() (a genuine
+    // server-backed stream, replacing the broken client-only shim this
+    // was). Keeping a second, dead, differently-broken streaming path
+    // around risked a future session reviving the wrong mechanism by
+    // mistake (rule 8) - this was CLAUDE.md's own standing tech-debt item
+    // ("Streaming Oracle intercept — dead code, neutralised, not removed"),
+    // closed here rather than re-flagged again.
+    console.log('[RPGACE:config] Cache ready');
 
     // Attach global phyla-scan observer directly — rpgace:ready may have
     // already fired before this code runs, so we don't wait for it.
@@ -10958,67 +10933,6 @@ RPGACE.register('config', {
       }
     }, 1500);
 
-    // Streaming sendChat intercept
-    setTimeout(function() {
-      if (typeof window.sendChat === 'function' && !window._sendChatPatched) {
-        window._sendChatPatched = true;
-        var _origSend = window.sendChat;
-        window.sendChat = function() {
-          var input = document.getElementById('chat-input') || document.querySelector('textarea[id*="chat"]');
-          if (!input || !input.value.trim() || !RPGACE.streamOracle) {
-            return _origSend.apply(this, arguments);
-          }
-          var userText = input.value.trim();
-          var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box');
-          if (!chatBox) return _origSend.apply(this, arguments);
-
-          // Add user message to UI
-          var userMsg = document.createElement('div');
-          userMsg.className = 'msg user';
-          userMsg.textContent = userText;
-          chatBox.appendChild(userMsg);
-          input.value = '';
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-
-          // Add streaming AI placeholder
-          var aiMsg = document.createElement('div');
-          aiMsg.className = 'msg ai';
-          aiMsg.innerHTML = '<span style="color:rgba(226,226,236,0.3);font-size:11px;">thinking...</span>';
-          chatBox.appendChild(aiMsg);
-          chatBox.scrollTop = chatBox.scrollHeight;
-
-          // Build conversation history from DOM
-          var history = [];
-          Array.from(chatBox.children).forEach(function(el) {
-            if (el === aiMsg) return;
-            var cls = el.className || '';
-            var txt = el.textContent.trim();
-            if (!txt) return;
-            if (cls.includes('user')) history.push({ role: 'user', content: txt });
-            else if (cls.includes('ai')) history.push({ role: 'assistant', content: txt });
-          });
-          history.push({ role: 'user', content: userText });
-
-          var started = false;
-          RPGACE.streamOracle(
-            history,
-            window._rpgaceSystem || '',
-            function(chunk, full) {
-              if (!started) { aiMsg.innerHTML = ''; started = true; }
-              aiMsg.textContent = full;
-              chatBox.scrollTop = chatBox.scrollHeight;
-            },
-            function(full) {
-              if (typeof window.renderMarkdown === 'function') {
-                try { aiMsg.innerHTML = window.renderMarkdown(full); } catch(e) { aiMsg.textContent = full; }
-              }
-              chatBox.scrollTop = chatBox.scrollHeight;
-            }
-          );
-        };
-        console.log('[RPGACE] sendChat streaming intercept active');
-      }
-    }, 2500);
 
     // Also intercept intel reload functions
     function patchIntelFns() {
@@ -14697,24 +14611,6 @@ RPGACE.register('suppressQuestPopup', {
 });
 /* ===END:suppressQuestPopup=== */
 
-
-/* ===MODULE:restoreSendChat=== */
-RPGACE.register('restoreSendChat', {
-  // July 24 audit fix: the re-apply pass below used to live inside a dead
-  // rpgace:ready listener. Harmless in practice (this module already
-  // registers after config in file order, so the direct pass above always
-  // wins), but the intent was clearly a real second guard against a
-  // future registration-order change - now it actually runs.
-  init: function() {
-    // Run immediately — must fire before any user interaction
-    RPGACE.streamOracle = null;
-    window._sendChatPatched = false;
-    RPGACE.streamOracle = null;
-    window._sendChatPatched = false;
-    console.log('[RPGACE] streamOracle neutralised');
-  }
-});
-/* ===END:restoreSendChat=== */
 
 /* ===MODULE:docsLinks=== */
 RPGACE.register('docsLinks', {

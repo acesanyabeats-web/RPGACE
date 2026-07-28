@@ -7,7 +7,7 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 
 ## 0. Verified Component Inventory
 
-**Module inventory rebuilt for real, July 28** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **52 real registered modules**, confirmed by name this time, not just by count — the July 24 pass had corrected the number but left the domain table below at its stale July 17 content (only ~30 of the 52 actually listed). All 52 are now in the table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
+**Module inventory rebuilt for real, July 28** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **51 real registered modules** (52 earlier today, before `restoreSendChat` was deleted the same session as a real dead-code cleanup — see the Oracle 504 fix below), confirmed by name this time, not just by count — the July 24 pass had corrected the number but left the domain table below at its stale July 17 content (only ~30 actually listed). All 51 are now in the table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
 
 ### Domains and modules (from `rpgace_core.js` markers, rebuilt by grep July 28)
 
@@ -19,7 +19,7 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 | CONTENT | beatLog, refCorpus, contentProductionLive, videoPipeline, conidPot, videoSummary |
 | JOURNAL | morningBrief, journalQoL |
 | DASHBOARD / NAV | dashDeck, leftNav, pathRouter, chroniclesLog, careerStatCard, docsLinks, pwaInstall |
-| SYSTEM | suppressQuestPopup, restoreSendChat, authGate, perfWatch |
+| SYSTEM | suppressQuestPopup, authGate, perfWatch |
 | SCHEDULE | shiftSync, myFeature, scheduleFixes |
 
 ### Serverless API (`api/`)
@@ -389,16 +389,16 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 
 ### Claimed/discussed but NOT built — do not trust any doc that implies otherwise
 - Live-study **card-list UI** (ConID-card pattern for Bookworm chapters) — explicitly deferred today
-- Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; phyla 11-21 framework passes; `hooks.on('rpgace:ready')` ~25-site audit; Oracle 504 root fix (streaming/chunking); dead streaming-code cleanup (`restoreSendChat`)
+- Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; phyla 11-21 framework passes; `hooks.on('rpgace:ready')` ~25-site audit
 - ~~Taxonomy Sorting Agent; Claude general-knowledge audit (3 parts)~~ — **moved July 22**: see the "Built but NEVER verified" section below (`book_knowledge`/`jargon_encyclopedia` views + the `/debate` skill).
 - ~~Server-side API authentication; `CORRECT_PW` moved server-side~~ — **moved July 23, BUILT (see "Built but NEVER verified" below)**: both fixed as one architecture change (`api/auth.js` + `requireAuth()` + `authGate`'s fetch wrap). Real deployment gate, not a code gap anymore: needs two Vercel env vars (`CORRECT_PW`, `RPGACE_API_SECRET`) before it can merge to `main` — see CLAUDE.md's urgent flag.
-- **XSS/DOM-injection audit of `innerHTML` call sites** — flagged July 22, not investigated. Distinct from the (fixed) prompt-injection risk: whether any fetched external content (Jina text, YouTube transcripts, Oracle's own rendered replies) ever reaches an `innerHTML` assignment unescaped is a real open question.
+- ~~XSS/DOM-injection audit of `innerHTML` call sites~~ — **fixed July 28**: `main.js`'s `renderMarkdown()` (behind every Oracle chat message) injected raw response text into `innerHTML` with zero escaping — fixed via a new `_escChatHtml()` step before the markdown regex chain runs. See CLAUDE.md.
 - **Website performance audit** — no Lighthouse/PageSpeed run has ever been done; `rpgace_core.js` alone is ~15,700+ lines.
 - ~~RLS policy redesign~~ — **BUILT July 24, confirmed end-to-end July 25** — see "Built" above. 17 tables flipped from permissive `USING(true)` to real `anon_read_only`/`authenticated_all` policies, verified directly against `pg_policy`, then independently confirmed live via 8 real authenticated writes through the proxy.
 - **Live-grounding for RLS/security status specifically** — deliberately not built July 23 (Supabase's advisor API isn't reachable from client-side browser JS; would need a dedicated server endpoint).
-- ~~`system_flow_map.md` §0's own module inventory is stale~~ — **fixed July 28**: §0's domain table rebuilt from a real grep of every `RPGACE.register()` call, all 52 modules now listed by name and domain, not just counted.
+- ~~`system_flow_map.md` §0's own module inventory is stale~~ — **fixed July 28**: §0's domain table rebuilt from a real grep of every `RPGACE.register()` call, all modules now listed by name and domain, not just counted (51, after the same session's `restoreSendChat` cleanup).
 
 ### Known open bugs
-- Oracle 504 on long responses (root cause known: single blocking non-streaming `callClaude`; mitigated by token trims only)
+- ~~Oracle 504 on long responses~~ — **real fix built July 28, not yet hand-tested**: `api/oracle.js` now proxies a genuine Anthropic SSE stream (opt-in via `stream:true`), `main.js`'s `callOracle()`/`sendChat()` consume it to progressively render the reply into the existing typing-indicator bubble, and `maxDuration` was raised from 60 to 300 (pending confirmation this account's Vercel plan actually allows it — see CLAUDE.md). A prior attempt shipped a client-only stub with no real server support and was reverted; that dead code (`RPGACE.streamOracle`/`restoreSendChat`) is now deleted rather than left neutralised.
 - F11 silent "Content Unavailable" on failed Jina fetches
 - `_generateNodeContent` empty-deep_content mystery (partially resolved, never re-tested)

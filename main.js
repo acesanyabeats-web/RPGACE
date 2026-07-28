@@ -97,7 +97,57 @@ const AGENT_ACTIONS=[
 ];
 
 // ── API CALLS VIA VERCEL FUNCTIONS ──
-async function callOracle(messages, system, maxTokens=1000){
+// July 28 FROZEN-file exception, logged in patch_notes.html: real Oracle
+// 504 fix (root cause per CLAUDE.md: a single blocking non-streaming call
+// can exceed the Vercel function's duration ceiling on long, detailed
+// responses). Optional 4th param `onChunk(fullTextSoFar)` opts a caller
+// into streaming; every existing call site that doesn't pass it keeps the
+// exact same behavior and return shape as before - zero risk to any of
+// the ~20 other callOracle() callers in this file. A prior streaming
+// attempt (rpgace_core.js's now-neutralised RPGACE.streamOracle) was
+// reverted because the SERVER never actually streamed - the client-side
+// parsing logic this reuses (data: lines, content_block_delta/delta.text)
+// already matches Anthropic's real SSE format correctly; api/oracle.js
+// now genuinely proxies it when `stream:true` is sent.
+async function callOracle(messages, system, maxTokens=1000, onChunk){
+  if (onChunk) {
+    let res;
+    try {
+      res = await fetch('/api/oracle', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({messages, system, maxTokens, stream: true})
+      });
+    } catch(e) { throw new Error('Cannot reach /api/oracle — check Vercel deployment. ' + e.message); }
+    if(!res.ok){
+      let errMsg = 'Oracle error ' + res.status;
+      try{ const errData = await res.json(); if(errData.error) errMsg = errData.error; }catch(_){}
+      throw new Error(errMsg);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '', full = '';
+    while(true){
+      const {done, value} = await reader.read();
+      if(done) break;
+      buffer += decoder.decode(value, {stream: true});
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep the last (possibly partial) line for the next chunk
+      for(const line of lines){
+        if(!line.startsWith('data: ')) continue;
+        const data = line.slice(6);
+        if(data === '[DONE]') continue;
+        try{
+          const parsed = JSON.parse(data);
+          if(parsed.type === 'content_block_delta' && parsed.delta && parsed.delta.text){
+            full += parsed.delta.text;
+            onChunk(full);
+          }
+        }catch(e){}
+      }
+    }
+    return { content: [{ type: 'text', text: full }] };
+  }
   let res;
   try {
     res = await fetch('/api/oracle', {
@@ -386,7 +436,7 @@ async function sendChat(){
   // Show typing indicator
   const typing=document.createElement('div');
   typing.className='msg ai';typing.id='typing-indicator';
-  typing.innerHTML='<div class="ai-name">✦ Oracle</div><span style="color:var(--muted)">thinking...</span>';
+  typing.innerHTML='<div class="ai-name">✦ Oracle</div><span id="oracle-stream-preview" style="color:var(--muted)">thinking...</span>';
   document.getElementById('chat-msgs').appendChild(typing);
   document.getElementById('chat-msgs').scrollTop=99999;
 
@@ -596,7 +646,21 @@ One sharp memorable line at the end of every reply.`;
         ? INSTA_ORACLE_SYS + '\n\n---\nADDITIONAL CONTEXT:\n' + ORACLE_SYS
         : ORACLE_SYS;
 
-      const data=await callOracle(STATE.chatHistory.slice(-8), activeSystem, 1200);
+      // Streams into the existing typing-indicator bubble as text arrives
+      // (real 504 fix — see callOracle's own comment). Purely a progressive
+      // preview: every side effect below (quest suggestions, XP, save
+      // buttons, chat history) still runs on the final resolved `reply`
+      // exactly as before, since this callback only touches the temporary
+      // preview element, never the outcome.
+      const data=await callOracle(STATE.chatHistory.slice(-8), activeSystem, 1200, function(fullSoFar){
+        const preview=document.getElementById('oracle-stream-preview');
+        if(preview){
+          preview.style.color='var(--text)';
+          preview.textContent=fullSoFar;
+          const msgs=document.getElementById('chat-msgs');
+          if(msgs) msgs.scrollTop=99999;
+        }
+      });
       reply=data.content.map(c=>c.text||'').join('');
     }
 
