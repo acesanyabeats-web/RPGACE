@@ -4883,9 +4883,6 @@ RPGACE.register('dashDeck', {
     document.head.appendChild(st);
   },
 
-  // Verbatim Morning Brief prompt (P1) — prefilled into #chat-input, never auto-sent.
-  MORNING_PROMPT: '🌅 MORNING BRIEF — give me today\'s brief: 1) my top 3 priorities from quests and agenda, 2) everything currently waiting on me (pending taxonomy reviews, in-progress book chapters), 3) one beat-making focus for today based on my recent learning, 4) one content idea worth filming today. Keep it tight and actionable.',
-
   // Order (July 20, Pass 2 — Fable's grouping): learning/building row, then
   // daily-use row, then knowledge-storage row. Oversight moved to last slot;
   // Agenda/Encyclopedia/Journal added as simple showPage navigation cards,
@@ -4921,7 +4918,7 @@ RPGACE.register('dashDeck', {
     } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
     { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
-    { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { var d = RPGACE.modules.dashDeck; d._prefillOracle(d.MORNING_PROMPT); } },
+    { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } },
     { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
     { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
     // /Engineer Goal 1 (July 28) — videoPipeline's own vp-widget was never
@@ -4939,7 +4936,7 @@ RPGACE.register('dashDeck', {
   ],
 
   _inject: function() {
-    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._stashWidget('vp-widget'); this._refreshGlance(); return; }
+    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._stashWidget('vp-widget'); this._stashWidget('mb-wrap'); this._refreshGlance(); return; }
     var page = document.getElementById('page-dashboard');
     if (!page) return;
     this._injectStyles();
@@ -4989,6 +4986,8 @@ RPGACE.register('dashDeck', {
     this._stashBookworm();
     this._stashWidget('kg-panel');
     this._stashWidget('cpl-widget');
+    this._stashWidget('vp-widget');
+    this._stashWidget('mb-wrap');
     this._refreshGlance();
   },
 
@@ -5165,19 +5164,6 @@ RPGACE.register('dashDeck', {
     overlay.appendChild(box);
     document.body.appendChild(overlay);
     return { overlay: overlay, box: body, close: close };
-  },
-
-  // ── Navigate to Oracle and prefill (never send) #chat-input. Same
-  // ── mechanism reused by P1 (Morning Brief) and P4 (Knowledge Gaps).
-  _prefillOracle: function(prompt) {
-    if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle);
-    setTimeout(function() {
-      var ci = document.getElementById('chat-input');
-      if (!ci) return;
-      ci.value = prompt;
-      ci.dispatchEvent(new Event('input', { bubbles: true }));
-      ci.focus();
-    }, 400);
   },
 
   // ── P3 Bookworm relocation. The live #bookworm-widget node is MOVED
@@ -5530,6 +5516,54 @@ RPGACE.register('dashDeck', {
     foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
     foot.textContent = 'No rendering happens here — this just tracks the real stages and where each file/URL actually lives.';
     body.appendChild(foot);
+  },
+
+  // /Engineer pass (July 28, round 2) — this card used to just prefill
+  // Oracle's chat input with a static, non-live prompt (_prefillOracle +
+  // MORNING_PROMPT, both removed) — a hollow duplicate of the real
+  // morningBrief module, which auto-runs once a day, gathers live
+  // Gmail/shift/YouTube/knowledge-gap/idea-bank data, and actually sends the
+  // result to Oracle. That real module was never given a dashDeck home
+  // either — it kept injecting its own #mb-wrap button straight onto
+  // #page-dashboard outside the card grid (rule 8 — two divergent
+  // implementations of the same feature). Same relocate-on-open pattern as
+  // every other card here: the live #mb-wrap node (button, last-run label,
+  // output) is MOVED into this popup, never rebuilt, so its real onclick
+  // and auto-run output keep working.
+  _openMorningBrief: function() {
+    var self = this;
+    var w = document.getElementById('mb-wrap');
+    if (!w) {
+      var mb = RPGACE.modules.morningBrief;
+      if (mb && mb._injectButton) { try { mb._injectButton(); } catch (e) {} }
+      w = document.getElementById('mb-wrap');
+    }
+    var pop = self._popup({
+      eyebrow: '🌅 Morning Brief',
+      title: 'Your day in one shot',
+      accent: 'var(--gold)',
+      width: '640px',
+      closeLabel: 'Close',
+      onClose: function() {
+        self._stashWidget('mb-wrap', true);
+        delete self._widgetPopups['mb-wrap'];
+      }
+    });
+    self._widgetPopups['mb-wrap'] = pop.close;
+    var body = pop.box;
+    if (w) {
+      w.style.marginBottom = '0';
+      body.appendChild(w);
+    } else {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
+      msg.textContent = 'Morning Brief is still loading — close this and try again in a moment.';
+      body.appendChild(msg);
+    }
+    var foot2 = document.createElement('div');
+    foot2.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
+    foot2.textContent = 'Auto-runs once each morning before noon and sends straight to Oracle — click ☀️ Morning Brief here any time to run it again.';
+    body.appendChild(foot2);
   },
 
 });
@@ -13613,27 +13647,33 @@ RPGACE.register('videoPipeline', {
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
     widget.appendChild(list);
 
-    // NOTE (July 20 Pass 1): #cpl-widget was relocated into dashDeck's
-    // Content Pipeline card popup and now lives in the hidden stash holder,
-    // so it is no longer a child of #page-dashboard. Anchoring insertBefore
-    // to a node that is not this page's child throws NotFoundError, which
-    // would break vp-widget injection outright. Guard: only anchor to
-    // cpl-widget when it really is a child of this page; otherwise fall back
-    // to vp's own existing top-of-dashboard placement. vp-widget is otherwise
-    // untouched (still a visible dashboard widget) — this is a defensive
-    // guard made necessary by cpl-widget's relocation, not a redesign.
-    var cplWidget = document.getElementById('cpl-widget');
-    var cplOnPage = cplWidget && cplWidget.parentElement === page;
-    if (cplOnPage && cplWidget.nextSibling) {
-      page.insertBefore(widget, cplWidget.nextSibling);
-    } else if (cplOnPage) {
-      page.insertBefore(widget, cplWidget);
-    } else {
-      page.insertBefore(widget, page.firstChild);
+    // /Engineer pass (July 28, round 2) — real bug found: Goal 1 (earlier
+    // the same day) gave vp-widget a dashDeck popup home (_openVideoPipeline)
+    // and added stash calls to dashDeck._inject(), but this function still
+    // injected the widget straight onto #page-dashboard, and dashDeck's own
+    // boot task runs BEFORE this module's (registration order — dashDeck
+    // registers far earlier in the file), so dashDeck's stash-on-boot calls
+    // always fired before #vp-widget existed to catch. Net effect: vp-widget
+    // sat loose on the live dashboard on every first paint, exactly the
+    // Content Pipeline bug the July 20 fix already solved for #cpl-widget —
+    // fixed the identical way: inject straight into the shared
+    // #dd-stash-holder instead of the raw page. dashDeck owns showing it via
+    // _openVideoPipeline(). Prefer dashDeck's own holder helper; fall back to
+    // the same-id holder if dashDeck hasn't run yet.
+    var holder = document.getElementById('dd-stash-holder');
+    if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
+      holder = RPGACE.modules.dashDeck._ensureStash();
     }
+    if (!holder) {
+      holder = document.createElement('div');
+      holder.id = 'dd-stash-holder';
+      holder.style.display = 'none';
+      page.appendChild(holder);
+    }
+    holder.appendChild(widget);
 
     self._refreshWidget();
-    console.log('[videoPipeline] Widget injected');
+    console.log('[videoPipeline] Widget injected (stashed for dashDeck popup)');
   },
 
   _showNewJobForm: function() {
@@ -14533,9 +14573,27 @@ RPGACE.register('morningBrief', {
     output.style.cssText = 'display:none;';
     wrap.appendChild(output);
 
-    // Insert at top of dashboard
-    page.insertBefore(wrap, page.firstChild);
-    console.log('[RPGACE:morningBrief] Button injected');
+    // /Engineer pass (July 28, round 2) — this widget used to inject
+    // straight onto #page-dashboard, a loose block outside dashDeck's card
+    // grid, and a real duplicate of dashDeck's own 'Morning Brief' card
+    // (which used to just do a hollow static Oracle-input prefill, now
+    // removed). This IS the real Morning Brief now; dashDeck's card opens
+    // it via _openMorningBrief(). Same fix as vp-widget/cpl-widget: inject
+    // straight into the shared #dd-stash-holder instead of the raw page —
+    // dashDeck owns showing it. Prefer dashDeck's own holder helper; fall
+    // back to the same-id holder if dashDeck hasn't run yet.
+    var holder = document.getElementById('dd-stash-holder');
+    if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
+      holder = RPGACE.modules.dashDeck._ensureStash();
+    }
+    if (!holder) {
+      holder = document.createElement('div');
+      holder.id = 'dd-stash-holder';
+      holder.style.display = 'none';
+      page.appendChild(holder);
+    }
+    holder.appendChild(wrap);
+    console.log('[RPGACE:morningBrief] Button injected (stashed for dashDeck popup)');
   },
 
   _autoRun: function() {

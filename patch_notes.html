@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🩹 July 28 (Round 36) — Real regression caught from Alex's own screenshot: Round 35's videoPipeline fix was incomplete, and Morning Brief turned out to be two competing implementations</div>
+    <div class="card-body">
+      Alex sent a real phone screenshot of the live dashboard: both "Morning Brief" and "Video Pipeline" were rendering as loose blocks ABOVE dashDeck's own card grid, despite Round 35's own claim that videoPipeline had been given a real card home. Ran a full <code>/scope</code> + GODMODE evidence pass before touching anything (record: <code>engineer_pass_2026-07-28_02.txt</code>).
+      <br><br>
+      <strong>Real root cause 1 — Round 35's vp-widget fix only patched half the problem.</strong> It added a dashDeck card + popup, but `videoPipeline._injectWidget()` itself still appended the widget straight onto `#page-dashboard`, and the new stash call only covered dashDeck's REPEAT-visit branch, never the first-run one. Module registration order (dashDeck registers before videoPipeline in file order, and `rpgace:ready` fires each module's `init()` in that order) means dashDeck's first-run stash sweep always ran before `#vp-widget` existed — so it sat loose on every fresh page load. Fixed by copying the ALREADY-PROVEN July 20 pattern used for `#cpl-widget`: `_injectWidget()` now injects straight into the shared `#dd-stash-holder` instead of the raw page, so it's never loose regardless of boot order.
+      <br><br>
+      <strong>Real root cause 2 — Morning Brief was two separate features wearing one name (rule 8 violation).</strong> dashDeck's own card did a hollow static prefill of Oracle's chat input (`_prefillOracle`/`MORNING_PROMPT`) — no live data, never sent. The REAL Morning Brief lived in a wholly separate `morningBrief` module: auto-runs once daily, gathers live Gmail/shifts/YouTube/knowledge-gap/idea-bank data, and actually sends a composed brief to Oracle — but it had never been migrated into the card/popup system either, injecting its own `#mb-wrap` button straight onto the dashboard the same way vp-widget was. Merged for real: dashDeck's card now opens a new `_openMorningBrief()` popup that relocates the live `#mb-wrap` node (same move-never-rebuild pattern as every other card widget), `_injectButton()` fixed with the same stash-holder injection as Goal 1's fix, and the dead `_prefillOracle`/`MORNING_PROMPT` code removed outright (confirmed unused elsewhere by grep first).
+      <br><br>
+      Both loose buttons are now architecturally impossible to re-appear the same way — they self-inject into the hidden holder from the moment they're created, the same mechanism `#cpl-widget`/`#kg-panel` have used correctly since July 20. `node --check` clean, cache-bust bumped `20260728d`→`20260728e`. <strong>Still genuinely UNTESTED</strong> — no login this session; the fastest real confirmation is the same screenshot-and-report loop that caught this bug in the first place.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">⚙️ July 28 (Round 35) — /Engineer pass: videoPipeline given a real dashDeck home + 160 more undersized-text sites fixed (the population the static scanner can't see)</div>
     <div class="card-body">
       Full whole-project audit today (a real /scope of oversight + a real /scope of RPGACE itself, function-path tracing across the button catalog) surfaced two concrete, buildable Tier-1 goals — logged verbatim in <code>engineer_pass_2026-07-28_01.txt</code>, run as a real bounded <code>/Engineer</code> pass. Opus was requested for the audit's synthesis step but hit its session usage limit before returning anything; Sonnet substituted directly rather than wait or fabricate a result, same precedent this project already has for a dispatched model running dry.

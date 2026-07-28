@@ -1,0 +1,187 @@
+/Engineer pass — 2026-07-28, round 2
+Trigger: Alex sent a real phone screenshot of the live dashboard showing
+BOTH "Morning Brief" and "Video Pipeline" rendered as loose, un-integrated
+blocks ABOVE dashDeck's own card grid, in addition to (supposedly) already
+having real dashDeck cards for both. Direct instruction: "these should not
+be seen... merge them by function if any are missing in the cards, then
+get rid of loose 2 buttons after once functions fully integrated into
+card. use /scope, /Godmode and /Engineer to execute."
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+Goal A (Tier 1 — single-module bug fix, real regression). Fix
+videoPipeline's vp-widget so it never renders loose on the dashboard,
+regardless of boot order — root-cause fix, not a second stash-call patch.
+
+Goal B (Tier 2 — real deduplication, rule 8). Merge the two divergent
+Morning Brief implementations (dashDeck's hollow static-prefill card vs.
+the real live-data morningBrief module) into one, with the real
+functionality reachable through the card, and fix its own loose-widget
+bug the same way as Goal A.
+
+Both goals reuse an already-proven, already-shipped pattern (the
+relocate-into-popup / stash-into-holder mechanism built July 20 for
+kg-panel/cpl-widget, and Goal 1 earlier today for vp-widget) — no new
+architecture, no Tier 3 concerns, no data writes.
+
+=====================================================================
+STAGE 2 — EVIDENCE (/scope + GODMODE, real source read before any edit)
+=====================================================================
+
+Real finding 1 — videoPipeline._injectWidget() (rpgace_core.js, was line
+~13574) appended the widget directly onto #page-dashboard
+(`page.insertBefore(widget, page.firstChild)` fallback), even after this
+morning's earlier /Engineer pass ("Goal 1") gave it a dashDeck card +
+_openVideoPipeline() popup. That earlier pass added stash calls
+(`this._stashWidget('vp-widget')`) only to the REPEAT-visit branch of
+dashDeck._inject() (the `if (document.getElementById('dd-deck')) {...}`
+early-return) — never to the first-run branch, and never touched
+_injectWidget()'s own injection target. Traced module registration order
+(RPGACE.register() calls are synchronous top-to-bottom as the script
+parses; `rpgace:ready` listeners then fire each module's init() in that
+same registration order — confirmed by reading R.register at line 545):
+dashDeck registers (~line 4700s) BEFORE videoPipeline (~line 13555)
+BEFORE morningBrief (~line 14486). So on first paint, dashDeck's own
+_inject() (first-run path) runs and stashes bookworm/kg-panel/cpl-widget
+— but #vp-widget doesn't exist yet at that moment, so nothing stashes it,
+and it never gets a second chance until the user navigates away from and
+back to the dashboard (the repeat-run branch). This exactly reproduces
+what Alex's screenshot shows on a fresh load.
+
+Real finding 2 — contentProductionLive._injectDashboardWidget() (the
+July 20 cpl-widget fix, still in place, read directly at line ~13024)
+does NOT rely on dashDeck to retroactively stash it. It injects itself
+straight into #dd-stash-holder (falling back to dashDeck's own
+_ensureStash() helper, or building the holder itself if dashDeck hasn't
+run yet) — this is why cpl-widget was NOT visible loose in the
+screenshot even though it has the exact same boot-order relationship to
+dashDeck as vp-widget. This is the real, already-proven fix pattern; Goal
+1 earlier today never applied it to vp-widget, it only added a
+now-provably-insufficient second-branch stash call.
+
+Real finding 3 — Morning Brief is not one feature with a stray loose
+button; it is TWO independent implementations (rule 8 violation, found by
+reading both in full):
+  (a) dashDeck's own card (key:'morningBrief', MODULES array) called
+      `_prefillOracle(MORNING_PROMPT)` — a hollow action that only fills
+      #chat-input with a hardcoded static prompt string and never sends
+      it. No live data of any kind.
+  (b) A wholly separate `morningBrief` module (RPGACE.register at
+      ~line 14486) is the REAL implementation: auto-runs once per
+      calendar day before noon, gathers live Gmail/shifts/YouTube/
+      knowledge-gap/idea-bank data via async calls, composes a real
+      prompt, and calls RPGACE.utils.sendToOracle(prompt) — an ACTUAL
+      send, not a prefill. It injects its own #mb-wrap (button + last-run
+      label + output) straight onto #page-dashboard, and was never
+      migrated into the dashDeck card/popup system at all — unlike
+      cpl-widget/kg-panel, which were.
+Grepped MORNING_PROMPT and _prefillOracle across rpgace_core.js and
+main.js: both are used ONLY by the one dashDeck card entry being
+replaced — confirmed dead once removed, not guessed.
+
+=====================================================================
+STAGE 3 — OMNITRIX EXECUTION (Sonnet direct, no Fable/Opus dispatch —
+single-session, small bounded diff, doesn't need a fresh-context audit)
+=====================================================================
+
+1. videoPipeline._injectWidget(): replaced the cpl-widget-anchor guard
+   block with the identical holder-injection pattern already proven in
+   contentProductionLive._injectDashboardWidget() — injects into
+   #dd-stash-holder (via dashDeck._ensureStash(), with a same-id-holder
+   fallback) instead of the raw page. Removed the now-obsolete
+   cplWidget-anchoring dead code it replaced.
+2. morningBrief._injectButton(): identical fix — injects #mb-wrap into
+   #dd-stash-holder instead of page.insertBefore(wrap, page.firstChild).
+   _autoRun()/_generate() are unaffected (they operate by getElementById,
+   which still resolves whether the node is visible or stashed) — the
+   daily auto-send-to-Oracle behavior is fully preserved.
+3. dashDeck.MODULES 'morningBrief' card: go handler changed from
+   `_prefillOracle(MORNING_PROMPT)` to `_openMorningBrief()`.
+4. New dashDeck._openMorningBrief(): added immediately after
+   _openVideoPipeline(), same exact relocate-on-open/stash-on-close
+   template as _openPipeline()/_openVideoPipeline()/_openGaps() — moves
+   the live #mb-wrap node into a popup (never rebuilds it), stashes it
+   back (force=true) on close.
+5. Removed dead code: MORNING_PROMPT constant and _prefillOracle()
+   function (confirmed unused elsewhere by grep before deletion).
+6. dashDeck._inject(): added 'vp-widget' and 'mb-wrap' to the first-run
+   stash-call list (defensive symmetry with kg-panel/cpl-widget, matching
+   existing convention — harmless now that both self-inject into the
+   holder directly, but keeps the four widget IDs treated consistently
+   for the popup-still-open sweep case) and added 'mb-wrap' to the
+   repeat-run branch alongside the existing vp-widget entry.
+7. index.html cache-bust: rpgace_core.js?v=20260728d -> 20260728e (G7).
+
+No main.js edit. No new module. No new Supabase table/column. No Tier-3
+action anywhere in this pass.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (from real git diff, not memory)
+=====================================================================
+
+What changed and where: rpgace_core.js — 4 functions touched
+(videoPipeline._injectWidget, morningBrief._injectButton,
+dashDeck._inject, and a new dashDeck._openMorningBrief), 2 dead-code
+removals (MORNING_PROMPT, _prefillOracle), 1 MODULES array entry
+changed. index.html — 1 cache-bust string. `git diff --stat`: 136
+insertions, 39 deletions across rpgace_core.js, 1 line in index.html.
+
+Why: a real, screenshot-evidenced bug (Goal 1's own fix was incomplete —
+missed the actual injection-target root cause) plus a real rule-8
+duplication (two independent Morning Brief implementations, one hollow).
+
+What it touched that wasn't planned: nothing — no other module, no CSS,
+no Supabase schema. The dead-code removal (MORNING_PROMPT/_prefillOracle)
+was planned as part of Goal B, not a surprise.
+
+Honest why-not / residual risk: the fix trusts that #dd-stash-holder
+either already exists (dashDeck ran first, true in the overwhelmingly
+common case) or gets created on demand by whichever module's boot task
+runs first among {contentProductionLive, videoPipeline, morningBrief} —
+same trust the July 20 cpl-widget fix already relies on and has run
+correctly since. No new failure mode introduced. Residual: still cannot
+verify visually without a real login — labeled UNTESTED below, honestly.
+
+Council of 5 quality score: 9/10 — informational only, authorizes
+nothing. Reasoning: root cause was read from real source for all three
+widgets before writing a single line (rule 1), the fix is a verbatim
+reuse of an already-proven pattern rather than a new mechanism, and the
+Goal-1 gap that caused this (missing the first-run stash branch AND the
+real injection-target root cause) is now understood well enough that
+future dashDeck-card widgets should self-inject into the holder from
+day one rather than rely on dashDeck to retroactively stash them.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (re-derived from scratch, not read back)
+=====================================================================
+
+- G1 Syntax: `node --check rpgace_core.js && node --check main.js` — both
+  clean, re-run fresh for this stage, not reused from Stage 3's own run.
+- G2 index.html invariants: only the cache-bust string changed — no div/
+  script-tag/page-id structure touched, so div-balance and the two-script
+  rule are unaffected by this pass.
+- G3 Module convention: all edits sit inside the existing dashDeck/
+  videoPipeline/morningBrief module markers; no main.js edit, so no
+  FROZEN-file exception needed.
+- G4 Claim-to-diff reconciliation: `git diff` re-read directly against
+  this report's Stage 3 list — every claimed change is present, no
+  unclaimed hunk exists beyond what's listed above. Clean both
+  directions.
+- G5 Goal reconciliation: Goal A (vp-widget root-cause fix) — DONE. Goal B
+  (Morning Brief merge + its own loose-widget fix + dead-code removal) —
+  DONE.
+- G6 Deployment reality: pending this session's merge-to-main + push +
+  `list_deployments` check (performed immediately after this file is
+  written, per standing process — not yet run at the time this record was
+  drafted).
+- G7 Cache-bust: rpgace_core.js changed -> index.html's ?v= moved in the
+  same commit (20260728d -> e). Confirmed present in the diff.
+- UNTESTED (required label, not a failure): whether the "Morning Brief"
+  and "Video Pipeline" dashDeck cards now open real, correctly-populated
+  popups on a genuine phone/browser session, and whether the loose blocks
+  are actually gone on a fresh page load — needs Alex's real hands
+  (exactly the same screenshot-and-report loop that surfaced this bug in
+  the first place is the fastest way to confirm the fix).
+
+Pass count: 1 of 3 allowed. No re-loop triggered — no gate failed.
