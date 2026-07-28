@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎤 July 28 (Round 41) — Real accessibility need: Alex fractured his right hand, added voice input to Oracle chat via the browser's native Speech API</div>
+    <div class="card-body">
+      Alex fractured his right hand and asked whether voice-to-text was possible, both for talking to Claude Code and inside RPGACE itself.
+      <br><br>
+      <strong>For Claude Code: already solved, zero code needed.</strong> The phone/OS keyboard's own mic/dictation button (Gboard's mic icon, iOS dictation) works in any text field already, including wherever he types to Claude Code — not something RPGACE or this session controls.
+      <br><br>
+      <strong>For RPGACE: real and buildable, built directly given the physical urgency</strong> (a fresh Opus dispatch would have cost more of his time re-explaining context already in hand this session, so this was built directly rather than round-tripped). New 🎤 button on Oracle chat's input row, next to the existing 📸 upload button — uses the browser's native <code>SpeechRecognition</code> Web Speech API: free, zero new dependency, fits the zero-npm-runtime architecture. Continuous mode with auto-restart on silence gaps, so a fractured-hand user isn't stuck re-tapping the button after every pause. Honest limitation stated plainly: Chrome (desktop + Android, what Alex uses throughout this session's own screenshots) supports this well; Firefox has none, Safari's has historically been unreliable — not a blocker for a single-user Chrome/Android app, but not universal either.
+      <br><br>
+      Also added a new standing rule (CLAUDE.md #9): if the same auto-continue system message repeats ~8+ times in a row with no genuine new input (a real client/harness artifact hit this session — 9 in a row), stop and checkpoint the real state to a dated backlog file rather than keep burning tokens re-processing the same tool output.
+      <br><br>
+      `node --check` clean, cache-bust bumped. <strong>Untested</strong> — needs Alex's real hand(s): tap 🎤, grant mic permission, confirm speech actually transcribes into the chat box.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎯 July 28 (Round 40) — Real root cause found for "matches are always the same": 2 dead scoring dimensions in the reference corpus, plus Genre added and Notion swapped for the real corpus</div>
     <div class="card-body">
       Alex's real feedback after logging a beat: matches keep repeating, no way to add Genre, doesn't want a Notion dump, wants to know if an AI can listen to a beat and extract its metadata.

@@ -16652,3 +16652,109 @@ RPGACE.register('perfWatch', {
   }
 });
 /* ===END:perfWatch=== */
+
+/* ===MODULE:voiceInput=== */
+// 2026-07-28 — Alex fractured his right hand and asked whether voice
+// input was possible, both for talking to Claude Code (answer: yes,
+// already solved with zero code — the phone/OS keyboard's own mic/
+// dictation button works in any text field, including wherever he types
+// to Claude Code) and inside RPGACE itself (this module). Real,
+// buildable via the browser's native Web Speech API (SpeechRecognition)
+// — free, zero new dependency, fits the zero-npm-runtime architecture.
+// Honest limitation: Chrome (desktop + Android — what Alex uses
+// throughout this session's own screenshots) supports this well;
+// Firefox has no support at all, Safari's has historically been
+// unreliable. Not a blocker for a single-user app used from Chrome, but
+// stated plainly rather than assumed universal.
+RPGACE.register('voiceInput', {
+
+  _recognition: null,
+  _listening: false,
+  _baseText: '',
+
+  init: function() {
+    var self = this;
+    // Global function name, matching this exact row's existing sibling
+    // buttons (oracleImageUpload()/sendChatWithImage(), both plain global
+    // functions called via onclick= in the static HTML) rather than
+    // introducing a different calling convention for one new button.
+    window.toggleVoiceInput = function() { self.toggle(); };
+  },
+
+  _supported: function() {
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  },
+
+  toggle: function() {
+    if (!this._supported()) {
+      RPGACE.utils.toast('🎤 Voice input isn\'t supported in this browser — try Chrome', '#CC4A4A', 3500);
+      return;
+    }
+    if (this._listening) { this._stop(); return; }
+    this._start();
+  },
+
+  _start: function() {
+    var self = this;
+    var input = document.getElementById('chat-input');
+    if (!input) return;
+
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var rec = new SR();
+    rec.lang = 'en-GB';
+    rec.continuous = true;
+    rec.interimResults = true;
+
+    this._baseText = input.value ? input.value.replace(/\s+$/, '') + ' ' : '';
+
+    rec.onresult = function(e) {
+      var finalText = '', interimText = '';
+      for (var i = 0; i < e.results.length; i++) {
+        var t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalText += t + ' '; else interimText += t;
+      }
+      if (finalText) self._baseText += finalText;
+      input.value = self._baseText + interimText;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    rec.onerror = function(e) {
+      RPGACE.utils.toast('🎤 Voice input error: ' + (e.error || 'unknown'), '#CC4A4A', 3000);
+      self._stop();
+    };
+    rec.onend = function() {
+      // Chrome auto-stops recognition after a silence gap even in
+      // continuous mode — restart transparently while still toggled on,
+      // so a fractured-hand user isn't stuck re-tapping the button after
+      // every pause in speech.
+      if (self._listening) { try { rec.start(); } catch (e2) {} }
+    };
+
+    this._recognition = rec;
+    this._listening = true;
+    this._setButtonState(true);
+    try {
+      rec.start();
+    } catch (e) {
+      RPGACE.utils.toast('🎤 Could not start: ' + e.message, '#CC4A4A', 3000);
+      this._listening = false;
+      this._setButtonState(false);
+    }
+  },
+
+  _stop: function() {
+    this._listening = false;
+    if (this._recognition) { try { this._recognition.stop(); } catch (e) {} this._recognition = null; }
+    this._setButtonState(false);
+  },
+
+  _setButtonState: function(active) {
+    var btn = document.getElementById('voice-input-btn');
+    if (!btn) return;
+    btn.textContent = active ? '🔴' : '🎤';
+    btn.title = active ? 'Stop voice input' : 'Voice input';
+    btn.style.borderColor = active ? '#CC4A4A' : 'rgba(201,168,76,.3)';
+    btn.style.color = active ? '#CC4A4A' : 'var(--gold)';
+  },
+
+});
+/* ===END:voiceInput=== */
