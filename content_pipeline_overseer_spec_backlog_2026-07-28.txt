@@ -215,6 +215,91 @@ or resurrect them (implies building Director-Match persistence /
 external-editor integration - real new scope, not proposed for now).
 
 =====================================================================
-ALEX'S REAL ANSWERS (appended once given - not guessed, not defaulted)
+ALEX'S REAL ANSWERS (verbatim, via AskUserQuestion)
 =====================================================================
-[pending]
+Fork 1 (video_jobs' fate): "Keep both, add a link."
+Fork 2 (where creative docs live): "New creative_docs field."
+Fork 3 (how Visual Oracle picks a save target): "make 1, but 2 sounds
+  very interesting" - build the explicit picker now; the ambient
+  active-row idea is logged below as a real future enhancement, not
+  built this pass.
+Fork 5 (style_profile_id/edl): "Resurrect them."
+Fork 4 was not asked directly (it depended on Fork 1's answer) - given
+"keep both, add a link," Beat Log was built to create the linked
+content_productions row directly, making it a real entry point into
+Content Pipeline rather than a second orphaned tracker.
+Then: "yes, proceed with the build, then I'll add on after if needed."
+
+=====================================================================
+WHAT WAS ACTUALLY BUILT (same session, real diff - not a claim) -
+node --check clean, merged to main, deployed
+=====================================================================
+Real schema (3 migrations, applied via Supabase MCP, all successful):
+  - video_jobs.content_production_id uuid references content_productions(id)
+  - content_productions.creative_docs jsonb not null default '{}'
+  - new style_profiles table (director_name, visual_style, colour_palette,
+    video_job_id references video_jobs(id), beat_title, source_response),
+    RLS enabled with the same anon_read_only + authenticated_all posture
+    as every other table since Approach B; added to api/data-write.js's
+    ALLOWED_TABLES.
+
+beatLog._submit() rewritten (rpgace_core.js): now creates the
+content_productions row FIRST (status:'Idea', idea: a real beat summary,
+taxonomy_nodes: form.taxNodes, creative_docs:{beat_meta:form},
+licence_type: form.licence), waits for its real id, then inserts
+video_jobs linked via content_production_id - real, not fire-and-forget,
+so downstream code always has a real target row. The rest of the
+existing flow (taxonomy marking, journal save, XP, artist search) now
+runs from a new _continueAfterLink() once linking resolves (or fails
+open to null ids, same as before).
+
+_autoVisualTreatment (F18) now threads cpId/videoJobId through the
+whole chain (_generateOutputs -> _waitThenAutoVisualTreatment ->
+_autoVisualTreatment) and asks Oracle for one extra structured trailer
+line (DIRECTOR_CHOSEN: <name>). A new shared visualOracle
+._captureNextResponse() (one-shot, built on the existing
+'oracle:response-scanned' hook - confirmed this only fires once per
+FULLY completed reply, not per streaming chunk, so today's earlier
+streaming work doesn't truncate the capture) catches the real response
+text without any extra API call, then visualOracle._saveDocToProduction()
+does the actual work: saves the full text into
+content_productions.creative_docs.visual_treatment, parses
+DIRECTOR_CHOSEN, looks up that director in the real 50-row
+f14_filmmaker_library, inserts a real style_profiles row, and links it
+via video_jobs.style_profile_id - style_profile_id is no longer a dead
+column.
+
+visualOracle's 6 CMDS gained the DIRECTOR_CHOSEN trailer (Director
+Match, Visual Treatment Doc) and Storyboard Scene Builder gained an
+EDL_JSON trailer (a compact JSON array: scene/shot_type/camera_movement/
+duration_sec/cut_type per shot). Every command, when fired manually from
+the Visual Oracle panel, now offers a real "💾 Save to Content Pipeline"
+picker (Fork 3's explicit-picker answer) listing recent
+content_productions rows; picking one runs the same _saveDocToProduction
+logic - if the docType is director_match/visual_treatment it resolves a
+style profile the same way the automatic flow does; if it's storyboard,
+it parses EDL_JSON and saves it onto the linked video_jobs row - edl is
+no longer a dead column either.
+
+Real limitation, stated honestly: the manual save picker doesn't know
+which video_jobs row to link to directly, so it looks one up by
+reverse query (video_jobs where content_production_id = the chosen row,
+most recent). If a production has no linked video_jobs row yet (was
+never created via Beat Log), style_profiles/edl saves for that
+production silently no-op on the video_jobs half - the creative_docs
+save onto content_productions still succeeds either way.
+
+NOT built this pass (real future enhancement, logged not dropped, per
+Alex's own "sounds very interesting"): the ambient "active production"
+context for Visual Oracle (Fork 3's option 2) - this codebase has no
+"currently active production" state concept anywhere yet; building it
+means real new plumbing (session state, a way to set/clear "active"),
+not a small addition. Worth a dedicated pass if the explicit picker
+proves annoying in daily use.
+
+UNTESTED - genuinely needs Alex's real hands: logging a real beat with
+the Visual Treatment checkbox on, confirming a real content_productions
+row appears with a linked video_jobs row and a real style_profiles row;
+firing a manual Visual Oracle command and using the save picker;
+running Storyboard Scene Builder against a production with a linked
+video job and confirming a real edl array lands on it.

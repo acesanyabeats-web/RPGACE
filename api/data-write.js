@@ -53,6 +53,10 @@ const ALLOWED_TABLES = new Set([
   'encyclopedia_insights',
   'rpgace_agendas',
   'intel_jobs',
+  // 2026-07-28 - Content Pipeline overseer build (Alex-confirmed forks,
+  // content_pipeline_overseer_spec_backlog_2026-07-28.txt): new table,
+  // same anon_read_only/authenticated_all posture as every table above.
+  'style_profiles',
 ]);
 
 export default async function handler(req, res) {

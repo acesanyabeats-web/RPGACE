@@ -1079,13 +1079,18 @@ RPGACE.register('quickActions', {
 RPGACE.register('visualOracle', {
 
   CMDS: [
-    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 14 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word Neural Frames prompt I can use immediately.'],
-    ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars.'],
+    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 14 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word Neural Frames prompt I can use immediately. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the one director from your 3 matches who fits best>.'],
+    ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the director/visual-style name you were given, or NONE if none was given>.'],
     ['Copyright Risk Analyser', 'Analyse the copyright risk of my planned music video concept. CONCEPT: [DESCRIBE YOUR VIDEO CONCEPT IN DETAIL] VISUAL REFERENCES: [LIST ANY FILMS, MUSIC VIDEOS, OR DIRECTORS YOU PLAN TO REFERENCE] FOOTAGE SOURCES: [LIST WHERE YOU PLAN TO SOURCE FOOTAGE — stock, self-shot, archival, AI-generated]. For each element: copyright risk level (Low / Medium / High), what specifically creates the risk, how to modify the concept to eliminate or reduce the risk, and safe alternative approaches. End with an overall risk score and a clear/proceed/modify verdict.'],
     ['Mood Board Brief', 'Create a detailed mood board brief for my beat visual. BEAT DESCRIPTION: [DESCRIBE YOUR BEAT — genre, mood, key, BPM, feel] TARGET PLATFORM: [YOUTUBE / INSTAGRAM / BEATSTARS / ALL]. The brief must specify: 5 colour hex codes with usage ratios, 3 texture references (describe the material/surface quality), lighting direction (quality, direction, colour temperature), typography direction if text appears, 5 specific shot types with descriptions, 3 real-world location types that fit, and 3 visual DONTs for this concept. Format this so I can hand it directly to a designer or use it in Canva.'],
-    ['Storyboard Scene Builder', 'Build a shot-by-shot storyboard for my music video. SONG SECTION: [INTRO / VERSE / CHORUS / BRIDGE / OUTRO — choose one, or ALL] DURATION: [TYPE THE SECTION LENGTH IN SECONDS] VISUAL STYLE: [TYPE YOUR VISUAL DIRECTION — e.g. dark cinematic UK drill, lo-fi nostalgic, futuristic minimal] LOCATION: [TYPE YOUR PLANNED LOCATION OR WRITE "studio" / "street" / "AI-generated"]. For each shot: shot number, shot type (close-up / medium / wide / extreme close-up), camera movement, subject action, duration in seconds, lighting note, and cut type to next shot. End with a total shot count and pacing assessment.'],
+    ['Storyboard Scene Builder', 'Build a shot-by-shot storyboard for my music video. SONG SECTION: [INTRO / VERSE / CHORUS / BRIDGE / OUTRO — choose one, or ALL] DURATION: [TYPE THE SECTION LENGTH IN SECONDS] VISUAL STYLE: [TYPE YOUR VISUAL DIRECTION — e.g. dark cinematic UK drill, lo-fi nostalgic, futuristic minimal] LOCATION: [TYPE YOUR PLANNED LOCATION OR WRITE "studio" / "street" / "AI-generated"]. For each shot: shot number, shot type (close-up / medium / wide / extreme close-up), camera movement, subject action, duration in seconds, lighting note, and cut type to next shot. End with a total shot count and pacing assessment. Then output a separate final block, starting on its own line with exactly: EDL_JSON: followed by a compact JSON array with one object per shot in the shape {"scene":<number>,"shot_type":"...","camera_movement":"...","duration_sec":<number>,"cut_type":"..."}.'],
     ['Neural Frames Prompt', 'Generate 3 Neural Frames AI video prompts for my beat. BEAT FEEL: [DESCRIBE IN 5 WORDS] COLOUR DIRECTION: [TYPE 2-3 COLOURS OR A PALETTE NAME] SUBJECT: [TYPE WHAT SHOULD APPEAR — abstract, character, landscape, object] AVOID: [TYPE ANYTHING YOU DO NOT WANT — faces, text, specific styles]. For each prompt: a 100-word Neural Frames Autopilot prompt optimised for beat-sync, the recommended motion intensity setting (Low / Medium / High / Extreme), the recommended style preset if applicable, and what this prompt will generate visually. Label them Option A (safest), Option B (most striking), Option C (most experimental).'],
   ],
+
+  // Doc-type slug per CMDS index — used as the key when saving a response
+  // into content_productions.creative_docs (2026-07-28 Content Pipeline
+  // overseer build, Alex-confirmed forks).
+  DOC_SLUGS: ['director_match', 'visual_treatment', 'copyright_risk', 'mood_board', 'storyboard', 'neural_frames'],
 
   ICONS: ['🎬','📄','⚠️','🎨','🎞️','🤖'],
 
@@ -1162,12 +1167,22 @@ RPGACE.register('visualOracle', {
       btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
       btn.onclick = function() {
         self._close();
+        // 2026-07-28 - arm the shared response capture right before the
+        // filled prompt is actually sent, so whichever reply comes back
+        // next can be offered a "save to Content Pipeline" picker (Content
+        // Pipeline overseer build, Alex-confirmed forks). Every command
+        // gets the offer, not just the 4 flagged as real per-project
+        // candidates in the plan - a save button costing nothing to
+        // ignore is simpler than special-casing which commands get one.
         var proceed = function(promptText) {
           RPGACE.utils.fillGaps(promptText, function(filled) {
             var input = document.querySelector('#chat-input');
             if (!input) return;
             input.value = filled;
             input.dispatchEvent(new Event('input', {bubbles:true}));
+            self._captureNextResponse(function(text) {
+              self._showSaveToPipelinePicker(self.DOC_SLUGS[i], text);
+            });
             if (typeof sendChat === 'function') sendChat();
           });
         };
@@ -1204,6 +1219,150 @@ RPGACE.register('visualOracle', {
         callback(RPGACE.utils.phylumContext(14) + ' FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
       })
       .catch(function() { callback(''); });
+  },
+
+  // ── Content Pipeline overseer build (2026-07-28, Alex-confirmed forks:
+  // content_pipeline_overseer_spec_backlog_2026-07-28.txt) ──────────────
+  // Shared one-shot capture: waits for the very next completed Oracle
+  // response and hands its full text to callback, then detaches. Reused
+  // by beatLog's automatic F18 Visual Treatment flow AND the manual
+  // "save to Content Pipeline" picker below - one real mechanism, not
+  // two hand-rolled waits (rule 8). Built on the existing
+  // 'oracle:response-scanned' hook (fires once per completed reply,
+  // already relied on by kg-panel/phylumPath's own auto-detect) rather
+  // than a second MutationObserver.
+  _captureNextResponse: function(callback) {
+    var off = RPGACE.hooks.on('oracle:response-scanned', function(text) {
+      off();
+      callback(text);
+    });
+  },
+
+  // Real save logic, no UI - reused by both the automatic Visual
+  // Treatment flow (already knows its target row) and the manual picker
+  // below (asks Alex which row). Parses the two structured trailers
+  // CMDS/the auto-treatment prompt now ask Oracle to emit
+  // (DIRECTOR_CHOSEN, EDL_JSON) so a director pick becomes a real
+  // style_profiles row and a storyboard becomes a real edit-decision-
+  // list, rather than staying locked inside chat prose forever.
+  _saveDocToProduction: function(docSlug, text, productionId, videoJobId) {
+    if (!productionId) return;
+    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
+      .then(function(rows) {
+        var existing = (rows && rows[0] && rows[0].creative_docs) || {};
+        existing[docSlug] = text;
+        return RPGACE.sb.secureWrite('content_productions', 'update', { creative_docs: existing }, 'id=eq.' + productionId);
+      })
+      .then(function() { RPGACE.utils.toast('💾 Saved ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline', '#9B6EC8', 2500); })
+      .catch(function(e) { console.warn('[visualOracle] save creative_docs:', e.message); });
+
+    var lookupVideoJob = function() {
+      if (videoJobId) return Promise.resolve(videoJobId);
+      return RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + productionId + '&select=id&order=created_at.desc&limit=1')
+        .then(function(rows) { return rows && rows[0] ? rows[0].id : null; });
+    };
+
+    if (docSlug === 'director_match' || docSlug === 'visual_treatment') {
+      var dm = text.match(/DIRECTOR_CHOSEN:\s*(.+)/);
+      if (!dm) return;
+      var directorName = dm[1].trim().replace(/\.$/, '');
+      if (!directorName || /^none$/i.test(directorName)) return;
+      lookupVideoJob().then(function(vjId) {
+        RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&concept=eq." + encodeURIComponent(directorName) + "&select=concept,definition,colour_palette&limit=1")
+          .then(function(rows) {
+            var d = rows && rows[0];
+            return RPGACE.sb.secureWrite('style_profiles', 'insert', {
+              director_name: directorName,
+              visual_style: d ? d.definition : null,
+              colour_palette: d ? d.colour_palette : null,
+              video_job_id: vjId,
+              beat_title: null,
+              source_response: text,
+            });
+          })
+          .then(function(result) {
+            var row = Array.isArray(result) ? result[0] : result;
+            if (row && row.id && vjId) {
+              return RPGACE.sb.secureWrite('video_jobs', 'update', { style_profile_id: row.id }, 'id=eq.' + vjId);
+            }
+          })
+          .catch(function(e) { console.warn('[visualOracle] style_profiles save:', e.message); });
+      });
+    }
+
+    if (docSlug === 'storyboard') {
+      var em = text.match(/EDL_JSON:\s*(\[[\s\S]*\])/);
+      if (!em) return;
+      var edl;
+      try { edl = JSON.parse(em[1]); } catch (e) { return; }
+      if (!Array.isArray(edl)) return;
+      lookupVideoJob().then(function(vjId) {
+        if (!vjId) return;
+        RPGACE.sb.secureWrite('video_jobs', 'update', { edl: edl }, 'id=eq.' + vjId)
+          .catch(function(e) { console.warn('[visualOracle] edl save:', e.message); });
+      });
+    }
+  },
+
+  // Manual save picker - shown after any of the 6 commands completes
+  // (Fork 3, Alex-confirmed: explicit picker, not an ambient "active
+  // production" context - that idea is logged as a real future
+  // enhancement, not built, per the same spec backlog). Lists recent
+  // content_productions rows so Alex can pick a target; calls the same
+  // _saveDocToProduction logic the automatic flow uses.
+  _showSaveToPipelinePicker: function(docSlug, text) {
+    var self = this;
+    RPGACE.sb.select('content_productions', 'select=id,con_id,title&order=created_at.desc&limit=15')
+      .then(function(rows) {
+        rows = rows || [];
+        var overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+        var box = document.createElement('div');
+        box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.25);border-radius:12px;padding:24px 28px;width:min(420px,95vw);';
+        var title = document.createElement('div');
+        title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
+        title.textContent = '💾 Save to Content Pipeline';
+        box.appendChild(title);
+
+        if (rows.length === 0) {
+          var msg = document.createElement('div');
+          msg.style.cssText = 'color:rgba(226,226,236,0.4);font-size:12px;margin-bottom:16px;';
+          msg.textContent = 'No Content Pipeline entries yet.';
+          box.appendChild(msg);
+        } else {
+          var sel = document.createElement('select');
+          sel.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
+          rows.forEach(function(r) {
+            var opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = '#' + r.con_id + ' — ' + r.title;
+            sel.appendChild(opt);
+          });
+          box.appendChild(sel);
+        }
+
+        var btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:8px;';
+        var saveBtn = document.createElement('button');
+        saveBtn.textContent = '💾 Save';
+        saveBtn.disabled = rows.length === 0;
+        saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        saveBtn.onclick = function() {
+          var selEl = box.querySelector('select');
+          var productionId = selEl ? selEl.value : null;
+          overlay.remove();
+          if (productionId) self._saveDocToProduction(docSlug, text, productionId, null);
+        };
+        var skipBtn = document.createElement('button');
+        skipBtn.textContent = 'Skip';
+        skipBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        skipBtn.onclick = function() { overlay.remove(); };
+        btnRow.appendChild(saveBtn); btnRow.appendChild(skipBtn);
+        box.appendChild(btnRow);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+      })
+      .catch(function() {});
   },
 
 });
@@ -12378,24 +12537,65 @@ RPGACE.register('beatLog', {
     output.style.display = 'block';
     output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">⚡ Logging beat and searching for artist matches...</div>';
 
-    // 1. Save to Supabase video_jobs
-    RPGACE.sb.secureWrite('video_jobs', 'insert', {
-      title:        form.title,
-      status:       'beat_logged',
-      script:       JSON.stringify(form),
-      edl:          null,
-      raw_path:     form.flPath || null,
-      style_profile_id: null,
-    }).catch(function(e) { console.warn('[beatLog] Supabase save:', e.message); });
+    // 1. Create the linked Content Pipeline (ConID) entry FIRST so
+    //    video_jobs can reference its real id - Content Pipeline is the
+    //    overseer, Beat Log is a real entry point into it (Alex-confirmed
+    //    2026-07-28, content_pipeline_overseer_spec_backlog_2026-07-28.txt).
+    //    Waited on (not fire-and-forget) so everything downstream - the
+    //    video_jobs row, the Visual Treatment auto-save - has a real
+    //    target row to link to; adds one INSERT round-trip before the
+    //    rest of this flow continues, same fail-open behaviour as before.
+    RPGACE.sb.secureWrite('content_productions', 'insert', {
+      title: form.title,
+      idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
+      taxonomy_nodes: form.taxNodes,
+      platform_outputs: {},
+      status: 'Idea',
+      licence_type: form.licence || null,
+      creative_docs: { beat_meta: form },
+    }).then(function(result) {
+      var cpRow = Array.isArray(result) ? result[0] : result;
+      var cpId = cpRow && cpRow.id ? cpRow.id : null;
 
-    // 2. Mark taxonomy nodes as applied
+      // 2. Save to Supabase video_jobs, linked to the new Content Pipeline row
+      return RPGACE.sb.secureWrite('video_jobs', 'insert', {
+        title:        form.title,
+        status:       'beat_logged',
+        script:       JSON.stringify(form),
+        edl:          null,
+        raw_path:     form.flPath || null,
+        style_profile_id: null,
+        content_production_id: cpId,
+      }).then(function(vjResult) {
+        var vjRow = Array.isArray(vjResult) ? vjResult[0] : vjResult;
+        var videoJobId = vjRow && vjRow.id ? vjRow.id : null;
+        self._continueAfterLink(form, cpId, videoJobId);
+      }).catch(function(e) {
+        console.warn('[beatLog] video_jobs save:', e.message);
+        self._continueAfterLink(form, cpId, null);
+      });
+    }).catch(function(e) {
+      console.warn('[beatLog] Content Pipeline entry:', e.message);
+      self._continueAfterLink(form, null, null);
+    });
+  },
+
+  // Continues the pre-existing beat-log flow (taxonomy marking, journal,
+  // XP, artist search + outputs) once the real content_productions/
+  // video_jobs ids are known (or null, if either write failed - fails
+  // open, same as every write in this function already did before this
+  // change).
+  _continueAfterLink: function(form, cpId, videoJobId) {
+    var self = this;
+
+    // Mark taxonomy nodes as applied
     form.taxNodes.forEach(function(concept) {
       if (RPGACE.modules.taxonomySync) {
         RPGACE.modules.taxonomySync.markApplied(concept);
       }
     });
 
-    // 3. Save to Journal
+    // Save to Journal
     var journalContent = 'Beat logged: ' + form.title + '\n' +
       'Key: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + ' | Energy: ' + form.energy + '\n' +
       'Mood: ' + form.mood + ' | Rating: ' + form.rating + '\n' +
@@ -12405,21 +12605,22 @@ RPGACE.register('beatLog', {
       saveToJournal('Beat: ' + form.title, journalContent, 'beatLog');
     }
 
-    // 4. Award XP
+    // Award XP
     var xp = [20, 40, 60, 80, 100][parseInt(form.energy) - 1] || 60;
     if (typeof addXP === 'function') addXP(xp);
 
-    // 5. Get colour palette from scale
+    // Get colour palette from scale
     var palette = self.SCALE_COLOURS[form.scale] || { hex: '#1a1a2e', name: 'Dark neutral' };
 
-    // 6. Get BPM-aware Last.fm tags
+    // Get BPM-aware Last.fm tags
     var tags = self._getMoodTags(form.mood, form.bpm);
 
     // Search Last.fm
-    self._searchArtists(tags, form, palette, output);
+    var output = document.getElementById('beat-log-output');
+    self._searchArtists(tags, form, palette, output, cpId, videoJobId);
   },
 
-  _searchArtists: function(tags, form, palette, output) {
+  _searchArtists: function(tags, form, palette, output, cpId, videoJobId) {
     var self = this;
     output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">🔍 Checking reference corpus for matches...</div>';
 
@@ -12499,7 +12700,7 @@ RPGACE.register('beatLog', {
           output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">✅ ' + lfmArtists.length + ' Last.fm artists found. Add tracks to your corpus for better matches.</div>';
         }
 
-        self._generateOutputs(form, palette, big, emerging, underground, output);
+        self._generateOutputs(form, palette, big, emerging, underground, output, cpId, videoJobId);
       });
     })
     .catch(function(err) {
@@ -12530,7 +12731,7 @@ RPGACE.register('beatLog', {
     });
   },
 
-  _generateOutputs: function(form, palette, big, emerging, underground, output) {
+  _generateOutputs: function(form, palette, big, emerging, underground, output, cpId, videoJobId) {
     var self = this;
     var bigNames   = big.map(function(a) { return a.name; }).join(', ') || 'N/A';
     var emergNames = emerging.map(function(a) { return a.name + ' (' + Math.round(a.listeners/1000) + 'k)'; }).join(', ') || 'N/A';
@@ -12561,7 +12762,7 @@ RPGACE.register('beatLog', {
     // prompt clears the in-flight guard (see scheduleOracle's sendChat
     // wrap) instead of firing immediately, which would just get blocked
     // by that same guard and silently dropped.
-    if (form.visualTreatment) self._waitThenAutoVisualTreatment(form, palette);
+    if (form.visualTreatment) self._waitThenAutoVisualTreatment(form, palette, cpId, videoJobId);
 
     // Render artist match panel in output
     self._renderArtistPanel(form, palette, big, emerging, underground, output);
@@ -12572,7 +12773,7 @@ RPGACE.register('beatLog', {
   // manual trip through the Visual Oracle panel with placeholder-filling.
   // Grounded in the real F14 filmmaker library the same way Director
   // Match is, so Oracle picks a real director rather than inventing one.
-  _waitThenAutoVisualTreatment: function(form, palette) {
+  _waitThenAutoVisualTreatment: function(form, palette, cpId, videoJobId) {
     var self = this;
     var waited = 0;
     var poll = function() {
@@ -12581,12 +12782,18 @@ RPGACE.register('beatLog', {
         setTimeout(poll, 500);
         return;
       }
-      self._autoVisualTreatment(form, palette);
+      self._autoVisualTreatment(form, palette, cpId, videoJobId);
     };
     setTimeout(poll, 500);
   },
 
-  _autoVisualTreatment: function(form, palette) {
+  // 2026-07-28 - now threads cpId/videoJobId through so the generated
+  // document is actually saved (content_pipeline_overseer_spec_backlog_
+  // 2026-07-28.txt) instead of only ever existing as a chat message, and
+  // asks for one extra structured trailer line (DIRECTOR_CHOSEN) so the
+  // director this document picks becomes a real style_profiles row
+  // instead of resurrecting nothing.
+  _autoVisualTreatment: function(form, palette, cpId, videoJobId) {
     var buildPrompt = function(filmmakerBlock) {
       return 'Generate a full Visual Treatment Document for my beat.\n' +
         'Beat title: ' + form.title + '\n' +
@@ -12597,13 +12804,23 @@ RPGACE.register('beatLog', {
         '\nThe document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), ' +
         'Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), ' +
         'Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars.' +
-        (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why.' : '');
+        (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why. Then on its own final line, output exactly: DIRECTOR_CHOSEN: <exact director name from the list above>.' : '');
     };
-    if (RPGACE.modules.visualOracle && typeof RPGACE.modules.visualOracle._withFilmmakerLibrary === 'function') {
-      RPGACE.modules.visualOracle._withFilmmakerLibrary(function(block) {
+    var vo = RPGACE.modules.visualOracle;
+    var armCapture = function() {
+      if (vo && vo._captureNextResponse && cpId) {
+        vo._captureNextResponse(function(text) {
+          vo._saveDocToProduction('visual_treatment', text, cpId, videoJobId);
+        });
+      }
+    };
+    if (vo && typeof vo._withFilmmakerLibrary === 'function') {
+      vo._withFilmmakerLibrary(function(block) {
+        armCapture();
         RPGACE.utils.sendToOracle(buildPrompt(block));
       });
     } else {
+      armCapture();
       RPGACE.utils.sendToOracle(buildPrompt(''));
     }
   },

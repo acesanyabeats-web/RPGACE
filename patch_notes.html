@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔗 July 28 (Round 38) — Content Pipeline overseer built: real schema link, Visual Treatment/Director Match/Storyboard finally save somewhere, style_profile_id and edl are no longer dead columns</div>
+    <div class="card-body">
+      Alex's real answers to Round 37's 5 forks: keep both trackers and link them; new <code>creative_docs</code> field; build the explicit save picker now (the "active production" idea logged as a real future enhancement, not built); resurrect <code>style_profile_id</code> and <code>edl</code>. Then: "proceed with the build."
+      <br><br>
+      <strong>3 real migrations</strong> (Supabase, all applied clean): `video_jobs.content_production_id` (uuid, FK to `content_productions.id` — checked first that `content_productions.con_id`, the human-readable label, has no unique constraint, so the real FK had to target `id`, not `con_id`); `content_productions.creative_docs` (jsonb, keyed by doc type); a new `style_profiles` table (director/visual style/palette/linked video job), RLS matching the existing `anon_read_only`+`authenticated_all` posture, added to `api/data-write.js`'s allowlist.
+      <br><br>
+      <strong>`beatLog._submit()` rewritten</strong>: now creates the linked `content_productions` row FIRST (real beat metadata in `creative_docs.beat_meta`), waits for its real id, then inserts the linked `video_jobs` row — Beat Log is now Content Pipeline's real entry point, not a second orphaned tracker.
+      <br><br>
+      <strong>The dead columns are dead no more.</strong> A new shared `visualOracle._captureNextResponse()` (one-shot, built on the existing `oracle:response-scanned` hook — confirmed it only fires once per fully-completed reply, so today's earlier streaming work can't truncate a capture mid-stream) catches a real Oracle response with zero extra API calls. Director Match/Visual Treatment Doc now ask for one structured trailer line (`DIRECTOR_CHOSEN:`), parsed and resolved against the real 50-row filmmaker library into a genuine `style_profiles` row, linked via `video_jobs.style_profile_id`. Storyboard Scene Builder asks for a compact `EDL_JSON:` block, parsed into a real shot list saved onto `video_jobs.edl`. Every Visual Oracle command now offers a "💾 Save to Content Pipeline" picker when fired manually, reusing the exact same save logic the automatic F18 flow uses.
+      <br><br>
+      Full build record, real limitations named honestly (the manual save picker can't always find a linked `video_jobs` row if one was never created via Beat Log), and the UNTESTED list: `content_pipeline_overseer_spec_backlog_2026-07-28.txt`. `node --check` clean, cache-bust bumped.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎬 July 28 (Round 37) — /5thDimension: does the Content Pipeline progress bar connect Beat Log → Visual Oracle → Video Pipeline? Real answer: no, and here's exactly why</div>
     <div class="card-body">
       Alex asked whether the Visual Treatment Doc feeds into Video Pipeline, and whether Beat Log/Visual Oracle/Video Pipeline could all connect to Content Pipeline's own 6-stage progress bar. Real answer to the first question: <strong>no</strong> — confirmed by reading `beatLog._autoVisualTreatment()` in full: it's grounded in real Phylum-14 filmmaker data (50 real rows) but the result is only ever a chat message, never saved anywhere.
