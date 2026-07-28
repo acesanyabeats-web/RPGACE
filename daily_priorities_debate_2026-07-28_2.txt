@@ -1,0 +1,145 @@
+/Routine — daily priorities debate, SECOND run this date
+2026-07-28 (evening run, immediately after /Bedtime closed the session
+that followed this morning's first /Routine run — see
+daily_priorities_debate_2026-07-28.txt for that earlier record, still
+accurate as history, now superseded as a task list by everything shipped
+since)
+
+=====================================================================
+REAL EVIDENCE GATHERED FIRST (GODMODE + /scope, not recalled from memory)
+=====================================================================
+- git log: main and claude/rpgace-master-steps-uobp98 in perfect sync,
+  zero divergence, latest commit 2302ad7.
+- Cross-checked this morning's locked-in checklist against what actually
+  shipped today: items 1 (hand-test improve-animations work), 2 (F16-F18
+  smoke-test sweep), 3 (Composio rotation), 4 (Lighthouse audit), 8 (fix
+  undersized-text findings), 9 (journal/Chronicles/Minotaur cross-feed)
+  did NOT get executed as originally sequenced — instead, a large real
+  hand-test-driven work stream took over the day (Content Pipeline
+  overseer build + 2 real bugs caught from Alex's own phone hand-tests +
+  a voice-input accessibility build after Alex fractured his hand).
+  Items actually completed today from the morning list: 6 (Oracle 504
+  fix - done, Round 31), 7/XSS audit (done, Round 30), the swipe-gesture
+  freeze decision (done - explicitly deprioritized with a real reason),
+  the 21 undersized-text findings (done, Round 32), and the Impeccable
+  reinstall recheck (done - still a genuine 403). So roughly half of this
+  morning's list is genuinely closed; the other half (hand-test sweep,
+  Composio rotation, Lighthouse audit, journal/Chronicles/Minotaur
+  cross-feed) is still real and still open - carried forward below, not
+  re-derived from scratch.
+- REAL NEW FINDING since this morning: taxonomy_proposals now shows 0
+  pending (32 accepted / 76 rejected) and taxonomy_links shows 0 pending
+  (66 confirmed) - the taxonomy review backlog is genuinely, fully
+  cleared. Real Alex-side activity Claude Code did not originate,
+  confirmed per this skill's own July 24 cross-feed rule.
+- Two new journal entries + two new content_productions rows ("No
+  Motivation"/"No motivation") confirm two real beat-log hand-tests
+  today, both still status:'Idea' - the linked video_jobs rows haven't
+  been advanced through any F17 stage yet.
+
+=====================================================================
+TEAM 1 — evidence-based draft Top 10
+=====================================================================
+1. Hand-test sweep: the Content Pipeline overseer's own untested pieces
+   (manual save picker against #6 "No motivation", Storyboard Scene
+   Builder -> a real edl landing on the linked video_jobs row) - highest
+   real value given real migrations/schema changes already shipped on
+   trust this session.
+2. Composio API key rotation - flagged repeatedly across multiple
+   sessions (July 12 onward, dropped from this morning's own list too),
+   a real standing security exposure, still open.
+3. Hand-test sweep (carried from this morning, still real): remaining
+   F16-F18 smoke tests (#5 walk video_jobs through all 5 stages, #6
+   licence+Beatstars Listing, #7 Visual Oracle/Director Match, #11
+   highlight-to-Phylum-Path button), the new Video Pipeline dashDeck
+   card, 160 text-size fixes, the new voice-input button.
+4. Phylum XP Ledger fork - needs Alex's real answer (new dedicated table
+   vs. retrofitting the 6 existing career-score tables).
+5. Beat-matching audio-AI fork - Cyanite.ai (~EUR 290/mo) vs. local
+   librosa vs. neither.
+6. Journal/Chronicles/Minotaur cross-feed interrogation - carried from
+   this morning's list, still waiting since July 23-24.
+7. Ambient "active production" Visual Oracle context - real future
+   enhancement Alex called "sounds very interesting."
+8. Swipe-gesture freeze - stays low; already decided, waiting on live
+   evidence only.
+
+=====================================================================
+TEAM 2 — real counter-case
+=====================================================================
+Attack 1 (strongest, carried from this morning's own debate and still
+unresolved): a Lighthouse/PageSpeed audit on rpgace.vercel.app was named
+a real gap on July 23, dropped from every Top 10 since including THIS
+MORNING'S own list (item 4 there), a second real drop in one calendar
+day. It needs zero input from Alex and zero blocking decision - the one
+item Claude Code can fully execute standing alone, today, with zero
+waiting. Ranking it below 6+ items all blocked on Alex's own hands or
+decision is backwards, especially with his hand fractured right now.
+
+Attack 2: bulk-treating the hand-test sweep (items 1 and 3) as one block
+ignores real effort differences - tapping one save-picker button is much
+lighter than walking a video_jobs row through 5 real stage transitions
+or a multi-field Beatstars flow.
+
+Defense (Team 1) / resolution: both attacks accepted, same as this
+morning's own reconciliation already established the precedent for.
+Lighthouse runs NOW, inline, as this run's first executed action -
+zero reason to let it drop a second time in the same day. Hand-test
+items get sequenced light-touch-first, not treated as one block.
+
+Council of 5 verdict: real tension, real resolution, no theater. Both
+attacks won on execution order, not on displacing Composio rotation's
+real standing importance.
+
+=====================================================================
+/5thDimension reconciliation (Phase 1-2 only, no Fable)
+=====================================================================
+Built vs. reported: no drift. Everything Team 1 drew from CLAUDE.md's
+Current State matches real git/Supabase evidence gathered above. The
+taxonomy backlog's real current state (0 pending) is a genuine, positive
+change since this morning, correctly removed from today's list rather
+than carried forward as if still open.
+
+Anchored to Alex's real goals: the governing 48-hour rule still favors
+verifying the Content Pipeline overseer and finishing the F16-F18 sweep
+over speculative new builds - none of the real forks (4, 5, 7) get built
+blind regardless of ranking, they need Alex's own answer either way.
+
+=====================================================================
+FINAL LOCKED TOP 10 (Council of 5, Step 5)
+=====================================================================
+0. [ATTEMPTED, real finding - Team 2's "zero Alex-effort" premise was
+   wrong] Lighthouse/PageSpeed audit on rpgace.vercel.app - tried via
+   PageSpeed Insights API (real HTTP 429, quota_limit_value:0 for this
+   environment's consumer - not transient, a hard anonymous-access
+   restriction) AND via a locally-run Lighthouse against the
+   pre-installed Chromium (a real Chrome interstitial, traced to this
+   session's own outbound proxy returning "CONNECT tunnel failed, 403"
+   on a plain curl to rpgace.vercel.app itself - confirmed independent
+   of Lighthouse). Two independent methods, two independently-diagnosed
+   real environment blockers - this is not achievable from inside a
+   Claude Code session's sandbox at all, not something more retrying
+   fixes. Real correction to the debate above: this item is actually
+   Alex's own 30-second task (Chrome DevTools' built-in Lighthouse panel,
+   or pagespeed.web.dev directly, from his own browser) - genuinely
+   the cheapest item on this whole list for him specifically, just not
+   a zero-Alex-effort item as Team 2 assumed.
+1. Hand-test (light-touch first): does the Content Pipeline manual save
+   picker work against #6 "No motivation"; does Storyboard Scene Builder
+   produce a real edl; does the new Video Pipeline card / voice-input
+   button render and open correctly.
+2. Composio API key rotation - real standing security exposure, Alex's
+   own action, dropped from 2+ prior lists.
+3. Hand-test (multi-step, when hand allows): walk a video_jobs row
+   through all 5 F17 stages; set a licence type + test Beatstars
+   Listing; Visual Oracle panel + Director Match; highlight-to-Phylum-
+   Path button.
+4. Phylum XP Ledger fork - Alex's real answer needed.
+5. Beat-matching audio-AI fork - Cyanite.ai vs. librosa vs. neither.
+6. Journal/Chronicles/Minotaur cross-feed interrogation.
+7. Ambient "active production" Visual Oracle context, if still wanted.
+8. Swipe-gesture freeze - stays low, waiting on live evidence only.
+
+Nothing real was dropped silently: the taxonomy review-queue item is
+REMOVED from this list entirely because it's genuinely done (0 pending),
+a real status change, not a deprioritization.
