@@ -16730,7 +16730,19 @@ RPGACE.register('voiceInput', {
   _recognition: null,
   _listening: false,
   _baseText: '',
+  _target: null,
+  _lastFocusedField: null,
 
+  // 2026-07-29 — Alex is working one-handed today (fractured hand, "aching
+  // like no tomorrow") and asked to make everything as low-click as
+  // possible while he works mostly by mic. The existing button only
+  // dictated into Oracle chat specifically - generalized the same core
+  // recognition logic (rule 8: one shared mechanism, not a copy per field)
+  // to target WHATEVER text input/textarea last had focus, plus a single
+  // persistent floating mic button (fixed, on every page, body-level per
+  // the fixed-overlay convention) so he never has to hunt for a per-page
+  // button before he can dictate into Beat Log/Journal/Encyclopedia/
+  // anywhere else that takes free text.
   init: function() {
     var self = this;
     // Global function name, matching this exact row's existing sibling
@@ -16738,6 +16750,27 @@ RPGACE.register('voiceInput', {
     // functions called via onclick= in the static HTML) rather than
     // introducing a different calling convention for one new button.
     window.toggleVoiceInput = function() { self.toggle(); };
+    window.toggleVoiceInputGlobal = function() { self.toggleGlobal(); };
+
+    document.addEventListener('focusin', function(e) {
+      var t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') && !t.disabled && !t.readOnly) {
+        self._lastFocusedField = t;
+      }
+    });
+
+    RPGACE.registerBootTask(function() { return self._injectFloatingButton(); });
+  },
+
+  _injectFloatingButton: function() {
+    if (document.getElementById('vi-floating-btn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'vi-floating-btn';
+    btn.title = 'Voice input — dictates into whatever text field you last tapped';
+    btn.textContent = '🎤';
+    btn.style.cssText = 'position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:#0c0c16;border:2px solid rgba(201,168,76,.5);color:var(--gold);font-size:22px;cursor:pointer;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,.5);';
+    btn.onclick = function() { window.toggleVoiceInputGlobal(); };
+    document.body.appendChild(btn);
   },
 
   _supported: function() {
@@ -16750,13 +16783,29 @@ RPGACE.register('voiceInput', {
       return;
     }
     if (this._listening) { this._stop(); return; }
-    this._start();
+    this._start(document.getElementById('chat-input'));
   },
 
-  _start: function() {
+  // Targets whatever text input/textarea last had real focus, so ONE
+  // floating button works on every page/popup without per-field wiring.
+  toggleGlobal: function() {
+    if (!this._supported()) {
+      RPGACE.utils.toast('🎤 Voice input isn\'t supported in this browser — try Chrome', '#CC4A4A', 3500);
+      return;
+    }
+    if (this._listening) { this._stop(); return; }
+    var field = this._lastFocusedField;
+    if (!field || !document.body.contains(field)) {
+      RPGACE.utils.toast('🎤 Tap into a text field first, then tap the mic', '#C9A84C', 3000);
+      return;
+    }
+    this._start(field);
+  },
+
+  _start: function(input) {
     var self = this;
-    var input = document.getElementById('chat-input');
     if (!input) return;
+    this._target = input;
 
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     var rec = new SR();
@@ -16818,11 +16867,19 @@ RPGACE.register('voiceInput', {
 
   _setButtonState: function(active) {
     var btn = document.getElementById('voice-input-btn');
-    if (!btn) return;
-    btn.textContent = active ? '🔴' : '🎤';
-    btn.title = active ? 'Stop voice input' : 'Voice input';
-    btn.style.borderColor = active ? '#CC4A4A' : 'rgba(201,168,76,.3)';
-    btn.style.color = active ? '#CC4A4A' : 'var(--gold)';
+    if (btn) {
+      btn.textContent = active ? '🔴' : '🎤';
+      btn.title = active ? 'Stop voice input' : 'Voice input';
+      btn.style.borderColor = active ? '#CC4A4A' : 'rgba(201,168,76,.3)';
+      btn.style.color = active ? '#CC4A4A' : 'var(--gold)';
+    }
+    var fbtn = document.getElementById('vi-floating-btn');
+    if (fbtn) {
+      fbtn.textContent = active ? '🔴' : '🎤';
+      fbtn.title = active ? 'Stop voice input' : 'Voice input — dictates into whatever text field you last tapped';
+      fbtn.style.borderColor = active ? '#CC4A4A' : 'rgba(201,168,76,.5)';
+      fbtn.style.color = active ? '#CC4A4A' : 'var(--gold)';
+    }
   },
 
 });

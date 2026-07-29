@@ -91,6 +91,19 @@
 </div>
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎤 July 29 (Round 44) — Real accessibility escalation: Alex working one-handed all day, added a global floating mic button so voice input works on every field, not just Oracle chat</div>
+    <div class="card-body">
+      Alex confirmed he's working one-handed all day (fractured hand "aching like no tomorrow") and asked to minimize clicking wherever possible while he works mostly by mic.
+      <br><br>
+      <strong>Real, scoped fix rather than a big redesign</strong>: the existing 🎤 button (Round 41/43) only dictated into Oracle chat's own input. Generalized the same core recognition logic (rule 8 — one shared mechanism, not a copy per field) to target whatever text input/textarea last had real focus, tracked via a single app-wide <code>focusin</code> listener. Added ONE persistent floating mic button — fixed bottom-right, injected once into <code>document.body</code> (per the fixed-overlay convention, never inside a <code>.page</code> div), visible on every page and above popups (<code>z-index:999999</code>) — so Alex never has to hunt for a per-page button before dictating into Beat Log, Journal, Encyclopedia, or anywhere else that takes free text. Tap into a field, tap the mic, speak; tap again to stop. If nothing's focused, a toast says so plainly rather than silently doing nothing.
+      <br><br>
+      The existing Oracle-chat-specific button is unchanged and still works exactly as before (kept for the one flow that already had it); the floating button is additive, not a replacement.
+      <br><br>
+      `node --check` clean, cache-bust bumped 20260728k→20260729a. <strong>Untested</strong> — needs Alex's real hands (or rather, real hand): tap a field, tap the new floating mic, confirm it dictates into the right place.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎤 July 28/29 (Round 43) — Real bug caught from Alex's own first hand-test of voice input: transcript duplication, root-caused and fixed same night</div>
     <div class="card-body">
       Alex tested the new 🎤 button (Round 41) and pasted the real result: a BeatStars listing generated correctly by Insta-Oracle, but with a gibberish "hello hello hello can hello can you hear me, I said once hello can you hear me" block appearing under an otherwise-empty section — his own mic test getting mangled and submitted as a follow-up Oracle message, not anything Oracle itself generated.
