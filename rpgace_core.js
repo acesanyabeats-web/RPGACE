@@ -16803,35 +16803,54 @@ RPGACE.register('voiceInput', {
   },
 
   _start: function(input) {
-    var self = this;
     if (!input) return;
     this._target = input;
+    this._listening = true;
+    this._setButtonState(true);
+    this._baseText = input.value ? input.value.replace(/\s+$/, '') + ' ' : '';
+    this._spawnRecognizer(input);
+  },
 
+  // July 29 — first fix attempt (looping from e.resultIndex instead of 0)
+  // did NOT resolve it: Alex confirmed, via a real reload-and-retest, that
+  // the exact same compounding duplication ("can you" -> "can you can
+  // you" -> ...) still happened. Real evidence this points to: Android
+  // Chrome's SpeechRecognition implementation (what Alex uses) is known
+  // to be far less spec-reliable than desktop Chrome specifically around
+  // e.resultIndex and continuous-mode restarts - relying on the browser's
+  // own "what's new" hint was the wrong foundation. This rewrite ignores
+  // e.resultIndex entirely and tracks our OWN idempotency by array
+  // position (_finalizedCount) instead - once e.results[i].isFinal is
+  // true, that transcript is committed to _baseText exactly once, no
+  // matter what the browser claims changed. Also spawns a genuinely NEW
+  // SpeechRecognition object on every restart rather than reusing the
+  // ended one - the standard, more robust pattern real SpeechRecognition
+  // wrapper libraries use, since reusing an ended instance is undefined/
+  // inconsistent behavior on some mobile implementations. Per this
+  // project's own per-defect cap (CLAUDE.md rule 9 / Engineer skill): this
+  // is the LAST attempt before stopping to get real console evidence
+  // instead of guessing a third time.
+  _spawnRecognizer: function(input) {
+    var self = this;
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     var rec = new SR();
     rec.lang = 'en-GB';
     rec.continuous = true;
     rec.interimResults = true;
-
-    this._baseText = input.value ? input.value.replace(/\s+$/, '') + ' ' : '';
+    this._finalizedCount = 0;
 
     rec.onresult = function(e) {
-      // Real bug, caught from Alex's own hand-test (July 28/29): looping
-      // from index 0 every time re-sums ALL results seen so far in this
-      // recognition session (Chrome's continuous mode never shrinks
-      // e.results), so each event re-appended the whole running final-text
-      // sum on top of an already-appended baseText - a compounding
-      // duplication ("hello" -> "hello hello" -> "hello hello hello can"...).
-      // Fix: start from e.resultIndex, the browser-provided index of the
-      // first result that changed since the LAST onresult event - the
-      // standard Web Speech API idiom, so finalText/interimText only ever
-      // reflect genuinely new content.
-      var finalText = '', interimText = '';
-      for (var i = e.resultIndex; i < e.results.length; i++) {
-        var t = e.results[i][0].transcript;
-        if (e.results[i].isFinal) finalText += t + ' '; else interimText += t;
+      var interimText = '';
+      for (var i = 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          if (i >= self._finalizedCount) {
+            self._baseText += e.results[i][0].transcript + ' ';
+            self._finalizedCount = i + 1;
+          }
+        } else if (i >= self._finalizedCount) {
+          interimText += e.results[i][0].transcript;
+        }
       }
-      if (finalText) self._baseText += finalText;
       input.value = self._baseText + interimText;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     };
@@ -16841,15 +16860,13 @@ RPGACE.register('voiceInput', {
     };
     rec.onend = function() {
       // Chrome auto-stops recognition after a silence gap even in
-      // continuous mode — restart transparently while still toggled on,
-      // so a fractured-hand user isn't stuck re-tapping the button after
-      // every pause in speech.
-      if (self._listening) { try { rec.start(); } catch (e2) {} }
+      // continuous mode — restart transparently (with a FRESH recognizer,
+      // see note above) while still toggled on, so a fractured-hand user
+      // isn't stuck re-tapping the button after every pause in speech.
+      if (self._listening) { try { self._spawnRecognizer(input); } catch (e2) {} }
     };
 
     this._recognition = rec;
-    this._listening = true;
-    this._setButtonState(true);
     try {
       rec.start();
     } catch (e) {

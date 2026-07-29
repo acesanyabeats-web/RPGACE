@@ -91,6 +91,19 @@
 </div>
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎤 July 29 (Round 45) — Real second attempt at voice-input duplication: Round 43's fix (e.resultIndex) confirmed NOT sufficient by a real reload-and-retest</div>
+    <div class="card-body">
+      Alex reloaded and retested per Round 44's own ask — the exact same compounding duplication ("can you" → "can you can you" → ...) still happened on the new floating button. This rules out the "stale tab" theory and means the e.resultIndex-based fix genuinely didn't work in practice.
+      <br><br>
+      <strong>Real reasoning for why, not a second blind guess</strong>: Android Chrome's SpeechRecognition (what Alex uses) is documented to be far less spec-reliable than desktop Chrome specifically around <code>e.resultIndex</code> and continuous-mode restarts — relying on the browser's own "what changed" hint was the wrong foundation to build on.
+      <br><br>
+      <strong>Rewrite</strong>: ignores <code>e.resultIndex</code> entirely. Tracks idempotency ourselves via array position (<code>_finalizedCount</code>) — once <code>e.results[i].isFinal</code> is true, that transcript is committed to <code>_baseText</code> exactly once, regardless of what the browser claims changed. Also spawns a genuinely NEW <code>SpeechRecognition</code> object on every auto-restart instead of reusing the ended one — the standard, more robust pattern real SpeechRecognition wrapper libraries use, since reusing an ended instance is inconsistent on some mobile implementations.
+      <br><br>
+      `node --check` clean, cache-bust bumped 20260729a→20260729b. <strong>Per CLAUDE.md rule 9 / the Engineer skill's per-defect cap: this is the last attempt before stopping to get real console evidence instead of guessing a third time</strong> — if this doesn't hold up on a real retest, next step needs Alex's actual browser console output, not another reasoned-but-unverified patch.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎤 July 29 (Round 44) — Real accessibility escalation: Alex working one-handed all day, added a global floating mic button so voice input works on every field, not just Oracle chat</div>
     <div class="card-body">
       Alex confirmed he's working one-handed all day (fractured hand "aching like no tomorrow") and asked to minimize clicking wherever possible while he works mostly by mic.
