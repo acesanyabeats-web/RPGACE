@@ -16767,8 +16767,18 @@ RPGACE.register('voiceInput', {
     this._baseText = input.value ? input.value.replace(/\s+$/, '') + ' ' : '';
 
     rec.onresult = function(e) {
+      // Real bug, caught from Alex's own hand-test (July 28/29): looping
+      // from index 0 every time re-sums ALL results seen so far in this
+      // recognition session (Chrome's continuous mode never shrinks
+      // e.results), so each event re-appended the whole running final-text
+      // sum on top of an already-appended baseText - a compounding
+      // duplication ("hello" -> "hello hello" -> "hello hello hello can"...).
+      // Fix: start from e.resultIndex, the browser-provided index of the
+      // first result that changed since the LAST onresult event - the
+      // standard Web Speech API idiom, so finalText/interimText only ever
+      // reflect genuinely new content.
       var finalText = '', interimText = '';
-      for (var i = 0; i < e.results.length; i++) {
+      for (var i = e.resultIndex; i < e.results.length; i++) {
         var t = e.results[i][0].transcript;
         if (e.results[i].isFinal) finalText += t + ' '; else interimText += t;
       }

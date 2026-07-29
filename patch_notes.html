@@ -91,6 +91,19 @@
 </div>
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎤 July 28/29 (Round 43) — Real bug caught from Alex's own first hand-test of voice input: transcript duplication, root-caused and fixed same night</div>
+    <div class="card-body">
+      Alex tested the new 🎤 button (Round 41) and pasted the real result: a BeatStars listing generated correctly by Insta-Oracle, but with a gibberish "hello hello hello can hello can you hear me, I said once hello can you hear me" block appearing under an otherwise-empty section — his own mic test getting mangled and submitted as a follow-up Oracle message, not anything Oracle itself generated.
+      <br><br>
+      <strong>Real root cause</strong>: <code>voiceInput._start</code>'s <code>rec.onresult</code> looped <code>e.results</code> from index 0 on every single event. Chrome's continuous mode never shrinks <code>e.results</code> — it keeps every result (final and interim) for the life of the recognition session — so each event re-summed ALL final text seen so far and then <em>appended</em> that full running sum onto an already-appended <code>_baseText</code>. A compounding duplication: one final word became "word", then the next event re-added it as "word word", then a third as "word word word &lt;new word&gt;" — exactly the pattern in Alex's paste.
+      <br><br>
+      <strong>Fix</strong>: loop from <code>e.resultIndex</code> instead of 0 — the browser-provided index of the first result that actually changed since the last event, the standard Web Speech API idiom. One-line, well-understood, low-risk (Tier 1, single function) — fixed the same night rather than left live, per this project's standing practice of acting immediately on real hand-test bugs.
+      <br><br>
+      `node --check` clean, cache-bust bumped 20260728j→20260728k. <strong>Untested</strong> — needs Alex's real second hand-test (same 🎤 button) to confirm the fix holds; the first test is what caught this, so it already proved the button itself opens/records — just the accumulation logic was wrong.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎧 July 28 (Round 42) — /Routine item 5: local librosa audio analysis built, real evidence changed the design from the naive assumption</div>
     <div class="card-body">
       Alex's answer to the Cyanite.ai-vs-librosa-vs-neither fork (logged Round 40): "Local librosa (free)."
