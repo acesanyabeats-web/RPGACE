@@ -2626,13 +2626,37 @@ RPGACE.register('oracleTreeGrounding', {
         return { leaf: l, score: score };
       }).sort(function(a, b) { return b.score - a.score; });
       var top = scored.filter(function(s) { return s.score > 0; }).slice(0, 6);
-      if (!top.length) return self._gapOnlyBlock();
-      var lines = top.map(function(s) {
-        return '- ' + s.leaf.path + (s.leaf.explainer ? ' — ' + s.leaf.explainer : '');
-      }).join('\n');
-      return '\n\n---\nALEX\'S OWN KNOWLEDGE LIBRARY (real, personally gathered insights from the RPGACE taxonomy tree relevant to this message):\n' + lines + '\n' +
-        'Ground your answer in these first - reference them by name so Alex sees his own library working - then add general knowledge on top. ' +
-        'If the specific thing asked about is NOT covered by the entries above, say briefly that it isn\'t in his RPGACE library yet and offer to place it via Phylum Path so it gets learned properly.';
+      // July 29 (/restructure finding 2): the word-overlap check above only
+      // catches an exact substring match - "compression" never matches
+      // "compressor," a typo, or a synonym. It stays as the FIRST, free
+      // pass since it's cheap and already works for exact matches; a real
+      // trigram-similarity RPC (search_taxonomy_leaves, pg_trgm - available
+      // in this project but unused until today) now runs ALONGSIDE it and
+      // the two result sets are merged, so a near-miss the word-overlap
+      // check would silently drop still surfaces. Fails open to the
+      // word-overlap result alone on any RPC error - never blocks the
+      // grounding block over a DB hiccup.
+      return RPGACE.sb.rpc('search_taxonomy_leaves', { q: userText, phyla: phylaNums })
+        .catch(function() { return []; })
+        .then(function(trgmRows) {
+          var merged = top.slice();
+          var seenPaths = {};
+          merged.forEach(function(s) { seenPaths[s.leaf.path] = true; });
+          (trgmRows || []).forEach(function(row) {
+            if (row.score > 0.15 && !seenPaths[row.path]) {
+              seenPaths[row.path] = true;
+              merged.push({ leaf: row, score: row.score });
+            }
+          });
+          merged = merged.slice(0, 8);
+          if (!merged.length) return self._gapOnlyBlock();
+          var lines = merged.map(function(s) {
+            return '- ' + s.leaf.path + (s.leaf.explainer ? ' — ' + s.leaf.explainer : '');
+          }).join('\n');
+          return '\n\n---\nALEX\'S OWN KNOWLEDGE LIBRARY (real, personally gathered insights from the RPGACE taxonomy tree relevant to this message):\n' + lines + '\n' +
+            'Ground your answer in these first - reference them by name so Alex sees his own library working - then add general knowledge on top. ' +
+            'If the specific thing asked about is NOT covered by the entries above, say briefly that it isn\'t in his RPGACE library yet and offer to place it via Phylum Path so it gets learned properly.';
+        });
     });
   },
 
@@ -11083,6 +11107,17 @@ RPGACE.register('config', {
       select: function(table, params) {
         return fetch(RPGACE.sb.url(table) + (params ? '?' + params : ''), {
           headers: RPGACE.sb.headers(),
+        }).then(function(r) { return r.json(); });
+      },
+      // July 29 (/restructure finding 2) - calls a Postgres function via
+      // PostgREST's RPC endpoint. First real user: oracleTreeGrounding's
+      // trigram-similarity search (search_taxonomy_leaves). Shared here
+      // per rule 8 rather than a one-off fetch, since any future RPC need
+      // should reuse this same path.
+      rpc: function(fn, params) {
+        return fetch(RPGACE.CONFIG.supabase.url + '/rest/v1/rpc/' + fn, {
+          method: 'POST', headers: RPGACE.sb.headers(),
+          body: JSON.stringify(params || {}),
         }).then(function(r) { return r.json(); });
       },
     };

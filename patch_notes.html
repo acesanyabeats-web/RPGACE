@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔍 July 29 — /restructure's 2 findings acted on: Commit Archaeologist installed, real hybrid-search grounding shipped, one finding honestly reported as a no-op</div>
+    <div class="card-body">
+      Alex green-lit Commit Archaeologist plus both real findings from the `/restructure` report. All three real, not theater:
+      <br><br>
+      <strong>1. Commit Archaeologist — installed.</strong> Fetched and read all three real source files (SKILL.md + `scripts/archaeologist.py` + `references/reading-git-history.md`) from the actual GitHub repo before installing anything — confirmed pure stdlib Python, read-only `git` subprocess calls only (`log`/`blame`/`diff-tree`/`show`), zero network calls, zero eval/exec, matching its own description exactly. Smoke-tested against RPGACE's own real git history (`CLAUDE.md`'s own first 3 lines) — worked correctly, instantly, for free.
+      <br><br>
+      <strong>2. TOON-style context compaction — real finding, no build needed.</strong> Grepped for verbose, repeated-key JSON arrays still being sent into Oracle prompts. Found none of real size: the one place this would have mattered most (`decidePlacementScored`'s taxonomy structure listing) was <em>already</em> retuned this exact way back in the July 19 token-cost audit — numbered indented tree instead of repeated full paths, ~65% fewer tokens, already shipped. Building a generic compaction helper today would have been solving an already-solved problem. Reported honestly rather than manufactured busywork, per this project's own standing rule against forced findings.
+      <br><br>
+      <strong>3. Hybrid retrieval for Oracle's tree grounding — built, but substituted a cheaper real path.</strong> Rather than full vector embeddings (which needs Alex to pick and sign up for a new paid embeddings vendor — a real decision I didn't make on his behalf), used `pg_trgm` (fuzzy text similarity), confirmed available in this exact Supabase project but never installed. New `search_taxonomy_leaves(q, phyla)` Postgres function (trigram similarity, GIN-indexed) now runs ALONGSIDE `oracleTreeGrounding`'s existing free word-overlap check rather than replacing it — the two result sets merge, so a near-miss the old exact-substring check would silently drop (e.g. "compressor" vs "compression") now still surfaces. Fails open to the word-overlap result alone on any RPC error. <strong>Two real new lint findings from this exact migration caught and fixed before calling it done</strong> (`get_advisors`, same discipline as every prior schema change): `pg_trgm` was installed in the `public` schema (moved to the existing `extensions` schema, matching this project's own established convention) and the new function had a mutable search_path (pinned explicitly). Re-verified clean afterward — only pre-existing, already-accepted `rls_policy_always_true` warnings remain, none new.
+      <br><br>
+      `node --check` clean, cache-bust bumped 20260729b→20260729c. Full vector/semantic embeddings stay a real, separate, still-open fork — needs Alex's own vendor choice (Voyage vs OpenAI) before anything with a recurring per-call cost gets built.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🏗️ July 29 (post-Bedtime) — New skill built and run: /restructure, a sharper sibling to Aintergration for "does this repo suggest RPGACE's own skeleton should evolve"</div>
     <div class="card-body">
       Alex pasted the <code>awesome-llm-apps</code> repo (100+ agent examples/skills) and, after a first Aintergration pass (mostly reject/reference-only — different tech stack, zero-build-step mismatch), asked for something sharper: a real two-sided debate on whether fitting pieces of it INSTEAD of RPGACE-Claude Code's own infrastructure would make code shorter, responses quicker, or output more detailed/context-appropriate. Built as a new named skill (<code>.claude/skills/restructure/SKILL.md</code>, referenced in CLAUDE.md's Invokable Frameworks section) rather than a one-off exercise, matching this project's own established pattern (5thDimension, Engineer, Routine, Bedtime were all built the same way from Alex's verbatim framing).
