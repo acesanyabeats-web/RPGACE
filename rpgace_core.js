@@ -4173,18 +4173,13 @@ RPGACE.register('scheduleOracle', {
   _openPanel: function(prefill) {
     if (document.getElementById('sched-oracle-panel')) return;
     var self = this;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', width: '520px', borderColor: 'rgba(74,144,226,0.3)',
+      eyebrow: 'Schedule Oracle · Phase 1', title: 'What do you want to learn / schedule?',
+      noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'sched-oracle-panel';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Schedule Oracle · Phase 1';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-    title.textContent = 'What do you want to learn / schedule?';
 
     var input = document.createElement('textarea');
     input.id = 'sched-oracle-input';
@@ -4207,9 +4202,7 @@ RPGACE.register('scheduleOracle', {
     cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:8px;';
     cancelBtn.onclick = function() { overlay.remove(); };
 
-    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(input); box.appendChild(goBtn); box.appendChild(cancelBtn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    box.appendChild(input); box.appendChild(goBtn); box.appendChild(cancelBtn);
     input.focus();
   },
 
@@ -4287,17 +4280,13 @@ RPGACE.register('scheduleOracle', {
     var idx = 0;
     function renderStep() {
       var s = steps[idx];
-      var overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-      var box = document.createElement('div');
-      box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.3);border-radius:12px;padding:24px 28px;width:min(480px,95vw);';
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.92', width: '480px', borderColor: 'rgba(74,144,226,0.3)',
+        eyebrow: 'Option ' + (idx + 1) + ' of ' + steps.length,
+        title: s.icon + ' ' + s.title, noDefaultClose: true,
+      });
+      var overlay = pop.overlay, box = pop.box;
 
-      var eyebrow = document.createElement('div');
-      eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:6px;';
-      eyebrow.textContent = 'Option ' + (idx + 1) + ' of ' + steps.length;
-      var stepTitle = document.createElement('div');
-      stepTitle.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:8px;';
-      stepTitle.textContent = s.icon + ' ' + s.title;
       var body = document.createElement('div');
       body.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.55);line-height:1.6;margin-bottom:18px;';
       body.textContent = s.body;
@@ -4327,9 +4316,7 @@ RPGACE.register('scheduleOracle', {
       skipBtn.onclick = advance;
 
       btnRow.appendChild(actionBtn); btnRow.appendChild(skipBtn);
-      box.appendChild(eyebrow); box.appendChild(stepTitle); box.appendChild(body); box.appendChild(btnRow);
-      overlay.appendChild(box);
-      document.body.appendChild(overlay);
+      box.appendChild(body); box.appendChild(btnRow);
     }
     renderStep();
   },
@@ -6722,17 +6709,12 @@ RPGACE.register('taxonomyTree', {
 
   _openManualEntry: function() {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.25);border-radius:12px;padding:24px 28px;width:min(520px,95vw);';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Taxonomy Tree · Manual Entry';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
-    title.textContent = 'What topic do you want to add?';
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', width: '520px', borderColor: 'rgba(155,89,182,0.25)',
+      eyebrow: 'Taxonomy Tree · Manual Entry', title: 'What topic do you want to add?',
+      noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var input = document.createElement('input');
     input.type = 'text';
@@ -6793,12 +6775,9 @@ RPGACE.register('taxonomyTree', {
     cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:8px;';
     cancelBtn.onclick = function() { overlay.remove(); };
 
-    box.appendChild(eyebrow); box.appendChild(title);
     box.appendChild(input); box.appendChild(phylumSelect);
     box.appendChild(previewBox);
     box.appendChild(genBtn); box.appendChild(cancelBtn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
     input.focus();
   },
 
