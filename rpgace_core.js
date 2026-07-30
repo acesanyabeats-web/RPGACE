@@ -6838,18 +6838,13 @@ RPGACE.register('taxonomyTree', {
   _showNamedTopicPicker: function(candidates, phylumNumber) {
     var self = this;
     var phylumName = self.PHYLUM_NAMES[phylumNumber] || '';
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:80vh;overflow-y:auto;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Oracle already named these — pick which to propose';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-    title.textContent = phylumName + ' — ' + candidates.length + ' named nodes found';
-    box.appendChild(eyebrow); box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', width: '520px', borderColor: 'rgba(155,89,182,0.3)',
+      eyebrow: 'Oracle already named these — pick which to propose',
+      title: phylumName + ' — ' + candidates.length + ' named nodes found',
+      noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     candidates.forEach(function(c, i) {
       var row = document.createElement('div');
@@ -6886,8 +6881,6 @@ RPGACE.register('taxonomyTree', {
     cancelBtn.onclick = function() { overlay.remove(); };
     btnRow.appendChild(proceedBtn); btnRow.appendChild(cancelBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── Core: propose a lineage for any topic, from any source ────────
@@ -7087,21 +7080,16 @@ RPGACE.register('taxonomyTree', {
   // ── The accept/edit/reject/morph popup ────────────────────────────
   _showProposalPopup: function(proposal) {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Proposed Taxonomy Lineage · ' + proposal.sourceType;
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
-    title.textContent = RPGACE.utils.phylumLabel(proposal.phylumNumber);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '560px', borderColor: 'rgba(155,89,182,0.3)',
+      eyebrow: 'Proposed Taxonomy Lineage · ' + proposal.sourceType,
+      title: RPGACE.utils.phylumLabel(proposal.phylumNumber), noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     var purposeLine = document.createElement('div');
     purposeLine.style.cssText = 'font-size:10.5px;color:rgba(226,226,236,0.4);margin-bottom:14px;line-height:1.5;';
     purposeLine.textContent = (self.PHYLUM_PURPOSE && self.PHYLUM_PURPOSE[proposal.phylumNumber]) || '';
-    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(purposeLine);
+    box.appendChild(purposeLine);
 
     // Insight summary — what the underlying content actually IS, so the lineage
     // isn't a guessing game. Reuses the leaf's own Oracle-generated explainer,
@@ -7239,9 +7227,8 @@ RPGACE.register('taxonomyTree', {
 
     btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
+
 
   // ── Write accepted lineage into taxonomy_tree, generate content ──
   _acceptLineage: function(proposal) {
@@ -8127,18 +8114,12 @@ RPGACE.register('phylumPath', {
     var steps = (newSteps || []).slice();
     var expl = (explainers || []).slice();
 
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.3);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Phylum Path · Confirm Placement';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
-    title.textContent = RPGACE.utils.phylumLabel(phylumNumber);
-    box.appendChild(eyebrow); box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(61,170,110,0.3)',
+      accent: 'rgba(61,170,110,0.6)', eyebrow: 'Phylum Path · Confirm Placement',
+      title: RPGACE.utils.phylumLabel(phylumNumber), noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var attachLine = document.createElement('div');
     attachLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);margin-bottom:14px;line-height:1.6;padding:10px 12px;background:rgba(61,170,110,0.04);border-left:2px solid rgba(61,170,110,0.3);border-radius:0 6px 6px 0;';
@@ -8203,8 +8184,6 @@ RPGACE.register('phylumPath', {
     rejectBtn.onclick = function() { overlay.remove(); if (onReject) onReject(); };
     btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── Manual-panel entry point: decide, confirm, then insert ──────────
@@ -8560,18 +8539,12 @@ RPGACE.register('phylumPath', {
   // to Encyclopedia + links taxonomy_node_id + fires the existing Concept
   // Fusion pass; Deny discards and does nothing.
   _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Phylum Path · Confirm Article';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:12px;';
-    title.textContent = articleTitle;
-    box.appendChild(eyebrow); box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '560px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)', eyebrow: 'Phylum Path · Confirm Article',
+      title: articleTitle, noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var body = document.createElement('div');
     body.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;background:rgba(155,89,182,0.04);border:1px solid rgba(155,89,182,0.15);border-radius:8px;padding:14px;margin-bottom:16px;';
@@ -8590,8 +8563,6 @@ RPGACE.register('phylumPath', {
     denyBtn.onclick = function() { overlay.remove(); if (onDeny) onDeny(); };
     btnRow.appendChild(approveBtn); btnRow.appendChild(denyBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // Manual-button entry point - generates the text, shows the confirm
@@ -9074,18 +9045,12 @@ RPGACE.register('phylumPath', {
   // folders it is made from."
   _showLinkArticle: function(link, focus, other) {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(52,152,219,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:85vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(52,152,219,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '🔗 Fusion Connection';
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
-    title.textContent = focus.name + ' ↔ ' + other.name;
-    box.appendChild(eyebrow); box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '560px', bg: '#0f0f1a', borderColor: 'rgba(52,152,219,0.3)',
+      accent: 'rgba(52,152,219,0.6)', eyebrow: '🔗 Fusion Connection',
+      title: focus.name + ' ↔ ' + other.name, noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     if (link.link_insight) {
       var insight = document.createElement('div');
@@ -9145,9 +9110,6 @@ RPGACE.register('phylumPath', {
     closeBtn.style.cssText = 'display:block;margin-top:10px;padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
 });
@@ -9706,19 +9668,13 @@ RPGACE.register('bookworm', {
   _renderStructureFound: function(book, chapters) {
     var self = this;
     var tt = RPGACE.modules.taxonomyTree;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '600px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)', eyebrow: '📚 Contents Found — ' + book.title,
+      title: chapters.length + ' chapters extracted from the table of contents:', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '📚 Contents Found — ' + book.title;
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-    title.textContent = chapters.length + ' chapters extracted from the table of contents:';
-    box.appendChild(eyebrow); box.appendChild(title);
 
     var list = document.createElement('div');
     list.style.cssText = 'max-height:45vh;overflow-y:auto;margin-bottom:16px;';
@@ -9750,9 +9706,6 @@ RPGACE.register('bookworm', {
     closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // Navigates back to the Dashboard - shared by every Bookworm overlay's
@@ -9795,19 +9748,13 @@ RPGACE.register('bookworm', {
   // ── Chapter list: tick per chapter + click-to-jump to any of them ──
   _renderChapterList: function(book, chapters) {
     var self = this;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '600px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)', eyebrow: '📖 ' + book.title,
+      title: 'Chapters — tap any to jump straight there', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '📖 ' + book.title;
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-    title.textContent = 'Chapters — tap any to jump straight there';
-    box.appendChild(eyebrow); box.appendChild(title);
 
     var list = document.createElement('div');
     list.style.cssText = 'max-height:60vh;overflow-y:auto;margin-bottom:16px;';
@@ -9858,9 +9805,6 @@ RPGACE.register('bookworm', {
     closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── Read-only view for an already-complete chapter: what was decided ──
@@ -9870,19 +9814,13 @@ RPGACE.register('bookworm', {
   _renderChapterSummary: function(book, chapter) {
     var self = this;
     var tt = RPGACE.modules.taxonomyTree;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '600px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)', eyebrow: '✅ ' + book.title,
+      title: chapter.chapter_title, noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '✅ ' + book.title;
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-    title.textContent = chapter.chapter_title;
-    box.appendChild(eyebrow); box.appendChild(title);
 
     var insights = chapter.insights || [];
     var list = document.createElement('div');
@@ -9949,9 +9887,6 @@ RPGACE.register('bookworm', {
     closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── Open a book at its current checkpoint (internal "keep going" use ──
@@ -10062,19 +9997,13 @@ RPGACE.register('bookworm', {
   // ── Chapter read view: full text, then a single "I've read this" button ──
   _renderChapterRead: function(book, chapter) {
     var self = this;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '640px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)', eyebrow: '📖 ' + book.title,
+      title: chapter.chapter_title, noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(640px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '📖 ' + book.title;
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-    title.textContent = chapter.chapter_title;
-    box.appendChild(eyebrow); box.appendChild(title);
 
     var textBox = document.createElement('div');
     textBox.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7;background:rgba(255,255,255,0.02);border-radius:8px;padding:14px;margin-bottom:16px;max-height:50vh;overflow-y:auto;';
@@ -10135,9 +10064,6 @@ RPGACE.register('bookworm', {
     closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── TOC-extracted chapters only: this chapter's title/order is       ──
@@ -10146,22 +10072,18 @@ RPGACE.register('bookworm', {
   // ── transcribe/copy it from their physical copy.                     ──
   _renderAddChapterText: function(book, chapter) {
     var self = this;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)', eyebrow: '📖 ' + book.title,
+      title: chapter.chapter_title, noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
 
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '📖 ' + book.title;
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:4px;';
-    title.textContent = chapter.chapter_title;
     var sub = document.createElement('div');
     sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:14px;';
     sub.textContent = 'Paste this chapter\'s actual body text (not the table of contents entry) to continue.';
-    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(sub);
+    box.appendChild(sub);
 
     var chapterTextInput = document.createElement('textarea');
     chapterTextInput.placeholder = 'Paste or type this chapter\'s text...';
@@ -10210,9 +10132,6 @@ RPGACE.register('bookworm', {
     closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // Heuristic guard against the repeated live mistake of pasting a table
