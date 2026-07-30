@@ -1315,14 +1315,11 @@ RPGACE.register('visualOracle', {
     RPGACE.sb.select('content_productions', 'select=id,con_id,title&order=created_at.desc&limit=15')
       .then(function(rows) {
         rows = rows || [];
-        var overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-        var box = document.createElement('div');
-        box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.25);border-radius:12px;padding:24px 28px;width:min(420px,95vw);';
-        var title = document.createElement('div');
-        title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:14px;';
-        title.textContent = '💾 Save to Content Pipeline';
-        box.appendChild(title);
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.9', width: '420px', borderColor: 'rgba(155,89,182,0.25)',
+          title: '💾 Save to Content Pipeline', closeLabel: 'Skip',
+        });
+        var box = pop.box;
 
         if (rows.length === 0) {
           var msg = document.createElement('div');
@@ -1341,26 +1338,17 @@ RPGACE.register('visualOracle', {
           box.appendChild(sel);
         }
 
-        var btnRow = document.createElement('div');
-        btnRow.style.cssText = 'display:flex;gap:8px;';
         var saveBtn = document.createElement('button');
         saveBtn.textContent = '💾 Save';
         saveBtn.disabled = rows.length === 0;
-        saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        saveBtn.style.cssText = 'width:100%;padding:10px;margin-bottom:8px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
         saveBtn.onclick = function() {
           var selEl = box.querySelector('select');
           var productionId = selEl ? selEl.value : null;
-          overlay.remove();
+          pop.close();
           if (productionId) self._saveDocToProduction(docSlug, text, productionId, null);
         };
-        var skipBtn = document.createElement('button');
-        skipBtn.textContent = 'Skip';
-        skipBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-        skipBtn.onclick = function() { overlay.remove(); };
-        btnRow.appendChild(saveBtn); btnRow.appendChild(skipBtn);
-        box.appendChild(btnRow);
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
+        box.appendChild(saveBtn);
       })
       .catch(function() {});
   },
@@ -1480,22 +1468,12 @@ RPGACE.register('contentRepurpose', {
     var self = this;
     var oracleMsgs = self._getOracleMessages(8);
 
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '620px', borderColor: 'rgba(61,170,110,0.25)',
+      eyebrow: 'Content Repurpose · Step 14', title: 'Repurpose an idea', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'cr-popup-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:20px;';
-
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.25);border-radius:14px;padding:28px 32px;width:min(620px,95vw);max-height:90vh;overflow-y:auto;position:relative;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Content Repurpose · Step 14';
-
-    var titleEl = document.createElement('div');
-    titleEl.style.cssText = 'font-size:18px;font-weight:700;color:#D4DAF5;margin-bottom:20px;';
-    titleEl.textContent = 'Repurpose an idea';
-
-    box.appendChild(eyebrow); box.appendChild(titleEl);
 
     // ── STEP 1: Oracle idea selection ──
     var step1 = document.createElement('div');
@@ -1582,9 +1560,6 @@ RPGACE.register('contentRepurpose', {
     closeBtn.style.cssText = 'position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;';
     closeBtn.onclick = function() { overlay.remove(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
 
     // ── Step 1 accept ──
     acceptBtn.onclick = function() {
@@ -3594,10 +3569,10 @@ RPGACE.register('taxonomyReviewQueue', {
 
   _openQueue: function() {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
-    var box = document.createElement('div');
-    box.style.cssText = 'position:relative;background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(640px,95vw);max-height:85vh;overflow-y:auto;';
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '640px', borderColor: 'rgba(155,89,182,0.3)', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     box.innerHTML = '<div style="font-size:15px;font-weight:700;color:#D4DAF5;">Loading proposals...</div>';
 
     var closeBtn = document.createElement('button');
@@ -3621,9 +3596,6 @@ RPGACE.register('taxonomyReviewQueue', {
       var d = RPGACE.modules.dashDeck;
       if (d && d._refreshGlance) d._refreshGlance();
     };
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
 
     Promise.all([
       RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&order=created_at.asc&limit=200'),
@@ -4088,20 +4060,11 @@ RPGACE.register('agendaReminder', {
     var entry = stored.find(function(a) { return a.id === id; });
     if (!entry) { RPGACE.utils.toast("Could not find this task's stored details", '#CC4A4A', 2500); return; }
 
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
-
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:22px 26px;width:min(440px,95vw);';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:8px;';
-    eyebrow.textContent = '🔔 Reminder';
-
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;margin-bottom:10px;';
-    title.textContent = entry.title || 'Task';
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.85', width: '440px', borderColor: 'rgba(201,168,76,0.3)',
+      eyebrow: '🔔 Reminder', title: entry.title || 'Task',
+    });
+    var box = pop.box;
 
     var meta = document.createElement('div');
     meta.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:14px;';
@@ -4112,14 +4075,7 @@ RPGACE.register('agendaReminder', {
     desc.style.cssText = 'font-size:13px;color:rgba(226,226,236,0.75);line-height:1.6;margin-bottom:18px;white-space:pre-wrap;';
     desc.textContent = entry.description || 'No description was saved for this task.';
 
-    var closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Close';
-    closeBtn.style.cssText = 'padding:8px 18px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    closeBtn.onclick = function() { overlay.remove(); };
-
-    box.appendChild(eyebrow); box.appendChild(title); box.appendChild(meta); box.appendChild(desc); box.appendChild(closeBtn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    box.appendChild(meta); box.appendChild(desc);
   },
 
 });
@@ -5316,10 +5272,17 @@ RPGACE.register('dashDeck', {
     opts = opts || {};
     var overlay = document.createElement('div');
     overlay.className = 'dd-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,' + (opts.dim || '0.94') + ');z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;' + (opts.scroll ? 'overflow-y:auto;' : '');
     var box = document.createElement('div');
     box.className = 'dd-pop-box';
-    box.style.cssText = 'background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px 28px;width:min(' + (opts.width || '600px') + ',95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
+    // borderColor (July 30, popup-scaffolding consolidation): lets a
+    // migrated per-module popup keep its own domain accent (purple for
+    // Visual/Insta-Oracle, blue for Prod Oracle, etc.) instead of every
+    // popup in the app flattening to one generic border the moment it
+    // routes through this shared helper - the real reason this option
+    // didn't exist until now is that all 11 original callers were
+    // already fine with the plain default.
+    box.style.cssText = 'position:relative;background:' + (opts.bg || 'var(--panel)') + ';border:1px solid ' + (opts.borderColor || 'var(--border)') + ';border-radius:12px;padding:24px 28px;width:min(' + (opts.width || '600px') + ',95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
     if (opts.eyebrow) {
       var eb = document.createElement('div');
       eb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;color:' + (opts.accent || 'var(--gold)') + ';';
@@ -5338,11 +5301,18 @@ RPGACE.register('dashDeck', {
       if (opts.onClose) { try { opts.onClose(); } catch (e) {} }
       overlay.remove();
     };
-    var closeBtn = document.createElement('button');
-    closeBtn.textContent = opts.closeLabel || 'Close';
-    closeBtn.style.cssText = 'display:block;width:100%;margin-top:16px;padding:11px;min-height:40px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    closeBtn.onclick = close;
-    box.appendChild(closeBtn);
+    // noDefaultClose (popup-scaffolding consolidation, July 30): several
+    // migrated call sites already build their own close/cancel/submit
+    // button(s) deep inside a multi-step flow - without this, they'd get
+    // a second, redundant "Close" button for free, a real visible
+    // regression this option exists specifically to avoid.
+    if (!opts.noDefaultClose) {
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = opts.closeLabel || 'Close';
+      closeBtn.style.cssText = 'display:block;width:100%;margin-top:16px;padding:11px;min-height:40px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      closeBtn.onclick = close;
+      box.appendChild(closeBtn);
+    }
     overlay.onclick = function(e) { if (e.target === overlay) close(); };
     overlay.appendChild(box);
     document.body.appendChild(overlay);
