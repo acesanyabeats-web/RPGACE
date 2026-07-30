@@ -176,9 +176,12 @@ G5 (Goal reconciliation): all 3 goals resolved -
   3. DONE, with an honest, stated scope revision (14 leaves via the
      real jargon-bucket precedent, not the ~110 originally sketched) -
      not a silent shortfall, a real improvement found mid-execution.
-G6 (Deployment reality): pending push - will confirm via
-  list_deployments once pushed (no /api/* surface changed, so no HTTP
-  probe needed on top of the deployment-state check).
+G6 (Deployment reality): PASS - pushed (commit 35fc1c8), independently
+  confirmed via get_deployment: dpl_Fp3LT9fEZdYBThYRNJEiGf3ZkXa4 shows
+  githubCommitSha 35fc1c877a20bf6ee440af8bc9194a1f4dd5018c,
+  githubCommitRef "main", target "production", readyState "READY".
+  No /api/* surface changed this pass, so no HTTP probe was needed on
+  top of the deployment-state check.
 G7 (Cache-bust): PASS - index.html bumped 20260730c -> 20260730d in the
   same commit as the rpgace_core.js change.
 

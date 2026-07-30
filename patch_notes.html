@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎨 July 30 — Phylum 11 + Phylum 14 built out, real keyword-collision bug fixed, Neural Frames → OpenMontage swap (all 3 confirmed by Alex, then /Engineer)</div>
+    <div class="card-body">
+      Alex hand-tested Beat Log with a real FL Studio beat, found the artist matches genuinely didn't fit, and independently diagnosed the real cause himself: Phylum 14's keyword-scoring list had "cinematic" as a bare term, colliding with Phylum 11's own legitimate mood vocabulary — exactly the collision class this project's own landmine notes already warn about. He then provided real, rich category-list content for both phyla and asked for a full plan (GODMODE + Council of 5 + implementability check) before building.
+      <br><br>
+      <strong>Real evidence confirmed his diagnosis directly in the code</strong>: `_PHYLA_KEYWORDS`'s Phylum 14 entry did have bare `"cinematic"` at weight 2. His own newly-pasted P14 list still carried the same residual bare terms ("cinematic," "cinematic feel") — caught and dropped rather than copied verbatim, applying his own stated principle rigorously.
+      <br><br>
+      <strong>A real precedent-check changed the actual build shape for the better</strong>: the original plan sketched ~110 individual per-term taxonomy leaves; checking an existing jargon-bucket leaf ("Cadence & Resolution Vocabulary," Phylum 1) found the established, cheaper, already-precedented pattern is one leaf per category with a "Covers: term1, term2..." explainer — 14 real leaves built (6 for Phylum 11, 8 for Phylum 14), not ~110, a genuine improvement discovered mid-execution rather than a shortfall.
+      <br><br>
+      <strong>Neural Frames replaced with OpenMontage</strong> across all 6 real occurrences (3 command prompts, `DOC_SLUGS`, `ICONS`, `beatLog`'s auto-treatment prompt) — Alex's call, since OpenMontage is RPGACE's real operated video-generation tool per the July 24 Aintergration verdict, and Neural Frames is the old idea.
+      <br><br>
+      Both phyla added to `ENABLED_PHYLA` (now `[1..10, 11, 14]`). `node --check` clean, cache-bust bumped `20260730c`→`20260730d`. G6 confirmed via `get_deployment`: commit `35fc1c8` READY on production. Full record: `engineer_pass_2026-07-30_02.txt`. Quality score 8/10, self-assessed. <strong>Untested</strong> — needs Alex's hands to confirm the collision fix actually resolves the real misroute, and to click through Phylum Path with both phyla now live.
+      <br><br>
+      <strong>Separately this session</strong>: real-world validation of the librosa work from earlier — Alex's own FL Studio ground truth (BPM 94, Key/Scale C Minor) confirmed the librosa run done directly in this session (BPM 92.3, Key C Minor) was accurate, resolving an earlier close-call ambiguity in favor of the right answer. The stuck `beat_audio_jobs` job for that test file was root-caused to Alex's `local_server.py` not yet running/polling for queued jobs — a real, concrete confirmation of the standing "untested end-to-end" item, not a new build.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔧 July 30 — /Routine → /Engineer: Video Pipeline Slice A built (4 of 5 items clean, 1 honest limitation on the 5th)</div>
     <div class="card-body">
       Same session, immediately after /Bedtime's close-out: /Routine confirmed Slice A as today's top 4 items (Phylum XP Ledger fork conceded to Team 2 as item 7), then moved straight into /Engineer per Alex's own explicit request.
