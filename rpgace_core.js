@@ -10617,16 +10617,14 @@ RPGACE.register('bookworm', {
       return;
     }
 
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+      accent: 'rgba(155,89,182,0.6)',
+      eyebrow: '📖 ' + book.title + ' — ' + chapter.chapter_title + ' — Insight ' + (idx + 1) + '/' + insights.length,
+      noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(560px,95vw);max-height:88vh;overflow-y:auto;font-family:Rajdhani,sans-serif;';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = '📖 ' + book.title + ' — ' + chapter.chapter_title + ' — Insight ' + (idx + 1) + '/' + insights.length;
-    box.appendChild(eyebrow);
 
     if (!insight.fits) {
       var unplaceableBox = document.createElement('div');
@@ -10723,9 +10721,6 @@ RPGACE.register('bookworm', {
     closeBtn.style.cssText = 'display:block;width:100%;margin-top:10px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     closeBtn.onclick = function() { overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // Shown when the next insight isn't ready yet - background analysis
@@ -10735,11 +10730,12 @@ RPGACE.register('bookworm', {
   // 13-insight chapter took ~7 minutes before the FIRST insight appeared.
   _renderWaitingForNextInsight: function(book, chapter) {
     var self = this;
-    var overlay = document.createElement('div');
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.94', width: '480px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
     overlay.id = 'bookworm-overlay';
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.94);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(155,89,182,0.3);border-radius:12px;padding:24px 28px;width:min(480px,95vw);font-family:Rajdhani,sans-serif;text-align:center;';
+    box.style.textAlign = 'center';
     var msg = document.createElement('div');
     msg.textContent = '⏳ Still analyzing the next insight in the background...';
     msg.style.cssText = 'font-size:13px;color:rgba(226,226,236,0.6);margin-bottom:14px;';
@@ -10763,8 +10759,6 @@ RPGACE.register('bookworm', {
     var stopped = false;
     closeBtn.onclick = function() { stopped = true; overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
 
     var idx = chapter.current_insight_index || 0;
     var STALL_MS = 45000;
@@ -11842,16 +11836,13 @@ RPGACE.register('config', {
       var idx = 0;
       var filled = prompt;
 
-      var overlay = document.createElement('div');
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.92', width: '480px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.25)',
+        eyebrow: 'FILL IN THE DETAILS', noDefaultClose: true,
+      });
+      var overlay = pop.overlay, box = pop.box;
       overlay.id = 'rpgace-gap-overlay';
-      overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.92);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;';
-
-      var box = document.createElement('div');
-      box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:28px 32px;width:min(480px,90vw);';
-
-      var eyebrow = document.createElement('div');
-      eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);margin-bottom:12px;text-transform:uppercase;';
-      eyebrow.textContent = 'FILL IN THE DETAILS';
+      box.style.padding = '28px 32px';
 
       var counter = document.createElement('div');
       counter.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:8px;';
@@ -11926,14 +11917,11 @@ RPGACE.register('config', {
       if (captureBtn) btnRow.appendChild(captureBtn);
       btnRow.appendChild(cancelBtn);
       btnRow.appendChild(nextBtn);
-      box.appendChild(eyebrow);
       box.appendChild(counter);
       box.appendChild(label);
       box.appendChild(inp);
       box.appendChild(hint);
       box.appendChild(btnRow);
-      overlay.appendChild(box);
-      document.body.appendChild(overlay);
       showGap(0);
     };
   },
