@@ -24,3 +24,5 @@ node_modules/
 .impeccable/hook.pending.json
 .impeccable/*.png
 .impeccable/live/
+graphify-out/cache/
+graphify-out/cost.json

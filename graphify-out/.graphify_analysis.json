@@ -1,0 +1,1199 @@
+{
+  "communities": {
+    "0": [
+      "api_analyst",
+      "api_analyst_handler",
+      "api_analyst_type_prompts",
+      "api_auth",
+      "api_auth_handler",
+      "api_bookworm_fetch",
+      "api_bookworm_fetch_charfuzzypattern",
+      "api_bookworm_fetch_collectmatches",
+      "api_bookworm_fetch_declusterbyoffset",
+      "api_bookworm_fetch_detectchapterlistbyoracle",
+      "api_bookworm_fetch_detectchaptersbyregex",
+      "api_bookworm_fetch_dropclusteredboundaries",
+      "api_bookworm_fetch_fetchfulltext",
+      "api_bookworm_fetch_guesstitlefromurl",
+      "api_bookworm_fetch_handler",
+      "api_bookworm_fetch_resolvechapterheadingsmechanically",
+      "api_composio",
+      "api_composio_handler",
+      "api_context",
+      "api_context_accounts",
+      "api_context_base_url",
+      "api_context_callclaude",
+      "api_context_callcomposio",
+      "api_context_fetchurl",
+      "api_context_isurl",
+      "api_context_model",
+      "api_context_model_extractor",
+      "api_context_model_ground_worker",
+      "api_context_requireauth",
+      "api_context_rpgace_context",
+      "api_context_setcors",
+      "api_context_tool_aliases",
+      "api_data_write",
+      "api_data_write_allowed_tables",
+      "api_data_write_handler",
+      "api_executor",
+      "api_executor_handler",
+      "api_lastfm",
+      "api_lastfm_handler",
+      "api_lastfm_lfm",
+      "api_noter",
+      "api_noter_handler",
+      "api_oracle",
+      "api_oracle_config",
+      "api_oracle_handler",
+      "api_orchestrate",
+      "api_orchestrate_handler",
+      "api_scout",
+      "api_scout_handler",
+      "api_search",
+      "api_search_handler"
+    ],
+    "1": [
+      "main",
+      "main_cat_col",
+      "main_cat_icon",
+      "main_clearencyclopedia",
+      "main_clearpendingimage",
+      "main_closeglobalpanel",
+      "main_config",
+      "main_copydescription",
+      "main_default_shifts",
+      "main_dzover",
+      "main_enc_bullet_cache",
+      "main_enc_category_map",
+      "main_enc_insight_cache",
+      "main_enc_insights",
+      "main_exportencyclopedia",
+      "main_extracttopic",
+      "main_fm_session",
+      "main_handleoracleimage",
+      "main_initshifts",
+      "main_insta_commands",
+      "main_learn",
+      "main_level_titles",
+      "main_openjournalentry",
+      "main_openpasterota",
+      "main_openschedulepicker",
+      "main_oracleimageupload",
+      "main_pickduration",
+      "main_pipeline",
+      "main_pipelinedragover",
+      "main_prod_commands",
+      "main_quests",
+      "main_reopenfocusoverlay",
+      "main_sbinsightdelete",
+      "main_setpipelinetype",
+      "main_showencentry",
+      "main_showjumptoencdialog",
+      "main_showpastearea",
+      "main_startdonow",
+      "main_startscheduledtask",
+      "main_state",
+      "main_toggleinstapanel",
+      "main_togglejournalentry",
+      "main_toggleprodoraclepanel",
+      "main_togglepwvis",
+      "main_toggleytkeyvis",
+      "main_tracked_jobs",
+      "main_type_meta",
+      "main_type_prompts",
+      "main_vst_pattern"
+    ],
+    "2": [
+      "path",
+      "scripts_rpgace_intel",
+      "scripts_rpgace_intel_add_to_watchlist",
+      "scripts_rpgace_intel_analyse_frames",
+      "scripts_rpgace_intel_banner",
+      "scripts_rpgace_intel_batch_process",
+      "scripts_rpgace_intel_call_claude",
+      "scripts_rpgace_intel_check_ytdlp",
+      "scripts_rpgace_intel_download_video",
+      "scripts_rpgace_intel_encode_frame",
+      "scripts_rpgace_intel_ensure_dirs",
+      "scripts_rpgace_intel_extract_frames",
+      "scripts_rpgace_intel_format_output",
+      "scripts_rpgace_intel_generate_oracle_insights",
+      "scripts_rpgace_intel_get_ffmpeg_path",
+      "scripts_rpgace_intel_get_metadata",
+      "scripts_rpgace_intel_load_json",
+      "scripts_rpgace_intel_log",
+      "scripts_rpgace_intel_main",
+      "scripts_rpgace_intel_process_url",
+      "scripts_rpgace_intel_rationale_122",
+      "scripts_rpgace_intel_rationale_146",
+      "scripts_rpgace_intel_rationale_168",
+      "scripts_rpgace_intel_rationale_196",
+      "scripts_rpgace_intel_rationale_202",
+      "scripts_rpgace_intel_rationale_233",
+      "scripts_rpgace_intel_rationale_262",
+      "scripts_rpgace_intel_rationale_359",
+      "scripts_rpgace_intel_rationale_416",
+      "scripts_rpgace_intel_rationale_46",
+      "scripts_rpgace_intel_rationale_589",
+      "scripts_rpgace_intel_rationale_603",
+      "scripts_rpgace_intel_rationale_99",
+      "scripts_rpgace_intel_save_insight",
+      "scripts_rpgace_intel_save_json",
+      "scripts_rpgace_intel_show_watchlist",
+      "scripts_rpgace_intel_transcribe_audio"
+    ],
+    "3": [
+      "main_addinstaquest",
+      "main_addtoencyclopedia",
+      "main_addxp",
+      "main_agentlog",
+      "main_callcomposio",
+      "main_calloracle",
+      "main_compileencyclopedia",
+      "main_completequest",
+      "main_copypipelineoutput",
+      "main_generatenotes",
+      "main_learnvideo",
+      "main_loadnote",
+      "main_markagendadone",
+      "main_pipelinetogithub",
+      "main_pipelinetogmail",
+      "main_pipelinetonotion",
+      "main_polljobs",
+      "main_renderjobs",
+      "main_rendervideoresults",
+      "main_resetchain",
+      "main_resetpipeline",
+      "main_runpipeline",
+      "main_runvideoworkshop",
+      "main_saveworkshoptonotion",
+      "main_saveytkey",
+      "main_searchvideos",
+      "main_setagentpipestatus",
+      "main_setchainstep",
+      "main_setlearnstatus",
+      "main_showxptoast",
+      "main_startjobpolling",
+      "main_submitintelurl",
+      "main_triggeragent",
+      "main_triggerglobalidentify"
+    ],
+    "4": [
+      "rpgace_core",
+      "rpgace_core_advance",
+      "rpgace_core_applyintelui",
+      "rpgace_core_bridgeglobal",
+      "rpgace_core_chapternumof",
+      "rpgace_core_chip",
+      "rpgace_core_commitchapters",
+      "rpgace_core_dailydate",
+      "rpgace_core_el",
+      "rpgace_core_fb",
+      "rpgace_core_get",
+      "rpgace_core_key",
+      "rpgace_core_mkb",
+      "rpgace_core_monthdate",
+      "rpgace_core_numbersfoundin",
+      "rpgace_core_onready",
+      "rpgace_core_patch",
+      "rpgace_core_patchintelfns",
+      "rpgace_core_pendingsched",
+      "rpgace_core_push",
+      "rpgace_core_rationale_16644",
+      "rpgace_core_remove",
+      "rpgace_core_renderstep",
+      "rpgace_core_rendersteps",
+      "rpgace_core_rendersummary",
+      "rpgace_core_set",
+      "rpgace_core_showgap",
+      "rpgace_core_truncate",
+      "rpgace_core_update",
+      "rpgace_core_updatepreview",
+      "rpgace_core_weekstart"
+    ],
+    "5": [
+      "main_acceptjumptoenc",
+      "main_clearscheduledagendas",
+      "main_exitfocustoenc",
+      "main_extractvstsfromtext",
+      "main_fetchfromlocal",
+      "main_fetchfromsupabase",
+      "main_fetchwatchlistfromlocal",
+      "main_fetchwatchlistfromsupabase",
+      "main_gotoencfromfocus",
+      "main_importinteljson",
+      "main_loadintelinsights",
+      "main_loadintelwatchlist",
+      "main_loadscheduledagendas",
+      "main_mergebyurl",
+      "main_pushlocaltosupabase",
+      "main_quicksavetoencyclopedia",
+      "main_refreshencyclopediadisplay",
+      "main_removescheduledagenda",
+      "main_saveencwithvsts",
+      "main_saveinteltoencyclopedia",
+      "main_saveoracletoencyclopedia",
+      "main_saveworkshoptoencyclopedia",
+      "main_sendinsighttocmd3",
+      "main_showinteltab",
+      "main_showpage",
+      "main_switchtoci",
+      "main_syncandpush",
+      "main_syncinteldata",
+      "main_vst_known"
+    ],
+    "6": [
+      "main_approveinsights",
+      "main_approveinsightsfromcache",
+      "main_autoextractallincategory",
+      "main_deleteencentry",
+      "main_detectcategory",
+      "main_enc_all_entries",
+      "main_extractinsightsauto",
+      "main_extractinsightssemiauto",
+      "main_extractvstcontext",
+      "main_filterentries",
+      "main_generatecontentideasfrominsights",
+      "main_generateencbullets",
+      "main_highlightvstsincontent",
+      "main_jumptofullentry",
+      "main_jumptosourceentry",
+      "main_loadencbullets",
+      "main_loadinsightsbycategory",
+      "main_loadvstinspector",
+      "main_parseinsightjson",
+      "main_renderbullets",
+      "main_renderencentries",
+      "main_rendervstchips",
+      "main_rendervstfooter",
+      "main_savemanualinsight",
+      "main_sbinsightfetch",
+      "main_sbinsightpost",
+      "main_setenccategory",
+      "main_setencsort",
+      "main_sortentries"
+    ],
+    "7": [
+      "rpgace_build",
+      "rpgace_build_cmd_add",
+      "rpgace_build_cmd_check",
+      "rpgace_build_cmd_cleanup",
+      "rpgace_build_cmd_deploy",
+      "rpgace_build_cmd_list",
+      "rpgace_build_cmd_migrate",
+      "rpgace_build_cmd_new",
+      "rpgace_build_cmd_remove",
+      "rpgace_build_cmd_status",
+      "rpgace_build_cmd_update",
+      "rpgace_build_dom_e",
+      "rpgace_build_dom_s",
+      "rpgace_build_find_module_end",
+      "rpgace_build_get_domains",
+      "rpgace_build_get_modules",
+      "rpgace_build_mod_e",
+      "rpgace_build_mod_s",
+      "rpgace_build_rationale_390",
+      "rpgace_build_rationale_65",
+      "rpgace_build_rationale_74",
+      "rpgace_build_read",
+      "rpgace_build_sh",
+      "rpgace_build_sh_out",
+      "rpgace_build_syntax_check",
+      "rpgace_build_write"
+    ],
+    "8": [
+      "claude_skills_commit_archaeologist_scripts_archaeologist",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_archaeologisterror",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_blame_authors",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_build_report",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_changed_file_details",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_classify_message",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_git",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_historical_paths",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_history_hashes",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_intent_signals",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_main",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_normalize_inputs",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_parse_line_range",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_print_human",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_rationale_30",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_rationale_34",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_read_commit",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_summarize_authors",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_summarize_co_changes",
+      "claude_skills_commit_archaeologist_scripts_archaeologist_validate_range",
+      "exception"
+    ],
+    "9": [
+      "main_addschedbuttons",
+      "main_caldatestr",
+      "main_closeschedmodal",
+      "main_confirmschedule",
+      "main_confirmschedulemodal",
+      "main_fracclock",
+      "main_initdailynav",
+      "main_initschedmodal",
+      "main_openschedmodal",
+      "main_renderdailygrid",
+      "main_scheduleagenda",
+      "main_scheduleagendabyidx",
+      "main_scheduletocalendar",
+      "main_selectduration",
+      "main_shiftday",
+      "main_showsched"
+    ],
+    "10": [
+      "manifest",
+      "manifest_background_color",
+      "manifest_description",
+      "manifest_display",
+      "manifest_display_override",
+      "manifest_icons",
+      "manifest_id",
+      "manifest_name",
+      "manifest_orientation",
+      "manifest_scope",
+      "manifest_short_name",
+      "manifest_start_url",
+      "manifest_theme_color",
+      "ref_minimal_ui",
+      "ref_standalone"
+    ],
+    "11": [
+      "vercel",
+      "vercel_api_analyst_js_maxduration",
+      "vercel_api_executor_js_maxduration",
+      "vercel_api_noter_js_maxduration",
+      "vercel_api_orchestrate_js_maxduration",
+      "vercel_api_scout_js_maxduration",
+      "vercel_api_search_js_maxduration",
+      "vercel_functions",
+      "vercel_functions_api_analyst_js",
+      "vercel_functions_api_executor_js",
+      "vercel_functions_api_noter_js",
+      "vercel_functions_api_orchestrate_js",
+      "vercel_functions_api_scout_js",
+      "vercel_functions_api_search_js",
+      "vercel_rewrites"
+    ],
+    "12": [
+      "main_agent_actions",
+      "main_buildagentactions",
+      "main_buildskilltree",
+      "main_buildtimeslots",
+      "main_checkpassword",
+      "main_checkserverstatus",
+      "main_initapp",
+      "main_levelup",
+      "main_removeinsighttooltip",
+      "main_setupmanualinsightselection",
+      "main_showinsighttooltip",
+      "main_skills",
+      "main_startintelpolling",
+      "main_updateskilltree"
+    ],
+    "13": [
+      "main_agenda_list",
+      "main_clearjournal",
+      "main_closefocusoverlay",
+      "main_closejournalentry",
+      "main_completescheduledtask",
+      "main_deletejournalentry",
+      "main_hidetimerwidget",
+      "main_logdailyaction",
+      "main_logstopreason",
+      "main_quicksavetojournal",
+      "main_refreshjournaldisplay",
+      "main_savejournalentry",
+      "main_savetojournal"
+    ],
+    "14": [
+      "main_autoapplystoredshifts",
+      "main_closepasterota",
+      "main_generateagendas",
+      "main_getfreewindows",
+      "main_getshiftcontext",
+      "main_getshifts",
+      "main_getshiftsfordate",
+      "main_gettodayshifts",
+      "main_initagendas",
+      "main_parseandsaverota",
+      "main_patchagendacardswithschedule",
+      "main_renderagendas",
+      "main_rendershiftblocks"
+    ],
+    "15": [
+      "main_addmsg",
+      "main_checkforquestsuggestions",
+      "main_escchathtml",
+      "main_firebeatanalysis",
+      "main_fireinstacommand",
+      "main_fireprodcommand",
+      "main_isinstaoraclequery",
+      "main_renderinstamsg",
+      "main_rendermarkdown",
+      "main_sendchat",
+      "main_sendchatwithimage",
+      "main_showsuggestionpopup"
+    ],
+    "16": [
+      "main_beginsession",
+      "main_closesessionsetup",
+      "main_handlefocusselect",
+      "main_loadfocusentries",
+      "main_onsessiontimerend",
+      "main_openfocusoverlay",
+      "main_setupfocustextselect",
+      "main_showtimerwidget",
+      "main_startfmtimer",
+      "main_updatetimerdisplay"
+    ],
+    "17": [
+      "main_buildmonthslots",
+      "main_buildweekslots",
+      "main_calcellitems",
+      "main_calfmtshort",
+      "main_calgetschedagendas",
+      "main_calgetshifts",
+      "main_calmondayof",
+      "main_calmonthnav",
+      "main_calweeknav",
+      "main_calyearnav"
+    ],
+    "18": [
+      "main_applyshifts",
+      "main_dzdrop",
+      "main_dzleave",
+      "main_handlefile",
+      "main_parsecsv",
+      "main_parseics",
+      "main_parsepasteinput",
+      "main_parsetext",
+      "main_showimporterr"
+    ],
+    "19": [
+      "scripts_fourth_rota",
+      "scripts_fourth_rota_day_abbr",
+      "scripts_fourth_rota_extract",
+      "scripts_fourth_rota_get_credentials",
+      "scripts_fourth_rota_rationale_30",
+      "scripts_fourth_rota_rationale_45",
+      "scripts_fourth_rota_rationale_58",
+      "scripts_fourth_rota_try_click",
+      "scripts_fourth_rota_try_fill"
+    ],
+    "20": [
+      "scripts_supabase_sync",
+      "scripts_supabase_sync_fetch_reports",
+      "scripts_supabase_sync_push_report",
+      "scripts_supabase_sync_push_watchlist",
+      "scripts_supabase_sync_rationale_25",
+      "scripts_supabase_sync_rationale_41",
+      "scripts_supabase_sync_rationale_59",
+      "scripts_supabase_sync_rationale_83",
+      "scripts_supabase_sync_supabase_post"
+    ],
+    "21": [
+      "main_acceptsuggestions",
+      "main_buildallquests",
+      "main_buildqs",
+      "main_closesuggestion",
+      "main_makecard"
+    ],
+    "22": [
+      "main_deletenote",
+      "main_initlearning",
+      "main_renderdb",
+      "main_savepipelinetodb",
+      "main_updatedbstats"
+    ],
+    "23": [
+      "main_collapseencentry",
+      "main_expandencentry",
+      "main_scrolltovstinentry",
+      "main_toggleencentry"
+    ],
+    "24": [
+      "main_handleglobalselect",
+      "main_initglobaltextselect",
+      "main_selectable_pages"
+    ],
+    "25": [
+      "main_handlepipelinefile",
+      "main_pipelinedragleave",
+      "main_pipelinedrop"
+    ],
+    "26": [
+      "scripts_build_full_scheduling_system",
+      "scripts_build_full_scheduling_system_find_function_span",
+      "scripts_build_full_scheduling_system_rationale_6"
+    ],
+    "27": [
+      "scripts_mod_taxonomytree",
+      "scripts_mod_taxonomytree_rendersteps",
+      "scripts_mod_taxonomytree_updatepreview"
+    ],
+    "28": [
+      "package",
+      "package_type"
+    ],
+    "29": [
+      "scripts_rebuild_daily_grid_v2",
+      "scripts_rebuild_daily_grid_v2_find_function_span"
+    ],
+    "30": [
+      "scripts_split",
+      "scripts_split_rationale_1"
+    ],
+    "31": [
+      "scripts_stub_addschedbuttons",
+      "scripts_stub_addschedbuttons_find_function_span"
+    ],
+    "32": [
+      "sw",
+      "sw_precache"
+    ],
+    "33": [
+      "scripts_add_click_to_schedule"
+    ],
+    "34": [
+      "scripts_add_title_description_fields"
+    ],
+    "35": [
+      "scripts_extract_exact"
+    ],
+    "36": [
+      "scripts_extract_weekslots"
+    ],
+    "37": [
+      "scripts_find_anchor"
+    ],
+    "38": [
+      "scripts_find_anchor2"
+    ],
+    "39": [
+      "scripts_find_anchors"
+    ],
+    "40": [
+      "scripts_find_hooks_impl"
+    ],
+    "41": [
+      "scripts_find_init_call"
+    ],
+    "42": [
+      "scripts_find_phylum"
+    ],
+    "43": [
+      "scripts_fix_bridge"
+    ],
+    "44": [
+      "scripts_fix_btn_order"
+    ],
+    "45": [
+      "scripts_fix_btn_syntax"
+    ],
+    "46": [
+      "scripts_fix_chatid"
+    ],
+    "47": [
+      "scripts_fix_chatid2"
+    ],
+    "48": [
+      "scripts_fix_collapsible3"
+    ],
+    "49": [
+      "scripts_fix_collapsible4"
+    ],
+    "50": [
+      "scripts_fix_compaction_v2"
+    ],
+    "51": [
+      "scripts_fix_compaction_v3"
+    ],
+    "52": [
+      "scripts_fix_compaction_v4"
+    ],
+    "53": [
+      "scripts_fix_confirmschedule_converge"
+    ],
+    "54": [
+      "scripts_fix_conid_title"
+    ],
+    "55": [
+      "scripts_fix_conidpot_limit"
+    ],
+    "56": [
+      "scripts_fix_dedup"
+    ],
+    "57": [
+      "scripts_fix_duplicate_buildmonth"
+    ],
+    "58": [
+      "scripts_fix_duplicate_buildmonth2"
+    ],
+    "59": [
+      "scripts_fix_duplicate_buttons"
+    ],
+    "60": [
+      "scripts_fix_duplicate_weekslots"
+    ],
+    "61": [
+      "scripts_fix_enc_sync"
+    ],
+    "62": [
+      "scripts_fix_expanded"
+    ],
+    "63": [
+      "scripts_fix_feynman"
+    ],
+    "64": [
+      "scripts_fix_full_24hr_dropdown"
+    ],
+    "65": [
+      "scripts_fix_global_observer"
+    ],
+    "66": [
+      "scripts_fix_hide_container"
+    ],
+    "67": [
+      "scripts_fix_init_timing"
+    ],
+    "68": [
+      "scripts_fix_insights2"
+    ],
+    "69": [
+      "scripts_fix_insights_type"
+    ],
+    "70": [
+      "scripts_fix_intel_bib_confirm"
+    ],
+    "71": [
+      "scripts_fix_intel_v2"
+    ],
+    "72": [
+      "scripts_fix_intel_v3"
+    ],
+    "73": [
+      "scripts_fix_intel_v4"
+    ],
+    "74": [
+      "scripts_fix_intercept"
+    ],
+    "75": [
+      "scripts_fix_learning_tab"
+    ],
+    "76": [
+      "scripts_fix_lineage_summary"
+    ],
+    "77": [
+      "scripts_fix_msg_class"
+    ],
+    "78": [
+      "scripts_fix_observer"
+    ],
+    "79": [
+      "scripts_fix_openschedmodal_final"
+    ],
+    "80": [
+      "scripts_fix_phylum2"
+    ],
+    "81": [
+      "scripts_fix_phylum3"
+    ],
+    "82": [
+      "scripts_fix_phylum4"
+    ],
+    "83": [
+      "scripts_fix_phylum_autoconfirm"
+    ],
+    "84": [
+      "scripts_fix_polling"
+    ],
+    "85": [
+      "scripts_fix_r_ref"
+    ],
+    "86": [
+      "scripts_fix_real_date_bug"
+    ],
+    "87": [
+      "scripts_fix_reapply"
+    ],
+    "88": [
+      "scripts_fix_regex"
+    ],
+    "89": [
+      "scripts_fix_sched_convergence"
+    ],
+    "90": [
+      "scripts_fix_sched_key_mismatch"
+    ],
+    "91": [
+      "scripts_fix_shift_date_bug"
+    ],
+    "92": [
+      "scripts_fix_state"
+    ],
+    "93": [
+      "scripts_fix_toggle_container"
+    ],
+    "94": [
+      "scripts_fix_yt3"
+    ],
+    "95": [
+      "scripts_fix_yt_syntax"
+    ],
+    "96": [
+      "scripts_fix_yt_syntax2"
+    ],
+    "97": [
+      "scripts_force_replace_cr"
+    ],
+    "98": [
+      "scripts_mod_beatlog"
+    ],
+    "99": [
+      "scripts_mod_collapsed_list"
+    ],
+    "100": [
+      "scripts_mod_conidpot"
+    ],
+    "101": [
+      "scripts_mod_contentproductionlive"
+    ],
+    "102": [
+      "scripts_mod_contentrepurpose"
+    ],
+    "103": [
+      "scripts_mod_contentrepurpose_v2"
+    ],
+    "104": [
+      "scripts_mod_knowledgegap"
+    ],
+    "105": [
+      "scripts_mod_morningbrief"
+    ],
+    "106": [
+      "scripts_mod_quickactions"
+    ],
+    "107": [
+      "scripts_mod_refcorpus"
+    ],
+    "108": [
+      "scripts_mod_restoresendchat"
+    ],
+    "109": [
+      "scripts_mod_shiftsync"
+    ],
+    "110": [
+      "scripts_mod_suppressquestpopup"
+    ],
+    "111": [
+      "scripts_mod_taxonomysync"
+    ],
+    "112": [
+      "scripts_mod_visualoracle"
+    ],
+    "113": [
+      "scripts_patch_agenda_stream"
+    ],
+    "114": [
+      "scripts_patch_agenda_stream2"
+    ],
+    "115": [
+      "scripts_patch_badge_propose"
+    ],
+    "116": [
+      "scripts_patch_beatlog_corpus"
+    ],
+    "117": [
+      "scripts_patch_beatlog_drop"
+    ],
+    "118": [
+      "scripts_patch_bpm_tags"
+    ],
+    "119": [
+      "scripts_patch_collapsible"
+    ],
+    "120": [
+      "scripts_patch_collapsible2"
+    ],
+    "121": [
+      "scripts_patch_conidpot_fixes"
+    ],
+    "122": [
+      "scripts_patch_feynman_tax"
+    ],
+    "123": [
+      "scripts_patch_global_phyla"
+    ],
+    "124": [
+      "scripts_patch_intercept_sync"
+    ],
+    "125": [
+      "scripts_patch_named_topics"
+    ],
+    "126": [
+      "scripts_patch_perf"
+    ],
+    "127": [
+      "scripts_patch_phyla"
+    ],
+    "128": [
+      "scripts_patch_prefilter_buttons"
+    ],
+    "129": [
+      "scripts_patch_rpgace"
+    ],
+    "130": [
+      "scripts_patch_swap_btn"
+    ],
+    "131": [
+      "scripts_patch_two_container"
+    ],
+    "132": [
+      "scripts_patch_utils"
+    ],
+    "133": [
+      "scripts_remove_collapsible_call"
+    ],
+    "134": [
+      "scripts_scan_all_duplicates"
+    ],
+    "135": [
+      "scripts_show_cr"
+    ],
+    "136": [
+      "scripts_show_feynman_save"
+    ],
+    "137": [
+      "scripts_show_inject"
+    ],
+    "138": [
+      "scripts_show_inject2"
+    ],
+    "139": [
+      "scripts_show_insights_line"
+    ],
+    "140": [
+      "scripts_show_intel"
+    ],
+    "141": [
+      "scripts_show_intel_init"
+    ],
+    "142": [
+      "scripts_show_lines"
+    ],
+    "143": [
+      "scripts_show_phylum_block"
+    ],
+    "144": [
+      "scripts_show_prod"
+    ],
+    "145": [
+      "scripts_show_prod2"
+    ],
+    "146": [
+      "scripts_show_quickactions"
+    ],
+    "147": [
+      "scripts_step9_panels"
+    ]
+  },
+  "cohesion": {
+    "0": 0.10745098039215686,
+    "1": 0.04081632653061224,
+    "2": 0.11411411411411411,
+    "3": 0.10160427807486631,
+    "4": 0.1010752688172043,
+    "5": 0.09113300492610837,
+    "6": 0.08620689655172414,
+    "7": 0.23384615384615384,
+    "8": 0.21904761904761905,
+    "9": 0.175,
+    "10": 0.13333333333333333,
+    "11": 0.13333333333333333,
+    "12": 0.16483516483516483,
+    "13": 0.15384615384615385,
+    "14": 0.1794871794871795,
+    "15": 0.21212121212121213,
+    "16": 0.2,
+    "17": 0.26666666666666666,
+    "18": 0.3055555555555556,
+    "19": 0.3333333333333333,
+    "20": 0.25,
+    "21": 0.4,
+    "22": 0.6,
+    "23": 0.5,
+    "24": 0.6666666666666666,
+    "25": 0.6666666666666666,
+    "26": 0.6666666666666666,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0,
+    "48": 1.0,
+    "49": 1.0,
+    "50": 1.0,
+    "51": 1.0,
+    "52": 1.0,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0,
+    "93": 1.0,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0,
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0,
+    "113": 1.0,
+    "114": 1.0,
+    "115": 1.0,
+    "116": 1.0,
+    "117": 1.0,
+    "118": 1.0,
+    "119": 1.0,
+    "120": 1.0,
+    "121": 1.0,
+    "122": 1.0,
+    "123": 1.0,
+    "124": 1.0,
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0,
+    "129": 1.0,
+    "130": 1.0,
+    "131": 1.0,
+    "132": 1.0,
+    "133": 1.0,
+    "134": 1.0,
+    "135": 1.0,
+    "136": 1.0,
+    "137": 1.0,
+    "138": 1.0,
+    "139": 1.0,
+    "140": 1.0,
+    "141": 1.0,
+    "142": 1.0,
+    "143": 1.0,
+    "144": 1.0,
+    "145": 1.0,
+    "146": 1.0,
+    "147": 1.0
+  },
+  "gods": [
+    {
+      "id": "api_context_setcors",
+      "label": "setCORS()",
+      "degree": 25
+    },
+    {
+      "id": "api_context_requireauth",
+      "label": "requireAuth()",
+      "degree": 23
+    },
+    {
+      "id": "main_addxp",
+      "label": "addXP()",
+      "degree": 21
+    },
+    {
+      "id": "main_calloracle",
+      "label": "callOracle()",
+      "degree": 15
+    },
+    {
+      "id": "main_initapp",
+      "label": "initApp()",
+      "degree": 15
+    },
+    {
+      "id": "main_setlearnstatus",
+      "label": "setLearnStatus()",
+      "degree": 15
+    },
+    {
+      "id": "scripts_rpgace_intel_process_url",
+      "label": "process_url()",
+      "degree": 15
+    },
+    {
+      "id": "main_sendchat",
+      "label": "sendChat()",
+      "degree": 14
+    },
+    {
+      "id": "main_renderencentries",
+      "label": "renderEncEntries()",
+      "degree": 14
+    },
+    {
+      "id": "api_context_callclaude",
+      "label": "callClaude()",
+      "degree": 13
+    }
+  ],
+  "surprises": [
+    {
+      "source": "handler()",
+      "target": "setCORS()",
+      "source_files": [
+        "api/auth.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "peripheral node `handler()` unexpectedly reaches hub `setCORS()`"
+    },
+    {
+      "source": "handler()",
+      "target": "callClaude()",
+      "source_files": [
+        "api/analyst.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "detectChapterListByOracle()",
+      "target": "callClaude()",
+      "source_files": [
+        "api/bookworm-fetch.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "handler()",
+      "target": "callClaude()",
+      "source_files": [
+        "api/noter.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "handler()",
+      "target": "callClaude()",
+      "source_files": [
+        "api/oracle.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `syntax_check()` connect `Community 7` to `Community 2`?",
+      "why": "High betweenness centrality (0.002) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 3 inferred relationships involving `initApp()` (e.g. with `refreshEncyclopediaDisplay()` and `setupManualInsightSelection()`) actually correct?",
+      "why": "`initApp()` has 3 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS` to the rest of the system?",
+      "why": "46 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.10745098039215686 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 2` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11411411411411411 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 3` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.10160427807486631 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
