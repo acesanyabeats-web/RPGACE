@@ -1,0 +1,322 @@
+Video Pipeline + Director Phylum development plan
+GODMODE evidence + Council of 5 scrutiny + 5thDimension reconciliation
+2026-07-30
+
+=====================================================================
+NOTE ON SKILL APPLICABILITY (honest, before anything else)
+=====================================================================
+Alex asked for /restructure + /Engineer + /scope + /Godmode + Council of
+5 + /5thDimension + /Omnitrix(no Fable, Opus-tier) + /simplify, all
+chained. Two of these don't literally fit this task, stated plainly
+rather than forced:
+  - /restructure compares a SPECIFIC third-party repo against RPGACE's
+    own infra ("would replacing X with Y make it shorter/faster/better
+    output"). No third-party repo is in play here - this is native
+    RPGACE feature planning. Skipped as a literal invocation.
+  - /Engineer's own definition explicitly says NOT to use it as a
+    planning ritual ("/Engineer executes a goal list that already
+    exists... /Routine is the planning ritual"). This whole request IS
+    the planning pass - /Engineer is the right skill to run AFTER this
+    plan is confirmed and a goal list exists, not during it.
+  - Omnitrix "with Opus 5, no Fable": Omnitrix's own rebalanced design
+    (July 20) has Opus build code and Sonnet plan directly - there is no
+    code being built in a planning pass, so there is no Opus dispatch
+    step to run. The "no Fable" instruction is honored (no subagent
+    dispatch at all for this pass - reasoning done directly, GODMODE-
+    depth).
+Everything else (GODMODE, /scope, Council of 5, /5thDimension,
+/simplify) was run for real, in full, below.
+
+=====================================================================
+PART 1 — GODMODE + /scope EVIDENCE (all live-queried this session,
+not assumed from CLAUDE.md's own prior claims)
+=====================================================================
+
+FINDING 1 — REAL CORRECTION to "I populated the taxonomy phylum path"
+for Director Phylum. Director Phylum = Phylum 14, "Visio Cinematica"
+(English label: "Visual Treatment, Filmmaking"; purpose text: "The
+visual/cinematic direction for beat videos — directors, camera
+language, treatment docs"). Direct query of taxonomy_tree confirms
+PHYLUM 14 HAS ZERO NODES. It is not in ENABLED_PHYLA ([1,2,3,4,5,6,7,
+8,9,10] only) and has never been through the 7-step Phylum Development
+Framework (keywords → tree build → data repair → enable → fusion pass
+→ hand-test) the other 10 live phyla went through.
+
+What Alex actually populated is a SEPARATE, deliberately-different
+table: taxonomy_nodes WHERE source='f14_filmmaker_library' — 50 real,
+well-written rows (director name, stylistic definition, colour
+palette — e.g. "Alfred Hitchcock: Suspense engineered through withheld
+information... Cool Technicolor blues and greens, high-contrast noir
+shadow"). This is real, rich, usable content — but it is a FLAT
+REFERENCE LIBRARY, not a browsable taxonomy branch. It already powers
+exactly 2 real Oracle prompts today (Director Match command,
+auto Visual Treatment Doc via F18), both via `_withFilmmakerLibrary()`.
+This taxonomy_nodes/taxonomy_tree split is itself a known, deliberate,
+already-reasoned architecture decision in this project (per
+interconnection_map.md's own note) — not a mistake — but it means
+"Director Phylum" today is reference data feeding prompts, not a
+place-into-it, drill-down-able tree like Phylum 1-10. This is the
+single most important thing to get straight before planning further:
+building "more Director Phylum" could mean two very different things
+depending which of these Alex actually wants (see Fork 1 below).
+
+FINDING 2 — real current pipeline state, queried directly:
+  - video_jobs: 2 real rows (both created July 28 from real beat-log
+    tests). BOTH stuck at status='beat_logged' — stage 1 of 5, never
+    advanced. Both have a generated script (has_script:true) but ZERO
+    edl, ZERO style_profile_id, ZERO raw/edited/rendered paths.
+  - style_profiles: 0 rows, ever. The DIRECTOR_CHOSEN trailer-parse
+    path (Director Match/Visual Treatment → a real style_profiles
+    insert, built July 28) has never fired successfully in production —
+    genuinely unverified, not just "untested," since real usage
+    attempts exist (2 video_jobs rows) and neither produced a row.
+  - beat_audio_jobs: 0 rows. The librosa real-audio-analysis hook
+    (built, waiting on Alex's local_server.py) has never been exercised.
+  - reference_tracks: 32 rows, 0 have `scale` set, 0 have `genre` set —
+    despite the beat-matching fix session adding exactly these fields
+    to the corpus add-track UI. The matching engine that scores on
+    scale+genre currently has nothing real to score against.
+
+FINDING 3 — no cross-navigation exists between Video Pipeline and Beat
+Log/Content Pipeline today. `videoPipeline._renderRow` (the per-job
+list item) has exactly 2 actions: "→ Mark [next stage]" and "📋 Paths +
+exports." No link back to the originating beat or production exists.
+Real, reusable precedent for this shape DOES already exist elsewhere in
+the same file: contentPipeline's own row has a "💬 Oracle session"
+button that jumps to the Oracle tab with the right context loaded, and
+`_injectOracleBar` has a "🎬 Switch to Production Panel" button doing
+the reverse. This is exactly the missing symmetric piece — not a new
+UI pattern, a gap in an already-proven one.
+
+FINDING 4 — "in sync with the beat" does not yet mean what it sounds
+like it means. The real EDL_JSON prompt (storyboard doc generation)
+asks Oracle for a "Scene breakdown (4 scenes with duration)" — an
+LLM-ESTIMATED guess at scene lengths, not derived from any real audio
+analysis. No onset detection, beat-grid extraction, or song-section
+(verse/drop/hook) timestamping exists ANYWHERE in the codebase today.
+Concretely: RPGACE can today make a video "match" a beat's mood, key,
+and colour palette — it cannot yet make a cut land exactly on a drop
+or a snare hit, because it has no data about where those moments
+actually occur in the audio. This is the single biggest gap between
+the stated goal ("in sync and eye-gripping") and current real
+capability — named plainly here rather than glossed over.
+
+FINDING 5 — no video-rendering engine exists in RPGACE, by design,
+confirmed multiple times across this whole project's history: F16-F18
+produce TEXT (listing copy, treatment docs, EDL text), never a
+rendered file. The July 24 Aintergration debate on OpenMontage (a real
+agent-operated video pipeline) already reached a real verdict: "adopt
+as a separate operated tool, never embedded in RPGACE's own runtime."
+That verdict still stands and is directly load-bearing here — any
+"generate the actual video" step in this workflow is Alex operating a
+separate tool (OpenMontage, Neural Frames, his own editing software),
+with RPGACE's job being to hand it a well-prepared brief/EDL and then
+track the resulting file paths, not to render anything itself.
+
+=====================================================================
+PART 2 — COUNCIL OF 5 SCRUTINY (real risks, not padded)
+=====================================================================
+
+1. TECHNICAL RISK — "sync to the beat" oversells current capability.
+   Building more automation on top of duration-ESTIMATED EDLs, without
+   naming this gap, would ship a feature that looks precise and isn't.
+   Any UI/copy in this workflow should say "suggested timing" not
+   "synced timing" until Finding 4 is actually addressed (Fork 2).
+
+2. SCOPE/COST — Phylum 14's full tree-build-out (if that's what Alex
+   wants from "populate the taxonomy phylum path") is the SAME real
+   cost class as the 10 already-built phyla (a full 7-step framework
+   pass: keywords, tree, data repair, enable, fusion, hand-test). This
+   is a separate, standalone body of work from video-pipeline
+   automation — conflating the two would blow the scope of "plan the
+   video pipeline" into "build an 11th taxonomy phylum," a materially
+   bigger ask that deserves its own explicit yes/no (Fork 1).
+
+3. MAINTAINABILITY — building more automation ON TOP of an unverified
+   foundation (style_profiles has never once saved successfully) risks
+   compounding a silent failure instead of fixing it. Per this
+   project's own rule 4 ("one failed fix = stop, get real evidence, do
+   not patch blind a second time"), the Director Match save path needs
+   a real, direct smoke test BEFORE anything else gets layered onto it
+   — not a rebuild, a verification.
+
+4. UX — the "stuck at stage 1" pattern across both real rows suggests
+   the current manual 5-stage-button model has real friction: a busy
+   producer (working one-handed some days, per Alex's own recent
+   accessibility note) is unlikely to reliably click through 5 discrete
+   stage-advance buttons over the days/weeks a real video takes to
+   finish. Auto-advance triggers (e.g. an edited_path being filled in
+   auto-advances status to 'edited') are a real, cheap improvement
+   worth planning in, not just the return-nav button Alex explicitly
+   asked for.
+
+5. WHY NOT TO BUILD ALL OF THIS NOW — three separate foundational gaps
+   (reference_tracks scale/genre backfill, beat_audio_jobs never
+   exercised, style_profiles never verified) already sit on the
+   existing backlog, independent of this new workflow ask. Stacking
+   fresh automation on top of three already-known-empty foundations is
+   a real risk of building a flashy front-end over data that doesn't
+   exist yet. A real "build order" decision is needed, not just a
+   feature list (Fork 3).
+
+=====================================================================
+PART 3 — 5thDIMENSION RECONCILIATION: the real phased workflow
+=====================================================================
+Reconciling Finding 1-5 against Alex's actual stated goal (a beat →
+music-video workflow using Director Phylum grounding, that produces
+eye-gripping short-form content and motivates cinematic beat-making) —
+built vs. reported drift is now resolved (Finding 1), so here is the
+real, current, already-existing pipeline shape, with what's genuinely
+new marked [NEW]:
+
+  Stage 0 — Beat Log (EXISTS, works). Title/key/scale/BPM/mood/energy/
+  reference-track/auto colour-palette. Optional F18 Visual Treatment
+  checkbox.
+
+  Stage 1 — Content Pipeline entry (EXISTS, works). content_productions
+  + video_jobs rows created and linked (status='beat_logged').
+
+  Stage 2 — Director Match (EXISTS, UNVERIFIED). Oracle grounds in the
+  real 50-director f14_filmmaker_library, picks one matching the beat's
+  mood/key/palette. DIRECTOR_CHOSEN trailer → should write a
+  style_profiles row. REAL NEXT STEP: a direct smoke test of this exact
+  path (log a beat, run Director Match, confirm a style_profiles row
+  actually appears) before building anything downstream of it.
+
+  Stage 3 — Visual Treatment Doc (EXISTS, chained automatically via
+  F18 checkbox). Full treatment + 4-scene breakdown, saved into
+  content_productions.creative_docs.
+
+  Stage 4 — Storyboard / EDL (EXISTS, DURATION-ESTIMATED not
+  audio-derived — Finding 4). [NEW, Fork 2-dependent]: optionally
+  upgrade to real beat-grid-anchored timing.
+
+  Stage 5 — Asset creation (OUTSIDE RPGACE, by design — Finding 5).
+  Neural Frames prompt (already generated) / OpenMontage (already-
+  judged separate tool) / manual filming — Alex's own external step.
+
+  Stage 6 — Editing (OUTSIDE RPGACE) → raw_path/edited_path/
+  rendered_path logged back into video_jobs.
+
+  Stage 7 — Export (youtube/instagram/tiktok/beatstars) — export_paths
+  logged; F16's Beatstars listing generator reused for that leg.
+
+  [NEW] Cross-navigation both ways: a "↩ [beat title]" button on
+  videoPipeline._renderRow's action row (same shape as contentPipeline's
+  existing "💬 Oracle session" button) jumping to the linked
+  content_production/beat detail — this is Alex's explicit "return
+  button to beat logged in" ask. Symmetric addition worth including:
+  contentPipeline's own row has no equivalent "→ Video Pipeline" jump
+  for a production that HAS a linked video_jobs row — closing the gap
+  in both directions, not just one, since the goal is easy back-and-
+  forth, not one-way navigation. Tier 1, small, zero architecture risk
+  — reuses an established pattern verbatim.
+
+  [NEW, real UX fix per Council-of-5 finding 4] Auto-advance triggers:
+  saving a raw_path auto-advances status to 'raw_footage', saving an
+  edited_path to 'edited', etc. — removes reliance on manually clicking
+  5 stage buttons across a multi-day/week production.
+
+=====================================================================
+PART 4 — VERDICT SCORING (self-graded, Council-of-5 style, 8/10 gate)
+=====================================================================
+- GODMODE evidence pass: 9/10 — real, live-queried against Supabase and
+  actual code, not recalled from docs; surfaced 2 genuine drift
+  corrections (Finding 1, Finding 4) rather than confirming assumptions.
+- Council of 5 scrutiny: 8/10 — 5 real, distinct risks named with
+  concrete evidence behind each, not generic risk-bullet padding.
+- 5thDimension reconciliation: 8/10 — built-vs-reported drift resolved
+  before any new stage was proposed; every [NEW] item is small,
+  justified by a specific finding above, and reuses an existing pattern
+  rather than inventing one.
+All three clear the 8/10 gate — proceeding to the simplified summary
+and the real forks below rather than stopping short.
+
+=====================================================================
+PART 5 — REAL FORKS NEEDING ALEX'S ANSWER (not guessed)
+=====================================================================
+Recorded here verbatim once answered, per this project's rule 5.
+
+FORK 1 — Director Phylum scope: build the full taxonomy_tree hierarchy
+for Phylum 14 (same 7-step framework cost as phyla 1-10, makes it a
+real browsable/placeable branch) OR leave it as the current flat
+50-row reference library (already working, zero extra cost) and treat
+the video-pipeline plan as fully separate from taxonomy tree-building?
+
+FORK 2 — Beat-sync precision: keep the EDL as LLM-estimated scene
+durations (human does the actual cut-timing in editing — zero new
+engineering) OR extend the already-built-but-unused beat_audio_jobs/
+librosa hook to detect real onset/beat-grid timestamps so the EDL can
+anchor cuts to actual musical structure (real, moderate scope increase
+— the only path to "in sync" being literally true)?
+
+FORK 3 — Build order: given Council-of-5 finding 5 (3 existing empty
+foundations), what's the real first slice —
+  (a) verify/fix the Director Match→style_profiles save path (smallest,
+      unblocks everything downstream) + the return-to-Beat-Log button
+      (small, real UX win, zero risk)
+  (b) backfill reference_tracks scale/genre + run one real
+      beat_audio_jobs test end-to-end first (data foundation)
+  (c) go straight for the EDL/beat-sync upgrade (Fork 2b), since that's
+      the most "eye-gripping" differentiator, and defer the smaller
+      fixes?
+
+=====================================================================
+PART 5b — ALEX'S REAL ANSWERS (verbatim, recorded same session)
+=====================================================================
+FORK 1: "Build the full tree now" — Phylum 14 gets the full 7-step
+Development Framework pass (keywords, tree build, data repair, enable,
+fusion pass, hand-test), same as phyla 1-10. It becomes a real
+browsable/placeable branch, not just the flat 50-row reference library.
+
+FORK 2: "Build real beat-grid sync" — the librosa hook gets extended
+beyond BPM+key to real onset/beat-grid timestamp detection, so the EDL
+can anchor cuts to actual musical structure instead of LLM-estimated
+scene durations.
+
+FORK 3: "Verify + small fixes first" — first real build slice is: (1)
+smoke-test the Director Match→style_profiles save path for real and
+fix if broken, (2) add the return-to-Beat-Log nav button, (3) add
+auto-advance stage triggers. Smallest, unblocks everything downstream,
+near-zero risk — done BEFORE the bigger Fork 1/Fork 2 work starts.
+
+REAL SEQUENCED BUILD ORDER (Fork 3's answer sets the order Fork 1 and
+Fork 2's work actually happens in):
+  Slice A — Verify + small fixes (Fork 3): Director Match save-path
+  smoke test/fix, return-to-Beat-Log nav button (+ symmetric Video
+  Pipeline jump from Content Pipeline), auto-advance stage triggers.
+  Slice B — Phylum 14 full tree build (Fork 1): the 7-step Development
+  Framework pass, run as its own dedicated Tier-2 body of work exactly
+  like phyla 1-10 were, once Slice A's foundation is confirmed solid.
+  Slice C — Real beat-grid audio sync (Fork 2): extend beat_audio_jobs/
+  librosa beyond BPM+key to onset/beat-grid detection, then upgrade the
+  EDL prompt to anchor cuts to real timestamps instead of estimates —
+  the biggest single piece of engineering here, sequenced last since it
+  depends on beat_audio_jobs actually being exercised (part of Slice A's
+  verification) and benefits from Phylum 14's fuller taxonomy existing
+  first (richer director/visual-language grounding to draw on).
+Note: reference_tracks scale/genre backfill (32 rows) is a real,
+separate, already-known small item — not new to this plan, worth doing
+alongside Slice A's verification pass since it's cheap and unblocks the
+beat-matching engine that was already built for it.
+
+=====================================================================
+PART 6 — SIMPLIFIED SUMMARY (the /simplify pass — condensed, no
+depth lost, full detail above)
+=====================================================================
+Most of this workflow already exists in code. The real story is: it's
+never been proven to work end-to-end (both real jobs are stuck at
+step 1, Director Match has never once saved a result), "in sync"
+currently means mood/palette-matched, not cut-precise, and there's no
+way today to jump back to a beat from its video job.
+
+Alex's real answers set the full ambitious path, sequenced: (A) verify
+Director Match's save path + add the return-nav button + auto-advance
+triggers + backfill reference_tracks metadata — small, fast, de-risks
+everything after it; (B) build out Phylum 14 as a real taxonomy tree,
+same 7-step framework as phyla 1-10; (C) extend the librosa hook to
+real beat-grid detection so the EDL can finally anchor cuts to actual
+musical structure, making "in sync" literally true rather than a vibe.
+Nothing here is built yet — this file is the confirmed plan, not a
+completion record. Next real step: run /Engineer against Slice A's
+goal list.

@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎬 July 30 — Video Pipeline / Director Phylum development plan: GODMODE evidence + Council of 5 + 5thDimension, real forks answered, nothing built yet</div>
+    <div class="card-body">
+      Alex asked to plan the beat→music-video workflow (Director Phylum-grounded, aiming for "in sync and eye-gripping" short-form content) with maximum rigor before building anything.
+      <br><br>
+      <strong>Real evidence found two genuine drift corrections.</strong> "Director Phylum" (Phylum 14, "Visio Cinematica") has ZERO nodes in taxonomy_tree and isn't in ENABLED_PHYLA — what Alex actually populated is a separate flat 50-row reference table (`taxonomy_nodes` where `source='f14_filmmaker_library'`), a deliberate architecture split already established in this project, not a mistake, but a real distinction from a browsable tree branch like phyla 1-10. Second: the EDL/storyboard's "scene breakdown" is LLM-estimated scene durations, not derived from any real audio analysis — no beat-grid/onset detection exists anywhere in the codebase, so "in sync with the beat" today means mood/palette-matched, not cut-precise.
+      <br><br>
+      <strong>Other real findings</strong>: both real `video_jobs` rows are stuck at stage 1 of 5 ("beat_logged"); `style_profiles` has 0 rows ever (Director Match's save path has never fired successfully in production — genuinely unverified, not just untested); `reference_tracks`' scale/genre columns (added for beat-matching) are still 0/32 populated; no cross-navigation exists between Video Pipeline and Beat Log/Content Pipeline today, despite the exact reusable button pattern (contentPipeline's "💬 Oracle session" button) already existing elsewhere in the file.
+      <br><br>
+      <strong>Alex's real answers, recorded verbatim</strong>: build Phylum 14's full taxonomy tree (same 7-step Development Framework as phyla 1-10, not just the reference library); build real beat-grid audio sync (extend the already-built-but-unused librosa hook beyond BPM+key to onset/beat-grid detection, so the EDL can anchor cuts to actual musical structure); build order is verify-and-small-fixes first (Director Match save-path smoke test, return-to-Beat-Log nav button, auto-advance stage triggers, reference_tracks metadata backfill) before the two bigger pieces.
+      <br><br>
+      Full record: `video_pipeline_director_phylum_spec_backlog_2026-07-30.txt`. <strong>Nothing built yet</strong> — this is a confirmed plan, not a completion record. Next real step: run `/Engineer` against the Slice A goal list.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧩 July 30 — Popup-scaffolding consolidation finished: all 26 real sites migrated to dashDeck._popup()</div>
     <div class="card-body">
       Direct follow-through on July 29's real architecture finding (the July 17 optimization backlog's "consolidate popup scaffolding" item, ~18 sites still hand-rolling the same overlay DOM). Ran via `/Engineer`'s procedure across the full session rather than stopping at the first honest checkpoint (Alex's explicit "do it" after a mid-way status update) — completed all remaining sites in one continuous pass.
