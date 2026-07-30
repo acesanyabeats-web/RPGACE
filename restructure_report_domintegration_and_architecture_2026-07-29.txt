@@ -1,0 +1,123 @@
+/restructure + Council of 5 (Godmode + scope + Omnitrix, no Fable, Opus 5)
+Question: can Graphify/Ponytail/CodeBurn merge with RPGACE's own DOM/
+modules/buttons/functions? Then: real architecture report on RPGACE-
+Claude Code interconnection/efficiency/output-quality.
+2026-07-29
+
+=====================================================================
+PART 1 — Can the 3 candidates merge with RPGACE's own DOM/modules?
+=====================================================================
+Real, honest answer: no, and here's the reasoning, not just "different
+stack." All three operate at the CLAUDE CODE DEVELOPMENT layer (target
+B), with zero natural presence in RPGACE's own runtime (target A):
+
+  - Graphify maps the CODEBASE (files, functions, git structure) into a
+    static HTML/JSON output for MY use investigating "what connects to
+    what" while developing. It has no RPGACE data to show Alex - there
+    is no button that would make sense ("open the code graph") inside a
+    music-production app.
+  - Ponytail changes how I WRITE code. It produces no output, no data,
+    no UI at all - there is nothing to merge, by definition.
+  - CodeBurn tracks CLAUDE CODE's OWN token/dollar spend across dev
+    sessions. RPGACE already has a real, separate concept that looks
+    similar on the surface - Chronicles/`chronicles_finance` (Alex's
+    actual beat-sale/business finance) and the career-score XP system -
+    but merging "how much I spend running Claude Code" into "how much
+    Alex earns from music" would be exactly the kind of forced merge
+    this project's own precedent already rejects (`taxonomy_nodes` vs
+    `taxonomy_tree` - CLAUDE.md is explicit that surface similarity is
+    NOT evidence two things should merge; that's a deliberate,
+    reasoned split, not an accidental duplication).
+
+Real conclusion: forcing a merge here would violate rule 8 in the
+OTHER direction - rule 8 says don't build two things that do the same
+job; it does NOT say merge two things that only sound similar. Saying
+so plainly rather than manufacturing a merge, per this skill's own
+guardrail ("if a full pass finds no real case, say so").
+
+=====================================================================
+PART 2 — Real architecture report: RPGACE-Claude Code interconnection,
+efficiency, output quality (GODMODE evidence, not recalled from memory)
+=====================================================================
+
+Re-audited two items already on record in CLAUDE.md's "Website/HTML
+optimization backlog" (July 17) rather than starting from a blank page
+- checking real current code state, not trusting the backlog's own age:
+
+FINDING 1 — CLOSED, verified. The backlog's item 3 ("audit the ~25
+hooks.on('rpgace:ready') re-subscription sites, each a latent silently-
+never-fires bug") is now down to exactly ONE occurrence in the entire
+file - and that one is the canonical definition inside `RPGACE.register()`
+itself (the framework's own ready-check-then-subscribe logic), not a
+module misusing the pattern. This item is genuinely done - confirmed by
+grep, not assumed from the backlog's own optimistic framing. No action
+needed; logging the close-out is the only real work left here.
+
+FINDING 2 — REAL, PARTIALLY OPEN. The backlog's item 2 ("consolidate
+popup scaffolding - ~10 modules each hand-build the same overlay") has
+gotten REAL work since July 17 (`dashDeck._popup()` now exists, used by
+11 real call sites - confirmed via grep) but is not finished: 29 places
+in the file still construct a `z-index:99999` popup-layer element, only
+11 of which go through the shared helper. The remaining ~18 are still
+hand-rolling the same overlay/eyebrow/title/button DOM the July 17
+backlog originally flagged. This is real, live rule-8 debt, not
+theoretical - every one of those ~18 sites is a place a future CSS/
+behavior fix (e.g. today's own accessibility work) would need to be
+applied N times instead of once.
+
+Envisioned implementation (via /Engineer's shape, not built): audit the
+~18 remaining sites, migrate each to `dashDeck._popup(opts)` where its
+shape fits (most popups already follow the eyebrow/title/body/buttons
+shape `_popup` expects), keep the ~3-4 genuine exceptions (if any) that
+need a structurally different shape, same as `uiSlidePanel`'s own
+documented exception for leftNav's drawer. Files touched: rpgace_core.js
+only, no new module, no schema/API change. Tier: 2 - real, contained,
+no spending, no destructive action, but real behavior-preserving
+migration work across ~18 real sites, not a five-minute fix.
+
+FINDING 3 — checked, no real duplication found (worth stating plainly,
+not skipped). CLAUDE.md's own history flagged "three distinct raw-fetch
+idioms" for Supabase writes as a past real bug source (the Approach B
+phase 2 incident). Re-checked for a NEW instance of the same problem
+following today's own `RPGACE.sb.rpc()` addition - only 2 real call
+sites construct a Supabase URL outside the `RPGACE.sb.url()` helper,
+and both are legitimate (the helper's own definition, and the new
+`rpc()` method's own necessarily-different path shape for RPC vs table
+endpoints). No new debt here - a real, clean check, not a manufactured
+finding.
+
+FINDING 4 — checked, real answer is "these two modules are NOT
+parallel," ruling out a tempting-looking idea before building it wrong.
+Considered whether today's pg_trgm hybrid-search upgrade to
+`oracleTreeGrounding` (taxonomy leaf retrieval) should also apply to
+`oracleAppGrounding` (RPGACE's own dashboard/module self-awareness).
+Real check of the actual code: `oracleAppGrounding` grounds Oracle in
+dashDeck's live cards + a hand-written status digest - it does not do
+leaf-name/explainer text retrieval at all, so there is no keyword-score
+step to upgrade to trigram search. Applying today's fix there would
+have been a real category error. Correctly not proposed.
+
+=====================================================================
+COUNCIL OF 5 VERDICT
+=====================================================================
+- Real disagreement resolved: Part 1's honest "no" isn't a cop-out -
+  forcing a merge where none of three candidates has RPGACE-facing
+  output would itself be the kind of manufactured finding this
+  project's own honesty rules exist to prevent.
+- Real, evidence-checked findings, not recycled from the July 17
+  backlog's own age: one item genuinely closed (say so, don't re-flag
+  it), one item genuinely still open with real numbers (11 of 29), two
+  honest "checked, nothing new" results (raw-fetch idioms, grounding-
+  module parallel) rather than padding the report with manufactured
+  busywork to look thorough.
+- Anchored to Alex's real goals (5thDimension-style check): Finding 2
+  (finish popup consolidation) is real, contained, genuinely serves
+  "more efficient + better interconnection" exactly as asked - but it's
+  UI-plumbing work, not a beat-or-video-in-48-hours item, so it's
+  logged here as a real, ready-to-build Tier 2 candidate for Alex's own
+  prioritization, not built blind in this same pass.
+
+Nothing built in this report. One real, concrete, ready candidate
+(Finding 2 - finish popup consolidation) is the single most actionable
+thing here if Alex wants a next architecture task; everything else is
+either already closed or genuinely checked-and-clean.
