@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧩 July 30 — Popup-scaffolding consolidation finished: all 26 real sites migrated to dashDeck._popup()</div>
+    <div class="card-body">
+      Direct follow-through on July 29's real architecture finding (the July 17 optimization backlog's "consolidate popup scaffolding" item, ~18 sites still hand-rolling the same overlay DOM). Ran via `/Engineer`'s procedure across the full session rather than stopping at the first honest checkpoint (Alex's explicit "do it" after a mid-way status update) — completed all remaining sites in one continuous pass.
+      <br><br>
+      <strong>Real final count, precise via grep, not estimate</strong>: 26 real hand-rolled `z-index:99999` popup sites existed (not the ~18 first estimated), spanning `phylumPath` (placement/article/fusion-link confirms), `bookworm` (7 sites — chapter structure, chapter list, chapter summary/read/add-text, insight review, waiting-for-next-insight), `conidPot` (idea save, merge prompt, idea-select), `videoPipeline` (new-job form, details), `contentPipeline` (post details), and the shared `RPGACE.utils.fillGaps` (used by 40+ Oracle command entries project-wide). All 26 now call `RPGACE.modules.dashDeck._popup(opts)` — one shared helper, one place to fix a popup bug or behavior going forward instead of 26.
+      <br><br>
+      <strong>Two real, generalizable gaps found and fixed in `_popup()` itself while migrating</strong> (not per-site patches): added `opts.borderColor`/`opts.bg`/`opts.dim`/`opts.scroll` (no way to preserve a module's own accent border color existed before); added `opts.noDefaultClose` (some sites build their own custom close/cancel/submit buttons — without this, migrating would have produced duplicate buttons); added `position:relative` to the box's base style (a site's own absolutely-positioned "×" button needed a positioned ancestor, previously would have anchored to the full-screen overlay instead).
+      <br><br>
+      <strong>1 deliberate, documented exception left unmigrated</strong>: `_showEncPopup` (Encyclopedia Preview) uses `transform`-based centering with a separate backdrop layer and a genuinely different pinned-header/scrolling-middle/pinned-footer layout — migrating would lose the pinned footer on a popup that can show up to 1500 chars. Same class of exception as `uiSlidePanel`'s own leftNav-drawer exception.
+      <br><br>
+      `node --check rpgace_core.js && node --check main.js` clean after every batch. Cache-bust bumped `20260730a`→`20260730b`. <strong>Untested in a real browser</strong> — no login this session, per this project's own standing rule; every migrated site preserves its original inner body-construction logic, IDs, and focus-management calls unchanged, only the opening scaffold/closing tail changed, but a real click-through across a representative sample (Bookworm chapter flow, Phylum Path confirm, Idea Bank save) is the real next verification step.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🕸️ July 29 — Can Graphify/Ponytail/CodeBurn merge into RPGACE's own DOM? Real answer: no. Real architecture re-audit found instead: one backlog item closed, one genuinely still open with real numbers</div>
     <div class="card-body">
       Alex asked whether the 3 `/restructure` candidates could merge with RPGACE's own DOMs/modules/buttons, then asked for a Council of 5 pass (Godmode+scope+Omnitrix, no Fable) producing a real architecture-efficiency/interconnection report.
