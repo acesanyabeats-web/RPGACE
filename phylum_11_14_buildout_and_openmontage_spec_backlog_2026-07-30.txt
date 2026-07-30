@@ -189,15 +189,11 @@ IMPLEMENTABILITY CHECK (does this plan actually work, practically)
   matters, not a race.
 
 =====================================================================
-AWAITING ALEX'S CONFIRMATION
+ALEX'S REAL ANSWERS (verbatim: "yes to all 3, do /Engineer")
 =====================================================================
-Per Alex's own explicit gate ("run /Engineer to execute all steps
-after i verify plan from all before") - nothing is built yet. Real
-open questions before /Engineer runs:
-  1. Confirm the "OpenMontage integrated" reading above (workflow
-     decision vs. literal code) - or correct it.
-  2. Confirm Part 1's rescoping approach (P14 loses its residual bare
-     "cinematic" terms even from Alex's own new list) is the right call.
-  3. Confirm whether all 3 parts run in one /Engineer pass, or Part 3
-     (the big taxonomy build) gets its own separate pass given its real
-     size relative to Parts 1-2.
+1. YES - "OpenMontage = workflow decision, not embedded code" reading
+   confirmed correct.
+2. YES - rescoping approach confirmed: P14 loses its residual bare
+   "cinematic"/"cinematic feel" entries even from Alex's own new list.
+3. YES - all 3 parts run in one /Engineer pass.
+Proceeding to /Engineer per this confirmation.

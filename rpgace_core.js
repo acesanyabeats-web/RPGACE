@@ -1078,21 +1078,27 @@ RPGACE.register('quickActions', {
 /* ===MODULE:visualOracle=== */
 RPGACE.register('visualOracle', {
 
+  // Engineer pass 2026-07-30 — Neural Frames replaced with OpenMontage
+  // throughout (Alex's own call: Neural Frames is the old idea, RPGACE's
+  // real operated video-generation tool per the July 24 Aintergration
+  // verdict is OpenMontage — adopted as a separate operated tool, never
+  // embedded in RPGACE's own runtime, so these commands generate a real
+  // OpenMontage-ready brief rather than a single AI-video-prompt string).
   CMDS: [
-    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 14 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word Neural Frames prompt I can use immediately. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the one director from your 3 matches who fits best>.'],
-    ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the director/visual-style name you were given, or NONE if none was given>.'],
+    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 14 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word OpenMontage brief I can use immediately. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the one director from your 3 matches who fits best>.'],
+    ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), OpenMontage production brief (120 words), and export format recommendations for YouTube, Reels, and Beatstars. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the director/visual-style name you were given, or NONE if none was given>.'],
     ['Copyright Risk Analyser', 'Analyse the copyright risk of my planned music video concept. CONCEPT: [DESCRIBE YOUR VIDEO CONCEPT IN DETAIL] VISUAL REFERENCES: [LIST ANY FILMS, MUSIC VIDEOS, OR DIRECTORS YOU PLAN TO REFERENCE] FOOTAGE SOURCES: [LIST WHERE YOU PLAN TO SOURCE FOOTAGE — stock, self-shot, archival, AI-generated]. For each element: copyright risk level (Low / Medium / High), what specifically creates the risk, how to modify the concept to eliminate or reduce the risk, and safe alternative approaches. End with an overall risk score and a clear/proceed/modify verdict.'],
     ['Mood Board Brief', 'Create a detailed mood board brief for my beat visual. BEAT DESCRIPTION: [DESCRIBE YOUR BEAT — genre, mood, key, BPM, feel] TARGET PLATFORM: [YOUTUBE / INSTAGRAM / BEATSTARS / ALL]. The brief must specify: 5 colour hex codes with usage ratios, 3 texture references (describe the material/surface quality), lighting direction (quality, direction, colour temperature), typography direction if text appears, 5 specific shot types with descriptions, 3 real-world location types that fit, and 3 visual DONTs for this concept. Format this so I can hand it directly to a designer or use it in Canva.'],
     ['Storyboard Scene Builder', 'Build a shot-by-shot storyboard for my music video. SONG SECTION: [INTRO / VERSE / CHORUS / BRIDGE / OUTRO — choose one, or ALL] DURATION: [TYPE THE SECTION LENGTH IN SECONDS] VISUAL STYLE: [TYPE YOUR VISUAL DIRECTION — e.g. dark cinematic UK drill, lo-fi nostalgic, futuristic minimal] LOCATION: [TYPE YOUR PLANNED LOCATION OR WRITE "studio" / "street" / "AI-generated"]. For each shot: shot number, shot type (close-up / medium / wide / extreme close-up), camera movement, subject action, duration in seconds, lighting note, and cut type to next shot. End with a total shot count and pacing assessment. Then output a separate final block, starting on its own line with exactly: EDL_JSON: followed by a compact JSON array with one object per shot in the shape {"scene":<number>,"shot_type":"...","camera_movement":"...","duration_sec":<number>,"cut_type":"..."}.'],
-    ['Neural Frames Prompt', 'Generate 3 Neural Frames AI video prompts for my beat. BEAT FEEL: [DESCRIBE IN 5 WORDS] COLOUR DIRECTION: [TYPE 2-3 COLOURS OR A PALETTE NAME] SUBJECT: [TYPE WHAT SHOULD APPEAR — abstract, character, landscape, object] AVOID: [TYPE ANYTHING YOU DO NOT WANT — faces, text, specific styles]. For each prompt: a 100-word Neural Frames Autopilot prompt optimised for beat-sync, the recommended motion intensity setting (Low / Medium / High / Extreme), the recommended style preset if applicable, and what this prompt will generate visually. Label them Option A (safest), Option B (most striking), Option C (most experimental).'],
+    ['OpenMontage Brief', 'Generate 3 OpenMontage production briefs for my beat. BEAT FEEL: [DESCRIBE IN 5 WORDS] COLOUR DIRECTION: [TYPE 2-3 COLOURS OR A PALETTE NAME] SUBJECT: [TYPE WHAT SHOULD APPEAR — abstract, character, landscape, object] AVOID: [TYPE ANYTHING YOU DO NOT WANT — faces, text, specific styles]. For each brief: a 100-word OpenMontage production brief (visual concept, pacing, shot suggestions) optimised for beat-sync, the recommended motion intensity setting (Low / Medium / High / Extreme), the recommended style preset if applicable, and what this brief will generate visually. Label them Option A (safest), Option B (most striking), Option C (most experimental).'],
   ],
 
   // Doc-type slug per CMDS index — used as the key when saving a response
   // into content_productions.creative_docs (2026-07-28 Content Pipeline
   // overseer build, Alex-confirmed forks).
-  DOC_SLUGS: ['director_match', 'visual_treatment', 'copyright_risk', 'mood_board', 'storyboard', 'neural_frames'],
+  DOC_SLUGS: ['director_match', 'visual_treatment', 'copyright_risk', 'mood_board', 'storyboard', 'openmontage_brief'],
 
-  ICONS: ['🎬','📄','⚠️','🎨','🎞️','🤖'],
+  ICONS: ['🎬','📄','⚠️','🎨','🎞️','🎥'],
 
   init: function() {
     var self = this;
@@ -7445,7 +7451,12 @@ RPGACE.register('phylumPath', {
   // repair) - phyla 2-5 added July 17 individually, phyla 6-10
   // (Instrumentarium, Sensus Auris, Anatomia, Historia, Psychologia)
   // added the same day as one batch, pushed live together.
-  ENABLED_PHYLA: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  // Engineer pass 2026-07-30: 11 (Lingua Musicae) + 14 (Visio Cinematica)
+  // added, real content in place first (6 + 8 leaves respectively,
+  // built from Alex's own real category lists), the keyword-collision
+  // fix already applied, and Neural Frames -> OpenMontage swapped
+  // through every real reference before enabling either phylum here.
+  ENABLED_PHYLA: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14],
 
   // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
   // silentPropose() check this before running their own flat top-down
@@ -11698,10 +11709,38 @@ RPGACE.register('config', {
         {t:'confidence in a saturated genre',w:2},
         {t:'habit',w:1},{t:'routine',w:1},
       ] },
-      { num: 11, name: 'Lingua Musicae',        keywords: [{t:'colour palette',w:2},{t:'mood board',w:2},{t:'aesthetic',w:2},{t:'visual identity',w:2},{t:'vibe',w:1},{t:'tone',w:1},{t:'brand colours',w:2}] },
+      // Engineer pass 2026-07-30 (Phylum 11+14 buildout, real content
+      // provided by Alex) - substantially expanded from the July-era
+      // placeholder list. Bare mood adjectives are correct HERE (P11's
+      // own real subject matter), unlike P14 below.
+      { num: 11, name: 'Lingua Musicae',        keywords: [
+        {t:'colour palette',w:2},{t:'mood board',w:2},{t:'aesthetic',w:2},{t:'visual identity',w:2},{t:'vibe',w:1},{t:'tone',w:1},{t:'brand colours',w:2},
+        {t:'sonic palette',w:2},{t:'sonic atmosphere',w:2},{t:'emotional tone',w:2},{t:'emotion-first production',w:2},{t:'sonic storytelling',w:2},
+        {t:'moody',w:1},{t:'melancholic',w:1},{t:'euphoric',w:1},{t:'nostalgic',w:1},{t:'eerie',w:1},{t:'haunting',w:1},
+        {t:'gritty',w:1},{t:'atmospheric',w:1},{t:'brooding',w:1},
+        {t:'drill darkness',w:2},{t:'grimy atmosphere',w:2},{t:'cold uk sound',w:2},
+        {t:'warmth (as feeling)',w:2},{t:'weight of a sound',w:2},
+      ] },
       { num: 12, name: 'Fons Educationis',      keywords: [{t:'tutorial',w:2},{t:'learn',w:1},{t:'teach',w:1},{t:'breakdown',w:1},{t:'guide',w:1},{t:'lesson',w:1}] },
       { num: 13, name: 'Contentum',             keywords: [{t:'youtube',w:2},{t:'instagram',w:2},{t:'reels',w:2},{t:'hook',w:1},{t:'thumbnail',w:2},{t:'tiktok',w:2},{t:'caption',w:1}] },
-      { num: 14, name: 'Visio Cinematica',      keywords: [{t:'cinematic',w:2},{t:'camera',w:2},{t:'filmmaker',w:2},{t:'neural frames',w:2},{t:'shot',w:1},{t:'b-roll',w:2},{t:'colour grade',w:2},{t:'footage',w:1}] },
+      // Engineer pass 2026-07-30 - "cinematic" (bare) and "neural frames"
+      // both REMOVED here: real evidence confirmed "cinematic" as a bare
+      // keyword collided with Phylum 11's own legitimate mood vocabulary
+      // (Alex's own diagnosis, independently confirmed in this exact
+      // array). Every new term below is a genuinely visual-specific
+      // compound phrase, never a bare adjective a music description
+      // would also use. "neural frames" removed per the Neural Frames ->
+      // OpenMontage swap (Part 2 of the same pass).
+      { num: 14, name: 'Visio Cinematica',      keywords: [
+        {t:'camera',w:2},{t:'filmmaker',w:2},{t:'shot',w:1},{t:'b-roll',w:2},{t:'colour grade',w:2},{t:'footage',w:1},
+        {t:'wide shot',w:2},{t:'tracking shot',w:2},{t:'drone shot',w:2},{t:'establishing shot',w:2},
+        {t:'colour grading',w:2},{t:'lut',w:2},{t:'storyboard',w:2},{t:'mise-en-scène',w:2},{t:'depth of field',w:2},
+        {t:'moody lighting',w:2},{t:'low-key lighting',w:2},{t:'chiaroscuro',w:2},
+        {t:'jump cut',w:2},{t:'match cut',w:2},{t:'visual rhythm',w:2},
+        {t:'music video',w:2},{t:'type beat video',w:2},{t:'visualizer',w:2},
+        {t:'director style',w:2},{t:'director signature',w:2},
+        {t:'openmontage',w:2},{t:'ai video generation',w:2},
+      ] },
       { num: 15, name: 'Collaboratio',          keywords: [{t:'collab',w:2},{t:'feature',w:1},{t:'outreach',w:2},{t:'guest verse',w:2},{t:'networking',w:1},{t:'cross-promotion',w:2}] },
       { num: 16, name: 'Venditionis Beatorum',  keywords: [{t:'beatstars',w:2},{t:'license',w:2},{t:'lease',w:2},{t:'exclusive rights',w:2},{t:'beat store',w:2},{t:'sell',w:1},{t:'price',w:1}] },
       { num: 17, name: 'Negotium',              keywords: [{t:'invoice',w:2},{t:'contract',w:2},{t:'accounting',w:2},{t:'tax',w:2},{t:'budget',w:1},{t:'business',w:1}] },
@@ -12851,7 +12890,7 @@ RPGACE.register('beatLog', {
         (filmmakerBlock ? '\n' + filmmakerBlock + '\n' : '') +
         '\nThe document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), ' +
         'Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), ' +
-        'Neural Frames Autopilot prompt (120 words), and export format recommendations for YouTube, Reels, and Beatstars.' +
+        'OpenMontage production brief (120 words), and export format recommendations for YouTube, Reels, and Beatstars.' +
         (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why. Then on its own final line, output exactly: DIRECTOR_CHOSEN: <exact director name from the list above>.' : '');
     };
     var vo = RPGACE.modules.visualOracle;

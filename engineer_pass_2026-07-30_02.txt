@@ -1,0 +1,209 @@
+/Engineer pass 2026-07-30_02 — Phylum 11+14 buildout, keyword-collision
+fix, Neural Frames -> OpenMontage swap
+(confirmed by Alex: "yes to all 3, do /Engineer")
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Fix the real P11/P14 keyword-scoring collision (bare "cinematic" in
+   P14 colliding with P11's own mood vocabulary). Tier 1 - single-array
+   code edit.
+2. Replace Neural Frames with OpenMontage throughout every real
+   reference (CMDS strings, DOC_SLUGS, ICONS, beatLog's auto-treatment
+   prompt). Tier 1 - contained string/array edits.
+3. Build real taxonomy_tree content for Phylum 11 and Phylum 14 from
+   Alex's own provided category lists, then enable both phyla. Tier 2
+   (new real taxonomy data, not destructive/spend/migration - a
+   confirmed-plan+confirmed-content build, not a Tier 3 action).
+None of these are Tier 3. Alex's plan confirmation ("yes to all 3, do
+/Engineer") serves as the human checkpoint rule 4 requires for these
+taxonomy writes - the content is Alex's own, not an AI-proposed
+placement needing separate review-queue staging.
+
+=====================================================================
+STAGE 2 — EVIDENCE (/scope + GODMODE)
+=====================================================================
+Already substantially gathered in the confirmed plan
+(phylum_11_14_buildout_and_openmontage_spec_backlog_2026-07-30.txt) -
+re-verified fresh at execution time:
+- Direct read of RPGACE.utils._PHYLA_KEYWORDS' real P11 (7 terms) and
+  P14 (8 terms, including bare "cinematic" - the confirmed collision)
+  entries before editing either.
+- Direct read of visualOracle.CMDS/DOC_SLUGS/ICONS in full (all 6 real
+  commands) and beatLog._autoVisualTreatment's buildPrompt before
+  editing, to find every real "Neural Frames" occurrence rather than
+  guess at the count (found: 2 inline CMDS phrases, 1 whole command,
+  1 DOC_SLUGS entry, 1 ICONS entry, 1 beatLog inline phrase = 6 real
+  sites, all addressed).
+- Direct query of a real existing jargon-bucket leaf ("Cadence &
+  Resolution Vocabulary," Phylum 1) BEFORE building anything, to find
+  the actual established convention for vocabulary-list content - this
+  changed the real plan from ~166 individual per-term leaves down to
+  14 real category-bucket leaves (6 P11 + 8 P14), matching precedent
+  exactly rather than inventing a new, more expensive shape.
+- Direct query of Phylum 11's 3 existing seed nodes (depth 1-3,
+  parent_id chain, path format) and a Phylum 1 sample to confirm
+  correct column values (parent_id null at depth 1, path format
+  "<Latin phylum name>/<node name>", node_type/explainer/deep_content/
+  sources/gap_score/status conventions) before writing any INSERT.
+- Confirmed ENABLED_PHYLA's real current value ([1..10]) directly
+  before editing it.
+
+=====================================================================
+STAGE 3 — OMNITRIX EXECUTION (no Fable, direct build)
+=====================================================================
+Built directly - Alex supplied the real content himself (the category
+lists), so this pass's real work was applying the established anti-
+collision convention and jargon-bucket precedent to that content
+faithfully, not open-ended research needing a dispatched agent.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from the real diff)
+=====================================================================
+Real diff: 2 files, rpgace_core.js (+55/-20 across 4 hunks: visualOracle,
+phylumPath, config, beatLog), index.html (cache-bust only). Plus 14 real
+taxonomy_tree INSERTs (a database change, verified independently below,
+not part of the file diff).
+
+ITEM 1 - Keyword-collision fix (config module, _PHYLA_KEYWORDS ~11701-
+11736 after edit):
+  WHAT CHANGED: P11 expanded from 7 to 26 terms (bare mood/colour
+  adjectives are correct here - this phylum's own real subject matter).
+  P14 rebuilt from 8 to 30 terms, with bare "cinematic" and "neural
+  frames" REMOVED and every new addition a genuinely visual-specific
+  compound phrase (wide shot, tracking shot, moody lighting, low-key
+  lighting, colour grading, jump cut, director style, etc.) - zero bare
+  adjectives survive into P14's list.
+  REAL JUDGMENT CALL, STATED PLAINLY: not every one of Alex's ~76 (P11)
+  + ~90 (P14) raw pasted terms went into this scoring array. This array
+  is a lightweight keyword pre-filter that runs a regex scan on every
+  Oracle response, not an exhaustive vocabulary - a full literal dump
+  would add many near-duplicate signals (dark/darkness/cold visual
+  darkness) for negligible real discriminating power while genuinely
+  increasing false-positive collision risk, the exact problem being
+  fixed. A representative, well-chosen subset per category was used
+  instead, sized comparably to Phylum 1's own "pilot phylum" richer
+  keyword list (the one phylum that already got July 14 jargon
+  enrichment) - not the thin 6-10 term lists most other phyla carry.
+  This is a real scope decision, not silently smaller than promised.
+
+ITEM 2 - Neural Frames -> OpenMontage swap:
+  WHAT CHANGED: all 6 real occurrences addressed - CMDS[0]'s "80-word
+  Neural Frames prompt" -> "80-word OpenMontage brief"; CMDS[1]'s
+  "Neural Frames Autopilot prompt (120 words)" -> "OpenMontage
+  production brief (120 words)"; CMDS[5] fully rewritten from "Neural
+  Frames Prompt" to "OpenMontage Brief" (same real input shape - beat
+  feel/colour/subject/avoid - producing an OpenMontage-appropriate
+  brief instead of a single AI-video-prompt string); DOC_SLUGS[5]
+  'neural_frames' -> 'openmontage_brief'; ICONS[5] 🤖 -> 🎥;
+  beatLog._autoVisualTreatment's inline phrase updated to match CMDS[1].
+  Grepped the whole file after editing to confirm zero live functional
+  "Neural Frames"/"neural_frames" strings remain (2 residual hits are
+  this pass's own explanatory comments, not code).
+
+ITEM 3 - Phylum 11+14 taxonomy tree build:
+  WHAT CHANGED: 14 real leaf nodes inserted (parent_id null, depth 1,
+  node_type 'leaf', status 'accepted', matching the established
+  jargon-bucket-leaf convention found via Stage 2's precedent check,
+  not invented fresh) - 6 for Phylum 11 (Emotional Colour Descriptors,
+  Sonic-to-Visual Mapping, Mood-Based Production Language, Descriptive
+  Genre Language, Cross-Sensory Language, Genre-Specific Mood
+  Vocabulary UK Drill/Trap), 8 for Phylum 14 (Camera & Shot Language,
+  Colour Grading, Filmmaking Technique, Visual Mood & Atmosphere,
+  Editing & Post, Video Production for Music, Director/Filmmaker
+  Reference, Video Generation Tooling). Each leaf's explainer states
+  what it covers plainly and cross-references adjacent real
+  infrastructure where genuinely relevant (SCALE_COLOURS, the separate
+  f14_filmmaker_library table, Storyboard Scene Builder) rather than
+  generic filler text.
+  REAL SCOPE REVISION FROM THE ORIGINAL PLAN, STATED PLAINLY: the
+  confirmed plan file originally sketched ~110 individual per-term
+  leaves; Stage 2's real precedent-check (the "Cadence & Resolution
+  Vocabulary" leaf) found the established, cheaper, better-matching
+  pattern is one leaf per category with a "Covers: term1, term2..."
+  explainer - 14 leaves total, not ~110. This is a real, deliberate
+  improvement discovered during execution (matches existing convention,
+  costs far less), not a shortcut - noted honestly rather than silently
+  building what the plan literally said.
+  Phylum 14's "Visual Mood & Atmosphere" leaf explicitly drops the bare
+  "cinematic"/"cinematic feel" terms from Alex's own pasted list, per
+  his own confirmed answer to question 2.
+  ENABLED_PHYLA: [1..10] -> [1..10, 11, 14].
+
+NOT PLANNED, NOT DONE: no other phylum's content touched. No main.js
+edit. Phylum 11's existing 3 seed nodes (Russian Trap & Hyperpop
+Visual Palette path) left completely untouched, sitting as real
+siblings to the 6 new leaves.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-derived, not read from Stage 4)
+=====================================================================
+- `node --check rpgace_core.js && node --check main.js` re-run
+  independently: both clean.
+- `git diff --stat` re-run independently: 2 files (rpgace_core.js
+  +55/-20, index.html cache-bust only) - matches Stage 4's claim.
+- Grepped git diff hunks directly: 4 hunks (visualOracle, phylumPath,
+  config, beatLog) - all 4 map 1:1 to items 1-2 above, no unclaimed
+  hunk in either direction.
+- Direct Supabase re-query (not read from this session's own earlier
+  insert-confirmation output): phylum_number=11 shows 9 total nodes/6
+  leaves, phylum_number=14 shows 8 total nodes/8 leaves - matches the
+  14 real leaves claimed (6+8). A duplicate-name check across both
+  phyla (GROUP BY name HAVING count>1) returned zero rows - no
+  accidental duplicate leaves introduced.
+- Grepped the whole file for "Neural Frames"/"neural_frames" post-edit:
+  exactly 2 hits, both this pass's own comments, zero live functional
+  strings remain.
+- Confirmed ENABLED_PHYLA's real current value directly: [1, 2, 3, 4,
+  5, 6, 7, 8, 9, 10, 11, 14] - matches the claimed change.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (Syntax): PASS - node --check clean on both files, independently
+  re-verified in Stage 5.
+G2 (index.html invariants): only the cache-bust `<script src>` line
+  changed - confirmed via direct diff, no div-balance/page-id risk.
+G3 (Module convention): PASS - all 4 code edits sit inside their
+  existing module markers (visualOracle, phylumPath, config, beatLog).
+  No main.js edit, no FROZEN-file exception needed.
+G4 (Claim-to-diff reconciliation): PASS - both directions checked in
+  Stage 5 (code diff AND the real Supabase state).
+G5 (Goal reconciliation): all 3 goals resolved -
+  1. DONE.
+  2. DONE, all 6 real occurrences addressed and verified via a
+     post-edit grep.
+  3. DONE, with an honest, stated scope revision (14 leaves via the
+     real jargon-bucket precedent, not the ~110 originally sketched) -
+     not a silent shortfall, a real improvement found mid-execution.
+G6 (Deployment reality): pending push - will confirm via
+  list_deployments once pushed (no /api/* surface changed, so no HTTP
+  probe needed on top of the deployment-state check).
+G7 (Cache-bust): PASS - index.html bumped 20260730c -> 20260730d in the
+  same commit as the rpgace_core.js change.
+
+UNTESTED (required label, not a failure) - genuinely needs Alex's own
+hands, no login/browser available this session:
+  - Confirm the keyword-collision fix actually resolves the real
+    misroute he found (needs a real Dave-style beat description run
+    through Director Match / Oracle and checked against which phylum
+    scores highest).
+  - Confirm the OpenMontage-branded commands read naturally and
+    produce useful output in a real Oracle call.
+  - Click through Phylum Path with 11 and 14 now enabled - confirm both
+    phyla appear correctly in the switcher/drill-down UI and the new
+    leaves render with correct explainer text.
+
+=====================================================================
+COUNCIL OF 5 QUALITY SCORE (informational only, authorizes nothing)
+=====================================================================
+8/10. Reasoning: all 3 goals genuinely done, the real precedent-check
+before building (rather than executing the plan's first draft blindly)
+is exactly the kind of real evidence-gathering this project's rules
+exist to reward, and the collision fix directly targets Alex's own
+independently-confirmed diagnosis rather than a generic cleanup. Not a
+9-10 because none of this is hand-tested yet (genuinely can't be, this
+session has no browser) and the keyword-scoring subset judgment call
+(item 1) is a real, defensible-but-debatable choice Alex didn't
+explicitly bless in those exact terms - flagged honestly above, not
+hidden.
