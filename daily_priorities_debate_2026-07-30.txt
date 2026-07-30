@@ -1,0 +1,131 @@
+/Routine — Top 10 debate
+2026-07-30
+
+=====================================================================
+REAL EVIDENCE (GODMODE + /scope, live-queried)
+=====================================================================
+- git: main and claude/rpgace-master-steps-uobp98 in sync at 7e1d984,
+  clean tree. Last /Routine run was July 28 (2 runs that date) — this
+  is genuinely due, not a re-run.
+- Since last Routine (July 28 23:06 UTC): 15 real commits — restructure
+  batch (10 repo reports), Graphify install + hybrid trigram search,
+  Commit Archaeologist install, popup-scaffolding consolidation (26
+  sites), the Video Pipeline/Director Phylum plan, and this session's
+  own /Bedtime close-out.
+- Real Alex-originated activity check (journal/chronicles_finance/
+  content_productions/taxonomy_proposals/taxonomy_links), all since
+  July 28 23:00 UTC: ZERO rows in any of the five. Alex has not used
+  the live app directly in this window — every real change since then
+  came from Claude Code sessions. Worth naming plainly since Routine's
+  own procedure specifically checks for this.
+- `oracle_dev_suggestions`: 2 rows still `status='new'`, both from
+  July 28 01:xx (5thDimension self-audit dumps, already digested in
+  that day's own sessions) — stale housekeeping, not new signal.
+- Freshest real artifact: `video_pipeline_director_phylum_spec_backlog_
+  2026-07-30.txt` — a confirmed plan with Alex's own real answers and a
+  ready-to-execute Slice A goal list, produced and logged this same
+  session, with Alex's explicit request that /Routine route straight
+  into /Engineer against it.
+
+=====================================================================
+TEAM 1 — evidence-based Top 10
+=====================================================================
+1. Slice A-1: smoke-test Director Match → style_profiles save path,
+   root-cause+fix if broken. REASON: unblocks everything downstream in
+   the video pipeline plan (rule 4 — verify before building on top);
+   smallest, most consequential item.
+2. Slice A-2: return-to-Beat-Log nav button + symmetric reverse on
+   Content Pipeline's own row. REASON: Alex's own explicit ask this
+   session, small, zero-risk, reuses an already-proven button pattern.
+3. Slice A-3: auto-advance stage triggers on video_jobs. REASON: real
+   UX fix for the "both real jobs stuck at stage 1" pattern found this
+   session — a producer working one-handed shouldn't need 5 manual
+   stage-advance clicks.
+4. Slice A-4: backfill reference_tracks scale/genre (32 rows). REASON:
+   cheap, unblocks the beat-matching engine already built to score on
+   these exact fields with nothing to score against.
+5. Hand-test sweep: everything shipped but never clicked through
+   (F16-F18 stage smoke tests, highlight-to-Phylum-Path button, Video
+   Pipeline dashDeck card, 160 rpgace_core.js text-size fixes, Content
+   Pipeline overseer's manual save picker + Storyboard→edl, voice-input
+   duplication fix retest). REASON: a large, real, repeatedly-carried
+   backlog item — confidence in everything built recently depends on
+   this actually happening.
+6. Composio key rotation. REASON: flagged across multiple sessions
+   since July 12, cheap (Alex's own action), still not done.
+7. Resolve the Phylum XP Ledger fork (a DECISION, not a build — new
+   dedicated table vs. retrofitting the 6 existing career-score
+   tables). REASON: real open question sitting unresolved since
+   July 28, cheap to answer, blocks a real feature Alex wants.
+8. Slice B: Phylum 14's full 7-step taxonomy tree build. REASON:
+   Alex's own confirmed answer this session; big, separate scope from
+   the video pipeline itself, sequenced after Slice A per his answer.
+9. Slice C: real beat-grid audio sync (extend the librosa hook to
+   onset/beat-grid detection). REASON: Alex's own confirmed answer;
+   biggest single piece, correctly sequenced last (depends on
+   beat_audio_jobs actually being exercised in Slice A's hand-test
+   sweep, and benefits from Phylum 14's fuller grounding existing
+   first).
+10. journal/Chronicles/Minotaur cross-feed interrogation. REASON: real,
+    named idea, open since July 23-24, never had its own GODMODE +
+    interrogation pass.
+
+=====================================================================
+TEAM 2 — counter-case (real, not manufactured)
+=====================================================================
+Genuine honest pass over the same evidence for anything wrongly left
+out or under-ranked:
+
+- REAL WIN: item 7 (Phylum XP Ledger fork) was NOT in Team 1's first
+  draft — added after Team 2 pointed out it's been sitting since
+  July 28 as a pure decision-ask (not a build), costs nothing to
+  resolve, and has been silently passed over by two /Routine cycles
+  in a row without ever being named as "left out and why." Conceded.
+- CONSIDERED, NOT ADDED (real reasons, not padding): the swipe-gesture
+  freeze — already has a standing, reasoned call from July 28 ("don't
+  attempt a 5th blind pass without live evidence from Alex") — nothing
+  has changed since that call, so re-litigating it here would be theater,
+  not a real case. The 36-item design-scan backlog (wide-tracking/
+  tiny-text/etc.) — real, but weighed against the governing 48-hour
+  rule, UI-polish items are genuinely lower-value than video-pipeline
+  infrastructure and hand-testing right now; correctly still
+  deprioritized, not silently dropped. The Lighthouse/PageSpeed audit —
+  confirmed in a prior session as genuinely unrunnable from inside this
+  environment (two independent methods both blocked) — it's Alex's own
+  30-second browser task, not a Claude Code backlog item at all; stays
+  off the list for a real, standing reason. The 2 stale
+  `oracle_dev_suggestions` rows — genuine housekeeping (mark reviewed),
+  but Tier 0/trivial, doesn't warrant a Top-10 slot.
+- Team 2's honest verdict: one real case found and conceded (item 7);
+  everything else considered was correctly already excluded for a real,
+  standing reason, not silently.
+
+=====================================================================
+/Debate + /5thDimension reconciliation
+=====================================================================
+- Ordering check against Alex's own explicit, very-recent, in-session
+  request ("focus /Bedtime on practical steps so /Routine gets straight
+  to /Engineer... on building" [the video pipeline]): Team 1's ranking
+  of Slice A items 1-4 at the very top is not a real dispute — it's a
+  direct match to what Alex asked for in this exact session, stronger
+  evidence than either team needs to argue over.
+- Built vs. reported: no drift found. Everything in this list matches
+  real current Supabase/code state as verified above and in this
+  session's own /Bedtime pass minutes earlier.
+- Anchored to Alex's real goals: item 1-4 are true Tier-1/2 build work
+  serving the governing 48-hour rule via infra-that-builds-beats
+  (RPGACE-infrastructure exemption); item 5 (hand-test sweep) protects
+  confidence in everything already shipped; items 8-9 are Alex's own
+  confirmed answers, not assumed defaults.
+
+=====================================================================
+FINAL COUNCIL OF 5 LOCK-IN — the Top 10 above stands as final.
+=====================================================================
+Real drop-list, named honestly (see Team 2 section): swipe-gesture
+freeze (standing reasoned exclusion), 36-item design-scan backlog
+(lower value than infra work right now), Lighthouse audit (genuinely
+unrunnable from this environment, Alex's own task), 2 stale
+oracle_dev_suggestions rows (Tier 0 housekeeping only).
+
+Per Routine's own guardrail — this is a planning pass, not a build
+pass. Moving straight into /Engineer against item 1 now.
