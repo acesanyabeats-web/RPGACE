@@ -1,0 +1,284 @@
+/restructure — 10 individual reports, one repo each
+Batch: Headroom, Graphify, Ponytail, CodeBurn, tiktoken, LLMLingua,
+GPTCache, LiteLLM, Outlines, vLLM
+2026-07-29
+
+Per /restructure's own guardrail ("if a full pass genuinely finds no
+real case, say so plainly rather than manufacturing one"), 5 of these
+got a fast, confident, real-reasoned dismissal rather than forced
+ceremony - the full Engineer/5thDimension/Council-of-5 treatment went
+only to the 5 that actually have a real case on at least one side.
+Everything here judges against BOTH real targets: RPGACE the app
+(vanilla JS, zero-build-step, zero-npm-runtime browser side, Anthropic-
+only per rule 10, real token-cost discipline per rule 11) and this
+Claude Code session's own dev process (target B).
+
+=====================================================================
+1) HEADROOM (chopratejas/headroom) - context compression layer/proxy
+   for AI agents; wraps Claude Code, Codex, etc.; MCP server;
+   cross-agent memory; "headroom learn" mines failed sessions into
+   CLAUDE.md corrections
+=====================================================================
+FULL DEBATE - real case on both sides.
+
+Side A (Aintergration): a local proxy/wrap tool assumes the user
+controls their own CLI invocation of Claude Code on their own machine.
+This session runs inside a managed Claude Code Remote container - I
+don't control how I'm launched, so `headroom wrap claude` isn't
+something I can self-install and have take effect on my OWN current
+invocation. Real architectural mismatch for target B specifically
+because of THIS environment, not because the tool is bad.
+
+Side B's real case: "headroom learn... writes corrections to
+CLAUDE.local.md / CLAUDE.md / AGENTS.md" is, functionally, exactly what
+`/Bedtime` and `/Routine` already do by hand every session (mine
+CLAUDE.md's own Current State section from real session outcomes) -
+this is a genuine, real precedent match, not a stretch. Headroom's
+`codeburn optimize`-style analogue (flagging bloated CLAUDE.md,
+ghost skills never invoked) would be real, useful, FREE signal on
+THIS repo specifically, since CLAUDE.md has grown large and this
+project's own doc-discipline rule (added July 28) exists precisely
+because of that growth.
+
+Envisioned implementation (not built): Alex would need to run Headroom
+on HIS OWN machine, wrapping whatever local Claude Code CLI session he
+runs there (separate from this remote session) - `headroom deploy` then
+`headroom wrap claude`. This session itself can't self-wrap.
+
+Verdict: REFERENCE ONLY for target B, with a real, actionable half -
+Alex could genuinely run `headroom optimize`/`headroom learn` against
+his own local `~/.claude/` directory (if he uses Claude Code locally at
+all, separate from this remote environment) and get real waste
+findings for free. NOT APPLICABLE for target A - RPGACE's own Oracle
+calls are bounded single-turn prompts, not a growing agentic context;
+Headroom's core compression value (tool outputs, logs, RAG chunks
+piling up over a long agent session) doesn't match RPGACE's shape.
+
+=====================================================================
+2) GRAPHIFY (Graphify-Labs/graphify) - tree-sitter AST knowledge graph
+   of a codebase, Claude Code skill, local + free for code (LLM only
+   for docs/PDFs/images)
+=====================================================================
+FULL DEBATE - the strongest real candidate in this batch.
+
+Side A: requires `uv tool install graphifyy` + a real build pass
+(`/graphify .`) over the whole repo - genuine setup cost, and a new
+Python dependency (mitigated: Python already runs in this session,
+confirmed by this session's own `archaeologist.py` smoke test).
+
+Side B's real case: RPGACE is exactly the kind of codebase this tool
+targets - one ~16,400+ line file (`rpgace_core.js`) with dozens of
+modules, plus six real oversight docs (`patch_notes.html`,
+`interconnection_map.md`, etc.) that already try to describe cross-
+module connections by hand. Graphify's "god nodes," "communities,"
+and cross-file link resolution would answer "what actually connects to
+what" faster than grepping - a GENUINELY DIFFERENT question from what
+Commit Archaeologist answers (archaeology = why/history; graphify =
+what/structure), so this is not a rule-8 duplication of item #1's
+installed skill. It can also graph the docs alongside the code (its
+own docs/PDF/markdown-link support), which could surface real doc-vs-
+code drift candidates for a future `/5thDimension` pass to check.
+
+Envisioned implementation (not built): `uv tool install graphifyy`,
+`graphify install --project` (writes `.claude/skills/graphify/`),
+`/graphify .` run once against the RPGACE repo root, committing the
+resulting `graphify-out/` per its own recommended team workflow.
+Tier: 2 (new tool + new committed output directory, no RPGACE runtime
+change, no spending).
+
+Verdict: ADOPT CANDIDATE for target B - the strongest one in this
+batch. Not decided here; flagged for Alex's own go-ahead the same way
+Commit Archaeologist was, since it's a real new dependency + a real
+new committed directory, not a zero-footprint change.
+
+=====================================================================
+3) PONYTAIL (DietrichGebert/ponytail) - Claude Code plugin enforcing a
+   YAGNI/minimal-code ladder before writing anything; real benchmark:
+   -54% LOC, -22% tokens, 100% safety maintained
+=====================================================================
+FULL DEBATE - genuinely contested, not a clean adopt or reject.
+
+Side A: this session's own system prompt ALREADY carries an explicit,
+similar instruction ("Don't add features, refactor, or introduce
+abstractions beyond what the task requires... Three similar lines is
+better than a premature abstraction"), and CLAUDE.md's rule 11 (token
+cost) plus rule 8 (dedup) cover much of the same ground in prose.
+Installing a second mechanism for the same discipline risks being a
+real rule-8 duplication - the exact question this skill needed to ask
+before recommending it.
+
+Side B's real case: prose instructions are a standing rule I read once
+per session; Ponytail's own real, measured benchmark (54% LOC cut, 100%
+safety preserved) suggests an operationalized decision ladder ("does
+this need to exist? already in the codebase? stdlib? native? installed
+dep? one line? THEN the minimum") catches real over-builds that a
+general "don't overengineer" instruction alone does not - its own
+example (a date picker reaching for a whole library instead of native
+`<input type="date">`) is a concrete failure mode worth guarding
+against explicitly, not just in spirit.
+
+Envisioned implementation (not built): `/plugin marketplace add
+DietrichGebert/ponytail` + `/plugin install ponytail@ponytail` (two
+prompts, per its own install note) in this Claude Code environment.
+Tier: 1 (a plugin install, no RPGACE code/schema change, fully
+reversible via `/plugin remove ponytail`).
+
+Verdict: genuinely undecided by design - real cases on both sides
+survived scrutiny, which is `/restructure` doing its job, not failing
+to reach a conclusion. Alex's call: install as a real second check
+alongside the existing prose discipline, or treat the existing CLAUDE.md
+instruction as sufficient and skip it.
+
+=====================================================================
+4) CODEBURN (getagentseal/codeburn) - local, read-only AI spend/token
+   dashboard across 36 coding tools; `codeburn optimize` flags CLAUDE.md
+   bloat, ghost skills, wasted context
+=====================================================================
+FULL DEBATE - low-risk, real, but an action for Alex's own machine, not
+this session.
+
+Side A: purely observational (reads session files already on disk, no
+proxy, no wrapping, no API keys) - the lowest-risk tool in this whole
+batch, architecturally. The real open question is whether it can even
+see THIS session's data, since this runs in a managed remote container,
+not Alex's own local `~/.claude/` directory.
+
+Side B's real case: this project has a REAL, already-documented
+token-cost incident (rule 11's own "£10 burned in one test session,"
+the July 19 audit). `codeburn optimize`'s specific findings list -
+bloated CLAUDE.md, ghost agents/skills never invoked, context-heavy
+sessions - map almost one-to-one onto real risks this exact project
+has already named (CLAUDE.md's own doc-discipline rule exists because
+of exactly this kind of bloat).
+
+Envisioned implementation (not built): `npx codeburn` or `codeburn
+guard install` run by ALEX on his own machine, against whatever local
+Claude Code / Cursor / Codex usage he has outside this remote session -
+not an action this session takes on itself. Tier: 1, but it's Alex's
+action, not mine.
+
+Verdict: REAL ADOPT CANDIDATE, but for Alex personally, on his own
+local machine if he runs any coding agent locally - not something this
+remote session can install for itself.
+
+=====================================================================
+5) LLMLINGUA (microsoft/LLMLingua) - academic prompt-compression
+   research library (trained small LM does the compressing)
+=====================================================================
+Quick verdict, real reasoning, not a full debate - REJECT for the
+library itself, one real REFERENCE finding underneath it.
+
+Same value proposition as Headroom (#1) - compress what gets sent to
+an LLM - but heavier (needs a local ML model: GPT2-small/LLaMA-7B or a
+BERT-based classifier for LLMLingua-2) and with zero Claude-Code
+integration (no wrap/plugin/MCP mechanism, unlike Headroom). Adopting
+it would mean building a second, worse-integrated version of what item
+#1 already covers - a real rule-8 duplication, not a fresh idea.
+REJECT as the library.
+
+One real thing underneath it worth naming separately: its SecurityLingua
+sub-project (compression that reveals jailbreak intent behind an
+attack) is a genuinely different idea from prompt COMPRESSION for cost
+- it's a compression-based SAFETY technique. RPGACE already has a real,
+built defense in this exact space (`oracleFetchGuard`, hardening Oracle
+against prompt injection from fetched web/YouTube/Instagram content),
+and a real, still-open, self-flagged gap (whether fetched content could
+also inject raw HTML/script, a separate risk class named in a July 22
+Aintergration pass and never resolved). SecurityLingua's technique is
+REFERENCE ONLY for that specific, still-open gap - not built, just
+named as a real pattern worth knowing about if that gap is ever
+revisited.
+
+=====================================================================
+6) GPTCACHE (zilliztech/GPTCache) - semantic (embedding-based) cache
+   for LLM query/response pairs
+=====================================================================
+Quick verdict - REJECT for target A on product-fit grounds, not just
+architecture.
+
+This isn't just a stack mismatch (though it is one - needs a vector
+store like Milvus/FAISS, a real new piece of infra beyond even the
+pg_trgm work shipped earlier today). It's a real PRODUCT-fit rejection:
+Oracle is a personal, conversational assistant - semantically caching
+"similar" questions and serving a stale cached answer directly
+undermines the thing that makes a personal assistant feel present and
+current, unlike a support-FAQ bot where two similar questions truly
+want the identical answer. Not applicable for target B either - a
+Claude Code session's full context matters on every turn; nothing about
+this session is "the same question asked slightly differently."
+
+=====================================================================
+7) LITELLM (BerriAI/litellm) - self-hosted unified gateway for 100+ LLM
+   providers
+=====================================================================
+Quick verdict - REJECT, direct rule conflict, not just a mismatch.
+
+This is the exact shape of tool CLAUDE.md's own Aintergration history
+already rejected once (OmniRoute, Worked Precedent 2, July 20) for the
+identical reason: RPGACE has a deliberately-tuned, Anthropic-only
+3-model discipline (rule 10 - "Never use... Never route judgment work
+to the mechanical tier"). A multi-provider gateway exists specifically
+to make swapping providers invisible - directly working against a rule
+this project holds on purpose. Not applicable for target B either - I
+am Claude, invoked directly; a provider gateway has no role in how I
+operate.
+
+=====================================================================
+8) OUTLINES (dottxt-ai/outlines) - structured-output constraining for
+   open-weight/local models (Transformers, vLLM, llama.cpp)
+=====================================================================
+Quick verdict - NOT APPLICABLE, real reason not just "different stack."
+
+Outlines solves a problem RPGACE doesn't have: constraining structured
+output from models that don't natively support it. RPGACE calls Claude
+directly and already gets reliable structured output (`_callGroundWorkerJSON`
+and friends) plus its own defensive-parsing discipline (rule 3: never
+trust model JSON blindly, sanitize in code). RPGACE never runs a local/
+open-weight model, so the entire premise doesn't apply. Not relevant to
+target B either - I already produce structured output natively when
+asked.
+
+=====================================================================
+9) VLLM (vllm-project/vllm) - GPU inference SERVING engine for open-
+   weight models, self-hosted at scale
+=====================================================================
+Quick verdict - NOT APPLICABLE, the cleanest reject of the whole batch.
+
+RPGACE calls Anthropic's hosted API directly; it has never run, and has
+no reason to ever run, its own model-serving infrastructure. Running
+vLLM would mean RPGACE hosting its own GPU inference stack for open-
+weight models - a completely different business than "call Claude via
+a Vercel function," with zero relevance to either target.
+
+=====================================================================
+10) TIKTOKEN (openai/tiktoken) - OpenAI's own BPE tokenizer library
+=====================================================================
+Quick verdict - NOT APPLICABLE, and using it would actively mislead.
+
+tiktoken tokenizes for OpenAI's own vocabularies (cl100k_base,
+o200k_base). Claude uses a different tokenizer entirely - using
+tiktoken to estimate RPGACE's real Claude API token/cost numbers (rule
+11's whole reason for existing) would produce confidently WRONG
+figures, not just unhelpful ones. Reject, not a maybe.
+
+=====================================================================
+SUMMARY TABLE
+=====================================================================
+Repo          | Target A (RPGACE)     | Target B (Claude Code)   | Action
+Headroom      | Not applicable        | Reference only (env-blocked) | none
+Graphify      | n/a (dev tool)        | ADOPT CANDIDATE          | Alex's go-ahead
+Ponytail      | n/a (dev tool)        | Genuinely undecided      | Alex's call
+CodeBurn      | n/a (dev tool)        | Real candidate, Alex's own machine | Alex's action
+LLMLingua     | Reject (dup of #1)    | Reject; SecurityLingua = reference | none
+GPTCache      | Reject (product-fit)  | Not applicable           | none
+LiteLLM       | Reject (rule 10 conflict) | Not applicable       | none
+Outlines      | Not applicable        | Not applicable           | none
+vLLM          | Not applicable        | Not applicable           | none
+tiktoken      | Not applicable (wrong tokenizer) | Not applicable | none
+
+Nothing in this batch was built. Three real, named candidates (Graphify,
+Ponytail, CodeBurn) are logged here for Alex's own decision - none
+auto-installed, since unlike the single Commit Archaeologist call last
+time, this batch has multiple real candidates and installing all three
+without his prioritization would be exactly the kind of un-confirmed
+multi-subsystem action rule 5 exists to prevent.
