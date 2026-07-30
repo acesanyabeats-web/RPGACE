@@ -13640,15 +13640,11 @@ RPGACE.register('contentProductionLive', {
   // ── Post details questionnaire ────────────────────────────────
   _showPostDetails: function(row) {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(61,170,110,0.25);border-radius:12px;padding:24px 28px;width:min(520px,95vw);max-height:90vh;overflow-y:auto;';
-
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
-    title.textContent = 'ConID #' + row.con_id + ' — Post Details';
-    box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(61,170,110,0.25)',
+      title: 'ConID #' + row.con_id + ' — Post Details', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var fields = [
       { id: 'pd-yt',    label: 'YouTube URL', placeholder: 'https://youtube.com/watch?v=...' },
@@ -13729,8 +13725,6 @@ RPGACE.register('contentProductionLive', {
     cancelBtn.onclick = function() { overlay.remove(); };
     btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── Oracle bar — shows active ConID in Oracle tab ─────────────
@@ -13984,15 +13978,11 @@ RPGACE.register('videoPipeline', {
 
   _showNewJobForm: function() {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.25);border-radius:12px;padding:24px 28px;width:min(420px,95vw);';
-
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
-    title.textContent = 'New Video Job';
-    box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', width: '420px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+      title: 'New Video Job', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var lbl = document.createElement('div');
     lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
@@ -14037,8 +14027,6 @@ RPGACE.register('videoPipeline', {
     cancelBtn.onclick = function() { overlay.remove(); };
     btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   _refreshWidget: function() {
@@ -14129,15 +14117,11 @@ RPGACE.register('videoPipeline', {
   // real file path or URL once that step is done outside RPGACE.
   _showDetails: function(row) {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(74,144,226,0.25);border-radius:12px;padding:24px 28px;width:min(480px,95vw);max-height:90vh;overflow-y:auto;';
-
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:16px;';
-    title.textContent = row.title;
-    box.appendChild(title);
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', scroll: true, width: '480px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+      title: row.title, noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var pathFields = [
       { id: 'vp-raw', label: 'Raw footage path', value: row.raw_path },
@@ -14203,8 +14187,6 @@ RPGACE.register('videoPipeline', {
     cancelBtn.onclick = function() { overlay.remove(); };
     btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
 });
@@ -14252,14 +14234,11 @@ RPGACE.register('conidPot', {
     var title = suggestedTitle || self._extractTitle(text);
 
     // Show save popup
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.88);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(500px,95vw);';
-
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:6px;';
-    eyebrow.textContent = 'Save to Idea Bank · ConIDPot';
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.88', width: '500px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.25)',
+      eyebrow: 'Save to Idea Bank · ConIDPot', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var titleLbl = document.createElement('div');
     titleLbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
@@ -14327,12 +14306,10 @@ RPGACE.register('conidPot', {
     };
 
     btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-    box.appendChild(eyebrow); box.appendChild(titleLbl);
+    box.appendChild(titleLbl);
     box.appendChild(titleInp); box.appendChild(previewLbl);
     box.appendChild(preview); box.appendChild(starRow);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
     titleInp.focus();
     titleInp.select();
   },
@@ -14361,14 +14338,11 @@ RPGACE.register('conidPot', {
 
   _showMergePrompt: function(existing, newTitle, newText, source, starred) {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(226,84,84,0.25);border-radius:12px;padding:24px 28px;width:min(480px,95vw);';
-
-    var title = document.createElement('div');
-    title.style.cssText = 'font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:8px;';
-    title.textContent = '⚠️ Similar idea found';
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', width: '480px', bg: '#0f0f1a', borderColor: 'rgba(226,84,84,0.25)',
+      title: '⚠️ Similar idea found', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
     var msg = document.createElement('div');
     msg.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);margin-bottom:16px;line-height:1.6;';
@@ -14400,9 +14374,7 @@ RPGACE.register('conidPot', {
     };
 
     btnRow.appendChild(mergeBtn); btnRow.appendChild(keepBtn);
-    box.appendChild(title); box.appendChild(msg); box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
+    box.appendChild(msg); box.appendChild(btnRow);
   },
 
   // ── Inject Save Ideas button after Oracle panel responses ─────
@@ -14452,18 +14424,16 @@ RPGACE.register('conidPot', {
 
   _showIdeaSelectPopup: function(ideas) {
     var self = this;
-    var overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(8,8,16,0.9);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:24px 28px;width:min(600px,95vw);max-height:90vh;overflow-y:auto;';
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', scroll: true, width: '600px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.25)',
+      title: '💡 Select ideas to save (' + ideas.length + ' found)', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
 
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'font-size:15px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
-    hdr.textContent = '💡 Select ideas to save (' + ideas.length + ' found)';
     var sub = document.createElement('div');
     sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:16px;';
     sub.textContent = 'Each selected idea becomes a ConIDPot entry in your Idea Bank.';
-    box.appendChild(hdr); box.appendChild(sub);
+    box.appendChild(sub);
 
     var selectAll = document.createElement('button');
     selectAll.textContent = 'Select all';
@@ -14518,8 +14488,6 @@ RPGACE.register('conidPot', {
     cancelBtn.onclick = function() { overlay.remove(); };
     btnRow.appendChild(saveSelBtn); btnRow.appendChild(cancelBtn);
     box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
   },
 
   // ── Patch text-select panel to add Save as Idea button ───────
