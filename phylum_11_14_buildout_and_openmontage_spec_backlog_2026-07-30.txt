@@ -1,0 +1,203 @@
+Phylum 11 + Phylum 14 buildout, keyword-collision fix, Neural Frames →
+OpenMontage swap — real plan, awaiting Alex's confirmation before /Engineer
+2026-07-30
+
+=====================================================================
+GODMODE + /scope EVIDENCE (live-queried, not assumed)
+=====================================================================
+- Phylum 11 ("Lingua Musicae," Colour/Mood/Visual Language): 3 real
+  taxonomy_tree nodes exist (Visual Identity & Mood Mapping / Colour and
+  Tone Language by Genre / Russian Trap & Hyperpop Visual Palette,
+  depth 1-3, all branches, 0 leaves) - confirmed as legitimate seed
+  groundwork in a prior session, never built out further.
+- Phylum 14 ("Visio Cinematica," Director Phylum): 0 taxonomy_tree
+  nodes, confirmed again this session. The real 50-director library
+  lives in the separate taxonomy_nodes reference table, unaffected by
+  this plan.
+- Current keyword-scoring entries (RPGACE.utils._PHYLA_KEYWORDS,
+  rpgace_core.js ~11701/11704) are thin placeholders:
+    P11 (7 terms): colour palette, mood board, aesthetic, visual
+    identity, vibe, tone, brand colours.
+    P14 (8 terms): cinematic, camera, filmmaker, neural frames, shot,
+    b-roll, colour grade, footage.
+  REAL BUG CONFIRMED, matching Alex's own diagnosis: P14 already
+  carries "cinematic" as a BARE keyword at weight 2 - exactly the
+  collision class CLAUDE.md's own landmine note already names ("Word-
+  boundary regex treats hyphens as boundaries... keyword lists use
+  compound phrases, never bare adjectives; this convention is what
+  prevents cross-phylum collisions"). Alex's diagnosis is correct and
+  independently confirmed in the actual code, not just plausible.
+- Neural Frames appears in exactly 3 real places: DOC_SLUGS[5] =
+  'neural_frames', ICONS[5] = '🤖', CMDS[5] ("Neural Frames Prompt" -
+  its whole purpose), plus inline "Neural Frames Autopilot prompt"
+  phrases inside CMDS[0] (Director Match) and CMDS[1] (Visual Treatment
+  Doc). No OpenMontage code/folder/script exists anywhere in this repo
+  - the July 24 Aintergration verdict was "adopt as a separate operated
+  tool, never embedded in RPGACE's own runtime," which still stands.
+  "We have integrated into rpgace" is read here as "OpenMontage is now
+  the real tool we operate for video generation" (a workflow decision),
+  not literal embedded code - flagged plainly rather than assumed
+  silently; correct me if this reading is wrong.
+- Real FL Studio ground truth for Calibre.mp3 (the file from earlier
+  this session), now confirmed: BPM 94, Key C, Scale Minor, Mood
+  Euphoric. This independently validates the librosa run done earlier
+  this session (BPM 92.3 - ~98% accurate; Key/Scale "C Minor" - an
+  EXACT match, resolving the earlier close-call ambiguity against G#
+  Major in favour of the real answer). Real, positive confirmation the
+  librosa technique works well once local_server.py is actually running
+  it - not acted on further here, just noted as real validation.
+
+=====================================================================
+COUNCIL OF 5 SCRUTINY
+=====================================================================
+1. SCOPE/COST (rule 11) - building 2 full taxonomy phyla via the same
+   7-step Development Framework as phyla 1-10 is genuinely comparable
+   in size to building 2 of the original 10 - a real Tier-2 body of
+   work, not a quick edit. Keeping the two together makes sense (they
+   are adjacent/interdependent - visual-mood language feeds director
+   matching) but this is not small.
+2. TECHNICAL RISK - Alex's own newly-pasted P14 keyword list STILL
+   includes bare "cinematic" and "cinematic feel" under "Visual Mood &
+   Atmosphere," the exact same collision class he just diagnosed and
+   asked to be fixed. Applying his own stated principle rigorously
+   (not just copying his list verbatim) means dropping/rescoping those
+   specific bare-adjective entries even from his own new list, not just
+   the old code's version - a real, necessary catch, not double-
+   checking for its own sake.
+3. HONEST WHY-NOT CASE - could this wait? The keyword-collision fix
+   (item 2 below) is cheap and independently valuable regardless of
+   whether the full tree gets built - it's worth doing even on its own.
+   The full tree build (item 1) is the bigger piece; if token cost is a
+   concern this session, it could be split into its own /Engineer pass
+   separate from the smaller collision-fix + Neural-Frames-swap work.
+4. MAINTAINABILITY - reusing the SAME category headers Alex already
+   wrote (his own section titles) as the real branch names keeps the
+   tree structure traceable back to his own real organizing logic,
+   rather than this session inventing new categorization on top of
+   content that already has one.
+5. HUMAN CHECKPOINT (rule 4) - taxonomy writes always need one. This
+   plan itself, presented for Alex's explicit confirmation before
+   /Engineer runs, IS that checkpoint - not a separate popup needed on
+   top of it, since these are new leaf/branch INSERTs into an area
+   Alex is personally directing content-first, not an AI-proposed
+   placement needing review-queue staging.
+
+=====================================================================
+THE REAL PLAN, IN 3 PARTS
+=====================================================================
+
+PART 1 — Keyword-collision fix (small, independently valuable,
+cheapest part, do this regardless of the other two)
+Rescope _PHYLA_KEYWORDS entries for P11 and P14 using Alex's real
+content, applying the compound-phrase-not-bare-adjective rule
+consistently to BOTH lists (including catching the residual bare
+entries in Alex's own P14 list, per Council of 5 finding 2 above):
+  - P11 gets the real mood/colour vocabulary AS BARE TERMS where
+    appropriate (rule 8's own precedent) IS actually correct for P11 -
+    music-mood words like "dark," "moody," "euphoric" belong bare
+    there, that's literally what Phylum 11 is for.
+  - P14 gets ONLY the genuinely visual-specific compound phrases:
+    camera/shot language (wide shot, tracking shot, drone shot),
+    colour-grading terms (LUT, colour grade, desaturated), filmmaking-
+    technique terms (cinematography, storyboard, mise-en-scène,
+    blocking), editing terms (jump cut, match cut, crossfade), and
+    director-reference terms (director match, Kubrick style, Hitchcock
+    style). BARE "cinematic"/"cinematic feel"/"moody lighting"-without-
+    context entries get either dropped or kept only in their explicitly
+    visual compound form ("moody lighting" stays - it's compound and
+    visual; bare "cinematic" does not survive into P14's list at all,
+    since P11 already legitimately owns that word).
+This directly fixes the real misroute Alex found, using his own
+diagnosis as the fix criterion.
+
+PART 2 — Neural Frames → OpenMontage swap (small, contained)
+  - DOC_SLUGS[5]: 'neural_frames' → 'openmontage_brief'
+  - ICONS[5]: 🤖 → 🎥 (or similar, open to Alex's preference)
+  - CMDS[5] ("Neural Frames Prompt") rewritten as an "OpenMontage
+    Brief" command - same real shape (beat feel, colour direction,
+    subject, avoid-list inputs) but producing an OpenMontage-ready
+    creative brief instead of a Neural-Frames-specific prompt string,
+    since OpenMontage takes a different real input shape (a directed
+    brief for its own agent-operated pipeline, not a single AI-video-
+    prompt string).
+  - CMDS[0] (Director Match) and CMDS[1] (Visual Treatment Doc)'s
+    inline "Neural Frames Autopilot prompt" phrases rewritten to ask
+    for an OpenMontage-appropriate brief/prompt instead.
+  - beatLog._autoVisualTreatment's buildPrompt (rpgace_core.js
+    ~12789-12801) gets the same inline phrase swap, since it generates
+    the same document type automatically.
+
+PART 3 — Phylum 11 + Phylum 14 taxonomy tree build (the big piece)
+Real branch structure proposed directly from Alex's own section
+headers (traceable, not invented):
+
+  Phylum 11 branches (depth 1, under the 3 existing seed nodes'
+  sibling level - the existing 3-node seed path stays untouched,
+  these are new sibling branches alongside it):
+    - Emotional Colour Descriptors (20 real leaf terms: dark, moody,
+      melancholic, euphoric, uplifting, nostalgic, aggressive, tense,
+      calm, eerie, haunting, triumphant, sombre, bittersweet, anxious,
+      hopeful, cold, warm, intimate, distant)
+    - Sonic-to-Visual Mapping (12 leaf terms)
+    - Mood-Based Production Language (11 leaf terms)
+    - Descriptive Genre Language (16 leaf terms)
+    - Cross-Sensory Language (9 leaf terms)
+    - Genre-Specific Mood Vocabulary — UK Drill/Trap (8 leaf terms)
+
+  Phylum 14 branches (depth 1, fresh - this phylum has zero existing
+  nodes to sit alongside):
+    - Camera & Shot Language (14 leaf terms)
+    - Colour Grading (11 leaf terms)
+    - Filmmaking Technique (14 leaf terms)
+    - Visual Mood & Atmosphere (12 leaf terms, minus the bare
+      "cinematic"/"cinematic feel" entries per Part 1's fix)
+    - Editing & Post (13 leaf terms)
+    - Video Production for Music (11 leaf terms)
+    - Director/Filmmaker Reference (8 leaf terms - real director-style
+      references like Kubrick/Hitchcock/Tarantino/Bay stay as explainer
+      content here, distinct from the separate 50-row f14_filmmaker_
+      library reference table, which is a different real data source)
+    - Video Generation Tooling (renamed from "Neural Frames / AI Video
+      Specific" per Part 2's swap - OpenMontage, AI video generation,
+      generative video, style transfer video, video prompt)
+
+Each leaf term gets a short real explainer (1-2 sentences, same
+convention every other phylum's leaves already carry) - not built
+verbatim here, generated during the actual /Engineer pass so explainer
+quality can be checked before committing, same as every other phylum
+build this project has done.
+
+Once both trees are real and reviewed, ENABLED_PHYLA gets 11 and 14
+added (currently [1..10]) - the last step of the 7-step framework,
+matching how phyla 1-10 were each enabled only after their own tree/
+data-repair/fusion-pass steps were done and verified.
+
+=====================================================================
+IMPLEMENTABILITY CHECK (does this plan actually work, practically)
+=====================================================================
+- Part 1/2 are pure rpgace_core.js edits, zero schema/API changes,
+  fully executable in one /Engineer pass, low risk.
+- Part 3 is real taxonomy_tree INSERTs (branch + leaf rows per the
+  existing schema: parent_id, depth, name, path, phylum_number,
+  node_type, explainer) - same INSERT pattern already used for every
+  other phylum, no new mechanism needed. Real cost: ~110 leaf terms
+  across both phyla, each needing a real explainer - this is the
+  actual token-cost driver Council of 5 flagged (rule 11), not the
+  INSERT mechanics themselves, which are cheap/mechanical.
+- Enabling 11/14 in ENABLED_PHYLA is a one-line array change, but only
+  correct to do AFTER the tree exists and looks right - sequencing
+  matters, not a race.
+
+=====================================================================
+AWAITING ALEX'S CONFIRMATION
+=====================================================================
+Per Alex's own explicit gate ("run /Engineer to execute all steps
+after i verify plan from all before") - nothing is built yet. Real
+open questions before /Engineer runs:
+  1. Confirm the "OpenMontage integrated" reading above (workflow
+     decision vs. literal code) - or correct it.
+  2. Confirm Part 1's rescoping approach (P14 loses its residual bare
+     "cinematic" terms even from Alex's own new list) is the right call.
+  3. Confirm whether all 3 parts run in one /Engineer pass, or Part 3
+     (the big taxonomy build) gets its own separate pass given its real
+     size relative to Parts 1-2.
