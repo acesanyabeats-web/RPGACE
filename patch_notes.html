@@ -74,6 +74,31 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🏁 July 30 — SESSION CLOSED via /Bedtime (with /Summary). Real state: popup consolidation shipped+verified+live, a real video-pipeline development plan confirmed with Alex's answers, a ready-to-execute Slice A goal list left for next session's /Engineer.</div>
+    <div class="card-body">
+      Alex asked for a close-out specifically focused on practical next-build steps, so `/Routine` can route straight into `/Engineer` next session instead of re-deriving priorities from scratch.
+      <br><br>
+      <strong>Real evidence checked before writing this</strong>: `git log` confirms `main` and `claude/rpgace-master-steps-uobp98` in perfect sync at `154b964`, zero divergence, working tree clean. 6 real commits this session (`e32576b` through `154b964`): 5 popup-consolidation batches + the video-pipeline plan. `system_updates` confirms both major deliverables logged (popup consolidation, video pipeline plan) with matching timestamps. `node --check` was clean on every popup-migration commit. Design scan (`/impeccable`) NOT re-run this pass — real reason, not skipped silently: this session touched zero `index.html`/`style.css` content (only `rpgace_core.js`'s dynamic popup-construction code, which the static scanner can't see anyway, plus a cache-bust version bump), so a fresh scan would return the identical July 28 baseline (36 findings) with no new information.
+      <br><br>
+      <strong>Done, live, verified</strong>: all 26 popup-scaffolding sites migrated to `dashDeck._popup()` — see this session's own card above.
+      <br><br>
+      <strong>Confirmed plan, NOT built</strong>: the Video Pipeline / Director Phylum workflow — see this session's own card above and `video_pipeline_director_phylum_spec_backlog_2026-07-30.txt` for the full record.
+      <br><br>
+      <strong>Practical next-build steps — Slice A, ready for `/Engineer` to execute directly, no further planning needed</strong>:
+      <ol style="margin:8px 0 8px 20px;padding:0;line-height:1.7;">
+        <li>Smoke-test the Director Match → `style_profiles` save path for real: log a beat, run Director Match (or the F18 auto Visual Treatment flow), confirm a `style_profiles` row actually appears with the right director/palette data. If it doesn't fire, root-cause via real evidence (the `DIRECTOR_CHOSEN` trailer parse in `_saveDocToProduction`, whether `_captureNextResponse` actually catches the reply, the Supabase write itself) before touching anything downstream — rule 4, don't patch blind.</li>
+        <li>Add a "↩ [beat title]" nav button to `videoPipeline._renderRow`'s action row, same shape as `contentPipeline`'s existing "💬 Oracle session" button — jumps to the linked `content_production`/beat detail via `content_production_id`. This is Alex's explicit "return button to beat logged in" ask.</li>
+        <li>Add the symmetric reverse: a "→ Video Pipeline" button on `contentPipeline`'s own row when a linked `video_jobs` row exists — closes the gap in both directions, not just one.</li>
+        <li>Add auto-advance stage triggers to `video_jobs`: saving `raw_path`/`edited_path`/`rendered_path` auto-advances `status` to the matching stage. One real judgment call to make at build time (not blocking now): whether the first populated `export_paths` entry should auto-advance to `'exported'`, or whether that needs all 4 targets filled first — flag it, don't guess it silently.</li>
+        <li>Backfill `reference_tracks` scale/genre on the 32 existing corpus rows — likely needs Alex's own hand-entry per track (genre/scale are judgment calls, not derivable from existing columns), so this may end up as a UI prompt for Alex rather than an automated fix. Flag the real shape at build time.</li>
+      </ol>
+      Slice B (Phylum 14's full 7-step taxonomy tree build) and Slice C (real beat-grid audio sync via the librosa hook) come after Slice A per Alex's own confirmed build order — full detail in the spec-backlog file, not re-derived here.
+      <br><br>
+      <strong>Handoff</strong>: next session opens with `/Routine` per standing rule — given this session already produced a confirmed, ranked, ready-to-execute goal list (Slice A above), `/Routine`'s own Team 1/Team 2 debate should find this as an obvious, undisputed top item rather than needing fresh evidence-gathering. If Alex wants to skip `/Routine`'s ceremony entirely and go straight to `/Engineer` against the Slice A list, that's a reasonable call given how fresh and concrete this list is.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎬 July 30 — Video Pipeline / Director Phylum development plan: GODMODE evidence + Council of 5 + 5thDimension, real forks answered, nothing built yet</div>
     <div class="card-body">
       Alex asked to plan the beat→music-video workflow (Director Phylum-grounded, aiming for "in sync and eye-gripping" short-form content) with maximum rigor before building anything.
