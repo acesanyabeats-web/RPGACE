@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🏗️ July 29 (post-Bedtime) — New skill built and run: /restructure, a sharper sibling to Aintergration for "does this repo suggest RPGACE's own skeleton should evolve"</div>
+    <div class="card-body">
+      Alex pasted the <code>awesome-llm-apps</code> repo (100+ agent examples/skills) and, after a first Aintergration pass (mostly reject/reference-only — different tech stack, zero-build-step mismatch), asked for something sharper: a real two-sided debate on whether fitting pieces of it INSTEAD of RPGACE-Claude Code's own infrastructure would make code shorter, responses quicker, or output more detailed/context-appropriate. Built as a new named skill (<code>.claude/skills/restructure/SKILL.md</code>, referenced in CLAUDE.md's Invokable Frameworks section) rather than a one-off exercise, matching this project's own established pattern (5thDimension, Engineer, Routine, Bedtime were all built the same way from Alex's verbatim framing).
+      <br><br>
+      <strong>Real run, not just a skill shell</strong>: Side A (Aintergration's own verdict) vs. Side B (a replacement case restricted to 3 named axes). Side B's strongest claims survived a real evidence check with a genuine new finding — Supabase's `vector` (pgvector) and `pg_trgm` extensions are both available in this exact project but never installed, meaning a real embeddings-based upgrade to Oracle's own keyword-score tree grounding (self-flagged "good enough" back in a July 22 Aintergration pass, never revisited) is architecturally buildable, not blocked. Two real Tier-rated future candidates surfaced: TOON-style context compaction for ground-worker calls (Tier 2) and vector/hybrid retrieval for Oracle's grounding (Tier 3 — new extension, new recurring cost, needs Alex's explicit go-ahead before any code). Neither built today — full record: <code>restructure_report_awesome_llm_apps_2026-07-29.txt</code>.
+      <br><br>
+      Real, honest verdict: no code from the repo ships into RPGACE (architecture mismatch confirmed twice now); Commit Archaeologist stays the one small real adopt candidate (Tier 1, pending Alex's go-ahead to actually install it).
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🏁 July 29 — SESSION CLOSED via /Bedtime. Real state: /Routine item 5 (librosa audio analysis) shipped and verified live; a real accessibility escalation (one-handed, fractured hand) got a global voice-input button; a real bug survived one fix and needed a second, evidence-driven rewrite that is UNVERIFIED.</div>
     <div class="card-body">

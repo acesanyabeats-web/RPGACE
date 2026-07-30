@@ -1,0 +1,190 @@
+/restructure — first real run
+Subject: github.com/Shubhamsaboo/awesome-llm-apps (100+ agent examples,
+agent skills, RAG tutorials, framework crash courses)
+2026-07-29
+
+This is the first invocation of the new /restructure skill
+(.claude/skills/restructure/SKILL.md), built this same session from
+Alex's own verbatim framing. Full procedure record below, per rule 5's
+"verbatim record in a committed file" convention.
+
+=====================================================================
+STEP 1 — SIDE A: Aintergration's own verdict (already run this session,
+prior chat turn, real GODMODE evidence check against each named item)
+=====================================================================
+Verdict, condensed: most of the repo (RAG tutorials, multi-agent teams,
+voice-claim agents, generative-UI kits, game-playing agents) runs on
+Python frameworks (agno, CrewAI, AG2, LangGraph, Google ADK, OpenAI
+Agents SDK) - a different stack from RPGACE's deliberate zero-build-step
+vanilla JS/Vercel architecture. NOT APPLICABLE for direct code adoption,
+same reasoning as the standing Framer Motion (Worked Precedent 1) and
+OmniRoute (Worked Precedent 2) rejections.
+
+Real, itemized verdicts on the pieces that DO have a genuine adoption
+question attached (target: Claude Code's own dev process, since Agent
+Skills operate at the session/tooling level, not RPGACE's runtime, so
+they don't trip the zero-npm-runtime rule that governs index.html):
+  - agent_skills/commit-archaeologist: ADOPT candidate. Reconstructs why
+    a file/region exists from its introducing commit + later edits. Real
+    gap - nothing currently automates rule 4's own recurring "which code
+    path produced this" pain (the Bookworm TOC bug, the taxonomy backlog
+    confusion) beyond hand-grepping `git log -p`.
+  - agent_skills/scope-creep-detector: REFERENCE ONLY. Overlaps with
+    /Engineer's own Stage 5 (G4, claim-to-diff reconciliation) - adopting
+    a second tool for the same job would be the exact rule-8 duplication
+    this project keeps flagging.
+  - agent_skills/advisor-orchestrator-worker: REJECT for adoption as-is.
+    GPT+Gemini multi-vendor routing repeats the OmniRoute mistake -
+    undercuts rule 10's tuned Anthropic-only 3-tier discipline. Omnitrix
+    already IS this pattern, single-vendor - REFERENCE ONLY for the
+    underlying concept.
+  - agent_skills/self-improving-agent-skills: REJECT. Auto-rewrites
+    itself against evals with no human checkpoint - conflicts with this
+    project's "AI proposes, human confirms" boundary (same reasoning
+    that keeps Oracle from writing CLAUDE.md directly, only
+    RPGACE_ORACLE_NOTES.md).
+  - always_on_agents (Release Radar, HN Briefing): REFERENCE ONLY. RPGACE
+    already has this exact pattern natively via Claude Code Remote
+    Routines (Morning Brief, built July 22) - a separate Python scheduled-
+    agent framework would be redundant infrastructure.
+  - Wispr Flow dictation clone: NOT APPLICABLE. Already solved for Alex
+    specifically by his phone/OS keyboard dictation (CLAUDE.md's own
+    July 28 finding), and architecturally separate from RPGACE's own
+    in-browser SpeechRecognition feature.
+
+=====================================================================
+STEP 2 — SIDE B: the replacement case, three named axes only
+=====================================================================
+Real research first (GODMODE + /scope), not an assumed baseline:
+
+Axis 1 - shorter code: RPGACE's Oracle/taxonomy pipeline
+(phylumPath._callExtractor / _callGroundWorkerJSON / _callGroundWorkerText,
+Omnitrix's Fable/Opus/Sonnet dispatch) is hand-rolled fetch()+prompt-
+parsing+manual JSON sanitization (_sanitizeNewSteps). A framework
+(OpenAI Agents SDK, Google ADK - both in this repo's own "Framework
+Crash Courses") gives tool-calling, structured-output validation, and
+retry/streaming as library primitives instead of hand-written boilerplate.
+REAL COUNTER-EVIDENCE: package.json is `{"type":"module"}` and nothing
+else - the api/*.js serverless backend has ALREADY chosen zero
+dependencies, deliberately, not by oversight. Adopting a Python agent
+framework would mean a second runtime (Python) alongside Node serverless
+functions - a real, larger architecture change than "shorter code," and
+one this project has already rejected the shape of twice. Axis 1's
+strong claim (adopt a framework wholesale) does NOT survive Step 3's
+implementation sketch. A narrower claim DOES survive: agent_skills
+themselves (already ADOPT-verdicted for Commit Archaeologist) are real,
+already-shorter alternatives to hand-writing an equivalent capability
+inside a SKILL.md from scratch - a live, small, real instance of "shorter
+code" via delegation rather than reinvention.
+
+Axis 2 - loads/responds quicker: RPGACE's OWN documented pain point (rule
+11, token_cost_audit_2026-07-19.txt: "£10 burned in one test session")
+is a real, live cost/latency problem. This repo's own "LLM Optimization
+Tools" section (Toonify - Token Optimization via TOON format, 30-60%
+reduction; Headroom - Context Optimization, 50-90% reduction) is DIRECTLY
+on-topic for this exact pain point, not a generic "faster app" claim.
+Smaller context sent to Claude means both lower cost AND a genuinely
+faster round-trip for Oracle/taxonomy calls - a legitimate reading of
+"loads quicker." REAL COUNTER-EVIDENCE: this project already runs its own
+prefiltering discipline (rule 11: keyword-scan before any Oracle call,
+numbered indented trees instead of full path listings, skip the call
+outright when the prefilter finds nothing) - some of TOON/Headroom's
+value may already be captured by hand, un-branded. This axis's claim
+SURVIVES Step 3 as a real, narrower proposal: apply TOON-style structured
+compression specifically to the ground-worker call sites that still send
+verbose JSON/prose (not a wholesale reframing of rule 11's own already-
+working discipline).
+
+Axis 3 - more detailed/context-appropriate/meticulously picked output:
+oracleTreeGrounding and oracleAppGrounding both use a keyword-score
+heuristic - already self-flagged in a PRIOR Aintergration pass (Worked
+Precedent 4, July 22) as "'good enough' vs. real search infra," never
+revisited since. REAL NEW EVIDENCE this session: Supabase's `vector`
+extension (pgvector 0.8.0) and `pg_trgm` (trigram fuzzy text match) are
+BOTH available in this exact project (confirmed via list_extensions) but
+NOT installed - meaning a real embeddings-based or fuzzy-match upgrade to
+Oracle's own grounding is NOT architecturally blocked, just never built.
+This repo's RAG tutorials (Corrective RAG - retrieval that grades itself
+and retries; Hybrid Search RAG - keyword+vector combined) are real,
+checkable REFERENCE PATTERNS for what a better retrieval mechanism would
+look like, even though none of the actual Python code would ship.
+REAL COUNTER-EVIDENCE: this is real added scope (a new table, a real
+recurring embeddings-API cost, a backfill job) - not free, and the
+current keyword heuristic hasn't caused a reported real failure, only a
+self-flagged "not ideal" note. This axis's claim SURVIVES Step 3 as a
+real Tier-3 candidate, explicitly NOT decided here.
+
+=====================================================================
+STEP 3 — Envision implementation (via /Engineer's shape, NOT built)
+=====================================================================
+Candidate 1 - TOON-style context compaction for ground-worker calls.
+  Goal contract: a shared `_compactContext(obj)` helper (rpgace_core.js,
+  near phylumPath) converting verbose JSON/prose into a token-dense
+  notation before _callGroundWorkerJSON/_callGroundWorkerText requests.
+  Files touched: rpgace_core.js only (one shared helper, rule 8 - not a
+  copy per call site). Tier: 2 (multi-call-site, no new infra, no
+  spending decision - just less text sent for the same real information).
+  Real evidence needed before building: an actual before/after token
+  count on a real chapter/proposal, not an assumed percentage.
+
+Candidate 2 - Vector/hybrid retrieval for Oracle tree grounding.
+  Goal contract: enable the `vector` extension; new `taxonomy_embeddings`
+  table (node_id, embedding vector); a one-time backfill Vercel function
+  calling an embeddings API; oracleTreeGrounding's retrieval swapped from
+  keyword-score to cosine-similarity (+ optionally a corrective-RAG
+  self-grading pass). Files touched: a new migration, a new api/*.js
+  endpoint, rpgace_core.js's grounding module. Tier: 3 (new extension,
+  new table, new recurring embedding-API cost, a real architecture
+  change to a hub both Oracle and Taxonomy Tree depend on per
+  interconnection_map.md). Real evidence needed: an actual cost estimate
+  per embedding call, and at least one real example of the CURRENT
+  keyword heuristic actually picking a worse result than a vector search
+  would have - not just "it's less rigorous in principle."
+
+Candidate 3 - Commit Archaeologist (already ADOPT-verdicted in Step 1).
+  Tier: 1. `npx skills add` once the real slug is confirmed against the
+  repo's actual agent_skills/ layout.
+
+=====================================================================
+STEP 4 — /5thDimension reconciliation (no Fable)
+=====================================================================
+Built vs. reported: no drift found - both surviving Side B candidates
+(TOON-style compaction, vector retrieval) match real, already-logged
+RPGACE pain points (rule 11's token-cost history; Worked Precedent 4's
+own "good enough for now" flag) rather than inventing new ones.
+Anchored to Alex's real goals: the governing 48-hour rule still favors
+neither candidate being built blind today - Candidate 1 is real but
+modest (a cost/latency polish, not a beat/video enabler); Candidate 2 is
+a genuine architecture evolution but a real Tier-3 spend/scope decision,
+not urgent given the current heuristic has no reported live failure.
+Rewiring debate: worth logging as real future items, not worth
+interrupting the current one-handed-accessibility-focused day for.
+
+=====================================================================
+STEP 5/6 — Council of 5, the actual "rebirth of RPGACE" report
+=====================================================================
+Real disagreement surfaced by running this as a debate, not a repeat of
+the first Aintergration pass: Side A's item-by-item scan (mostly reject/
+reference-only) was not WRONG, but it was scoped too narrowly - checking
+"is this specific listed agent worth adopting" rather than "does this
+repo's THEMATIC content suggest an existing RPGACE weak spot is worth
+evolving." That reframing is what surfaced Candidates 1 and 2, which the
+first pass never named.
+
+Final verdict: no code from awesome-llm-apps ships into RPGACE directly
+(architecture mismatch stands, confirmed twice now). ONE small thing
+already cleared for adoption (Commit Archaeologist, Tier 1, Alex's go-
+ahead pending). TWO real, evidence-backed future-evolution candidates
+now on record for the next time token cost or grounding quality comes up
+as its own dedicated topic - neither is being built today, both need a
+real rule-5 spec-and-confirm pass of their own before any code is
+written, and Candidate 2 specifically needs Alex's explicit Tier-3 go-
+ahead (a new extension + new recurring cost) before anything happens
+with it, exactly like every other Tier-3 item in this project.
+
+This IS the report on "rebirth of RPGACE" per Alex's own framing - not
+because a rebirth is being recommended (it isn't; the skeleton mostly
+holds), but because this is the honest, evidence-checked account of
+where it currently doesn't, filed the same way every other real finding
+in this project gets filed: named, evidenced, Tier-rated, and left for
+Alex's actual decision rather than built on inference alone.
