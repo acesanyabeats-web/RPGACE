@@ -231,9 +231,12 @@ G5 (Goal reconciliation): all 5 goals resolved -
   3. DONE.
   4. DONE, including the explicit judgment call the goal asked for.
   5. DONE.
-G6 (Deployment reality): pending - this pass has NOT yet merged to
-  main/pushed. Will be confirmed via list_deployments + (no /api/*
-  surface changed this pass, so no HTTP probe needed) once pushed.
+G6 (Deployment reality): PASS - pushed to main and the feature branch
+  (commit 7964650), then independently confirmed via list_deployments:
+  dpl_Asgom8ScGypguTdQbHpdGXvjRSgo shows githubCommitSha 7964650f...,
+  githubCommitRef "main", target "production", state "READY". No
+  /api/* surface changed this pass, so no HTTP probe was needed on top
+  of the deployment-state check.
 G7 (Cache-bust): PASS - index.html bumped 20260730b -> 20260730c in the
   same commit as the rpgace_core.js change, confirmed via git diff.
 

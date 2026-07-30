@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔧 July 30 — /Routine → /Engineer: Video Pipeline Slice A built (4 of 5 items clean, 1 honest limitation on the 5th)</div>
+    <div class="card-body">
+      Same session, immediately after /Bedtime's close-out: /Routine confirmed Slice A as today's top 4 items (Phylum XP Ledger fork conceded to Team 2 as item 7), then moved straight into /Engineer per Alex's own explicit request.
+      <br><br>
+      <strong>Item 1 (Director Match save-path smoke test)</strong> — real evidence (both content_productions test rows show only <code>beat_meta</code> in <code>creative_docs</code>, never <code>visual_treatment</code>, across a pre-fix AND a post-fix attempt) proves the chain is genuinely broken. Deep static tracing of the whole async chain (phyla-scan observer, the global Oracle in-flight guard, main.js's typing-indicator DOM lifecycle) found several plausible failure points but could NOT prove any one definitively without a live browser — this session has no login. <strong>Honest outcome, not rounded up</strong>: fixed the separate, definitely-real problem that every failure point in this chain was completely silent (bare `return`/console.warn only) — every step now surfaces a real toast, success included. The next real beat-log test will show exactly which step breaks instead of leaving another silent 0-row mystery. This is the responsible move given no live-test capability, not a claim the underlying bug is resolved.
+      <br><br>
+      <strong>Items 2-5, done clean</strong>: a "↩ Beat Log" nav button on Video Pipeline rows (+ the symmetric "🎥 Video Pipeline" reverse on Content Pipeline rows, only shown when a link exists — one extra bulk query, not N+1); auto-advance stage triggers on `video_jobs` saves, with a real judgment call made and documented (first populated export advances to 'exported', not all 4 — a non-sale video would never reach 'exported' otherwise, since F16's Beatstars button only shows with a licence type set); a real backfill popup for `reference_tracks`' 32 rows still missing scale/genre (a UI helper for Alex's own judgment call per track, not an automated guess).
+      <br><br>
+      Full Engineer-pass record (goal contract, evidence, diff-reconciled Council of 5 report, Truth Check, all 7 gates): `engineer_pass_2026-07-30_01.txt`. `node --check` clean on both files, cache-bust bumped `20260730b`→`20260730c`. G6 independently confirmed via `list_deployments`: commit `7964650` READY on production. Quality score 7/10, self-assessed honestly — items 2-5 are clean, item 1's real root cause remains unproven (a real, stated gap, not hidden).
+      <br><br>
+      <strong>UNTESTED, needs Alex's hands</strong>: item 1's real verification (log a beat with Visual Treatment on, watch for the new toasts); clicking the two new nav buttons; saving a real path/export and confirming the status auto-advances; opening the backfill popup against the real 32-row corpus.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🏁 July 30 — SESSION CLOSED via /Bedtime (with /Summary). Real state: popup consolidation shipped+verified+live, a real video-pipeline development plan confirmed with Alex's answers, a ready-to-execute Slice A goal list left for next session's /Engineer.</div>
     <div class="card-body">
       Alex asked for a close-out specifically focused on practical next-build steps, so `/Routine` can route straight into `/Engineer` next session instead of re-deriving priorities from scratch.
