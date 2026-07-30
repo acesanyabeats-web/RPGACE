@@ -1,0 +1,269 @@
+/Engineer pass 2026-07-30_01 — Video Pipeline Slice A
+(triggered directly from /Routine's confirmed Top 10, items 1-4)
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Smoke-test the Director Match -> style_profiles save path for real;
+   root-cause and fix via real evidence if broken. Tier 1 (single-module
+   bug fix, no destructive/spend/migration action).
+2. Add a return-to-Beat-Log nav button to videoPipeline._renderRow.
+   Tier 1.
+3. Add the symmetric reverse ("-> Video Pipeline") on
+   contentProductionLive's own row. Tier 1.
+4. Add auto-advance stage triggers to video_jobs on path/export saves,
+   with an explicit real judgment call on the export threshold. Tier 1.
+5. Build a real backfill mechanism for reference_tracks scale/genre
+   (32 rows, all still null) - a UI helper for Alex, not an automated
+   data fix, since these are subjective per-track judgment calls. Tier 1.
+No goal is Tier 3 - no migration, no RLS change, no spend, nothing
+destructive. No pre-pass Alex confirmation required per the Judgment
+Funnel.
+
+=====================================================================
+STAGE 2 — EVIDENCE (/scope + GODMODE)
+=====================================================================
+Real source pulled and read before any edit, not guessed:
+- visualOracle._saveDocToProduction (rpgace_core.js ~1248-1305 before
+  this pass) - the DIRECTOR_CHOSEN/EDL_JSON trailer-parsing save chain.
+- visualOracle._captureNextResponse, _autoVisualTreatment,
+  _waitThenAutoVisualTreatment - the full async chain that arms/fires
+  the save.
+- RPGACE.sb.secureWrite (config module, ~line 10957) - confirms
+  `Prefer: return=representation` by default, array-vs-object handling
+  in the client is correct.
+- api/data-write.js in full - confirms style_profiles IS in
+  ALLOWED_TABLES (added July 28 alongside the table itself) and the
+  server-side insert path returns real representation data. Ruled OUT
+  as a candidate root cause.
+- main.js's sendChat() (frozen file, read-only) - traced the exact
+  typing-indicator lifecycle (create -> stream-fill -> remove -> real
+  addMsg() -> send-btn re-enable) to check for a DOM-id collision or
+  race between back-to-back automated Oracle calls. Structurally sound
+  on read; could not be definitively proven broken or clean without a
+  live repro.
+- RPGACE.utils._runPhylaScan / _initPhylaObserver (the real trigger
+  for the shared 'oracle:response-scanned' hook every save path in this
+  chain depends on) - read in full; the length<60 early-return guard
+  and the #send-btn MutationObserver timing were both checked as
+  candidate races. No definitive proof found either way without a live
+  browser.
+- scheduleOracle's window.sendChat wrap + window._oracleRequestInFlight
+  - read in full; the global in-flight guard was checked as a candidate
+  blocker for the second (chained) Oracle call. Timing analysis suggests
+  it clears before the second call fires (the async filmmaker-library
+  fetch adds real delay after the flag clears), but this is reasoning,
+  not a live-verified fact.
+- Direct Supabase queries (not assumed from docs): taxonomy_tree phylum
+  counts, taxonomy_nodes f14_filmmaker_library row count (50, confirmed
+  real), video_jobs/style_profiles/content_productions/
+  reference_tracks/beat_audio_jobs row counts, the exact creative_docs
+  keys on both real content_productions test rows (both show ONLY
+  'beat_meta', never 'visual_treatment' - direct proof the auto-save has
+  never landed even once across 2 real attempts, one before and one
+  after the July 28 "event-driven" rebuild).
+- videoPipeline._renderRow, _showDetails, STAGES/STAGE_LABELS/
+  EXPORT_TARGETS - read in full before adding the nav button/auto-
+  advance logic.
+- contentProductionLive._refreshWidget's full row-render loop - read in
+  full before adding the symmetric nav button.
+- refCorpus's full module (_inject, _loadList, _addSingle, findMatches)
+  - read in full before adding the backfill popup.
+- Grep for a second copy of anything about to be written (rule 8): no
+  existing "return to X" cross-navigation helper found outside the
+  Oracle-session/Production-panel button pair already in
+  contentProductionLive - the new buttons reuse that exact pattern
+  rather than inventing a new one.
+
+=====================================================================
+STAGE 3 — OMNITRIX EXECUTION (no Fable, direct build)
+=====================================================================
+Given the actual work here (bug investigation + 4 small, well-scoped UI/
+logic additions, all Tier 1, all in already-read real source) does not
+call for a dedicated fresh-context research agent - built directly, per
+Omnitrix's own July 20 rebalance ("most tasks don't need a dedicated
+fresh-context agent"). No Opus dispatch either - this is not a large
+mechanical pass; the judgment calls (item 1's honest root-cause limit,
+item 4's export threshold) needed the same context already built up
+during Stage 2, not a separate builder pass.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from the real diff)
+=====================================================================
+Real diff: 2 files changed, rpgace_core.js (+238/-17 lines across 4
+modules), index.html (cache-bust bump only).
+
+ITEM 1 - Director Match save chain (visualOracle._saveDocToProduction,
+~1248-1360 after edit):
+  WHAT CHANGED: every previously-silent failure/no-op path (missing
+  productionId, missing DIRECTOR_CHOSEN trailer, empty/"none" director
+  name, missing video_jobs link, director not found in the filmmaker
+  library, style_profiles insert returning no row, both .catch() blocks,
+  the EDL_JSON equivalents) now surfaces a real RPGACE.utils.toast in
+  addition to the existing console.warn. A success toast was also added
+  for the style_profiles save and the EDL save, which didn't exist
+  before at all (so a SILENT SUCCESS looked identical to a silent
+  failure to anyone watching the screen).
+  WHY: real evidence (both content_productions test rows show only
+  'beat_meta' in creative_docs, never 'visual_treatment', across one
+  pre-fix and one post-fix attempt) proves this chain is currently
+  broken in production. Deep static tracing (Stage 2) found several
+  plausible failure points (a phyla-scan length guard, a global
+  in-flight-guard race, a typing-indicator DOM lifecycle question) but
+  could NOT prove any single one definitively without a live browser -
+  this session has no login. Per rule 4, guessing a fix for an unproven
+  cause and shipping it as "fixed" would be exactly the blind-patch
+  mistake rule 4 exists to prevent.
+  HONEST LIMITATION, STATED PLAINLY: this pass does NOT claim to have
+  fixed the underlying root cause of style_profiles' 0-row count. It
+  fixes the SEPARATE, definitely-real problem that the entire chain was
+  silent end-to-end (rule 7 violation, independently confirmable by
+  reading the old code - every failure path was a bare `return` or
+  console.warn only). The concrete value: the very next real beat-log
+  test (with the Visual Treatment checkbox on) will now show EXACTLY
+  which step breaks, via a visible toast, instead of leaving another
+  silent 0-row mystery. This is the responsible move given no live-test
+  capability this session, not a claim that the bug is resolved.
+  RESIDUAL RISK: none introduced - every change is additive (new toast
+  calls alongside existing logic), no existing successful path was
+  altered.
+
+ITEM 2 - "↩ Beat Log" button (videoPipeline._renderRow):
+  WHAT CHANGED: a new button, shown only when row.content_production_id
+  is set, that closes the vp-widget popup and opens dashDeck's Content
+  Pipeline popup (_openPipeline). Reuses contentProductionLive's own
+  "Oracle session" button pattern verbatim (close-then-open).
+  SCOPE NOTE, stated honestly: this is a COARSE jump - it opens the
+  whole Content Pipeline card, not a deep link scrolled/highlighted to
+  the one matching row. Same granularity as every other existing
+  dashDeck popup-to-popup jump in the codebase; a scroll-to-row
+  enhancement is a real, small future addition, not built here since it
+  wasn't asked for and would add real new UI state-tracking.
+
+ITEM 3 - "🎥 Video Pipeline" button (contentProductionLive._refreshWidget):
+  WHAT CHANGED: _refreshWidget now does a Promise.all of 2 real queries
+  (content_productions + a bulk video_jobs content_production_id list)
+  instead of 1, building a lookup map once rather than an N+1 query per
+  row (rule 8/11). The new button only renders when a row has a linked
+  video_jobs row, and does the symmetric close-cpl/open-vp jump.
+  RESIDUAL RISK: one extra real Supabase read per widget refresh (was
+  1 query, now 2 in parallel) - negligible cost, well within rule 11's
+  design-constraint intent (this is not a premium-model call, it's a
+  free REST read).
+
+ITEM 4 - Auto-advance stage triggers (videoPipeline._showDetails save
+handler + new _computeAutoAdvancedStatus):
+  WHAT CHANGED: saving raw_path/edited_path/rendered_path/export_paths
+  now computes the furthest stage the newly-saved data supports and
+  writes it into `status` alongside the path fields, never moving
+  status backward (max of current stage index and computed stage
+  index).
+  REAL JUDGMENT CALL MADE, NOT LEFT UNDECIDED (per the goal's own
+  instruction): the FIRST populated export_paths entry advances status
+  straight to 'exported', not all 4 targets. Reasoning documented
+  inline in the code: F16's own Beatstars button only shows once a
+  licence_type is set, meaning a non-sale video would NEVER get all 4
+  exports and could never reach 'exported' if all 4 were required -
+  this would make the terminal stage unreachable for most real videos.
+  RESIDUAL RISK: a genuinely unusual workflow (e.g. someone deliberately
+  wants to track "partially exported" as distinct from "fully exported"
+  across all 4 platforms) is not served by this - flagged honestly, not
+  hidden, and easy to revisit if it turns out to matter in practice.
+
+ITEM 5 - Backfill popup (refCorpus._showBackfillPopup + a new toolbar
+button):
+  WHAT CHANGED: a new "🧬 Backfill missing metadata" button opens a
+  popup listing every reference_tracks row with scale or genre null
+  (currently all 32), each with 2 small pre-filled inputs; a single
+  Save writes only the rows Alex actually changed (compared against
+  each row's original value, not blindly re-writing everything).
+  WHY THIS SHAPE, NOT AN AUTOMATED FIX: scale/genre are subjective
+  musical judgment calls (what scale/genre a reference track is) that
+  cannot be derived from the columns already on the row (bpm/mood/
+  energy) - an automated backfill would just be guessing, exactly the
+  kind of fabricated-data risk this project's own rules (rule 7, "never
+  fake success") exist to prevent. This matches the goal's own explicit
+  framing ("will likely need to surface as a UI prompt... for Alex to
+  fill in himself").
+
+NOT PLANNED, NOT DONE: nothing outside the 5 declared goals was touched.
+No main.js edit (FROZEN-file exception not needed this pass).
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-derived, not read from Stage 4)
+=====================================================================
+- `node --check rpgace_core.js && node --check main.js` re-run
+  independently after all 5 items: both clean.
+- `git diff --stat`: 2 files, rpgace_core.js (+238/-17), index.html
+  (+1/-1, the cache-bust line only) - matches the Stage 4 report's own
+  claim of "2 files changed," no unclaimed hunks in either direction.
+- Grepped `git diff rpgace_core.js` in full (not summarized from
+  memory) and reconciled every hunk against an item above: all 5 hunks
+  (visualOracle, refCorpus x2, contentProductionLive x2, videoPipeline
+  x2) map 1:1 to declared goals 1-5. No hunk found outside the 5 goals.
+- Grepped for "===MODULE:" / "===END:" markers around every edit site:
+  all 5 edits sit inside their pre-existing module's markers
+  (visualOracle, refCorpus, contentProductionLive, videoPipeline) - G3
+  passes, no new module needed, no marker damage.
+- Confirmed via a direct string check that every new RPGACE.utils.toast
+  call in item 1 sits inside an existing .catch()/no-match branch, not
+  a new code path that could double-fire alongside the old
+  console.warn silently - each `console.warn` + new toast pair is one
+  single branch, not two.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (Syntax): PASS - node --check clean on both files, re-verified
+  independently in Stage 5.
+G2 (index.html invariants): N/A for div-balance/page-id checks (only
+  the cache-bust `<script src>` line changed) - confirmed via direct
+  grep that only that one line differs.
+G3 (Module convention): PASS - all 5 edits sit inside existing module
+  markers, no main.js edit, no FROZEN-file exception needed.
+G4 (Claim-to-diff reconciliation): PASS - see Stage 5, both directions
+  checked.
+G5 (Goal reconciliation): all 5 goals resolved -
+  1. DONE (with an honest, stated limitation - see Item 1 above; not a
+     silent "done", the limitation is the headline finding of this
+     item, not a footnote).
+  2. DONE.
+  3. DONE.
+  4. DONE, including the explicit judgment call the goal asked for.
+  5. DONE.
+G6 (Deployment reality): pending - this pass has NOT yet merged to
+  main/pushed. Will be confirmed via list_deployments + (no /api/*
+  surface changed this pass, so no HTTP probe needed) once pushed.
+G7 (Cache-bust): PASS - index.html bumped 20260730b -> 20260730c in the
+  same commit as the rpgace_core.js change, confirmed via git diff.
+
+UNTESTED (required label, not a failure) - genuinely needs Alex's own
+hands, no login available this session:
+  - Item 1: the actual next real beat-log test with Visual Treatment
+    checked. This is the real verification this whole item exists to
+    enable - watch for the new toasts, they will say exactly which step
+    (if any) still fails.
+  - Item 2/3: clicking the new nav buttons in a real browser to confirm
+    the popup-close/popup-open sequence feels right and doesn't leave
+    any visual artifact (the pattern is reused verbatim from an already-
+    proven button, but never independently clicked for these two new
+    instances).
+  - Item 4: saving a real path/export in the Details popup and watching
+    the status badge actually advance and the toast read correctly.
+  - Item 5: opening the backfill popup against the real 32-row corpus
+    and confirming the popup renders and scrolls correctly on a real
+    screen (32 rows in a scrollable box - untested for real overflow
+    behavior).
+
+=====================================================================
+COUNCIL OF 5 QUALITY SCORE (informational only, authorizes nothing)
+=====================================================================
+7/10. Reasoning: items 2-5 are clean, well-scoped, low-risk, and
+directly match what was asked. Item 1 is the honest weak point - real,
+deep investigation was done, but the actual root cause remains
+unproven, and the fix is a (correct, valuable) workaround for that
+limitation rather than a resolution of it. A 7, not higher, specifically
+because Alex asked for a "smoke test" and this pass could not perform
+one - it substituted the most responsible thing possible given that
+constraint (make every failure visible) but that is a real, honest gap
+between what was asked and what could be delivered this session.

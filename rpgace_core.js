@@ -1245,8 +1245,23 @@ RPGACE.register('visualOracle', {
   // (DIRECTOR_CHOSEN, EDL_JSON) so a director pick becomes a real
   // style_profiles row and a storyboard becomes a real edit-decision-
   // list, rather than staying locked inside chat prose forever.
+  // Engineer pass 2026-07-30 (Slice A item 1): style_profiles has had 0
+  // rows across 2 real hand-test attempts, both with the DIRECTOR_CHOSEN
+  // trailer expected. Root cause could not be proven from static reading
+  // alone (no live browser/login this session) - every prior failure
+  // point in this function was SILENT (console.warn only, or a bare
+  // `return`), meaning neither Alex nor this session could ever tell
+  // WHICH step actually broke. Per rule 7 (fail loud, never silently
+  // swallow a failed write), every real failure/no-op path below now
+  // surfaces a toast - the next real beat-log test will show exactly
+  // where this chain breaks instead of leaving another silent 0-row
+  // mystery.
   _saveDocToProduction: function(docSlug, text, productionId, videoJobId) {
-    if (!productionId) return;
+    if (!productionId) {
+      console.warn('[visualOracle] _saveDocToProduction: no productionId, cannot save ' + docSlug);
+      RPGACE.utils.toast('⚠️ Could not save ' + docSlug.replace(/_/g, ' ') + ' — no linked Content Pipeline production', '#E2A83D', 3500);
+      return;
+    }
     RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
       .then(function(rows) {
         var existing = (rows && rows[0] && rows[0].creative_docs) || {};
@@ -1254,7 +1269,10 @@ RPGACE.register('visualOracle', {
         return RPGACE.sb.secureWrite('content_productions', 'update', { creative_docs: existing }, 'id=eq.' + productionId);
       })
       .then(function() { RPGACE.utils.toast('💾 Saved ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline', '#9B6EC8', 2500); })
-      .catch(function(e) { console.warn('[visualOracle] save creative_docs:', e.message); });
+      .catch(function(e) {
+        console.warn('[visualOracle] save creative_docs:', e.message);
+        RPGACE.utils.toast('⚠️ Failed to save ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline: ' + e.message, '#CC4A4A', 4000);
+      });
 
     var lookupVideoJob = function() {
       if (videoJobId) return Promise.resolve(videoJobId);
@@ -1264,13 +1282,24 @@ RPGACE.register('visualOracle', {
 
     if (docSlug === 'director_match' || docSlug === 'visual_treatment') {
       var dm = text.match(/DIRECTOR_CHOSEN:\s*(.+)/);
-      if (!dm) return;
+      if (!dm) {
+        console.warn('[visualOracle] no DIRECTOR_CHOSEN trailer found in ' + docSlug + ' response');
+        RPGACE.utils.toast('⚠️ No director pick found in the response — style_profiles not saved', '#E2A83D', 3500);
+        return;
+      }
       var directorName = dm[1].trim().replace(/\.$/, '');
-      if (!directorName || /^none$/i.test(directorName)) return;
+      if (!directorName || /^none$/i.test(directorName)) {
+        RPGACE.utils.toast('⚠️ Director pick was empty/"none" — style_profiles not saved', '#E2A83D', 3000);
+        return;
+      }
       lookupVideoJob().then(function(vjId) {
+        if (!vjId) {
+          RPGACE.utils.toast('⚠️ Director chosen (' + directorName + ') but no linked video_jobs row to attach it to', '#E2A83D', 3500);
+        }
         RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&concept=eq." + encodeURIComponent(directorName) + "&select=concept,definition,colour_palette&limit=1")
           .then(function(rows) {
             var d = rows && rows[0];
+            if (!d) console.warn('[visualOracle] director "' + directorName + '" not found in f14_filmmaker_library — saving with null style/palette');
             return RPGACE.sb.secureWrite('style_profiles', 'insert', {
               director_name: directorName,
               visual_style: d ? d.definition : null,
@@ -1283,23 +1312,49 @@ RPGACE.register('visualOracle', {
           .then(function(result) {
             var row = Array.isArray(result) ? result[0] : result;
             if (row && row.id && vjId) {
-              return RPGACE.sb.secureWrite('video_jobs', 'update', { style_profile_id: row.id }, 'id=eq.' + vjId);
+              return RPGACE.sb.secureWrite('video_jobs', 'update', { style_profile_id: row.id }, 'id=eq.' + vjId)
+                .then(function() { RPGACE.utils.toast('🎬 Director match saved: ' + directorName, '#9B6EC8', 3000); });
+            } else if (row && row.id) {
+              RPGACE.utils.toast('🎬 Director match saved: ' + directorName + ' (no video_jobs link)', '#9B6EC8', 3000);
+            } else {
+              console.warn('[visualOracle] style_profiles insert returned no row id:', result);
+              RPGACE.utils.toast('⚠️ style_profiles insert returned no row — check console', '#CC4A4A', 4000);
             }
           })
-          .catch(function(e) { console.warn('[visualOracle] style_profiles save:', e.message); });
+          .catch(function(e) {
+            console.warn('[visualOracle] style_profiles save:', e.message);
+            RPGACE.utils.toast('⚠️ style_profiles save failed: ' + e.message, '#CC4A4A', 4000);
+          });
       });
     }
 
     if (docSlug === 'storyboard') {
       var em = text.match(/EDL_JSON:\s*(\[[\s\S]*\])/);
-      if (!em) return;
+      if (!em) {
+        console.warn('[visualOracle] no EDL_JSON trailer found in storyboard response');
+        RPGACE.utils.toast('⚠️ No EDL_JSON found in the storyboard response — edl not saved', '#E2A83D', 3500);
+        return;
+      }
       var edl;
-      try { edl = JSON.parse(em[1]); } catch (e) { return; }
-      if (!Array.isArray(edl)) return;
+      try { edl = JSON.parse(em[1]); } catch (e) {
+        RPGACE.utils.toast('⚠️ EDL_JSON failed to parse: ' + e.message, '#CC4A4A', 4000);
+        return;
+      }
+      if (!Array.isArray(edl)) {
+        RPGACE.utils.toast('⚠️ EDL_JSON was not a real array — edl not saved', '#CC4A4A', 3500);
+        return;
+      }
       lookupVideoJob().then(function(vjId) {
-        if (!vjId) return;
+        if (!vjId) {
+          RPGACE.utils.toast('⚠️ Storyboard EDL generated but no linked video_jobs row to attach it to', '#E2A83D', 3500);
+          return;
+        }
         RPGACE.sb.secureWrite('video_jobs', 'update', { edl: edl }, 'id=eq.' + vjId)
-          .catch(function(e) { console.warn('[visualOracle] edl save:', e.message); });
+          .then(function() { RPGACE.utils.toast('🎞️ Storyboard EDL saved (' + edl.length + ' scenes)', '#9B6EC8', 3000); })
+          .catch(function(e) {
+            console.warn('[visualOracle] edl save:', e.message);
+            RPGACE.utils.toast('⚠️ EDL save failed: ' + e.message, '#CC4A4A', 4000);
+          });
       });
     }
   },
@@ -13047,7 +13102,18 @@ RPGACE.register('refCorpus', {
     refreshBtn.style.cssText = 'padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     refreshBtn.onclick = function() { self._loadList(); };
 
-    btnRow.appendChild(addBtn); btnRow.appendChild(bulkBtn); btnRow.appendChild(refreshBtn);
+    // Engineer pass 2026-07-30 (Slice A item 5) — real evidence found all
+    // 32 existing corpus rows still have scale/genre null even after the
+    // July 28 fix added those fields to the ADD form; scale/genre are
+    // subjective judgment calls Alex has to make per track (not
+    // derivable from bpm/mood/energy), so this is a real backfill HELPER
+    // for him, not an automated data fix.
+    var backfillBtn = document.createElement('button');
+    backfillBtn.textContent = '🧬 Backfill missing metadata';
+    backfillBtn.style.cssText = 'padding:8px 16px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:6px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    backfillBtn.onclick = function() { self._showBackfillPopup(); };
+
+    btnRow.appendChild(addBtn); btnRow.appendChild(bulkBtn); btnRow.appendChild(refreshBtn); btnRow.appendChild(backfillBtn);
     panel.appendChild(btnRow);
 
     // Track list
@@ -13252,6 +13318,80 @@ RPGACE.register('refCorpus', {
     });
   },
 
+  // Engineer pass 2026-07-30 (Slice A item 5). Lists every corpus row
+  // missing scale and/or genre with two small inline inputs each, so
+  // Alex can fill in his own real judgment call per track in one place
+  // instead of hunting through the full add/edit flow row by row. Only
+  // writes rows he actually changed - untouched inputs are skipped, not
+  // overwritten with empty strings.
+  _showBackfillPopup: function() {
+    var self = this;
+    RPGACE.sb.select('reference_tracks', 'or=(scale.is.null,genre.is.null)&order=artist.asc&limit=200')
+      .then(function(rows) {
+        rows = rows || [];
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.9', scroll: true, width: '560px', borderColor: 'rgba(201,168,76,0.25)',
+          eyebrow: 'Reference Corpus', title: 'Backfill missing metadata (' + rows.length + ' tracks)',
+        });
+        var box = pop.box;
+
+        if (rows.length === 0) {
+          var done = document.createElement('div');
+          done.style.cssText = 'color:rgba(226,226,236,0.4);font-size:12px;';
+          done.textContent = 'Nothing missing — every corpus track has scale + genre set.';
+          box.appendChild(done);
+          return;
+        }
+
+        var note = document.createElement('div');
+        note.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);margin-bottom:14px;line-height:1.5;';
+        note.textContent = 'Scale/genre are your own judgment call per track — fill in whichever you know, leave the rest blank, and click Save. Only changed rows get written.';
+        box.appendChild(note);
+
+        var inputs = [];
+        rows.forEach(function(row) {
+          var line = document.createElement('div');
+          line.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+          var name = document.createElement('div');
+          name.style.cssText = 'flex:1;font-size:11px;color:#D4DAF5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+          name.textContent = row.artist + ' — ' + row.title;
+          var scaleInp = document.createElement('input');
+          scaleInp.type = 'text'; scaleInp.value = row.scale || ''; scaleInp.placeholder = 'Scale';
+          scaleInp.style.cssText = 'width:90px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:5px 7px;outline:none;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+          var genreInp = document.createElement('input');
+          genreInp.type = 'text'; genreInp.value = row.genre || ''; genreInp.placeholder = 'Genre';
+          genreInp.style.cssText = 'width:90px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:5px 7px;outline:none;font-family:Rajdhani,sans-serif;flex-shrink:0;';
+          line.appendChild(name); line.appendChild(scaleInp); line.appendChild(genreInp);
+          box.appendChild(line);
+          inputs.push({ id: row.id, origScale: row.scale || '', origGenre: row.genre || '', scaleInp: scaleInp, genreInp: genreInp });
+        });
+
+        var saveBtn = document.createElement('button');
+        saveBtn.textContent = '💾 Save changed rows';
+        saveBtn.style.cssText = 'width:100%;margin-top:16px;padding:10px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        saveBtn.onclick = function() {
+          var toWrite = inputs.filter(function(i) {
+            return i.scaleInp.value.trim() !== i.origScale || i.genreInp.value.trim() !== i.origGenre;
+          });
+          if (toWrite.length === 0) { RPGACE.utils.toast('No changes to save', 'rgba(226,226,236,0.5)', 2000); return; }
+          saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving ' + toWrite.length + '...';
+          Promise.all(toWrite.map(function(i) {
+            return RPGACE.sb.secureWrite('reference_tracks', 'update', {
+              scale: i.scaleInp.value.trim() || null,
+              genre: i.genreInp.value.trim() || null,
+            }, 'id=eq.' + i.id).catch(function(e) { console.warn('[refCorpus] backfill row ' + i.id + ':', e.message); return null; });
+          })).then(function() {
+            RPGACE.utils.toast('✅ Backfilled ' + toWrite.length + ' track' + (toWrite.length === 1 ? '' : 's'), '#C9A84C', 3000);
+            pop.close();
+            self._loadList();
+          });
+        };
+        box.appendChild(saveBtn);
+      }).catch(function(e) {
+        RPGACE.utils.toast('Error loading backfill list: ' + e.message, '#CC4A4A', 3500);
+      });
+  },
+
 });
 /* ===END:refCorpus=== */
 
@@ -13422,9 +13562,18 @@ RPGACE.register('contentProductionLive', {
     var list = document.getElementById('cpl-list');
     if (!list) return;
 
-    RPGACE.sb.select('content_productions', 'order=con_id.desc&limit=20')
-      .then(function(rows) {
-        rows = rows || [];
+    // Engineer pass 2026-07-30 (Slice A item 3, symmetric reverse of the
+    // Video Pipeline "↩ Beat Log" button) - bulk-fetch which productions
+    // have a linked video_jobs row, once, rather than an N+1 query per
+    // row (rule 8/11 - one extra request total, not one per card).
+    Promise.all([
+      RPGACE.sb.select('content_productions', 'order=con_id.desc&limit=20'),
+      RPGACE.sb.select('video_jobs', 'select=content_production_id&content_production_id=not.is.null'),
+    ])
+      .then(function(results) {
+        var rows = results[0] || [];
+        var linkedIds = {};
+        (results[1] || []).forEach(function(vj) { if (vj.content_production_id) linkedIds[vj.content_production_id] = true; });
         list.innerHTML = '';
 
         if (rows.length === 0) {
@@ -13433,6 +13582,7 @@ RPGACE.register('contentProductionLive', {
         }
 
         rows.forEach(function(row) {
+          var hasVideoJob = !!linkedIds[row.id];
           var statusColors = {
             'Idea': '#4A8CCC', 'Scripted': '#C9A84C', 'Filmed': '#9B6EC8',
             'Edited': '#CC4A4A', 'Posted': '#4CAF82', 'Analysed': '#2ABFB0'
@@ -13618,6 +13768,23 @@ RPGACE.register('contentProductionLive', {
             }, 500);
           };
           actions.appendChild(oracleBtn);
+
+          // Engineer pass 2026-07-30 (Slice A item 3) — symmetric reverse
+          // of videoPipeline's new "↩ Beat Log" button. Same closeWidget
+          // Popup-then-open-the-other-one pattern as the Oracle button
+          // right above.
+          if (hasVideoJob) {
+            var vpBtn = document.createElement('button');
+            vpBtn.textContent = '🎥 Video Pipeline';
+            vpBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            vpBtn.onclick = function() {
+              if (RPGACE.modules.dashDeck) {
+                RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+                if (RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
+              }
+            };
+            actions.appendChild(vpBtn);
+          }
 
           // F16: Beatstars listing generator — only shown once a licence
           // type is set (i.e. this ConID is a beat sale, not just content)
@@ -14108,6 +14275,26 @@ RPGACE.register('videoPipeline', {
     detailsBtn.onclick = function() { self._showDetails(row); };
     actions.appendChild(detailsBtn);
 
+    // Engineer pass 2026-07-30 (Slice A item 2, Alex's explicit "return
+    // button to beat logged in" ask). No cross-navigation existed between
+    // Video Pipeline and Content Pipeline before this - same button
+    // pattern as contentProductionLive's own "Oracle session" button
+    // (close this popup, open the other one). Coarse (opens the whole
+    // Content Pipeline card, not a deep link to this one row) - same
+    // granularity as every other dashDeck popup-to-popup jump.
+    if (row.content_production_id) {
+      var beatBtn = document.createElement('button');
+      beatBtn.textContent = '↩ Beat Log';
+      beatBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      beatBtn.onclick = function() {
+        if (RPGACE.modules.dashDeck) {
+          RPGACE.modules.dashDeck.closeWidgetPopup('vp-widget');
+          if (RPGACE.modules.dashDeck._openPipeline) RPGACE.modules.dashDeck._openPipeline();
+        }
+      };
+      actions.appendChild(beatBtn);
+    }
+
     item.appendChild(actions);
     return item;
   },
@@ -14175,10 +14362,23 @@ RPGACE.register('videoPipeline', {
         notes: g('vp-notes') || null,
         export_paths: newExportPaths,
       };
+      // Engineer pass 2026-07-30 (Slice A item 4) - real Council-of-5
+      // finding: both real video_jobs rows sat stuck at stage 1 because
+      // advancing required a separate manual "Mark [stage]" click on top
+      // of actually filling in a path here. Auto-advances status to the
+      // furthest stage the newly-saved data supports, never backward
+      // (max of current stage and computed stage) - filling in a field
+      // out of order (e.g. rendered_path before edited_path) still only
+      // advances, never skips silently past a stage the data doesn't
+      // support yet.
+      var newStatus = self._computeAutoAdvancedStatus(row.status, updates);
+      if (newStatus !== row.status) updates.status = newStatus;
       self.updateEntry(row.id, updates).then(function() {
         overlay.remove();
         self._refreshWidget();
-        RPGACE.utils.toast('✅ Video job updated', '#4CAF82', 2500);
+        RPGACE.utils.toast(newStatus !== row.status
+          ? '✅ Video job updated — auto-advanced to ' + (self.STAGE_LABELS[newStatus] || newStatus)
+          : '✅ Video job updated', '#4CAF82', 2500);
       });
     };
     var cancelBtn = document.createElement('button');
@@ -14187,6 +14387,27 @@ RPGACE.register('videoPipeline', {
     cancelBtn.onclick = function() { overlay.remove(); };
     btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
     box.appendChild(btnRow);
+  },
+
+  // Engineer pass 2026-07-30 (Slice A item 4). Real judgment call, made
+  // and documented rather than left undecided: the first populated
+  // export_paths entry advances status straight to 'exported' - NOT all
+  // 4 targets. Reasoning: most productions only ever post to one or two
+  // platforms (a non-sale video never gets a Beatstars listing at all,
+  // per F16's own licence_type gate), so requiring all 4 would mean many
+  // real videos could never reach 'exported' even once genuinely done.
+  // Never moves status backward - takes the further of the current
+  // stage and whatever the new data supports.
+  _computeAutoAdvancedStatus: function(currentStatus, updates) {
+    var computed = 'beat_logged';
+    if (updates.raw_path) computed = 'raw_footage';
+    if (updates.edited_path) computed = 'edited';
+    if (updates.rendered_path) computed = 'rendered';
+    if (updates.export_paths && Object.keys(updates.export_paths).length > 0) computed = 'exported';
+    var curIdx = this.STAGES.indexOf(currentStatus);
+    var newIdx = this.STAGES.indexOf(computed);
+    if (curIdx === -1) curIdx = 0;
+    return newIdx > curIdx ? computed : currentStatus;
   },
 
 });
