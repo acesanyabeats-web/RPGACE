@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🎥 July 31 — <code>openmontage_jobs</code>: a real Supabase handoff queue for a separate OpenMontage Claude Code session (the "2.5-way system")</div>
+    <div class="card-body">
+      Alex asked to actually set up OpenMontage against the Calibri Visual Treatment doc. Real constraint hit and confirmed, not guessed: this session's own <code>add_repo</code> tool refused to attach <code>calesthio/OpenMontage</code> alongside RPGACE — "cross-tier adds are not supported... session already has repos from owner(s)." A session is permanently tied to whichever repo owner it started with, matching the July 24 Aintergration verdict that OpenMontage stays a separate operated tool, never embedded.
+      <br><br>
+      Built the real communication channel instead: <code>openmontage_jobs</code> (id/content_production_id/video_job_id/title/brief/beat_meta jsonb/status/output_note), deliberately <code>anon_all</code> RLS — the external OpenMontage session writes back with the plain anon key, same precedent as <code>oracle_fallback_queue</code>/<code>journal</code>-via-Routine, logged as the same standing landmine (never RLS-restrict this table without giving that session another way to write). First real job queued (Calibri's actual brief + beat metadata). Wrote <code>openmontage_kickoff_prompt_2026-07-31.txt</code> — a ready-to-paste first message for a fresh Claude Code session started with the OpenMontage repo, including the Supabase URL/key/table shape and the real queued job.
+      <br><br>
+      <code>get_advisors</code> confirms the new table's RLS lints match the exact same already-accepted baseline as every other <code>anon_all</code>/<code>authenticated_all</code> table in this project — no new risk class. <strong>Genuinely untested</strong> — no OpenMontage session has picked up the job yet; needs Alex to actually start that separate session and paste the kickoff prompt.
+    </div>
+</div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🎬 July 31 — Director picker (dropdown + taxonomy summary + inspiration box) + fixed Oracle reply truncation, via new <code>/free-for-all-debate</code> skill</div>
     <div class="card-body">
       Alex hand-tested the Visual Treatment build the same session it shipped and hit 2 real problems immediately: the director-reference field was a plain one-line textbox with no guidance, and his real "Kubrick" reply cut off mid-scene-breakdown. Asked for a new skill — <code>/free-for-all-debate</code> — individual competitors (not two teams) each picking 2 real problems to argue, converging points merged, Council of 5 turning the result into a plan.

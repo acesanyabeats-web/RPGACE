@@ -1,0 +1,99 @@
+Kickoff prompt for a NEW, separate Claude Code session — paste this whole
+block as the first message once you've started a session with
+calesthio/OpenMontage as the initial repo. This is NOT the RPGACE repo;
+do not attempt to add RPGACE alongside it (confirmed this session:
+cross-tier repo adds aren't supported — a session is tied to whichever
+owner it started with).
+
+Real architecture this sets up (Alex's own framing, July 31): a "2.5-way"
+system — RPGACE's own in-app Oracle, this RPGACE Claude Code session, and
+the new OpenMontage session, all able to read/write one shared Supabase
+queue table. "2.5" because OpenMontage is currently only a generator —
+it consumes a job and writes back a result, it doesn't hold a live
+conversation the way Oracle/Claude Code do.
+
+=====================================================================
+PASTE EVERYTHING BELOW THIS LINE INTO THE NEW SESSION
+=====================================================================
+
+You're starting fresh with the OpenMontage repo (github.com/calesthio/
+OpenMontage) as your working directory. This is a real job handed off
+from a separate project called RPGACE (a music producer's own AI
+operating system) via a shared Supabase table — not something built
+into OpenMontage itself.
+
+YOUR TASK:
+1. Set up OpenMontage per its own README — Python 3.10+ venv + pip
+   install requirements.txt, npm install its `remotion-composer`
+   subproject, confirm FFmpeg is installed. Verify each step actually
+   works before moving on; report honestly if something in the repo's
+   own setup instructions doesn't work as documented, don't paper over it.
+2. Query the shared Supabase table below for rows where status='queued'.
+3. For each queued row, run whichever of OpenMontage's own 12 pipelines
+   genuinely fits the brief (a narrative music video treatment like this
+   one is most likely "cinematic" or "documentary montage" — check
+   OpenMontage's own pipeline list rather than assuming).
+4. When finished (or if you hit a real blocker), write back to the SAME
+   row: set status to 'complete' or 'failed', and put a clear, honest
+   note in output_note — where the rendered output actually is, or
+   exactly what went wrong. Update updated_at to now() on every write.
+
+SHARED SUPABASE QUEUE (this table is the real communication channel):
+- Project URL: https://gripopghczmrbrhqtqbm.supabase.co
+- anon API key (same key RPGACE's own client code already uses openly —
+  safe to use directly): eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyaXBvcGdoY3ptcmJyaHF0cWJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4NjQ2MDAsImV4cCI6MjA5NzQ0MDYwMH0.FTjBMZMBoaJZdonLHK1BrmDVR2NPUvXCH9aNViOQ2Ls
+- Table: openmontage_jobs
+  columns: id, content_production_id, video_job_id, title, brief,
+  beat_meta (jsonb), status ('queued'|'processing'|'complete'|'failed'),
+  output_note, requested_by, created_at, updated_at
+
+- Read queued jobs:
+  curl "https://gripopghczmrbrhqtqbm.supabase.co/rest/v1/openmontage_jobs?status=eq.queued" \
+    -H "apikey: <the key above>" -H "Authorization: Bearer <the key above>"
+
+- Write back a result:
+  curl -X PATCH "https://gripopghczmrbrhqtqbm.supabase.co/rest/v1/openmontage_jobs?id=eq.<row-id>" \
+    -H "apikey: <the key above>" -H "Authorization: Bearer <the key above>" \
+    -H "Content-Type: application/json" -H "Prefer: return=minimal" \
+    -d '{"status":"complete","output_note":"...", "updated_at":"<iso timestamp>"}'
+
+THE REAL JOB ALREADY QUEUED FOR YOU RIGHT NOW:
+- id: 7cb846b5-4edf-4e11-8804-3674aa84f3bd
+- title: Calibri
+- brief: "Cinematic music video treatment, Martin Scorsese visual
+  language, 16mm grain. Scene 1: Italian restaurant interior, tungsten
+  candlelight, warm amber grade, long tracking shot, suited man at
+  corner table watching room. Scene 2: Same restaurant, violent
+  eruption, muzzle flash lighting, desaturated cold grade, fast-cut
+  handheld chaos, rain-soaked alley exterior. Scene 3: Open wildflower
+  field, extreme overexposure, warm golden daylight, drone overhead
+  pull-back, man rising from ground; then small-town streets, warm
+  kitchen interior, dinner table symmetrical static shot, bedroom
+  mirror close-up. Scene 4: Street exterior, two black cars arriving,
+  low-angle mob approach, dutch tilt; handheld car interior escape;
+  final wide static — man with cigarette, sunset horizon, blood on
+  temple, amber silhouette. Anamorphic lens flares throughout."
+- beat_meta: genre RnB x West Coast, mood Euphoric, key C Minor, 94 BPM,
+  director reference Martin Scorsese, inspiration: an Italian-mob
+  narrative (chorus 1 = restaurant shootout, verse 1 = the survivor
+  before it, verse 2 = the day after — waking in a field, warm day,
+  flowers, heading to town, seeing his sister, dinner table, getting
+  dressed — chorus 2 = the mob finds him, a car escape and crash,
+  surviving bruised and bleeding, then lighting a cigarette as sunset
+  begins).
+
+HONEST CONSTRAINTS TO RESPECT:
+- This is genuinely a separate tool from RPGACE's own codebase — don't
+  attempt to touch the RPGACE repo, its Vercel deployment, or any
+  Supabase table besides openmontage_jobs (that one is your only real
+  write target).
+- OpenMontage's zero-API-key mode (Piper TTS, free stock/archive
+  footage, Remotion compositing) may not be capable of producing this
+  bespoke a narrative (a specific mob shootout, a specific survivor
+  arc) — free stock footage won't show that. If that's the real
+  limit you hit, say so plainly in output_note rather than rendering
+  generic stock footage and calling the brief fulfilled.
+- Fail loud: if setup itself doesn't work (a missing dependency, a
+  broken pipeline reference), write status='failed' with the real
+  error in output_note rather than leaving the row silently stuck at
+  'queued' forever.
