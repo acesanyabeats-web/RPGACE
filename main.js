@@ -361,7 +361,19 @@ RULE 10 — TONE: Direct. Sharp. No fluff. Blunt about what isn't working. Alway
 
 function isInstaOracleQuery(text){
   const t = text.toLowerCase();
-  return /instagram|insta\b|reel|carousel|caption|hashtag|#[a-z]|ig\s|@acesanya|insta-oracle|instaoracle|followers|story\s|post strategy|content plan|instagram\.com/.test(t);
+  // 2026-07-31 FROZEN-file exception, logged: real bug Alex caught live —
+  // a pure architecture question ("how does dashDeck's popup system work")
+  // got tagged 📸 INSTA-ORACLE with no Instagram content anywhere in it.
+  // Root cause: the bare `#[a-z]` clause here was meant to catch Instagram
+  // hashtags, but Oracle's own reply quoted real CSS/DOM id references from
+  // the new oracle_module_anatomy grounding content (`#bookworm-widget`,
+  // `#cpl-widget`) — those match `#[a-z]` exactly as well as a real
+  // hashtag does, so isInstaOracleQuery(cleanReply) below false-positived
+  // on a reply that never mentioned Instagram at all. Removed — every
+  // remaining clause (literal "hashtag", "instagram", "@acesanya", etc.)
+  // already reliably detects real Instagram-shaped text without this
+  // over-broad, code-colliding signal.
+  return /instagram|insta\b|reel|carousel|caption|hashtag|ig\s|@acesanya|insta-oracle|instaoracle|followers|story\s|post strategy|content plan|instagram\.com/.test(t);
 }
 
 function renderInstaMsg(text){

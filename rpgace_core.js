@@ -2873,10 +2873,27 @@ RPGACE.register('oracleAppGrounding', {
   // landmine that governs every keyword list in this project (a bare 'how'
   // or 'module' would fire on almost every message and pay for a lookup
   // that returns nothing).
+  //
+  // Real gap found on the first real hand-test (July 31, Alex): "what's the
+  // gotcha with authGate" matched NONE of the original 8 "how does X work"
+  // -shaped phrases below, so the lookup never even fired for a module that
+  // IS in the table - _buildAnatomyBlock()'s own name/keyword scoring never
+  // got a chance to run. Fixed two ways: broader natural phrasings added,
+  // AND the curated module names themselves (lowercase + spaced-camelCase,
+  // matching _anatomyNameVariants' own logic) added directly as triggers -
+  // naming one of these modules at all is itself a strong enough signal to
+  // attempt the lookup, regardless of how the question is phrased around
+  // it. Keep this list in sync with oracle_module_anatomy's real rows.
   ANATOMY_KEYWORDS: [
     'how does', 'how do you', 'under the hood', 'which module handles',
     'why is it built', 'internals', 'how is it implemented',
-    'walk me through the code',
+    'walk me through the code', 'the gotcha', 'any gotchas', 'what\'s the catch',
+    'known issue with', 'quirks of', 'tell me about the', 'explain the',
+    'dashdeck', 'dash deck', 'phylumpath', 'phylum path', 'authgate', 'auth gate',
+    'oracleappgrounding', 'oracletreegrounding', 'bookworm', 'taxonomytree',
+    'taxonomy tree', 'leftnav', 'left nav', 'beatlog', 'beat log',
+    'contentproductionlive', 'videopipeline', 'video pipeline', 'voiceinput',
+    'voice input',
   ],
 
   // Hand-maintained condensed digest, not live-parsed from the oversight
