@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🎬 July 31 — Director picker (dropdown + taxonomy summary + inspiration box) + fixed Oracle reply truncation, via new <code>/free-for-all-debate</code> skill</div>
+    <div class="card-body">
+      Alex hand-tested the Visual Treatment build the same session it shipped and hit 2 real problems immediately: the director-reference field was a plain one-line textbox with no guidance, and his real "Kubrick" reply cut off mid-scene-breakdown. Asked for a new skill — <code>/free-for-all-debate</code> — individual competitors (not two teams) each picking 2 real problems to argue, converging points merged, Council of 5 turning the result into a plan.
+      <br><br>
+      <strong>Problem 1 fixed</strong>: <code>visualOracle._showDirectorPicker</code> — a real dropdown of the 50-director <code>f14_filmmaker_library</code>, a "ℹ️ View Style" button showing that director's real taxonomy_tree definition/palette before committing, and a free-text inspiration box layered on top rather than instead of a real pick. Wired into both real call sites (the ConID-card button and the global Visual Oracle panel's own command) — filling the placeholder before <code>fillGaps</code> runs means it sees zero remaining gaps and skips its own step for this field entirely.
+      <br><br>
+      <strong>Problem 2 root-caused and fixed</strong>: <code>main.js</code>'s <code>sendChat</code> was still capping <code>callOracle</code> at <code>maxTokens:1200</code> — tuned back when a real 504-timeout risk scaled with response length. Streaming (built July 28) already removed that risk, and max_tokens is a ceiling billed on tokens actually generated, not a floor — raised to 3000. FROZEN-file exception, logged, <code>node --check</code> clean.
+      <br><br>
+      <code>node --check</code> clean on both files. <strong>Untested</strong> — needs Alex's hands: pick a director from the new dropdown, view its style summary, and confirm a real Visual Treatment Doc no longer cuts off.
+    </div>
+</div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🎥 July 31 — Video/Content Pipeline UX pass: Beatstars label fix, ConID delete, direct Visual Treatment wiring, music_video status labels, script/EDL handoff view</div>
     <div class="card-body">
       Alex named 5 real gaps directly from a screenshot of ConID #8 (Calibri): the Beatstars button read as a status label not an action, no delete existed for a ConID, neither Content nor Video Pipeline linked to the existing Visual Treatment capability, Content Pipeline should read as an explicit 4-step music-video ladder (log beat/visual treatment/video generation/captions), and Video Pipeline should "take the script and keywords... to build the whole music video in sync to the beat."
