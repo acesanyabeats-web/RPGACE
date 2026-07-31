@@ -2859,6 +2859,26 @@ RPGACE.register('oracleAppGrounding', {
     'what is rpgace', 'suggest a fix', 'suggest an improvement',
   ],
 
+  // July 31 — second, SEPARATE gate for anatomy-shaped questions ("how does
+  // X actually work"), feeding _buildAnatomyBlock() below. Deliberately NOT
+  // merged into TRIGGER_KEYWORDS: that list gates the hand-written
+  // SELF_KNOWLEDGE status digest (what's built / what's missing), this one
+  // gates a live per-module mechanism lookup - two genuinely different
+  // questions that should be answerable independently. Checked phrase-by-
+  // phrase against the list above for substring collision before shipping:
+  // none found in either direction, so a message can legitimately match
+  // both and get both blocks, which is correct rather than duplicated.
+  //
+  // Compound phrases only, never bare words - the same word-boundary
+  // landmine that governs every keyword list in this project (a bare 'how'
+  // or 'module' would fire on almost every message and pay for a lookup
+  // that returns nothing).
+  ANATOMY_KEYWORDS: [
+    'how does', 'how do you', 'under the hood', 'which module handles',
+    'why is it built', 'internals', 'how is it implemented',
+    'walk me through the code',
+  ],
+
   // Hand-maintained condensed digest, not live-parsed from the oversight
   // docs - deliberately, to avoid a second live source of truth alongside
   // system_flow_map.md's actual built/not-built table (the July 20 audit
@@ -2893,16 +2913,34 @@ RPGACE.register('oracleAppGrounding', {
         if (!lastUser) return orig.apply(this, arguments);
         var lower = lastUser.toLowerCase();
         var matched = forced || self.TRIGGER_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
-        if (!matched) return orig.apply(this, arguments);
-        var block = self._buildBlock();
+        // July 31: the anatomy lookup is gated by its OWN keyword list and
+        // rides inside THIS SAME wrap rather than adding a 4th
+        // window.callOracle wrapper. Real reason (CLAUDE.md landmine): every
+        // existing wrapper has to forward all 4 arguments or a matched block
+        // silently downgrades a streaming call to blocking - a 4th wrap would
+        // be a 4th chance to get that wrong for zero benefit.
+        var anatomyHit = self.ANATOMY_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
+        if (!matched && !anatomyHit) return orig.apply(this, arguments);
+        var block = matched ? self._buildBlock() : '';
         // July 28: was orig.call(this, messages, system+block, maxTokens) -
         // a fixed 3-arg forward that silently dropped any 4th+ argument
         // (main.js's callOracle gained an optional onChunk callback the
         // same day for real streaming). A matched grounding block should
         // never silently turn a streaming call into a non-streaming one.
         var newArgs = Array.prototype.slice.call(arguments);
-        newArgs[1] = system + block;
-        return orig.apply(this, newArgs);
+        var callerThis = this;
+        if (!anatomyHit) {
+          newArgs[1] = system + block;
+          return orig.apply(callerThis, newArgs);
+        }
+        // Anatomy lookup is async (one live Supabase read). Fails open on
+        // ANY error or empty result: the call still goes through with
+        // whatever the synchronous path already produced, never rejected,
+        // never delayed past a single failed fetch.
+        return self._buildAnatomyBlock(lastUser).catch(function() { return ''; }).then(function(anatomyBlock) {
+          newArgs[1] = system + block + (anatomyBlock || '');
+          return orig.apply(callerThis, newArgs);
+        });
       };
     }
     patch();
@@ -2989,6 +3027,107 @@ RPGACE.register('oracleAppGrounding', {
       this._liveFactsLine() +
       (cardLines ? '\n\nRPGACE\'s live dashboard cards right now:\n' + cardLines : '') +
       '\n\nIf Alex asks what to build/fix next, give ONE concrete, specific suggestion grounded in the real gaps above - not a generic list.';
+  },
+
+  // ── ANATOMY LOOKUP (July 31) ────────────────────────────────────────
+  // Oracle runs as a stateless Vercel function - it can never read
+  // rpgace_core.js, graphify-out/, or the six oversight docs. SELF_KNOWLEDGE
+  // above answers "what's built"; this answers "how does that specific thing
+  // actually work", from the `oracle_module_anatomy` table (curated by Claude
+  // Code sessions only - nothing in the app writes to it, and it is
+  // deliberately NOT in api/data-write.js's ALLOWED_TABLES).
+  //
+  // Shape is lifted from oracleTreeGrounding._buildGroundingBlock rather than
+  // hand-rolled (rule 8a): cheap free local scan -> live Supabase SELECT
+  // scoped to what matched -> score -> top-N -> inject -> fail open. The
+  // index fetch (module_name/layer/keywords only, no prose) is TTL-cached so
+  // repeated anatomy questions in one session cost one network read, not one
+  // per message; the full-prose rows are fetched ONLY for the 2-3 that
+  // actually scored.
+  _anatomyIndex: null,
+  _anatomyIndexAt: 0,
+  _ANATOMY_TTL_MS: 10 * 60 * 1000,
+
+  // 'dashDeck' -> ['dashdeck', 'dash deck'] so a human typing "how does the
+  // dash deck work" still matches a camelCase module name. Compound-phrase
+  // discipline still holds: these are whole names, never bare adjectives.
+  _anatomyNameVariants: function(name) {
+    var lower = String(name || '').toLowerCase();
+    var spaced = String(name || '').replace(/([a-z0-9])([A-Z])/g, '$1 $2').toLowerCase();
+    return spaced !== lower ? [lower, spaced] : [lower];
+  },
+
+  _loadAnatomyIndex: function() {
+    var self = this;
+    if (self._anatomyIndex && (Date.now() - self._anatomyIndexAt < self._ANATOMY_TTL_MS)) {
+      return Promise.resolve(self._anatomyIndex);
+    }
+    if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve([]);
+    return RPGACE.sb.select('oracle_module_anatomy', 'select=module_name,layer,keywords&limit=200')
+      .then(function(rows) {
+        rows = Array.isArray(rows) ? rows : [];
+        self._anatomyIndex = rows;
+        self._anatomyIndexAt = Date.now();
+        return rows;
+      })
+      .catch(function() { return []; });
+  },
+
+  _buildAnatomyBlock: function(userText) {
+    var self = this;
+    var lower = String(userText || '').toLowerCase();
+    if (!lower) return Promise.resolve('');
+    return self._loadAnatomyIndex().then(function(index) {
+      if (!index.length) return '';
+      // Free local scoring - no tokens, no second network call. A module
+      // named outright is a much stronger signal than a keyword brush, so
+      // it scores higher and wins the top-3 slots.
+      var scored = index.map(function(row) {
+        var score = 0;
+        self._anatomyNameVariants(row.module_name).forEach(function(v) {
+          if (v && lower.indexOf(v) !== -1) score += 5;
+        });
+        (row.keywords || []).forEach(function(k) {
+          if (k && lower.indexOf(String(k).toLowerCase()) !== -1) score += 2;
+        });
+        return { name: row.module_name, score: score };
+      }).filter(function(s) { return s.score > 0; })
+        .sort(function(a, b) { return b.score - a.score; })
+        .slice(0, 3);
+      // Nothing matched: emit NOTHING. An anatomy-shaped question about
+      // something not in the table (a general music question phrased "how
+      // does X work") must cost zero extra tokens, same as a missed
+      // TRIGGER_KEYWORDS gate.
+      if (!scored.length) return '';
+      // Module names are plain identifiers by construction; strip anything
+      // else rather than percent-encoding, because PostgREST parses in.()'s
+      // own commas/parens from the raw query string - encoding them breaks
+      // the filter rather than escaping it.
+      var names = scored.map(function(s) { return String(s.name).replace(/[^A-Za-z0-9_.-]/g, ''); })
+        .filter(Boolean).join(',');
+      if (!names) return '';
+      return RPGACE.sb.select('oracle_module_anatomy',
+        'module_name=in.(' + names + ')&select=module_name,layer,purpose,anatomy,connects_to,gotchas,source_ref'
+      ).then(function(rows) {
+        rows = Array.isArray(rows) ? rows : [];
+        if (!rows.length) return '';
+        // Re-apply the local ranking - PostgREST returns rows in table
+        // order, not in the order they were asked for.
+        var order = {};
+        scored.forEach(function(s, i) { order[s.name] = i; });
+        rows.sort(function(a, b) { return (order[a.module_name] || 0) - (order[b.module_name] || 0); });
+        var lines = rows.map(function(r) {
+          var bits = ['- ' + r.module_name + ' (' + r.layer + ') — ' + r.purpose];
+          if (r.anatomy) bits.push('  HOW IT ACTUALLY WORKS: ' + r.anatomy);
+          if (r.connects_to) bits.push('  CONNECTS TO: ' + r.connects_to);
+          if (r.gotchas) bits.push('  GOTCHA: ' + r.gotchas);
+          if (r.source_ref) bits.push('  SOURCE: ' + r.source_ref);
+          return bits.join('\n');
+        }).join('\n\n');
+        return '\n\n---\nRPGACE INTERNAL ANATOMY (real curated notes on the specific parts of RPGACE\'s own code this message is asking about — written by the Claude Code sessions that actually built them, not guessed):\n' + lines + '\n' +
+          'Answer from these first and cite the module name and its source file:line so Alex can go look at the real code. The GOTCHA lines are real, already-hit landmines — mention the relevant one rather than giving generic advice. If the question is about a part of RPGACE that is NOT described above, say plainly that you do not have its internals on hand rather than inventing a mechanism.';
+      }).catch(function() { return ''; });
+    }).catch(function() { return ''; });
   },
 
 });

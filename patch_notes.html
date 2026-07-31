@@ -73,8 +73,21 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🧠 July 31 — Oracle architecture/anatomy self-awareness table BUILT (Alex confirmed the debate's verdict)</div>
+    <div class="card-body">
+      Alex reviewed the debate below and confirmed: build the table, scope the first batch to the riskiest/most complex modules rather than everything asked-about-so-far. Built via Omnitrix (Opus building, Sonnet reviewing) — the Opus build pass hit a real session-usage-limit mid-task after finishing the migration, RLS, the <code>rpgace_core.js</code> extension, and 7 of 13 rows; Sonnet verified the real state directly (table exists, RLS correct, <code>node --check</code> clean, 7/13 rows) rather than trusting the agent's own incomplete self-report, then wrote the remaining 6 rows from the same real-code-reading standard.
+      <br><br>
+      <strong>New table <code>oracle_module_anatomy</code></strong> (9 columns: <code>module_name</code>, <code>layer</code>, <code>purpose</code>, <code>anatomy</code>, <code>connects_to</code>, <code>gotchas</code>, <code>keywords[]</code>, <code>source_ref</code>, <code>updated_at</code>) — <code>anon_read_only</code>+<code>authenticated_all</code> RLS, matching the other 19 restricted tables, and deliberately excluded from <code>api/data-write.js</code>'s <code>ALLOWED_TABLES</code> since nothing in the app writes to it client-side. 13 rows, each with a real <code>source_ref</code> file:line and a <code>gotchas</code> column mined from CLAUDE.md's own already-written landmines rather than invented: <code>dashDeck</code>, <code>phylumPath</code>, <code>authGate</code>, <code>oracleAppGrounding</code>, <code>oracleTreeGrounding</code>, <code>bookworm</code>, <code>config</code>, <code>taxonomyTree</code>, <code>leftNav</code>, <code>beatLog</code>, <code>contentProductionLive</code>, <code>videoPipeline</code>, <code>voiceInput</code>.
+      <br><br>
+      <strong><code>oracleAppGrounding</code> gained a second keyword gate, not a fourth <code>window.callOracle</code> wrapper.</strong> <code>ANATOMY_KEYWORDS</code> ("how does", "under the hood", "which module handles", etc. — checked against <code>TRIGGER_KEYWORDS</code> for collision, none found) rides inside the SAME existing wrap as the status-digest gate, avoiding the real landmine that all three existing wrappers must forward all 4 <code>callOracle</code> arguments or streaming silently downgrades. <code>_buildAnatomyBlock()</code> reuses <code>oracleTreeGrounding</code>'s own scan→SELECT→score→top-N retrieval shape (rule 8a) rather than hand-rolling a new one: a free local match against a TTL-cached module-name/keyword index, then a live Supabase <code>SELECT</code> scoped to only the top 2-3 matches, fails open on any error. <code>node --check</code> clean.
+      <br><br>
+      <strong>Untested — needs Alex to actually ask Oracle a real "how does X work" question</strong> and confirm the grounding block actually surfaces and reads correctly. Full debate + design record: <code>oracle_architecture_anatomy_db_debate_2026-07-31.txt</code>.
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
-    <div class="card-title">🧭 July 31 — /loggingregen skill built + a real "self-awareness database" design debated, reshaped, and correctly NOT built yet</div>
+    <div class="card-title">🧭 July 31 — /loggingregen skill built + the "self-awareness database" design debated and reshaped (see the card above for the build that followed)</div>
     <div class="card-body">
       <strong>New skill: <code>.claude/skills/loggingregen/SKILL.md</code>.</strong> Formalizes the same-day manual.html pass (free-for-all-debate + dedup audit + role-fulfillment check) into a repeatable per-doc procedure — two hard checks run against each of the six oversight docs plus Chronicles in turn: does this doc's content match CLAUDE.md's own stated role for it, and does any fact appear in more than one place (rule 8, applied to docs and Supabase rows, not just code).
       <br><br>
