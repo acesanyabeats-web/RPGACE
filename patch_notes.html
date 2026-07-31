@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧭 July 31 — /loggingregen skill built + a real "self-awareness database" design debated, reshaped, and correctly NOT built yet</div>
+    <div class="card-body">
+      <strong>New skill: <code>.claude/skills/loggingregen/SKILL.md</code>.</strong> Formalizes the same-day manual.html pass (free-for-all-debate + dedup audit + role-fulfillment check) into a repeatable per-doc procedure — two hard checks run against each of the six oversight docs plus Chronicles in turn: does this doc's content match CLAUDE.md's own stated role for it, and does any fact appear in more than one place (rule 8, applied to docs and Supabase rows, not just code).
+      <br><br>
+      <strong>Running it found and fixed 3 real, small issues the same pass:</strong> this file's own "Still Open" section header still said "Curated July 14" despite a real re-curation happening earlier today (three long-resolved bugs struck through and marked resolved-in-place, five sessions late) — corrected. <code>system_updates</code> (Chronicles) had the INSTA-ORACLE latch fix above logged as <strong>two separate rows 15 minutes apart</strong> — merged into one, commit hash preserved, duplicate deleted. And CLAUDE.md's own landmine bullet warning that <code>oracleAppGrounding.SELF_KNOWLEDGE</code> "is stale right now (still says 10 of 21 phyla)" had itself gone stale — the live string already said 12, fixed July 30; only the warning about it hadn't been updated to match.
+      <br><br>
+      <strong>The bigger ask — a database Oracle and Claude Code could both use for architecture/anatomy self-knowledge — got a real GODMODE evidence pass, a 4-competitor <code>/free-for-all-debate</code>, and an independent Council of 5 review dispatched to Opus 5</strong> (full record: <code>oracle_architecture_anatomy_db_debate_2026-07-31.txt</code>). Real evidence killed the "both can use it" framing: Oracle is a stateless serverless function whose only self-knowledge is text injected into its prompt (<code>oracleAppGrounding</code>), while Claude Code sessions already have direct filesystem access plus <code>graphify-out/</code>'s live code graph — a Supabase copy would be strictly worse for Claude Code and a genuine rule-8 second-source-of-truth risk. The surviving, honest verdict: a small, retrieval-scored, Oracle-only table (reusing <code>oracleTreeGrounding</code>'s existing scan→SELECT→score→top-N pattern rather than a 4th prompt wrapper) covering ~12-15 modules Alex actually asks about — real value (Oracle currently has zero grounding on how any specific module/function works), but genuinely Tier 3 (a new migration). <strong>Not built this pass</strong> — routed to Alex as a real decision (table yes/no, RLS posture, first-batch scope, standing refresh cost), per Council of 5's own rule that a killed-or-reshaped premise gets said plainly rather than quietly built as originally framed.
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">📸 July 31 — Real token-cost bug fixed: INSTA-ORACLE mode was a one-way latch, never reset</div>
     <div class="card-body">
@@ -1479,7 +1490,7 @@
 <div class="section" id="open">
   <div class="section-eyebrow">Carried Forward</div>
   <div class="section-title">Still Open</div>
-  <div class="section-sub">Curated July 14 — moved ~15 stale/superseded/duplicate cards out to <a href="patch_notes_archive.html">the archive</a>. What remains here is genuinely current: live tech debt, live infra, and the smoke-test backlog for everything shipped July 12-14 but not yet hand-tested.</div>
+  <div class="section-sub">Curated July 14 — moved ~15 stale/superseded/duplicate cards out to <a href="patch_notes_archive.html">the archive</a>. Re-curated July 31 (oversight-doc audit): 3 long-resolved bugs (504 timeout, XSS/innerHTML, streaming dead-code cleanup) were still sitting here unresolved five sessions after their real fixes shipped — struck through and marked resolved in place, kept as a record rather than deleted or silently removed. What remains here is genuinely current: live tech debt, live infra, and the smoke-test backlog for shipped-but-unverified work going back to July 12.</div>
 
 <div class="card red">
     <div class="card-title">Claude Code fallback lane — real, deployed, but genuinely UNVERIFIED behavior <span class="badge open">JULY 24 — NEEDS A REAL CREDIT-EXHAUSTION EVENT TO PROVE</span></div>

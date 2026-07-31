@@ -304,6 +304,7 @@ flowchart TD
         F12[/"Schedule Oracle Phase 2:<br/>carousel, two-tier session memory, auto-routing"/]
         PHYLA11[/"The REMAINING phyla through the<br/>7-step Development Framework:<br/>12, 13, 15-21. Phyla 11 + 14 cleared it<br/>July 30 and are live in ENABLED_PHYLA"/]
         EPUB[/"EPUB/other-format upload<br/>same _createBookFromExtraction path<br/>as PDF upload"/]
+        ANATDB[/"Oracle-only architecture/anatomy table<br/>(July 31 debate) - retrieval-scored,<br/>~12-15 modules, reuses oracleTreeGrounding's<br/>scan-&gt;SELECT-&gt;score-&gt;top-N shape.<br/>Tier 3 - awaiting Alex's yes/no"/]
     end
 
     CARDS -.->|renders| BWPIPE
