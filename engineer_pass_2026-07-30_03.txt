@@ -171,8 +171,10 @@ G4 (Claim-to-diff reconciliation): PASS - both directions checked
 G5 (Goal reconciliation): all 4 goals DONE, plus one real extra fix
   (the migration-default backfill correction) found and resolved
   during execution, not left for later.
-G6 (Deployment reality): pending push - will confirm via
-  get_deployment once pushed.
+G6 (Deployment reality): PASS - confirmed via list_deployments.
+  Commit 5838b91e7adace6c4ea877c7bb122c818385556e, target: "production",
+  state: "READY" (deployment dpl_G77QVCsh2dTK2mxsmYdA93Kvm8mz). Pushed to
+  both main and claude/rpgace-master-steps-uobp98.
 G7 (Cache-bust): PASS - index.html bumped 20260730d -> 20260730e in the
   same commit as the rpgace_core.js change.
 

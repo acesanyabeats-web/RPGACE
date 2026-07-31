@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🎬 July 30 — Video Pipeline "2 workflows" conflation resolved: <code>content_type</code> discriminator, Production Panel branching, "Raw Footage" mislabel fixed</div>
+    <div class="card-body">
+      Direct follow-through on the prior card's own real fork (shared <code>content_productions</code>/<code>video_jobs</code> tables serving two genuinely different content shapes — tutorial/OBS-recording vs. beat-driven music video). Alex asked to resolve it via <code>/Engineer</code> + <code>/restructure</code> + <code>/scope</code> + GODMODE, Council of 5 verdict, <code>/debate</code> if needed.
+      <br><br>
+      <strong>Real evidence resolved the fork cleanly</strong>: <code>content_productions</code> is genuinely shared across 3 real creation paths (Beat Log, Content Repurpose, Idea Bank's Activate ConID) with substantial identical mechanics (ConID numbering, status ladder, Oracle bar, session-end journal save) — splitting into two tables would duplicate all of that for zero benefit, a direct rule-8 violation. Council of 5 verdict: one shared table + a new <code>content_type</code> discriminator column, not a split.
+      <br><br>
+      <strong>Shipped</strong>: a real migration adds <code>content_productions.content_type</code> (default <code>'tutorial'</code>); <code>beatLog._submit</code> now sets it to <code>'music_video'</code> explicitly. <code>contentProductionLive._openProductionPanel</code> now fetches the real content type and renders one of two phase sets — tutorial's copy is byte-identical to before (zero regression), music_video gets new correct copy pointing at the real reference-match/Phylum-11/Director-Match work already in the Oracle conversation, plus a "🎥 Open Video Pipeline" button. <code>videoPipeline.STAGES</code>' mislabeled <code>'raw_footage'</code> step (Alex's own direct catch — a beat is never camera footage) renamed to <code>'in_production'</code> across all 4 real code sites.
+      <br><br>
+      <strong>Real self-corrections caught mid-pass, not smoothed over</strong>: the initial assumption that <code>video_jobs</code> is exclusively beat-driven was wrong — <code>videoPipeline._showNewJobForm</code> is a second, real manual creation path (the neutral rename still fits both). The migration's own <code>DEFAULT 'tutorial'</code> backfilled 3 real pre-existing beat-driven rows (con_id 6/7/8) incorrectly — caught via a direct post-migration query and corrected with a general rule (any row with a linked <code>video_jobs</code> row is music_video).
+      <br><br>
+      <code>node --check</code> clean, <code>get_advisors</code> shows zero new lints, G6 confirmed via <code>list_deployments</code> — commit <code>5838b91</code> <code>READY</code> on production. Full record: <code>engineer_pass_2026-07-30_03.txt</code>. <strong>Untested</strong> — needs Alex's hands: open the Production Panel for a music_video ConID (e.g. con_id 8) and a fresh tutorial ConID, and check the Video Pipeline card now reads "In Production" instead of "Raw Footage."
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">🗺️ July 30 — Minotaur Map gap fixed (River XI: Content Production Live) + a real workflow-model-separation finding, planned not built (token-constrained close)</div>
     <div class="card-body">
