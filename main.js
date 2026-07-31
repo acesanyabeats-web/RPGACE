@@ -373,7 +373,26 @@ function isInstaOracleQuery(text){
   // remaining clause (literal "hashtag", "instagram", "@acesanya", etc.)
   // already reliably detects real Instagram-shaped text without this
   // over-broad, code-colliding signal.
-  return /instagram|insta\b|reel|carousel|caption|hashtag|ig\s|@acesanya|insta-oracle|instaoracle|followers|story\s|post strategy|content plan|instagram\.com/.test(t);
+  //
+  // SAME SESSION, SECOND ROUND: a follow-up test (asking about authGate)
+  // still got tagged 📸 despite containing zero Instagram content. Verified
+  // in Node against the real reply text before touching anything (rule 4):
+  // `story\s` matched literally inside "git hi-STORY -is permanent" (the
+  // word "history" followed by a space), which is exactly why this
+  // specific reply mis-tagged. Checking the sibling clauses the same way
+  // surfaced a MUCH bigger, likely long-standing problem: `ig\s` matches
+  // "b-IG- improvement" — the word "big" followed by a space — and bare
+  // `reel` matches inside "f-REEL-ance"/"freelancer". Both are common
+  // enough English words that this was very likely inflating real token
+  // cost on ordinary messages well before today, independent of the
+  // one-way-latch bug fixed earlier this session. Fixed by requiring a
+  // real leading word boundary (`\b`) on all three, so each still matches
+  // its intended standalone usage ("ig story", "post a reel", "check the
+  // history" no longer trips it) without matching as a bare substring
+  // inside an unrelated word. Verified against both directions in Node
+  // before shipping — see oracle_architecture_anatomy_db_debate_2026-07-31.txt
+  // for the anatomy-grounding context this was found investigating.
+  return /instagram|insta\b|\breel|carousel|caption|hashtag|\big\s|@acesanya|insta-oracle|instaoracle|followers|\bstory\s|post strategy|content plan|instagram\.com/.test(t);
 }
 
 function renderInstaMsg(text){

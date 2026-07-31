@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🐛 July 31 — Round 2: a much bigger, likely long-standing token-cost bug found in the SAME regex, root-caused with real Node evidence before touching anything</div>
+    <div class="card-body">
+      Alex re-tested after the first two fixes: the dashDeck answer no longer mis-tagged, but the authGate answer still showed 📸 INSTA-ORACLE with zero Instagram content. Per rule 4 ("one failed fix = stop, get real evidence, don't patch blind a second time"), the actual reply text was tested against the live regex in Node rather than guessed at again.
+      <br><br>
+      <strong>Confirmed: `story\s` matched literally inside "git <u>history </u>is permanent"</strong> — "history" ends in "...story" followed by a space, and the clause has no leading word-boundary check. Checking the sibling clauses the same way surfaced something bigger: <strong>`ig\s` matches "b<u>ig </u>improvement"</strong> — the ordinary word "big" followed by a space — and bare <strong>`reel` matches inside "f<u>reel</u>ance"/"freelancer"</strong>. All three verified directly in Node against real test strings before shipping anything (both "should NOT match" and "should still match" cases checked in both directions).
+      <br><br>
+      <strong>Real significance: this is very likely a bigger, OLDER contributor to today's earlier "credits dropping fast" complaint than the one-way-latch bug already fixed</strong> — "big"/"gig"/"dig" and "history"/"reel"-containing words are common enough in ordinary conversation that this regex has likely been mis-triggering the ~2000-char <code>INSTA_ORACLE_SYS</code> injection on a meaningful fraction of totally unrelated messages for a long time, independent of and probably predating the latch bug.
+      <br><br>
+      Fixed by adding a real leading word-boundary (<code>\b</code>) to all three clauses — each still correctly matches its intended standalone usage ("ig story", "post a reel", real Instagram content) while no longer matching as a bare substring inside an unrelated word. <strong>Also fixed a real process gap</strong>: the earlier same-session <code>#[a-z]</code> fix never bumped <code>main.js</code>'s cache-bust query string, so it was genuinely uncertain whether Alex's browser was even running the fixed code — bumped <code>?v=20260731a</code> → <code>?v=20260731b</code> this round. FROZEN-file exception, logged. <code>node --check</code> clean.
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🧪 July 31 — First real hand-test of the anatomy grounding: 2 real bugs found, both fixed same session</div>
     <div class="card-body">
