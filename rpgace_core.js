@@ -1199,6 +1199,17 @@ RPGACE.register('visualOracle', {
         // the model improvises consistent answers each time.
         if (i === 0) {
           self._withFilmmakerLibrary(function(block) { proceed(cmd[1] + '\n\n' + block); });
+        } else if (i === 1) {
+          // 2026-07-31 — same real gap as Director Match's own i===0 case,
+          // for Visual Treatment Doc's "DIRECTOR REFERENCE" placeholder:
+          // show the real dropdown+taxonomy-summary+inspiration picker
+          // here too, so fillGaps sees this one pre-filled and only ever
+          // asks about genuinely un-fillable fields (beat title/genre/
+          // mood/key/bpm) when this command is run from the global panel
+          // rather than a specific ConID (which has no beat data to pull).
+          self._showDirectorPicker(function(directorText) {
+            proceed(cmd[1].replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText));
+          });
         } else {
           proceed(cmd[1]);
         }
@@ -1225,6 +1236,95 @@ RPGACE.register('visualOracle', {
         callback(RPGACE.utils.phylumContext(14) + ' FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
       })
       .catch(function() { callback(''); });
+  },
+
+  // 2026-07-31 — real UX gap Alex hit directly: the Visual Treatment Doc's
+  // "DIRECTOR REFERENCE" placeholder used to fall through to fillGaps'
+  // generic one-line textbox, no different from typing a genre or a BPM.
+  // Real fix, not a generic fillGaps change (that would risk the other 40+
+  // commands sharing it) - a dedicated picker: a real dropdown of the same
+  // 50-director f14_filmmaker_library (reuses this module's own existing
+  // fetch, never re-queried), a "View Style" button showing that director's
+  // real taxonomy_tree data (definition/colour_palette) before committing,
+  // and a free-text box for extra inspiration/keywords layered on top of
+  // the chosen director rather than instead of one. Calling code fills the
+  // placeholder with the result BEFORE calling fillGaps, so fillGaps sees
+  // zero remaining gaps and skips its own step entirely for this field.
+  _showDirectorPicker: function(callback) {
+    var self = this;
+    RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
+      .catch(function() { return []; })
+      .then(function(rows) {
+        rows = rows || [];
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', scroll: true, width: '440px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
+          title: 'Choose a Director Reference', noDefaultClose: true,
+        });
+        var overlay = pop.overlay, box = pop.box;
+
+        var selLbl = document.createElement('div');
+        selLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+        selLbl.textContent = 'Director (' + RPGACE.utils.phylumLabel(14) + ' library)';
+        box.appendChild(selLbl);
+
+        var selRow = document.createElement('div');
+        selRow.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
+        var sel = document.createElement('select');
+        sel.style.cssText = 'flex:1;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+        var noneOpt = document.createElement('option');
+        noneOpt.value = ''; noneOpt.textContent = '— none / skip —';
+        sel.appendChild(noneOpt);
+        rows.forEach(function(r) {
+          var opt = document.createElement('option');
+          opt.value = r.concept; opt.textContent = r.concept;
+          sel.appendChild(opt);
+        });
+        var viewBtn = document.createElement('button');
+        viewBtn.textContent = 'ℹ️ View Style';
+        viewBtn.style.cssText = 'padding:8px 12px;background:none;border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;white-space:nowrap;';
+        viewBtn.onclick = function() {
+          var d = rows.filter(function(r) { return r.concept === sel.value; })[0];
+          if (!d) { RPGACE.utils.toast('Pick a director first', '#E2A83D', 2000); return; }
+          var dp = RPGACE.modules.dashDeck._popup({
+            dim: '0.94', scroll: true, width: '400px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+            title: d.concept,
+          });
+          var body = document.createElement('div');
+          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
+          body.innerHTML = '<div style="margin-bottom:10px;">' + (d.definition || '').replace(/</g, '&lt;') + '</div>' +
+            '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Palette: ' + (d.colour_palette || 'n/a').replace(/</g, '&lt;') + '</div>';
+          dp.box.appendChild(body);
+        };
+        selRow.appendChild(sel); selRow.appendChild(viewBtn);
+        box.appendChild(selRow);
+
+        var insLbl = document.createElement('div');
+        insLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+        insLbl.textContent = 'Extra inspiration / keywords (optional)';
+        box.appendChild(insLbl);
+        var insBox = document.createElement('textarea');
+        insBox.placeholder = 'e.g. more handheld than usual, add neon signage...';
+        insBox.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:60px;margin-bottom:16px;';
+        box.appendChild(insBox);
+
+        var btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:8px;';
+        var contBtn = document.createElement('button');
+        contBtn.textContent = 'Continue';
+        contBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        contBtn.onclick = function() {
+          var directorPart = sel.value || 'NONE';
+          var insp = insBox.value.trim();
+          overlay.remove();
+          callback(insp ? (directorPart + ' — additional inspiration: ' + insp) : directorPart);
+        };
+        var cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        cancelBtn.onclick = function() { overlay.remove(); };
+        btnRow.appendChild(contBtn); btnRow.appendChild(cancelBtn);
+        box.appendChild(btnRow);
+      });
   },
 
   // ── Content Pipeline overseer build (2026-07-28, Alex-confirmed forks:
@@ -13570,50 +13670,56 @@ RPGACE.register('contentProductionLive', {
     var self = this;
     var vo = RPGACE.modules.visualOracle;
     if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
-    RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
 
-    RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-      .catch(function(e) { console.warn('[contentProductionLive] visual treatment beat lookup:', e.message); return []; })
-      .then(function(jobs) {
-        var vjId = jobs && jobs[0] ? jobs[0].id : null;
-        var beat = null;
-        if (jobs && jobs[0] && jobs[0].script) {
-          try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
-        }
-        // CMDS[1] template has bracketed placeholders — fill whichever real
-        // fields the linked beat actually has, leave the rest for Alex to
-        // fill in Oracle chat rather than guessing at his intent.
-        var template = vo.CMDS[1][1];
-        var prompt = template
-          .replace('[TYPE BEAT TITLE]', row.title || '[TYPE BEAT TITLE]')
-          .replace('[TYPE GENRE]', (beat && beat.genre) || '[TYPE GENRE]')
-          .replace('[TYPE MOOD]', (beat && beat.mood) || '[TYPE MOOD]')
-          .replace('[TYPE KEY AND SCALE]', (beat && beat.key) ? (beat.key + ' ' + (beat.scale || '')) : '[TYPE KEY AND SCALE]')
-          .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
-          .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', '[TYPE A FILMMAKER NAME OR VISUAL STYLE]');
+    // 2026-07-31 — real UX fix Alex asked for directly: show the real
+    // director dropdown + taxonomy summary + inspiration box FIRST, before
+    // anything else fires. Filling this placeholder here (rather than
+    // leaving it for fillGaps) means fillGaps sees zero remaining gaps
+    // once every other beat field is also filled below, so it skips its
+    // own generic "Step X of Y" textbox entirely for this whole command.
+    vo._showDirectorPicker(function(directorText) {
+      RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
 
-        if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-          RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-        }
-        if (typeof showPage === 'function') showPage('advisor');
-        setTimeout(function() {
-          self._activeConID = row.con_id;
-          self._activeId = row.id;
-          self._injectOracleBar();
-          RPGACE.utils.fillGaps(prompt, function(filled) {
-            var input = document.querySelector('#chat-input');
-            if (!input) return;
-            input.value = filled;
-            input.dispatchEvent(new Event('input', {bubbles:true}));
-            if (vo._captureNextResponse) {
-              vo._captureNextResponse(function(text) {
-                vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
-              });
-            }
-            if (typeof sendChat === 'function') sendChat();
-          });
-        }, 500);
-      });
+      RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+        .catch(function(e) { console.warn('[contentProductionLive] visual treatment beat lookup:', e.message); return []; })
+        .then(function(jobs) {
+          var vjId = jobs && jobs[0] ? jobs[0].id : null;
+          var beat = null;
+          if (jobs && jobs[0] && jobs[0].script) {
+            try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
+          }
+          var template = vo.CMDS[1][1];
+          var prompt = template
+            .replace('[TYPE BEAT TITLE]', row.title || '[TYPE BEAT TITLE]')
+            .replace('[TYPE GENRE]', (beat && beat.genre) || '[TYPE GENRE]')
+            .replace('[TYPE MOOD]', (beat && beat.mood) || '[TYPE MOOD]')
+            .replace('[TYPE KEY AND SCALE]', (beat && beat.key) ? (beat.key + ' ' + (beat.scale || '')) : '[TYPE KEY AND SCALE]')
+            .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
+            .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText);
+
+          if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+            RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+          }
+          if (typeof showPage === 'function') showPage('advisor');
+          setTimeout(function() {
+            self._activeConID = row.con_id;
+            self._activeId = row.id;
+            self._injectOracleBar();
+            RPGACE.utils.fillGaps(prompt, function(filled) {
+              var input = document.querySelector('#chat-input');
+              if (!input) return;
+              input.value = filled;
+              input.dispatchEvent(new Event('input', {bubbles:true}));
+              if (vo._captureNextResponse) {
+                vo._captureNextResponse(function(text) {
+                  vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
+                });
+              }
+              if (typeof sendChat === 'function') sendChat();
+            });
+          }, 500);
+        });
+    });
   },
 
   // ── Dashboard widget — ConID tracker ─────────────────────────

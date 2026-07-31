@@ -652,7 +652,15 @@ One sharp memorable line at the end of every reply.`;
       // buttons, chat history) still runs on the final resolved `reply`
       // exactly as before, since this callback only touches the temporary
       // preview element, never the outcome.
-      const data=await callOracle(STATE.chatHistory.slice(-8), activeSystem, 1200, function(fullSoFar){
+      // 2026-07-31 FROZEN-file exception, logged: 1200 -> 3000. Real bug
+      // Alex hit directly — a structured multi-section reply (Visual
+      // Treatment Doc) cut off mid-sentence. 1200 was tuned back when the
+      // 504 timeout was a live risk that scaled with response length;
+      // streaming (built July 28) already removed that risk, and max_tokens
+      // is a ceiling billed on tokens actually generated, not a floor — a
+      // short reply still costs the same as before, this only lets a
+      // genuinely long one finish instead of being cut off.
+      const data=await callOracle(STATE.chatHistory.slice(-8), activeSystem, 3000, function(fullSoFar){
         const preview=document.getElementById('oracle-stream-preview');
         if(preview){
           preview.style.color='var(--text)';
