@@ -73,6 +73,39 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">📸 July 31 — Real token-cost bug fixed: INSTA-ORACLE mode was a one-way latch, never reset</div>
+    <div class="card-body">
+      Alex reported credits dropping fast and every Oracle message — including an unrelated mob-movie Visual Treatment Doc — getting tagged 📸 INSTA-ORACLE. Root cause, confirmed by reading <code>main.js</code> directly rather than guessed: <code>window._instaOracleActive</code> was set to <code>true</code> in 5 places but <strong>never reset anywhere in the file</strong>. Once any single message tripped Instagram-strategist mode, the full ~2,000-character <code>INSTA_ORACLE_SYS</code> block silently kept appending to every later message's system prompt for the rest of the page session, regardless of topic — a real, ongoing token-cost bug, not a one-off.
+      <br><br>
+      Fixed by re-evaluating fresh from each message's own content (<code>isInstaOracleQuery(msg)</code>) instead of a persistent flag, so it turns off naturally the moment the topic changes; the explicit one-shot triggers (<code>sendInsightToCmd3</code> etc.) are unaffected. FROZEN-file exception, logged. <code>node --check</code> clean, cache-bust bumped. Commit <code>8c56d79</code>, confirmed <code>READY</code> on production.
+      <br><br>
+      <strong>Same session, a real finding about Oracle's own self-diagnosis, not RPGACE's code:</strong> asked directly what was driving the credit drop, Oracle's own chat reply presented several claims with confident, specific-sounding detail (severity ratings, function names) that didn't hold up against the actual source — conversation history was claimed unbounded when <code>main.js</code> already slices to <code>.slice(-8)</code>; several DOM/module items conflated browser-rendering or Supabase-read cost with Anthropic token cost, a category error. One claim did hold up and is recorded separately below (prompt caching). Worth remembering generally: Oracle's own "audits" of the app are a hypothesis to verify against real code, same standing rule as everywhere else in this file — not evidence on their own, however confident the formatting looks.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📋 July 31 — Prompt caching: flagged as a real future win, not built this pass</div>
+    <div class="card-body">
+      The one claim from the same Oracle self-diagnosis above that checked out against real code: <code>cache_control</code> (Anthropic prompt caching) is genuinely not implemented anywhere in <code>api/oracle.js</code>. Real and legitimate — caching the stable parts of a system prompt (taxonomy lists, <code>SELF_KNOWLEDGE</code>, the INSTA/Prod/YouTube/Visual Oracle personas) would cut real token cost on repeat calls sharing the same prefix.
+      <br><br>
+      <strong>Deliberately not built this pass.</strong> Getting the cache-boundary placement right (which prefix segments are actually stable across calls, minimum cacheable length, TTL vs. call frequency) needs its own careful pass, not something to bolt onto a fix session for an unrelated bug. Flagged here as an open, low-risk, real future item — not a silent gap.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🐂 July 31 — Minotaur Sidekick proposal: full free-for-all-debate + Council of 5 pass, killed by real scrutiny (the protocol working, not failing)</div>
+    <div class="card-body">
+      Ran the full requested chain — free-for-all-debate + GODMODE evidence on <code>manual.html</code>/the doc system, a two-phase design, then an independent Council of 5 pass on Opus — before writing a line of new UI code. Full verbatim record: <code>manual_html_minotaur_sidekick_debate_2026-07-31.txt</code>.
+      <br><br>
+      <strong>Real, cheap fixes shipped from the debate's first pass</strong> (staleness found by treating <code>manual.html</code> with the same dedup/audit discipline rule 8 and <code>/Regeneration</code> already apply to the taxonomy tree): the masthead's hardcoded "JULY 8 2026" corrected to an honest "edited to JULY 31 2026" with a note explaining the doc deliberately carries no live version tag; the F17 roadmap row's stale "Raw" stage corrected to "In Production" (missed in the July 30 rename across the other 3 code sites); the Standing Development Rules section — a stale 6-rule subset silently implying completeness — gained an explicit "CLAUDE.md is authoritative" pointer plus its two most load-bearing missing rules (dedup discipline, six-doc oversight scope).
+      <br><br>
+      <strong>The design itself — an in-app "Minotaur Guide" sidekick surfacing minotaur_map.html's river copy, optionally Oracle-grounded for open questions — was killed by the Council of 5 pass, and correctly so.</strong> The reframing finding: <code>dashDeck._openOversight()</code> (rpgace_core.js:5632) already lists the Minotaur Map as a live, one-click dashboard card popup — the design's own premise ("nobody sees it unless they remember to open it separately") was checked against real code for the first time during the review and found false. A legacy widget at line 15701 had already tried a second doc-list once and was deliberately neutered in 2026-07-20 specifically to prevent exactly this duplication, with a comment saying so. Building the proposed module would have added new surface area (a real content migration of 682 hand-authored HTML lines into a JS data model, or a sixth hand-maintained Oracle-grounding digest for Phase B) to fix a problem that barely exists, on the third oversight-focused pass of the same day, while real open forks (voice input, the swipe freeze, hand-testing) sat untouched.
+      <br><br>
+      <strong>Honest deliverable for this pass: the three cheap manual.html fixes above and this debate record — not a new UI module.</strong> Per CLAUDE.md's own Council of 5 rule: "If the scrutiny kills or reshapes the idea, say so plainly — that is the protocol working, not failing." One small, real, Alex's-call item survives: if the Minotaur Map opening in a new tab instead of in-panel actually bothers him, the minimal fix is swapping that one <code>_openOversight</code> row for an <code>&lt;iframe&gt;</code> inside the existing popup (~10 lines, zero content migration) — not built, pending his answer.
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">📋 July 31 — Oversight-doc audit and reshape: 5 docs carried claims contradicted by live evidence, including one that mattered</div>
     <div class="card-body">

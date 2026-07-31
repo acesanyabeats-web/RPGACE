@@ -1,0 +1,189 @@
+MANUAL.HTML + MINOTAUR SIDEKICK — FREE-FOR-ALL DEBATE RECORD
+2026-07-31, same session as the INSTA-ORACLE token-latch fix + prompt-caching flag.
+Alex's request (verbatim intent): run /Engineer, /free-for-all-debate, /scope, /Godmode over
+manual.html, finding issues via the rule-8 dedup discipline and /Regeneration's audit method
+— expanded in scope from taxonomy_tree to manual.html and RPGACE-Claude-Code as a system —
+then design a concise, Minotaur-narrated in-app "sidekick and tutorial expert" using
+system_flow_map.md + interconnection_map.md as its data, Council-of-5 it with /Engineer as
+advisor (running /scope, /commit-archaeologist, /5thDimension without Fable, on Opus 5), then
+have /Engineer execute the surviving design via /Omnitrix + the Oracle API for cohesion.
+
+=== PHASE 1: GODMODE evidence (real reads, not assumed) ===
+Read in full: manual.html (429 lines), system_flow_map.md (486 lines), interconnection_map.md
+(267 lines), minotaur_map.html (682 lines), plus the current patch_notes.html top cards.
+
+=== PHASE 2: FREE-FOR-ALL — individual findings, not a two-team debate ===
+
+FINDING 1 (staleness/internal contradiction): manual.html's own masthead says "FULL MANUAL ·
+JULY 8 2026" and its governing-rule section-sub says "current as of July 8, 2026" — but its
+body has clearly been hand-edited past that date (the RLS section was corrected July 31, F16
+was renamed July 31, the director picker/ConID delete are July 31 additions). The doc doesn't
+know its own age. A reader has no signal which parts are July 8 and which are July 31 without
+cross-checking every section against patch_notes.html.
+
+FINDING 2 (real staleness bug, checkable): manual.html's roadmap table (F0-F18) still
+describes F17 as "Beat Logged → Raw → Edited → Rendered → Exported." The second stage was
+renamed raw_footage -> in_production on July 30 across all 4 code sites (Alex's own catch —
+a beat-driven music video has no raw footage to log) — logged in patch_notes.html,
+system_flow_map.md, and interconnection_map.md, but manual.html's roadmap table was never
+touched. This is exactly the "doc says X, code says Y" class of bug rule 4/8 exist to catch,
+just found in a fourth document rather than in code.
+
+FINDING 3 (dedup violation, rule 8 applied to docs not code): manual.html's "Every Button,
+Cataloged" and "Supabase Tables" sections are a THIRD hand-maintained prose copy of facts
+system_flow_map.md §0 and interconnection_map.md's per-domain sections already carry (which
+table does what, which module owns which button). Three docs, one underlying fact set, three
+places to independently drift — already proven to actually drift (manual.html's RLS section
+carried a materially wrong "everything is USING(true)" claim for a full week after the real
+July 24 flip, until today's audit). Same failure class named directly in CLAUDE.md rule 8's
+composio.js/_context.js example, just for documentation instead of code.
+
+FINDING 4 (real content gap, not just staleness): manual.html's "Standing Development Rules"
+section (#dev-rules) lists 6 rules "confirmed July 8." CLAUDE.md now carries 9 numbered
+non-negotiable process rules plus the entire Judgment Funnel / Omnitrix / Council of 5 /
+GODMODE / Aintergration apparatus. A reader who only ever opens manual.html gets a materially
+INCOMPLETE picture of the real process discipline now in force — no dedup rule, no per-defect
+cap, no tier system, nothing about the four named protocols at all.
+
+FINDING 5 (orphaned duplicate diagram system): manual.html's own "Diagram Chain" (Level 1-4:
+Atomic/Module/Domain/System, plain ASCII) is a THIRD parallel diagram system alongside
+system_flow_map.md's 11 numbered Mermaid sections and minotaur_map.html's 11 rivers. The other
+two cross-reference each other explicitly (every river in minotaur_map.html carries a
+"<-> direct translation of system_flow_map.md §N" line, by that doc's own stated rule: "if
+system_flow_map.md's Mermaid changes, minotaur_map.html must be re-translated in the same
+session"). manual.html's Level 1-4 diagrams carry NO such cross-reference to either — it is
+the one orphaned copy of the three, with its own vocabulary (Atomic/Module/Domain/System)
+that doesn't map onto either of the other two's numbering.
+
+FINDING 6 (the real opportunity, not just a problem): minotaur_map.html already solved the
+"concise, analogical explanation of the system" problem in writing — the river copy is
+genuinely good, plain-language, and already kept honest via its own explicit re-translation
+rule. But it is a SEPARATE STATIC FILE outside the live app. Nobody using RPGACE day to day
+ever sees it unless they remember to open it directly. The real gap isn't "we need new
+Minotaur content" — the content already exists and is already well-written. The gap is
+that it has no delivery mechanism inside the app itself.
+
+FINDING 7 (the structural fix precedent already exists in this codebase): taxonomy_map.html
+solved this exact "hand-maintained snapshot silently goes stale" problem for the taxonomy tree
+specifically by becoming a live document that queries taxonomy_tree from Supabase on every
+load, rather than a hand-authored snapshot of tree state. manual.html, system_flow_map.md,
+interconnection_map.md, and minotaur_map.html are all STILL hand-maintained snapshots. Every
+one of today's oversight-doc-audit findings (the RLS section, the module count, the fusion-
+link numbers) was a snapshot going stale between audits — a recurring failure mode, not a
+one-off. The Regeneration-style fix (verify structurally, prevent recurrence, don't just clean
+up the current mess) argues for at least the LIVE-FACTS layer of any new sidekick reusing
+oracleAppGrounding._liveFactsLine()'s existing live-query pattern rather than becoming a FIFTH
+hand-maintained snapshot that will itself go stale by the next session.
+
+FINDING 8 (the honest why-NOT-to-build case, per Council of 5 discipline): most of findings
+1-5 are real but genuinely low-stakes — Alex is the only reader of these docs, none of it is
+user-facing, and this is the THIRD consecutive oversight-focused pass today (after the
+July 31 oversight-doc audit already logged above, which itself just fixed manual.html's worst
+staleness problem, the RLS section). CLAUDE.md's own governing rule ("does this result in a
+beat made or video posted within 48 hours") applies the infrastructure exemption generously,
+but there is a real point of diminishing returns in spending further session time polishing
+meta-documentation about documentation, especially building a whole new UI module for it,
+versus the actually-open Tier-1/Tier-2 backlog items already sitting in CLAUDE.md's "Open
+forks that need Alex" (voice input verification, phylum XP ledger, the swipe-gesture freeze,
+hand-testing everything shipped since July 28). A new Minotaur Sidekick UI module is real new
+surface area (new code, new maintenance burden, one more thing that can silently go stale)
+being proposed to fix a problem whose cheapest real fix (finding 2's roadmap-table correction)
+is a five-minute edit, not a new feature.
+
+=== PHASE 3: RECONCILIATION ===
+Findings 1, 2, 4 are cheap, mechanical corrections — fixed directly in manual.html in the same
+session as this record (see manual.html's own diff). Findings 3 and 5 are real dedup violations
+but are NOT proposed for a full architectural fix this pass (would mean either deleting real
+content or building live-query infrastructure for 3 more docs — out of scope for a single
+session, and Finding 8's counter-case applies most strongly here). Findings 6 and 7 together
+are the actual brief for the Minotaur Sidekick design that follows this record — scoped
+specifically to avoid becoming a sixth hand-maintained snapshot, per Finding 7's own argument.
+Finding 8 stands as the honest counter-case carried forward into the Council of 5 pass, not
+overridden by fiat.
+
+Cheap fixes applied directly in manual.html, same session, before design work continued:
+masthead date corrected from a fixed "JULY 8 2026" to an honest "edited to JULY 31 2026" with
+a note explaining this doc deliberately carries no live version tag; F17's roadmap row
+corrected "Raw" -> "In Production" (the July 30 rename); Standing Development Rules section
+gained an explicit "CLAUDE.md is authoritative" pointer plus the two most load-bearing missing
+rules (dedup discipline, six-doc oversight scope) instead of silently implying it's complete.
+
+=== PHASE 4: MINOTAUR SIDEKICK DESIGN (the brief Findings 6+7 argue for) ===
+
+Governing constraint from Finding 7: do NOT become a sixth hand-maintained snapshot. Two
+phases, deliberately separable so Council of 5 can clear one without the other.
+
+PHASE A — "surface what already exists" (cheap, no new content, no Oracle calls):
+A new rpgace_core.js module (RPGACE.register('minotaurGuide', {...}), same pattern as every
+other module) adding one dashDeck card ("🐂 Minotaur Guide") that opens via the existing
+dashDeck._popup() helper (dedup discipline — the 26 existing overlay sites already prove this
+is the one correct pattern, no new popup scaffolding). Inside: the SAME river copy already
+written and kept honest in minotaur_map.html, rendered from a shared data structure instead of
+copy-pasted a second time — extract minotaur_map.html's river content into one JS object both
+the standalone page and the new in-app popup read from, so there is exactly one copy, not two
+(this is the actual rule-8 fix Finding 5 calls for, applied narrowly to just this one piece
+rather than all three duplicate diagram systems at once). A simple picker jumps between the
+Bird's-Eye View and any of the 11 rivers. Zero Oracle cost. Zero new data pipeline. Converts
+"the manual" from a link Alex has to remember to open separately into something reachable
+without leaving the app.
+
+PHASE B — "answer open-ended questions in Minotaur voice" (real new scope, needs Oracle):
+A chat-style box in the same popup for questions the static river cards don't cover. Would
+reuse oracleAppGrounding's existing pattern exactly (rule 3: never hand-roll a second fetch
+to /api/oracle) — grounds the system prompt with real system_flow_map.md/interconnection_map.md
+excerpts plus the Minotaur vocabulary (river/tributary/estuary/fork/reservoir), and reuses
+_liveFactsLine()'s already-built live-query plumbing for any live number it needs (module
+count, pending-review count) rather than building a second live-fact fetcher. This is the part
+that costs real tokens on every use and is real new maintenance surface — flagged as the part
+most worth Council of 5 scrutiny on whether it's actually wanted versus Phase A alone being
+sufficient (Finding 8's counter-case applies most directly here).
+
+Explicitly NOT proposed: a full architectural fix unifying all three diagram systems (manual's
+Level 1-4, system_flow_map.md's Mermaid, minotaur_map.html's rivers) into one live-queried
+source — that is a real, much larger Tier-2/3 undertaking Finding 8's counter-case argues
+against attempting in this same session, and is named here only as a possible future item if
+Council of 5 or a later session decides the smaller Phase A/B win isn't enough.
+
+=== PHASE 5: COUNCIL OF 5 (Opus 5, acting as /Engineer's advisor — /scope + commit-archaeologist
++ /5thDimension reasoning, no Fable) — VERDICT ===
+
+REFRAMING FINDING THAT KILLS PHASE 4'S PREMISE, independently re-verified against real code
+(rpgace_core.js:5219-5223, 5632-5643): dashDeck already has a live "📚 Oversight" dashboard card
+-> _openOversight() -> a real _popup() listing all 7 living docs, including a 🐂 Minotaur Map
+row linking to /minotaur_map.html. Finding 6's claim ("nobody using RPGACE day to day ever sees
+it unless they remember to open it directly") is FALSE — it is already one click from the
+dashboard. The real gap is only "opens in a new tab, not in-panel" — a materially smaller
+problem than Phase 4 was scoped against, and Phase 4 never grepped for the existing
+implementation before proposing a new one (exactly the failure rule 3 exists to prevent).
+
+PHASE A VERDICT: DO NOT BUILD. The capability substantially already exists. The proposed
+"one shared JS data structure both pages read from" has no clean home under the two-script
+rule (minotaur_map.html has zero script tags; either loading rpgace_core.js into a static doc
+page or runtime-injecting a new minotaur_data.js are both real, unadmitted migration work —
+682 lines of hand-authored HTML/CSS river cards rewritten into a JS object + renderer, real
+regression risk to a document that currently works). Would also create a second active
+doc-list surface alongside _openOversight (a legacy widget at rpgace_core.js:15701 already
+tried this once and was deliberately neutered in 2026-07-20 specifically to prevent a second
+list — its own comment says "add it to dashDeck._openOversight's list, not here").
+MINIMAL alternative, if Alex confirms the new-tab hop actually bothers him (ask first, don't
+assume): change _openOversight's Minotaur row to open /minotaur_map.html in an <iframe> inside
+the existing _popup() instead of a new tab (~10 lines, zero content migration, zero new
+staleness surface).
+
+PHASE B VERDICT: DO NOT BUILD. Real per-use token cost; would be a sixth hand-maintained
+grounding digest (the exact failure it claims to avoid — oracleAppGrounding.SELF_KNOWLEDGE was
+itself found stale this same day, fixed in commit a076c20). Oracle already answers app
+capability questions via oracleAppGrounding; a Minotaur-voiced wrapper on those answers is
+styling, not new capability.
+
+WHY-NOT CASE, upheld rather than softened: 8 of the last 10 commits today are oversight/doc
+work (this is the third oversight-focused pass of the same day). Nothing shipped since July 28
+has been hand-tested. Real open forks in CLAUDE.md (voice input verification, phylum XP
+ledger, the swipe-gesture freeze, the whole hand-testing backlog) are starved for session time
+this would spend instead. Governing rule answer: no beat, no video, within 48 hours.
+
+RECOMMENDED DELIVERABLE FOR THIS PASS: manual.html's already-applied cheap fixes (Findings 1,
+2, 4) plus this debate record — not a new UI module. This is the Judgment Funnel / Council of
+5 protocol working as designed, not failing: real scrutiny reshaped a proposed build down to
+nothing, per CLAUDE.md's own explicit rule that a killed idea is the protocol succeeding.
+
