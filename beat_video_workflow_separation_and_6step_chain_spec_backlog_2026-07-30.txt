@@ -1,0 +1,100 @@
+Beat→Music-Video workflow: real model-separation finding + Alex's own
+6-step chain — plan for the NEXT /Engineer pass, NOT built this session
+(token-constrained close-out)
+2026-07-30
+
+=====================================================================
+REAL EVIDENCE (direct code read, sufficient without a deep git dig)
+=====================================================================
+contentProductionLive's "Production Panel" (Phase 1 Pre-Production /
+Phase 2 Production / Phase 3 Post-Production) is real, working, and its
+own copy text proves what it was actually built for: "your script
+outline, HOOK, and KEY TEACHING POINTS," "FILM your video section by
+section," raw footage path, platform captions. This is a talking-head/
+tutorial-recording model (OBS screen-capture of an FL Studio session),
+confirmed directly from the UI's own words, not inferred.
+
+Alex's real complaint ("Beat Logged → Mark Raw Footage... it shouldn't
+be raw footage") is the same root cause surfacing a second way: the
+beat→music-video pipeline (Beat Log/Video Pipeline/Director Phylum)
+reuses this exact same STAGES model (beat_logged → raw_footage →
+edited → rendered → exported) even though a beat-driven video may never
+involve camera footage at all - the real next step after logging a
+beat is reference-matching → mood/palette → director match → script,
+not "go film something."
+
+REAL FORK, not decided here: video_jobs today is ONE shared table/
+STAGES model serving what are actually TWO different content-
+production shapes. Two honest options for the next pass to resolve
+with Alex directly:
+  (a) keep one table, add a real `workflow_type` discriminator
+      ('tutorial' | 'music_video') so each renders its own correct
+      stage labels/actions - smaller change, matches this project's
+      general economy-of-schema preference.
+  (b) split into two genuinely separate tracks - cleaner conceptually,
+      more real schema/migration work.
+
+=====================================================================
+ALEX'S OWN REAL 6-STEP CHAIN for the beat→music-video workflow
+(his verbatim structure, this session's real sequencing notes added)
+=====================================================================
+1. Log beat for all data. DONE (existing beatLog._submit flow).
+2. Most closely linked songs / similar instrumentals shown - used as
+   the source material for music-video DESCRIPTIONS across platforms.
+   PARTIALLY DONE: findMatches()/Last.fm artist-matching already
+   exists and already feeds BeatStars listing generation (confirmed
+   working this session - see the real INSTA-ORACLE BeatStars output
+   Alex pasted). REAL GAP: this output does not yet explicitly feed
+   platform-specific music-video description generation (YouTube/IG/
+   TikTok captions) the way it feeds the BeatStars listing - a real,
+   contained addition for the next pass, not a rebuild.
+3. Identify palette + mood for the beat (Phylum 11). DONE this session
+   - P11's real content (6 leaves, Emotional Colour Descriptors etc.)
+   built and enabled.
+4. Identify directors from Phylum 14 best-fit for step 3's decision.
+   PARTIALLY DONE: Director Match exists and is grounded in the real
+   50-director f14_filmmaker_library, but does NOT currently gate
+   explicitly on a prior Phylum 11 mood/palette decision - it infers
+   mood from the beat's own form fields directly. Real refinement for
+   the next pass: thread step 3's actual P11 result into the Director
+   Match prompt as an explicit input, tightening the sequencing Alex
+   is asking for rather than leaving it implicit.
+5. Create the script collaboratively - broad abstract prompt →
+   refined into general scene ideas matching the chosen director's
+   style + Phylum 11/14 keywords. NOT YET BUILT AS DESCRIBED: Visual
+   Treatment Doc exists but is a single one-shot generation, not the
+   real two-stage abstract→scene collaborative flow Alex is asking
+   for here. A real, contained new piece for the next pass.
+6. The script adopts keywords from every prior round to build a story
+   fully in sync with the beat's own energy/element switch-ups, shown
+   via real timestamps. THIS IS SLICE C (already confirmed, not yet
+   built): extend the librosa hook to real onset/beat-grid detection,
+   then anchor the EDL's scene cuts to real timestamps instead of
+   LLM-estimated durations - Alex's step 6 is the concrete acceptance
+   criterion for Slice C, not a new idea layered on top of it.
+
+=====================================================================
+REAL NEXT /ENGINEER GOAL LIST (not run this session - token-constrained
+close-out, per Alex's own explicit call)
+=====================================================================
+1. Resolve the workflow-type fork above with Alex directly (a real
+   decision-only ask, cheap, should happen before any further video_jobs
+   schema work).
+2. Wire reference-track/artist-match output into platform-specific
+   music-video description generation (step 2's real gap).
+3. Thread Phylum 11's actual mood/palette result into the Director
+   Match prompt as an explicit input (step 4's real refinement).
+4. Build the two-stage collaborative script flow: abstract prompt →
+   director/keyword-matched scene breakdown (step 5, genuinely new).
+5. Slice C: real beat-grid audio sync (step 6 - already confirmed by
+   Alex July 30, unchanged scope, just reframed here as the literal
+   acceptance test for his own step 6).
+
+=====================================================================
+STATUS
+=====================================================================
+Nothing built this pass beyond the Minotaur Map fix (River XI added -
+Content Production Live was completely absent from the map, a real gap
+Alex caught, now fixed and cross-linked to this same real workflow-
+separation finding). This file is the confirmed-content plan for
+whenever the next /Engineer pass runs.
