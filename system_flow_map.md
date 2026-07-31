@@ -1,5 +1,5 @@
 # RPGACE — System Flow Map
-**The 5th Oversight doc.** Created July 17, 2026 from a full audit of all oversight files + the live codebase (`main.js`, `rpgace_core.js`, `api/*`, `index.html`). **Last re-verified July 24, 2026** (hygiene pass, item 10 of the `/Routine`-produced daily Top 10) — the body has been edited well past the creation date on multiple sessions since; this line now gets bumped whenever a real re-verification pass runs, not just on creation. Diagrams are Mermaid — render on GitHub, in VS Code, or any Mermaid viewer. Every diagram follows the same convention: **rectangles = processing**, **diamonds = yes/no decisions**, **cylinders = data stores**, **stadiums = entry/exit points**, **dashed boxes = PLANNED, not built**.
+**The 5th Oversight doc.** Created July 17, 2026 from a full audit of all oversight files + the live codebase (`main.js`, `rpgace_core.js`, `api/*`, `index.html`). **Last re-verified July 31, 2026** (oversight-doc audit + reshape — module inventory re-grepped, table list rebuilt from `pg_policies`, §8/§10 reconciled against real code and live Supabase; record in `oversight_doc_audit_and_reshape_2026-07-31.txt`). This line gets bumped whenever a real re-verification pass runs, not just on creation. Diagrams are Mermaid — render on GitHub, in VS Code, or any Mermaid viewer. Every diagram follows the same convention: **rectangles = processing**, **diamonds = yes/no decisions**, **cylinders = data stores**, **stadiums = entry/exit points**, **dashed boxes = PLANNED, not built**.
 
 Companion to CLAUDE.md (the operational guide). Update BOTH when architecture changes.
 
@@ -7,9 +7,9 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 
 ## 0. Verified Component Inventory
 
-**Module inventory rebuilt for real, July 28** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **51 real registered modules** (52 earlier today, before `restoreSendChat` was deleted the same session as a real dead-code cleanup — see the Oracle 504 fix below), confirmed by name this time, not just by count — the July 24 pass had corrected the number but left the domain table below at its stale July 17 content (only ~30 actually listed). All 51 are now in the table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
+**Module inventory re-grepped July 31** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **52 real registered modules**, listed by name below, not just counted. The count moved 51 → 52 because `voiceInput` was added July 29 and never entered this table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
 
-### Domains and modules (from `rpgace_core.js` markers, rebuilt by grep July 28)
+### Domains and modules (from `rpgace_core.js` markers, re-grepped July 31)
 
 | Domain | Modules |
 |---|---|
@@ -19,14 +19,22 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 | CONTENT | beatLog, refCorpus, contentProductionLive, videoPipeline, conidPot, videoSummary |
 | JOURNAL | morningBrief, journalQoL |
 | DASHBOARD / NAV | dashDeck, leftNav, pathRouter, chroniclesLog, careerStatCard, docsLinks, pwaInstall |
-| SYSTEM | suppressQuestPopup, authGate, perfWatch |
+| SYSTEM | suppressQuestPopup, authGate, perfWatch, voiceInput |
 | SCHEDULE | shiftSync, myFeature, scheduleFixes |
 
 ### Serverless API (`api/`)
 `oracle.js` (Claude proxy, accepts optional `model`), `scout.js` (URL detect + Jina fetch, 8000-char cap), `analyst.js`, `bookworm-fetch.js` (uncapped fetch OR provided fullText → Oracle chapter detection), `composio.js`, `executor.js`, `orchestrate.js`, `noter.js`, `search.js`, `lastfm.js`, `auth.js` (**NEW July 23** — server-side password check + shared-secret issuance, see §10's API-auth entry), `_context.js` (shared: `callClaude`, `MODEL='claude-sonnet-4-6'`, `MODEL_EXTRACTOR='claude-fable-5'`, `fetchURL`, `setCORS`, **`requireAuth` NEW July 23**, Composio `ACCOUNTS`/`TOOL_ALIASES` — single source of truth as of July 23's deduplication fix).
 
 ### Supabase tables
-`taxonomy_tree` (recursive, parent_id/depth/path/phylum_number/node_type/explainer/deep_content/sources), `taxonomy_proposals` (staging + review, `proposed_steps.engine` tags: legacy / `phylum_path` / `concept_fusion`), `taxonomy_links` (symmetric fusion links + `link_article`), `taxonomy_nodes` (older flat store, still read by some features), `encyclopedia` (`taxonomy_node_id` links), `content_productions` (ConID + licence/price), `video_jobs` (F17), `rpgace_shifts`, `rpgace_agendas`, `bookworm_books`, `bookworm_chapters` (+keywords, suggested_phylum, analysis_complete), `bibliography`, `intel_bibliography` (Content Intelligence's OWN separate bibliography — real, unrelated table sharing a near-identical name with `bibliography`, found by the July 23 audit), `chronicles_finance`, `system_updates`, `oracle_dev_suggestions`, `taxonomy_decision_log` (all July 22), `book_knowledge`/`jargon_encyclopedia` (Postgres views, July 22).
+**Rebuilt July 31 from a direct `pg_policies` query — 28 real tables, grouped by RLS posture, because the posture is load-bearing.**
+
+*Restricted (`anon_read_only` SELECT + `authenticated_all` — all writes must go through `/api/data-write`'s service-role proxy), 18 tables:* `taxonomy_tree` (recursive, parent_id/depth/path/phylum_number/node_type/explainer/deep_content/sources), `taxonomy_proposals` (staging + review, `proposed_steps.engine` tags: legacy / `phylum_path` / `concept_fusion`), `taxonomy_links` (symmetric fusion links + `link_article`), `taxonomy_nodes` (older flat store — still the home of the `f14_filmmaker_library`/`beatlog_scale_colours`/`f16_licence_terms` reference libraries), `taxonomy_decision_log`, `encyclopedia` (`taxonomy_node_id` links), `encyclopedia_insights`, `content_productions` (ConID + licence/price + `content_type` discriminator + `creative_docs` jsonb), `video_jobs` (F17 — `content_production_id` FK, `style_profile_id`, `edl`), `style_profiles` (Director Match output), `reference_tracks` (beat-matching corpus, +scale/genre/url), `conid_pot`, `bookworm_books`, `bookworm_chapters` (+keywords, suggested_phylum, analysis_complete), `bibliography`, `chronicles_finance`, `oracle_dev_suggestions`, `rpgace_agendas`.
+
+*Deliberately still `anon_all` because a real external writer needs the plain anon key — never sweep these into an RLS batch without giving that writer another path, 10 tables:* `journal` (Morning Brief Routine), `oracle_fallback_queue` (Fallback Drain Routine), `openmontage_jobs` (the separate OpenMontage Claude Code session), `beat_audio_jobs` (local librosa runner), `intel_jobs`/`intel_reports`/`intel_watchlist`/`intel_bibliography` (`local_server.py`, port 7842 — `intel_bibliography` is a real, unrelated table sharing a near-identical name with `bibliography`), `rpgace_shifts` (external Python browser-use script), `system_updates` (written by Claude Code sessions via MCP).
+
+*Views:* `book_knowledge`/`jargon_encyclopedia` (both `security_invoker`).
+
+*Storage:* `beat-audio` bucket (Beat Log's librosa uploads).
 
 ### The two real hubs (confirmed in interconnection_map.md)
 Everything converges on **Oracle** (`callOracle`/`sendChat`/`api/oracle.js`) and the **Taxonomy Tree** (`taxonomy_tree` + its propose/review cycle) — except SCHEDULE, which runs fully independent.
@@ -294,7 +302,7 @@ flowchart TD
         CARDS[/"Live-study card list UI<br/>ConID-card pattern: per-chapter cards,<br/>edit title, status, context action.<br/>REPLACES the modal-per-step flow,<br/>calls the SAME _openBook/_renderInsightReview logic"/]
         DEBATE[/"/debate skill run on a real topic:<br/>Claude's general knowledge vs.<br/>a specific gathered tree insight —<br/>comparison only, never auto-writes"/]
         F12[/"Schedule Oracle Phase 2:<br/>carousel, two-tier session memory, auto-routing"/]
-        PHYLA11[/"Phyla 11-21 through the<br/>7-step Development Framework"/]
+        PHYLA11[/"The REMAINING phyla through the<br/>7-step Development Framework:<br/>12, 13, 15-21. Phyla 11 + 14 cleared it<br/>July 30 and are live in ENABLED_PHYLA"/]
         EPUB[/"EPUB/other-format upload<br/>same _createBookFromExtraction path<br/>as PDF upload"/]
     end
 
@@ -344,13 +352,14 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 
 ---
 
-## 10. Built vs NOT built — the truth table (July 17, post-audit)
+## 10. Built vs NOT built — the truth table (created July 17; live numbers re-queried July 31)
 
 ### Built AND verified working (hand-tested or confirmed live)
-- 10-phylum Phylum Path: switcher, drill-down, placement, confirm popups, auto-detect badge (1-click as of today)
-- Placement logic hand-tested across 8 of 10 enabled phyla (data-layer)
+- Phylum Path across **12 live phyla** (`ENABLED_PHYLA:[1..10, 11, 14]`): switcher, drill-down, placement, confirm popups, auto-detect badge. Phyla 11 + 14 were added July 30 as 14 real category leaves (6 + 8), not ~110 per-term leaves — an existing jargon-bucket precedent in the tree changed the build mid-execution.
+- Placement logic hand-tested across 8 of the original 10 enabled phyla (data-layer); 11 and 14 are **not** hand-tested.
 - Concept Fusion full propose→accept cycle (data-layer)
-- Fusion links: creation, review, display (**21 confirmed / 47 pending, 68 total** — corrected July 20 by direct SQL from the stale "6 confirmed" figure)
+- Fusion links: creation, review, display. **Live count re-queried July 31: 66 total, 66 confirmed, 0 pending** (the long-quoted "21 confirmed / 47 pending / 68 total" is a stale July 20 figure — Alex has since worked the pending queue to zero). Standing caveat unchanged: the near-100% lifetime confirm rate is a known-contaminated statistic (a rapid clear-through, not real review) — never cite it as a quality signal.
+- Live taxonomy state, same query: **544 `taxonomy_tree` rows; 52 `taxonomy_proposals` still pending** (down from the 60-pending July 24 triage figure and the "77-item backlog" that included fusion links).
 - Review queue with all 3 proposal types + link cards
 - Bookworm: streaming analysis (verified <1 min to first insight), delete button, checkpoint/resume, placement-path sanitizer
 - **Bookworm full insight-review loop, July 18: `_analyzeChapter` → Council-of-5 scored placement → Approve/Reject/Edit checkpoint → live `taxonomy_tree` write, confirmed end-to-end on a real chapter** (1 genuine reject, 2 genuine approvals) — manual/TOC-paste book only, see caveat below
@@ -385,11 +394,31 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 - **Oracle self-awareness partially made live (July 23)** — real module count + a live taxonomy-backlog number now append to `oracleAppGrounding`'s digest, fail-open if unavailable. Playwright-verified; never viewed in a real Oracle conversation by Alex.
 - **Every boot-time UI injector moved onto a shared `RPGACE.registerBootTask` gate (July 24)** — Alex: "no loads should happen after login, only before." ~24 modules that used to `setTimeout` their dashboard/page injection after login now register with the boot loader instead, which waits on all of them via `Promise.all` before hiding. `page:show`/`research:tab-active`-gated re-injection (the deliberate lazy-load pattern for not-yet-visited pages) is untouched — a different, legitimate mechanism.
 - **Approach B's authenticated write-proxy — independently confirmed end-to-end for real (July 25), not just gated.** 8 real user writes (via the dashboard Review Queue, not a test script) landed 90 minutes after the RLS flip below, on tables where `anon` is SELECT-only — proving both UPDATE (`taxonomy_proposals`/`taxonomy_links`) and INSERT (`taxonomy_tree`/`taxonomy_decision_log`, via one real accept chain with a matching `node_id`) genuinely work through `/api/data-write`. DELETE through the proxy, and the 6 deliberately-excluded tables, remain unconfirmed — named honestly, not folded into a blanket "it works."
+- **July 26-31 block — everything below is code-verified / `node --check` clean and live on `main`, and NONE of it has been clicked through by Alex in a real browser.** Added July 31; this whole stretch was missing from the truth table.
+  - **Oracle 504 streaming fix (July 28)** — `api/oracle.js` proxies a real Anthropic SSE stream on `stream:true`; `callOracle()` gained an optional `onChunk`; `sendChat()` renders progressively through the XSS-safe `renderMarkdown()`. The prior client-only stub and its `restoreSendChat` neutraliser are deleted. `maxDuration` 300, confirmed `READY` on production. Alex has used it for real once and reported a readability bug, fixed same session.
+  - **XSS fix in `main.js`'s `renderMarkdown()` (July 28)** — raw response text went into `innerHTML` unescaped; `_escChatHtml()` now escapes before the markdown regex chain. FROZEN-file exception logged.
+  - **160 undersized-text fixes in `rpgace_core.js` + 21 in `index.html`/`style.css` (July 28)** — the static `/impeccable` scanner only reads `index.html`/`style.css`, so the dynamically-generated UI's own 9-10px text was invisible to it. 3 monospace exemptions excluded. 16 wide-tracking + 15 tiny-text + 4 one-off findings remain a real, smaller backlog.
+  - **`videoPipeline` + `morningBrief` migrated into real dashDeck cards (July 28)** — both had been injecting loose onto `#page-dashboard`; both now inject into `#dd-stash-holder`. Morning Brief had been two competing implementations (a hollow static prefill card vs. the real live-data module).
+  - **Content Pipeline overseer (July 28)** — 3 migrations: `video_jobs.content_production_id` FK, `content_productions.creative_docs` jsonb, and the new `style_profiles` table. `beatLog._submit()` creates the linked `content_productions` row. `visualOracle._captureNextResponse()` (one-shot, on the existing `oracle:response-scanned` hook, zero extra API calls) parses two structured trailers — `DIRECTOR_CHOSEN:` → a real `style_profiles` row, `EDL_JSON:` → a real `video_jobs.edl`. Both previously-dead columns are live design intent again. **`style_profiles` still has 0 rows** — the Director Match save path has never fired successfully in production.
+  - **Beat-matching root cause fixed (July 28)** — `reference_tracks.scale`/`genre` existed and were scored but were null on all 32 corpus rows, so every beat tied in the same bucket. Genre added to the Beat Log form, Scale/Genre/`url` to the corpus add-track UI, genre added to `findMatches()`. **Still 0/32 populated** — the backfill popup exists but has not been run.
+  - **Local librosa audio analysis (July 29)** — `beat_audio_jobs` table + `beat-audio` Storage bucket + an async queue hook in `beatLog._tryRealAudioAnalysis`. BPM + Major/Minor key only. Needs Alex to add the Python snippet and keep `local_server.py` running.
+  - **Voice input (July 29, real accessibility need — one-handed)** — `voiceInput` module: Oracle-chat 🎤 plus a persistent global floating 🎤 targeting the last-focused field. A transcript-duplication bug survived one fix and got a second, more fundamental rewrite (position-tracked idempotency, fresh recognition object per restart). **Genuinely UNVERIFIED** — per the per-defect cap, the next step is real console evidence, not a third guess.
+  - **Popup scaffolding fully consolidated (July 30)** — all 26 real hand-rolled overlay sites in `rpgace_core.js` route through `dashDeck._popup()`. One documented exception (`_showEncPopup`, a genuinely different pinned-header/footer layout).
+  - **Phylum 11 + 14 built out (July 30)** — plus a real keyword-collision bug Alex diagnosed himself (bare `"cinematic"` in P14 colliding with P11's mood vocabulary) and a Neural Frames → OpenMontage swap across all 6 occurrences.
+  - **Video Pipeline Slice A (July 30)** — return-to-Beat-Log nav both directions, `video_jobs` auto-advance stage triggers, a `reference_tracks` backfill popup, and real toasts at every failure point in the Director Match save chain.
+  - **`content_type` discriminator (July 30)** — one shared `content_productions` table serving both tutorial and music-video workflows, Production Panel copy branching on it, and `videoPipeline.STAGES`' mislabeled `'raw_footage'` renamed `'in_production'` across all 4 code sites. **Verified live July 31: 4 `tutorial` + 3 `music_video` rows, backfilled correctly.**
+  - **Video/Content Pipeline UX pass (July 31)** — "Generate Beatstars Listing" rename, FK-aware ConID delete, a "🎬 Generate Visual Treatment" button on ConID cards, music_video 4-step display labels over the shared `status` column, and a "Script + Treatment" handoff section on Video Pipeline job details.
+  - **Director picker + reply-truncation fix (July 31)** — `visualOracle._showDirectorPicker` (dropdown over the 50-row `f14_filmmaker_library` + a "View Style" taxonomy popup + a free-text inspiration box) replaces a plain textbox at both call sites. `main.js`'s `sendChat` `maxTokens` raised 1200 → 3000 (FROZEN-file exception; `max_tokens` is a ceiling billed on tokens generated, so short replies cost the same).
+  - **`openmontage_jobs` (July 31)** — a real async handoff table between RPGACE, this session, and a separate OpenMontage Claude Code session in a different repo. First real round-trip completed: the external session set up cleanly, chose the `cinematic` pipeline correctly, and **correctly failed loud** (`status='failed'` with an honest `output_note`) rather than faking a render with generic stock footage for a brief needing a specific recurring character. A provider-independent "Character Reference Block" deliverable was added to the Visual Treatment prompt as a result. Which paid provider (if any) to configure is an open Tier-3 spend fork for Alex.
 - **`/Regeneration` skill built (July 25)** — a real, human-gated taxonomy-quality audit: Tier 0 (free deterministic SQL), Tier 1 (bounded AI judgment, batched by branch), Tier 2 (generative reorganisation, explicit-ask-only). Never writes to `taxonomy_tree` autonomously — proposes into the existing review queue or a plain report. First real Tier 0 pass found and (with Alex's explicit per-node confirmation) fixed 20 real defects: 14 leaf-nodes wrongly holding children, 2 duplicate-name clusters (6 nodes merged/deleted), 1 standalone YouTube-title-as-node. 13 nodes in disabled phyla (11/13/16) were checked and correctly left alone — legitimate pre-launch seed content, not corruption.
 
 ### Claimed/discussed but NOT built — do not trust any doc that implies otherwise
 - Live-study **card-list UI** (ConID-card pattern for Bookworm chapters) — explicitly deferred today
-- Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; phyla 11-21 framework passes; `hooks.on('rpgace:ready')` ~25-site audit
+- Schedule Oracle Phase 2 (F12); Circles rabbit-hole nav (folded into Phase-2 vision); dedicated case-study/reference-tracks phylum; framework passes for the **remaining** phyla (12, 13, 15-21 — 11 and 14 cleared it July 30)
+- ~~`hooks.on('rpgace:ready')` ~25-site audit~~ — **closed July 29, doc corrected July 31.** A real re-audit found the sites had already been fixed incidentally over time; a fresh grep on July 31 confirms exactly **one** occurrence remains in `rpgace_core.js`, and it is `RPGACE.register()`'s own canonical module-init machinery — not a bug site. The underlying `hooks.fire()` behaviour (never revisits listeners added mid-fire) is still true and still worth knowing; there is no backlog attached to it.
+- **Cut-precise beat-synced video generation** — genuinely not built and not close. The EDL/storyboard's scene timing is LLM-estimated; no beat-grid or onset detection exists anywhere in the stack. "In sync with the beat" today means mood/palette-matched. Real audio beat-grid sync is confirmed as a wanted future build (Slice C), unstarted.
+- **Phylum 14's full browsable taxonomy tree** — the 50 real director profiles live in the flat `taxonomy_nodes` reference table (`source='f14_filmmaker_library'`), not as tree branches. The 8 category leaves built July 30 are a scaffold, not the 50 profiles.
+- **Phylum XP Ledger** — spec'd (`phylum_xp_ledger_spec_backlog_2026-07-28.txt`), not built. Blocked on a real architecture fork only Alex can settle: the career score's 6 activity tables mostly carry no phylum tag, and the Quest Board's `addXP()`/`completeQuest()` have **zero persistence** (pure in-memory `STATE`/`QUESTS`) — the same in-memory-only problem the July 22 career-score rebuild already fixed for the dashboard.
 - ~~Taxonomy Sorting Agent; Claude general-knowledge audit (3 parts)~~ — **moved July 22**: see the "Built but NEVER verified" section below (`book_knowledge`/`jargon_encyclopedia` views + the `/debate` skill).
 - ~~Server-side API authentication; `CORRECT_PW` moved server-side~~ — **moved July 23, BUILT (see "Built but NEVER verified" below)**: both fixed as one architecture change (`api/auth.js` + `requireAuth()` + `authGate`'s fetch wrap). Real deployment gate, not a code gap anymore: needs two Vercel env vars (`CORRECT_PW`, `RPGACE_API_SECRET`) before it can merge to `main` — see CLAUDE.md's urgent flag.
 - ~~XSS/DOM-injection audit of `innerHTML` call sites~~ — **fixed July 28**: `main.js`'s `renderMarkdown()` (behind every Oracle chat message) injected raw response text into `innerHTML` with zero escaping — fixed via a new `_escChatHtml()` step before the markdown regex chain runs. See CLAUDE.md.
@@ -398,7 +427,60 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 - **Live-grounding for RLS/security status specifically** — deliberately not built July 23 (Supabase's advisor API isn't reachable from client-side browser JS; would need a dedicated server endpoint).
 - ~~`system_flow_map.md` §0's own module inventory is stale~~ — **fixed July 28**: §0's domain table rebuilt from a real grep of every `RPGACE.register()` call, all modules now listed by name and domain, not just counted (51, after the same session's `restoreSendChat` cleanup).
 
-### Known open bugs
+### Known open bugs — see also §11
 - ~~Oracle 504 on long responses~~ — **real fix built July 28, not yet hand-tested**: `api/oracle.js` now proxies a genuine Anthropic SSE stream (opt-in via `stream:true`), `main.js`'s `callOracle()`/`sendChat()` consume it to progressively render the reply into the existing typing-indicator bubble, and `maxDuration` was raised from 60 to 300 (confirmed real via `list_deployments` — commit `c296471` deployed `READY` on production with this value, so the plan does allow it). A prior attempt shipped a client-only stub with no real server support and was reverted; that dead code (`RPGACE.streamOracle`/`restoreSendChat`) is now deleted rather than left neutralised.
 - F11 silent "Content Unavailable" on failed Jina fetches
 - `_generateNodeContent` empty-deep_content mystery (partially resolved, never re-tested)
+
+---
+
+## 11. Content & Video Production Pipeline — added July 31
+
+**Why this section exists:** this pipeline has been real and load-bearing since July 28 (`content_productions` ↔ `video_jobs` ↔ `style_profiles`, plus the OpenMontage handoff) and was never drawn anywhere in this document. Per this doc's own rule — a feature isn't "done" until it moves out of the dashed/planned section into a real diagram — it was reported as built in `patch_notes.html` and `interconnection_map.md` while remaining invisible here. Drawn now from real code and a live Supabase query, not from a doc's claim.
+
+```mermaid
+flowchart TD
+    BL([Beat Log: drag file, fill BPM/key/scale/mood/genre]) --> AUD{Audio file present?}
+    AUD -->|yes| LIBR[(beat_audio_jobs + beat-audio bucket<br/>local librosa: BPM + Major/Minor key only<br/>⚠ needs local_server.py running)]
+    AUD -->|no| SUB
+    LIBR -.->|fills back| SUB
+    SUB[beatLog._submit] --> CP[(content_productions<br/>content_type: music_video<br/>creative_docs.beat_meta)]
+    CP --> VJ[(video_jobs<br/>content_production_id FK)]
+    SUB --> MATCH[refCorpus.findMatches:<br/>BPM + energy + mood + scale + genre<br/>Last.fm fallback if no corpus hit]
+    MATCH --> CORP[(reference_tracks — 32 rows<br/>⚠ scale/genre 0/32 populated)]
+    MATCH -->|Add These Artists| CORP
+
+    REP([Repurpose]) --> CP
+    POT([conidPot: Activate ConID]) --> CP
+    TUT([Tutorial/OBS workflow]) --> CPT[(content_productions<br/>content_type: tutorial)]
+
+    CP --> PANEL{contentProductionLive<br/>_openProductionPanel<br/>branches on content_type}
+    CPT --> PANEL
+    PANEL -->|tutorial| P1[Phase 1-3 tutorial copy<br/>byte-identical to pre-July-30]
+    PANEL -->|music_video| P2[Phase 1-3 music-video copy<br/>+ hop button into Video Pipeline]
+
+    CP --> VO[Visual Oracle F14 commands:<br/>Visual Treatment Doc / Director Match /<br/>Storyboard Scene Builder]
+    VO --> PICK[_showDirectorPicker:<br/>50-row f14_filmmaker_library dropdown<br/>+ View Style + free-text inspiration]
+    PICK --> ORC[Oracle call — includes the<br/>Character Reference Block deliverable]
+    ORC --> CAP[visualOracle._captureNextResponse<br/>one-shot on oracle:response-scanned<br/>zero extra API calls]
+    CAP --> TRAIL{Structured trailer?}
+    TRAIL -->|DIRECTOR_CHOSEN:| SP[(style_profiles<br/>⚠ 0 rows ever — save path<br/>has never fired in production)]
+    TRAIL -->|EDL_JSON:| EDL[(video_jobs.edl<br/>⚠ 0 rows populated)]
+    TRAIL -->|none| DOC[(content_productions.creative_docs<br/>keyed by doc type)]
+    SP --> VJ
+
+    VJ --> STAGES[videoPipeline.STAGES:<br/>beat_logged → in_production → edited<br/>→ rendered → exported<br/>auto-advance off real path/export fields]
+    STAGES --> HAND[Job detail: Script + Treatment<br/>handoff view — script/EDL + creative_docs]
+    HAND --> OMQ[(openmontage_jobs — anon_all by design)]
+    OMQ --> OMS([SEPARATE OpenMontage Claude Code session<br/>different repo, writes status/output_note back])
+    OMS --> OMQ
+
+    BEATSTARS([Generate Beatstars Listing]) -.->|reads BPM/key/mood| VJ
+
+    SYNC[/"Real beat-grid audio sync — Slice C.<br/>NOT BUILT. Scene timing is LLM-estimated;<br/>no onset/beat-grid detection exists"/] -.->|would replace estimated timing in| EDL
+    P14[/"Phylum 14's full browsable tree.<br/>NOT BUILT — the 50 director profiles are<br/>flat taxonomy_nodes rows, not tree branches"/] -.->|would back| PICK
+```
+
+**Live state, queried July 31 (not assumed):** `content_productions` 7 rows (4 `tutorial`, 3 `music_video` — the July 30 migration's default backfilled correctly after a self-caught correction); `video_jobs` 3 rows, **all three still at stage 1/5 `beat_logged`**; `style_profiles` 0 rows; `openmontage_jobs` 1 row (the Calibri job — a completed round-trip that correctly ended `status='failed'` with an honest note rather than a faked render); `reference_tracks` 32 rows with scale/genre 0/32.
+
+**Honest limit, restated because it is the single most misreadable claim in this pipeline:** RPGACE does not generate video. It tracks, briefs, and hands off. OpenMontage stays an externally-operated tool per the July 24 verdict, and the handoff view surfaces real data — it does not simulate generation.
