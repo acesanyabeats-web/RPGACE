@@ -1,0 +1,392 @@
+OVERSIGHT DOC AUDIT AND RESHAPE — 2026-07-31
+============================================================
+Procedure: GODMODE evidence pass -> Council of 5 + commit archaeology on
+anything that looked stale or contradicted -> a per-doc /debate pass
+(overdone / underdone / needs restructuring) across all six oversight docs
+plus CLAUDE.md and Chronicles -> apply the justified edits -> record here.
+
+Scope guard held throughout: docs and Supabase only. No edits to
+rpgace_core.js, main.js, index.html, style.css or any api/*.js file. No RLS
+changes. No migrations. Two system_updates rows inserted (Chronicles is an
+oversight surface, and inserting there was in scope by instruction).
+
+Explicitly recorded so the next session doesn't re-derive it: an earlier
+dispatch of this same task died immediately on an Opus usage limit before
+doing any work. This was a clean retry, not a resume. Nothing was half-applied.
+
+
+============================================================
+PART 1 — GODMODE EVIDENCE GATHERED
+============================================================
+
+Git: 40 most recent commits read in order. Today's work (9885fa5, df4a36c,
+81471c9, 26f0808, 2ed084c, 14b0a28, cda1f0a, 5838b91) matched what the
+dispatching session said it had shipped. Working tree clean, on main, main and
+the claude/rpgace-master-steps-uobp98 branch both present.
+
+Live Supabase (project gripopghczmrbrhqtqbm), queried directly, not inherited:
+  taxonomy_tree           544 rows
+  taxonomy_proposals      160 total, 52 pending
+  taxonomy_links          66 total, 66 confirmed, 0 pending
+  content_productions     7 (4 tutorial, 3 music_video)
+  video_jobs              3, ALL at status 'beat_logged' (stage 1/5),
+                          all 3 linked to a content_production,
+                          0 with edl, 0 with style_profile_id
+  style_profiles          0 rows (never once written)
+  reference_tracks        32, scale 0/32, genre 0/32
+  openmontage_jobs        1
+  system_updates          80 rows, 2026-07-23 .. 2026-07-31 (now 82)
+  oracle_dev_suggestions  3 rows still status='new'
+  pg_policies             28 tables: 18 anon_read_only + authenticated_all,
+                          10 deliberately anon_all
+
+Real code greps:
+  ENABLED_PHYLA: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14]   (12 phyla)
+  videoPipeline.STAGES: ['beat_logged','in_production','edited','rendered',
+                         'exported']                        (rename confirmed)
+  RPGACE.register(...) unique names: 52 modules
+  hooks.on('rpgace:ready'): exactly 1 occurrence, at rpgace_core.js:557,
+    inside RPGACE.register()'s own module-init branch — the canonical one
+  All 3 callOracle wrappers use orig.apply(..., arguments-derived args)
+
+Docs read in full: CLAUDE.md, interconnection_map.md, system_flow_map.md,
+plus structural reads of patch_notes.html (408 cards, 318KB), manual.html,
+minotaur_map.html, taxonomy_map.html. Skills read: debate, scope.
+
+
+============================================================
+PART 2 — MISMATCHES THAT SURVIVED SCRUTINY
+============================================================
+These are the ones I was hunting for: the current equivalent of the July 24
+"Approach B claimed done for three sessions while the RLS flip had never
+actually been executed" class of gap. Five real ones, ordered by consequence.
+
+--- 2.1 manual.html's RLS section was materially wrong (HIGHEST CONSEQUENCE)
+
+CLAIMED: "every table with RLS 'enabled' ... actually uses a permissive
+USING(true) policy — functionally readable/writable by anyone with the public
+key, project-wide." Presented as a standing July 23 finding, at the top of the
+Supabase Tables section, in the doc explicitly described as the "polished
+reference."
+
+ACTUAL (live pg_policies, today): 18 tables carry anon_read_only (SELECT) +
+authenticated_all. 10 carry anon_all, each deliberately, each with a named
+real external writer.
+
+WHY IT MATTERS IN BOTH DIRECTIONS. A reader trusting the polished reference
+would conclude the app is wide open when it isn't — but the more dangerous
+failure is the other way: someone acting on "everything is USING(true), that's
+a gap" could restrict the 10 tables that are unguarded on purpose. That would
+silently 403 the Morning Brief Routine, the Fallback Drain Routine, the
+external OpenMontage session, the local librosa runner and local_server.py —
+with no crash and no visible error, exactly the failure mode CLAUDE.md's
+landmines section warns about for oracle_fallback_queue and openmontage_jobs.
+
+FIXED: replaced with the live grouping (18 restricted / 10 deliberately
+anon_all, every external writer named) plus an explicit do-not-sweep warning.
+
+--- 2.2 A stale-open-bug cluster spanning three docs
+
+interconnection_map.md still carried, as current architecture:
+  - "Oracle 504 ... A prior streaming attempt broke things and was reverted
+    (dead code + restoreSendChat neutraliser still present)"
+  - a whole bullet: "Streaming Oracle intercept — dead code, neutralised, not
+    removed ... delete the dead code once confirmed nothing references it"
+Both false since July 28. The streaming fix shipped end-to-end and that dead
+code was deleted, not neutralised. system_flow_map.md had this right, so the
+two docs directly contradicted each other on a named open bug.
+
+patch_notes.html's own Still Open section listed as unresolved:
+  - Oracle 504 (twice — once generally, once for Phylum Path's Generate
+    Article call; same underlying bug, two cards)
+  - the XSS / innerHTML audit ("still not started" — done July 28, and it
+    found a real bug)
+  - the streaming-Oracle tech debt (code deleted July 28)
+Five sessions of drift on a section whose entire job is to be current.
+
+The "~25 unaudited hooks.on('rpgace:ready') sites" backlog appeared in THREE
+places (interconnection_map.md, CLAUDE.md's landmines AND its optimization
+backlog, patch_notes.html's Still Open) after being closed July 29. A real
+grep finds one occurrence, and it is register()'s own canonical machinery.
+
+FIXED: interconnection_map.md rewritten present-tense; patch_notes Still Open
+cards struck through with a fixed badge and a short account of the real fix
+(kept as record, not deleted); CLAUDE.md's landmine keeps the behavioural
+warning and loses the false backlog; the optimization backlog items closed.
+
+--- 2.3 Numbers quoted across docs that had drifted from live state
+
+  fusion links     docs said 21 confirmed / 47 pending / 68 total
+                   live:     66 total, 66 confirmed, 0 pending
+                   (Alex has worked that queue to zero — a real, positive
+                   change nobody had recorded)
+  taxonomy backlog docs said "77-item remainder"      live: 52 pending
+  phyla            docs said 10 of 21 (3 places)      code: 12
+  video_jobs       manual said "0 rows, never
+                   exercised in production"           live: 3 rows
+  modules          system_flow_map said 51            live: 52 (voiceInput,
+                                                      added July 29, never
+                                                      entered the inventory)
+
+--- 2.4 system_flow_map.md had a six-day hole and an undrawn pipeline
+
+The truth table — described in CLAUDE.md as "the single most load-bearing
+claim-surface in the whole project" — had NO entries between July 25 and
+today. Roughly 14 real shipped items were invisible in it.
+
+Worse, and a direct violation of the doc's own stated rule ("a feature isn't
+'done' until it moves from the dashed/planned section into a built diagram"):
+the entire Content & Video Production Pipeline had never been drawn anywhere
+in the document, despite being real since July 28 and being the subject of
+most of the last four sessions' work.
+
+§8 also still drew "Phyla 11-21" as a single planned box, when 11 and 14 have
+been live in ENABLED_PHYLA since July 30.
+
+FIXED: 14-item July 26-31 block added (every item flagged as never
+browser-tested); §8 corrected to the remaining phyla; new §11 diagram drawn
+from code + a live query, with the 0-row warnings on the diagram itself.
+
+--- 2.5 interconnection_map.md had drifted back into being a changelog
+
+The doc's own header states it "should describe what's true now, never what
+happened when," and records that it was already condensed once on July 28 for
+exactly this reason. It had drifted back. The clearest case: the Content
+Production Pipeline section still narrated "The video_jobs table didn't exist
+in Supabase until July 13 — every save had been silently failing..." — pure
+history — while ALSO duplicating and contradicting the newer, accurate
+"Content Pipeline overseer" section further down the same file. Two sections
+describing the same architecture with different stage names and different
+button names is a rule-8 (deduplication) violation applied to docs.
+
+Four more entries in the two Known-open-issues lists were finished work
+narrated as if open ("Phylum Path Phase 2 — shipped July 16 ... no longer
+parked", "PHYLUM_NUM generalization — shipped July 17").
+
+FIXED: rewritten present-tense; the resolved entries removed or promoted into
+current-architecture prose; the two competing pipeline sections given
+non-overlapping jobs with an explicit pointer between them.
+
+
+============================================================
+PART 3 — PER-DOC DEBATE FINDINGS
+============================================================
+
+--- patch_notes.html — day-by-day narrative, the one place incident detail lives
+OVERDONE:   Nothing content-wise. Its narrative depth is correct for its role.
+            Real volume flag, NOT acted on (see Part 5): 318KB / 408 cards /
+            1517 lines, going back to July 1. The archive it already spawned
+            (patch_notes_archive.html) was cut at 270KB — so the live doc is
+            now LARGER than the archive was at its own cut point. By the
+            project's own "archive aggressively" convention this is due.
+UNDERDONE:  Two missing cards. (1) The first real openmontage_jobs round-trip
+            — the day's most substantive narrative, with no card at all.
+            (2) This audit.
+            Still Open listed 5 resolved items (see 2.2).
+RESTRUCTURE: None needed. Newest-at-top structure is sound.
+DONE:       Both cards added; 5 Still Open cards resolved in place.
+            div balance 429/429 -> 435/435, matched.
+
+--- interconnection_map.md — structural touchpoints, present tense, never a changelog
+OVERDONE:   Real narrative bleed (2.5). Resolved items narrated as open.
+UNDERDONE:  No mention at all of openmontage_jobs, beat_audio_jobs/librosa, or
+            the voiceInput module. The Oracle section didn't describe the live
+            streaming architecture or the 4-argument callOracle contract that
+            all three grounding wrappers must honour.
+RESTRUCTURE: Yes — the two competing content-pipeline sections.
+DONE:       All of the above. Also corrected "all 4 Oversight docs" -> six docs
+            plus Chronicles, with each doc's role named. 253 -> 267 lines.
+
+--- manual.html — polished reference: buttons, tables, fixed bugs, roadmap
+OVERDONE:   Nothing.
+UNDERDONE:  Severely, on the table reference: style_profiles, beat_audio_jobs,
+            openmontage_jobs and oracle_fallback_queue were all absent; and
+            the button catalog was missing the director picker, the ConID
+            delete, Generate Visual Treatment, and voice input entirely.
+RESTRUCTURE: The RLS note (2.1) — a correction, not a restructure.
+DONE:       RLS section rewritten; 5 table rows added; 4 existing rows given
+            their real live counts and caveats; 4 button rows added; the "10
+            phyla" / "10 of 21" claims corrected; the Beatstars rename
+            recorded with its reason; and the oracleAppGrounding row no longer
+            hardcodes a phyla count as an example (so it can't restale the
+            same way) — it states the sync convention instead.
+            div 80/80 and tr 125/125, both unchanged.
+
+--- taxonomy_map.html — live doc, queries taxonomy_tree at runtime
+CHECKED AND FOUND FINE — deliberately untouched, and verified rather than
+assumed. It selects id, depth, name, phylum_number, path, node_type from
+taxonomy_tree; all six columns confirmed present in information_schema today,
+and anon retains SELECT on taxonomy_tree post-flip, so the page still
+functions. Its own code and columns have not changed, which is the doc's
+stated condition for touching it. No edit was the correct call.
+
+--- system_flow_map.md — Mermaid diagrams + built/not-built truth table
+OVERDONE:   Nothing.
+UNDERDONE:  Severely (2.4): a six-day hole in the truth table, an entire real
+            pipeline never drawn, a stale module count, and a Supabase table
+            list missing 10 real tables.
+RESTRUCTURE: The table list is now grouped by RLS posture rather than listed
+            flat, because the posture is the load-bearing fact about each one.
+DONE:       All of the above, plus three genuinely-unbuilt items promoted out
+            of CLAUDE.md prose into the NOT-built section where they belong
+            (beat-grid audio sync, Phylum 14's real tree, the Phylum XP Ledger
+            fork). "Last re-verified" bumped with what was actually verified.
+            404 -> 486 lines.
+
+--- minotaur_map.html — spatial river metaphor; update only when a wing changes
+OVERDONE:   Nothing.
+UNDERDONE:  One real new wing: openmontage_jobs. It qualifies under the doc's
+            own rule — a new exit, and the first in the whole map whose far
+            shore is a DIFFERENT repository's session, and the first where
+            water flows back carrying a real result rather than a note.
+RESTRUCTURE: The real judgment call was new-river vs. new-channel. Drawn as a
+            fourth channel INSIDE River IX, following the exact precedent set
+            when the Fallback Drain was added: it reuses River IX's existing
+            mechanism (a reservoir read by a far-shore session on its own
+            clock), and a new destination along an existing shape of journey
+            does not earn a new river. That reasoning is now written into the
+            intro so it isn't re-litigated next time.
+DONE:       Fourth channel added, including what actually happened on the
+            first crossing (the honest refusal) and the fact that the refusal
+            flowed back and reshaped RPGACE's own upstream prompt. Plus a dry
+            riverbed node making explicit that RPGACE does not generate video.
+            div balance 762/762 before and after.
+
+--- CLAUDE.md — durable operating facts, NOT a second changelog
+OVERDONE:   Badly, and against its own explicitly-written July 28 rule. 34
+            Current State bullets, most of them multi-paragraph incident
+            narratives already told in full in patch_notes cards. 154KB that
+            every session pays to re-read.
+UNDERDONE:  Live numbers were stale (2.3); several genuinely-open forks were
+            buried at the end of long resolved narratives where they read as
+            afterthoughts.
+RESTRUCTURE: Yes. Rebuilt as one-line durable facts grouped by domain
+            (Taxonomy / Video-content pipeline / Oracle / External handoff
+            lanes / Skills-tooling-security / Open forks that need Alex), with
+            a new "Live numbers" line that instructs re-querying rather than
+            inheriting. The four July 31 entries kept verbatim at full detail
+            as instructed — current work, not yet collapsable.
+DONE:       The above, plus CLAUDE_archive.md created — which this file's own
+            July 28 rule explicitly anticipated ("one should exist once this
+            file's Current state section is next pruned in full"). The dated
+            Current-state-July-24 and Prior-state-July-18/20/22/23 sections
+            moved there verbatim (~46KB) with a header making clear it is
+            archaeology, never orientation. 154KB -> 92KB.
+            NO durable fact was dropped: four were hoisted into Known
+            landmines first because they existed ONLY inside archived
+            narrative — no Supabase backup/PITR at all; the dashDeck
+            stash-guard force=true rule plus the 99999 z-index contract; Fable
+            5 dying mid-task on usage credits and not to be silently
+            substituted; and the hooks.fire() behaviour.
+            Also flagged weekly_recap_2026-07-25.txt as six days old and no
+            longer "the next /Routine run's" input — five sessions have run
+            since it was written.
+
+--- Chronicles (system_updates)
+OVERDONE:   Nothing. 80 rows, July 23 - July 31, no duplicates found, today's
+            5 rows accurately describe today's 5 committed work items.
+UNDERDONE:  One real gap: commit 9885fa5 (the openmontage round-trip + the
+            Character Reference Block) shipped with no row — the same gap as
+            in patch_notes.
+DONE:       Two rows inserted (the round-trip; this audit). Now 82.
+NOT DONE, deliberately: the 3 oracle_dev_suggestions rows still sitting at
+            status='new' were left alone. All three have already been read and
+            acted on in past sessions (the two July 28 5thDimension self-audits
+            and today's Calibri Visual Treatment) — they were simply never
+            marked reviewed, so the session-start check keeps re-surfacing
+            them. Marking someone else's queue as reviewed is not my call;
+            named in the report instead.
+
+
+============================================================
+PART 4 — CHECKED AND FOUND ACCURATE (no edit needed)
+============================================================
+Naming these matters as much as the corrections — this is an audit trail, not
+a diff summary. Each was verified against real evidence, not accepted on the
+doc's word.
+
+  * The content_type migration backfill. CLAUDE.md claims the migration's own
+    default backfilled 3 pre-existing beat-driven rows wrong and that this was
+    caught and corrected. Live: 4 tutorial (all dated 2026-06-29) + 3
+    music_video (2026-07-28..30). The correction genuinely landed.
+  * The videoPipeline stage rename. 'raw_footage' -> 'in_production' confirmed
+    in STAGES and STAGE_LABELS, with the reasoning preserved in a code comment.
+  * ENABLED_PHYLA: [1..10, 11, 14] — exactly as claimed.
+  * The 4-argument callOracle forwarding fix. All three wrappers
+    (oracleTreeGrounding, oracleAppGrounding, oracleFetchGuard) use
+    orig.apply with rebuilt args, each with a July 28 comment explaining why.
+    The claim that streaming would otherwise silently downgrade is real and
+    the fix is real.
+  * style_profiles at 0 rows and reference_tracks scale/genre at 0/32 — both
+    honestly reported as still-unpopulated in CLAUDE.md. Confirmed. The docs
+    were not overclaiming here.
+  * openmontage_jobs RLS posture: anon_all present, exactly as the landmine
+    note describes and requires.
+  * taxonomy_map.html's query — all 6 selected columns present, anon SELECT
+    retained. Correctly untouched.
+  * Chronicles' existing 80 rows — spot-checked for duplicates and for
+    accuracy against today's commits. Clean.
+  * patch_notes.html div balance was already 429/429 on arrival — no
+    pre-existing imbalance was introduced by earlier sessions.
+
+
+============================================================
+PART 5 — FOUND, NOT ACTED ON, AND WHY
+============================================================
+
+5.1 oracleAppGrounding.SELF_KNOWLEDGE IS STALE AND ORACLE IS MISREPORTING
+    ITSELF RIGHT NOW.  *** The single most actionable finding here. ***
+    The live string (rpgace_core.js:2870) says, verbatim:
+      "Exactly 10 of 21 knowledge Phyla (numbers 1-10) are actually built out
+       via the Phylum Development Framework - phyla 11-21 exist only as names
+       in the classification list, with no real tree content"
+    and closes with "phyla 11-21 have no framework pass yet."
+    Both untrue since July 30. Phyla 11 and 14 have real tree content.
+    This is not cosmetic. That string exists specifically to stop Oracle
+    overclaiming — and it is now making Oracle confidently UNDERclaim, in a
+    way Alex would have no reason to doubt, about the exact thing the string
+    was written to keep honest. It is also a direct miss of a standing
+    convention already written in interconnection_map.md: "whoever updates
+    CLAUDE.md's Current State updates this string in the same session."
+    NOT FIXED HERE because it is rpgace_core.js — explicitly out of scope for
+    this docs-only task. Flagged in CLAUDE.md's Current State with a warning
+    marker, and named in the report for the next session to fix in code.
+
+5.2 patch_notes.html is due an archive pass.
+    318KB, 408 cards, back to July 1. The archive it already spawned was cut
+    at 270KB, so the live doc has now outgrown the precedent that triggered
+    the last archive. A clean cut point would be everything dated before
+    July 20 (the dashboard/nav rebuild is a natural boundary — it's where the
+    current UI architecture begins).
+    NOT DONE because a ~300KB structural move through a deeply nested HTML
+    file is real risk, and rushing it at the end of an audit is exactly how a
+    div imbalance gets introduced into the project's most important record.
+    It deserves its own pass with its own verification, not a tail-end
+    scramble. Named rather than silently skipped.
+
+5.3 The 3 oracle_dev_suggestions rows at status='new'. See Part 3, Chronicles.
+    Left for Alex to clear; not my queue to close.
+
+5.4 The 10 anon_all tables. Correct as-is and deliberately so. Documented
+    harder in three places this pass precisely so a future session doesn't
+    "fix" them. No change made.
+
+
+============================================================
+PART 6 — COMMITS (all pushed to origin main AND
+origin main:claude/rpgace-master-steps-uobp98)
+============================================================
+  1. interconnection_map.md — structural-only restored, contradictions fixed
+  2. system_flow_map.md — re-verified, July 26-31 block, new §11 diagram
+  3. manual.html — RLS correction, table + button catalog current
+  4. minotaur_map.html — River IX fourth channel (OpenMontage)
+  5. CLAUDE.md prune + CLAUDE_archive.md created
+  6. patch_notes.html — 5 Still Open cards resolved, 2 missing cards added
+  7. this record file
+Plus 2 system_updates rows inserted directly (Chronicles).
+
+HTML verification run before and after every HTML edit:
+  patch_notes.html   429/429 -> 435/435 (matched, +6 from added cards)
+  manual.html        80/80 div, 125/125 tr (unchanged)
+  minotaur_map.html  762/762 (unchanged)
+No .js file was opened for writing. No migration. No RLS change.
