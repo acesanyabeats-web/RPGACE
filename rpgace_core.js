@@ -12606,6 +12606,12 @@ RPGACE.register('beatLog', {
     //    video_jobs row, the Visual Treatment auto-save - has a real
     //    target row to link to; adds one INSERT round-trip before the
     //    rest of this flow continues, same fail-open behaviour as before.
+    // Engineer pass 2026-07-30 (real "2 workflows" resolution, Alex's own
+    // catch): content_type explicitly set here since beatLog is the one
+    // real always-music_video creation path - every other real entry
+    // point (Content Repurpose, Idea Bank activate) leaves it at its
+    // default ('tutorial'), matching what those flows have always
+    // actually produced.
     RPGACE.sb.secureWrite('content_productions', 'insert', {
       title: form.title,
       idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
@@ -12614,6 +12620,7 @@ RPGACE.register('beatLog', {
       status: 'Idea',
       licence_type: form.licence || null,
       creative_docs: { beat_meta: form },
+      content_type: 'music_video',
     }).then(function(result) {
       var cpRow = Array.isArray(result) ? result[0] : result;
       var cpId = cpRow && cpRow.id ? cpRow.id : null;
@@ -13998,56 +14005,97 @@ RPGACE.register('contentProductionLive', {
     var body = document.createElement('div');
     body.style.cssText = 'flex:1;overflow-y:auto;padding:16px;';
 
-    var phases = [
-      { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
-      { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
-      { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
-    ];
-
-    phases.forEach(function(ph, i) {
-      var phaseCard = document.createElement('div');
-      phaseCard.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:10px;';
-      var phTitle = document.createElement('div');
-      phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
-      phTitle.textContent = ph.icon + ' ' + ph.title;
-      var phDesc = document.createElement('div');
-      phDesc.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:10px;';
-      phDesc.textContent = ph.desc;
-
-      if (i === 1) {
-        // Phase 2 — raw footage path input
-        var pathInp = document.createElement('input');
-        pathInp.type = 'text';
-        pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
-        pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-        var savePathBtn = document.createElement('button');
-        savePathBtn.textContent = 'Save footage path';
-        savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-        savePathBtn.onclick = function() {
-          if (self._activeId && pathInp.value.trim()) {
-            self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
-              .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#4CAF82', 2000); });
-          }
-        };
-        phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
-        phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
-      } else {
-        phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
-      }
-
-      body.appendChild(phaseCard);
-    });
-
-    // Switch back to Oracle button
-    var backBtn = document.createElement('button');
-    backBtn.textContent = '← Back to Oracle (Option A)';
-    backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
-    backBtn.onclick = function() {
-      RPGACE.ui.slideOutPanel(panel, 'right');
-    };
-    body.appendChild(backBtn);
+    // Engineer pass 2026-07-30 (real "2 workflows" resolution) — this
+    // panel's 3 phases were built for a talking-head/OBS-tutorial
+    // recording (confirmed from its own original copy: "hook," "key
+    // teaching points," "film section by section," raw footage path) -
+    // a real, different content shape from a beat-driven production,
+    // where the real next steps are reference-matching/mood-palette/
+    // director-match/script, never "go film something." Fetches the
+    // real content_type once per open rather than guessing/threading a
+    // new field through every _activeId-setting call site.
+    var loadingRow = document.createElement('div');
+    loadingRow.style.cssText = 'color:rgba(226,226,236,0.3);font-size:11px;';
+    loadingRow.textContent = 'Loading...';
+    body.appendChild(loadingRow);
     panel.appendChild(body);
     RPGACE.ui.slideInPanel(panel, {edge:'right'});
+
+    RPGACE.sb.select('content_productions', 'id=eq.' + self._activeId + '&select=content_type&limit=1')
+      .then(function(rows) {
+        var contentType = (rows && rows[0] && rows[0].content_type) || 'tutorial';
+        body.innerHTML = '';
+
+        var phases = contentType === 'music_video' ? [
+          { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 11 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
+          { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Director Match (Phylum 14) and your Visual Treatment Doc are in the Oracle conversation. Once you\'re happy with the direction, use the Video Pipeline card to track real file paths and exports as the video comes together.' },
+          { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
+        ] : [
+          { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
+          { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
+          { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
+        ];
+
+        phases.forEach(function(ph, i) {
+          var phaseCard = document.createElement('div');
+          phaseCard.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:10px;';
+          var phTitle = document.createElement('div');
+          phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
+          phTitle.textContent = ph.icon + ' ' + ph.title;
+          var phDesc = document.createElement('div');
+          phDesc.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:10px;';
+          phDesc.textContent = ph.desc;
+          phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
+
+          if (i === 1 && contentType === 'tutorial') {
+            // Phase 2 — raw footage path input (tutorial workflow only;
+            // a beat-driven production's real paths live on its linked
+            // video_jobs row instead, reachable via the Video Pipeline
+            // card).
+            var pathInp = document.createElement('input');
+            pathInp.type = 'text';
+            pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
+            pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+            var savePathBtn = document.createElement('button');
+            savePathBtn.textContent = 'Save footage path';
+            savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            savePathBtn.onclick = function() {
+              if (self._activeId && pathInp.value.trim()) {
+                self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
+                  .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#4CAF82', 2000); });
+              }
+            };
+            phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
+          } else if (i === 1 && contentType === 'music_video') {
+            var vpBtn = document.createElement('button');
+            vpBtn.textContent = '🎥 Open Video Pipeline';
+            vpBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            vpBtn.onclick = function() {
+              RPGACE.ui.slideOutPanel(panel, 'right');
+              if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
+            };
+            phaseCard.appendChild(vpBtn);
+          }
+
+          body.appendChild(phaseCard);
+        });
+
+        // Switch back to Oracle button
+        var backBtn = document.createElement('button');
+        backBtn.textContent = '← Back to Oracle (Option A)';
+        backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
+        backBtn.onclick = function() {
+          RPGACE.ui.slideOutPanel(panel, 'right');
+        };
+        body.appendChild(backBtn);
+      })
+      .catch(function() {
+        body.innerHTML = '';
+        var err = document.createElement('div');
+        err.style.cssText = 'color:#CC4A4A;font-size:12px;';
+        err.textContent = 'Could not load this production\'s details.';
+        body.appendChild(err);
+      });
   },
 
   // ── End session — compile to journal ─────────────────────────
@@ -14094,8 +14142,19 @@ RPGACE.register('contentProductionLive', {
 // failing; table created alongside this module).
 RPGACE.register('videoPipeline', {
 
-  STAGES: ['beat_logged', 'raw_footage', 'edited', 'rendered', 'exported'],
-  STAGE_LABELS: { beat_logged: 'Beat Logged', raw_footage: 'Raw Footage', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
+  // Engineer pass 2026-07-30 (real "2 workflows" resolution) — every
+  // real video_jobs row is created by beatLog._submit and ONLY by
+  // beatLog._submit (confirmed via grep - no other module inserts into
+  // this table), meaning this whole pipeline is ALWAYS beat-driven.
+  // 'raw_footage' as the second stage was a real mislabel: the real
+  // next step after logging a beat is reference-matching/mood-palette/
+  // director-match/script, never "go film something" - Alex's own
+  // direct catch. Renamed to 'in_production', a stage that genuinely
+  // fits every real video_jobs row rather than falsely implying camera
+  // footage. No data migration needed - both real existing rows were
+  // still at 'beat_logged', never 'raw_footage'.
+  STAGES: ['beat_logged', 'in_production', 'edited', 'rendered', 'exported'],
+  STAGE_LABELS: { beat_logged: 'Beat Logged', in_production: 'In Production', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
   EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
 
   init: function() {
@@ -14216,7 +14275,7 @@ RPGACE.register('videoPipeline', {
       if (!t) { RPGACE.utils.toast('Add a title first', '#CC4A4A', 2000); return; }
       RPGACE.sb.secureWrite('video_jobs', 'insert', {
         title: t,
-        status: 'raw_footage',
+        status: 'in_production',
         raw_path: pathInp.value.trim() || null,
         export_paths: {},
       }).then(function() {
@@ -14259,7 +14318,7 @@ RPGACE.register('videoPipeline', {
   _renderRow: function(row) {
     var self = this;
     var statusColors = {
-      beat_logged: '#C9A84C', raw_footage: '#4A8CCC', edited: '#9B6EC8',
+      beat_logged: '#C9A84C', in_production: '#4A8CCC', edited: '#9B6EC8',
       rendered: '#CC4A4A', exported: '#4CAF82',
     };
     var stageIdx = self.STAGES.indexOf(row.status);
@@ -14439,7 +14498,7 @@ RPGACE.register('videoPipeline', {
   // stage and whatever the new data supports.
   _computeAutoAdvancedStatus: function(currentStatus, updates) {
     var computed = 'beat_logged';
-    if (updates.raw_path) computed = 'raw_footage';
+    if (updates.raw_path) computed = 'in_production';
     if (updates.edited_path) computed = 'edited';
     if (updates.rendered_path) computed = 'rendered';
     if (updates.export_paths && Object.keys(updates.export_paths).length > 0) computed = 'exported';

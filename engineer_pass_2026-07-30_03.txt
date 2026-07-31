@@ -1,0 +1,200 @@
+/Engineer pass 2026-07-30_03 — Resolve the "2 workflows" conflation for
+Video Pipeline (Alex's direct request: "resolve the 2 workflows... use
+/Engineer to get it done")
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Add a real, additive discriminator to content_productions so the
+   Production Panel's copy correctly fits whichever real content shape
+   a ConID actually is (tutorial/OBS-recording vs beat-driven music
+   video). Tier 2 (schema change, additive/non-destructive, no RLS/
+   security-posture change, no spend) - Alex's own "get it done"
+   instruction is the real go-ahead for this exact fork.
+2. Set the discriminator correctly at every real creation path.
+3. Branch the Production Panel's Phase 1-3 copy on it - tutorial keeps
+   its exact existing copy (zero regression), music_video gets new,
+   correct copy.
+4. Fix the real mislabel Alex directly caught (videoPipeline.STAGES'
+   'raw_footage' step) - rename to a label that genuinely fits every
+   real video_jobs row instead of falsely implying camera footage.
+No Tier 3 action (no RLS change, no destructive drop, no spend).
+
+=====================================================================
+STAGE 2 — EVIDENCE (/scope + GODMODE) - real, not recalled
+=====================================================================
+- Direct read of contentProductionLive._openProductionPanel's real
+  source (found the exact phase copy: "hook," "key teaching points,"
+  "film section by section," raw footage path) - confirms the tutorial-
+  specific design intent directly from the UI's own words, no inference
+  needed.
+- Grepped every real content_productions INSERT call site: beatLog.
+  _submit (beat-driven) and contentProductionLive.createEntry, called
+  from 2 real sites - a Content Repurpose wizard flow (~line 1727) and
+  Idea Bank's "Activate ConID" (~line 14929). Confirms content_
+  productions is genuinely shared across 3 different real entry points,
+  not just beatLog.
+- Direct schema read of content_productions (19 real columns) - no
+  content_type/workflow_type column existed before this pass, and
+  raw_footage_path is its own real, correctly-named column (untouched -
+  it's genuinely the tutorial workflow's own real field, not part of
+  the mislabel).
+- REAL CORRECTION MADE MID-EVIDENCE-GATHERING: initially assumed every
+  video_jobs row is created exclusively by beatLog._submit. Direct read
+  of videoPipeline._showNewJobForm found a SECOND real creation path (a
+  manual "+ New Video Job" entry, no beat data collected) - video_jobs
+  is not exclusively beat-driven after all. This didn't change the fix
+  (renaming to a neutral 'in_production' label fits both real cases),
+  but is recorded honestly rather than silently keeping the narrower,
+  wrong initial framing.
+- Direct query, before backfilling anything: all 3 real pre-existing
+  content_productions rows with a linked video_jobs row (con_id 6, 7,
+  8) got the migration's DEFAULT ('tutorial') applied, which is the
+  WRONG value for all 3 - they are all real, confirmed beat-driven
+  productions. Caught and fixed via a real, general backfill rule (any
+  row with a linked video_jobs row is music_video, since only beatLog
+  ever creates that link) rather than a blind default-and-move-on.
+- Confirmed via get_advisors: the migration introduced zero NEW security
+  lints - the pre-existing "authenticated_all"/"anon_all" RLS pattern
+  already accepted across every table in this project (Approach B's
+  service-role write proxy already handles real writes) is unchanged.
+
+=====================================================================
+STAGE 3 — OMNITRIX EXECUTION (no Fable, direct build)
+=====================================================================
+Built directly - real evidence-gathering resolved the fork cleanly
+(one shared table + a discriminator, not a split - see Council of 5
+below), so no open-ended research needing a dispatched agent.
+
+Note on requested protocols: /restructure doesn't literally apply here
+(no third-party repo being evaluated against RPGACE's own infra) -
+noted plainly rather than forced, same as prior sessions' handling of
+this exact mismatch.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from the real diff + real DB
+state, not from memory)
+=====================================================================
+Real diff: 2 files, rpgace_core.js (+111/-52 across 7 hunks: beatLog,
+contentProductionLive x2, videoPipeline x4), index.html (cache-bust
+only). Plus 1 real migration (content_productions.content_type) and 1
+real backfill UPDATE (3 rows corrected from the migration's own wrong
+default), both independently verified below, not just claimed.
+
+THE REAL FORK, RESOLVED: the prior session's plan file left "shared
+table + discriminator" vs. "split into two tracks" genuinely undecided.
+Real evidence now resolves it cleanly: content_productions is shared
+across 3 real, legitimate creation paths (beatLog, Content Repurpose,
+Idea Bank) with substantial identical real mechanics (ConID numbering,
+status ladder, Oracle bar, session-end journal save) - splitting would
+duplicate ALL of that for zero real benefit, a direct rule-8 violation.
+The one shared table + a `content_type` discriminator is the correct,
+evidence-backed call, not a coin-flip - Council of 5 verdict: option
+(a), decisively.
+
+ITEM 1-2 - content_type column + set at creation:
+  WHAT CHANGED: `content_productions.content_type` (text, default
+  'tutorial', additive/non-destructive) via a real migration.
+  `beatLog._submit`'s insert now sets `content_type: 'music_video'`
+  explicitly. Every other real creation path (Content Repurpose, Idea
+  Bank) is correctly left at the default, since those flows have never
+  produced anything but a tutorial-shaped ConID.
+
+ITEM 3 - Production Panel branching:
+  WHAT CHANGED: `_openProductionPanel` now fetches the real
+  `content_type` for the active ConID (one extra read, correctly async-
+  ordered so the panel still slides in immediately with a loading
+  state rather than blocking on the fetch) and renders one of two real
+  phase sets. Tutorial's copy is BYTE-IDENTICAL to before (zero
+  regression - confirmed via diff, the exact same 3 phase objects).
+  music_video gets new, correct copy: Phase 1 points to the real
+  reference-match/Phylum-11 output already in the Oracle conversation;
+  Phase 2 points to Director Match/Visual Treatment Doc and offers a
+  real "🎥 Open Video Pipeline" button (reuses the already-built
+  dashDeck._openVideoPipeline from Slice A, not a new mechanism); Phase
+  3 (platform captions/URLs) is genuinely identical for both types, so
+  it's shared rather than duplicated.
+
+ITEM 4 - videoPipeline.STAGES mislabel fix:
+  WHAT CHANGED: 'raw_footage' -> 'in_production' across all 4 real
+  code sites (STAGES/STAGE_LABELS array, _showNewJobForm's insert,
+  _renderRow's statusColors, _computeAutoAdvancedStatus) - grepped the
+  whole file after editing to confirm zero live 'raw_footage' string
+  values remain (2 residual hits are this pass's own explanatory
+  comments). No data migration needed for this one - both real
+  pre-existing video_jobs rows were still at 'beat_logged', never
+  'raw_footage', confirmed via direct query before editing.
+
+REAL DATA CORRECTION (found and fixed, not silently left wrong):
+  the migration's own default backfilled con_id 6/7/8 (all 3 real,
+  confirmed beat-driven productions - each has a linked video_jobs row)
+  as 'tutorial'. Caught via a direct post-migration query and corrected
+  via a real, general rule (any content_productions row with a linked
+  video_jobs row is music_video) rather than three one-off guesses.
+
+NOT PLANNED, NOT DONE: no work on the remaining, larger 6-step-chain
+items (platform-description feed, P11-gated Director Match, the
+collaborative script flow, Slice C's real beat-grid sync) - those stay
+correctly out of scope for "resolve the 2 workflows," per the prior
+session's own goal-list separation. No main.js edit.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-derived, not read from Stage 4)
+=====================================================================
+- `node --check rpgace_core.js && node --check main.js` re-run
+  independently: both clean.
+- `git diff --stat` re-run independently: 2 files (rpgace_core.js
+  +111/-52, index.html cache-bust only) - matches Stage 4's claim.
+- Grepped git diff hunks directly: 7 hunks, all mapping 1:1 to items
+  1-4 above - no unclaimed hunk in either direction.
+- Direct Supabase re-query (not read from this pass's own earlier
+  output): `content_productions.content_type` column exists with
+  default 'tutorial'; con_id 6/7/8 (all 3 confirmed to have a linked
+  video_jobs row via a real JOIN query) now show 'music_video' - matches
+  the claimed backfill.
+- Grepped the whole file for 'raw_footage' post-edit: only 2 hits, both
+  this pass's own comments - zero live functional strings remain.
+- get_advisors re-run independently after the migration: zero NEW
+  security lints introduced (same pre-existing baseline as before).
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (Syntax): PASS - node --check clean on both files, independently
+  re-verified.
+G2 (index.html invariants): only the cache-bust line changed.
+G3 (Module convention): PASS - all 4 code edits sit inside existing
+  module markers (beatLog, contentProductionLive, videoPipeline). No
+  main.js edit.
+G4 (Claim-to-diff reconciliation): PASS - both directions checked
+  (code diff AND real Supabase state) in Stage 5.
+G5 (Goal reconciliation): all 4 goals DONE, plus one real extra fix
+  (the migration-default backfill correction) found and resolved
+  during execution, not left for later.
+G6 (Deployment reality): pending push - will confirm via
+  get_deployment once pushed.
+G7 (Cache-bust): PASS - index.html bumped 20260730d -> 20260730e in the
+  same commit as the rpgace_core.js change.
+
+UNTESTED (required label, not a failure) - genuinely needs Alex's own
+hands, no login/browser available this session:
+  - Open the Production Panel for a real music_video-type ConID (e.g.
+    con_id 8, "Calibri") and confirm the new Phase 1-3 copy + the
+    "🎥 Open Video Pipeline" button render and work correctly.
+  - Open the Production Panel for a genuinely new tutorial-type ConID
+    and confirm the existing copy/raw-footage-path input still works
+    completely unchanged.
+  - Check the Video Pipeline card and confirm the stage badge now
+    reads "In Production" instead of "Raw Footage" for con_id 6/7/8.
+
+=====================================================================
+COUNCIL OF 5 QUALITY SCORE (informational only, authorizes nothing)
+=====================================================================
+9/10. Reasoning: the real fork left undecided in the prior session was
+resolved with genuine evidence (not a coin-flip), the fix is additive/
+reversible/low-risk, a real self-correction (the video_jobs-creation-
+path assumption, and the migration-default backfill) happened mid-pass
+and is reported honestly rather than smoothed over, and the scope held
+exactly to what was asked - no drift into the larger unbuilt 6-step-
+chain items. Not a 10 only because none of this is hand-tested yet,
+which genuinely can't happen without a live browser this session.
