@@ -13461,6 +13461,17 @@ RPGACE.register('contentProductionLive', {
   },
 
   // ── Create a new ConID entry ──────────────────────────────────
+  // 2026-07-31 — Alex's own explicit 4-step mental model for music_video
+  // ConIDs (log beat / visual treatment / video generation / captions).
+  // Display-label override only, keyed off the same real `status` enum
+  // every content_type shares — no schema change, no ripple to Content
+  // Repurpose/Idea Bank's own use of this column.
+  MUSIC_VIDEO_STATUS_LABELS: {
+    'Idea': '1. Beat Logged', 'Scripted': '2. Visual Treatment',
+    'Filmed': '3. Video Generation', 'Edited': '3. Video Generation',
+    'Posted': '4. Captions Ready', 'Analysed': '4. Captions Ready',
+  },
+
   createEntry: function(data) {
     var self = this;
     RPGACE.sb.secureWrite('content_productions', 'insert', {
@@ -13542,6 +13553,65 @@ RPGACE.register('contentProductionLive', {
           self._activeId = row.id;
           self._injectOracleBar();
           RPGACE.utils.sendToOracle(prompt);
+        }, 500);
+      });
+  },
+
+  // ── Visual Treatment Doc, triggered directly from a ConID card ──
+  // 2026-07-31. Real gap Alex named: visualOracle's "Visual Treatment Doc"
+  // command already exists but only lived on the global Visual Oracle
+  // panel, decoupled from any specific ConID/beat — using it meant
+  // hand-typing the beat's own data into bracketed placeholders and then
+  // manually picking which ConID to save the result to. This reuses
+  // visualOracle.CMDS[1]'s real prompt text (never re-typed here — dedup,
+  // rule 8) and _saveDocToProduction's real trailer-parsing, but skips the
+  // manual save picker entirely since we already know the exact target row.
+  _generateVisualTreatment: function(row) {
+    var self = this;
+    var vo = RPGACE.modules.visualOracle;
+    if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+    RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
+
+    RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+      .catch(function(e) { console.warn('[contentProductionLive] visual treatment beat lookup:', e.message); return []; })
+      .then(function(jobs) {
+        var vjId = jobs && jobs[0] ? jobs[0].id : null;
+        var beat = null;
+        if (jobs && jobs[0] && jobs[0].script) {
+          try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
+        }
+        // CMDS[1] template has bracketed placeholders — fill whichever real
+        // fields the linked beat actually has, leave the rest for Alex to
+        // fill in Oracle chat rather than guessing at his intent.
+        var template = vo.CMDS[1][1];
+        var prompt = template
+          .replace('[TYPE BEAT TITLE]', row.title || '[TYPE BEAT TITLE]')
+          .replace('[TYPE GENRE]', (beat && beat.genre) || '[TYPE GENRE]')
+          .replace('[TYPE MOOD]', (beat && beat.mood) || '[TYPE MOOD]')
+          .replace('[TYPE KEY AND SCALE]', (beat && beat.key) ? (beat.key + ' ' + (beat.scale || '')) : '[TYPE KEY AND SCALE]')
+          .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
+          .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', '[TYPE A FILMMAKER NAME OR VISUAL STYLE]');
+
+        if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+          RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+        }
+        if (typeof showPage === 'function') showPage('advisor');
+        setTimeout(function() {
+          self._activeConID = row.con_id;
+          self._activeId = row.id;
+          self._injectOracleBar();
+          RPGACE.utils.fillGaps(prompt, function(filled) {
+            var input = document.querySelector('#chat-input');
+            if (!input) return;
+            input.value = filled;
+            input.dispatchEvent(new Event('input', {bubbles:true}));
+            if (vo._captureNextResponse) {
+              vo._captureNextResponse(function(text) {
+                vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
+              });
+            }
+            if (typeof sendChat === 'function') sendChat();
+          });
         }, 500);
       });
   },
@@ -13649,9 +13719,11 @@ RPGACE.register('contentProductionLive', {
           titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
           titleSpan.textContent = row.title;
 
+          var isMusicVideo = row.content_type === 'music_video';
+
           var statusBadge = document.createElement('span');
           statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
-          statusBadge.textContent = row.status;
+          statusBadge.textContent = isMusicVideo ? (self.MUSIC_VIDEO_STATUS_LABELS[row.status] || row.status) : row.status;
 
           topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
           item.appendChild(topRow);
@@ -13753,7 +13825,7 @@ RPGACE.register('contentProductionLive', {
           if (statusIdx < statuses.length - 1) {
             var nextStatus = statuses[statusIdx + 1];
             var advBtn = document.createElement('button');
-            advBtn.textContent = '→ Mark ' + nextStatus;
+            advBtn.textContent = '→ Mark ' + (isMusicVideo ? (self.MUSIC_VIDEO_STATUS_LABELS[nextStatus] || nextStatus) : nextStatus);
             advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             advBtn.onclick = function() {
               var updates = { status: nextStatus };
@@ -13836,11 +13908,51 @@ RPGACE.register('contentProductionLive', {
           // type is set (i.e. this ConID is a beat sale, not just content)
           if (row.licence_type) {
             var bsBtn = document.createElement('button');
-            bsBtn.textContent = '🎧 Beatstars Listing';
+            // 2026-07-31 — Alex's own direct catch: "Beatstars Listing" read
+            // as a status label, not an action. Renamed to remove the
+            // ambiguity; behaviour unchanged.
+            bsBtn.textContent = '🎧 Generate Beatstars Listing';
             bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
             actions.appendChild(bsBtn);
           }
+
+          // 2026-07-31 — direct answer to Alex's real gap: neither Content
+          // nor Video Pipeline had any link to visualOracle's existing
+          // "Visual Treatment Doc" command. This button pulls the linked
+          // beat's real data and auto-saves the result straight to THIS
+          // row (skips the manual save picker — we already know the exact
+          // target, reusing visualOracle._saveDocToProduction rather than
+          // re-implementing its trailer-parsing, rule 8).
+          var vtBtn = document.createElement('button');
+          vtBtn.textContent = '🎬 Generate Visual Treatment';
+          vtBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          vtBtn.onclick = function() { self._generateVisualTreatment(row); };
+          actions.appendChild(vtBtn);
+
+          // 2026-07-31 — Alex's real ask: "a delete for each conID should
+          // be present." Real risk checked first (pg_constraint): video_jobs.
+          // content_production_id has NO cascade, so deleting a linked
+          // ConID would hard-fail with an FK violation — warn explicitly in
+          // the confirm when hasVideoJob is true, and surface any failure
+          // as a clear toast rather than a silent no-op (fail loud, rule 7).
+          var delBtn = document.createElement('button');
+          delBtn.textContent = '🗑';
+          delBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.06);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:rgba(226,84,84,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          delBtn.onclick = function() {
+            var msg = 'Delete ConID #' + row.con_id + ' ("' + row.title + '")?';
+            if (hasVideoJob) msg += '\n\nThis ConID has a linked Video Pipeline job — delete that job first, or this will fail.';
+            if (!confirm(msg)) return;
+            RPGACE.sb.secureWrite('content_productions', 'delete', null, 'id=eq.' + row.id)
+              .then(function() {
+                RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id, 'rgba(226,226,236,0.5)', 2500);
+                self._refreshWidget();
+              })
+              .catch(function(e) {
+                RPGACE.utils.toast('⚠️ Delete failed: ' + e.message + (hasVideoJob ? ' (delete the linked Video Pipeline job first)' : ''), '#CC4A4A', 4500);
+              });
+          };
+          actions.appendChild(delBtn);
 
           item.appendChild(actions);
           list.appendChild(item);
@@ -14407,6 +14519,84 @@ RPGACE.register('videoPipeline', {
       title: row.title, noDefaultClose: true,
     });
     var overlay = pop.overlay, box = pop.box;
+
+    // 2026-07-31 — real, honest handoff surface (Alex asked for Video
+    // Pipeline to "take the script and keywords and phrases and context
+    // off visual treatment" to build the actual video). No video-rendering
+    // engine exists inside RPGACE (OpenMontage is a separate operated tool
+    // per the July 24 Aintergration verdict, never embedded) and real
+    // beat-grid sync isn't built yet (Slice C, already planned) — so this
+    // does NOT generate a video. It surfaces the real ingredients that DO
+    // already exist (this job's own script/EDL, plus the linked ConID's
+    // saved creative_docs) together in one place, so whatever's real is
+    // visible and ready to hand off manually, rather than scattered across
+    // separate Oracle conversations Alex has to remember.
+    var handoffWrap = document.createElement('div');
+    handoffWrap.style.cssText = 'margin-bottom:10px;';
+    var handoffLbl = document.createElement('div');
+    handoffLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;';
+    handoffLbl.textContent = '📄 Script + Treatment';
+    handoffWrap.appendChild(handoffLbl);
+
+    var beat = null;
+    if (row.script) { try { beat = JSON.parse(row.script); } catch (e) { beat = null; } }
+    if (beat) {
+      var beatLine = document.createElement('div');
+      beatLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;line-height:1.5;';
+      beatLine.textContent = 'Beat: ' + (beat.title || row.title) + (beat.key ? ' · ' + beat.key + ' ' + (beat.scale || '') : '') + (beat.bpm ? ' · ' + beat.bpm + ' BPM' : '') + (beat.mood ? ' · ' + beat.mood : '');
+      handoffWrap.appendChild(beatLine);
+    }
+    if (row.edl && Array.isArray(row.edl) && row.edl.length > 0) {
+      var edlLine = document.createElement('div');
+      edlLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;';
+      edlLine.textContent = '🎞️ Storyboard EDL saved: ' + row.edl.length + ' scenes';
+      handoffWrap.appendChild(edlLine);
+    }
+    var docsHolder = document.createElement('div');
+    docsHolder.id = 'vp-docs-holder';
+    docsHolder.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
+    docsHolder.textContent = row.content_production_id ? 'Loading saved creative docs...' : 'No linked Content Pipeline ConID — nothing to show here yet.';
+    handoffWrap.appendChild(docsHolder);
+    box.appendChild(handoffWrap);
+
+    if (row.content_production_id) {
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.content_production_id + '&select=creative_docs&limit=1')
+        .then(function(rows) {
+          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+          var keys = Object.keys(docs);
+          docsHolder.innerHTML = '';
+          if (keys.length === 0) {
+            docsHolder.textContent = 'No creative docs saved on the linked ConID yet.';
+            return;
+          }
+          keys.forEach(function(k) {
+            var row2 = document.createElement('div');
+            row2.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
+            var lbl2 = document.createElement('span');
+            lbl2.textContent = '✓ ' + k.replace(/_/g, ' ');
+            lbl2.style.cssText = 'color:rgba(155,89,182,0.8);';
+            var viewBtn = document.createElement('button');
+            viewBtn.textContent = 'View';
+            viewBtn.style.cssText = 'padding:2px 8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(226,226,236,0.5);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            // Reuses the shared popup helper (July 30 consolidation) rather
+            // than a native alert() — keeps this one viewer on the same
+            // pattern as every other popup in the app.
+            viewBtn.onclick = function() {
+              var docPop = RPGACE.modules.dashDeck._popup({
+                dim: '0.9', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
+                title: k.replace(/_/g, ' '),
+              });
+              var pre = document.createElement('div');
+              pre.style.cssText = 'font-size:12px;color:#D4DAF5;white-space:pre-wrap;line-height:1.6;';
+              pre.textContent = docs[k];
+              docPop.box.appendChild(pre);
+            };
+            row2.appendChild(lbl2); row2.appendChild(viewBtn);
+            docsHolder.appendChild(row2);
+          });
+        })
+        .catch(function(e) { docsHolder.textContent = 'Load error: ' + e.message; });
+    }
 
     var pathFields = [
       { id: 'vp-raw', label: 'Raw footage path', value: row.raw_path },
