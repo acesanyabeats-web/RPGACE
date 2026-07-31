@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">📚 July 31 — The 7th oversight doc: <code>ai_tooling_and_rules_map.md</code> — a real code/doc drift found and fixed in the same pass</div>
+    <div class="card-body">
+      New file: <code>ai_tooling_and_rules_map.md</code>, cataloging (1) every Claude Code skill actually present in this environment, split into global/native-but-mostly-inert-for-RPGACE (docx/pptx/xlsx/pdf/canvas-design/brand-guidelines/etc. — real capabilities, no real connection to this app), global/native-and-genuinely-load-bearing (graphify, commit-archaeologist, the animation-craft skills, aintergration/omnitrix's global originals), and RPGACE-authored project-scoped skills (pointer to CLAUDE.md's own existing sections, not repeated); and (2) every rule-bearing <code>.md</code>/<code>.txt</code> file in the repo, sorted into live authority (CLAUDE.md, <code>.claude/CLAUDE.md</code>, <code>.claude/settings.json</code>, <code>taxonomy_placement_rules.txt</code>, DESIGN.md, the docs themselves), real verbatim decision records (the ~30 dated spec-backlog/debate <code>.txt</code> files), and historical/superseded files (<code>RPGACE.md</code>, <code>RPGACE_ARCHITECTURE.md</code>, <code>saved_conversation.md</code>, <code>session_handover_2026-07-19.md</code>, the two archive files) — with an explicit warning on <code>RPGACE.md</code> specifically, since it's the same class of stale-account-id risk that caused the real June 28 Composio bug CLAUDE.md rule 8 already documents.
+      <br><br>
+      <strong>Real finding surfaced building this, not invented to justify the doc: <code>dashDeck._openOversight()</code>'s live popup had already unilaterally labeled <code>taxonomy_placement_rules.txt</code> "The 7th doc"</strong> — with no matching entry ever added to CLAUDE.md's "SIX docs" section, no dated card recording when or why. A real, previously-uncaught instance of code and docs silently disagreeing about the system's own structure — exactly the class of drift this whole doc exists to prevent, caught by the drift itself rather than a clean slate. Fixed: <code>taxonomy_placement_rules.txt</code> moved into the popup's "Working specs" tier (honest placement — a narrow, un-dated ruleset, not a full living doc), and this new file added as the real 7th "Primary" entry. <code>node --check</code> clean.
+      <br><br>
+      CLAUDE.md's "Oversight — now SIX docs" section, <code>interconnection_map.md</code>'s "Standing rule: Oversight," <code>manual.html</code>'s Standing Development Rules, and the <code>/Bedtime</code>/<code>/scope</code>/<code>/Routine</code> skill files' own "six docs" language all updated to seven in the same pass — Chronicles is now correctly described as the eighth, separate, live in-app place, not the seventh (it was previously mislabeled "seventh" in CLAUDE.md, a label that only made sense before this file existed).
+      <br><br>
+      <strong>Real, notable gap found and recorded, not fixed</strong>: <code>graphify</code> — this session's own MANDATORY code-exploration tool per <code>.claude/settings.json</code>'s hook — has a stale index built against an older <code>scripts/mod_*.js</code> file layout that no longer exists (the app is one <code>rpgace_core.js</code> monolith now), and separately confuses the in-game "SKILLS" RPG mechanic with the Claude Code "skills" concept when queried. Nearly every module lookup this session's mandatory hook fired on returned "no node matching," meaning the tool the hook insists on consulting first often can't answer the question — flagged honestly in the new doc's own Part 1b rather than silently worked around forever.
+      <br><br>
+      Per <code>/Routine</code>'s own Step 1, now updated: after a genuine multi-day usage gap, the next session-start pass should read all seven docs individually (not skimmed) to rebuild full context of build state, capabilities, code interlinks, and AI intercommunication before proposing anything — the explicit instruction Alex gave for next week's run.
+    </div>
+</div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ July 31 — Round 3: Alex re-tested both questions, both bug classes confirmed genuinely fixed</div>
     <div class="card-body">

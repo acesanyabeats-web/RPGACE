@@ -32,7 +32,7 @@ Don't hand back a flat chronological wall of text. Organize into these categorie
 - **Deliberately not built / explicitly out of scope** — real decisions to hold something back, with the actual reason (cost, risk, "user said personal-visibility only"), not a silent omission. This is what separates "we forgot" from "we chose not to," and the project's own history shows that distinction gets lost if it isn't written down at the time.
 - **Still open** — genuinely unresolved items carried forward, cross-checked against `patch_notes.html`'s own "Still Open" section so nothing gets silently dropped or duplicated.
 
-## Handing off to the six docs
+## Handing off to the seven docs
 
 Once grouped, route into each doc per its own stated purpose (CLAUDE.md's summary of each is the checklist):
 - `patch_notes.html` — Bugs + Features groups become dated cards; a comprehensive top-level summary card when the session is large enough to need one.
@@ -41,6 +41,7 @@ Once grouped, route into each doc per its own stated purpose (CLAUDE.md's summar
 - `system_flow_map.md` — anything that changes an information flow (new data source, new processing step, new output).
 - `interconnection_map.md` — one paragraph per new structural touchpoint between modules.
 - `minotaur_map.html` — only if a new wing (entrance/hub/exit) was added; internal patches don't belong here.
+- `ai_tooling_and_rules_map.md` — only if a new global/native Claude Code skill got used against RPGACE for the first time, a new RPGACE-authored skill shipped, or a new rule-bearing `.md`/`.txt` file was added anywhere in the repo.
 
 ## What this skill does NOT do
 

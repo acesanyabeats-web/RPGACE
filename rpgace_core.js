@@ -5788,6 +5788,13 @@ RPGACE.register('dashDeck', {
   _openOversight: function() {
     var pop = this._popup({ eyebrow: '📚 Oversight', title: 'The seven living docs', accent: 'var(--blue)', width: '620px' });
     var body = pop.box;
+    // July 31 real fix: this list had already unilaterally declared
+    // taxonomy_placement_rules.txt "The 7th doc" with no matching entry
+    // ever added to CLAUDE.md's own "SIX docs" section - real doc/code
+    // drift, found while adding the actual 7th living doc
+    // (ai_tooling_and_rules_map.md). Placement Rules moved to Working
+    // specs where it honestly belongs (a narrow ruleset, not a full
+    // dated/updated living doc like the other seven).
     var primary = [
       { icon: '📓', title: 'Patch Notes', desc: 'Build history', href: '/patch_notes.html' },
       { icon: '🔗', title: 'Interconnection Map', desc: 'Module touchpoints', href: '/interconnection_map.md' },
@@ -5795,9 +5802,10 @@ RPGACE.register('dashDeck', {
       { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load', href: '/taxonomy_map.html' },
       { icon: '🗺️', title: 'System Flow Map', desc: 'Pipeline flow diagrams', href: '/system_flow_map.md' },
       { icon: '🐂', title: 'Minotaur Map', desc: 'The labyrinth mental-map', href: '/minotaur_map.html' },
-      { icon: '⚖️', title: 'Placement Rules', desc: 'The 7th doc', href: '/taxonomy_placement_rules.txt' }
+      { icon: '🤖', title: 'AI Tooling & Rules Map', desc: 'Skills + rule files, live vs. historical', href: '/ai_tooling_and_rules_map.md' }
     ];
     var secondary = [
+      { icon: '⚖️', title: 'Placement Rules', desc: 'taxonomy_placement_rules.txt', href: '/taxonomy_placement_rules.txt' },
       { icon: '📐', title: 'DESIGN.md', desc: 'Structural restructure spec', href: '/DESIGN.md' },
       { icon: '💰', title: 'Token Cost Audit', desc: 'token_cost_audit_2026-07-19.txt', href: '/token_cost_audit_2026-07-19.txt' },
       { icon: '🔮', title: 'Oracle Grounding Spec', desc: 'oracle_grounding_spec.txt', href: '/oracle_grounding_spec.txt' },
