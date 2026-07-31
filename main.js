@@ -607,8 +607,20 @@ async function sendChat(){
     } else {
       // Use oracle directly for pure conversation — much faster, no timeout risk
       // Detect INSTA-ORACLE mode — triggered by Instagram URL or Instagram keywords
+      // 2026-07-31 FROZEN-file exception, logged: real token-cost bug Alex
+      // caught (credits dropping fast; every message including unrelated
+      // ones tagged 📸 INSTA-ORACLE). window._instaOracleActive was set to
+      // true in 5 places but never reset anywhere - a one-way latch that,
+      // once tripped, silently appended the full ~2000-char Instagram-
+      // strategist system prompt to every later message for the rest of
+      // the page session, no matter the topic. Now re-evaluated fresh
+      // every send from THIS message's own content, so it naturally turns
+      // off the moment the topic actually changes instead of staying on
+      // forever. The explicit one-shot triggers (sendInsightToCmd3 etc.)
+      // still work - they set the flag then immediately send an Insta-
+      // flavoured message that matches isInstaOracleQuery on its own merits.
       const instaMode = window._instaOracleActive || isInstaOracleQuery(msg);
-      if(isInstaOracleQuery(msg)) window._instaOracleActive = true;
+      window._instaOracleActive = isInstaOracleQuery(msg);
 
       // July 15 deliberate main.js exception (frozen-file rule, logged same
       // session): asked directly "which phylum is this," Oracle invented a
