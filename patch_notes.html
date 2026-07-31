@@ -73,6 +73,13 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ July 31 — Round 3: Alex re-tested both questions, both bug classes confirmed genuinely fixed</div>
+    <div class="card-body">
+      Re-asked both the <code>dashDeck</code> and <code>authGate</code> questions after the round-2 fix. Both answered fully grounded (real <code>source_ref</code>, real function names, real gotchas pulled from the curated rows) and <strong>neither showed the 📸 INSTA-ORACLE tag</strong> — closing the loop on all 3 bugs found this session: the anatomy trigger gap, the <code>#[a-z]</code> false positive, and the <code>ig\s</code>/<code>reel</code>/<code>story\s</code> word-boundary false positives. First real end-to-end confirmation of the whole anatomy-grounding feature, not just a code-review pass.
+    </div>
+</div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🐛 July 31 — Round 2: a much bigger, likely long-standing token-cost bug found in the SAME regex, root-caused with real Node evidence before touching anything</div>
     <div class="card-body">
