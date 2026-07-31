@@ -91,7 +91,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight — 6th document</div>
   <h1><span class="bull">🐂</span>The Minotaur Map</h1>
-  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart. <strong>Restructured July 23</strong> so the ten rivers now read in real chronological order — the actual step-by-step journey a piece of information takes, start to finish, not the order each piece was originally built in. <strong>River XI added July 30</strong>: Content Production Live — a real, already-built river (ConID tracking through a production's own phases) that had simply never been drawn until Alex himself flagged the gap.</p>
+  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart. <strong>Restructured July 23</strong> so the ten rivers now read in real chronological order — the actual step-by-step journey a piece of information takes, start to finish, not the order each piece was originally built in. <strong>River XI added July 30</strong>: Content Production Live — a real, already-built river (ConID tracking through a production's own phases) that had simply never been drawn until Alex himself flagged the gap. <strong>River IX gained a fourth channel July 31</strong>: the OpenMontage Commission. It is drawn inside River IX rather than given a river of its own for the same reason the Fallback Drain was — it reuses that river's existing mechanism exactly (a reservoir read by a session on the far shore, on its own clock), and this map only mints a new river for a genuinely new shape of journey, not for a new destination along an existing one.</p>
 </div>
 
 <div class="wrap">
@@ -467,8 +467,8 @@
   <!-- ═══════════════ RIVER IX — Oracle self-awareness + Claude Code bridge (was River VIII) ═══════════════ -->
   <div class="river-label">River IX</div>
   <div class="river-title">🪞🌉 The Mirror and the Far Shore</div>
-  <div class="river-sub">Oracle learns to see its own reflection on everything above — and for the first time, water leaves RPGACE entirely, carried to a different world: a future Claude Code session</div>
-  <div class="correspond">↔ direct translation of <code>interconnection_map.md</code>'s "Oracle self-awareness + two-way Claude Code bridge" paragraph (July 22) — new enough it has no dedicated <code>system_flow_map.md</code> numbered section yet</div>
+  <div class="river-sub">Oracle learns to see its own reflection on everything above — and water leaves RPGACE entirely, carried to a different world: a Claude Code session. <strong>Four channels now run through this river</strong>, in the order they were dug: the Flagged Suggestion, the Morning Brief, the Fallback Drain, and (July 31) the OpenMontage Commission — the first one whose far shore is a <em>different repository</em> altogether, and the first where water genuinely flows back carrying a result.</div>
+  <div class="correspond">↔ direct translation of <code>interconnection_map.md</code>'s "Oracle self-awareness + two-way Claude Code bridge", "Claude Code fallback lane" and "OpenMontage handoff lane" sections, plus <code>system_flow_map.md</code> §8's fallback flow and §11's handoff arrow</div>
 
   <div class="flow">
     <div class="lane">
@@ -541,6 +541,39 @@
     </div></div>
     <div class="arrow-down"></div>
     <div class="lane"><div class="node stadium"><div class="t">A toast tells Alex it happened — never a silent recovery</div></div></div>
+  </div>
+
+  <div class="flow" style="margin-top:28px">
+    <div class="lane">
+      <div class="node rect"><div class="t">🎬 Built July 31 — a fourth channel, and a genuinely different far shore</div><div class="d">Every channel above ends at a Claude Code session working on <em>this</em> repo. This one ends somewhere else entirely: a separate OpenMontage session, in a different repository, that this session is permanently forbidden from attaching (a session is tied to its starting repo's owner — the tool refuses the add outright). Two worlds that cannot see each other's ground, sharing exactly one reservoir. It is also the first channel where water comes <em>back</em> carrying a real result rather than just a note.</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node stadium"><div class="t">A beat has a finished Visual Treatment and is ready to become an actual video</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node cyl"><div class="t">💧 Reservoir — openmontage_jobs</div><div class="d">the treatment brief plus the beat's own real numbers (BPM, key, mood), left where the other world can reach it. This reservoir is deliberately left <strong>unguarded</strong> — the far session carries only the plain public key, no shared secret — which is exactly why it must never be swept into a future guarding pass without first handing that session another way in.</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">🌉 The Far Shore, a third time — the OpenMontage session's own hands</div><div class="d">reads the brief, chooses which of its own pipelines fits, and either renders or refuses</div></div></div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Can it honestly make this video with what it actually has?</div>
+      <div class="branches">
+        <div class="branch yes"><span class="yn">YES</span>renders, and writes the result back into the same reservoir</div>
+        <div class="branch no"><span class="yn">NO</span>marks the job failed with a real, specific reason — <strong>this is what actually happened on the first real crossing</strong>: the brief needed one recurring character across several scenes, and generic stock footage cannot depict a person who has to stay the same person. It refused rather than quietly shipping something wrong.</div>
+      </div>
+    </div></div>
+    <div class="arrow-down"></div>
+    <div class="lane">
+      <div class="node stadium"><div class="t">🏖️ Both sessions read the same row — one shared timeline, not two accounts of the same trip</div></div>
+    </div>
+    <div class="arrow-down"></div>
+    <div class="lane"><div class="node rect"><div class="t">🪞 The refusal changed RPGACE's own upstream water</div><div class="d">no provider anywhere guarantees the same character survives from one generated scene to the next — so the Visual Treatment brief itself now always carries a fixed physical description of any recurring character. A failure on the far shore flowed back and reshaped the spring it came from, which is the whole point of drawing this channel rather than treating OpenMontage as somewhere water merely disappears to.</div></div></div>
+  </div>
+
+  <div class="flow" style="margin-top:22px">
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ Actual video, actually rendered</div><div class="d">still dry. A paid generation provider has to be chosen and configured first, and Alex has deliberately held off on that. RPGACE briefs and hands off; it does not generate video, and nothing in this river pretends otherwise.</div></div>
+    </div>
   </div>
 
   <!-- ═══════════════ RIVER X — Chronicles (was River IX) ═══════════════ -->
