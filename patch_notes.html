@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🎥 July 31 — Video/Content Pipeline UX pass: Beatstars label fix, ConID delete, direct Visual Treatment wiring, music_video status labels, script/EDL handoff view</div>
+    <div class="card-body">
+      Alex named 5 real gaps directly from a screenshot of ConID #8 (Calibri): the Beatstars button read as a status label not an action, no delete existed for a ConID, neither Content nor Video Pipeline linked to the existing Visual Treatment capability, Content Pipeline should read as an explicit 4-step music-video ladder (log beat/visual treatment/video generation/captions), and Video Pipeline should "take the script and keywords... to build the whole music video in sync to the beat."
+      <br><br>
+      <strong>Real evidence first</strong>: visualOracle's "Visual Treatment Doc" command and its save-to-pipeline path already existed — the real gap was that it lived only on a global panel, decoupled from any specific ConID, requiring Alex to hand-type beat data and manually pick a target. A direct <code>pg_constraint</code> query confirmed <code>video_jobs.content_production_id</code> has NO cascade, so a naive delete button would hard-fail against a linked job — handled explicitly rather than assumed safe.
+      <br><br>
+      <strong>Shipped</strong>: "Generate Beatstars Listing" label; a 🗑 delete button on ConID cards that warns explicitly when a linked video job exists and surfaces any FK failure as a clear toast; a "🎬 Generate Visual Treatment" button that pulls the linked beat's real BPM/key/mood/genre and auto-saves the result straight to that row (reusing <code>visualOracle._saveDocToProduction</code>, no re-implementation); music_video ConIDs now display Alex's own 4-step labels (Beat Logged/Visual Treatment/Video Generation/Captions Ready) mapped off the existing shared status column — no schema change, no ripple to Content Repurpose/Idea Bank; Video Pipeline's job detail view gains a real "📄 Script + Treatment" section showing the job's own script/EDL plus the linked ConID's saved creative docs (viewable via the shared popup).
+      <br><br>
+      <strong>Honest limit, named not hidden</strong>: actually building "the whole music video in sync to the beat" needs two capabilities that don't exist yet — real beat-grid audio sync (Slice C, already planned) and a video-rendering engine (OpenMontage stays a separate operated tool per the July 24 Aintergration verdict, never embedded). The handoff section surfaces real existing data; it does not simulate video generation.
+      <br><br>
+      Council of 5 implementability check + <code>/5thDimension</code> reconciliation (self-scored 9/10 against Alex's own 8/10 bar): <code>video_visual_treatment_wiring_and_conid_ux_spec_2026-07-31.txt</code>. Built directly (Sonnet, no Fable/Opus dispatch — evidence-gathering was already done inline with full context; <code>/restructure</code> noted as not literally applicable, same as the prior pass). <code>node --check</code> clean, G6 confirmed via <code>list_deployments</code>/<code>get_deployment</code>: commit <code>14b0a28</code> READY on production. <strong>Untested</strong> — needs Alex's hands: try the delete button (with and without a linked video job), Generate Visual Treatment on a real beat, and confirm the music_video status labels + handoff section render correctly.
+    </div>
+</div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🎬 July 30 — Video Pipeline "2 workflows" conflation resolved: <code>content_type</code> discriminator, Production Panel branching, "Raw Footage" mislabel fixed</div>
     <div class="card-body">
       Direct follow-through on the prior card's own real fork (shared <code>content_productions</code>/<code>video_jobs</code> tables serving two genuinely different content shapes — tutorial/OBS-recording vs. beat-driven music video). Alex asked to resolve it via <code>/Engineer</code> + <code>/restructure</code> + <code>/scope</code> + GODMODE, Council of 5 verdict, <code>/debate</code> if needed.
