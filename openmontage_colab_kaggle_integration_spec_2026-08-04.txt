@@ -96,7 +96,90 @@ STILL OPEN before a real build pass
    as the rest of this investigation.
 4. Alex's go-ahead to move from scoping to an actual build pass.
 
-STATUS: Nothing built. This file is the real, verbatim decision record
-for whenever that build pass happens - per this project's own rule 5
-("record real answers verbatim... never substitute a recommended
-default for the user's actual answer").
+=====================================================================
+BOTH REMAINING FORKS RESOLVED (2026-08-04, same session, real checks)
+=====================================================================
+1. REAL HF REPO SIZE FOR ltx2-local - checked directly against Hugging
+   Face, not the tool's own untrustworthy placeholder:
+   - ltx-2-19b-dev.safetensors (full precision): 43.3 GB
+   - ltx-2-19b-dev-fp8.safetensors (fp8 quantized): 27.1 GB
+   - vae/diffusion_pytorch_model.safetensors: 2.44 GB
+   - Full repo (ALL variants, not what a real download needs): 314 GB
+   REAL FINDING: the tool's disk_mb:4000 placeholder was off by 7-11x,
+   not a rounding error - a real download is ~29.5GB (fp8+VAE) or
+   ~45.7GB (full+VAE), not 4GB. This changes real planning materially:
+   a fresh-session re-download on a typical free-tier connection would
+   burn a meaningful chunk of a 9h/12h session cap on download alone.
+   STILL OPEN, not assumed: which exact variant OpenMontage's own
+   ltx2-local tool code actually pulls. Its declared vram_mb:12000
+   suggests fp8 (a full-precision 19B model would need more), but this
+   was not independently confirmed against the tool's real download
+   logic - first real build step, not guessed here.
+
+2. WEIGHT PERSISTENCE - size-fit confirmed, live mechanism NOT tested
+   (honest limit, not resolved past what's actually checkable from this
+   session): Kaggle's real current private-dataset limit is 200GB
+   (doubled from 100GB per Kaggle's own product update) - comfortably
+   fits either LTX-2 variant + VAE with huge headroom, so persistence
+   is structurally viable size-wise. What's still GENUINELY unverified:
+   the actual upload-once/attach-on-fresh-session round trip has never
+   been run. This requires Alex's real Kaggle account and an actual
+   notebook - it cannot be verified from a documentation check, and
+   this session has no way to execute it. It is Build Step 1 below, not
+   a resolved item - same "don't claim success without real evidence"
+   discipline that already caught the disk_mb placeholder and the two
+   earlier doc-vs-code mismatches today.
+
+=====================================================================
+REAL BUILD PLAN, FOR ALEX'S APPROVAL (nothing executed yet)
+=====================================================================
+Step 0 (done, this session): both forks above resolved with real
+  numbers; which LTX-2 variant is actually used remains the one open
+  confirmation, folded into Step 1.
+Step 1 (first REAL build action, needs Alex's live Kaggle account):
+  confirm which LTX-2 variant ltx2-local's own code downloads, then
+  live-test the actual persistence round trip - download once, upload
+  to a Kaggle Dataset, start a genuinely fresh session, confirm it
+  attaches and loads without re-downloading. This is the one step nothing
+  in this session can substitute for.
+Step 2: build the handoff wiring - a Kaggle notebook that receives job
+  params, runs ONLY the raw ltx2-local generation call (everything else
+  stays local per the confirmed minimal-surface-area finding above),
+  and the local OpenMontage session pulls the finished clip back via
+  `kaggle datasets download`/`kaggle kernels output` CLI (the one fully
+  scriptable retrieval option of the three proposed).
+Step 3: wire session-limit resumption onto the existing checkpoint
+  mechanism (completed_scene_ids) - confirm a real Kaggle 9h timeout
+  mid-run leaves genuinely resumable state, then start a fresh session
+  for whatever scenes remain.
+Step 4: one real small test - a single throwaway scene, NOT the full
+  Calibri brief - confirming the whole loop (local -> Kaggle -> generate
+  -> retrieve -> local compose) works end to end before committing to
+  the real job.
+Step 5: the real Colibri run - pre-authorized full run (a real
+  decision_log 'approval_policy' entry, per OpenMontage's own checkpoint
+  protocol), real audio (Calibre.wav) attached via source_audio_url,
+  Alex's own manually-supplied rough section timings (chorus1=restaurant
+  shootout / verse1=survivor before it / verse2=day after / chorus2=mob
+  finds him) as approximate scene boundaries - not beat-grid-accurate,
+  a real known limitation carried forward from earlier in this
+  investigation, not solved here. All 4 scenes generated via the Kaggle
+  pipeline, stitched, then surfaced through the accept/reject-per-scene
+  loop (revision_notes/revision_requested, already built) for Alex's
+  real review.
+
+=====================================================================
+NEXT SESSION DIRECTIVE (Alex's explicit instruction, 2026-08-04)
+=====================================================================
+When /Routine next runs, it should treat Steps 1-4 of this plan as the
+IMMEDIATE FIRST ACTION - dispatch /Engineer with GODMODE + /scope +
+/commit-archaeologist folded into its evidence pass to actually execute
+them, BEFORE running /Routine's normal Top-10 backlog debate. The real
+outcome of that /Engineer pass (built/blocked/partial, with real
+evidence either way) then gets folded into /Routine's own output
+alongside whatever else is prioritized that session - not a separate,
+disconnected report.
+
+STATUS: Both real-evidence forks resolved. Build plan written for
+Alex's approval - nothing in Steps 1-5 executed yet. This file is the
+real, verbatim decision record per rule 5.
