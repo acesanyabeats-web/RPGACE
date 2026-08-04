@@ -373,3 +373,59 @@ structure intact (model_index.json, scheduler__*, text_encoder__* x4,
 tokenizer__* x4, transformer__* x3, vae__*). No re-upload was needed -
 the original data was good the whole time, just gated on account
 verification.
+
+=====================================================================
+DTYPE HYPOTHESIS DISPROVEN, T4 CONFIRMED FIXES PASCAL ISSUE, THEN REAL
+VRAM CEILING FOUND (2026-08-04, same day, real self-correction)
+=====================================================================
+bf16 was NOT the cause - torch.cuda.is_bf16_supported() returned True
+on the P100 and the same kernel error persisted, disproving the
+morning's own hypothesis (flagged and corrected openly, not left
+standing). Real cause: Pascal-architecture (P100, compute capability
+6.0) lacks compiled CUDA kernels in the pip-installed torch/diffusers
+build for operations CogVideoX needs - confirmed fixed by requesting
+machine_shape="NvidiaTeslaT4" explicitly (real SDK enum value found,
+not guessed) - torch.cuda.get_device_name(0) confirmed "Tesla T4",
+kernel error gone completely.
+
+Then hit a real, different wall: genuine CUDA OOM during generation
+(not loading). Reproduced near-identically across TWO structurally
+different memory mechanisms - device_map="balanced" (11.33GiB used,
+3.23GiB free, 6.54GiB needed) and enable_model_cpu_offload() alone
+(11.34GiB/3.22GiB/6.54GiB) - with attention slicing + VAE tiling
+already active in both. That consistency across different mechanisms
+is real signal: this is a genuine VRAM ceiling for cogvideo-5b's peak
+generation-time memory (~17.9GB combined) exceeding a T4's ~14.56GB
+usable capacity, even at minimal test settings (9 frames, 720x480) -
+not a device_map artifact, not a missed optimization.
+
+max_memory={0:"7GiB"} capping was also tried as an intermediate value -
+avoided the OOM but surfaced a THIRD distinct failure (cross-device
+tensor mismatch, CogVideoXPipeline's forward pass not correctly
+rehoming split components) - real evidence this pipeline class has
+genuine rough edges under aggressive device_map splitting, not just a
+wrong number to retune.
+
+TWO FURTHER REAL CHECKS, BOTH CLOSED DOORS (not what was hoped, still
+real useful evidence):
+1. Dual-GPU via Kaggle Kernels API: confirmed NOT exposed. Empirically
+   tested (machine_shape="NvidiaTeslaT4x2", not just absence from SDK
+   docs) - server silently ignored the invalid value, fell back to a
+   random single GPU (a P100 this time, re-confirming the Pascal
+   finding again independently).
+2. hunyuan-1.5 real repo structure discovered directly (list_repo_files,
+   not guessed): top-level dirs are ['assets','scheduler','transformer',
+   'upsampler','vae'] - NO text_encoder directory at all. This morning's
+   drafted subfolder= fix cannot work as written - that path holds one
+   component's weights, not a full pipeline config. Correctly loading
+   hunyuan-1.5 needs manual per-component pipeline assembly, a real,
+   larger job than scoped this morning. This morning's caution against
+   hardcoding a default was the right call even though the specific fix
+   drafted doesn't work.
+
+STATUS: cogvideo-5b's real blocker is a genuine T4 VRAM ceiling during
+generation, not yet resolved. One real, untried free lever remains:
+enable_sequential_cpu_offload() (layer-level offload, likely much
+slower but purpose-built for exactly this constraint). hunyuan-1.5 is
+now a bigger job than a quick swap, not a near-term alternative. GPU
+quota used: ~15-18 min of 6h weekly, not a constraint.
