@@ -256,3 +256,43 @@ note already flagged for whoever writes the Kaggle-notebook loader:
 reconstruct the real subfolder/filename structure from the flattened
 names before calling from_pretrained() - the flat names encode the
 original path (subfolder__filename), not a random rename.
+
+=====================================================================
+MEMORY-EFFICIENT LOADING FIX - drafted, verified, staged for review
+(not yet used - fix/hunyuan-ltx2-variant-loading branch, local only,
+2 commits, nothing pushed)
+=====================================================================
+Real finding before writing anything: diffusers 0.39.0 (confirmed via
+source inspection) already defaults low_cpu_mem_usage=True whenever
+torch>=1.9.0 and accelerate is importable - both true during the
+segfault. Adding that flag explicitly, alone, almost certainly would
+NOT have prevented the crash - it was already active. Real candidate
+fix instead: opt-in device_map/offload_folder/max_memory parameters
+(unset by default - existing 4-tool behavior unchanged unless a caller
+explicitly opts in), letting accelerate spill excess weights to disk
+DURING loading instead of requiring the full ~19-20GB checkpoint
+resident in RAM before any offload hook runs (the actual crash cause).
+Confirmed via source, not assumed: diffusers pipelines only support
+device_map="balanced" (not "auto" - that's transformers' convention).
+
+CRITICAL OPERATIONAL NOTE: this fix is OPT-IN. Step 6 must explicitly
+pass device_map="balanced" + a real offload_folder path when it calls
+generation, or this fix is inert and the same RAM-staging crash risk is
+still live on whatever environment runs it next (including Kaggle -
+its notebook RAM isn't guaranteed to be immune either).
+
+disk_mb corrected on the 3 remaining tools, honestly tiered (measured
+vs. computed floor, not presented with equal confidence):
+- cogvideo_video: 21600 - real measured number, this session's actual
+  download.
+- wan_video: 5300 - computed floor only (1.3B params x 2 bytes bf16,
+  transformer alone; real total with text encoder/VAE unverified and
+  likely higher).
+- hunyuan_video: 18500 - same computed-floor approach (8.3B params).
+
+Verified before calling it done: syntax-checks pass all 4 tool files,
+tool registry loads correctly with new values, full tests/contracts/
+suite passes 620/620 (7 unrelated skips) - no regressions. Explicitly
+NOT live-tested against a real generation run - a drafted, reviewed
+fallback, not a proven fix, exactly as scoped. That real test is
+Step 6's job once the Kaggle upload completes.
