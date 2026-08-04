@@ -1,0 +1,102 @@
+OpenMontage free-cloud-GPU integration — real scoping proposal + resolved
+forks. Scoping only, NOT built. Next real step is a build pass, pending
+Alex's go-ahead.
+2026-08-04
+
+=====================================================================
+WHY THIS EXISTS (real chain, not invented)
+=====================================================================
+Same-day investigation: Alex wants a segmented-generation music-video
+workflow (Colibri beat) with a recurring character, timestamp-synced to
+the beat's arrangement, reviewed and selectively re-generated per scene.
+Real evidence found OpenMontage's own scene_plan -> assets -> edit ->
+compose pipeline with Backlot per-scene approval + selective
+regeneration already covers the segment/review/redo shape natively.
+Local GPU confirmed a dead end (no bundled model's declared vram_mb
+clears Alex's 6GB card; GGUF-quantized fallback needs new software
+install for an unconfirmed fit). Alex's real, explicit constraint: zero
+monetary spend, unlimited effort tolerance. Free cloud GPU (Colab/
+Kaggle, genuinely $0, no credit card) is the chosen path. Alex chose
+"wait for the full vision" over a same-day stock-footage compromise
+when given the real honest choice.
+
+=====================================================================
+REAL PROPOSAL FROM THE OPENMONTAGE SESSION (verbatim summary, not
+substituted with a recommended default)
+=====================================================================
+1. MODEL PICK: ltx2-local primary, hunyuan-1.5 backup, cogvideo-5b
+   rejected. Real reasoning: cogvideo-5b self-declares (in its own tool
+   file) not_good_for best-in-class local quality, and its 8fps/49-frame
+   default risks looking like a slideshow for an action-heavy brief
+   (shootout, car chase) - likely to trip OpenMontage's own slideshow-
+   risk gate. ltx2-local: 30fps (better for handheld chaos/whip-pans
+   this brief needs) and a safer ~4GB headroom on a 16GB T4. hunyuan-1.5:
+   tighter ~2GB headroom, but a cleaner Apache-2.0 license vs LTX-2's
+   "Community" license, which the OpenMontage session correctly flagged
+   as unverified rather than assumed safe.
+
+2. HANDOFF MECHANISM: minimal surface area, confirmed via the real
+   asset_manifest schema - nothing downstream cares where a clip's
+   pixels came from, only its local file path. So only the raw
+   generation call needs to run in the cloud; scene_plan, checkpoints,
+   Backlot, approval gates, and edit/compose all stay local, unchanged.
+   Three real retrieval options given, none picked for Alex:
+   (a) Google Drive mount + sync (Colab-native, needs Drive desktop
+       sync running locally too, or a separate download step)
+   (b) Kaggle Dataset output + `kaggle datasets download` CLI pull
+       (scriptable, no manual step, no Drive dependency)
+   (c) Manual download (simplest, but breaks automation - needs Alex's
+       active involvement every clip)
+
+3. SESSION-LIMIT HANDLING: real, verified via checkpoint-protocol.md
+   directly, not assumed - the assets stage already tracks
+   completed_scene_ids for resuming interrupted work. A Kaggle (9h) or
+   Colab (12h) timeout is just another interruption to the same existing
+   mechanism. No new state format needed, only new orchestration logic
+   to start a fresh session for whatever scenes remain.
+
+4. WEIGHT PERSISTENCE: real mechanisms exist on both platforms
+   (Drive-mounted HF cache for Colab, Kaggle Datasets for Kaggle) but
+   flagged honestly as UNVERIFIED LIVE by that session, not just
+   documented and trusted. Real data-quality gap found: the repo's own
+   disk_mb figures are an identical placeholder (4000) across all three
+   models regardless of real size - not trustworthy for real storage
+   planning. Real HF repo size for ltx2-local needs checking before
+   committing to a persistence plan (next dispatch's job).
+
+5. BEAT-GRID GAP: correctly left unsolved per instruction - this plan
+   assumes Alex's own manually-supplied rough section timings for now,
+   not blocked on Slice C (real onset/beat-grid detection, still unbuilt
+   project-wide).
+
+=====================================================================
+FORKS RESOLVED THIS SESSION (real checks, not guesses)
+=====================================================================
+- LTX-2 LICENSE: cleared. Community License permits free commercial use
+  under $10M ARR (Alex is nowhere near that) - real, current terms
+  checked directly, not assumed. Self-hosted use carries zero IP
+  indemnification from Lightricks, same generic risk shared by every
+  self-hosted open-weight model, not LTX-2-specific.
+- PLATFORM PICK (Colab vs Kaggle): Kaggle recommended for this specific
+  need - option (b) above (Kaggle Dataset + CLI pull) is the only fully
+  scriptable, zero-manual-step retrieval path of the three; Kaggle's
+  30h/week is also a guaranteed allocation, vs. Colab's 15-30h being
+  availability-based, not guaranteed. Not yet confirmed against Alex.
+
+=====================================================================
+STILL OPEN before a real build pass
+=====================================================================
+1. Confirm Kaggle over Colab (or ask for both to stay open as fallback
+   for each other, given Kaggle's own outage/queue risk).
+2. Real HF repo size check for ltx2-local (disk_mb placeholder is
+   untrustworthy) - do this before committing to a storage/download
+   plan, not after.
+3. Live-test weight persistence (Kaggle Dataset round-trip) rather than
+   trust documentation - same "verify before building on it" discipline
+   as the rest of this investigation.
+4. Alex's go-ahead to move from scoping to an actual build pass.
+
+STATUS: Nothing built. This file is the real, verbatim decision record
+for whenever that build pass happens - per this project's own rule 5
+("record real answers verbatim... never substitute a recommended
+default for the user's actual answer").

@@ -74,6 +74,13 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">☁️ Aug 4 — Colab/Kaggle free-GPU integration scoped (not built), LTX-2 license cleared</div>
+    <div class="card-body">
+      Real scoping pass from the OpenMontage session, verbatim record: <code>openmontage_colab_kaggle_integration_spec_2026-08-04.txt</code>. Model pick <code>ltx2-local</code> (30fps, safer VRAM headroom on a free T4, beats <code>cogvideo-5b</code>'s self-declared quality/slideshow-risk mismatch for an action brief) over <code>hunyuan-1.5</code>. Handoff surface confirmed minimal — only raw generation runs remotely, everything else (scene_plan/Backlot/checkpoints/compose) stays local, since <code>asset_manifest</code> only cares about a clip's local file path. Session-limit handling reuses the existing checkpoint mechanism, verified via <code>checkpoint-protocol.md</code> directly, not assumed. Two real resolutions this session: LTX-2's Community License checked live — free commercial use under $10M ARR, clear for Alex's scale; Kaggle recommended over Colab for the scriptable Dataset-pull retrieval path and its guaranteed (not availability-based) weekly hours. Still open: real HF repo size for <code>ltx2-local</code> (the tool's own <code>disk_mb</code> field is an untrustworthy identical placeholder across all 3 models), live-testing weight persistence, and Alex's go-ahead to move from scoping to an actual build pass.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎬 Aug 4 — OpenMontage segmented-generation investigation: real capability test, one confirmed doc-vs-code gap, one schema addition (untested — needs Alex's real run)</div>
     <div class="card-body">
       Alex proposed a segment-by-timestamp / generate-per-scene / stitch / accept-reject-and-redo video workflow. Real evidence-gathering (not a docs-only pass) found this is largely Alex's own already-recorded Step 5+6 from <code>beat_video_workflow_separation_and_6step_chain_spec_backlog_2026-07-30.txt</code>, and that OpenMontage's own real pipeline (<code>scene_plan → assets → edit → compose</code>, Backlot per-scene approval, documented selective regeneration) already covers the segment/review/redo shape natively — the open questions were whether local free generation actually works on Alex's hardware and how the review loop's approval model fits RPGACE's async job queue.
