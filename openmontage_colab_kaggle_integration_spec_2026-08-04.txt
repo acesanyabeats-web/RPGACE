@@ -250,6 +250,42 @@ REAL DATASET-UPLOAD BUGS FOUND AND FIXED, in order (none glossed over):
    bypassing the CLI's broken directory/tar handling entirely in favor
    of its working per-file streaming upload path.
 
+=====================================================================
+STEP 5/6 IN PROGRESS (2026-08-04, later same day) - real Kaggle Kernels
+API run, 2 real platform findings confirmed, generation test not yet
+complete
+=====================================================================
+Used the Kaggle Kernels API (kaggle kernels push) rather than an
+interactive notebook - gives a genuinely fresh, server-side execution
+environment using the same access_token auth already confirmed
+working, no browser/login needed. Real GPU quota checked first: 21,600s
+(6h) weekly, 0 used - confirmed real headroom before committing.
+
+TWO REAL PLATFORM FINDINGS, confirmed regardless of final outcome:
+1. Kaggle Kernels API datasets mount at
+   /kaggle/input/datasets/<owner>/<dataset-slug>/, NOT the flat
+   /kaggle/input/<dataset-slug>/ path most documentation implies -
+   found via a real diagnostic (listing /kaggle/input/) added after
+   the first run failed the attach check, not guessed.
+2. /kaggle/input and /kaggle/working are separate filesystems -
+   os.link() (hardlinks, which worked fine locally for the upload
+   workaround) cannot cross that boundary. The shutil.copy2() fallback
+   tried to duplicate the full ~21GB into /kaggle/working, exhausting
+   its disk quota (OSError: No space left on device). Real fix:
+   symlinks instead - filesystem-agnostic, ~0 disk cost. Currently
+   re-running with this fix applied.
+
+Real confirmation along the way: the dataset attach check passed with
+byte-exact file sizes matching the original upload (e.g. transformer
+shard = 9,925,342,208 bytes) - proof the data survived the earlier
+finalization ordeal completely intact.
+
+STATUS: symlink-fixed run in progress, not yet complete. Step 6's real
+question (does cogvideo-5b actually generate cleanly with device_map=
+"balanced"+offload_folder on real Kaggle GPU hardware) remains
+unanswered until this run finishes.
+
+=====================================================================
 STATUS: real upload in progress (~21.5GB, ~2-4MB/s observed, no local
 disk risk - streaming confirmed, not staged). Not yet complete. Step 6
 note already flagged for whoever writes the Kaggle-notebook loader:
