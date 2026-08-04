@@ -296,3 +296,21 @@ suite passes 620/620 (7 unrelated skips) - no regressions. Explicitly
 NOT live-tested against a real generation run - a drafted, reviewed
 fallback, not a proven fix, exactly as scoped. That real test is
 Step 6's job once the Kaggle upload completes.
+
+=====================================================================
+STEP 4 CONFIRMED COMPLETE (2026-08-04) - real root cause found, not
+guessed
+=====================================================================
+The dataset showed 3241 bytes / a stale timestamp for ~an hour after
+the real 21.5GB upload finished - looked like a silent failure (2
+independent CLI checks a minute apart showed zero change). ROOT CAUSE,
+confirmed via the authoritative Kaggle website UI, not the flaky CLI:
+the account's phone verification was incomplete, silently blocking
+large private-dataset finalization with no CLI-visible error. Completing
+phone verification unblocked it immediately. Real, verified final
+state: kaggle.com/datasets/acesanyabeats/cogvideox-5b-weights, Version
+3, 21.53GB, all 16 files present with the correct subfolder__filename
+structure intact (model_index.json, scheduler__*, text_encoder__* x4,
+tokenizer__* x4, transformer__* x3, vae__*). No re-upload was needed -
+the original data was good the whole time, just gated on account
+verification.
