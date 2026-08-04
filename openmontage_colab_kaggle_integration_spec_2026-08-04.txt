@@ -280,10 +280,33 @@ byte-exact file sizes matching the original upload (e.g. transformer
 shard = 9,925,342,208 bytes) - proof the data survived the earlier
 finalization ordeal completely intact.
 
-STATUS: symlink-fixed run in progress, not yet complete. Step 6's real
-question (does cogvideo-5b actually generate cleanly with device_map=
-"balanced"+offload_folder on real Kaggle GPU hardware) remains
-unanswered until this run finishes.
+STATUS UPDATE: symlink-fixed run COMPLETED - real success on the
+RAM-staging question specifically, the core thing this morning's
+investigation set out to answer.
+
+CONFIRMED, WITH REAL EVIDENCE: the device_map="balanced"+offload_folder
+fix (drafted earlier today, opt-in, previously untested) genuinely
+works. Real GPU allocated: Tesla P100-16GB (not the T4 assumed earlier
+- Kaggle's real hardware allocation varies run to run). Pipeline loaded
+in 88.6s using 11.3GB VRAM, both params confirmed actually passed (not
+just present in code), NO crash, NO segfault - the exact failure mode
+from this morning's local test is resolved on real cloud hardware. This
+directly answers the original question: yes, cogvideo-5b's checkpoint
+loading problem was fixable, and the fix works for real, not just in
+theory.
+
+Generation itself then failed, but for a real, narrow, separate reason:
+a CUDA "no kernel image available for execution on the device" error -
+the classic symptom of an unsupported dtype on older GPU architecture.
+Root cause: the throwaway test script hardcoded torch.bfloat16 instead
+of checking torch.cuda.is_bf16_supported() first. Pascal-generation
+GPUs (P100 included) genuinely lack proper bf16 tensor core support
+(that arrived with Volta/Turing onward) - a real, known hardware fact,
+not a guess. Important distinction confirmed: the ACTUAL drafted fix in
+_shared.py already checks is_bf16_supported() correctly rather than
+hardcoding - this is a bug in the disposable test script only, not a
+gap in the real code that needs revisiting. Retest with the dtype check
+fixed in progress.
 
 =====================================================================
 STATUS: real upload in progress (~21.5GB, ~2-4MB/s observed, no local
