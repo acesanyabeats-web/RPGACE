@@ -1,0 +1,161 @@
+/Routine — 2026-08-04 (morning), real Top 10 via GODMODE + Council of 5 +
+Omnitrix (no Fable) + /scope + /debate + /5thDimension, per the skill's
+own fixed procedure. Standing Alex-directive from last night's session
+executed first: OpenMontage build plan Steps 1-4 dispatched via
+/Engineer discipline before the normal debate.
+
+=====================================================================
+STANDING DIRECTIVE EXECUTED FIRST (per CLAUDE.md + the spec file's own
+"NEXT SESSION DIRECTIVE" section, Alex's explicit July-night instruction)
+=====================================================================
+GODMODE evidence pass before dispatching anything: re-queried
+openmontage_jobs live (2 rows, no overnight surprises — the Colab/Kaggle
+scoping proposal row matches exactly what was already processed and
+logged last session), confirmed git/Supabase state clean, and found two
+real doc-vs-database drifts while re-verifying CLAUDE.md's Live Numbers
+line: taxonomy_proposals dropped from 52 to 25 pending (Alex working the
+review queue himself, real activity Claude Code didn't originate — the
+July 24 journal/Chronicles cross-feed check catching exactly what it was
+built for), and oracle_dev_suggestions' 3 rows were already
+status='reviewed', not 'new' as the doc claimed. Both fixed directly in
+CLAUDE.md (Tier 0, no ceremony needed).
+
+Since Steps 1-4 of openmontage_colab_kaggle_integration_spec_2026-08-04.txt
+execute entirely inside the SEPARATE OpenMontage session (this RPGACE
+session cannot run Kaggle/Python commands in that repo), "/Engineer" here
+means: apply Engineer's real discipline (bounded goal list from real
+evidence, checkable against a report, no blind execution) to produce the
+actual next dispatch — not simulate a build that can't happen from here.
+
+REAL DISPATCH PRODUCED, ready for Alex to paste into the OpenMontage
+session (Step 1 of the 5-step plan, the one step nothing in this session
+can substitute for):
+
+---
+Two real things before Step 2 (handoff wiring) starts.
+
+1. CONFIRM THE VARIANT: your own ltx2-local tool declares vram_mb:12000.
+   Real Hugging Face sizes are 43.3GB (full ltx-2-19b-dev.safetensors)
+   vs 27.1GB (fp8 ltx-2-19b-dev-fp8.safetensors) + 2.44GB VAE either way.
+   Which one does your tool's actual download/load code pull? Check the
+   real source, don't infer from the VRAM number alone - a 19B model
+   needing only 12GB suggests fp8, but confirm it directly.
+
+2. LIVE PERSISTENCE TEST: download the confirmed variant once, push it
+   as a Kaggle Dataset via the Kaggle API (kaggle.json credentials
+   needed - confirm you have them or tell me what's missing), then start
+   a genuinely fresh Kaggle session and confirm the dataset attaches at
+   /kaggle/input/<dataset>/ and loads without re-downloading. This is
+   the one real unknown nothing could verify without your actual
+   account - report the real outcome, including a real error if it
+   fails, not a best-guess.
+
+Don't start Step 2 (handoff wiring) until both of these come back real
+and confirmed - building the notebook adapter around an unconfirmed
+variant or an untested persistence path just moves the guess downstream
+instead of resolving it.
+---
+
+Council-of-5 check on the dispatch before sending: scoped tight (2 real
+things, not the whole plan at once, same discipline that made yesterday's
+dispatches work); doesn't ask for anything this session could have
+checked itself (variant confirmation is source-code-only and was left
+for OpenMontage's own session since it already has the file open);
+honest that Step 2 is blocked on both landing clean, not proceeding
+regardless. Truth-check caveat, stated plainly: this session cannot
+verify the dispatch actually gets pasted or run today - that depends on
+Alex having a few minutes and live Kaggle access. If it doesn't happen
+today, it costs nothing (no code was written blind) and stays ready for
+whenever it does.
+
+=====================================================================
+TEAM 1 — GODMODE + Council of 5 evidence-based Top 10
+=====================================================================
+1. OpenMontage Step 1 dispatch (above) — real blocker for the whole
+   Colibri video vision, Alex's own explicit standing priority, costs
+   him ~2 minutes to paste and check back on.
+2. Hand-testing the accumulated backlog — F16 (Beatstars button), F17
+   (video_jobs 5-stage walk), F18 (Visual Treatment checkbox), the
+   highlight-to-Phylum-Path button (smoke tests #4-7/#11, open since
+   mid-July). Real reason for #2, not filler: CLAUDE.md's own words call
+   this "the single largest open item in the project," and everything
+   shipped July 26-31 (a large stretch) is still only code-verified, not
+   clicked through once.
+3. Characterize the 25 pending taxonomy_proposals — not a blind
+   rubber-stamp pass, a real look at what's actually in the batch
+   (source/engine/score spread) before Alex works through more of it
+   himself, same "verify what a backlog actually contains" discipline
+   as the July 24 precedent that found two genuinely different batches
+   inside one "60 pending" label.
+4. Voice input transcript-duplication — check whether Alex has real
+   console evidence yet from a repro; still no third blind attempt per
+   the per-defect cap, but worth asking directly rather than leaving it
+   silently parked.
+5. Composio key rotation — cheap, real, still open since July 12.
+6. Phylum XP Ledger architecture fork — needs Alex's real call (new
+   dedicated table vs. feeding the 6 existing activity tables); nothing
+   to build until he answers.
+7. journal/Chronicles/Minotaur cross-feed interrogation — needs Alex's
+   real answers per its own backlog file, not a guessed default.
+8. Swipe-gesture freeze — stays deprioritized per the July 28 standing
+   call; only reopens on real live evidence (screen recording or a
+   console trace), not a 5th blind pass.
+9. OpenMontage Steps 2-4 — contingent on Step 1 landing clean; not
+   started blind ahead of it.
+10. Continue the smoke-test sweep into whatever F16/F17/F18 hand-testing
+    surfaces as real bugs, rather than a separate backlog item.
+
+=====================================================================
+TEAM 2 — the honest counter-case
+=====================================================================
+Real case, not manufactured: hand-testing (Team 1's #2) should arguably
+be #1, ahead of even the OpenMontage dispatch. The reasoning: RPGACE has
+now shipped a genuinely large stretch of code (July 26-31 alone, per
+system_flow_map.md's own truth table) that has NEVER been clicked
+through once, and every session that keeps building on top of an
+unverified stack — including today's OpenMontage work, which itself
+touches the Content Pipeline/video_jobs surface — compounds exactly the
+risk this project's own rule 2 and rule 4 exist to prevent (get real
+evidence before layout/positioning code; one failed fix means stop and
+get real evidence, don't patch blind a second time). A doc-vs-code drift
+was found and fixed twice again just this morning (the two Live Numbers
+corrections) — real, small proof the gap between "reported" and "real"
+keeps growing quietly the longer hand-testing waits.
+
+REBUTTAL, why Team 1's ordering still holds: the OpenMontage dispatch is
+not a blind-build risk the way more UI construction would be — it is a
+two-question check-and-report ask, explicitly bounded so Step 2 doesn't
+start until it lands clean, and it was Alex's own explicit standing
+instruction from last night, not a guessed priority. Hand-testing
+requires Alex's own hands and sustained attention (clicking through
+several real flows); the OpenMontage dispatch requires two minutes to
+paste and walk away from. Sequencing the cheap, already-directed,
+low-attention item first doesn't deprioritize hand-testing — it exists
+in parallel as Team 1's real #2, not pushed further down the list.
+
+=====================================================================
+/5thDimension reconciliation (built vs. reported vs. Alex's real goals)
+=====================================================================
+No real drift found between this list and actual built/not-built state
+beyond the two Live Numbers corrections already fixed. Against Alex's
+own governing 48-hour rule: neither the OpenMontage dispatch nor
+hand-testing directly produces a beat/video in 48 hours on their own —
+both are exempted under this file's own "RPGACE infrastructure itself is
+exempt" standing clause, since both are real steps toward the Colibri
+video specifically. Judgment-funnel tier check: OpenMontage dispatch and
+hand-testing both stay Tier 1/2 (routine/multi-module, no destructive
+action); nothing on this list requires Tier 3 confirmation today.
+
+=====================================================================
+FINAL COUNCIL OF 5 LOCK-IN
+=====================================================================
+Final Top 10 = Team 1's list unchanged in ranking (the counter-case was
+real but didn't overturn the ordering — see rebuttal above), with an
+explicit honest note: hand-testing sits at a strong #2, not because it's
+less real than #1, but because #1 costs Alex two minutes and #2 costs
+him real sustained time, and sequencing doesn't erase priority.
+
+DROPPED, named not hidden: nothing genuinely dropped this pass — every
+open item from CLAUDE.md's "Open forks" section and the smoke-test
+backlog appears above, either as a numbered item or explicitly named as
+staying parked with its real reason (voice input, swipe freeze).
