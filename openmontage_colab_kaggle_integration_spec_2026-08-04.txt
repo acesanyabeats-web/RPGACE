@@ -183,3 +183,76 @@ disconnected report.
 STATUS: Both real-evidence forks resolved. Build plan written for
 Alex's approval - nothing in Steps 1-5 executed yet. This file is the
 real, verbatim decision record per rule 5.
+
+=====================================================================
+STEP 1 EXECUTED (2026-08-04, later same day) - real findings, model
+decision revised again, Kaggle upload in progress
+=====================================================================
+LOCAL TEST ABANDONED, correctly: the cogvideo-5b local VRAM test
+finally finished after 2h10m downloading, then crashed with a
+segmentation fault (exit 139) during checkpoint loading - never reached
+the GPU (peak VRAM stayed at ~1670MiB idle baseline the whole run).
+Real, useful finding despite the crash: the ~5GB VRAM figure from
+CogVideoX-5b's model card describes GPU memory DURING INFERENCE, not
+the ~19-20GB needed to load the full checkpoint (transformer + T5-XXL
+text encoder + VAE) into system RAM first - a real distinction the
+model card doesn't make clear. Most likely cause: system RAM pressure
+during loading (32.68GB total, other apps already using a chunk) -
+NOT confirmed with certainty (Windows Event Log search came back
+empty), correctly reported as a hypothesis, not a proven cause. Given
+Alex's explicit standing preference (Kaggle stays primary specifically
+to keep his own GPU/CPU free for real music production), the retry was
+called off rather than chased further - this was always secondary
+information, not something gating the plan.
+
+MODEL DECISION STANDS: cogvideo-5b remains the pick (only one of three
+candidates whose loading code matches its real HF repo, confirmed
+earlier). The RAM-loading lesson carries forward to whichever
+environment actually runs generation - needs explicit memory-efficient
+loading (low_cpu_mem_usage / device_map), not assumed safe just because
+it's a cloud notebook.
+
+KAGGLE CREDENTIAL SETUP - done, verified properly: token saved to
+~/.kaggle/access_token (37 chars, confirmed real length via a
+zero-exposure PowerShell length check, not by viewing the value).
+kaggle package upgraded to 2.2.4 (kagglesdk rewrite) - confirmed via
+real source inspection (kaggle_env.py's get_access_token_from_env())
+that it genuinely reads this plain-text access_token file format, not
+assumed compatible. Real auth check (`kaggle datasets list`) succeeded
+after hitting and fixing the SAME SSL cert issue from the local GPU
+test (machine-wide, not one-off - pip-system-certs fix applied to the
+main venv too).
+
+REAL DATASET-UPLOAD BUGS FOUND AND FIXED, in order (none glossed over):
+1. A Git-Bash-style path (/c/Users/...) passed to the Windows-native
+   Kaggle CLI broke its temp-staging path sanitizer (only escapes \
+   and : - forward slashes leaked through as literal nonexistent
+   subdirectories). Fixed: convert to a real Windows path first.
+2. Subdirectories are silently skipped by `kaggle datasets create`
+   without an explicit -r/--dir-mode flag - the first "successful"
+   upload contained one 411-byte file, none of the real weights.
+3. `-r tar` mode does not dereference symlinks. The HF cache stores
+   weights as symlinks to content-addressed blobs; Python's
+   `tarfile.add()` stores symlink stub entries (a few bytes, just the
+   link target) instead of real file content by default. Produced 5
+   identical ~10KB "archives" that LOOKED like a successful upload but
+   contained zero real weight data - caught by direct verification (a
+   local tarfile test) before trusting it, not assumed correct.
+   REAL LESSON: the same class of "green checkmark, silently wrong
+   data" risk this whole project's rule 4 exists to catch, just in a
+   different codebase.
+4. The "obvious" fix (dereference into a real copy) hit a real
+   constraint: only 8.6GB free disk, and the CLI's tar mode stages the
+   full archive locally first - text_encoder/ alone is ~9.4GB, so that
+   would have failed or filled the disk. Real fix: NTFS hardlinks
+   (verified zero extra disk usage before/after) flattened into unique
+   top-level filenames (e.g. text_encoder__model-00001-of-00002...),
+   bypassing the CLI's broken directory/tar handling entirely in favor
+   of its working per-file streaming upload path.
+
+STATUS: real upload in progress (~21.5GB, ~2-4MB/s observed, no local
+disk risk - streaming confirmed, not staged). Not yet complete. Step 6
+note already flagged for whoever writes the Kaggle-notebook loader:
+reconstruct the real subfolder/filename structure from the flattened
+names before calling from_pretrained() - the flat names encode the
+original path (subfolder__filename), not a random rename.
