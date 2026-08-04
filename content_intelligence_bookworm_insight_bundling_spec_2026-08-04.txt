@@ -1,0 +1,142 @@
+CONTENT INTELLIGENCE -> BOOKWORM-STYLE INSIGHT BUNDLING — real spec, not yet built
+Date: 2026-08-04
+Requested by Alex, verbatim: "I dont like how content intelligence is extracting
+the encyclopedia entries. I want the entries to essentially be a bundle of
+insights like how bookworm extracts insights. the criteria and reading and
+picking out algorithms should match bookworms. Current content pipeline only
+shows how infomation is presented, not what information is actually given
+that will then feed into taxonomy."
+
+Why this is a spec, not a same-pass rewrite: this touches main.js's live,
+daily-use Content Intelligence sync path (a FROZEN file), and rule 5's own
+convention ("multi-subsystem asks get spec'd and confirmed first") applies
+directly - a botched rewrite of a real sync path Alex uses daily is a much
+worse outcome than a one-session delay.
+
+===============================================================================
+REAL EVIDENCE — what actually happens today, read from the live code
+===============================================================================
+
+Two SEPARATE things happen at the end of a Content Intelligence sync, and
+they are NOT symmetric — this asymmetry is the real root of Alex's complaint:
+
+1. ENCYCLOPEDIA ENTRY CREATION (main.js, syncIntelData()'s "Auto-save new
+   entries to encyclopedia" block, ~line 4374-4390, feeding saveIntelToEncyclopedia()
+   at line 4431). For each of the first 5 new intel_reports rows, IF
+   r.insights.encyclopedia_entry has a title+summary, ONE combined markdown
+   blob is built (line 4224's template):
+     ## {title}
+     Source: {video title} by {creator} · Score: {score}/10
+     ### Summary
+     {summary}
+     ### Key Learnings
+     - {learning 1}
+     - {learning 2}
+     ...
+     ### Production Techniques
+     - {technique 1}
+     ...
+     ### What To Apply
+     -> {suggestion 1}
+     ...
+     ### Tags
+     {tags}
+   ...and saved as ONE encyclopedia row. Every distinct insight (each
+   key_learning, each technique, each suggestion) is flattened into one wall
+   of markdown under one title. This is "how information is presented" -
+   nicely formatted, but structurally undifferentiated.
+
+2. TAXONOMY PROPOSAL (rpgace_core.js, ciAutoPropose, rewritten July 19 per
+   its own code comment - "each stored insight is proposed individually
+   through the same unified scored engine book insights use"). This part
+   ALREADY loops over key_learnings + production_techniques INDIVIDUALLY
+   (capped 3/video, 9/scan) and calls taxonomyTree.silentPropose(insightText,
+   phylum, 'content_intelligence', url) per insight - which itself delegates
+   to phylumPath.decidePlacementScored whenever the phylum is enabled (the
+   "old feeds new" July 15 architecture, confirmed in interconnection_map.md).
+   So the TAXONOMY side is already insight-level and already shares Bookworm's
+   real scored-placement engine. This is not the part Alex is unhappy with,
+   though it's silent/auto-fired with no per-insight human review - see the
+   "criteria and reading" gap below.
+
+Compare to Bookworm's real model (_analyzeChapter -> _placeInsightCascade ->
+decidePlacementScored -> per-insight Approve/Reject/Edit checkpoint ->
+_insertNewSteps, storing the processed set in bookworm_chapters.insights
+jsonb): every insight is its own reviewable unit, scored 1-10, reworded and
+retried if mediocre, cascaded through other phyla if it doesn't fit, and
+NEVER committed without an explicit human Approve.
+
+===============================================================================
+THE REAL, HARD CONSTRAINT — what can and can't be rebuilt here
+===============================================================================
+
+The actual EXTRACTION of key_learnings/production_techniques/what_to_steal
+from a raw video happens in an EXTERNAL Python backend (local_server.py,
+confirmed NOT in this repo — CLAUDE.md's own security section already flags
+this: "whether to bring local_server.py's actual source into a session that
+can edit it" is a real, still-open question, never answered yes). This
+Claude Code session cannot rewrite that extraction algorithm directly. So
+"match Bookworm's criteria and reading and picking out algorithms" has to be
+answered on the JS side, in two honest ways:
+
+(a) Bookworm's real "criteria" for what counts as a decision, not what counts
+    as an insight in the first place, is the SCORED PLACEMENT engine
+    (decidePlacementScored's 5-check reasoning + 1-10 confidence + reword-retry
+    + cascade-through-phyla). ciAutoPropose already uses this exact function -
+    that part is already matched, just never surfaced to Alex as "matching
+    Bookworm" because it's silent.
+(b) What's genuinely missing is the REVIEW CHECKPOINT and the STRUCTURED
+    BUNDLE. Bookworm never auto-commits an insight without Approve/Reject/Edit;
+    Content Intelligence auto-queues to taxonomy_proposals silently (still
+    goes through the real review queue before landing in the tree, so nothing
+    is auto-committed to taxonomy_tree itself - but the ENCYCLOPEDIA row is
+    auto-created with zero review, and it's one flattened blob, not a
+    reviewable bundle).
+
+===============================================================================
+PROPOSED BUILD — phased, JS-side only, no main.js sync-path rewrite in phase 1
+===============================================================================
+
+PHASE 1 (low risk, main.js touch is additive not a rewrite): change the
+encyclopedia row's OWN shape. Instead of one markdown blob, store a real
+`insights` jsonb array on the encyclopedia row itself (schema addition,
+same pattern as bookworm_chapters.insights) - each array item:
+  { text, type: 'key_learning'|'technique'|'suggestion', phylum_number,
+    confidence, taxonomy_node_id (nullable, filled once/if placed) }
+`saveIntelToEncyclopedia()` still creates ONE row per video (title/summary
+stay as the row's own headline fields) but the body becomes a real bundle,
+not a rendered wall of markdown - Encyclopedia's own display can then render
+each insight as its own small card (same visual pattern Bookworm already
+uses for per-insight review, reused not reinvented per rule 8).
+
+PHASE 2 (the real "criteria matching" Alex asked for): give Content
+Intelligence a Bookworm-shaped review checkpoint. Instead of ciAutoPropose
+silently auto-queuing every insight into taxonomy_proposals, surface a real
+per-insight review screen (reusing Bookworm's own _renderInsightReview
+component, not a second one, per rule 8) the first time Alex opens a synced
+video's encyclopedia entry - Approve places it (same decidePlacementScored
+call already in use), Reject discards it, Edit lets him change the
+slash-path directly, identical UX contract to Bookworm's own chapter review.
+
+PHASE 3 (only if Phase 1-2 prove insufficient): revisit whether the raw
+Python-side extraction itself needs richer output (more insights per video,
+better-worded text) - this needs Alex's decision on whether to bring
+local_server.py's source into a session that can edit it, the same open
+question CLAUDE.md's security section already names.
+
+===============================================================================
+REAL QUESTIONS FOR ALEX BEFORE PHASE 1 STARTS
+===============================================================================
+1. Confirm Phase 1's schema addition (`encyclopedia.insights` jsonb) - a real
+   migration, same Tier-3-adjacent caution as any schema change, though this
+   one is additive (new nullable column) not a breaking change.
+2. Confirm Phase 2's review-checkpoint UX is wanted (it changes Content
+   Intelligence from fully-silent/background to needing a human click per
+   video, same tradeoff Bookworm already made deliberately) - or whether
+   silent auto-propose (current behavior) is preferred for encyclopedia rows
+   specifically, with only the DISPLAY becoming bundle-shaped (Phase 1 alone).
+3. Whether Phase 3 (touching local_server.py) is ever in scope, given it's
+   not in this repo and a session would need it added to edit it directly.
+
+Not built this pass. Real, concrete, phased plan ready for Alex's go-ahead -
+same discipline as any other Tier 2 multi-subsystem ask under rule 5.

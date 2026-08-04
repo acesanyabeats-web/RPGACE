@@ -2775,16 +2775,33 @@ RPGACE.register('oracleTreeGrounding', {
       return RPGACE.sb.rpc('search_taxonomy_leaves', { q: userText, phyla: phylaNums })
         .catch(function() { return []; })
         .then(function(trgmRows) {
-          var merged = top.slice();
-          var seenPaths = {};
-          merged.forEach(function(s) { seenPaths[s.leaf.path] = true; });
-          (trgmRows || []).forEach(function(row) {
-            if (row.score > 0.15 && !seenPaths[row.path]) {
-              seenPaths[row.path] = true;
-              merged.push({ leaf: row, score: row.score });
-            }
+          // Aug 4 (/restructure finding, Council-of-5 confirmed): the old
+          // merge just appended trigram hits after every keyword hit,
+          // threshold-filtered - a strong trigram match (a real synonym or
+          // typo-fix) could never outrank a weak keyword match, it could
+          // only ever fill remaining slots. Replaced with real reciprocal-
+          // rank fusion (k=60, the standard RRF constant): each leaf's
+          // score is the sum of 1/(k+rank) across whichever of the two
+          // ranked lists it appears in, so a leaf both lists agree on
+          // ranks above one only one list found, and a top trigram match
+          // can genuinely outrank a middling keyword match. Same fails-
+          // open behavior: an empty/errored trgmRows just means every
+          // leaf's score comes from the keyword list alone.
+          var RRF_K = 60;
+          var byPath = {};
+          top.forEach(function(s, i) {
+            var p = s.leaf.path;
+            byPath[p] = { leaf: s.leaf, rrf: 1 / (RRF_K + i + 1) };
           });
-          merged = merged.slice(0, 8);
+          (trgmRows || []).filter(function(row) { return row.score > 0.15; })
+            .forEach(function(row, i) {
+              var contribution = 1 / (RRF_K + i + 1);
+              if (byPath[row.path]) { byPath[row.path].rrf += contribution; }
+              else { byPath[row.path] = { leaf: row, rrf: contribution }; }
+            });
+          var merged = Object.keys(byPath).map(function(p) { return byPath[p]; })
+            .sort(function(a, b) { return b.rrf - a.rrf; })
+            .slice(0, 8);
           if (!merged.length) return self._gapOnlyBlock();
           var lines = merged.map(function(s) {
             return '- ' + s.leaf.path + (s.leaf.explainer ? ' — ' + s.leaf.explainer : '');
@@ -3482,16 +3499,21 @@ RPGACE.register('leftNav', {
     // the root. Guard here + the retry in init() below fixes it properly.
     if (!RPGACE.CONFIG || !RPGACE.CONFIG.pages) return [];
     var P = RPGACE.CONFIG.pages;
+    // Aug 4 restructure (Alex-requested): same card language as dashDeck's
+    // #dd-grid (icon/title/desc, dd-card visual identity) instead of a
+    // flat button-row list - every nav destination is now a real card,
+    // not just a label. `desc` is new; `icon` replaces the old inline-emoji
+    // convention so _renderItem can lay out icon/title/desc consistently.
     return [
-      { label: 'Dashboard',        page: P.dashboard },
-      { label: '📋 Agenda',        page: P.agenda },
-      { label: 'Schedule',         page: P.schedule },
-      { label: 'Oracle AI',        page: P.oracle },
-      { label: '🔬 Research Lab',  page: P.research, subKind: 'research' },
-      { label: '📖 Encyclopedia',  page: P.encyclopedia },
-      { label: '📓 Journal',       page: P.journal },
-      { label: '🧬 Phylum Path',   page: P.phylumPath },
-      { label: '📜 Chronicles',    page: P.chronicles },
+      { icon: '🏠', label: 'Dashboard',     desc: 'Command deck + Needs you now',        page: P.dashboard },
+      { icon: '📋', label: 'Agenda',        desc: 'Quests, shifts, daily grid',          page: P.agenda },
+      { icon: '📅', label: 'Schedule',      desc: 'Weekly / daily / monthly calendar',   page: P.schedule },
+      { icon: '🔮', label: 'Oracle AI',     desc: 'Chat, panels, agents',                page: P.oracle },
+      { icon: '🔬', label: 'Research Lab',  desc: 'Idea Bank, Corpus, Beat Log, Bibliography + more', page: P.research, subKind: 'research' },
+      { icon: '📖', label: 'Encyclopedia',  desc: 'Saved insights + articles',           page: P.encyclopedia },
+      { icon: '📓', label: 'Journal',       desc: 'Session logs, morning briefs',        page: P.journal },
+      { icon: '🧬', label: 'Phylum Path',   desc: 'Taxonomy drill-down + placement',     page: P.phylumPath },
+      { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
     ];
   },
 
@@ -3585,14 +3607,25 @@ RPGACE.register('leftNav', {
       '#ln-hdr .ln-brand{font-family:Cinzel,serif;font-size:14px;color:var(--gold);letter-spacing:2px;white-space:nowrap}',
       '.ln-close{width:44px;height:44px;background:none;border:none;color:var(--muted);font-size:24px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}',
       '.ln-close:hover{color:var(--text)}',
-      '#ln-list{display:flex;flex-direction:column;padding:8px 0}',
-      '.ln-item{display:flex;align-items:center;width:100%;min-height:44px;padding:10px 18px;background:none;border:none;border-left:3px solid transparent;color:var(--muted);font-family:Rajdhani,sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;text-align:left;cursor:pointer;transition:color .2s,background .2s,border-color .2s}',
-      '.ln-item:hover{color:var(--text);background:var(--panel)}',
-      '.ln-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--panel)}',
-      '.ln-sub{display:flex;flex-direction:column;background:var(--dark)}',
-      '.ln-subitem{display:flex;align-items:center;width:100%;min-height:44px;padding:8px 16px 8px 34px;background:none;border:none;border-left:3px solid transparent;color:var(--muted);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;letter-spacing:.5px;text-align:left;cursor:pointer;transition:color .2s,background .2s,border-color .2s}',
-      '.ln-subitem:hover{color:var(--text);background:var(--panel)}',
-      '.ln-subitem.active{color:var(--gold);border-left-color:var(--gold)}',
+      '#ln-list{display:flex;flex-direction:column;gap:8px;padding:12px}',
+      // Aug 4 restructure (Alex-requested): same dd-card visual identity as
+      // dashDeck's dashboard grid - icon/title/desc, hover lift, gold active
+      // state - single column (the drawer is 280px, dashDeck's 2-col grid
+      // doesn't fit) rather than a flat button-row list.
+      '.ln-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:border-color .2s,background .2s;width:100%;text-align:left}',
+      '.ln-card:hover{border-color:var(--border2);background:var(--dark)}',
+      '.ln-card.active{border-color:var(--gold);background:rgba(201,168,76,0.08)}',
+      '.ln-card .ln-ctitle{display:flex;align-items:center;gap:8px;font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}',
+      '.ln-card.active .ln-ctitle{color:var(--gold)}',
+      '.ln-card:hover .ln-ctitle{color:var(--text)}',
+      '.ln-card .ln-cdesc{font-family:Rajdhani,sans-serif;font-size:11px;color:var(--muted);opacity:.75;line-height:1.4}',
+      // Research Lab's sub-tabs render as smaller inner cards nested right
+      // beneath its own card (Alex's own framing: "inner cards showing
+      // under") rather than an indented flat list.
+      '.ln-subwrap{display:flex;flex-direction:column;gap:6px;margin:2px 4px 4px 18px;padding-left:10px;border-left:2px solid var(--border)}',
+      '.ln-subcard{display:flex;align-items:center;gap:7px;width:100%;min-height:38px;padding:7px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:Rajdhani,sans-serif;font-size:11px;font-weight:600;letter-spacing:.4px;text-align:left;cursor:pointer;transition:color .2s,border-color .2s,background .2s}',
+      '.ln-subcard:hover{color:var(--text);border-color:var(--border2)}',
+      '.ln-subcard.active{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,0.06)}',
       '@media (prefers-reduced-motion: reduce){#ln-drawer,#ln-backdrop{transition:none}}',
     ].join('');
     document.head.appendChild(st);
@@ -3651,23 +3684,37 @@ RPGACE.register('leftNav', {
     document.body.appendChild(panel);
   },
 
+  // Aug 4 restructure (Alex-requested): "make the left nav the same
+  // structure as dashboard - every card is a nav, research lab will have
+  // the sub navs (inner cards) showing under." Builds a real dd-card-style
+  // card per item instead of a plain button row; Research Lab's card is
+  // immediately followed by its own .ln-subwrap of smaller inner cards
+  // (one per researchTabs.TABS entry), same single-source-of-truth pattern
+  // dashDeck._openResearch() already established for that tab list.
   _renderItem: function(list, it) {
     var self = this;
     var row = document.createElement('button');
-    row.className = 'ln-item';
+    row.className = 'ln-card';
     row.type = 'button';
     row.dataset.page = it.page;
-    row.textContent = it.label;
+    var title = document.createElement('div');
+    title.className = 'ln-ctitle';
+    title.textContent = it.icon + ' ' + it.label;
+    var desc = document.createElement('div');
+    desc.className = 'ln-cdesc';
+    desc.textContent = it.desc || '';
+    row.appendChild(title);
+    row.appendChild(desc);
     row.onclick = function() { self._go(it.page); };
     list.appendChild(row);
 
     if (it.subKind === 'research') {
       var rWrap = document.createElement('div');
-      rWrap.className = 'ln-sub';
+      rWrap.className = 'ln-subwrap';
       var rt = RPGACE.modules.researchTabs;
       (rt && rt.TABS ? rt.TABS : []).forEach(function(t) {
         var s = document.createElement('button');
-        s.className = 'ln-subitem';
+        s.className = 'ln-subcard';
         s.type = 'button';
         s.dataset.researchTab = t.key;
         s.textContent = t.label;
@@ -3740,13 +3787,13 @@ RPGACE.register('leftNav', {
     if (!panel) return;
     var activeDiv = document.querySelector('.page.active');
     var activePage = activeDiv ? activeDiv.id.replace('page-', '') : null;
-    Array.prototype.forEach.call(panel.querySelectorAll('.ln-item'), function(r) {
+    Array.prototype.forEach.call(panel.querySelectorAll('.ln-card'), function(r) {
       r.classList.toggle('active', r.dataset.page === activePage);
     });
     var rt = RPGACE.modules.researchTabs;
     var activeTab = (rt && rt._activeTab) ? rt._activeTab() : null;
     var onResearch = activePage === RPGACE.CONFIG.pages.research;
-    Array.prototype.forEach.call(panel.querySelectorAll('.ln-subitem[data-research-tab]'), function(s) {
+    Array.prototype.forEach.call(panel.querySelectorAll('.ln-subcard[data-research-tab]'), function(s) {
       s.classList.toggle('active', onResearch && s.dataset.researchTab === activeTab);
     });
   },

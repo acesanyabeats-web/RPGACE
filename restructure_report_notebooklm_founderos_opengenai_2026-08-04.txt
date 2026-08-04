@@ -1,0 +1,101 @@
+/RESTRUCTURE + AINTERGRATION — NotebookLM memory setup, FounderOS, Open Generative AI
+Date: 2026-08-04
+Run via: GODMODE evidence + /restructure's two-sided debate (Side A: Aintergration's
+keep-current-infra case; Side B: a specific piece of the candidate replacing a
+specific piece of RPGACE-Claude-Code's own infra, argued on 3 axes) + Council of
+5, dispatched to an independent Opus agent, no Fable. Full transcript-derived
+verdicts below; this file is the verbatim record per rule 5.
+
+===============================================================================
+CANDIDATE A — NotebookLM as Claude's persistent memory — REJECT (both lenses)
+===============================================================================
+The pitch's own premise is false for RPGACE: this project does NOT re-explain
+itself every session. CLAUDE.md auto-loads via .claude/settings.json's
+context_files, seven oversight docs are git-committed, Chronicles
+(system_updates) is a live in-app log. Real cost is genuine though: CLAUDE.md
+alone is ~24,400 tokens loaded before any work starts - a real complaint,
+already self-diagnosed (the July 28 doc-discipline rule, the July 31 prune
+154KB->92KB).
+
+Rejected on the SOLUTION, not the complaint, on 4 counts: (1) notebooklm-mcp
+needs an interactive Google browser login this managed session cannot
+complete (same reason Canva sits unauthenticated right now); (2) it puts a
+mutable, un-diffable, third-party-hosted store UPSTREAM of CLAUDE.md's
+authority - CLAUDE.md's own Oracle-editable-section rule ("AI proposes,
+human confirms") already names this exact shape as an injection risk;
+(3) auto-generated summaries would be an 8th uncontrolled copy of facts 7
+docs already own (rule 8); (4) a near-identical idea (Headroom, cross-session
+MCP memory) was already Reference-only'd July 29 for the same environment
+reason.
+
+Reference only: "retrieve the relevant slice, don't load everything" -
+RPGACE already has this twice (oracleTreeGrounding, oracle_module_anatomy).
+The real, free, already-installed version of this benefit is graphify -
+mandated by a hook on nearly every tool call, found stale twice today, and
+re-run this same session (graphify update ., 1073 nodes/1438 edges/184
+communities, confirmed rpgace_core.js now present 115 times in the rebuilt
+graph.json). Honest caveat: querying by bare module name still misses after
+the rebuild (a query-matching limitation, not a staleness problem) -
+flagged, not solved.
+
+===============================================================================
+CANDIDATE B — FounderOS — REJECT the repo; REFERENCE ONLY on 3 patterns
+===============================================================================
+Next.js/TypeScript/Tailwind/better-sqlite3/Vitest/d3-force all require a
+bundler + npm runtime - hard fail against RPGACE's explicit zero-build-step
+rule, same reasoning as the July 20 Framer Motion rejection.
+
+Three real, surviving findings:
+- B-1 Repository-layer invariant: RPGACE already has this by convention
+  (RPGACE.sb.*, secureWrite(), data-write.js ALLOWED_TABLES) but not
+  enforced - real cost already on record (27 raw anon-key calls found in
+  main.js needing a dedicated audit before the RLS flip). A grep-based
+  bypass check is the minimal native version. Tier 1, not built this pass.
+- B-2 Honest connector-status surface: RPGACE already has "fail loud" as a
+  building-guide rule and the OpenMontage round-trip proved it. Real gap:
+  no single surface shows integration health project-wide - the exact class
+  of bug the composio.js ACCOUNTS-map drift already caused once, silently,
+  for weeks. Tier 2 - correctly NOT jumped ahead of hand-testing, the
+  project's own largest named open item.
+- B-3 G-Brain vs oracleTreeGrounding (the strongest finding): same
+  architectural shape already exists. Two real gaps: embeddings would catch
+  synonyms trigram can't, but needs a second paid vendor for 544 tree rows -
+  recommended NO, same reasoning as the OmniRoute rejection. The merge
+  itself (threshold-append rather than real reciprocal-rank fusion) WAS a
+  real, concrete, Tier-1 fix - built and shipped this same session
+  (rpgace_core.js's oracleTreeGrounding._buildGroundingBlock, RRF with k=60
+  replacing the old append-after-threshold merge). node --check clean.
+
+===============================================================================
+CANDIDATE C — Open Generative AI — REJECT (target A); NOT APPLICABLE (target B)
+===============================================================================
+Stated briefly per /restructure's own anti-ceremony guardrail - not a real
+three-axis fight. Electron+Next.js fails the architecture rule outright.
+More decisive: adopting a generation studio directly REVERSES an already-
+reasoned Council-of-5 verdict (system_flow_map.md: "RPGACE does not generate
+video. It tracks, briefs, and hands off.") - that makes it Reject, not
+merely Not-applicable. Its MuAPI gateway is a paid multi-provider router,
+the same shape as the already-rejected OmniRoute. It does not even solve the
+real open problem (OpenMontage's character-consistency gap across scenes) -
+nothing in a generic model gateway addresses that specific failure mode.
+One honest exception, flagged not built: as a personal tool Alex uses with
+his own hands outside RPGACE entirely, this is plausible - explicitly not
+an RPGACE integration, same shape as the July 20 marketing-site exception.
+
+===============================================================================
+WHAT ACTUALLY SHIPPED FROM THIS PASS (Tier 1, executed same session)
+===============================================================================
+1. graphify update . re-run - fixes the stale-index finding from July 31/
+   Aug 4 (confirmed: rpgace_core.js now present in the rebuilt graph;
+   honest caveat that bare-name symbol queries still miss, a separate
+   smaller limitation).
+2. oracleTreeGrounding's leaf-merge rewritten from threshold-append to real
+   reciprocal-rank fusion (k=60) - a leaf both the keyword scan and the
+   trigram RPC agree on now genuinely ranks above one only one list found,
+   instead of a strong trigram match only ever filling leftover slots after
+   every keyword hit. node --check clean.
+
+Everything else (B-1's grep check, B-2's connector-status surface) is
+real, evidence-backed, and deliberately NOT built this pass - flagged
+honestly as Tier 1/Tier 2 follow-ups rather than rushed in behind an
+already-large combined session.
