@@ -1257,50 +1257,106 @@ RPGACE.register('visualOracle', {
       .then(function(rows) {
         rows = rows || [];
         var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.92', scroll: true, width: '440px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
-          title: 'Choose a Director Reference', noDefaultClose: true,
+          dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
+          title: 'Choose a Director Blend', noDefaultClose: true,
         });
         var overlay = pop.overlay, box = pop.box;
 
-        var selLbl = document.createElement('div');
-        selLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-        selLbl.textContent = 'Director (' + RPGACE.utils.phylumLabel(14) + ' library)';
-        box.appendChild(selLbl);
+        // 2026-08-05 — Phase C (director blend, item 3 of
+        // content_video_pipeline_unification_spec_2026-08-05.txt).
+        // /interrogation confirmed: 3 SEPARATE dropdown rows (primary/
+        // secondary/tertiary), not one multi-select. Real single-fetch
+        // above (rows) is shared by all 3 rows below - no re-query.
+        var introNote = document.createElement('div');
+        introNote.textContent = 'Pick up to 3 directors to blend their styles. Their Phylum 14 keywords/phrases/insight get conjoined into one grounded reference for Oracle.';
+        introNote.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);line-height:1.5;margin-bottom:14px;';
+        box.appendChild(introNote);
 
-        var selRow = document.createElement('div');
-        selRow.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;';
-        var sel = document.createElement('select');
-        sel.style.cssText = 'flex:1;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-        var noneOpt = document.createElement('option');
-        noneOpt.value = ''; noneOpt.textContent = '— none / skip —';
-        sel.appendChild(noneOpt);
-        rows.forEach(function(r) {
-          var opt = document.createElement('option');
-          opt.value = r.concept; opt.textContent = r.concept;
-          sel.appendChild(opt);
-        });
-        var viewBtn = document.createElement('button');
-        viewBtn.textContent = 'ℹ️ View Style';
-        viewBtn.style.cssText = 'padding:8px 12px;background:none;border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;white-space:nowrap;';
-        viewBtn.onclick = function() {
-          var d = rows.filter(function(r) { return r.concept === sel.value; })[0];
-          if (!d) { RPGACE.utils.toast('Pick a director first', '#E2A83D', 2000); return; }
-          var dp = RPGACE.modules.dashDeck._popup({
-            dim: '0.94', scroll: true, width: '400px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-            title: d.concept,
+        // Real "5 helper phrases" requirement: definitions in
+        // f14_filmmaker_library are written as comma/semicolon-separated
+        // technique clauses (confirmed via live Supabase read, not
+        // guessed) - split on those, not invented metadata that doesn't
+        // exist in the table.
+        function directorPhrases(def) {
+          if (!def) return [];
+          return def.split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 5);
+        }
+
+        // One real row-builder, reused 3x (rule 8 dedup - not 3 hand-
+        // rolled copies of the same select+view-style+phrase-preview
+        // markup). A native <select>'s own options can't render rich
+        // content while the user scrolls through them cross-browser, so
+        // the honest "faster scanning" implementation is a live preview
+        // strip beneath the row that updates the instant a director is
+        // picked or keyboard-navigated to (both 'change' and 'input'),
+        // rather than a fabricated per-option tooltip claim.
+        function buildDirectorRow(labelText) {
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'margin-bottom:14px;';
+
+          var lbl = document.createElement('div');
+          lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+          lbl.textContent = labelText + ' (' + RPGACE.utils.phylumLabel(14) + ' library)';
+          wrap.appendChild(lbl);
+
+          var selRow = document.createElement('div');
+          selRow.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;';
+          var sel = document.createElement('select');
+          sel.style.cssText = 'flex:1;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+          var noneOpt = document.createElement('option');
+          noneOpt.value = ''; noneOpt.textContent = '— none / skip —';
+          sel.appendChild(noneOpt);
+          rows.forEach(function(r) {
+            var opt = document.createElement('option');
+            opt.value = r.concept; opt.textContent = r.concept;
+            sel.appendChild(opt);
           });
-          var body = document.createElement('div');
-          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
-          body.innerHTML = '<div style="margin-bottom:10px;">' + (d.definition || '').replace(/</g, '&lt;') + '</div>' +
-            '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Palette: ' + (d.colour_palette || 'n/a').replace(/</g, '&lt;') + '</div>';
-          dp.box.appendChild(body);
-        };
-        selRow.appendChild(sel); selRow.appendChild(viewBtn);
-        box.appendChild(selRow);
+          var viewBtn = document.createElement('button');
+          viewBtn.textContent = 'ℹ️ View Style';
+          viewBtn.style.cssText = 'padding:8px 12px;background:none;border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;white-space:nowrap;';
+          viewBtn.onclick = function() {
+            var d = rows.filter(function(r) { return r.concept === sel.value; })[0];
+            if (!d) { RPGACE.utils.toast('Pick a director first', '#E2A83D', 2000); return; }
+            var dp = RPGACE.modules.dashDeck._popup({
+              dim: '0.94', scroll: true, width: '400px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
+              title: d.concept,
+            });
+            var body = document.createElement('div');
+            body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
+            body.innerHTML = '<div style="margin-bottom:10px;">' + (d.definition || '').replace(/</g, '&lt;') + '</div>' +
+              '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Palette: ' + (d.colour_palette || 'n/a').replace(/</g, '&lt;') + '</div>';
+            dp.box.appendChild(body);
+          };
+          selRow.appendChild(sel); selRow.appendChild(viewBtn);
+          wrap.appendChild(selRow);
+
+          var phraseBox = document.createElement('div');
+          phraseBox.style.cssText = 'font-size:11px;color:rgba(155,89,182,0.55);line-height:1.5;min-height:16px;margin-bottom:2px;';
+          phraseBox.textContent = 'Pick a director to see their signature phrases here.';
+          wrap.appendChild(phraseBox);
+
+          function refreshPhrases() {
+            var d = rows.filter(function(r) { return r.concept === sel.value; })[0];
+            if (!d) { phraseBox.textContent = 'Pick a director to see their signature phrases here.'; return; }
+            var phrases = directorPhrases(d.definition);
+            phraseBox.textContent = phrases.length ? ('✦ ' + phrases.join('  ✦  ')) : '';
+          }
+          sel.addEventListener('change', refreshPhrases);
+          sel.addEventListener('input', refreshPhrases);
+
+          return { wrap: wrap, sel: sel };
+        }
+
+        var primaryRow = buildDirectorRow('Primary Director');
+        var secondaryRow = buildDirectorRow('Secondary Director (optional blend)');
+        var tertiaryRow = buildDirectorRow('Tertiary Director (optional blend)');
+        box.appendChild(primaryRow.wrap);
+        box.appendChild(secondaryRow.wrap);
+        box.appendChild(tertiaryRow.wrap);
 
         var insLbl = document.createElement('div');
         insLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-        insLbl.textContent = 'Extra inspiration / keywords (optional)';
+        insLbl.textContent = 'Your creative inspiration / keywords for THIS beat (optional)';
         box.appendChild(insLbl);
         var insBox = document.createElement('textarea');
         insBox.placeholder = 'e.g. more handheld than usual, add neon signage...';
@@ -1313,10 +1369,28 @@ RPGACE.register('visualOracle', {
         contBtn.textContent = 'Continue';
         contBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
         contBtn.onclick = function() {
-          var directorPart = sel.value || 'NONE';
+          // Real 3-info-group structure confirmed by /interrogation: (a)
+          // beat log metadata stays in the template's own separate fields
+          // (untouched here) - this callback only ever produces groups
+          // (b) director-blend keywords/phrases/insight and (c) Alex's
+          // own free-text creative inspiration, each clearly labeled so
+          // the scriptwriter prompt can't conflate them the way the old
+          // single "director — additional inspiration: X" string did.
+          var chosenNames = [primaryRow.sel.value, secondaryRow.sel.value, tertiaryRow.sel.value].filter(Boolean);
           var insp = insBox.value.trim();
           overlay.remove();
-          callback(insp ? (directorPart + ' — additional inspiration: ' + insp) : directorPart);
+          if (chosenNames.length === 0 && !insp) { callback('NONE'); return; }
+          var blendText = 'NONE';
+          if (chosenNames.length) {
+            blendText = chosenNames.map(function(name) {
+              var d = rows.filter(function(r) { return r.concept === name; })[0];
+              return d ? ('- ' + d.concept + ': ' + d.definition + ' Palette: ' + d.colour_palette) : ('- ' + name);
+            }).join('\n');
+          }
+          var out = 'DIRECTOR-BLEND STYLE (Phylum 14 keyword/phrase/insight blend' +
+            (chosenNames.length > 1 ? ', ' + chosenNames.length + ' directors conjoined' : '') + '):\n' + blendText;
+          if (insp) out += '\n\nCREATIVE INSPIRATION (Alex\'s own free-text, for this specific beat):\n' + insp;
+          callback(out);
         };
         var cancelBtn = document.createElement('button');
         cancelBtn.textContent = 'Cancel';

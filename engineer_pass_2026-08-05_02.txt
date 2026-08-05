@@ -1,0 +1,172 @@
+/Engineer pass — 2026-08-05_02
+Content/Video Pipeline unification, Phase C (director blend UI)
+Ref: content_video_pipeline_unification_spec_2026-08-05.txt, item 3
+Ref: engineer_pass_2026-08-05_01.txt (Phase A, same framework)
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Add 2 more director rows (secondary + tertiary) to the existing
+   single-director picker, so up to 3 directors' styles can be blended.
+   Confirmed via /interrogation: 3 SEPARATE dropdown rows, not one
+   multi-select. Tier 1 (single function, no schema change).
+2. Each director row shows up to 5 "helper phrases" for faster scanning.
+3. Restructure the resulting text so the eventual scriptwriter prompt
+   draws from 3 distinct, named info groups: (a) beat log metadata
+   [already separate, untouched], (b) director-blend keywords/phrases/
+   insight, (c) Alex's own free-text creative inspiration for this beat.
+No Tier 3 goals — no pre-pass confirmation needed (function-scoped UI
+change, no new table, no RLS/migration).
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- `_showDirectorPicker(callback)` (rpgace_core.js ~line 1253) confirmed
+  as the one real implementation, called from exactly 2 real sites
+  (line ~1210 DOC_SLUGS proceed-flow, line ~13925 contentProductionLive
+  ConID-card flow) — both just do a single string-replace of
+  `[TYPE A FILMMAKER NAME OR VISUAL STYLE]` with the picker's callback
+  text, so the callback's own output shape was the only thing that
+  needed real design work; neither call site needed touching.
+- Before this pass: ONE director `<select>` (source=f14_filmmaker_
+  library, 50 real rows), a "View Style" info popup, ONE free-text
+  inspiration box. Output was a single flat string:
+  `directorPart + ' — additional inspiration: ' + insp` — group (b) and
+  (c) were mixed into one unlabeled sentence, no distinct groups at all.
+- Live Supabase schema check (not assumed): `taxonomy_nodes` has NO
+  dedicated "keywords"/"phrases" column for f14 rows — `concept`,
+  `definition`, `colour_palette` are the only populated fields (checked
+  3 real rows directly: fl_studio_implementation/artist_references/
+  beat_selling_angle are all null for this source). `definition` is
+  written as comma/semicolon-separated technique clauses (e.g. Kurosawa:
+  "Multiple-camera simultaneous coverage..., weather used as emotional
+  force..., telephoto lens compression..., wipe transitions...") — the
+  real, honest basis for "5 helper phrases" is splitting this field, not
+  inventing a phrases column that doesn't exist.
+- Real constraint acknowledged, not glossed over: a native `<select>`
+  cannot render rich per-option content while the user scrolls/keys
+  through it, cross-browser. The honest implementation is a live preview
+  strip beneath each row that updates on the currently-selected/
+  navigated-to option (`change` + `input` listeners), not a claim of
+  true per-option tooltips.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — routine build, not an audit)
+=====================================================================
+1. Added `directorPhrases(def)` — splits definition on `[,;]`, trims,
+   filters empty, caps at 5. One real helper, used by all 3 rows.
+2. Added `buildDirectorRow(labelText)` — one real factory (rule 8 dedup:
+   3 rows share ONE implementation, not 3 hand-rolled copies) building
+   label + select + View Style button + a live phrase-preview strip.
+   Single shared `rows` fetch (already fetched once before any row is
+   built) reused by all 3 — no re-query per row.
+3. Built 3 rows: Primary Director / Secondary Director (optional blend)
+   / Tertiary Director (optional blend). Popup title changed to "Choose
+   a Director Blend"; width widened 440px→460px for the extra rows;
+   intro note explains the blend explicitly.
+4. Free-text box relabeled "Your creative inspiration / keywords for
+   THIS beat (optional)" — makes group (c) explicit rather than
+   "Extra inspiration / keywords".
+5. Continue button now: collects up to 3 chosen director names, looks
+   each up in the already-fetched `rows` (no extra fetch), builds a
+   labeled "DIRECTOR-BLEND STYLE (Phylum 14 keyword/phrase/insight
+   blend[, N directors conjoined]):" block (same concept/definition/
+   palette format `_withFilmmakerLibrary` already uses elsewhere for a
+   different real purpose — full-library grounding vs. this function's
+   chosen-subset blend — same shape reused deliberately, not a dedup
+   violation since the underlying data need differs). If free-text
+   inspiration is present, appends a separately labeled "CREATIVE
+   INSPIRATION (Alex's own free-text, for this specific beat):" block.
+   Preserves old exact behavior (`callback('NONE')`) when nothing at all
+   is chosen/typed, so both real call sites' existing placeholder-
+   substitution logic needs zero changes.
+6. index.html cache-bust bumped (20260805a → 20260805b) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 2 files, 114 insertions / 40 deletions (rpgace_core.js), plus
+index.html's 1-line cache-bust. All changes contained inside
+`visualOracle._showDirectorPicker` (~line 1253-1420) — no other function
+touched, no call-site changes needed (confirmed by design: callback
+output shape change is fully absorbed by the existing string-replace at
+both sites).
+
+Honest residual risks, not hidden:
+- The "5 helper phrases" feature is a live preview, not a true per-
+  option in-dropdown display — flagged in Stage 2/3 as a deliberate,
+  honest scope decision given native `<select>` limits, not silently
+  passed off as literally "in the dropdown."
+- `definition` text quality varies per director (some clauses are long,
+  splitting on comma can occasionally produce an oddly-long "phrase" if
+  a director's definition uses long comma-joined clauses rather than
+  short ones) — cosmetic only, no functional break, not fixed this pass
+  (rule 11 — no silent scope growth beyond the 3 goal-contract items).
+- The blended DIRECTOR-BLEND STYLE block can get long with 3 directors
+  each carrying a full definition — inlined directly into the
+  `[TYPE A FILMMAKER NAME OR VISUAL STYLE]` placeholder inside the
+  Visual Treatment Doc prompt sentence, same as before (single-director
+  case already did this), just longer. Prompt is sent to Oracle as
+  plain text, not rendered UI, so this is functional, if visually dense
+  if anyone reads the raw filled prompt.
+- Zero real hand-testing yet — same standing project-wide gap as every
+  other pass this week.
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: real dedup (one row factory, one phrase-splitter, one
+shared fetch — not 3 copies), real schema check before inventing a
+"phrases" field that doesn't exist, honest labeling of the 3 info
+groups per the confirmed spec, zero regression risk to either call site
+(callback contract unchanged: still a single string). Docked 2 points
+for the still-unhand-tested UI and the acknowledged-but-unfixed
+long-block/cosmetic-phrase-length residuals.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- node --check main.js: untouched this pass, no re-check needed (no
+  FROZEN-file exception invoked).
+- git diff --stat: re-run fresh, matches Stage 4's claimed file/line
+  counts exactly.
+- index.html script-tag count: re-checked, exactly 2, only the version
+  string changed.
+- Both real call sites (line ~1210, ~13925) re-read after the edit:
+  confirmed unchanged, still doing a plain string-replace of the same
+  placeholder with the callback's (now richer) string — no call-site
+  code needed to change for this pass's goals.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, both files, fresh run.
+G2 (index.html invariants) — PASS, exactly 2 script tags, only the
+  version string changed.
+G3 (module convention) — PASS, change entirely inside visualOracle's
+  existing module markers, no main.js touch, no FROZEN exception.
+G4 (claim-to-diff reconciliation) — PASS, both directions clean.
+G5 (goal reconciliation) — all 3 Stage 1 goals: DONE.
+G6 (deployment reality) — pending merge+push, will confirm real
+  production commit once live (same as every other pass this week).
+G7 (cache-bust) — PASS, version string moved in the same pass.
+UNTESTED (required label, not a failure): code-verified and gate-passed,
+  not yet clicked through in a real browser. Specific actions needed:
+  (1) open the director picker from a ConID card's "Start Visual
+  Treatment" button, confirm 3 distinct rows render with working
+  dropdowns; (2) pick 2-3 directors, confirm each row's phrase-preview
+  strip updates live and "View Style" still opens the right director's
+  full definition; (3) submit with a blend + free-text inspiration,
+  confirm the generated prompt (visible in the chat input before send)
+  shows both a DIRECTOR-BLEND STYLE block and a separately labeled
+  CREATIVE INSPIRATION block; (4) submit with everything left blank,
+  confirm the old exact behavior (director text = "NONE") still holds.
+
+PASS COUNT: 1 of 3 max. Re-looping not triggered — no gate failed, no
+Stage 1 goal unresolved.
+
+=====================================================================
+NEXT
+=====================================================================
+Phase D: restructure Production Panel into 4 real phases for
+music_video ConIDs (Reference+Style / Direction+Script / Script editing
+/ Video Pipeline), each with its own retroactive button. Same framework.

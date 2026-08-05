@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎬 Aug 5 — /Engineer Phase C: 3-director blend picker, 5 helper phrases, 3 named info groups</div>
+    <div class="card-body">
+      Second real build pass of the Content/Video Pipeline unification (spec item 3), same 5-stage <code>/Engineer</code> discipline as Phase A. Full record: <code>engineer_pass_2026-08-05_02.txt</code>. Phase B (reference-corpus linking) was stopped mid-evidence-gathering after a real architecture mismatch — <code>findMatches()</code> is metadata-tag scoring, not audio-similarity matching, and the "Add These Artists" mechanism is a separate Last.fm suggestion feature — logged as a real future build instead of built on the wrong premise: <code>beat_audience_matching_engine_future_idea_2026-08-05.txt</code>.
+      <br><br>
+      <strong><code>visualOracle._showDirectorPicker</code> now offers 3 separate director rows</strong> (primary/secondary/tertiary, per <code>/interrogation</code>'s confirmed answer) instead of one, sharing a single real row-factory and a single shared <code>taxonomy_nodes</code> fetch (rule 8 dedup — not 3 hand-rolled copies). Each row shows up to 5 real "helper phrases" split from that director's own <code>definition</code> field (confirmed via live Supabase read — no dedicated phrases column exists, so this is honestly built from what's actually there) in a live preview strip, since a native <code>&lt;select&gt;</code> can't render rich content per-option while scrolling.
+      <br><br>
+      <strong>Output is now 3 distinctly labeled info groups</strong>, per the confirmed spec: beat metadata stays in the existing template fields untouched; a new "DIRECTOR-BLEND STYLE" block conjoins up to 3 chosen directors' concept/definition/palette; a separately labeled "CREATIVE INSPIRATION" block carries Alex's own free-text — replacing the old single unlabeled sentence that mixed director name and inspiration together. Both real call sites (DOC_SLUGS proceed-flow, ConID-card Visual Treatment button) needed zero changes — the callback's string contract is unchanged.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass (fresh <code>node --check</code>, index.html invariants, module convention, two-directional diff reconciliation, cache-bust bumped 20260805a→20260805b). G6 pending merge+push. <strong>UNTESTED, needs Alex's hands</strong>: open the picker from a real ConID, confirm all 3 rows render and their phrase strips update live; submit a 2-3 director blend plus free-text inspiration and confirm the filled prompt shows both labeled blocks; submit blank and confirm the old "NONE" behavior still holds.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎨 Aug 5 — /Engineer Phase A: mood-aware colour palette, auto-advancing status, ConID recency sort</div>
     <div class="card-body">
       First real build pass of the Content/Video Pipeline unification (full spec: <code>content_video_pipeline_unification_spec_2026-08-05.txt</code>, built via a real <code>/interrogation</code> pass first — a new skill Alex named and defined inline). Full record: <code>engineer_pass_2026-08-05_01.txt</code>.
