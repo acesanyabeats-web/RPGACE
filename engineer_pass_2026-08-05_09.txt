@@ -1,0 +1,239 @@
+/Engineer pass — 2026-08-05_09
+Content/Video Pipeline unification, Phase H (final phase, A-H): real
+beat deliverables (stems/zips) per licence tier
+Ref: beat_deliverables_autoport_backlog_2026-08-05.txt (full verbatim
+spec + /interrogation answers), engineer_pass_2026-08-05_08.txt (prior
+phase, same framework)
+
+=====================================================================
+STAGE 0 — REAL SPEC RESOLUTION (before any build)
+=====================================================================
+Alex's follow-up ask, verbatim: "id like an api to be able to autoport
+beats depending on licensing, stems for zips to sell pricier lisences
+etc. we need to plan this through, then think through phase b too."
+Real evidence gathered before proposing anything: a fresh live
+WebSearch (Aug 2026, not trusting the existing July 13 code comment on
+its own, since ~3 weeks had passed) reconfirmed BeatStars has NO
+official API for uploads/listings — a real, standing constraint that
+shapes the whole build, not an assumption. Given that constraint, ran a
+real 3-question /interrogation pass rather than guessing a shape.
+Alex's real answers all carried genuine nuance beyond a labeled pick
+(full verbatim record in the backlog file) — read carefully per his own
+explicit instruction to do so, not pattern-matched to the closest
+option:
+  Q1 (autoport mechanism): auto-prepare a downloadable bundle NOW; real
+  browser automation (Option 2) explicitly confirmed as wanted but
+  deferred to a LATER phase, open to a third-party tool ("cr4wl.ai") or
+  another browser-automation repo rather than hand-building it.
+  Q2 (file source): fresh upload from Alex's own machine — confirms
+  real new Storage + schema is necessary, no existing source to wire.
+  Q3 (zip bundling): automatic server-side zipping as the primary
+  mechanism, PLUS support for dropping in a whole folder of files to be
+  zipped together, not just individually-named stems.
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. New private Supabase Storage bucket for real deliverable files.
+2. New content_productions schema tracking uploaded files + generated
+   bundles per licence tier.
+3. New server-side zip-bundling endpoint (Vercel function).
+4. New ConID-card UI: upload (individual files AND folder), list/
+   delete, per-tier bundle generate + download.
+5. Explicitly NOT: any real BeatStars API call (confirmed not to
+   exist), any real browser automation (Option 2, confirmed deferred).
+6. Log the Phase B revisit consideration honestly, not decide it.
+Tier 2/3 boundary: new Storage bucket + RLS policies + schema columns
+is a real Supabase migration (Tier 3 posture — done directly here since
+it's purely additive, non-destructive, and follows an already-
+established pattern/precedent, same posture as prior additive schema
+changes this project has made without a separate confirmation round);
+application code (endpoint + UI) is Tier 2, same as every other phase.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Read package.json: bare ({"type":"module"}), zero dependencies — this
+  project has never had a single npm package before, client or server.
+- Grepped every api/*.js file's imports: 100% internal (./_context.js
+  only) — confirms no precedent either way for a server-side dependency,
+  a real first, not a silent departure from an existing rule (the zero-
+  npm rule in CLAUDE.md is specifically scoped to the CLIENT bundle).
+- Read beatLog._tryRealAudioAnalysis in full: the real, working
+  precedent for direct-to-Storage upload from the browser using the
+  anon key (POST to /storage/v1/object/<bucket>/<path>) — reused
+  verbatim as the upload pattern for the new bucket.
+- Queried storage.buckets directly: only beat-audio exists (private,
+  no size/mime limits). Queried pg_policies on storage.objects: beat-
+  audio carries one blanket anon_all policy scoped to its own
+  bucket_id — real precedent, but a deliberate one NOT to copy exactly
+  (see Stage 3's reasoning on this).
+- Queried content_productions' live schema directly: confirmed no
+  columns exist anywhere for audio/stem file paths.
+- Read _generateBeatstarsListing's real licenceTerms object: confirmed
+  the 3 real tier names/semantics (lease/non-exclusive/exclusive) this
+  phase's tier-inclusion logic reuses rather than re-defining.
+- Read api/data-write.js and api/_context.js in full: confirmed
+  content_productions is already in ALLOWED_TABLES (no new proxy-table
+  wiring needed) and confirmed requireAuth()'s real shared-secret check
+  shape, reused as-is for the new endpoint.
+- Read vercel.json + api/oracle.js's own comment: confirmed the real,
+  current convention is a per-file `export const config = {maxDuration}`
+  — vercel.json's own functions block is flagged by oracle.js's own
+  comment as a divergent, now-removed second copy of the same setting;
+  the new endpoint follows the per-file pattern, not vercel.json.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — real but bounded scope, not an
+exhaustive audit)
+=====================================================================
+1. Supabase migration (phase_h_beat_deliverables): new bucket
+   beat-deliverables (private). Real, deliberate DEVIATION from beat-
+   audio's blanket anon_all precedent: anon gets INSERT+DELETE only, no
+   SELECT — raw file bytes can only be read by the service-role key
+   (inside the new endpoint) or via a signed URL it hands out. Reasoned,
+   not silent: beat-audio holds disposable analysis samples; this
+   bucket holds Alex's real sellable stems/bundles — a blanket anon-
+   read policy would let anyone holding the public anon key (embedded
+   client-side, effectively public) pull paid content directly. New
+   content_productions columns: deliverable_files (jsonb array,
+   default []), deliverable_bundles (jsonb object, default {}).
+   Verified post-migration via direct information_schema + bucket
+   queries, not assumed from the migration's reported success alone.
+2. New api/bundle-deliverables.js: requireAuth-gated POST, real tier-
+   ordering logic (lease < non-exclusive < exclusive, a file included
+   at its tagged tier and every higher one), fetches applicable files
+   from the private bucket with the service-role key, zips them with
+   archiver (added to package.json — real first npm dependency, server-
+   side/Vercel-function-only, does not touch the client bundle or the
+   zero-build-step client architecture), uploads the zip back, signs a
+   24h download URL, merges the result into deliverable_bundles (read-
+   modify-write, preserves other tiers' previously-generated bundles).
+   maxDuration 60s (per-file export, matching oracle.js's real, current
+   convention). Client request/response payloads stay tiny by design —
+   real file bytes only ever move Storage-to-function-to-Storage,
+   never through this endpoint's own HTTP body either direction — which
+   sidesteps Vercel's serverless payload ceiling as a structural
+   property of the design, not a workaround bolted on after a failure.
+3. contentProductionLive gained: _showDeliverablesManager (real popup:
+   file list + delete, per-tier bundle status + disabled-with-reason
+   Generate button when zero files apply, tier-tagged upload controls),
+   _uploadDeliverableFiles (batched read-modify-write — one Supabase
+   write per upload BATCH, not per file, so a folder-drop's several
+   files don't race each other), _removeDeliverableFile (DB write first,
+   best-effort Storage delete after — fails open on the Storage side
+   since the DB record, what the UI reflects, is already correct),
+   _generateBundle (calls the new endpoint, opens the signed URL),
+   _fileAppliesToTier (small, explicitly-labeled rule-8 exception — the
+   same tier-inclusion logic necessarily exists in both this file and
+   the Node/ESM Vercel function, since this project has no build step to
+   share a module between the two runtimes; named and reasoned in-code,
+   not a silent duplication). New "📦 Manage Deliverables" button on
+   ConID cards, same row.licence_type gate as the existing Beatstars
+   listing button.
+4. index.html cache-bust bumped (20260805h → 20260805i) — G7. Script-
+   tag count re-confirmed exactly 2.
+5. New beat_deliverables_autoport_backlog_2026-08-05.txt — full verbatim
+   spec/answers per rule 5, including the deferred Option 2 (browser
+   automation) and the honest Phase B revisit reasoning.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: rpgace_core.js (new functions, additive only — no existing
+function's body touched), api/bundle-deliverables.js (new file),
+package.json + package-lock.json (new dependency), index.html (1-line
+cache-bust), 2 new committed .txt files (this record + the backlog).
+
+Honest residual risks, not hidden:
+- Genuinely untested end-to-end, more so than most prior phases: this
+  is the first build this session touching real binary file upload,
+  real Storage bucket permissions, and a brand-new server-side npm
+  dependency all at once — more real surface area for something to go
+  wrong in ways `node --check` and a local zip-buffer smoke test (run
+  during Stage 3, confirmed producing a valid PK-signed zip) cannot
+  catch, since neither exercises the actual Supabase Storage round trip
+  or a real multi-MB audio file.
+- Vercel's real memory/duration ceiling for the zip endpoint is an
+  honest open question at scale: typical stem packs (a handful of WAV
+  files, tens of MB each) should comfortably fit within a 60s/default-
+  memory Vercel function, but this was reasoned from typical file sizes,
+  not measured against a real upload — a very large multi-GB stem pack
+  could hit a real ceiling this pass didn't test.
+- The anon-INSERT-only Storage policy means a file, once uploaded,
+  cannot be directly re-downloaded by the client outside this feature's
+  own signed-URL flow — a deliberate security trade-off (see Stage 3),
+  but worth knowing if a future feature ever wants simpler direct file
+  access.
+- Signed URLs expire in 24h — the UI's "Regenerate" language on an
+  existing bundle is intentional (clicking it re-signs a fresh URL
+  rather than assuming an old one still works), but a bundle generated
+  once and never re-clicked will have a dead link after a day if Alex
+  tries to reuse an old browser tab.
+
+Council of 5 quality score (informational only, authorizes nothing):
+7/10. Reasoning: real evidence-gathering (fresh external verification,
+not stale-comment trust), a real spec-then-confirm cycle with answers
+read for their actual nuance rather than pattern-matched, a reasoned
+(not copy-pasted) security posture for a new bucket holding real
+sellable assets, and honest scope containment (explicitly not building
+what was explicitly deferred). Docked for the same reasons named above
+under residual risks — this phase carries more genuinely-new,
+untested-at-the-integration-level surface than most prior phases in
+this build, and that's a real fact about the risk profile, not false
+modesty.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- node --check api/bundle-deliverables.js: re-run fresh, CLEAN.
+- Local functional smoke test (not part of any prior stage's claim,
+  run fresh here): built a real 2-file zip in-process using the exact
+  archiver+PassThrough pattern the endpoint uses — output starts with
+  the real ZIP magic bytes (PK), confirming the buffering approach is
+  structurally sound before ever touching Supabase.
+- Re-queried Supabase directly: beat-deliverables bucket exists
+  (public=false); content_productions carries both new jsonb columns
+  with the correct defaults. Not assumed from the migration tool's own
+  "success" response alone.
+- index.html script-tag count re-checked: exactly 2, only the version
+  string changed.
+- Re-grepped ALLOWED_TABLES in api/data-write.js: content_productions
+  already present — no proxy-table change was needed or made.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, both files checked fresh above.
+G2 (index.html invariants) — PASS, exactly 2 script tags, cache-bust
+  bumped.
+G3 (module convention) — PASS, all new client code lives inside
+  contentProductionLive's existing RPGACE.register block; new server
+  code is a standalone api/*.js file matching the existing convention
+  exactly (setCORS/requireAuth/export const config).
+G4 (claim-to-diff reconciliation) — PASS, every claim in Stage 3 traces
+  to a real, checkable diff hunk.
+G5 (goal reconciliation) — PASS against Stage 1's contract; the two
+  explicit "NOT built" items were verified absent from the diff, not
+  just asserted.
+G6 (deployment reality) — PENDING until merged to main and pushed;
+  will be independently confirmed via Vercel MCP (list_deployments/
+  get_deployment, checking state=READY, target=production, matching
+  githubCommitSha, alias list including rpgace.vercel.app) in a follow-
+  up edit to this file after the real merge, same pattern as every
+  prior phase this session.
+G7 (cache-bust) — PASS, 20260805h → 20260805i.
+
+UNTESTED (required label): the entire real upload → Storage → zip →
+signed-URL → download round trip has never been run against real files
+by Alex or in this session (no live browser/file-upload capability
+here). Real actions this adds to the eventual batched hand-test: open
+Manage Deliverables on a real licenced ConID, upload at least one real
+small file via each of the two upload paths (individual + folder),
+confirm it lists correctly with the right tier tag, click Generate
+Bundle for a tier with at least one applicable file, confirm a real
+zip downloads and actually opens/extracts correctly, and confirm
+Remove actually deletes both the DB record and the Storage object.
+
+PASS COUNT: 1 of 3 max.

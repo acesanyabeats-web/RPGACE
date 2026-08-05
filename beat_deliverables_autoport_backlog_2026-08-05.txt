@@ -1,0 +1,165 @@
+Beat Deliverables / Autoport backlog — 2026-08-05
+Phase H of the Content/Video Pipeline unification (final phase, A-H)
+Verbatim record per rule 5 (multi-subsystem asks get spec'd/confirmed
+first, real answers recorded, not chat memory).
+
+=====================================================================
+ALEX'S ORIGINAL ASK (verbatim)
+=====================================================================
+"yes lets see how we can do the next phase with the beat listing. id
+like an api to be able to autoport beats depending on licensing, stems
+for zips to sell pricier lisences etc. we need to plan this through,
+then think through phase b too"
+
+=====================================================================
+REAL EVIDENCE GATHERED BEFORE ASKING ANYTHING
+=====================================================================
+- Re-verified live (fresh WebSearch, Aug 2026 — not just trusting the
+  existing July 13 code comment, since ~3 weeks had passed and this is
+  exactly the kind of external fact that could have changed and would
+  invalidate the whole premise): BeatStars has NO official developer
+  API for uploading beats or creating listings. Long-standing,
+  repeatedly-requested, still-unimplemented community feature. Real
+  workarounds that exist today are browser-automation scripts (e.g.
+  github.com/MyNameIsCarsten/beatstars-upload) or paid third-party
+  tools (e.g. BeatValet) doing browser automation against the real
+  BeatStars web UI — not an API.
+- content_productions had zero columns for tracking actual audio
+  deliverable files (confirmed via direct schema query) — real gap,
+  not an oversight, since no audio file storage had ever been built.
+- Supabase Storage had exactly one bucket (beat-audio, private, used
+  only for librosa BPM/key analysis samples) — confirmed via direct
+  storage.buckets query. No existing bucket for sellable deliverable
+  assets.
+- Licence tiers already exist (F15/F16), hardcoded in
+  _generateBeatstarsListing's licenceTerms object: lease (MP3/WAV
+  only), non-exclusive (WAV + stems), exclusive (full stems + rights
+  transfer) — real, already-shipped tier semantics this phase reuses
+  rather than re-inventing.
+
+=====================================================================
+/interrogation — 3 REAL QUESTIONS ASKED, ALEX'S REAL ANSWERS (verbatim)
+=====================================================================
+
+Q1 — Autoport mechanism (given BeatStars has no API):
+Option 1 = auto-prepare a downloadable bundle per licence tier, Alex
+still does the manual BeatStars upload himself. Option 2 = real
+browser automation actually driving the BeatStars web UI.
+ALEX'S ANSWER (verbatim): "1 now, then implement 2 after with browser
+ui or maybe another option like cr4wl.ai or another browser githup
+repo for rpgace to use"
+READING: build Option 1 NOW (this phase). Option 2 is explicitly
+CONFIRMED as wanted, but for a LATER phase — Alex is open to using a
+third-party tool (named "cr4wl.ai") or another browser-automation
+GitHub repo for that future phase, rather than hand-building browser
+automation from scratch. This is a sequencing answer, not a straight
+pick of one option — both are real, just staged.
+
+Q2 — Where do the real audio deliverable files come from?
+Options included linking an existing external storage location vs.
+building fresh upload infrastructure. ALEX'S ANSWER (verbatim): "On my
+own machine, need to upload to RPGACE" (the Recommended option).
+READING: confirms a brand-new Supabase Storage bucket + upload UI is
+real, necessary new work — no existing file source to link to instead.
+
+Q3 — Zip bundling mechanism:
+Option 1 (Recommended) = automatic server-side zipping of named,
+individually-tagged stem files per tier. ALEX'S ANSWER (verbatim): "1,
+but i can also put a folder in, with content to be zipped"
+READING: build Option 1 as the primary mechanism, but ALSO support
+Alex dropping in a WHOLE FOLDER of files to be zipped together — not
+just individually-named stems one at a time. A real addition to the
+Recommended option, not a straight pick — both upload paths needed to
+feed the same real file-tracking data model.
+
+=====================================================================
+WHAT WAS BUILT (Phase H, this session, engineer_pass_2026-08-05_09.txt
+has the full 5-stage /Engineer record)
+=====================================================================
+1. New private Supabase Storage bucket `beat-deliverables`. Deliberately
+   MORE restrictive than the beat-audio precedent: anon can INSERT/
+   DELETE (client upload flow) but NOT SELECT — raw file bytes can only
+   be read server-side (service-role key) or via a time-limited signed
+   URL the server hands out. Reasoned deviation from the beat-audio
+   anon_all pattern: these are Alex's real sellable IP (stems, paid
+   bundles), not ephemeral analysis samples: a blanket anon-read policy
+   would let anyone holding the public anon key pull paid stems for free.
+2. New content_productions columns: deliverable_files (jsonb array —
+   {name, storage_path, size, tier}, tier = minimum licence tier the
+   file unlocks at, null = every tier) and deliverable_bundles (jsonb
+   object keyed by tier — last real generated zip's path/size/
+   file_count/generated_at).
+3. New api/bundle-deliverables.js (Vercel function, 60s maxDuration):
+   given {conId, tier}, fetches every file that applies to that tier
+   (real BeatStars-style inclusion: lease < non-exclusive < exclusive,
+   a file tagged at a tier is included in that tier and every higher
+   one) from the private bucket using the service-role key, zips them
+   server-side (first real npm dependency this project has ever had —
+   `archiver`, added to package.json; server-side ONLY, inside a Vercel
+   Node function, never shipped to the browser — does not touch the
+   zero-npm-CLIENT-runtime constraint, which is specifically about the
+   client bundle), uploads the zip back to the same bucket, generates a
+   24h signed download URL, and writes deliverable_bundles[tier] back.
+   Client request/response bodies stay tiny (a JSON conId+tier in, a
+   signed URL out) — sidesteps Vercel's serverless payload ceiling
+   entirely, since the actual file bytes never pass through this
+   endpoint's own request/response, only server-to-server via Storage.
+4. New "📦 Manage Deliverables" button on ConID cards (same
+   row.licence_type gate as the existing Beatstars listing button) ->
+   contentProductionLive._showDeliverablesManager(row): lists uploaded
+   files with a delete control, shows per-tier bundle status + a
+   Generate/Regenerate button (disabled with a real reason when zero
+   files apply to that tier), and two real upload controls — a plain
+   multi-file input (named individual stems) AND a webkitdirectory
+   folder input (Alex's real Q3 addition), both tagged with a tier
+   selector and feeding the exact same deliverable_files array via one
+   shared upload helper.
+5. Explicitly NOT built, by design, matching the confirmed scope: any
+   real BeatStars API call (doesn't exist), any real browser automation
+   driving BeatStars' web UI (Option 2, confirmed for a LATER phase),
+   any change to how the existing Beatstars listing-copy generator
+   (F16) works.
+
+=====================================================================
+DEFERRED — REAL FUTURE PHASE, NOT BUILT, NOT FORGOTTEN
+=====================================================================
+Option 2 — real browser automation actually uploading a prepared
+bundle + listing copy to BeatStars' web UI. Alex's own confirmed
+direction: either build this from scratch against BeatStars' real DOM
+(fragile, breaks on any BeatStars UI change — the same real risk every
+public browser-automation script for BeatStars already carries), or
+adopt a third-party tool/repo — he named "cr4wl.ai" specifically, and
+is open to "another browser githup repo" generally. Real next step
+when this phase is picked up: Aintergration-assess whichever specific
+tool/repo is chosen (GODMODE evidence on what it actually requires —
+runtime, auth model, maintenance risk — against RPGACE's real
+architecture and this session's dev workflow, same procedure as every
+other third-party-tool decision this project has made), THEN spec+
+confirm+build through the normal /Engineer discipline. Not scoped in
+detail yet — genuinely a future phase, not this one.
+
+=====================================================================
+"THEN THINK THROUGH PHASE B TOO" — real synergy flagged, not decided
+=====================================================================
+Phase B (real audio-similarity audience-matching — connecting a beat
+to real published songs via genuine audio characteristics, not just
+metadata-tag scoring) was stopped earlier this session
+(beat_audience_matching_engine_future_idea_2026-08-05.txt) specifically
+because no real audio files existed anywhere in RPGACE's storage to
+analyze. Phase H's new beat-deliverables bucket is a genuine, real
+architectural change to that premise — real audio files (stems, full
+mixes) now exist in RPGACE's own storage for the first time, for beats
+that have gone through the deliverables flow.
+REAL CAVEAT, not glossed over: Phase H's bucket holds SELLABLE OUTPUT
+files (Alex's own beats/stems being prepared for sale) — not a corpus
+of OTHER PUBLISHED artists' songs to compare against, which is what
+Phase B's real audience-matching vision actually needs (matching Alex's
+beat against real released tracks' audio characteristics to infer their
+audience). Phase H does not, by itself, unblock Phase B — it proves
+real audio-file infrastructure can exist in RPGACE now, which is a
+necessary precondition, but the actual missing piece (a real corpus of
+comparison tracks with genuine audio analysis, not just reference_tracks'
+existing 0/32-populated scale/genre columns) is still unbuilt. Flagged
+as a real, updated consideration for Phase B's eventual re-opening, not
+a decision to build it now — genuinely not scoped in detail, per Alex's
+own "think through" framing rather than "build."

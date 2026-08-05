@@ -1,21 +1,21 @@
 # Graph Report - RPGACE  (2026-08-05)
 
 ## Corpus Check
-- 199 files · ~479,888 words
+- 200 files · ~487,056 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1081 nodes · 1445 edges · 187 communities (177 shown, 10 thin omitted)
+- 1090 nodes · 1460 edges · 187 communities (178 shown, 9 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.54)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d209d159`
+- Built from commit: `fc231cb4`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
-- _context.js
+- setCORS
 - main.js
 - rpgace_intel.py
 - addXP
@@ -24,12 +24,12 @@
 - renderEncEntries
 - rpgace_build.py
 - archaeologist.py
-- renderDailyGrid
+- buildMonthSlots
 - manifest.json
 - functions
 - initApp
 - saveToJournal
-- beginSession
+- acceptSuggestions
 - sendChat
 - 001 — Replace bare `ease` with real easing tokens everywhere
 - RPGACE — CLAUDE.md
@@ -87,9 +87,9 @@
 - renderAgendas
 
 ## God Nodes (most connected - your core abstractions)
-1. `setCORS()` - 25 edges
-2. `RPGACE Interconnection Map` - 25 edges
-3. `requireAuth()` - 23 edges
+1. `setCORS()` - 27 edges
+2. `requireAuth()` - 25 edges
+3. `RPGACE Interconnection Map` - 25 edges
 4. `RPGACE — CLAUDE.md` - 22 edges
 5. `addXP()` - 21 edges
 6. `Animation Standards Reference` - 16 edges
@@ -113,35 +113,35 @@
 ## Import Cycles
 - None detected.
 
-## Communities (187 total, 10 thin omitted)
+## Communities (187 total, 9 thin omitted)
 
-### Community 0 - "_context.js"
-Cohesion: 0.11
-Nodes (38): handler(), TYPE_PROMPTS, handler(), charFuzzyPattern(), collectMatches(), declusterByOffset(), detectChapterListByOracle(), detectChaptersByRegex() (+30 more)
+### Community 0 - "setCORS"
+Cohesion: 0.09
+Nodes (43): handler(), TYPE_PROMPTS, handler(), charFuzzyPattern(), collectMatches(), declusterByOffset(), detectChapterListByOracle(), detectChaptersByRegex() (+35 more)
 
 ### Community 1 - "main.js"
 Cohesion: 0.04
-Nodes (35): acceptSuggestions(), buildAllQuests(), buildQS(), CAT_COL, CAT_ICON, closeSuggestion(), collapseEncEntry(), CONFIG (+27 more)
+Nodes (40): beginSession(), CAT_COL, CAT_ICON, closeSessionSetup(), collapseEncEntry(), CONFIG, DEFAULT_SHIFTS, ENC_BULLET_CACHE (+32 more)
 
 ### Community 2 - "rpgace_intel.py"
 Cohesion: 0.11
 Nodes (36): Path, add_to_watchlist(), analyse_frames(), banner(), batch_process(), call_claude(), check_ytdlp(), download_video() (+28 more)
 
 ### Community 3 - "addXP"
-Cohesion: 0.09
-Nodes (39): addInstaQuest(), addToEncyclopedia(), addXP(), agentLog(), callComposio(), callOracle(), compileEncyclopedia(), completeQuest() (+31 more)
+Cohesion: 0.12
+Nodes (30): addInstaQuest(), addToEncyclopedia(), addXP(), agentLog(), callComposio(), callOracle(), compileEncyclopedia(), completeQuest() (+22 more)
 
 ### Community 4 - "rpgace_core.js"
 Cohesion: 0.09
 Nodes (20): advance(), applyIntelUI(), chapterNumOf(), commitChapters(), el(), _fb(), get(), _key() (+12 more)
 
 ### Community 5 - "showPage"
-Cohesion: 0.20
-Nodes (12): acceptJumpToEnc(), clearScheduledAgendas(), exitFocusToEnc(), goToEncFromFocus(), loadScheduledAgendas(), pushLocalToSupabase(), refreshEncyclopediaDisplay(), removeScheduledAgenda() (+4 more)
+Cohesion: 0.18
+Nodes (13): acceptJumpToEnc(), clearScheduledAgendas(), exitFocusToEnc(), goToEncFromFocus(), loadNote(), loadScheduledAgendas(), pushLocalToSupabase(), refreshEncyclopediaDisplay() (+5 more)
 
 ### Community 6 - "renderEncEntries"
-Cohesion: 0.11
-Nodes (24): approveInsights(), approveInsightsFromCache(), autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext() (+16 more)
+Cohesion: 0.12
+Nodes (21): approveInsights(), approveInsightsFromCache(), autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext() (+13 more)
 
 ### Community 7 - "rpgace_build.py"
 Cohesion: 0.23
@@ -151,9 +151,9 @@ Nodes (25): cmd_add(), cmd_check(), cmd_cleanup(), cmd_deploy(), cmd_list(), cmd
 Cohesion: 0.22
 Nodes (20): ArchaeologistError, blame_authors(), build_report(), changed_file_details(), classify_message(), git(), historical_paths(), history_hashes() (+12 more)
 
-### Community 9 - "renderDailyGrid"
-Cohesion: 0.17
-Nodes (16): _addSchedButtons(), _calDateStr(), closeSchedModal(), confirmSchedule(), confirmScheduleModal(), _fracClock(), initDailyNav(), initSchedModal() (+8 more)
+### Community 9 - "buildMonthSlots"
+Cohesion: 0.12
+Nodes (24): _addSchedButtons(), buildMonthSlots(), buildWeekSlots(), _calCellItems(), _calDateStr(), _calFmtShort(), _calGetSchedAgendas(), _calGetShifts() (+16 more)
 
 ### Community 10 - "manifest.json"
 Cohesion: 0.13
@@ -164,20 +164,20 @@ Cohesion: 0.13
 Nodes (14): maxDuration, maxDuration, maxDuration, maxDuration, maxDuration, maxDuration, functions, api/analyst.js (+6 more)
 
 ### Community 12 - "initApp"
-Cohesion: 0.13
-Nodes (19): AGENT_ACTIONS, buildAgentActions(), buildMonthSlots(), buildSkillTree(), buildTimeSlots(), buildWeekSlots(), _calCellItems(), _calFmtShort() (+11 more)
+Cohesion: 0.15
+Nodes (17): AGENT_ACTIONS, buildAgentActions(), buildSkillTree(), buildTimeSlots(), checkPassword(), deleteNote(), initApp(), initLearning() (+9 more)
 
 ### Community 13 - "saveToJournal"
 Cohesion: 0.15
 Nodes (13): AGENDA_LIST, clearJournal(), closeFocusOverlay(), closeJournalEntry(), completeScheduledTask(), deleteJournalEntry(), hideTimerWidget(), logDailyAction() (+5 more)
 
-### Community 14 - "beginSession"
-Cohesion: 0.20
-Nodes (10): beginSession(), closeSessionSetup(), handleFocusSelect(), loadFocusEntries(), onSessionTimerEnd(), openFocusOverlay(), setupFocusTextSelect(), showTimerWidget() (+2 more)
+### Community 14 - "acceptSuggestions"
+Cohesion: 0.40
+Nodes (5): acceptSuggestions(), buildAllQuests(), buildQS(), closeSuggestion(), makeCard()
 
 ### Community 15 - "sendChat"
-Cohesion: 0.14
-Nodes (18): addMsg(), checkForQuestSuggestions(), _escChatHtml(), extractVSTsFromText(), fireBeatAnalysis(), fireInstaCommand(), fireProdCommand(), isInstaOracleQuery() (+10 more)
+Cohesion: 0.13
+Nodes (19): addMsg(), checkForQuestSuggestions(), _escChatHtml(), extractVSTsFromText(), fireBeatAnalysis(), fireInstaCommand(), fireProdCommand(), isInstaOracleQuery() (+11 more)
 
 ### Community 16 - "001 — Replace bare `ease` with real easing tokens everywhere"
 Cohesion: 0.04
@@ -188,8 +188,8 @@ Cohesion: 0.06
 Nodes (35): Aintergration — third-party framework/tool/agent assessment (Alex-confirmed July 20), Architecture — never violate without explicit confirmation, Building guide for lower models — follow these patterns exactly, Context/logging efficiency rules (log without losing meaning), Council of 5 — pre-build deliberation, Current state — durable facts (pruned July 31 per this file's own doc-discipline rule), External handoff lanes (both deliberately unguarded — see landmines), GODMODE — maximum-rigor deliberation (+27 more)
 
 ### Community 18 - "applyShifts"
-Cohesion: 0.31
-Nodes (9): applyShifts(), dzDrop(), dzLeave(), handleFile(), parseCSV(), parseICS(), parsePasteInput(), parseText() (+1 more)
+Cohesion: 0.27
+Nodes (10): applyShifts(), autoApplyStoredShifts(), dzDrop(), dzLeave(), handleFile(), parseCSV(), parseICS(), parsePasteInput() (+2 more)
 
 ### Community 19 - "fourth_rota.py"
 Cohesion: 0.33
@@ -219,6 +219,10 @@ Nodes (21): 1. Purpose & frequency, 2. Easing & duration, 3. Physicality & origi
 Cohesion: 0.09
 Nodes (21): 0. Verified Component Inventory, 10. Built vs NOT built — the truth table (created July 17; live numbers re-queried July 31), 11. Content & Video Production Pipeline — added July 31, rebuilt Aug 5, 1. Top-Level System Map, 2. Oracle Chat Request Flow (`main.js sendChat` + wraps), 3. Phylum Path Insight Placement (the core taxonomy write path), 4. Article Generation + Concept Fusion, 5. Bookworm (whole-book → taxonomy pipeline) (+13 more)
 
+### Community 28 - "package.json"
+Cohesion: 0.40
+Nodes (4): archiver, dependencies, archiver, type
+
 ### Community 148 - "SIDE B: WHAT'S REPORTED AS DONE (the docs)"
 Cohesion: 0.11
 Nodes (18): 0. Repo shape, /5thDimension — Phase 1 & 2 Evidence Report, chronicles_finance (Supabase), git log — real timeline (confirmed via `git log --oneline`, 213 commits), index.html real structure, interconnection_map.md (257 lines), main.js real structure (frozen, confirmed by direct read), manual.html (413 lines) (+10 more)
@@ -244,8 +248,8 @@ Cohesion: 0.14
 Nodes (13): 10. Page Redesign Audit — July 20, 2nd session (GODMODE + Council of 5, Omnitrix skipped per Alex — Fable 5 ran out of usage credits mid-dispatch, so this pass was done solo by Sonnet 5, no second-agent review; extra care taken as a result, smaller scope shipped than a reviewed pass would have), 1. Visual Theme & Atmosphere, 2. Color Palette & Roles, 3. Typography Rules, 4. Component Stylings, 5. Layout Principles, 6. Depth & Elevation, 7. Animation & Interaction (L1) (+5 more)
 
 ### Community 154 - "syncIntelData"
-Cohesion: 0.19
-Nodes (13): checkServerStatus(), fetchFromLocal(), fetchFromSupabase(), fetchWatchlistFromLocal(), fetchWatchlistFromSupabase(), importIntelJSON(), loadIntelInsights(), loadIntelWatchlist() (+5 more)
+Cohesion: 0.16
+Nodes (15): checkServerStatus(), fetchFromLocal(), fetchFromSupabase(), fetchWatchlistFromLocal(), fetchWatchlistFromSupabase(), importIntelJSON(), learnVideo(), loadIntelInsights() (+7 more)
 
 ### Community 155 - "Part 2 — Every rule/`.md`/`.txt` file that influences the system, by real authority level"
 Cohesion: 0.17
@@ -352,28 +356,28 @@ Cohesion: 0.29
 Nodes (8): ENC_ALL_ENTRIES, generateContentIdeasFromInsights(), jumpToFullEntry(), jumpToSourceEntry(), loadInsightsByCategory(), loadVSTInspector(), sbInsightFetch(), setEncCategory()
 
 ### Community 186 - "renderAgendas"
-Cohesion: 0.18
-Nodes (13): autoApplyStoredShifts(), closePasteRota(), generateAgendas(), getFreeWindows(), getShiftContext(), getShifts(), getShiftsForDate(), getTodayShifts() (+5 more)
+Cohesion: 0.16
+Nodes (14): closePasteRota(), confirmSchedule(), generateAgendas(), getFreeWindows(), getShiftContext(), getShifts(), getShiftsForDate(), getTodayShifts() (+6 more)
 
 ## Knowledge Gaps
-- **398 isolated node(s):** `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS`, `config`, `CONFIG` (+393 more)
+- **401 isolated node(s):** `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS`, `config`, `TIER_ORDER` (+396 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS` to the rest of the system?**
-  _398 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `_context.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.10745098039215686 - nodes in this community are weakly interconnected._
+  _401 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `setCORS` be split into smaller, more focused modules?**
+  _Cohesion score 0.09335839598997493 - nodes in this community are weakly interconnected._
 - **Should `main.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.03670634920634921 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03580562659846547 - nodes in this community are weakly interconnected._
 - **Should `rpgace_intel.py` be split into smaller, more focused modules?**
   _Cohesion score 0.11411411411411411 - nodes in this community are weakly interconnected._
 - **Should `addXP` be split into smaller, more focused modules?**
-  _Cohesion score 0.08771929824561403 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11954022988505747 - nodes in this community are weakly interconnected._
 - **Should `rpgace_core.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08912655971479501 - nodes in this community are weakly interconnected._
 - **Should `renderEncEntries` be split into smaller, more focused modules?**
-  _Cohesion score 0.10507246376811594 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11904761904761904 - nodes in this community are weakly interconnected._

@@ -14402,6 +14402,253 @@ RPGACE.register('contentProductionLive', {
     if (typeof sendChat === 'function') sendChat();
   },
 
+  // ── Phase H (Aug 5, Engineer pass 09) — real beat deliverables ──────
+  // (stems/wav/zips) per licence tier, per Alex's confirmed /interrogation
+  // answers on the follow-up "autoport beats depending on licensing" ask:
+  // (1) BeatStars has no upload/listing API at all (reconfirmed live,
+  // Aug 2026 WebSearch, not just the pre-existing July 13 code comment) —
+  // so this stops at "auto-prepare a downloadable bundle," never a real
+  // push to BeatStars; real browser-automation autoport (e.g. cr4wl.ai)
+  // is a confirmed, deliberately deferred future phase, logged in
+  // beat_deliverables_autoport_backlog_2026-08-05.txt, not built here.
+  // (2) Files are uploaded fresh from Alex's own machine — no existing
+  // external storage to link to, so this is real new Storage + schema.
+  // (3) Automatic server-side zipping (api/bundle-deliverables.js) is the
+  // primary bundling mechanism, but Alex can ALSO drop in a whole folder
+  // of files to be zipped together, not just individually-named stems —
+  // both upload paths below feed the exact same deliverable_files array.
+  //
+  // Small, deliberate rule-8 exception: fileAppliesToTier's real tier-
+  // inclusion logic (lease < non-exclusive < exclusive) is duplicated here
+  // AND in api/bundle-deliverables.js, because this codebase has no build
+  // step to share a module between a browser file and a Node/ESM Vercel
+  // function — the duplication is named and reasoned, not accidental.
+  _fileAppliesToTier: function(fileTier, tier) {
+    var ORDER = { 'lease': 0, 'non-exclusive': 1, 'exclusive': 2 };
+    if (!fileTier) return true;
+    if (!(fileTier in ORDER) || !(tier in ORDER)) return false;
+    return ORDER[fileTier] <= ORDER[tier];
+  },
+
+  _showDeliverablesManager: function(row) {
+    var self = this;
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.9', scroll: true, width: '560px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.3)',
+      title: '📦 ConID #' + row.con_id + ' — Manage Deliverables', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
+
+    var status = document.createElement('div');
+    status.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);margin-bottom:12px;';
+    status.textContent = 'Loading uploaded files...';
+    box.appendChild(status);
+
+    var fileListEl = document.createElement('div');
+    box.appendChild(fileListEl);
+
+    var bundleListEl = document.createElement('div');
+    bundleListEl.style.cssText = 'margin-top:14px;';
+    box.appendChild(bundleListEl);
+
+    var render = function() {
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files,deliverable_bundles')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var r = rows && rows[0];
+          var files = (r && Array.isArray(r.deliverable_files)) ? r.deliverable_files : [];
+          var bundles = (r && r.deliverable_bundles) || {};
+          status.textContent = files.length ? (files.length + ' file(s) uploaded') : 'No files uploaded yet.';
+
+          fileListEl.innerHTML = '';
+          files.forEach(function(f, idx) {
+            var line = document.createElement('div');
+            line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;';
+            var label = document.createElement('span');
+            label.style.cssText = 'color:#D4DAF5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;';
+            var tierTag = f.tier ? (' [' + f.tier + '+]') : ' [all tiers]';
+            label.textContent = f.name + tierTag + ' (' + Math.round((f.size || 0) / 1024) + 'KB)';
+            var rm = document.createElement('button');
+            rm.textContent = '✕';
+            rm.style.cssText = 'padding:2px 8px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:4px;color:#CC4A4A;font-size:11px;cursor:pointer;';
+            rm.onclick = function() { self._removeDeliverableFile(row, idx, render); };
+            line.appendChild(label); line.appendChild(rm);
+            fileListEl.appendChild(line);
+          });
+
+          bundleListEl.innerHTML = '';
+          ['lease', 'non-exclusive', 'exclusive'].forEach(function(tier) {
+            var applicableCount = files.filter(function(f) { return self._fileAppliesToTier(f.tier, tier); }).length;
+            var line = document.createElement('div');
+            line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;';
+            var lbl = document.createElement('span');
+            lbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.6);text-transform:capitalize;';
+            var b = bundles[tier];
+            lbl.textContent = tier + ' (' + applicableCount + ' file' + (applicableCount === 1 ? '' : 's') + ')' + (b ? ' — bundle ready, ' + Math.round(b.size / 1024 / 1024 * 10) / 10 + 'MB' : ' — no bundle yet');
+            var genBtn = document.createElement('button');
+            genBtn.textContent = b ? '🔄 Regenerate + Download' : '🎁 Generate Bundle';
+            genBtn.disabled = !applicableCount;
+            genBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:5px;color:#C9A84C;font-size:11px;cursor:' + (applicableCount ? 'pointer' : 'not-allowed') + ';opacity:' + (applicableCount ? '1' : '0.4') + ';';
+            genBtn.onclick = function() { if (applicableCount) self._generateBundle(row, tier, genBtn, render); };
+            line.appendChild(lbl); line.appendChild(genBtn);
+            bundleListEl.appendChild(line);
+          });
+        });
+    };
+    render();
+
+    var uploadLbl = document.createElement('div');
+    uploadLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin:16px 0 6px 0;';
+    uploadLbl.textContent = 'Upload files — tag which licence tier they unlock at:';
+    box.appendChild(uploadLbl);
+
+    var tierSelect = document.createElement('select');
+    tierSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    [['', 'All tiers (e.g. main MP3/WAV)'], ['lease', 'Lease and above'], ['non-exclusive', 'Non-Exclusive and above (stems)'], ['exclusive', 'Exclusive only']].forEach(function(o) {
+      var opt = document.createElement('option'); opt.value = o[0]; opt.textContent = o[1];
+      opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
+      tierSelect.appendChild(opt);
+    });
+    box.appendChild(tierSelect);
+
+    var fileLbl = document.createElement('div');
+    fileLbl.textContent = 'Individual files (e.g. named stems):';
+    fileLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:3px;';
+    var fileInp = document.createElement('input');
+    fileInp.type = 'file'; fileInp.multiple = true;
+    fileInp.style.cssText = 'width:100%;font-size:11px;color:#D4DAF5;margin-bottom:10px;';
+
+    // Real Q3 addition (Alex, verbatim): "1, but i can also put a folder
+    // in, with content to be zipped" — a whole folder drop, not just
+    // named individual stems. webkitRelativePath preserves the folder
+    // structure in the stored filename (see _uploadDeliverableFiles).
+    var folderLbl = document.createElement('div');
+    folderLbl.textContent = 'Or a whole folder to zip together:';
+    folderLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:3px;';
+    var folderInp = document.createElement('input');
+    folderInp.type = 'file'; folderInp.multiple = true;
+    folderInp.webkitdirectory = true; folderInp.directory = true;
+    folderInp.style.cssText = 'width:100%;font-size:11px;color:#D4DAF5;';
+
+    box.appendChild(fileLbl); box.appendChild(fileInp);
+    box.appendChild(folderLbl); box.appendChild(folderInp);
+
+    var doUpload = function(fileList) {
+      var arr = Array.prototype.slice.call(fileList);
+      if (!arr.length) return;
+      var tier = tierSelect.value || null;
+      status.textContent = 'Uploading ' + arr.length + ' file(s)...';
+      self._uploadDeliverableFiles(row, arr, tier, function(err) {
+        if (err) { RPGACE.utils.toast('⚠️ Upload error: ' + err.message, '#CC4A4A', 4000); }
+        else { RPGACE.utils.toast('✅ ' + arr.length + ' file(s) uploaded', '#4CAF82', 3000); }
+        render();
+      });
+    };
+    fileInp.onchange = function() { doUpload(fileInp.files); fileInp.value = ''; };
+    folderInp.onchange = function() { doUpload(folderInp.files); folderInp.value = ''; };
+
+    var closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Close';
+    closeBtn.style.cssText = 'width:100%;margin-top:16px;padding:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    closeBtn.onclick = function() { overlay.remove(); };
+    box.appendChild(closeBtn);
+  },
+
+  // Real direct-to-Storage upload (client, anon key) — same pattern as
+  // beatLog._tryRealAudioAnalysis for the beat-audio bucket, applied to
+  // the new private beat-deliverables bucket. One batched read-modify-
+  // write of deliverable_files at the end (not per-file) so several files
+  // from the same folder-drop don't race each other's Supabase write.
+  _uploadDeliverableFiles: function(row, files, tier, callback) {
+    var base = RPGACE.CONFIG.supabase.url;
+    var key = RPGACE.CONFIG.supabase.key;
+    var uploads = files.map(function(file) {
+      var relName = file.webkitRelativePath || file.name;
+      var safeName = relName.replace(/[^a-zA-Z0-9._\/-]/g, '_');
+      var uuid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+      var storagePath = row.id + '/' + uuid + '-' + safeName.replace(/\//g, '_');
+      return fetch(base + '/storage/v1/object/beat-deliverables/' + encodeURIComponent(storagePath), {
+        method: 'POST',
+        headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      }).then(function(res) {
+        if (!res.ok) throw new Error('upload failed: ' + relName);
+        return { name: relName, storage_path: storagePath, size: file.size, tier: tier || null };
+      });
+    });
+
+    Promise.all(uploads).then(function(newEntries) {
+      return RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files').then(function(rows) {
+        var existing = (rows && rows[0] && Array.isArray(rows[0].deliverable_files)) ? rows[0].deliverable_files : [];
+        var merged = existing.concat(newEntries);
+        return RPGACE.sb.secureWrite('content_productions', 'update', { deliverable_files: merged }, 'id=eq.' + row.id);
+      });
+    }).then(function() {
+      callback(null);
+    }).catch(function(e) {
+      callback(e);
+    });
+  },
+
+  _removeDeliverableFile: function(row, idx, afterCallback) {
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files')
+      .then(function(rows) {
+        var existing = (rows && rows[0] && Array.isArray(rows[0].deliverable_files)) ? rows[0].deliverable_files : [];
+        var removed = existing[idx];
+        existing.splice(idx, 1);
+        return RPGACE.sb.secureWrite('content_productions', 'update', { deliverable_files: existing }, 'id=eq.' + row.id)
+          .then(function() { return removed; });
+      })
+      .then(function(removed) {
+        // Best-effort real delete from Storage too — fire-and-forget, not
+        // fatal if it fails, since the DB record (what the UI reflects)
+        // is already gone.
+        if (removed && removed.storage_path) {
+          var base = RPGACE.CONFIG.supabase.url;
+          var key = RPGACE.CONFIG.supabase.key;
+          fetch(base + '/storage/v1/object/beat-deliverables/' + encodeURIComponent(removed.storage_path), {
+            method: 'DELETE',
+            headers: { 'apikey': key, 'Authorization': 'Bearer ' + key },
+          }).catch(function() {});
+        }
+        RPGACE.utils.toast('🗑 File removed', 'rgba(226,226,236,0.5)', 2000);
+        if (afterCallback) afterCallback();
+      })
+      .catch(function(e) {
+        RPGACE.utils.toast('⚠️ Remove failed: ' + e.message, '#CC4A4A', 3500);
+      });
+  },
+
+  // Calls the real server-side zip endpoint (api/bundle-deliverables.js).
+  // authGate's global fetch() wrap attaches the X-RPGACE-Auth header to
+  // this automatically, same as every other /api/* call — no manual
+  // header handling needed here.
+  _generateBundle: function(row, tier, btnEl, afterCallback) {
+    var origText = btnEl.textContent;
+    btnEl.textContent = '⏳ Zipping...';
+    btnEl.disabled = true;
+    fetch('/api/bundle-deliverables', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conId: row.id, tier: tier }),
+    }).then(function(res) {
+      return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+    }).then(function(result) {
+      btnEl.textContent = origText;
+      btnEl.disabled = false;
+      if (!result.ok) {
+        RPGACE.utils.toast('⚠️ Bundle failed: ' + (result.data.error || 'unknown error'), '#CC4A4A', 4500);
+        return;
+      }
+      RPGACE.utils.toast('🎁 Bundle ready — opening download...', '#4CAF82', 3000);
+      window.open(result.data.url, '_blank');
+      if (afterCallback) afterCallback();
+    }).catch(function(e) {
+      btnEl.textContent = origText;
+      btnEl.disabled = false;
+      RPGACE.utils.toast('⚠️ Bundle request failed: ' + e.message, '#CC4A4A', 4000);
+    });
+  },
+
   // ── Phase 2 retroactive button (Aug 5, Engineer pass, Phase E) ───────
   // Real edit-in-place: reads back the STRUCTURED director choice this
   // module already saves (creative_docs.director_blend, added above -
@@ -14752,6 +14999,19 @@ RPGACE.register('contentProductionLive', {
             bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
             actions.appendChild(bsBtn);
+
+            // Phase H (Aug 5, Engineer pass 09) — real file handling, same
+            // gate as the Beatstars button (this ConID is a beat sale).
+            // Alex's confirmed scope: auto-prepare a downloadable bundle
+            // per licence tier (server-side zip), NOT a real BeatStars API
+            // push (doesn't exist — reconfirmed live, Aug 2026) or browser
+            // automation (deliberately deferred, see
+            // beat_deliverables_autoport_backlog_2026-08-05.txt).
+            var dmBtn = document.createElement('button');
+            dmBtn.textContent = '📦 Manage Deliverables';
+            dmBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            dmBtn.onclick = function() { self._showDeliverablesManager(row); };
+            actions.appendChild(dmBtn);
           }
 
           // 2026-07-31 — direct answer to Alex's real gap: neither Content

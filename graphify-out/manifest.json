@@ -95,9 +95,9 @@
     "semantic_hash": "6695a6663133d4bf601c6eb801dc9517"
   },
   "package.json": {
-    "mtime": 1783868447.954659,
-    "ast_hash": "d0707362e90f00edd12435e9d3b9d71c",
-    "semantic_hash": "d0707362e90f00edd12435e9d3b9d71c"
+    "mtime": 1785963530.211042,
+    "ast_hash": "2137332a44aae1da8956a233cbc2db4f",
+    "semantic_hash": ""
   },
   "rpgace_build.py": {
     "mtime": 1783868447.954659,
@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785958912.7439253,
-    "ast_hash": "9b0b5fa57391375f6245a091ba699cc0",
+    "mtime": 1785963740.8710544,
+    "ast_hash": "84892c0237240bc8ed6ce30e5c51629e",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785958912.7319252,
-    "ast_hash": "fb2466aa1b2c666b250bc348dd4c1cbd",
+    "mtime": 1785963901.511064,
+    "ast_hash": "13987d8a75f2fd594860bf7c3eee6eba",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,13 +1060,13 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785958912.7359252,
-    "ast_hash": "aa5a9c1bdacb730bd327e50eb00e0433",
+    "mtime": 1785963747.6390548,
+    "ast_hash": "62d3911683ff46a64c22f3419cc2f72b",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
-    "mtime": 1785958912.7359252,
-    "ast_hash": "af1498e5348ef3ef70b61a06c1bd2d83",
+    "mtime": 1785964013.9150708,
+    "ast_hash": "b937a6c9348ad5a800ec26d6c0c93b98",
     "semantic_hash": ""
   },
   "item7_process_debate_2026-07-24.txt": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785958958.7919242,
-    "ast_hash": "a5cde92765c452adf3196f2b684fce15",
+    "mtime": 1785963817.435059,
+    "ast_hash": "336c3fb20c8342adb1f19322a1c43d7d",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1215,8 +1215,8 @@
     "semantic_hash": ""
   },
   "system_flow_map.md": {
-    "mtime": 1785958912.7439253,
-    "ast_hash": "256583475e0db07d788ca00849e9d2cb",
+    "mtime": 1785963984.055069,
+    "ast_hash": "3122b2772e711370421a414364fc855f",
     "semantic_hash": ""
   },
   "taxonomy_map.html": {
@@ -1360,8 +1360,23 @@
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-05_08.txt": {
-    "mtime": 1785958953.7279243,
+    "mtime": 1785958983.3039236,
     "ast_hash": "60c5eb5b33f8a9390388e3270b92d097",
+    "semantic_hash": ""
+  },
+  "api/bundle-deliverables.js": {
+    "mtime": 1785963576.6070447,
+    "ast_hash": "94ee03935351845b80058ae56d9d056a",
+    "semantic_hash": ""
+  },
+  "beat_deliverables_autoport_backlog_2026-08-05.txt": {
+    "mtime": 1785963792.5790575,
+    "ast_hash": "c59dbc0fee0ad1790814a05a04ed84ce",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-05_09.txt": {
+    "mtime": 1785963881.6870627,
+    "ast_hash": "b3462668dace0c4e74fd84a28362fc1c",
     "semantic_hash": ""
   }
 }
