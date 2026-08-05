@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785941588.4517055,
-    "ast_hash": "60a2e760e915417169329863379472d3",
+    "mtime": 1785942482.911685,
+    "ast_hash": "42164c62715a57684e7f4af14f25da61",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785941588.4437056,
-    "ast_hash": "e8a3fc0b2e3d30f315be957d42a1a22b",
+    "mtime": 1785942482.903685,
+    "ast_hash": "cc35bd9eba2515dae9ee25e51d8428a3",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,8 +1060,8 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785941588.4437056,
-    "ast_hash": "676cf3a034f9dc9ec6f1b4743451ed22",
+    "mtime": 1785942482.903685,
+    "ast_hash": "93e48480b51c56aecb4c2d6860c95bd0",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785941688.3837032,
-    "ast_hash": "0eac8bdb869c281576ee73bb9ff170b8",
+    "mtime": 1785942523.819684,
+    "ast_hash": "bdb520c7f3e1024db746effa649fdc8b",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1327,6 +1327,11 @@
   "restructure_report_notebooklm_founderos_opengenai_2026-08-04.txt": {
     "mtime": 1785802441.7183828,
     "ast_hash": "b50f0eb52374fa392b7f057470a5e3de",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-05_03.txt": {
+    "mtime": 1785942516.6316843,
+    "ast_hash": "26dc604284813e51f22cac305c6e8510",
     "semantic_hash": ""
   }
 }

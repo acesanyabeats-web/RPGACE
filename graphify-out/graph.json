@@ -1342,7 +1342,7 @@
       "_origin": "ast",
       "id": "main_showpage",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "showpage()"
     },
     {
@@ -1353,7 +1353,7 @@
       "_origin": "ast",
       "id": "main_showsched",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "showsched()"
     },
     {
@@ -1396,8 +1396,8 @@
       "source_location": "L842",
       "_origin": "ast",
       "id": "main_generateagendas",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "generateagendas()"
     },
     {
@@ -1407,8 +1407,8 @@
       "source_location": "L877",
       "_origin": "ast",
       "id": "main_initagendas",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "initagendas()"
     },
     {
@@ -1418,8 +1418,8 @@
       "source_location": "L884",
       "_origin": "ast",
       "id": "main_renderagendas",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "renderagendas()"
     },
     {
@@ -1452,7 +1452,7 @@
       "_origin": "ast",
       "id": "main_confirmschedule",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "confirmschedule()"
     },
     {
@@ -1495,8 +1495,8 @@
       "source_location": "L988",
       "_origin": "ast",
       "id": "main_closesessionsetup",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "closesessionsetup()"
     },
     {
@@ -1506,8 +1506,8 @@
       "source_location": "L993",
       "_origin": "ast",
       "id": "main_beginsession",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "beginsession()"
     },
     {
@@ -1517,8 +1517,8 @@
       "source_location": "L1012",
       "_origin": "ast",
       "id": "main_showtimerwidget",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "showtimerwidget()"
     },
     {
@@ -1539,8 +1539,8 @@
       "source_location": "L1015",
       "_origin": "ast",
       "id": "main_startfmtimer",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "startfmtimer()"
     },
     {
@@ -1550,8 +1550,8 @@
       "source_location": "L1030",
       "_origin": "ast",
       "id": "main_updatetimerdisplay",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "updatetimerdisplay()"
     },
     {
@@ -1561,8 +1561,8 @@
       "source_location": "L1042",
       "_origin": "ast",
       "id": "main_onsessiontimerend",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "onsessiontimerend()"
     },
     {
@@ -1583,8 +1583,8 @@
       "source_location": "L1068",
       "_origin": "ast",
       "id": "main_openfocusoverlay",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "openfocusoverlay()"
     },
     {
@@ -1594,8 +1594,8 @@
       "source_location": "L1082",
       "_origin": "ast",
       "id": "main_loadfocusentries",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "loadfocusentries()"
     },
     {
@@ -1617,7 +1617,7 @@
       "_origin": "ast",
       "id": "main_exitfocustoenc",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "exitfocustoenc()"
     },
     {
@@ -1638,8 +1638,8 @@
       "source_location": "L1135",
       "_origin": "ast",
       "id": "main_setupfocustextselect",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "setupfocustextselect()"
     },
     {
@@ -1649,8 +1649,8 @@
       "source_location": "L1153",
       "_origin": "ast",
       "id": "main_handlefocusselect",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 14,
+      "community_name": "beginSession",
       "norm_label": "handlefocusselect()"
     },
     {
@@ -1661,7 +1661,7 @@
       "_origin": "ast",
       "id": "main_gotoencfromfocus",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "gotoencfromfocus()"
     },
     {
@@ -1671,8 +1671,8 @@
       "source_location": "L1209",
       "_origin": "ast",
       "id": "main_loadscheduledagendas",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 5,
+      "community_name": "showPage",
       "norm_label": "loadscheduledagendas()"
     },
     {
@@ -1682,8 +1682,8 @@
       "source_location": "L1235",
       "_origin": "ast",
       "id": "main_removescheduledagenda",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 5,
+      "community_name": "showPage",
       "norm_label": "removescheduledagenda()"
     },
     {
@@ -1693,8 +1693,8 @@
       "source_location": "L1242",
       "_origin": "ast",
       "id": "main_clearscheduledagendas",
-      "community": 1,
-      "community_name": "main.js",
+      "community": 5,
+      "community_name": "showPage",
       "norm_label": "clearscheduledagendas()"
     },
     {
@@ -1726,8 +1726,8 @@
       "source_location": "L1285",
       "_origin": "ast",
       "id": "main_getshifts",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getshifts()"
     },
     {
@@ -1737,8 +1737,8 @@
       "source_location": "L1289",
       "_origin": "ast",
       "id": "main_gettodayshifts",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "gettodayshifts()"
     },
     {
@@ -1748,8 +1748,8 @@
       "source_location": "L1294",
       "_origin": "ast",
       "id": "main_getshiftsfordate",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getshiftsfordate()"
     },
     {
@@ -1759,8 +1759,8 @@
       "source_location": "L1298",
       "_origin": "ast",
       "id": "main_getshiftcontext",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getshiftcontext()"
     },
     {
@@ -1770,8 +1770,8 @@
       "source_location": "L1319",
       "_origin": "ast",
       "id": "main_getfreewindows",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getfreewindows()"
     },
     {
@@ -1781,8 +1781,8 @@
       "source_location": "L1339",
       "_origin": "ast",
       "id": "main_rendershiftblocks",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "rendershiftblocks()"
     },
     {
@@ -1803,8 +1803,8 @@
       "source_location": "L1390",
       "_origin": "ast",
       "id": "main_closepasterota",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "closepasterota()"
     },
     {
@@ -1814,8 +1814,8 @@
       "source_location": "L1395",
       "_origin": "ast",
       "id": "main_parseandsaverota",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "parseandsaverota()"
     },
     {
@@ -1869,8 +1869,8 @@
       "source_location": "L1586",
       "_origin": "ast",
       "id": "main_updatedbstats",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "updatedbstats()"
     },
     {
@@ -1979,8 +1979,8 @@
       "source_location": "L1813",
       "_origin": "ast",
       "id": "main_autoapplystoredshifts",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "autoapplystoredshifts()"
     },
     {
@@ -1990,8 +1990,8 @@
       "source_location": "L1855",
       "_origin": "ast",
       "id": "main_calgetshifts",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "_calgetshifts()"
     },
     {
@@ -2001,8 +2001,8 @@
       "source_location": "L1856",
       "_origin": "ast",
       "id": "main_calgetschedagendas",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "_calgetschedagendas()"
     },
     {
@@ -2013,7 +2013,7 @@
       "_origin": "ast",
       "id": "main_caldatestr",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "_caldatestr()"
     },
     {
@@ -2023,8 +2023,8 @@
       "source_location": "L1858",
       "_origin": "ast",
       "id": "main_calmondayof",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "_calmondayof()"
     },
     {
@@ -2034,8 +2034,8 @@
       "source_location": "L1859",
       "_origin": "ast",
       "id": "main_calcellitems",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "_calcellitems()"
     },
     {
@@ -2045,8 +2045,8 @@
       "source_location": "L1860",
       "_origin": "ast",
       "id": "main_calfmtshort",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "_calfmtshort()"
     },
     {
@@ -2056,8 +2056,8 @@
       "source_location": "L1862",
       "_origin": "ast",
       "id": "main_buildmonthslots",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "buildmonthslots()"
     },
     {
@@ -2067,8 +2067,8 @@
       "source_location": "L1896",
       "_origin": "ast",
       "id": "main_calmonthnav",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "calmonthnav()"
     },
     {
@@ -2078,8 +2078,8 @@
       "source_location": "L1897",
       "_origin": "ast",
       "id": "main_calyearnav",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "calyearnav()"
     },
     {
@@ -2089,8 +2089,8 @@
       "source_location": "L1899",
       "_origin": "ast",
       "id": "main_buildweekslots",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "buildweekslots()"
     },
     {
@@ -2100,8 +2100,8 @@
       "source_location": "L1930",
       "_origin": "ast",
       "id": "main_calweeknav",
-      "community": 9,
-      "community_name": "buildMonthSlots",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "calweeknav()"
     },
     {
@@ -2123,7 +2123,7 @@
       "_origin": "ast",
       "id": "main_scheduletocalendar",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "scheduletocalendar()"
     },
     {
@@ -2134,7 +2134,7 @@
       "_origin": "ast",
       "id": "main_fracclock",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "_fracclock()"
     },
     {
@@ -2145,7 +2145,7 @@
       "_origin": "ast",
       "id": "main_renderdailygrid",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "renderdailygrid()"
     },
     {
@@ -2156,7 +2156,7 @@
       "_origin": "ast",
       "id": "main_initdailynav",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "initdailynav()"
     },
     {
@@ -2167,7 +2167,7 @@
       "_origin": "ast",
       "id": "main_shiftday",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "shiftday()"
     },
     {
@@ -2178,7 +2178,7 @@
       "_origin": "ast",
       "id": "main_initschedmodal",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "initschedmodal()"
     },
     {
@@ -2189,7 +2189,7 @@
       "_origin": "ast",
       "id": "main_openschedmodal",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "openschedmodal()"
     },
     {
@@ -2200,7 +2200,7 @@
       "_origin": "ast",
       "id": "main_closeschedmodal",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "closeschedmodal()"
     },
     {
@@ -2211,7 +2211,7 @@
       "_origin": "ast",
       "id": "main_selectduration",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "selectduration()"
     },
     {
@@ -2222,7 +2222,7 @@
       "_origin": "ast",
       "id": "main_confirmschedulemodal",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "confirmschedulemodal()"
     },
     {
@@ -2255,7 +2255,7 @@
       "_origin": "ast",
       "id": "main_scheduleagenda",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "scheduleagenda()"
     },
     {
@@ -2266,7 +2266,7 @@
       "_origin": "ast",
       "id": "main_addschedbuttons",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "_addschedbuttons()"
     },
     {
@@ -2276,8 +2276,8 @@
       "source_location": "L2215",
       "_origin": "ast",
       "id": "main_patchagendacardswithschedule",
-      "community": 14,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "patchagendacardswithschedule()"
     },
     {
@@ -2288,7 +2288,7 @@
       "_origin": "ast",
       "id": "main_scheduleagendabyidx",
       "community": 9,
-      "community_name": "buildMonthSlots",
+      "community_name": "renderDailyGrid",
       "norm_label": "scheduleagendabyidx()"
     },
     {
@@ -2430,8 +2430,8 @@
       "source_location": "L2608",
       "_origin": "ast",
       "id": "main_savepipelinetodb",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "savepipelinetodb()"
     },
     {
@@ -2441,8 +2441,8 @@
       "source_location": "L2633",
       "_origin": "ast",
       "id": "main_saveoracletoencyclopedia",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 15,
+      "community_name": "sendChat",
       "norm_label": "saveoracletoencyclopedia()"
     },
     {
@@ -2474,8 +2474,8 @@
       "source_location": "L2686",
       "_origin": "ast",
       "id": "main_sbinsightpost",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "sbinsightpost()"
     },
     {
@@ -2486,7 +2486,7 @@
       "_origin": "ast",
       "id": "main_sbinsightfetch",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "sbinsightfetch()"
     },
     {
@@ -2540,8 +2540,8 @@
       "source_location": "L2791",
       "_origin": "ast",
       "id": "main_approveinsightsfromcache",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "approveinsightsfromcache()"
     },
     {
@@ -2551,8 +2551,8 @@
       "source_location": "L2797",
       "_origin": "ast",
       "id": "main_approveinsights",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "approveinsights()"
     },
     {
@@ -2562,8 +2562,8 @@
       "source_location": "L2814",
       "_origin": "ast",
       "id": "main_setupmanualinsightselection",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "setupmanualinsightselection()"
     },
     {
@@ -2573,8 +2573,8 @@
       "source_location": "L2827",
       "_origin": "ast",
       "id": "main_showinsighttooltip",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "showinsighttooltip()"
     },
     {
@@ -2584,8 +2584,8 @@
       "source_location": "L2836",
       "_origin": "ast",
       "id": "main_removeinsighttooltip",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "removeinsighttooltip()"
     },
     {
@@ -2595,8 +2595,8 @@
       "source_location": "L2837",
       "_origin": "ast",
       "id": "main_savemanualinsight",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "saveManualInsight",
       "norm_label": "savemanualinsight()"
     },
     {
@@ -2618,7 +2618,7 @@
       "_origin": "ast",
       "id": "main_sendinsighttocmd3",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "sendinsighttocmd3()"
     },
     {
@@ -2629,7 +2629,7 @@
       "_origin": "ast",
       "id": "main_generatecontentideasfrominsights",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "generatecontentideasfrominsights()"
     },
     {
@@ -2661,8 +2661,8 @@
       "source_location": "L2962",
       "_origin": "ast",
       "id": "main_learnvideo",
-      "community": 154,
-      "community_name": "syncIntelData",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "learnvideo()"
     },
     {
@@ -2683,8 +2683,8 @@
       "source_location": "L3006",
       "_origin": "ast",
       "id": "main_vst_known",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 15,
+      "community_name": "sendChat",
       "norm_label": "vst_known"
     },
     {
@@ -2705,8 +2705,8 @@
       "source_location": "L3037",
       "_origin": "ast",
       "id": "main_extractvstsfromtext",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 15,
+      "community_name": "sendChat",
       "norm_label": "extractvstsfromtext()"
     },
     {
@@ -2771,8 +2771,8 @@
       "source_location": "L3114",
       "_origin": "ast",
       "id": "main_saveencwithvsts",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 15,
+      "community_name": "sendChat",
       "norm_label": "saveencwithvsts()"
     },
     {
@@ -2816,7 +2816,7 @@
       "_origin": "ast",
       "id": "main_acceptjumptoenc",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "acceptjumptoenc()"
     },
     {
@@ -3003,7 +3003,7 @@
       "_origin": "ast",
       "id": "main_refreshencyclopediadisplay",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "refreshencyclopediadisplay()"
     },
     {
@@ -3014,7 +3014,7 @@
       "_origin": "ast",
       "id": "main_syncandpush",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "syncandpush()"
     },
     {
@@ -3101,8 +3101,8 @@
       "source_location": "L3620",
       "_origin": "ast",
       "id": "main_initlearning",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "initlearning()"
     },
     {
@@ -3167,8 +3167,8 @@
       "source_location": "L3798",
       "_origin": "ast",
       "id": "main_quicksavetoencyclopedia",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 15,
+      "community_name": "sendChat",
       "norm_label": "quicksavetoencyclopedia()"
     },
     {
@@ -3277,8 +3277,8 @@
       "source_location": "L4061",
       "_origin": "ast",
       "id": "main_saveworkshoptoencyclopedia",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 15,
+      "community_name": "sendChat",
       "norm_label": "saveworkshoptoencyclopedia()"
     },
     {
@@ -3310,8 +3310,8 @@
       "source_location": "L4141",
       "_origin": "ast",
       "id": "main_submitintelurl",
-      "community": 154,
-      "community_name": "syncIntelData",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "submitintelurl()"
     },
     {
@@ -3332,8 +3332,8 @@
       "source_location": "L4196",
       "_origin": "ast",
       "id": "main_startjobpolling",
-      "community": 154,
-      "community_name": "syncIntelData",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "startjobpolling()"
     },
     {
@@ -3388,7 +3388,7 @@
       "_origin": "ast",
       "id": "main_pushlocaltosupabase",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "pushlocaltosupabase()"
     },
     {
@@ -3498,7 +3498,7 @@
       "_origin": "ast",
       "id": "main_saveinteltoencyclopedia",
       "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community_name": "showPage",
       "norm_label": "saveinteltoencyclopedia()"
     },
     {
@@ -3519,8 +3519,8 @@
       "source_location": "L4500",
       "_origin": "ast",
       "id": "main_renderdb",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "renderdb()"
     },
     {
@@ -3530,8 +3530,8 @@
       "source_location": "L4526",
       "_origin": "ast",
       "id": "main_loadnote",
-      "community": 5,
-      "community_name": "saveOracleToEncyclopedia",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "loadnote()"
     },
     {
@@ -3541,8 +3541,8 @@
       "source_location": "L4540",
       "_origin": "ast",
       "id": "main_deletenote",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "deletenote()"
     },
     {
@@ -4437,10 +4437,21 @@
       "norm_label": "advance()"
     },
     {
+      "label": "buildField()",
+      "file_type": "code",
+      "source_file": "rpgace_core.js",
+      "source_location": "L14732",
+      "_origin": "ast",
+      "id": "rpgace_core_buildfield",
+      "community": 4,
+      "community_name": "rpgace_core.js",
+      "norm_label": "buildfield()"
+    },
+    {
       "label": "truncate()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L16906",
+      "source_location": "L17028",
       "_origin": "ast",
       "id": "rpgace_core_truncate",
       "community": 4,
@@ -4451,7 +4462,7 @@
       "label": "chip()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L17180",
+      "source_location": "L17302",
       "_origin": "ast",
       "id": "rpgace_core_chip",
       "community": 4,
@@ -4462,9 +4473,9 @@
       "label": "NOTE: not `global.addEventListener` - this module is defined AFTER",
       "file_type": "rationale",
       "source_file": "rpgace_core.js",
-      "source_location": "L17402",
+      "source_location": "L17524",
       "_origin": "ast",
-      "id": "rpgace_core_rationale_17402",
+      "id": "rpgace_core_rationale_17524",
       "community": 4,
       "community_name": "rpgace_core.js",
       "norm_label": "note: not `global.addeventlistener` - this module is defined after"
@@ -21693,6 +21704,17 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
+      "source_location": "L14732",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "rpgace_core",
+      "target": "rpgace_core_buildfield",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "rpgace_core.js",
       "source_location": "L10053",
       "weight": 1.0,
       "_origin": "ast",
@@ -21704,7 +21726,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L17180",
+      "source_location": "L17302",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -21836,7 +21858,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L16391",
+      "source_location": "L16513",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -21946,7 +21968,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L16906",
+      "source_location": "L17028",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -21990,10 +22012,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L17402",
+      "source_location": "L17524",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "rpgace_core_rationale_17402",
+      "source": "rpgace_core_rationale_17524",
       "target": "rpgace_core",
       "confidence_score": 1.0
     },
@@ -28333,5 +28355,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "b90d92cf23594a8f7b62d1bbc7e063e27c968aaf"
+  "built_at_commit": "10c7e0abf4aa974934338c5f6bfbd6053901c9a4"
 }
