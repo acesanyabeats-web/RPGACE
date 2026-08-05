@@ -185,7 +185,7 @@ Grouped by **shared destination**, not by domain — anything in the same row al
 ## Future Integration Vision (a-f) — confirmed direction, not yet scoped
 
 Full detail in `patch_notes.html`'s Tier 6. One-line summary per item, each extending an existing touchpoint above except (e):
-- **(a)** Social platform integrations — extends Composio connectors
+- **(a)** Social platform integrations — extends Composio connectors. **Aug 5 scope confirmed via `/interrogation`**: the Content/Video Pipeline unification explicitly stops at Captions Generating (captions saved to the ConID, stage marked complete) — Composio auto-posting is a real, separately-scoped follow-up, not folded into that build. Full spec: `content_video_pipeline_unification_spec_2026-08-05.txt`.
 - **(b)** Video editing/scripting integration — extends F17/F18 (Content Production Pipeline)
 - **(c)** Full learning environment — unifies Feynman + Encyclopedia + Taxonomy Tree into one curriculum
 - **(d)** Auto-logging videos/beats/career progress — extends Journal + Content Production Live

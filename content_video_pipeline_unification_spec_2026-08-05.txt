@@ -1,0 +1,178 @@
+Content Pipeline / Video Pipeline / Live Content Production unification —
+full verbatim spec + /interrogation answers. NOT built yet. Real
+Council-of-5-advised step-by-step build plan follows the spec, per
+rule 5's "record real answers verbatim, never substitute a recommended
+default" convention.
+2026-08-05
+
+=====================================================================
+THE CORE ARCHITECTURE VISION (Alex's own framing, condensed but not
+substituted)
+=====================================================================
+Merge Log Beat, Live Content Production, Content Pipeline, and Video
+Pipeline into one coherent flow, not 4 disconnected surfaces. Log Beat
+gives Content Pipeline an idea to work on (music_video workflow); raw
+OBS footage triggers the editor/tutorial workflow. Both workflows go
+through DIFFERENT PROCESSES (because the inputs differ) but the SAME
+STAGES in Content Pipeline (every video needs the same real steps from
+raw to done, just implemented differently per input type). Oracle-saved
+ideas (conid_pot) are one extra step before this: make the content for
+the idea, then the output goes through the same system. Converting
+conid_pot -> content_productions ("PotConID to ConID") is the real
+gateway - Alex puts in his beat or raw OBS footage, the code recognises
+which file type it is, and routes to the correct workflow.
+
+REAL EVIDENCE CHECK (Aug 5): most of this already matches built
+architecture - one shared content_productions table, content_type
+discriminator ('tutorial'|'music_video'), same status column with
+display-label overrides. What's NOT built: automatic file-type
+detection at the gateway (currently Beat Log and Production Panel are
+two separate explicit entry points Alex chooses between, not one
+dropzone that auto-detects audio vs. video). Scope of the auto-detect
+gateway itself was not separately interrogated this pass - flagged for
+the build plan to confirm before implementing literally as "one
+dropzone."
+
+=====================================================================
+THE 14 REAL CRITIQUE ITEMS (verbatim intent, not paraphrased away)
+=====================================================================
+1. Log beat + artist always ties to the same "cold midnight blue" -
+   CONFIRMED REAL AND ROOT-CAUSED this session (not asked about, real
+   evidence found): SCALE_COLOURS (rpgace_core.js ~line 12345) keys
+   purely on musical scale (Minor -> #1a3a5c always), never mood. Real
+   fix: make palette selection mood-aware (or mood+scale combined).
+
+2. Reference corpus should NOT be updated by "song most close" as a
+   side effect of matching - it's a stable reference library, matched
+   via real librosa analysis (energy/rhythm/drums/melody/instrument
+   choice/sonicscape/vibe), tied to Log Beat info and saved, then fed
+   to Oracle for Visual Treatment/script. RESOLVED via /interrogation:
+   if librosa's match is a genuinely NEW song, add it to reference_tracks
+   AND attach the beat to it; if the matched song already exists in the
+   corpus, don't touch the corpus row - just attach the beat to the
+   existing row. Real gap found: reference_tracks has no link back to
+   which beat matched it today - Claude's recommendation (not yet
+   confirmed against Alex further): store as
+   content_productions.creative_docs.matched_reference_track_id +
+   match_score, not a new join table (economy-of-schema precedent).
+   Also part of item 2: this ends the Log Beat phase of Content
+   Pipeline - when passed, re-clicking "Log Beat" reopens the original
+   form pre-filled with saved data for tweaking (the general
+   retroactive-access pattern, formalized in items 5-9 below).
+
+3. Visual Treatment UX: "Mark 2 Visual Treatment" button should read
+   "Start Visual Treatment"; the status light box should update
+   automatically (not manually); director picker rows should each show
+   5 helper phrases for faster scanning while scrolling; ADD 2 MORE
+   director rows (secondary + tertiary) to blend up to 3 directors'
+   styles together for new hybrid feels. RESOLVED via /interrogation:
+   3 separate dropdown rows (primary/secondary/tertiary), not a single
+   multi-select. Phylum 14's keywords/phrases/insight for however many
+   directors are selected get conjoined to ground Oracle. The
+   scriptwriter prompt should draw from 3 distinct, named information
+   groups: (a) beat log metadata, (b) the director-blend
+   keywords/phrases/insight, (c) Alex's own free-text creative
+   inspiration/keywords for this specific beat.
+
+4. A yellow-warning toast appeared during the Continue-to-Oracle flow
+   after saving output to Flag-for-Claude-Code - NOT FOUND in
+   oracle_dev_suggestions (checked directly, real query, not assumed) -
+   none of the flagged rows describe an accompanying warning. GENUINELY
+   UNRESOLVED - needs Alex to describe it directly (what it said,
+   roughly when/which ConID) before this can be root-caused.
+
+5. Production Panel restructured into 4 real phases for music_video
+   ConIDs (more granular than the current 3-phase tutorial-shaped
+   model):
+   - Phase 1 - Reference + Style: keep as-is, add a retroactive
+     "return to Beat Log" button.
+   - Phase 2 - Direction + Script: Visual Treatment gets its own
+     retroactive button. Script gets saved as the real Oracle prompt
+     generated once step 4 (Continue) commences.
+   - Phase 3 - Script editing + its own retroactive button (a NEW,
+     separate phase from Visual Treatment, not folded into Phase 2).
+   - Phase 4 - the whole Video Pipeline (injects everything above into
+     OpenMontage/Kling), with its own retroactive button that pulls up
+     the real Kling project that generated the video.
+
+6. RESOLVED via /interrogation: retroactive buttons edit the SAME
+   ConID's data in place (not branch into a new ConID). Real purpose
+   named directly: reusing a beat's existing creative record to
+   re-generate new visuals for content repurposing (posting again with
+   a different visual take) without starting from zero - "multiply my
+   output" when busy/on holiday.
+
+7. Continuing to Oracle (script generation) auto-updates the ConID's
+   status box to "Visual Treatment: check" (not manual). Below the
+   generated prompt: a "return to Content Pipeline" button.
+
+8. ConID list sorts by most-recently-updated first (chronological,
+   newest on top) - a real, simple UI requirement.
+
+9. Once Visual Treatment is complete: Log Beat / Visual Treatment /
+   Script retroactive buttons all become available alongside a
+   "Generate Video" button.
+
+10. "Generate Video" packages everything the retroactive buttons
+    represent (beat metadata + visual treatment + script) and sends it
+    as the real job payload to OpenMontage/Kling.
+
+11. Kling's result triggers the real accept/reject/regenerate-scene
+    review workflow (matches the Backlot-shaped pattern already
+    confirmed real in OpenMontage today).
+
+12. Once ALL scenes are accepted: Video Generation stage marked
+    complete (status box updates), video saved locally with the real
+    path recorded in the ConID's Supabase row - "any information that
+    drives ConID in Content Pipeline should have a reference in the
+    ConID's Supabase row so metadata is never lost and is always
+    retroactively accessible." This triggers a NEW real stage, Captions
+    Generating - a Generate Captions button (Instagram/YouTube
+    Shorts/TikTok, short-form) using the full ConID record for accurate
+    captions. Once generated: captions saved to ConID, "Captions:
+    check" marked complete. ORIGINAL SPEC then said this triggers
+    automatic Composio-driven scheduled posting across all mentioned
+    platforms. RESOLVED via /interrogation: STOP THE BUILD AT CAPTIONS
+    for now - Composio auto-posting is explicitly deferred as its own
+    real, separately-scoped future item, not built in this pass, and
+    not silently dropped either (recorded here + in the oversight docs'
+    Future Integration Vision section).
+
+13. Reinforces principle stated throughout: ConID (content_productions)
+    must be the exhaustive, lossless record of every input that shaped
+    the output - losing one piece of info risks real creative drift
+    from what Alex actually intended.
+
+14. BeatStars listing (F16, already exists as a button) should become a
+    real formalized STAGE in the pipeline, not just a standalone
+    button - "sell the beat with the right marketing strategy with
+    assigned phylum." Scope of "mandatory vs. optional per-ConID stage"
+    not separately interrogated this pass.
+
+=====================================================================
+/INTERROGATION ANSWERS, VERBATIM
+=====================================================================
+Q1 (retroactive scope): "Edit in place" - confirmed, matches Claude's
+  own recommendation.
+Q2 (corpus growth): "if libersoa comes up with a new song, only then it
+  updates reference corpus (with beat saved to reference corpus) if the
+  song is there already, dont update, just attach beat to the row of
+  song in reference corpus + your recommendation to make it better"
+  [verbatim, kept as-said, typo preserved] - see item 2 above for
+  Claude's resulting recommendation.
+Q3 (Composio scope): "stop at captions for now, then we move to that in
+  a future session, log as future step in rpgace development if not in
+  oversight, or change to fit all new mentions and function updates to
+  get full scope recorded" [verbatim] - this file + the oversight-doc
+  updates that follow it are the direct fulfillment of this instruction.
+Q4 (director blend UI): "3 separate dropdown rows (as you described)" -
+  confirmed.
+
+=====================================================================
+STATUS
+=====================================================================
+Nothing built yet. Real evidence pass + /interrogation complete. Next:
+a Council-of-5-advised (/restructure + /Engineer informing) step-by-step
+build plan, scoped to everything through Captions Generating -
+Composio posting automation explicitly out of scope for this pass, real
+future item, not dropped.
