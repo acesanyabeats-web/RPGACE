@@ -1,0 +1,181 @@
+/Engineer pass — 2026-08-05_06
+Content/Video Pipeline unification, Phase G (Generate Captions)
+Ref: content_video_pipeline_unification_spec_2026-08-05.txt, item 12
+Ref: engineer_pass_2026-08-05_01/_02/_03/_04/_05.txt (Phases A/C/D/E/F, same framework)
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Real "Generate Captions" button on Phase 4, using the FULL ConID
+   record (beat metadata, Visual Treatment Doc, outbound script, video
+   job status) to produce Instagram Reels / YouTube Shorts / TikTok
+   captions.
+2. Captions save to the ConID (new `creative_docs.captions` field), and
+   the status box marks complete — reusing the existing display-label
+   override (`MUSIC_VIDEO_STATUS_LABELS`'s `'Posted'` → "4. Captions
+   Ready", forward-guarded the same way Phase A's Idea→Scripted
+   auto-advance already is).
+3. Explicitly stops here — no Composio auto-posting, per
+   `/interrogation`'s confirmed scope answer (already logged).
+4. A real "View Captions" reader, matching the established pattern
+   (Script Editing's dual fields, View Kling Project) of always pairing
+   a generator with a reader.
+Tier 1/2 boundary. One additive `creative_docs` key, no schema
+migration (jsonb). No RLS/Tier 3 action.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Real evidence check before designing the status-advance: is "once
+  ALL scenes are accepted" (item 12's stated gate) buildable today?
+  No — item 11 (the accept/reject/regenerate-scene review workflow)
+  isn't built; Phase F only built job creation/simulation, not a scene-
+  level review loop. Decision: do NOT hard-gate Generate Captions on an
+  unbuilt mechanism — the real content it needs (beat metadata, Visual
+  Treatment, script) already exists once Phase 2/3 have run, and
+  blocking a working feature behind a missing one would be a worse
+  default than letting Alex use it whenever he judges the video ready.
+  Restated in-code so this isn't mistaken for an oversight.
+- Confirmed via a real grep: the manual "→ Mark [Status]" ConID-card
+  button (pre-existing, not built this session) already advances
+  `content_productions.status` through the full real sequence (Idea→
+  Scripted→Filmed→Edited→Posted→Analysed) one step at a time, including
+  setting `posted_at`/`analysed_at`. This meant no retroactive fix was
+  needed to Phase F for a "Filmed" auto-advance — the manual path
+  already covers any status Alex wants to set by hand; Phase G's own
+  auto-advance to 'Posted' on caption-save is additive, not filling a
+  gap Phase F should have closed.
+- Found a real, reusable 3-platform caption SHAPE already in the
+  codebase: `contentRepurpose`'s "4 platform formats" generator (a
+  different real feature — repurposing a raw Oracle idea, not an
+  existing beat's finished record) already asks for an Instagram Reels
+  caption, a YouTube Shorts hook, and a TikTok caption with near-
+  identical style/length constraints. Reused the same voice/format
+  descriptions rather than inventing a divergent one — not a forced
+  shared function, since the real inputs (checked taxonomy phyla vs. a
+  specific ConID's saved creative_docs) genuinely differ.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — routine build, not an audit)
+=====================================================================
+1. New `contentProductionLive._generateCaptions(row)` — one real fetch
+   of `content_productions.creative_docs`, one of the linked
+   `video_jobs` row (reused for both the beat-metadata fallback and the
+   video-job id — no duplicate lookup), builds a prompt from whichever
+   real fields exist (beat metadata, Visual Treatment Doc, outbound
+   script, video status/path), sends via the shared
+   `_prepOracleBarFor`/`_sendFilledPromptToOracle` tail (Phase E/F's
+   own dedup pattern).
+2. `_sendFilledPromptToOracle` gained an optional 4th param, `docSlug`
+   (defaults to `'visual_treatment'` — every existing caller unchanged)
+   so Phase G could reuse the exact same send/capture tail for a
+   different creative_docs key instead of a second hand-rolled copy.
+3. `visualOracle._saveDocToProduction` gained a second forward-only
+   status-advance branch: `docSlug==='captions'` advances
+   `Idea`/`Scripted`/`Filmed`/`Edited` → `Posted` (+ `posted_at`),
+   mirroring the exact guard shape Phase A's `visual_treatment` branch
+   already established — same function, same real read-merge-write, no
+   new write path.
+4. New `contentProductionLive._viewCaptions(row)` — real reader,
+   honest "none yet" message if `creative_docs.captions` is empty.
+5. Phase 4's render branch gained 2 new buttons: "📝 Generate Captions"
+   and "👁 View Captions" (via `_buildRetroActionButton`, same real
+   factory Phase E built).
+6. index.html cache-bust bumped (20260805e → 20260805f) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 2 files (rpgace_core.js 110 insertions/3 deletions,
+index.html 1-line cache-bust). Touches 2 modules: `visualOracle`
+(`_saveDocToProduction`'s new branch) and `contentProductionLive` (the
+2 new functions, the generalized send-tail param, the Phase 4 button
+wiring). No other module touched.
+
+Honest residual risks, not hidden:
+- Generate Captions is NOT gated on real video generation having
+  actually completed (by design, per Stage 2's evidence — item 11 isn't
+  built) — Alex could click it the moment Phase 2 finishes, before any
+  video exists. The prompt degrades gracefully (uses whatever real
+  fields exist, omits the rest) rather than erroring, but the captions
+  it produces would only reference the Visual Treatment concept, not a
+  finished video. Flagged, not fixed — fixing it means building item
+  11 first, out of this pass's scope.
+- The status advance to `'Posted'` (displaying "4. Captions Ready")
+  happens the instant captions save, regardless of whether video
+  generation, in the real sequence, has reached `Filmed`/`Edited` first
+  via the manual advance button. This is consistent with Phase A's own
+  precedent (an automatic side-effect advance living alongside a manual
+  one for the same column) but means the display can jump straight from
+  "2. Visual Treatment" to "4. Captions Ready" if Alex never used the
+  manual button in between — an honest side effect of reusing the
+  existing shared status column, not a bug.
+- `contentRepurpose`'s similar 3-platform prompt and this one now exist
+  as 2 real, deliberately un-shared prompt-builders with similar voice.
+  Revisit if a future session wants one shared "platform caption style
+  guide" constant — not done here since the real inputs differ enough
+  that forcing a shared function would have made both call sites more
+  awkward, not less.
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: correctly identified and avoided a hard-gate on an
+unbuilt mechanism rather than blocking a working feature; real dedup
+(generalized the existing send-tail param instead of a new function,
+reused the existing status-advance guard shape, reused an existing
+caption-format voice without forcing an artificial shared function);
+real evidence check confirmed no retroactive Phase F fix was needed.
+Docked 2 points for the same standing zero-hand-testing gap (now
+spanning 6 phases) and the un-gated caption-before-video ordering risk
+left as a named, not silently accepted, limitation.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope.
+- index.html script-tag count: re-checked, exactly 2, only version
+  string changed.
+- Re-grepped _generateCaptions/_viewCaptions (each exactly one
+  definition, called from the expected real site) and both
+  _sendFilledPromptToOracle call sites (the original, unchanged
+  3-arg call from _generateVisualTreatment; the new 4-arg
+  'captions' call from _generateCaptions) — confirmed no regression to
+  the existing call's default behavior.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, fresh run.
+G2 (index.html invariants) — PASS, exactly 2 script tags, only version
+  string changed.
+G3 (module convention) — PASS, entirely inside visualOracle/
+  contentProductionLive's existing module markers, no main.js touch.
+G4 (claim-to-diff reconciliation) — PASS, both directions clean.
+G5 (goal reconciliation) — all 4 Stage 1 goals: DONE.
+G6 (deployment reality) — pending merge+push; will confirm via Vercel
+  MCP same as every prior phase this week.
+G7 (cache-bust) — PASS, version string moved in the same pass.
+UNTESTED (required label, not a failure): per Alex's explicit direction
+  this session, no individual hand-test requested after this phase —
+  accumulates for one batched real-beat verification once all 8 phases
+  ship. Real actions this pass adds to that eventual list: (1) click
+  Generate Captions on a real ConID, confirm the 3 platform captions
+  come back referencing the actual beat/treatment, not generic filler;
+  (2) confirm the status box advances to "4. Captions Ready"; (3) click
+  View Captions, confirm the saved text shows; (4) confirm clicking
+  Generate Captions again on an already-Posted ConID doesn't clobber
+  its status backward.
+
+PASS COUNT: 1 of 3 max. Re-looping not triggered — no gate failed, no
+Stage 1 goal unresolved.
+
+=====================================================================
+NEXT
+=====================================================================
+Phase H: formalize BeatStars (F16) as a real pipeline stage. One
+sub-question genuinely unresolved from the original spec (item 14):
+mandatory vs. optional per-ConID — not separately interrogated, default
+stated in the spec is "optional, gated on licence_type being set,"
+matching existing F15/F16 precedent — will confirm with Alex before
+building if this proves load-bearing. Same framework. This is the
+final phase of the confirmed 8-phase build.

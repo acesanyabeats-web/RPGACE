@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">📝 Aug 5 — /Engineer Phase G: Generate Captions, using the full ConID record</div>
+    <div class="card-body">
+      Sixth real build pass of the Content/Video Pipeline unification, same 5-stage <code>/Engineer</code> discipline as Phases A/C/D/E/F. Full record: <code>engineer_pass_2026-08-05_06.txt</code>.
+      <br><br>
+      <strong>Phase 4 gained a real "📝 Generate Captions" button</strong>, building its prompt from the FULL real ConID record — beat metadata, the Visual Treatment Doc, the outbound script, and the video job's real status — rather than generic filler. Produces all 3 real short-form platforms (Instagram Reels caption, YouTube Shorts title+description+tags, TikTok caption), each with its own opening line. A real evidence check first: item 12's original "once ALL scenes are accepted" gate isn't buildable yet (the scene-review workflow, item 11, doesn't exist) — rather than block a working feature behind an unbuilt one, Generate Captions is deliberately NOT hard-gated, with the real limitation named plainly in-code rather than hidden.
+      <br><br>
+      <strong>Captions save to <code>creative_docs.captions</code> and the status box marks complete</strong> — reuses the exact same forward-only auto-advance pattern Phase A built for Visual Treatment (never clobbers a ConID already past this stage), advancing to <code>'Posted'</code>, which the pre-existing <code>MUSIC_VIDEO_STATUS_LABELS</code> override already displays as "4. Captions Ready". A real evidence check confirmed the pre-existing manual "→ Mark [Status]" button already covers the Filmed/Edited steps by hand, so no retroactive fix to Phase F was needed.
+      <br><br>
+      <strong>New "👁 View Captions" reader</strong> pairs the generator, matching the established pattern (Script Editing, View Kling Project) of always shipping a reader alongside a writer. <strong>Explicitly stops here</strong> — no Composio auto-posting, per <code>/interrogation</code>'s already-confirmed scope.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass. G6 pending merge+push, will confirm via Vercel MCP same as every prior phase. Per Alex's explicit direction, hand-testing stays deferred until all 8 phases ship and get verified together in one pass with a real beat. This was the 6th of 8 confirmed phases — only Phase H (BeatStars as a formal stage) remains.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎬 Aug 5 — /Engineer Phase F: video generation handoff, gated + a safe test tool</div>
     <div class="card-body">
       Fifth real build pass of the Content/Video Pipeline unification, same 5-stage <code>/Engineer</code> discipline as Phases A/C/D/E. Full record: <code>engineer_pass_2026-08-05_05.txt</code>.

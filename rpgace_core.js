@@ -1484,6 +1484,17 @@ RPGACE.register('visualOracle', {
         if (docSlug === 'visual_treatment' && currentStatus === 'Idea') {
           updates.status = 'Scripted';
         }
+        // Aug 5 (Engineer pass, Phase G) - same forward-only pattern for
+        // captions reaching "4. Captions Ready" (the MUSIC_VIDEO_STATUS_
+        // LABELS display override on 'Posted'). Guards against every
+        // status before it, matching the real manual "-> Mark [Status]"
+        // sequence (Idea/Scripted/Filmed/Edited) so this never clobbers
+        // an already-Posted/Analysed ConID. posted_at set the same way
+        // the manual advance button already sets it.
+        if (docSlug === 'captions' && ['Idea', 'Scripted', 'Filmed', 'Edited'].indexOf(currentStatus) !== -1) {
+          updates.status = 'Posted';
+          updates.posted_at = new Date().toISOString();
+        }
         return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + productionId);
       })
       .then(function() { RPGACE.utils.toast('💾 Saved ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline', '#9B6EC8', 2500); })
@@ -14239,7 +14250,13 @@ RPGACE.register('contentProductionLive', {
     }, 500);
   },
 
-  _sendFilledPromptToOracle: function(row, vjId, filled) {
+  // Aug 5 (Engineer pass, Phase G) — optional docSlug param added
+  // (defaults to 'visual_treatment', every existing caller's real
+  // behavior unchanged) so _generateCaptions can reuse this exact same
+  // real send/capture tail for a different creative_docs key, instead of
+  // a second hand-rolled copy (rule 8 dedup).
+  _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) {
+    docSlug = docSlug || 'visual_treatment';
     var vo = RPGACE.modules.visualOracle;
     var input = document.querySelector('#chat-input');
     if (!input) return;
@@ -14247,7 +14264,7 @@ RPGACE.register('contentProductionLive', {
     input.dispatchEvent(new Event('input', {bubbles:true}));
     if (vo && vo._captureNextResponse) {
       vo._captureNextResponse(function(text) {
-        vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
+        vo._saveDocToProduction(docSlug, text, row.id, vjId);
       });
     }
     if (typeof sendChat === 'function') sendChat();
@@ -14960,6 +14977,28 @@ RPGACE.register('contentProductionLive', {
               phaseCard.appendChild(self._buildRetroActionButton('↩ View Kling Project', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
                 self._viewOpenMontageJob(row);
               }));
+              phaseCard.appendChild(document.createElement('br'));
+
+              // Aug 5 (Engineer pass, Phase G) — real Generate Captions
+              // trigger, item 12's "Captions Generating" stage. NOT hard-
+              // gated on all-scenes-accepted (item 11's review workflow
+              // isn't built) - the real content this needs already exists
+              // once Phase 2/3 have run, and blocking a working feature on
+              // an unbuilt one would be a worse default than letting Alex
+              // use it whenever he judges the video ready. Explicitly
+              // stops at saving captions - no Composio auto-posting, per
+              // /interrogation's confirmed scope.
+              var capBtn = document.createElement('button');
+              capBtn.textContent = '📝 Generate Captions';
+              capBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-top:6px;';
+              capBtn.onclick = function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._generateCaptions(row);
+              };
+              phaseCard.appendChild(capBtn);
+              phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
+                self._viewCaptions(row);
+              }));
             }
           }
 
@@ -15193,6 +15232,74 @@ RPGACE.register('contentProductionLive', {
             (job.output_note ? '<div style="margin-bottom:8px;"><strong>Output note:</strong> ' + job.output_note.replace(/</g, '&lt;') + '</div>' : '') +
             '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Job id: ' + job.id + '</div>';
         }
+        pop.box.appendChild(body);
+      });
+  },
+
+  // ── Phase G: Generate Captions (Aug 5, Engineer pass) ────────────────
+  // Real trigger built from the FULL ConID record (beat metadata, Visual
+  // Treatment Doc, outbound script, video job status/path) per item 12's
+  // explicit "using the full ConID record for accurate captions" - one
+  // real fetch of content_productions + one of video_jobs, no duplicate
+  // lookups. Reuses the same 3-platform caption shape (Instagram Reels/
+  // YouTube Shorts/TikTok) contentRepurpose's own "4 platform formats"
+  // generator already uses elsewhere for a different real purpose
+  // (repurposing a raw Oracle idea, not an existing beat's finished
+  // record) - same voice, not a forced shared function, since the real
+  // inputs genuinely differ. Explicitly stops at saving captions - no
+  // Composio auto-posting, per /interrogation's confirmed scope.
+  _generateCaptions: function(row) {
+    var self = this;
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+          .catch(function() { return []; })
+          .then(function(jobs) {
+            var vj = jobs && jobs[0];
+            var vjId = vj ? vj.id : null;
+            var beatMeta = null;
+            if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
+            if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
+
+            var contextParts = [];
+            contextParts.push('BEAT: ' + (row.title || 'Untitled') +
+              (beatMeta ? ' (' + [beatMeta.genre, beatMeta.mood, beatMeta.key ? (beatMeta.key + ' ' + (beatMeta.scale || '')) : null, beatMeta.bpm ? (beatMeta.bpm + ' BPM') : null].filter(Boolean).join(', ') + ')' : ''));
+            if (docs.visual_treatment) contextParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
+            if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
+            if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
+
+            var prompt = 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n' +
+              contextParts.join('\n\n') + '\n\n' +
+              'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
+              '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags.\n\n' +
+              '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags.\n\n' +
+              '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags.\n\n' +
+              'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.';
+
+            self._prepOracleBarFor(row, function() {
+              self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
+              RPGACE.utils.toast('📝 Generating platform captions from the full ConID record...', '#4A8CCC', 3000);
+            });
+          });
+      });
+  },
+
+  // Real reader for the saved captions - honest "none yet" message
+  // rather than fabricating placeholder text.
+  _viewCaptions: function(row) {
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var captions = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.captions;
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+          title: 'Platform Captions',
+        });
+        var body = document.createElement('div');
+        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
+        body.textContent = captions || 'No captions generated yet for this ConID — use Generate Captions first.';
         pop.box.appendChild(body);
       });
   },
