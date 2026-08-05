@@ -221,8 +221,12 @@ G4 (claim-to-diff reconciliation) — PASS, every claim in Stage 3 traces
 G5 (goal reconciliation) — PASS against Stage 1's contract; the two
   explicit "NOT built" items were verified absent from the diff, not
   just asserted.
-G6 (deployment reality) — FAILED on first real check, FIXED, then
-  re-confirmed PASS. Full account in STAGE 6 below — this is the real
+G6 (deployment reality) — FAILED on first real check (dpl_DcGjHRCZabq
+  7MRCNxSAHfomtS1uh, state=ERROR, exceeded_serverless_functions_per_
+  deployment), FIXED (folded into api/data-write.js), then
+  independently RE-CONFIRMED PASS (dpl_51pMwaV6hXXN7QD6KnSnasZJr4LP,
+  state=READY, target=production, commit 071e5cd, rpgace.vercel.app in
+  the alias list). Full account in STAGE 6 below — this is the real
   reason G6 exists as an independent check rather than an assumption.
 G7 (cache-bust) — PASS, 20260805h → 20260805i.
 
@@ -279,11 +283,12 @@ Re-verification, not re-assumption:
   PK-signed buffer — the actual zip logic itself was never the bug,
   only its placement as a 14th file was.
 - Re-committed, re-merged to main (fast-forward), re-pushed.
-- Re-ran Vercel MCP list_deployments for the new commit: state=READY,
-  target=production, githubCommitSha matches the real new commit,
-  alias list includes the real rpgace.vercel.app domain — this time a
-  genuine PASS, independently re-checked rather than assumed from the
-  first (broken) merge.
+- Re-ran Vercel MCP get_deployment for the new commit (dpl_51pMwaV6hX
+  XN7QD6KnSnasZJr4LP): state=READY, target=production, githubCommitSha=
+  071e5cddc6e4c294d9e480147631ee493b533712 (the exact commit this fix
+  produced), alias list includes the real rpgace.vercel.app domain,
+  aliasError=null — this time a genuine PASS, independently re-checked
+  rather than assumed from the first (broken) merge.
 
 Real lesson worth keeping, not just for this file: a clean `git push`
 and a clean `node --check` are NECESSARY but not SUFFICIENT evidence
@@ -302,4 +307,4 @@ Bundle for a tier with at least one applicable file, confirm a real
 zip downloads and actually opens/extracts correctly, and confirm
 Remove actually deletes both the DB record and the Storage object.
 
-PASS COUNT: 1 of 3 max.
+PASS COUNT: 2 of 3 max (initial pass + the STAGE 6 G6 correction).
