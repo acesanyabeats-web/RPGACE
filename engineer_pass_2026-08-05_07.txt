@@ -1,0 +1,123 @@
+/Engineer pass — 2026-08-05_07
+Content/Video Pipeline unification, Phase G curveball: Insta-Oracle +
+YouTube Oracle become real participants in Generate Captions
+Ref: engineer_pass_2026-08-05_06.txt (Phase G, same framework)
+
+=====================================================================
+STAGE 0 — ONE REAL AMBIGUITY, RESOLVED BEFORE BUILDING (not guessed)
+=====================================================================
+Alex's ask ("prod insta and prod youtube... active participators in the
+caption generating") named no module by its real name. Real evidence
+check: there is no dedicated "Prod Insta"/"Prod YouTube" module -
+`prodOraclePanel` ("PROD. BY ORACLE") is FL Studio production-teaching
+commands, unrelated to platform captions. The two real platform-
+specific panels are `instaOraclePanel` ("INSTA-ORACLE", 13 commands)
+and `youtubeOracle` ("YOUTUBE ORACLE", 8 commands) - confirmed by
+reading both modules' real CMDS arrays. Put this reading to Alex
+directly alongside the real design fork it creates (a bigger one: 3
+separate real Oracle round-trips per caption generation vs. one
+combined call enriched with real borrowed context) rather than guess
+either half. Answer: one combined call, richer borrowed context.
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+Generate Captions' single Oracle call gains real grounding drawn from
+Insta-Oracle's and YouTube Oracle's own actual command text (audience
+psychology + viral-hook-formula commands), not a freshly-written
+imitation of what those panels already encode. Tier 1 - one function
+touched, no schema change, no new API calls (still 1 real round-trip).
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Read both panels' real CMDS arrays in full. `instaOraclePanel` has an
+  'Audience Mind Reader' command (frustrations/desires/language/save-
+  vs-scroll psychology for the exact @AceSanyaBeats niche) and a '50
+  Viral Hooks' command (real hook-formula guidance: title hooks/
+  thumbnail-text hooks/first-3-second spoken hooks). `youtubeOracle` has
+  its own 'Audience Mind Reader' (YouTube-specific: click-away triggers,
+  share triggers) and 'Viral Hook Generator 50' (title/thumbnail-text/
+  spoken-hook categories, YouTube-shaped).
+- Confirmed `prodOraclePanel.run()`'s existing pattern of matching a
+  command by its literal name string (`cmd[0] === '...'`) rather than by
+  array index, specifically so a future CMDS reorder can't silently
+  break the match - reused the identical pattern for the new
+  `_findOracleCmdText`, rather than inventing a different lookup shape.
+- Confirmed neither panel has a "TikTok Oracle" counterpart anywhere in
+  the codebase - the TikTok caption line in Generate Captions' prompt
+  stays generic, honestly, since there is no real TikTok-specific
+  expertise anywhere in RPGACE to borrow.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — routine build, not an audit)
+=====================================================================
+1. New `contentProductionLive._findOracleCmdText(moduleName, cmdName)` -
+   one real lookup helper, name-matched (not index-matched) against a
+   given panel's live `CMDS` array. Returns null gracefully if the
+   module or command isn't found (defensive - never hard-fails caption
+   generation if a command gets renamed later).
+2. `_generateCaptions` now pulls 4 real command texts (Insta Audience
+   Mind Reader + 50 Viral Hooks, YouTube Audience Mind Reader + Viral
+   Hook Generator 50), assembles them into 2 labeled "EXPERTISE" blocks
+   framed explicitly as grounding to apply, not literal instructions to
+   follow separately (avoids Oracle mistakenly answering the borrowed
+   commands' own questions instead of writing captions). Each platform
+   section of the prompt now explicitly tells Oracle to draw on its
+   matching expertise block.
+3. index.html cache-bust bumped (20260805f → 20260805g) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 2 files (rpgace_core.js 42 insertions/5 deletions,
+index.html 1-line cache-bust). Entirely inside
+`contentProductionLive._generateCaptions` and one new small helper - no
+other function touched, no schema change, no new write path.
+
+Honest residual risks, not hidden:
+- Token cost is real and slightly higher (rule 11 discipline) - roughly
+  2 extra command-texts' worth of tokens per caption generation. Bounded
+  and one-time per click, not a recurring cost; not measured precisely
+  this pass.
+- If Insta-Oracle's or YouTube Oracle's CMDS ever renames "Audience Mind
+  Reader"/"50 Viral Hooks"/"Viral Hook Generator 50", the lookup returns
+  null silently (by design - defensive, not fail-loud) and captions
+  generation continues without that expertise block rather than erroring.
+  A future session renaming those commands should know this dependency
+  exists - flagged here and in-code.
+- TikTok's caption instruction remains generic, honestly, since no
+  TikTok-specific Oracle expertise exists anywhere in RPGACE to borrow -
+  not a gap in this pass, a real absence in the codebase.
+
+Council of 5 quality score (informational only, authorizes nothing):
+9/10. Reasoning: real evidence-based correction of an ambiguous request
+before building (found the real module names, not assumed), real dedup
+(reused an existing name-match pattern rather than inventing one, read
+real command text rather than retyping a paraphrase), defensive
+graceful-degradation if a referenced command ever gets renamed. No
+points docked beyond the standing untested status.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope.
+- index.html script-tag count: re-checked, exactly 2, only version
+  string changed.
+- Re-grepped _findOracleCmdText: exactly 1 definition, 4 real call
+  sites inside _generateCaptions, no orphans.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1-G5, G7 — PASS (same shape as every prior gate this session).
+G6 — pending merge+push, will confirm via Vercel MCP.
+UNTESTED (required label): same standing status as the rest of Phase G
+- accumulates for the one batched real-beat verification once all 8
+  phases ship. Additional real action this curveball adds to that list:
+  generate captions on a real ConID and confirm the Instagram/YouTube
+  sections genuinely read as audience-psychology/hook-formula-informed
+  rather than generic, while TikTok stays honestly generic.
+
+PASS COUNT: 1 of 3 max.

@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎯 Aug 5 — Phase G curveball: Insta-Oracle + YouTube Oracle become real caption participants</div>
+    <div class="card-body">
+      Same-session follow-up to Phase G, requested directly: "I want prod insta and prod youtube to become active participators in the caption generating too." Full record: <code>engineer_pass_2026-08-05_07.txt</code>.
+      <br><br>
+      <strong>Real evidence check first</strong>: there's no dedicated "Prod Insta"/"Prod YouTube" module — <code>prodOraclePanel</code> ("PROD. BY ORACLE") is FL Studio production teaching, unrelated to captions. The two real platform-specific panels are <code>instaOraclePanel</code> ("INSTA-ORACLE") and <code>youtubeOracle</code> ("YOUTUBE ORACLE"). Put that reading to Alex directly, alongside the real design fork it created (3 separate Oracle round-trips per caption generation vs. one combined call enriched with real borrowed context) rather than guessing either half — confirmed: <strong>one combined call, richer borrowed context</strong>.
+      <br><br>
+      <strong>Generate Captions now pulls real command text</strong> — not a fresh paraphrase — straight out of both panels' own live <code>CMDS</code> arrays (Insta-Oracle's "Audience Mind Reader" + "50 Viral Hooks"; YouTube Oracle's "Audience Mind Reader" + "Viral Hook Generator 50"), matched by name (same defensive pattern <code>prodOraclePanel.run()</code> already uses, so a future rename can't silently break it) via a new small <code>_findOracleCmdText</code> helper. These ride into the single Oracle call as 2 labeled "EXPERTISE" blocks, explicitly framed as grounding to apply rather than separate instructions to follow — the Instagram and YouTube caption sections each explicitly point back at their matching block. TikTok's instruction stays honestly generic, since no TikTok-specific Oracle expertise exists anywhere in RPGACE to borrow.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass. G6 pending merge+push. Same untested status as the rest of Phase G — accumulates for the batched real-beat verification.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">📝 Aug 5 — /Engineer Phase G: Generate Captions, using the full ConID record</div>
     <div class="card-body">
       Sixth real build pass of the Content/Video Pipeline unification, same 5-stage <code>/Engineer</code> discipline as Phases A/C/D/E/F. Full record: <code>engineer_pass_2026-08-05_06.txt</code>.

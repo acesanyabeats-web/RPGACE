@@ -15236,6 +15236,20 @@ RPGACE.register('contentProductionLive', {
       });
   },
 
+  // Aug 5 (Engineer pass, Phase G curveball) — real reuse, not a retyped
+  // paraphrase: pulls a named command's exact prompt text straight out of
+  // instaOraclePanel/youtubeOracle's own CMDS array (matched by name, same
+  // pattern prodOraclePanel.run() already uses so a future CMDS reorder
+  // can't silently break this), so their real audience-psychology/hook
+  // expertise is one source of truth read from 2 places, never copy-
+  // pasted and left to drift.
+  _findOracleCmdText: function(moduleName, cmdName) {
+    var mod = RPGACE.modules[moduleName];
+    if (!mod || !mod.CMDS) return null;
+    var found = mod.CMDS.filter(function(c) { return c[0] === cmdName; })[0];
+    return found ? found[1] : null;
+  },
+
   // ── Phase G: Generate Captions (Aug 5, Engineer pass) ────────────────
   // Real trigger built from the FULL ConID record (beat metadata, Visual
   // Treatment Doc, outbound script, video job status/path) per item 12's
@@ -15248,6 +15262,14 @@ RPGACE.register('contentProductionLive', {
   // record) - same voice, not a forced shared function, since the real
   // inputs genuinely differ. Explicitly stops at saving captions - no
   // Composio auto-posting, per /interrogation's confirmed scope.
+  //
+  // Curveball (same session, real fork put to Alex directly): Insta-
+  // Oracle and YouTube Oracle become real participants via their OWN
+  // real expertise borrowed into this ONE combined call (Alex's chosen
+  // option over 3 separate round-trips) - their actual Audience Mind
+  // Reader / viral-hook-generator command TEXT rides alongside the beat
+  // record as real grounding, not a fresh generic instruction imitating
+  // what those panels already say better.
   _generateCaptions: function(row) {
     var self = this;
     RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
@@ -15270,17 +15292,32 @@ RPGACE.register('contentProductionLive', {
             if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
             if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
 
+            var instaMind = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
+            var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
+            var ytMind = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
+            var ytHooks = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
+            var expertiseParts = [];
+            if (instaMind || instaHooks) {
+              expertiseParts.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
+                [instaMind, instaHooks].filter(Boolean).join('\n\n'));
+            }
+            if (ytMind || ytHooks) {
+              expertiseParts.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
+                [ytMind, ytHooks].filter(Boolean).join('\n\n'));
+            }
+
             var prompt = 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n' +
-              contextParts.join('\n\n') + '\n\n' +
+              contextParts.join('\n\n') +
+              (expertiseParts.length ? '\n\n' + expertiseParts.join('\n\n') : '') + '\n\n' +
               'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
-              '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags.\n\n' +
-              '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags.\n\n' +
+              '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags. Draw on the INSTAGRAM EXPERTISE above.\n\n' +
+              '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags. Draw on the YOUTUBE EXPERTISE above.\n\n' +
               '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags.\n\n' +
               'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.';
 
             self._prepOracleBarFor(row, function() {
               self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
-              RPGACE.utils.toast('📝 Generating platform captions from the full ConID record...', '#4A8CCC', 3000);
+              RPGACE.utils.toast('📝 Generating platform captions (Insta-Oracle + YouTube Oracle grounded) from the full ConID record...', '#4A8CCC', 3500);
             });
           });
       });
