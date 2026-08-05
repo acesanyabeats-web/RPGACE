@@ -1,0 +1,68 @@
+Real audio-similarity matching for audience targeting — future RPGACE
+build, NOT started, logged per rule 5 (multi-subsystem idea, needs real
+spec before any build).
+2026-08-05
+
+=====================================================================
+WHY THIS EXISTS (real chain)
+=====================================================================
+Phase B of the Content/Video Pipeline unification (reference corpus
+linking) hit a genuine architecture mismatch during real evidence-
+gathering: Alex's described mental model — "librosa deduces my beat's
+energy/rhythm/drums/melody/instrument choice/sonicscape/vibe, finds the
+closest matching SONG in the corpus, links my beat to it if it already
+exists, adds it if genuinely new" — does not match what's actually
+built. Real findings, both confirmed directly against source:
+- `findMatches()` scores existing `reference_tracks` rows against the
+  current beat's METADATA (BPM/mood/scale/energy/genre tag matching) -
+  a real, working feature, but metadata similarity, not audio analysis.
+- "Add These Artists to Reference Corpus" is a SEPARATE mechanism -
+  Last.fm similar-artist suggestions (tiered big/emerging/underground),
+  inserted as placeholder rows carrying the CURRENT beat's own metadata
+  copied over, not the artist's real characteristics. Zero connection
+  to findMatches()'s scoring.
+Neither of these is real audio-fingerprint/similarity matching. Alex
+confirmed this finding is correct and named the real underlying goal:
+this isn't just about a tidier corpus - it's about being able to
+connect his own beat to REAL PUBLISHED, successful songs via genuine
+audio characteristics, in order to identify the REAL AUDIENCE those
+songs' listeners represent - a genuine audience-targeting capability
+for marketing/content strategy (BeatStars positioning, social content
+targeting, which platforms/demographics to focus on for a given beat).
+
+=====================================================================
+THE REAL FUTURE BUILD (not scoped in detail - this is the durable
+placeholder, not the spec)
+=====================================================================
+A genuine audio-similarity engine that:
+1. Analyses a beat's real audio characteristics (energy, rhythm, drum
+   pattern, melody, instrument choice, overall sonicscape/vibe) - this
+   needs real signal-processing depth beyond the current optional
+   librosa hook (which only extracts BPM + Major/Minor key today, per
+   `beat_audio_jobs` - confirmed, not assumed, via the existing
+   `beat_log_matching_spec_backlog_2026-07-28.txt` finding this project
+   already recorded).
+2. Matches against a real corpus of PUBLISHED songs (not just Last.fm
+   similar-artist name suggestions) with known real audience data -
+   genre, listener demographics, platform performance - a real external
+   data source question, not decided here.
+3. Surfaces the resulting audience insight back into the beat's own
+   ConID record, to inform BeatStars marketing copy, content platform
+   choice, and posting strategy - the real practical payoff.
+
+This is genuinely adjacent to, but distinct from, the already-flagged
+Slice C (real beat-grid/onset detection for video scene timing) - both
+need deeper real audio analysis than exists today, but Slice C is about
+TIMING (where the beat falls) and this is about AUDIENCE MATCHING
+(who else likes music that sounds like this). Related, not the same
+build - don't conflate them when this gets scoped for real.
+
+=====================================================================
+STATUS
+=====================================================================
+NOT built, NOT scoped in detail, NOT blocking anything else in the
+Content/Video Pipeline unification. Phase B (reference corpus linking)
+proceeds instead with the real, already-existing mechanism: link a
+beat's ConID to whichever reference_tracks row findMatches() scores
+highest (metadata-based), not real audio fingerprinting - that's this
+file's job for later, not Phase B's.

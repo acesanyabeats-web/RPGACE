@@ -55,6 +55,7 @@ One line per fact that is true **right now**. The full story of how anything bel
 - **Composio key rotation** — needs Alex's action.
 - **The swipe-gesture freeze** — see landmines; do not attempt a 5th blind pass.
 - **The journal/Chronicles/Minotaur cross-feed interrogation** (`journal_chronicles_oversight_crossfeed_spec_backlog.txt`) — needs his real answers, not guessed defaults.
+- **Real audio-similarity audience-matching engine** (`beat_audience_matching_engine_future_idea_2026-08-05.txt`) — surfaced Aug 5 during Phase B of the Content/Video Pipeline unification: connect a beat to real published songs via genuine audio characteristics (not just metadata-tag scoring, which is all `findMatches()` does today) to identify the real audience those songs' listeners represent. Real future build, not scoped in detail, not blocking anything.
 - **Hand-testing.** Nothing shipped since July 28 has been clicked through in a real browser. That is the single largest open item in the project and it is not something a session can close for him.
 
 ### The four July 31 entries, kept at full detail (current work, not yet collapsed)
