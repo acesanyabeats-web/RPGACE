@@ -1,5 +1,5 @@
 # RPGACE — System Flow Map
-**The 5th Oversight doc.** Created July 17, 2026 from a full audit of all oversight files + the live codebase (`main.js`, `rpgace_core.js`, `api/*`, `index.html`). **Last re-verified July 31, 2026** (oversight-doc audit + reshape — module inventory re-grepped, table list rebuilt from `pg_policies`, §8/§10 reconciled against real code and live Supabase; record in `oversight_doc_audit_and_reshape_2026-07-31.txt`). This line gets bumped whenever a real re-verification pass runs, not just on creation. Diagrams are Mermaid — render on GitHub, in VS Code, or any Mermaid viewer. Every diagram follows the same convention: **rectangles = processing**, **diamonds = yes/no decisions**, **cylinders = data stores**, **stadiums = entry/exit points**, **dashed boxes = PLANNED, not built**.
+**The 5th Oversight doc.** Created July 17, 2026 from a full audit of all oversight files + the live codebase (`main.js`, `rpgace_core.js`, `api/*`, `index.html`). **Last re-verified Aug 5, 2026** (Council of 5 + GODMODE/`/scope`/`/commit-archaeologist`-informed oversight sweep after Phases A-F of the Content/Video Pipeline unification — §11's diagram fully rebuilt around the real 4-phase Production Panel + retroactive edit-in-place loop + Phase F's OpenMontage handoff, §10 gained an Aug 5 truth-table block). Prior re-verification: July 31, 2026 (module inventory re-grepped, table list rebuilt from `pg_policies`; record in `oversight_doc_audit_and_reshape_2026-07-31.txt`). This line gets bumped whenever a real re-verification pass runs, not just on creation. Diagrams are Mermaid — render on GitHub, in VS Code, or any Mermaid viewer. Every diagram follows the same convention: **rectangles = processing**, **diamonds = yes/no decisions**, **cylinders = data stores**, **stadiums = entry/exit points**, **dashed boxes = PLANNED, not built**.
 
 Companion to CLAUDE.md (the operational guide). Update BOTH when architecture changes.
 
@@ -412,6 +412,14 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
   - **`openmontage_jobs` (July 31)** — a real async handoff table between RPGACE, this session, and a separate OpenMontage Claude Code session in a different repo. First real round-trip completed: the external session set up cleanly, chose the `cinematic` pipeline correctly, and **correctly failed loud** (`status='failed'` with an honest `output_note`) rather than faking a render with generic stock footage for a brief needing a specific recurring character. A provider-independent "Character Reference Block" deliverable was added to the Visual Treatment prompt as a result. Alex has since ruled out paid providers on principle — see the Aug 4 entry below for where this actually went.
   - **OpenMontage free-generation path investigated end-to-end (Aug 4) — real evidence at every step, nothing rendered.** Local GPU (Alex's 1660 Ti, 6GB) confirmed a dead end: real declared VRAM checked in `tools/video/_shared.py` for all 6 bundled local models, smallest (`cogvideo-2b`, 6000MB) equals the card's entire capacity before headroom; GGUF-quantized fallback checked too — mechanism exists, no asset bundled, needs a new ComfyUI install for a still-unconfirmed fit. Free cloud GPU chosen instead: Kaggle over Colab (scriptable Dataset-pull retrieval, guaranteed hours), model `ltx2-local` over `hunyuan-1.5`/`cogvideo-5b` on real fps/quality reasoning, LTX-2's Community License checked live and cleared (free commercial use under $10M ARR). Real correction found along the way: the tool's own `disk_mb:4000` placeholder was off by 7-11x against LTX-2's real Hugging Face size (43.3GB full / 27.1GB fp8 + 2.44GB VAE). Additive `openmontage_jobs` migration shipped (`source_audio_url`, `revision_notes`) — schema ready, nothing populated yet. Full 5-step build plan awaiting Alex's approval: `openmontage_colab_kaggle_integration_spec_2026-08-04.txt`. **Standing directive: next session's `/Routine` dispatches `/Engineer` on this plan's Steps 1-4 before its normal Top-10 debate.**
   - **Oracle architecture/anatomy self-awareness table (July 31) — `oracle_module_anatomy`, 13 curated rows, first batch scoped to the riskiest/most complex modules (Alex's own choice).** Real evidence killed the original "a database both Oracle and Claude Code can use" framing — Claude Code already has better direct access via the repo + `graphify-out/`; the honest deliverable is Oracle-only. `oracleAppGrounding` gained a second keyword gate (`ANATOMY_KEYWORDS`) riding inside its EXISTING `window.callOracle` wrap (not a 4th wrapper) and `_buildAnatomyBlock()`, reusing `oracleTreeGrounding`'s own scan→SELECT→score→top-N retrieval shape rather than a full always-injected blob. Rows: `dashDeck`, `phylumPath`, `authGate`, `oracleAppGrounding`, `oracleTreeGrounding`, `bookworm`, `config`, `taxonomyTree`, `leftNav`, `beatLog`, `contentProductionLive`, `videoPipeline`, `voiceInput` — each with a real `source_ref` file:line pointer and a `gotchas` column mined from CLAUDE.md's own already-written landmines, not invented. `node --check` clean. Full debate record: `oracle_architecture_anatomy_db_debate_2026-07-31.txt`. **Untested — needs Alex to actually ask Oracle an anatomy-shaped question in a real conversation.**
+- **Aug 5 block — Content/Video Pipeline unification, Phases A-F, all `/Engineer`-disciplined, ALL code-verified/gate-passed/live-on-`main`, NONE hand-tested (Alex has explicitly deferred hand-testing until all 8 phases ship, verified together in one pass with a real beat).** Full spec + verbatim `/interrogation` answers: `content_video_pipeline_unification_spec_2026-08-05.txt`. Per-phase records: `engineer_pass_2026-08-05_01.txt` through `_05.txt`.
+  - **Phase A** — real root-cause fix: colour palette read scale only, never mood; new `MOOD_COLOURS` table drives it now. Status box auto-advances on a real Visual-Treatment save. `content_productions.updated_at` (new column) drives real recency sort.
+  - **Phase B stopped, not built** — real evidence showed `findMatches()` is metadata-tag scoring and "Add These Artists" is an unrelated Last.fm mechanism; neither is real audio-similarity matching. Logged as a future build (`beat_audience_matching_engine_future_idea_2026-08-05.txt`) rather than built on the wrong premise.
+  - **Phase C** — `_showDirectorPicker` blends up to 3 directors (one shared row-factory), 5 real helper phrases per row split from each director's own `definition`, output restructured into 3 named info groups instead of one mixed sentence.
+  - **Phase D** — Production Panel restructured from 3 to 4 real phases for `music_video` ConIDs (Reference+Style / Direction+Script / Script Editing / Video Pipeline); new Script Editing phase saves BOTH the exact outbound prompt (`creative_docs.script`, new field) and Oracle's reply (`creative_docs.visual_treatment`), independently editable. Tutorial's 3-phase branch untouched.
+  - **Phase E** — 3 of 4 retroactive buttons became real edit-in-place actions (see §11's diagram for the full loop): Return to Beat Log genuinely UPDATEs the same rows via a new `beatLog._retroTarget` branch; Redo Visual Treatment reopens the picker pre-selected from a new structured `creative_docs.director_blend` field; Regenerate resends the current saved script. "View Kling Project" stayed an honest stub, correctly identified as blocked on Phase F.
+  - **Phase F** — real "Generate Video" trigger packaging beat metadata + Visual Treatment + script into the real `openmontage_jobs` row shape, gated behind `OPENMONTAGE_HANDOFF_ENABLED:false` (mirrors `ENABLED_PHYLA`'s shape) — shows the real payload rather than faking success while off. New "Simulate Response" test-only tool fakes a complete job result (zero cost, explicitly `[SIMULATED]`-labeled) so the rest of the pipeline can be validated safely. "View Kling Project" is genuinely real now.
+  - Remaining: Phase G (captions, explicitly stops before Composio auto-posting) and Phase H (BeatStars as a formal stage) not yet started.
 - **`/Regeneration` skill built (July 25)** — a real, human-gated taxonomy-quality audit: Tier 0 (free deterministic SQL), Tier 1 (bounded AI judgment, batched by branch), Tier 2 (generative reorganisation, explicit-ask-only). Never writes to `taxonomy_tree` autonomously — proposes into the existing review queue or a plain report. First real Tier 0 pass found and (with Alex's explicit per-node confirmation) fixed 20 real defects: 14 leaf-nodes wrongly holding children, 2 duplicate-name clusters (6 nodes merged/deleted), 1 standalone YouTube-title-as-node. 13 nodes in disabled phyla (11/13/16) were checked and correctly left alone — legitimate pre-launch seed content, not corruption.
 
 ### Claimed/discussed but NOT built — do not trust any doc that implies otherwise
@@ -436,21 +444,23 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 
 ---
 
-## 11. Content & Video Production Pipeline — added July 31
+## 11. Content & Video Production Pipeline — added July 31, rebuilt Aug 5
 
-**Why this section exists:** this pipeline has been real and load-bearing since July 28 (`content_productions` ↔ `video_jobs` ↔ `style_profiles`, plus the OpenMontage handoff) and was never drawn anywhere in this document. Per this doc's own rule — a feature isn't "done" until it moves out of the dashed/planned section into a real diagram — it was reported as built in `patch_notes.html` and `interconnection_map.md` while remaining invisible here. Drawn now from real code and a live Supabase query, not from a doc's claim.
+**Why this section exists:** this pipeline has been real and load-bearing since July 28 and was never drawn anywhere in this document until July 31. **Rebuilt Aug 5** after a real `/interrogation`-scoped 8-phase unification (`content_video_pipeline_unification_spec_2026-08-05.txt`, Phases A-F shipped, G-H not started) merged Beat Log / Content Pipeline / Video Pipeline into one real, chronological, looping flow — the previous diagram (a 3-phase Production Panel with no real retroactive path) was already stale the moment Phase D shipped. Per this doc's own rule — a feature isn't "done" until it moves out of the dashed/planned section into a real diagram — drawn now from real code (`rpgace_core.js`'s `beatLog`/`contentProductionLive`/`visualOracle`/`videoPipeline` modules) and a live Supabase schema read, not from a doc's claim.
+
+**How to read this diagram — one real chronological loop, not a static map**: information enters at Beat Log (top), gets processed and transported through exactly 4 real Production Panel phases in order, and — this is the "on loop" part Alex asked to make explicit — **3 of those 4 phases can hand control straight back to an earlier real step** to regenerate output without losing any prior data (the retroactive edit-in-place mechanism, Phase E). The loop only exits forward once Phase 4 hands off to OpenMontage and a real job result (or a safe simulated one) comes back.
 
 ```mermaid
 flowchart TD
-    BL([Beat Log: drag file, fill BPM/key/scale/mood/genre]) --> AUD{Audio file present?}
+    BL(["① Beat Log — drag file, fill BPM/key/scale/mood/genre"]) --> AUD{Audio file present?}
     AUD -->|yes| LIBR[(beat_audio_jobs + beat-audio bucket<br/>local librosa: BPM + Major/Minor key only<br/>⚠ needs local_server.py running)]
     AUD -->|no| SUB
     LIBR -.->|fills back| SUB
-    SUB[beatLog._submit] --> CP[(content_productions<br/>content_type: music_video<br/>creative_docs.beat_meta)]
-    CP --> VJ[(video_jobs<br/>content_production_id FK)]
+    SUB[beatLog._submit — INSERT path] --> CP[(content_productions<br/>content_type: music_video, status: Idea<br/>creative_docs.beat_meta)]
+    CP --> VJ[(video_jobs<br/>content_production_id FK<br/>script: beat metadata JSON)]
+    SUB --> PALETTE[Mood-first colour palette<br/>MOOD_COLOURS, SCALE_COLOURS fallback]
     SUB --> MATCH[refCorpus.findMatches:<br/>BPM + energy + mood + scale + genre<br/>Last.fm fallback if no corpus hit]
-    MATCH --> CORP[(reference_tracks — 32 rows<br/>⚠ scale/genre 0/32 populated)]
-    MATCH -->|Add These Artists| CORP
+    MATCH --> CORP[(reference_tracks — 32 rows<br/>⚠ scale/genre still 0/32 populated)]
 
     REP([Repurpose]) --> CP
     POT([conidPot: Activate ConID]) --> CP
@@ -459,30 +469,59 @@ flowchart TD
     CP --> PANEL{contentProductionLive<br/>_openProductionPanel<br/>branches on content_type}
     CPT --> PANEL
     PANEL -->|tutorial| P1[Phase 1-3 tutorial copy<br/>byte-identical to pre-July-30]
-    PANEL -->|music_video| P2[Phase 1-3 music-video copy<br/>+ hop button into Video Pipeline]
+    PANEL -->|music_video| PH1
 
-    CP --> VO[Visual Oracle F14 commands:<br/>Visual Treatment Doc / Director Match /<br/>Storyboard Scene Builder]
-    VO --> PICK[_showDirectorPicker:<br/>50-row f14_filmmaker_library dropdown<br/>+ View Style + free-text inspiration]
-    PICK --> ORC[Oracle call — includes the<br/>Character Reference Block deliverable]
-    ORC --> CAP[visualOracle._captureNextResponse<br/>one-shot on oracle:response-scanned<br/>zero extra API calls]
-    CAP --> TRAIL{Structured trailer?}
-    TRAIL -->|DIRECTOR_CHOSEN:| SP[(style_profiles<br/>⚠ 0 rows ever — save path<br/>has never fired in production)]
-    TRAIL -->|EDL_JSON:| EDL[(video_jobs.edl<br/>⚠ 0 rows populated)]
-    TRAIL -->|none| DOC[(content_productions.creative_docs<br/>keyed by doc type)]
-    SP --> VJ
+    subgraph MVPANEL["music_video — real 4-phase Production Panel, Aug 5"]
+      direction TB
+      PH1["② Phase 1 — Reference + Style<br/>content unchanged"]
+      PH2["③ Phase 2 — Direction + Script<br/>🎬 Start Visual Treatment"]
+      PH3["④ Phase 3 — Script Editing (NEW)<br/>2 real editable textareas"]
+      PH4["⑤ Phase 4 — Video Pipeline"]
+      PH1 --> PH2 --> PH3 --> PH4
 
-    VJ --> STAGES[videoPipeline.STAGES:<br/>beat_logged → in_production → edited<br/>→ rendered → exported<br/>auto-advance off real path/export fields]
-    STAGES --> HAND[Job detail: Script + Treatment<br/>handoff view — script/EDL + creative_docs]
-    HAND --> OMQ[(openmontage_jobs — anon_all by design)]
-    OMQ --> OMS([SEPARATE OpenMontage Claude Code session<br/>different repo, writes status/output_note back])
+      PH2 --> PICK[_showDirectorPicker:<br/>up to 3 f14_filmmaker_library directors blended<br/>5 helper phrases/row + free-text inspiration]
+      PICK --> ORC["Oracle call — 3 named info groups:<br/>(a) beat metadata (b) director-blend style<br/>(c) creative inspiration + Character Ref Block"]
+      ORC --> SAVE1[(creative_docs.script<br/>= exact outbound prompt, saved the instant<br/>'Send to Oracle' fires)]
+      SAVE1 --> CAP[visualOracle._captureNextResponse<br/>one-shot, zero extra API calls]
+      CAP --> SAVE2[(creative_docs.visual_treatment<br/>= Oracle's reply)]
+      SAVE2 -->|auto-advances, Idea only| STATUS[status: Idea → Scripted]
+      PICK -.->|saves STRUCTURED choice, not prose| DBLEND[(creative_docs.director_blend<br/>= names + inspiration)]
+
+      PH3 -->|shows + edits| SAVE1
+      PH3 -->|shows + edits| SAVE2
+    end
+
+    PH4 --> VP{🎥 Open Video Pipeline}
+    VP --> VJ
+
+    PH4 --> GENVID{🎬 Generate Video —<br/>OPENMONTAGE_HANDOFF_ENABLED?}
+    GENVID -->|false, real default| PREVIEW[Shows the REAL payload that<br/>would be sent — no write, no fake success]
+    GENVID -->|true, Alex's future Tier-3 call| OMQ
+    PH4 --> SIM(["🧪 Simulate Response<br/>test only, always available"])
+    SIM --> OMQFAKE[(openmontage_jobs<br/>status: complete<br/>output_note: SIMULATED)]
+    OMQFAKE --> VJRENDER[video_jobs.status → rendered<br/>fake path, safe pipeline validation]
+
+    OMQ[(openmontage_jobs<br/>real queued row: title/brief/beat_meta)] --> OMS([SEPARATE OpenMontage Claude Code session<br/>different repo, writes status/output_note back])
     OMS --> OMQ
+
+    OMQ --> VIEWJOB
+    OMQFAKE --> VIEWJOB
+    VIEWJOB["⑥ ↩ View Kling Project<br/>real reader, Phase F"] -.->|loop back into| PH4
+
+    PH1 -.->|"↩ Return to Beat Log<br/>pre-fills form, UPDATEs SAME row (Phase E)"| BL
+    PH2 -.->|"↩ Redo Visual Treatment<br/>reopens PICK pre-selected from DBLEND (Phase E)"| PICK
+    PH3 -.->|"↩ Regenerate<br/>resends CURRENT script incl. edits, skips picker (Phase E)"| ORC
 
     BEATSTARS([Generate Beatstars Listing]) -.->|reads BPM/key/mood| VJ
 
-    SYNC[/"Real beat-grid audio sync — Slice C.<br/>NOT BUILT. Scene timing is LLM-estimated;<br/>no onset/beat-grid detection exists"/] -.->|would replace estimated timing in| EDL
+    SYNC[/"Real beat-grid audio sync — Slice C.<br/>NOT BUILT. Scene timing is LLM-estimated;<br/>no onset/beat-grid detection exists"/] -.->|would replace estimated timing in| VJ
     P14[/"Phylum 14's full browsable tree.<br/>NOT BUILT — the 50 director profiles are<br/>flat taxonomy_nodes rows, not tree branches"/] -.->|would back| PICK
+    CAPTIONS[/"Phase G — Generate Captions.<br/>NOT BUILT — IG/YouTube Shorts/TikTok,<br/>stops before Composio auto-posting"/] -.->|would attach after| VIEWJOB
+    BEATSTAGE[/"Phase H — BeatStars as a formal stage.<br/>NOT BUILT — mandatory-vs-optional unanswered"/] -.->|would formalize| BEATSTARS
 ```
 
-**Live state, queried July 31 (not assumed):** `content_productions` 7 rows (4 `tutorial`, 3 `music_video` — the July 30 migration's default backfilled correctly after a self-caught correction); `video_jobs` 3 rows, **all three still at stage 1/5 `beat_logged`**; `style_profiles` 0 rows; `openmontage_jobs` still 1 row (the Calibri job — a completed round-trip that correctly ended `status='failed'` with an honest note rather than a faked render), **schema extended Aug 4** (`source_audio_url`, `revision_notes` — not yet populated, see Aug 4 truth-table entry above for the real free-generation path this feeds); `reference_tracks` 32 rows with scale/genre 0/32.
+**The real retroactive loop, spelled out** (the 3 dashed "↩" edges above are the actual "on loop until final product" mechanism, not decoration): Phase 1's button reopens Beat Log pre-filled and routes `beatLog._submit()` through a real UPDATE branch (`_retroTarget`) instead of a fresh INSERT — editing the SAME `content_productions`/`video_jobs` rows. Phase 2's button reopens the director picker pre-selected from the structured `creative_docs.director_blend` field (not a fragile parse of rendered prose). Phase 3's button resends whatever is CURRENTLY saved in `creative_docs.script` — including manual edits made right there in Phase 3 — straight back to Oracle, skipping the picker entirely. All three genuinely mutate the existing ConID in place; none ever branches into a second ConID. This is the real mechanism behind Alex's stated purpose: reuse a beat's existing creative record to regenerate new visuals for content repurposing, without starting from zero.
 
-**Honest limit, restated because it is the single most misreadable claim in this pipeline:** RPGACE does not generate video. It tracks, briefs, and hands off. OpenMontage stays an externally-operated tool per the July 24 verdict, and the handoff view surfaces real data — it does not simulate generation.
+**Live state, queried July 31, schema-only facts re-confirmed Aug 5:** `content_productions` 7 rows (4 `tutorial`, 3 `music_video`); `video_jobs` 3 rows, all three still at stage 1/5 `beat_logged`; `style_profiles` 0 rows; `openmontage_jobs` schema now includes `title`/`brief`/`beat_meta`/`status`/`output_note`/`requested_by` (confirmed via a live Aug 5 schema read, ahead of Phase F's first real use); `reference_tracks` 32 rows with scale/genre still 0/32. `creative_docs.script`/`.director_blend` are brand-new Aug 5 fields — zero rows have ever been through the new 4-phase flow yet, so these are structurally ready but empty in practice.
+
+**Honest limit, restated because it is the single most misreadable claim in this pipeline:** RPGACE does not generate video. It tracks, briefs, and hands off. OpenMontage stays an externally-operated tool per the July 24 verdict; Phase F's "Generate Video" builds and can send a real job payload, but the freeze flag defaults OFF pending Alex's own Tier-3 paid-provider decision, and the handoff view surfaces real data — it never simulates a real render as if it were genuine (the Simulate Response tool exists specifically so a fake result is always labeled `[SIMULATED]`, never silently indistinguishable from a real one).

@@ -1,0 +1,123 @@
+Oversight sweep — 2026-08-05
+Full post-Phase-F oversight update: minotaur_map.html, system_flow_map.md,
+interconnection_map.md, manual.html, CLAUDE.md dedup pass. Requested by
+Alex directly: "use council of 5, /summary, /deduplications on all
+components and context using /Godmode, /scope, /commit-archaeologist to
+get everything up to date... workflows and pipelines executions shown 1
+clear step by step process."
+
+=====================================================================
+METHOD (honest account of what actually ran, not a ceremony checklist)
+=====================================================================
+- GODMODE evidence pass: `git log --oneline --since="2026-08-04"` to find
+  the real last `/Routine` boundary (commit `605d23e`, "Aug 4 morning") -
+  everything after it is real session scope: the OpenMontage/Kaggle
+  investigation (already logged Aug 4) plus the full Content/Video
+  Pipeline unification, Phases A-F (this session, already logged
+  phase-by-phase in patch_notes.html/CLAUDE.md/system_updates as each
+  shipped).
+- Live schema re-checks (not assumed) for `openmontage_jobs` and
+  `api/data-write.js`'s `ALLOWED_TABLES` were already done during the
+  Phase F build itself - reused here rather than re-queried.
+- `/commit-archaeologist` was NOT separately invoked as a subagent this
+  pass - the git-log evidence above already answered the one question
+  it would have been asked ("what actually happened since the last real
+  checkpoint"), and re-running it as a formality would have been
+  ceremony without added value, which this project's own anti-ceremony
+  discipline (rule 11, the Judgment Funnel) explicitly warns against.
+- Real dedup pass (rule 8) across the 4 non-code oversight docs found 2
+  genuine staleness bugs, both fixed (not just noted):
+  1. `interconnection_map.md`'s Content Pipeline overseer section still
+     said `video_jobs` stages were `beat_logged→raw_footage→edited→
+     rendered→exported` - the July 30 rename (`raw_footage`→
+     `in_production`) was applied in code and caught by CLAUDE.md/
+     manual.html/patch_notes.html at the time, but this specific doc's
+     own sentence was never touched. Fixed.
+  2. `CLAUDE.md`'s own Current State still described
+     `contentProductionLive._openProductionPanel` as branching a
+     uniform "Phase 1-3 copy" for both content types, and separately
+     still named the July-31 "Generate Visual Treatment" ConID-card
+     button as current - both superseded by Aug 5's Phase A rename and
+     Phase D's 4-phase rebuild for `music_video`. Fixed (collapsed per
+     this file's own doc-discipline rule: state the current fact,
+     point at the superseding entry, don't re-tell the old story).
+- No code changed this pass (docs-only) - `graphify update .` not run,
+  since nothing in `rpgace_core.js`/`main.js`/`api/*` moved.
+
+=====================================================================
+WHAT CHANGED, PER DOC
+=====================================================================
+**system_flow_map.md** (§11 fully rebuilt, §10 gained an Aug 5 block,
+header re-verification line bumped): the Content & Video Production
+Pipeline diagram was still the July 31 version - a 3-phase Production
+Panel with no real retroactive path - stale the moment Phase D shipped.
+Rebuilt as ONE real chronological loop per Alex's explicit ask (info
+fed at Beat Log -> lands in content_productions/video_jobs -> processed
+through 4 real Production Panel phases in order -> transported to
+OpenMontage via a gated real handoff or a safe simulated one -> loops
+back into Phase 4 via the real "View Kling Project" reader), with the 3
+real retroactive "flows back upstream" edges drawn explicitly and
+explained in prose immediately after the diagram - this IS the "on loop
+until final product" mechanism Alex asked to see made explicit, not
+decorative dashed lines.
+
+**minotaur_map.html**: River XI ("Content Production Live") had only
+ever drawn the TUTORIAL 3-phase branch - its own July 30 text flagged
+"a real fork found the same day this river was drawn" (the beat→
+music-video branch was never actually poured in). That fork is now
+resolved and drawn: a new "River XI, continued" section walks the real
+4-phase beat→video branch, ending in a dedicated callout for the 3 real
+loop-back buttons (translated into the river metaphor: water flowing
+back upstream to be re-processed, carrying everything already
+gathered, rather than only ever running downstream) plus one honest
+still-dry callout (a real Phase-4 loop-back needs a real, non-simulated
+job to exist first). River IX's OpenMontage channel gained one new node
+acknowledging the real gated send-path + safe test tap Phase F built.
+Top intro paragraph updated to name both changes.
+
+**interconnection_map.md**: Content Production Pipeline section
+rewritten in present tense (per this doc's own "never a changelog"
+rule) to describe the real 4-phase Production Panel, the new Script
+Editing phase's dual save paths, and the retroactive edit-in-place loop
+as current architecture - not narrated as "what happened Aug 5." New
+paragraph on the OpenMontage handoff lane describing Phase F's real
+gated send mechanism + test tool. Plus the 2 real staleness fixes named
+above.
+
+**manual.html**: button catalog gained 3 new rows (the 4-phase
+Production Panel + Script Editing; the 3 real retroactive buttons; the
+3 Phase F buttons), and updated the existing Visual Treatment/director-
+picker rows to describe the current blend-of-3/auto-advance behavior
+instead of the July 31 single-director version. Supabase table
+reference updated for `openmontage_jobs` (real Phase F writers) and
+`content_productions` (new `updated_at`/`creative_docs.script`/
+`.director_blend`).
+
+**CLAUDE.md**: 2 staleness fixes (above) plus the standing Aug 5 block
+(already built up phase-by-phase through today's session) left intact
+as the authoritative current-state summary for this pipeline.
+
+=====================================================================
+COUNCIL OF 5 SELF-CHECK ON THIS SWEEP
+=====================================================================
+- Technical risk: none - docs only, zero application code touched.
+- Scope/cost: targeted the sections that actually changed rather than
+  rewriting whole documents; reused each doc's own established voice
+  (Mermaid+truth-table for system_flow_map, river metaphor for
+  minotaur, present-tense structural prose for interconnection_map,
+  button/table catalog rows for manual).
+- Maintainability: net positive - 2 real staleness bugs closed, not
+  just documented as known-stale.
+- Honest gap, not hidden: this sweep is docs-only. The actual pipeline
+  remains fully UNTESTED in a real browser, same standing status as
+  every phase this week - no doc update changes that fact, and none of
+  the doc updates claim otherwise.
+
+=====================================================================
+STATUS
+=====================================================================
+All 4 oversight docs updated and internally consistent with each other
+and with the real Aug 5 Phases A-F code. `patch_notes.html` and
+`system_updates` already carry the full phase-by-phase narrative from
+earlier in this session - not duplicated here. Committed and pushed to
+`main` alongside this record.
