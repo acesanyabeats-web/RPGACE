@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785943359.223665,
-    "ast_hash": "26b7b84291a94c1a7978dcf7e2b0b399",
+    "mtime": 1785957364.8839607,
+    "ast_hash": "6bd0b18af8e812f078739bbf572cfd99",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785943359.2156649,
-    "ast_hash": "a5f72272969bd82b439b5cdee48e1f41",
+    "mtime": 1785957364.8759606,
+    "ast_hash": "9613602559ba79bbd6653f5306462f6b",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,13 +1060,13 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785943359.2156649,
-    "ast_hash": "f317da373ec4a6b00e686a2e2b1f0002",
+    "mtime": 1785957364.8759606,
+    "ast_hash": "5727d1bf5194c513fddd028ffb129fbd",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
-    "mtime": 1785938966.2633634,
-    "ast_hash": "4409ebbbc3e701758af6d641ff3db63a",
+    "mtime": 1785956939.0839703,
+    "ast_hash": "43eaf3d67db191d74758620a0eed7fd4",
     "semantic_hash": ""
   },
   "item7_process_debate_2026-07-24.txt": {
@@ -1080,8 +1080,8 @@
     "semantic_hash": ""
   },
   "manual.html": {
-    "mtime": 1785524968.1963754,
-    "ast_hash": "bd1c8c89504de079c7671733f26e8c1b",
+    "mtime": 1785956939.0839703,
+    "ast_hash": "609c1c0291a159b6ff25e7fd946498b6",
     "semantic_hash": ""
   },
   "manual_html_minotaur_sidekick_debate_2026-07-31.txt": {
@@ -1090,8 +1090,8 @@
     "semantic_hash": ""
   },
   "minotaur_map.html": {
-    "mtime": 1785504288.2822773,
-    "ast_hash": "bd680211d8f55f6acce520e665739f2b",
+    "mtime": 1785956939.0839703,
+    "ast_hash": "e81fd3232e39aaec1fbf5f94588e9c10",
     "semantic_hash": ""
   },
   "n8n/README.md": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785943395.8636642,
-    "ast_hash": "879664091efbb763ae5aa1980ec29d21",
+    "mtime": 1785957406.5999596,
+    "ast_hash": "65ac66ebc90da142cec57977ecf5d2a8",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1215,8 +1215,8 @@
     "semantic_hash": ""
   },
   "system_flow_map.md": {
-    "mtime": 1785810057.3933976,
-    "ast_hash": "621ede41156cf0b2cf267139e53929dc",
+    "mtime": 1785956939.0839703,
+    "ast_hash": "b7591e66a91cb1355bf4f4bcfbb98a85",
     "semantic_hash": ""
   },
   "taxonomy_map.html": {
@@ -1335,8 +1335,23 @@
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-05_04.txt": {
-    "mtime": 1785943389.1116643,
+    "mtime": 1785943422.9956634,
     "ast_hash": "614d2028fcadabec070a71dc60d185e8",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-05_05.txt": {
+    "mtime": 1785956412.5959823,
+    "ast_hash": "263fb761944735d05e6cdad8f3df2e65",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-05_06.txt": {
+    "mtime": 1785957401.3839598,
+    "ast_hash": "6882a1e9a6a16fe5ff5637d9fefdd1b4",
+    "semantic_hash": ""
+  },
+  "oversight_sweep_2026-08-05.txt": {
+    "mtime": 1785956939.0839703,
+    "ast_hash": "d5ebf76543839f31dfa02971c87079d6",
     "semantic_hash": ""
   }
 }

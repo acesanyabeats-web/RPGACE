@@ -152,8 +152,11 @@ G3 (module convention) — PASS, entirely inside visualOracle/
   contentProductionLive's existing module markers, no main.js touch.
 G4 (claim-to-diff reconciliation) — PASS, both directions clean.
 G5 (goal reconciliation) — all 4 Stage 1 goals: DONE.
-G6 (deployment reality) — pending merge+push; will confirm via Vercel
-  MCP same as every prior phase this week.
+G6 (deployment reality) — PASS, independently confirmed post-merge via
+  Vercel MCP: deployment dpl_b7vpeykmtkgToySJP8TNcG19Et2e state=READY,
+  target=production, githubCommitSha=6b295b1dd87244e354faec39da603590cb852f07
+  — the exact commit this pass produced — alias list includes the real
+  rpgace.vercel.app domain.
 G7 (cache-bust) — PASS, version string moved in the same pass.
 UNTESTED (required label, not a failure): per Alex's explicit direction
   this session, no individual hand-test requested after this phase —

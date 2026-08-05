@@ -1,16 +1,16 @@
 # Graph Report - RPGACE  (2026-08-05)
 
 ## Corpus Check
-- 199 files · ~466,030 words
+- 199 files · ~474,907 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1081 nodes · 1445 edges · 186 communities (176 shown, 10 thin omitted)
+- 1081 nodes · 1445 edges · 187 communities (177 shown, 10 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.54)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `73e2b1a6`
+- Built from commit: `6b295b1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -83,7 +83,8 @@
 - .claude/CLAUDE.md
 - extraction-spec.md
 - /interrogation — ask before guessing, on anything that would actually change
-- setEncCategory
+- renderAgendas
+- saveManualInsight
 
 ## God Nodes (most connected - your core abstractions)
 1. `setCORS()` - 25 edges
@@ -112,7 +113,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (186 total, 10 thin omitted)
+## Communities (187 total, 10 thin omitted)
 
 ### Community 0 - "_context.js"
 Cohesion: 0.11
@@ -139,8 +140,8 @@ Cohesion: 0.20
 Nodes (12): acceptJumpToEnc(), clearScheduledAgendas(), exitFocusToEnc(), goToEncFromFocus(), loadScheduledAgendas(), pushLocalToSupabase(), refreshEncyclopediaDisplay(), removeScheduledAgenda() (+4 more)
 
 ### Community 6 - "renderEncEntries"
-Cohesion: 0.11
-Nodes (24): approveInsights(), approveInsightsFromCache(), autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext() (+16 more)
+Cohesion: 0.10
+Nodes (25): autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), ENC_ALL_ENTRIES, extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext(), filterEntries() (+17 more)
 
 ### Community 7 - "rpgace_build.py"
 Cohesion: 0.23
@@ -151,8 +152,8 @@ Cohesion: 0.22
 Nodes (20): ArchaeologistError, blame_authors(), build_report(), changed_file_details(), classify_message(), git(), historical_paths(), history_hashes() (+12 more)
 
 ### Community 9 - "renderDailyGrid"
-Cohesion: 0.09
-Nodes (29): _addSchedButtons(), autoApplyStoredShifts(), _calDateStr(), closePasteRota(), closeSchedModal(), confirmSchedule(), confirmScheduleModal(), _fracClock() (+21 more)
+Cohesion: 0.17
+Nodes (16): _addSchedButtons(), _calDateStr(), closeSchedModal(), confirmSchedule(), confirmScheduleModal(), _fracClock(), initDailyNav(), initSchedModal() (+8 more)
 
 ### Community 10 - "manifest.json"
 Cohesion: 0.13
@@ -216,7 +217,7 @@ Nodes (21): 1. Purpose & frequency, 2. Easing & duration, 3. Physicality & origi
 
 ### Community 25 - "RPGACE — System Flow Map"
 Cohesion: 0.09
-Nodes (21): 0. Verified Component Inventory, 10. Built vs NOT built — the truth table (created July 17; live numbers re-queried July 31), 11. Content & Video Production Pipeline — added July 31, 1. Top-Level System Map, 2. Oracle Chat Request Flow (`main.js sendChat` + wraps), 3. Phylum Path Insight Placement (the core taxonomy write path), 4. Article Generation + Concept Fusion, 5. Bookworm (whole-book → taxonomy pipeline) (+13 more)
+Nodes (21): 0. Verified Component Inventory, 10. Built vs NOT built — the truth table (created July 17; live numbers re-queried July 31), 11. Content & Video Production Pipeline — added July 31, rebuilt Aug 5, 1. Top-Level System Map, 2. Oracle Chat Request Flow (`main.js sendChat` + wraps), 3. Phylum Path Insight Placement (the core taxonomy write path), 4. Article Generation + Concept Fusion, 5. Bookworm (whole-book → taxonomy pipeline) (+13 more)
 
 ### Community 148 - "SIDE B: WHAT'S REPORTED AS DONE (the docs)"
 Cohesion: 0.11
@@ -346,9 +347,13 @@ Nodes (3): Guardrails, /Summary — a real, evidence-checked recap when context 
 Cohesion: 0.40
 Nodes (4): Guardrails, /interrogation — ask before guessing, on anything that would actually change, Procedure, When to run it
 
-### Community 185 - "setEncCategory"
-Cohesion: 0.29
-Nodes (8): ENC_ALL_ENTRIES, generateContentIdeasFromInsights(), jumpToFullEntry(), jumpToSourceEntry(), loadInsightsByCategory(), loadVSTInspector(), sbInsightFetch(), setEncCategory()
+### Community 185 - "renderAgendas"
+Cohesion: 0.18
+Nodes (13): autoApplyStoredShifts(), closePasteRota(), generateAgendas(), getFreeWindows(), getShiftContext(), getShifts(), getShiftsForDate(), getTodayShifts() (+5 more)
+
+### Community 186 - "saveManualInsight"
+Cohesion: 0.33
+Nodes (7): approveInsights(), approveInsightsFromCache(), removeInsightTooltip(), saveManualInsight(), sbInsightPost(), setupManualInsightSelection(), showInsightTooltip()
 
 ## Knowledge Gaps
 - **398 isolated node(s):** `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS`, `config`, `CONFIG` (+393 more)
@@ -371,4 +376,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `rpgace_core.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08912655971479501 - nodes in this community are weakly interconnected._
 - **Should `renderEncEntries` be split into smaller, more focused modules?**
-  _Cohesion score 0.10507246376811594 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._
