@@ -112,7 +112,11 @@ STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
 OBJECTIVE COMPLETION GATE
 =====================================================================
 G1-G5, G7 — PASS (same shape as every prior gate this session).
-G6 — pending merge+push, will confirm via Vercel MCP.
+G6 — PASS, independently confirmed post-merge via Vercel MCP:
+  deployment dpl_H5bdrFYHpa2sPC6J1aybQpEw4fxp state=READY,
+  target=production, githubCommitSha=eb6e8add1c9e0a3a5a4153b5274b928d1efece78
+  — the exact commit this pass produced — alias list includes the real
+  rpgace.vercel.app domain.
 UNTESTED (required label): same standing status as the rest of Phase G
 - accumulates for the one batched real-beat verification once all 8
   phases ship. Additional real action this curveball adds to that list:

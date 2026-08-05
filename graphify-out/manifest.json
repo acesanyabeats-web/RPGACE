@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785957364.8839607,
-    "ast_hash": "6bd0b18af8e812f078739bbf572cfd99",
+    "mtime": 1785957892.8559484,
+    "ast_hash": "ab72a31a539babe31d909dd91f32b61e",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785957364.8759606,
-    "ast_hash": "9613602559ba79bbd6653f5306462f6b",
+    "mtime": 1785957892.8479486,
+    "ast_hash": "cef4ea32744614bb0386f269bfc2d7d3",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,8 +1060,8 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785957364.8759606,
-    "ast_hash": "5727d1bf5194c513fddd028ffb129fbd",
+    "mtime": 1785957892.8479486,
+    "ast_hash": "30e8fba386888c48199a2847646bc62a",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785957406.5999596,
-    "ast_hash": "65ac66ebc90da142cec57977ecf5d2a8",
+    "mtime": 1785957927.3959477,
+    "ast_hash": "6a3e160505055398db41b7934f282863",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1345,13 +1345,18 @@
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-05_06.txt": {
-    "mtime": 1785957401.3839598,
+    "mtime": 1785957430.787959,
     "ast_hash": "6882a1e9a6a16fe5ff5637d9fefdd1b4",
     "semantic_hash": ""
   },
   "oversight_sweep_2026-08-05.txt": {
     "mtime": 1785956939.0839703,
     "ast_hash": "d5ebf76543839f31dfa02971c87079d6",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-05_07.txt": {
+    "mtime": 1785957922.9999478,
+    "ast_hash": "b02010be0b29e7be34ee47408783fd08",
     "semantic_hash": ""
   }
 }

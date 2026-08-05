@@ -1396,8 +1396,8 @@
       "source_location": "L842",
       "_origin": "ast",
       "id": "main_generateagendas",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "generateagendas()"
     },
     {
@@ -1407,8 +1407,8 @@
       "source_location": "L877",
       "_origin": "ast",
       "id": "main_initagendas",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "initagendas()"
     },
     {
@@ -1418,8 +1418,8 @@
       "source_location": "L884",
       "_origin": "ast",
       "id": "main_renderagendas",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "renderagendas()"
     },
     {
@@ -1726,8 +1726,8 @@
       "source_location": "L1285",
       "_origin": "ast",
       "id": "main_getshifts",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getshifts()"
     },
     {
@@ -1737,8 +1737,8 @@
       "source_location": "L1289",
       "_origin": "ast",
       "id": "main_gettodayshifts",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "gettodayshifts()"
     },
     {
@@ -1748,8 +1748,8 @@
       "source_location": "L1294",
       "_origin": "ast",
       "id": "main_getshiftsfordate",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getshiftsfordate()"
     },
     {
@@ -1759,8 +1759,8 @@
       "source_location": "L1298",
       "_origin": "ast",
       "id": "main_getshiftcontext",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getshiftcontext()"
     },
     {
@@ -1770,8 +1770,8 @@
       "source_location": "L1319",
       "_origin": "ast",
       "id": "main_getfreewindows",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "getfreewindows()"
     },
     {
@@ -1781,8 +1781,8 @@
       "source_location": "L1339",
       "_origin": "ast",
       "id": "main_rendershiftblocks",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "rendershiftblocks()"
     },
     {
@@ -1803,8 +1803,8 @@
       "source_location": "L1390",
       "_origin": "ast",
       "id": "main_closepasterota",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "closepasterota()"
     },
     {
@@ -1814,8 +1814,8 @@
       "source_location": "L1395",
       "_origin": "ast",
       "id": "main_parseandsaverota",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "parseandsaverota()"
     },
     {
@@ -1979,8 +1979,8 @@
       "source_location": "L1813",
       "_origin": "ast",
       "id": "main_autoapplystoredshifts",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "autoapplystoredshifts()"
     },
     {
@@ -2276,8 +2276,8 @@
       "source_location": "L2215",
       "_origin": "ast",
       "id": "main_patchagendacardswithschedule",
-      "community": 185,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "renderDailyGrid",
       "norm_label": "patchagendacardswithschedule()"
     },
     {
@@ -2474,8 +2474,8 @@
       "source_location": "L2686",
       "_origin": "ast",
       "id": "main_sbinsightpost",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "sbinsightpost()"
     },
     {
@@ -2485,8 +2485,8 @@
       "source_location": "L2692",
       "_origin": "ast",
       "id": "main_sbinsightfetch",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "sbinsightfetch()"
     },
     {
@@ -2540,8 +2540,8 @@
       "source_location": "L2791",
       "_origin": "ast",
       "id": "main_approveinsightsfromcache",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "approveinsightsfromcache()"
     },
     {
@@ -2551,8 +2551,8 @@
       "source_location": "L2797",
       "_origin": "ast",
       "id": "main_approveinsights",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "approveinsights()"
     },
     {
@@ -2562,8 +2562,8 @@
       "source_location": "L2814",
       "_origin": "ast",
       "id": "main_setupmanualinsightselection",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "setupmanualinsightselection()"
     },
     {
@@ -2573,8 +2573,8 @@
       "source_location": "L2827",
       "_origin": "ast",
       "id": "main_showinsighttooltip",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "showinsighttooltip()"
     },
     {
@@ -2584,8 +2584,8 @@
       "source_location": "L2836",
       "_origin": "ast",
       "id": "main_removeinsighttooltip",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "removeinsighttooltip()"
     },
     {
@@ -2595,8 +2595,8 @@
       "source_location": "L2837",
       "_origin": "ast",
       "id": "main_savemanualinsight",
-      "community": 186,
-      "community_name": "saveManualInsight",
+      "community": 6,
+      "community_name": "renderEncEntries",
       "norm_label": "savemanualinsight()"
     },
     {
@@ -2606,8 +2606,8 @@
       "source_location": "L2857",
       "_origin": "ast",
       "id": "main_loadinsightsbycategory",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "loadinsightsbycategory()"
     },
     {
@@ -2628,8 +2628,8 @@
       "source_location": "L2927",
       "_origin": "ast",
       "id": "main_generatecontentideasfrominsights",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "generatecontentideasfrominsights()"
     },
     {
@@ -2650,8 +2650,8 @@
       "source_location": "L2950",
       "_origin": "ast",
       "id": "main_jumptosourceentry",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "jumptosourceentry()"
     },
     {
@@ -2782,8 +2782,8 @@
       "source_location": "L3123",
       "_origin": "ast",
       "id": "main_loadvstinspector",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "loadvstinspector()"
     },
     {
@@ -2793,8 +2793,8 @@
       "source_location": "L3181",
       "_origin": "ast",
       "id": "main_jumptofullentry",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "jumptofullentry()"
     },
     {
@@ -2826,8 +2826,8 @@
       "source_location": "L3227",
       "_origin": "ast",
       "id": "main_enc_all_entries",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "enc_all_entries"
     },
     {
@@ -2870,8 +2870,8 @@
       "source_location": "L3253",
       "_origin": "ast",
       "id": "main_setenccategory",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "setenccategory()"
     },
     {
@@ -4451,7 +4451,7 @@
       "label": "truncate()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L17575",
+      "source_location": "L17612",
       "_origin": "ast",
       "id": "rpgace_core_truncate",
       "community": 4,
@@ -4462,7 +4462,7 @@
       "label": "chip()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L17849",
+      "source_location": "L17886",
       "_origin": "ast",
       "id": "rpgace_core_chip",
       "community": 4,
@@ -4473,9 +4473,9 @@
       "label": "NOTE: not `global.addEventListener` - this module is defined AFTER",
       "file_type": "rationale",
       "source_file": "rpgace_core.js",
-      "source_location": "L18071",
+      "source_location": "L18108",
       "_origin": "ast",
-      "id": "rpgace_core_rationale_18071",
+      "id": "rpgace_core_rationale_18108",
       "community": 4,
       "community_name": "rpgace_core.js",
       "norm_label": "note: not `global.addeventlistener` - this module is defined after"
@@ -21726,7 +21726,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L17849",
+      "source_location": "L17886",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -21858,7 +21858,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L17060",
+      "source_location": "L17097",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -21968,7 +21968,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L17575",
+      "source_location": "L17612",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -22012,10 +22012,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L18071",
+      "source_location": "L18108",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "rpgace_core_rationale_18071",
+      "source": "rpgace_core_rationale_18108",
       "target": "rpgace_core",
       "confidence_score": 1.0
     },
@@ -28355,5 +28355,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6b295b1dd87244e354faec39da603590cb852f07"
+  "built_at_commit": "eb6e8add1c9e0a3a5a4153b5274b928d1efece78"
 }
