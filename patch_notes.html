@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎬 Aug 5 — /Engineer Phase F: video generation handoff, gated + a safe test tool</div>
+    <div class="card-body">
+      Fifth real build pass of the Content/Video Pipeline unification, same 5-stage <code>/Engineer</code> discipline as Phases A/C/D/E. Full record: <code>engineer_pass_2026-08-05_05.txt</code>.
+      <br><br>
+      <strong>Phase 4 gained a real "🎬 Generate Video" trigger</strong>, packaging the beat metadata + Visual Treatment Doc + outbound script prompt (everything the earlier phases already save) into the real <code>openmontage_jobs</code> row shape (confirmed against its live schema). Gated behind a new <code>OPENMONTAGE_HANDOFF_ENABLED</code> freeze flag — <strong>false by default</strong>, mirroring <code>ENABLED_PHYLA</code>'s own shape, since Alex hasn't made his real Tier-3 paid-provider decision yet. While off, clicking it doesn't fake success or silently do nothing — it builds the real payload and shows it verbatim, so the feature is honestly inspectable before it's ever turned on.
+      <br><br>
+      <strong>New "🧪 Simulate Response (test only)" button</strong> fakes a COMPLETE job result — an explicitly <code>[SIMULATED]</code>-labeled <code>openmontage_jobs</code> row and a linked <code>video_jobs</code> row bumped to "rendered" with an obviously-fake path — so the rest of the pipeline can be exercised and validated with zero real provider calls and zero cost.
+      <br><br>
+      <strong>Phase 4's "View Kling Project" retro button is genuinely real now</strong>, not the honest stub Phases D/E left it as — this pass finally gives it real data to read (whatever job, real or simulated, most recently exists for the ConID), or an honest "none yet" message.
+      <br><br>
+      Real correctness check done before writing a line: <code>openmontage_jobs</code> is confirmed NOT in <code>api/data-write.js</code>'s <code>ALLOWED_TABLES</code>, so both writes correctly use the plain anon-key <code>RPGACE.sb.insert</code>, not <code>secureWrite</code> — matching the standing landmine that this table must never be swept into an RLS-restriction batch.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass. G6 pending merge+push, will confirm via Vercel MCP same as every prior phase. Per Alex's explicit direction, hand-testing stays deferred until all 8 phases ship and get verified together in one pass with a real beat.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">↩️ Aug 5 — /Engineer Phase E: the retroactive buttons are real now, 3 of 4</div>
     <div class="card-body">
       Fourth real build pass of the Content/Video Pipeline unification, same 5-stage <code>/Engineer</code> discipline as Phases A/C/D. Full record: <code>engineer_pass_2026-08-05_04.txt</code>. Replaces 3 of Phase D's 4 honest stub buttons with the real "reopen the original form pre-filled, edit-in-place" mechanism, per <code>/interrogation</code>'s confirmed answer.

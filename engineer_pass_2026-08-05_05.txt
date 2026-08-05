@@ -1,0 +1,159 @@
+/Engineer pass — 2026-08-05_05
+Content/Video Pipeline unification, Phase F (video generation handoff)
+Ref: content_video_pipeline_unification_spec_2026-08-05.txt, items 9/10/11
+Ref: engineer_pass_2026-08-05_01/_02/_03/_04.txt (Phases A/C/D/E, same framework)
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Real "Generate Video" trigger on Phase 4 of the Production Panel,
+   packaging beat metadata + Visual Treatment Doc + outbound script
+   prompt into the real openmontage_jobs row shape.
+2. Gated behind a new OPENMONTAGE_HANDOFF_ENABLED freeze flag (false by
+   default), mirroring ENABLED_PHYLA's own shape — Alex hasn't made his
+   real Tier-3 paid-provider decision yet.
+3. A "🧪 Simulate Response" test-only button that fakes a COMPLETE job
+   result (no real provider call, no cost) so the rest of the pipeline
+   can be validated safely.
+4. Phase 4's "View Kling Project" retro button (an honest stub since
+   Phase D/E) becomes genuinely real, since this pass finally gives it
+   real data to read.
+Tier 1/2 boundary. No schema change (openmontage_jobs already has every
+column this needs). No RLS action — openmontage_jobs stays anon_all per
+the existing standing landmine, confirmed not touched.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Live schema read (not assumed) of openmontage_jobs: id,
+  content_production_id, video_job_id, title, brief, beat_meta (jsonb),
+  status, output_note, requested_by, created_at, updated_at,
+  source_audio_url, revision_notes (jsonb) — confirms the real payload
+  shape used below.
+- Confirmed via api/data-write.js's own ALLOWED_TABLES list: openmontage_
+  jobs is NOT in it. Writes here correctly use the plain anon-key
+  RPGACE.sb.insert (matching the standing landmine that this table's
+  RLS must never be flipped without breaking the separate OpenMontage
+  session's own writes), not secureWrite.
+- RPGACE.sb.insert() confirmed (via rpgace_core.js's own RPGACE.sb
+  definition) to default Prefer: return=minimal — the known landmine
+  ("does NOT return the inserted row"). Rather than hand-roll a second
+  raw-fetch-with-representation-header pattern (only 2 real precedents
+  exist for that: phylumPath._insertNewSteps, bookworm._createBookFrom
+  Extraction), _viewOpenMontageJob simply re-selects the most recent row
+  by content_production_id afterward — reuses the existing select()
+  primitive instead of adding a 3rd header-override call site.
+- ENABLED_PHYLA (phylumPath module) confirmed as the real precedent for
+  a boolean feature-freeze flag's shape/placement convention.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — routine build, not an audit)
+=====================================================================
+1. Added contentProductionLive.OPENMONTAGE_HANDOFF_ENABLED = false.
+2. New _buildVideoPipelinePayload(row, callback) — one real payload
+   builder shared by both _generateVideo and _simulateOpenMontageResponse
+   (rule 8 dedup). Pulls beat_meta from video_jobs.script JSON (falling
+   back to creative_docs.beat_meta), and brief text from
+   creative_docs.visual_treatment + creative_docs.script.
+3. New _generateVideo(row) — when the flag is off, builds the real
+   payload and shows it verbatim in a popup (honest preview, not a fake
+   success and not a silent no-op); when on, does a real
+   RPGACE.sb.insert into openmontage_jobs.
+4. New _simulateOpenMontageResponse(row) — test-only, always runs
+   regardless of the freeze flag (it never calls a real provider either
+   way). Inserts a fake COMPLETE openmontage_jobs row with an explicit
+   [SIMULATED] output_note, and bumps the linked video_jobs row to
+   'rendered' with an obviously-fake path.
+5. New _viewOpenMontageJob(row) — real reader for Phase 4's retro
+   button: shows the real most-recent job's status/title/output_note,
+   or an honest "none yet" message.
+6. Phase 4's render branch (i===3) rewired: Open Video Pipeline button
+   unchanged; new Generate Video + Simulate Response buttons added; the
+   retro button switched from the generic honest-stub factory
+   (_buildRetroButton) to the real-action factory
+   (_buildRetroActionButton) calling _viewOpenMontageJob.
+7. index.html cache-bust bumped (20260805d → 20260805e) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 2 files (rpgace_core.js 177 insertions/6 deletions,
+index.html 1-line cache-bust). All rpgace_core.js changes contained
+inside contentProductionLive — no other module touched.
+
+Honest residual risks, not hidden:
+- _generateVideo's real-insert path (when the flag is eventually
+  flipped true) has not been exercised against a live write — the flag
+  defaults false specifically so nothing real fires until Alex's own
+  Tier-3 decision, so this is expected, not a gap to apologize for.
+- _simulateOpenMontageResponse always inserts a NEW openmontage_jobs
+  row rather than updating an existing queued one — meaning repeated
+  simulated runs on the same ConID accumulate multiple job rows over
+  time. Real, deliberate simplicity (matching this table's own existing
+  "queued rows for real jobs" pattern per CLAUDE.md's Total-system
+  section) rather than added update-vs-insert branching logic for a
+  test-only tool; flagged, not silently left unconsidered.
+- _viewOpenMontageJob always shows the MOST RECENT job only — if
+  multiple simulated/real jobs exist for one ConID (see above), older
+  ones aren't surfaced. Acceptable for a "what's the current state"
+  reader; not built as a full job history view (out of this pass's
+  scope).
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: real schema-verified payload shape, real dedup (one
+payload builder for both real and simulated paths), correctly avoided
+secureWrite for a table deliberately excluded from it (re-confirmed
+against the standing landmine before writing a single line), honest
+non-faking behavior while the freeze flag is off. Docked 2 points for
+the still-standing zero-hand-testing gap (now spanning 5 phases) and
+the un-deduped accumulation of simulated job rows over repeated tests.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope.
+- index.html script-tag count: re-checked, exactly 2, only version
+  string changed.
+- Re-grepped every new symbol (OPENMONTAGE_HANDOFF_ENABLED,
+  _buildVideoPipelinePayload, _generateVideo,
+  _simulateOpenMontageResponse, _viewOpenMontageJob) — each has exactly
+  one definition, called from the expected real site(s), no orphans.
+- Re-confirmed api/data-write.js's ALLOWED_TABLES directly (not from
+  memory) does not include openmontage_jobs before finalizing the
+  RPGACE.sb.insert (not secureWrite) choice.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, fresh run.
+G2 (index.html invariants) — PASS, exactly 2 script tags, only version
+  string changed.
+G3 (module convention) — PASS, entirely inside contentProductionLive's
+  existing module markers, no main.js touch.
+G4 (claim-to-diff reconciliation) — PASS, both directions clean.
+G5 (goal reconciliation) — all 4 Stage 1 goals: DONE.
+G6 (deployment reality) — pending merge+push; will confirm via Vercel
+  MCP same as every prior phase this week.
+G7 (cache-bust) — PASS, version string moved in the same pass.
+UNTESTED (required label, not a failure): per Alex's explicit direction
+  this session, no individual hand-test requested after this phase —
+  accumulates for one batched real-beat verification once all 8 phases
+  ship. Real actions this pass adds to that eventual list: (1) with the
+  flag off (default), click Generate Video and confirm the preview
+  popup shows a real, correctly-populated payload; (2) click Simulate
+  Response, confirm a toast fires and the linked video_jobs row's status
+  flips to 'rendered'; (3) click View Kling Project afterward, confirm
+  it shows the simulated job's real status/output_note instead of the
+  old stub toast; (4) confirm Open Video Pipeline still works unchanged.
+
+PASS COUNT: 1 of 3 max. Re-looping not triggered — no gate failed, no
+Stage 1 goal unresolved.
+
+=====================================================================
+NEXT
+=====================================================================
+Phase G: Generate Captions button (IG/YouTube Shorts/TikTok) using the
+full ConID record, saved to ConID, stage marked complete. Explicitly
+stops there — no Composio auto-posting (deferred per the confirmed
+/interrogation answer, already logged). Same framework.

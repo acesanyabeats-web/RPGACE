@@ -14025,6 +14025,15 @@ RPGACE.register('contentProductionLive', {
   _activeConID: null,
   _oracleSession: [],
 
+  // Aug 5 (Engineer pass, Phase F) — real freeze flag mirroring
+  // ENABLED_PHYLA's own shape (phylumPath module): false until Alex makes
+  // his real Tier-3 paid-video-provider decision (Kling, per the July 31
+  // OpenMontage findings). While false, "Generate Video" builds and shows
+  // the REAL payload it would send, but does not actually write to
+  // openmontage_jobs - so the feature is honestly inspectable, not a dead
+  // button and not a silent fake success.
+  OPENMONTAGE_HANDOFF_ENABLED: false,
+
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._injectDashboardWidget(); });
@@ -14915,16 +14924,42 @@ RPGACE.register('contentProductionLive', {
             } else if (i === 3) {
               var vpBtn = document.createElement('button');
               vpBtn.textContent = '🎥 Open Video Pipeline';
-              vpBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+              vpBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-bottom:6px;';
               vpBtn.onclick = function() {
                 RPGACE.ui.slideOutPanel(panel, 'right');
                 if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
               };
               phaseCard.appendChild(vpBtn);
-              // Genuinely still a stub - blocked on Phase F (video
-              // generation handoff), not Phase E. No real Kling project
-              // reference exists anywhere in the schema yet to pull up.
-              phaseCard.appendChild(self._buildRetroButton('↩ View Kling Project', row));
+
+              // Aug 5 (Engineer pass, Phase F) — real Generate Video
+              // trigger. Gated behind OPENMONTAGE_HANDOFF_ENABLED (false
+              // by default) - see _generateVideo for the honest
+              // preview-not-fake-success behaviour while it's off.
+              var genVidBtn = document.createElement('button');
+              genVidBtn.textContent = '🎬 Generate Video';
+              genVidBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-bottom:6px;';
+              genVidBtn.onclick = function() { self._generateVideo(row); };
+              phaseCard.appendChild(genVidBtn);
+
+              // Test-only tool, deliberately labeled - fakes a completed
+              // job so the rest of the pipeline (Video Pipeline widget,
+              // this Phase's own "View Kling Project" retro button below)
+              // can be validated for real without any Kling spend.
+              var simBtn = document.createElement('button');
+              simBtn.textContent = '🧪 Simulate Response (test only)';
+              simBtn.style.cssText = 'padding:5px 12px;background:none;border:1px dashed rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+              simBtn.onclick = function() { self._simulateOpenMontageResponse(row); };
+              phaseCard.appendChild(simBtn);
+              phaseCard.appendChild(document.createElement('br'));
+
+              // Aug 5 (Engineer pass, Phase F) — genuinely real now, not a
+              // stub: Phase F stores a real openmontage_jobs reference
+              // (via either Generate Video or Simulate Response), so this
+              // button can finally show real job data instead of an
+              // honest "not built yet" toast.
+              phaseCard.appendChild(self._buildRetroActionButton('↩ View Kling Project', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
+                self._viewOpenMontageJob(row);
+              }));
             }
           }
 
@@ -15023,6 +15058,142 @@ RPGACE.register('contentProductionLive', {
       .catch(function() {
         loading.textContent = 'Could not load saved script/doc.';
         loading.style.color = '#CC4A4A';
+      });
+  },
+
+  // ── Phase F: video generation handoff (Aug 5, Engineer pass) ─────────
+  // Real, shared payload builder (rule 8 dedup - one real construction
+  // path, reused by both _generateVideo and _simulateOpenMontageResponse
+  // rather than 2 hand-rolled copies). Packages exactly what the Phase D/
+  // E retroactive-button work already saves: beat metadata (video_jobs.
+  // script JSON, falling back to creative_docs.beat_meta), the Visual
+  // Treatment Doc, and the outbound script prompt - into the real
+  // openmontage_jobs row shape (confirmed via live schema read: id,
+  // content_production_id, video_job_id, title, brief, beat_meta jsonb,
+  // status, output_note, requested_by, created_at, updated_at,
+  // source_audio_url, revision_notes).
+  _buildVideoPipelinePayload: function(row, callback) {
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+          .catch(function() { return []; })
+          .then(function(jobs) {
+            var vj = jobs && jobs[0];
+            var beatMeta = null;
+            if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
+            if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
+            var briefParts = [];
+            if (docs.visual_treatment) briefParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
+            if (docs.script) briefParts.push('ORACLE PROMPT USED:\n' + docs.script);
+            var payload = {
+              content_production_id: row.id,
+              video_job_id: vj ? vj.id : null,
+              title: row.title || null,
+              brief: briefParts.length ? briefParts.join('\n\n---\n\n') : null,
+              beat_meta: beatMeta || {},
+              status: 'queued',
+              requested_by: 'rpgace_claude_code',
+            };
+            callback(payload, vj ? vj.id : null);
+          });
+      });
+  },
+
+  // Real "Generate Video" action, gated behind OPENMONTAGE_HANDOFF_ENABLED.
+  // While off (the real default - Alex hasn't chosen a paid provider yet,
+  // Tier 3 spend fork), this does NOT fake success and does NOT silently
+  // no-op (rule 7) - it builds the real payload and shows it verbatim, so
+  // the feature is honestly inspectable before it's ever flipped on.
+  // openmontage_jobs deliberately uses the plain anon-key RPGACE.sb.insert
+  // (NOT secureWrite) - confirmed against api/data-write.js's own
+  // ALLOWED_TABLES list, which does not include it, matching the standing
+  // landmine that this table must never be swept into an RLS-restriction
+  // batch without breaking the separate OpenMontage session's writes.
+  _generateVideo: function(row) {
+    var self = this;
+    self._buildVideoPipelinePayload(row, function(payload) {
+      if (!self.OPENMONTAGE_HANDOFF_ENABLED) {
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+          title: 'Generate Video — handoff currently OFF',
+        });
+        var body = document.createElement('div');
+        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
+        body.innerHTML = '<div style="margin-bottom:12px;color:#E2A83D;">OpenMontage handoff is OFF (<code>OPENMONTAGE_HANDOFF_ENABLED = false</code>) — Alex hasn\'t chosen a paid video provider yet, a real Tier-3 spend decision. Nothing was sent. This is exactly the real payload that WOULD be sent once this is flipped on:</div>' +
+          '<pre style="white-space:pre-wrap;font-size:11px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px;max-height:320px;overflow-y:auto;">' + JSON.stringify(payload, null, 2).replace(/</g, '&lt;') + '</pre>';
+        pop.box.appendChild(body);
+        return;
+      }
+      RPGACE.sb.insert('openmontage_jobs', payload)
+        .then(function(r) {
+          if (!r.ok) throw new Error('insert returned ' + r.status);
+          RPGACE.utils.toast('🎬 Video generation job queued to OpenMontage', '#4A8CCC', 3000);
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('⚠️ Failed to queue OpenMontage job: ' + e.message, '#CC4A4A', 4000);
+        });
+    });
+  },
+
+  // Test-only tool (clearly labeled in its own button text): fakes a
+  // COMPLETE openmontage_jobs row and bumps the linked video_jobs row to
+  // 'rendered' with an obviously-fake path, so the rest of the pipeline
+  // (this Phase's own "View Kling Project" button, the Video Pipeline
+  // widget) can be exercised and validated for real without any actual
+  // provider call or spend. Runs regardless of OPENMONTAGE_HANDOFF_ENABLED
+  // - it never talks to a real provider either way, so the freeze flag
+  // doesn't apply to it.
+  _simulateOpenMontageResponse: function(row) {
+    var self = this;
+    self._buildVideoPipelinePayload(row, function(payload, vjId) {
+      var simulated = {
+        content_production_id: payload.content_production_id,
+        video_job_id: payload.video_job_id,
+        title: payload.title,
+        brief: payload.brief,
+        beat_meta: payload.beat_meta,
+        status: 'complete',
+        requested_by: payload.requested_by,
+        output_note: '[SIMULATED — Aug 5 Phase F test tool] Fake completed render for safe workflow validation. No real video was generated, no cost incurred, no real provider was called.',
+      };
+      RPGACE.sb.insert('openmontage_jobs', simulated)
+        .then(function(r) {
+          if (!r.ok) throw new Error('insert returned ' + r.status);
+          RPGACE.utils.toast('🧪 Simulated a completed OpenMontage job (test only — no real render)', '#9B6EC8', 3500);
+          if (vjId) {
+            return RPGACE.sb.secureWrite('video_jobs', 'update', { status: 'rendered', raw_path: '[SIMULATED] /fake/path/simulated_render.mp4' }, 'id=eq.' + vjId);
+          }
+        })
+        .catch(function(e) { RPGACE.utils.toast('⚠️ Simulate failed: ' + e.message, '#CC4A4A', 3500); });
+    });
+  },
+
+  // Real reader for Phase 4's "View Kling Project" button (genuinely real
+  // as of this pass, not the honest stub Phase D/E left it as) - shows
+  // whatever real openmontage_jobs row exists for this ConID, or an
+  // honest "none yet" message rather than fabricating one.
+  _viewOpenMontageJob: function(row) {
+    RPGACE.sb.select('openmontage_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var job = rows && rows[0];
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', scroll: true, width: '440px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+          title: 'OpenMontage Job',
+        });
+        var body = document.createElement('div');
+        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
+        if (!job) {
+          body.textContent = 'No OpenMontage job exists yet for this ConID — use Generate Video (or Simulate Response, for testing) first.';
+        } else {
+          body.innerHTML = '<div style="margin-bottom:8px;"><strong>Status:</strong> ' + (job.status || '').replace(/</g, '&lt;') + '</div>' +
+            '<div style="margin-bottom:8px;"><strong>Title:</strong> ' + (job.title || '').replace(/</g, '&lt;') + '</div>' +
+            (job.output_note ? '<div style="margin-bottom:8px;"><strong>Output note:</strong> ' + job.output_note.replace(/</g, '&lt;') + '</div>' : '') +
+            '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Job id: ' + job.id + '</div>';
+        }
+        pop.box.appendChild(body);
       });
   },
 
