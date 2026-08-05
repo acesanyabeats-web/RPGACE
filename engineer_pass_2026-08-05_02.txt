@@ -146,8 +146,11 @@ G3 (module convention) — PASS, change entirely inside visualOracle's
   existing module markers, no main.js touch, no FROZEN exception.
 G4 (claim-to-diff reconciliation) — PASS, both directions clean.
 G5 (goal reconciliation) — all 3 Stage 1 goals: DONE.
-G6 (deployment reality) — pending merge+push, will confirm real
-  production commit once live (same as every other pass this week).
+G6 (deployment reality) — PASS, independently confirmed post-merge via
+  Vercel MCP (reconnected this session): production deployment
+  dpl_GNhwupKeMdW5eauLWNP1hPong8Ry state=READY, target=production,
+  githubCommitSha=b79e91a4c1825d66f4db820e0759baa4f30ad31c — the exact
+  commit this pass produced, genuinely live, not assumed.
 G7 (cache-bust) — PASS, version string moved in the same pass.
 UNTESTED (required label, not a failure): code-verified and gate-passed,
   not yet clicked through in a real browser. Specific actions needed:

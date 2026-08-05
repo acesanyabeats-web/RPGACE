@@ -112,8 +112,13 @@ G3 (module convention) - PASS, all changes inside existing MODULE
   markers, no main.js touch, no FROZEN exception needed.
 G4 (claim-to-diff reconciliation) - PASS, both directions clean.
 G5 (goal reconciliation) - all 3 Stage 1 goals: DONE.
-G6 (deployment reality) - pending merge+push, will confirm real
-  production commit + a real check once live.
+G6 (deployment reality) - PASS, retroactively confirmed 2026-08-05
+  during the Phase C pass once Vercel's MCP server reconnected:
+  production deployment dpl_3ZxPPVtomRNobb92SHRwKTsoLShW state=READY,
+  target=production, githubCommitSha=a40ac4cc84e9623bd00d276da413fdb1c1dae76a
+  - the exact commit this pass produced, genuinely live. Was flagged
+  unverifiable at the time this file was first written; not left stale
+  (per CLAUDE.md's own rule against unresolved stale flags).
 G7 (cache-bust) - PASS, version string moved in the same pass.
 UNTESTED (required label, not a failure): all 3 fixes are code-verified
   and gate-passed, but NONE have been clicked through in a real browser
