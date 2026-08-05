@@ -179,8 +179,11 @@ G5 (goal reconciliation) — 3 of 4 Stage 1 goals DONE (Phases 1-3's retro
   buttons real); Phase 4's stays an honest stub by design, restated
   plainly, not a failure to meet the goal contract (the contract itself
   named this dependency on Phase F up front).
-G6 (deployment reality) — pending merge+push; will confirm via Vercel
-  MCP same as Phases A/C/D.
+G6 (deployment reality) — PASS, independently confirmed post-merge via
+  Vercel MCP: deployment dpl_2PqZu27ZMDnSZfqFa4F7hmesfiwQ state=READY,
+  target=production, githubCommitSha=73e2b1a696e97893dea378efed1fa653800e1b62
+  — the exact commit this pass produced — alias list includes the real
+  rpgace.vercel.app domain.
 G7 (cache-bust) — PASS, version string moved in the same pass.
 UNTESTED (required label, not a failure): per Alex's explicit direction
   this session ("we will do all untested in one go once all phases are

@@ -1,7 +1,7 @@
 # Graph Report - RPGACE  (2026-08-05)
 
 ## Corpus Check
-- 199 files · ~462,069 words
+- 199 files · ~466,030 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `10c7e0ab`
+- Built from commit: `73e2b1a6`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -83,7 +83,7 @@
 - .claude/CLAUDE.md
 - extraction-spec.md
 - /interrogation — ask before guessing, on anything that would actually change
-- saveManualInsight
+- setEncCategory
 
 ## God Nodes (most connected - your core abstractions)
 1. `setCORS()` - 25 edges
@@ -120,7 +120,7 @@ Nodes (38): handler(), TYPE_PROMPTS, handler(), charFuzzyPattern(), collectMatch
 
 ### Community 1 - "main.js"
 Cohesion: 0.04
-Nodes (38): acceptSuggestions(), buildAllQuests(), buildQS(), CAT_COL, CAT_ICON, closeSuggestion(), collapseEncEntry(), CONFIG (+30 more)
+Nodes (35): acceptSuggestions(), buildAllQuests(), buildQS(), CAT_COL, CAT_ICON, closeSuggestion(), collapseEncEntry(), CONFIG (+27 more)
 
 ### Community 2 - "rpgace_intel.py"
 Cohesion: 0.11
@@ -135,12 +135,12 @@ Cohesion: 0.09
 Nodes (20): advance(), applyIntelUI(), chapterNumOf(), commitChapters(), el(), _fb(), get(), _key() (+12 more)
 
 ### Community 5 - "showPage"
-Cohesion: 0.16
-Nodes (14): acceptJumpToEnc(), clearScheduledAgendas(), exitFocusToEnc(), generateContentIdeasFromInsights(), goToEncFromFocus(), loadScheduledAgendas(), pushLocalToSupabase(), refreshEncyclopediaDisplay() (+6 more)
+Cohesion: 0.20
+Nodes (12): acceptJumpToEnc(), clearScheduledAgendas(), exitFocusToEnc(), goToEncFromFocus(), loadScheduledAgendas(), pushLocalToSupabase(), refreshEncyclopediaDisplay(), removeScheduledAgenda() (+4 more)
 
 ### Community 6 - "renderEncEntries"
-Cohesion: 0.13
-Nodes (20): autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), ENC_ALL_ENTRIES, extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext(), filterEntries() (+12 more)
+Cohesion: 0.11
+Nodes (24): approveInsights(), approveInsightsFromCache(), autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext() (+16 more)
 
 ### Community 7 - "rpgace_build.py"
 Cohesion: 0.23
@@ -346,9 +346,9 @@ Nodes (3): Guardrails, /Summary — a real, evidence-checked recap when context 
 Cohesion: 0.40
 Nodes (4): Guardrails, /interrogation — ask before guessing, on anything that would actually change, Procedure, When to run it
 
-### Community 185 - "saveManualInsight"
-Cohesion: 0.33
-Nodes (7): approveInsights(), approveInsightsFromCache(), removeInsightTooltip(), saveManualInsight(), sbInsightPost(), setupManualInsightSelection(), showInsightTooltip()
+### Community 185 - "setEncCategory"
+Cohesion: 0.29
+Nodes (8): ENC_ALL_ENTRIES, generateContentIdeasFromInsights(), jumpToFullEntry(), jumpToSourceEntry(), loadInsightsByCategory(), loadVSTInspector(), sbInsightFetch(), setEncCategory()
 
 ## Knowledge Gaps
 - **398 isolated node(s):** `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS`, `config`, `CONFIG` (+393 more)
@@ -363,7 +363,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `_context.js` be split into smaller, more focused modules?**
   _Cohesion score 0.10745098039215686 - nodes in this community are weakly interconnected._
 - **Should `main.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.03573043871551334 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03670634920634921 - nodes in this community are weakly interconnected._
 - **Should `rpgace_intel.py` be split into smaller, more focused modules?**
   _Cohesion score 0.11411411411411411 - nodes in this community are weakly interconnected._
 - **Should `addXP` be split into smaller, more focused modules?**
@@ -371,4 +371,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `rpgace_core.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08912655971479501 - nodes in this community are weakly interconnected._
 - **Should `renderEncEntries` be split into smaller, more focused modules?**
-  _Cohesion score 0.13157894736842105 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10507246376811594 - nodes in this community are weakly interconnected._
