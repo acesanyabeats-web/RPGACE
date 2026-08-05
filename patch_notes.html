@@ -86,7 +86,7 @@
       <br><br>
       Real correctness check done before writing a line: <code>openmontage_jobs</code> is confirmed NOT in <code>api/data-write.js</code>'s <code>ALLOWED_TABLES</code>, so both writes correctly use the plain anon-key <code>RPGACE.sb.insert</code>, not <code>secureWrite</code> — matching the standing landmine that this table must never be swept into an RLS-restriction batch.
       <br><br>
-      Full Objective Completion Gate: G1-G5 and G7 pass. G6 pending merge+push, will confirm via Vercel MCP same as every prior phase. Per Alex's explicit direction, hand-testing stays deferred until all 8 phases ship and get verified together in one pass with a real beat.
+      Full Objective Completion Gate: G1-G7 all pass, including G6 — independently confirmed via Vercel MCP post-merge (production deployment READY on commit <code>d49107f</code>, alias list includes the real <code>rpgace.vercel.app</code> domain). Per Alex's explicit direction, hand-testing stays deferred until all 8 phases ship and get verified together in one pass with a real beat.
     </div>
 </div>
 
