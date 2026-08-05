@@ -1,0 +1,194 @@
+/Engineer pass — 2026-08-05_03
+Content/Video Pipeline unification, Phase D (Production Panel 4-phase restructure)
+Ref: content_video_pipeline_unification_spec_2026-08-05.txt, item 5
+Ref: engineer_pass_2026-08-05_01.txt (Phase A), _02.txt (Phase C), same framework
+
+=====================================================================
+STAGE 0 — ONE REAL AMBIGUITY, RESOLVED BEFORE BUILDING (not guessed)
+=====================================================================
+Item 5's own wording is internally ambiguous: "Script gets saved as the
+real Oracle prompt generated once step 4 (Continue) commences" (implies
+the OUTBOUND prompt) vs. item 7 calling the whole Continue action itself
+"script generation" (implies Oracle's RETURNED doc). This is genuinely
+load-bearing — it decides the data model and what Phase 3 edits. Asked
+Alex directly (AskUserQuestion, 3 real options). Answer: **save both,
+separately** — creative_docs.script (the exact outbound prompt, captured
+verbatim the instant it's sent) AND creative_docs.visual_treatment
+(Oracle's reply, already saved today), each independently editable in
+the new Phase 3.
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Restructure `contentProductionLive._openProductionPanel`'s
+   music_video branch from 3 phases to 4 real phases: Phase 1
+   Reference+Style (content unchanged + retroactive button), Phase 2
+   Direction+Script (real Start Visual Treatment trigger + retroactive
+   button), Phase 3 Script Editing (NEW — real dual-field editor for
+   creative_docs.script + .visual_treatment + retroactive button), Phase
+   4 Video Pipeline (existing Open Video Pipeline button relocated here
+   + retroactive button). Tutorial's 3-phase branch stays byte-identical
+   (same precedent as Phase A).
+2. Wire the real outbound-prompt save: the exact moment fillGaps'
+   completion fires inside `_generateVisualTreatment` (the real "step 4
+   Continue" moment), save the filled prompt verbatim to
+   creative_docs.script via the existing `_saveDocToProduction` (no new
+   write helper — rule 8 dedup).
+3. All 4 retroactive buttons are real, correctly labeled, clickable UI —
+   per the confirmed 8-phase build-plan split, the actual "reopen
+   original form pre-filled, edit-in-place" mechanism is Phase E's job,
+   not this pass's. Built as honest stubs (real toast naming what/when),
+   never a fake no-op or a faked pre-fill.
+Tier: 1/2 boundary. No schema change (creative_docs is jsonb, no
+migration needed). No RLS/Tier 3 action. One genuine ambiguity resolved
+with Alex directly before building (Stage 0), consistent with rule 5 /
+`/interrogation`'s own charter — not guessed.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- `_openProductionPanel` (~line 14516) confirmed as the one real
+  Production Panel implementation, opened via the Oracle bar's "🎬
+  Switch to Production Panel" button. Its music_video branch had 3
+  generic phases (Reference+Style / Direction+Script / Post-Production)
+  with only ONE real action anywhere (an "Open Video Pipeline" button on
+  old Phase 2) — everything else was descriptive text pointing back at
+  "the Oracle conversation," no real per-phase actions.
+- `_generateVisualTreatment(row)` (~line 13988, ConID-card entry point)
+  confirmed as the real, already-working Visual Treatment trigger —
+  reused directly for Phase 2's new button rather than re-implemented.
+- Real, pre-existing naming collision found and NOT touched (out of
+  scope, just documented so it isn't conflated with the new field):
+  `video_jobs.script` already holds BEAT METADATA JSON (confirmed via
+  the existing `JSON.parse(jobs[0].script)` beat-lookup code, ~line
+  14007) — a completely different real column, on a different table,
+  from the NEW `content_productions.creative_docs.script` this pass
+  adds. Same English word, two unrelated real data shapes — flagged
+  explicitly in-code so a future reader doesn't merge the two.
+- `_saveDocToProduction(docSlug, text, productionId, videoJobId)`
+  re-confirmed (used in Phase C too) as a real, generic read-merge-write
+  into `creative_docs[docSlug]` — its two special-case branches
+  (auto-status-advance, DIRECTOR_CHOSEN trailer parsing) only fire for
+  docSlug 'visual_treatment'/'director_match', so calling it with
+  docSlug='script' is a clean, side-effect-free save — confirmed by
+  reading the function's actual branching logic, not assumed.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — routine build, not an audit)
+=====================================================================
+1. Widened the panel's initial select from `content_type` alone to
+   `id,con_id,title,content_type` — the 4-phase branch needs a real row
+   object to hand to `_generateVisualTreatment` and the retroactive
+   buttons, not just a type string.
+2. Rewrote the music_video `phases` array (4 entries) and the per-phase
+   render branch: Phase 1 gets `_buildRetroButton`; Phase 2 gets a real
+   "🎬 Start Visual Treatment" button (calls `self._generateVisualTreatment
+   (row)` directly — dedup, not a re-implementation) plus its own retro
+   button; Phase 3 calls the new `_buildScriptEditor`; Phase 4 keeps the
+   exact same "Open Video Pipeline" button (moved, not changed) plus its
+   own retro button. Tutorial's `if (i === 1 && contentType ===
+   'tutorial')` raw-footage-path branch is untouched, same condition,
+   same code.
+3. New `_buildRetroButton(label, row)` — one shared builder for all 4
+   stub buttons (rule 8 dedup, not 4 copies). Real, honest toast naming
+   the action and stating plainly it's Phase E's job — never a silent
+   no-op, never a faked pre-fill.
+4. New `_buildScriptEditor(container, productionId)` — real fetch of
+   `creative_docs`, renders 2 labeled textareas (Outbound Prompt /
+   Visual Treatment Doc) each with its own Save button, both reusing
+   `visualOracle._saveDocToProduction` directly (no new write path).
+5. Wired the real outbound-prompt capture inside `_generateVisualTreatment`
+   ('s `fillGaps` completion, right where the "Send to Oracle" click
+   actually fires: `vo._saveDocToProduction('script', filled, row.id,
+   vjId);` — added alongside the existing reply-capture call, not
+   replacing it.
+6. index.html cache-bust bumped (20260805b → 20260805c) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 2 files (index.html 1-line cache-bust, rpgace_core.js). All
+rpgace_core.js changes contained inside `contentProductionLive`
+(`_openProductionPanel`, new `_buildRetroButton`/`_buildScriptEditor`,
+and the `_generateVisualTreatment` fillGaps-completion addition) — no
+other module touched.
+
+Honest residual risks, not hidden:
+- Saving an edited `visual_treatment` textarea in Phase 3 without a
+  fresh `DIRECTOR_CHOSEN:` trailer at the end will trigger
+  `_saveDocToProduction`'s existing "⚠️ No director pick found" warning
+  toast — correct/honest behavior (there genuinely is no trailer in
+  hand-edited prose), but could read as confusing to Alex the first time
+  he just wants to re-save a tweak rather than regenerate. Not special-
+  cased this pass (rule 11 — no silent scope growth beyond the 3 goal-
+  contract items); flagged for Alex to decide if worth suppressing later.
+- All 4 retroactive buttons are real UI but intentionally do nothing
+  beyond an explanatory toast — by design, per the confirmed Phase D/E
+  split, not a bug. Restated here so it's impossible to miss in the
+  gate/report.
+- Phase 3's textareas show '' (empty) with a helpful placeholder until
+  Phase 2's Start Visual Treatment has actually been run once for that
+  ConID — correct, not a bug, but worth knowing before hand-testing an
+  older ConID that predates this pass (its creative_docs.script will be
+  genuinely empty since the save-on-Continue wiring didn't exist before
+  today).
+- Phase 4's "View Kling Project" retro button can't point at a real
+  Kling project yet regardless of Phase E, since no real video-
+  generation handoff exists until Phase F ships — noted so Phase E's own
+  future pass doesn't get blocked rediscovering this.
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: one genuine ambiguity correctly caught and resolved
+with Alex rather than guessed; real dedup throughout (reused
+`_generateVisualTreatment`, reused `_saveDocToProduction` for both new
+save paths, one shared retro-button builder); tutorial branch verified
+untouched. Docked 2 points for the same standing "zero hand-testing"
+gap as every pass this week, plus the honest DIRECTOR_CHOSEN-warning
+rough edge left unaddressed by design.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- node --check main.js: untouched this pass, no FROZEN exception.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope.
+- index.html script-tag count: re-checked, exactly 2, only version
+  string changed.
+- Re-read the tutorial branch's `if (i === 1 && contentType ===
+  'tutorial')` block after editing: confirmed byte-identical to before.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, both files, fresh run.
+G2 (index.html invariants) — PASS, exactly 2 script tags, only version
+  string changed.
+G3 (module convention) — PASS, entirely inside contentProductionLive's
+  existing module markers, no main.js touch.
+G4 (claim-to-diff reconciliation) — PASS, both directions clean.
+G5 (goal reconciliation) — all 3 Stage 1 goals: DONE.
+G6 (deployment reality) — pending merge+push; will confirm via Vercel
+  MCP same as Phases A/C once live.
+G7 (cache-bust) — PASS, version string moved in the same pass.
+UNTESTED (required label, not a failure): code-verified and gate-passed,
+  not yet clicked through in a real browser. Specific actions needed:
+  (1) open the Production Panel on a real music_video ConID, confirm 4
+  phases render with the right titles/descriptions; (2) click Start
+  Visual Treatment on Phase 2, complete the director-picker + fillGaps
+  flow, confirm the toast for the outbound-prompt save fires alongside
+  the existing reply-save toast; (3) reopen the panel, check Phase 3 —
+  confirm both textareas now show real saved text, edit one, click Save,
+  reload and confirm the edit persisted; (4) click each of the 4
+  retroactive buttons, confirm each shows its own correctly-worded
+  "lands in Phase E" toast; (5) confirm Phase 4's Open Video Pipeline
+  button still works exactly as before (moved, not changed).
+
+PASS COUNT: 1 of 3 max. Re-looping not triggered — no gate failed, no
+Stage 1 goal unresolved.
+
+=====================================================================
+NEXT
+=====================================================================
+Phase E: build the actual retroactive-button mechanism (reopens the
+original form pre-filled, edit-in-place per the confirmed Q1 answer) —
+replaces this pass's 4 honest stubs with real behavior. Same framework.

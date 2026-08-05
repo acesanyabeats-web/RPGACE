@@ -14029,6 +14029,20 @@ RPGACE.register('contentProductionLive', {
               if (!input) return;
               input.value = filled;
               input.dispatchEvent(new Event('input', {bubbles:true}));
+              // Aug 5 (Engineer pass, Phase D, Alex-confirmed "save both,
+              // separately" data model) - the exact outbound prompt is
+              // captured verbatim right here, the moment fillGaps'
+              // "Send to Oracle" click actually fires (this IS the real
+              // "step 4 Continue" moment item 5 describes). Saved as
+              // creative_docs.script - a DIFFERENT field from video_jobs'
+              // own pre-existing 'script' column (which holds beat
+              // metadata JSON, see the JSON.parse above - a real, already-
+              // existing naming collision on the word "script" across two
+              // different tables, not something this pass introduces or
+              // fixes; noted here so a future reader doesn't conflate the
+              // two). Reuses _saveDocToProduction directly (rule 8 dedup)
+              // rather than a new merge-write helper.
+              vo._saveDocToProduction('script', filled, row.id, vjId);
               if (vo._captureNextResponse) {
                 vo._captureNextResponse(function(text) {
                   vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
@@ -14558,15 +14572,30 @@ RPGACE.register('contentProductionLive', {
     panel.appendChild(body);
     RPGACE.ui.slideInPanel(panel, {edge:'right'});
 
-    RPGACE.sb.select('content_productions', 'id=eq.' + self._activeId + '&select=content_type&limit=1')
+    // Aug 5 (Engineer pass, Phase D — content_video_pipeline_unification_
+    // spec_2026-08-05.txt item 5): music_video's real select widened to
+    // id/con_id/title so the new 4-phase branch below has a real row to
+    // hand to _generateVisualTreatment and the retroactive-button stubs,
+    // not just a content_type string.
+    RPGACE.sb.select('content_productions', 'id=eq.' + self._activeId + '&select=id,con_id,title,content_type&limit=1')
       .then(function(rows) {
-        var contentType = (rows && rows[0] && rows[0].content_type) || 'tutorial';
+        var row = rows && rows[0];
+        var contentType = (row && row.content_type) || 'tutorial';
         body.innerHTML = '';
 
+        // music_video gets a real 4-phase model (more granular than the
+        // 3-phase tutorial shape below, which is byte-identical to before -
+        // Phase A's own "tutorial copy untouched" precedent). Phase 3
+        // (Script Editing) is genuinely new, not folded into Phase 2 -
+        // Alex confirmed directly this session that BOTH the outbound
+        // Oracle prompt and Oracle's returned Visual Treatment Doc get
+        // saved separately (creative_docs.script / .visual_treatment) and
+        // are each independently editable here.
         var phases = contentType === 'music_video' ? [
           { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 11 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
-          { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Director Match (Phylum 14) and your Visual Treatment Doc are in the Oracle conversation. Once you\'re happy with the direction, use the Video Pipeline card to track real file paths and exports as the video comes together.' },
-          { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
+          { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 14) and generate a real Visual Treatment Doc for this beat.' },
+          { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
+          { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
         ] : [
           { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
           { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
@@ -14603,15 +14632,43 @@ RPGACE.register('contentProductionLive', {
               }
             };
             phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
-          } else if (i === 1 && contentType === 'music_video') {
-            var vpBtn = document.createElement('button');
-            vpBtn.textContent = '🎥 Open Video Pipeline';
-            vpBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            vpBtn.onclick = function() {
-              RPGACE.ui.slideOutPanel(panel, 'right');
-              if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
-            };
-            phaseCard.appendChild(vpBtn);
+          } else if (contentType === 'music_video' && row) {
+            if (i === 0) {
+              // Phase 1 — Reference + Style: content unchanged, real
+              // retroactive button added per item 5.
+              phaseCard.appendChild(self._buildRetroButton('↩ Return to Beat Log', row));
+            } else if (i === 1) {
+              // Phase 2 — real trigger into the already-existing
+              // _generateVisualTreatment flow (dedup: reuses the exact
+              // function the ConID-card button calls, not a second
+              // hand-rolled copy), plus its own retroactive button.
+              var vtBtn2 = document.createElement('button');
+              vtBtn2.textContent = '🎬 Start Visual Treatment';
+              vtBtn2.style.cssText = 'padding:5px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+              vtBtn2.onclick = function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._generateVisualTreatment(row);
+              };
+              phaseCard.appendChild(vtBtn2);
+              phaseCard.appendChild(self._buildRetroButton('↩ Redo Visual Treatment', row));
+            } else if (i === 2) {
+              // Phase 3 — NEW real Script Editing surface (Alex-confirmed
+              // this session): both creative_docs.script (the exact
+              // outbound Oracle prompt) and creative_docs.visual_treatment
+              // (Oracle's reply) shown independently editable.
+              self._buildScriptEditor(phaseCard, row.id);
+              phaseCard.appendChild(self._buildRetroButton('↩ Regenerate Script', row));
+            } else if (i === 3) {
+              var vpBtn = document.createElement('button');
+              vpBtn.textContent = '🎥 Open Video Pipeline';
+              vpBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+              vpBtn.onclick = function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
+              };
+              phaseCard.appendChild(vpBtn);
+              phaseCard.appendChild(self._buildRetroButton('↩ View Kling Project', row));
+            }
           }
 
           body.appendChild(phaseCard);
@@ -14632,6 +14689,71 @@ RPGACE.register('contentProductionLive', {
         err.style.cssText = 'color:#CC4A4A;font-size:12px;';
         err.textContent = 'Could not load this production\'s details.';
         body.appendChild(err);
+      });
+  },
+
+  // ── Phase D retroactive-button stub (Aug 5, Engineer pass) ───────────
+  // Real, honest placeholder shared by all 4 Phase D retroactive buttons
+  // (rule 8 dedup - one builder, not 4 hand-rolled buttons) — the actual
+  // "reopen the original form pre-filled, edit-in-place" mechanism is
+  // Phase E's job per the confirmed 8-phase build plan. This deliberately
+  // does NOT fake that behavior (no silent no-op, no fabricated pre-fill) -
+  // it tells Alex plainly what will happen and when, per rule 7 (fail
+  // loud / never silently swallow or fake a not-yet-built feature).
+  _buildRetroButton: function(label, row) {
+    var btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid rgba(226,226,236,0.15);border-radius:5px;color:rgba(226,226,236,0.45);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    btn.onclick = function() {
+      RPGACE.utils.toast('🔧 "' + label.replace('↩ ', '') + '" — retroactive edit-in-place for ConID #' + (row.con_id || row.id) + ' lands in Phase E (not built yet)', '#E2A83D', 4000);
+    };
+    return btn;
+  },
+
+  // ── Phase D Script Editing surface (Aug 5, Engineer pass) ────────────
+  // Real editable view of both creative_docs.script (the exact outbound
+  // Oracle prompt, saved the moment _generateVisualTreatment's fillGaps
+  // flow completes) and creative_docs.visual_treatment (Oracle's reply,
+  // already saved by _saveDocToProduction elsewhere). Both save paths
+  // reuse visualOracle._saveDocToProduction directly rather than a new
+  // hand-rolled merge-write (rule 8 dedup) - it already does the real
+  // read-merge-write-into-creative_docs shape this needs.
+  _buildScriptEditor: function(container, productionId) {
+    var loading = document.createElement('div');
+    loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
+    loading.textContent = 'Loading saved script + doc...';
+    container.appendChild(loading);
+
+    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
+      .then(function(rows) {
+        loading.remove();
+        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+
+        function buildField(labelText, docSlug, placeholder) {
+          var lbl = document.createElement('div');
+          lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
+          lbl.textContent = labelText;
+          var ta = document.createElement('textarea');
+          ta.value = docs[docSlug] || '';
+          ta.placeholder = placeholder;
+          ta.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:70px;margin-bottom:6px;';
+          var saveBtn = document.createElement('button');
+          saveBtn.textContent = 'Save ' + labelText;
+          saveBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
+          saveBtn.onclick = function() {
+            var vo = RPGACE.modules.visualOracle;
+            if (!vo || !vo._saveDocToProduction) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+            vo._saveDocToProduction(docSlug, ta.value, productionId);
+          };
+          container.appendChild(lbl); container.appendChild(ta); container.appendChild(saveBtn);
+        }
+
+        buildField('Outbound Prompt (sent to Oracle)', 'script', 'Not generated yet — use Phase 2\'s Start Visual Treatment first.');
+        buildField('Visual Treatment Doc (Oracle\'s reply)', 'visual_treatment', 'Not generated yet.');
+      })
+      .catch(function() {
+        loading.textContent = 'Could not load saved script/doc.';
+        loading.style.color = '#CC4A4A';
       });
   },
 

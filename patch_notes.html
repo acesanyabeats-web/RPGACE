@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎞️ Aug 5 — /Engineer Phase D: Production Panel restructured into 4 real phases, new Script Editing surface</div>
+    <div class="card-body">
+      Third real build pass of the Content/Video Pipeline unification (spec item 5), same 5-stage <code>/Engineer</code> discipline as Phases A/C. Full record: <code>engineer_pass_2026-08-05_03.txt</code>. One genuine ambiguity in the spec's own wording (whether "the script" means the outbound Oracle prompt or Oracle's returned doc) was caught and put to Alex directly before building, per <code>/interrogation</code>'s own charter — answer: <strong>save both, separately</strong>.
+      <br><br>
+      <strong><code>contentProductionLive._openProductionPanel</code>'s music_video branch now has 4 real phases</strong> instead of 3: Reference+Style (unchanged, new retroactive button), Direction+Script (a real "🎬 Start Visual Treatment" trigger reusing the existing ConID-card function directly, plus its own retroactive button), a brand-new <strong>Script Editing</strong> phase, and Video Pipeline (the existing Open Video Pipeline button relocated here). Tutorial's 3-phase branch is untouched, byte-identical.
+      <br><br>
+      <strong>Script Editing is real, working functionality, not a stub</strong>: the exact outbound prompt sent to Oracle (captured verbatim the instant the Visual Treatment flow's "Send to Oracle" click fires) now saves to a new <code>creative_docs.script</code> field, alongside Oracle's returned Visual Treatment Doc in the existing <code>creative_docs.visual_treatment</code> field — both shown as independently editable textareas with their own Save buttons, both reusing the existing <code>_saveDocToProduction</code> write path (no new merge-write code). Real, pre-existing naming collision flagged, not fixed: <code>video_jobs.script</code> already holds unrelated beat-metadata JSON on a different table — same word, two unrelated fields, now documented in-code so it's never conflated.
+      <br><br>
+      <strong>All 4 retroactive buttons are real, honestly-labeled stubs</strong> — per the confirmed 8-phase plan, the actual "reopen the original form pre-filled, edit-in-place" behavior is Phase E's job; each button shows a plain toast naming what it will do and that it isn't built yet, rather than faking a no-op or a fake pre-fill.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass. G6 pending merge+push, will confirm via Vercel MCP same as Phases A/C. <strong>UNTESTED, needs Alex's hands</strong>: open the panel on a real music_video ConID and confirm all 4 phases render; run Start Visual Treatment and confirm both the outbound-prompt and reply-save toasts fire; reopen Phase 3 and confirm both textareas show real saved text and edits persist after Save; click each retroactive button and confirm its own toast; confirm Open Video Pipeline still works unchanged from Phase 4.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎬 Aug 5 — /Engineer Phase C: 3-director blend picker, 5 helper phrases, 3 named info groups</div>
     <div class="card-body">
       Second real build pass of the Content/Video Pipeline unification (spec item 3), same 5-stage <code>/Engineer</code> discipline as Phase A. Full record: <code>engineer_pass_2026-08-05_02.txt</code>. Phase B (reference-corpus linking) was stopped mid-evidence-gathering after a real architecture mismatch — <code>findMatches()</code> is metadata-tag scoring, not audio-similarity matching, and the "Add These Artists" mechanism is a separate Last.fm suggestion feature — logged as a real future build instead of built on the wrong premise: <code>beat_audience_matching_engine_future_idea_2026-08-05.txt</code>.
