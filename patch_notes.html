@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">↩️ Aug 5 — /Engineer Phase E: the retroactive buttons are real now, 3 of 4</div>
+    <div class="card-body">
+      Fourth real build pass of the Content/Video Pipeline unification, same 5-stage <code>/Engineer</code> discipline as Phases A/C/D. Full record: <code>engineer_pass_2026-08-05_04.txt</code>. Replaces 3 of Phase D's 4 honest stub buttons with the real "reopen the original form pre-filled, edit-in-place" mechanism, per <code>/interrogation</code>'s confirmed answer.
+      <br><br>
+      <strong>Phase 1 "↩ Return to Beat Log"</strong> now genuinely reopens the Beat Log form pre-filled with a ConID's saved beat data (every field, plus a best-effort taxonomy-chip re-selection) and, critically, makes the existing Log Beat button <strong>UPDATE the same rows in place</strong> instead of creating new ones — a real branch inside <code>beatLog._submit()</code>, not a rewrite of its heavyweight insert pipeline. Re-running the artist-search/journal/XP steps on save is deliberate (fresh matches for a tweaked mood/BPM), not a bug — flagged honestly since it does mean XP gets re-awarded on every edit.
+      <br><br>
+      <strong>Phase 2 "↩ Redo Visual Treatment"</strong> reopens the director-blend picker pre-selected with whatever was chosen last time. Real fix made this possible cleanly: the picker's own callback now also returns the STRUCTURED director choice (not just the rendered prose), saved to a new <code>creative_docs.director_blend</code> field — avoiding a fragile regex-parse of the saved prompt text. Gracefully degrades to a fresh picker for any ConID logged before this field existed.
+      <br><br>
+      <strong>Phase 3 "↩ Regenerate"</strong> resends whatever is currently saved in <code>creative_docs.script</code> — including manual edits made in Phase 3's own editor — straight back to Oracle, skipping the director picker entirely since the saved text has no placeholders left.
+      <br><br>
+      <strong>Phase 4 "↩ View Kling Project" stays an honest stub</strong> — real evidence confirmed no Kling/video-generation job data exists anywhere in the schema yet (Phase F, unbuilt), so there's genuinely nothing to pull up. Not unfinished Phase E work; a real ordering dependency, named plainly rather than faked.
+      <br><br>
+      Full Objective Completion Gate: G1-G4 and G7 pass; G5 DONE for 3 of 4 goals (Phase 4's deferral was named up front, not a shortfall); G6 pending merge+push. Per Alex's explicit direction this session, hand-testing is deferred until all 8 phases ship, then verified together in one pass with a real beat — this pass's own required actions (pre-fill correctness, in-place update confirmed on the same row, pre-selected director dropdowns, edited-script resend) are recorded in the full report for that sweep.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎞️ Aug 5 — /Engineer Phase D: Production Panel restructured into 4 real phases, new Script Editing surface</div>
     <div class="card-body">
       Third real build pass of the Content/Video Pipeline unification (spec item 5), same 5-stage <code>/Engineer</code> discipline as Phases A/C. Full record: <code>engineer_pass_2026-08-05_03.txt</code>. One genuine ambiguity in the spec's own wording (whether "the script" means the outbound Oracle prompt or Oracle's returned doc) was caught and put to Alex directly before building, per <code>/interrogation</code>'s own charter — answer: <strong>save both, separately</strong>.

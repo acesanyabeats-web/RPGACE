@@ -1250,7 +1250,13 @@ RPGACE.register('visualOracle', {
   // the chosen director rather than instead of one. Calling code fills the
   // placeholder with the result BEFORE calling fillGaps, so fillGaps sees
   // zero remaining gaps and skips its own step entirely for this field.
-  _showDirectorPicker: function(callback) {
+  // Aug 5 (Engineer pass, Phase E) — optional `prefill` param added:
+  // {names:[...], inspiration:''}, used by contentProductionLive's
+  // "Redo Visual Treatment" retroactive button to reopen this exact
+  // picker pre-selected with a previously-saved director blend, per
+  // /interrogation's confirmed "edit in place" answer. Purely additive -
+  // every existing caller that passes nothing behaves exactly as before.
+  _showDirectorPicker: function(callback, prefill) {
     var self = this;
     RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
       .catch(function() { return []; })
@@ -1354,6 +1360,20 @@ RPGACE.register('visualOracle', {
         box.appendChild(secondaryRow.wrap);
         box.appendChild(tertiaryRow.wrap);
 
+        // Real edit-in-place pre-fill (Phase E) - apply AFTER all 3 rows
+        // exist so dispatching 'change' correctly refreshes each row's own
+        // phrase-preview strip too, not just the selected value.
+        if (prefill && prefill.names && prefill.names.length) {
+          var rowsInOrder = [primaryRow, secondaryRow, tertiaryRow];
+          prefill.names.slice(0, 3).forEach(function(name, i) {
+            var match = rows.filter(function(r) { return r.concept === name; })[0];
+            if (match && rowsInOrder[i]) {
+              rowsInOrder[i].sel.value = match.concept;
+              rowsInOrder[i].sel.dispatchEvent(new Event('change'));
+            }
+          });
+        }
+
         var insLbl = document.createElement('div');
         insLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
         insLbl.textContent = 'Your creative inspiration / keywords for THIS beat (optional)';
@@ -1361,6 +1381,7 @@ RPGACE.register('visualOracle', {
         var insBox = document.createElement('textarea');
         insBox.placeholder = 'e.g. more handheld than usual, add neon signage...';
         insBox.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:60px;margin-bottom:16px;';
+        if (prefill && prefill.inspiration) insBox.value = prefill.inspiration;
         box.appendChild(insBox);
 
         var btnRow = document.createElement('div');
@@ -1379,7 +1400,14 @@ RPGACE.register('visualOracle', {
           var chosenNames = [primaryRow.sel.value, secondaryRow.sel.value, tertiaryRow.sel.value].filter(Boolean);
           var insp = insBox.value.trim();
           overlay.remove();
-          if (chosenNames.length === 0 && !insp) { callback('NONE'); return; }
+          // Aug 5 (Engineer pass, Phase E) - second callback arg carries
+          // the STRUCTURED choice (names + inspiration) alongside the
+          // rendered text, so a caller can save it verbatim for a later
+          // real edit-in-place pre-fill instead of regex-parsing it back
+          // out of the rendered prose (rule 8 - one real data path, not
+          // a save path plus a fragile re-parse path). Purely additive -
+          // ignored by any caller that only reads the first argument.
+          if (chosenNames.length === 0 && !insp) { callback('NONE', { names: [], inspiration: '' }); return; }
           var blendText = 'NONE';
           if (chosenNames.length) {
             blendText = chosenNames.map(function(name) {
@@ -1390,7 +1418,7 @@ RPGACE.register('visualOracle', {
           var out = 'DIRECTOR-BLEND STYLE (Phylum 14 keyword/phrase/insight blend' +
             (chosenNames.length > 1 ? ', ' + chosenNames.length + ' directors conjoined' : '') + '):\n' + blendText;
           if (insp) out += '\n\nCREATIVE INSPIRATION (Alex\'s own free-text, for this specific beat):\n' + insp;
-          callback(out);
+          callback(out, { names: chosenNames, inspiration: insp });
         };
         var cancelBtn = document.createElement('button');
         cancelBtn.textContent = 'Cancel';
@@ -12521,6 +12549,12 @@ RPGACE.register('beatLog', {
     'Nostalgic': ['boom bap'], 'Tense': ['dark trap', 'drill'],
   },
 
+  // Aug 5 (Engineer pass, Phase E) — transient state, only ever set by
+  // _openRetroactive (Phase D's "Return to Beat Log" retro button):
+  // {cpId, videoJobId} of the existing ConID currently being edited in
+  // place. null means _submit's normal fresh-INSERT path runs unchanged.
+  _retroTarget: null,
+
   // July 23 — same real freeze finding as refCorpus: this injected (and
   // fetched) 900ms after every boot regardless of page. Gated behind
   // researchTabs' 'research:tab-active' now — only the first real open of
@@ -13002,6 +13036,75 @@ RPGACE.register('beatLog', {
     var cb = document.getElementById('bl-sample'); if (cb) cb.checked = false;
     var vtCb = document.getElementById('bl-visual-treatment'); if (vtCb) vtCb.checked = false;
     var out = document.getElementById('beat-log-output'); if (out) { out.style.display='none'; out.innerHTML=''; }
+    self._retroTarget = null;
+  },
+
+  // ── Phase 1 retroactive button (Aug 5, Engineer pass, Phase E) ───────
+  // Real edit-in-place, per /interrogation's confirmed Q1 answer: reuse
+  // a beat's existing creative record to regenerate for content
+  // repurposing, without starting from zero. Called by
+  // contentProductionLive's "Return to Beat Log" retro button with the
+  // ConID's own content_productions row.
+  _openRetroactive: function(row) {
+    var self = this;
+    RPGACE.utils.toast('✏️ Loading saved beat data for ConID #' + (row.con_id || row.id) + '...', '#C9A84C', 2500);
+    RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1&select=id,script')
+      .catch(function(e) { console.warn('[beatLog] retro lookup:', e.message); return []; })
+      .then(function(jobs) {
+        var vj = jobs && jobs[0];
+        if (!vj || !vj.script) {
+          RPGACE.utils.toast('⚠️ No saved beat data found for this ConID — nothing to pre-fill', '#E2A83D', 3500);
+          return;
+        }
+        var form;
+        try { form = JSON.parse(vj.script); } catch (e) { form = null; }
+        if (!form) {
+          RPGACE.utils.toast('⚠️ Saved beat data could not be read — nothing to pre-fill', '#E2A83D', 3500);
+          return;
+        }
+        if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+        setTimeout(function() {
+          self._inject();
+          self._prefillForm(form);
+          self._retroTarget = { cpId: row.id, videoJobId: vj.id };
+          var panelEl = document.getElementById('beat-log-panel');
+          if (panelEl) panelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          RPGACE.utils.toast('✏️ Editing existing beat for ConID #' + (row.con_id || row.id) + ' — Log Beat below will UPDATE this record in place', '#C9A84C', 4500);
+        }, 400);
+      });
+  },
+
+  // Real pre-fill, keyed the same way _getForm() reads the form back out
+  // (rule 8 - one real field set, read in both directions). Taxonomy
+  // chips load asynchronously (a real Supabase fetch inside _inject), so
+  // marking them active uses a bounded retry rather than a guessed fixed
+  // delay.
+  _prefillForm: function(form) {
+    var ids = { title:'bl-title', key:'bl-key', bpm:'bl-bpm', scale:'bl-scale', energy:'bl-energy', mood:'bl-mood', genre:'bl-genre', rating:'bl-rating', licence:'bl-licence', collab:'bl-collab', refTrack:'bl-ref-track', flPath:'bl-fl-path' };
+    Object.keys(ids).forEach(function(key) {
+      var el = document.getElementById(ids[key]);
+      if (el && form[key] != null) el.value = form[key];
+    });
+    var sampleCb = document.getElementById('bl-sample'); if (sampleCb) sampleCb.checked = !!form.sample;
+    var vtCb = document.getElementById('bl-visual-treatment'); if (vtCb) vtCb.checked = !!form.visualTreatment;
+    var attempts = 0;
+    var tryMarkTax = function() {
+      var grid = document.getElementById('bl-tax-grid');
+      if (grid && grid.children.length > 0) {
+        Array.prototype.forEach.call(grid.children, function(chip) {
+          if ((form.taxNodes || []).indexOf(chip.dataset.concept) !== -1) {
+            chip.dataset.active = '1';
+            chip.style.background = 'rgba(201,168,76,0.12)';
+            chip.style.borderColor = 'rgba(201,168,76,0.4)';
+            chip.style.color = '#C9A84C';
+          }
+        });
+        return;
+      }
+      attempts++;
+      if (attempts < 15) setTimeout(tryMarkTax, 300);
+    };
+    tryMarkTax();
   },
 
   _submit: function() {
@@ -13012,6 +13115,17 @@ RPGACE.register('beatLog', {
 
     var output = document.getElementById('beat-log-output');
     output.style.display = 'block';
+
+    // Aug 5 (Engineer pass, Phase E) - real edit-in-place branch. Set
+    // only by _openRetroactive (Phase D's "Return to Beat Log" retro
+    // button); routes to an UPDATE of the exact same content_productions
+    // + video_jobs rows instead of a fresh INSERT pair, per
+    // /interrogation's confirmed "edit in place" answer.
+    if (self._retroTarget) {
+      self._submitUpdate(form);
+      return;
+    }
+
     output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">⚡ Logging beat and searching for artist matches...</div>';
 
     // 1. Create the linked Content Pipeline (ConID) entry FIRST so
@@ -13062,6 +13176,52 @@ RPGACE.register('beatLog', {
       console.warn('[beatLog] Content Pipeline entry:', e.message);
       self._continueAfterLink(form, null, null);
     });
+  },
+
+  // ── Real edit-in-place UPDATE path (Aug 5, Engineer pass, Phase E) ───
+  // Updates the SAME content_productions + video_jobs rows _openRetroactive
+  // loaded from, instead of the fresh INSERT pair _submit's normal path
+  // creates - per /interrogation's confirmed "edit in place" answer.
+  // Reuses _continueAfterLink unchanged afterward (rule 8 dedup) -
+  // re-running the artist search/journal/XP steps is a real, wanted side
+  // effect of a repurposing edit (fresh matches for the tweaked mood/BPM/
+  // genre), not a bug.
+  _submitUpdate: function(form) {
+    var self = this;
+    var target = self._retroTarget;
+    var output = document.getElementById('beat-log-output');
+    output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">✏️ Updating existing beat log entry...</div>';
+
+    RPGACE.sb.secureWrite('content_productions', 'update', {
+      title: form.title,
+      idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
+      taxonomy_nodes: form.taxNodes,
+      licence_type: form.licence || null,
+    }, 'id=eq.' + target.cpId)
+      .catch(function(e) { console.warn('[beatLog] retro content_productions update:', e.message); })
+      .then(function() {
+        // beat_meta lives inside creative_docs (jsonb) - reuses
+        // visualOracle's existing read-merge-write rather than a second
+        // hand-rolled merge (rule 8 dedup). Stored as a real object, same
+        // shape _submit's own INSERT path already uses (creative_docs:
+        // {beat_meta: form}), not a stringified copy.
+        var vo = RPGACE.modules.visualOracle;
+        if (vo && vo._saveDocToProduction) vo._saveDocToProduction('beat_meta', form, target.cpId);
+      })
+      .then(function() {
+        if (!target.videoJobId) return;
+        return RPGACE.sb.secureWrite('video_jobs', 'update', {
+          title: form.title,
+          script: JSON.stringify(form),
+          raw_path: form.flPath || null,
+        }, 'id=eq.' + target.videoJobId).catch(function(e) { console.warn('[beatLog] retro video_jobs update:', e.message); });
+      })
+      .then(function() {
+        RPGACE.utils.toast('💾 Beat log updated in place — regenerating matches', '#4CAF82', 2500);
+        var cpId = target.cpId, videoJobId = target.videoJobId;
+        self._retroTarget = null;
+        self._continueAfterLink(form, cpId, videoJobId);
+      });
   },
 
   // Continues the pre-existing beat-log flow (taxonomy marking, journal,
@@ -13985,7 +14145,13 @@ RPGACE.register('contentProductionLive', {
   // visualOracle.CMDS[1]'s real prompt text (never re-typed here — dedup,
   // rule 8) and _saveDocToProduction's real trailer-parsing, but skips the
   // manual save picker entirely since we already know the exact target row.
-  _generateVisualTreatment: function(row) {
+  // Aug 5 (Engineer pass, Phase E) — optional `prefill` param added,
+  // forwarded straight to _showDirectorPicker, so contentProductionLive's
+  // own "Redo Visual Treatment" retroactive button can reopen this exact
+  // flow pre-filled with a previously-saved director blend. Purely
+  // additive - the ConID-card call site that passes nothing behaves
+  // exactly as before.
+  _generateVisualTreatment: function(row, prefill) {
     var self = this;
     var vo = RPGACE.modules.visualOracle;
     if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
@@ -13996,7 +14162,13 @@ RPGACE.register('contentProductionLive', {
     // leaving it for fillGaps) means fillGaps sees zero remaining gaps
     // once every other beat field is also filled below, so it skips its
     // own generic "Step X of Y" textbox entirely for this whole command.
-    vo._showDirectorPicker(function(directorText) {
+    vo._showDirectorPicker(function(directorText, directorMeta) {
+      // Aug 5 (Engineer pass, Phase E) - save the STRUCTURED director
+      // choice too (not just the rendered text), so a later "Redo Visual
+      // Treatment" retroactive click can pre-fill the real picker instead
+      // of regex-parsing it back out of prose (rule 8 - one real data
+      // path). Fire-and-forget, same as the other creative_docs saves.
+      if (directorMeta) vo._saveDocToProduction('director_blend', directorMeta, row.id);
       RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
 
       RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
@@ -14016,19 +14188,8 @@ RPGACE.register('contentProductionLive', {
             .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
             .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText);
 
-          if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-            RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-          }
-          if (typeof showPage === 'function') showPage('advisor');
-          setTimeout(function() {
-            self._activeConID = row.con_id;
-            self._activeId = row.id;
-            self._injectOracleBar();
+          self._prepOracleBarFor(row, function() {
             RPGACE.utils.fillGaps(prompt, function(filled) {
-              var input = document.querySelector('#chat-input');
-              if (!input) return;
-              input.value = filled;
-              input.dispatchEvent(new Event('input', {bubbles:true}));
               // Aug 5 (Engineer pass, Phase D, Alex-confirmed "save both,
               // separately" data model) - the exact outbound prompt is
               // captured verbatim right here, the moment fillGaps'
@@ -14043,16 +14204,95 @@ RPGACE.register('contentProductionLive', {
               // two). Reuses _saveDocToProduction directly (rule 8 dedup)
               // rather than a new merge-write helper.
               vo._saveDocToProduction('script', filled, row.id, vjId);
-              if (vo._captureNextResponse) {
-                vo._captureNextResponse(function(text) {
-                  vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
-                });
-              }
-              if (typeof sendChat === 'function') sendChat();
+              self._sendFilledPromptToOracle(row, vjId, filled);
             });
-          }, 500);
+          });
         });
-    });
+    }, prefill);
+  },
+
+  // ── Shared Oracle-send tail (Aug 5, Engineer pass, Phase E) ──────────
+  // Extracted out of _generateVisualTreatment so _retroRegenerateScript
+  // (Phase 3's real retroactive button - resends an already-saved script
+  // with no fillGaps step at all) can reuse the exact same real send/
+  // capture path instead of a second hand-rolled copy (rule 8 dedup).
+  _prepOracleBarFor: function(row, callback) {
+    var self = this;
+    if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+      RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+    }
+    if (typeof showPage === 'function') showPage('advisor');
+    setTimeout(function() {
+      self._activeConID = row.con_id;
+      self._activeId = row.id;
+      self._injectOracleBar();
+      callback();
+    }, 500);
+  },
+
+  _sendFilledPromptToOracle: function(row, vjId, filled) {
+    var vo = RPGACE.modules.visualOracle;
+    var input = document.querySelector('#chat-input');
+    if (!input) return;
+    input.value = filled;
+    input.dispatchEvent(new Event('input', {bubbles:true}));
+    if (vo && vo._captureNextResponse) {
+      vo._captureNextResponse(function(text) {
+        vo._saveDocToProduction('visual_treatment', text, row.id, vjId);
+      });
+    }
+    if (typeof sendChat === 'function') sendChat();
+  },
+
+  // ── Phase 2 retroactive button (Aug 5, Engineer pass, Phase E) ───────
+  // Real edit-in-place: reads back the STRUCTURED director choice this
+  // module already saves (creative_docs.director_blend, added above -
+  // no regex-parsing of rendered prose needed) and reopens the exact
+  // same picker + Visual Treatment flow pre-filled with it, per
+  // /interrogation's confirmed "edit in place" answer. Gracefully
+  // degrades to a fresh, unprefilled flow for any ConID logged before
+  // this field existed.
+  _retroVisualTreatment: function(row) {
+    var self = this;
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
+        var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
+        self._generateVisualTreatment(row, prefill);
+      });
+  },
+
+  // ── Phase 3 retroactive button (Aug 5, Engineer pass, Phase E) ───────
+  // Resends whatever is CURRENTLY saved in creative_docs.script (any
+  // manual edits made in Phase 3's own editor included) straight to
+  // Oracle again - genuinely distinct from Phase 2's "start over with a
+  // new director pick" retro button. The saved text has no [BRACKET]
+  // placeholders left in it (it's already the fully-filled prompt), so
+  // this skips fillGaps entirely and reuses the same real send/capture
+  // tail as _generateVisualTreatment (rule 8 dedup).
+  _retroRegenerateScript: function(row) {
+    var self = this;
+    var vo = RPGACE.modules.visualOracle;
+    if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var script = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.script;
+        if (!script) {
+          RPGACE.utils.toast('⚠️ No saved script yet — use Phase 2\'s Start Visual Treatment first', '#E2A83D', 3500);
+          return;
+        }
+        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+          .catch(function() { return []; })
+          .then(function(jobs) {
+            var vjId = jobs && jobs[0] ? jobs[0].id : null;
+            self._prepOracleBarFor(row, function() {
+              self._sendFilledPromptToOracle(row, vjId, script);
+              RPGACE.utils.toast('🔁 Resending saved script to Oracle...', '#4CAF82', 2500);
+            });
+          });
+      });
   },
 
   // ── Dashboard widget — ConID tracker ─────────────────────────
@@ -14634,14 +14874,20 @@ RPGACE.register('contentProductionLive', {
             phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
           } else if (contentType === 'music_video' && row) {
             if (i === 0) {
-              // Phase 1 — Reference + Style: content unchanged, real
-              // retroactive button added per item 5.
-              phaseCard.appendChild(self._buildRetroButton('↩ Return to Beat Log', row));
+              // Phase 1 — Reference + Style: content unchanged. Real
+              // edit-in-place retroactive button (Aug 5, Phase E) -
+              // reopens Beat Log pre-filled with this ConID's saved data.
+              phaseCard.appendChild(self._buildRetroActionButton('↩ Return to Beat Log (edit in place)', '#C9A84C', 'rgba(201,168,76,0.3)', function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                if (RPGACE.modules.beatLog && RPGACE.modules.beatLog._openRetroactive) RPGACE.modules.beatLog._openRetroactive(row);
+              }));
             } else if (i === 1) {
               // Phase 2 — real trigger into the already-existing
               // _generateVisualTreatment flow (dedup: reuses the exact
               // function the ConID-card button calls, not a second
-              // hand-rolled copy), plus its own retroactive button.
+              // hand-rolled copy). Real retroactive button (Aug 5, Phase
+              // E) reopens the same flow pre-filled with the previously
+              // saved director blend.
               var vtBtn2 = document.createElement('button');
               vtBtn2.textContent = '🎬 Start Visual Treatment';
               vtBtn2.style.cssText = 'padding:5px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
@@ -14650,14 +14896,22 @@ RPGACE.register('contentProductionLive', {
                 self._generateVisualTreatment(row);
               };
               phaseCard.appendChild(vtBtn2);
-              phaseCard.appendChild(self._buildRetroButton('↩ Redo Visual Treatment', row));
+              phaseCard.appendChild(self._buildRetroActionButton('↩ Redo Visual Treatment (pre-filled)', '#9B6EC8', 'rgba(155,89,182,0.3)', function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._retroVisualTreatment(row);
+              }));
             } else if (i === 2) {
               // Phase 3 — NEW real Script Editing surface (Alex-confirmed
               // this session): both creative_docs.script (the exact
               // outbound Oracle prompt) and creative_docs.visual_treatment
-              // (Oracle's reply) shown independently editable.
+              // (Oracle's reply) shown independently editable. Real
+              // retroactive button (Aug 5, Phase E) resends whatever is
+              // currently saved straight to Oracle again.
               self._buildScriptEditor(phaseCard, row.id);
-              phaseCard.appendChild(self._buildRetroButton('↩ Regenerate Script', row));
+              phaseCard.appendChild(self._buildRetroActionButton('↩ Regenerate (resend saved script)', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._retroRegenerateScript(row);
+              }));
             } else if (i === 3) {
               var vpBtn = document.createElement('button');
               vpBtn.textContent = '🎥 Open Video Pipeline';
@@ -14667,6 +14921,9 @@ RPGACE.register('contentProductionLive', {
                 if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
               };
               phaseCard.appendChild(vpBtn);
+              // Genuinely still a stub - blocked on Phase F (video
+              // generation handoff), not Phase E. No real Kling project
+              // reference exists anywhere in the schema yet to pull up.
               phaseCard.appendChild(self._buildRetroButton('↩ View Kling Project', row));
             }
           }
@@ -14692,21 +14949,33 @@ RPGACE.register('contentProductionLive', {
       });
   },
 
-  // ── Phase D retroactive-button stub (Aug 5, Engineer pass) ───────────
-  // Real, honest placeholder shared by all 4 Phase D retroactive buttons
-  // (rule 8 dedup - one builder, not 4 hand-rolled buttons) — the actual
-  // "reopen the original form pre-filled, edit-in-place" mechanism is
-  // Phase E's job per the confirmed 8-phase build plan. This deliberately
-  // does NOT fake that behavior (no silent no-op, no fabricated pre-fill) -
-  // it tells Alex plainly what will happen and when, per rule 7 (fail
-  // loud / never silently swallow or fake a not-yet-built feature).
+  // ── Phase D retroactive-button stub — NOW ONLY the Phase 4 button ────
+  // Real, honest placeholder (rule 7 - never fake a not-yet-built
+  // feature). Phases 1-3's retroactive buttons became real edit-in-place
+  // actions in the Aug 5 Phase E pass below (_buildRetroActionButton) -
+  // this stub now covers exactly ONE remaining case, Phase 4's "View
+  // Kling Project" button, which is genuinely blocked on Phase F (video
+  // generation handoff hasn't shipped, so no real Kling project
+  // reference exists anywhere in the schema yet to pull up).
   _buildRetroButton: function(label, row) {
     var btn = document.createElement('button');
     btn.textContent = label;
     btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid rgba(226,226,236,0.15);border-radius:5px;color:rgba(226,226,236,0.45);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
     btn.onclick = function() {
-      RPGACE.utils.toast('🔧 "' + label.replace('↩ ', '') + '" — retroactive edit-in-place for ConID #' + (row.con_id || row.id) + ' lands in Phase E (not built yet)', '#E2A83D', 4000);
+      RPGACE.utils.toast('🔧 "' + label.replace('↩ ', '') + '" — needs Phase F (video generation handoff) to exist first for ConID #' + (row.con_id || row.id), '#E2A83D', 4000);
     };
+    return btn;
+  },
+
+  // ── Phase E real-action button style (Aug 5, Engineer pass) ──────────
+  // Shared by the 3 retroactive buttons that now do real work (rule 8
+  // dedup - one builder, not 3 hand-rolled copies), each tinted to match
+  // its phase's existing accent colour.
+  _buildRetroActionButton: function(label, colorCss, borderCss, onclick) {
+    var btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid ' + borderCss + ';border-radius:5px;color:' + colorCss + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    btn.onclick = onclick;
     return btn;
   },
 
