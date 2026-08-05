@@ -141,7 +141,11 @@ STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
 OBJECTIVE COMPLETION GATE
 =====================================================================
 G1-G5, G7 — PASS.
-G6 — pending merge+push, will confirm via Vercel MCP.
+G6 — PASS, independently confirmed post-merge via Vercel MCP:
+  deployment dpl_5mUEV6WC5jjYd8dGCqJT89C3Zyjq state=READY,
+  target=production, githubCommitSha=d209d1599093caf14c311f7fc1a523d00a958036
+  — the exact commit this pass produced — alias list includes the real
+  rpgace.vercel.app domain.
 UNTESTED (required label): same standing status, now with the added
 real caveat that tiktokOracle's own 8 commands have never been clicked
 individually either, on top of Generate Captions never having been run

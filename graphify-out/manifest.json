@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785957892.8559484,
-    "ast_hash": "ab72a31a539babe31d909dd91f32b61e",
+    "mtime": 1785958912.7439253,
+    "ast_hash": "9b0b5fa57391375f6245a091ba699cc0",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785957892.8479486,
-    "ast_hash": "cef4ea32744614bb0386f269bfc2d7d3",
+    "mtime": 1785958912.7319252,
+    "ast_hash": "fb2466aa1b2c666b250bc348dd4c1cbd",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,13 +1060,13 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785957892.8479486,
-    "ast_hash": "30e8fba386888c48199a2847646bc62a",
+    "mtime": 1785958912.7359252,
+    "ast_hash": "aa5a9c1bdacb730bd327e50eb00e0433",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
-    "mtime": 1785956939.0839703,
-    "ast_hash": "43eaf3d67db191d74758620a0eed7fd4",
+    "mtime": 1785958912.7359252,
+    "ast_hash": "af1498e5348ef3ef70b61a06c1bd2d83",
     "semantic_hash": ""
   },
   "item7_process_debate_2026-07-24.txt": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785957927.3959477,
-    "ast_hash": "6a3e160505055398db41b7934f282863",
+    "mtime": 1785958958.7919242,
+    "ast_hash": "a5cde92765c452adf3196f2b684fce15",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1215,8 +1215,8 @@
     "semantic_hash": ""
   },
   "system_flow_map.md": {
-    "mtime": 1785956939.0839703,
-    "ast_hash": "b7591e66a91cb1355bf4f4bcfbb98a85",
+    "mtime": 1785958912.7439253,
+    "ast_hash": "256583475e0db07d788ca00849e9d2cb",
     "semantic_hash": ""
   },
   "taxonomy_map.html": {
@@ -1355,8 +1355,13 @@
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-05_07.txt": {
-    "mtime": 1785957922.9999478,
+    "mtime": 1785957957.743947,
     "ast_hash": "b02010be0b29e7be34ee47408783fd08",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-05_08.txt": {
+    "mtime": 1785958953.7279243,
+    "ast_hash": "60c5eb5b33f8a9390388e3270b92d097",
     "semantic_hash": ""
   }
 }
