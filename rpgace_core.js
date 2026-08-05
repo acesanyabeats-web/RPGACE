@@ -1368,11 +1368,21 @@ RPGACE.register('visualOracle', {
       RPGACE.utils.toast('⚠️ Could not save ' + docSlug.replace(/_/g, ' ') + ' — no linked Content Pipeline production', '#E2A83D', 3500);
       return;
     }
-    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
+    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs,status&limit=1')
       .then(function(rows) {
         var existing = (rows && rows[0] && rows[0].creative_docs) || {};
+        var currentStatus = rows && rows[0] && rows[0].status;
         existing[docSlug] = text;
-        return RPGACE.sb.secureWrite('content_productions', 'update', { creative_docs: existing }, 'id=eq.' + productionId);
+        var updates = { creative_docs: existing, updated_at: new Date().toISOString() };
+        // Aug 5 (Engineer pass) - real UX fix Alex asked for: the status
+        // box should update automatically once the real Visual Treatment
+        // doc genuinely saves, not via a separate manual "Mark" click.
+        // Only auto-advance forward (Idea -> Scripted), never backward
+        // over a later real stage the ConID has already reached.
+        if (docSlug === 'visual_treatment' && currentStatus === 'Idea') {
+          updates.status = 'Scripted';
+        }
+        return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + productionId);
       })
       .then(function() { RPGACE.utils.toast('💾 Saved ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline', '#9B6EC8', 2500); })
       .catch(function(e) {
@@ -12342,6 +12352,7 @@ RPGACE.register('config', {
 RPGACE.register('beatLog', {
 
   // Colour palette by scale (Phylum 11 — Lingua Musicae, Colour/Mood/Visual Language)
+  // Kept as a fallback only as of Aug 5 - see MOOD_COLOURS below for why.
   SCALE_COLOURS: {
     'Minor':         { hex: '#1a3a5c', name: 'Cold midnight blue',    rgb: '26,58,92' },
     'Dorian':        { hex: '#2d1b4e', name: 'Deep purple',           rgb: '45,27,78' },
@@ -12353,6 +12364,26 @@ RPGACE.register('beatLog', {
     'Minor Pentatonic': { hex: '#0d2233', name: 'Steel blue',         rgb: '13,34,51' },
     'Major Pentatonic': { hex: '#2d3a00', name: 'Olive gold',         rgb: '45,58,0'  },
     'Blues':         { hex: '#1a1a33', name: 'Indigo night',          rgb: '26,26,51' },
+  },
+
+  // Aug 5 (Engineer pass, real bug Alex caught: "log beat + artist still
+  // ties down to same cold midnight blue") - root cause was that colour
+  // selection only ever read SCALE_COLOURS, never mood. Most drill/trap
+  // beats are Minor-key, so every beat landed on the same "Cold midnight
+  // blue" regardless of whether the real described mood was Dark,
+  // Aggressive, Euphoric, or anything else. Keys match MOOD_TAGS' real
+  // options (the actual dropdown list) exactly - no gaps.
+  MOOD_COLOURS: {
+    'Dark':        { hex: '#14151f', name: 'Charcoal void',      rgb: '20,21,31'  },
+    'Aggressive':  { hex: '#5c1a1a', name: 'Blood crimson',      rgb: '92,26,26'  },
+    'Cinematic':   { hex: '#3d2817', name: 'Film amber',         rgb: '61,40,23'  },
+    'Melancholic': { hex: '#2a3540', name: 'Muted slate blue',   rgb: '42,53,64'  },
+    'Euphoric':    { hex: '#5c3a1a', name: 'Golden euphoria',    rgb: '92,58,26'  },
+    'Calm':        { hex: '#1a3d3a', name: 'Calm teal',          rgb: '26,61,58'  },
+    'Energetic':   { hex: '#5c2e0a', name: 'Energetic ember',    rgb: '92,46,10'  },
+    'Romantic':    { hex: '#4a1a30', name: 'Romantic rose',      rgb: '74,26,48'  },
+    'Nostalgic':   { hex: '#3a2a1a', name: 'Nostalgic sepia',    rgb: '58,42,26'  },
+    'Tense':       { hex: '#33351a', name: 'Tense acid olive',   rgb: '51,53,26'  },
   },
 
   // BPM-aware mood → genre tags for Last.fm
@@ -12988,8 +13019,10 @@ RPGACE.register('beatLog', {
     var xp = [20, 40, 60, 80, 100][parseInt(form.energy) - 1] || 60;
     if (typeof addXP === 'function') addXP(xp);
 
-    // Get colour palette from scale
-    var palette = self.SCALE_COLOURS[form.scale] || { hex: '#1a1a2e', name: 'Dark neutral' };
+    // Get colour palette - mood first (Aug 5 fix: this is what actually
+    // varies per Alex's real creative intent), scale as a fallback only
+    // if mood is somehow unset.
+    var palette = self.MOOD_COLOURS[form.mood] || self.SCALE_COLOURS[form.scale] || { hex: '#1a1a2e', name: 'Dark neutral' };
 
     // Get BPM-aware Last.fm tags
     var tags = self._getMoodTags(form.mood, form.bpm);
@@ -13807,6 +13840,7 @@ RPGACE.register('contentProductionLive', {
 
   // ── Update an existing entry ──────────────────────────────────
   updateEntry: function(id, updates) {
+    updates.updated_at = new Date().toISOString();
     return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + id);
   },
 
@@ -14000,7 +14034,7 @@ RPGACE.register('contentProductionLive', {
     // have a linked video_jobs row, once, rather than an N+1 query per
     // row (rule 8/11 - one extra request total, not one per card).
     Promise.all([
-      RPGACE.sb.select('content_productions', 'order=con_id.desc&limit=20'),
+      RPGACE.sb.select('content_productions', 'order=updated_at.desc&limit=20'),
       RPGACE.sb.select('video_jobs', 'select=content_production_id&content_production_id=not.is.null'),
     ])
       .then(function(results) {
@@ -14091,7 +14125,7 @@ RPGACE.register('contentProductionLive', {
           swapBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
           swapBtn.onclick = function() {
             // Load all ConIDs and show swap dropdown
-            RPGACE.sb.select('content_productions', 'order=con_id.desc&limit=30')
+            RPGACE.sb.select('content_productions', 'order=updated_at.desc&limit=30')
               .then(function(all) {
                 // Remove existing swap dropdown if open
                 var existing = document.getElementById('cpl-swap-dropdown');
@@ -14242,7 +14276,7 @@ RPGACE.register('contentProductionLive', {
           // target, reusing visualOracle._saveDocToProduction rather than
           // re-implementing its trailer-parsing, rule 8).
           var vtBtn = document.createElement('button');
-          vtBtn.textContent = '🎬 Generate Visual Treatment';
+          vtBtn.textContent = '🎬 Start Visual Treatment';
           vtBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           vtBtn.onclick = function() { self._generateVisualTreatment(row); };
           actions.appendChild(vtBtn);

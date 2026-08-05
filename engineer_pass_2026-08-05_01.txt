@@ -1,0 +1,129 @@
+/Engineer pass — 2026-08-05_01
+Content/Video Pipeline unification, Phase A (3 quick, independent fixes)
+Ref: content_video_pipeline_unification_spec_2026-08-05.txt
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Fix the mood-ignoring colour palette bug — beat mood should actually
+   affect the displayed colour, not just musical scale. Tier 1.
+2. Rename the Visual Treatment button to "Start Visual Treatment" and
+   make its status box update automatically, not via a separate manual
+   click. Tier 1.
+3. Sort the ConID list by most-recently-updated first. Tier 1.
+No Tier 3 goals — no pre-pass confirmation needed.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- SCALE_COLOURS (rpgace_core.js) keys purely on musical scale;
+  MOOD_TAGS (10 real moods: Dark/Aggressive/Cinematic/Melancholic/
+  Euphoric/Calm/Energetic/Romantic/Nostalgic/Tense) exists but was never
+  used for colour. Root cause confirmed directly, not inferred: most
+  drill/trap beats are Minor-key, so palette selection always resolved
+  to the same "Cold midnight blue" regardless of real described mood.
+- "Mark 2 Visual Treatment" (Alex's paraphrase) is real button text
+  '→ Mark ' + MUSIC_VIDEO_STATUS_LABELS[nextStatus] - a SEPARATE manual
+  status-advance button from the real action button ('🎬 Generate
+  Visual Treatment'). The manual button flips status with zero
+  verification real work happened - the actual disconnect Alex named.
+- content_productions had NO updated_at column at all (confirmed
+  against live schema). Real write paths found via grep, both fixed:
+  contentProductionLive.updateEntry (the shared choke point) and
+  visualOracle._saveDocToProduction (a separate real writer, genuine
+  read-merge-write shape, not a dedup violation - kept as its own call).
+  Real list-query call sites found and fixed: 2 (main ConID list,
+  limit=20; the ConID swap dropdown, limit=30).
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable - routine build, not an audit)
+=====================================================================
+1. Added MOOD_COLOURS (10 real, distinct entries matching MOOD_TAGS'
+   keys exactly - no gaps). Changed palette selection to mood-first,
+   scale-fallback: `self.MOOD_COLOURS[form.mood] || self.SCALE_COLOURS
+   [form.scale] || {hex:'#1a1a2e', name:'Dark neutral'}`.
+2. Renamed vtBtn.textContent to '🎬 Start Visual Treatment'. Wired
+   auto-status-advance into visualOracle._saveDocToProduction: when
+   docSlug==='visual_treatment' AND the ConID's current status is
+   still 'Idea' (guards against clobbering a later real stage), sets
+   status:'Scripted' as part of the same real write - status box now
+   updates as a side effect of the real save succeeding, no separate
+   manual click required for this transition.
+3. Migration applied: content_productions.updated_at (timestamptz,
+   DEFAULT now() - existing/new INSERT rows need no code change).
+   updateEntry() and _saveDocToProduction() both now set it explicitly
+   on every real UPDATE. Both real ConID list queries changed from
+   order=con_id.desc to order=updated_at.desc.
+4. index.html cache-bust bumped (20260731d -> 20260805a) since
+   rpgace_core.js changed - G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 1 file (rpgace_core.js), 41 insertions, 7 deletions, plus
+index.html's 1-line cache-bust. What changed and where: visualOracle
+(~line 1365, _saveDocToProduction), beatLog (~line 12352-12385,
+MOOD_COLOURS + palette selection ~line 13020), contentProductionLive
+(~line 13840 updateEntry, ~line 14035 + 14128 list queries, ~line 14278
+vtBtn text). Nothing touched outside these 3 goals' real scope.
+
+Honest residual risks, not hidden:
+- The manual "→ Mark 2. Visual Treatment" advance button still exists
+  unchanged - clicking it still flips status with no real-work
+  verification. Now genuinely redundant with the new auto-advance for
+  this one transition, but removing/altering it was not in this pass's
+  goal contract - flagged for a future pass, not fixed here (rule 11 -
+  no silent scope growth).
+- content_productions.updated_at got DEFAULT now() applied to ALL
+  existing rows at migration time - meaning the very first render after
+  this ships will show rows in roughly today's-migration-time order,
+  not true historical recency, until real updates start accumulating
+  naturally. Self-correcting, not a bug, but worth knowing before
+  hand-testing so it isn't mistaken for a broken sort.
+- The auto-advance only covers the Idea->Scripted transition for
+  music_video-shaped saves; it does not (and was not asked to) touch
+  any other stage transition - those still rely on the manual Mark
+  button for now.
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: real root cause found and fixed for all 3 goals, real
+dedup check performed (found both real write paths, not just one),
+defensive guard against clobbering a later stage. Docked 2 points for
+the redundant-manual-button residual (a real, if scoped-out, rough
+edge) and for zero real hand-testing yet.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- node --check main.js: CLEAN (untouched this pass).
+- git diff --stat: re-run fresh, matches Stage 4's claimed file/line
+  counts exactly - both directions clean (every claimed change present
+  in the diff; every diff hunk accounted for in the report above).
+- index.html script-tag count: re-checked, exactly 2, unchanged.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) - PASS, both files, fresh run.
+G2 (index.html invariants) - PASS, exactly 2 script tags, only the
+  version string changed.
+G3 (module convention) - PASS, all changes inside existing MODULE
+  markers, no main.js touch, no FROZEN exception needed.
+G4 (claim-to-diff reconciliation) - PASS, both directions clean.
+G5 (goal reconciliation) - all 3 Stage 1 goals: DONE.
+G6 (deployment reality) - pending merge+push, will confirm real
+  production commit + a real check once live.
+G7 (cache-bust) - PASS, version string moved in the same pass.
+UNTESTED (required label, not a failure): all 3 fixes are code-verified
+  and gate-passed, but NONE have been clicked through in a real browser
+  by Alex yet. Specific actions needed: (1) log a real beat with a
+  non-Minor-adjacent mood (e.g. Euphoric) and confirm the swatch/colour
+  shown is NOT cold midnight blue; (2) click "Start Visual Treatment" on
+  a real ConID at status Idea, confirm the status box shows "2. Visual
+  Treatment" automatically after the doc saves, with no manual Mark
+  click; (3) touch an old ConID and confirm it jumps to the top of the
+  list on refresh.
+
+PASS COUNT: 1 of 3 max. Re-looping not triggered - no gate failed, no
+Stage 1 goal unresolved.

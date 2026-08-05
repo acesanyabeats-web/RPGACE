@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎨 Aug 5 — /Engineer Phase A: mood-aware colour palette, auto-advancing status, ConID recency sort</div>
+    <div class="card-body">
+      First real build pass of the Content/Video Pipeline unification (full spec: <code>content_video_pipeline_unification_spec_2026-08-05.txt</code>, built via a real <code>/interrogation</code> pass first — a new skill Alex named and defined inline). Full record: <code>engineer_pass_2026-08-05_01.txt</code>.
+      <br><br>
+      <strong>Real root cause found and fixed, not guessed:</strong> every beat's colour palette was reading <code>SCALE_COLOURS</code> only — never mood — so any Minor-key beat (most drill/trap) landed on the same "Cold midnight blue" regardless of its actual described mood. New <code>MOOD_COLOURS</code> table (10 entries, matching the real mood dropdown exactly) now drives the palette, scale kept only as a fallback.
+      <br><br>
+      <strong>Status box now updates automatically</strong> — clicking the renamed "🎬 Start Visual Treatment" button (was "Generate Visual Treatment") and having the doc genuinely save now advances the ConID's status to "2. Visual Treatment" as a side effect, guarded against clobbering a ConID already past that stage. The older manual "→ Mark 2. Visual Treatment" button still exists and is now genuinely redundant for this one transition — flagged, not removed, since that wasn't in this pass's scope.
+      <br><br>
+      <strong>ConID list now sorts by real recency</strong> — <code>content_productions</code> gained a real <code>updated_at</code> column (additive migration, <code>DEFAULT now()</code>), set on every real write path. Honest note: existing rows all got today's migration timestamp, so the very first render shows roughly today's order, not true history — self-corrects as real updates accumulate.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass (fresh <code>node --check</code>, index.html invariants, module convention, two-directional diff reconciliation, cache-bust bumped). <strong>G6 (deployment reality) could not be independently verified this session</strong> — Vercel's MCP server disconnected mid-session and direct HTTP to the live site is blocked by this session's own outbound proxy (same standing landmine as the Lighthouse issue) — flagged honestly rather than assumed. <strong>UNTESTED, needs Alex's hands</strong>: log a real beat with a non-Minor mood and confirm the colour isn't cold blue; click Start Visual Treatment and confirm the status box updates without a manual Mark click; touch an old ConID and confirm it jumps to the top of the list.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🏁 Aug 4 — Session closed via /Bedtime. Everything committed, pushed, and merged to <code>main</code>; nothing sits on a feature branch</div>
     <div class="card-body">
       Real status, verified against git and Supabase, not assumed: working tree clean, <code>main</code> and <code>claude/rpgace-master-steps-uobp98</code> both at the same commit. This session's real arc: an earlier <code>/Routine</code> pass shipped 4 revisions (leftNav rebuild, Fallback Drain cron fix, Content Intelligence spec, 3 <code>/restructure</code>/Aintergration verdicts), then a long, evidence-heavy investigation into free video generation for the Colibri beat — starting from a general Wan2GP/GPU question, narrowing to OpenMontage's own real architecture, and ending in a genuine build plan.
