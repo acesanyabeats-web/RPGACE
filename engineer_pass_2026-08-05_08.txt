@@ -1,0 +1,154 @@
+/Engineer pass — 2026-08-05_08
+Content/Video Pipeline unification, Phase G curveball 2: real TikTok
+Oracle module, wired into Generate Captions the same way Insta/YouTube
+already are
+Ref: engineer_pass_2026-08-05_07.txt (Phase G curveball 1, same framework)
+
+=====================================================================
+STAGE 0 — REAL ARCHITECTURE DECISION, GIVEN AS A RECOMMENDATION
+=====================================================================
+Alex asked directly: build a separate TikTok Oracle mirroring Insta-
+Oracle's architecture, or fold TikTok expertise into instaOraclePanel
+since Reels and TikTok are both short-form. Real evidence read from
+instaOraclePanel's own live CMDS: its commands are built around
+Instagram's actual growth model - a follower-graph-plus-explore system
+where bio, profile picture, highlights, and grid aesthetic are real
+ranking-adjacent signals ("Full Profile Audit," "DIAGNOSE: No
+Followers"). TikTok's real discovery mechanic is a pure interest/FYP
+graph ranked on completion rate, rewatches, and early-window shares/
+comments - profile signals barely matter. These are genuinely different
+growth models, not two flavours of one mechanic - cramming TikTok
+content into a panel literally labeled "INSTA-ORACLE · Instagram" would
+misrepresent its own scope, the same category of mistake this project
+has already avoided (taxonomy_nodes/taxonomy_tree kept deliberately
+separate because they answer genuinely different questions). Since Alex
+had already given both options and asked for a real recommendation
+rather than posing pure open ambiguity, gave the evidence-backed answer
+directly (separate module, mirroring youtubeOracle's smaller real
+architecture as the closer precedent for a newly-added platform) and
+proceeded, rather than re-opening another confirmation round for a
+choice he'd already framed as mine to make.
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. New `tiktokOracle` module, real architecture mirroring youtubeOracle
+   (8 commands, self-injected button, no main.js/index.html touch).
+   8 commands genuinely reflecting TikTok's real mechanics (FYP
+   algorithm/completion rate, trending sounds, sub-1-second hooks,
+   loop/rewatch engineering, duets/stitches, TikTok-specific audience
+   psychology and hook generator) - not a reskin of Insta/YouTube's text.
+2. Wire it into Generate Captions the same way Insta-Oracle/YouTube
+   Oracle already are (Phase G curveball 1): a 3rd labeled TIKTOK
+   EXPERTISE block, real command text reused via the existing
+   `_findOracleCmdText` helper, no new lookup mechanism.
+Tier 1/2 boundary — one new module (mirrors 2 existing real precedents
+exactly), one function's prompt-assembly extended. No schema change,
+no RLS/Tier 3 action.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Read `youtubeOracle` in full as the real architecture template: CMDS
+  array (name + prompt text pairs), ICONS array, `init()` registering a
+  boot task + a `page:show` re-injection hook, `_btn()` finding an
+  existing DOM anchor (`[onclick*="toggleProdOraclePanel"]`) and
+  inserting a sibling button rather than touching main.js/index.html
+  (the FROZEN-file rule), `open()`/`_close()`/`run()`.
+- Read `instaOraclePanel` in full to confirm its real commands are
+  genuinely Instagram-profile-model-shaped (bio/highlights/grid/
+  followers) - the real evidence behind Stage 0's architecture call.
+- Confirmed `_findOracleCmdText(moduleName, cmdName)` (built in Phase G
+  curveball 1) needs zero changes to support a 3rd module - it already
+  takes any module name, so `tiktokOracle` slots in the same way
+  `instaOraclePanel`/`youtubeOracle` already do.
+- One real bug caught by `node --check` before finalizing: an unescaped
+  apostrophe in "someone else's video" inside a CMDS string broke
+  parsing - fixed (`else\'s`), then re-verified clean.
+
+=====================================================================
+STAGE 3 — BUILD (Omnitrix, no Fable — routine build, not an audit)
+=====================================================================
+1. New `tiktokOracle` module (rpgace_core.js, placed directly after
+   `youtubeOracle`'s end marker, grouping the 3 platform panels
+   together): 8 real CMDS (Find Your Niche, FYP Algorithm Audit, Sound
+   & Trend Scout, Hook in Under 1 Second, Loop & Rewatch Engineering,
+   Duet/Stitch Idea Generator, Audience Mind Reader, Viral Hook
+   Generator 50 - the last 2 deliberately named identically to Insta/
+   YouTube's own commands, matching the established convention of the
+   same command NAME holding platform-specific TEXT per panel).
+2. `_btn()` mirrors youtubeOracle's exact real injection pattern -
+   looks for `#yt-ob` (YouTube's own injected button) first, falls back
+   to the Prod Oracle anchor, inserts a sibling `#tt-ob` button. Never
+   touches main.js or index.html.
+3. `_generateCaptions` gained a 3rd expertise block (`ttMind`/
+   `ttHooks`, TIKTOK EXPERTISE) using the exact same `_findOracleCmdText`
+   call shape as Insta/YouTube - zero new lookup code. TikTok's caption
+   instruction line updated to explicitly draw on it and to name the
+   real completion-rate/rewatch distinction rather than staying generic.
+4. index.html cache-bust bumped (20260805g → 20260805h) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: 2 files (rpgace_core.js 146 insertions/3 deletions,
+index.html 1-line cache-bust). New module contained between its own
+markers; `_generateCaptions` extension is additive (3 new lines of
+lookups + 1 new conditional push + 1 updated instruction line) - no
+other function touched.
+
+Honest residual risks, not hidden:
+- tiktokOracle is a brand-new module with zero real use yet - unlike
+  Insta/YouTube's commands (which have presumably seen some real use
+  in this app already), these 8 commands are freshly written and
+  untested even at the "does clicking this produce a good reply"
+  level, on top of the standing zero-hand-testing status for
+  everything shipped this session.
+- The TikTok button's injection order relative to Insta/YouTube's own
+  buttons is not guaranteed (all 3 boot around similar setTimeout
+  delays) - cosmetic only, not a functional risk.
+- Reusing the exact command NAMES "Audience Mind Reader"/"Viral Hook
+  Generator 50" across 3 panels is deliberate (rule 8 - one real lookup
+  contract, `_findOracleCmdText(module, name)`, works identically for
+  all 3) but means a future session renaming one of these in any single
+  panel without checking `_generateCaptions` would silently drop that
+  platform's expertise block (degrades gracefully - no crash - but
+  worth knowing).
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: real, evidence-backed architecture decision (not a
+coin-flip) with the reasoning shown, not just asserted; real dedup
+throughout (zero new lookup code, exact existing injection pattern
+reused); a real syntax bug caught and fixed before claiming done, not
+after. Docked 2 points for the entirely-fresh, entirely-untested new
+CMDS content (a bigger real unknown than extending an existing tested
+panel would have been) and the standing zero-hand-testing gap.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh after the apostrophe fix,
+  CLEAN.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope.
+- index.html script-tag count: re-checked, exactly 2, only version
+  string changed.
+- Re-grepped `RPGACE.register('tiktokOracle'`: exactly 1 definition.
+  Re-grepped the 3 `_findOracleCmdText` blocks inside
+  `_generateCaptions`: Insta/YouTube unchanged, TikTok's new block
+  present and shaped identically.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1-G5, G7 — PASS.
+G6 — pending merge+push, will confirm via Vercel MCP.
+UNTESTED (required label): same standing status, now with the added
+real caveat that tiktokOracle's own 8 commands have never been clicked
+individually either, on top of Generate Captions never having been run
+end-to-end. Real actions this adds to the eventual batched test: open
+TikTok Oracle from its injected button and confirm it renders 8
+commands; run at least one command and confirm a sensible real reply;
+run Generate Captions on a real ConID and confirm the TikTok section
+reads as completion-rate/rewatch-aware rather than generic.
+
+PASS COUNT: 1 of 3 max.

@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎵 Aug 5 — Phase G curveball 2: a real TikTok Oracle module joins the caption grounding</div>
+    <div class="card-body">
+      Same-session follow-up, requested directly: "let's make a tiktok one too... or should insta oracle just have a tiktok expertise." Full record: <code>engineer_pass_2026-08-05_08.txt</code>.
+      <br><br>
+      <strong>Real architecture recommendation, given directly rather than re-asked</strong>: a separate module, not a few extra commands folded into Insta-Oracle. Real evidence: <code>instaOraclePanel</code>'s own commands are built around Instagram's actual follower-graph-plus-explore growth model (bio, profile picture, highlights, grid aesthetic — real ranking-adjacent signals there). TikTok's real discovery mechanic is a pure interest/FYP graph ranked on completion rate, rewatches, and early-window shares/comments — profile signals barely matter. These are genuinely different growth models, not two flavours of one mechanic; cramming TikTok content into a panel literally labeled "INSTA-ORACLE · Instagram" would misrepresent its own scope.
+      <br><br>
+      <strong>New <code>tiktokOracle</code> module</strong>, mirroring <code>youtubeOracle</code>'s real architecture (8 commands, self-injected button finding an existing DOM anchor rather than touching <code>main.js</code>/<code>index.html</code>) — the closer precedent for a newly-added platform panel. 8 commands genuinely reflecting TikTok's real mechanics: FYP Algorithm Audit, Sound &amp; Trend Scout, Hook in Under 1 Second, Loop &amp; Rewatch Engineering, Duet/Stitch Idea Generator, plus an Audience Mind Reader and Viral Hook Generator deliberately named identically to Insta/YouTube's own — the established convention of one shared command name holding platform-specific text per panel.
+      <br><br>
+      <strong>Generate Captions gained a 3rd real expertise block</strong> — TikTok Oracle's own Audience Mind Reader + Viral Hook Generator text, pulled via the exact same <code>_findOracleCmdText</code> helper Insta/YouTube already use, zero new lookup code. The TikTok caption instruction now explicitly draws on it and names the real completion-rate/rewatch distinction instead of staying generic.
+      <br><br>
+      Full Objective Completion Gate: G1-G5 and G7 pass. G6 pending merge+push. <strong>Extra honest flag beyond the standing untested status</strong>: this is a brand-new module with zero prior real use — even its own 8 commands haven't been individually clicked yet, on top of Generate Captions never having run end-to-end.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🎯 Aug 5 — Phase G curveball: Insta-Oracle + YouTube Oracle become real caption participants</div>
     <div class="card-body">
       Same-session follow-up to Phase G, requested directly: "I want prod insta and prod youtube to become active participators in the caption generating too." Full record: <code>engineer_pass_2026-08-05_07.txt</code>.

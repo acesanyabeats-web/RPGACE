@@ -7,13 +7,13 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 
 ## 0. Verified Component Inventory
 
-**Module inventory re-grepped July 31** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **52 real registered modules**, listed by name below, not just counted. The count moved 51 → 52 because `voiceInput` was added July 29 and never entered this table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
+**Module inventory re-grepped Aug 5** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **53 real registered modules**, listed by name below, not just counted. The count moved 52 → 53 because `tiktokOracle` was added Aug 5 (Phase G curveball 2 — a real TikTok-specific Oracle panel, mirroring `youtubeOracle`'s architecture) and never entered this table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
 
 ### Domains and modules (from `rpgace_core.js` markers, re-grepped July 31)
 
 | Domain | Modules |
 |---|---|
-| ORACLE | youtubeOracle, prodOraclePanel, instaOraclePanel, quickActions, visualOracle, contentRepurpose, oracleAppGrounding, oracleDevBridge, oracleFetchGuard, oracleTreeGrounding, agentsIntoOracle |
+| ORACLE | youtubeOracle, tiktokOracle, prodOraclePanel, instaOraclePanel, quickActions, visualOracle, contentRepurpose, oracleAppGrounding, oracleDevBridge, oracleFetchGuard, oracleTreeGrounding, agentsIntoOracle |
 | LEARNING | feynman, encSync, ciAutoPropose, taxonomyReviewQueue, encTaxonomyLink, agendaReminder, scheduleOracle, intelDelete, taxonomySync, knowledgeGap, taxonomyTree, phylumPath, bookworm, encyclopediaQoL, intelBatchList, intelDedup, jargonEncyclopedia, researchTabs |
 | CONFIG | config (defines `RPGACE.sb`, `RPGACE.cache`, `RPGACE.hooks`, CONFIG constants) |
 | CONTENT | beatLog, refCorpus, contentProductionLive, videoPipeline, conidPot, videoSummary |

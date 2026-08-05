@@ -760,6 +760,138 @@ RPGACE.register('youtubeOracle', {
 });
 /* ===END:youtubeOracle=== */
 
+/* ===MODULE:tiktokOracle=== */
+// Aug 5 (Engineer pass, Phase G curveball 2) — real evidence-based
+// architecture call, put to Alex directly: a SEPARATE panel, not a few
+// extra commands folded into instaOraclePanel. TikTok's real discovery
+// mechanic (a pure interest/FYP graph ranked on completion rate/
+// rewatches/trending-sound usage) is genuinely different from
+// Instagram's follower-graph-plus-explore model that instaOraclePanel's
+// own existing commands are built around (Full Profile Audit's bio/
+// highlights/grid aesthetic, DIAGNOSE: No Followers' profile-picture/
+// bio-clarity framing - none of that maps onto how TikTok actually
+// ranks content). Cramming TikTok content into a panel literally
+// labeled "INSTA-ORACLE · Instagram" would misrepresent its own scope -
+// the same category of mistake this project has already avoided
+// elsewhere (taxonomy_nodes/taxonomy_tree kept deliberately separate
+// because they answer genuinely different questions, not merged just
+// because they're topically adjacent). Mirrors youtubeOracle's smaller
+// real architecture (8 commands, own injected button) rather than
+// instaOraclePanel's larger one, since TikTok is a new platform here
+// the same way YouTube was a secondary addition to Instagram's original
+// footprint - not a scope judgment on TikTok's importance, just the
+// closer real precedent for a newly-added platform panel.
+RPGACE.register('tiktokOracle', {
+
+  CMDS: [
+    ['Find Your Niche', 'Analyse this TikTok niche for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FREQUENCY: 3-5x per week. Return: 1) Niche saturation score 1-10 with explanation 2) Top 3 direct competitors and their strengths 3) Three underserved sub-niches with lower competition 4) Which content pillar to lead with on a brand-new TikTok specifically (distinct from an existing Instagram/YouTube presence) 5) Your single strongest differentiation angle. Be specific to this niche only.'],
+    ['FYP Algorithm Audit', 'Audit @AceSanyaBeats for TikTok For You Page performance. NICHE: FL Studio beats and UK hip hop production tutorials. FREQUENCY: 3-5x per week. TikTok ranks almost entirely on completion rate, rewatches, and comments/shares in the first hour - NOT follower count or CTR like other platforms. Return: 1) COMPLETION RATE architecture (how to structure a video so people watch to the end) 2) REWATCH ENGINEERING (what makes someone watch a second time) 3) FIRST-HOUR VELOCITY (comment/share triggers in the critical early window) 4) POSTING CADENCE for FYP favour 5) THE SINGLE BIGGEST MISTAKE music production creators make on TikTok specifically. Specific to FL Studio and UK hip hop only.'],
+    ['Sound & Trend Scout', 'Find trending sound and format opportunities for @AceSanyaBeats on TikTok right now. NICHE: FL Studio beats and UK hip hop production. Trending audio is a real, distinct TikTok discovery mechanic other platforms do not have in the same way. Return: 1) 5 trending sound/format types currently boosting music-production or beat-making content 2) How to use MY OWN beat as the trending sound in someone else\'s video (the real distribution mechanic unique to TikTok) 3) 3 specific video ideas combining a trending format with an FL Studio technique 4) What NOT to do (overused sounds/formats in this niche right now).'],
+    ['Hook in Under 1 Second', 'Write 20 TikTok hooks for @AceSanyaBeats that work in the first FRAME, not the first few seconds - TikTok\'s scroll-away window is tighter than Instagram Reels or YouTube Shorts. NICHE: FL Studio beats and UK hip hop production. TOPIC: [TYPE YOUR VIDEO TOPIC]. For each hook: the exact on-screen text for frame 1, the spoken line (if any) for the first second, and why it stops a scroll specifically on TikTok. No generic creator hooks.'],
+    ['Loop & Rewatch Engineering', 'Design a seamlessly-looping TikTok video concept for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. TOPIC: [TYPE YOUR VIDEO TOPIC OR BEAT]. TikTok\'s vertical loop format rewards videos people watch multiple times in a row. Return: 1) How to structure the end so it loops seamlessly into the start 2) A specific edit/transition point that makes a rewatch feel intentional, not accidental 3) A caption/on-screen prompt that explicitly invites a second watch 4) The exact video length sweet spot for this content type on TikTok right now.'],
+    ['Duet/Stitch Idea Generator', 'Generate 10 Duet or Stitch video concepts for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Duets/Stitches are a real TikTok-native remix mechanic Instagram and YouTube do not have. For each: what kind of original video to duet/stitch (a beat reaction, a producer tutorial, a trending sound), the exact reaction/addition to film, and why it gives a real discovery boost beyond a standalone post.'],
+    ['Audience Mind Reader', 'Analyse TikTok audience psychology for @AceSanyaBeats. AUDIENCE: Aspiring producers aged 18-35 wanting pro-sounding FL Studio beats, scrolling TikTok specifically (not Instagram or YouTube). Return: 1) Their 5 biggest frustrations as expressed in TikTok comments/duets specifically (often blunter and more meme-coded than Instagram) 2) Their 3 core desires 3) The exact comment-bait phrasing that gets a real response on this platform 4) What makes them stop mid-scroll vs keep scrolling past in under 1 second 5) The one thing that makes them duet/stitch instead of just watching 6) One content idea per frustration.'],
+    ['Viral Hook Generator 50', 'Generate 50 viral TikTok hooks for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Category A: 18 FIRST-FRAME TEXT OVERLAY HOOKS (visible before any sound plays). Category B: 17 SOUND-SYNC HOOKS (the first beat-drop or vocal line timed to a trending or original sound). Category C: 15 SPOKEN HOOKS for the first second on camera. Each must stop a scroll specifically on TikTok and be specific to FL Studio or beat-making. After the 50 hooks give your top 5 picks and explain why they outperform the others for this specific niche and platform.'],
+  ],
+
+  ICONS: ['🎯','📊','🎵','⚡','🔁','🤝','🧠','🪝'],
+
+  // Same real boot pattern as youtubeOracle - injects its own button by
+  // finding an existing anchor in the live DOM (never touches main.js/
+  // index.html, respects the FROZEN-file rule) since there is no
+  // pre-existing TikTok toggle button anywhere to intercept.
+  init: function() {
+    var self = this;
+    RPGACE.registerBootTask(function() { return self._btn(); });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._btn(); }, 600);
+    });
+  },
+
+  _btn: function() {
+    if (document.getElementById('tt-ob')) return;
+    var self = this;
+    var tries = 0;
+    var go = function() {
+      tries++;
+      if (document.getElementById('tt-ob')) return;
+      var anchor = document.getElementById('yt-ob') || document.querySelector('[onclick*="toggleProdOraclePanel"]');
+      if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
+      var b = document.createElement('button');
+      b.id = 'tt-ob';
+      b.className = anchor.className;
+      b.textContent = '🎵 TikTok Oracle';
+      b.onclick = function() { self.open(); };
+      anchor.parentElement.insertBefore(b, anchor.nextSibling);
+    };
+    setTimeout(go, 600);
+    setTimeout(go, 1500);
+    setTimeout(go, 3000);
+  },
+
+  _close: function() {
+    RPGACE.ui.slideOutPanel(document.getElementById('tt-op'), 'right');
+  },
+
+  open: function() {
+    if (document.getElementById('tt-op')) { this._close(); return; }
+    var self = this;
+    var panel = document.createElement('div');
+    panel.id = 'tt-op';
+    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(80,220,180,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'background:rgba(40,220,180,0.06);border-bottom:1px solid rgba(80,220,180,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+    var ht = document.createElement('div');
+    var lb = document.createElement('div');
+    lb.textContent = 'TIKTOK ORACLE';
+    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(80,220,180,0.8);margin-bottom:3px;';
+    var ch = document.createElement('div');
+    ch.textContent = '@AceSanyaBeats';
+    ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
+    ht.appendChild(lb); ht.appendChild(ch);
+    var cb = document.createElement('button');
+    cb.textContent = '×';
+    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+    cb.onclick = function() { self._close(); };
+    hdr.appendChild(ht); hdr.appendChild(cb);
+    panel.appendChild(hdr);
+
+    var body = document.createElement('div');
+    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+    var note = document.createElement('div');
+    note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
+    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+    body.appendChild(note);
+
+    self.CMDS.forEach(function(cmd, i) {
+      var btn = document.createElement('button');
+      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '🎵'; ic.style.fontSize = '15px';
+      var tx = document.createElement('span'); tx.textContent = cmd[0];
+      btn.appendChild(ic); btn.appendChild(tx);
+      btn.onmouseover = function() { this.style.background = 'rgba(80,220,180,0.1)'; };
+      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+      btn.onclick = function() { self.run(i); };
+      body.appendChild(btn);
+    });
+    panel.appendChild(body);
+    RPGACE.ui.slideInPanel(panel, {edge:'right'});
+  },
+
+  run: function(i) {
+    var cmd = this.CMDS[i];
+    if (!cmd) return;
+    this._close();
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
+      RPGACE.utils.toast('🎵 ' + cmd[0], 'rgba(80,220,180,0.9)', 2000);
+    });
+  },
+
+});
+/* ===END:tiktokOracle=== */
+
 /* ===MODULE:prodOraclePanel=== */
 RPGACE.register('prodOraclePanel', {
 
@@ -15296,6 +15428,13 @@ RPGACE.register('contentProductionLive', {
             var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
             var ytMind = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
             var ytHooks = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
+            // Aug 5 (Engineer pass, Phase G curveball 2) - tiktokOracle
+            // joins the same real grounding pattern as Insta/YouTube,
+            // reusing its own real Audience Mind Reader/Viral Hook
+            // Generator commands rather than a new TikTok-flavoured
+            // paraphrase.
+            var ttMind = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
+            var ttHooks = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
             var expertiseParts = [];
             if (instaMind || instaHooks) {
               expertiseParts.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
@@ -15305,6 +15444,10 @@ RPGACE.register('contentProductionLive', {
               expertiseParts.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
                 [ytMind, ytHooks].filter(Boolean).join('\n\n'));
             }
+            if (ttMind || ttHooks) {
+              expertiseParts.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
+                [ttMind, ttHooks].filter(Boolean).join('\n\n'));
+            }
 
             var prompt = 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n' +
               contextParts.join('\n\n') +
@@ -15312,12 +15455,12 @@ RPGACE.register('contentProductionLive', {
               'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
               '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags. Draw on the INSTAGRAM EXPERTISE above.\n\n' +
               '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags. Draw on the YOUTUBE EXPERTISE above.\n\n' +
-              '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags.\n\n' +
+              '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram — completion-rate and rewatch-driven, not follower-driven. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags. Draw on the TIKTOK EXPERTISE above.\n\n' +
               'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.';
 
             self._prepOracleBarFor(row, function() {
               self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
-              RPGACE.utils.toast('📝 Generating platform captions (Insta-Oracle + YouTube Oracle grounded) from the full ConID record...', '#4A8CCC', 3500);
+              RPGACE.utils.toast('📝 Generating platform captions (Insta-Oracle + YouTube Oracle + TikTok Oracle grounded) from the full ConID record...', '#4A8CCC', 3500);
             });
           });
       });
