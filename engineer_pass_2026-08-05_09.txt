@@ -100,7 +100,8 @@ exhaustive audit)
    default []), deliverable_bundles (jsonb object, default {}).
    Verified post-migration via direct information_schema + bucket
    queries, not assumed from the migration's reported success alone.
-2. New api/bundle-deliverables.js: requireAuth-gated POST, real tier-
+2. New api/bundle-deliverables.js (later corrected — see the STAGE 6
+   section appended below): requireAuth-gated POST, real tier-
    ordering logic (lease < non-exclusive < exclusive, a file included
    at its tagged tier and every higher one), fetches applicable files
    from the private bucket with the service-role key, zips them with
@@ -141,7 +142,8 @@ exhaustive audit)
 STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
 =====================================================================
 Real diff: rpgace_core.js (new functions, additive only — no existing
-function's body touched), api/bundle-deliverables.js (new file),
+function's body touched), api/bundle-deliverables.js (new file, later
+folded into api/data-write.js — see STAGE 6 below),
 package.json + package-lock.json (new dependency), index.html (1-line
 cache-bust), 2 new committed .txt files (this record + the backlog).
 
@@ -187,7 +189,9 @@ modesty.
 STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
 =====================================================================
 - node --check rpgace_core.js: re-run fresh, CLEAN.
-- node --check api/bundle-deliverables.js: re-run fresh, CLEAN.
+- node --check api/bundle-deliverables.js: re-run fresh, CLEAN (this
+  file was subsequently deleted and its logic folded into
+  api/data-write.js — see STAGE 6).
 - Local functional smoke test (not part of any prior stage's claim,
   run fresh here): built a real 2-file zip in-process using the exact
   archiver+PassThrough pattern the endpoint uses — output starts with
@@ -217,13 +221,75 @@ G4 (claim-to-diff reconciliation) — PASS, every claim in Stage 3 traces
 G5 (goal reconciliation) — PASS against Stage 1's contract; the two
   explicit "NOT built" items were verified absent from the diff, not
   just asserted.
-G6 (deployment reality) — PENDING until merged to main and pushed;
-  will be independently confirmed via Vercel MCP (list_deployments/
-  get_deployment, checking state=READY, target=production, matching
-  githubCommitSha, alias list including rpgace.vercel.app) in a follow-
-  up edit to this file after the real merge, same pattern as every
-  prior phase this session.
+G6 (deployment reality) — FAILED on first real check, FIXED, then
+  re-confirmed PASS. Full account in STAGE 6 below — this is the real
+  reason G6 exists as an independent check rather than an assumption.
 G7 (cache-bust) — PASS, 20260805h → 20260805i.
+
+=====================================================================
+STAGE 6 — G6 REAL FAILURE, DIAGNOSIS, FIX, RE-VERIFICATION
+(added after the fact — this is what G6's independent check is FOR)
+=====================================================================
+Merged to main, pushed, then ran the real G6 check via Vercel MCP
+(list_deployments) rather than assuming success from a clean git push.
+Real finding: the production deployment for this commit
+(dpl_DcGjHRCZabq7MRCNxSAHfomtS1uh) showed state=ERROR, not READY — on
+BOTH the main-branch deploy and the feature-branch deploy of the same
+commit. Pulled get_deployment for the real reason rather than guessing:
+  errorCode: "exceeded_serverless_functions_per_deployment"
+  errorMessage: "No more than 12 Serverless Functions can be added to
+  a Deployment on the Hobby plan."
+Real root cause: this project's Vercel account is on the Hobby plan
+(consistent with oracle.js's own standing comment about a 60s
+maxDuration hard cap on Hobby). Before this pass, api/ held exactly 12
+real function files (13 physical files minus the underscore-prefixed
+_context.js, which Vercel's own convention excludes from function-
+counting) — already sitting at the cap. Adding api/bundle-
+deliverables.js as a 14th physical file (13th real function) pushed
+past it, and Vercel correctly refused the deploy rather than silently
+truncating it.
+
+This is real Tier-3-adjacent territory (a structural platform limit),
+but the fix does not require Alex's spend decision — upgrading to
+Vercel Pro would lift the cap but costs money; the real, zero-cost fix
+is architectural: fold the new job into an EXISTING endpoint instead of
+adding a 14th file. Chose api/data-write.js specifically (not an
+unrelated endpoint) because it already has the exact same real
+posture the new job needs — requireAuth() + the service-role key — so
+folding in is a genuine scope match, not an arbitrary host. Added an
+`action: 'bundle-deliverables'` branch checked FIRST in the handler,
+falling through unchanged to the existing generic {table,operation}
+write behavior for every other real call — zero existing call sites of
+api/data-write.js were touched or need retesting. Deleted
+api/bundle-deliverables.js entirely (not left as dead code). Updated
+the one real client call site (contentProductionLive._generateBundle)
+to POST to /api/data-write with {action, conId, tier} instead of a
+dedicated URL. Updated every in-code comment and oversight-doc
+reference that named the now-nonexistent file, rather than leaving a
+stale pointer (rule 8's own "known-stale flag that's never actioned is
+worse than no flag" standard, applied to a fact, not just a doc note).
+
+Re-verification, not re-assumption:
+- `ls api/*.js | wc -l` → 13 (was 14 with the broken file, 13 before
+  this whole phase) — confirms the real function count is back at the
+  exact level that was deploying successfully before Phase H started.
+- node --check on both changed files: CLEAN.
+- Local zip-buffer smoke test (same real archiver+PassThrough pattern,
+  now living in data-write.js): re-run, still produces a valid
+  PK-signed buffer — the actual zip logic itself was never the bug,
+  only its placement as a 14th file was.
+- Re-committed, re-merged to main (fast-forward), re-pushed.
+- Re-ran Vercel MCP list_deployments for the new commit: state=READY,
+  target=production, githubCommitSha matches the real new commit,
+  alias list includes the real rpgace.vercel.app domain — this time a
+  genuine PASS, independently re-checked rather than assumed from the
+  first (broken) merge.
+
+Real lesson worth keeping, not just for this file: a clean `git push`
+and a clean `node --check` are NECESSARY but not SUFFICIENT evidence
+of G6 — this is exactly the gap G6 exists to close, and this pass is
+the first time in this session's 9 phases that the check actually
+caught something rather than confirming what was already assumed true.
 
 UNTESTED (required label): the entire real upload → Storage → zip →
 signed-URL → download round trip has never been run against real files

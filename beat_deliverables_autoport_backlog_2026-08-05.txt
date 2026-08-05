@@ -89,7 +89,13 @@ has the full 5-stage /Engineer record)
    file unlocks at, null = every tier) and deliverable_bundles (jsonb
    object keyed by tier — last real generated zip's path/size/
    file_count/generated_at).
-3. New api/bundle-deliverables.js (Vercel function, 60s maxDuration):
+3. Real server-side zip logic (60s maxDuration) — folded into
+   api/data-write.js as an `action: 'bundle-deliverables'` branch rather
+   than its own file, after the first version (its own
+   api/bundle-deliverables.js file) broke the production deploy against
+   Vercel Hobby's 12-Serverless-Function cap (real state:ERROR, caught
+   and fixed same session — see api/data-write.js's own header comment
+   and engineer_pass_2026-08-05_09.txt's G6 correction section):
    given {conId, tier}, fetches every file that applies to that tier
    (real BeatStars-style inclusion: lease < non-exclusive < exclusive,
    a file tagged at a tier is included in that tier and every higher

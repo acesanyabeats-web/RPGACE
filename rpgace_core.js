@@ -14413,16 +14413,18 @@ RPGACE.register('contentProductionLive', {
   // beat_deliverables_autoport_backlog_2026-08-05.txt, not built here.
   // (2) Files are uploaded fresh from Alex's own machine — no existing
   // external storage to link to, so this is real new Storage + schema.
-  // (3) Automatic server-side zipping (api/bundle-deliverables.js) is the
-  // primary bundling mechanism, but Alex can ALSO drop in a whole folder
-  // of files to be zipped together, not just individually-named stems —
-  // both upload paths below feed the exact same deliverable_files array.
+  // (3) Automatic server-side zipping (the `bundle-deliverables` action
+  // inside api/data-write.js — folded in rather than its own file, see
+  // that file's header comment for why) is the primary bundling
+  // mechanism, but Alex can ALSO drop in a whole folder of files to be
+  // zipped together, not just individually-named stems — both upload
+  // paths below feed the exact same deliverable_files array.
   //
   // Small, deliberate rule-8 exception: fileAppliesToTier's real tier-
   // inclusion logic (lease < non-exclusive < exclusive) is duplicated here
-  // AND in api/bundle-deliverables.js, because this codebase has no build
-  // step to share a module between a browser file and a Node/ESM Vercel
-  // function — the duplication is named and reasoned, not accidental.
+  // AND in api/data-write.js, because this codebase has no build step to
+  // share a module between a browser file and a Node/ESM Vercel function
+  // — the duplication is named and reasoned, not accidental.
   _fileAppliesToTier: function(fileTier, tier) {
     var ORDER = { 'lease': 0, 'non-exclusive': 1, 'exclusive': 2 };
     if (!fileTier) return true;
@@ -14618,7 +14620,10 @@ RPGACE.register('contentProductionLive', {
       });
   },
 
-  // Calls the real server-side zip endpoint (api/bundle-deliverables.js).
+  // Calls the real server-side zip logic, folded into api/data-write.js
+  // as an `action: 'bundle-deliverables'` branch rather than its own file
+  // (Vercel Hobby's 12-Serverless-Function cap — see data-write.js's own
+  // header comment for the real deploy-failure evidence that forced this).
   // authGate's global fetch() wrap attaches the X-RPGACE-Auth header to
   // this automatically, same as every other /api/* call — no manual
   // header handling needed here.
@@ -14626,10 +14631,10 @@ RPGACE.register('contentProductionLive', {
     var origText = btnEl.textContent;
     btnEl.textContent = '⏳ Zipping...';
     btnEl.disabled = true;
-    fetch('/api/bundle-deliverables', {
+    fetch('/api/data-write', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ conId: row.id, tier: tier }),
+      body: JSON.stringify({ action: 'bundle-deliverables', conId: row.id, tier: tier }),
     }).then(function(res) {
       return res.json().then(function(data) { return { ok: res.ok, data: data }; });
     }).then(function(result) {

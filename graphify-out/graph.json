@@ -242,7 +242,7 @@
       "_origin": "ast",
       "id": "api_context",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "_context.js"
     },
     {
@@ -253,7 +253,7 @@
       "_origin": "ast",
       "id": "api_context_rpgace_context",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "rpgace_context"
     },
     {
@@ -264,7 +264,7 @@
       "_origin": "ast",
       "id": "api_context_accounts",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "accounts"
     },
     {
@@ -275,7 +275,7 @@
       "_origin": "ast",
       "id": "api_context_tool_aliases",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "tool_aliases"
     },
     {
@@ -286,7 +286,7 @@
       "_origin": "ast",
       "id": "api_context_model",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "model"
     },
     {
@@ -297,7 +297,7 @@
       "_origin": "ast",
       "id": "api_context_base_url",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "base_url"
     },
     {
@@ -308,7 +308,7 @@
       "_origin": "ast",
       "id": "api_context_model_extractor",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "model_extractor"
     },
     {
@@ -319,7 +319,7 @@
       "_origin": "ast",
       "id": "api_context_model_ground_worker",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "model_ground_worker"
     },
     {
@@ -330,7 +330,7 @@
       "_origin": "ast",
       "id": "api_context_callclaude",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "callclaude()"
     },
     {
@@ -341,7 +341,7 @@
       "_origin": "ast",
       "id": "api_context_callcomposio",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "callcomposio()"
     },
     {
@@ -352,7 +352,7 @@
       "_origin": "ast",
       "id": "api_context_setcors",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "setcors()"
     },
     {
@@ -363,7 +363,7 @@
       "_origin": "ast",
       "id": "api_context_requireauth",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "requireauth()"
     },
     {
@@ -374,7 +374,7 @@
       "_origin": "ast",
       "id": "api_context_fetchurl",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "fetchurl()"
     },
     {
@@ -385,7 +385,7 @@
       "_origin": "ast",
       "id": "api_context_isurl",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "isurl()"
     },
     {
@@ -396,7 +396,7 @@
       "_origin": "ast",
       "id": "api_analyst",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "analyst.js"
     },
     {
@@ -407,7 +407,7 @@
       "_origin": "ast",
       "id": "api_analyst_type_prompts",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "type_prompts"
     },
     {
@@ -418,7 +418,7 @@
       "_origin": "ast",
       "id": "api_analyst_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -429,7 +429,7 @@
       "_origin": "ast",
       "id": "api_auth",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "auth.js"
     },
     {
@@ -440,7 +440,7 @@
       "_origin": "ast",
       "id": "api_auth_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -451,7 +451,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "bookworm-fetch.js"
     },
     {
@@ -462,7 +462,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_fetchfulltext",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "fetchfulltext()"
     },
     {
@@ -473,7 +473,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_detectchaptersbyregex",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "detectchaptersbyregex()"
     },
     {
@@ -484,7 +484,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_detectchapterlistbyoracle",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "detectchapterlistbyoracle()"
     },
     {
@@ -495,7 +495,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_charfuzzypattern",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "charfuzzypattern()"
     },
     {
@@ -506,7 +506,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_collectmatches",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "collectmatches()"
     },
     {
@@ -517,7 +517,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_declusterbyoffset",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "declusterbyoffset()"
     },
     {
@@ -528,7 +528,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_resolvechapterheadingsmechanically",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "resolvechapterheadingsmechanically()"
     },
     {
@@ -539,7 +539,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_dropclusteredboundaries",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "dropclusteredboundaries()"
     },
     {
@@ -550,7 +550,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_guesstitlefromurl",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "guesstitlefromurl()"
     },
     {
@@ -561,73 +561,7 @@
       "_origin": "ast",
       "id": "api_bookworm_fetch_handler",
       "community": 0,
-      "community_name": "setCORS",
-      "norm_label": "handler()"
-    },
-    {
-      "label": "bundle-deliverables.js",
-      "file_type": "code",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "api_bundle_deliverables",
-      "community": 0,
-      "community_name": "setCORS",
-      "norm_label": "bundle-deliverables.js"
-    },
-    {
-      "label": "config",
-      "file_type": "code",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L26",
-      "_origin": "ast",
-      "id": "api_bundle_deliverables_config",
-      "community": 0,
-      "community_name": "setCORS",
-      "norm_label": "config"
-    },
-    {
-      "label": "TIER_ORDER",
-      "file_type": "code",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L38",
-      "_origin": "ast",
-      "id": "api_bundle_deliverables_tier_order",
-      "community": 0,
-      "community_name": "setCORS",
-      "norm_label": "tier_order"
-    },
-    {
-      "label": "fileAppliesToTier()",
-      "file_type": "code",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L40",
-      "_origin": "ast",
-      "id": "api_bundle_deliverables_fileappliestotier",
-      "community": 0,
-      "community_name": "setCORS",
-      "norm_label": "fileappliestotier()"
-    },
-    {
-      "label": "sbFetch()",
-      "file_type": "code",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L46",
-      "_origin": "ast",
-      "id": "api_bundle_deliverables_sbfetch",
-      "community": 0,
-      "community_name": "setCORS",
-      "norm_label": "sbfetch()"
-    },
-    {
-      "label": "handler()",
-      "file_type": "code",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L58",
-      "_origin": "ast",
-      "id": "api_bundle_deliverables_handler",
-      "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -638,7 +572,7 @@
       "_origin": "ast",
       "id": "api_composio",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "composio.js"
     },
     {
@@ -649,7 +583,7 @@
       "_origin": "ast",
       "id": "api_composio_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -660,29 +594,84 @@
       "_origin": "ast",
       "id": "api_data_write",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "data-write.js"
+    },
+    {
+      "label": "config",
+      "file_type": "code",
+      "source_file": "api/data-write.js",
+      "source_location": "L27",
+      "_origin": "ast",
+      "id": "api_data_write_config",
+      "community": 0,
+      "community_name": "_context.js",
+      "norm_label": "config"
+    },
+    {
+      "label": "TIER_ORDER",
+      "file_type": "code",
+      "source_file": "api/data-write.js",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "api_data_write_tier_order",
+      "community": 0,
+      "community_name": "_context.js",
+      "norm_label": "tier_order"
+    },
+    {
+      "label": "fileAppliesToTier()",
+      "file_type": "code",
+      "source_file": "api/data-write.js",
+      "source_location": "L41",
+      "_origin": "ast",
+      "id": "api_data_write_fileappliestotier",
+      "community": 0,
+      "community_name": "_context.js",
+      "norm_label": "fileappliestotier()"
+    },
+    {
+      "label": "sbFetch()",
+      "file_type": "code",
+      "source_file": "api/data-write.js",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "api_data_write_sbfetch",
+      "community": 0,
+      "community_name": "_context.js",
+      "norm_label": "sbfetch()"
     },
     {
       "label": "ALLOWED_TABLES",
       "file_type": "code",
       "source_file": "api/data-write.js",
-      "source_location": "L24",
+      "source_location": "L73",
       "_origin": "ast",
       "id": "api_data_write_allowed_tables",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "allowed_tables"
+    },
+    {
+      "label": "handleBundleDeliverables()",
+      "file_type": "code",
+      "source_file": "api/data-write.js",
+      "source_location": "L111",
+      "_origin": "ast",
+      "id": "api_data_write_handlebundledeliverables",
+      "community": 0,
+      "community_name": "_context.js",
+      "norm_label": "handlebundledeliverables()"
     },
     {
       "label": "handler()",
       "file_type": "code",
       "source_file": "api/data-write.js",
-      "source_location": "L62",
+      "source_location": "L212",
       "_origin": "ast",
       "id": "api_data_write_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -693,7 +682,7 @@
       "_origin": "ast",
       "id": "api_executor",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "executor.js"
     },
     {
@@ -704,7 +693,7 @@
       "_origin": "ast",
       "id": "api_executor_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -715,7 +704,7 @@
       "_origin": "ast",
       "id": "api_lastfm",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "lastfm.js"
     },
     {
@@ -726,7 +715,7 @@
       "_origin": "ast",
       "id": "api_lastfm_lfm",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "lfm()"
     },
     {
@@ -737,7 +726,7 @@
       "_origin": "ast",
       "id": "api_lastfm_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -748,7 +737,7 @@
       "_origin": "ast",
       "id": "api_noter",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "noter.js"
     },
     {
@@ -759,7 +748,7 @@
       "_origin": "ast",
       "id": "api_noter_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -770,7 +759,7 @@
       "_origin": "ast",
       "id": "api_oracle",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "oracle.js"
     },
     {
@@ -781,7 +770,7 @@
       "_origin": "ast",
       "id": "api_oracle_config",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "config"
     },
     {
@@ -792,7 +781,7 @@
       "_origin": "ast",
       "id": "api_oracle_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -803,7 +792,7 @@
       "_origin": "ast",
       "id": "api_orchestrate",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "orchestrate.js"
     },
     {
@@ -814,7 +803,7 @@
       "_origin": "ast",
       "id": "api_orchestrate_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -825,7 +814,7 @@
       "_origin": "ast",
       "id": "api_scout",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "scout.js"
     },
     {
@@ -836,7 +825,7 @@
       "_origin": "ast",
       "id": "api_scout_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -847,7 +836,7 @@
       "_origin": "ast",
       "id": "api_search",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "search.js"
     },
     {
@@ -858,7 +847,7 @@
       "_origin": "ast",
       "id": "api_search_handler",
       "community": 0,
-      "community_name": "setCORS",
+      "community_name": "_context.js",
       "norm_label": "handler()"
     },
     {
@@ -956,8 +945,8 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "main_agent_actions",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "agent_actions"
     },
     {
@@ -967,8 +956,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "main_calloracle",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "calloracle()"
     },
     {
@@ -978,8 +967,8 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "main_callcomposio",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "callcomposio()"
     },
     {
@@ -989,8 +978,8 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "main_buildagentactions",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "buildagentactions()"
     },
     {
@@ -1000,8 +989,8 @@
       "source_location": "L192",
       "_origin": "ast",
       "id": "main_triggeragent",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "triggeragent()"
     },
     {
@@ -1011,8 +1000,8 @@
       "source_location": "L228",
       "_origin": "ast",
       "id": "main_agentlog",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "agentlog()"
     },
     {
@@ -1022,8 +1011,8 @@
       "source_location": "L235",
       "_origin": "ast",
       "id": "main_makecard",
-      "community": 14,
-      "community_name": "acceptSuggestions",
+      "community": 1,
+      "community_name": "main.js",
       "norm_label": "makecard()"
     },
     {
@@ -1033,8 +1022,8 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "main_buildqs",
-      "community": 14,
-      "community_name": "acceptSuggestions",
+      "community": 1,
+      "community_name": "main.js",
       "norm_label": "buildqs()"
     },
     {
@@ -1044,8 +1033,8 @@
       "source_location": "L241",
       "_origin": "ast",
       "id": "main_buildallquests",
-      "community": 14,
-      "community_name": "acceptSuggestions",
+      "community": 1,
+      "community_name": "main.js",
       "norm_label": "buildallquests()"
     },
     {
@@ -1363,8 +1352,8 @@
       "source_location": "L823",
       "_origin": "ast",
       "id": "main_acceptsuggestions",
-      "community": 14,
-      "community_name": "acceptSuggestions",
+      "community": 1,
+      "community_name": "main.js",
       "norm_label": "acceptsuggestions()"
     },
     {
@@ -1374,8 +1363,8 @@
       "source_location": "L824",
       "_origin": "ast",
       "id": "main_closesuggestion",
-      "community": 14,
-      "community_name": "acceptSuggestions",
+      "community": 1,
+      "community_name": "main.js",
       "norm_label": "closesuggestion()"
     },
     {
@@ -1408,7 +1397,7 @@
       "_origin": "ast",
       "id": "main_showpage",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "showpage()"
     },
     {
@@ -1462,8 +1451,8 @@
       "source_location": "L842",
       "_origin": "ast",
       "id": "main_generateagendas",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "generateagendas()"
     },
     {
@@ -1473,8 +1462,8 @@
       "source_location": "L877",
       "_origin": "ast",
       "id": "main_initagendas",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "initagendas()"
     },
     {
@@ -1484,8 +1473,8 @@
       "source_location": "L884",
       "_origin": "ast",
       "id": "main_renderagendas",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "renderagendas()"
     },
     {
@@ -1517,8 +1506,8 @@
       "source_location": "L939",
       "_origin": "ast",
       "id": "main_confirmschedule",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "buildMonthSlots",
       "norm_label": "confirmschedule()"
     },
     {
@@ -1683,7 +1672,7 @@
       "_origin": "ast",
       "id": "main_exitfocustoenc",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "exitfocustoenc()"
     },
     {
@@ -1727,7 +1716,7 @@
       "_origin": "ast",
       "id": "main_gotoencfromfocus",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "gotoencfromfocus()"
     },
     {
@@ -1738,7 +1727,7 @@
       "_origin": "ast",
       "id": "main_loadscheduledagendas",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "loadscheduledagendas()"
     },
     {
@@ -1749,7 +1738,7 @@
       "_origin": "ast",
       "id": "main_removescheduledagenda",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "removescheduledagenda()"
     },
     {
@@ -1760,7 +1749,7 @@
       "_origin": "ast",
       "id": "main_clearscheduledagendas",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "clearscheduledagendas()"
     },
     {
@@ -1792,8 +1781,8 @@
       "source_location": "L1285",
       "_origin": "ast",
       "id": "main_getshifts",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "getshifts()"
     },
     {
@@ -1803,8 +1792,8 @@
       "source_location": "L1289",
       "_origin": "ast",
       "id": "main_gettodayshifts",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "gettodayshifts()"
     },
     {
@@ -1814,8 +1803,8 @@
       "source_location": "L1294",
       "_origin": "ast",
       "id": "main_getshiftsfordate",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "getshiftsfordate()"
     },
     {
@@ -1825,8 +1814,8 @@
       "source_location": "L1298",
       "_origin": "ast",
       "id": "main_getshiftcontext",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "getshiftcontext()"
     },
     {
@@ -1836,8 +1825,8 @@
       "source_location": "L1319",
       "_origin": "ast",
       "id": "main_getfreewindows",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "getfreewindows()"
     },
     {
@@ -1847,8 +1836,8 @@
       "source_location": "L1339",
       "_origin": "ast",
       "id": "main_rendershiftblocks",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "rendershiftblocks()"
     },
     {
@@ -1869,8 +1858,8 @@
       "source_location": "L1390",
       "_origin": "ast",
       "id": "main_closepasterota",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "closepasterota()"
     },
     {
@@ -1880,8 +1869,8 @@
       "source_location": "L1395",
       "_origin": "ast",
       "id": "main_parseandsaverota",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 18,
+      "community_name": "applyShifts",
       "norm_label": "parseandsaverota()"
     },
     {
@@ -1979,8 +1968,8 @@
       "source_location": "L1645",
       "_origin": "ast",
       "id": "main_triggerglobalidentify",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "triggerglobalidentify()"
     },
     {
@@ -2188,8 +2177,8 @@
       "source_location": "L1944",
       "_origin": "ast",
       "id": "main_scheduletocalendar",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 9,
+      "community_name": "buildMonthSlots",
       "norm_label": "scheduletocalendar()"
     },
     {
@@ -2342,8 +2331,8 @@
       "source_location": "L2215",
       "_origin": "ast",
       "id": "main_patchagendacardswithschedule",
-      "community": 186,
-      "community_name": "renderAgendas",
+      "community": 12,
+      "community_name": "initApp",
       "norm_label": "patchagendacardswithschedule()"
     },
     {
@@ -2507,8 +2496,8 @@
       "source_location": "L2633",
       "_origin": "ast",
       "id": "main_saveoracletoencyclopedia",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "saveoracletoencyclopedia()"
     },
     {
@@ -2541,7 +2530,7 @@
       "_origin": "ast",
       "id": "main_sbinsightpost",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "sbinsightpost()"
     },
     {
@@ -2574,7 +2563,7 @@
       "_origin": "ast",
       "id": "main_parseinsightjson",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "parseinsightjson()"
     },
     {
@@ -2585,7 +2574,7 @@
       "_origin": "ast",
       "id": "main_extractinsightsauto",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "extractinsightsauto()"
     },
     {
@@ -2596,7 +2585,7 @@
       "_origin": "ast",
       "id": "main_extractinsightssemiauto",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "extractinsightssemiauto()"
     },
     {
@@ -2607,7 +2596,7 @@
       "_origin": "ast",
       "id": "main_approveinsightsfromcache",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "approveinsightsfromcache()"
     },
     {
@@ -2618,7 +2607,7 @@
       "_origin": "ast",
       "id": "main_approveinsights",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "approveinsights()"
     },
     {
@@ -2628,8 +2617,8 @@
       "source_location": "L2814",
       "_origin": "ast",
       "id": "main_setupmanualinsightselection",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "setupmanualinsightselection()"
     },
     {
@@ -2639,8 +2628,8 @@
       "source_location": "L2827",
       "_origin": "ast",
       "id": "main_showinsighttooltip",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "showinsighttooltip()"
     },
     {
@@ -2650,8 +2639,8 @@
       "source_location": "L2836",
       "_origin": "ast",
       "id": "main_removeinsighttooltip",
-      "community": 12,
-      "community_name": "initApp",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "removeinsighttooltip()"
     },
     {
@@ -2662,7 +2651,7 @@
       "_origin": "ast",
       "id": "main_savemanualinsight",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "savemanualinsight()"
     },
     {
@@ -2684,7 +2673,7 @@
       "_origin": "ast",
       "id": "main_sendinsighttocmd3",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "sendinsighttocmd3()"
     },
     {
@@ -2705,8 +2694,8 @@
       "source_location": "L2940",
       "_origin": "ast",
       "id": "main_autoextractallincategory",
-      "community": 6,
-      "community_name": "renderEncEntries",
+      "community": 185,
+      "community_name": "setEncCategory",
       "norm_label": "autoextractallincategory()"
     },
     {
@@ -2727,8 +2716,8 @@
       "source_location": "L2962",
       "_origin": "ast",
       "id": "main_learnvideo",
-      "community": 154,
-      "community_name": "syncIntelData",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "learnvideo()"
     },
     {
@@ -2738,8 +2727,8 @@
       "source_location": "L2997",
       "_origin": "ast",
       "id": "main_switchtoci",
-      "community": 5,
-      "community_name": "showPage",
+      "community": 154,
+      "community_name": "syncIntelData",
       "norm_label": "switchtoci()"
     },
     {
@@ -2749,8 +2738,8 @@
       "source_location": "L3006",
       "_origin": "ast",
       "id": "main_vst_known",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "vst_known"
     },
     {
@@ -2771,8 +2760,8 @@
       "source_location": "L3037",
       "_origin": "ast",
       "id": "main_extractvstsfromtext",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "extractvstsfromtext()"
     },
     {
@@ -2783,7 +2772,7 @@
       "_origin": "ast",
       "id": "main_highlightvstsincontent",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "highlightvstsincontent()"
     },
     {
@@ -2794,7 +2783,7 @@
       "_origin": "ast",
       "id": "main_rendervstchips",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "rendervstchips()"
     },
     {
@@ -2816,7 +2805,7 @@
       "_origin": "ast",
       "id": "main_extractvstcontext",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "extractvstcontext()"
     },
     {
@@ -2827,7 +2816,7 @@
       "_origin": "ast",
       "id": "main_rendervstfooter",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "rendervstfooter()"
     },
     {
@@ -2837,8 +2826,8 @@
       "source_location": "L3114",
       "_origin": "ast",
       "id": "main_saveencwithvsts",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "saveencwithvsts()"
     },
     {
@@ -2882,7 +2871,7 @@
       "_origin": "ast",
       "id": "main_acceptjumptoenc",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "acceptjumptoenc()"
     },
     {
@@ -2926,7 +2915,7 @@
       "_origin": "ast",
       "id": "main_detectcategory",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "detectcategory()"
     },
     {
@@ -2948,7 +2937,7 @@
       "_origin": "ast",
       "id": "main_setencsort",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "setencsort()"
     },
     {
@@ -2959,7 +2948,7 @@
       "_origin": "ast",
       "id": "main_sortentries",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "sortentries()"
     },
     {
@@ -2970,7 +2959,7 @@
       "_origin": "ast",
       "id": "main_filterentries",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "filterentries()"
     },
     {
@@ -2981,7 +2970,7 @@
       "_origin": "ast",
       "id": "main_generateencbullets",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "generateencbullets()"
     },
     {
@@ -2992,7 +2981,7 @@
       "_origin": "ast",
       "id": "main_renderencentries",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "renderencentries()"
     },
     {
@@ -3003,7 +2992,7 @@
       "_origin": "ast",
       "id": "main_loadencbullets",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "loadencbullets()"
     },
     {
@@ -3014,7 +3003,7 @@
       "_origin": "ast",
       "id": "main_renderbullets",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "renderbullets()"
     },
     {
@@ -3058,7 +3047,7 @@
       "_origin": "ast",
       "id": "main_deleteencentry",
       "community": 6,
-      "community_name": "renderEncEntries",
+      "community_name": "callOracle",
       "norm_label": "deleteencentry()"
     },
     {
@@ -3069,7 +3058,7 @@
       "_origin": "ast",
       "id": "main_refreshencyclopediadisplay",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "refreshencyclopediadisplay()"
     },
     {
@@ -3080,7 +3069,7 @@
       "_origin": "ast",
       "id": "main_syncandpush",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "syncandpush()"
     },
     {
@@ -3178,8 +3167,8 @@
       "source_location": "L3630",
       "_origin": "ast",
       "id": "main_searchvideos",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "searchvideos()"
     },
     {
@@ -3189,8 +3178,8 @@
       "source_location": "L3674",
       "_origin": "ast",
       "id": "main_rendervideoresults",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "rendervideoresults()"
     },
     {
@@ -3200,8 +3189,8 @@
       "source_location": "L3702",
       "_origin": "ast",
       "id": "main_generatenotes",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 6,
+      "community_name": "callOracle",
       "norm_label": "generatenotes()"
     },
     {
@@ -3233,8 +3222,8 @@
       "source_location": "L3798",
       "_origin": "ast",
       "id": "main_quicksavetoencyclopedia",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "quicksavetoencyclopedia()"
     },
     {
@@ -3343,8 +3332,8 @@
       "source_location": "L4061",
       "_origin": "ast",
       "id": "main_saveworkshoptoencyclopedia",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "saveworkshoptoencyclopedia()"
     },
     {
@@ -3376,8 +3365,8 @@
       "source_location": "L4141",
       "_origin": "ast",
       "id": "main_submitintelurl",
-      "community": 154,
-      "community_name": "syncIntelData",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "submitintelurl()"
     },
     {
@@ -3398,8 +3387,8 @@
       "source_location": "L4196",
       "_origin": "ast",
       "id": "main_startjobpolling",
-      "community": 154,
-      "community_name": "syncIntelData",
+      "community": 3,
+      "community_name": "addXP",
       "norm_label": "startjobpolling()"
     },
     {
@@ -3454,7 +3443,7 @@
       "_origin": "ast",
       "id": "main_pushlocaltosupabase",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "pushlocaltosupabase()"
     },
     {
@@ -3563,8 +3552,8 @@
       "source_location": "L4482",
       "_origin": "ast",
       "id": "main_saveinteltoencyclopedia",
-      "community": 15,
-      "community_name": "sendChat",
+      "community": 5,
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "saveinteltoencyclopedia()"
     },
     {
@@ -3597,7 +3586,7 @@
       "_origin": "ast",
       "id": "main_loadnote",
       "community": 5,
-      "community_name": "showPage",
+      "community_name": "saveOracleToEncyclopedia",
       "norm_label": "loadnote()"
     },
     {
@@ -3662,8 +3651,8 @@
       "source_location": "L4635",
       "_origin": "ast",
       "id": "main_pipelinetonotion",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "pipelinetonotion()"
     },
     {
@@ -3673,8 +3662,8 @@
       "source_location": "L4660",
       "_origin": "ast",
       "id": "main_pipelinetogithub",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "pipelinetogithub()"
     },
     {
@@ -3684,8 +3673,8 @@
       "source_location": "L4690",
       "_origin": "ast",
       "id": "main_pipelinetogmail",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "pipelinetogmail()"
     },
     {
@@ -3695,8 +3684,8 @@
       "source_location": "L4742",
       "_origin": "ast",
       "id": "main_setagentpipestatus",
-      "community": 3,
-      "community_name": "addXP",
+      "community": 14,
+      "community_name": "triggerAgent",
       "norm_label": "setagentpipestatus()"
     },
     {
@@ -4539,7 +4528,7 @@
       "label": "buildField()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L15467",
+      "source_location": "L15472",
       "_origin": "ast",
       "id": "rpgace_core_buildfield",
       "community": 4,
@@ -4550,7 +4539,7 @@
       "label": "truncate()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L18015",
+      "source_location": "L18020",
       "_origin": "ast",
       "id": "rpgace_core_truncate",
       "community": 4,
@@ -4561,7 +4550,7 @@
       "label": "chip()",
       "file_type": "code",
       "source_file": "rpgace_core.js",
-      "source_location": "L18289",
+      "source_location": "L18294",
       "_origin": "ast",
       "id": "rpgace_core_chip",
       "community": 4,
@@ -4572,9 +4561,9 @@
       "label": "NOTE: not `global.addEventListener` - this module is defined AFTER",
       "file_type": "rationale",
       "source_file": "rpgace_core.js",
-      "source_location": "L18511",
+      "source_location": "L18516",
       "_origin": "ast",
-      "id": "rpgace_core_rationale_18511",
+      "id": "rpgace_core_rationale_18516",
       "community": 4,
       "community_name": "rpgace_core.js",
       "norm_label": "note: not `global.addeventlistener` - this module is defined after"
@@ -12567,18 +12556,6 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L22",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_context",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "api/composio.js",
       "source_location": "L12",
       "weight": 1.0,
@@ -12735,7 +12712,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "api/data-write.js",
-      "source_location": "L5",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write",
@@ -13214,30 +13191,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L22",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_context_setcors",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L59",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables_handler",
-      "target": "api_context_setcors"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "api/composio.js",
       "source_location": "L12",
       "weight": 1.0,
@@ -13263,7 +13216,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "api/data-write.js",
-      "source_location": "L5",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write",
@@ -13276,7 +13229,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "api/data-write.js",
-      "source_location": "L63",
+      "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write_handler",
@@ -13502,30 +13455,6 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L22",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_context_requireauth",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L61",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables_handler",
-      "target": "api_context_requireauth"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
       "source_file": "api/composio.js",
       "source_location": "L12",
       "weight": 1.0,
@@ -13551,7 +13480,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "api/data-write.js",
-      "source_location": "L5",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write",
@@ -13564,7 +13493,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "api/data-write.js",
-      "source_location": "L65",
+      "source_location": "L215",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write_handler",
@@ -14040,85 +13969,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L26",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_bundle_deliverables_config",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L40",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_bundle_deliverables_fileappliestotier",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L58",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_bundle_deliverables_handler",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L46",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_bundle_deliverables_sbfetch",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L38",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables",
-      "target": "api_bundle_deliverables_tier_order",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L87",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables_handler",
-      "target": "api_bundle_deliverables_fileappliestotier",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "api/bundle-deliverables.js",
-      "source_location": "L78",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "api_bundle_deliverables_handler",
-      "target": "api_bundle_deliverables_sbfetch",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "api/composio.js",
       "source_location": "L14",
       "weight": 1.0,
@@ -14131,7 +13981,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api/data-write.js",
-      "source_location": "L24",
+      "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write",
@@ -14142,11 +13992,90 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "api/data-write.js",
-      "source_location": "L62",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write",
+      "target": "api_data_write_config",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write",
+      "target": "api_data_write_fileappliestotier",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L111",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write",
+      "target": "api_data_write_handlebundledeliverables",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write",
       "target": "api_data_write_handler",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write",
+      "target": "api_data_write_sbfetch",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write",
+      "target": "api_data_write_tier_order",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L129",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write_handlebundledeliverables",
+      "target": "api_data_write_fileappliestotier",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L120",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write_handlebundledeliverables",
+      "target": "api_data_write_sbfetch",
       "confidence_score": 1.0
     },
     {
@@ -14155,11 +14084,23 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "api/data-write.js",
-      "source_location": "L77",
+      "source_location": "L232",
       "weight": 1.0,
       "_origin": "ast",
       "source": "api_data_write_handler",
       "target": "api_data_write_allowed_tables"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "api/data-write.js",
+      "source_location": "L227",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "api_data_write_handler",
+      "target": "api_data_write_handlebundledeliverables",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -21976,7 +21917,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L15467",
+      "source_location": "L15472",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -21998,7 +21939,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L18289",
+      "source_location": "L18294",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -22130,7 +22071,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L17500",
+      "source_location": "L17505",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -22240,7 +22181,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L18015",
+      "source_location": "L18020",
       "weight": 1.0,
       "_origin": "ast",
       "source": "rpgace_core",
@@ -22284,10 +22225,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "rpgace_core.js",
-      "source_location": "L18511",
+      "source_location": "L18516",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "rpgace_core_rationale_18511",
+      "source": "rpgace_core_rationale_18516",
       "target": "rpgace_core",
       "confidence_score": 1.0
     },
@@ -28627,5 +28568,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "fc231cb48959eaa911c0eb33cf5af89722157d9b"
+  "built_at_commit": "a794c20e95854819bb2596cb1746f1aed0973b09"
 }

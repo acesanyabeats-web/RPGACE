@@ -40,9 +40,9 @@
     "semantic_hash": "7fca0326ac07022224f3d6c78a6c7ee6"
   },
   "api/data-write.js": {
-    "mtime": 1785248854.8751485,
-    "ast_hash": "26cb88ef3e24ac37a26700e88ea21a53",
-    "semantic_hash": "26cb88ef3e24ac37a26700e88ea21a53"
+    "mtime": 1785964229.4630835,
+    "ast_hash": "abe3d04b74ed46a80566c4699a973cac",
+    "semantic_hash": ""
   },
   "api/executor.js": {
     "mtime": 1784852228.8074856,
@@ -95,7 +95,7 @@
     "semantic_hash": "6695a6663133d4bf601c6eb801dc9517"
   },
   "package.json": {
-    "mtime": 1785963530.211042,
+    "mtime": 1785964074.4310744,
     "ast_hash": "2137332a44aae1da8956a233cbc2db4f",
     "semantic_hash": ""
   },
@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785963740.8710544,
-    "ast_hash": "84892c0237240bc8ed6ce30e5c51629e",
+    "mtime": 1785964255.019085,
+    "ast_hash": "ff66da6ff59182a58ad2cdadddd3e35d",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785963901.511064,
-    "ast_hash": "13987d8a75f2fd594860bf7c3eee6eba",
+    "mtime": 1785964290.887087,
+    "ast_hash": "970425578c8710db17248c3dadaec4f9",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,13 +1060,13 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785963747.6390548,
+    "mtime": 1785964074.4310744,
     "ast_hash": "62d3911683ff46a64c22f3419cc2f72b",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
-    "mtime": 1785964013.9150708,
-    "ast_hash": "b937a6c9348ad5a800ec26d6c0c93b98",
+    "mtime": 1785974170.9813876,
+    "ast_hash": "a99c1d2dc701d93aa35389ef3e4613d0",
     "semantic_hash": ""
   },
   "item7_process_debate_2026-07-24.txt": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785963817.435059,
-    "ast_hash": "336c3fb20c8342adb1f19322a1c43d7d",
+    "mtime": 1785974189.2773879,
+    "ast_hash": "a11e9f3a3ef090fed19cc83926799b53",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1215,8 +1215,8 @@
     "semantic_hash": ""
   },
   "system_flow_map.md": {
-    "mtime": 1785963984.055069,
-    "ast_hash": "3122b2772e711370421a414364fc855f",
+    "mtime": 1785974182.9653878,
+    "ast_hash": "d33a5f34f0787096d6ec80c3744fade5",
     "semantic_hash": ""
   },
   "taxonomy_map.html": {
@@ -1364,19 +1364,14 @@
     "ast_hash": "60c5eb5b33f8a9390388e3270b92d097",
     "semantic_hash": ""
   },
-  "api/bundle-deliverables.js": {
-    "mtime": 1785963576.6070447,
-    "ast_hash": "94ee03935351845b80058ae56d9d056a",
-    "semantic_hash": ""
-  },
   "beat_deliverables_autoport_backlog_2026-08-05.txt": {
-    "mtime": 1785963792.5790575,
-    "ast_hash": "c59dbc0fee0ad1790814a05a04ed84ce",
+    "mtime": 1785974209.345388,
+    "ast_hash": "dd1170e1302f28c702a0ef50de048dee",
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-05_09.txt": {
-    "mtime": 1785963881.6870627,
-    "ast_hash": "b3462668dace0c4e74fd84a28362fc1c",
+    "mtime": 1785974244.9933884,
+    "ast_hash": "90c59e0dfecee736479452f7d79e5d8d",
     "semantic_hash": ""
   }
 }
