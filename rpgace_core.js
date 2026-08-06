@@ -3491,10 +3491,20 @@ RPGACE.register('oracleDevBridge', {
     // 5thDimension reply mid-sentence, with no indication to Alex that
     // anything was lost - `suggestion_text` is a plain unbounded `text`
     // column (confirmed via information_schema), so this was a client-
-    // side-only limit, not a real DB constraint. Raised to 8000 (comfortably
-    // covers a max_tokens:1200 reply) and now appends an explicit marker
-    // if a reply somehow still exceeds it, instead of a silent mid-word cut.
-    var toSave = text.length > 8000 ? (text.slice(0, 8000) + '\n\n[...truncated - original reply was ' + text.length + ' chars]') : text;
+    // side-only limit, not a real DB constraint. Raised to 8000 at the time
+    // (comfortably covered the then-current max_tokens:1200 reply cap).
+    // Aug 6 (real /Summary review of this exact table's own rows) — that
+    // cap is now itself stale: sendChat's callOracle cap was raised to
+    // max_tokens:3000 on July 31 (a separate real fix, for a different
+    // "reply cut off mid-document" complaint about Visual Treatment Docs)
+    // and NEVER cross-checked against this flag cap. Real evidence: 6 of
+    // 8 real flagged rows in this exact table between Aug 5-6 hit the old
+    // 8000-char ceiling almost exactly and lost their endings — including
+    // DIRECTOR_CHOSEN:/EDL_JSON: trailers and final scene breakdowns on
+    // real Visual Treatment Docs. Raised to 16000 (comfortable headroom
+    // over a 3000-token reply) with the same explicit-marker safety net
+    // for anything that somehow still exceeds it.
+    var toSave = text.length > 16000 ? (text.slice(0, 16000) + '\n\n[...truncated - original reply was ' + text.length + ' chars]') : text;
     RPGACE.sb.secureWrite(this.TABLE, 'insert', [{ suggestion_text: toSave, category: 'oracle-flagged', status: 'new', source: 'oracle' }])
     .then(function() {
       btn.textContent = '✓ Sent to Claude Code';

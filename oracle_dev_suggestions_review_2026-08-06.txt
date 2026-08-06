@@ -1,0 +1,321 @@
+ORACLE_DEV_SUGGESTIONS FULL REVIEW — 2026-08-06
+==================================================
+Real /Summary pass over every row in `oracle_dev_suggestions`, in the order
+each row was actually created (timestamps are the real ordering key, per
+Alex's own instruction — nothing here is reordered by importance).
+
+CONTEXT / REAL GAP FOUND FIRST: CLAUDE.md's standing claim ("all 3 rows
+already status='reviewed', re-checked directly Aug 4") was itself stale.
+Direct query: 11 total rows, 3 reviewed (the pre-Aug-4 set) + 8 status='new'
+that arrived Aug 5 03:25 through Aug 6 01:54 and had never been looked at
+by any Claude Code session — a real miss of this file's own standing
+"Session-start check" rule across several passes today. Closed by this
+review: all 8 now marked reviewed (see STATUS CHANGE at the end).
+
+===============================================================================
+ROW 1 — 2026-07-28 01:40:03 UTC — status: reviewed (pre-existing)
+===============================================================================
+WHAT HAPPENED: Oracle ran its own 5thDimension self-audit. Confirmed real:
+21-phylum classification exists, Oracle persona/quest-generation format
+work. Explicitly flagged as unverifiable from inside the chat: XP totals,
+dashboard numbers, whether the taxonomy tree matches the system prompt,
+quest persistence, activity counts, deployment status. Proposed rewire:
+bidirectional XP ledger tagging every quest to a Phylum, feeding a radar
+chart of XP-per-Phylum. Gave its own honest counter-case: if quest
+completion isn't reliably captured, the radar chart would just visualize
+logging habits, not real skill gaps — precondition is durable quest
+completion tracking first.
+
+WHAT'S CHANGED SINCE: Nothing on the specific ask (Phylum XP Ledger) —
+CLAUDE.md's "Open forks that need Alex" section still lists it as NOT
+BUILT, blocked on the exact same precondition Oracle named here: Quest
+Board's `addXP()`/`completeQuest()` have zero persistence. Oracle's own
+counter-case has held up for 9 real days without being invalidated.
+
+IMPROVED: The taxonomy did grow — 12 of 21 phyla now built (was ~10 when
+this row was written), phyla 11+14 added July 30.
+NOT IMPROVED: Quest Board persistence — still zero, still the real blocker.
+
+INFLUENCE ON OUTPUT: None yet — the rewire was never built, so no output
+change to measure.
+
+WHAT CAN BE PLANNED: Nothing changes the verdict here. The honest
+counter-case is still correct. Building the radar chart before quest
+persistence exists would still be decorating a data layer that doesn't
+work yet.
+
+===============================================================================
+ROW 2 — 2026-07-28 01:56:44 UTC — status: reviewed (pre-existing)
+===============================================================================
+WHAT HAPPENED: A genuine human-verified feedback loop — Alex checked Row
+1's claims against the real codebase, found a real overclaim ("21 phyla
+structurally complete" — actually 10/21 at the time) and found the quest
+XP problem was WORSE than Oracle guessed (zero persistence, not just
+inconsistent logging). Oracle corrected its own claim permanently and
+proposed the real Supabase→Claude Code grounding channel — explicitly
+distinguishing "reported state" from "code-verified state," and naming
+the exact failure mode that would repeat without it (an in-memory bug a
+DB read alone could never catch). Named the real next move: wire
+`completeQuest()` to the same Supabase activity tables the dashboard
+already reads.
+
+WHAT'S CHANGED SINCE: This is the single clearest "idea became real
+infrastructure" row in the whole table. The Supabase→Claude Code channel
+this row asked for is now THIS EXACT TABLE plus `oracle_module_anatomy`
+(built July 31) — both real, both live. The overclaim-correction loop it
+described ("I will not repeat that overclaim") is the literal mechanism
+this review is running right now.
+
+IMPROVED: A real, working grounding channel exists where none did.
+NOT IMPROVED: The actual named next move — wire `completeQuest()` to
+persistent storage — was never done. The idea that motivated the whole
+row shipped; the underlying bug it was flagging did not get fixed.
+
+INFLUENCE ON OUTPUT: Real and positive — Oracle's own self-audits (rows
+10, 11) now cite specific real numbers (52 modules, 12/21 phyla, exact
+RLS/XSS fix dates) instead of guessing, directly because this channel
+exists.
+
+WHAT CAN BE PLANNED: The actual code fix this row named 9 days ago is
+still sitting there, still correctly scoped, still not built: wire
+`addXP()`/`completeQuest()` in main.js to write into the same real
+Supabase activity tables the dashboard's career score already reads from.
+This is now the SINGLE MOST-REPEATED ask in this entire table — see rows
+1, 2, 10, 11 below. Four separate flags across 9 days asking for the same
+fix is a real pattern-of-repeated-asks signal, not four different ideas.
+
+===============================================================================
+ROW 3 — 2026-07-31 11:17:22 UTC — status: reviewed (pre-existing)
+===============================================================================
+WHAT HAPPENED: Not dev feedback — a real Visual Treatment Document for
+"Calibri" (RnB × West Coast, 94 BPM, C Minor, Kubrick reference), flagged
+via the same button. Real finding: the "🧪 Flag for Claude Code" button is
+genuinely being used for two different purposes — architecture feedback
+AND creative-output archival — and this table's own name/CLAUDE.md's own
+description ("Oracle's own flagged app-improvement suggestions") only
+describes the first use. 6 of the 8 rows below are also this second kind.
+
+WHAT'S CHANGED SINCE: The Character Reference Block convention this doc
+already uses (added July 31, per the openmontage_kickoff work) is
+confirmed present and consistently applied in every later Visual
+Treatment row in this table — real evidence the fix is working in live
+usage, not just shipped.
+
+WHAT CAN BE PLANNED: Nothing to build from this row's content — it's a
+creative artifact, correctly preserved. The real actionable finding is
+the button's dual-purpose usage pattern, addressed in the STATUS CHANGE
+section below (this review does not change the button's behavior, just
+documents the real usage pattern for future sessions triaging this table).
+
+===============================================================================
+ROWS 4-9 — 2026-08-05 03:25:34 through 2026-08-06 01:13:37 UTC — status:
+was 'new', now reviewed
+===============================================================================
+Six rows, all real creative outputs (a Copyright Risk Analysis for "No
+Motivation," a Morning Brief + Visual Treatment for the same beat, and
+Visual Treatment Docs for "Temptations," and THREE separate versions of
+"Asylum" across ~4 hours). None are dev-feedback-shaped; all are the same
+"flag button used for archival" pattern as Row 3.
+
+WHAT HAPPENED, timestamp by timestamp:
+- 03:25:34 — Copyright Risk Analysis, "No Motivation" (Drill). Real,
+  substantive legal analysis: correctly identifies a Banksy Easter-egg
+  reference as HIGH risk (2D street art isn't covered by UK Freedom of
+  Panorama), London landmark filming as MEDIUM (permit/CAA drone
+  requirements, not copyright), director-style/genre-convention
+  references as LOW risk (directorial style isn't copyrightable), and
+  raises a real, current UK IPO position on AI-generated-video ownership
+  (minimal human creative input weakens an authorship claim) — genuinely
+  useful, non-generic legal reasoning tied to real UK law sections.
+- 03:25:44 — Morning Brief + full "No Motivation" Visual Treatment. Real
+  evidence inside it: Gmail and Composio/YouTube both show "Could not
+  fetch — check connection" — this is the SAME Morning Brief integration
+  failure already investigated and left open per Alex's own "move on and
+  retry later" call earlier this session (see
+  morning_brief_redesign_and_measured_doses_spec_backlog_2026-08-06.txt).
+  Not a new finding — independent confirmation of an already-logged one.
+- 13:20:30 — Visual Treatment, "Temptations" (Bong Joon-ho director
+  match). Real Character Reference Block present, consistently formatted.
+- 21:19:45 — Visual Treatment, "Asylum" v1 (Terrence Malick single-
+  director match).
+- 21:27:10 — Visual Treatment, "Asylum" v2, ~8 min later (Kurosawa ×
+  Miller × Snyder director BLEND — a rain-themed global concept, entirely
+  different concept statement from v1).
+- Aug 6 01:13:37 — Visual Treatment, "Asylum" v3, ~4h later (Kurosawa ×
+  Aster × Aronofsky blend — an amputee/accident-survival concept,
+  entirely different again from v1 and v2).
+
+WHAT'S CHANGED SINCE: The real Content Pipeline director-blend picker
+(Phase C, Aug 5) is confirmed working exactly as designed by this live
+usage — Alex generating 3 structurally different treatments for the same
+beat, each with a real multi-director blend and a real Character
+Reference Block, is precisely the "up to 3 directors, blended" feature
+Phase C shipped. This is real, positive, unprompted evidence the feature
+works in practice — stronger than a hand-test, because it's Alex actually
+using it for real creative work, not a scripted click-through.
+
+REAL BUG FOUND FROM THIS EVIDENCE (not from guessing): 6 of these 8 rows
+are within a few bytes of an identical ~8000-character length — a dead
+giveaway of a length CAP, not a coincidence. Confirmed by reading the
+actual flag code (`oracleDevBridge._flag`, rpgace_core.js): a real
+8000-char client-side truncation, tuned July 28 to the THEN-current
+`max_tokens:1200` reply ceiling. That ceiling was raised to 3000 tokens on
+July 31 for a different, real complaint (Visual Treatment Docs cutting off
+mid-document) — and nobody cross-checked this flag cap against that
+change. Real, silent consequence: every one of these long Visual
+Treatment flags LOST its ending — director trailers, final scene
+breakdowns, OpenMontage production briefs, all truncated with only a
+"[...truncated - original reply was N chars]" marker, no warning to Alex
+at flag-time. FIXED this session (see STATUS CHANGE below): cap raised to
+16000, same safety-net marker kept for anything that still exceeds it.
+
+INFLUENCE ON OUTPUT: The real Visual Treatment content itself (before
+truncation) is detailed, structurally consistent, and correctly grounded
+in RPGACE's own taxonomy nodes (every doc cites its real Visio Cinematica
+sub-node sources) — genuinely good creative output. The truncation bug
+did NOT affect the real operational path (Oracle's actual reply, captured
+live via `_captureNextResponse` and saved to `creative_docs` through the
+normal send flow, was never touched by this cap) — it only affected these
+archival copies inside `oracle_dev_suggestions` itself. Real scope: this
+bug degraded Claude Code's own ability to review flagged output, not
+RPGACE's live production pipeline.
+
+WHAT CAN BE PLANNED: Nothing else from these 6 rows needs building —
+they're creative artifacts, now safely preserved at full length going
+forward. The one real code action (the cap fix) is done.
+
+===============================================================================
+ROW 10 — 2026-08-06 01:26:12 UTC — status: was 'new', now reviewed
+===============================================================================
+WHAT HAPPENED: A fresh 5thDimension self-audit, ~4h after Row 9. Real,
+specific confirms: 52 modules registered, 12/21 phyla (1-10, 11, 14) with
+real tree content, RLS flip verified via `pg_policy` July 24, XSS fix
+July 28, Quest Board STILL zero persistence (re-confirmed, not assumed),
+Oracle streaming shipped but not hand-tested, F16/F17/F18 shipped but
+never hand-tested. Rewiring idea: connect Knowledge Gaps to Quest Board —
+auto-propose a quest from a real gap, write it to a durable table. Honest
+counter-case, correctly reasoned: Quest Board's missing persistence is
+the more urgent problem, and 9 of 21 phyla have no tree content to
+meaningfully generate gap-based quests from yet — premature. "Bring to
+Claude Code" list: F16/17/18 hand-test, Oracle streaming live test, Quest
+Board persistence audit (read `addXP()`/`completeQuest()` directly),
+phylumPath internals audit, Morning Brief connection-failure diagnosis.
+
+WHAT'S CHANGED SINCE (real, checked against this exact session's own
+work, not assumed):
+- F16/F17/F18 hand-test: STILL NOT DONE. CLAUDE.md's own smoke-test
+  backlog still lists all three as pending. Genuinely unresolved, 9 days
+  running now (first flagged in spirit by Row 1, explicitly named here).
+- Oracle streaming live test: STILL NOT formally hand-tested, but real
+  indirect evidence accumulated THIS session: 8 long, coherent, well-
+  formed Visual Treatment/Copyright/Brief replies (rows 3-9) all
+  generated successfully end-to-end. Streaming is very likely working —
+  this is real evidence toward that, not a substitute for an explicit
+  test.
+- Quest Board persistence audit: STILL NOT DONE. No session has read
+  `addXP()`/`completeQuest()` in main.js and confirmed/fixed the
+  in-memory-only claim this session.
+- Morning Brief connection failures: PARTIALLY addressed earlier this
+  same session — real evidence gathered (the Routine fires into the same
+  trusted environment used successfully all day; a diagnostic re-fire was
+  sent), but per Alex's own explicit "move on and retry later" call, left
+  open rather than chased further. Not ignored — deliberately deferred.
+- phylumPath internals audit: not directly re-audited this session, but
+  CLAUDE.md's Taxonomy section already documents phylumPath's real
+  behavior in reasonable depth (decidePlacementScored, Council-of-5
+  scoring mechanic, the duplicate-Order landmine's real fix status) —
+  Oracle's own grounding data for this module is simply older than what
+  CLAUDE.md itself now knows; a real oracle_module_anatomy refresh would
+  close this gap cheaply.
+
+INFLUENCE ON OUTPUT: This row's own content is measurably better than
+Row 1's — real counts instead of hedged language, correct citation of
+verified-not-assumed facts (RLS "independently verified via pg_policy,"
+not just "flipped"). Direct, positive evidence the Row 2 grounding-channel
+investment is paying off in real answer quality.
+
+WHAT CAN BE PLANNED AND EXECUTED: The two genuinely still-open, buildable
+items from this row's own list:
+  1. Quest Board persistence — same fix Row 2 named 9 days ago. This is
+     now the single most-repeated ask across this whole table (rows 1, 2,
+     10, 11 — 4 separate flags, 9 days apart). Real next step: read
+     `addXP()`/`completeQuest()` in main.js directly, confirm the
+     in-memory-only claim, then wire them to write into the same real
+     Supabase activity tables the dashboard's career score reads from.
+  2. F16/F17/F18 hand-test sweep — a real, bounded task, zero build
+     required, just execution: log a beat with F18 on, walk a video_jobs
+     row through all 5 F17 stages, set a licence type and test the F16
+     Beatstars button. This has been on the smoke-test backlog since it
+     shipped and has never been picked up.
+
+===============================================================================
+ROW 11 — 2026-08-06 01:54:47 UTC — status: was 'new', now reviewed
+===============================================================================
+WHAT HAPPENED: Another self-audit, ~28 minutes after Row 10, on the same
+day, with almost identical content — same 52-module/12-phylum counts, same
+RLS/XSS confirms, same Quest Board zero-persistence flag, same F16/17/18
+untested flag, same Knowledge Gaps → Quest Board rewire idea (slightly
+tighter wording), same honest counter-case, same "bring to Claude Code"
+list with 2 additional specific items: Encyclopedia/Knowledge Gaps
+internals (Oracle has zero anatomy notes on either — a real
+oracle_module_anatomy gap, only 13 of RPGACE's ~52 modules are covered)
+and Bookworm's modal-vs-card-list state (already CLAUDE.md's own
+optimization-backlog item 1, still not built).
+
+REAL OBSERVATION WORTH NAMING: two nearly-identical 5thDimension self-
+audits, 28 minutes apart, with no real new grounding data arriving in
+between, is a real token-cost signal (rule 11) — likely Alex re-running
+the same Prod Oracle command twice in close succession, possibly testing
+repeatability rather than expecting two different answers. Not a bug,
+just worth flagging: each 5thDimension pass is a real Anthropic API call:
+running it twice back-to-back for the same real state doesn't produce new
+information.
+
+WHAT'S CHANGED SINCE: Same answer as Row 10 — nothing in the 28-minute gap
+changed, and nothing has changed since either, on the two still-open
+items (Quest Board persistence, F16/17/18 hand-test).
+
+WHAT CAN BE PLANNED AND EXECUTED: Same two real items as Row 10, plus:
+  3. Expand `oracle_module_anatomy` to cover Encyclopedia and Knowledge
+     Gaps — cheap (it's a data-entry task against an existing table and
+     retrieval mechanism, not new code), and directly closes a gap Oracle
+     itself has now named twice.
+  4. Bookworm modal → card-list conversion — already-scoped backlog item
+     1, unrelated to today's work, still real and still open.
+
+===============================================================================
+CROSS-ROW PATTERN, ACROSS ALL 11 ROWS, BY TIMESTAMP
+===============================================================================
+The single clearest signal in this whole table, ranked by how many
+separate timestamps independently raised it:
+
+1. QUEST BOARD PERSISTENCE — flagged 2026-07-28 01:40, 2026-07-28 01:56,
+   2026-08-06 01:26, 2026-08-06 01:54. FOUR separate real timestamps, 9
+   days apart, same real bug, same real fix named each time
+   (`addXP()`/`completeQuest()` need to write to persistent Supabase
+   storage instead of in-memory `STATE`). This is the strongest, most
+   repeated, most consistently-scoped real ask in the entire table and
+   has not been built.
+2. F16/F17/F18 HAND-TEST — flagged 2026-08-06 01:26 and 2026-08-06 01:54
+   explicitly, implicitly relevant to every row that generated real
+   output through those features (rows 4-9). Zero build required, pure
+   execution debt.
+3. THE FLAG BUTTON'S DUAL USE — not something Oracle itself named, but a
+   real structural finding from reading all 11 rows together: 8 of 11
+   are creative-output archival, only 3 are architecture feedback. Future
+   sessions triaging this table should expect this ratio, not assume
+   every row is a dev suggestion.
+
+===============================================================================
+STATUS CHANGE (this review)
+===============================================================================
+- All 8 `status='new'` rows updated to `status='reviewed'` in Supabase —
+  this review IS the review the status column exists to track.
+- `oracleDevBridge._flag`'s truncation cap raised 8000 -> 16000 chars,
+  matching the real current `max_tokens:3000` reply ceiling (rpgace_core.js).
+  node --check clean.
+- CLAUDE.md's stale "all 3 rows already reviewed" claim corrected.
+- Real, still-open items surfaced by this review promoted into CLAUDE.md's
+  "Open forks that need Alex" section: Quest Board persistence (now the
+  most-repeated ask in the project's own Oracle feedback), F16/F17/F18
+  hand-test sweep.

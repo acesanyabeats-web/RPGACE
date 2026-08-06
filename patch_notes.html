@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧾 Aug 6 — Full oracle_dev_suggestions review (all 11 rows, real /Summary). Full record: <code>oracle_dev_suggestions_review_2026-08-06.txt</code>.</div>
+    <div class="card-body">
+      Real gap found first: CLAUDE.md's "all 3 rows reviewed" claim (checked Aug 4) had gone stale — 8 real new rows arrived Aug 5-6 and sat unreviewed across several sessions. All 11 rows now reviewed row-by-row, in timestamp order, cross-checked against what's actually true right now (not assumed).
+      <br><br>
+      <strong>Biggest finding</strong>: Quest Board's zero-persistence bug (<code>addXP()</code>/<code>completeQuest()</code> never writing anywhere durable) has now been independently flagged by Oracle's own self-audits 4 separate times over 9 days. Same real fix named every time, still not built — promoted to a sharper CLAUDE.md bullet.
+      <br><br>
+      <strong>Real bug found and fixed from the evidence itself</strong>: 6 of 8 new rows were silently truncated at an 8000-char flag-storage cap — real, live Visual Treatment Docs losing their endings (director trailers, scene breakdowns). Root cause: the cap was tuned to a <code>max_tokens:1200</code> ceiling in July, never rechecked after that ceiling was raised to 3000 on July 31. Fixed: cap raised to 16000.
+      <br><br>
+      <strong>Real positive evidence, unprompted</strong>: 6 of the 11 rows are actual live creative output (Visual Treatment Docs, a Copyright Risk Analysis) rather than dev feedback — confirming the Aug 5 director-blend picker and Character Reference Block conventions are genuinely working in Alex's real usage, not just passing a hand-test.
+      <br><br>
+      node --check clean. Cache-bust 20260806e → f.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌐 Aug 6 — Mock Oracle pattern generalized into a global Claude Code skill, /dummy.</div>
     <div class="card-body">
       Alex confirmed the Mock Oracle toggle's intended workflow verbatim: dummy mode for "developing functions and DOMs" (zero API cost), switch to real Oracle "when I need to check how output is formed." Then asked for the underlying pattern as a portable global skill, paired with <code>/Engineer</code>.
