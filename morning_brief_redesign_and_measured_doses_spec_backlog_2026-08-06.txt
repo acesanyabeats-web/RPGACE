@@ -54,10 +54,26 @@ gap, not confirmed as such.
 Real diagnostic action taken: fired a fresh re-test of the exact same
 Routine (fire_trigger, session cse_01MZfEWpP5e3iRZboZ4x1EPz) asking it
 to plainly retry the identical curl and report whether it succeeds or
-fails identically. Result pending as this file is written — see the
-live chat reply for the real outcome once it reports back, and update
-this file's own "resolved" status accordingly rather than leaving this
-paragraph stale.
+fails identically. Result still pending at time of writing (no
+notification received yet) — checked directly rather than wait idly:
+
+REAL, BIGGER FINDING THAN THE ORIGINAL TRANSIENT-VS-DURABLE QUESTION —
+queried `journal` directly: `select count(*) from journal where
+source='morning-routine'` returns **0, ever**. Not "0 today" — zero
+rows have EVER been written by this Routine's own real end-to-end
+task (fetch Supabase data → compose brief → POST into journal) since
+it was built July 22, despite the Routine having fired multiple times
+(`last_fired_at` history shows real fires on at least July 22/31 —
+whatever CLAUDE.md's manual.html entry meant by "not yet fired for
+real" back on July 22 was apparently never re-confirmed as actually
+working afterward). This reframes the real severity: this isn't
+necessarily "today's run hit a one-off block" — the Routine's real
+write path may never have succeeded even once. Whether that's the
+SAME root cause as today's reported 403, or a separate, longer-
+standing problem, is not yet known — needs the actual diagnostic
+re-fire's real reply (or a fresh direct check of `journal` after it
+completes) before concluding either way. Do not treat this paragraph
+as resolved until that real check has been done.
 
 =====================================================================
 PART B — THE BIG IDEA: Morning Brief redesign + "measured doses"
