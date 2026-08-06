@@ -173,3 +173,62 @@ open item -- a future session should not re-propose building it without
 a new, explicit reason to revisit. The 56-component shape is accepted
 as the real, honest output of a community-detection graph over this
 codebase's actual reference structure.
+
+------------------------------------------------------------------
+ROUND 3 (same session) — the real justification, and real positioning
+------------------------------------------------------------------
+Alex asked for 2 things: (1) a real justification for keeping the 56
+components rather than force-merging them, and (2) positioning
+disconnected components spatially closest to the real part of RPGACE
+they're actually about, even without a real edge.
+
+REAL JUSTIFICATION for keeping 56 components (not a repeat of "it's
+honest" - the actual reasoning):
+- An edge in this graph currently means one specific, checkable thing:
+  a real AST-extracted reference (a call, an import, a "contains"
+  relationship). That single, consistent meaning is what makes an edge
+  trustworthy to read at all. A synthetic "this file is probably about
+  that module" edge would carry a DIFFERENT, weaker kind of claim -
+  mixing the two together would mean a reader could no longer tell,
+  from an edge alone, whether A really calls B or just vaguely relates
+  to B. That ambiguity would make every edge in the graph less
+  trustworthy, not just add a few new ones.
+- Many of the 56 components are genuinely, correctly self-contained:
+  interconnection_map.md's own 25-node island IS one document's real
+  internal structure (its own sections cross-referencing each other) -
+  that is the real, correct shape of a markdown file's own content, not
+  a bug. Forcing it to touch code nodes it doesn't reference would be
+  the actual misrepresentation.
+- The disconnection is ALSO a real, useful signal on its own: it
+  visibly flags exactly where graphify's real extraction has no
+  purchase (RPGACE.register() module boundaries, hooks/dynamic
+  dispatch, doc-to-code semantic links) - hiding that behind fabricated
+  connectivity would remove the one honest marker of where a reader
+  needs to go read the actual source instead of trusting the graph.
+
+REAL POSITIONING built instead (the safer way to express "these are
+related"): extended scripts/graphify_river_group.py with
+build_component_zone_map() - computes every real connected component
+from graph.json's own edges, then places a whole component near the
+zone matching real, checkable evidence about it (component-vote logic:
+an existing river tag from a real module-marker range wins outright;
+otherwise a real file-path rule - .claude/skills/ + plans/ + root-level
+oversight docs + dev/build tooling -> Zone XIII "Dev Process"; api/*.js
+-> Zone XII "API/Auth Layer" (real, checkable: every api file routes
+through requireAuth()/setCORS() in api/_context.js, confirmed by direct
+grep); scripts/fourth_rota.py + n8n/* -> River V (real Schedule-system
+tooling, documented in interconnection_map.md/patch_notes.html)).
+Crucially, POSITION is not an EDGE - proximity doesn't claim a hard
+reference relationship the way a graph edge would, so this satisfies
+the real underlying ask without repeating the "why not just hook them
+up" mistake.
+
+Real, honest result: 711 of 950 nodes now have a real, evidence-based
+position (up from the 16 the pure river-tagging pass gave). 239 remain
+unclassified on purpose - all of them main.js's own single connected
+component, since main.js has no per-line module-marker evidence the
+way rpgace_core.js does, and guessing at which real river any one
+main.js function belongs to would be exactly the kind of unearned claim
+this whole exercise was built to avoid. Verified idempotent (2nd run:
+"already present, no-op"), node/legend counts intact (950 nodes, 194
+legend entries).

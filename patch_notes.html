@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📍 Aug 6 (same day, 15th pass) — real justification for keeping 56 components + real evidence-based spatial positioning, 711 of 950 nodes placed.</div>
+    <div class="card-body">
+      Alex asked for 2 things: a real justification for keeping the 56 separate components rather than force-merging them, and positioning disconnected components spatially closest to the real part of RPGACE they're actually about.
+      <br><br>
+      <strong>Justification</strong>: an edge in this graph means one specific, checkable thing — a real AST-extracted reference. Mixing in a weaker "probably related" edge would make every edge in the graph less trustworthy to read, not just add a few new ones. Many components are also genuinely, correctly self-contained (interconnection_map.md's own 25-node island IS its own real internal document structure). The disconnection itself is a useful signal too — it visibly flags exactly where graphify's extraction has no purchase (RPGACE.register() boundaries, hooks/dynamic dispatch, doc-to-code semantic gaps); hiding that behind fabricated connectivity would remove the one honest marker of where a reader needs to go read the actual source.
+      <br><br>
+      <strong>Positioning ≠ edges</strong>, which is why this satisfies the real ask without repeating the "fabricate connections" mistake: proximity doesn't claim a hard reference relationship. Extended <code>scripts/graphify_river_group.py</code> with <code>build_component_zone_map()</code> — computes every real connected component from graph.json's own edges, then places the WHOLE component near a zone chosen by real, checkable evidence (an existing module-marker river tag wins outright as the strongest signal; otherwise real file-path rules: <code>.claude/skills/</code>+<code>plans/</code>+root oversight docs+dev/build tooling → new Zone XIII "Dev Process"; <code>api/*.js</code> → new Zone XII "API/Auth Layer", real since every api file routes through <code>api/_context.js</code>'s shared auth, confirmed by direct grep; <code>fourth_rota.py</code>/<code>n8n/*</code> → River V, real documented Schedule tooling).
+      <br><br>
+      Real result: 711 of 950 nodes now have a real, evidence-based position (up from 16 after the pure river-tagging pass). 239 remain honestly unclassified — all of them main.js's own single connected component, since main.js has no per-line module-marker evidence the way rpgace_core.js does, and guessing which river any one main.js function belongs to would be exactly the kind of unearned claim this whole exercise was built to avoid. Verified idempotent (2nd run: no-op), node/legend counts intact.
+      <br><br>
+      Full record: <code>graphify_orphan_scripts_cleanup_2026-08-06.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🕸️ Aug 6 (same day, 14th pass) — 5 more dead scratch scripts found and deleted; real evidence on why graphify still won't fully connect.</div>
     <div class="card-body">
       Alex looked at the live graph.html directly, pasted 2 real node inspections (<code>rebuild_daily_grid_v2.py</code> connected only to its own internal helper function; <code>interconnection_map.md</code> connected only to its own 25 sections) plus a screenshot of several small disconnected clusters, and asked why parts of the graph still won't connect, wanting everything traceable back to one point.
