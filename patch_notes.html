@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔍 Aug 6 — Real /scope + GODMODE dedup check: "Content Production Live" vs. "Content Pipeline". Verdict: not a code duplicate, was a real branding bug — fixed.</div>
+    <div class="card-body">
+      Alex asked to dedupe these two if they "have the same role but different code." Treated as a real claim to verify (rule 4), not acted on blind. Direct code read of <code>_openPipeline()</code> confirmed its own comment: the <code>#cpl-widget</code> node is <strong>moved</strong> into the dashDeck popup, never rebuilt — one real implementation, not two.
+      <br><br>
+      The actual bug: the widget's header showed eyebrow "Content Production Live" (the module's internal code name, leaking into the UI) stacked over title "Content Pipeline" — one feature, two names, reading exactly like two competing systems. Fixed: eyebrow now reads "Ideas → Productions → Posts", matching the dashDeck card's own real description string.
+      <br><br>
+      Separately found, not touched (main.js is FROZEN, and it's confirmed unreachable): a wholly dead <code>PIPELINE</code>/<code>runPipeline()</code> subsystem in main.js — a different, Research-Lab-era feature that also branded itself "RPGACE Content Pipeline" in its copy strings. Confirmed dead via direct check: <code>getElementById('pipeline-output')</code> matches nothing in the current index.html, so the code cannot run. Flagged in CLAUDE.md for the record, not actioned.
+      <br><br>
+      node --check clean. Cache-bust 20260806c → 20260806d.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎬 Aug 6 — /Engineer pass 12: Content Pipeline UX overhaul, real 2nd hand-test round (13-item critique). Full record: <code>engineer_pass_2026-08-06_12.txt</code>.</div>
     <div class="card-body">
       <strong>Trigger</strong>: Alex ran a real second hand-test (new beat "Missing", ConID #12, alongside "Turnover" ConID #11), pasted 5 screenshots + 13 numbered critique items, and asked for every relevant skill applied end-to-end.

@@ -14882,9 +14882,19 @@ RPGACE.register('contentProductionLive', {
     var hdr = document.createElement('div');
     hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
     var titleEl = document.createElement('div');
+    // Aug 6 (Engineer pass, real /deduplication ask) — was "Content
+    // Production Live" (eyebrow) stacked over "Content Pipeline" (title):
+    // two different names on the SAME single widget/node (this is not
+    // two systems — see the _openPipeline comment above, "node MOVED,
+    // never rebuilt"), which read exactly like two overlapping features.
+    // Real code check confirmed there is only ever one #cpl-widget; the
+    // module's internal name (contentProductionLive) is an implementation
+    // detail that never needed to leak into the user-facing header. Now
+    // one consistent brand voice, matching the dashDeck card's own real
+    // desc string (line ~5707: "Ideas -> productions -> posts.").
     var eyebrow = document.createElement('div');
     eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:3px;';
-    eyebrow.textContent = 'Content Production Live';
+    eyebrow.textContent = 'Ideas → Productions → Posts';
     var titleText = document.createElement('div');
     titleText.className = 'section-title';
     titleText.style.cssText = 'font-size:14px;';
