@@ -1,0 +1,187 @@
+/Routine — daily priorities debate — 2026-08-06
+Run at the start of the first Aug 6 session, immediately after /Bedtime
+closed out Aug 5 (8-phase Content/Video Pipeline unification, A-H,
+complete + G6-verified). Sonnet-direct (no Fable dispatch — a routine
+daily evidence pass doesn't need a dedicated fresh-context researcher,
+per Omnitrix's own July 20 rebalance).
+
+=====================================================================
+STEP 1 — GODMODE EVIDENCE PASS (real, not from memory)
+=====================================================================
+Git log: clean, `main`/`claude/rpgace-master-steps-uobp98` in sync at
+`3a89f3b`. CLAUDE.md's own Current State + landmines re-read in full.
+
+Real, direct Supabase queries (not trusting any doc's stated numbers —
+rule 4) surfaced several genuine deltas since the docs were last
+written, some the docs themselves are now WRONG about:
+
+1. **`style_profiles` has its first-ever row** (created_at 2026-08-05
+   03:21:08 UTC) — CLAUDE.md's standing claim ("`style_profiles` has
+   never held a row... has never once fired successfully in
+   production") is now FALSE. Real row: director_name='Stanley
+   Kubrick', a genuinely detailed, high-quality Visual Treatment Doc
+   for the "No Motivation" ConID (colour palette, camera direction,
+   character reference block, full 4-scene breakdown, export specs) —
+   the Director Match save chain worked correctly end-to-end for real,
+   for the first time. `video_job_id` populated (b10f2175-...) but
+   `beat_title` is null on the row itself — worth checking if that's
+   cosmetic or a real gap in the save.
+
+2. **content_productions is NOT "7 rows (4 tutorial + 3 music_video)"
+   as both CLAUDE.md and manual.html (written minutes earlier tonight,
+   during /Bedtime, off the stale doc text without re-verifying) claim.
+   Real live count: exactly 5 rows, con_id 6-10, ALL content_type=
+   'music_video'. Zero tutorial rows exist.** Real, unresolved
+   discrepancy — not silently corrected with a guess. Two explanations
+   are both plausible and neither confirmed: (a) the 4 tutorial rows
+   were deleted at some point (the July 31-built FK-aware delete
+   button exists and could have been used, intentionally or not); (b)
+   the "4 tutorial + 3 music_video, backfilled correctly" claim was
+   simply wrong when written. No journal entry or system_updates row
+   documents a deletion. Flagged as a real open question for Alex
+   directly, not resolved by assumption.
+
+3. **Two brand-new ConIDs Claude Code did NOT originate — real Alex
+   activity between sessions**, confirmed via journal entries with
+   `source='beatLog'`: con_id 9 "Temptations" (D Minor, 96 BPM,
+   Melancholic, created 2026-08-05 12:57 UTC) and con_id 10 "Asylum"
+   (C, 89 BPM, Nostalgic, created 2026-08-05 21:17 UTC). Both already
+   show `status='Analysed'` — past initial logging, meaning Alex (or
+   an automated stage-trigger) has already pushed them further through
+   the real pipeline. Genuinely relevant to today's hand-test
+   priority: Alex may have already started testing the Aug 5 build
+   himself, on real data, before this session even opened.
+
+4. **taxonomy_links: 25 pending, 72 confirmed** (97 total) — CLAUDE.md's
+   July 31 claim ("66 total, all confirmed, 0 pending") is stale. 25
+   new pending fusion links have appeared since — real review-queue
+   backlog growth nobody has logged.
+
+5. **taxonomy_proposals: 51 pending, 33 accepted, 80 rejected** (164
+   total) — real status names are `pending`/`accepted`/`rejected`, not
+   the `confirmed` language CLAUDE.md's July 31 entry used ("25 pending,
+   72 confirmed"). Pending count has roughly doubled since (25 → 51).
+   Per rule 4's own explicit instruction ("this covers any review-
+   queue-shaped backlog"), this needs a real re-verification pass, not
+   another inherited number.
+
+6. **`oracle_dev_suggestions`: 5 rows at `status='new'`** — CLAUDE.md's
+   standing claim ("all 3 rows already `status='reviewed'`") is stale.
+   This directly triggers CLAUDE.md's own mandatory "Session-start
+   check" rule (query this table before other work) — a real, load-
+   bearing miss if left unread.
+
+7. **video_jobs: 5 rows** (was 3, all stage 1/5 per the last-known
+   count) — consistent with the 2 new beats above.
+
+=====================================================================
+STEP 2 — TEAM 1'S TOP 10 (GODMODE evidence → Council of 5 ranking)
+=====================================================================
+1. **Resolve the content_productions tutorial-row discrepancy** — a
+   real, currently-wrong fact sitting in 2 live oversight docs
+   (CLAUDE.md, manual.html), caught by this session's own evidence
+   pass rather than propagated further. Cheap: query real history if
+   possible, ask Alex directly if not, correct both docs either way.
+2. **Log the `style_profiles` first-fire as the real win it is** —
+   closes one of the project's oldest standing "never worked" items.
+   Cheap doc update (CLAUDE.md Current State, patch_notes.html), plus
+   a real follow-up check: does `video_jobs.edl` show a matching real
+   value for the same job, or did only half the Director Match chain
+   fire?
+3. **The big one — guide Alex through the deferred full hand-test pass
+   of the 8-phase (A-H) Content/Video Pipeline unification**, using
+   the two real, already-Analysed ConIDs (Temptations/Asylum) as
+   natural test subjects rather than asking him to log a fresh beat
+   first. This is the single largest standing item in the project and
+   the whole reason the 8 phases were built — everything downstream of
+   it (Phase B revisit, further captions/deliverables polish) is
+   premature without it.
+4. **Review the 5 new `oracle_dev_suggestions` rows** — mandatory
+   per CLAUDE.md's own session-start rule, cheap, never skip.
+5. **Triage the taxonomy review queue** (25 pending fusion links, 51
+   pending proposals) — real, growing backlog; even a quick pass
+   separating genuine signal from noise (per rule 4's own July 24
+   precedent — "60 pending, largely bad" turned out to be 2 genuinely
+   different batches) is worth doing before it grows further.
+6. **Run the `reference_tracks.scale`/`genre` backfill popup** (0/32
+   populated, popup already built, confirmed root cause of "beat
+   matches are always the same") — old, cheap, still not done.
+7. **Confirm the API-auth password's own happy-path login** — Alex
+   still hasn't done this himself; a real, cheap, 30-second check that
+   closes out a Tier-3 security item that's otherwise been sitting
+   done-but-unconfirmed since July 24.
+8. **Composio key rotation** — old open item, needs Alex's action,
+   real security hygiene, cheap to just do.
+9. **Phylum XP Ledger decision** — needs Alex's real architecture call
+   (new dedicated table vs. feeding existing tables); not urgent, but
+   genuinely blocking a real feature (Quest Board has zero persistence
+   at all) if he wants it moved forward.
+10. **Voice input verification** — stays parked per the standing per-
+    defect cap; the ask here is just "if you hit the bug again, paste
+    the console trace," not new work.
+
+=====================================================================
+STEP 3 — TEAM 2'S COUNTER-CASE
+=====================================================================
+Real case, not manufactured: **item 3 (the full 8-phase hand-test)
+might not deserve the #3 slot it has — it might deserve #1, ahead of
+even the discrepancy investigation.** Reasoning: Alex has explicitly
+named this as the single next real milestone for the whole Aug 5 build
+("Alex has explicitly deferred hand-testing until all 8 phases ship,
+then verifying the whole flow in one pass with a real beat" — his own
+stated plan, not an assumption). The two new real ConIDs suggest he may
+already be mid-way into exactly this. Team 1's ordering (doc-fixes
+first, hand-test third) optimizes for tidiness over unblocking the
+actual highest-value real-world outcome the whole session's work was
+building toward. Team 2's real counter: doc corrections (items 1-2) are
+each under 5 minutes of real work and don't block anything — they can
+run in parallel with, not before, kicking off the hand-test conversation
+with Alex. There's no real reason to sequence them ahead of it.
+
+A second, smaller Team 2 point: the website/HTML-optimization backlog's
+item 1 (card-list UI for Bookworm chapters, still not built since it was
+first flagged) and the "IaC / dev-prod parity" items from the July 22
+Aintergration book audit are both real, aged, untouched backlog — Team 1
+left them off entirely. Honest assessment: neither is more valuable
+right now than anything in Team 1's list, and forcing one in would just
+bump something real off — Team 2 does not press this point further, it's
+real but genuinely lower priority than everything already listed.
+
+=====================================================================
+STEP 4 — RECONCILIATION (5thDimension-shaped, without Fable)
+=====================================================================
+Built-vs-reported check: every real number cited above was pulled
+directly from Supabase this session, not inherited from a doc — the
+reconciliation IS this evidence pass; there's no separate drift to
+settle beyond what Step 1 already surfaced and Step 2/3 already used.
+Team 2's re-ordering argument is accepted — it's genuinely stronger:
+Alex's own stated plan governs, and the doc fixes are real but truly
+parallelizable, not sequence-blocking. Anchored to Alex's actual goals
+(the governing 48-hour rule: does closing today's list result in a beat
+made or video posted sooner) — the hand-test pass is the most direct
+path to that of anything in the list, since it's the last real gate
+before the whole pipeline can be trusted for actual use.
+
+=====================================================================
+STEP 5 — FINAL COUNCIL OF 5 LOCK-IN
+=====================================================================
+Final Top 10 (reordered per Step 4's reconciliation):
+1. Guide Alex through the full 8-phase hand-test, using the real
+   Temptations/Asylum ConIDs already in play.
+2. Resolve the content_productions tutorial-row discrepancy (doc fix +
+   real question to Alex — runs in parallel, not blocking #1).
+3. Log the style_profiles first-fire win + check video_jobs.edl.
+4. Review the 5 new oracle_dev_suggestions rows.
+5. Triage the taxonomy review queue (25 links + 51 proposals pending).
+6. Run the reference_tracks.scale/genre backfill popup.
+7. Confirm the API-auth password happy-path login.
+8. Composio key rotation.
+9. Phylum XP Ledger architecture decision.
+10. Voice input — stays parked, ask only if the bug recurs.
+
+Nothing real was dropped from Team 1's original list; Team 2's
+re-ordering case is reflected (item 1 moved from #3 to #1), and its
+secondary point (Bookworm card-list UI, IaC/dev-prod parity) is named
+here rather than silently omitted, but correctly left out of the actual
+Top 10 — both are real but genuinely lower-value than everything above
+right now.
