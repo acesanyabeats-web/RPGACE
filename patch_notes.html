@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">💡 Aug 6 — Morning Brief redesign + "measured doses" idea logged (not built); 2 real bugs reported and investigated</div>
+    <div class="card-body">
+      Alex asked to log a real dashboard-redesign idea before losing it, plus fix two real bugs he hit trying to get a morning brief. Full record: <code>morning_brief_redesign_and_measured_doses_spec_backlog_2026-08-06.txt</code>.
+      <br><br>
+      <strong>Bug 1 — in-app Oracle "Unauthorized"</strong>: `authGate`'s full auth chain read and confirmed structurally correct for a fresh login. Real unconfirmed gap: `_apiSecret` lives only in JS memory with zero persistence — any mid-session state reset would silently drop the auth header. Per rule 9, not blind-patched; needs a real DevTools screenshot from Alex to close for good.
+      <br><br>
+      <strong>Bug 2 — Morning Brief Routine's Supabase 403</strong>: real check (`list_environments`) showed it fires into the exact same "trusted network access" environment this session used all day with zero issues — a durable policy block looked unlikely. A diagnostic re-fire was sent to confirm rather than assumed either way; see the backlog file for the real result.
+      <br><br>
+      <strong>The idea, real-evidence debated, not rubber-stamped</strong>: split into 3 real pieces. (i) relocate Morning Brief to a top-of-dashboard bulletin + full-screen popup and (ii) an Oracle-mediated dispatcher ("what do you want to work on") both fit existing dashDeck patterns exactly — Adopt. (iii) auto-tuning module surfacing by real social/revenue performance is NOT buildable yet — direct query confirmed no social-metrics table exists anywhere and `chronicles_finance` has zero rows. Real design insight pulled straight from the SAME day's own failures: the bulletin should assemble directly from Supabase, not require an Oracle call, so it still works when Oracle itself is down (exactly what happened today).
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔀 Aug 6 — /Engineer real /deduplication pass: Video Pipeline absorbed into Content Pipeline</div>
     <div class="card-body">
