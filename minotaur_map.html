@@ -76,6 +76,15 @@
   .correspond{font-size:9.5px;color:rgba(226,226,236,0.35);text-align:center;margin-top:6px}
   .correspond code{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.04);padding:1px 5px;border-radius:3px}
 
+  /* Aug 6 — real Alex ask: "the rivers should show how one flows into
+     another when river ends." One small connector at the foot of every
+     detailed river section, stating its REAL downstream destination(s)
+     (derived from that river's own content, not just copied from the
+     bird's-eye block order above — those two can differ, e.g. River XI
+     genuinely flows INTO River X's Confluence, not the reverse). */
+  .river-flow-next{text-align:center;font-size:11px;color:var(--teal);margin:22px auto 0;max-width:620px;padding:8px 16px;border-top:1px dashed rgba(42,191,176,0.25)}
+  .river-flow-next strong{color:#E2E2EC}
+
   .footnote{max-width:800px;margin:60px auto 0;padding:22px 26px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--dim);line-height:1.8}
   .footnote strong{color:#E2E2EC}
   .footnote code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:1px 5px;border-radius:4px;color:#B8C4D4}
@@ -91,7 +100,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight — 6th document</div>
   <h1><span class="bull">🐂</span>The Minotaur Map</h1>
-  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart. <strong>Restructured July 23</strong> so the ten rivers now read in real chronological order — the actual step-by-step journey a piece of information takes, start to finish, not the order each piece was originally built in. <strong>River XI added July 30</strong>: Content Production Live — a real, already-built river (ConID tracking through a production's own phases) that had simply never been drawn until Alex himself flagged the gap. <strong>River IX gained a fourth channel July 31</strong>: the OpenMontage Commission. It is drawn inside River IX rather than given a river of its own for the same reason the Fallback Drain was — it reuses that river's existing mechanism exactly (a reservoir read by a session on the far shore, on its own clock), and this map only mints a new river for a genuinely new shape of journey, not for a new destination along an existing one. <strong>River XI gained a second real branch and a genuinely new hub, Aug 5</strong>: the beat→music-video path this river always intended to hold (flagged as an open fork the day River XI was first drawn) is now actually poured in, rebuilt into 4 real phases with the first true loop-back mechanism anywhere on this map — 3 places where water flows BACK to an earlier point in the same river to be re-processed, instead of only ever running downstream. River IX's OpenMontage channel gained a matching update: a real gated send-path plus an always-available, clearly-labeled test tap.</p>
+  <p><code>system_flow_map.md</code> is written for the nerds — exact function names, exact Mermaid syntax, exact code terms. This page is its plain-language twin: <strong>the Minotaur is a real piece of information</strong> — a chat message, a book chapter, an idea worth teaching — carried like water down a river system. <strong>Tributaries</strong> are the places information enters. <strong>Rivers</strong> are the paths it's carried along. <strong>Estuaries</strong> are where several rivers meet and become one shared current. <strong>The sea</strong> is where it finally reaches Alex's screen. Every river below is a direct plain-language translation of one real Mermaid diagram — nothing here was invented separately from it, so the two documents can never quietly drift apart. <strong>Restructured July 23</strong> so the ten rivers now read in real chronological order — the actual step-by-step journey a piece of information takes, start to finish, not the order each piece was originally built in. <strong>River XI added July 30</strong>: Content Production Live — a real, already-built river (ConID tracking through a production's own phases) that had simply never been drawn until Alex himself flagged the gap. <strong>River IX gained a fourth channel July 31</strong>: the OpenMontage Commission. It is drawn inside River IX rather than given a river of its own for the same reason the Fallback Drain was — it reuses that river's existing mechanism exactly (a reservoir read by a session on the far shore, on its own clock), and this map only mints a new river for a genuinely new shape of journey, not for a new destination along an existing one. <strong>River XI gained a second real branch and a genuinely new hub, Aug 5</strong>: the beat→music-video path this river always intended to hold (flagged as an open fork the day River XI was first drawn) is now actually poured in, rebuilt into 4 real phases with the first true loop-back mechanism anywhere on this map — 3 places where water flows BACK to an earlier point in the same river to be re-processed, instead of only ever running downstream. River IX's OpenMontage channel gained a matching update: a real gated send-path plus an always-available, clearly-labeled test tap. <strong>Restructured again Aug 6</strong> (real Alex ask, part of a wider dedup/conciseness pass across the oversight docs): every dry riverbed that used to sit in one appendix at the bottom now lives inline, inside the real river it would actually join — a planned Bookworm feature sits inside River IV, not in a separate list you had to cross-reference back. A small connector now sits at the foot of every detailed river too, stating exactly which river its water flows into next — so the step-by-step sections read as one continuous system, not eleven separate diagrams. A genuine staleness bug caught in the same pass: River I's own "two keys not yet cut" line was describing the API-auth gate as still dry — it's been live and independently verified since July 24.</p>
 </div>
 
 <div class="wrap">
@@ -160,12 +169,6 @@
     </div>
   </div>
 
-  <div class="flow" style="margin-top:20px">
-    <div class="lane">
-      <div class="node dashed"><div class="t">🏜️ The Dry Riverbeds</div><div class="d">planned channels, not yet dug — shown in full detail at the bottom of this page</div></div>
-    </div>
-  </div>
-
   <!-- ═══════════════ RIVER I — Gatekeeper's Checkpoint (was River X) ═══════════════ -->
   <div class="river-label">River I</div>
   <div class="river-title">🔒 The Gatekeeper's Checkpoint</div>
@@ -195,8 +198,10 @@
   </div>
 
   <div class="flow" style="margin-top:28px">
-    <div class="lane"><div class="node rect"><div class="t">🗝️ Two real keys, not yet cut</div><div class="d">the gatekeeper's private password-copy and the one sealed-token design both need a real key Alex has to forge himself and hand over (two Vercel environment variables) - until then this whole river is dug but dry, the gate built but not yet swung shut</div></div></div>
+    <div class="lane"><div class="node rect"><div class="t">🗝️ Both keys long since cut — confirmed live, not assumed</div><div class="d">this whole river was dug-but-dry when first drawn; both real keys (the gatekeeper's private password-copy, the sealed-token secret) have been live since July 24, independently verified by a genuine unauthenticated request coming back a real 401 rather than sailing through</div></div></div>
   </div>
+
+  <div class="river-flow-next">🌊 flows into → <strong>River II, The Great Confluence</strong></div>
 
   <!-- ═══════════════ RIVER II — top-level map (was River I) ═══════════════ -->
   <div class="river-label">River II</div>
@@ -243,6 +248,8 @@
     </div>
   </div>
 
+  <div class="river-flow-next">🌊 splits into the three real entry points → <strong>River III (Oracle Current)</strong>, <strong>River IV (Bookworm)</strong>, <strong>River V (Two Independent Streams)</strong></div>
+
   <!-- ═══════════════ RIVER III — Oracle chat (was River II) ═══════════════ -->
   <div class="river-label">River III</div>
   <div class="river-title">💬 The Oracle Current</div>
@@ -279,6 +286,8 @@
       </div>
     </div>
   </div>
+
+  <div class="river-flow-next">🌊 a tapped insight badge flows into → <strong>River VI, The Judgment Chamber</strong> · a special prefix diverts the whole message into → <strong>River IV (Bookworm)</strong> or <strong>River V (Schedule)</strong></div>
 
   <!-- ═══════════════ RIVER IV — Bookworm (was River V) ═══════════════ -->
   <div class="river-label">River IV</div>
@@ -330,6 +339,15 @@
     <div class="lane"><div class="node stadium"><div class="t">🏖️ Shown on the Research page</div></div></div>
   </div>
 
+  <div class="flow" style="margin-top:28px">
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ Card-list view for chapters</div><div class="d">one popup-at-a-time replaced with a real scannable list — planned, not yet dug</div></div>
+      <div class="node dashed"><div class="t">🏜️ Other book formats (EPUB, etc.)</div><div class="d">a new spring feeding this same river — planned, not yet dug</div></div>
+    </div>
+  </div>
+
+  <div class="river-flow-next">🌊 every insight found here flows into → <strong>River VI, The Judgment Chamber</strong> (the same Council's Verdict a chat-badge insight goes through)</div>
+
   <!-- ═══════════════ RIVER V — Content Intel + Schedule (was River VII) ═══════════════ -->
   <div class="river-label">River V</div>
   <div class="river-title">🎥📅 Two Independent Streams</div>
@@ -354,6 +372,14 @@
       </div>
     </div>
   </div>
+
+  <div class="flow" style="margin-top:28px">
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ Schedule Oracle, phase 2</div><div class="d">carousel toggle + two-tier session memory + an auto-routing confidence gate — planned, not yet dug, joins this river's own Schedule stream</div></div>
+    </div>
+  </div>
+
+  <div class="river-flow-next">🌊 Content Intelligence flows directly into → <strong>River VIII, The Confluence Pool</strong> · the Schedule stream stays its own separate track — no further river, it ends at the real Schedule Calendar</div>
 
   <!-- ═══════════════ RIVER VI — Phylum Path placement (was River III) ═══════════════ -->
   <div class="river-label">River VI</div>
@@ -412,6 +438,18 @@
     </div></div>
   </div>
 
+  <div class="flow" style="margin-top:28px">
+    <div class="lane">
+      <div class="node dashed"><div class="t">🏜️ 11 more disciplines</div><div class="d">extends this chamber's own reach — 12 of 21 currently judge real ideas, planned, not yet dug</div></div>
+    </div>
+    <div class="lane">
+      <div class="node rect"><div class="t">💧 Dug already, July 22: this chamber already serves everyone</div><div class="d">tracing the real current showed this chamber already carries both Bookworm water (River IV) and non-book water to the same Great Tree — there was no second chamber left to build. Two small new springs off the Great Tree instead: 📖 book_knowledge (every carved idea, with which book it came from) and 📖 jargon_encyclopedia (every carved idea's name alone, as a plain dictionary) — both just new ways of looking at water already in the Tree, nothing new poured in.</div></div>
+      <div class="node rect"><div class="t">⚖️ Redirected, not dug: the general-knowledge audit</div><div class="d">Alex said plainly: nothing from Claude's own general memory gets carved into the Great Tree without being earned first. A new dry channel exists for this instead — the <code>/debate</code> skill — where general knowledge and a real carved idea are set against each other and argued out, never poured into the Tree just by being compared. Built, run for real since.</div></div>
+    </div>
+  </div>
+
+  <div class="river-flow-next">🌊 a fresh leaf's teaching page flows into → <strong>River VII, The Library Current</strong> · any confirmable bridge flows into → <strong>River VIII, The Confluence Pool</strong></div>
+
   <!-- ═══════════════ RIVER VII — Article + Concept Fusion (was River IV) ═══════════════ -->
   <div class="river-label">River VII</div>
   <div class="river-title">📚 The Library Current</div>
@@ -437,6 +475,8 @@
       <div class="branches"><div class="branch no"><span class="yn">NO</span>done</div><div class="branch yes"><span class="yn">YES</span>waits in River VIII, the Confluence Pool, as a proposed new leaf</div></div>
     </div></div>
   </div>
+
+  <div class="river-flow-next">🌊 a proposed merge flows into → <strong>River VIII, The Confluence Pool</strong></div>
 
   <!-- ═══════════════ RIVER VIII — Review queue (was River VI) ═══════════════ -->
   <div class="river-label">River VIII</div>
@@ -467,6 +507,8 @@
     <div class="arrow-down"></div>
     <div class="lane"><div class="node stadium"><div class="t">🏖️ Confirmed bridges appear in the drill-down view — click through to either side</div></div></div>
   </div>
+
+  <div class="river-flow-next">🌊 flows into → <strong>The Great Tree</strong>, River II's own estuary — from there its content is readable by every other river, including IX's self-awareness mirror below</div>
 
   <!-- ═══════════════ RIVER IX — Oracle self-awareness + Claude Code bridge (was River VIII) ═══════════════ -->
   <div class="river-label">River IX</div>
@@ -584,6 +626,8 @@
     </div>
   </div>
 
+  <div class="river-flow-next">🌊 the Far Shore's own real changes flow back into → <strong>River X, The Confluence of Chronicles</strong>, via the <code>system_updates</code> reservoir</div>
+
   <!-- ═══════════════ RIVER X — Chronicles (was River IX) ═══════════════ -->
   <div class="river-label">River X</div>
   <div class="river-title">📜 The Confluence of Chronicles</div>
@@ -632,6 +676,8 @@
     <div class="lane"><div class="estuary"><div class="t">🌊 Joins the Confluence</div><div class="d">Alex's own activity and the river system's own upkeep, one shared current for the first time</div></div></div>
   </div>
 
+  <div class="river-flow-next">🌊 this IS the final estuary for every river above · <strong>River XI</strong>, drawn next, is the one exception — it feeds back into this SAME Confluence rather than flowing further downstream from it</div>
+
   <!-- ═══════════════ RIVER XI — Content Production Live (added July 30) ═══════════════ -->
   <div class="river-label">River XI</div>
   <div class="river-title">🎬 Content Production Live</div>
@@ -654,6 +700,8 @@
     <div class="arrow-down"></div>
     <div class="lane"><div class="estuary"><div class="t">🌊 Joins the Confluence</div><div class="d">a real session-end save to the Journal, plus the same shared timeline everything else in RPGACE reports into</div></div></div>
   </div>
+
+  <div class="river-flow-next">🌊 flows back into → <strong>River X, The Confluence of Chronicles</strong> (the same shared estuary, not a new one)</div>
 
   <div class="flow" style="margin-top:28px">
     <div class="lane"><div class="node rect"><div class="t">✅ The fork flagged here July 30 is resolved and drawn, Aug 5</div><div class="d">these 3 phases above are one real branch — a talking-head/tutorial recording (OBS footage). What follows is the second real branch this river was always missing: the beat→music-video path, rebuilt Aug 5 from 3 generic phases into 4 real ones, with a genuinely new mechanism this river never had before — water that can flow back UPSTREAM to be re-processed, not just forward.</div></div></div>
@@ -683,6 +731,8 @@
     <div class="lane"><div class="estuary"><div class="t">🌊 Joins the Confluence</div><div class="d">same shared timeline as every other river, plus Beatstars listing generation reading straight off the beat's own real numbers</div></div></div>
   </div>
 
+  <div class="river-flow-next">🌊 flows back into → <strong>River X, The Confluence of Chronicles</strong> (the same shared estuary as the branch above)</div>
+
   <div class="flow" style="margin-top:28px">
     <div class="lane"><div class="node rect"><div class="t">🔁 The genuinely new part of this river: 3 real places water flows BACK upstream</div><div class="d">exactly the "regenerate without losing anything" mechanic Alex asked for directly — reuse a beat's existing creative record to make new visuals for content repurposing, without starting from zero. Each button below re-enters an earlier point in this SAME river, carrying everything already gathered.</div></div></div>
     <div class="lane">
@@ -692,27 +742,6 @@
     </div>
     <div class="arrow-down"></div>
     <div class="lane"><div class="node dashed"><div class="t">🏜️ A fourth loop-back, from Phase 4, still dry</div><div class="d">pulling up the real Far Shore job's own details from right here waits on a real job actually existing to look at — Phase F built the reader, there just isn't a real (non-test) result to read yet.</div></div></div>
-  </div>
-
-  <!-- ═══════════════ Planned / dry riverbeds ═══════════════ -->
-  <div class="river-label">Not yet dug</div>
-  <div class="river-title">🏜️ The Dry Riverbeds</div>
-  <div class="river-sub">Planned channels, and exactly where they would join the rivers that already flow</div>
-  <div class="correspond">↔ direct translation of <code>system_flow_map.md</code> §8, "PLANNED features and where they attach"</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node dashed"><div class="t">🏜️ Card-list view for Bookworm chapters</div><div class="d">would join River IV, replacing one popup-at-a-time with a real list</div></div>
-    </div>
-    <div class="lane">
-      <div class="node rect"><div class="t">💧 Dug already, July 22: the Judgment Chamber already serves everyone</div><div class="d">tracing the real current showed River VI (the Judgment Chamber) already carries both book water (River IV) and non-book water to the same Great Tree — there was no second chamber left to build. Two small new springs off the Great Tree instead: 📖 book_knowledge (every carved idea, with which book it came from) and 📖 jargon_encyclopedia (every carved idea's name alone, as a plain dictionary) — both just new ways of looking at water already in the Tree, nothing new poured in.</div></div>
-      <div class="node rect"><div class="t">⚖️ Redirected, not dug: the general-knowledge audit</div><div class="d">Alex said plainly: nothing from Claude's own general memory gets carved into the Great Tree without being earned first. A new dry channel exists for this instead - the <code>/debate</code> skill - where general knowledge and a real carved idea are set against each other and argued out, never poured into the Tree just by being compared. Built, not yet run.</div></div>
-    </div>
-    <div class="lane">
-      <div class="node dashed"><div class="t">🏜️ Schedule Oracle, phase 2</div><div class="d">joins River V's schedule stream</div></div>
-      <div class="node dashed"><div class="t">🏜️ 11 more disciplines</div><div class="d">extends the Judgment Chamber's reach</div></div>
-      <div class="node dashed"><div class="t">🏜️ Other book formats (EPUB, etc.)</div><div class="d">a new spring feeding River IV</div></div>
-    </div>
   </div>
 
   <div class="footnote">

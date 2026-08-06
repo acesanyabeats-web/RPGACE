@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🐂 Aug 6 (same day, 11th pass) — Minotaur restructure: dry riverbeds merged inline, river-to-river flow connectors added, a real staleness bug fixed.</div>
+    <div class="card-body">
+      Real Alex ask: "every dry bed that then get filled or dug with no water should be in the actual river. the rivers should show how one flows into another when river ends."
+      <br><br>
+      <strong>Dry Riverbeds appendix removed, content merged inline</strong>: the 5 real planned items that used to sit in one standalone section at the bottom now live as dashed nodes inside the river they'd actually join — Bookworm card-list view + EPUB support into River IV, Schedule Oracle phase 2 into River V, 11 more disciplines into River VI. 2 items that had actually already resolved (book_knowledge/jargon_encyclopedia views, the <code>/debate</code> skill) moved from the dry-riverbed appendix into River VI, where they genuinely belong — they were never really "dry," just misfiled.
+      <br><br>
+      <strong>New river-to-river flow connectors</strong>: a small note at the foot of every detailed river section now states its real downstream destination, derived from that river's own content — not copied from the bird's-eye block's visual order, which is a chronological reading-order summary, not always a literal pipe (River XI genuinely flows INTO River X's Confluence, not the reverse — the new connectors say so correctly even where that differs from the block diagram's top-to-bottom layout).
+      <br><br>
+      <strong>Real staleness bug caught while doing this pass, fixed in the same edit</strong>: River I's own text still described the API-auth gate as "dug but dry... two keys not yet cut" — that's been live and independently verified (a real 401 on an unauthenticated request) since July 24. Fixed to say so.
+      <br><br>
+      Div-balance verified post-edit (839/839). Ran <code>/impeccable</code>'s free scan against index.html/style.css per its own scoped invocation — 37 findings, all matching the already-tracked backlog in CLAUDE.md, nothing new; the skill doesn't reach taxonomy_map.html/minotaur_map.html/manual.html (not its scoped targets), flagged honestly rather than inventing a new invocation.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🗑️ Aug 6 (same day, 10th pass) — real bugfix: ConID delete now cascade-deletes its linked video/OpenMontage jobs instead of just warning.</div>
     <div class="card-body">
       Real Alex ask from a live screenshot: "the button should delete both, one button also triggers the other" — the existing delete button correctly warned about the FK conflict but made him manually delete the linked job first instead of just doing it.
