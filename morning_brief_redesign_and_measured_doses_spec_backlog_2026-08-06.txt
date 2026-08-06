@@ -54,8 +54,18 @@ gap, not confirmed as such.
 Real diagnostic action taken: fired a fresh re-test of the exact same
 Routine (fire_trigger, session cse_01MZfEWpP5e3iRZboZ4x1EPz) asking it
 to plainly retry the identical curl and report whether it succeeds or
-fails identically. Result still pending at time of writing (no
-notification received yet) — checked directly rather than wait idly:
+fails identically. Waited twice (once ~90s, once ~5min) — no
+notification arrived either time, and a direct `journal` recheck both
+times still showed 0 rows. That's unusually slow for a simple curl
+retry (genuinely stuck, or silently failed without replying — can't
+tell which without a session-status tool this account doesn't have
+access to). **Per Alex's own direct call: not chased further right
+now** — deliberately left running/unresolved rather than polled
+indefinitely, to be rechecked in a later session once everything else
+in this idea was logged and sorted. Re-check `journal` (source=
+'morning-routine') and this trigger's real state directly before
+assuming either a pass or a fail — do not carry forward "still
+pending" as a stale status once a future session picks this back up.
 
 REAL, BIGGER FINDING THAN THE ORIGINAL TRANSIENT-VS-DURABLE QUESTION —
 queried `journal` directly: `select count(*) from journal where
@@ -246,9 +256,15 @@ REAL OPEN QUESTIONS FOR ALEX — /interrogation, deferred, not blocking
    to this idea, not decided here.
 
 =====================================================================
-STATUS: LOGGED, NOT BUILT. Alex explicitly asked to log this and move
-on to smoke-testing today's Content Pipeline work — no code changes
-were made for Part B. Part A's two bugs are real and open (A1 needs
-more evidence from Alex; A2's diagnostic re-fire result is reported in
-the same session's chat once it lands).
+STATUS: LOGGED, NOT BUILT, SORTED per Alex's explicit direction. No
+code changes were made for Part B. Part A's two bugs are real and
+still open:
+  A1 — needs real DevTools evidence from Alex before any fix attempt.
+  A2 — the underlying finding (0 real journal writes, ever) stands
+       regardless of the diagnostic's outcome; the diagnostic re-fire
+       itself never reported back after 2 real waits and was
+       deliberately left running rather than chased further, per
+       Alex's own call ("move on and retry later"). Re-check for real
+       before treating A2 as resolved OR as a confirmed durable block —
+       neither is confirmed yet.
 =====================================================================
