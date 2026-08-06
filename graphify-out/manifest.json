@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785975751.4014032,
-    "ast_hash": "4bedba70478847b3e40188cb7f2f1ab5",
+    "mtime": 1785976255.6934083,
+    "ast_hash": "794afdc680e47d55837d0cf6e1fa3d96",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785975874.3534045,
-    "ast_hash": "bfa0715deb52434ce273279e9b106638",
+    "mtime": 1785976380.2574096,
+    "ast_hash": "c60d2600057b0cdb8b0b67697d9423af",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,13 +1060,13 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785975779.8774035,
-    "ast_hash": "e2781c8fe9289c6ee890bb30da3c51de",
+    "mtime": 1785976280.4574084,
+    "ast_hash": "2db3f7476400ee4e089bc0a3f004c3c9",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
-    "mtime": 1785974281.6213887,
-    "ast_hash": "a99c1d2dc701d93aa35389ef3e4613d0",
+    "mtime": 1785976343.5454092,
+    "ast_hash": "671da582c1f12f55e1b4aad7150b2675",
     "semantic_hash": ""
   },
   "item7_process_debate_2026-07-24.txt": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785975851.5094042,
-    "ast_hash": "eb30c76c5f32b7452eb627f0c1d81f82",
+    "mtime": 1785976359.2774093,
+    "ast_hash": "d4ab44018043d69818cf3508408688df",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1380,8 +1380,13 @@
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-06_10.txt": {
-    "mtime": 1785975832.0494041,
+    "mtime": 1785975922.4214048,
     "ast_hash": "6a63b3b57ba5de16efe0bd51495c8242",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-06_11.txt": {
+    "mtime": 1785976325.909409,
+    "ast_hash": "1daefe642ba1790223b84d8cd4e072a4",
     "semantic_hash": ""
   }
 }

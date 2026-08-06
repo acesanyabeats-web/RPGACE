@@ -1,0 +1,175 @@
+/Engineer pass — 2026-08-06_11
+Video Pipeline → Content Pipeline absorption (real /deduplication ask)
+Ref: engineer_pass_2026-08-06_10.txt (same-session prior pass, real
+Content Pipeline bugfixes)
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+Alex's own words, verbatim: "i want to get rid of video pipeline, i
+want it to be completely absorbed by content pipeline as it is a step
+in content pipeline, this is a /deduplication justification."
+1. Delete the separate "📹 Video Pipeline" dashDeck card and its own
+   popup/widget entry point — a real parallel place to do the same task
+   Content Pipeline's own Production Panel already half-covers.
+2. Fold its real, reusable functionality (stage progress tracker,
+   "→ Mark next stage," "📋 Paths + exports" editor) directly INTO
+   Content Pipeline's Production Panel Phase 4, replacing the old
+   "🎥 Open Video Pipeline" link-out button, for THIS ConID's own
+   linked video_jobs row.
+3. Keep the underlying data/logic (STAGES, STAGE_LABELS,
+   EXPORT_TARGETS, updateEntry, _showDetails, _computeAutoAdvanced
+   Status) — real dedup means reusing these directly, not deleting
+   working logic just because its UI home moved.
+4. Real, deliberate scope decision, stated plainly: the "+ New"
+   standalone (non-beat-linked) video job form is REMOVED, not ported.
+   Real evidence backing this (not a guess): the module's own July 30
+   comment already recorded that every real video_jobs row has always
+   been created by beatLog._submit, confirmed via grep — there has
+   never been a real standalone job in production. A merged model with
+   Content Pipeline as the sole entry point has no real place for a
+   video job with no beat.
+Tier 2 — real architecture change (deletes a dashDeck card, moves real
+UI logic between modules), no schema change, no destructive data
+operation (existing video_jobs rows are untouched, only how they're
+viewed/edited changes).
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Read the full `videoPipeline` module (rpgace_core.js:15868-16317,
+  ~450 lines) before touching anything: `init`/`_injectWidget` (the
+  standalone dashDeck-hosted widget), `_showNewJobForm` (the standalone-
+  job creation form), `_refreshWidget`/`_renderRow` (the multi-row list
+  renderer, with its own "↩ Beat Log" cross-nav button), `_showDetails`
+  (the real paths+exports editor, including the "Script + Treatment"
+  handoff view of the linked ConID's creative_docs — genuinely useful,
+  kept), `_computeAutoAdvancedStatus` (real auto-advance logic, kept).
+- Grepped every real call site of `_openVideoPipeline` (3: the dashDeck
+  MODULES card entry, a ConID-card button, and Phase 4's own link-out
+  button) and every reference to `vp-widget`/`_injectWidget`/
+  `_refreshWidget`/`_showNewJobForm`/`_renderRow` scoped to videoPipeline
+  specifically (2 harmless `_stashWidget('vp-widget')` calls in
+  dashDeck's own boot/refresh routine) — all enumerated before editing,
+  not discovered after by a broken reference.
+- Confirmed via grep: neither `main.js` (FROZEN) nor `index.html`
+  reference `videoPipeline` or `vp-widget` anywhere — no FROZEN-file
+  exception needed for this pass.
+- Read `contentProductionLive._buildScriptEditor` as the real existing
+  convention for a phase doing its own async sub-load into a phaseCard
+  (loading state → fetch → replace → render) — the new
+  `_buildVideoJobStatus` mirrors this exactly rather than inventing a
+  new pattern.
+
+=====================================================================
+STAGE 3 — BUILD (Sonnet-direct, same reasoning as the prior pass this
+session — full context already held, no fresh-dispatch benefit)
+=====================================================================
+1. `videoPipeline` module stripped to its real reusable core: STAGES/
+   STAGE_LABELS/EXPORT_TARGETS/updateEntry/_showDetails/
+   _computeAutoAdvancedStatus. Deleted: `init`, `_injectWidget`,
+   `_showNewJobForm`, `_refreshWidget`, `_renderRow` (all real dead
+   code after the absorption, not left unreferenced).
+2. `_showDetails(row, onSaved)` — signature widened to accept an
+   explicit save-callback instead of a hardcoded `self._refreshWidget()`
+   call, since there's no longer a standalone widget to refresh; every
+   real caller (now just `_buildVideoJobStatus`) passes its own re-
+   render function.
+3. New `contentProductionLive._buildVideoJobStatus(phaseCard, row)` —
+   fetches this ConID's own linked video_jobs row, renders the real
+   status badge + 5-stage progress dots + "→ Mark next stage" +
+   "📋 Paths + exports" (calling `videoPipeline._showDetails` directly),
+   with an honest "No linked video job found" fallback. Called from
+   Production Panel Phase 4, replacing the old link-out button.
+4. dashDeck: MODULES array's "videoPipeline" card entry deleted;
+   `_openVideoPipeline` method deleted; its own footer text in
+   `_openPipeline` (which used to point at "its own card, right below
+   this one") corrected to point at the real new location (a ConID's
+   Production Panel) instead of left stale.
+5. ConID card's own "🎥 Video Pipeline" button: now opens the
+   Production Panel directly (setting `_activeConID`/`_activeId` first)
+   instead of the deleted separate popup.
+6. 2 harmless-but-stale `_stashWidget('vp-widget')` calls in dashDeck's
+   own boot/refresh routine removed (real cleanup, not required for
+   correctness — `_stashWidget` on a nonexistent id is a safe no-op,
+   but leaving it would read as a stray reference to a future auditor).
+7. index.html cache-bust bumped (20260806a → 20260806b) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: rpgace_core.js (144 insertions / 311 deletions — net -167
+lines, consistent with a real deletion-heavy dedup, not a rename),
+index.html (1-line cache-bust). No schema change, no new table, no
+destructive data operation — existing video_jobs rows are completely
+untouched; only their UI surface moved.
+
+Honest residual risks, not hidden:
+- The "+ New standalone video job" removal is a real, deliberate
+  feature cut, not just a UI relocation — flagged plainly here and in
+  the patch_notes.html card, not silently dropped. If Alex ever wants a
+  video job with no linked beat again, that capability needs rebuilding
+  (the underlying `video_jobs` table itself is untouched and could
+  still hold such a row if inserted directly, just no UI creates one).
+- `_buildVideoJobStatus` assumes exactly one real video_jobs row per
+  ConID (matches the real July 30 evidence — every row IS beat-driven,
+  1:1 with its content_production), and picks the most recent by
+  `created_at` if more than one somehow exists — untested against a
+  real multi-job ConID, since none should exist by design.
+- This pass, like every phase before it in this build, is code-verified
+  and gate-passed but has never been clicked through.
+
+Council of 5 quality score (informational only, authorizes nothing):
+8/10. Reasoning: real, exhaustive evidence pass before any deletion
+(every call site enumerated, not discovered by breakage); genuine net-
+negative line count confirms real dedup rather than a relabel; the one
+real scope cut (standalone jobs) is named plainly, not smuggled in
+silently. Docked slightly for the untested multi-job-per-ConID edge
+case and the standing zero-hand-testing status.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope.
+- Re-grepped `_openVideoPipeline`, `videoPipeline\._injectWidget`,
+  `videoPipeline\._refreshWidget`, `videoPipeline\._showNewJobForm`,
+  `videoPipeline\._renderRow`: zero occurrences anywhere — confirmed no
+  orphaned reference to any deleted function survives.
+- Re-grepped `vp-widget`/`videoPipeline` in main.js and index.html:
+  zero occurrences, confirms the "no FROZEN-file exception needed"
+  claim.
+- index.html script-tag count re-checked: exactly 2, only version
+  string changed.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, re-checked fresh above.
+G2 (index.html invariants) — PASS, exactly 2 script tags.
+G3 (module convention) — PASS, videoPipeline stays a real registered
+  module (slimmed, not removed — its constants/helpers are real,
+  reused code, not dead weight), all new code inside
+  contentProductionLive's existing RPGACE.register block, no main.js
+  touch.
+G4 (claim-to-diff reconciliation) — PASS, Stage 5's checks came back
+  clean both directions.
+G5 (goal reconciliation) — All 4 Stage 1 goals: DONE, including the
+  explicit scope-cut goal (4), which is a deliberate "not built" by
+  design, not a dropped goal.
+G6 (deployment reality) — PENDING until merged to main and pushed;
+  will be independently confirmed via Vercel MCP in a follow-up edit.
+G7 (cache-bust) — PASS, 20260806a → 20260806b.
+
+UNTESTED (required label): the entire real absorption — Phase 4's new
+inline video-job status, the "Mark next stage"/"Paths + exports"
+buttons now firing from inside the Production Panel instead of a
+separate popup, and the ConID card's "🎥 Video Pipeline" button opening
+the Production Panel directly — has never been clicked through. Real
+action for the eventual hand-test: open a music_video ConID's
+Production Panel, confirm Phase 4 shows the real linked video job's
+status inline, advance its stage, open Paths + exports, save, and
+confirm the status re-renders correctly without needing to close/reopen
+the panel.
+
+PASS COUNT: 1 of 3 max.

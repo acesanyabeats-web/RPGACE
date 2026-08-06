@@ -5694,14 +5694,15 @@ RPGACE.register('dashDeck', {
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } },
     { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
     { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
-    // /Engineer Goal 1 (July 28) — videoPipeline's own vp-widget was never
-    // migrated into this card system when dashDeck was built July 20; it
-    // was still directly appending itself to #page-dashboard outside the
-    // grid, and video_jobs has 0 real rows (confirmed via Supabase), so
-    // this was almost certainly sitting as a stray, non-integrated block
-    // every time the dashboard rendered. Same relocate-on-open pattern as
-    // Content Pipeline above, not a new mechanism.
-    { key: 'videoPipeline', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📹', name: 'Video Pipeline', desc: 'Track a beat through raw footage, edit, render, and export — no rendering happens here, just the real stages.', go: function() { RPGACE.modules.dashDeck._openVideoPipeline(); } },
+    // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
+    // absorption, Alex's explicit /deduplication ask) — this card is
+    // DELETED, not just relabeled. Every real video_jobs row has always
+    // been created by beatLog._submit, so it was always a real step
+    // inside Content Pipeline's own flow, never an independent workflow.
+    // Its real functionality (stage tracker, paths+exports) now lives
+    // inline in the Production Panel's Phase 4 — see
+    // contentProductionLive._buildVideoJobStatus. See
+    // engineer_pass_2026-08-06_11.txt for the full record.
     { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
     { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
     { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
@@ -5709,7 +5710,7 @@ RPGACE.register('dashDeck', {
   ],
 
   _inject: function() {
-    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._stashWidget('vp-widget'); this._stashWidget('mb-wrap'); this._refreshGlance(); return; }
+    if (document.getElementById('dd-deck')) { this._stashBookworm(); this._stashWidget('kg-panel'); this._stashWidget('cpl-widget'); this._stashWidget('mb-wrap'); this._refreshGlance(); return; }
     var page = document.getElementById('page-dashboard');
     if (!page) return;
     this._injectStyles();
@@ -5759,7 +5760,6 @@ RPGACE.register('dashDeck', {
     this._stashBookworm();
     this._stashWidget('kg-panel');
     this._stashWidget('cpl-widget');
-    this._stashWidget('vp-widget');
     this._stashWidget('mb-wrap');
     this._refreshGlance();
   },
@@ -6262,54 +6262,11 @@ RPGACE.register('dashDeck', {
     body.appendChild(btn);
     var foot = document.createElement('div');
     foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-    // July 28: this used to say "Video Pipeline joins this flow... by
-    // design" - stale the moment Video Pipeline got its own real card
-    // (below), since that footer implied it was still a future, unconnected
-    // concern rather than an actually-reachable popup.
-    foot.textContent = '🎥 Video Pipeline tracking lives in its own card, right below this one.';
-    body.appendChild(foot);
-  },
-
-  // /Engineer Goal 1 (July 28) — videoPipeline's vp-widget was never given
-  // a real dashDeck home when this popup system was built July 20; it kept
-  // directly injecting itself into #page-dashboard outside the card grid.
-  // Exact same relocate-on-open/stash-on-close pattern as _openPipeline
-  // above, applied to the one widget that was missed.
-  _openVideoPipeline: function() {
-    var self = this;
-    var w = document.getElementById('vp-widget');
-    if (!w) {
-      var vp = RPGACE.modules.videoPipeline;
-      if (vp && vp._injectWidget) { try { vp._injectWidget(); } catch (e) {} }
-      w = document.getElementById('vp-widget');
-    }
-    var pop = self._popup({
-      eyebrow: '📹 Video Pipeline',
-      title: 'Beat logged → raw → edited → rendered → exported',
-      accent: 'var(--blue)',
-      width: '680px',
-      closeLabel: 'Close',
-      onClose: function() {
-        self._stashWidget('vp-widget', true);
-        delete self._widgetPopups['vp-widget'];
-      }
-    });
-    self._widgetPopups['vp-widget'] = pop.close;
-    var body = pop.box;
-    if (w) {
-      w.style.marginBottom = '0';
-      body.appendChild(w);
-      var vp2 = RPGACE.modules.videoPipeline;
-      if (vp2 && vp2._refreshWidget) { try { vp2._refreshWidget(); } catch (e) {} }
-    } else {
-      var msg = document.createElement('div');
-      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
-      msg.textContent = 'Video Pipeline is still loading — close this and try again in a moment.';
-      body.appendChild(msg);
-    }
-    var foot = document.createElement('div');
-    foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-    foot.textContent = 'No rendering happens here — this just tracks the real stages and where each file/URL actually lives.';
+    // Aug 6 (Engineer pass, real Video Pipeline absorption) — the separate
+    // "Video Pipeline" card this footer used to point to is gone; video
+    // job stage tracking now lives inline on each ConID's own Production
+    // Panel (Phase 4), reachable from a ConID card in this same popup.
+    foot.textContent = '🎥 Video job stage tracking lives inside each beat\'s own Production Panel (Phase 4) — open a ConID above.';
     body.appendChild(foot);
   },
 
@@ -15044,19 +15001,21 @@ RPGACE.register('contentProductionLive', {
           };
           actions.appendChild(oracleBtn);
 
-          // Engineer pass 2026-07-30 (Slice A item 3) — symmetric reverse
-          // of videoPipeline's new "↩ Beat Log" button. Same closeWidget
-          // Popup-then-open-the-other-one pattern as the Oracle button
-          // right above.
+          // Aug 6 (Engineer pass, real Video Pipeline absorption) — this
+          // used to open a separate "Video Pipeline" card/popup; that
+          // card is deleted (real dedup, not a rename — see
+          // engineer_pass_2026-08-06_11.txt). Now opens THIS ConID's own
+          // Production Panel directly, whose Phase 4 shows the real video
+          // job status inline.
           if (hasVideoJob) {
             var vpBtn = document.createElement('button');
             vpBtn.textContent = '🎥 Video Pipeline';
             vpBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             vpBtn.onclick = function() {
-              if (RPGACE.modules.dashDeck) {
-                RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-                if (RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
-              }
+              if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+              self._activeConID = row.con_id;
+              self._activeId = row.id;
+              self._openProductionPanel();
             };
             actions.appendChild(vpBtn);
           }
@@ -15410,14 +15369,14 @@ RPGACE.register('contentProductionLive', {
                 self._retroRegenerateScript(row);
               }));
             } else if (i === 3) {
-              var vpBtn = document.createElement('button');
-              vpBtn.textContent = '🎥 Open Video Pipeline';
-              vpBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-bottom:6px;';
-              vpBtn.onclick = function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._openVideoPipeline) RPGACE.modules.dashDeck._openVideoPipeline();
-              };
-              phaseCard.appendChild(vpBtn);
+              // Aug 6 (Engineer pass, real Video Pipeline absorption) —
+              // real inline video-job status (stage progress + "Mark
+              // next stage" + "Paths + exports") replaces the old
+              // "Open Video Pipeline" link-out to a now-deleted separate
+              // card. Real dedup, not a rename: reuses videoPipeline's
+              // own STAGES/STAGE_LABELS/_showDetails/_computeAuto
+              // AdvancedStatus rather than a second hand-rolled copy.
+              self._buildVideoJobStatus(phaseCard, row);
 
               // Aug 5 (Engineer pass, Phase F) — real Generate Video
               // trigger. Gated behind OPENMONTAGE_HANDOFF_ENABLED (false
@@ -15569,6 +15528,92 @@ RPGACE.register('contentProductionLive', {
         loading.textContent = 'Could not load saved script/doc.';
         loading.style.color = '#CC4A4A';
       });
+  },
+
+  // ── Phase 4 real video-job status (Aug 6, Engineer pass, real Video
+  // Pipeline → Content Pipeline absorption) — replaces the old link-out
+  // to a separate "Video Pipeline" card (now deleted) with the real
+  // stage tracker inline, for THIS ConID's own linked video_jobs row.
+  // Reuses videoPipeline's own STAGES/STAGE_LABELS/_showDetails/
+  // _computeAutoAdvancedStatus directly (rule 8 dedup) rather than a
+  // second hand-rolled copy of the same stage/paths/exports logic.
+  _buildVideoJobStatus: function(phaseCard, row) {
+    var self = this;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-bottom:10px;';
+    var loading = document.createElement('div');
+    loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
+    loading.textContent = 'Loading video job status...';
+    wrap.appendChild(loading);
+    phaseCard.appendChild(wrap);
+
+    var render = function() {
+      RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+        .catch(function() { return []; })
+        .then(function(jobs) {
+          wrap.innerHTML = '';
+          var vj = jobs && jobs[0];
+          if (!vj) {
+            var none = document.createElement('div');
+            none.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);';
+            none.textContent = 'No linked video job found for this ConID yet.';
+            wrap.appendChild(none);
+            return;
+          }
+          var vp = RPGACE.modules.videoPipeline;
+          var statusColors = { beat_logged: '#C9A84C', in_production: '#4A8CCC', edited: '#9B6EC8', rendered: '#CC4A4A', exported: '#4CAF82' };
+          var stageIdx = vp.STAGES.indexOf(vj.status);
+          if (stageIdx === -1) stageIdx = 0;
+          var color = statusColors[vj.status] || '#4A8CCC';
+
+          var topRow = document.createElement('div');
+          topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
+          var statusBadge = document.createElement('span');
+          statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';';
+          statusBadge.textContent = vp.STAGE_LABELS[vj.status] || vj.status;
+          topRow.appendChild(statusBadge);
+          wrap.appendChild(topRow);
+
+          var progressWrap = document.createElement('div');
+          progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
+          vp.STAGES.forEach(function(s, i) {
+            var dot = document.createElement('div');
+            dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= stageIdx ? color : 'rgba(255,255,255,0.08)') + ';';
+            progressWrap.appendChild(dot);
+          });
+          wrap.appendChild(progressWrap);
+
+          var actions = document.createElement('div');
+          actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;';
+          if (stageIdx < vp.STAGES.length - 1) {
+            var nextStage = vp.STAGES[stageIdx + 1];
+            var advBtn = document.createElement('button');
+            advBtn.textContent = '→ Mark ' + vp.STAGE_LABELS[nextStage];
+            advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            advBtn.onclick = function() {
+              vp.updateEntry(vj.id, { status: nextStage }).then(function() {
+                RPGACE.utils.toast(vj.title + ' → ' + vp.STAGE_LABELS[nextStage], color, 2000);
+                render();
+              });
+            };
+            actions.appendChild(advBtn);
+          }
+          var detailsBtn = document.createElement('button');
+          detailsBtn.textContent = '📋 Paths + exports';
+          detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          detailsBtn.onclick = function() { vp._showDetails(vj, render); };
+          actions.appendChild(detailsBtn);
+          wrap.appendChild(actions);
+        })
+        .catch(function(e) {
+          wrap.innerHTML = '';
+          var err = document.createElement('div');
+          err.style.cssText = 'font-size:11px;color:#CC4A4A;';
+          err.textContent = 'Could not load video job: ' + e.message;
+          wrap.appendChild(err);
+        });
+    };
+    render();
   },
 
   // ── Phase F: video generation handoff (Aug 5, Engineer pass) ─────────
@@ -15882,250 +15927,38 @@ RPGACE.register('videoPipeline', {
   STAGE_LABELS: { beat_logged: 'Beat Logged', in_production: 'In Production', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
   EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
 
-  init: function() {
-    var self = this;
-    RPGACE.registerBootTask(function() { return self._injectWidget(); });
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.dashboard) self._injectWidget();
-    });
-  },
+  // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
+  // absorption, Alex's explicit /deduplication ask: "get rid of video
+  // pipeline, i want it to be completely absorbed by content pipeline
+  // as it is a step in content pipeline"). Real evidence backing the
+  // merge: every real video_jobs row has always been created by
+  // beatLog._submit and ONLY by beatLog._submit (confirmed via grep,
+  // same finding this module's own July 30 STAGES comment already
+  // recorded) — there has never been a real standalone (non-beat-
+  // linked) video job in production. The separate dashDeck "📹 Video
+  // Pipeline" card, its own widget/popup, and its "+ New" standalone-
+  // job form are DELETED (real dedup, not a rename) — a parallel place
+  // to do the same task Content Pipeline's own Production Panel Phase 4
+  // now does inline (see contentProductionLive._buildVideoJobStatus).
+  // This module keeps ONLY the real reusable pieces Phase 4 calls
+  // directly: the stage constants, the write helper, the paths+exports
+  // editor, and the auto-advance calculator — no UI surface of its own
+  // anymore. `_showDetails` now takes an explicit onSaved callback
+  // instead of a hardcoded self._refreshWidget() call, since there is
+  // no longer a standalone widget to refresh.
+  STAGES: ['beat_logged', 'in_production', 'edited', 'rendered', 'exported'],
+  STAGE_LABELS: { beat_logged: 'Beat Logged', in_production: 'In Production', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
+  EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
 
   updateEntry: function(id, updates) {
     updates.updated_at = new Date().toISOString();
     return RPGACE.sb.secureWrite('video_jobs', 'update', updates, 'id=eq.' + id);
   },
 
-  _injectWidget: function() {
-    if (document.getElementById('vp-widget')) return;
-    var self = this;
-    var page = document.getElementById('page-dashboard');
-    if (!page) return;
-
-    var widget = document.createElement('div');
-    widget.id = 'vp-widget';
-    widget.style.cssText = 'background:rgba(74,144,226,0.03);border:1px solid rgba(74,144,226,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
-    var titleEl = document.createElement('div');
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(74,144,226,0.6);text-transform:uppercase;margin-bottom:3px;';
-    eyebrow.textContent = 'Video Pipeline';
-    var titleText = document.createElement('div');
-    titleText.className = 'section-title';
-    titleText.style.cssText = 'font-size:14px;';
-    titleText.textContent = '📹 Video Jobs';
-    titleEl.appendChild(eyebrow); titleEl.appendChild(titleText);
-
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:6px;';
-    var newBtn = document.createElement('button');
-    newBtn.textContent = '+ New';
-    newBtn.style.cssText = 'background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.3);border-radius:6px;color:#4A8CCC;cursor:pointer;font-size:11px;font-weight:700;padding:4px 10px;font-family:Rajdhani,sans-serif;';
-    newBtn.onclick = function() { self._showNewJobForm(); };
-    var refreshBtn = document.createElement('button');
-    refreshBtn.textContent = '↻';
-    refreshBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);cursor:pointer;font-size:12px;padding:4px 10px;';
-    refreshBtn.onclick = function() { self._refreshWidget(); };
-    btnRow.appendChild(newBtn); btnRow.appendChild(refreshBtn);
-    hdr.appendChild(titleEl); hdr.appendChild(btnRow);
-    widget.appendChild(hdr);
-
-    var list = document.createElement('div');
-    list.id = 'vp-list';
-    list.style.cssText = 'max-height:320px;overflow-y:auto;';
-    list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
-    widget.appendChild(list);
-
-    // /Engineer pass (July 28, round 2) — real bug found: Goal 1 (earlier
-    // the same day) gave vp-widget a dashDeck popup home (_openVideoPipeline)
-    // and added stash calls to dashDeck._inject(), but this function still
-    // injected the widget straight onto #page-dashboard, and dashDeck's own
-    // boot task runs BEFORE this module's (registration order — dashDeck
-    // registers far earlier in the file), so dashDeck's stash-on-boot calls
-    // always fired before #vp-widget existed to catch. Net effect: vp-widget
-    // sat loose on the live dashboard on every first paint, exactly the
-    // Content Pipeline bug the July 20 fix already solved for #cpl-widget —
-    // fixed the identical way: inject straight into the shared
-    // #dd-stash-holder instead of the raw page. dashDeck owns showing it via
-    // _openVideoPipeline(). Prefer dashDeck's own holder helper; fall back to
-    // the same-id holder if dashDeck hasn't run yet.
-    var holder = document.getElementById('dd-stash-holder');
-    if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
-      holder = RPGACE.modules.dashDeck._ensureStash();
-    }
-    if (!holder) {
-      holder = document.createElement('div');
-      holder.id = 'dd-stash-holder';
-      holder.style.display = 'none';
-      page.appendChild(holder);
-    }
-    holder.appendChild(widget);
-
-    self._refreshWidget();
-    console.log('[videoPipeline] Widget injected (stashed for dashDeck popup)');
-  },
-
-  _showNewJobForm: function() {
-    var self = this;
-    var pop = RPGACE.modules.dashDeck._popup({
-      dim: '0.9', width: '420px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-      title: 'New Video Job', noDefaultClose: true,
-    });
-    var overlay = pop.overlay, box = pop.box;
-
-    var lbl = document.createElement('div');
-    lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-    lbl.textContent = 'Title';
-    var titleInp = document.createElement('input');
-    titleInp.type = 'text'; titleInp.placeholder = 'e.g. Edison Tutorial Video';
-    titleInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:12px;';
-    box.appendChild(lbl); box.appendChild(titleInp);
-
-    var pathLbl = document.createElement('div');
-    pathLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-    pathLbl.textContent = 'Raw footage path (optional)';
-    var pathInp = document.createElement('input');
-    pathInp.type = 'text'; pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
-    pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
-    box.appendChild(pathLbl); box.appendChild(pathInp);
-
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:8px;';
-    var saveBtn = document.createElement('button');
-    saveBtn.textContent = '💾 Create';
-    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    saveBtn.onclick = function() {
-      var t = titleInp.value.trim();
-      if (!t) { RPGACE.utils.toast('Add a title first', '#CC4A4A', 2000); return; }
-      RPGACE.sb.secureWrite('video_jobs', 'insert', {
-        title: t,
-        status: 'in_production',
-        raw_path: pathInp.value.trim() || null,
-        export_paths: {},
-      }).then(function() {
-        overlay.remove();
-        self._refreshWidget();
-        RPGACE.utils.toast('📹 Video job created: ' + t, '#4A8CCC', 3000);
-      }).catch(function(e) {
-        RPGACE.utils.toast('Save error: ' + e.message, '#CC4A4A', 3000);
-      });
-    };
-    var cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    cancelBtn.onclick = function() { overlay.remove(); };
-    btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-    box.appendChild(btnRow);
-  },
-
-  _refreshWidget: function() {
-    var self = this;
-    var list = document.getElementById('vp-list');
-    if (!list) return;
-
-    RPGACE.sb.select('video_jobs', 'order=created_at.desc&limit=20')
-      .then(function(rows) {
-        rows = rows || [];
-        list.innerHTML = '';
-
-        if (rows.length === 0) {
-          list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;padding:8px 0;">No video jobs yet. Log a beat, or use + New for a standalone video.</div>';
-          return;
-        }
-
-        rows.forEach(function(row) { list.appendChild(self._renderRow(row)); });
-      }).catch(function(e) {
-        list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
-      });
-  },
-
-  _renderRow: function(row) {
-    var self = this;
-    var statusColors = {
-      beat_logged: '#C9A84C', in_production: '#4A8CCC', edited: '#9B6EC8',
-      rendered: '#CC4A4A', exported: '#4CAF82',
-    };
-    var stageIdx = self.STAGES.indexOf(row.status);
-    if (stageIdx === -1) stageIdx = 0;
-    var color = statusColors[row.status] || '#4A8CCC';
-
-    var item = document.createElement('div');
-    item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
-
-    var topRow = document.createElement('div');
-    topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
-    var titleSpan = document.createElement('span');
-    titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-    titleSpan.textContent = row.title;
-    var statusBadge = document.createElement('span');
-    statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb', 'rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb', 'rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
-    statusBadge.textContent = self.STAGE_LABELS[row.status] || row.status;
-    topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
-    item.appendChild(topRow);
-
-    // Stage progress bar — same visual language as contentProductionLive's ConID tracker
-    var progressWrap = document.createElement('div');
-    progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
-    self.STAGES.forEach(function(s, i) {
-      var dot = document.createElement('div');
-      dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= stageIdx ? color : 'rgba(255,255,255,0.08)') + ';';
-      progressWrap.appendChild(dot);
-    });
-    item.appendChild(progressWrap);
-
-    // Actions
-    var actions = document.createElement('div');
-    actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
-
-    if (stageIdx < self.STAGES.length - 1) {
-      var nextStage = self.STAGES[stageIdx + 1];
-      var advBtn = document.createElement('button');
-      advBtn.textContent = '→ Mark ' + self.STAGE_LABELS[nextStage];
-      advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      advBtn.onclick = function() {
-        self.updateEntry(row.id, { status: nextStage }).then(function() {
-          self._refreshWidget();
-          RPGACE.utils.toast(row.title + ' → ' + self.STAGE_LABELS[nextStage], color, 2000);
-        });
-      };
-      actions.appendChild(advBtn);
-    }
-
-    var detailsBtn = document.createElement('button');
-    detailsBtn.textContent = '📋 Paths + exports';
-    detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    detailsBtn.onclick = function() { self._showDetails(row); };
-    actions.appendChild(detailsBtn);
-
-    // Engineer pass 2026-07-30 (Slice A item 2, Alex's explicit "return
-    // button to beat logged in" ask). No cross-navigation existed between
-    // Video Pipeline and Content Pipeline before this - same button
-    // pattern as contentProductionLive's own "Oracle session" button
-    // (close this popup, open the other one). Coarse (opens the whole
-    // Content Pipeline card, not a deep link to this one row) - same
-    // granularity as every other dashDeck popup-to-popup jump.
-    if (row.content_production_id) {
-      var beatBtn = document.createElement('button');
-      beatBtn.textContent = '↩ Beat Log';
-      beatBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      beatBtn.onclick = function() {
-        if (RPGACE.modules.dashDeck) {
-          RPGACE.modules.dashDeck.closeWidgetPopup('vp-widget');
-          if (RPGACE.modules.dashDeck._openPipeline) RPGACE.modules.dashDeck._openPipeline();
-        }
-      };
-      actions.appendChild(beatBtn);
-    }
-
-    item.appendChild(actions);
-    return item;
-  },
-
   // Per-stage paths + the "4 exports" (YouTube/Instagram/TikTok/Beatstars) —
   // no rendering happens here, these are just where the human puts the
   // real file path or URL once that step is done outside RPGACE.
-  _showDetails: function(row) {
+  _showDetails: function(row, onSaved) {
     var self = this;
     var pop = RPGACE.modules.dashDeck._popup({
       dim: '0.9', scroll: true, width: '480px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
@@ -16276,7 +16109,7 @@ RPGACE.register('videoPipeline', {
       if (newStatus !== row.status) updates.status = newStatus;
       self.updateEntry(row.id, updates).then(function() {
         overlay.remove();
-        self._refreshWidget();
+        if (onSaved) onSaved();
         RPGACE.utils.toast(newStatus !== row.status
           ? '✅ Video job updated — auto-advanced to ' + (self.STAGE_LABELS[newStatus] || newStatus)
           : '✅ Video job updated', '#4CAF82', 2500);

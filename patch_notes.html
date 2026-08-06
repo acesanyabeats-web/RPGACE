@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔀 Aug 6 — /Engineer real /deduplication pass: Video Pipeline absorbed into Content Pipeline</div>
+    <div class="card-body">
+      Alex's own direct ask, verbatim: "i want to get rid of video pipeline, i want it to be completely absorbed by content pipeline as it is a step in content pipeline, this is a /deduplication justification." Full record: <code>engineer_pass_2026-08-06_11.txt</code>.
+      <br><br>
+      <strong>Real evidence backing the merge</strong>: every real <code>video_jobs</code> row has always been created by <code>beatLog._submit</code> (already recorded July 30, reconfirmed via grep this pass) — there has never been a real standalone video job in production. The separate "📹 Video Pipeline" dashDeck card was a genuine parallel place to do a step that already belonged inside Content Pipeline's own flow.
+      <br><br>
+      <strong>Deleted, not renamed</strong>: the dashDeck card entry, its own popup/widget (<code>_injectWidget</code>, <code>vp-widget</code>), and the "+ New" standalone-job creation form. <strong>Kept and directly reused</strong>: <code>videoPipeline</code>'s real stage constants, the paths+exports editor, and the auto-advance calculator — no working logic thrown away, only its duplicate UI surface. Production Panel's Phase 4 gained a real inline video-job status (stage progress dots, "→ Mark next stage," "📋 Paths + exports") for that ConID's own linked job, replacing the old "🎥 Open Video Pipeline" link-out button. The ConID card's own video button now opens the Production Panel directly instead of a separate popup.
+      <br><br>
+      Real diff: 144 insertions / 311 deletions — net -167 lines, a genuine deletion-heavy dedup, not a relabel. <strong>Honest scope cut, named plainly</strong>: the standalone "video job with no linked beat" capability is gone from the UI (the underlying data model could still hold one if ever needed again, nothing stops that at the table level). <strong>Untested</strong> — needs Alex to open a music_video ConID's Production Panel and confirm Phase 4's new inline status works.
+    </div>
+</div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🐛 Aug 6 — /Engineer real bugfix pass: dangling Oracle-capture race condition, ungated Beat Log auto-fires</div>
     <div class="card-body">
       Triggered directly by Alex running the full Aug 5 build through a real beat ("Asylum") and pasting the actual transcript: the Beat Log flow auto-fired two giant Oracle prompts back to back with zero human gating, a director pick Oracle genuinely made never became a <code>style_profiles</code> row, and Generate Captions silently failed. Full record: <code>engineer_pass_2026-08-06_10.txt</code>.
