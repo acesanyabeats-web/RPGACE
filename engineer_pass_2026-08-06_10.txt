@@ -1,0 +1,193 @@
+/Engineer pass — 2026-08-06_10
+Content Pipeline real bugfix pass — dangling-capture race condition,
+ungated Beat Log Oracle auto-fires, duplicated-stage button confusion
+Trigger: Alex's own real hand-test report of the Aug 5 8-phase build,
+run through the whole Beat Log → Visual Treatment → Captions chain on
+a real beat ("Asylum," ConID #10), pasted verbatim mid-session.
+
+=====================================================================
+STAGE 1 — GOAL CONTRACT
+=====================================================================
+1. Fix the real dangling-capture bug: `visualOracle._captureNextResponse`
+   is a bare one-shot listener on the shared `oracle:response-scanned`
+   hook with no request correlation. Every call site that armed it
+   BEFORE confirming its own `sendToOracle`/`sendChat()` call actually
+   went through (not silently blocked by the in-flight guard) could
+   leave a dangling listener that would wrongly fire on whatever
+   DIFFERENT reply landed next (`RPGACE.hooks.fire` broadcasts to every
+   registered listener — confirmed by direct read, not assumed). Tier 2
+   — touches Visual Treatment, Director Match/Beatstars-style save
+   flows, and Captions, all of which share this one mechanism.
+2. Real human gate before Beat Log's two Oracle auto-fires (the giant
+   "Log Beat + Find Artists" combined prompt, and F18's chained auto
+   Visual Treatment), per Alex's own direct words: "it did all of this
+   without any human gating or auto gating, this needs to be step by
+   step." Tier 1/2 — UX change to the flagship Beat Log flow, also
+   closes the real unsupervised async window goal 1's bug lived in.
+3. Never fail silently — any blocked/failed Oracle send from an
+   Oracle-reply-capturing flow shows a real, specific toast. Folded
+   into goal 1's fix.
+4. Real UI de-confusion: Production Panel Phase 2 showed "Start Visual
+   Treatment" next to "Redo Visual Treatment" with no clear distinction
+   — relabeled for what's actually different. Tier 0/1, cosmetic.
+Video Pipeline → Content Pipeline absorption is Alex's explicit
+SECOND, separate ask ("then i want to get rid of video pipeline") —
+out of scope for this pass, own dated record follows this one.
+
+=====================================================================
+STAGE 2 — EVIDENCE (real, not from memory)
+=====================================================================
+- Read `visualOracle._captureNextResponse` in full: a bare
+  `RPGACE.hooks.on('oracle:response-scanned', cb)` that self-
+  unsubscribes after firing once — no request id, no correlation to
+  what it was armed FOR.
+- Read `RPGACE.hooks.fire` in full: iterates a snapshot of ALL
+  registered listeners for an event and calls every one — confirmed
+  broadcast semantics, not "first listener wins" as might be assumed.
+- Read `RPGACE.utils._runPhylaScan` (the real trigger for
+  `oracle:response-scanned`): fires once per completed AI reply, keyed
+  off the LAST `.msg.ai` DOM element when `#send-btn` re-enables — it
+  has zero awareness of which logical flow that reply belongs to.
+- Read `scheduleOracle`'s `window.sendChat` wrap: a real in-flight
+  guard (`window._oracleRequestInFlight`) already exists and DOES show
+  a real toast on a blocked second send — but returned bare `undefined`
+  on both the blocked path and (implicitly) the success path, giving
+  callers no way to distinguish "blocked, don't arm a capture" from
+  "sent, arm away."
+- Read every real "arm capture, then send" call site directly (not
+  assumed from memory): the Visual Oracle global panel's CMDS click
+  handler (~line 1306), `beatLog._autoVisualTreatment`'s F18 auto-chain
+  (~line 13636), and `contentProductionLive._sendFilledPromptToOracle`
+  (~line 14417, the shared tail Visual Treatment AND Generate Captions
+  both call — rule 8's own dedup meant fixing this ONE site fixes
+  Captions too).
+- Cross-checked Alex's own pasted real transcript against live
+  Supabase (already done pre-pass, see `daily_priorities_debate_
+  2026-08-06.txt`): the Malick director pick's `style_profiles` row
+  never appeared; the only saved `creative_docs.visual_treatment` is
+  the LATER manual Kurosawa/Miller/Snyder generation — consistent with
+  the F18 auto-chain's send having been silently blocked (a manual
+  click grabbing the in-flight slot in the real async gap between the
+  first reply landing and `_withFilmmakerLibrary`'s own Supabase read
+  completing) while its capture stayed armed and dangling.
+- Honest uncertainty, stated plainly to Alex before building and
+  restated here: this exact sequence is the best-evidenced
+  reconstruction, not a certainty (Oracle's own compliance with the
+  requested `DIRECTOR_CHOSEN:` trailer format is a real, separate
+  possible contributor this pass cannot rule out from static code
+  alone). The fix built below is correct and worth having regardless
+  of which exact interleaving caused this specific miss — it closes a
+  real, confirmed structural gap (unconditional arming) either way.
+
+=====================================================================
+STAGE 3 — BUILD (Sonnet-direct, no Fable/Opus dispatch — the
+investigating session already held full context; a fresh dispatch
+would need re-briefing into evidence already gathered, a real rule-11
+cost with no benefit here)
+=====================================================================
+1. `scheduleOracle`'s `window.sendChat` wrap: blocked path now returns
+   `false` (was bare `undefined`); success path returns `true`.
+2. `RPGACE.utils.sendToOracle(text)`: now returns whether the send
+   actually went through (`sendChat() !== false`), so callers can act
+   on it. Fallback path (no `sendChat` global yet) returns `true`,
+   unchanged prior best-effort behaviour.
+3. Three real call sites converted from "arm then send" to "send, then
+   arm only if it actually sent, else toast a specific reason":
+   the Visual Oracle CMDS handler, `beatLog._autoVisualTreatment`'s
+   F18 chain, `contentProductionLive._sendFilledPromptToOracle` (fixes
+   Captions as a side effect of the shared-tail dedup, not a separate
+   patch).
+4. `beatLog._generateOutputs` restructured: renders the real artist-
+   match panel FIRST, then appends two independent gated buttons
+   ("📤 Send to Oracle" for the combined prompt, "🎬 Generate Visual
+   Treatment Doc" only when F18's checkbox was on) instead of auto-
+   firing either. The two are now fully decoupled — Visual Treatment no
+   longer chains off the first response at all, which removes the
+   unsupervised async window the dangling-capture bug lived in, not
+   just papers over its symptom.
+5. `beatLog._waitThenAutoVisualTreatment` deleted — genuinely dead code
+   after (4), not left unreferenced (rule 8). Its real prior debugging
+   history (a mobile-Chrome timer-throttling bug, then an event-driven
+   rebuild that still raced) is preserved in this file rather than
+   re-told in the source comment.
+6. Production Panel Phase 2 buttons relabeled: "Start Visual Treatment"
+   → "New Visual Treatment (fresh director pick)", "Redo Visual
+   Treatment (pre-filled)" → "Reopen Last Visual Treatment (pre-filled)"
+   — names what's actually different instead of reading as duplicates.
+7. index.html cache-bust bumped (20260805i → 20260806a) — G7.
+
+=====================================================================
+STAGE 4 — COUNCIL OF 5 REPORT (written from git diff, not memory)
+=====================================================================
+Real diff: rpgace_core.js (144 insertions / 70 deletions across the
+sites above — no function outside this set touched), index.html
+(1-line cache-bust). No new files, no schema change, no new endpoint.
+
+Honest residual risks, not hidden:
+- The exact causal chain for the missing Malick `style_profiles` row
+  remains a well-evidenced reconstruction, not a certainty (see Stage 2's
+  honest uncertainty note) — the fix closes the real structural gap
+  regardless, but Alex should know this pass didn't have a smoking-gun
+  console trace, only static code evidence plus the real Supabase state.
+- The new gated Beat Log flow is a genuine UX change to the single most-
+  used entry point in the app — untested by anyone, including this
+  session, beyond `node --check`.
+- `_generateVisualTreatment`'s OTHER real call sites (the ConID-card
+  button, the global Visual Oracle panel's own Director Match command at
+  line ~1391) were read and confirmed to already route through the now-
+  fixed `_sendFilledPromptToOracle`/CMDS-handler pattern — not
+  independently re-tested end-to-end.
+- This pass did not attempt to reproduce the bug live (no browser access
+  in this session) — the fix is evidence-driven, not repro-verified.
+
+Council of 5 quality score (informational only, authorizes nothing):
+7/10. Reasoning: real, traceable evidence chain (hooks.fire's broadcast
+semantics read directly, not assumed; every real call site enumerated
+via grep, not guessed at); the fix addresses the structural cause
+(unconditional arming) rather than papering over one symptom; genuine
+dedup (fixing `_sendFilledPromptToOracle` once fixes both Visual
+Treatment and Captions). Docked for the honest uncertainty on the exact
+causal chain and the total absence of live/console verification.
+
+=====================================================================
+STAGE 5 — TRUTH CHECK (independently re-run, not re-read from Stage 4)
+=====================================================================
+- node --check rpgace_core.js: re-run fresh, CLEAN.
+- git diff --stat: re-run fresh, matches Stage 4's claimed scope
+  exactly (2 files, no unclaimed hunks elsewhere).
+- Re-grepped `_captureNextResponse(`: exactly 3 real call sites, all
+  confirmed now inside the send-then-arm pattern by direct re-read.
+- Re-grepped `_waitThenAutoVisualTreatment`: zero occurrences remain
+  (deletion confirmed complete, no orphaned reference left calling it).
+- index.html script-tag count re-checked: exactly 2, only version
+  string changed.
+
+=====================================================================
+OBJECTIVE COMPLETION GATE
+=====================================================================
+G1 (syntax) — PASS, re-checked fresh above.
+G2 (index.html invariants) — PASS, exactly 2 script tags.
+G3 (module convention) — PASS, all changes inside existing
+  RPGACE.register blocks (beatLog, contentProductionLive, scheduleOracle,
+  visualOracle's own CMDS handler), no new module, no main.js touch.
+G4 (claim-to-diff reconciliation) — PASS, Stage 5's two-directional
+  check came back clean both ways.
+G5 (goal reconciliation) — All 4 Stage 1 goals: DONE. Video Pipeline
+  absorption explicitly out of scope, not silently dropped — separate
+  pass follows.
+G6 (deployment reality) — PENDING until merged to main and pushed; will
+  be independently confirmed via Vercel MCP in a follow-up edit to this
+  file, same pattern as every prior phase.
+G7 (cache-bust) — PASS, 20260805i → 20260806a.
+
+UNTESTED (required label): the entire real fix — the new gated Beat
+Log buttons, the F18 Visual Treatment decoupling, the relabeled Phase 2
+buttons, and whether the dangling-capture fix actually prevents a
+recurrence — has never been clicked through. Real action for the
+eventual hand-test: log a beat with F18's checkbox on, click "Send to
+Oracle," THEN separately click "Generate Visual Treatment Doc," confirm
+a real style_profiles row appears with the right director this time,
+then run Generate Captions on the same ConID and confirm it completes
+without going silent.
+
+PASS COUNT: 1 of 3 max.

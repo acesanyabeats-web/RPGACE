@@ -1,16 +1,16 @@
-# Graph Report - RPGACE  (2026-08-05)
+# Graph Report - RPGACE  (2026-08-06)
 
 ## Corpus Check
-- 199 files · ~487,014 words
+- 199 files · ~493,425 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1089 nodes · 1456 edges · 186 communities (177 shown, 9 thin omitted)
+- 1089 nodes · 1456 edges · 185 communities (176 shown, 9 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 28 edges (avg confidence: 0.54)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a794c20e`
+- Built from commit: `1ee66bd8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,7 +21,7 @@
 - addXP
 - rpgace_core.js
 - saveOracleToEncyclopedia
-- callOracle
+- renderEncEntries
 - rpgace_build.py
 - archaeologist.py
 - buildMonthSlots
@@ -29,7 +29,7 @@
 - functions
 - initApp
 - saveToJournal
-- triggerAgent
+- saveManualInsight
 - sendChat
 - 001 — Replace bare `ease` with real easing tokens everywhere
 - RPGACE — CLAUDE.md
@@ -83,7 +83,6 @@
 - .claude/CLAUDE.md
 - extraction-spec.md
 - /interrogation — ask before guessing, on anything that would actually change
-- setEncCategory
 
 ## God Nodes (most connected - your core abstractions)
 1. `setCORS()` - 25 edges
@@ -112,7 +111,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (186 total, 9 thin omitted)
+## Communities (185 total, 9 thin omitted)
 
 ### Community 0 - "_context.js"
 Cohesion: 0.09
@@ -127,8 +126,8 @@ Cohesion: 0.11
 Nodes (36): Path, add_to_watchlist(), analyse_frames(), banner(), batch_process(), call_claude(), check_ytdlp(), download_video() (+28 more)
 
 ### Community 3 - "addXP"
-Cohesion: 0.16
-Nodes (21): addInstaQuest(), addToEncyclopedia(), addXP(), compileEncyclopedia(), completeQuest(), copyPipelineOutput(), learnVideo(), markAgendaDone() (+13 more)
+Cohesion: 0.11
+Nodes (33): addInstaQuest(), addToEncyclopedia(), addXP(), agentLog(), callComposio(), callOracle(), compileEncyclopedia(), completeQuest() (+25 more)
 
 ### Community 4 - "rpgace_core.js"
 Cohesion: 0.09
@@ -138,9 +137,9 @@ Nodes (20): advance(), applyIntelUI(), chapterNumOf(), commitChapters(), el(), _
 Cohesion: 0.13
 Nodes (19): acceptJumpToEnc(), clearScheduledAgendas(), exitFocusToEnc(), extractVSTsFromText(), goToEncFromFocus(), loadNote(), loadScheduledAgendas(), pushLocalToSupabase() (+11 more)
 
-### Community 6 - "callOracle"
-Cohesion: 0.09
-Nodes (28): approveInsights(), approveInsightsFromCache(), callOracle(), deleteEncEntry(), detectCategory(), extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext() (+20 more)
+### Community 6 - "renderEncEntries"
+Cohesion: 0.10
+Nodes (25): autoExtractAllInCategory(), deleteEncEntry(), detectCategory(), ENC_ALL_ENTRIES, extractInsightsAuto(), extractInsightsSemiAuto(), extractVSTContext(), filterEntries() (+17 more)
 
 ### Community 7 - "rpgace_build.py"
 Cohesion: 0.23
@@ -163,16 +162,16 @@ Cohesion: 0.13
 Nodes (14): maxDuration, maxDuration, maxDuration, maxDuration, maxDuration, maxDuration, functions, api/analyst.js (+6 more)
 
 ### Community 12 - "initApp"
-Cohesion: 0.16
-Nodes (15): buildSkillTree(), buildTimeSlots(), checkPassword(), deleteNote(), initAgendas(), initApp(), initLearning(), levelUp() (+7 more)
+Cohesion: 0.14
+Nodes (17): AGENT_ACTIONS, buildAgentActions(), buildSkillTree(), buildTimeSlots(), checkPassword(), deleteNote(), initAgendas(), initApp() (+9 more)
 
 ### Community 13 - "saveToJournal"
 Cohesion: 0.15
 Nodes (13): AGENDA_LIST, clearJournal(), closeFocusOverlay(), closeJournalEntry(), completeScheduledTask(), deleteJournalEntry(), hideTimerWidget(), logDailyAction() (+5 more)
 
-### Community 14 - "triggerAgent"
-Cohesion: 0.28
-Nodes (9): AGENT_ACTIONS, agentLog(), buildAgentActions(), callComposio(), pipelineToGitHub(), pipelineToGmail(), pipelineToNotion(), setAgentPipeStatus() (+1 more)
+### Community 14 - "saveManualInsight"
+Cohesion: 0.33
+Nodes (7): approveInsights(), approveInsightsFromCache(), removeInsightTooltip(), saveManualInsight(), sbInsightPost(), setupManualInsightSelection(), showInsightTooltip()
 
 ### Community 15 - "sendChat"
 Cohesion: 0.21
@@ -350,10 +349,6 @@ Nodes (3): Guardrails, /Summary — a real, evidence-checked recap when context 
 Cohesion: 0.40
 Nodes (4): Guardrails, /interrogation — ask before guessing, on anything that would actually change, Procedure, When to run it
 
-### Community 185 - "setEncCategory"
-Cohesion: 0.25
-Nodes (9): autoExtractAllInCategory(), ENC_ALL_ENTRIES, generateContentIdeasFromInsights(), jumpToFullEntry(), jumpToSourceEntry(), loadInsightsByCategory(), loadVSTInspector(), sbInsightFetch() (+1 more)
-
 ## Knowledge Gaps
 - **401 isolated node(s):** `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS`, `config`, `TIER_ORDER` (+396 more)
   These have ≤1 connection - possible missing edges or undocumented components.
@@ -370,9 +365,9 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.03443169196593854 - nodes in this community are weakly interconnected._
 - **Should `rpgace_intel.py` be split into smaller, more focused modules?**
   _Cohesion score 0.11411411411411411 - nodes in this community are weakly interconnected._
+- **Should `addXP` be split into smaller, more focused modules?**
+  _Cohesion score 0.10606060606060606 - nodes in this community are weakly interconnected._
 - **Should `rpgace_core.js` be split into smaller, more focused modules?**
   _Cohesion score 0.08912655971479501 - nodes in this community are weakly interconnected._
 - **Should `saveOracleToEncyclopedia` be split into smaller, more focused modules?**
   _Cohesion score 0.1286549707602339 - nodes in this community are weakly interconnected._
-- **Should `callOracle` be split into smaller, more focused modules?**
-  _Cohesion score 0.09259259259259259 - nodes in this community are weakly interconnected._

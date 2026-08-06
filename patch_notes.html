@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🐛 Aug 6 — /Engineer real bugfix pass: dangling Oracle-capture race condition, ungated Beat Log auto-fires</div>
+    <div class="card-body">
+      Triggered directly by Alex running the full Aug 5 build through a real beat ("Asylum") and pasting the actual transcript: the Beat Log flow auto-fired two giant Oracle prompts back to back with zero human gating, a director pick Oracle genuinely made never became a <code>style_profiles</code> row, and Generate Captions silently failed. Full record: <code>engineer_pass_2026-08-06_10.txt</code>.
+      <br><br>
+      <strong>Real root cause, traced through actual code, not guessed</strong>: <code>visualOracle._captureNextResponse</code> is a bare one-shot listener on the shared <code>oracle:response-scanned</code> hook with no request correlation — and <code>RPGACE.hooks.fire</code> broadcasts to every registered listener (confirmed by direct read). Every real call site armed this capture BEFORE confirming its own <code>sendToOracle()</code> call actually went through — if the in-flight guard silently blocked that send (e.g. a manual click stealing the slot during F18's auto-chain's own async gap), the capture stayed armed and dangling, ready to wrongly consume whatever DIFFERENT reply landed next.
+      <br><br>
+      <strong>Fixed at the structural level, not papered over</strong>: <code>sendToOracle()</code> and the wrapped <code>sendChat()</code> now report whether a send actually went through; all 3 real "arm then send" call sites (Visual Oracle's command panel, F18's auto Visual Treatment chain, and <code>_sendFilledPromptToOracle</code> — the one shared tail Visual Treatment AND Captions both call, so fixing it once fixed both) now send first and only arm if confirmed sent, toasting a specific reason otherwise. Beat Log's two auto-fires became two real, independent, human-gated buttons ("📤 Send to Oracle" / "🎬 Generate Visual Treatment Doc") per Alex's own words — which also removes the unsupervised async window the bug lived in, not just its symptom. Production Panel's Phase 2 buttons relabeled ("New Visual Treatment" / "Reopen Last Visual Treatment") to stop reading as duplicates.
+      <br><br>
+      <strong>Honest uncertainty, stated plainly</strong>: the exact causal chain for the missing <code>style_profiles</code> row is a well-evidenced reconstruction from static code + Supabase state, not a console-verified certainty — Oracle's own compliance with the requested trailer format is a real, separate possible contributor this pass couldn't rule out. The fix closes a real, confirmed structural gap either way. <strong>Untested</strong> — needs Alex to run the same real flow again.
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">🏁 Aug 5 — SESSION CLOSED via /Bedtime. Real state: the full 8-phase (A-H) Content/Video Pipeline unification shipped and is genuinely live on production; a real deploy failure was caught by this session's own G6 check and fixed same session; everything remains untested end-to-end by design (Alex's own deferred hand-test plan).</div>
     <div class="card-body">

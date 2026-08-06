@@ -1312,16 +1312,24 @@ RPGACE.register('visualOracle', {
         // gets the offer, not just the 4 flagged as real per-project
         // candidates in the plan - a save button costing nothing to
         // ignore is simpler than special-casing which commands get one.
+        // Aug 6 (Engineer pass, real Content Pipeline bugfix) — send
+        // first, only arm the save-picker capture if it actually sent
+        // (see _sendFilledPromptToOracle's own comment for the full real
+        // root-cause evidence this pattern fixes).
         var proceed = function(promptText) {
           RPGACE.utils.fillGaps(promptText, function(filled) {
             var input = document.querySelector('#chat-input');
             if (!input) return;
             input.value = filled;
             input.dispatchEvent(new Event('input', {bubbles:true}));
-            self._captureNextResponse(function(text) {
-              self._showSaveToPipelinePicker(self.DOC_SLUGS[i], text);
-            });
-            if (typeof sendChat === 'function') sendChat();
+            var sent = (typeof sendChat === 'function') ? (sendChat() !== false) : true;
+            if (sent) {
+              self._captureNextResponse(function(text) {
+                self._showSaveToPipelinePicker(self.DOC_SLUGS[i], text);
+              });
+            } else {
+              RPGACE.utils.toast('⏳ Oracle was still busy — try this command again in a moment', '#E2A83D', 3500);
+            }
           });
         };
         // F14: Director Match used to just tell Claude to imagine "the Phylum
@@ -4761,9 +4769,29 @@ RPGACE.register('scheduleOracle', {
         // faster one fired while it was still pending. Blocking overlap
         // entirely removes the chance of that happening, no main.js edit
         // needed.
+        // Aug 6 (Engineer pass, real Content Pipeline bugfix) — this guard
+        // already stopped a SECOND request from firing while one was in
+        // flight, but returned bare `undefined` on the blocked path,
+        // identical to what it returns on a genuinely successful send with
+        // no promise result. Every caller that arms a
+        // visualOracle._captureNextResponse() listener right before calling
+        // sendChat()/sendToOracle() had no way to tell "blocked, don't
+        // arm" from "sent, arm away" - so a blocked send left its capture
+        // dangling, armed for a response that was never coming, ready to
+        // wrongly consume whatever DIFFERENT reply happened to land next
+        // (RPGACE.hooks.fire() broadcasts to every registered listener for
+        // an event, confirmed by direct read - there is no per-request
+        // tagging). Real evidence trail: Alex's own hand-test report
+        // (2026-08-06) showed a missing style_profiles row for a director
+        // pick Oracle DID make, and content-pipeline "duplicated stages" -
+        // both consistent with a dangling auto-chain capture (F18's
+        // _autoVisualTreatment) getting silently blocked by a manual click
+        // grabbing the in-flight slot first, then wrongly firing on that
+        // manual flow's own reply once it landed. Returning `false` here
+        // (instead of undefined) lets every call site that cares check it.
         if (window._oracleRequestInFlight) {
           RPGACE.utils.toast('⏳ Oracle is still answering — wait for it to finish first', '#CC4A4A', 2800);
-          return;
+          return false;
         }
         var input = document.getElementById('chat-input');
         var val = input ? input.value.trim() : '';
@@ -4774,7 +4802,7 @@ RPGACE.register('scheduleOracle', {
           input.value = '';
           input.dispatchEvent(new Event('input', { bubbles: true }));
           self._openPanel(rest);
-          return;
+          return false;
         }
         window._oracleRequestInFlight = true;
         var result = origSend.apply(this, arguments);
@@ -4783,7 +4811,7 @@ RPGACE.register('scheduleOracle', {
         } else {
           window._oracleRequestInFlight = false;
         }
-        return result;
+        return true;
       };
     }
   },
@@ -11835,16 +11863,23 @@ RPGACE.register('config', {
       });
     };
 
+    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — now returns
+    // whether the send actually went through (true) or was blocked by the
+    // in-flight guard (false), so callers that arm a one-shot response
+    // capture right before/after calling this can skip arming it on a
+    // blocked send instead of leaving it dangling. See scheduleOracle's
+    // sendChat wrap (real root-cause comment there) for the full evidence.
     RPGACE.utils.sendToOracle = function(text) {
       var input = document.querySelector('#chat-input');
-      if (!input) return;
+      if (!input) return false;
       input.value = text;
       input.dispatchEvent(new Event('input', { bubbles: true }));
       if (typeof sendChat === 'function') {
-        sendChat();
+        return sendChat() !== false;
       } else {
         var btn = document.querySelector('#send-btn') || document.querySelector('button[onclick*="sendChat"]');
         if (btn) btn.click();
+        return true; // can't observe the guard via a raw click - best-effort, unchanged from prior behaviour
       }
     };
 
@@ -13545,63 +13580,69 @@ RPGACE.register('beatLog', {
       '6. CONTENT BRIEF — One Instagram Reels concept for this beat (hook + visual direction + caption).\n\n' +
       'Be specific, direct, and pre-filled for @AceSanyaBeats / FL Studio / UK hip hop.';
 
-    RPGACE.utils.sendToOracle(prompt);
-
-    // F18: optional second Oracle call, chained after the main beat-log
-    // prompt clears the in-flight guard (see scheduleOracle's sendChat
-    // wrap) instead of firing immediately, which would just get blocked
-    // by that same guard and silently dropped.
-    if (form.visualTreatment) self._waitThenAutoVisualTreatment(form, palette, cpId, videoJobId);
-
-    // Render artist match panel in output
+    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — real human
+    // gate before EITHER Oracle call, per Alex's own direct hand-test
+    // report: "it did all of this without any human gating or auto
+    // gating, this needs to be step by step." Both calls used to auto-
+    // fire — the second one (F18's Visual Treatment) literally CHAINED
+    // off the first one's response with no click in between, which was
+    // also the real opening for the dangling-capture bug fixed above (a
+    // manual click landing in that unsupervised gap could steal the
+    // in-flight slot). Gating both behind explicit buttons closes both
+    // problems with one change: nothing fires without a real click, so
+    // there is no unsupervised window for two sends to collide in.
     self._renderArtistPanel(form, palette, big, emerging, underground, output);
-  },
 
-  // F18: Beat Log entry → auto Visual Treatment Document, calling
-  // visualOracle's own template automatically instead of requiring a
-  // manual trip through the Visual Oracle panel with placeholder-filling.
-  // Grounded in the real F14 filmmaker library the same way Director
-  // Match is, so Oracle picks a real director rather than inventing one.
-  // 2026-07-28 (real hand-test evidence): was a setTimeout poll on
-  // window._oracleRequestInFlight, up to 30s. Real evidence a beat logged
-  // from a phone never triggered the second (Visual Treatment) call at
-  // all: Vercel's own request logs for that exact window show exactly
-  // ONE /api/oracle POST (the main beat-log prompt) and zero more, ever -
-  // no server error, so the failure was client-side. The wrap chain and
-  // argument threading all check out on direct re-reading; the real
-  // suspect is that a chain of setTimeout callbacks is vulnerable to
-  // mobile Chrome's background-tab timer throttling silently stalling it
-  // for a long time (or indefinitely) if the tab isn't foregrounded right
-  // when the poll needs to keep firing - a real risk specifically because
-  // this flow is used from a phone. Rebuilt event-driven instead: reuses
-  // the same one-shot _captureNextResponse the save logic already relies
-  // on to wait for the main prompt's own 'oracle:response-scanned' firing
-  // (a real DOM-mutation-driven signal, not a timer) before starting the
-  // second call - removes the timer dependency for this handoff entirely.
-  _waitThenAutoVisualTreatment: function(form, palette, cpId, videoJobId) {
-    var self = this;
-    var vo = RPGACE.modules.visualOracle;
-    if (vo && vo._captureNextResponse) {
-      vo._captureNextResponse(function() {
-        self._autoVisualTreatment(form, palette, cpId, videoJobId);
-      });
-    } else {
-      // Fallback if the shared hook module isn't available for some
-      // reason - keep the old poll as a safety net rather than silently
-      // doing nothing.
-      var waited = 0;
-      var poll = function() {
-        if (window._oracleRequestInFlight && waited < 30000) {
-          waited += 500;
-          setTimeout(poll, 500);
-          return;
+    var gateRow = document.createElement('div');
+    gateRow.style.cssText = 'margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:8px;';
+
+    var sendBtn = document.createElement('button');
+    sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
+    sendBtn.style.cssText = 'width:100%;padding:10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:6px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    sendBtn.onclick = function() {
+      sendBtn.disabled = true;
+      sendBtn.textContent = '⏳ Sending...';
+      if (typeof showPage === 'function') showPage('advisor');
+      setTimeout(function() {
+        var sent = RPGACE.utils.sendToOracle(prompt);
+        if (!sent) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
+          RPGACE.utils.toast('⏳ Oracle was busy — try again in a moment', '#E2A83D', 3000);
         }
-        self._autoVisualTreatment(form, palette, cpId, videoJobId);
+      }, 300);
+    };
+    gateRow.appendChild(sendBtn);
+
+    // F18: now a real second gated step instead of an auto-chain off the
+    // first response — decoupled entirely, so it can be run independently
+    // whenever Alex is ready, not forced into a fixed sequence.
+    if (form.visualTreatment) {
+      var vtBtn = document.createElement('button');
+      vtBtn.textContent = '🎬 Generate Visual Treatment Doc';
+      vtBtn.style.cssText = 'width:100%;padding:10px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      vtBtn.onclick = function() {
+        vtBtn.disabled = true;
+        vtBtn.textContent = '⏳ Generating...';
+        if (typeof showPage === 'function') showPage('advisor');
+        setTimeout(function() { self._autoVisualTreatment(form, palette, cpId, videoJobId); }, 300);
       };
-      setTimeout(poll, 500);
+      gateRow.appendChild(vtBtn);
     }
+
+    output.appendChild(gateRow);
   },
 
+  // Aug 6 (Engineer pass, real Content Pipeline bugfix) — the old
+  // _waitThenAutoVisualTreatment auto-chain (fired this straight off the
+  // Beat Log response scan, no click involved) is gone; _generateOutputs
+  // now calls this directly from a real "🎬 Generate Visual Treatment
+  // Doc" button click instead. Real, deliberate deletion, not left as
+  // dead code (rule 8) — its docstring's own history (a background-tab
+  // timer-throttling bug, then an event-driven rebuild that turned out to
+  // still race) is preserved in engineer_pass_2026-08-06_10.txt rather
+  // than re-told here.
+  //
   // 2026-07-28 - now threads cpId/videoJobId through so the generated
   // document is actually saved (content_pipeline_overseer_spec_backlog_
   // 2026-07-28.txt) instead of only ever existing as a chat message, and
@@ -13622,6 +13663,18 @@ RPGACE.register('beatLog', {
         (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why. Then on its own final line, output exactly: DIRECTOR_CHOSEN: <exact director name from the list above>.' : '');
     };
     var vo = RPGACE.modules.visualOracle;
+    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — armCapture now
+    // runs AFTER sendToOracle confirms the send actually happened, not
+    // before. This was the real root cause of Alex's own hand-test report
+    // (2026-08-06): this auto-chain fires straight off the Beat Log
+    // response scan with no human gate, so a manual click elsewhere (e.g.
+    // "Start Visual Treatment" on the ConID card) landing in the same
+    // narrow window could grab the in-flight slot first, silently
+    // blocking THIS send while the capture below was already armed and
+    // dangling - it then wrongly fired on the manual flow's own reply
+    // once that landed (RPGACE.hooks.fire broadcasts to every registered
+    // listener, confirmed by direct read), which is why no style_profiles
+    // row ever appeared for the auto-triggered director pick.
     var armCapture = function() {
       if (vo && vo._captureNextResponse && cpId) {
         vo._captureNextResponse(function(text) {
@@ -13629,14 +13682,18 @@ RPGACE.register('beatLog', {
         });
       }
     };
-    if (vo && typeof vo._withFilmmakerLibrary === 'function') {
-      vo._withFilmmakerLibrary(function(block) {
+    var fire = function(block) {
+      var sent = RPGACE.utils.sendToOracle(buildPrompt(block));
+      if (sent) {
         armCapture();
-        RPGACE.utils.sendToOracle(buildPrompt(block));
-      });
+      } else {
+        RPGACE.utils.toast('⏳ Auto Visual Treatment was blocked (Oracle still busy) — use the ConID\'s "🎬 Start Visual Treatment" button to run it manually', '#E2A83D', 5000);
+      }
+    };
+    if (vo && typeof vo._withFilmmakerLibrary === 'function') {
+      vo._withFilmmakerLibrary(function(block) { fire(block); });
     } else {
-      armCapture();
-      RPGACE.utils.sendToOracle(buildPrompt(''));
+      fire('');
     }
   },
 
@@ -14387,6 +14444,15 @@ RPGACE.register('contentProductionLive', {
   // behavior unchanged) so _generateCaptions can reuse this exact same
   // real send/capture tail for a different creative_docs key, instead of
   // a second hand-rolled copy (rule 8 dedup).
+  // Aug 6 (Engineer pass, real Content Pipeline bugfix) — send FIRST, only
+  // arm the capture if it actually went through. Previously armed
+  // unconditionally before sending, which left a dangling capture (ready
+  // to wrongly consume a LATER, unrelated reply per RPGACE.hooks.fire's
+  // broadcast-to-all-listeners semantics) whenever the in-flight guard
+  // silently blocked this exact send - e.g. this flow firing while a
+  // still-in-flight Beat Log auto-chain hadn't cleared yet. Real root
+  // cause of Alex's own hand-test report (2026-08-06): a missing
+  // style_profiles row + "duplicated stages" in Content Pipeline.
   _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) {
     docSlug = docSlug || 'visual_treatment';
     var vo = RPGACE.modules.visualOracle;
@@ -14394,12 +14460,14 @@ RPGACE.register('contentProductionLive', {
     if (!input) return;
     input.value = filled;
     input.dispatchEvent(new Event('input', {bubbles:true}));
-    if (vo && vo._captureNextResponse) {
+    var sent = (typeof sendChat === 'function') ? (sendChat() !== false) : true;
+    if (sent && vo && vo._captureNextResponse) {
       vo._captureNextResponse(function(text) {
         vo._saveDocToProduction(docSlug, text, row.id, vjId);
       });
+    } else if (!sent) {
+      RPGACE.utils.toast('⏳ Oracle was still busy — click again in a moment (nothing was lost, this attempt just didn\'t send)', '#E2A83D', 4000);
     }
-    if (typeof sendChat === 'function') sendChat();
   },
 
   // ── Phase H (Aug 5, Engineer pass 09) — real beat deliverables ──────
@@ -15311,15 +15379,21 @@ RPGACE.register('contentProductionLive', {
               // hand-rolled copy). Real retroactive button (Aug 5, Phase
               // E) reopens the same flow pre-filled with the previously
               // saved director blend.
+              // Aug 6 (Engineer pass, real Content Pipeline bugfix) —
+              // relabeled per Alex's own "duplicated stages" report:
+              // showing "Start Visual Treatment" next to "Redo Visual
+              // Treatment" read as two copies of the same action. Now
+              // named for what's actually different — a fresh director
+              // pick vs. reopening the LAST saved one pre-selected.
               var vtBtn2 = document.createElement('button');
-              vtBtn2.textContent = '🎬 Start Visual Treatment';
+              vtBtn2.textContent = '🎬 New Visual Treatment (fresh director pick)';
               vtBtn2.style.cssText = 'padding:5px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
               vtBtn2.onclick = function() {
                 RPGACE.ui.slideOutPanel(panel, 'right');
                 self._generateVisualTreatment(row);
               };
               phaseCard.appendChild(vtBtn2);
-              phaseCard.appendChild(self._buildRetroActionButton('↩ Redo Visual Treatment (pre-filled)', '#9B6EC8', 'rgba(155,89,182,0.3)', function() {
+              phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Visual Treatment (pre-filled)', '#9B6EC8', 'rgba(155,89,182,0.3)', function() {
                 RPGACE.ui.slideOutPanel(panel, 'right');
                 self._retroVisualTreatment(row);
               }));

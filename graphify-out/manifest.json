@@ -40,7 +40,7 @@
     "semantic_hash": "7fca0326ac07022224f3d6c78a6c7ee6"
   },
   "api/data-write.js": {
-    "mtime": 1785964229.4630835,
+    "mtime": 1785974281.6173887,
     "ast_hash": "abe3d04b74ed46a80566c4699a973cac",
     "semantic_hash": ""
   },
@@ -105,8 +105,8 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785964255.019085,
-    "ast_hash": "ff66da6ff59182a58ad2cdadddd3e35d",
+    "mtime": 1785975751.4014032,
+    "ast_hash": "4bedba70478847b3e40188cb7f2f1ab5",
     "semantic_hash": ""
   },
   "scripts/add_click_to_schedule.py": {
@@ -905,8 +905,8 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1785964290.887087,
-    "ast_hash": "970425578c8710db17248c3dadaec4f9",
+    "mtime": 1785975874.3534045,
+    "ast_hash": "bfa0715deb52434ce273279e9b106638",
     "semantic_hash": ""
   },
   "CLAUDE_archive.md": {
@@ -1060,12 +1060,12 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1785964074.4310744,
-    "ast_hash": "62d3911683ff46a64c22f3419cc2f72b",
+    "mtime": 1785975779.8774035,
+    "ast_hash": "e2781c8fe9289c6ee890bb30da3c51de",
     "semantic_hash": ""
   },
   "interconnection_map.md": {
-    "mtime": 1785974170.9813876,
+    "mtime": 1785974281.6213887,
     "ast_hash": "a99c1d2dc701d93aa35389ef3e4613d0",
     "semantic_hash": ""
   },
@@ -1080,8 +1080,8 @@
     "semantic_hash": ""
   },
   "manual.html": {
-    "mtime": 1785956939.0839703,
-    "ast_hash": "609c1c0291a159b6ff25e7fd946498b6",
+    "mtime": 1785974585.1973917,
+    "ast_hash": "48ec65636cbbd3dbb4a3dfe38397a16e",
     "semantic_hash": ""
   },
   "manual_html_minotaur_sidekick_debate_2026-07-31.txt": {
@@ -1130,8 +1130,8 @@
     "semantic_hash": ""
   },
   "patch_notes.html": {
-    "mtime": 1785974189.2773879,
-    "ast_hash": "a11e9f3a3ef090fed19cc83926799b53",
+    "mtime": 1785975851.5094042,
+    "ast_hash": "eb30c76c5f32b7452eb627f0c1d81f82",
     "semantic_hash": ""
   },
   "patch_notes_archive.html": {
@@ -1215,7 +1215,7 @@
     "semantic_hash": ""
   },
   "system_flow_map.md": {
-    "mtime": 1785974182.9653878,
+    "mtime": 1785974281.6293888,
     "ast_hash": "d33a5f34f0787096d6ec80c3744fade5",
     "semantic_hash": ""
   },
@@ -1365,13 +1365,23 @@
     "semantic_hash": ""
   },
   "beat_deliverables_autoport_backlog_2026-08-05.txt": {
-    "mtime": 1785974209.345388,
+    "mtime": 1785974281.6173887,
     "ast_hash": "dd1170e1302f28c702a0ef50de048dee",
     "semantic_hash": ""
   },
   "engineer_pass_2026-08-05_09.txt": {
-    "mtime": 1785974244.9933884,
-    "ast_hash": "90c59e0dfecee736479452f7d79e5d8d",
+    "mtime": 1785974406.68139,
+    "ast_hash": "f994c3a3eba2460217145fb598817fec",
+    "semantic_hash": ""
+  },
+  "daily_priorities_debate_2026-08-06.txt": {
+    "mtime": 1785975176.5333977,
+    "ast_hash": "4179244f052436c16a15fe336ca6eab3",
+    "semantic_hash": ""
+  },
+  "engineer_pass_2026-08-06_10.txt": {
+    "mtime": 1785975832.0494041,
+    "ast_hash": "6a63b3b57ba5de16efe0bd51495c8242",
     "semantic_hash": ""
   }
 }
