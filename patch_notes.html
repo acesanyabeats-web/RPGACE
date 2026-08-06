@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🏁 Aug 6 — SESSION CLOSED (2nd close this date) via /Bedtime. Real state: a real Alex hand-test surfaced 2 genuine bugs, both investigated (1 fixed live, 1 root-caused and human-gated), Video Pipeline was fully absorbed into Content Pipeline on Alex's own /deduplication ask, and a real dashboard-redesign idea was logged with honest debate rather than rubber-stamped.</div>
+    <div class="card-body">
+      <strong>Real evidence checked before writing this</strong>: `git log` confirms `main`, `claude/rpgace-master-steps-uobp98`, and `origin/main` all at the identical commit `2a4bce2`, working tree clean. `system_updates` confirms 4 real rows this stretch (session-close, bugfix, refactor, planning), matching the real commits one-for-one — nothing shipped without a matching Chronicles row.
+      <br><br>
+      <strong>Done, live, verified — not just claimed</strong>: (1) the dangling Oracle-capture bugfix — `sendToOracle()`/`sendChat()` now report whether a send actually went through, every real "arm then send" site fixed, Beat Log's 2 auto-fires became real human-gated buttons; G6-confirmed READY on commit `f57e364`. (2) Video Pipeline fully absorbed into Content Pipeline — the separate dashDeck card deleted, real logic reused inline in Production Panel Phase 4, net -167 lines; G6-confirmed READY on commit `5e3d7ab`. See this session's own cards above for full detail on both.
+      <br><br>
+      <strong>Logged, deliberately not built</strong>: the Morning Brief redesign + "measured doses" idea, split via real debate into 3 pieces — 2 buildable now (top-of-dashboard bulletin, Oracle dispatcher), 1 genuinely blocked on missing data (no social-metrics table exists anywhere, `chronicles_finance` has zero rows). Full record: `morning_brief_redesign_and_measured_doses_spec_backlog_2026-08-06.txt`.
+      <br><br>
+      <strong>Two real bugs from Alex's own hand-test, honestly split by resolution status</strong>: the dangling-capture race (above) is fixed and live. The in-app "Unauthorized" Oracle error is real-investigated but NOT fixed — `authGate`'s chain is structurally correct for a fresh login, and the one real unconfirmed gap (`_apiSecret` has zero persistence) needs actual DevTools evidence from Alex before any patch, per rule 9's no-blind-second-attempt discipline. The Morning Brief Routine's Supabase 403 turned into a bigger, real, still-open finding: `journal` has **zero rows ever** from `source='morning-routine'` — not just today — meaning this Routine may never have completed its real end-to-end task since July 22. A diagnostic re-fire was sent but never reported back after 2 real waits; left running rather than chased further, on Alex's own explicit call ("move on and retry later").
+      <br><br>
+      <strong>Hand-off</strong>: next session opens with `/Routine`. Real, load-bearing candidates already on record for it: guide the full 8-phase (A-H) hand-test (now with 2 more real fixes to also verify), re-check the Morning Brief Routine's real status (both the diagnostic and whether it has EVER written to `journal`), and get Alex's real DevTools evidence for the still-open Unauthorized bug. All of this is written into CLAUDE.md's Open Forks and the two dated backlog files linked above — `/Routine`'s next evidence pass does not need to reconstruct any of it from git log.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">💡 Aug 6 — Morning Brief redesign + "measured doses" idea logged (not built); 2 real bugs reported and investigated</div>
     <div class="card-body">
       Alex asked to log a real dashboard-redesign idea before losing it, plus fix two real bugs he hit trying to get a morning brief. Full record: <code>morning_brief_redesign_and_measured_doses_spec_backlog_2026-08-06.txt</code>.
