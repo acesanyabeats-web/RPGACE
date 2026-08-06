@@ -248,8 +248,9 @@ G4 (claim-to-diff reconciliation): PASS — every numbered item above maps
   to a real, re-read diff hunk; nothing claimed that isn't in the diff.
 G5 (goal reconciliation): PASS — G1-G9 all built; G10 (chat-only items)
   delivered in the reply, not silently dropped.
-G6 (deployment reality): PENDING at time of writing — will confirm via
-  Vercel MCP get_deployment after merge+push, same as every prior pass.
+G6 (deployment reality): PASS — Vercel MCP list_deployments confirms
+  `dpl_FLNCjAmYZEoDqBocQyW9HrBRARFC`, target=production, state=READY,
+  commit a10b23f (this pass's exact commit), pushed to `main`.
 G7 (cache-bust): PASS — 20260806b -> 20260806c.
 
 UNTESTED — same standing flag as every UI pass shipped this week. Real
