@@ -104,25 +104,10 @@
     "ast_hash": "406a10d4ec8ebb92a1c1890ebe3f48e6",
     "semantic_hash": "406a10d4ec8ebb92a1c1890ebe3f48e6"
   },
-  "scripts/build_full_scheduling_system.py": {
-    "mtime": 1783868447.9696956,
-    "ast_hash": "0c60c643492579173e438ebd71a3d837",
-    "semantic_hash": "0c60c643492579173e438ebd71a3d837"
-  },
   "scripts/fourth_rota.py": {
     "mtime": 1783908201.0055985,
     "ast_hash": "519346a804842ee9032e91f8a2086df0",
     "semantic_hash": "519346a804842ee9032e91f8a2086df0"
-  },
-  "scripts/mod_taxonomyTree.js": {
-    "mtime": 1783868448.0186589,
-    "ast_hash": "137e40fe26db3f9a51215f95940a3acf",
-    "semantic_hash": "137e40fe26db3f9a51215f95940a3acf"
-  },
-  "scripts/rebuild_daily_grid_v2.py": {
-    "mtime": 1783868448.034659,
-    "ast_hash": "f54ede85b5b618a1c50fc8f51b3bc411",
-    "semantic_hash": "f54ede85b5b618a1c50fc8f51b3bc411"
   },
   "scripts/rpgace_intel.py": {
     "mtime": 1783868448.034659,
@@ -133,16 +118,6 @@
     "mtime": 1783868448.0426588,
     "ast_hash": "20539cb9fcd5505789386a6b29c4d10f",
     "semantic_hash": "20539cb9fcd5505789386a6b29c4d10f"
-  },
-  "scripts/stub_addSchedButtons.py": {
-    "mtime": 1783868448.0466588,
-    "ast_hash": "68fc496d7dd9d95343a0081700aade7f",
-    "semantic_hash": "68fc496d7dd9d95343a0081700aade7f"
-  },
-  "scripts/supabase_sync.py": {
-    "mtime": 1783868448.0466588,
-    "ast_hash": "626901bb887921564dbd921644820d9d",
-    "semantic_hash": "626901bb887921564dbd921644820d9d"
   },
   "skills-lock.json": {
     "mtime": 1784980426.0850823,

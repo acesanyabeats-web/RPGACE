@@ -77,3 +77,89 @@ existed — it does not mean the graph will never have a new orphan again
 (a genuinely new, real one-off scratch script written and committed in
 the future would show up the same way). Nothing here changes that; this
 was a one-time cleanup of an accumulated batch, not a new standing rule.
+
+------------------------------------------------------------------
+ROUND 2 (same session) — Alex looked at the live graph.html directly,
+found the pattern still visible, and asked a bigger question
+------------------------------------------------------------------
+Alex pasted 2 real node inspections from the live graph.html itself:
+- `rebuild_daily_grid_v2.py`, degree 1, its only neighbor
+  `find_function_span()` — i.e. connected only to a helper function
+  defined inside itself.
+- `interconnection_map.md`, degree 25, all 25 neighbors its own
+  document sections — connected only to itself, not to any code.
+Plus a screenshot of the live graph showing several small disconnected
+star/tree clusters floating separately from the main mass, and asked:
+"why are these parts of graphify not connecting? i want everything to
+be connected... starting from one point, when i log in."
+
+Real re-check of the "10 kept" list from round 1 found 4 more of the
+EXACT SAME dead-scratch-script species, missed because each had exactly
+1 self-referencing edge instead of 0:
+- build_full_scheduling_system.py, rebuild_daily_grid_v2.py,
+  stub_addSchedButtons.py — identical open('main.js') +
+  find_function_span() one-off pattern, zero real references anywhere.
+- supabase_sync.py — its own docstring claimed "Imported by
+  rpgace_intel.py, not run directly." Checked directly: FALSE. Nothing
+  in the repo imports it.
+- mod_taxonomyTree.js — a real historical staging file. Real evidence:
+  rpgace_build.py (repo root, a genuinely live "Master Build Tool" for
+  rpgace_core.js modules, degree 22, confirmed real and left untouched)
+  has a documented `update taxonomyTree mod_taxonomyTree.js` command in
+  patch_notes.html — this file's real job (feeding that command once)
+  is done; the taxonomyTree module it staged already lives in
+  rpgace_core.js.
+All 5 deleted. scripts/ now holds exactly 5 real files: fourth_rota.py,
+graphify_recolor.py, graphify_river_group.py, rpgace_intel.py, split.py.
+
+------------------------------------------------------------------
+THE BIGGER QUESTION — real evidence, not a fix, since it isn't one
+------------------------------------------------------------------
+Re-ran the full pipeline (--code-only rebuild, export, recolor,
+river-group) and computed real connected components, not just degree:
+950 nodes, 0 orphans (0-degree nodes fully gone), but **56 separate
+connected components** — the biggest holds 239 nodes, then 63, 54, 45,
+36... down to many small clusters. This is the real shape behind both
+of Alex's examples: rebuild_daily_grid_v2.py forms its own tiny
+2-node island (itself + its one internal helper); interconnection_map.md
+forms its own ~25-node island (its own sections, cross-referencing only
+each other).
+
+Real, evidence-based cause — NOT a bug in this session's cleanup, a
+structural limit of graphify's own AST extractor for THIS codebase's
+own real conventions, already confirmed once this session
+(graphify_restructure_paranoia_2026-08-06.txt):
+1. `RPGACE.register('name', {...})` — this project's own standing
+   module convention — is never extracted as a first-class symbol.
+   Confirmed live, twice, including a fresh rebuild run specifically to
+   test it.
+2. Real dynamic dispatch the AST cannot statically resolve:
+   `RPGACE.hooks.fire('name')` / `.on('name', fn)` pairs (string-keyed
+   at runtime, not a direct call), and `RPGACE.modules.X.method()` /
+   `RPGACE.utils.X()` (property lookups on a shared registry object,
+   not a resolvable function call).
+3. Docs and code are separate extraction domains — a markdown doc
+   describing a module gets edges to its OWN sections, never to the
+   actual code symbols it describes, unless an LLM-based semantic pass
+   (not the free --code-only AST pass) explicitly draws that link.
+
+A community-detection graph over AST-extracted references is not
+designed to be a single-rooted tree in the first place — many separate
+real components is the textbook-correct, honest output of this kind of
+tool on a codebase with this many one-off utility scripts and doc files
+that only reference themselves. Force-connecting them with fabricated
+edges would misrepresent the codebase (same standing rule 1 reasoning
+as round 1's "why not hook them up" answer).
+
+Real, buildable path forward, NOT built this pass (put to Alex as a
+scoped decision rather than started blind, given its real size):
+a genuinely new companion script adding a SYNTHETIC edge layer on top
+of graphify's real AST edges, grounded in real string-matched evidence
+(never invented) — tracing `index.html`'s real script/boot sequence,
+`RPGACE.registerBootTask()` registrations, and `RPGACE.hooks.fire()`/
+`.on()` name pairs, plus `RPGACE.modules.X.method()`/`RPGACE.utils.X()`
+call sites matched back to their real `RPGACE.register('X', ...)`
+definition. This would close the SPECIFIC extraction gap causing the
+fragmentation, not just recolor/reposition nodes like today's scripts
+do — a real, substantially bigger build than anything done on graphify
+so far this session.

@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🕸️ Aug 6 (same day, 14th pass) — 5 more dead scratch scripts found and deleted; real evidence on why graphify still won't fully connect.</div>
+    <div class="card-body">
+      Alex looked at the live graph.html directly, pasted 2 real node inspections (<code>rebuild_daily_grid_v2.py</code> connected only to its own internal helper function; <code>interconnection_map.md</code> connected only to its own 25 sections) plus a screenshot of several small disconnected clusters, and asked why parts of the graph still won't connect, wanting everything traceable back to one point.
+      <br><br>
+      <strong>Real self-check on the "10 kept" list from the 13th pass found 4 more of the exact same dead-scratch-script species</strong>, missed last time because each had exactly 1 self-referencing edge instead of 0: <code>build_full_scheduling_system.py</code>/<code>rebuild_daily_grid_v2.py</code>/<code>stub_addSchedButtons.py</code> (identical <code>open('main.js')</code> + find-replace pattern), plus <code>supabase_sync.py</code> — its own docstring claimed "Imported by rpgace_intel.py," checked directly and found FALSE, nothing imports it. <code>mod_taxonomyTree.js</code> deleted too — a real historical staging file for <code>rpgace_build.py</code> (repo root, a genuinely live "Master Build Tool" for rpgace_core.js modules, confirmed real and left untouched) whose real job (feeding a documented <code>update taxonomyTree mod_taxonomyTree.js</code> command) is done, the module already merged. <code>scripts/</code> now holds exactly 5 real files.
+      <br><br>
+      <strong>The bigger question, answered honestly rather than patched</strong>: re-ran the pipeline and computed real connected components — 950 nodes, 0 orphans, but still 56 SEPARATE connected components (biggest 239 nodes, down to many small clusters). This is the real shape behind Alex's 2 examples. Real, evidence-based cause (not a new bug — the same structural gap already confirmed earlier this session): graphify's AST extractor never sees RPGACE's own <code>RPGACE.register()</code> module convention as a first-class symbol, can't statically resolve <code>RPGACE.hooks.fire()</code>/<code>.on()</code> or <code>RPGACE.modules.X.method()</code> dynamic dispatch, and treats docs and code as separate extraction domains. A community-detection graph isn't designed to be a single-rooted tree in the first place — many real components is the honest, correct output here, not a bug to force-fix with fabricated edges.
+      <br><br>
+      Real, buildable path flagged for a future scoped decision, not started blind: a synthetic edge layer grounded in real string-matched evidence (index.html's boot sequence, <code>RPGACE.registerBootTask()</code>, <code>RPGACE.hooks</code> name pairs, <code>RPGACE.modules.X()</code> call sites matched to their real <code>register()</code> definition) — a genuinely bigger build than today's recolor/river-group scripts.
+      <br><br>
+      Full record: <code>graphify_orphan_scripts_cleanup_2026-08-06.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧹 Aug 6 (same day, 13th pass) — 115 orphaned scratch scripts deleted, found via graphify's own disconnected-node list.</div>
     <div class="card-body">
       Real Alex ask: "on graphify i see some data that are not connected in any way, go through the list to see nodes with no neighbour or 0 links or edges to see what we can hook it up to."

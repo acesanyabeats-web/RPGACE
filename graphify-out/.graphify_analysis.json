@@ -1,76 +1,6 @@
 {
   "communities": {
     "0": [
-      "main",
-      "main_acceptsuggestions",
-      "main_beginsession",
-      "main_buildallquests",
-      "main_buildqs",
-      "main_cat_col",
-      "main_cat_icon",
-      "main_clearencyclopedia",
-      "main_clearpendingimage",
-      "main_closeglobalpanel",
-      "main_closesessionsetup",
-      "main_closesuggestion",
-      "main_collapseencentry",
-      "main_config",
-      "main_copydescription",
-      "main_default_shifts",
-      "main_dzover",
-      "main_enc_bullet_cache",
-      "main_enc_category_map",
-      "main_enc_insight_cache",
-      "main_enc_insights",
-      "main_expandencentry",
-      "main_exportencyclopedia",
-      "main_extracttopic",
-      "main_extractvstcontext",
-      "main_fm_session",
-      "main_handlefocusselect",
-      "main_handleglobalselect",
-      "main_handleoracleimage",
-      "main_initglobaltextselect",
-      "main_initshifts",
-      "main_insta_commands",
-      "main_learn",
-      "main_level_titles",
-      "main_loadfocusentries",
-      "main_makecard",
-      "main_onsessiontimerend",
-      "main_openfocusoverlay",
-      "main_openjournalentry",
-      "main_openpasterota",
-      "main_openschedulepicker",
-      "main_oracleimageupload",
-      "main_pickduration",
-      "main_prod_commands",
-      "main_quests",
-      "main_rendervstfooter",
-      "main_reopenfocusoverlay",
-      "main_sbinsightdelete",
-      "main_scrolltovstinentry",
-      "main_selectable_pages",
-      "main_setupfocustextselect",
-      "main_showencentry",
-      "main_showjumptoencdialog",
-      "main_showpastearea",
-      "main_showtimerwidget",
-      "main_startdonow",
-      "main_startfmtimer",
-      "main_startscheduledtask",
-      "main_state",
-      "main_toggleencentry",
-      "main_toggleinstapanel",
-      "main_togglejournalentry",
-      "main_toggleprodoraclepanel",
-      "main_togglepwvis",
-      "main_toggleytkeyvis",
-      "main_tracked_jobs",
-      "main_updatetimerdisplay",
-      "main_vst_pattern"
-    ],
-    "1": [
       "api_analyst",
       "api_analyst_handler",
       "api_analyst_type_prompts",
@@ -126,7 +56,7 @@
       "api_search",
       "api_search_handler"
     ],
-    "2": [
+    "1": [
       "plans_001_add_real_easing_tokens",
       "plans_001_add_real_easing_tokens_001_replace_bare_ease_with_real_easing_tokens_everywhere",
       "plans_001_add_real_easing_tokens_boundaries",
@@ -172,6 +102,52 @@
       "plans_readme_execution_notes_real_deviations_found_while_implementing_july_25",
       "plans_readme_notes",
       "plans_readme_recommended_execution_order"
+    ],
+    "2": [
+      "main",
+      "main_cat_col",
+      "main_cat_icon",
+      "main_clearencyclopedia",
+      "main_clearpendingimage",
+      "main_closeglobalpanel",
+      "main_config",
+      "main_copydescription",
+      "main_default_shifts",
+      "main_dzover",
+      "main_enc_bullet_cache",
+      "main_enc_category_map",
+      "main_enc_insight_cache",
+      "main_enc_insights",
+      "main_exportencyclopedia",
+      "main_extracttopic",
+      "main_fm_session",
+      "main_handleoracleimage",
+      "main_initshifts",
+      "main_insta_commands",
+      "main_learn",
+      "main_level_titles",
+      "main_openjournalentry",
+      "main_openpasterota",
+      "main_openschedulepicker",
+      "main_oracleimageupload",
+      "main_pickduration",
+      "main_prod_commands",
+      "main_quests",
+      "main_reopenfocusoverlay",
+      "main_sbinsightdelete",
+      "main_showencentry",
+      "main_showjumptoencdialog",
+      "main_showpastearea",
+      "main_startdonow",
+      "main_startscheduledtask",
+      "main_state",
+      "main_toggleinstapanel",
+      "main_togglejournalentry",
+      "main_toggleprodoraclepanel",
+      "main_togglepwvis",
+      "main_toggleytkeyvis",
+      "main_tracked_jobs",
+      "main_vst_pattern"
     ],
     "3": [
       "path",
@@ -287,6 +263,70 @@
       "rpgace_core_weekstart"
     ],
     "6": [
+      "main_approveinsights",
+      "main_approveinsightsfromcache",
+      "main_autoextractallincategory",
+      "main_calloracle",
+      "main_deleteencentry",
+      "main_detectcategory",
+      "main_enc_all_entries",
+      "main_extractinsightsauto",
+      "main_extractinsightssemiauto",
+      "main_extractvstcontext",
+      "main_filterentries",
+      "main_generatecontentideasfrominsights",
+      "main_generateencbullets",
+      "main_highlightvstsincontent",
+      "main_jumptofullentry",
+      "main_jumptosourceentry",
+      "main_loadencbullets",
+      "main_loadinsightsbycategory",
+      "main_loadvstinspector",
+      "main_parseinsightjson",
+      "main_renderbullets",
+      "main_renderencentries",
+      "main_rendervstchips",
+      "main_rendervstfooter",
+      "main_savemanualinsight",
+      "main_sbinsightfetch",
+      "main_sbinsightpost",
+      "main_setenccategory",
+      "main_setencsort",
+      "main_sortentries",
+      "main_triggerglobalidentify"
+    ],
+    "7": [
+      "main_addschedbuttons",
+      "main_autoapplystoredshifts",
+      "main_caldatestr",
+      "main_closepasterota",
+      "main_closeschedmodal",
+      "main_confirmschedule",
+      "main_confirmschedulemodal",
+      "main_fracclock",
+      "main_generateagendas",
+      "main_getfreewindows",
+      "main_getshiftcontext",
+      "main_getshifts",
+      "main_getshiftsfordate",
+      "main_gettodayshifts",
+      "main_initagendas",
+      "main_initdailynav",
+      "main_initschedmodal",
+      "main_openschedmodal",
+      "main_parseandsaverota",
+      "main_patchagendacardswithschedule",
+      "main_renderagendas",
+      "main_renderdailygrid",
+      "main_rendershiftblocks",
+      "main_scheduleagenda",
+      "main_scheduleagendabyidx",
+      "main_scheduletocalendar",
+      "main_selectduration",
+      "main_shiftday",
+      "main_showsched"
+    ],
+    "8": [
       "claude_skills_review_animations_skill",
       "claude_skills_review_animations_skill_aggressive_escalation_triggers",
       "claude_skills_review_animations_skill_guidelines",
@@ -315,7 +355,7 @@
       "claude_skills_review_animations_standards_stagger",
       "claude_skills_review_animations_standards_transforms_clip_path"
     ],
-    "7": [
+    "9": [
       "interconnection_map",
       "interconnection_map_accessibility_voice_input",
       "interconnection_map_api_auth_write_proxy_and_rls_current_security_architecture",
@@ -343,63 +383,6 @@
       "interconnection_map_the_chronicles_shared_aggregation_across_system_updates_app_tables",
       "interconnection_map_the_two_real_hubs_read_this_first",
       "interconnection_map_unified_placement_engine"
-    ],
-    "8": [
-      "main_approveinsights",
-      "main_approveinsightsfromcache",
-      "main_autoextractallincategory",
-      "main_calloracle",
-      "main_deleteencentry",
-      "main_detectcategory",
-      "main_enc_all_entries",
-      "main_extractinsightsauto",
-      "main_extractinsightssemiauto",
-      "main_filterentries",
-      "main_generateencbullets",
-      "main_highlightvstsincontent",
-      "main_jumptofullentry",
-      "main_jumptosourceentry",
-      "main_loadencbullets",
-      "main_loadinsightsbycategory",
-      "main_loadvstinspector",
-      "main_parseinsightjson",
-      "main_renderbullets",
-      "main_renderencentries",
-      "main_rendervstchips",
-      "main_savemanualinsight",
-      "main_sbinsightpost",
-      "main_setenccategory",
-      "main_setencsort",
-      "main_sortentries",
-      "main_triggerglobalidentify"
-    ],
-    "9": [
-      "main_addschedbuttons",
-      "main_buildmonthslots",
-      "main_buildweekslots",
-      "main_calcellitems",
-      "main_caldatestr",
-      "main_calfmtshort",
-      "main_calgetschedagendas",
-      "main_calgetshifts",
-      "main_calmondayof",
-      "main_calmonthnav",
-      "main_calweeknav",
-      "main_calyearnav",
-      "main_closeschedmodal",
-      "main_confirmschedule",
-      "main_confirmschedulemodal",
-      "main_fracclock",
-      "main_initdailynav",
-      "main_initschedmodal",
-      "main_openschedmodal",
-      "main_renderdailygrid",
-      "main_scheduleagenda",
-      "main_scheduleagendabyidx",
-      "main_scheduletocalendar",
-      "main_selectduration",
-      "main_shiftday",
-      "main_showsched"
     ],
     "10": [
       "rpgace_build",
@@ -530,26 +513,26 @@
       "exception"
     ],
     "15": [
-      "main_acceptjumptoenc",
-      "main_clearscheduledagendas",
-      "main_exitfocustoenc",
-      "main_extractvstsfromtext",
-      "main_generatecontentideasfrominsights",
-      "main_gotoencfromfocus",
-      "main_loadscheduledagendas",
-      "main_pushlocaltosupabase",
-      "main_quicksavetoencyclopedia",
-      "main_refreshencyclopediadisplay",
-      "main_removescheduledagenda",
-      "main_saveencwithvsts",
-      "main_saveinteltoencyclopedia",
-      "main_saveoracletoencyclopedia",
-      "main_saveworkshoptoencyclopedia",
-      "main_sbinsightfetch",
-      "main_sendinsighttocmd3",
-      "main_showpage",
-      "main_syncandpush",
-      "main_vst_known"
+      "main_buildmonthslots",
+      "main_buildskilltree",
+      "main_buildtimeslots",
+      "main_buildweekslots",
+      "main_calcellitems",
+      "main_calfmtshort",
+      "main_calgetschedagendas",
+      "main_calgetshifts",
+      "main_calmondayof",
+      "main_calmonthnav",
+      "main_calweeknav",
+      "main_calyearnav",
+      "main_checkpassword",
+      "main_initapp",
+      "main_levelup",
+      "main_removeinsighttooltip",
+      "main_setupmanualinsightselection",
+      "main_showinsighttooltip",
+      "main_skills",
+      "main_updateskilltree"
     ],
     "16": [
       "fifth_dimension_phase1_2_report_2026_07_23",
@@ -573,27 +556,6 @@
       "fifth_dimension_phase1_2_report_2026_07_23_taxonomy_map_html"
     ],
     "17": [
-      "main_addinstaquest",
-      "main_addxp",
-      "main_compileencyclopedia",
-      "main_completequest",
-      "main_generatenotes",
-      "main_learnvideo",
-      "main_loadnote",
-      "main_markagendadone",
-      "main_polljobs",
-      "main_renderjobs",
-      "main_rendervideoresults",
-      "main_runvideoworkshop",
-      "main_saveworkshoptonotion",
-      "main_saveytkey",
-      "main_searchvideos",
-      "main_setlearnstatus",
-      "main_showxptoast",
-      "main_startjobpolling",
-      "main_submitintelurl"
-    ],
-    "18": [
       "claude_skills_animation_vocabulary_skill",
       "claude_skills_animation_vocabulary_skill_animation_vocabulary",
       "claude_skills_animation_vocabulary_skill_easing_how_speed_changes_over_an_animation",
@@ -613,7 +575,46 @@
       "claude_skills_animation_vocabulary_skill_spring_animations_physics_based_motion_as_an_alternative_to_fixed_duration_easing",
       "claude_skills_animation_vocabulary_skill_transitions_between_states_connecting_one_state_view_or_element_to_another"
     ],
+    "18": [
+      "main_addinstaquest",
+      "main_addxp",
+      "main_compileencyclopedia",
+      "main_completequest",
+      "main_generatenotes",
+      "main_learnvideo",
+      "main_markagendadone",
+      "main_polljobs",
+      "main_renderjobs",
+      "main_rendervideoresults",
+      "main_runvideoworkshop",
+      "main_saveworkshoptonotion",
+      "main_saveytkey",
+      "main_searchvideos",
+      "main_setlearnstatus",
+      "main_showxptoast",
+      "main_startjobpolling",
+      "main_submitintelurl"
+    ],
     "19": [
+      "main_addmsg",
+      "main_agent_actions",
+      "main_agentlog",
+      "main_buildagentactions",
+      "main_callcomposio",
+      "main_checkforquestsuggestions",
+      "main_escchathtml",
+      "main_firebeatanalysis",
+      "main_fireinstacommand",
+      "main_fireprodcommand",
+      "main_isinstaoraclequery",
+      "main_renderinstamsg",
+      "main_rendermarkdown",
+      "main_sendchat",
+      "main_sendchatwithimage",
+      "main_showsuggestionpopup",
+      "main_triggeragent"
+    ],
+    "20": [
       "rpgace_architecture",
       "rpgace_architecture_api_pattern_3_different_styles",
       "rpgace_architecture_architecture_diagram",
@@ -632,7 +633,7 @@
       "rpgace_architecture_the_injection_pattern_why_it_keeps_breaking",
       "rpgace_architecture_what_main_js_issues_remain_and_why_we_leave_them"
     ],
-    "20": [
+    "21": [
       "scripts_graphify_river_group",
       "scripts_graphify_river_group_build_id_river_map",
       "scripts_graphify_river_group_deterministic_jitter",
@@ -651,25 +652,25 @@
       "scripts_graphify_river_group_river_group",
       "scripts_graphify_river_group_zone_center"
     ],
-    "21": [
-      "main_agent_actions",
-      "main_buildagentactions",
-      "main_buildskilltree",
-      "main_buildtimeslots",
-      "main_checkpassword",
-      "main_deletenote",
-      "main_initapp",
-      "main_initlearning",
-      "main_levelup",
-      "main_removeinsighttooltip",
-      "main_renderdb",
-      "main_setupmanualinsightselection",
-      "main_showinsighttooltip",
-      "main_skills",
-      "main_updatedbstats",
-      "main_updateskilltree"
-    ],
     "22": [
+      "main_acceptjumptoenc",
+      "main_exitfocustoenc",
+      "main_extractvstsfromtext",
+      "main_gotoencfromfocus",
+      "main_loadnote",
+      "main_pushlocaltosupabase",
+      "main_quicksavetoencyclopedia",
+      "main_refreshencyclopediadisplay",
+      "main_saveencwithvsts",
+      "main_saveinteltoencyclopedia",
+      "main_saveoracletoencyclopedia",
+      "main_saveworkshoptoencyclopedia",
+      "main_sendinsighttocmd3",
+      "main_showpage",
+      "main_syncandpush",
+      "main_vst_known"
+    ],
+    "23": [
       "session_handover_2026_07_19",
       "session_handover_2026_07_19_1_how_to_use_this_doc",
       "session_handover_2026_07_19_2_10_security_open_do_not_forget",
@@ -686,23 +687,6 @@
       "session_handover_2026_07_19_3_open_threads_build_test_next_in_this_order",
       "session_handover_2026_07_19_4_working_style_that_made_this_session_work_keep_it",
       "session_handover_2026_07_19_rpgace_session_handover_july_18_19_2026_fable_session"
-    ],
-    "23": [
-      "main_addmsg",
-      "main_agentlog",
-      "main_callcomposio",
-      "main_checkforquestsuggestions",
-      "main_escchathtml",
-      "main_firebeatanalysis",
-      "main_fireinstacommand",
-      "main_fireprodcommand",
-      "main_isinstaoraclequery",
-      "main_renderinstamsg",
-      "main_rendermarkdown",
-      "main_sendchat",
-      "main_sendchatwithimage",
-      "main_showsuggestionpopup",
-      "main_triggeragent"
     ],
     "24": [
       "manifest",
@@ -755,36 +739,6 @@
       "design_what_shipped_ai_advisor_page"
     ],
     "27": [
-      "main_agenda_list",
-      "main_clearjournal",
-      "main_closefocusoverlay",
-      "main_closejournalentry",
-      "main_completescheduledtask",
-      "main_deletejournalentry",
-      "main_hidetimerwidget",
-      "main_logdailyaction",
-      "main_logstopreason",
-      "main_quicksavetojournal",
-      "main_refreshjournaldisplay",
-      "main_savejournalentry",
-      "main_savetojournal"
-    ],
-    "28": [
-      "main_autoapplystoredshifts",
-      "main_closepasterota",
-      "main_generateagendas",
-      "main_getfreewindows",
-      "main_getshiftcontext",
-      "main_getshifts",
-      "main_getshiftsfordate",
-      "main_gettodayshifts",
-      "main_initagendas",
-      "main_parseandsaverota",
-      "main_patchagendacardswithschedule",
-      "main_renderagendas",
-      "main_rendershiftblocks"
-    ],
-    "29": [
       "main_checkserverstatus",
       "main_fetchfromlocal",
       "main_fetchfromsupabase",
@@ -799,7 +753,7 @@
       "main_switchtoci",
       "main_syncinteldata"
     ],
-    "30": [
+    "28": [
       "vercel",
       "vercel_api_analyst_js_maxduration",
       "vercel_api_executor_js_maxduration",
@@ -814,7 +768,7 @@
       "vercel_functions_api_search_js",
       "vercel_rewrites"
     ],
-    "31": [
+    "29": [
       "ai_tooling_and_rules_map",
       "ai_tooling_and_rules_map_1a_global_native_generic_capability_present_but_largely_inert_for_rpgace",
       "ai_tooling_and_rules_map_1b_global_native_genuinely_load_bearing_for_rpgace_used_repeatedly_this_session_and_prior_ones",
@@ -828,7 +782,7 @@
       "ai_tooling_and_rules_map_tier_b_real_committed_verbatim_decision_records_rule_5_s_chat_isn_t_durable_storage_convention_authoritative_for_the_one_decision_they_document_not_standing_rules",
       "ai_tooling_and_rules_map_tier_c_historical_superseded_real_files_but_not_current_authority_a_future_session_should_not_treat_these_as_live_rules"
     ],
-    "32": [
+    "30": [
       "claude_skills_commit_archaeologist_skill",
       "claude_skills_commit_archaeologist_skill_commit_archaeologist",
       "claude_skills_commit_archaeologist_skill_evidence_rules",
@@ -841,7 +795,19 @@
       "claude_skills_commit_archaeologist_skill_when_to_use",
       "claude_skills_commit_archaeologist_skill_write_the_report"
     ],
-    "33": [
+    "31": [
+      "main_beginsession",
+      "main_closesessionsetup",
+      "main_handlefocusselect",
+      "main_loadfocusentries",
+      "main_onsessiontimerend",
+      "main_openfocusoverlay",
+      "main_setupfocustextselect",
+      "main_showtimerwidget",
+      "main_startfmtimer",
+      "main_updatetimerdisplay"
+    ],
+    "32": [
       "claude_skills_graphify_references_exports",
       "claude_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
       "claude_skills_graphify_references_exports_step_6b_wiki_only_if_wiki_flag",
@@ -852,7 +818,7 @@
       "claude_skills_graphify_references_exports_step_7d_mcp_server_only_if_mcp_flag",
       "claude_skills_graphify_references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000"
     ],
-    "34": [
+    "33": [
       "main_applyshifts",
       "main_dzdrop",
       "main_dzleave",
@@ -862,6 +828,17 @@
       "main_parsepasteinput",
       "main_parsetext",
       "main_showimporterr"
+    ],
+    "34": [
+      "main_clearjournal",
+      "main_closejournalentry",
+      "main_completescheduledtask",
+      "main_deletejournalentry",
+      "main_logdailyaction",
+      "main_quicksavetojournal",
+      "main_refreshjournaldisplay",
+      "main_savejournalentry",
+      "main_savetojournal"
     ],
     "35": [
       "rpgace",
@@ -886,17 +863,6 @@
       "scripts_fourth_rota_try_fill"
     ],
     "37": [
-      "scripts_supabase_sync",
-      "scripts_supabase_sync_fetch_reports",
-      "scripts_supabase_sync_push_report",
-      "scripts_supabase_sync_push_watchlist",
-      "scripts_supabase_sync_rationale_25",
-      "scripts_supabase_sync_rationale_41",
-      "scripts_supabase_sync_rationale_59",
-      "scripts_supabase_sync_rationale_83",
-      "scripts_supabase_sync_supabase_post"
-    ],
-    "38": [
       "claude_archive",
       "claude_archive_claude_md_archive",
       "claude_archive_current_state_july_24_2026_session_end_don_t_re_discover_this",
@@ -906,7 +872,7 @@
       "claude_archive_prior_state_july_23_2026_first_session_still_true_unless_superseded_above",
       "claude_archive_prior_state_july_23_2026_second_session_still_true_unless_superseded_above"
     ],
-    "39": [
+    "38": [
       "claude_skills_commit_archaeologist_references_reading_git_history",
       "claude_skills_commit_archaeologist_references_reading_git_history_authorship_has_two_meanings",
       "claude_skills_commit_archaeologist_references_reading_git_history_change_risk_checklist",
@@ -916,7 +882,7 @@
       "claude_skills_commit_archaeologist_references_reading_git_history_reading_git_history_without_inventing_intent",
       "claude_skills_commit_archaeologist_references_reading_git_history_timeline_categories_are_routing_hints"
     ],
-    "40": [
+    "39": [
       "claude_skills_engineer_skill",
       "claude_skills_engineer_skill_engineer_build_it_then_prove_the_report_about_it_is_true",
       "claude_skills_engineer_skill_guardrails",
@@ -925,7 +891,7 @@
       "claude_skills_engineer_skill_the_objective_completion_gate_the_real_pass_fail",
       "claude_skills_engineer_skill_what_this_skill_is_not"
     ],
-    "41": [
+    "40": [
       "claude_skills_omnitrix_skill",
       "claude_skills_omnitrix_skill_aintergration_third_party_framework_tool_agent_assessment",
       "claude_skills_omnitrix_skill_council_of_5_pre_build_deliberation",
@@ -934,7 +900,7 @@
       "claude_skills_omnitrix_skill_rpgace_judgment_funnel_omnitrix_council_of_5_godmode_aintergration",
       "claude_skills_omnitrix_skill_the_judgment_funnel_which_tier_a_task_sits_at"
     ],
-    "42": [
+    "41": [
       "claude_skills_scope_skill",
       "claude_skills_scope_skill_grouping_the_digestible_bits_output_shape",
       "claude_skills_scope_skill_handing_off_to_the_seven_docs",
@@ -943,7 +909,7 @@
       "claude_skills_scope_skill_what_to_gather_real_evidence_never_a_doc_s_own_claim",
       "claude_skills_scope_skill_when_to_run_this"
     ],
-    "43": [
+    "42": [
       "claude_skills_graphify_references_query",
       "claude_skills_graphify_references_query_for_graphify_explain",
       "claude_skills_graphify_references_query_for_graphify_path",
@@ -951,7 +917,7 @@
       "claude_skills_graphify_references_query_step_0_constrained_query_expansion_required_before_traversal",
       "claude_skills_graphify_references_query_step_1_traversal"
     ],
-    "44": [
+    "43": [
       "claude_skills_loggingregen_skill",
       "claude_skills_loggingregen_skill_loggingregen_per_doc_regeneration_against_role_dedup",
       "claude_skills_loggingregen_skill_procedure_per_doc",
@@ -959,7 +925,7 @@
       "claude_skills_loggingregen_skill_the_two_hard_checks_run_against_every_doc_in_turn",
       "claude_skills_loggingregen_skill_what_this_skill_does_not_do"
     ],
-    "45": [
+    "44": [
       "claude_skills_regeneration_skill",
       "claude_skills_regeneration_skill_guardrails",
       "claude_skills_regeneration_skill_procedure",
@@ -967,7 +933,7 @@
       "claude_skills_regeneration_skill_the_three_tiers_always_run_in_this_order",
       "claude_skills_regeneration_skill_what_this_skill_is_not"
     ],
-    "46": [
+    "45": [
       "claude_skills_routine_skill",
       "claude_skills_routine_skill_guardrails",
       "claude_skills_routine_skill_output",
@@ -975,47 +941,54 @@
       "claude_skills_routine_skill_the_procedure_in_order",
       "claude_skills_routine_skill_when_to_run_it"
     ],
-    "47": [
+    "46": [
       "archiver",
       "package",
       "package_dependencies",
       "package_dependencies_archiver",
       "package_type"
     ],
-    "48": [
+    "47": [
       "claude_skills_5thdimension_skill",
       "claude_skills_5thdimension_skill_5thdimension_built_vs_reported_then_how_to_rewire_it_well",
       "claude_skills_5thdimension_skill_guardrails",
       "claude_skills_5thdimension_skill_the_procedure_in_order",
       "claude_skills_5thdimension_skill_what_everything_built_off_this_means"
     ],
-    "49": [
+    "48": [
       "claude_skills_free_for_all_debate_skill",
       "claude_skills_free_for_all_debate_skill_free_for_all_debate_individual_competitors_not_two_teams",
       "claude_skills_free_for_all_debate_skill_guardrails",
       "claude_skills_free_for_all_debate_skill_the_procedure_in_order",
       "claude_skills_free_for_all_debate_skill_when_to_use_this_instead_of_debate"
     ],
-    "50": [
+    "49": [
       "claude_skills_impeccable_skill",
       "claude_skills_impeccable_skill_as_a_bedtime_summary_sub_step",
       "claude_skills_impeccable_skill_impeccable_design_pattern_scan_standalone_or_as_a_bedtime_summary_sub_step",
       "claude_skills_impeccable_skill_standalone_use_impeccable",
       "claude_skills_impeccable_skill_why_this_feeds_oracle_not_just_claude_code"
     ],
-    "51": [
+    "50": [
       "claude_skills_interrogation_skill",
       "claude_skills_interrogation_skill_guardrails",
       "claude_skills_interrogation_skill_interrogation_ask_before_guessing_on_anything_that_would_actually_change",
       "claude_skills_interrogation_skill_procedure",
       "claude_skills_interrogation_skill_when_to_run_it"
     ],
-    "52": [
+    "51": [
       "fifth_dimension_phase3_4_debate_2026_07_23",
       "fifth_dimension_phase3_4_debate_2026_07_23_5thdimension_phase_3_4_reconciliation_the_rewiring_debate",
       "fifth_dimension_phase3_4_debate_2026_07_23_phase_3_reconciling_side_a_vs_side_b",
       "fifth_dimension_phase3_4_debate_2026_07_23_phase_4_the_rewiring_debate",
       "fifth_dimension_phase3_4_debate_2026_07_23_what_phase_5_actually_needs_from_alex_when_he_s_rested_not_now"
+    ],
+    "52": [
+      "main_acceptsuggestions",
+      "main_buildallquests",
+      "main_buildqs",
+      "main_closesuggestion",
+      "main_makecard"
     ],
     "53": [
       "claude_skills_bedtime_skill",
@@ -1060,108 +1033,118 @@
       "claude_skills_summary_skill_the_procedure_in_order"
     ],
     "60": [
+      "main_agenda_list",
+      "main_closefocusoverlay",
+      "main_hidetimerwidget",
+      "main_logstopreason"
+    ],
+    "61": [
+      "main_collapseencentry",
+      "main_expandencentry",
+      "main_scrolltovstinentry",
+      "main_toggleencentry"
+    ],
+    "62": [
+      "main_deletenote",
+      "main_initlearning",
+      "main_renderdb",
+      "main_updatedbstats"
+    ],
+    "63": [
       "claude_skills_graphify_references_github_and_merge",
       "claude_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
       "claude_skills_graphify_references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given"
     ],
-    "61": [
+    "64": [
       "claude_skills_graphify_references_transcribe",
       "claude_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
       "claude_skills_graphify_references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected"
     ],
-    "62": [
+    "65": [
+      "main_clearscheduledagendas",
+      "main_loadscheduledagendas",
+      "main_removescheduledagenda"
+    ],
+    "66": [
+      "main_handleglobalselect",
+      "main_initglobaltextselect",
+      "main_selectable_pages"
+    ],
+    "67": [
       "n8n_readme",
       "n8n_readme_n8n_workflows",
       "n8n_readme_rota_sync_workflow_json_f10_fourth_rota_sync"
     ],
-    "63": [
-      "scripts_build_full_scheduling_system",
-      "scripts_build_full_scheduling_system_find_function_span",
-      "scripts_build_full_scheduling_system_rationale_6"
-    ],
-    "64": [
+    "68": [
       "scripts_graphify_recolor",
       "scripts_graphify_recolor_py_path",
       "scripts_graphify_recolor_recolor"
     ],
-    "65": [
-      "scripts_mod_taxonomytree",
-      "scripts_mod_taxonomytree_rendersteps",
-      "scripts_mod_taxonomytree_updatepreview"
-    ],
-    "66": [
+    "69": [
       "claude_claude",
       "claude_claude_graphify"
     ],
-    "67": [
+    "70": [
       "claude_skills_graphify_references_extraction_spec",
       "claude_skills_graphify_references_extraction_spec_graphify_reference_extraction_subagent_prompt"
     ],
-    "68": [
-      "scripts_rebuild_daily_grid_v2",
-      "scripts_rebuild_daily_grid_v2_find_function_span"
-    ],
-    "69": [
+    "71": [
       "scripts_split",
       "scripts_split_rationale_1"
     ],
-    "70": [
-      "scripts_stub_addschedbuttons",
-      "scripts_stub_addschedbuttons_find_function_span"
-    ],
-    "71": [
+    "72": [
       "sw",
       "sw_precache"
     ]
   },
   "cohesion": {
-    "0": 0.03775241439859526,
-    "1": 0.0936408106219427,
-    "2": 0.044444444444444446,
+    "0": 0.0936408106219427,
+    "1": 0.044444444444444446,
+    "2": 0.045454545454545456,
     "3": 0.11411411411411411,
     "4": 0.05555555555555555,
     "5": 0.08912655971479501,
-    "6": 0.07407407407407407,
-    "7": 0.07977207977207977,
-    "8": 0.10256410256410256,
-    "9": 0.11384615384615385,
+    "6": 0.08602150537634409,
+    "7": 0.09359605911330049,
+    "8": 0.07407407407407407,
+    "9": 0.07977207977207977,
     "10": 0.23384615384615384,
     "11": 0.08,
     "12": 0.08695652173913043,
     "13": 0.09090909090909091,
     "14": 0.21904761904761905,
-    "15": 0.12105263157894737,
+    "15": 0.13157894736842105,
     "16": 0.10526315789473684,
-    "17": 0.15789473684210525,
-    "18": 0.1111111111111111,
-    "19": 0.11764705882352941,
-    "20": 0.18382352941176472,
-    "21": 0.15,
-    "22": 0.125,
-    "23": 0.17142857142857143,
+    "17": 0.1111111111111111,
+    "18": 0.16993464052287582,
+    "19": 0.14705882352941177,
+    "20": 0.11764705882352941,
+    "21": 0.18382352941176472,
+    "22": 0.15833333333333333,
+    "23": 0.125,
     "24": 0.13333333333333333,
     "25": 0.13333333333333333,
     "26": 0.14285714285714285,
-    "27": 0.15384615384615385,
-    "28": 0.1794871794871795,
-    "29": 0.19230769230769232,
-    "30": 0.15384615384615385,
-    "31": 0.16666666666666666,
-    "32": 0.18181818181818182,
-    "33": 0.2222222222222222,
-    "34": 0.3055555555555556,
+    "27": 0.19230769230769232,
+    "28": 0.15384615384615385,
+    "29": 0.16666666666666666,
+    "30": 0.18181818181818182,
+    "31": 0.2,
+    "32": 0.2222222222222222,
+    "33": 0.3055555555555556,
+    "34": 0.2222222222222222,
     "35": 0.2222222222222222,
     "36": 0.3333333333333333,
     "37": 0.25,
     "38": 0.25,
-    "39": 0.25,
+    "39": 0.2857142857142857,
     "40": 0.2857142857142857,
     "41": 0.2857142857142857,
-    "42": 0.2857142857142857,
+    "42": 0.3333333333333333,
     "43": 0.3333333333333333,
     "44": 0.3333333333333333,
     "45": 0.3333333333333333,
-    "46": 0.3333333333333333,
+    "46": 0.4,
     "47": 0.4,
     "48": 0.4,
     "49": 0.4,
@@ -1175,18 +1158,19 @@
     "57": 0.5,
     "58": 0.5,
     "59": 0.5,
-    "60": 0.6666666666666666,
-    "61": 0.6666666666666666,
+    "60": 0.5,
+    "61": 0.5,
     "62": 0.6666666666666666,
     "63": 0.6666666666666666,
     "64": 0.6666666666666666,
-    "65": 1.0,
-    "66": 1.0,
-    "67": 1.0,
-    "68": 1.0,
+    "65": 0.6666666666666666,
+    "66": 0.6666666666666666,
+    "67": 0.6666666666666666,
+    "68": 0.6666666666666666,
     "69": 1.0,
     "70": 1.0,
-    "71": 1.0
+    "71": 1.0,
+    "72": 1.0
   },
   "gods": [
     {
