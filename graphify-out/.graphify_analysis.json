@@ -1,6 +1,74 @@
 {
   "communities": {
     "0": [
+      "main",
+      "main_acceptsuggestions",
+      "main_beginsession",
+      "main_buildallquests",
+      "main_buildqs",
+      "main_cat_col",
+      "main_cat_icon",
+      "main_clearencyclopedia",
+      "main_clearpendingimage",
+      "main_closeglobalpanel",
+      "main_closesessionsetup",
+      "main_closesuggestion",
+      "main_collapseencentry",
+      "main_config",
+      "main_copydescription",
+      "main_default_shifts",
+      "main_dzover",
+      "main_enc_bullet_cache",
+      "main_enc_category_map",
+      "main_enc_insight_cache",
+      "main_enc_insights",
+      "main_expandencentry",
+      "main_exportencyclopedia",
+      "main_extracttopic",
+      "main_fm_session",
+      "main_handlefocusselect",
+      "main_handleglobalselect",
+      "main_handleoracleimage",
+      "main_initglobaltextselect",
+      "main_initshifts",
+      "main_insta_commands",
+      "main_learn",
+      "main_level_titles",
+      "main_loadfocusentries",
+      "main_makecard",
+      "main_onsessiontimerend",
+      "main_openfocusoverlay",
+      "main_openjournalentry",
+      "main_openpasterota",
+      "main_openschedulepicker",
+      "main_oracleimageupload",
+      "main_pickduration",
+      "main_prod_commands",
+      "main_quests",
+      "main_reopenfocusoverlay",
+      "main_sbinsightdelete",
+      "main_scrolltovstinentry",
+      "main_selectable_pages",
+      "main_setupfocustextselect",
+      "main_showencentry",
+      "main_showjumptoencdialog",
+      "main_showpastearea",
+      "main_showtimerwidget",
+      "main_startdonow",
+      "main_startfmtimer",
+      "main_startscheduledtask",
+      "main_state",
+      "main_toggleencentry",
+      "main_toggleinstapanel",
+      "main_togglejournalentry",
+      "main_toggleprodoraclepanel",
+      "main_togglepwvis",
+      "main_toggleytkeyvis",
+      "main_tracked_jobs",
+      "main_updatetimerdisplay",
+      "main_vst_pattern"
+    ],
+    "1": [
       "api_analyst",
       "api_analyst_handler",
       "api_analyst_type_prompts",
@@ -35,14 +103,17 @@
       "api_context_tool_aliases",
       "api_data_write",
       "api_data_write_allowed_tables",
+      "api_data_write_config",
+      "api_data_write_fileappliestotier",
+      "api_data_write_handlebundledeliverables",
       "api_data_write_handler",
+      "api_data_write_sbfetch",
+      "api_data_write_tier_order",
       "api_executor",
       "api_executor_handler",
       "api_lastfm",
       "api_lastfm_handler",
       "api_lastfm_lfm",
-      "api_noter",
-      "api_noter_handler",
       "api_oracle",
       "api_oracle_config",
       "api_oracle_handler",
@@ -53,58 +124,54 @@
       "api_search",
       "api_search_handler"
     ],
-    "1": [
-      "main",
-      "main_cat_col",
-      "main_cat_icon",
-      "main_clearencyclopedia",
-      "main_clearpendingimage",
-      "main_closeglobalpanel",
-      "main_config",
-      "main_copydescription",
-      "main_default_shifts",
-      "main_dzover",
-      "main_enc_bullet_cache",
-      "main_enc_category_map",
-      "main_enc_insight_cache",
-      "main_enc_insights",
-      "main_exportencyclopedia",
-      "main_extracttopic",
-      "main_fm_session",
-      "main_handleoracleimage",
-      "main_initshifts",
-      "main_insta_commands",
-      "main_learn",
-      "main_level_titles",
-      "main_openjournalentry",
-      "main_openpasterota",
-      "main_openschedulepicker",
-      "main_oracleimageupload",
-      "main_pickduration",
-      "main_pipeline",
-      "main_pipelinedragover",
-      "main_prod_commands",
-      "main_quests",
-      "main_reopenfocusoverlay",
-      "main_sbinsightdelete",
-      "main_setpipelinetype",
-      "main_showencentry",
-      "main_showjumptoencdialog",
-      "main_showpastearea",
-      "main_startdonow",
-      "main_startscheduledtask",
-      "main_state",
-      "main_toggleinstapanel",
-      "main_togglejournalentry",
-      "main_toggleprodoraclepanel",
-      "main_togglepwvis",
-      "main_toggleytkeyvis",
-      "main_tracked_jobs",
-      "main_type_meta",
-      "main_type_prompts",
-      "main_vst_pattern"
-    ],
     "2": [
+      "plans_001_add_real_easing_tokens",
+      "plans_001_add_real_easing_tokens_001_replace_bare_ease_with_real_easing_tokens_everywhere",
+      "plans_001_add_real_easing_tokens_boundaries",
+      "plans_001_add_real_easing_tokens_problem",
+      "plans_001_add_real_easing_tokens_repo_conventions_to_follow",
+      "plans_001_add_real_easing_tokens_steps",
+      "plans_001_add_real_easing_tokens_target",
+      "plans_001_add_real_easing_tokens_verification",
+      "plans_002_consolidate_drawer_slidein",
+      "plans_002_consolidate_drawer_slidein_002_consolidate_6_duplicated_drawer_slide_in_blocks_into_one_shared_helper",
+      "plans_002_consolidate_drawer_slidein_boundaries",
+      "plans_002_consolidate_drawer_slidein_problem",
+      "plans_002_consolidate_drawer_slidein_repo_conventions_to_follow",
+      "plans_002_consolidate_drawer_slidein_steps",
+      "plans_002_consolidate_drawer_slidein_target",
+      "plans_002_consolidate_drawer_slidein_verification",
+      "plans_003_gate_hover_transforms",
+      "plans_003_gate_hover_transforms_003_gate_hover_transform_rules_behind_media_hover_hover_and_pointer_fine",
+      "plans_003_gate_hover_transforms_boundaries",
+      "plans_003_gate_hover_transforms_problem",
+      "plans_003_gate_hover_transforms_repo_conventions_to_follow",
+      "plans_003_gate_hover_transforms_steps",
+      "plans_003_gate_hover_transforms_target",
+      "plans_003_gate_hover_transforms_verification",
+      "plans_004_replace_transition_all",
+      "plans_004_replace_transition_all_004_replace_transition_all_with_explicit_properties",
+      "plans_004_replace_transition_all_boundaries",
+      "plans_004_replace_transition_all_problem",
+      "plans_004_replace_transition_all_repo_conventions_to_follow",
+      "plans_004_replace_transition_all_steps",
+      "plans_004_replace_transition_all_target",
+      "plans_004_replace_transition_all_verification",
+      "plans_005_fix_layout_transitions",
+      "plans_005_fix_layout_transitions_005_convert_width_max_height_transitions_to_transform_measured_height",
+      "plans_005_fix_layout_transitions_boundaries",
+      "plans_005_fix_layout_transitions_problem",
+      "plans_005_fix_layout_transitions_repo_conventions_to_follow",
+      "plans_005_fix_layout_transitions_steps",
+      "plans_005_fix_layout_transitions_target",
+      "plans_005_fix_layout_transitions_verification",
+      "plans_readme",
+      "plans_readme_animation_improvement_plans_july_25_2026",
+      "plans_readme_execution_notes_real_deviations_found_while_implementing_july_25",
+      "plans_readme_notes",
+      "plans_readme_recommended_execution_order"
+    ],
+    "3": [
       "path",
       "scripts_rpgace_intel",
       "scripts_rpgace_intel_add_to_watchlist",
@@ -143,51 +210,56 @@
       "scripts_rpgace_intel_show_watchlist",
       "scripts_rpgace_intel_transcribe_audio"
     ],
-    "3": [
-      "main_addinstaquest",
-      "main_addtoencyclopedia",
-      "main_addxp",
-      "main_agentlog",
-      "main_callcomposio",
-      "main_calloracle",
-      "main_compileencyclopedia",
-      "main_completequest",
-      "main_copypipelineoutput",
-      "main_generatenotes",
-      "main_learnvideo",
-      "main_loadnote",
-      "main_markagendadone",
-      "main_pipelinetogithub",
-      "main_pipelinetogmail",
-      "main_pipelinetonotion",
-      "main_polljobs",
-      "main_renderjobs",
-      "main_rendervideoresults",
-      "main_resetchain",
-      "main_resetpipeline",
-      "main_runpipeline",
-      "main_runvideoworkshop",
-      "main_saveworkshoptonotion",
-      "main_saveytkey",
-      "main_searchvideos",
-      "main_setagentpipestatus",
-      "main_setchainstep",
-      "main_setlearnstatus",
-      "main_showxptoast",
-      "main_startjobpolling",
-      "main_submitintelurl",
-      "main_triggeragent",
-      "main_triggerglobalidentify"
-    ],
     "4": [
+      "claude",
+      "claude_aintergration_third_party_framework_tool_agent_assessment_alex_confirmed_july_20",
+      "claude_architecture_never_violate_without_explicit_confirmation",
+      "claude_building_guide_for_lower_models_follow_these_patterns_exactly",
+      "claude_context_logging_efficiency_rules_log_without_losing_meaning",
+      "claude_council_of_5_pre_build_deliberation",
+      "claude_current_state_durable_facts_pruned_july_31_per_this_file_s_own_doc_discipline_rule",
+      "claude_external_handoff_lanes_both_deliberately_unguarded_see_landmines",
+      "claude_godmode_maximum_rigor_deliberation",
+      "claude_graphify",
+      "claude_historical_session_state_archived_july_31",
+      "claude_invokable_frameworks_omnitrix_council_of_5_godmode_aintergration_alex_confirmed_july_20",
+      "claude_known_landmines_condensed_all_still_true",
+      "claude_known_working_api_models_three_tiers_as_of_july_19_alex_confirmed",
+      "claude_live_numbers_re_queried_aug_4_check_them_again_don_t_inherit_them",
+      "claude_non_negotiable_process_rules",
+      "claude_omnitrix_the_3_agent_build_workflow_reweighted_july_20_2nd_session_after_fable_ran_dry_mid_task",
+      "claude_open_forks_that_need_alex_not_a_guessed_default",
+      "claude_oracle",
+      "claude_oracle_editable_section_rpgace_oracle_notes_md",
+      "claude_oversight_logging_not_automatic_confirmed_limitation",
+      "claude_oversight_now_seven_docs",
+      "claude_remote_control_laptop_phone_workflow_confirmed_working",
+      "claude_rpgace_claude_md",
+      "claude_security_note_july_12_still_standing_api_auth_password_gap_fixed_independently_verified_live_july_24",
+      "claude_session_start_check_oracle_dev_suggestions_alex_confirmed_july_22",
+      "claude_session_start_ritual_routine_alex_named_and_defined_july_23",
+      "claude_skills_tooling_security",
+      "claude_style",
+      "claude_taxonomy",
+      "claude_the_four_july_31_entries_kept_at_full_detail_current_work_not_yet_collapsed",
+      "claude_the_governing_rule",
+      "claude_the_judgment_funnel_the_default_pipeline_not_just_a_safeword",
+      "claude_video_content_pipeline",
+      "claude_website_html_optimization_backlog_from_the_july_17_audit_real_prioritized",
+      "claude_who_you_re_working_with"
+    ],
+    "5": [
       "rpgace_core",
       "rpgace_core_advance",
       "rpgace_core_applyintelui",
       "rpgace_core_bridgeglobal",
+      "rpgace_core_builddirectorrow",
+      "rpgace_core_buildfield",
       "rpgace_core_chapternumof",
       "rpgace_core_chip",
       "rpgace_core_commitchapters",
       "rpgace_core_dailydate",
+      "rpgace_core_directorphrases",
       "rpgace_core_el",
       "rpgace_core_fb",
       "rpgace_core_get",
@@ -200,7 +272,7 @@
       "rpgace_core_patchintelfns",
       "rpgace_core_pendingsched",
       "rpgace_core_push",
-      "rpgace_core_rationale_16644",
+      "rpgace_core_rationale_18686",
       "rpgace_core_remove",
       "rpgace_core_renderstep",
       "rpgace_core_rendersteps",
@@ -212,41 +284,11 @@
       "rpgace_core_updatepreview",
       "rpgace_core_weekstart"
     ],
-    "5": [
-      "main_acceptjumptoenc",
-      "main_clearscheduledagendas",
-      "main_exitfocustoenc",
-      "main_extractvstsfromtext",
-      "main_fetchfromlocal",
-      "main_fetchfromsupabase",
-      "main_fetchwatchlistfromlocal",
-      "main_fetchwatchlistfromsupabase",
-      "main_gotoencfromfocus",
-      "main_importinteljson",
-      "main_loadintelinsights",
-      "main_loadintelwatchlist",
-      "main_loadscheduledagendas",
-      "main_mergebyurl",
-      "main_pushlocaltosupabase",
-      "main_quicksavetoencyclopedia",
-      "main_refreshencyclopediadisplay",
-      "main_removescheduledagenda",
-      "main_saveencwithvsts",
-      "main_saveinteltoencyclopedia",
-      "main_saveoracletoencyclopedia",
-      "main_saveworkshoptoencyclopedia",
-      "main_sendinsighttocmd3",
-      "main_showinteltab",
-      "main_showpage",
-      "main_switchtoci",
-      "main_syncandpush",
-      "main_syncinteldata",
-      "main_vst_known"
-    ],
     "6": [
       "main_approveinsights",
       "main_approveinsightsfromcache",
       "main_autoextractallincategory",
+      "main_calloracle",
       "main_deleteencentry",
       "main_detectcategory",
       "main_enc_all_entries",
@@ -272,9 +314,68 @@
       "main_sbinsightpost",
       "main_setenccategory",
       "main_setencsort",
-      "main_sortentries"
+      "main_sortentries",
+      "main_triggerglobalidentify"
     ],
     "7": [
+      "claude_skills_review_animations_skill",
+      "claude_skills_review_animations_skill_aggressive_escalation_triggers",
+      "claude_skills_review_animations_skill_guidelines",
+      "claude_skills_review_animations_skill_operating_posture",
+      "claude_skills_review_animations_skill_part_1_findings_table_required",
+      "claude_skills_review_animations_skill_part_2_verdict_required",
+      "claude_skills_review_animations_skill_remedial_preference_hierarchy",
+      "claude_skills_review_animations_skill_required_output_format",
+      "claude_skills_review_animations_skill_reviewing_animations",
+      "claude_skills_review_animations_skill_the_ten_non_negotiable_standards",
+      "claude_skills_review_animations_standards",
+      "claude_skills_review_animations_standards_accessibility",
+      "claude_skills_review_animations_standards_animation_standards_reference",
+      "claude_skills_review_animations_standards_asymmetric_timing",
+      "claude_skills_review_animations_standards_cohesion",
+      "claude_skills_review_animations_standards_debugging_recommend_in_reviews_when_feel_is_uncertain",
+      "claude_skills_review_animations_standards_duration",
+      "claude_skills_review_animations_standards_easing",
+      "claude_skills_review_animations_standards_gestures_drag",
+      "claude_skills_review_animations_standards_interruptibility",
+      "claude_skills_review_animations_standards_masking_imperfect_crossfades",
+      "claude_skills_review_animations_standards_performance",
+      "claude_skills_review_animations_standards_physicality",
+      "claude_skills_review_animations_standards_should_it_animate_frequency_table",
+      "claude_skills_review_animations_standards_springs",
+      "claude_skills_review_animations_standards_stagger",
+      "claude_skills_review_animations_standards_transforms_clip_path"
+    ],
+    "8": [
+      "interconnection_map",
+      "interconnection_map_accessibility_voice_input",
+      "interconnection_map_api_auth_write_proxy_and_rls_current_security_architecture",
+      "interconnection_map_bookworm_phylum_path_confirmed_live_end_to_end",
+      "interconnection_map_claude_code_fallback_lane_architecture",
+      "interconnection_map_content_pipeline_overseer_content_productions_video_jobs_style_profiles",
+      "interconnection_map_content_production_pipeline",
+      "interconnection_map_cross_doc_sync_conventions",
+      "interconnection_map_dashboard_architecture_dashdeck",
+      "interconnection_map_encyclopedia_taxonomy_tree_link",
+      "interconnection_map_future_integration_vision_a_f_confirmed_direction_not_yet_scoped",
+      "interconnection_map_known_open_issues",
+      "interconnection_map_navigation_architecture_leftnav_drawer",
+      "interconnection_map_openmontage_handoff_lane_openmontage_jobs",
+      "interconnection_map_oracle_pipeline",
+      "interconnection_map_oracle_self_awareness_digest_hand_maintained_live_facts_a_real_cross_doc_convention",
+      "interconnection_map_popup_scaffolding_one_shared_helper_project_wide",
+      "interconnection_map_regeneration_skill_taxonomy_quality_audit_not_a_live_agent",
+      "interconnection_map_rpgace_interconnection_map",
+      "interconnection_map_schedule_system_independent_track_no_taxonomy_dependency",
+      "interconnection_map_shared_boot_loader_gate_rpgace_registerboottask",
+      "interconnection_map_shared_touchpoint_cross_reference",
+      "interconnection_map_standing_rule_oversight",
+      "interconnection_map_taxonomy_tree_pipeline",
+      "interconnection_map_the_chronicles_shared_aggregation_across_system_updates_app_tables",
+      "interconnection_map_the_two_real_hubs_read_this_first",
+      "interconnection_map_unified_placement_engine"
+    ],
+    "9": [
       "rpgace_build",
       "rpgace_build_cmd_add",
       "rpgace_build_cmd_check",
@@ -302,7 +403,111 @@
       "rpgace_build_syntax_check",
       "rpgace_build_write"
     ],
-    "8": [
+    "10": [
+      "claude_skills_graphify_skill",
+      "claude_skills_graphify_skill_for_graphify_add_and_watch",
+      "claude_skills_graphify_skill_for_graphify_query",
+      "claude_skills_graphify_skill_for_the_commit_hook_and_native_claude_md_integration",
+      "claude_skills_graphify_skill_for_update_and_cluster_only",
+      "claude_skills_graphify_skill_graphify",
+      "claude_skills_graphify_skill_honesty_rules",
+      "claude_skills_graphify_skill_interpreter_guard_for_subcommands",
+      "claude_skills_graphify_skill_part_a_structural_extraction_for_code_files",
+      "claude_skills_graphify_skill_part_b_semantic_extraction_parallel_subagents",
+      "claude_skills_graphify_skill_part_c_merge_ast_semantic_into_final_extraction",
+      "claude_skills_graphify_skill_step_0_github_repos_and_multi_path_merge_only_if_a_url_or_several_paths",
+      "claude_skills_graphify_skill_step_1_ensure_graphify_is_installed",
+      "claude_skills_graphify_skill_step_2_5_video_and_audio_only_if_video_files_detected",
+      "claude_skills_graphify_skill_step_2_detect_files",
+      "claude_skills_graphify_skill_step_3_extract_entities_and_relationships",
+      "claude_skills_graphify_skill_step_4_5_graph_health_check_read_only_integrity_gate",
+      "claude_skills_graphify_skill_step_4_build_graph_cluster_analyze_generate_outputs",
+      "claude_skills_graphify_skill_step_5_label_communities",
+      "claude_skills_graphify_skill_step_6_generate_obsidian_vault_opt_in_html",
+      "claude_skills_graphify_skill_step_9_save_manifest_update_cost_tracker_clean_up_and_report",
+      "claude_skills_graphify_skill_steps_6b_8_wiki_neo4j_falkordb_svg_graphml_mcp_benchmark_only_on_their_flags",
+      "claude_skills_graphify_skill_usage",
+      "claude_skills_graphify_skill_what_graphify_is_for",
+      "claude_skills_graphify_skill_what_you_must_do_when_invoked"
+    ],
+    "11": [
+      "main_addschedbuttons",
+      "main_autoapplystoredshifts",
+      "main_buildmonthslots",
+      "main_buildweekslots",
+      "main_calcellitems",
+      "main_caldatestr",
+      "main_calfmtshort",
+      "main_calgetschedagendas",
+      "main_calgetshifts",
+      "main_calmondayof",
+      "main_calmonthnav",
+      "main_calweeknav",
+      "main_calyearnav",
+      "main_closeschedmodal",
+      "main_confirmschedulemodal",
+      "main_fracclock",
+      "main_initdailynav",
+      "main_initschedmodal",
+      "main_openschedmodal",
+      "main_renderdailygrid",
+      "main_scheduleagenda",
+      "main_scheduleagendabyidx",
+      "main_selectduration",
+      "main_shiftday",
+      "main_showsched"
+    ],
+    "12": [
+      "claude_skills_improve_animations_audit",
+      "claude_skills_improve_animations_audit_1_purpose_frequency",
+      "claude_skills_improve_animations_audit_2_easing_duration",
+      "claude_skills_improve_animations_audit_3_physicality_origin",
+      "claude_skills_improve_animations_audit_4_interruptibility",
+      "claude_skills_improve_animations_audit_5_performance",
+      "claude_skills_improve_animations_audit_6_accessibility",
+      "claude_skills_improve_animations_audit_7_cohesion_tokens",
+      "claude_skills_improve_animations_audit_8_missed_opportunities",
+      "claude_skills_improve_animations_audit_animation_audit_playbook",
+      "claude_skills_improve_animations_plan_template",
+      "claude_skills_improve_animations_plan_template_notes_for_the_plan_author",
+      "claude_skills_improve_animations_plan_template_plan_template",
+      "claude_skills_improve_animations_skill",
+      "claude_skills_improve_animations_skill_hard_rules",
+      "claude_skills_improve_animations_skill_improving_animations",
+      "claude_skills_improve_animations_skill_invocation_variants",
+      "claude_skills_improve_animations_skill_operating_posture",
+      "claude_skills_improve_animations_skill_phase_1_recon_always_first",
+      "claude_skills_improve_animations_skill_phase_2_audit_parallel",
+      "claude_skills_improve_animations_skill_phase_3_vet_prioritize_confirm",
+      "claude_skills_improve_animations_skill_phase_4_write_plans",
+      "claude_skills_improve_animations_skill_tone",
+      "claude_skills_improve_animations_skill_workflow"
+    ],
+    "13": [
+      "system_flow_map",
+      "system_flow_map_0_verified_component_inventory",
+      "system_flow_map_10_built_vs_not_built_the_truth_table_created_july_17_live_numbers_re_queried_july_31",
+      "system_flow_map_11_content_video_production_pipeline_added_july_31_rebuilt_aug_5",
+      "system_flow_map_1_top_level_system_map",
+      "system_flow_map_2_oracle_chat_request_flow_main_js_sendchat_wraps",
+      "system_flow_map_3_phylum_path_insight_placement_the_core_taxonomy_write_path",
+      "system_flow_map_4_article_generation_concept_fusion",
+      "system_flow_map_5_bookworm_whole_book_taxonomy_pipeline",
+      "system_flow_map_6_review_queue_dashboard_all_pending_taxonomy_decisions",
+      "system_flow_map_7_content_intelligence_schedule_oracle_ingestion",
+      "system_flow_map_8_planned_features_dashed_not_built_and_where_they_attach",
+      "system_flow_map_9_the_chronicles_activity_log_aggregation_finance_ledger_added_july_22",
+      "system_flow_map_built_and_verified_working_hand_tested_or_confirmed_live",
+      "system_flow_map_built_but_never_verified_treat_as_unconfirmed_test_before_building_on",
+      "system_flow_map_claimed_discussed_but_not_built_do_not_trust_any_doc_that_implies_otherwise",
+      "system_flow_map_domains_and_modules_from_rpgace_core_js_markers_re_grepped_july_31",
+      "system_flow_map_known_open_bugs_see_also_11",
+      "system_flow_map_rpgace_system_flow_map",
+      "system_flow_map_serverless_api_api",
+      "system_flow_map_supabase_tables",
+      "system_flow_map_the_two_real_hubs_confirmed_in_interconnection_map_md"
+    ],
+    "14": [
       "claude_skills_commit_archaeologist_scripts_archaeologist",
       "claude_skills_commit_archaeologist_scripts_archaeologist_archaeologisterror",
       "claude_skills_commit_archaeologist_scripts_archaeologist_blame_authors",
@@ -325,25 +530,161 @@
       "claude_skills_commit_archaeologist_scripts_archaeologist_validate_range",
       "exception"
     ],
-    "9": [
-      "main_addschedbuttons",
-      "main_caldatestr",
-      "main_closeschedmodal",
-      "main_confirmschedule",
-      "main_confirmschedulemodal",
-      "main_fracclock",
-      "main_initdailynav",
-      "main_initschedmodal",
-      "main_openschedmodal",
-      "main_renderdailygrid",
-      "main_scheduleagenda",
-      "main_scheduleagendabyidx",
-      "main_scheduletocalendar",
-      "main_selectduration",
-      "main_shiftday",
-      "main_showsched"
+    "15": [
+      "fifth_dimension_phase1_2_report_2026_07_23",
+      "fifth_dimension_phase1_2_report_2026_07_23_0_repo_shape",
+      "fifth_dimension_phase1_2_report_2026_07_23_5thdimension_phase_1_2_evidence_report",
+      "fifth_dimension_phase1_2_report_2026_07_23_chronicles_finance_supabase",
+      "fifth_dimension_phase1_2_report_2026_07_23_git_log_real_timeline_confirmed_via_git_log_oneline_213_commits",
+      "fifth_dimension_phase1_2_report_2026_07_23_index_html_real_structure",
+      "fifth_dimension_phase1_2_report_2026_07_23_interconnection_map_md_257_lines",
+      "fifth_dimension_phase1_2_report_2026_07_23_main_js_real_structure_frozen_confirmed_by_direct_read",
+      "fifth_dimension_phase1_2_report_2026_07_23_manual_html_413_lines",
+      "fifth_dimension_phase1_2_report_2026_07_23_minotaur_map_html_495_lines",
+      "fifth_dimension_phase1_2_report_2026_07_23_module_inventory_all_49_file_line_one_line_real_function_doc_match_note",
+      "fifth_dimension_phase1_2_report_2026_07_23_patch_notes_html_659_lines_most_recent_cards_read_in_full",
+      "fifth_dimension_phase1_2_report_2026_07_23_preliminary_drift_notes",
+      "fifth_dimension_phase1_2_report_2026_07_23_real_supabase_state_project_gripopghczmrbrhqtqbm_queried_live_not_estimated",
+      "fifth_dimension_phase1_2_report_2026_07_23_side_a_what_s_actually_built_real_code_evidence",
+      "fifth_dimension_phase1_2_report_2026_07_23_side_b_what_s_reported_as_done_the_docs",
+      "fifth_dimension_phase1_2_report_2026_07_23_system_flow_map_md_381_lines",
+      "fifth_dimension_phase1_2_report_2026_07_23_system_updates_supabase_read_in_full_12_rows_newest_first",
+      "fifth_dimension_phase1_2_report_2026_07_23_taxonomy_map_html"
     ],
-    "10": [
+    "16": [
+      "main_acceptjumptoenc",
+      "main_clearscheduledagendas",
+      "main_exitfocustoenc",
+      "main_extractvstsfromtext",
+      "main_gotoencfromfocus",
+      "main_loadnote",
+      "main_loadscheduledagendas",
+      "main_pushlocaltosupabase",
+      "main_quicksavetoencyclopedia",
+      "main_refreshencyclopediadisplay",
+      "main_removescheduledagenda",
+      "main_saveencwithvsts",
+      "main_saveinteltoencyclopedia",
+      "main_saveoracletoencyclopedia",
+      "main_saveworkshoptoencyclopedia",
+      "main_sendinsighttocmd3",
+      "main_showpage",
+      "main_syncandpush",
+      "main_vst_known"
+    ],
+    "17": [
+      "claude_skills_animation_vocabulary_skill",
+      "claude_skills_animation_vocabulary_skill_animation_vocabulary",
+      "claude_skills_animation_vocabulary_skill_easing_how_speed_changes_over_an_animation",
+      "claude_skills_animation_vocabulary_skill_entrances_exits_how_elements_appear_and_disappear",
+      "claude_skills_animation_vocabulary_skill_examples",
+      "claude_skills_animation_vocabulary_skill_feedback_interaction_responding_to_the_user_s_actions",
+      "claude_skills_animation_vocabulary_skill_glossary",
+      "claude_skills_animation_vocabulary_skill_instructions",
+      "claude_skills_animation_vocabulary_skill_looping_ambient_motion_animations_that_run_on_their_own",
+      "claude_skills_animation_vocabulary_skill_movement_transforms_changing_an_element_s_position_size_or_angle",
+      "claude_skills_animation_vocabulary_skill_performance_what_keeps_motion_smooth_instead_of_stuttering",
+      "claude_skills_animation_vocabulary_skill_polish_effects_the_small_touches_that_separate_good_from_great",
+      "claude_skills_animation_vocabulary_skill_principles_to_know_concepts_that_guide_when_and_how_to_animate",
+      "claude_skills_animation_vocabulary_skill_quick_start",
+      "claude_skills_animation_vocabulary_skill_scroll_motion_tied_to_scrolling_or_navigating_between_views",
+      "claude_skills_animation_vocabulary_skill_sequencing_timing_coordinating_multiple_elements_or_moments",
+      "claude_skills_animation_vocabulary_skill_spring_animations_physics_based_motion_as_an_alternative_to_fixed_duration_easing",
+      "claude_skills_animation_vocabulary_skill_transitions_between_states_connecting_one_state_view_or_element_to_another"
+    ],
+    "18": [
+      "main_addinstaquest",
+      "main_addxp",
+      "main_compileencyclopedia",
+      "main_completequest",
+      "main_generatenotes",
+      "main_learnvideo",
+      "main_markagendadone",
+      "main_polljobs",
+      "main_renderjobs",
+      "main_rendervideoresults",
+      "main_runvideoworkshop",
+      "main_saveworkshoptonotion",
+      "main_saveytkey",
+      "main_searchvideos",
+      "main_setlearnstatus",
+      "main_showxptoast",
+      "main_startjobpolling",
+      "main_submitintelurl"
+    ],
+    "19": [
+      "rpgace_architecture",
+      "rpgace_architecture_api_pattern_3_different_styles",
+      "rpgace_architecture_architecture_diagram",
+      "rpgace_architecture_current_state_full_audit",
+      "rpgace_architecture_duplicate_functions_3_versions_each",
+      "rpgace_architecture_global_state_chaos",
+      "rpgace_architecture_implementation_plan",
+      "rpgace_architecture_localstorage_raw_and_unprotected",
+      "rpgace_architecture_quick_reference_what_goes_where",
+      "rpgace_architecture_rpgace_software_architecture_analysis_foundation_plan",
+      "rpgace_architecture_the_diagnosis",
+      "rpgace_architecture_the_file",
+      "rpgace_architecture_the_fix_a_foundation_layer",
+      "rpgace_architecture_the_governing_rule_applied_to_architecture",
+      "rpgace_architecture_the_hook_system_how_step_8_features_get_added",
+      "rpgace_architecture_the_injection_pattern_why_it_keeps_breaking",
+      "rpgace_architecture_what_main_js_issues_remain_and_why_we_leave_them"
+    ],
+    "20": [
+      "main_agent_actions",
+      "main_buildagentactions",
+      "main_buildskilltree",
+      "main_buildtimeslots",
+      "main_checkpassword",
+      "main_deletenote",
+      "main_initapp",
+      "main_initlearning",
+      "main_levelup",
+      "main_removeinsighttooltip",
+      "main_renderdb",
+      "main_setupmanualinsightselection",
+      "main_showinsighttooltip",
+      "main_skills",
+      "main_updatedbstats",
+      "main_updateskilltree"
+    ],
+    "21": [
+      "session_handover_2026_07_19",
+      "session_handover_2026_07_19_1_how_to_use_this_doc",
+      "session_handover_2026_07_19_2_10_security_open_do_not_forget",
+      "session_handover_2026_07_19_2_1_bookworm_chapter_detection_finished_and_confirmed_on_a_real_book",
+      "session_handover_2026_07_19_2_2_bookworm_ux_commits_ee0f2e2_ba31a38_built_not_hand_tested",
+      "session_handover_2026_07_19_2_3_reader_formatting_commit_9550e40_built_not_hand_tested",
+      "session_handover_2026_07_19_2_4_tree_audit_one_unified_placement_engine_commit_42ca91e",
+      "session_handover_2026_07_19_2_5_tree_cleanup_g1_g5_executed_commits_b9c4f1b_28d8fb6",
+      "session_handover_2026_07_19_2_6_youtube_per_insight_loop_review_queue_reasoning_commit_28d8fb6",
+      "session_handover_2026_07_19_2_7_oracle_tree_grounding_commit_b0a5939_built_not_hand_tested",
+      "session_handover_2026_07_19_2_8_research_page_redesign_commit_7c10ac4_built_not_hand_tested",
+      "session_handover_2026_07_19_2_9_video_summary_page_commit_a27fa0d_built_27_27_headless_tests_not_browser_tested",
+      "session_handover_2026_07_19_2_shipped_this_session",
+      "session_handover_2026_07_19_3_open_threads_build_test_next_in_this_order",
+      "session_handover_2026_07_19_4_working_style_that_made_this_session_work_keep_it",
+      "session_handover_2026_07_19_rpgace_session_handover_july_18_19_2026_fable_session"
+    ],
+    "22": [
+      "main_addmsg",
+      "main_agentlog",
+      "main_callcomposio",
+      "main_checkforquestsuggestions",
+      "main_escchathtml",
+      "main_firebeatanalysis",
+      "main_fireinstacommand",
+      "main_fireprodcommand",
+      "main_isinstaoraclequery",
+      "main_renderinstamsg",
+      "main_rendermarkdown",
+      "main_sendchat",
+      "main_sendchatwithimage",
+      "main_showsuggestionpopup",
+      "main_triggeragent"
+    ],
+    "23": [
       "manifest",
       "manifest_background_color",
       "manifest_description",
@@ -360,40 +701,56 @@
       "ref_minimal_ui",
       "ref_standalone"
     ],
-    "11": [
-      "vercel",
-      "vercel_api_analyst_js_maxduration",
-      "vercel_api_executor_js_maxduration",
-      "vercel_api_noter_js_maxduration",
-      "vercel_api_orchestrate_js_maxduration",
-      "vercel_api_scout_js_maxduration",
-      "vercel_api_search_js_maxduration",
-      "vercel_functions",
-      "vercel_functions_api_analyst_js",
-      "vercel_functions_api_executor_js",
-      "vercel_functions_api_noter_js",
-      "vercel_functions_api_orchestrate_js",
-      "vercel_functions_api_scout_js",
-      "vercel_functions_api_search_js",
-      "vercel_rewrites"
+    "24": [
+      "saved_conversation",
+      "saved_conversation_command_1_niche_domination_scan",
+      "saved_conversation_confirmed_anchor_pillar_3_fl_studio_secrets_series",
+      "saved_conversation_full_weekly_schedule",
+      "saved_conversation_growth_intel",
+      "saved_conversation_how_to_find_vocalists_under_5k_15_minute_method",
+      "saved_conversation_oracle_session_insta_oracle_command_1_content_rebuild",
+      "saved_conversation_pillar_a_fl_studio_secrets_series_anchor",
+      "saved_conversation_pillar_b_made_different_outsider_producer_angle",
+      "saved_conversation_pillar_c_producer_challenge_beat_constraints_series",
+      "saved_conversation_positioning_statement_final_de_britished",
+      "saved_conversation_quest_unlocked",
+      "saved_conversation_rebuilt_content_mix_3_pillars",
+      "saved_conversation_the_5_oversaturated_angles_to_avoid",
+      "saved_conversation_the_gap_what_nobody_is_owning"
     ],
-    "12": [
-      "main_agent_actions",
-      "main_buildagentactions",
-      "main_buildskilltree",
-      "main_buildtimeslots",
-      "main_checkpassword",
-      "main_checkserverstatus",
-      "main_initapp",
-      "main_levelup",
-      "main_removeinsighttooltip",
-      "main_setupmanualinsightselection",
-      "main_showinsighttooltip",
-      "main_skills",
-      "main_startintelpolling",
-      "main_updateskilltree"
+    "25": [
+      "design",
+      "design_10_page_redesign_audit_july_20_2nd_session_godmode_council_of_5_omnitrix_skipped_per_alex_fable_5_ran_out_of_usage_credits_mid_dispatch_so_this_pass_was_done_solo_by_sonnet_5_no_second_agent_review_extra_care_taken_as_a_result_smaller_scope_shipped_than_a_reviewed_pass_would_have",
+      "design_1_visual_theme_atmosphere",
+      "design_2_color_palette_roles",
+      "design_3_typography_rules",
+      "design_4_component_stylings",
+      "design_5_layout_principles",
+      "design_6_depth_elevation",
+      "design_7_animation_interaction_l1",
+      "design_8_do_s_and_don_ts",
+      "design_9_responsive_behavior",
+      "design_design_md_rpgace_structural_restructure",
+      "design_verdicts_page_by_page",
+      "design_what_shipped_ai_advisor_page"
     ],
-    "13": [
+    "26": [
+      "main_closepasterota",
+      "main_confirmschedule",
+      "main_generateagendas",
+      "main_getfreewindows",
+      "main_getshiftcontext",
+      "main_getshifts",
+      "main_getshiftsfordate",
+      "main_gettodayshifts",
+      "main_initagendas",
+      "main_parseandsaverota",
+      "main_patchagendacardswithschedule",
+      "main_renderagendas",
+      "main_rendershiftblocks",
+      "main_scheduletocalendar"
+    ],
+    "27": [
       "main_agenda_list",
       "main_clearjournal",
       "main_closefocusoverlay",
@@ -408,60 +765,75 @@
       "main_savejournalentry",
       "main_savetojournal"
     ],
-    "14": [
-      "main_autoapplystoredshifts",
-      "main_closepasterota",
-      "main_generateagendas",
-      "main_getfreewindows",
-      "main_getshiftcontext",
-      "main_getshifts",
-      "main_getshiftsfordate",
-      "main_gettodayshifts",
-      "main_initagendas",
-      "main_parseandsaverota",
-      "main_patchagendacardswithschedule",
-      "main_renderagendas",
-      "main_rendershiftblocks"
+    "28": [
+      "main_checkserverstatus",
+      "main_fetchfromlocal",
+      "main_fetchfromsupabase",
+      "main_fetchwatchlistfromlocal",
+      "main_fetchwatchlistfromsupabase",
+      "main_importinteljson",
+      "main_loadintelinsights",
+      "main_loadintelwatchlist",
+      "main_mergebyurl",
+      "main_showinteltab",
+      "main_startintelpolling",
+      "main_switchtoci",
+      "main_syncinteldata"
     ],
-    "15": [
-      "main_addmsg",
-      "main_checkforquestsuggestions",
-      "main_escchathtml",
-      "main_firebeatanalysis",
-      "main_fireinstacommand",
-      "main_fireprodcommand",
-      "main_isinstaoraclequery",
-      "main_renderinstamsg",
-      "main_rendermarkdown",
-      "main_sendchat",
-      "main_sendchatwithimage",
-      "main_showsuggestionpopup"
+    "29": [
+      "vercel",
+      "vercel_api_analyst_js_maxduration",
+      "vercel_api_executor_js_maxduration",
+      "vercel_api_orchestrate_js_maxduration",
+      "vercel_api_scout_js_maxduration",
+      "vercel_api_search_js_maxduration",
+      "vercel_functions",
+      "vercel_functions_api_analyst_js",
+      "vercel_functions_api_executor_js",
+      "vercel_functions_api_orchestrate_js",
+      "vercel_functions_api_scout_js",
+      "vercel_functions_api_search_js",
+      "vercel_rewrites"
     ],
-    "16": [
-      "main_beginsession",
-      "main_closesessionsetup",
-      "main_handlefocusselect",
-      "main_loadfocusentries",
-      "main_onsessiontimerend",
-      "main_openfocusoverlay",
-      "main_setupfocustextselect",
-      "main_showtimerwidget",
-      "main_startfmtimer",
-      "main_updatetimerdisplay"
+    "30": [
+      "ai_tooling_and_rules_map",
+      "ai_tooling_and_rules_map_1a_global_native_generic_capability_present_but_largely_inert_for_rpgace",
+      "ai_tooling_and_rules_map_1b_global_native_genuinely_load_bearing_for_rpgace_used_repeatedly_this_session_and_prior_ones",
+      "ai_tooling_and_rules_map_1c_rpgace_authored_project_scoped_only_for_contrast_full_detail_already_lives_in_claude_md_s_invokable_frameworks_and_skills_tooling_security_sections_not_repeated_here",
+      "ai_tooling_and_rules_map_notably_absent_a_real_gap_not_an_oversight",
+      "ai_tooling_and_rules_map_part_1_claude_code_skills_present_in_this_environment",
+      "ai_tooling_and_rules_map_part_2_every_rule_md_txt_file_that_influences_the_system_by_real_authority_level",
+      "ai_tooling_and_rules_map_part_3_what_this_doc_changes_about_the_oversight_system_itself",
+      "ai_tooling_and_rules_map_rpgace_ai_tooling_rules_map",
+      "ai_tooling_and_rules_map_tier_a_live_authoritative_read_at_the_start_of_every_session",
+      "ai_tooling_and_rules_map_tier_b_real_committed_verbatim_decision_records_rule_5_s_chat_isn_t_durable_storage_convention_authoritative_for_the_one_decision_they_document_not_standing_rules",
+      "ai_tooling_and_rules_map_tier_c_historical_superseded_real_files_but_not_current_authority_a_future_session_should_not_treat_these_as_live_rules"
     ],
-    "17": [
-      "main_buildmonthslots",
-      "main_buildweekslots",
-      "main_calcellitems",
-      "main_calfmtshort",
-      "main_calgetschedagendas",
-      "main_calgetshifts",
-      "main_calmondayof",
-      "main_calmonthnav",
-      "main_calweeknav",
-      "main_calyearnav"
+    "31": [
+      "claude_skills_commit_archaeologist_skill",
+      "claude_skills_commit_archaeologist_skill_commit_archaeologist",
+      "claude_skills_commit_archaeologist_skill_evidence_rules",
+      "claude_skills_commit_archaeologist_skill_files",
+      "claude_skills_commit_archaeologist_skill_follow_ups",
+      "claude_skills_commit_archaeologist_skill_gather_the_target",
+      "claude_skills_commit_archaeologist_skill_read_the_json",
+      "claude_skills_commit_archaeologist_skill_run_the_dig",
+      "claude_skills_commit_archaeologist_skill_when_not_to_use",
+      "claude_skills_commit_archaeologist_skill_when_to_use",
+      "claude_skills_commit_archaeologist_skill_write_the_report"
     ],
-    "18": [
+    "32": [
+      "claude_skills_graphify_references_exports",
+      "claude_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
+      "claude_skills_graphify_references_exports_step_6b_wiki_only_if_wiki_flag",
+      "claude_skills_graphify_references_exports_step_7_neo4j_export_only_if_neo4j_or_neo4j_push_flag",
+      "claude_skills_graphify_references_exports_step_7a_falkordb_export_only_if_falkordb_or_falkordb_push_flag",
+      "claude_skills_graphify_references_exports_step_7b_svg_export_only_if_svg_flag",
+      "claude_skills_graphify_references_exports_step_7c_graphml_export_only_if_graphml_flag",
+      "claude_skills_graphify_references_exports_step_7d_mcp_server_only_if_mcp_flag",
+      "claude_skills_graphify_references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000"
+    ],
+    "33": [
       "main_applyshifts",
       "main_dzdrop",
       "main_dzleave",
@@ -472,7 +844,18 @@
       "main_parsetext",
       "main_showimporterr"
     ],
-    "19": [
+    "34": [
+      "rpgace",
+      "rpgace_api_rules_never_break_these",
+      "rpgace_confirmed_working_tools",
+      "rpgace_definitive_connected_accounts",
+      "rpgace_rpgace_system_context",
+      "rpgace_stale_ids_never_use_these",
+      "rpgace_tool_name_errors_never_use_these",
+      "rpgace_url_fetching",
+      "rpgace_user"
+    ],
+    "35": [
       "scripts_fourth_rota",
       "scripts_fourth_rota_day_abbr",
       "scripts_fourth_rota_extract",
@@ -483,7 +866,7 @@
       "scripts_fourth_rota_try_click",
       "scripts_fourth_rota_try_fill"
     ],
-    "20": [
+    "36": [
       "scripts_supabase_sync",
       "scripts_supabase_sync_fetch_reports",
       "scripts_supabase_sync_push_report",
@@ -494,476 +877,628 @@
       "scripts_supabase_sync_rationale_83",
       "scripts_supabase_sync_supabase_post"
     ],
-    "21": [
-      "main_acceptsuggestions",
-      "main_buildallquests",
-      "main_buildqs",
-      "main_closesuggestion",
-      "main_makecard"
+    "37": [
+      "claude_archive",
+      "claude_archive_claude_md_archive",
+      "claude_archive_current_state_july_24_2026_session_end_don_t_re_discover_this",
+      "claude_archive_prior_state_july_18_2026_still_true_unless_superseded_above",
+      "claude_archive_prior_state_july_20_2026_session_end_still_true_unless_superseded_above",
+      "claude_archive_prior_state_july_22_2026_session_end_still_true_unless_superseded_above",
+      "claude_archive_prior_state_july_23_2026_first_session_still_true_unless_superseded_above",
+      "claude_archive_prior_state_july_23_2026_second_session_still_true_unless_superseded_above"
     ],
-    "22": [
-      "main_deletenote",
-      "main_initlearning",
-      "main_renderdb",
-      "main_savepipelinetodb",
-      "main_updatedbstats"
+    "38": [
+      "claude_skills_commit_archaeologist_references_reading_git_history",
+      "claude_skills_commit_archaeologist_references_reading_git_history_authorship_has_two_meanings",
+      "claude_skills_commit_archaeologist_references_reading_git_history_change_risk_checklist",
+      "claude_skills_commit_archaeologist_references_reading_git_history_co_change_is_correlation",
+      "claude_skills_commit_archaeologist_references_reading_git_history_file_history_and_line_history_answer_different_questions",
+      "claude_skills_commit_archaeologist_references_reading_git_history_intent_signals_and_confidence",
+      "claude_skills_commit_archaeologist_references_reading_git_history_reading_git_history_without_inventing_intent",
+      "claude_skills_commit_archaeologist_references_reading_git_history_timeline_categories_are_routing_hints"
     ],
-    "23": [
-      "main_collapseencentry",
-      "main_expandencentry",
-      "main_scrolltovstinentry",
-      "main_toggleencentry"
+    "39": [
+      "claude_skills_engineer_skill",
+      "claude_skills_engineer_skill_engineer_build_it_then_prove_the_report_about_it_is_true",
+      "claude_skills_engineer_skill_guardrails",
+      "claude_skills_engineer_skill_one_pass_the_five_stages_in_order",
+      "claude_skills_engineer_skill_re_looping_capped_and_only_on_objective_failure",
+      "claude_skills_engineer_skill_the_objective_completion_gate_the_real_pass_fail",
+      "claude_skills_engineer_skill_what_this_skill_is_not"
     ],
-    "24": [
-      "main_handleglobalselect",
-      "main_initglobaltextselect",
-      "main_selectable_pages"
+    "40": [
+      "claude_skills_omnitrix_skill",
+      "claude_skills_omnitrix_skill_aintergration_third_party_framework_tool_agent_assessment",
+      "claude_skills_omnitrix_skill_council_of_5_pre_build_deliberation",
+      "claude_skills_omnitrix_skill_godmode_maximum_rigor_evidence_gathering",
+      "claude_skills_omnitrix_skill_omnitrix_the_3_agent_build_workflow_reweighted_after_a_real_failure",
+      "claude_skills_omnitrix_skill_rpgace_judgment_funnel_omnitrix_council_of_5_godmode_aintergration",
+      "claude_skills_omnitrix_skill_the_judgment_funnel_which_tier_a_task_sits_at"
     ],
-    "25": [
-      "main_handlepipelinefile",
-      "main_pipelinedragleave",
-      "main_pipelinedrop"
+    "41": [
+      "claude_skills_scope_skill",
+      "claude_skills_scope_skill_grouping_the_digestible_bits_output_shape",
+      "claude_skills_scope_skill_handing_off_to_the_seven_docs",
+      "claude_skills_scope_skill_scope_the_whole_picture_in_digestible_grouped_bits",
+      "claude_skills_scope_skill_what_this_skill_does_not_do",
+      "claude_skills_scope_skill_what_to_gather_real_evidence_never_a_doc_s_own_claim",
+      "claude_skills_scope_skill_when_to_run_this"
     ],
-    "26": [
+    "42": [
+      "claude_skills_graphify_references_query",
+      "claude_skills_graphify_references_query_for_graphify_explain",
+      "claude_skills_graphify_references_query_for_graphify_path",
+      "claude_skills_graphify_references_query_graphify_reference_query_path_explain",
+      "claude_skills_graphify_references_query_step_0_constrained_query_expansion_required_before_traversal",
+      "claude_skills_graphify_references_query_step_1_traversal"
+    ],
+    "43": [
+      "claude_skills_loggingregen_skill",
+      "claude_skills_loggingregen_skill_loggingregen_per_doc_regeneration_against_role_dedup",
+      "claude_skills_loggingregen_skill_procedure_per_doc",
+      "claude_skills_loggingregen_skill_running_it_across_all_six_docs_chronicles_in_one_session",
+      "claude_skills_loggingregen_skill_the_two_hard_checks_run_against_every_doc_in_turn",
+      "claude_skills_loggingregen_skill_what_this_skill_does_not_do"
+    ],
+    "44": [
+      "claude_skills_regeneration_skill",
+      "claude_skills_regeneration_skill_guardrails",
+      "claude_skills_regeneration_skill_procedure",
+      "claude_skills_regeneration_skill_regeneration_audit_the_whole_tree_one_bounded_pass_at_a_time",
+      "claude_skills_regeneration_skill_the_three_tiers_always_run_in_this_order",
+      "claude_skills_regeneration_skill_what_this_skill_is_not"
+    ],
+    "45": [
+      "claude_skills_routine_skill",
+      "claude_skills_routine_skill_guardrails",
+      "claude_skills_routine_skill_output",
+      "claude_skills_routine_skill_routine_the_daily_top_10_decided_by_real_debate_instead_of_by_whoever_spoke_first",
+      "claude_skills_routine_skill_the_procedure_in_order",
+      "claude_skills_routine_skill_when_to_run_it"
+    ],
+    "46": [
+      "archiver",
+      "package",
+      "package_dependencies",
+      "package_dependencies_archiver",
+      "package_type"
+    ],
+    "47": [
+      "claude_skills_5thdimension_skill",
+      "claude_skills_5thdimension_skill_5thdimension_built_vs_reported_then_how_to_rewire_it_well",
+      "claude_skills_5thdimension_skill_guardrails",
+      "claude_skills_5thdimension_skill_the_procedure_in_order",
+      "claude_skills_5thdimension_skill_what_everything_built_off_this_means"
+    ],
+    "48": [
+      "claude_skills_free_for_all_debate_skill",
+      "claude_skills_free_for_all_debate_skill_free_for_all_debate_individual_competitors_not_two_teams",
+      "claude_skills_free_for_all_debate_skill_guardrails",
+      "claude_skills_free_for_all_debate_skill_the_procedure_in_order",
+      "claude_skills_free_for_all_debate_skill_when_to_use_this_instead_of_debate"
+    ],
+    "49": [
+      "claude_skills_impeccable_skill",
+      "claude_skills_impeccable_skill_as_a_bedtime_summary_sub_step",
+      "claude_skills_impeccable_skill_impeccable_design_pattern_scan_standalone_or_as_a_bedtime_summary_sub_step",
+      "claude_skills_impeccable_skill_standalone_use_impeccable",
+      "claude_skills_impeccable_skill_why_this_feeds_oracle_not_just_claude_code"
+    ],
+    "50": [
+      "claude_skills_interrogation_skill",
+      "claude_skills_interrogation_skill_guardrails",
+      "claude_skills_interrogation_skill_interrogation_ask_before_guessing_on_anything_that_would_actually_change",
+      "claude_skills_interrogation_skill_procedure",
+      "claude_skills_interrogation_skill_when_to_run_it"
+    ],
+    "51": [
+      "fifth_dimension_phase3_4_debate_2026_07_23",
+      "fifth_dimension_phase3_4_debate_2026_07_23_5thdimension_phase_3_4_reconciliation_the_rewiring_debate",
+      "fifth_dimension_phase3_4_debate_2026_07_23_phase_3_reconciling_side_a_vs_side_b",
+      "fifth_dimension_phase3_4_debate_2026_07_23_phase_4_the_rewiring_debate",
+      "fifth_dimension_phase3_4_debate_2026_07_23_what_phase_5_actually_needs_from_alex_when_he_s_rested_not_now"
+    ],
+    "52": [
+      "claude_skills_bedtime_skill",
+      "claude_skills_bedtime_skill_bedtime_closing_out_a_session_for_real_not_just_saying_done",
+      "claude_skills_bedtime_skill_guardrails",
+      "claude_skills_bedtime_skill_the_procedure_in_order"
+    ],
+    "53": [
+      "claude_skills_debate_skill",
+      "claude_skills_debate_skill_debate_adversarial_case_building_before_a_real_decision",
+      "claude_skills_debate_skill_guardrails",
+      "claude_skills_debate_skill_the_procedure_in_order"
+    ],
+    "54": [
+      "claude_skills_graphify_references_add_watch",
+      "claude_skills_graphify_references_add_watch_for_graphify_add",
+      "claude_skills_graphify_references_add_watch_for_watch",
+      "claude_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder"
+    ],
+    "55": [
+      "claude_skills_graphify_references_hooks",
+      "claude_skills_graphify_references_hooks_for_git_commit_hook",
+      "claude_skills_graphify_references_hooks_for_native_claude_md_integration",
+      "claude_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration"
+    ],
+    "56": [
+      "claude_skills_graphify_references_update",
+      "claude_skills_graphify_references_update_for_cluster_only",
+      "claude_skills_graphify_references_update_for_update_incremental_re_extraction",
+      "claude_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only"
+    ],
+    "57": [
+      "claude_skills_restructure_skill",
+      "claude_skills_restructure_skill_guardrails",
+      "claude_skills_restructure_skill_restructure_would_this_repo_change_rpgace_claude_code_s_skeleton_and_should_it",
+      "claude_skills_restructure_skill_the_procedure_in_order"
+    ],
+    "58": [
+      "claude_skills_summary_skill",
+      "claude_skills_summary_skill_guardrails",
+      "claude_skills_summary_skill_summary_a_real_evidence_checked_recap_when_context_needs_restoring",
+      "claude_skills_summary_skill_the_procedure_in_order"
+    ],
+    "59": [
+      "claude_skills_graphify_references_github_and_merge",
+      "claude_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
+      "claude_skills_graphify_references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given"
+    ],
+    "60": [
+      "claude_skills_graphify_references_transcribe",
+      "claude_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
+      "claude_skills_graphify_references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected"
+    ],
+    "61": [
+      "n8n_readme",
+      "n8n_readme_n8n_workflows",
+      "n8n_readme_rota_sync_workflow_json_f10_fourth_rota_sync"
+    ],
+    "62": [
       "scripts_build_full_scheduling_system",
       "scripts_build_full_scheduling_system_find_function_span",
       "scripts_build_full_scheduling_system_rationale_6"
     ],
-    "27": [
+    "63": [
       "scripts_mod_taxonomytree",
       "scripts_mod_taxonomytree_rendersteps",
       "scripts_mod_taxonomytree_updatepreview"
     ],
-    "28": [
-      "package",
-      "package_type"
+    "64": [
+      "claude_claude",
+      "claude_claude_graphify"
     ],
-    "29": [
+    "65": [
+      "claude_skills_graphify_references_extraction_spec",
+      "claude_skills_graphify_references_extraction_spec_graphify_reference_extraction_subagent_prompt"
+    ],
+    "66": [
       "scripts_rebuild_daily_grid_v2",
       "scripts_rebuild_daily_grid_v2_find_function_span"
     ],
-    "30": [
+    "67": [
       "scripts_split",
       "scripts_split_rationale_1"
     ],
-    "31": [
+    "68": [
       "scripts_stub_addschedbuttons",
       "scripts_stub_addschedbuttons_find_function_span"
     ],
-    "32": [
+    "69": [
       "sw",
       "sw_precache"
     ],
-    "33": [
+    "70": [
       "scripts_add_click_to_schedule"
     ],
-    "34": [
+    "71": [
       "scripts_add_title_description_fields"
     ],
-    "35": [
+    "72": [
       "scripts_extract_exact"
     ],
-    "36": [
+    "73": [
       "scripts_extract_weekslots"
     ],
-    "37": [
+    "74": [
       "scripts_find_anchor"
     ],
-    "38": [
+    "75": [
       "scripts_find_anchor2"
     ],
-    "39": [
+    "76": [
       "scripts_find_anchors"
     ],
-    "40": [
+    "77": [
       "scripts_find_hooks_impl"
     ],
-    "41": [
+    "78": [
       "scripts_find_init_call"
     ],
-    "42": [
+    "79": [
       "scripts_find_phylum"
     ],
-    "43": [
+    "80": [
       "scripts_fix_bridge"
     ],
-    "44": [
+    "81": [
       "scripts_fix_btn_order"
     ],
-    "45": [
+    "82": [
       "scripts_fix_btn_syntax"
     ],
-    "46": [
+    "83": [
       "scripts_fix_chatid"
     ],
-    "47": [
+    "84": [
       "scripts_fix_chatid2"
     ],
-    "48": [
+    "85": [
       "scripts_fix_collapsible3"
     ],
-    "49": [
+    "86": [
       "scripts_fix_collapsible4"
     ],
-    "50": [
+    "87": [
       "scripts_fix_compaction_v2"
     ],
-    "51": [
+    "88": [
       "scripts_fix_compaction_v3"
     ],
-    "52": [
+    "89": [
       "scripts_fix_compaction_v4"
     ],
-    "53": [
+    "90": [
       "scripts_fix_confirmschedule_converge"
     ],
-    "54": [
+    "91": [
       "scripts_fix_conid_title"
     ],
-    "55": [
+    "92": [
       "scripts_fix_conidpot_limit"
     ],
-    "56": [
+    "93": [
       "scripts_fix_dedup"
     ],
-    "57": [
+    "94": [
       "scripts_fix_duplicate_buildmonth"
     ],
-    "58": [
+    "95": [
       "scripts_fix_duplicate_buildmonth2"
     ],
-    "59": [
+    "96": [
       "scripts_fix_duplicate_buttons"
     ],
-    "60": [
+    "97": [
       "scripts_fix_duplicate_weekslots"
     ],
-    "61": [
+    "98": [
       "scripts_fix_enc_sync"
     ],
-    "62": [
+    "99": [
       "scripts_fix_expanded"
     ],
-    "63": [
+    "100": [
       "scripts_fix_feynman"
     ],
-    "64": [
+    "101": [
       "scripts_fix_full_24hr_dropdown"
     ],
-    "65": [
+    "102": [
       "scripts_fix_global_observer"
     ],
-    "66": [
+    "103": [
       "scripts_fix_hide_container"
     ],
-    "67": [
+    "104": [
       "scripts_fix_init_timing"
     ],
-    "68": [
+    "105": [
       "scripts_fix_insights2"
     ],
-    "69": [
+    "106": [
       "scripts_fix_insights_type"
     ],
-    "70": [
+    "107": [
       "scripts_fix_intel_bib_confirm"
     ],
-    "71": [
+    "108": [
       "scripts_fix_intel_v2"
     ],
-    "72": [
+    "109": [
       "scripts_fix_intel_v3"
     ],
-    "73": [
+    "110": [
       "scripts_fix_intel_v4"
     ],
-    "74": [
+    "111": [
       "scripts_fix_intercept"
     ],
-    "75": [
+    "112": [
       "scripts_fix_learning_tab"
     ],
-    "76": [
+    "113": [
       "scripts_fix_lineage_summary"
     ],
-    "77": [
+    "114": [
       "scripts_fix_msg_class"
     ],
-    "78": [
+    "115": [
       "scripts_fix_observer"
     ],
-    "79": [
+    "116": [
       "scripts_fix_openschedmodal_final"
     ],
-    "80": [
+    "117": [
       "scripts_fix_phylum2"
     ],
-    "81": [
+    "118": [
       "scripts_fix_phylum3"
     ],
-    "82": [
+    "119": [
       "scripts_fix_phylum4"
     ],
-    "83": [
+    "120": [
       "scripts_fix_phylum_autoconfirm"
     ],
-    "84": [
+    "121": [
       "scripts_fix_polling"
     ],
-    "85": [
+    "122": [
       "scripts_fix_r_ref"
     ],
-    "86": [
+    "123": [
       "scripts_fix_real_date_bug"
     ],
-    "87": [
+    "124": [
       "scripts_fix_reapply"
     ],
-    "88": [
+    "125": [
       "scripts_fix_regex"
     ],
-    "89": [
+    "126": [
       "scripts_fix_sched_convergence"
     ],
-    "90": [
+    "127": [
       "scripts_fix_sched_key_mismatch"
     ],
-    "91": [
+    "128": [
       "scripts_fix_shift_date_bug"
     ],
-    "92": [
+    "129": [
       "scripts_fix_state"
     ],
-    "93": [
+    "130": [
       "scripts_fix_toggle_container"
     ],
-    "94": [
+    "131": [
       "scripts_fix_yt3"
     ],
-    "95": [
+    "132": [
       "scripts_fix_yt_syntax"
     ],
-    "96": [
+    "133": [
       "scripts_fix_yt_syntax2"
     ],
-    "97": [
+    "134": [
       "scripts_force_replace_cr"
     ],
-    "98": [
+    "135": [
       "scripts_mod_beatlog"
     ],
-    "99": [
+    "136": [
       "scripts_mod_collapsed_list"
     ],
-    "100": [
+    "137": [
       "scripts_mod_conidpot"
     ],
-    "101": [
+    "138": [
       "scripts_mod_contentproductionlive"
     ],
-    "102": [
+    "139": [
       "scripts_mod_contentrepurpose"
     ],
-    "103": [
+    "140": [
       "scripts_mod_contentrepurpose_v2"
     ],
-    "104": [
+    "141": [
       "scripts_mod_knowledgegap"
     ],
-    "105": [
+    "142": [
       "scripts_mod_morningbrief"
     ],
-    "106": [
+    "143": [
       "scripts_mod_quickactions"
     ],
-    "107": [
+    "144": [
       "scripts_mod_refcorpus"
     ],
-    "108": [
+    "145": [
       "scripts_mod_restoresendchat"
     ],
-    "109": [
+    "146": [
       "scripts_mod_shiftsync"
     ],
-    "110": [
+    "147": [
       "scripts_mod_suppressquestpopup"
     ],
-    "111": [
+    "148": [
       "scripts_mod_taxonomysync"
     ],
-    "112": [
+    "149": [
       "scripts_mod_visualoracle"
     ],
-    "113": [
+    "150": [
       "scripts_patch_agenda_stream"
     ],
-    "114": [
+    "151": [
       "scripts_patch_agenda_stream2"
     ],
-    "115": [
+    "152": [
       "scripts_patch_badge_propose"
     ],
-    "116": [
+    "153": [
       "scripts_patch_beatlog_corpus"
     ],
-    "117": [
+    "154": [
       "scripts_patch_beatlog_drop"
     ],
-    "118": [
+    "155": [
       "scripts_patch_bpm_tags"
     ],
-    "119": [
+    "156": [
       "scripts_patch_collapsible"
     ],
-    "120": [
+    "157": [
       "scripts_patch_collapsible2"
     ],
-    "121": [
+    "158": [
       "scripts_patch_conidpot_fixes"
     ],
-    "122": [
+    "159": [
       "scripts_patch_feynman_tax"
     ],
-    "123": [
+    "160": [
       "scripts_patch_global_phyla"
     ],
-    "124": [
+    "161": [
       "scripts_patch_intercept_sync"
     ],
-    "125": [
+    "162": [
       "scripts_patch_named_topics"
     ],
-    "126": [
+    "163": [
       "scripts_patch_perf"
     ],
-    "127": [
+    "164": [
       "scripts_patch_phyla"
     ],
-    "128": [
+    "165": [
       "scripts_patch_prefilter_buttons"
     ],
-    "129": [
+    "166": [
       "scripts_patch_rpgace"
     ],
-    "130": [
+    "167": [
       "scripts_patch_swap_btn"
     ],
-    "131": [
+    "168": [
       "scripts_patch_two_container"
     ],
-    "132": [
+    "169": [
       "scripts_patch_utils"
     ],
-    "133": [
+    "170": [
       "scripts_remove_collapsible_call"
     ],
-    "134": [
+    "171": [
       "scripts_scan_all_duplicates"
     ],
-    "135": [
+    "172": [
       "scripts_show_cr"
     ],
-    "136": [
+    "173": [
       "scripts_show_feynman_save"
     ],
-    "137": [
+    "174": [
       "scripts_show_inject"
     ],
-    "138": [
+    "175": [
       "scripts_show_inject2"
     ],
-    "139": [
+    "176": [
       "scripts_show_insights_line"
     ],
-    "140": [
+    "177": [
       "scripts_show_intel"
     ],
-    "141": [
+    "178": [
       "scripts_show_intel_init"
     ],
-    "142": [
+    "179": [
       "scripts_show_lines"
     ],
-    "143": [
+    "180": [
       "scripts_show_phylum_block"
     ],
-    "144": [
+    "181": [
       "scripts_show_prod"
     ],
-    "145": [
+    "182": [
       "scripts_show_prod2"
     ],
-    "146": [
+    "183": [
       "scripts_show_quickactions"
     ],
-    "147": [
+    "184": [
       "scripts_step9_panels"
     ]
   },
   "cohesion": {
-    "0": 0.10745098039215686,
-    "1": 0.04081632653061224,
-    "2": 0.11411411411411411,
-    "3": 0.10160427807486631,
-    "4": 0.1010752688172043,
-    "5": 0.09113300492610837,
-    "6": 0.08620689655172414,
-    "7": 0.23384615384615384,
-    "8": 0.21904761904761905,
-    "9": 0.175,
-    "10": 0.13333333333333333,
-    "11": 0.13333333333333333,
-    "12": 0.16483516483516483,
-    "13": 0.15384615384615385,
-    "14": 0.1794871794871795,
-    "15": 0.21212121212121213,
-    "16": 0.2,
-    "17": 0.26666666666666666,
-    "18": 0.3055555555555556,
-    "19": 0.3333333333333333,
-    "20": 0.25,
-    "21": 0.4,
-    "22": 0.6,
-    "23": 0.5,
-    "24": 0.6666666666666666,
-    "25": 0.6666666666666666,
-    "26": 0.6666666666666666,
-    "27": 1.0,
-    "28": 1.0,
-    "29": 1.0,
-    "30": 1.0,
-    "31": 1.0,
-    "32": 1.0,
-    "33": 1.0,
-    "34": 1.0,
-    "35": 1.0,
-    "36": 1.0,
-    "37": 1.0,
-    "38": 1.0,
-    "39": 1.0,
-    "40": 1.0,
-    "41": 1.0,
-    "42": 1.0,
-    "43": 1.0,
-    "44": 1.0,
-    "45": 1.0,
-    "46": 1.0,
-    "47": 1.0,
-    "48": 1.0,
-    "49": 1.0,
-    "50": 1.0,
-    "51": 1.0,
-    "52": 1.0,
-    "53": 1.0,
-    "54": 1.0,
-    "55": 1.0,
-    "56": 1.0,
-    "57": 1.0,
-    "58": 1.0,
-    "59": 1.0,
-    "60": 1.0,
-    "61": 1.0,
-    "62": 1.0,
+    "0": 0.0386946386946387,
+    "1": 0.0936408106219427,
+    "2": 0.044444444444444446,
+    "3": 0.11411411411411411,
+    "4": 0.05555555555555555,
+    "5": 0.08912655971479501,
+    "6": 0.08602150537634409,
+    "7": 0.07407407407407407,
+    "8": 0.07977207977207977,
+    "9": 0.23384615384615384,
+    "10": 0.08,
+    "11": 0.11666666666666667,
+    "12": 0.08695652173913043,
+    "13": 0.09090909090909091,
+    "14": 0.21904761904761905,
+    "15": 0.10526315789473684,
+    "16": 0.1286549707602339,
+    "17": 0.1111111111111111,
+    "18": 0.16993464052287582,
+    "19": 0.11764705882352941,
+    "20": 0.15,
+    "21": 0.125,
+    "22": 0.17142857142857143,
+    "23": 0.13333333333333333,
+    "24": 0.13333333333333333,
+    "25": 0.14285714285714285,
+    "26": 0.16483516483516483,
+    "27": 0.15384615384615385,
+    "28": 0.19230769230769232,
+    "29": 0.15384615384615385,
+    "30": 0.16666666666666666,
+    "31": 0.18181818181818182,
+    "32": 0.2222222222222222,
+    "33": 0.3055555555555556,
+    "34": 0.2222222222222222,
+    "35": 0.3333333333333333,
+    "36": 0.25,
+    "37": 0.25,
+    "38": 0.25,
+    "39": 0.2857142857142857,
+    "40": 0.2857142857142857,
+    "41": 0.2857142857142857,
+    "42": 0.3333333333333333,
+    "43": 0.3333333333333333,
+    "44": 0.3333333333333333,
+    "45": 0.3333333333333333,
+    "46": 0.4,
+    "47": 0.4,
+    "48": 0.4,
+    "49": 0.4,
+    "50": 0.4,
+    "51": 0.4,
+    "52": 0.5,
+    "53": 0.5,
+    "54": 0.5,
+    "55": 0.5,
+    "56": 0.5,
+    "57": 0.5,
+    "58": 0.5,
+    "59": 0.6666666666666666,
+    "60": 0.6666666666666666,
+    "61": 0.6666666666666666,
+    "62": 0.6666666666666666,
     "63": 1.0,
     "64": 1.0,
     "65": 1.0,
@@ -1048,27 +1583,79 @@
     "144": 1.0,
     "145": 1.0,
     "146": 1.0,
-    "147": 1.0
+    "147": 1.0,
+    "148": 1.0,
+    "149": 1.0,
+    "150": 1.0,
+    "151": 1.0,
+    "152": 1.0,
+    "153": 1.0,
+    "154": 1.0,
+    "155": 1.0,
+    "156": 1.0,
+    "157": 1.0,
+    "158": 1.0,
+    "159": 1.0,
+    "160": 1.0,
+    "161": 1.0,
+    "162": 1.0,
+    "163": 1.0,
+    "164": 1.0,
+    "165": 1.0,
+    "166": 1.0,
+    "167": 1.0,
+    "168": 1.0,
+    "169": 1.0,
+    "170": 1.0,
+    "171": 1.0,
+    "172": 1.0,
+    "173": 1.0,
+    "174": 1.0,
+    "175": 1.0,
+    "176": 1.0,
+    "177": 1.0,
+    "178": 1.0,
+    "179": 1.0,
+    "180": 1.0,
+    "181": 1.0,
+    "182": 1.0,
+    "183": 1.0,
+    "184": 1.0
   },
   "gods": [
     {
+      "id": "interconnection_map_rpgace_interconnection_map",
+      "label": "RPGACE Interconnection Map",
+      "degree": 25
+    },
+    {
       "id": "api_context_setcors",
       "label": "setCORS()",
-      "degree": 25
+      "degree": 22
+    },
+    {
+      "id": "claude_rpgace_claude_md",
+      "label": "RPGACE \u2014 CLAUDE.md",
+      "degree": 22
     },
     {
       "id": "api_context_requireauth",
       "label": "requireAuth()",
-      "degree": 23
+      "degree": 20
+    },
+    {
+      "id": "claude_skills_review_animations_standards_animation_standards_reference",
+      "label": "Animation Standards Reference",
+      "degree": 16
+    },
+    {
+      "id": "scripts_rpgace_intel_process_url",
+      "label": "process_url()",
+      "degree": 15
     },
     {
       "id": "main_addxp",
       "label": "addXP()",
-      "degree": 21
-    },
-    {
-      "id": "main_calloracle",
-      "label": "callOracle()",
       "degree": 15
     },
     {
@@ -1077,29 +1664,14 @@
       "degree": 15
     },
     {
-      "id": "main_setlearnstatus",
-      "label": "setLearnStatus()",
-      "degree": 15
-    },
-    {
-      "id": "scripts_rpgace_intel_process_url",
-      "label": "process_url()",
-      "degree": 15
+      "id": "main_calloracle",
+      "label": "callOracle()",
+      "degree": 14
     },
     {
       "id": "main_sendchat",
       "label": "sendChat()",
       "degree": 14
-    },
-    {
-      "id": "main_renderencentries",
-      "label": "renderEncEntries()",
-      "degree": 14
-    },
-    {
-      "id": "api_context_callclaude",
-      "label": "callClaude()",
-      "degree": 13
     }
   ],
   "surprises": [
@@ -1140,7 +1712,7 @@
       "source": "handler()",
       "target": "callClaude()",
       "source_files": [
-        "api/noter.js",
+        "api/oracle.js",
         "api/_context.js"
       ],
       "confidence": "EXTRACTED",
@@ -1151,7 +1723,7 @@
       "source": "handler()",
       "target": "callClaude()",
       "source_files": [
-        "api/oracle.js",
+        "api/orchestrate.js",
         "api/_context.js"
       ],
       "confidence": "EXTRACTED",
@@ -1159,41 +1731,8 @@
       "why": "cross-file semantic connection"
     }
   ],
-  "questions": [
-    {
-      "type": "bridge_node",
-      "question": "Why does `syntax_check()` connect `Community 7` to `Community 2`?",
-      "why": "High betweenness centrality (0.002) - this node is a cross-community bridge."
-    },
-    {
-      "type": "verify_inferred",
-      "question": "Are the 3 inferred relationships involving `initApp()` (e.g. with `refreshEncyclopediaDisplay()` and `setupManualInsightSelection()`) actually correct?",
-      "why": "`initApp()` has 3 INFERRED edges - model-reasoned connections that need verification."
-    },
-    {
-      "type": "isolated_nodes",
-      "question": "What connects `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS` to the rest of the system?",
-      "why": "46 weakly-connected nodes found - possible documentation gaps or missing edges."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `Community 0` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.10745098039215686 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `Community 1` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.04081632653061224 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `Community 2` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.11411411411411411 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `Community 3` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.10160427807486631 - nodes in this community are weakly interconnected."
-    }
-  ]
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
 }

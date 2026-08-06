@@ -42,7 +42,7 @@
   "api/data-write.js": {
     "mtime": 1785974281.6173887,
     "ast_hash": "abe3d04b74ed46a80566c4699a973cac",
-    "semantic_hash": ""
+    "semantic_hash": "abe3d04b74ed46a80566c4699a973cac"
   },
   "api/executor.js": {
     "mtime": 1784852228.8074856,
@@ -53,11 +53,6 @@
     "mtime": 1784852228.8074856,
     "ast_hash": "c0d843ded2b740130339423bdf6dae8b",
     "semantic_hash": "c0d843ded2b740130339423bdf6dae8b"
-  },
-  "api/noter.js": {
-    "mtime": 1784852228.8074856,
-    "ast_hash": "124e8bdb1df3775fe6a63d602ad2deb6",
-    "semantic_hash": "124e8bdb1df3775fe6a63d602ad2deb6"
   },
   "api/oracle.js": {
     "mtime": 1785201801.0335886,
@@ -80,9 +75,9 @@
     "semantic_hash": "a837b19b1f132270e3b2e841408cb66d"
   },
   "main.js": {
-    "mtime": 1785523783.0026717,
-    "ast_hash": "172ff3c3ed0f29de569d52d966762b67",
-    "semantic_hash": ""
+    "mtime": 1786018809.0599132,
+    "ast_hash": "0874800e32bb0b4273c3285952e8d1b5",
+    "semantic_hash": "0874800e32bb0b4273c3285952e8d1b5"
   },
   "manifest.json": {
     "mtime": 1784806604.060967,
@@ -97,7 +92,7 @@
   "package.json": {
     "mtime": 1785964074.4310744,
     "ast_hash": "2137332a44aae1da8956a233cbc2db4f",
-    "semantic_hash": ""
+    "semantic_hash": "2137332a44aae1da8956a233cbc2db4f"
   },
   "rpgace_build.py": {
     "mtime": 1783868447.954659,
@@ -105,9 +100,9 @@
     "semantic_hash": "edcf06a0a84f75a313708bdb3dfae18d"
   },
   "rpgace_core.js": {
-    "mtime": 1785976255.6934083,
-    "ast_hash": "794afdc680e47d55837d0cf6e1fa3d96",
-    "semantic_hash": ""
+    "mtime": 1786020641.6846082,
+    "ast_hash": "0fdc241f77da6282754f575170b229da",
+    "semantic_hash": "0fdc241f77da6282754f575170b229da"
   },
   "scripts/add_click_to_schedule.py": {
     "mtime": 1783868447.9666588,
@@ -735,9 +730,9 @@
     "semantic_hash": "c7701c69bd12e2f7cefdea2564d85e06"
   },
   "vercel.json": {
-    "mtime": 1784928473.5298774,
-    "ast_hash": "a63ad9dc61b186fbc7108c0aa34b59cf",
-    "semantic_hash": "a63ad9dc61b186fbc7108c0aa34b59cf"
+    "mtime": 1786012063.9754043,
+    "ast_hash": "5f9fe85db51cd8738bc2a237ca2d449e",
+    "semantic_hash": "5f9fe85db51cd8738bc2a237ca2d449e"
   },
   ".claude/CLAUDE.md": {
     "mtime": 1785443650.0656712,

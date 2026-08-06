@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🕸️ Aug 6 (same day, 5th pass) — Live graphify demo + real <code>/paranoia</code>+<code>/restructure</code> verdict: plugged into <code>/update-logging-system</code>, narrowly.</div>
+    <div class="card-body">
+      Alex had never used graphify and wanted a live run plus a real rundown, then asked for full <code>/paranoia</code>+<code>/restructure</code> scrutiny on whether it could be plugged into <code>/update-logging-system</code> (and the other named skills) to cut token usage without hurting output quality.
+      <br><br>
+      <strong>Real correction to this same session's own earlier finding</strong>: the "graphify is stale" query from pass 4 had skipped `references/query.md`'s own mandatory vocab-expansion step (Step 0 — extract the graph's real vocabulary first, never pass a raw phrase). Done properly (<code>graphify query "self knowledge oracle grounding" --budget 1200</code>), it returned a genuinely good, correctly-cited cross-doc answer pulling real content from CLAUDE.md/interconnection_map.md/ai_tooling_and_rules_map.md. graphify's doc-content matching works when used correctly — this session's earlier read was partly a process error, not proof the tool is broken.
+      <br><br>
+      <strong>Separately, a real and structural gap — confirmed, not fixed by a rebuild</strong>: <code>graphify explain "mockOracle"</code> / <code>"phylumPath"</code> both return "No node matching," even after a live <code>graphify . --update --code-only --no-viz</code> rebuild run specifically to test this. <code>RPGACE.register('name', {...})</code> — this project's own standing module convention — is never extracted as a first-class symbol by graphify's AST extractor; only generic function declarations inside <code>rpgace_core.js</code> are. Real, structural, external limitation — not something a future rebuild will fix on its own.
+      <br><br>
+      <strong>Verdict: Adopt narrowly.</strong> <code>/update-logging-system</code> gains a new artifact type 10 (run the free <code>--code-only</code> rebuild whenever <code>rpgace_core.js</code>/<code>main.js</code>/<code>api/*.js</code> structure changes, so the index stops drifting further even though it can't close the extraction gap) plus an optional, explicitly non-authoritative doc-cross-reference pre-check. <strong>Explicitly NOT adopted</strong>: plugging graphify into <code>Routine</code>/<code>scope</code>/<code>Summary</code>/<code>GODMODE</code>/<code>commit-archaeologist</code>/<code>Engineer</code> as a blanket replacement for their real evidence-gathering — overselling a tool confirmed unable to answer RPGACE's own module-structure questions would create false confidence, which costs more than admitted ignorance.
+      <br><br>
+      Full verbatim record — the live demo transcript, the real "how to use/read graphify" rundown, and the full debate: <code>graphify_restructure_paranoia_2026-08-06.txt</code>. <code>graphify-out/graph.json</code> itself was refreshed (free AST-only rebuild) as part of this pass.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🗂️ Aug 6 (same day, 4th pass) — Stale-intercommunication reflection + new <code>/update-logging-system</code> framework; Dummy-mode trace-log idea <code>/paranoia</code>'d and logged for later.</div>
     <div class="card-body">
       Alex asked to reflect on what intercommunication had gone stale/dead, and build a real mechanism so oversight docs, Oracle's own self-awareness, and skill <code>.md</code> files stay in sync going forward — plus critiqued Dummy Oracle mode ("quite useless with no context showing on what injected") and proposed a trace/error-code log idea.

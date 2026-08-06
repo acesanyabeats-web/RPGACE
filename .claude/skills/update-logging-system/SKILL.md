@@ -65,6 +65,27 @@ row that applies, either touch the artifact or state explicitly why not
    deferred. This is the "skill md files... update at the same time" half
    of Alex's own ask — skills are living documents of what's actually been
    tried, not fixed specs written once.
+10. **`rpgace_core.js`/`main.js`/`api/*.js` structural change** (added Aug
+    6, real `/paranoia`+`/restructure` evidence: `graphify_restructure_paranoia_2026-08-06.txt`)
+    → run `graphify . --update --code-only --no-viz` (free, AST-only, no
+    LLM key, seconds) in the same pass. This does NOT fix graphify's own
+    confirmed structural gap (`RPGACE.register('name', {...})` isn't
+    extracted as a first-class symbol — a rebuild was tested live and
+    did not close it), but it keeps the code-side index from drifting
+    further than it already has, and is genuinely free to run. Skip for
+    doc-only sessions — nothing code-side changed.
+
+**Optional, non-authoritative pre-check** (same Aug 6 evidence): before
+marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded
+`graphify query` (see that skill's own `references/query.md` Step 0 —
+extract real graph vocabulary first, never pass a raw natural-language
+phrase) on the change's own topic is a legitimate, cheap first-pass check
+for existing coverage — demonstrated working for doc-content questions
+in the live evidence pass. Never treat a "no results" answer as proof
+something isn't covered — the doc-side graph is only as current as its
+last real semantic rebuild (which needs an LLM pass, not run by default,
+a genuine cost/benefit call per rule 11), so an empty result means
+"check by hand," not "confirmed absent."
 
 ## How to actually run this (the enforceable part)
 
