@@ -342,6 +342,17 @@
     },
 
     /* Show a temporary gold toast notification */
+    // Aug 6 (Engineer pass, 2nd real hand-test round) — z-index raised
+    // 9999 -> 100000. Real, confirmed root cause of Alex's "some error
+    // popped up about directors or something, couldnt see behind the
+    // purple pop up" report: dashDeck's own _popup() renders at 99999
+    // (documented landmine), so ANY toast fired while a popup is open —
+    // e.g. _saveDocToProduction's "No director pick found" warning,
+    // firing while the director-blend picker itself was still on
+    // screen — rendered ten thousand z-index levels BEHIND it,
+    // invisible. One universal fix here closes this whole bug class
+    // everywhere a toast can fire under an open popup, not just this
+    // one call site.
     toast: function (msg, color, ms) {
       color = color || '#C9A84C';
       ms    = ms    || 3000;
@@ -350,7 +361,7 @@
         'position:fixed;bottom:24px;left:50%;transform:translateX(-50%)',
         'background:#0f0f18;border:1px solid ' + color + '40;color:' + color,
         'font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700',
-        'padding:10px 20px;border-radius:8px;z-index:9999',
+        'padding:10px 20px;border-radius:8px;z-index:100000',
         'white-space:nowrap;pointer-events:none;transition:opacity .3s',
       ].join(';');
       t.textContent = msg;
@@ -12937,18 +12948,14 @@ RPGACE.register('beatLog', {
     sampleRow.appendChild(sampleCb); sampleRow.appendChild(sampleLbl);
     panel.appendChild(sampleRow);
 
-    // F18: optional auto Visual Treatment Doc — off by default since it's
-    // a second, separate Oracle call on top of the main beat-log prompt
-    var vtRow = document.createElement('div');
-    vtRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:16px;';
-    var vtCb = document.createElement('input');
-    vtCb.type = 'checkbox'; vtCb.id = 'bl-visual-treatment';
-    var vtLbl = document.createElement('label');
-    vtLbl.htmlFor = 'bl-visual-treatment';
-    vtLbl.textContent = '🎬 Also generate Visual Treatment Doc (' + RPGACE.utils.phylumLabel(14) + ', extra Oracle call)';
-    vtLbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);cursor:pointer;';
-    vtRow.appendChild(vtCb); vtRow.appendChild(vtLbl);
-    panel.appendChild(vtRow);
+    // F18 checkbox REMOVED (Aug 6, 2nd real hand-test round, item 1) —
+    // Beat Log is the one real always-music_video creation path (see the
+    // content_type:'music_video' comment at _submit below), and Alex's
+    // own words: "we will always use it no matter what in the music
+    // video workflow." form.visualTreatment below is now a hardcoded
+    // true rather than read from a removed checkbox — every other real
+    // consumer of that flag (_generateOutputs' gated button) is
+    // unchanged, it just always sees true now.
 
     // Action buttons
     var btnRow = document.createElement('div');
@@ -13153,7 +13160,7 @@ RPGACE.register('beatLog', {
       refTrack: get('bl-ref-track'),
       flPath:   get('bl-fl-path'),
       sample:   document.getElementById('bl-sample') ? document.getElementById('bl-sample').checked : false,
-      visualTreatment: document.getElementById('bl-visual-treatment') ? document.getElementById('bl-visual-treatment').checked : false,
+      visualTreatment: true, // always on now — checkbox removed Aug 6, item 1 (see note above)
       taxNodes: activeTax,
     };
   },
@@ -13221,7 +13228,7 @@ RPGACE.register('beatLog', {
       if (el && form[key] != null) el.value = form[key];
     });
     var sampleCb = document.getElementById('bl-sample'); if (sampleCb) sampleCb.checked = !!form.sample;
-    var vtCb = document.getElementById('bl-visual-treatment'); if (vtCb) vtCb.checked = !!form.visualTreatment;
+    // bl-visual-treatment checkbox removed Aug 6 (item 1) — form.visualTreatment stays hardcoded true
     var attempts = 0;
     var tryMarkTax = function() {
       var grid = document.getElementById('bl-tax-grid');
@@ -13566,6 +13573,33 @@ RPGACE.register('beatLog', {
           sendBtn.disabled = false;
           sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
           RPGACE.utils.toast('⏳ Oracle was busy — try again in a moment', '#E2A83D', 3000);
+          return;
+        }
+        sendBtn.textContent = '✅ Sent — jotting it down + opening Content Pipeline once it replies...';
+        // Aug 6 (item 2) — Alex's real ask: "pressing log beat... should
+        // all be jotted down and send me back to content pipeline, where
+        // all the live production phases should be shown." Reuses the
+        // shared _captureNextResponse one-shot listener (rule 8, same
+        // dangling-capture-safe pattern fixed earlier today — armed only
+        // AFTER sendToOracle confirmed it actually sent, never before).
+        // Saves the real reply into creative_docs.beat_log_response (no
+        // trailer to parse here, just a straight save) then opens the
+        // Production Panel as an overlay — it renders fixed/z-9998, so
+        // it slides in over the advisor page without navigating away
+        // from the reply Alex is reading.
+        if (cpId && RPGACE.modules.visualOracle) {
+          RPGACE.modules.visualOracle._captureNextResponse(function(text) {
+            RPGACE.modules.visualOracle._saveDocToProduction('beat_log_response', text, cpId, videoJobId);
+            RPGACE.sb.select('content_productions', 'id=eq.' + cpId + '&select=con_id&limit=1')
+              .catch(function() { return []; })
+              .then(function(rows) {
+                var cpl = RPGACE.modules.contentProductionLive;
+                if (!cpl) return;
+                cpl._activeConID = rows && rows[0] ? rows[0].con_id : cpl._activeConID;
+                cpl._activeId = cpId;
+                cpl._openProductionPanel();
+              });
+          });
         }
       }, 300);
     };
@@ -14216,6 +14250,110 @@ RPGACE.register('contentProductionLive', {
     'Posted': '4. Captions Ready', 'Analysed': '4. Captions Ready',
   },
 
+  // Aug 6 (Engineer pass, 2nd real hand-test round, item 10) — Alex's own
+  // catch: the status badge showed the UPCOMING stage's name, which read
+  // ambiguously. He wants it to show what was just DONE, "tick" phrasing
+  // ("log beat - tick", "visual treatment: tick"). Sibling table to
+  // MUSIC_VIDEO_STATUS_LABELS above, same status keys, different phrasing.
+  MUSIC_VIDEO_BADGE_LABELS: {
+    'Idea': 'Log Beat: tick', 'Scripted': 'Visual Treatment: tick',
+    'Filmed': 'Video Generation: tick', 'Edited': 'Video Generation: tick',
+    'Posted': 'Captions: tick', 'Analysed': 'Captions: tick',
+  },
+
+  // Aug 6 (Engineer pass, items 5/7/13) — real fix for the recurring
+  // "duplicate stage" complaint. Root cause, confirmed by direct code
+  // read: the ConID card used to render a FIXED set of buttons (a
+  // generic "-> Mark [next status]" advance chip AND a permanently-shown
+  // "Start Visual Treatment" button AND a Video Pipeline link) regardless
+  // of real current progress — never a race condition, just every
+  // applicable-looking button always rendering at once. These two tables
+  // replace that with ONE stage-aware primary action + ONE redo-the-
+  // last-completed-stage action, keyed off the real status column. No
+  // schema change — same pattern as the two label tables above.
+  MUSIC_VIDEO_PRIMARY_ACTION: {
+    'Idea':     { label: '🎬 Start Visual Treatment', fn: '_generateVisualTreatment' },
+    'Scripted': { label: '🎥 Generate Video',          fn: '_generateVideo' },
+    'Filmed':   { label: '📝 Generate Captions',        fn: '_generateCaptions' },
+    'Edited':   { label: '📝 Generate Captions',        fn: '_generateCaptions' },
+    // 'Posted'/'Analysed': no further primary action — last real stage.
+  },
+  // Redo targets the stage that led INTO the current status, i.e. the
+  // most recently completed real action — not every prior stage at once
+  // (that would just reintroduce the same clutter under a new name).
+  // revertTo is the status _revertToStage should roll back to before
+  // fn re-runs, when the caller's "revert progress" checkbox is on.
+  MUSIC_VIDEO_REDO_ACTION: {
+    'Scripted': { label: '↩ Redo Visual Treatment', fn: '_generateVisualTreatment', revertTo: 'Idea' },
+    'Filmed':   { label: '↩ Redo Video Generation',  fn: '_generateVideo',          revertTo: 'Scripted' },
+    'Edited':   { label: '↩ Redo Video Generation',  fn: '_generateVideo',          revertTo: 'Scripted' },
+    'Posted':   { label: '↩ Redo Captions',          fn: '_generateCaptions',       revertTo: 'Filmed' },
+    'Analysed': { label: '↩ Redo Captions',          fn: '_generateCaptions',       revertTo: 'Filmed' },
+    // 'Idea': nothing completed yet, no redo target.
+  },
+  // Undo (item 12) shares this exact map with the revert-checkbox path —
+  // one source of truth for "what stage comes before this one," never a
+  // second hand-maintained copy (rule 8).
+  MUSIC_VIDEO_PREV_STAGE: {
+    'Scripted': 'Idea', 'Filmed': 'Scripted', 'Edited': 'Scripted',
+    'Posted': 'Filmed', 'Analysed': 'Filmed',
+  },
+  // What each stage's real action actually writes, so reverting past it
+  // can honestly clear the output it produced (item 3/12's "delete the
+  // outputs that stage made" requirement) rather than just changing the
+  // status label while stale docs linger. Deliberately scoped to
+  // content_productions.creative_docs only — NOT a cascading delete
+  // across style_profiles/video_jobs/openmontage_jobs. This project has
+  // no Supabase backup/PITR (standing CLAUDE.md fact); a blind cross-
+  // table delete here would be real, unrecoverable data loss for a UI
+  // convenience feature. Those rows are simply superseded on redo, not
+  // deleted — an honest, named scope-down, not a silent gap.
+  STAGE_DOC_KEYS: {
+    'Idea':     ['visual_treatment', 'director_blend', 'script', 'director_match', 'captions'],
+    'Scripted': ['captions'],
+    'Filmed':   ['captions'],
+  },
+
+  // Shared revert helper — used by both the redo-checkbox path (edit vs.
+  // revert-and-redo) and the standalone Undo button (item 3 + item 12,
+  // one real function instead of two, rule 8).
+  _revertToStage: function(row, targetStatus, callback) {
+    var self = this;
+    var clearKeys = self.STAGE_DOC_KEYS[targetStatus] || [];
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .then(function(rows) {
+        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+        clearKeys.forEach(function(k) { delete docs[k]; });
+        var updates = { status: targetStatus, creative_docs: docs, updated_at: new Date().toISOString() };
+        if (targetStatus === 'Idea' || targetStatus === 'Scripted' || targetStatus === 'Filmed') {
+          updates.posted_at = null;
+        }
+        return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id);
+      })
+      .then(function() {
+        RPGACE.utils.toast('↩ ConID #' + row.con_id + ' reverted to "' + targetStatus + '" — outputs from later stages cleared', '#E2A83D', 3500);
+        self._refreshWidget();
+        if (callback) callback();
+      })
+      .catch(function(e) {
+        RPGACE.utils.toast('⚠️ Revert failed: ' + e.message, '#CC4A4A', 4000);
+      });
+  },
+
+  // Item 12 — standalone Undo: reverts to the previous stage and clears
+  // that stage's outputs, without re-launching any action (unlike the
+  // redo-checkbox path, which reverts THEN re-runs). Reuses
+  // MUSIC_VIDEO_PREV_STAGE + _revertToStage — no separate logic.
+  _undoLastStage: function(row) {
+    var target = this.MUSIC_VIDEO_PREV_STAGE[row.status];
+    if (!target) {
+      RPGACE.utils.toast('Nothing to undo — ConID #' + row.con_id + ' is already at its first stage', 'rgba(226,226,236,0.4)', 2500);
+      return;
+    }
+    if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
+    this._revertToStage(row, target);
+  },
+
   createEntry: function(data) {
     var self = this;
     RPGACE.sb.secureWrite('content_productions', 'insert', {
@@ -14837,7 +14975,7 @@ RPGACE.register('contentProductionLive', {
 
           var statusBadge = document.createElement('span');
           statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
-          statusBadge.textContent = isMusicVideo ? (self.MUSIC_VIDEO_STATUS_LABELS[row.status] || row.status) : row.status;
+          statusBadge.textContent = isMusicVideo ? (self.MUSIC_VIDEO_BADGE_LABELS[row.status] || row.status) : row.status;
 
           topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
           item.appendChild(topRow);
@@ -14854,13 +14992,18 @@ RPGACE.register('contentProductionLive', {
           });
           item.appendChild(progressWrap);
 
-          // Top action row — swap button bottom right
+          // Aug 6 (Engineer pass, 2nd real hand-test round, item 8) —
+          // "⇄ Swap ConID" removed entirely. Alex's own words: "i think
+          // swap conid is so redundant now with no actual benefit to
+          // me" — the same ConID list is already one click away (this
+          // widget itself), and the Oracle-session/Production-Panel
+          // buttons below already carry the con_id context switch.
           var topActions = document.createElement('div');
-          topActions.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
+          topActions.style.cssText = 'display:flex;align-items:center;margin-bottom:6px;';
 
           // Inline title edit
           var titleWrap = document.createElement('div');
-          titleWrap.style.cssText = 'flex:1;margin-right:8px;';
+          titleWrap.style.cssText = 'flex:1;';
           var titleDisplay = document.createElement('div');
           titleDisplay.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);cursor:pointer;';
           titleDisplay.textContent = '✎ Edit title';
@@ -14881,65 +15024,84 @@ RPGACE.register('contentProductionLive', {
             inp.onkeydown = function(e) { if (e.key === 'Enter') inp.blur(); };
           };
           titleWrap.appendChild(titleDisplay);
-
-          // Swap button
-          var swapBtn = document.createElement('button');
-          swapBtn.textContent = '⇄ Swap ConID';
-          swapBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;flex-shrink:0;';
-          swapBtn.onclick = function() {
-            // Load all ConIDs and show swap dropdown
-            RPGACE.sb.select('content_productions', 'order=updated_at.desc&limit=30')
-              .then(function(all) {
-                // Remove existing swap dropdown if open
-                var existing = document.getElementById('cpl-swap-dropdown');
-                if (existing) { existing.remove(); return; }
-
-                var dd = document.createElement('div');
-                dd.id = 'cpl-swap-dropdown';
-                dd.style.cssText = 'position:absolute;right:0;top:100%;background:#0f0f1a;border:1px solid rgba(61,170,110,0.25);border-radius:8px;z-index:9999;min-width:260px;max-height:200px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.5);';
-
-                (all || []).forEach(function(entry) {
-                  var opt = document.createElement('div');
-                  opt.style.cssText = 'padding:8px 12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;color:rgba(226,226,236,0.7);';
-                  opt.innerHTML = '<span style="color:rgba(61,170,110,0.7);font-weight:700;margin-right:6px;">ConID #' + entry.con_id + '</span>' + entry.title.slice(0, 45) + (entry.title.length > 45 ? '...' : '') + '<span style="float:right;font-size:11px;color:rgba(226,226,236,0.3);">' + entry.status + '</span>';
-                  opt.onmouseover = function() { opt.style.background = 'rgba(61,170,110,0.08)'; };
-                  opt.onmouseout = function() { opt.style.background = 'none'; };
-                  opt.onclick = function() {
-                    dd.remove();
-                    self._activeConID = entry.con_id;
-                    self._activeId = entry.id;
-                    RPGACE.utils.toast('Switched to ConID #' + entry.con_id + ': ' + entry.title.slice(0,40), '#4CAF82', 3000);
-                    self._refreshWidget();
-                  };
-                  dd.appendChild(opt);
-                });
-
-                // Position relative to swap button
-                swapBtn.style.position = 'relative';
-                swapBtn.appendChild(dd);
-
-                // Close on outside click
-                setTimeout(function() {
-                  document.addEventListener('click', function closeDd(e) {
-                    if (!dd.contains(e.target)) { dd.remove(); document.removeEventListener('click', closeDd); }
-                  });
-                }, 100);
-              });
-          };
-
           topActions.appendChild(titleWrap);
-          topActions.appendChild(swapBtn);
           item.appendChild(topActions);
 
           // Action buttons row
           var actions = document.createElement('div');
-          actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+          actions.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
 
-          // Status advance button
-          if (statusIdx < statuses.length - 1) {
+          // Aug 6 (Engineer pass, 2nd real hand-test round, items 5/7/13) —
+          // real fix for the recurring "duplicate stage" bug Alex hit
+          // twice. music_video ConIDs now get ONE stage-aware primary
+          // action button (label + handler keyed off real status via
+          // MUSIC_VIDEO_PRIMARY_ACTION) instead of the old fixed
+          // "-> Mark [next]" chip PLUS a permanently-shown "Start Visual
+          // Treatment" button rendering at the same time regardless of
+          // real progress — that fixed-set rendering was the actual root
+          // cause, confirmed by direct code read, not a race condition.
+          // Tutorial ConIDs keep the original generic advance button
+          // unchanged (their workflow was never the one Alex complained
+          // about).
+          if (isMusicVideo) {
+            var primary = self.MUSIC_VIDEO_PRIMARY_ACTION[row.status];
+            if (primary) {
+              var primaryBtn = document.createElement('button');
+              primaryBtn.textContent = primary.label;
+              primaryBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              primaryBtn.onclick = function() { self[primary.fn](row); };
+              actions.appendChild(primaryBtn);
+            }
+
+            // Item 3 — redo button for the most-recently-completed stage,
+            // paired with a real "revert progress" checkbox. Unchecked
+            // (default) = edit-in-place only, status untouched — same
+            // behaviour Alex already confirmed working on ConID #11
+            // ("everything stays as is with how conid 11 changes worked
+            // just now"). Checked = _revertToStage runs first, clearing
+            // that stage's real outputs, THEN the action re-runs.
+            var redo = self.MUSIC_VIDEO_REDO_ACTION[row.status];
+            if (redo) {
+              var redoWrap = document.createElement('span');
+              redoWrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
+              var redoBtn = document.createElement('button');
+              redoBtn.textContent = redo.label;
+              redoBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              var revertCb = document.createElement('input');
+              revertCb.type = 'checkbox';
+              revertCb.id = 'cpl-revert-' + row.id;
+              revertCb.title = 'Revert progress to this stage first (clears this stage\'s real outputs, later stages need redoing). Leave unchecked to just edit in place — status stays as-is.';
+              revertCb.style.cssText = 'cursor:pointer;margin:0;';
+              var revertLbl = document.createElement('label');
+              revertLbl.htmlFor = revertCb.id;
+              revertLbl.textContent = 'revert';
+              revertLbl.title = revertCb.title;
+              revertLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);cursor:pointer;';
+              redoBtn.onclick = function() {
+                if (revertCb.checked) {
+                  self._revertToStage(row, redo.revertTo, function() { self[redo.fn](row); });
+                } else {
+                  self[redo.fn](row);
+                }
+              };
+              redoWrap.appendChild(redoBtn); redoWrap.appendChild(revertCb); redoWrap.appendChild(revertLbl);
+              actions.appendChild(redoWrap);
+            }
+
+            // Item 12 — standalone Undo (reverts without re-running the
+            // action; see _undoLastStage above for the real scope).
+            if (self.MUSIC_VIDEO_PREV_STAGE[row.status]) {
+              var undoBtn = document.createElement('button');
+              undoBtn.textContent = '🔙 Undo';
+              undoBtn.title = 'Revert to the previous stage and delete the output it produced.';
+              undoBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.05);border:1px solid rgba(226,84,84,0.15);border-radius:5px;color:rgba(226,84,84,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              undoBtn.onclick = function() { self._undoLastStage(row); };
+              actions.appendChild(undoBtn);
+            }
+          } else if (statusIdx < statuses.length - 1) {
             var nextStatus = statuses[statusIdx + 1];
             var advBtn = document.createElement('button');
-            advBtn.textContent = '→ Mark ' + (isMusicVideo ? (self.MUSIC_VIDEO_STATUS_LABELS[nextStatus] || nextStatus) : nextStatus);
+            advBtn.textContent = '→ Mark ' + nextStatus;
             advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             advBtn.onclick = function() {
               var updates = { status: nextStatus };
@@ -15001,28 +15163,52 @@ RPGACE.register('contentProductionLive', {
           };
           actions.appendChild(oracleBtn);
 
-          // Aug 6 (Engineer pass, real Video Pipeline absorption) — this
-          // used to open a separate "Video Pipeline" card/popup; that
-          // card is deleted (real dedup, not a rename — see
-          // engineer_pass_2026-08-06_11.txt). Now opens THIS ConID's own
-          // Production Panel directly, whose Phase 4 shows the real video
-          // job status inline.
-          if (hasVideoJob) {
-            var vpBtn = document.createElement('button');
-            vpBtn.textContent = '🎥 Video Pipeline';
-            vpBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            vpBtn.onclick = function() {
-              if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-              self._activeConID = row.con_id;
-              self._activeId = row.id;
-              self._openProductionPanel();
-            };
-            actions.appendChild(vpBtn);
-          }
+          // Aug 6 (Engineer pass, 2nd real hand-test round, item 7) —
+          // renamed + demoted to a muted secondary link. Alex's real
+          // complaint wasn't that this capability shouldn't exist, it's
+          // that it (and Beatstars Listing, right below) rendered as a
+          // same-weight button next to the real primary action at every
+          // stage, including the very first one — before this pass,
+          // hasVideoJob was true from the moment Log Beat ran (the linked
+          // video_jobs row is created in the same insert), so this button
+          // showed even on a fresh ConID. Still opens the full multi-phase
+          // Production Panel (script editing, Phase breakdown) — that
+          // capability isn't removed, just no longer competing visually
+          // with the one real next-action button.
+          var vpBtn = document.createElement('button');
+          vpBtn.textContent = '⚙ Full Production Panel';
+          vpBtn.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:rgba(74,144,226,0.55);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          vpBtn.onclick = function() {
+            if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+            self._activeConID = row.con_id;
+            self._activeId = row.id;
+            self._openProductionPanel();
+          };
+          actions.appendChild(vpBtn);
 
-          // F16: Beatstars listing generator — only shown once a licence
-          // type is set (i.e. this ConID is a beat sale, not just content)
+          // Aug 6 (item 7) — "Sell This Beat" now folded behind a small
+          // toggle instead of rendering Beatstars Listing + Manage
+          // Deliverables inline at every stage (Alex's real complaint:
+          // "there should also be no video pipeline button and generate
+          // beatstars listings" cluttering the early-stage view). Real
+          // /debate verdict on moving Phase H earlier in the pipeline
+          // (whether monetisation should be a parallel track rather than
+          // a late linear phase) is a bigger architecture question logged
+          // separately, not resolved here — this is the honest interim
+          // fix: keep the real capability reachable, stop it competing
+          // with the primary action row. Still gated on licence_type (a
+          // beat sale, not just content).
           if (row.licence_type) {
+            var sellWrap = document.createElement('span');
+            sellWrap.style.cssText = 'display:inline-flex;';
+            var sellToggle = document.createElement('button');
+            sellToggle.textContent = '💰 Sell This Beat ▾';
+            sellToggle.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(201,168,76,0.2);border-radius:5px;color:rgba(201,168,76,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            var sellPanel = document.createElement('div');
+            sellPanel.style.cssText = 'display:none;gap:6px;margin-top:4px;flex-basis:100%;';
+            sellToggle.onclick = function() {
+              sellPanel.style.display = sellPanel.style.display === 'none' ? 'flex' : 'none';
+            };
             var bsBtn = document.createElement('button');
             // 2026-07-31 — Alex's own direct catch: "Beatstars Listing" read
             // as a status label, not an action. Renamed to remove the
@@ -15030,7 +15216,7 @@ RPGACE.register('contentProductionLive', {
             bsBtn.textContent = '🎧 Generate Beatstars Listing';
             bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
-            actions.appendChild(bsBtn);
+            sellPanel.appendChild(bsBtn);
 
             // Phase H (Aug 5, Engineer pass 09) — real file handling, same
             // gate as the Beatstars button (this ConID is a beat sale).
@@ -15043,21 +15229,12 @@ RPGACE.register('contentProductionLive', {
             dmBtn.textContent = '📦 Manage Deliverables';
             dmBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             dmBtn.onclick = function() { self._showDeliverablesManager(row); };
-            actions.appendChild(dmBtn);
-          }
+            sellPanel.appendChild(dmBtn);
 
-          // 2026-07-31 — direct answer to Alex's real gap: neither Content
-          // nor Video Pipeline had any link to visualOracle's existing
-          // "Visual Treatment Doc" command. This button pulls the linked
-          // beat's real data and auto-saves the result straight to THIS
-          // row (skips the manual save picker — we already know the exact
-          // target, reusing visualOracle._saveDocToProduction rather than
-          // re-implementing its trailer-parsing, rule 8).
-          var vtBtn = document.createElement('button');
-          vtBtn.textContent = '🎬 Start Visual Treatment';
-          vtBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.08);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          vtBtn.onclick = function() { self._generateVisualTreatment(row); };
-          actions.appendChild(vtBtn);
+            sellWrap.appendChild(sellToggle);
+            actions.appendChild(sellWrap);
+            actions.appendChild(sellPanel);
+          }
 
           // 2026-07-31 — Alex's real ask: "a delete for each conID should
           // be present." Real risk checked first (pg_constraint): video_jobs.
@@ -15521,6 +15698,27 @@ RPGACE.register('contentProductionLive', {
           container.appendChild(lbl); container.appendChild(ta); container.appendChild(saveBtn);
         }
 
+        // Aug 6 (Engineer pass, 2nd real hand-test round, item 9) — Alex's
+        // real gap: he wrote free-text creative inspiration into the
+        // director picker (Phase 2), then couldn't find it again when he
+        // reopened a ConID's Visual Treatment to copy what he'd written.
+        // It WAS being saved (creative_docs.director_blend.inspiration,
+        // real structured data — see _showDirectorPicker/_generateVisualTreatment
+        // above), just never rendered anywhere. Read-only here (it's an
+        // input to Phase 2's picker, not itself an editable script field —
+        // editing it means reopening the picker via the retro button).
+        var blend = docs.director_blend;
+        if (blend && (blend.inspiration || (blend.names && blend.names.length))) {
+          var blLbl = document.createElement('div');
+          blLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
+          blLbl.textContent = 'Director Blend + Your Inspiration Notes';
+          var blBox = document.createElement('div');
+          blBox.style.cssText = 'font-size:11px;color:#D4DAF5;background:rgba(155,89,182,0.05);border:1px solid rgba(155,89,182,0.15);border-radius:5px;padding:8px;margin-bottom:14px;line-height:1.5;';
+          blBox.innerHTML = (blend.names && blend.names.length ? '<strong>Directors:</strong> ' + blend.names.join(', ').replace(/</g, '&lt;') + '<br>' : '') +
+            (blend.inspiration ? '<strong>Your notes:</strong> ' + blend.inspiration.replace(/</g, '&lt;') : '<span style="color:rgba(226,226,236,0.3);">No free-text inspiration notes were added.</span>');
+          container.appendChild(blLbl); container.appendChild(blBox);
+        }
+
         buildField('Outbound Prompt (sent to Oracle)', 'script', 'Not generated yet — use Phase 2\'s Start Visual Treatment first.');
         buildField('Visual Treatment Doc (Oracle\'s reply)', 'visual_treatment', 'Not generated yet.');
       })
@@ -15721,6 +15919,26 @@ RPGACE.register('contentProductionLive', {
             return RPGACE.sb.secureWrite('video_jobs', 'update', { status: 'rendered', raw_path: '[SIMULATED] /fake/path/simulated_render.mp4' }, 'id=eq.' + vjId);
           }
         })
+        // Aug 6 (Engineer pass, 2nd real hand-test round, item 13a) — real
+        // gap Alex's screenshots surfaced: neither this nor the real
+        // _generateVideo path ever advanced content_productions.status,
+        // so "Video Generation: tick" never became true and the next
+        // stage's real button (Generate Captions) never appeared. This
+        // path fakes a COMPLETE render (test tool, clearly labeled), so
+        // advancing status here is honest — a genuinely queued-but-not-
+        // finished real job (via _generateVideo) deliberately does NOT
+        // get this treatment, see _viewOpenMontageJob's own real "mark
+        // complete" button below for that case (rule 7 — no fake
+        // progress for a job that hasn't actually finished).
+        .then(function() {
+          return RPGACE.sb.select('content_productions', 'id=eq.' + payload.content_production_id + '&select=status&limit=1');
+        })
+        .then(function(rows) {
+          var cur = rows && rows[0] && rows[0].status;
+          if (['Idea', 'Scripted'].indexOf(cur) !== -1) {
+            return RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + payload.content_production_id);
+          }
+        })
         .catch(function(e) { RPGACE.utils.toast('⚠️ Simulate failed: ' + e.message, '#CC4A4A', 3500); });
     });
   },
@@ -15730,6 +15948,7 @@ RPGACE.register('contentProductionLive', {
   // whatever real openmontage_jobs row exists for this ConID, or an
   // honest "none yet" message rather than fabricating one.
   _viewOpenMontageJob: function(row) {
+    var self = this;
     RPGACE.sb.select('openmontage_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
       .catch(function() { return []; })
       .then(function(rows) {
@@ -15747,6 +15966,30 @@ RPGACE.register('contentProductionLive', {
             '<div style="margin-bottom:8px;"><strong>Title:</strong> ' + (job.title || '').replace(/</g, '&lt;') + '</div>' +
             (job.output_note ? '<div style="margin-bottom:8px;"><strong>Output note:</strong> ' + job.output_note.replace(/</g, '&lt;') + '</div>' : '') +
             '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Job id: ' + job.id + '</div>';
+        }
+        // Aug 6 (Engineer pass, item 13a) — real, non-fake completion
+        // path: unlike Simulate Response, a genuine OpenMontage job
+        // completes asynchronously and RPGACE has no live push/webhook
+        // for that write-back (openmontage_jobs is polled, not pushed —
+        // see CLAUDE.md's own external-handoff-lane note). So a real
+        // 'complete' job needs one honest manual acknowledgment click
+        // to advance content_productions.status, rather than either
+        // faking it early (rule 7) or leaving "Video Generation: tick"
+        // permanently unreachable for real (non-simulated) jobs.
+        if (job && job.status === 'complete' && ['Idea', 'Scripted'].indexOf(row.status) !== -1) {
+          var markBtn = document.createElement('button');
+          markBtn.textContent = '✅ Mark ConID as Filmed';
+          markBtn.style.cssText = 'margin-top:6px;padding:8px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          markBtn.onclick = function() {
+            RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + row.id)
+              .then(function() {
+                RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Filmed — video generation complete', '#4CAF82', 3000);
+                pop.overlay.remove();
+                self._refreshWidget();
+              })
+              .catch(function(e) { RPGACE.utils.toast('⚠️ Failed: ' + e.message, '#CC4A4A', 3500); });
+          };
+          body.appendChild(markBtn);
         }
         pop.box.appendChild(body);
       });

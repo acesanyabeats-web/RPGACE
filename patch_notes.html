@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎬 Aug 6 — /Engineer pass 12: Content Pipeline UX overhaul, real 2nd hand-test round (13-item critique). Full record: <code>engineer_pass_2026-08-06_12.txt</code>.</div>
+    <div class="card-body">
+      <strong>Trigger</strong>: Alex ran a real second hand-test (new beat "Missing", ConID #12, alongside "Turnover" ConID #11), pasted 5 screenshots + 13 numbered critique items, and asked for every relevant skill applied end-to-end.
+      <br><br>
+      <strong>Real root cause found, not re-guessed</strong>: the recurring "duplicate stage" bug was NOT the same bug the morning's dangling-capture fix addressed — direct code read confirmed the ConID card rendered a FIXED set of buttons every time regardless of real progress (never a race condition). Fixed with 4 new lookup tables (<code>MUSIC_VIDEO_PRIMARY_ACTION</code>/<code>_REDO_ACTION</code>/<code>_PREV_STAGE</code>/<code>_BADGE_LABELS</code>) driving one stage-aware primary action button + one redo-last-stage button (paired with a real "revert progress" checkbox, default unchecked = non-destructive edit-in-place) + a standalone Undo button.
+      <br><br>
+      <strong>Also shipped this pass</strong>: F18's Beat Log checkbox removed (always-on now — Beat Log is always music_video); Send-to-Oracle flow now jots the reply down and auto-opens the Production Panel once it lands; "⇄ Swap ConID" removed; Beatstars Listing + Manage Deliverables folded behind a "💰 Sell This Beat" toggle (real <code>/debate</code> verdict: monetisation is a parallel track, not a linear-sequence reorder); <code>director_blend.inspiration</code> now renders in the Script Editor (was saving correctly, just never shown); real status-advance wired into video-generation completion (Simulate Response auto-advances; a genuine completion gets one honest manual acknowledgment button, since <code>openmontage_jobs</code> is polled not pushed).
+      <br><br>
+      <strong>Honest scope-down</strong>: revert/undo only clears <code>content_productions.creative_docs</code> keys, deliberately NOT cascading into <code>style_profiles</code>/<code>video_jobs</code>/<code>openmontage_jobs</code> — no Supabase backup exists, so a blind cross-table delete for a UI convenience feature would be real unrecoverable data loss.
+      <br><br>
+      <strong>node --check clean throughout. Cache-bust 20260806b → 20260806c. UNTESTED</strong> — same standing flag as every UI pass this week; Alex hand-tests next.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🏁 Aug 6 — SESSION CLOSED (2nd close this date) via /Bedtime. Real state: a real Alex hand-test surfaced 2 genuine bugs, both investigated (1 fixed live, 1 root-caused and human-gated), Video Pipeline was fully absorbed into Content Pipeline on Alex's own /deduplication ask, and a real dashboard-redesign idea was logged with honest debate rather than rubber-stamped.</div>
     <div class="card-body">
       <strong>Real evidence checked before writing this</strong>: `git log` confirms `main`, `claude/rpgace-master-steps-uobp98`, and `origin/main` all at the identical commit `2a4bce2`, working tree clean. `system_updates` confirms 4 real rows this stretch (session-close, bugfix, refactor, planning), matching the real commits one-for-one — nothing shipped without a matching Chronicles row.

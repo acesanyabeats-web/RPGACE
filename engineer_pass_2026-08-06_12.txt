@@ -1,0 +1,269 @@
+ENGINEER PASS — 2026-08-06 (#12), Content Pipeline 2nd real hand-test round
+==============================================================================
+Full record per /Engineer's 5-stage discipline (Goal Contract → Evidence →
+Omnitrix execution → Council of 5 report → Truth Check), applied at Tier 2
+scale (multi-piece, single-module-family — the ConID card + Production
+Panel + beatLog gate flow inside contentProductionLive/beatLog/visualOracle,
+not a whole-system architecture change).
+
+TRIGGER
+-------
+Alex ran a real second hand-test of the Aug 5/Aug 6-morning Content Pipeline
+build — a new beat "Missing" (ConID #12) alongside the earlier "Turnover"
+(ConID #11) — and pasted 5 screenshots + 13 numbered items of direct
+critique, closing with: "go through all this evidence and critique using
+every and any skill.md skills and my custom skills from the beginning to
+the end where needed to make this all work." Full verbatim message is in
+the conversation transcript; not re-quoted here in full per this project's
+own "don't re-tell the story twice" doc-discipline rule — see chat log for
+the exact wording of all 13 items.
+
+STAGE 1 — GOAL CONTRACT (what "done" means for this pass)
+-----------------------------------------------------------
+G1. Remove the F18 checkbox from Beat Log — Beat Log is always music_video,
+    so the toggle was pure friction with only one real answer.
+G2. Beat Log's gated Send-to-Oracle flow, once the reply lands, jots it
+    down (creative_docs.beat_log_response) and opens the Production Panel
+    over whatever page is showing — no more stranding on the advisor page.
+G3. Real fix for the recurring "duplicate stage" bug — root-cause it
+    properly (rule 4: no second blind patch), not just re-apply the Aug 6
+    morning capture-race fix a second time (that bug was already fixed;
+    this is a structurally different one).
+G4. A real revert-progress checkbox on redo actions + a standalone Undo
+    button (items 3 + 12), sharing one revert mechanism (rule 8).
+G5. Status badge reads "[Last completed stage]: tick" for music_video
+    ConIDs (item 10).
+G6. Real status-advance wired into video generation completion (item 13a) —
+    honest: only on a genuinely complete job (simulated OR a real
+    acknowledged completion), never faked on "queued."
+G7. "⇄ Swap ConID" removed (item 8). Beatstars Listing + Manage
+    Deliverables folded behind a "Sell This Beat" toggle instead of always
+    rendering inline (item 7, half of the Phase-H-sequencing ask — full
+    /debate verdict delivered in chat, not blocking this build).
+G8. director_blend.inspiration surfaced read-only in the Script Editor
+    (item 9) — was being saved correctly already, just never rendered.
+G9. Add-post-details button's existing Filmed/Edited gate becomes
+    trustworthy now that G6 makes "Filmed" a real, not falsely-early,
+    status (item 11/13b — no separate gating change needed once G6 landed).
+G10. item 4 (explain the "Add These Artists to Reference Corpus" button)
+    and item 6 (Phase H sequencing /debate verdict) are chat-delivered
+    answers, not code — captured here for the record.
+
+STAGE 2 — REAL EVIDENCE (before writing any code)
+---------------------------------------------------
+- Read the full ConID card render function directly (rpgace_core.js, the
+  cpl-widget list renderer) — confirmed the root cause of "duplicate
+  stage": it rendered a FIXED set of buttons every time (a generic
+  "-> Mark [next status]" chip AND a permanently-shown "Start Visual
+  Treatment" button AND a gated-but-still-always-visible-once-triggered
+  "Video Pipeline" link AND Beatstars/Deliverables once licence_type was
+  set) regardless of real current progress. This was never a race
+  condition — it's a rendering-logic bug, confirmed by direct read, not
+  assumed. The Aug 6 morning fix (dangling Oracle-capture race) was a
+  real, different bug and stays fixed; this pass does not re-touch it.
+- Confirmed hasVideoJob was true from the moment Log Beat ran (video_jobs
+  row created in the same _submit insert as content_productions) —
+  explains why "Video Pipeline" showed even on a brand-new ConID.
+- Confirmed row.licence_type is set directly from the Beat Log form
+  (form.licence), so Beatstars/Deliverables could appear from stage 1 too
+  if a licence was picked up front — matches item 7's screenshot.
+- Read _saveDocToProduction directly: confirmed its existing forward-only
+  auto-advance guards (Idea->Scripted on visual_treatment save,
+  ...->Posted on captions save) — the new revert/redo system was designed
+  to compose with these guards, not fight them (revert targets chosen so
+  the existing guard naturally re-advances status on redo).
+- Read _generateVideo/_simulateOpenMontageResponse/_viewOpenMontageJob
+  directly: confirmed NEITHER real path ever advanced
+  content_productions.status — a real, previously-undetected gap, not
+  something item 13 invented. Real vs. simulated completion needed
+  different treatment (rule 7 — no fake progress for a genuinely
+  unfinished async job).
+- Read _showDirectorPicker/_generateVisualTreatment directly: confirmed
+  creative_docs.director_blend = {names:[...], inspiration:''} was
+  already being saved correctly on every Visual Treatment generation —
+  item 9 was a pure rendering gap, not a data-loss bug.
+- Grepped the whole file for "Swap ConID"/swapBtn: exactly one call site,
+  safe to remove outright.
+
+STAGE 3 — OMNITRIX EXECUTION (Sonnet planned+built directly; no Fable
+dispatch — this is a bounded, well-scoped Tier 2 batch inside one
+module family, not a large exhaustive audit; matches the Judgment
+Funnel's own "default to Sonnet doing it directly" guidance)
+---------------------------------------------------------------------
+Real changes, all in rpgace_core.js unless noted:
+
+1. beatLog form: bl-visual-treatment checkbox removed from the DOM build,
+   form.visualTreatment hardcoded true, the now-dead checkbox-restore line
+   removed. (G1)
+
+2. beatLog._generateOutputs' sendBtn: on confirmed send, arms
+   visualOracle._captureNextResponse (the SAME dangling-capture-safe
+   one-shot listener fixed this morning — reused, not re-implemented,
+   rule 8) and, once the reply lands, saves it to
+   creative_docs.beat_log_response via _saveDocToProduction and opens
+   contentProductionLive._openProductionPanel(). Confirmed via direct
+   read that _openProductionPanel renders as a fixed position:fixed
+   z-index:9998 overlay that does NOT require page navigation first — it
+   slides in over whatever's showing, so Alex keeps seeing the Oracle
+   reply on the left while Content Pipeline shows on the right. (G2)
+
+3. contentProductionLive gained 4 new lookup tables (MUSIC_VIDEO_
+   BADGE_LABELS, MUSIC_VIDEO_PRIMARY_ACTION, MUSIC_VIDEO_REDO_ACTION,
+   MUSIC_VIDEO_PREV_STAGE) plus STAGE_DOC_KEYS, sibling to the existing
+   MUSIC_VIDEO_STATUS_LABELS table, same "no schema change, display/
+   behaviour lookup only" pattern. (G3, G5 infra)
+
+4. New shared _revertToStage(row, targetStatus, callback) — clears the
+   creative_docs keys that stage's real action produced (via
+   STAGE_DOC_KEYS), sets status back, refreshes, and optionally re-runs
+   a callback. Deliberately scoped to content_productions.creative_docs
+   only — does NOT cascade-delete style_profiles/video_jobs/
+   openmontage_jobs rows, logged as an honest scope-down (no Supabase
+   backup/PITR exists — a blind cross-table delete for a UI convenience
+   feature would be real, unrecoverable data loss). (G4)
+
+5. New _undoLastStage(row) — thin wrapper over MUSIC_VIDEO_PREV_STAGE +
+   _revertToStage, confirm-gated, no re-launch of any action. Shares the
+   revert mechanism with #4 rather than a second hand-rolled copy. (G4)
+
+6. ConID card render, real rewrite:
+   - "⇄ Swap ConID" removed outright. (G7)
+   - Status badge now reads MUSIC_VIDEO_BADGE_LABELS (e.g. "Log Beat:
+     tick", "Visual Treatment: tick") instead of the upcoming-stage name.
+     (G5)
+   - The old fixed advBtn + always-shown vtBtn are GONE for music_video
+     rows, replaced by: one stage-aware primary action button
+     (MUSIC_VIDEO_PRIMARY_ACTION), one redo-the-last-completed-stage
+     button paired with a real "revert" checkbox (MUSIC_VIDEO_
+     REDO_ACTION + the checkbox wired to _revertToStage), and one
+     standalone Undo button when a previous stage exists. Tutorial
+     ConIDs keep the original generic "-> Mark [next]" button, completely
+     untouched. (G3, G4)
+   - "🎥 Video Pipeline" renamed "⚙ Full Production Panel", demoted to a
+     small muted secondary link (still opens the same real Production
+     Panel — capability unchanged, just no longer competing visually with
+     the primary action). Beatstars Listing + Manage Deliverables folded
+     behind a "💰 Sell This Beat ▾" toggle instead of rendering inline at
+     every stage. (G7)
+
+7. _simulateOpenMontageResponse: after marking video_jobs 'rendered', now
+   also advances content_productions.status to 'Filmed' (forward-only
+   guard, same convention as _saveDocToProduction's existing guards) —
+   honest because this path fakes a COMPLETE render, clearly labeled.
+   (G6)
+
+8. _viewOpenMontageJob: when a REAL job.status === 'complete' is found and
+   the ConID hasn't advanced past Scripted yet, shows a real "✅ Mark
+   ConID as Filmed" button — one honest manual acknowledgment click,
+   since RPGACE has no live push/webhook for openmontage_jobs completion
+   (it's polled, not pushed — matches CLAUDE.md's own external-handoff-
+   lane note). Deliberately does NOT auto-advance on "queued" — no fake
+   progress for a job that hasn't actually finished (rule 7). (G6)
+
+9. _buildScriptEditor: reads creative_docs.director_blend and renders a
+   read-only "Director Blend + Your Inspiration Notes" box (names +
+   inspiration free text) above the two editable fields, only when real
+   data exists. (G8)
+
+10. index.html cache-bust: rpgace_core.js?v=20260806b -> 20260806c.
+
+NOT built this pass, logged honestly rather than silently skipped:
+- Full /debate verdict on moving Phase H (BeatStars/Deliverables) earlier
+  in the linear phase sequence — item 6/7's bigger architecture question.
+  Real verdict delivered in chat: treat monetisation ("Sell This Beat") as
+  a PARALLEL track available whenever a licence_type is set, not a
+  reordering of the linear Idea->Scripted->Filmed->Posted sequence — the
+  video-production stages and the sell-this-beat action are logically
+  independent (you can list a beat for sale before, during, or after
+  making its video). This pass's UI change (folding Beatstars/
+  Deliverables behind a toggle rather than removing/reordering) already
+  implements that verdict without needing a schema/status-enum change.
+  Council of 5 check: real disagreement considered (a literal reorder of
+  the phase sequence was the alternative) and rejected — content_
+  productions.status is shared across BOTH content_types and 3 other
+  real consumers (MUSIC_VIDEO_STATUS_LABELS, the video_jobs auto-advance
+  guards, the new stage tables this pass adds) — inserting a new status
+  value or reordering the enum would ripple into all of them for a UI
+  clutter problem that a toggle already solves honestly. Not reopening
+  unless Alex explicitly wants the literal sequence changed.
+- Item 4 (explain "Add These Artists to Reference Corpus") — chat-only,
+  no code needed. Real answer: it grows reference_tracks using the
+  CURRENT beat's own BPM/scale/mood/key as the anchor for each Last.fm-
+  matched artist name (not each artist's real released song data) —
+  directly targets the "reference_tracks scale/genre 0/32 populated"
+  gap this project has had open since July 28, seeding future beat-
+  matching so it stops recommending the same ~8 recurring names.
+
+STAGE 4 — COUNCIL OF 5 REPORT (from the real git diff, not from memory)
+---------------------------------------------------------------------------
+- Technical risk: MEDIUM. Largest single-session UI rewrite of the ConID
+  card this project has done — real risk is a rendering edge case (e.g. a
+  music_video row with a status value outside the 4 handled stages) but
+  every new lookup table has a graceful "no entry -> render nothing"
+  fallback (primary/redo both check truthiness before rendering), so a
+  missing mapping degrades to "no button shown," not a crash.
+- Scope/cost (rule 11): stayed within one module family
+  (contentProductionLive + beatLog + visualOracle's shared helper), no
+  new Oracle calls added, no new Supabase tables — pure client-side
+  logic + one new creative_docs key (beat_log_response). Zero new token
+  cost.
+- Maintainability: the 4 new lookup tables are the single source of truth
+  for "what button shows at what stage" — a future stage addition means
+  editing 4 short objects, not hunting through render logic. Real
+  improvement over the fixed-button-set approach this replaces.
+- UX: directly answers 9 of Alex's 13 items with real behavior changes,
+  not cosmetic renames. The "revert" checkbox defaults unchecked,
+  preserving the exact non-destructive behavior Alex already confirmed
+  working on ConID #11 — a deliberate choice to not change default
+  behavior underneath him.
+- Honest why-not-build-more case: a full literal Phase-H-reordering (new
+  status enum value, e.g. "Listed") was considered and explicitly
+  rejected above, not silently skipped — real Council of 5 disagreement,
+  resolved in favor of the toggle.
+- Score: 8/10. Two points held back for UNTESTED (same standing caveat
+  as every UI pass this week — Alex hand-tests, not this session).
+
+STAGE 5 — TRUTH CHECK (fresh re-verification)
+------------------------------------------------
+- node --check rpgace_core.js: PASS (re-run after every edit block, final
+  re-run clean).
+- git diff --stat: 2 files (index.html, rpgace_core.js) — matches the
+  claimed scope exactly, no accidental main.js touch, no FROZEN exception
+  needed this pass.
+- Grepped for stray "swapBtn"/"Swap ConID" post-edit: zero remaining
+  references — confirmed fully removed, not just hidden.
+- Grepped for the old fixed vtBtn/"Start Visual Treatment" (always-shown)
+  and the old generic "→ Mark [next]" for music_video rows: zero
+  remaining — confirmed replaced, not left as dead duplicate code.
+
+GATE RESULTS
+------------
+G1 (syntax): PASS — node --check clean, re-run 6 times across this pass.
+G2 (index.html invariants): PASS — exactly 2 script tags untouched, only
+  the cache-bust query string changed.
+G3 (module convention): PASS — all new functions live inside the existing
+  contentProductionLive module object, no new RPGACE.register() call
+  needed (extending an existing module, not adding a new one).
+G4 (claim-to-diff reconciliation): PASS — every numbered item above maps
+  to a real, re-read diff hunk; nothing claimed that isn't in the diff.
+G5 (goal reconciliation): PASS — G1-G9 all built; G10 (chat-only items)
+  delivered in the reply, not silently dropped.
+G6 (deployment reality): PENDING at time of writing — will confirm via
+  Vercel MCP get_deployment after merge+push, same as every prior pass.
+G7 (cache-bust): PASS — 20260806b -> 20260806c.
+
+UNTESTED — same standing flag as every UI pass shipped this week. Real
+hand-test actions Alex should run next: (1) log a fresh beat, confirm no
+checkbox appears and the Send-to-Oracle flow opens the Production Panel
+once Oracle replies; (2) walk ConID #12 "Missing" through Visual
+Treatment -> Generate Video -> Simulate Response -> Generate Captions,
+confirming the primary button label changes at each stage and only ONE
+primary + one redo button ever show at once; (3) check the "revert"
+checkbox on a redo action and confirm it actually clears the later
+creative_docs key; (4) click Undo once and confirm it reverts without
+re-running anything; (5) open Script Editing (Phase 3) on a ConID with a
+saved director_blend and confirm the inspiration notes render.
+
+PASS COUNT: 1 of however many real hand-test rounds this takes (per
+rule 9 — the per-defect cap is per BUG, not per pass; this is a large
+batch of distinct real fixes, not one bug fixed 3 times).
