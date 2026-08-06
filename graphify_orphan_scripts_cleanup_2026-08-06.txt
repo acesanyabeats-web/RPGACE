@@ -163,3 +163,13 @@ definition. This would close the SPECIFIC extraction gap causing the
 fragmentation, not just recolor/reposition nodes like today's scripts
 do — a real, substantially bigger build than anything done on graphify
 so far this session.
+
+------------------------------------------------------------------
+DECISION (Alex, direct answer, via AskUserQuestion)
+------------------------------------------------------------------
+"No -- 56 real components is an honest picture, leave it." The
+synthetic edge layer is NOT built. This is a settled decision, not an
+open item -- a future session should not re-propose building it without
+a new, explicit reason to revisit. The 56-component shape is accepted
+as the real, honest output of a community-detection graph over this
+codebase's actual reference structure.
