@@ -9,10 +9,6 @@
       "destination": "/api/analyst.js"
     },
     {
-      "source": "/api/noter",
-      "destination": "/api/noter.js"
-    },
-    {
       "source": "/api/executor",
       "destination": "/api/executor.js"
     },
@@ -65,9 +61,6 @@
       "maxDuration": 30
     },
     "api/analyst.js": {
-      "maxDuration": 30
-    },
-    "api/noter.js": {
       "maxDuration": 30
     },
     "api/executor.js": {
