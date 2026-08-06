@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌐 Aug 6 — Mock Oracle pattern generalized into a global Claude Code skill, /dummy.</div>
+    <div class="card-body">
+      Alex confirmed the Mock Oracle toggle's intended workflow verbatim: dummy mode for "developing functions and DOMs" (zero API cost), switch to real Oracle "when I need to check how output is formed." Then asked for the underlying pattern as a portable global skill, paired with <code>/Engineer</code>.
+      <br><br>
+      Built <code>~/.claude/skills/dummy/SKILL.md</code> — same two-scope pattern as <code>omnitrix</code>/<code>aintergration</code> (project-tuned RPGACE implementation + portable global fallback). Documents the real 5-step pattern any project can follow: find the one real interception point, make fake replies unmistakable, keep them structurally plausible for real trailer-parsing, off-by-default with zero footprint, and pair with an Engineer-style loop (dummy mode for build+verify, one real-API pass for output quality before reporting done).
+      <br><br>
+      RPGACE's own <code>mockOracle</code> module is the reference implementation the global skill generalizes from — no code changes this pass, doc-only.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧪 Aug 6 — Mock Oracle testing mode built + /paranoia framework named (Alex out of real API credits).</div>
     <div class="card-body">
       Alex asked for two things while out of Anthropic credits: a way to keep testing RPGACE's real wiring without spending real Oracle tokens, and a maximal-scrutiny protocol (bracket-defined, named "/paranoia") for evaluating whether a multi-provider fallback (OmniRoute + Gemini/ChatGPT) could stand in for Oracle when credits run out.
