@@ -157,8 +157,11 @@ G4 (claim-to-diff reconciliation) — PASS, Stage 5's checks came back
 G5 (goal reconciliation) — All 4 Stage 1 goals: DONE, including the
   explicit scope-cut goal (4), which is a deliberate "not built" by
   design, not a dropped goal.
-G6 (deployment reality) — PENDING until merged to main and pushed;
-  will be independently confirmed via Vercel MCP in a follow-up edit.
+G6 (deployment reality) — PASS. Independently confirmed via Vercel MCP
+  (dpl_HMjhDcGECALrHkm2g6XTs8xfJJh2): state=READY, target=production,
+  githubCommitSha=5e3d7ab4d45b9222231ab81c00219589ee78ea81 (the exact
+  commit this pass produced), alias list includes the real
+  rpgace.vercel.app domain, aliasError=null.
 G7 (cache-bust) — PASS, 20260806a → 20260806b.
 
 UNTESTED (required label): the entire real absorption — Phase 4's new
