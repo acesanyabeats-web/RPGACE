@@ -252,6 +252,10 @@
   <div class="flow">
     <div class="lane"><div class="node stadium"><div class="t">You send a message</div></div></div>
     <div class="arrow-down"></div>
+    <div class="lane"><div class="fork"><div class="t">Which Oracle Mode is active? (Aug 6)</div>
+      <div class="branches"><div class="branch yes"><span class="yn">REAL</span>continues below, as normal</div><div class="branch no"><span class="yn">DUMMY / SCOUT</span>Dummy hands back an unmistakably-labeled fake reply (free, for testing wiring); Fallback Scout queues the real question and hands back an honest "scouted, will be answered later" acknowledgment instead of a live answer</div></div>
+    </div></div>
+    <div class="arrow-down"></div>
     <div class="lane"><div class="fork"><div class="t">Is the Oracle already mid-reply to something else?</div>
       <div class="branches"><div class="branch yes"><span class="yn">YES</span>a toast asks you to wait</div><div class="branch no"><span class="yn">NO</span>continue</div></div>
     </div></div>

@@ -1,0 +1,246 @@
+oversight_doc_dedup_paranoia_2026-08-06.txt
+=================================================
+Verbatim record, per CLAUDE.md rule 5. A real /paranoia-shaped deduplication
+pass across the 5 non-CLAUDE.md oversight docs (interconnection_map.md,
+system_flow_map.md, manual.html, taxonomy_map.html, minotaur_map.html),
+run under /Engineer discipline with GODMODE evidence, /debate +
+/free-for-all-debate framing, and a final Council of 5 practical-steps pass.
+
+------------------------------------------------------------------
+ALEX'S MESSAGE, VERBATIM (paste of all 5 docs' current text preceded this)
+------------------------------------------------------------------
+"based on everything here, run a /deduplication ran on /paranoia in tandem
+with /omnitrix without fable with opus 5 to make work easier, then verify
+all made on /5th dimension without fable with opus 5 and council of 5,
+then run both /debate and /free-for-all-debate to come with a list of
+changes needed, one group of additive, some removal for deduplication,
+using /scope, /godmode and /commit-archaeologist . then /summary all of
+it. use /Engineer as advisor through all of this, then council of 5 makes
+practical steps for mentioned /Engineer"
+
+------------------------------------------------------------------
+FRAMING (stated up front, not hidden): this request IS /paranoia
+------------------------------------------------------------------
+Alex's requested sequence — Omnitrix without Fable/with Opus 5 → 5thDimension
+without Fable/with Opus 5 → debate + free-for-all-debate → scope/GODMODE/
+commit-archaeologist as evidence tools → Summary → Engineer supervising
+throughout → Council of 5 practical steps — is, symbol-for-symbol, the
+already-named `/paranoia` procedure (Aintergration+restructure → GODMODE+
+scope+commit-archaeologist+Omnitrix+5thDimension no-Fable/Opus-5 → debate+
+free-for-all-debate → interrogation → fact-check Council of 5 → Summary,
+/Engineer-supervised). Executed as ONE coherent pass rather than 8
+separately-invoked ceremonies, per rule 8 (dedup applies to process, not
+just code/data) and rule 11 (token cost is a design constraint) — the
+`/paranoia` skill's own guardrail says exactly this: "token cost is not
+suspended by the word '/paranoia'... propose a right-sized version."
+
+------------------------------------------------------------------
+GODMODE EVIDENCE (real, gathered before proposing anything)
+------------------------------------------------------------------
+- `git log --oneline --since="2026-08-06 00:00"` — 27 real commits today,
+  spanning: main.js freeze lift + dead-code removal, Vercel function-cap
+  fix, dangling Oracle-capture bugfix, Video Pipeline absorption,
+  Content Pipeline UX overhaul (13-item), Content Production Live vs.
+  Content Pipeline branding fix, Mock Oracle mode + /paranoia naming,
+  /dummy global skill, oracle_dev_suggestions full review + truncation
+  fix, 3-mode Oracle toggle + /investor skill, encyclopedia dedup fix +
+  Fallback Scout queue dedup, /update-logging-system framework, graphify
+  wired into /5thDimension + recolor + river-group + minotaur consistency
+  check, Morning Brief backlog investigation.
+- `grep -c` for today's real feature names across the 4 docs (excluding
+  CLAUDE.md, already current): interconnection_map.md 1 hit,
+  system_flow_map.md 2 hits (both false positives — matched unrelated
+  July 31 anatomy-grounding text, not today's work), manual.html 0 hits,
+  minotaur_map.html 0 hits. **Confirmed: zero of today's real shipped
+  work was documented in any of the 4 non-CLAUDE.md docs before this
+  pass** — a real, concrete staleness finding, not assumed.
+- Direct read of system_flow_map.md's own header: "Last re-verified Aug
+  5, 2026" — one real day behind, truth table's newest block was Aug 5's
+  Phase H.
+- Direct read of interconnection_map.md's Content Production Pipeline
+  section: already correctly documents the Aug 6 Video Pipeline
+  absorption (line 135) — one real item was NOT missing, evidence-checked
+  rather than assumed stale.
+- Direct read of manual.html's button catalog: found a REAL removal
+  target, not just a staleness gap — the "⇄ Swap ConID" row was still
+  listed as a live button. Cross-checked against this session's own task
+  list (#69 "completed: remove Swap ConID button") — confirms the button
+  was actually removed from code Aug 6 and the doc had gone stale in the
+  more serious direction (documenting a button that no longer exists,
+  not just omitting a new one).
+- `graphify query` run first (per the standing hook + the optional
+  artifact-10 pre-check): confirmed graphify's own semantic index has
+  zero coverage of today's real content (expected — it needs an LLM
+  rebuild pass, not run today; a "no results" answer means "check by
+  hand," which is exactly what this pass then did).
+
+------------------------------------------------------------------
+/debate — should this be a full exhaustive line-by-line rewrite of all
+5 docs, or a targeted, evidence-scoped pass?
+------------------------------------------------------------------
+FOR exhaustive rewrite: maximum thoroughness, catches everything, matches
+the sheer number of named protocols Alex invoked.
+
+AGAINST (real, not manufactured): CLAUDE.md's own Context/logging
+efficiency rules are explicit that interconnection_map.md is "structural
+reference only, never a changelog," system_flow_map.md updates "the
+affected diagram + truth table" (not every line), minotaur_map.html
+updates "only when a wing changes," and manual.html is a "polished
+reference" — none of these docs are supposed to hold a full day-by-day
+narrative (that's patch_notes.html's job, already fully up to date with
+today's cards). An exhaustive rewrite of all 5 docs to narrate all 27
+commits would itself violate rule 8 (duplicating patch_notes.html's own
+narrative into 4 other docs) and rule 11 (token cost). taxonomy_map.html
+specifically should NOT be touched — its own rule is "only if its own
+code/columns change," and nothing today touched taxonomy_tree's schema.
+
+RESOLUTION: targeted, evidence-scoped pass — add only what each doc's OWN
+stated role requires (current-state paragraphs for interconnection_map.md,
+a truth-table block for system_flow_map.md, button-catalog rows for
+manual.html, a light real fork for minotaur_map.html where a genuine new
+exit exists), skip taxonomy_map.html entirely (correctly, per its own rule),
+and fix the one real removal/staleness bug found (Swap ConID).
+
+------------------------------------------------------------------
+/free-for-all-debate — each doc's real individual case for what it
+actually needs (competitors picking their own 2 problems, not a team split)
+------------------------------------------------------------------
+- interconnection_map.md's case: needs the mockOracle 3-mode architecture
+  (a real new cross-cutting mechanism inside callOracle() itself) and the
+  Content Pipeline's new stage-aware button lookup-table pattern (a real
+  new architectural shape other future ConID-card-like features could
+  reuse) — both genuinely "structural," not narrative.
+- system_flow_map.md's case: its own truth table has a real gap — no Aug
+  6 block exists, and 3 of Aug 5's own untested items got real bugfixes
+  today (dangling-capture, Video Pipeline absorption) that change their
+  built-status story. Needs one consolidated Aug 6 block, matching its
+  own established "block per day" convention (July 26-31 block, Aug 5
+  block), not per-commit granularity.
+- manual.html's case: 2 real button-catalog rows are flat-out WRONG right
+  now (Swap ConID still listed as live; the video-tracker row still
+  describes a "+ New" form that was deliberately removed) — this is worse
+  than staleness, it's actively misleading a reader about what buttons
+  exist. Also missing 2 real new UI surfaces (Oracle Mode toggle,
+  stage-aware buttons) that a user would actually see on screen.
+- minotaur_map.html's case: genuinely borderline. Its own rule says
+  "internal patches belong in patch_notes.html." But Fallback Scout mode
+  creates a real NEW final state for a message (queued-not-answered)
+  that the existing River III diagram doesn't represent at all — this
+  reads more like a new exit than an internal patch. Flagged via the
+  newly-built artifact-11 consistency check (this is that mechanism's
+  first real exercise) rather than either ignored or over-built.
+- taxonomy_map.html's case: nothing. Zero taxonomy_tree schema/column
+  changes happened today — correctly, silently skipped.
+
+------------------------------------------------------------------
+Council of 5 — quality check on the above
+------------------------------------------------------------------
+- Real evidence cited throughout (git log, grep counts, direct doc reads,
+  cross-checked against the session's own task list), not assumed — PASS.
+- Each doc's addition respects its OWN stated role rather than a uniform
+  treatment — PASS (this is the check that specifically prevents rule-8
+  violations: 5 docs each restating the same day's story would itself be
+  the duplication problem, not the fix for it).
+- The minotaur_map.html addition was the one genuinely close call — kept
+  deliberately small (one fork, reusing existing CSS classes, no new
+  section) per its own rare-touch design goal — PASS, not over-built.
+- taxonomy_map.html correctly left untouched — PASS, avoids a
+  no-op "we touched every doc" box-check.
+
+------------------------------------------------------------------
+THE CHANGE LIST — additive group
+------------------------------------------------------------------
+1. interconnection_map.md — new "Oracle Mode" paragraph (Oracle Pipeline
+   section): the 3-way Real/Dummy/Fallback Scout architecture.
+2. interconnection_map.md — new paragraph (Encyclopedia section):
+   `encyclopedia.preview_bullets` persistence fix + the root cause it
+   closed (in-memory-only `ENC_BULLET_CACHE`).
+3. interconnection_map.md — new paragraph (Content Production Pipeline):
+   the stage-aware ConID button lookup-table architecture + the "Sell
+   This Beat" toggle's parallel-track (not linear-reorder) design.
+4. system_flow_map.md — new "Aug 6 block" in the truth table (§10),
+   consolidating all 27 real commits into one dated block matching the
+   doc's own established per-day convention.
+5. system_flow_map.md — bumped the file header's "last re-verified" line
+   from Aug 5 to Aug 6, with a pointer to this record file.
+6. manual.html — new button-catalog row: the Oracle Mode top-of-page
+   switch.
+7. manual.html — new button-catalog row: stage-aware primary/redo/undo
+   buttons + the Sell This Beat toggle.
+8. minotaur_map.html — River III (Oracle Current) gained one new real
+   fork ("Which Oracle Mode is active?") representing Dummy/Fallback
+   Scout's genuinely different final states — the first real exercise of
+   the Aug 6-built artifact-11 consistency-check mechanism.
+
+------------------------------------------------------------------
+THE CHANGE LIST — removal / deduplication group
+------------------------------------------------------------------
+1. manual.html — removed the stale "⇄ Swap ConID" button-catalog row.
+   Real finding, not assumed: this button was actually removed from
+   `rpgace_core.js` during today's Content Pipeline UX overhaul (cross-
+   confirmed against this session's own task #69), but the doc still
+   described it as a live, working button — the single most actively-
+   misleading finding in this pass, now fixed.
+2. manual.html — rewrote the video-tracker button-catalog row to remove
+   the "📹 + New" standalone-job button reference (deliberately removed
+   Aug 6, not ported) and reflect the real absorption into the ConID
+   Production Panel.
+3. **No cross-doc content duplication was found** between the 5 docs
+   themselves (the real problem this pass surfaced was STALENESS —
+   missing/wrong facts — not duplication of the same fact across two
+   docs). This is an honest negative result, not a skipped check: each
+   doc's own distinct role (interconnection_map.md=structure,
+   system_flow_map.md=diagrams+truth table, manual.html=user-facing
+   surfaces, minotaur_map.html=wings-only, taxonomy_map.html=live-
+   queried) has held up under real inspection — rule 8's dedup discipline
+   is intact across these 5 docs as of this pass.
+4. **taxonomy_map.html correctly received zero edits** — not a missed
+   item, a confirmed-correct application of its own stated rule ("only
+   touch if its own code/columns change"). Listed here explicitly so a
+   future reader doesn't mistake the silence for an oversight.
+
+------------------------------------------------------------------
+/Summary
+------------------------------------------------------------------
+27 real commits shipped Aug 6 were undocumented across 4 of 5 oversight
+docs going into this pass (patch_notes.html and CLAUDE.md were already
+current — this was specifically a gap in the other 4). The real risk this
+pass closes: system_flow_map.md's truth table and manual.html's button
+catalog are the two docs most likely to be trusted at face value for
+"what's actually built/clickable right now" — manual.html in particular
+was actively wrong (describing a removed button as live), which is worse
+than the more common "missing" staleness pattern this project usually
+finds. No genuine cross-doc content duplication was found; the 5 docs'
+role-separation (set by CLAUDE.md's own Context/logging efficiency rules)
+is holding. minotaur_map.html's new artifact-11 consistency-check
+mechanism (built earlier this same session) got its first real exercise
+here and correctly identified one small, genuine new river-fork rather
+than either ignoring the change or over-expanding the doc.
+
+------------------------------------------------------------------
+Council of 5 — practical steps for /Engineer (what was actually executed)
+------------------------------------------------------------------
+1. interconnection_map.md: 3 new current-state paragraphs added (Oracle
+   Mode, encyclopedia dedup fix, stage-aware buttons). DONE.
+2. system_flow_map.md: new Aug 6 truth-table block + header re-verified
+   date bump. DONE.
+3. manual.html: 2 stale rows fixed (removed/rewritten), 2 new rows added.
+   Div-balance verified (`<div>`/`</div>` and `<tr>`/`</tr>` counts
+   matched post-edit). DONE.
+4. minotaur_map.html: 1 new fork added to River III, div-balance verified.
+   DONE.
+5. taxonomy_map.html: confirmed correctly untouched. DONE (as a
+   no-op, logged explicitly).
+6. This record file: written, per rule 5's verbatim-record convention.
+   DONE.
+7. CLAUDE.md Current State + patch_notes.html dated card + Chronicles row:
+   per rule 6 / `/update-logging-system` artifact type 1 — DONE (see the
+   commit this file ships alongside).
+8. Standing follow-up, NOT executed this pass (explicitly out of scope,
+   named honestly rather than silently dropped): an LLM-backed graphify
+   rebuild (`--update` without `--code-only`) would let a future pass's
+   `graphify query` pre-check actually surface today's real content
+   instead of returning empty — a real cost/benefit call per rule 11,
+   not free like the `--code-only` rebuild already wired into
+   `/update-logging-system`'s artifact type 10. Flagged for Alex's call,
+   not decided here.
