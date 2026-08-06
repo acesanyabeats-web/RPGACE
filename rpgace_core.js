@@ -19065,39 +19065,74 @@ RPGACE.register('mockOracle', {
     });
   },
 
-  // Fixed floating toggle (mirrors voiceInput's own fixed-button
-  // convention, rule 8 — same placement pattern, not a new one) plus a
-  // full-width top banner ONLY while mock mode is on, so it is never
-  // possible to forget it's active mid-session and mistake a fake reply
-  // for a real one.
+  // Aug 6 (real hand-test report: "i cant see dummy oracle right now...
+  // it is not there") — replaced the small bottom-right circular button
+  // (competing for space/attention with voiceInput's own floating mic
+  // button, easy to miss) with a real, always-visible toggle switch fixed
+  // at the top of the page. Alex's own exact spec: red track = Dummy
+  // Oracle, click, slides to green = Oracle API. Unlike the old design
+  // (which only showed a warning banner while mock mode was ON), this
+  // switch is permanently rendered regardless of state — the discoverability
+  // complaint was the real bug, not the toggle logic itself, so the fix is
+  // "always there," not "smarter hiding."
   _injectToggleButton: function () {
-    if (document.getElementById('mock-oracle-btn')) return;
+    if (document.getElementById('mock-oracle-switch')) return;
     var self = this;
-    var btn = document.createElement('button');
-    btn.id = 'mock-oracle-btn';
-    btn.title = 'Toggle Mock Oracle — test app wiring with fake replies, zero real API cost';
-    btn.textContent = '🧪';
-    btn.style.cssText = 'position:fixed;bottom:24px;right:80px;width:40px;height:40px;border-radius:50%;background:#0c0c16;border:2px solid rgba(226,226,236,0.15);color:rgba(226,226,236,0.4);font-size:16px;cursor:pointer;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,.5);font-family:Rajdhani,sans-serif;';
-    btn.onclick = function () { self.toggle(); };
-    document.body.appendChild(btn);
+
+    var wrap = document.createElement('div');
+    wrap.id = 'mock-oracle-switch';
+    wrap.title = 'Toggle Mock Oracle — dummy replies for wiring tests (zero API cost) vs. real Oracle API';
+    wrap.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;align-items:center;gap:8px;background:#0c0c16;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px 5px 5px;box-shadow:0 4px 16px rgba(0,0,0,.5);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;';
+
+    var track = document.createElement('div');
+    track.id = 'mock-oracle-track';
+    track.style.cssText = 'position:relative;width:44px;height:24px;border-radius:12px;flex-shrink:0;transition:background .2s ease;';
+
+    var knob = document.createElement('div');
+    knob.id = 'mock-oracle-knob';
+    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
+    track.appendChild(knob);
+
+    var label = document.createElement('span');
+    label.id = 'mock-oracle-label';
+    label.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:.5px;white-space:nowrap;';
+
+    wrap.appendChild(track);
+    wrap.appendChild(label);
+    wrap.onclick = function () { self.toggle(); };
+    document.body.appendChild(wrap);
     self._renderState();
   },
 
   _renderState: function () {
-    var btn = document.getElementById('mock-oracle-btn');
+    var track = document.getElementById('mock-oracle-track');
+    var knob = document.getElementById('mock-oracle-knob');
+    var label = document.getElementById('mock-oracle-label');
     var existingBadge = document.getElementById('mock-oracle-badge');
     if (existingBadge) existingBadge.remove();
+    if (!track || !knob || !label) return;
 
-    if (!this.isEnabled()) {
-      if (btn) { btn.style.borderColor = 'rgba(226,226,236,0.15)'; btn.style.color = 'rgba(226,226,236,0.4)'; }
-      return;
+    if (this.isEnabled()) {
+      // Dummy Oracle active — red, knob left.
+      track.style.background = '#CC4A4A';
+      knob.style.left = '2px';
+      label.textContent = '🧪 Dummy Oracle';
+      label.style.color = '#CC4A4A';
+      // Still keep a real full-width warning strip while active (rule 7 —
+      // a corner switch alone is easy to miss mid-scroll on a long chat
+      // reply). Sits just under the switch, same z-tier convention.
+      var badge = document.createElement('div');
+      badge.id = 'mock-oracle-badge';
+      badge.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
+      badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#CC4A4A;color:#1a0808;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
+      document.body.appendChild(badge);
+    } else {
+      // Real Oracle API — green, knob right.
+      track.style.background = '#4CAF82';
+      knob.style.left = '22px';
+      label.textContent = '✅ Oracle API';
+      label.style.color = '#4CAF82';
     }
-    if (btn) { btn.style.borderColor = '#E2A83D'; btn.style.color = '#E2A83D'; }
-    var badge = document.createElement('div');
-    badge.id = 'mock-oracle-badge';
-    badge.textContent = '🧪 MOCK ORACLE ON — every reply is fake, wiring-test only (click the 🧪 button to turn off)';
-    badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#E2A83D;color:#1a1400;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
-    document.body.appendChild(badge);
   },
 
 });

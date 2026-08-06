@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔴🟢 Aug 6 — Mock Oracle toggle redesigned: real top-of-page red/green switch, real hand-test fix.</div>
+    <div class="card-body">
+      Alex's real report: "i cant see dummy oracle right now... it is not there." Checked `sw.js` first (network-first for JS/HTML, ruled out as the cause — a real July 22 lesson already engineered against this exact bug class).
+      <br><br>
+      Real root cause: a discoverability bug, not a logic bug — the old bottom-right 🧪 circular button competed for space with `voiceInput`'s own floating mic button and only showed a warning when mock mode was already ON. Replaced with a permanently-visible slide toggle pinned to the top of every page, per Alex's own exact spec: red track + "🧪 Dummy Oracle" label, click to slide green + "✅ Oracle API" label. Full-width warning strip still shows while active, now colored to match.
+      <br><br>
+      node --check clean. Cache-bust 20260806f → g.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧾 Aug 6 — Full oracle_dev_suggestions review (all 11 rows, real /Summary). Full record: <code>oracle_dev_suggestions_review_2026-08-06.txt</code>.</div>
     <div class="card-body">
       Real gap found first: CLAUDE.md's "all 3 rows reviewed" claim (checked Aug 4) had gone stale — 8 real new rows arrived Aug 5-6 and sat unreviewed across several sessions. All 11 rows now reviewed row-by-row, in timestamp order, cross-checked against what's actually true right now (not assumed).
