@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🏁 Aug 5 — SESSION CLOSED via /Bedtime. Real state: the full 8-phase (A-H) Content/Video Pipeline unification shipped and is genuinely live on production; a real deploy failure was caught by this session's own G6 check and fixed same session; everything remains untested end-to-end by design (Alex's own deferred hand-test plan).</div>
+    <div class="card-body">
+      <strong>Real evidence checked before writing this</strong>: `git log` confirms `main` and `claude/rpgace-master-steps-uobp98` in sync at `6437933`, working tree clean. This session's real commits: `a794c20` (Phase H build), `071e5cd` (the real deploy-failure fix), `6437933` (G6 re-confirmation doc update) — on top of the earlier `d209d15`/`fc231cb` (Phase G curveball 2) and everything back through Phase A this same calendar date. `node --check` clean on every JS file touched. `ls api/*.js` confirms exactly 13 physical files (12 real functions, `_context.js` excluded) — back at the exact count that deploys successfully on Vercel's Hobby plan.
+      <br><br>
+      <strong>Done, live, verified — not just claimed</strong>: Phase H (final phase) — new private `beat-deliverables` Storage bucket, `content_productions.deliverable_files`/`.deliverable_bundles` columns, real server-side zip bundling (`archiver`, this project's first-ever npm dependency), and a "📦 Manage Deliverables" ConID-card UI. All 8 phases (A-H) of the Content/Video Pipeline unification are now complete. See this session's own cards above for the full phase-by-phase detail.
+      <br><br>
+      <strong>A real bug this session's own process caught, not something a user reported</strong>: Phase H was first built as its own `api/bundle-deliverables.js` file. The production deploy came back `state: ERROR` — Vercel's Hobby plan hard-caps a deployment at 12 Serverless Functions, and this project was already sitting at exactly 12; the new file pushed to 13. Real evidence pulled directly (`errorCode: exceeded_serverless_functions_per_deployment`) before attempting any fix, per rule 4. Fixed at zero cost (no Vercel Pro upgrade): deleted the standalone file, folded its logic into the existing `api/data-write.js` as an `action: 'bundle-deliverables'` branch — the same real auth/service-role posture that file already has, so the fold-in is a genuine scope match, not an arbitrary host. Re-deployed, independently re-confirmed `READY` on production via Vercel MCP (commit `071e5cd`, `rpgace.vercel.app` in the alias list) rather than assumed from a clean push. Full account: `engineer_pass_2026-08-05_09.txt`'s STAGE 6.
+      <br><br>
+      <strong>Oversight docs updated to match, including correcting the file-path references the G6 fix invalidated</strong>: CLAUDE.md, `patch_notes.html`, `system_flow_map.md`, `interconnection_map.md`, and `manual.html` (button catalog + Supabase table reference gained real rows for Phase G/G-curveballs/H — a real gap found and closed this session, since the last `manual.html` pass only covered through Phase F). `beat_deliverables_autoport_backlog_2026-08-05.txt` holds the full verbatim `/interrogation` spec for Phase H. Chronicles (`system_updates`) has one row per phase plus this session-close row.
+      <br><br>
+      <strong>Genuinely untested, by Alex's own explicit design, not an oversight</strong>: every phase of the 8-phase build — code-verified, gate-passed, live on production — has never been clicked through. Phase H's entire upload/zip/download round trip and `tiktokOracle`'s 8 commands are additionally brand-new with zero prior real use at all. The next real milestone is Alex's one deferred full hand-test pass with a real beat, not a new phase — nothing left to plan here, `/Routine`'s next run should treat that hand-test as the top real candidate alongside whatever else has aged onto the backlog.
+    </div>
+</div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">📦 Aug 5 — /Engineer Phase H: real beat deliverables (stems/zips) per licence tier — final phase of the unification</div>
     <div class="card-body">
