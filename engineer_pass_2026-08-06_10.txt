@@ -175,9 +175,10 @@ G4 (claim-to-diff reconciliation) — PASS, Stage 5's two-directional
 G5 (goal reconciliation) — All 4 Stage 1 goals: DONE. Video Pipeline
   absorption explicitly out of scope, not silently dropped — separate
   pass follows.
-G6 (deployment reality) — PENDING until merged to main and pushed; will
-  be independently confirmed via Vercel MCP in a follow-up edit to this
-  file, same pattern as every prior phase.
+G6 (deployment reality) — PASS. Independently confirmed via Vercel MCP
+  (dpl_468gnJhwhbzgSncL2hz97PDeBw1h): state=READY, target=production,
+  githubCommitSha=f57e3643c74267e36087e64321a16a7156a70d63 (the exact
+  commit this pass produced).
 G7 (cache-bust) — PASS, 20260805i → 20260806a.
 
 UNTESTED (required label): the entire real fix — the new gated Beat
