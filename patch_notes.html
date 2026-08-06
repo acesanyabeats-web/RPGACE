@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌊 Aug 6 (same day, 8th pass) — graphify now groups by real river; interconnection_map/placement_rules/skills wired to minotaur_map as a consistency check.</div>
+    <div class="card-body">
+      Alex asked for graphify + interconnection_map.md + taxonomy_placement_rules.txt + skills to "bounce off each other and contribute to minotaur map directly," plus graphify's own visualization to be grouped by river instead of graphify's native clustering.
+      <br><br>
+      <strong>Real evidence first</strong>: minotaur_map.html is deliberately a rare-touch, hand-authored document (CLAUDE.md's own rule: update only on a new wing) whose existing relationship to system_flow_map.md is already a manual "direct plain-language translation," not a pipeline. A live auto-generation build would work against that stated design goal — flagged honestly rather than built blind.
+      <br><br>
+      <strong>3 real forks, put to Alex via <code>/interrogation</code> rather than guessed</strong> — all 3 answered with the recommended option: (1) a consistency-CHECK, not live auto-generation; (2) skills cross-referenced for consistency only, never folded into river content (they document Claude Code's own dev process, not app information flow); (3) graphify's river-grouping covers named modules only, not every node.
+      <br><br>
+      <strong>Built, under /Engineer</strong>: <code>/update-logging-system</code> artifact type 11 — when interconnection_map.md/taxonomy_placement_rules.txt/a skill changes in a way that affects an existing river, flag minotaur_map.html's corresponding river for a real hand-update, never silently rewritten. New <code>scripts/graphify_river_group.py</code> — parses <code>rpgace_core.js</code>'s own 54 real <code>/* ===MODULE:x=== */</code> marker pairs for real line ranges, maps each to one of 11 rivers via a table sourced from interconnection_map.md's section headers + minotaur_map.html's own river titles, recolors matched nodes with a river palette and reuses the existing legend-toggle code (zero new JS) via a new community id offset.
+      <br><br>
+      <strong>Real, honest result, verified live</strong>: 16 of 1,064 nodes matched across 7 of 11 rivers — most nodes have no single-module home and correctly stay in graphify's native coloring, the confirmed scope limit from fork (3), not a bug. Sample tags spot-checked correct (<code>chapterNumOf()</code>/<code>commitChapters()</code> → River IV Bookworm; <code>directorPhrases()</code> → River XI Content Production Live). Wired into artifact type 10's mandatory sequence as a third step: export → recolor → river-group.
+      <br><br>
+      Full verbatim record: <code>minotaur_graphify_river_paranoia_2026-08-06.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🕸️ Aug 6 (same day, 7th pass) — the graph visualization is now a real, clickable oversight doc, live on rpgace.vercel.app.</div>
     <div class="card-body">
       Alex's direct ask: make <code>graphify-out/graph.html</code> reachable from inside RPGACE itself, and keep it auto-updated with everything else so it can't go stale.

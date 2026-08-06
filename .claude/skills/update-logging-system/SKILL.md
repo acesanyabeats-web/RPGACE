@@ -84,12 +84,39 @@ row that applies, either touch the artifact or state explicitly why not
     `graphify export html` then `python3 scripts/graphify_recolor.py`**
     (graphify's own export always resets to its default Tableau10
     palette, so the RPGACE-palette swap needs re-running every time the
-    HTML regenerates, not just once) — then commit the refreshed
+    HTML regenerates, not just once) **then `python3 scripts/graphify_river_group.py`
+    third** (Aug 6, 2nd real Alex ask — river-groups the real, named
+    RPGACE modules graphify's own AST extractor CAN see, per the module
+    marker line-ranges in `rpgace_core.js`, against the curated
+    module→river table documented in that script's own header; scope
+    confirmed via `/interrogation`: named modules only, not every node —
+    most nodes stay in graphify's native community color, an honest
+    scope limit, not an oversight) — then commit the refreshed
     `graphify-out/graph.html` alongside the code change, same standing
     commit/merge/push discipline as everything else, so the live link
     never points at a stale visual. This was previously framed as
     optional ("if a visual export is also wanted") — no longer accurate
-    now that Alex clicks it from inside the app.
+    now that Alex clicks it from inside the app. **Real order matters**:
+    export → recolor → river-group, always in that sequence (river-group
+    depends on the RPGACE palette already being applied so river colors
+    read as a distinct, deliberately different palette from the
+    community colors, not a coincidental clash).
+11. **`interconnection_map.md`, `taxonomy_placement_rules.txt`, or a
+    skill `.md` file changes in a way that could affect an EXISTING
+    minotaur_map.html river's accuracy** (added Aug 6, real `/interrogation`-
+    confirmed scope — a consistency-CHECK, explicitly NOT a live auto-
+    generation pipeline, same shape as minotaur_map.html's own existing
+    relationship to `system_flow_map.md`: "a direct plain-language
+    translation... nothing here was invented separately from it") → cross-
+    check the corresponding river's own text in `minotaur_map.html` and
+    flag (not silently auto-rewrite) if it's gone stale. Skills are
+    cross-referenced for this consistency check only — they document
+    Claude Code's own dev process, not information flowing through the
+    deployed app, so they do NOT become river content themselves
+    (`/interrogation`-confirmed, Aug 6). Still honors minotaur_map.html's
+    own standing rule: internal patches belong in `patch_notes.html`,
+    not here — this artifact type only fires when a river's own real
+    accuracy is at stake, not for every unrelated doc edit.
 
 **Optional, non-authoritative pre-check** (same Aug 6 evidence): before
 marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded

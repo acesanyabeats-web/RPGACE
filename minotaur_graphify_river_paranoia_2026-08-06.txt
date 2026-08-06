@@ -1,0 +1,133 @@
+minotaur_graphify_river_paranoia_2026-08-06.txt
+=================================================
+Verbatim record, per CLAUDE.md rule 5. Real /paranoia pass + /interrogation
+on Alex's ask to connect graphify + interconnection_map.md +
+taxonomy_placement_rules.txt + skills to minotaur_map.html, and to make
+graphify's own visualization resemble/group by river. Executed under
+/Engineer discipline once the real forks were resolved.
+
+------------------------------------------------------------------
+ALEX'S MESSAGE, VERBATIM
+------------------------------------------------------------------
+"continue from the exact moment you got cutoff, id also like graphify,
+interconnection map and placement rules and skills to all bounce off
+each other and contribute to minotaur map directly. those 3 have the
+contents and interlinks info, minotaur map has the chronological order
+of action and presentation. i'd also like graphify to resemble more of
+a river, with functions skills and modules to be grouped based on river
+so it can resemble more of a river to make minotaur mapping easier. run
+/paranoia on each doc, then execute with /engineer overlooking all
+changes. also /interrogation if you need my inout at any point"
+
+------------------------------------------------------------------
+GODMODE EVIDENCE (real, before proposing anything)
+------------------------------------------------------------------
+- minotaur_map.html: 11 real "Rivers," each a chronological information-
+  flow journey through the DEPLOYED APP (a chat message, a book, a beat).
+  Explicitly a "direct plain-language translation of one real Mermaid
+  diagram" from system_flow_map.md — "nothing here was invented
+  separately from it, so the two documents can never quietly drift
+  apart." Explicitly a RARE-TOUCH document by CLAUDE.md's own rule:
+  "Update only when a new wing... is added — internal patches inside an
+  existing corridor belong in patch_notes.html, not here."
+- interconnection_map.md: 280 lines, real section headers (Oracle
+  Pipeline, Taxonomy Tree Pipeline, Content Production Pipeline,
+  Schedule System, Unified placement engine, Chronicles, API auth,
+  Claude Code fallback lane, OpenMontage handoff lane) map cleanly onto
+  specific rivers.
+- taxonomy_placement_rules.txt: 195 lines, a narrow ruleset for exactly
+  ONE engine (phylumPath.decidePlacementScored) — maps to exactly one
+  river (VI, the Judgment Chamber), not the whole map.
+- .claude/skills/*.md: document Claude Code's OWN dev process (how a
+  session works on the repo), not information moving through the
+  deployed app — a genuinely different domain from what a river
+  represents.
+- graphify: confirmed (same-day earlier pass) unable to see
+  RPGACE.register('name', {...}) module boundaries — a real, structural
+  gap, not staleness.
+
+------------------------------------------------------------------
+DEBATE
+------------------------------------------------------------------
+FOR the full ask (live pipeline + full-node river regrouping): reduces
+real drift risk; all 3 sources genuinely hold real structural/content
+data that could cross-check minotaur_map.html's accuracy.
+
+AGAINST (real, not manufactured): minotaur_map.html's own stated design
+goal is to stay stable, readable, rarely-touched prose — a live
+regeneration pipeline directly works against that rule, and risks
+producing technically-correct-but-badly-worded river text, undermining
+the doc's whole reason for existing as system_flow_map.md's plain-
+language twin. graphify's extraction gap means true automated river-
+grouping isn't achievable without a hand-curated lookup (real, ongoing
+maintenance). Skills are dev-process docs, not app information flow —
+folding them into river CONTENT would blur what a river means.
+
+------------------------------------------------------------------
+/interrogation — 3 real open forks, Alex's actual answers
+------------------------------------------------------------------
+Q1: Live auto-generation pipeline vs. lighter consistency-check (same
+shape as the existing system_flow_map.md relationship)?
+A1: Consistency-check. [Alex's choice, recommended option]
+
+Q2: Do skills belong IN river content itself, or cross-referenced only
+for dev-process traceability?
+A2: Cross-reference only. [Alex's choice, recommended option]
+
+Q3: Should graphify's river-grouping cover every node, or just the real
+named modules the docs already document?
+A3: Named modules only. [Alex's choice, recommended option]
+
+------------------------------------------------------------------
+WHAT WAS BUILT (/Engineer discipline: plan -> build -> verify -> report)
+------------------------------------------------------------------
+1. New `.claude/skills/update-logging-system/SKILL.md` artifact type 11:
+   when interconnection_map.md, taxonomy_placement_rules.txt, or a skill
+   .md file changes in a way that could affect an EXISTING river's
+   accuracy, cross-check minotaur_map.html's corresponding river and
+   FLAG (never silently auto-rewrite) if it's gone stale. Skills
+   cross-referenced for consistency only, never folded into river
+   prose. Still honors minotaur_map.html's own rare-touch rule — this
+   only fires when a river's real accuracy is at stake, not on every
+   unrelated doc edit.
+
+2. New `scripts/graphify_river_group.py`: parses rpgace_core.js's own
+   real `/* ===MODULE:x=== */` / `/* ===END:x=== */` markers (54 real
+   pairs) to get each module's real line range, builds a curated
+   module -> river lookup (11 rivers, sourced from interconnection_map.md's
+   own section headers + minotaur_map.html's own river titles - not
+   guessed), and for every node in graph.json whose source_file is
+   rpgace_core.js and whose source_location falls inside a known
+   module's range, tags it with that module's river: recolors it (a
+   real per-river palette, again sourced from style.css tokens, kept
+   deliberately distinct from graphify_recolor.py's community palette)
+   and assigns it a new community id (1000+river number) so the
+   EXISTING legend-toggle checkbox code works for rivers too with zero
+   new JS (rule 8 - reused, not duplicated).
+   Real, honest scope limit (per Alex's own A3): only 16 of 1064 nodes
+   matched across 7 of 11 rivers on this run - most nodes (generic
+   utility functions, main.js, doc paragraphs) have no single-module
+   home and correctly stay in graphify's native community color. This
+   is the real, bounded result of "named modules only," not a bug.
+   Confirmed working live: file integrity checked (1064 nodes preserved,
+   192 legend entries = 185 original + 7 new river entries), sample
+   tagged nodes spot-checked (directorPhrases()/buildDirectorRow() ->
+   River XI Content Production Live; chapterNumOf()/commitChapters() ->
+   River IV Bookworm; renderSteps()/renderSummary()/updatePreview() ->
+   River VIII Confluence Pool - all plausible, correctly grounded).
+
+3. `/update-logging-system` artifact type 10's mandatory HTML-refresh
+   sequence extended: export -> recolor -> river-group, in that order
+   (river-group must run after recolor so river colors read as a
+   deliberately distinct palette, not a coincidental clash with
+   community colors).
+
+Real limitation stated plainly: this does NOT make minotaur_map.html
+"bounce off" the other 3 sources automatically - Alex's own answer to
+Q1 confirmed that's not what's wanted. The real deliverable is a
+CHECK, not a generator - the next time interconnection_map.md or
+taxonomy_placement_rules.txt changes in a way that touches a river,
+this artifact type is the trigger for a human/Claude-Code pass to
+verify and, if needed, hand-update minotaur_map.html - same discipline
+already proven working for system_flow_map.md, now extended to 2 more
+real sources.
