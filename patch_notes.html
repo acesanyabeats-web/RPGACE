@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧪 Aug 6 — Mock Oracle testing mode built + /paranoia framework named (Alex out of real API credits).</div>
+    <div class="card-body">
+      Alex asked for two things while out of Anthropic credits: a way to keep testing RPGACE's real wiring without spending real Oracle tokens, and a maximal-scrutiny protocol (bracket-defined, named "/paranoia") for evaluating whether a multi-provider fallback (OmniRoute + Gemini/ChatGPT) could stand in for Oracle when credits run out.
+      <br><br>
+      <strong>Built</strong>: a real Mock Oracle mode — one check inside <code>callOracle()</code> itself (main.js) intercepts before the real network fetch when enabled, returning a synthetic, unmistakably-labeled reply. Every real button/DOM/hook/Supabase-write path downstream still runs authentically on the fake text, so this exercises genuine app wiring end-to-end at zero API cost. Toggle via a fixed 🧪 button + full-width warning banner while active. New <code>mockOracle</code> module.
+      <br><br>
+      <strong>Named, not run at full cost</strong>: <code>/paranoia</code> (<code>.claude/skills/paranoia/SKILL.md</code>) captures Alex's real 6-step sequence (Aintergration+restructure → GODMODE+scope+commit-archaeologist+Omnitrix+5thDimension → debate+free-for-all-debate → interrogation → Council of 5 fact-check → Summary, /Engineer supervising) as standing, invocable infrastructure — but given the stated credit constraint, this session gave a right-sized direct verdict on the actual question instead of running the full cascade at maximum cost (the skill's own guardrail names this exact tradeoff). See the reply in-session for the real verdict: OmniRoute stays rejected (unchanged from the July 20 Aintergration precedent — architecture mismatch, undermines the tuned 3-model discipline); the real, cheaper, already-built answer is <code>oracle_fallback_queue</code>, confirmed still at 0 rows and never exercised.
+      <br><br>
+      node --check clean on both files. Cache-bust main.js 20260806a → b, rpgace_core.js 20260806d → e.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🚨 Aug 6 — real G6 catch: deleting api/noter.js broke production, fixed same session.</div>
     <div class="card-body">
       The main.js cleanup's first push (commit <code>0402049</code>) came back production <code>state: ERROR</code> — real build log: "The pattern 'api/noter.js' defined in <code>functions</code> doesn't match any Serverless Functions." <code>vercel.json</code> still explicitly referenced the deleted file in both its <code>rewrites</code> and <code>functions</code> blocks, a config file the earlier evidence pass hadn't checked.

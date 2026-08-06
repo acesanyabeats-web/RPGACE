@@ -110,6 +110,23 @@ const AGENT_ACTIONS=[
 // already matches Anthropic's real SSE format correctly; api/oracle.js
 // now genuinely proxies it when `stream:true` is sent.
 async function callOracle(messages, system, maxTokens=1000, onChunk){
+  // Aug 6 (real /paranoia-adjacent build, credit-exhaustion context) — a
+  // real mock-mode escape hatch, checked INSIDE this function rather than
+  // as an outer window.callOracle wrap. Deliberate: main.js's oracle-
+  // grounding modules (oracleTreeGrounding/oracleAppGrounding/
+  // oracleFetchGuard, all in rpgace_core.js) already wrap window.callOracle
+  // 3 deep, each forwarding via orig.apply - wrapping a 4th time from
+  // outside would race their own init() ordering and risk sitting either
+  // too far in (skipping grounding) or too far out (never seeing real
+  // calls). Checking here, inside the one real function every wrap layer
+  // eventually calls through to, guarantees correct behavior regardless
+  // of module registration order: every real grounding/context-injection
+  // step still runs authentically, ONLY the actual network fetch below is
+  // replaced with a synthetic reply. See rpgace_core.js's mockOracle
+  // module for the real toggle + fake-reply generator.
+  if (window.RPGACE && RPGACE.modules.mockOracle && RPGACE.modules.mockOracle.isEnabled()) {
+    return RPGACE.modules.mockOracle._fakeReply(messages, system, onChunk);
+  }
   if (onChunk) {
     let res;
     try {

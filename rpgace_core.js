@@ -18968,3 +18968,127 @@ RPGACE.register('voiceInput', {
 
 });
 /* ===END:voiceInput=== */
+
+/* ===MODULE:mockOracle=== */
+// Aug 6 (Alex out of real Anthropic credits, real "test the wiring without
+// Oracle actually thinking" ask) — a real, honest fake-Oracle mode. Every
+// reply generated this way is unmistakably labeled (rule 7 - fail loud,
+// never silently indistinguishable from a real response), and the ONLY
+// thing it replaces is the actual network call inside callOracle() in
+// main.js (see the comment there) - every real button click, DOM update,
+// hook fire (oracle:response-scanned), Supabase write, and trailer-parse
+// (_saveDocToProduction's DIRECTOR_CHOSEN:/EDL_JSON: regexes) still runs
+// authentically on top of the fake text, so this genuinely exercises real
+// app wiring end-to-end without spending real API tokens. Off by default,
+// zero DOM footprint when off (matches the no-post-login-pop-in
+// convention every other module here follows).
+RPGACE.register('mockOracle', {
+
+  STORAGE_KEY: 'rpgace_mock_oracle',
+
+  init: function() {
+    var self = this;
+    RPGACE.registerBootTask(function() { return self._injectToggleButton(); });
+  },
+
+  isEnabled: function() {
+    try { return localStorage.getItem(this.STORAGE_KEY) === '1'; } catch (e) { return false; }
+  },
+
+  enable: function() {
+    try { localStorage.setItem(this.STORAGE_KEY, '1'); } catch (e) {}
+    RPGACE.utils.toast('🧪 Mock Oracle ON — every Oracle reply from now on is fake, wiring-test only. No real API calls, no real cost.', '#E2A83D', 5000);
+    this._renderState();
+  },
+  disable: function() {
+    try { localStorage.removeItem(this.STORAGE_KEY); } catch (e) {}
+    RPGACE.utils.toast('🧪 Mock Oracle OFF — real Oracle calls resume', '#4CAF82', 3000);
+    this._renderState();
+  },
+  toggle: function() { if (this.isEnabled()) this.disable(); else this.enable(); },
+
+  // Real reply generator, called from main.js's callOracle() when mock
+  // mode is on. Scans the outbound prompt for this app's own known
+  // structured trailers (DIRECTOR_CHOSEN:, EDL_JSON:) so downstream
+  // parsing genuinely gets exercised, not just the chat bubble text -
+  // same real trailer names visualOracle._saveDocToProduction already
+  // looks for, kept in sync by reading the same literal strings rather
+  // than a second guessed format (rule 8).
+  _fakeReply: function(messages, system, onChunk) {
+    var lastUser = (messages || []).slice().reverse().filter(function (m) { return m.role === 'user'; })[0];
+    var promptText = ((system || '') + ' ' + (lastUser && lastUser.content || '')).toLowerCase();
+
+    var lines = [
+      '🧪 [MOCK ORACLE — no real API call made, wiring test only]',
+      '',
+      'This is a synthetic stand-in reply while real Anthropic credits are unavailable. It exists to exercise real button/DOM/Supabase wiring end-to-end, not to represent real output quality — never treat this text as a genuine Oracle answer.',
+    ];
+    if (promptText.indexOf('director_chosen') !== -1) {
+      lines.push('', 'DIRECTOR_CHOSEN: Christopher Nolan');
+    }
+    if (promptText.indexOf('edl_json') !== -1) {
+      lines.push('', 'EDL_JSON: [{"scene":1,"start":0,"end":4,"desc":"[MOCK] establishing shot — wiring test only"}]');
+    }
+    var full = lines.join('\n');
+
+    return new Promise(function (resolve) {
+      if (onChunk) {
+        // Feed it back progressively so the real streaming-render path
+        // (renderMarkdown, chat-box scroll behaviour) gets exercised too,
+        // not just the final-result path.
+        var parts = full.match(/[\s\S]{1,40}/g) || [full];
+        var i = 0, acc = '';
+        var iv = setInterval(function () {
+          acc += parts[i] || '';
+          onChunk(acc);
+          i++;
+          if (i >= parts.length) {
+            clearInterval(iv);
+            resolve({ content: [{ type: 'text', text: acc }] });
+          }
+        }, 55);
+      } else {
+        setTimeout(function () {
+          resolve({ content: [{ type: 'text', text: full }] });
+        }, 400 + Math.random() * 400);
+      }
+    });
+  },
+
+  // Fixed floating toggle (mirrors voiceInput's own fixed-button
+  // convention, rule 8 — same placement pattern, not a new one) plus a
+  // full-width top banner ONLY while mock mode is on, so it is never
+  // possible to forget it's active mid-session and mistake a fake reply
+  // for a real one.
+  _injectToggleButton: function () {
+    if (document.getElementById('mock-oracle-btn')) return;
+    var self = this;
+    var btn = document.createElement('button');
+    btn.id = 'mock-oracle-btn';
+    btn.title = 'Toggle Mock Oracle — test app wiring with fake replies, zero real API cost';
+    btn.textContent = '🧪';
+    btn.style.cssText = 'position:fixed;bottom:24px;right:80px;width:40px;height:40px;border-radius:50%;background:#0c0c16;border:2px solid rgba(226,226,236,0.15);color:rgba(226,226,236,0.4);font-size:16px;cursor:pointer;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,.5);font-family:Rajdhani,sans-serif;';
+    btn.onclick = function () { self.toggle(); };
+    document.body.appendChild(btn);
+    self._renderState();
+  },
+
+  _renderState: function () {
+    var btn = document.getElementById('mock-oracle-btn');
+    var existingBadge = document.getElementById('mock-oracle-badge');
+    if (existingBadge) existingBadge.remove();
+
+    if (!this.isEnabled()) {
+      if (btn) { btn.style.borderColor = 'rgba(226,226,236,0.15)'; btn.style.color = 'rgba(226,226,236,0.4)'; }
+      return;
+    }
+    if (btn) { btn.style.borderColor = '#E2A83D'; btn.style.color = '#E2A83D'; }
+    var badge = document.createElement('div');
+    badge.id = 'mock-oracle-badge';
+    badge.textContent = '🧪 MOCK ORACLE ON — every reply is fake, wiring-test only (click the 🧪 button to turn off)';
+    badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#E2A83D;color:#1a1400;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
+    document.body.appendChild(badge);
+  },
+
+});
+/* ===END:mockOracle=== */
