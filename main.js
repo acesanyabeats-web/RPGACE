@@ -870,8 +870,8 @@ async function generateAgendas(force=false){
   const btn=document.getElementById('agenda-gen-btn');
   if(btn){btn.disabled=true;btn.textContent='⚡ Generating...';}
   let encEntries=[],journalEntries=[];
-  try{const er=await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?order=created_at.desc&limit=15`,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});if(er.ok)encEntries=await er.json();}catch(e){}
-  try{const jr=await fetch(`${SUPABASE_URL}/rest/v1/journal?order=created_at.desc&limit=4`,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});if(jr.ok)journalEntries=await jr.json();}catch(e){}
+  try{const er=await _sbGet('/rest/v1/encyclopedia?order=created_at.desc&limit=15');if(er.ok)encEntries=await er.json();}catch(e){}
+  try{const jr=await _sbGet('/rest/v1/journal?order=created_at.desc&limit=4');if(jr.ok)journalEntries=await jr.json();}catch(e){}
   const encSummary=encEntries.slice(0,8).map(e=>`- ${e.title}: ${(e.content||'').slice(0,90)}`).join('\n')||'No entries yet';
   const journalSummary=journalEntries.slice(0,3).map(j=>`- ${j.title}: ${(j.content||'').slice(0,120)}`).join('\n')||'No journal yet';
   const vstsFound=[...new Set(encEntries.flatMap(e=>e.vst_tags||[]))].slice(0,8).join(', ')||'FL Studio built-ins';
@@ -1111,8 +1111,7 @@ async function loadFocusEntries(){
   el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px">Loading related knowledge...</div>';
   let entries = [];
   try{
-    const res = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia?order=created_at.desc&limit=60',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    const res = await _sbGet('/rest/v1/encyclopedia?order=created_at.desc&limit=60');
     if(res.ok) entries = await res.json();
   }catch(e){}
   const a = FM_SESSION.agenda;
@@ -1198,8 +1197,7 @@ async function handleFocusSelect(){
 
   let storedInsights = [];
   try{
-    const ir = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia_insights?order=created_at.desc&limit=40',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    const ir = await _sbGet('/rest/v1/encyclopedia_insights?order=created_at.desc&limit=40');
     if(ir.ok) storedInsights = await ir.json();
   }catch(e){}
 
@@ -1689,8 +1687,7 @@ async function triggerGlobalIdentify(){
   // Fetch stored insights for context
   let storedInsights = [];
   try{
-    const ir = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia_insights?order=created_at.desc&limit=30',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    const ir = await _sbGet('/rest/v1/encyclopedia_insights?order=created_at.desc&limit=30');
     if(ir.ok) storedInsights = await ir.json();
   }catch(e){}
 
@@ -1795,16 +1792,14 @@ async function fireBeatAnalysis(){
   // Fetch encyclopedia insights
   let insights = [];
   try{
-    const r = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia_insights?order=created_at.desc&limit=60',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    const r = await _sbGet('/rest/v1/encyclopedia_insights?order=created_at.desc&limit=60');
     if(r.ok) insights = await r.json();
   }catch(e){}
 
   // Fetch encyclopedia entries
   let entries = [];
   try{
-    const r = await fetch(SUPABASE_URL+'/rest/v1/encyclopedia?order=created_at.desc&limit=20',
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+    const r = await _sbGet('/rest/v1/encyclopedia?order=created_at.desc&limit=20');
     if(r.ok) entries = await r.json();
   }catch(e){}
 
@@ -2472,9 +2467,7 @@ async function sbInsightPost(data){
 async function sbInsightFetch(macroCategory){
   try {
     const filter = macroCategory && macroCategory!=='all' ? `macro_category=eq.${macroCategory}&` : '';
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${ENC_INSIGHT_TABLE}?${filter}order=created_at.desc&limit=500`,{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-    });
+    const res = await _sbGet(`/rest/v1/${ENC_INSIGHT_TABLE}?${filter}order=created_at.desc&limit=500`);
     return res.ok ? await res.json() : [];
   } catch(e){ return []; }
 }
@@ -3322,9 +3315,7 @@ async function refreshEncyclopediaDisplay(){
 
   let entries = [];
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/encyclopedia?order=created_at.desc&limit=200`, {
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
-    });
+    const res = await _sbGet('/rest/v1/encyclopedia?order=created_at.desc&limit=200');
     if(res.ok){ entries = await res.json(); localStorage.setItem('rpgace_encyclopedia', JSON.stringify(entries)); }
   } catch(e){}
 
@@ -3607,9 +3598,7 @@ async function refreshJournalDisplay(){
 
   let entries = [];
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/journal?order=created_at.desc&limit=200`, {
-      headers: {'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`}
-    });
+    const res = await _sbGet('/rest/v1/journal?order=created_at.desc&limit=200');
     if(res.ok){
       entries = await res.json();
       localStorage.setItem('rpgace_journal', JSON.stringify(entries));
@@ -3882,6 +3871,19 @@ async function saveWorkshopToNotion(){
 // doc claim was wrong because it only ever grepped rpgace_core.js.
 const SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+// Real dedup fix (Aug 6, /paranoia pass on main.js): 15 call sites across
+// this file each hand-rolled the identical fetch+header boilerplate below
+// (the "4th Supabase-write-idiom" landmine CLAUDE.md already flagged, here
+// on the read side). One shared helper now — pure boilerplate consolidation,
+// zero behavior change: still returns the raw Response, so every caller's
+// existing .ok/.json()/error handling works exactly as before. A `function`
+// declaration (hoisted), not `const`, so it's callable from call sites that
+// appear earlier in the file than this definition, same as SUPABASE_URL/KEY
+// already had to be (those consts are only read once a function body runs,
+// well after the whole script has parsed).
+function _sbGet(pathAndQuery){
+  return fetch(SUPABASE_URL + pathAndQuery, {headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
+}
 const LOCAL_SERVER = 'http://localhost:7842';
 let INTEL_POLL_INTERVAL = null;
 let JOB_POLL_INTERVAL   = null;
@@ -3891,10 +3893,7 @@ let SERVER_ONLINE       = false;
 async function checkServerStatus(){
   try {
     // Check if any jobs processed recently = server is running
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/intel_jobs?status=eq.processing&limit=1`,
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}}
-    );
+    const res = await _sbGet('/rest/v1/intel_jobs?status=eq.processing&limit=1');
     const dot   = document.getElementById('intel-server-dot');
     const label = document.getElementById('intel-server-label');
     if(res.ok){
@@ -3927,9 +3926,7 @@ async function submitIntelURL(){
     // Guard: check for an existing pending/processing job with this exact URL
     // before inserting a new one - prevents wasting a full transcription+analysis
     // cycle on an accidental double-submit.
-    const checkRes = await fetch(`${SUPABASE_URL}/rest/v1/intel_jobs?url=eq.${encodeURIComponent(url)}&status=in.(queued,processing)&select=id,status`, {
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-    });
+    const checkRes = await _sbGet(`/rest/v1/intel_jobs?url=eq.${encodeURIComponent(url)}&status=in.(queued,processing)&select=id,status`);
     const existing = checkRes.ok ? await checkRes.json() : [];
     if(existing.length > 0){
       alert('This URL is already ' + existing[0].status + '. Check the Insights tab - it should appear shortly.');
@@ -3979,10 +3976,7 @@ function startJobPolling(jobId){
 async function pollJobs(){
   try {
     // Poll Supabase for job status updates
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/intel_jobs?order=created_at.desc&limit=10`,
-      {headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}}
-    );
+    const res = await _sbGet('/rest/v1/intel_jobs?order=created_at.desc&limit=10');
     if(!res.ok) return;
     const jobs = await res.json();
 
@@ -4040,9 +4034,7 @@ function renderJobs(jobs){
 
 async function fetchFromSupabase(){
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/intel_reports?order=created_at.desc&limit=50`,{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-    });
+    const res = await _sbGet('/rest/v1/intel_reports?order=created_at.desc&limit=50');
     if(!res.ok) return null;
     return (await res.json()).map(r=>({...r,date:r.created_at,source:'supabase'}));
   } catch(e){ return null; }
@@ -4076,9 +4068,7 @@ async function pushLocalToSupabase(){
 
 async function fetchWatchlistFromSupabase(){
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/intel_watchlist?order=created_at.desc&limit=100`,{
-      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
-    });
+    const res = await _sbGet('/rest/v1/intel_watchlist?order=created_at.desc&limit=100');
     if(!res.ok) return null;
     return await res.json();
   } catch(e){ return null; }

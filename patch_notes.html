@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Aug 6 (same day, 17th pass) — /paranoia dedup sweep on main.js: 15 hand-rolled Supabase fetch blocks consolidated into one helper.</div>
+    <div class="card-body">
+      Alex asked to run rule 8's "eliminate deduplication gaps" discipline (CLAUDE.md's own named process, not a separate skill file) against main.js at full <code>/paranoia</code> rigor.
+      <br><br>
+      <strong>Real evidence first, not a doc's claim</strong>: graphify surfaced <code>RPGACE_ARCHITECTURE.md</code>'s own "Duplicate Functions (3 versions each)" section — checked directly against the live file and found <strong>stale</strong>: dated June 26, describes pre-refactor main.js (no rpgace_core.js even existing yet), and every one of its 5 named duplicates now has exactly 1 definition in live main.js. Not re-fixed because there was nothing left to fix — flagged so a future session doesn't re-cite it as current.
+      <br><br>
+      <strong>Two real, current findings instead</strong>: (1) 15 near-identical hand-rolled Supabase read-fetch blocks in main.js — the exact "4th Supabase-write-idiom" landmine CLAUDE.md already flagged, confirmed still live on the read side (all 10 real POSTs correctly go through <code>/api/*</code>, zero write-security exposure — this was purely a code-duplication finding). (2) The Supabase URL/key hardcoded independently in both main.js and <code>rpgace_core.js</code>'s <code>RPGACE.CONFIG.supabase</code> — same risk class as the July 23 composio.js/<code>_context.js</code> CORS-header drift that silently broke two live integrations. Not fixed this pass (a genuinely larger refactor, not confirmed) — real backlog item.
+      <br><br>
+      Confirmed with Alex directly before touching main.js: fix the 15 blocks now. New <code>function _sbGet(pathAndQuery)</code> added — returns the raw <code>Response</code> unchanged, pure boilerplate consolidation, zero logic change (every caller's existing <code>.ok</code>/<code>.json()</code> handling works exactly as before). All 15 call sites replaced one at a time, each checked against its own real surrounding context first. Verified after: exactly 1 remaining <code>'apikey':SUPABASE_KEY</code> hit (the helper's own definition), 16 <code>_sbGet(</code> occurrences (1 definition + 15 real call sites), <code>node --check</code> clean, 4407→4397 lines.
+      <br><br>
+      Full record: <code>main_js_dedup_paranoia_2026-08-06.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌐 Aug 6 (same day, 16th pass) — /paranoia on "graphify as a fourth Total member," real dispatch logged to Engineer CC instead of building blind.</div>
     <div class="card-body">
       Alex asked to install graphify's GitHub repo, connect it to a separate Claude Code chat, and add that chat as a fourth communicating member of "Total" (RPGACE app / RPGACE CC / Engineer CC-OpenMontage), running on the Engineer framework — with the hardest possible <code>/paranoia</code> scrutiny before building.

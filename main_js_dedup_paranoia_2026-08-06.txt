@@ -1,0 +1,107 @@
+main_js_dedup_paranoia_2026-08-06.txt
+=================================================
+Real /paranoia record, per CLAUDE.md rule 5. Alex asked: "lets run
+/deduplication framework on main.js using /paranoia" — CLAUDE.md rule 8's
+own named discipline ("eliminate deduplication gaps"), not a separate
+skill file, run at full /paranoia rigor.
+
+------------------------------------------------------------------
+STEP 1 — /restructure + Aintergration in tandem
+------------------------------------------------------------------
+No existing tool covers this. `rpgace_build.py check` was checked
+directly (read the real function, not assumed) — it only reads
+rpgace_core.js and only checks for duplicate MODULE names (RPGACE.
+register() blocks), never touches main.js, never checks general
+function/logic duplication. No third-party tool is warranted for a
+single-file grep-and-consolidate job; graphify + direct reading is the
+right-sized approach.
+
+------------------------------------------------------------------
+STEP 2 — Reconcile against real state (/scope + GODMODE + commit-archaeologist)
+------------------------------------------------------------------
+graphify surfaced RPGACE_ARCHITECTURE.md's own "Duplicate Functions (3
+versions each)" section as the first hit. Checked directly against the
+live file rather than trusted: the doc is dated June 26 2026 and
+describes PRE-REFACTOR main.js (4700+ lines, "no extension system," no
+rpgace_core.js even existing yet). Every one of its 5 named duplicates
+(buildWeekSlots, buildMonthSlots, renderDailyGrid, scheduleAgenda,
+patchAgendaCardsWithSchedule) now has exactly 1 definition in live
+main.js — the doc is stale, its findings do not apply today. Real
+lesson (commit-archaeologist framing): this doc predates the July
+main.js/rpgace_core.js split and the subsequent cleanup passes; it
+should not be re-cited as current evidence in a future session.
+
+No duplicate top-level function names within main.js (checked). No
+function name shared between main.js and rpgace_core.js (checked) —
+the module boundary is holding, no cross-file logic duplication of that
+kind.
+
+TWO REAL, CURRENT findings:
+1. 15 near-identical hand-rolled Supabase read-fetch blocks in main.js:
+   `fetch(SUPABASE_URL+'/rest/v1/...', {headers:{'apikey':SUPABASE_KEY,
+   'Authorization':'Bearer '+SUPABASE_KEY}})` — the exact "4th Supabase-
+   write-idiom" landmine CLAUDE.md already flagged, confirmed still
+   live, here on the READ side (all 10 real POST calls in the file
+   correctly go through /api/* server endpoints — no write-security
+   exposure, this was purely a code-duplication finding).
+2. The Supabase URL + publishable key is hardcoded independently in TWO
+   places: main.js's own module-level consts, and rpgace_core.js's
+   RPGACE.CONFIG.supabase. Same real risk class as the July 23
+   api/composio.js / api/_context.js CORS-header drift that silently
+   broke two live integrations — not fixed this pass (a real, separate,
+   larger refactor to make one file the single source of truth would
+   touch rpgace_core.js too; flagged, not built, see "not done" below).
+
+Also found: 15 main.js symbols at graph-degree 1 (used exactly once).
+NOT confirmed dead — degree 1 is normal for single-use UI handlers,
+structurally different from the earlier PIPELINE finding (which had
+zero DOM anchor anywhere, confirmed via direct check). Flagged as
+unverified rather than spending further effort on 15 individual
+reachability checks for uncertain payoff (token-cost discipline, rule
+11) — a real, honest scope limit, not a skipped step.
+
+------------------------------------------------------------------
+STEP 3 — debate / free-for-all-debate
+------------------------------------------------------------------
+Not run as a separate ceremony. The findings are clear-cut (a real,
+low-risk, mechanical consolidation with an obvious right answer) —
+manufacturing adversarial tension on an unambiguous finding would
+violate /paranoia's own "never manufactured balance" guardrail.
+
+------------------------------------------------------------------
+STEP 4 — /interrogation (Alex, direct answer via AskUserQuestion)
+------------------------------------------------------------------
+Asked: consolidate the 15 duplicated read-fetch blocks into one shared
+helper now, given main.js's freeze is lifted but it's still a heavily-
+loaded, shared file? Answer: "Yes, fix now."
+
+------------------------------------------------------------------
+STEP 5/6 — fix applied + fact-checked
+------------------------------------------------------------------
+New `function _sbGet(pathAndQuery)` added right after the SUPABASE_URL/
+SUPABASE_KEY consts — returns the raw fetch Response unchanged (pure
+boilerplate consolidation, zero logic change: every caller's existing
+.ok/.json()/error handling continues working identically). A real
+`function` declaration (hoisted), not `const`, so it's safely callable
+from call sites appearing earlier in the file than its own definition —
+same reasoning SUPABASE_URL/SUPABASE_KEY themselves already relied on
+(read only once a function body actually runs, well after the whole
+script has parsed top-to-bottom).
+
+All 15 call sites replaced, one at a time, each verified against its
+own real surrounding context (exact URL/query string, exact downstream
+.ok/.json() handling) before editing — not a blind find/replace.
+Verified after: `grep "'apikey':SUPABASE_KEY"` now returns exactly 1
+hit (the helper's own definition, correctly still using the raw
+consts); `_sbGet(` appears 16 times (1 definition + 15 real call
+sites). `node --check main.js`: clean. File went from 4407 to 4397
+lines (net small reduction — consolidating 15 multi-line blocks into
+single-line calls, offset by the new helper's own comment block).
+
+NOT done this pass, flagged honestly: the cross-file SUPABASE_URL/KEY
+duplication between main.js and rpgace_core.js was found but not fixed
+— unifying it to one real source of truth would need a genuinely larger
+refactor (main.js would need to read rpgace_core.js's RPGACE.CONFIG at
+runtime, or vice versa, which changes real load-order assumptions
+between the two files) and wasn't part of what Alex confirmed fixing
+this pass. Real future backlog item, not silently dropped.
