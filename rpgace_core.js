@@ -6187,7 +6187,8 @@ RPGACE.register('dashDeck', {
       });
     };
     var auto = [
-      { icon: '🕸️', title: 'Graphify Map', desc: 'Code + doc knowledge graph — auto-refreshed by /update-logging-system, not hand-written', href: '/graphify-out/graph.html' }
+      { icon: '🕸️', title: 'Graphify Map', desc: 'Code + doc knowledge graph — auto-refreshed by /update-logging-system, not hand-written', href: '/graphify-out/graph.html' },
+      { icon: '🌳', title: 'Graphify Tree', desc: 'D3 collapsible tree view of RPGACE (950 nodes) — built by Graphify CC, the real 4th Total member', href: '/graphify-out/GRAPH_TREE.html' }
     ];
     addGroup('Primary — the seven', primary, false);
     addGroup('Auto-generated', auto, true);
