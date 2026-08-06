@@ -1170,7 +1170,7 @@
     },
     {
       "id": "claude_rpgace_claude_md",
-      "label": "RPGACE \u2014 CLAUDE.md",
+      "label": "RPGACE — CLAUDE.md",
       "degree": 22
     },
     {
@@ -1266,8 +1266,41 @@
       "why": "cross-file semantic connection"
     }
   ],
-  "tokens": {
-    "input": 0,
-    "output": 0
-  }
+  "questions": [
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS` to the rest of the system?",
+      "why": "394 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `main.js` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.03753957485300769 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `rpgace_intel.py` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.0707070707070707 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `_context.js` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.0936408106219427 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `001 — Replace bare `ease` with real easing tokens everywhere` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.044444444444444446 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `RPGACE — CLAUDE.md` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `rpgace_core.js` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.08912655971479501 - nodes in this community are weakly interconnected."
+    }
+  ]
 }
