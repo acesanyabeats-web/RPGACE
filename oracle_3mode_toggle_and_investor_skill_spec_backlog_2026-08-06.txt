@@ -1,0 +1,221 @@
+oracle_3mode_toggle_and_investor_skill_spec_backlog_2026-08-06.txt
+==================================================================
+Verbatim record, per CLAUDE.md rule 5 (multi-subsystem asks get spec'd
+and confirmed first, real answers recorded verbatim, chat isn't durable
+storage). Covers: Alex's answers to the 3 outstanding /interrogation
+questions from the earlier same-day /paranoia pass on the Oracle-mode
+toggle, his real pricing question, his /investor persona definition, and
+the right-sized /paranoia pass run on the combined build that followed.
+
+------------------------------------------------------------------
+1) ALEX'S MESSAGE, VERBATIM
+------------------------------------------------------------------
+"1. scouted, now answered (also want to ask, does it make sense to buy
+more api keys that can inject one after another when exhausted, can i
+upgrade my current api key and unlock better abilities, output and speed
+of thinking? how much is the api key a month again? or am i only paying
+for claude pro?) 2) in the toggle in top right as a third mode. think of
+those oracle functions as modes. 3) good question, give me pros and
+cons, then [an outlook of an 300iq investor, entrepreneur with 10 start
+ups upward of 50 million, who is inputting 1 million pounds into this
+project looking for 10 million in net shareholder stakes in the next 3
+years as a return of investment on this start-up] [] is a new scope
+called /investor - an outlook on progress made that will judge the
+development and logistics for a bussiness stand point to get rpgace
+more ready for commercial use or output use to generate revenue, and
+gives practicals steps and input to all stages of a prompt framework
+when typed to help start making money or build infrastructure to start
+doing that. /paranoia all of this for me"
+
+------------------------------------------------------------------
+2) WHAT THIS ANSWERS (the 3 real /interrogation questions from the
+   earlier same-day /paranoia pass on "Fallback to Oracle" toggle idea)
+------------------------------------------------------------------
+Q1 (where do drained "scout" answers land?) -> "scouted, now answered" —
+a real named list/view, built this session (see Part 4).
+Q2 (how does Alex add a scout item?) + Q3 (does Fallback apply to live
+Oracle chat too?) -> answered together: Fallback becomes a genuine THIRD
+whole-app Oracle operating mode, symmetrical with Dummy/Real, selected
+from the same top-right toggle. "Think of those oracle functions as
+modes" — no separate scouting button/action; while the toggle is set to
+Fallback, ordinary Oracle usage across the app IS the scouting action.
+
+------------------------------------------------------------------
+3) REAL PRICING ANSWER (claude-api skill invoked per its own mandatory
+   trigger rule — never answered from memory)
+------------------------------------------------------------------
+Anthropic API pricing (cached 2026-06-24, this skill's own live table):
+Sonnet 4.6 (RPGACE's real ground-worker model) = $3.00 input / $15.00
+output per million tokens. Sonnet 5 = $3.00/$15.00 ($2/$10 intro through
+2026-08-31). Opus 5/4.8/4.7/4.6 = $5/$25. Fable 5 = $10/$50. Haiku 4.5 =
+$1/$5. Prompt caching: reads ~0.1x base input cost, writes 1.25x (5-min
+TTL) or 2x (1-hour TTL).
+
+Real facts, not guessed:
+- An API key has NO monthly fee and NO tiered "upgrade." It's a
+  credential against a Console account balance; every call draws down
+  that balance per token actually used. There is no flat "£X/month" cost
+  for the key itself.
+- Multiple keys under the SAME Console account/org share the SAME
+  balance — rotating keys only helps with per-key rate limits (RPM/TPM),
+  not with an empty balance. Real extra capacity needs a genuinely
+  separate account/org with its own separate payment method.
+- "Upgrade a key for better output/speed of thinking" is not a real
+  concept — output quality/reasoning comes from WHICH MODEL is called
+  (Haiku -> Sonnet -> Opus -> Fable) and settings like extended-thinking
+  budget, never from a tier on the key. Usage tiers (1-4) raise rate
+  limits as spend/payment history grows — they don't make output smarter.
+- Claude.ai Pro/Max (flat monthly subscription) and the Anthropic API
+  (pay-per-token, billed via Console) are two separate products/billing
+  systems. This session has no tool visibility into which one(s) Alex is
+  actually on — he needs to check console.anthropic.com/settings/billing
+  (API balance) and claude.ai/settings (Pro/Max) directly.
+- The free lever already built and standing idle most of the time:
+  oracle_fallback_queue + the daily "RPGACE Fallback Drain" Routine —
+  this Claude Code session's own separate Claude access answering queued
+  questions at zero extra Anthropic-API spend. Today's build (Part 4)
+  turns this from an emergency-only mechanism into a real, everyday
+  "scout now, get answered later for free" workflow.
+
+------------------------------------------------------------------
+4) /investor PERSONA — PROS/CONS ON THE API-COST-MANAGEMENT QUESTION
+   (the actual deliverable Alex asked for under item 3)
+------------------------------------------------------------------
+Persona: a 300-IQ investor/entrepreneur, 10 startups built (several
+past £50M), putting £1M into RPGACE for a 10M GBP net shareholder stake
+within 3 years.
+
+PROS of the current approach (Sonnet 4.6 pay-per-token + the free
+Fallback lane, no extra keys/upgrade purchase):
+- Real cost discipline already exists and is documented (rule 11, the
+  £10-burned-in-one-session audit, the 3-tier model system). A founder
+  who already tracks unit cost per API call is a real diligence
+  positive, not a nice-to-have — most solo AI-product founders don't.
+- The free Fallback lane is a genuinely underused asset. It converts
+  "I'm out of credits" from a stop condition into a batching decision —
+  zero marginal cost, reusing infrastructure that already exists
+  (the Morning Brief Routine's own proven pattern). That's real, already-
+  built leverage most seed-stage AI tools don't have.
+- Not buying a second API account avoids a real trap: founders who
+  throw money at infrastructure before there's a proven revenue loop
+  are a classic early-stage failure pattern this persona has seen
+  repeatedly. There is currently ZERO confirmed revenue event in RPGACE
+  (no beat sold via the Beatstars flow has been confirmed, no video
+  posted end-to-end) — spending more on API capacity ahead of that is
+  optimizing a cost line that revenue hasn't validated yet.
+
+CONS / real risk:
+- The Fallback lane is genuinely NOT live-chat capable (hourly-minimum
+  trigger interval, batch by design) — if Alex's actual bottleneck is
+  "I need Oracle NOW during a live session and it's down," this doesn't
+  solve that; it solves "I want to keep working async." Conflating the
+  two would be a real planning mistake.
+- A single Anthropic Console account/payment method is a real single
+  point of failure for anything revenue-facing later (e.g. an automated
+  captioning/posting pipeline that MUST run reliably) — worth revisiting
+  once there's an actual revenue stream depending on API uptime, not now.
+- "How much is the API key a month" being an open question this late
+  signals billing hasn't been actively monitored — worth a five-minute
+  actual Console check (spend this month, current balance, auto-reload
+  setting) rather than continuing to reason about it abstractly.
+
+VERDICT (this persona, stated plainly): Not worth buying a second key or
+chasing a nonexistent "upgrade" yet — that's spend without a validated
+revenue reason. The real next commercial move is smaller and cheaper:
+use the free Fallback lane for real, get ONE real revenue event
+confirmed (a Beatstars sale, one video actually posted end-to-end), THEN
+revisit infra spend with actual unit economics instead of guesses. This
+is exactly the same conclusion CLAUDE.md's own governing rule already
+points to ("does this result in a beat made or video posted within 48
+hours") — the investor lens didn't change the answer, it gave it a real
+business justification.
+
+------------------------------------------------------------------
+5) /paranoia — RIGHT-SIZED PASS ON THE 3-MODE TOGGLE + FALLBACK BUILD
+------------------------------------------------------------------
+Right-sizing note (per /paranoia's own guardrail): Alex is visibly
+resource-constrained right now (the reason he's asking about buying more
+keys at all). Running all 6 named sub-frameworks at full separate
+ceremony here would itself be the kind of token-cost problem rule 11
+exists to prevent, especially reusing evidence/verdicts already produced
+earlier this same session's first /paranoia pass on this same idea
+(verdict then: "Adopt, real and buildable", 3 interrogation questions —
+all 3 now answered above). This pass reconciles that prior verdict
+against the NEW answers rather than re-deriving it from scratch.
+
+Real evidence (GODMODE, direct code read this session):
+- main.js's callOracle() has exactly one real interception point
+  (confirmed: the mockOracle.isEnabled() check just before the real
+  /api/oracle fetch) — the same point extends cleanly to a 3-way branch
+  with zero new wrap layers, avoiding the exact wrap-ordering risk the
+  module's own header comment already warns about.
+- phylumPath._queueFallback / oracle_fallback_queue's real schema and
+  RLS (anon_all, deliberately never restricted, confirmed via the
+  landmine note and the existing insert call using RPGACE.sb.secureWrite,
+  which IS in api/data-write.js's ALLOWED_TABLES) both support a new
+  write path with zero schema change — only a new `context.type:
+  'scout_item'` value, following the exact same discriminator pattern
+  'bookworm_chapter_insight'/'silent_propose' already use.
+- create_trigger's real, confirmed constraint: minimum interval is
+  HOURLY. There is no mechanism for RPGACE's deployed web app (a public
+  Vercel-hosted client using only the anon key) to fire a Claude Code
+  Remote trigger early at "10 items waiting" — firing a trigger requires
+  an authenticated Claude Code Remote session, which the deployed app
+  is not and cannot become without real new infrastructure (a server-
+  side credential to CCR's own control plane, never discussed, not
+  scoped, Tier 3 if ever pursued). This is a REAL, confirmed limitation,
+  not a guess.
+
+Debate (FOR real build now / AGAINST building the 10-item auto-fire):
+FOR: the 3-mode toggle + scout-queue write path + "Scouted, Now
+Answered" list is fully buildable today with existing infrastructure,
+directly solves Alex's real recurring pain (credits running out mid-
+session, work he wants to capture and revisit later), and reuses 100%
+proven patterns (mockOracle's interception point, _queueFallback's write
+shape, dashDeck._popup() for the list UI) — zero new architecture.
+AGAINST attempting the 10-item auto-fire specifically: faking it (e.g. a
+client-side timer that "looks like" auto-fire but can't actually invoke
+CCR) would violate rule 7 (fail loud, never fake progress) the moment
+the browser tab is closed or the phone locks — a client-side trigger
+firing mechanism is fundamentally unreliable for something meant to run
+even when Alex isn't looking at the app. Building it partially and
+badging it as "automatic" would be a real honesty violation this
+project's own rules explicitly forbid.
+
+Council of 5 fact-check: does the resulting scope honestly match what
+Alex asked for? He asked for absorption "when triggered at 10 items
+waiting... or when daily drainback trigger occurs" — the daily trigger
+already exists and needs zero new work; the 10-item early-fire is the
+one piece that's honestly NOT buildable from the browser side today.
+Reporting the queue depth and telling Alex plainly when 10+ items are
+waiting (so HE can ask a Claude Code session to fire the drain early, or
+just wait for the daily run) is the honest version of "10 items ->
+absorb" available right now — flagging this explicitly rather than
+silently shipping a fake auto-fire.
+
+VERDICT: Build now — 3-mode toggle, real scout-queue write path,
+"Scouted, Now Answered" list view, honest queue-depth messaging
+(including the 10-item milestone notice with an honest note about the
+real limitation). Do NOT build a fake/unreliable auto-fire-at-10 client
+mechanism. If Alex wants a REAL auto-fire-at-10 later, that's a genuine
+new Tier-3 scope (a server-side credential to Claude Code Remote's
+control plane) — flagged here as a future idea, not built blind.
+
+------------------------------------------------------------------
+6) WHAT WAS ACTUALLY BUILT THIS SESSION (see patch_notes.html for the
+   dated card with full technical detail)
+------------------------------------------------------------------
+- mockOracle extended from a 2-state (Dummy/Real) toggle to a real
+  3-state toggle (Dummy / Fallback-Scout / Real), same top-right switch,
+  cycling on click, 3 distinct colors/labels.
+- Fallback mode's real behavior: every Oracle call while active queues
+  into oracle_fallback_queue (context.type:'scout_item') instead of
+  calling /api/oracle live, and returns an honest, unmistakably-labeled
+  acknowledgment (not a fake answer) confirming the item was scouted,
+  with the current pending-queue depth and an honest note at 10+ items.
+- New "📥 Scouted, Now Answered" popup list (dashDeck._popup()) showing
+  every scout_item row, pending and answered, browsable any time.
+- .claude/skills/investor/SKILL.md — new project-scoped skill, Alex's
+  verbatim persona/scope definition, both as a standalone report shape
+  and an inline lens usable inside any other prompt.
+- This backlog file, per rule 5.

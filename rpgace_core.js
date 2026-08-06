@@ -18994,28 +18994,59 @@ RPGACE.register('voiceInput', {
 // convention every other module here follows).
 RPGACE.register('mockOracle', {
 
-  STORAGE_KEY: 'rpgace_mock_oracle',
+  // Aug 6, same day, 2nd pass: extended from a binary Dummy/Real switch to
+  // a real 3-state Oracle Mode, per Alex's own direct spec ("in the toggle
+  // in top right as a third mode. think of those oracle functions as
+  // modes"). MODE_KEY replaces the old binary STORAGE_KEY; the old key is
+  // migrated once in init() and never written again, so no dangling second
+  // source of truth survives (rule 8). isEnabled() is kept as the exact
+  // same method name/meaning ("is Dummy mode active") specifically because
+  // main.js's callOracle() already calls it - zero change needed at that
+  // call site for the dummy-mode branch.
+  MODE_KEY: 'rpgace_oracle_mode',
+  LEGACY_KEY: 'rpgace_mock_oracle',
+  MODES: ['real', 'dummy', 'fallback'],
 
   init: function() {
     var self = this;
+    try {
+      if (!localStorage.getItem(this.MODE_KEY) && localStorage.getItem(this.LEGACY_KEY) === '1') {
+        localStorage.setItem(this.MODE_KEY, 'dummy');
+        localStorage.removeItem(this.LEGACY_KEY);
+      }
+    } catch (e) {}
     RPGACE.registerBootTask(function() { return self._injectToggleButton(); });
+    RPGACE.registerBootTask(function() { return self._injectScoutButton(); });
   },
 
-  isEnabled: function() {
-    try { return localStorage.getItem(this.STORAGE_KEY) === '1'; } catch (e) { return false; }
+  getMode: function() {
+    try {
+      var m = localStorage.getItem(this.MODE_KEY);
+      return this.MODES.indexOf(m) !== -1 ? m : 'real';
+    } catch (e) { return 'real'; }
   },
-
-  enable: function() {
-    try { localStorage.setItem(this.STORAGE_KEY, '1'); } catch (e) {}
-    RPGACE.utils.toast('🧪 Mock Oracle ON — every Oracle reply from now on is fake, wiring-test only. No real API calls, no real cost.', '#E2A83D', 5000);
+  setMode: function(mode) {
+    if (this.MODES.indexOf(mode) === -1) return;
+    try { localStorage.setItem(this.MODE_KEY, mode); } catch (e) {}
+    if (mode === 'dummy') {
+      RPGACE.utils.toast('🧪 Dummy Oracle ON — every Oracle reply from now on is fake, wiring-test only. No real API calls, no real cost.', '#E2A83D', 5000);
+    } else if (mode === 'fallback') {
+      RPGACE.utils.toast('📥 Fallback Scout Mode ON — every Oracle send now queues for later, free, instead of calling the real API. Open "Scouted" any time to browse answers.', 'rgba(201,168,76,0.9)', 6000);
+    } else {
+      RPGACE.utils.toast('✅ Real Oracle API — live calls resume', '#4CAF82', 3000);
+    }
     this._renderState();
   },
-  disable: function() {
-    try { localStorage.removeItem(this.STORAGE_KEY); } catch (e) {}
-    RPGACE.utils.toast('🧪 Mock Oracle OFF — real Oracle calls resume', '#4CAF82', 3000);
-    this._renderState();
+  // Back-compat: "isEnabled" has always meant "is Dummy mode active" -
+  // main.js's callOracle() calls this exact method name/meaning already.
+  isEnabled: function() { return this.getMode() === 'dummy'; },
+  isFallbackMode: function() { return this.getMode() === 'fallback'; },
+  // Cycles Real -> Dummy -> Fallback -> Real on click.
+  toggle: function() {
+    var order = ['real', 'dummy', 'fallback'];
+    var next = order[(order.indexOf(this.getMode()) + 1) % order.length];
+    this.setMode(next);
   },
-  toggle: function() { if (this.isEnabled()) this.disable(); else this.enable(); },
 
   // Real reply generator, called from main.js's callOracle() when mock
   // mode is on. Scans the outbound prompt for this app's own known
@@ -19075,18 +19106,21 @@ RPGACE.register('mockOracle', {
   // switch is permanently rendered regardless of state — the discoverability
   // complaint was the real bug, not the toggle logic itself, so the fix is
   // "always there," not "smarter hiding."
+  // Widened to a 3-position track same day (2nd pass) for the Fallback
+  // mode: Real -> Dummy -> Fallback -> Real, cycling on click, per Alex's
+  // own spec ("in the toggle in top right as a third mode").
   _injectToggleButton: function () {
     if (document.getElementById('mock-oracle-switch')) return;
     var self = this;
 
     var wrap = document.createElement('div');
     wrap.id = 'mock-oracle-switch';
-    wrap.title = 'Toggle Mock Oracle — dummy replies for wiring tests (zero API cost) vs. real Oracle API';
+    wrap.title = 'Click to cycle Oracle Mode: Real API → Dummy (wiring tests, zero cost) → Fallback Scout (queue for free later answers)';
     wrap.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;align-items:center;gap:8px;background:#0c0c16;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px 5px 5px;box-shadow:0 4px 16px rgba(0,0,0,.5);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;';
 
     var track = document.createElement('div');
     track.id = 'mock-oracle-track';
-    track.style.cssText = 'position:relative;width:44px;height:24px;border-radius:12px;flex-shrink:0;transition:background .2s ease;';
+    track.style.cssText = 'position:relative;width:64px;height:24px;border-radius:12px;flex-shrink:0;transition:background .2s ease;';
 
     var knob = document.createElement('div');
     knob.id = 'mock-oracle-knob';
@@ -19104,6 +19138,22 @@ RPGACE.register('mockOracle', {
     self._renderState();
   },
 
+  // Small pill next to the switch, opening the "Scouted, Now Answered"
+  // browsable list. Always present (not just while Fallback mode is
+  // active) since past scouted items stay worth browsing regardless of
+  // which mode is active right now.
+  _injectScoutButton: function () {
+    if (document.getElementById('mock-oracle-scout-btn')) return;
+    var self = this;
+    var btn = document.createElement('div');
+    btn.id = 'mock-oracle-scout-btn';
+    btn.title = 'Browse scouted questions and their free fallback answers';
+    btn.style.cssText = 'position:fixed;top:44px;right:10px;z-index:999999;background:#0c0c16;border:1px solid rgba(201,168,76,0.35);border-radius:14px;padding:4px 11px;font-size:11px;font-weight:700;letter-spacing:.3px;color:rgba(201,168,76,0.9);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;box-shadow:0 3px 10px rgba(0,0,0,.4);';
+    btn.textContent = '📥 Scouted';
+    btn.onclick = function () { self._openScoutedList(); };
+    document.body.appendChild(btn);
+  },
+
   _renderState: function () {
     var track = document.getElementById('mock-oracle-track');
     var knob = document.getElementById('mock-oracle-knob');
@@ -19112,7 +19162,8 @@ RPGACE.register('mockOracle', {
     if (existingBadge) existingBadge.remove();
     if (!track || !knob || !label) return;
 
-    if (this.isEnabled()) {
+    var mode = this.getMode();
+    if (mode === 'dummy') {
       // Dummy Oracle active — red, knob left.
       track.style.background = '#CC4A4A';
       knob.style.left = '2px';
@@ -19126,13 +19177,168 @@ RPGACE.register('mockOracle', {
       badge.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
       badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#CC4A4A;color:#1a0808;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
       document.body.appendChild(badge);
+    } else if (mode === 'fallback') {
+      // Fallback Scout mode active — amber/gold, knob center.
+      track.style.background = 'rgba(201,168,76,0.85)';
+      knob.style.left = '22px';
+      label.textContent = '📥 Fallback Scout';
+      label.style.color = '#C9A84C';
+      var badge2 = document.createElement('div');
+      badge2.id = 'mock-oracle-badge';
+      badge2.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
+      badge2.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(201,168,76,0.9);color:#1a1508;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
+      document.body.appendChild(badge2);
     } else {
       // Real Oracle API — green, knob right.
       track.style.background = '#4CAF82';
-      knob.style.left = '22px';
+      knob.style.left = '42px';
       label.textContent = '✅ Oracle API';
       label.style.color = '#4CAF82';
     }
+  },
+
+  // ── Fallback Scout mode — real behavior ─────────────────────────────
+  // Called from main.js's callOracle() when getMode()==='fallback',
+  // exactly parallel to _fakeReply's dummy-mode call site. Instead of
+  // fabricating an answer, this queues the REAL prompt into
+  // oracle_fallback_queue (same table, same RPGACE.sb.secureWrite write
+  // path phylumPath._queueFallback already uses — rule 8, no second
+  // write mechanism invented) with a new context.type:'scout_item'
+  // discriminator, then returns an honest, unmistakably-labeled
+  // acknowledgment — never a fake answer to the actual question asked.
+  // The daily "RPGACE Fallback Drain" Routine (already live, unchanged)
+  // answers these the same way it answers every other tier; Alex browses
+  // real answers later via _openScoutedList(), never an auto-injected
+  // chat reply (the browser tab/session may be long gone by the time a
+  // daily-batch answer lands).
+  _queueScoutItem: function (messages, system, onChunk) {
+    var self = this;
+    var lastUser = (messages || []).slice().reverse().filter(function (m) { return m.role === 'user'; })[0];
+    var promptText = (lastUser && lastUser.content) || '';
+
+    var row = {
+      prompt: promptText,
+      tier: 'ground_worker_text',
+      max_tokens: 1500,
+      model: null,
+      status: 'pending',
+      context: { type: 'scout_item', queued_via: 'live_chat_fallback_mode', system: system || null }
+    };
+
+    // Fail loud (rule 7): a failed write must never come back looking
+    // like a successful queue — this is checked explicitly rather than
+    // swallowed, unlike a bare .catch(warn-and-continue) would produce.
+    var ackLines = function (pendingCount, writeFailed, writeErr) {
+      if (writeFailed) {
+        return [
+          '⚠️ [SCOUT QUEUE WRITE FAILED — this question was NOT saved]',
+          '',
+          'Real error: ' + (writeErr || 'unknown'),
+          '',
+          'Nothing was queued. Switch back to Real or Dummy mode, or try again — do not assume this was captured.',
+        ].join('\n');
+      }
+      var lines = [
+        '📥 [SCOUTED — queued for free fallback processing, not answered live]',
+        '',
+        'This question was added to your scouting queue instead of calling the real API. It will be answered by the daily Fallback Drain (free, uses Claude Code\'s own access, no Anthropic API spend) — check "📥 Scouted" any time to browse real answers as they land.',
+        '',
+        'Pending in queue: ' + pendingCount,
+      ];
+      if (pendingCount >= 10) {
+        lines.push('', '🔔 10+ items waiting — the next daily drain will answer all of them. This app can\'t auto-fire the drain early from the browser (real limitation, not a bug) — ask a Claude Code session to fire it now if you want them answered sooner.');
+      }
+      return lines.join('\n');
+    };
+
+    var writeFailed = false, writeErr = null;
+    return RPGACE.sb.secureWrite('oracle_fallback_queue', 'insert', [row])
+      .catch(function (e) { writeFailed = true; writeErr = e.message; console.warn('[mockOracle] scout enqueue failed:', e.message); })
+      .then(function () {
+        if (writeFailed) return [];
+        return RPGACE.sb.select('oracle_fallback_queue', "context->>type=eq.scout_item&status=eq.pending&select=id");
+      })
+      .catch(function () { return []; })
+      .then(function (rows) {
+        var full = ackLines((rows || []).length || 1, writeFailed, writeErr);
+        return new Promise(function (resolve) {
+          if (onChunk) {
+            var parts = full.match(/[\s\S]{1,40}/g) || [full];
+            var i = 0, acc = '';
+            var iv = setInterval(function () {
+              acc += parts[i] || '';
+              onChunk(acc);
+              i++;
+              if (i >= parts.length) {
+                clearInterval(iv);
+                resolve({ content: [{ type: 'text', text: acc }] });
+              }
+            }, 55);
+          } else {
+            setTimeout(function () { resolve({ content: [{ type: 'text', text: full }] }); }, 300);
+          }
+        });
+      });
+  },
+
+  // "📥 Scouted, Now Answered" — real browsable list, confirms Q1 from the
+  // earlier /paranoia interrogation round. Reads oracle_fallback_queue
+  // directly (anon_all RLS, never restricted — same landmine-protected
+  // table _checkFallbackAnswers already reads), newest first, showing
+  // both still-pending and already-answered scout_item rows so Alex can
+  // see the real state of his own queue, not just a black box.
+  _openScoutedList: function () {
+    var self = this;
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '640px', borderColor: 'rgba(201,168,76,0.35)',
+      eyebrow: 'Fallback Scout Mode', title: '📥 Scouted, Now Answered', accent: 'rgba(201,168,76,0.9)',
+    });
+    var body = pop.box;
+    var loading = document.createElement('div');
+    loading.style.cssText = 'color:var(--muted);font-size:12px;padding:10px 0;';
+    loading.textContent = 'Loading scouted items…';
+    body.appendChild(loading);
+
+    RPGACE.sb.select('oracle_fallback_queue', "context->>type=eq.scout_item&order=created_at.desc&limit=50")
+      .then(function (rows) {
+        loading.remove();
+        if (!rows || !rows.length) {
+          var empty = document.createElement('div');
+          empty.style.cssText = 'color:var(--muted);font-size:12px;padding:10px 0;';
+          empty.textContent = 'Nothing scouted yet. Switch the top-right toggle to 📥 Fallback Scout and send an Oracle message to queue your first item.';
+          body.appendChild(empty);
+          return;
+        }
+        rows.forEach(function (row) {
+          var card = document.createElement('div');
+          card.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;';
+          var answered = row.status === 'answered';
+          var statusChip = document.createElement('span');
+          statusChip.style.cssText = 'display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-bottom:8px;' + (answered ? 'background:rgba(76,175,130,0.15);color:#4CAF82;' : 'background:rgba(201,168,76,0.15);color:#C9A84C;');
+          statusChip.textContent = answered ? '✅ Answered' : '⏳ Pending';
+          card.appendChild(statusChip);
+
+          var promptEl = document.createElement('div');
+          promptEl.style.cssText = 'font-size:12px;color:var(--text);white-space:pre-wrap;margin-bottom:' + (answered ? '8px' : '0') + ';';
+          promptEl.textContent = row.prompt || '(no prompt text)';
+          card.appendChild(promptEl);
+
+          if (answered && row.answer) {
+            var ansLbl = document.createElement('div');
+            ansLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(76,175,130,0.7);margin:8px 0 4px;';
+            ansLbl.textContent = 'Real answer';
+            card.appendChild(ansLbl);
+            var ansEl = document.createElement('div');
+            ansEl.style.cssText = 'font-size:12px;color:var(--muted);white-space:pre-wrap;';
+            ansEl.textContent = row.answer;
+            card.appendChild(ansEl);
+          }
+          body.appendChild(card);
+        });
+      })
+      .catch(function (e) {
+        loading.textContent = 'Could not load scouted items: ' + e.message;
+      });
   },
 
 });

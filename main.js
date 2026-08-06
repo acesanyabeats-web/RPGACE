@@ -127,6 +127,15 @@ async function callOracle(messages, system, maxTokens=1000, onChunk){
   if (window.RPGACE && RPGACE.modules.mockOracle && RPGACE.modules.mockOracle.isEnabled()) {
     return RPGACE.modules.mockOracle._fakeReply(messages, system, onChunk);
   }
+  // Aug 6, same day 2nd pass — real third Oracle mode: Fallback Scout.
+  // Alex's own spec ("in the toggle in top right as a third mode, think
+  // of those oracle functions as modes"). While active, every real Oracle
+  // send queues into oracle_fallback_queue instead of calling the live
+  // API, and is answered later for free by the existing daily Fallback
+  // Drain Routine. See mockOracle._queueScoutItem in rpgace_core.js.
+  if (window.RPGACE && RPGACE.modules.mockOracle && RPGACE.modules.mockOracle.isFallbackMode()) {
+    return RPGACE.modules.mockOracle._queueScoutItem(messages, system, onChunk);
+  }
   if (onChunk) {
     let res;
     try {
