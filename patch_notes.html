@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">♻️ Aug 6 (same day, 3rd pass) — Real <code>/deduplication</code> fix: encyclopedia entries were being re-analyzed on every page load.</div>
+    <div class="card-body">
+      Alex spotted the same encyclopedia entries (Harp Arpeggiation, Wiley's Eskimo, Dave x Central Cee, Endshpiel) appearing multiple times in the new "📥 Scouted, Now Answered" list and asked whether entries could be deduplicated against RPGACE's own established content before reprocessing, to save tokens and workload.
+      <br><br>
+      <strong>Real root cause</strong> (direct code read, not guessed): <code>ENC_BULLET_CACHE</code> — the encyclopedia preview-bullet generator's only "cache" — is a plain in-memory JS object with zero persistence. It evaporates on every page reload, so <code>generateEncBullets()</code> re-sent the identical prompt to Oracle every time the Encyclopedia page loaded, even for entries whose bullets already existed from a prior session. Once Fallback Scout mode shipped this same day, those re-generations became re-queued <code>scout_item</code> rows too — which is what Alex actually saw.
+      <br><br>
+      <strong>Real fix, per rule 8 (dedup always, no exceptions):</strong> new <code>encyclopedia.preview_bullets</code> jsonb column (migration applied) — the entry's own real "destination of planned output." <code>generateEncBullets()</code> now checks this persisted column BEFORE ever calling Oracle; a successful generation writes back via <code>RPGACE.sb.secureWrite</code> (encyclopedia is already in <code>api/data-write.js</code>'s <code>ALLOWED_TABLES</code>), a failed/fallback generation never does, so a transient error can't poison the row with a useless placeholder bullet.
+      <br><br>
+      <strong>Second, generic safeguard</strong> at the queue layer itself: <code>mockOracle._queueScoutItem</code> now checks existing pending <code>scout_item</code> rows for an exact prompt-text match before inserting, and returns an honest "♻️ already scouted, nothing new queued" acknowledgment instead of minting a duplicate row — caller-agnostic, so it protects every current and future Fallback Scout caller, not just this one root cause.
+      <br><br>
+      node --check clean on both files. Cache-bust 20260806c → d (main.js), 20260806h → i (rpgace_core.js). Merged to <code>main</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">📥 Aug 6 (same day, 2nd pass) — Oracle Mode is now a real 3-state toggle: Real / Dummy / Fallback Scout. New <code>/investor</code> skill.</div>
     <div class="card-body">
       Alex answered the 3 outstanding <code>/interrogation</code> questions from the earlier same-day <code>/paranoia</code> pass on the Oracle-mode idea in one message, plus asked a real pricing question and defined a new named skill. Full verbatim record: <code>oracle_3mode_toggle_and_investor_skill_spec_backlog_2026-08-06.txt</code>.
