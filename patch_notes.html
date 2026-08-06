@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🚨 Aug 6 — real G6 catch: deleting api/noter.js broke production, fixed same session.</div>
+    <div class="card-body">
+      The main.js cleanup's first push (commit <code>0402049</code>) came back production <code>state: ERROR</code> — real build log: "The pattern 'api/noter.js' defined in <code>functions</code> doesn't match any Serverless Functions." <code>vercel.json</code> still explicitly referenced the deleted file in both its <code>rewrites</code> and <code>functions</code> blocks, a config file the earlier evidence pass hadn't checked.
+      <br><br>
+      Fixed same session (commit <code>8582745</code>): removed both stale entries, re-verified valid JSON, re-pushed, re-confirmed via Vercel MCP — <code>state: READY</code>, aliased to the real <code>rpgace.vercel.app</code>. New standing rule added to CLAUDE.md's landmine: deleting an <code>api/*.js</code> file needs a <code>vercel.json</code> grep too, not just a codebase-wide caller search.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔓 Aug 6 — main.js freeze LIFTED indefinitely (Alex's own explicit call) + real dead-code removal, engineer_pass_2026-08-06_13.txt.</div>
     <div class="card-body">
       Following the Content Pipeline naming dedup check, Alex said directly: "no more exceptions, im tired of the frozen core always being out of date and stale, the freeze is officially lifted indefinately." The "deliberate logged exception" ceremony is gone — <code>node --check main.js</code> before every commit and same-session logging both stay.

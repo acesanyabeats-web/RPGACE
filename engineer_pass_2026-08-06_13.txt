@@ -76,3 +76,24 @@ main.js for other possible dead code — this pass was bounded to the
 specific "Content Pipeline" naming collision Alex flagged, not a full
 main.js dead-code audit. A broader sweep would be a real, separate future
 task if Alex wants one, now that the freeze no longer blocks it.
+
+REAL G6 CATCH (not silently missed) — a second real failure this same pass
+------------------------------------------------------------------------
+The first push (commit 0402049) came back production `state: ERROR` on
+BOTH the `main` and working-branch deployments. Real build log, not
+guessed: "The pattern 'api/noter.js' defined in `functions` doesn't match
+any Serverless Functions inside the `api` directory." `vercel.json` still
+explicitly referenced `api/noter.js` in both its `rewrites` and
+`functions` blocks — a config file this pass hadn't checked before
+deleting the underlying file. Real gap in the evidence-gathering above:
+`ls api/*.js` and grepping every JS/HTML file for callers isn't the full
+picture when a deploy config also hardcodes function paths.
+
+Fixed same session: removed both stale `api/noter` entries from
+`vercel.json` (commit 8582745), re-verified valid JSON, re-pushed to
+`main`, re-confirmed via Vercel MCP `get_deployment` — `state: READY`,
+`target: production`, aliased to the real `rpgace.vercel.app` domain.
+
+Lesson for the record, worth keeping as a standing check: **deleting an
+`api/*.js` file needs a `vercel.json` grep too, not just a codebase grep
+for callers** — added to CLAUDE.md's own landmine bullet.
