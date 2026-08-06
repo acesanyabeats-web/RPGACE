@@ -1,0 +1,79 @@
+graphify_orphan_scripts_cleanup_2026-08-06.txt
+=================================================
+Real record, per CLAUDE.md rule 5. Alex asked: "on graphify i see some
+dota that are not connected in any way, go through the list to see nodes
+with no neighbour or 0 links or edges to see what we can hook it up to."
+
+------------------------------------------------------------------
+REAL EVIDENCE (before proposing anything)
+------------------------------------------------------------------
+Computed degree directly from graphify-out/graph.json's real 1396
+`links` (1064 nodes total at the time): 115 nodes had zero edges.
+Every one of the 115 was the SAME thing — a whole-file node (source_
+location L1, i.e. "this file, as a unit") under `scripts/`, out of 125
+files in that directory total. Confirmed by reading several of them
+directly, not assumed from filenames alone:
+
+  scripts/fix_dedup.py    — open('rpgace_core.js') + a single hardcoded
+                             old-string/new-string swap, run once
+  scripts/show_prod2.py   — reads rpgace_core.js, prints one fixed line
+                             range to stdout
+  scripts/find_anchor2.py — reads rpgace_core.js, greps a few keywords
+
+All three (and by pattern, the whole batch: fix_*/patch_*/show_*/find_*/
+mod_*/extract_*/step9_panels.py/scan_all_duplicates.py/
+force_replace_cr.py/remove_collapsible_call.py) are one-off, standalone
+CLI scratch scripts — meant to be run once (`python3 scripts/whatever.py`)
+during a past debugging session, never imported by anything else, never
+called by another file. Cross-checked, not assumed:
+- Zero references to any of the 115 filenames anywhere else in the repo
+  (grepped across .md/.txt/.html/.json/.py/.js, excluding graphify-out).
+- All 115 trace to exactly 2 historical commits (2026-06-30 22:28:33 and
+  2026-07-07 23:43:49) — a bulk batch from early sessions, predating the
+  project's current discipline (dated backlog .txt files, the real
+  graphify_recolor.py/graphify_river_group.py convention of documented,
+  reusable scripts).
+- The real live app code (rpgace_core.js, main.js, api/*) had ZERO
+  orphans — the disconnection was 100% contained to this one legacy
+  scratch-script batch, not scattered dead ends across real code.
+
+------------------------------------------------------------------
+WHY NOT "HOOK THEM UP"
+------------------------------------------------------------------
+Adding graph edges to these nodes would mean fabricating relationships
+that don't exist — none of the 115 are called by anything, import
+anything, or have any real relationship to the rest of the codebase.
+Doing so would misrepresent the codebase rather than fix a genuine graph
+gap (rule 1: never invent structure that isn't real). Put to Alex
+directly via AskUserQuestion rather than guessed.
+
+------------------------------------------------------------------
+DECISION (Alex, direct answer)
+------------------------------------------------------------------
+"Delete outright" — git history preserves them if ever needed; scripts/
+becomes just the ~10 real, live tools.
+
+------------------------------------------------------------------
+WHAT WAS DONE
+------------------------------------------------------------------
+1. Verified all 115 listed files actually exist on disk before deleting
+   anything (0 missing).
+2. Deleted all 115. scripts/ now holds exactly 10 real files:
+   build_full_scheduling_system.py, fourth_rota.py, graphify_recolor.py,
+   graphify_river_group.py, mod_taxonomyTree.js,
+   rebuild_daily_grid_v2.py, rpgace_intel.py, split.py,
+   stub_addSchedButtons.py, supabase_sync.py.
+3. Ran `graphify . --update --code-only --no-viz` — real, free AST
+   rebuild. Confirmed live: "Pruned 115 node(s)... 115 deleted" in its
+   own output. Post-rebuild degree recheck: 0 orphans remain anywhere
+   in the graph (969 nodes total, down from 1064).
+4. Re-ran the standing export -> recolor -> river-group sequence
+   (`/update-logging-system` artifact type 10) so the live, clickable
+   graph.html in the Oversight popup reflects the cleanup, not a stale
+   pre-deletion snapshot.
+
+Real, honest scope note: this closes the ONE orphan cluster that
+existed — it does not mean the graph will never have a new orphan again
+(a genuinely new, real one-off scratch script written and committed in
+the future would show up the same way). Nothing here changes that; this
+was a one-time cleanup of an accumulated batch, not a new standing rule.

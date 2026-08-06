@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Aug 6 (same day, 13th pass) — 115 orphaned scratch scripts deleted, found via graphify's own disconnected-node list.</div>
+    <div class="card-body">
+      Real Alex ask: "on graphify i see some data that are not connected in any way, go through the list to see nodes with no neighbour or 0 links or edges to see what we can hook it up to."
+      <br><br>
+      <strong>Real evidence first</strong>: computed degree directly from <code>graphify-out/graph.json</code>'s real 1396 edges — 115 of 1064 nodes had zero neighbors. Every single one was a whole-file node under <code>scripts/</code> (out of 125 files there total). Read several directly to confirm, not assumed from filenames: <code>fix_dedup.py</code>, <code>show_prod2.py</code>, <code>find_anchor2.py</code> were all one-off <code>open('rpgace_core.js')</code> + a single hardcoded find/replace or line-dump, clearly meant to run once via CLI during a past debugging session. Zero references to any of the 115 anywhere else in the repo; all trace to exactly 2 historical bulk commits (June 30 + July 7), predating this project's current tooling discipline.
+      <br><br>
+      <strong>Why not just "hook them up"</strong>: adding graph edges to make them look connected would have fabricated relationships that don't exist — real evidence showed the live app code itself (rpgace_core.js/main.js/api/*) had ZERO orphans; the disconnection was 100% contained to this one legacy scratch batch, correctly reflecting reality rather than a graphify extraction gap.
+      <br><br>
+      Put to Alex directly (archive / delete / just document) rather than guessed — his call: <strong>delete outright</strong>, git history preserves them if ever needed. Verified all 115 existed before deleting anything (0 missing), deleted all 115, <code>scripts/</code> now holds exactly 10 real files (<code>graphify_recolor.py</code>/<code>graphify_river_group.py</code>/<code>fourth_rota.py</code>/<code>rpgace_intel.py</code>/etc). Ran <code>graphify . --update --code-only --no-viz</code> (free rebuild) — its own output confirmed "Pruned 115 node(s)... 115 deleted"; re-checked degree afterward: 0 orphans remain anywhere in the graph (969 nodes total, down from 1064). Re-ran the standing export → recolor → river-group sequence so the live, clickable graph in the Oversight popup reflects the cleanup.
+      <br><br>
+      Full record: <code>graphify_orphan_scripts_cleanup_2026-08-06.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔵 Aug 6 (same day, 12th pass, via /Engineer) — real taxonomy circle-pack diagram, graphify spatial clustering, manual.html collapsible domain groups.</div>
     <div class="card-body">
       Real Alex ask ("do it /Engineer") to execute 3 deferred goals from earlier this session, right-sized to their Recommended scope since Alex declined to pick between options twice.
