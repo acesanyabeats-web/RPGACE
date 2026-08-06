@@ -6186,7 +6186,11 @@ RPGACE.register('dashDeck', {
         body.appendChild(row);
       });
     };
+    var auto = [
+      { icon: '🕸️', title: 'Graphify Map', desc: 'Code + doc knowledge graph — auto-refreshed by /update-logging-system, not hand-written', href: '/graphify-out/graph.html' }
+    ];
     addGroup('Primary — the seven', primary, false);
+    addGroup('Auto-generated', auto, true);
     addGroup('Working specs', secondary, true);
   },
 

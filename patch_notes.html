@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🕸️ Aug 6 (same day, 7th pass) — the graph visualization is now a real, clickable oversight doc, live on rpgace.vercel.app.</div>
+    <div class="card-body">
+      Alex's direct ask: make <code>graphify-out/graph.html</code> reachable from inside RPGACE itself, and keep it auto-updated with everything else so it can't go stale.
+      <br><br>
+      <strong>Checked, not assumed</strong>: no <code>.vercelignore</code> excludes <code>graphify-out/</code>, and 4 of the existing 7 oversight docs (<code>patch_notes.html</code>, <code>manual.html</code>, <code>taxonomy_map.html</code>, <code>minotaur_map.html</code>) already serve live with zero explicit <code>vercel.json</code> rewrite — confirms Vercel's default filesystem-first static serving already covers the graph file too, no config change needed.
+      <br><br>
+      Added as a new "Auto-generated" group inside the real, live "Oversight" popup (<code>dashDeck._openOversight</code>) — kept separate from "the seven" rather than becoming an 8th, since it's a regenerated artifact, not hand-narrated prose. Along the way, confirmed the OTHER hardcoded oversight-doc list in the file (<code>docsLinks._inject</code>) is already dead code, neutered since July 20 with a clear self-documenting comment — not a live second copy that needed a rule-8 fix, just checked rather than assumed.
+      <br><br>
+      <code>/update-logging-system</code>'s artifact type 10 upgraded from optional to mandatory: every code-structure change now re-runs <code>graphify export html</code> + the recolor script + commits the refreshed file in the same pass, since the link is now something Alex actually clicks from inside the live app.
+      <br><br>
+      node --check clean. Cache-bust 20260806j → k.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎨 Aug 6 (same day, 6th pass) — graphify wired into <code>/5thDimension</code> Phase 1; graph visualization recolored to real RPGACE tokens.</div>
     <div class="card-body">
       Two direct follow-ups on pass 5's graphify work.

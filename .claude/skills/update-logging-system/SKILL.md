@@ -78,12 +78,18 @@ row that applies, either touch the artifact or state explicitly why not
     step as part of its evidence pass, referencing this artifact rather
     than restating it — rule 8, one definition of "keep the graph
     current," not two.**
-    If a visual export is also wanted (`graphify export html`), immediately
-    run `python3 scripts/graphify_recolor.py` afterward — graphify's own
-    export always resets to its default Tableau10 palette, so this
-    deterministic, idempotent RPGACE-palette swap (real tokens from
-    `style.css`'s `:root`, never guessed) needs re-running every time the
-    HTML gets regenerated, not just once.
+    **Mandatory as of Aug 6 (real Alex ask — `graphify-out/graph.html` is
+    now a real, clickable entry in the live "Oversight" popup, `dashDeck._openOversight`'s
+    "Auto-generated" group): every time this artifact fires, also run
+    `graphify export html` then `python3 scripts/graphify_recolor.py`**
+    (graphify's own export always resets to its default Tableau10
+    palette, so the RPGACE-palette swap needs re-running every time the
+    HTML regenerates, not just once) — then commit the refreshed
+    `graphify-out/graph.html` alongside the code change, same standing
+    commit/merge/push discipline as everything else, so the live link
+    never points at a stale visual. This was previously framed as
+    optional ("if a visual export is also wanted") — no longer accurate
+    now that Alex clicks it from inside the app.
 
 **Optional, non-authoritative pre-check** (same Aug 6 evidence): before
 marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded
