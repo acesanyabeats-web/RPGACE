@@ -6,6 +6,7 @@
 <title>RPGACE — Taxonomy Tree Map</title>
 <style>
   :root {
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
     --bg: #08080f;
     --surface: #101019;
     --surface2: #161623;
@@ -158,6 +159,43 @@
   .loading-note { color: var(--faint); font-size: 13px; padding: 20px 0; }
   .error-note { color: var(--species); font-size: 13px; padding: 20px 0; max-width: 640px; }
 
+  /* ── Aug 6, real Alex ask via /Engineer: "just showing breakdown
+     phylum-order-etc in a ball breaking into multiple smaller ones as
+     a diagram would be better" — a real interactive circle-packing
+     diagram as the page's primary view. Vanilla SVG, zero npm runtime,
+     same architecture rule as the rest of RPGACE. ── */
+  .pack-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .pack-breadcrumb { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.5px; }
+  .pack-crumb { color: var(--muted); background: none; border: none; cursor: pointer; font-family: var(--sans); font-size: 12.5px; padding: 3px 8px; border-radius: 6px; }
+  .pack-crumb:hover, .pack-crumb:focus-visible { color: var(--phylum); background: var(--surface2); outline: none; }
+  .pack-crumb.current { color: var(--ink); font-weight: 600; cursor: default; }
+  .pack-crumb.current:hover { background: none; }
+  .pack-sep { color: var(--faint); font-size: 11px; }
+  .pack-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .pack-svg-holder { flex: 1 1 480px; min-width: 280px; }
+  .pack-svg-holder svg { width: 100%; height: auto; display: block; }
+  .pack-circle { cursor: pointer; transition: opacity 0.18s var(--ease-out); }
+  @media (prefers-reduced-motion: reduce) { .pack-circle { transition: none; } }
+  .pack-circle:hover, .pack-circle:focus-visible { opacity: 0.82; outline: none; }
+  .pack-circle.leaf { cursor: default; }
+  .pack-circle.leaf:hover { opacity: 1; }
+  .pack-circle.empty-phylum { opacity: 0.4; }
+  .pack-label { font-family: var(--sans); pointer-events: none; fill: rgba(10,10,16,0.88); font-weight: 600; }
+  .pack-info { flex: 1 1 260px; min-width: 220px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; align-self: flex-start; }
+  .pack-info .k { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .pack-info .name { font-family: var(--serif); font-size: 17px; margin-bottom: 4px; }
+  .pack-info .meta { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .pack-info .purp { font-size: 12px; color: var(--faint); line-height: 1.5; }
+  .pack-info .empty-note { color: var(--faint); font-style: italic; font-size: 12px; }
+
+  details.legacy-detail { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; max-width: 100%; }
+  details.legacy-detail > summary { cursor: pointer; font-family: var(--serif); font-size: 15px; color: var(--phylum); padding: 6px 0; list-style: none; }
+  details.legacy-detail > summary::-webkit-details-marker { display: none; }
+  details.legacy-detail > summary::before { content: '▸ '; display: inline-block; transition: transform 0.15s var(--ease-out); }
+  details.legacy-detail[open] > summary::before { transform: rotate(90deg); }
+  @media (prefers-reduced-motion: reduce) { details.legacy-detail > summary::before { transition: none; } }
+  details.legacy-detail .legacy-sub { font-size: 12px; color: var(--muted); font-weight: 400; font-family: var(--sans); margin-top: 4px; }
+
   footer { border-top: 1px solid var(--border); padding-top: 26px; color: var(--faint); font-size: 11.5px; max-width: 640px; }
 </style>
 </head>
@@ -171,17 +209,12 @@
       <div class="sub">Taxonomy Structural Map</div>
     </div>
     <div class="nav-label">Orientation</div>
+    <a class="nav-item" href="#circle-pack">🔵 The Tree, as Circles</a>
     <a class="nav-item" href="#legend">Rank Legend</a>
     <a class="nav-item" href="#overview">All 21 Phyla</a>
-    <div class="nav-label">Rank Transitions</div>
-    <a class="nav-item" href="#t-phylum-order">Phylum → Order</a>
-    <a class="nav-item" href="#t-order-class">Order → Class</a>
-    <a class="nav-item" href="#t-class-family">Class → Family</a>
-    <a class="nav-item" href="#t-family-genus">Family → Genus</a>
-    <a class="nav-item" href="#t-genus-species">Genus → Species</a>
-    <a class="nav-item" href="#t-species-variant">Species → Variant</a>
-    <div class="nav-label">Grouped View</div>
-    <a class="nav-item" href="#by-phylum">Full Trees by Phylum</a>
+    <div class="nav-label">Full Detail (expand below)</div>
+    <a class="nav-item" href="#t-phylum-order">Rank-transition diagrams</a>
+    <a class="nav-item" href="#by-phylum">Full trees by phylum</a>
     <div class="nav-label">Notes</div>
     <a class="nav-item" href="#methodology">Methodology</a>
     <div class="nav-label">Oversight Docs</div>
@@ -268,6 +301,178 @@
 
   function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
 
+  // ── Circle-packing layout (Aug 6, via /Engineer) ───────────────────
+  // Deliberately a real, vanilla-JS iterative-relaxation packer, not a
+  // full D3-style front-chain algorithm — good enough visually for this
+  // scale (a few hundred nodes, mostly under a dozen siblings deep),
+  // zero new dependency, same "zero npm runtime" rule as the rest of
+  // RPGACE. Golden-angle spiral for a decent starting spread, then N
+  // rounds of pairwise overlap resolution + a gentle pull-to-centroid so
+  // the pack stays tight rather than drifting apart.
+  var LEAF_R = 13;
+  function packChildren(items) {
+    var n = items.length;
+    if (n === 0) return 0;
+    if (n === 1) { items[0].x = 0; items[0].y = 0; return items[0].r; }
+    var golden = Math.PI * (3 - Math.sqrt(5));
+    items.forEach(function (it, i) {
+      var a = i * golden;
+      var d = Math.sqrt(i + 1) * (it.r + 3);
+      it.x = Math.cos(a) * d; it.y = Math.sin(a) * d;
+    });
+    for (var iter = 0; iter < 220; iter++) {
+      for (var i = 0; i < n; i++) {
+        for (var j = i + 1; j < n; j++) {
+          var a = items[i], b = items[j];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var dist = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          var minDist = a.r + b.r + 2;
+          if (dist < minDist) {
+            var push = (minDist - dist) / 2;
+            var ux = dx / dist, uy = dy / dist;
+            a.x -= ux * push; a.y -= uy * push;
+            b.x += ux * push; b.y += uy * push;
+          }
+        }
+      }
+      var cx = 0, cy = 0;
+      items.forEach(function (it) { cx += it.x; cy += it.y; });
+      cx /= n; cy /= n;
+      items.forEach(function (it) { it.x -= cx * 0.03; it.y -= cy * 0.03; });
+    }
+    var R = 0;
+    items.forEach(function (it) {
+      var d = Math.sqrt(it.x * it.x + it.y * it.y) + it.r;
+      if (d > R) R = d;
+    });
+    return R;
+  }
+  function computeLayout(node) {
+    if (!node.children.length) { node.r = LEAF_R; return; }
+    node.children.forEach(computeLayout);
+    var items = node.children.map(function (c) { return { r: c.r }; });
+    var R = packChildren(items);
+    node.children.forEach(function (c, i) { c.x = items[i].x; c.y = items[i].y; });
+    node.r = R + 8;
+  }
+  function buildPackTree(NODES) {
+    var childrenByParentPath = {};
+    NODES.forEach(function (n) {
+      if (n.depth === 1) return; // roots (Order-level) attach to the virtual phylum node instead
+      var parts = n.path.split('/');
+      var parentPath = parts.slice(0, -1).join('/');
+      (childrenByParentPath[parentPath] = childrenByParentPath[parentPath] || []).push(n);
+    });
+    function build(n) {
+      var kids = (childrenByParentPath[n.path] || []).map(build);
+      return { name: n.name, path: n.path, depth: n.depth, type: n.type, real: n, children: kids };
+    }
+    var phylumNodes = Object.keys(PHYLA).map(Number).sort(function (a, b) { return a - b; }).map(function (num) {
+      var roots = NODES.filter(function (n) { return n.phylum === num && n.depth === 1; }).map(build);
+      return { name: PHYLA[num].lat, eng: PHYLA[num].eng, purp: PHYLA[num].purp, phylum: num, depth: 0, isPhylum: true, children: roots };
+    });
+    var root = { name: 'RPGACE Taxonomy', depth: -1, children: phylumNodes };
+    computeLayout(root);
+    return root;
+  }
+
+  // ── Circle-pack rendering + click-to-drill state ───────────────────
+  function renderPack(NODES) {
+    var root = buildPackTree(NODES);
+    var stack = [root]; // drill-down path; stack[0] is always the synthetic root
+
+    function currentNode() { return stack[stack.length - 1]; }
+
+    function draw() {
+      var node = currentNode();
+      var holder = document.getElementById('packSvgHolder');
+      var breadcrumb = document.getElementById('packBreadcrumb');
+      var info = document.getElementById('packInfo');
+
+      // Breadcrumb
+      breadcrumb.innerHTML = '';
+      stack.forEach(function (n, i) {
+        if (i > 0) {
+          var sep = document.createElement('span'); sep.className = 'pack-sep'; sep.textContent = '→';
+          breadcrumb.appendChild(sep);
+        }
+        var btn = document.createElement('button');
+        btn.className = 'pack-crumb' + (i === stack.length - 1 ? ' current' : '');
+        btn.textContent = i === 0 ? '🏠 All 21 Phyla' : n.name;
+        btn.onclick = (function (idx) { return function () { stack = stack.slice(0, idx + 1); draw(); }; })(i);
+        breadcrumb.appendChild(btn);
+      });
+
+      // SVG — viewBox sized to this node's own packed radius
+      var R = Math.max(node.r, 40);
+      var svgSize = 560;
+      var ns = 'http://www.w3.org/2000/svg';
+      var svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', (-R - 10) + ' ' + (-R - 10) + ' ' + (2 * R + 20) + ' ' + (2 * R + 20));
+      svg.setAttribute('width', svgSize); svg.setAttribute('height', svgSize);
+
+      var kids = node.children;
+      if (!kids.length) {
+        holder.innerHTML = '';
+        holder.appendChild(svg);
+        info.innerHTML = '<div class="k">Nothing here yet</div><div class="empty-note">This branch has no children — it is itself the deepest real leaf in this path.</div>';
+        return;
+      }
+
+      kids.forEach(function (c) {
+        var rankColor = c.isPhylum ? 'var(--phylum)' : rankFor(c.depth).color;
+        var hasData = c.isPhylum ? (c.children.length > 0) : true;
+        var circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', c.x); circle.setAttribute('cy', c.y); circle.setAttribute('r', c.r);
+        circle.setAttribute('fill', rankColor.indexOf('var(') === 0 ? getComputedStyle(document.documentElement).getPropertyValue(rankColor.slice(4, -1)) : rankColor);
+        circle.setAttribute('fill-opacity', c.children.length ? '0.72' : '0.9');
+        circle.setAttribute('stroke', 'rgba(0,0,0,0.35)'); circle.setAttribute('stroke-width', '1');
+        circle.setAttribute('tabindex', '0'); circle.setAttribute('role', 'button');
+        circle.setAttribute('aria-label', c.name);
+        circle.className.baseVal = 'pack-circle' + (c.children.length ? '' : ' leaf') + (c.isPhylum && !hasData ? ' empty-phylum' : '');
+        circle.onclick = function () {
+          if (c.children.length) { stack.push(c); draw(); }
+          showInfo(c);
+        };
+        circle.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); circle.onclick(); } };
+        circle.onmouseenter = function () { showInfo(c); };
+        svg.appendChild(circle);
+
+        // Label only on circles big enough to hold readable text
+        if (c.r > 22) {
+          var label = document.createElementNS(ns, 'text');
+          label.setAttribute('x', c.x); label.setAttribute('y', c.y + 3);
+          label.setAttribute('text-anchor', 'middle');
+          label.setAttribute('font-size', Math.min(13, Math.max(8, c.r / 4)));
+          label.setAttribute('class', 'pack-label');
+          var maxChars = Math.floor(c.r / 3.2);
+          var txt = c.name.length > maxChars ? c.name.slice(0, maxChars - 1) + '…' : c.name;
+          label.textContent = txt;
+          svg.appendChild(label);
+        }
+      });
+
+      holder.innerHTML = '';
+      holder.appendChild(svg);
+      function showInfo(c) {
+        info.innerHTML = '<div class="k">' + (c.isPhylum ? 'Phylum' : rankFor(c.depth).name) + '</div>' +
+          '<div class="name">' + esc(c.name) + (c.isPhylum ? ' <span style="color:var(--faint);font-size:11px;">(' + esc(c.eng) + ')</span>' : '') + '</div>' +
+          '<div class="meta">' + (c.children.length ? c.children.length + ' direct child' + (c.children.length === 1 ? '' : 'ren') + ' — click to zoom in' : (c.isPhylum ? 'No tree data yet' : 'A real leaf — nothing deeper')) + '</div>' +
+          (c.isPhylum && c.purp ? '<div class="purp">' + esc(c.purp) + '</div>' : '');
+      }
+      // Default info panel = the current view's own context
+      if (node.isPhylum) {
+        info.innerHTML = '<div class="k">Phylum</div><div class="name">' + esc(node.name) + '</div><div class="meta">' + kids.length + ' root Order' + (kids.length === 1 ? '' : 's') + '</div><div class="purp">' + esc(node.purp || '') + '</div>';
+      } else if (node.depth === -1) {
+        info.innerHTML = '<div class="k">Orientation</div><div class="name">All 21 Phyla</div><div class="meta">Circle size = how much real tree data lives underneath. Click any circle to zoom in; click a breadcrumb to zoom back out.</div>';
+      } else {
+        info.innerHTML = '<div class="k">' + esc(rankFor(node.depth).name) + '</div><div class="name">' + esc(node.name) + '</div><div class="meta">' + kids.length + ' direct child' + (kids.length === 1 ? '' : 'ren') + '</div>';
+      }
+    }
+
+    draw();
+  }
+
   function fetchLiveNodes() {
     return fetch(SUPABASE_URL + '/rest/v1/taxonomy_tree?select=id,depth,name,phylum_number,path,node_type&order=phylum_number.asc,depth.asc', {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
@@ -304,6 +509,16 @@
       var parentPath = parts.slice(0, -1).join('/');
       return byPath[parentPath] || null;
     }
+
+    // Circle-pack — the new primary view (Aug 6, via /Engineer)
+    var packSection = document.createElement('section');
+    packSection.id = 'circle-pack';
+    packSection.innerHTML = '<div class="eyebrow">Orientation · Primary View</div><h2>🔵 The Tree, as Circles</h2>' +
+      '<p class="section-sub">Every phylum is a circle; every real branch beneath it is a smaller circle packed inside — the whole tree, one shape, no scrolling through a wall of nested text to see how big any one branch actually is. Click a circle to zoom into it; click a breadcrumb above the diagram to zoom back out. The rank-transition diagrams and full per-phylum trees below still hold every last detail — this is the same data, shown so its real shape is visible at a glance first.</p>' +
+      '<div class="pack-toolbar"><div class="pack-breadcrumb" id="packBreadcrumb"></div></div>' +
+      '<div class="pack-wrap"><div class="pack-svg-holder" id="packSvgHolder"></div><div class="pack-info" id="packInfo"></div></div>';
+    body.appendChild(packSection);
+    renderPack(NODES);
 
     // Legend
     var legendSection = document.createElement('section');
@@ -357,6 +572,16 @@
       overviewEl.appendChild(block);
     });
 
+    // Full detail, folded (Aug 6, via /Engineer) — every rank-transition
+    // diagram and the full per-phylum text trees still exist, in full,
+    // exactly as before; they just don't have to load the page's whole
+    // scroll length before the circle-pack view above them is visible.
+    // Nothing here was deleted, only wrapped in progressive disclosure.
+    var legacyDetails = document.createElement('details');
+    legacyDetails.className = 'legacy-detail';
+    legacyDetails.innerHTML = '<summary>📋 Full detail — rank-transition diagrams + complete per-phylum trees<div class="legacy-sub">Same data as the circle-pack above, shown the traditional way. Collapsed by default so this doesn\'t have to load before you see the shape of the tree.</div></summary>';
+    body.appendChild(legacyDetails);
+
     // Transition diagrams
     var transitions = [
       ['t-phylum-order', 'Diagram 1 of 6', 'Phylum → Order', 0, 1, 'Every phylum with at least one accepted lineage, and its root-level Order(s).'],
@@ -372,7 +597,7 @@
       sec.innerHTML = '<div class="eyebrow">' + t[1] + '</div><h2>' + t[2] + '</h2>' +
         (t[5] ? '<p class="section-sub">' + t[5] + '</p>' : '') +
         '<div class="diagram-target"></div>';
-      body.appendChild(sec);
+      legacyDetails.appendChild(sec);
       var target = sec.querySelector('.diagram-target');
 
       var parentDepth = t[3], childDepth = t[4];
@@ -420,7 +645,7 @@
     byPhylumSection.innerHTML = '<div class="eyebrow">Regrouped</div><h2>Full Trees, Grouped by Phylum</h2>' +
       '<p class="section-sub">Same nodes, read the other way — each phylum\'s complete root-to-leaf chains in one place, rank colours carried through from the legend above.</p>' +
       '<div id="byPhylumTarget"></div>';
-    body.appendChild(byPhylumSection);
+    legacyDetails.appendChild(byPhylumSection);
     var byPhylumEl = byPhylumSection.querySelector('#byPhylumTarget');
     var phylumNumsWithData = Object.keys(hasData).map(Number).sort(function(a,b){return a-b;});
     phylumNumsWithData.forEach(function (phylumNum) {

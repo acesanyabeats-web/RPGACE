@@ -34,10 +34,37 @@ graphify_recolor.py already colored them — this is a deliberate, honest
 scope limit, not an oversight. Run AFTER graphify_recolor.py, on the
 same file.
 
+Aug 6, real Alex ask (2nd round, via /Engineer): "communities in graphify
+should make up to make block, then the modules, and then the river in
+the physical space, it just looks like a massive blob." Extends this
+script from color-only tagging to REAL spatial clustering: every
+river-tagged node now also gets a fixed x/y position inside its own
+river's "zone" (11 zones arranged around one large circle, deterministic
+per-node jitter via a hash of the node id - never Math.random, so
+re-running this script against a fresh export always produces the exact
+same layout, same idempotency discipline as graphify_recolor.py).
+`fixed:{x:true,y:true}` is set ONLY on these nodes, so vis.js's own
+forceAtlas2Based physics leaves them exactly where placed instead of
+letting the sim's repulsion drag them back toward the blob - the other
+1048 untagged nodes are completely unaffected, same "named modules
+only" honest scope limit as the color-only version.
+
+Real, necessary companion fix: graph.html's own nodesDS mapping
+function explicitly whitelists which RAW_NODES fields become vis.js
+DataSet fields (id/label/color/size/font/title/_community/...) - it did
+NOT forward x/y/fixed, so setting those fields on RAW_NODES alone would
+have been silently dropped. This script also patches that one mapping
+line (idempotent - checks for its own marker string before patching, so
+re-running does not double-patch), a real find made by reading
+graph.html's own init script directly rather than assuming vis.js would
+"just work."
+
 Usage:
     python3 scripts/graphify_river_group.py [path/to/graph.html]
 """
+import hashlib
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -157,6 +184,72 @@ def build_id_river_map(graph_json_path: Path, module_ranges):
     return id_river
 
 
+ZONE_RADIUS = 2400  # px from the graph's own origin - well outside the
+                     # untagged-node blob's natural forceAtlas2Based
+                     # settling radius, so river zones read as clearly
+                     # separate from it, not swallowed back in.
+JITTER_RADIUS = 220  # px scatter within a zone, so same-river nodes are
+                      # a visible cluster, not one stacked point.
+
+
+def zone_center(river):
+    """Deterministic center for a river's zone - 11 rivers placed evenly
+    around one large circle. Same real technique as minotaur_map.html's
+    own bird's-eye block layout: one shape per river, arranged in a
+    fixed ring, not randomly - so the physical layout itself is legible."""
+    angle = 2 * math.pi * (river - 1) / 11
+    return ZONE_RADIUS * math.cos(angle), ZONE_RADIUS * math.sin(angle)
+
+
+def deterministic_jitter(node_id, community):
+    """A node's scatter position within its zone, seeded from its own id
+    (never Math.random/random.random) - re-running this script against a
+    fresh export always reproduces the exact same layout, same
+    idempotency discipline as graphify_recolor.py. Nodes sharing a
+    graphify `community` id get pulled toward one shared sub-point
+    inside the zone first (the real 'communities make up a block'
+    request), then jittered a little further so they don't overlap."""
+    h = int(hashlib.sha1(f'{node_id}'.encode()).hexdigest(), 16)
+    sub_h = int(hashlib.sha1(f'{community}'.encode()).hexdigest(), 16)
+    sub_angle = 2 * math.pi * (sub_h % 1000) / 1000
+    sub_r = JITTER_RADIUS * 0.35 * ((sub_h // 1000) % 100) / 100
+    sub_dx, sub_dy = sub_r * math.cos(sub_angle), sub_r * math.sin(sub_angle)
+    angle = 2 * math.pi * (h % 1000) / 1000
+    r = JITTER_RADIUS * 0.65 * ((h // 1000) % 100) / 100
+    return sub_dx + r * math.cos(angle), sub_dy + r * math.sin(angle)
+
+
+DATASET_MARKER = '_river_fixed: n._river_fixed'  # idempotency check string
+
+
+def patch_dataset_mapping(text):
+    """graph.html's own nodesDS mapping function (checked directly by
+    reading the file, not assumed) explicitly whitelists which RAW_NODES
+    fields become vis.js DataSet fields - x/y/fixed were never among
+    them, so setting them on RAW_NODES alone would be silently dropped.
+    Idempotent: skips if this exact patch already landed."""
+    if DATASET_MARKER in text:
+        return text, False
+    old = ("const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({\n"
+           "  id: n.id, label: n.label, color: n.color, size: n.size,\n"
+           "  font: n.font, title: n.title,\n"
+           "  _community: n.community, _community_name: n.community_name,\n"
+           "  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,\n"
+           "})));")
+    new = ("const nodesDS = new vis.DataSet(RAW_NODES.map(n => ({\n"
+           "  id: n.id, label: n.label, color: n.color, size: n.size,\n"
+           "  font: n.font, title: n.title,\n"
+           "  _community: n.community, _community_name: n.community_name,\n"
+           "  _source_file: n.source_file, _file_type: n.file_type, _degree: n.degree,\n"
+           "  x: n.x, y: n.y, fixed: n.fixed, _river_fixed: n._river_fixed,\n"
+           "})));")
+    if old not in text:
+        raise ValueError('graph.html\'s nodesDS mapping line has changed shape - '
+                          'a graphify version bump likely rewrote its own export '
+                          'template. Re-check by hand before patching blind.')
+    return text.replace(old, new), True
+
+
 def extract_array(text, name):
     """Pull `const NAME = [ ... ];` out of the HTML via bracket counting -
     safer than a greedy regex against a 900K+ char single-line file."""
@@ -195,6 +288,16 @@ def river_group(html_path: Path, graph_json_path: Path):
         node['title'] = (node.get('title') or node.get('label') or '') + f' · {RIVER_NAME[river]}'
         river_counts[river] = river_counts.get(river, 0) + 1
 
+        # Real spatial clustering (Aug 6, 2nd Engineer pass): a fixed
+        # position inside this river's own zone, so vis.js's physics
+        # leaves it there instead of dragging it back toward the blob.
+        zx, zy = zone_center(river)
+        jx, jy = deterministic_jitter(node['id'], node.get('community'))
+        node['x'] = round(zx + jx, 1)
+        node['y'] = round(zy + jy, 1)
+        node['fixed'] = {'x': True, 'y': True}
+        node['_river_fixed'] = True
+
     for river, count in sorted(river_counts.items()):
         legend.append({'cid': 1000 + river, 'color': RIVER_COLOR[river],
                         'label': f'🌊 {RIVER_NAME[river]}', 'count': count})
@@ -206,8 +309,10 @@ def river_group(html_path: Path, graph_json_path: Path):
     new_nodes_json = json.dumps(raw_nodes, ensure_ascii=False)
     text = text[:n_start] + new_nodes_json + text[n_end:]
 
+    text, patched = patch_dataset_mapping(text)
+
     html_path.write_text(text, encoding='utf-8')
-    return river_counts, len(module_ranges)
+    return river_counts, len(module_ranges), patched
 
 
 if __name__ == '__main__':
@@ -222,9 +327,10 @@ if __name__ == '__main__':
     if not CORE_JS.exists():
         print(f'ERROR: {CORE_JS} not found - run from the repo root.')
         sys.exit(1)
-    counts, n_modules = river_group(target, graph_json)
+    counts, n_modules, patched = river_group(target, graph_json)
     print(f'Parsed {n_modules} real module marker ranges from {CORE_JS}.')
     total = sum(counts.values())
-    print(f'River-tagged {total} nodes across {len(counts)} rivers:')
+    print(f'River-tagged {total} nodes across {len(counts)} rivers, each given a real fixed x/y inside its river zone:')
     for r in sorted(counts):
         print(f'  {RIVER_NAME[r]}: {counts[r]} nodes')
+    print(f'nodesDS mapping patch: {"applied" if patched else "already present (no-op)"}')

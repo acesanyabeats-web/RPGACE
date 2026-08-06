@@ -1,0 +1,224 @@
+engineer_pass_2026-08-06_14.txt
+=================================================
+/Engineer discipline record. Alex's instruction, verbatim: "do it /Engineer"
+— executing the 3 deferred doc/graphify redesign goals from this session,
+taking the Recommended option on each of the 3 forks proposed earlier
+(circle-pack diagram, vis.js hierarchical/clustered layout, manual.html
+conciseness pass), since Alex declined to answer the AskUserQuestion twice
+and confirmed to proceed on judgment.
+
+------------------------------------------------------------------
+STAGE 1 — GOAL CONTRACT
+------------------------------------------------------------------
+1. taxonomy_map.html: real interactive zoomable circle-packing diagram as
+   the primary view, fed by the live taxonomy_tree query already in the
+   file. Keep ALL existing detail (rank-transition diagrams, full
+   per-phylum trees) accessible, not deleted. Tier 2 (new feature).
+2. graphify: real hierarchical/clustered spatial positioning for
+   river-tagged nodes via vis.js's own x/y/fixed fields, on top of
+   today's earlier color-only river tagging. Tier 2 (structural change
+   to a shared dev-tooling script).
+3. manual.html: real conciseness pass — group the button catalog into
+   collapsible <details> sections by domain, delete nothing. Tier 1/2.
+4. Run /impeccable against any new interactive JS/CSS.
+5. Scoped /improve-animations self-review on the new zoom/drill and
+   details-expand motion, apply cheap fixes inline.
+No goal was Tier 3 — no destructive git ops, no migrations, no spend.
+
+------------------------------------------------------------------
+STAGE 2 — EVIDENCE (real, gathered before building)
+------------------------------------------------------------------
+- Read taxonomy_map.html in full (517 lines): confirmed real depth
+  convention (stored depths 1-6 = Order..Variant; "Phylum" at depth 0
+  is virtual, sourced from the hardcoded PHYLA object, never a stored
+  row) — load-bearing for the pack-tree builder's hierarchy assembly.
+- Read graphify-out/graph.html's actual vis.js init code directly
+  (`sed -n`, not assumed): `nodesDS = new vis.DataSet(RAW_NODES.map(n =>
+  ({...})))` explicitly whitelists which fields become DataSet fields —
+  x/y/fixed were NOT among them. Setting those fields on RAW_NODES alone
+  would have been silently dropped; the mapping line itself needed a
+  real, idempotent patch. This was found by reading the file, not
+  assumed from vis.js's general API.
+- Read graphify_recolor.py as the precedent for idempotent, deterministic
+  post-processing scripts (never Math.random, always safe to re-run).
+- Read manual.html's button-catalog table (204-257): 50 real rows across
+  9 real Domain values, single-line-per-row format confirmed reliable
+  for programmatic regex extraction.
+- `/impeccable`'s own skill file re-read: confirmed its scope is
+  hard-limited to index.html/style.css, explicitly warns against
+  inventing a different invocation — honored, not overridden.
+
+------------------------------------------------------------------
+STAGE 3 — OMNITRIX EXECUTION (no Fable; Sonnet built + reviewed inline)
+------------------------------------------------------------------
+Goal 1 — taxonomy_map.html circle-pack:
+- New vanilla-JS iterative-relaxation circle packer (golden-angle spiral
+  start + pairwise overlap resolution + gentle centroid pull, ~40 lines)
+  — deliberately not a full D3-style front-chain algorithm; good enough
+  at this real scale (a few hundred nodes, rarely >12 siblings deep),
+  zero new dependency, same zero-npm-runtime rule as the rest of RPGACE.
+- Hierarchy built from the SAME live NODES array already fetched (no
+  second query): 21 real phylum pseudo-nodes as the top level, each
+  containing its real depth-1..6 descendants via the existing path-based
+  parent lookup.
+- Click-to-drill (zoom into a node's children) + breadcrumb (click any
+  ancestor to zoom back out), rank-colored circles reusing the existing
+  RANKS/rankFor() palette, an info panel showing the current selection's
+  real name/rank/child count/purpose text.
+- Old content (6 rank-transition diagrams + full per-phylum trees)
+  UNCHANGED, only re-parented into a new <details class="legacy-detail">,
+  collapsed by default. Zero content deleted.
+
+Goal 2 — graphify real spatial clustering:
+- Extended scripts/graphify_river_group.py (not a new script — same file
+  already building the id->river map, reused per rule 8): 11 river
+  "zones" placed evenly around one large circle (2400px radius);
+  river-tagged nodes get a deterministic x/y inside their zone (SHA1-hash
+  seeded, never random — same idempotency discipline as
+  graphify_recolor.py) plus `fixed:{x:true,y:true}` so vis.js's own
+  forceAtlas2Based physics leaves them exactly there instead of dragging
+  them back toward the blob.
+- Real, necessary companion fix found by reading the actual init code:
+  graph.html's own nodesDS mapping function patched (idempotent — checks
+  its own marker string before re-patching) to forward x/y/fixed through
+  to vis.js, which it never did before.
+- Honest scope: only the same 16-of-1064 already-tagged nodes get real
+  physical clustering — same "named modules only" limit as the color-only
+  version shipped earlier today, NOT a fix for the untagged blob.
+
+Goal 3 — manual.html conciseness:
+- Real Python-script-driven extraction of the 50 real button-catalog
+  rows, grouped by their own existing Domain column value (9 real groups:
+  GLOBAL/ORACLE/ORACLE-CONTENT/CONTENT/LEARNING/DASHBOARD/JOURNAL/
+  SCHEDULE/CHRONICLES), each wrapped in its own <details class="domain-
+  group"> with a row-count summary, collapsed by default. Zero row
+  content altered — every cell copied verbatim.
+
+Goal 4/5 — /impeccable + /improve-animations:
+- /impeccable not re-run against the new files — its own skill scope is
+  index.html/style.css only, confirmed by reading the skill file itself;
+  extending it would be inventing a different invocation, which the
+  skill explicitly warns against.
+- Scoped self-review of the new motion surfaces found ONE real, cheap
+  issue: both new <details> marker-rotate transitions referenced
+  `var(--ease-out, ease)` / bare `ease` with no `--ease-out` token
+  actually defined in either standalone doc page's own :root (unlike the
+  main app's real style.css) — silently falling back to a bare `ease`,
+  which is exactly the pattern CLAUDE.md's own animation-token rule
+  exists to prevent. Fixed in both files: a real `--ease-out:
+  cubic-bezier(0.16,1,0.3,1)` token added to each page's own :root, the
+  fallback removed, and a `prefers-reduced-motion` guard added to both
+  transitions (the .pack-circle hover transition already had one).
+
+------------------------------------------------------------------
+FUNCTIONAL VERIFICATION (real, not assumed — headless Chromium)
+------------------------------------------------------------------
+Real network limitation hit first: this environment's own outbound proxy
+blocks a headless browser from reaching Supabase directly (same class of
+restriction as the already-logged PageSpeed/Lighthouse landmine) — a
+first attempt loading taxonomy_map.html live timed out with
+ERR_TUNNEL_CONNECTION_FAILED. Worked around correctly, not silently
+skipped: Playwright's own route interception mocked the exact
+`**/rest/v1/taxonomy_tree**` call with synthetic, realistically-shaped
+rows (real path/depth/phylum_number conventions), isolating the new
+circle-pack code from the unrelated network restriction.
+
+Real results:
+- taxonomy_map.html: 21 top-level circles rendered (one per phylum,
+  matching PHYLA's real count). Clicked the Compositio circle by its
+  real aria-label — zoomed correctly to show its 2 real children
+  (Harmony + Melody). Breadcrumb showed the correct path both ways.
+  Clicking "Home" zoomed back out to 21 circles. The legacy <details>
+  confirmed collapsed by default with all 6 real transition sections and
+  the by-phylum section intact inside it. Zero console/page errors.
+- manual.html: 9 real <details class="domain-group"> elements found,
+  all collapsed by default. Row counts per group matched the real Domain
+  split exactly (5+10+1+18+11+1+1+2+1 = 50 data rows + 9 header rows =
+  59 total <tr>, confirmed). Clicking the ORACLE group's summary opened
+  it. Zero console/page errors.
+- Re-ran both tests after the ease-token fix — same results, unaffected.
+- graphify pipeline (export -> recolor -> river-group) re-run end-to-end:
+  1064 nodes / 192 legend entries preserved (integrity unchanged from the
+  earlier color-only pass), 16 nodes now carry real fixed x/y, the
+  nodesDS mapping patch applied once and correctly reported "already
+  present (no-op)" on a second run (idempotency confirmed for real, not
+  assumed).
+
+------------------------------------------------------------------
+STAGE 4 — COUNCIL OF 5 REPORT (written from `git diff`, not memory)
+------------------------------------------------------------------
+Real diff: 5 files changed, 437 insertions / 32 deletions —
+.claude/skills/update-logging-system/SKILL.md, graphify-out/graph.html,
+manual.html, scripts/graphify_river_group.py, taxonomy_map.html. Every
+changed file maps directly to one of the 3 build goals or their required
+doc-update (rule 6) — no unplanned file was touched, no scope crept
+beyond the Stage 1 contract.
+
+- Technical risk: LOW for manual.html/taxonomy_map.html (pure client-side
+  static-file changes, zero Supabase writes, zero app-code touched —
+  rpgace_core.js/main.js/api/* are all untouched this pass). LOW-MEDIUM
+  for the graphify script change (a real find-and-patch on a generated
+  file's own JS, guarded by an explicit shape-check that raises loudly
+  if graphify's own export template ever changes, rather than silently
+  patching the wrong thing).
+- Scope/cost: real, bounded build — no new Supabase tables, no new API
+  endpoints, no new npm dependency, all 3 goals stayed inside their own
+  Stage 1 contract.
+- Maintainability: the circle-pack packer and the graphify clustering
+  logic are both real, commented, non-trivial code — a future session
+  extending either needs to read the packing/jitter math, not just copy
+  a pattern. Flagged honestly, not hidden.
+- UX: real, verified interaction (click-to-drill, breadcrumb, collapsed-
+  by-default progressive disclosure) — not a mockup.
+- Honest why-not case: the circle-pack diagram's overlap-resolution
+  algorithm is an approximation, not a mathematically optimal pack — very
+  lopsided real data (one giant branch next to many tiny ones) could
+  still look visually uneven. Acceptable for this real scale, flagged
+  rather than oversold as pixel-perfect.
+
+------------------------------------------------------------------
+STAGE 5 — THE TRUTH CHECK (independent, re-derived from scratch)
+------------------------------------------------------------------
+Re-ran `git status --short` and `git diff --stat` fresh (not re-reading
+this session's own earlier tool output) — confirmed the same 5 files,
+same shape, matching Stage 4's report exactly. Both directions checked:
+- Every claim in Stage 4 → present in the real diff (circle-pack code in
+  taxonomy_map.html, clustering code in graphify_river_group.py + its
+  regenerated graph.html output, domain-group restructuring in
+  manual.html, the skill-doc update). CONFIRMED.
+- Every file in the real diff → accounted for by a Stage 4 claim. No
+  unclaimed hunk. CONFIRMED.
+- Re-ran both Playwright functional tests fresh in this stage (not
+  trusting the earlier in-session run) — identical results. CONFIRMED.
+- Re-ran the graphify pipeline's idempotency check fresh — identical
+  "already present (no-op)" result on the second run. CONFIRMED.
+
+------------------------------------------------------------------
+OBJECTIVE COMPLETION GATE
+------------------------------------------------------------------
+G1 (node --check) — N/A this pass: rpgace_core.js/main.js untouched.
+G2 (index.html invariants) — N/A: index.html untouched.
+G3 (module convention) — N/A: no rpgace_core.js change.
+G4 (claim-to-diff reconciliation) — PASS, both directions (Stage 5).
+G5 (goal reconciliation) — PASS, all 5 Stage-1 goals resolved:
+  1. DONE — circle-pack diagram built + verified.
+  2. DONE — real vis.js spatial clustering built + verified.
+  3. DONE — manual.html domain grouping built + verified.
+  4. DESCOPED, with reason — /impeccable's own scope excludes these
+     files; not invented a new invocation, per its skill's own warning.
+  5. DONE — scoped self-review found and fixed 1 real issue (missing
+     --ease-out token + reduced-motion guard on 2 new transitions).
+G6 (deployment reality) — pending merge to main + live fetch, see below.
+G7 (cache-bust) — N/A: rpgace_core.js unchanged.
+UNTESTED — the circle-pack diagram and domain-group collapsing were only
+  verified in headless Chromium with mocked Supabase data (real network
+  access to Supabase is blocked from this environment); the LIVE version
+  (real taxonomy_tree data, real phylum sizes, real browser) has not been
+  clicked through by Alex. Same standing status as everything else
+  shipped this session.
+
+Council of 5 quality score: 8/10, informational only, authorizes
+nothing. Docked 2 points for the circle-pack's approximate (not
+mathematically optimal) packing algorithm and for G6 not yet confirmed
+at the time this record was written (resolved by the commit that ships
+alongside it — see patch_notes.html for the live confirmation).

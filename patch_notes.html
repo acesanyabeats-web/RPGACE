@@ -74,6 +74,25 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔵 Aug 6 (same day, 12th pass, via /Engineer) — real taxonomy circle-pack diagram, graphify spatial clustering, manual.html collapsible domain groups.</div>
+    <div class="card-body">
+      Real Alex ask ("do it /Engineer") to execute 3 deferred goals from earlier this session, right-sized to their Recommended scope since Alex declined to pick between options twice.
+      <br><br>
+      <strong>taxonomy_map.html</strong> — a real, vanilla-JS interactive circle-packing diagram (golden-angle spiral start + iterative pairwise overlap resolution, zero new dependency, same zero-npm-runtime rule as the rest of RPGACE) is now the page's primary view: 21 real phylum circles, click any circle to zoom into its real children, breadcrumb to zoom back out. Every rank-transition diagram and full per-phylum tree that existed before is untouched, just moved inside a collapsed-by-default <code>&lt;details&gt;</code> — same data, zero deletions, just not loaded in front of the reader before the tree's real shape is visible.
+      <br><br>
+      <strong>graphify</strong> — <code>scripts/graphify_river_group.py</code> extended (not a new script, rule 8) to give the 16 already river-tagged nodes a REAL fixed x/y position inside their own river's zone (11 zones around one large circle, deterministic hash-seeded jitter — never random, so re-running always reproduces the same layout) plus <code>fixed:&#123;x:true,y:true&#125;</code>, so vis.js's own physics leaves them there instead of dragging them back into the blob. Real, necessary companion fix found by reading <code>graph.html</code>'s own init code directly: its <code>nodesDS</code> mapping function never forwarded x/y/fixed to vis.js before — patched, idempotently (confirmed via a real second run reporting "already present, no-op"). Same honest "named modules only" scope as today's earlier color-only pass — this doesn't fix the untagged blob, by design.
+      <br><br>
+      <strong>manual.html</strong> — the 50-row button catalog regrouped into 9 real collapsible <code>&lt;details&gt;</code> sections by its own existing Domain column (GLOBAL/ORACLE/CONTENT/LEARNING/etc), collapsed by default. Zero row content altered — every cell copied verbatim via a verified Python extraction (row count checked before/after: 50 in, 50 out).
+      <br><br>
+      <strong>Real, cheap /improve-animations finding, fixed inline</strong>: both new <code>&lt;details&gt;</code> marker-rotate transitions referenced an undefined <code>--ease-out</code> token in their own standalone page's <code>:root</code>, silently falling back to a bare <code>ease</code> — exactly the pattern CLAUDE.md's own animation-token rule exists to prevent. Fixed: a real <code>--ease-out</code> token added to both pages, plus a <code>prefers-reduced-motion</code> guard on both transitions.
+      <br><br>
+      <strong>Functionally verified, not just code-reviewed</strong>: headless Chromium via Playwright. Real network limitation hit and worked around correctly (this environment's own proxy blocks a headless browser from reaching Supabase directly, same class of restriction as the logged PageSpeed/Lighthouse landmine) — route interception mocked the live query with synthetic, realistically-shaped rows instead of silently skipping the test. Confirmed: 21 top-level circles, real click-to-drill into Compositio showing its 2 real children, breadcrumb both directions, legacy detail collapsed with all 6 transition sections + full-tree section intact inside it; manual.html's 9 domain groups match the real 5+10+1+18+11+1+1+2+1 row split exactly, collapse/expand works. Zero console errors either page.
+      <br><br>
+      Full <code>/Engineer</code> record (5-stage discipline, Truth Check, Objective Completion Gate): <code>engineer_pass_2026-08-06_14.txt</code>. <strong>UNTESTED by Alex's own hands</strong> — the headless verification used mocked Supabase data; the live version with real taxonomy data hasn't been clicked through yet, same standing status as everything else shipped this session.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🐂 Aug 6 (same day, 11th pass) — Minotaur restructure: dry riverbeds merged inline, river-to-river flow connectors added, a real staleness bug fixed.</div>
     <div class="card-body">
       Real Alex ask: "every dry bed that then get filled or dug with no water should be in the actual river. the rivers should show how one flows into another when river ends."

@@ -91,7 +91,17 @@ row that applies, either touch the artifact or state explicitly why not
     module→river table documented in that script's own header; scope
     confirmed via `/interrogation`: named modules only, not every node —
     most nodes stay in graphify's native community color, an honest
-    scope limit, not an oversight) — then commit the refreshed
+    scope limit, not an oversight. **Aug 6, 3rd real Alex ask, via
+    `/Engineer`**: the same script now also gives each river-tagged node
+    a real fixed x/y position inside its own river's zone (11 zones
+    around one large circle, deterministic per-node jitter — never
+    random, so re-running always reproduces the same layout) and
+    patches `graph.html`'s own `nodesDS` mapping function to forward
+    x/y/fixed through to vis.js — a required, idempotent companion fix,
+    since that mapping line never passed those fields through before.
+    Real physical clustering, not just color, for the same 16-of-1064
+    tagged nodes — same honest scope limit as the color-only version,
+    not a fix for the untagged blob) — then commit the refreshed
     `graphify-out/graph.html` alongside the code change, same standing
     commit/merge/push discipline as everything else, so the live link
     never points at a stale visual. This was previously framed as
