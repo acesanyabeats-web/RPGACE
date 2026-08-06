@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🗑️ Aug 6 (same day, 10th pass) — real bugfix: ConID delete now cascade-deletes its linked video/OpenMontage jobs instead of just warning.</div>
+    <div class="card-body">
+      Real Alex ask from a live screenshot: "the button should delete both, one button also triggers the other" — the existing delete button correctly warned about the FK conflict but made him manually delete the linked job first instead of just doing it.
+      <br><br>
+      <strong>Re-checked <code>pg_constraint</code> directly rather than trusting the existing code comment</strong> (rule 1): found a SECOND non-cascading FK the original July 31 fix never handled — <code>openmontage_jobs.content_production_id</code>, alongside the known <code>video_jobs.content_production_id</code> one.
+      <br><br>
+      Delete now runs in order: linked <code>video_jobs</code> rows (via the service-role <code>secureWrite</code> proxy) → linked <code>openmontage_jobs</code> rows (plain anon-key <code>RPGACE.sb.del</code>, deliberately NOT the proxy — <code>openmontage_jobs</code> must stay anon-writable for the separate OpenMontage Claude Code session, per the standing landmine) → the <code>content_productions</code> row itself. Each step still fails loud with a specific error rather than leaving an orphaned row. <code>node --check</code> clean.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧹 Aug 6 (same day, 9th pass) — real /paranoia-shaped deduplication pass across the other 4 oversight docs; found and fixed one doc actively describing a removed button as live.</div>
     <div class="card-body">
       Alex pasted the full current text of interconnection_map.md, system_flow_map.md, manual.html, taxonomy_map.html, and minotaur_map.html and asked for a giant named-protocol sequence (<code>/deduplication</code> on <code>/paranoia</code> with <code>/omnitrix</code> no-Fable/Opus-5, verified via <code>/5thDimension</code> no-Fable/Opus-5 + Council of 5, <code>/debate</code> + <code>/free-for-all-debate</code>, <code>/scope</code>/<code>/godmode</code>/<code>/commit-archaeologist</code> as evidence, <code>/summary</code>, <code>/Engineer</code> advising throughout, Council of 5 producing practical steps).

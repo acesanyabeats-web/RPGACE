@@ -15263,23 +15263,47 @@ RPGACE.register('contentProductionLive', {
           // 2026-07-31 — Alex's real ask: "a delete for each conID should
           // be present." Real risk checked first (pg_constraint): video_jobs.
           // content_production_id has NO cascade, so deleting a linked
-          // ConID would hard-fail with an FK violation — warn explicitly in
-          // the confirm when hasVideoJob is true, and surface any failure
-          // as a clear toast rather than a silent no-op (fail loud, rule 7).
+          // ConID would hard-fail with an FK violation.
+          //
+          // Aug 6, real Alex ask ("the button should delete both, one
+          // button also triggers the other") — the FK-violation confirm
+          // dialog was correct but unhelpful; it made Alex manually delete
+          // the linked job first instead of just doing it. Re-checked
+          // pg_constraint directly (rule 1, never assume): a SECOND
+          // non-cascading FK exists too — openmontage_jobs.content_production_id
+          // — not previously handled here, a real gap this fix also closes.
+          // Cascade delete now: video_jobs rows (via the service-role
+          // secureWrite proxy, content_productions/video_jobs are both in
+          // api/data-write.js's ALLOWED_TABLES) → openmontage_jobs rows
+          // (plain anon-key RPGACE.sb.del — deliberately NOT secureWrite,
+          // per the standing landmine: openmontage_jobs must stay anon_all
+          // so the separate OpenMontage Claude Code session can still
+          // write to it) → the content_productions row itself. Each step
+          // still fails loud on a real error (rule 7) rather than silently
+          // leaving an orphaned row.
           var delBtn = document.createElement('button');
           delBtn.textContent = '🗑';
           delBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.06);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:rgba(226,84,84,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
           delBtn.onclick = function() {
             var msg = 'Delete ConID #' + row.con_id + ' ("' + row.title + '")?';
-            if (hasVideoJob) msg += '\n\nThis ConID has a linked Video Pipeline job — delete that job first, or this will fail.';
+            if (hasVideoJob) msg += '\n\nThis will also delete its linked Video Pipeline job (and any OpenMontage job record) — that cannot be undone.';
             if (!confirm(msg)) return;
-            RPGACE.sb.secureWrite('content_productions', 'delete', null, 'id=eq.' + row.id)
+            RPGACE.sb.secureWrite('video_jobs', 'delete', null, 'content_production_id=eq.' + row.id)
+              .catch(function(e) { throw new Error('linked video job: ' + e.message); })
               .then(function() {
-                RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id, 'rgba(226,226,236,0.5)', 2500);
+                return RPGACE.sb.del('openmontage_jobs', 'content_production_id=eq.' + row.id)
+                  .catch(function(e) { throw new Error('linked OpenMontage job: ' + e.message); });
+              })
+              .then(function() {
+                return RPGACE.sb.secureWrite('content_productions', 'delete', null, 'id=eq.' + row.id)
+                  .catch(function(e) { throw new Error('ConID row: ' + e.message); });
+              })
+              .then(function() {
+                RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id + (hasVideoJob ? ' + linked jobs' : ''), 'rgba(226,226,236,0.5)', 2500);
                 self._refreshWidget();
               })
               .catch(function(e) {
-                RPGACE.utils.toast('⚠️ Delete failed: ' + e.message + (hasVideoJob ? ' (delete the linked Video Pipeline job first)' : ''), '#CC4A4A', 4500);
+                RPGACE.utils.toast('⚠️ Delete failed (' + e.message + ')', '#CC4A4A', 4500);
               });
           };
           actions.appendChild(delBtn);
