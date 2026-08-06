@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📥 Aug 6 (same day, 2nd pass) — Oracle Mode is now a real 3-state toggle: Real / Dummy / Fallback Scout. New <code>/investor</code> skill.</div>
+    <div class="card-body">
+      Alex answered the 3 outstanding <code>/interrogation</code> questions from the earlier same-day <code>/paranoia</code> pass on the Oracle-mode idea in one message, plus asked a real pricing question and defined a new named skill. Full verbatim record: <code>oracle_3mode_toggle_and_investor_skill_spec_backlog_2026-08-06.txt</code>.
+      <br><br>
+      <strong>3-mode toggle, built.</strong> The same top-right switch now cycles Real → Dummy → Fallback Scout on click. Fallback Scout mode queues every real Oracle send into <code>oracle_fallback_queue</code> (<code>context.type:'scout_item'</code>, reusing <code>phylumPath._queueFallback</code>'s exact <code>RPGACE.sb.secureWrite</code> write path — rule 8, no second write mechanism) instead of calling the live API, and returns an honest, unmistakably-labeled acknowledgment with the real pending-queue depth — never a fake answer. Answered for free by the existing daily "RPGACE Fallback Drain" Routine, unchanged. New "📥 Scouted, Now Answered" popup list (<code>dashDeck._popup()</code>) browses every scout_item row, pending and answered — the real named view Alex asked for ("1. scouted, now answered"). Fail-loud fix in the same pass: a failed queue write now says so explicitly instead of silently claiming success.
+      <br><br>
+      <strong>Confirmed, honest limitation — not built blind:</strong> the deployed web app cannot auto-fire the Fallback Drain early at "10 items waiting" — <code>create_trigger</code>'s real minimum interval is hourly, and firing a trigger needs an authenticated Claude Code Remote session, which the public anon-key app is not. The queue-depth message flags this plainly at 10+ pending items instead of faking an auto-fire (right-sized <code>/paranoia</code> pass reused the prior round's evidence rather than re-deriving it, per its own resource-constraint guardrail).
+      <br><br>
+      <strong>Real pricing answer</strong> (via the <code>claude-api</code> skill, never from memory): RPGACE's ground-worker model is $3/$15 per million input/output tokens (Sonnet 4.6). An API key has no monthly fee and no tiered "upgrade" — multiple keys under one account share one balance; extra capacity needs a genuinely separate account. The free lever already built: the Fallback lane above, now a real everyday workflow instead of an emergency-only mechanism.
+      <br><br>
+      <strong>New skill: <code>.claude/skills/investor/SKILL.md</code>.</strong> Alex's verbatim persona — a 300-IQ investor/entrepreneur putting £1M into RPGACE for a 10M GBP stake in 3 years — judging real progress from a commercial-readiness angle. Applied immediately to the API-key question: verdict was "not worth buying a second key yet — get one real revenue event confirmed first, then revisit infra spend with actual unit economics."
+      <br><br>
+      node --check clean on both files. Cache-bust 20260806g → h (rpgace_core.js), 20260806b → c (main.js). Merged to <code>main</code>, G6-verified <code>READY</code> (commit <code>329f464</code>). <strong>Untested by hand.</strong>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔴🟢 Aug 6 — Mock Oracle toggle redesigned: real top-of-page red/green switch, real hand-test fix.</div>
     <div class="card-body">
       Alex's real report: "i cant see dummy oracle right now... it is not there." Checked `sw.js` first (network-first for JS/HTML, ruled out as the cause — a real July 22 lesson already engineered against this exact bug class).
