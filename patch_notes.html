@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🗂️ Aug 6 (same day, 4th pass) — Stale-intercommunication reflection + new <code>/update-logging-system</code> framework; Dummy-mode trace-log idea <code>/paranoia</code>'d and logged for later.</div>
+    <div class="card-body">
+      Alex asked to reflect on what intercommunication had gone stale/dead, and build a real mechanism so oversight docs, Oracle's own self-awareness, and skill <code>.md</code> files stay in sync going forward — plus critiqued Dummy Oracle mode ("quite useless with no context showing on what injected") and proposed a trace/error-code log idea.
+      <br><br>
+      <strong>Real findings (not hypothetical):</strong> <code>oracleAppGrounding.SELF_KNOWLEDGE</code> had gone stale mid-session — despite CLAUDE.md's own rule 6 already requiring it to update in the same session as any Current State change, it missed the 3-mode toggle, <code>/investor</code>, and the dedup fix earlier this same day. Fixed in this pass. <code>graphify</code> was re-confirmed stale live (a query against <code>oracleAppGrounding</code>/<code>SELF_KNOWLEDGE</code> returned unrelated nodes; direct grep found them instantly) — same standing finding as July 31/Aug 4, logged as a fresh dated data point, not a new regression. <code>main.js</code>'s confirmed-dead <code>PIPELINE</code>/<code>runVideoWorkshop()</code> subsystem (found earlier this session, deferred as "FROZEN") is now genuinely actionable since the freeze lifted later the same day — flagged, not removed here (scope discipline). <code>ai_tooling_and_rules_map.md</code>'s own RPGACE-skill list was found missing 3 real shipped skills (<code>interrogation</code>, <code>paranoia</code>, <code>investor</code>) — fixed in the same pass, a small real example of the exact drift this whole reflection is about.
+      <br><br>
+      <strong>New skill: <code>.claude/skills/update-logging-system/SKILL.md</code>.</strong> A shared change-type → required-artifact dependency map, naming <code>SELF_KNOWLEDGE</code> and skill <code>.md</code> files as first-class artifacts (rule 6's own prose hadn't named either outright). Wired into <code>Bedtime</code>'s Step 1 — replacing that step's own duplicated ad hoc list, a real rule-8 fix — rather than copied into <code>Routine</code>/<code>scope</code>/<code>Summary</code>/<code>commit-archaeologist</code>/GODMODE. Real Council-of-5 + <code>/simplify</code> pass cut the original 6-file touch plan down to 3 (the new skill, CLAUDE.md rule 6, Bedtime's Step 1). Honest limitation stated in the skill itself: a checklist doesn't enforce itself — this makes rule 6's existing obligation checkable, it doesn't guarantee it's followed.
+      <br><br>
+      <strong>Dummy-mode trace log — planned, NOT built</strong> (per Alex's own explicit instruction: "plan it and log as future update to get back to"). Real design: reuse the two existing choke points every cross-module signal and write already funnels through (<code>RPGACE.hooks.fire</code>, the 4 <code>RPGACE.sb.*</code> write functions) rather than instrumenting every call site — zero new firing sites needed. 3 real open forks need Alex's actual answers before it's built: trace-code format, display surface (new popup vs. inline vs. both), and whether it needs to persist across reloads.
+      <br><br>
+      Full verbatim record, both ideas + the real debate/Council-of-5 reasoning: <code>dummy_mode_tracelog_and_update_logging_system_paranoia_2026-08-06.txt</code>. node --check clean on rpgace_core.js.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">♻️ Aug 6 (same day, 3rd pass) — Real <code>/deduplication</code> fix: encyclopedia entries were being re-analyzed on every page load.</div>
     <div class="card-body">
       Alex spotted the same encyclopedia entries (Harp Arpeggiation, Wiley's Eskimo, Dave x Central Cee, Endshpiel) appearing multiple times in the new "📥 Scouted, Now Answered" list and asked whether entries could be deduplicated against RPGACE's own established content before reprocessing, to save tokens and workload.
