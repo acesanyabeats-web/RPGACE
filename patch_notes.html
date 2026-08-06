@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔓 Aug 6 — main.js freeze LIFTED indefinitely (Alex's own explicit call) + real dead-code removal, engineer_pass_2026-08-06_13.txt.</div>
+    <div class="card-body">
+      Following the Content Pipeline naming dedup check, Alex said directly: "no more exceptions, im tired of the frozen core always being out of date and stale, the freeze is officially lifted indefinately." The "deliberate logged exception" ceremony is gone — <code>node --check main.js</code> before every commit and same-session logging both stay.
+      <br><br>
+      Acted on the bonus find from that same check: an orphaned 4-agent "Content Pipeline" subsystem (<code>runPipeline</code>/<code>savePipelineToDB</code>/<code>addToEncyclopedia</code>/<code>copyPipelineOutput</code>/<code>resetPipeline</code>/<code>pipelineToNotion</code>/<code>pipelineToGitHub</code>/<code>pipelineToGmail</code>/<code>setAgentPipeStatus</code> + the <code>PIPELINE</code>/<code>TYPE_META</code>/<code>TYPE_PROMPTS</code> state, ~275 lines) confirmed genuinely dead — every DOM id it touched had zero matches anywhere in index.html — removed outright, not just renamed. Carefully distinguished from the similarly-named but genuinely LIVE <code>runVideoWorkshop()</code> feature, which was left untouched.
+      <br><br>
+      <code>api/noter.js</code> was called only by the deleted code (confirmed via grep, zero other callers) and was deleted too — a real freed slot against Vercel Hobby's 12-Serverless-Function cap, now 11 of 12. <code>api/scout.js</code>/<code>api/analyst.js</code> stay, both genuinely reused live by rpgace_core.js's own ingestion path; <code>api/executor.js</code> stays too (4 other live callers beyond the deleted functions).
+      <br><br>
+      node --check main.js clean. Cache-bust main.js 20260731b → 20260806a.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔍 Aug 6 — Real /scope + GODMODE dedup check: "Content Production Live" vs. "Content Pipeline". Verdict: not a code duplicate, was a real branding bug — fixed.</div>
     <div class="card-body">
       Alex asked to dedupe these two if they "have the same role but different code." Treated as a real claim to verify (rule 4), not acted on blind. Direct code read of <code>_openPipeline()</code> confirmed its own comment: the <code>#cpl-widget</code> node is <strong>moved</strong> into the dashDeck popup, never rebuilt — one real implementation, not two.

@@ -1,0 +1,78 @@
+ENGINEER PASS — 2026-08-06 (#13), main.js dead-code removal + freeze lifted
+==============================================================================
+Real /Engineer discipline applied at Tier 1-2 scale (single-file dead-code
+removal, evidence-gathering was the bulk of the work, not the edit itself).
+
+TRIGGER
+-------
+Following the "Content Production Live" vs "Content Pipeline" dedup check,
+Alex asked to actually act on the bonus find (the dead main.js PIPELINE
+subsystem sharing the "Content Pipeline" brand). Mid-investigation, Alex
+sent: "no more exceptions, im tired of the frozen core always being out of
+date and stale, the freeze is officially lifted indefinately" — a direct,
+explicit, standing architecture-rule reversal, applied immediately.
+
+REAL EVIDENCE (before deleting anything)
+------------------------------------------
+- Confirmed via direct grep that ZERO of `runPipeline()`'s DOM anchors
+  (`pipeline-output`, `pipeline-text-input`, `pipeline-run-btn`,
+  `pipeline-img-preview`, `pipeline-detected-type`, `pipeline-result`,
+  `pipeline-drop-zone`) exist anywhere in the current index.html.
+- Distinguished this from a genuinely LIVE, similarly-named sibling
+  feature (`runVideoWorkshop()`) by the same check — its DOM anchors
+  (`vw-duration`, `vw-output`, `vw-run-btn`, `vw-titles`, `vw-transcript`,
+  `vw-type`) all DO exist and are wired to a real onclick. Left completely
+  untouched.
+- Traced every consumer of the `PIPELINE` state object and confirmed all
+  of them (`setPipelineType`, `pipelineDragOver/Leave/Drop`,
+  `handlePipelineFile`, `setChainStep`/`resetChain`, `runPipeline`,
+  `savePipelineToDB`, `addToEncyclopedia`, `copyPipelineOutput`,
+  `resetPipeline`, `pipelineToNotion`, `pipelineToGitHub`,
+  `pipelineToGmail`, `setAgentPipeStatus`) have zero live onclick/DOM
+  wiring in index.html — a full grep for every onclick/ondrop/ondragover
+  handler name and every referenced id/class returned nothing.
+- Confirmed `TYPE_PROMPTS` (a large prompt-template const) has ZERO
+  references anywhere outside its own definition — dead data, not just
+  dead functions.
+- Checked `/api/executor` (called by the 3 dead `pipelineToX` functions)
+  has 4 OTHER live callers elsewhere in main.js — kept, untouched.
+- Checked `/api/scout` and `/api/analyst` (called by the dead
+  `runPipeline`) are BOTH genuinely reused live by rpgace_core.js's own
+  ingestion path (grep-confirmed, ~line 4732 onward) — kept, untouched.
+- Checked `/api/noter` (also called by the dead `runPipeline`) has ZERO
+  other callers anywhere in the codebase — confirmed genuinely orphaned.
+
+BUILD
+-----
+- main.js: removed ~275 lines across 3 contiguous blocks (the `PIPELINE`/
+  `TYPE_META`/`TYPE_PROMPTS` state + all 13 consumer functions), replaced
+  with one explanatory comment recording what was removed and why, so a
+  future grep for "Content Pipeline" doesn't rediscover ghost references
+  with no explanation. Every LIVE neighboring function (`saveOracleTo
+  Encyclopedia`, `clearEncyclopedia`, `LEARN` const, `setLearnStatus`,
+  `searchVideos`, `runVideoWorkshop`, the Enter-key video-search listener)
+  verified still present and untouched after the edit.
+- `api/noter.js` deleted outright (`git rm`) — real freed slot against
+  Vercel Hobby's 12-function cap, now 11 of 12.
+- CLAUDE.md: the "main.js is FROZEN" architecture rule rewritten to
+  record the real, standing policy change (Alex's verbatim quote kept),
+  the real reason it mattered (the freeze itself had hidden this dead
+  code from ever being found), and what discipline stays unchanged
+  (`node --check main.js` before every commit, same-session logging).
+  The 12-function landmine bullet updated to 11/12 with the real cause.
+
+VERIFICATION
+------------
+- `node --check main.js`: PASS.
+- Post-edit grep for every removed function/identifier name: zero
+  remaining references anywhere in main.js except inside the new
+  explanatory comment itself.
+- `ls api/*.js | grep -v _context | wc -l`: 11 (was 12).
+- git diff confirms only main.js + api/noter.js (deletion) + CLAUDE.md +
+  patch_notes.html changed — no other file touched.
+
+NOT DONE, honestly scoped: no equivalent sweep was run across the rest of
+main.js for other possible dead code — this pass was bounded to the
+specific "Content Pipeline" naming collision Alex flagged, not a full
+main.js dead-code audit. A broader sweep would be a real, separate future
+task if Alex wants one, now that the freeze no longer blocks it.
