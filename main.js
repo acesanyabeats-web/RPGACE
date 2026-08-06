@@ -3102,9 +3102,24 @@ function filterEntries(entries){
   return entries.filter(e => detectCategory(e.content, e.title) === ENC_CATEGORY);
 }
 
+// Aug 6 (Alex's real /deduplication ask, surfaced by the Fallback Scout
+// list showing the SAME encyclopedia entries re-queued repeatedly):
+// ENC_BULLET_CACHE alone is NOT real dedup - it's a plain in-memory JS
+// object that evaporates on every page reload, so the exact same entry
+// got re-sent to Oracle (and, once Fallback mode shipped, re-queued into
+// oracle_fallback_queue) every time the Encyclopedia page loaded, even
+// though its bullets had already been generated in a prior session. Real
+// fix, per rule 8: check the entry's own real "destination of planned
+// output" - a persisted preview_bullets column on the encyclopedia row
+// itself - BEFORE ever calling Oracle, not just an in-memory cache that
+// only helps within one page load.
 async function generateEncBullets(entry, allEntries){
   const id = entry.id || entry.created_at || entry.title;
   if(ENC_BULLET_CACHE[id]) return ENC_BULLET_CACHE[id];
+  if(Array.isArray(entry.preview_bullets) && entry.preview_bullets.length){
+    ENC_BULLET_CACHE[id] = entry.preview_bullets;
+    return entry.preview_bullets;
+  }
 
   // Build cross-entry context (titles of other entries for comparison)
   const otherTitles = allEntries
@@ -3148,6 +3163,17 @@ Return ONLY a JSON array of 7 strings. No explanation, no markdown, no preamble:
     if(match){
       const bullets = JSON.parse(match[0]);
       ENC_BULLET_CACHE[id] = bullets;
+      entry.preview_bullets = bullets; // keeps this session's in-memory entry object in sync too
+      // Persist to the real row (id && real UUID guard - same pattern
+      // deleteEncEntry already uses) so the NEXT page load/session/device
+      // finds it via the check above and never re-generates it. Only the
+      // genuine success path writes here - the fallback below never does,
+      // so a transient failure can never poison the row with a useless
+      // placeholder bullet.
+      if(entry.id && String(entry.id).includes('-') && String(entry.id).length > 20){
+        RPGACE.sb.secureWrite('encyclopedia', 'update', {preview_bullets: bullets}, 'id=eq.' + entry.id)
+          .catch(function(e){ console.warn('[generateEncBullets] preview_bullets persist failed:', e.message); });
+      }
       return bullets;
     }
   } catch(e){}

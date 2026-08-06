@@ -19211,6 +19211,17 @@ RPGACE.register('mockOracle', {
   // real answers later via _openScoutedList(), never an auto-injected
   // chat reply (the browser tab/session may be long gone by the time a
   // daily-batch answer lands).
+  //
+  // Aug 6 (2nd pass, real /deduplication ask): a real, generic dedup
+  // check runs BEFORE every insert — any caller that fires the exact
+  // same prompt twice (the concrete case that surfaced this:
+  // generateEncBullets() re-queuing an encyclopedia entry's preview-
+  // bullet prompt on every page reload, since ENC_BULLET_CACHE alone
+  // never persisted — see main.js's own fix for that specific root
+  // cause) gets told it's already queued instead of minting a second
+  // row. This is deliberately caller-agnostic (matches on prompt text
+  // alone, not on which module queued it) so it protects every current
+  // and future Fallback Scout caller the same way, per rule 8.
   _queueScoutItem: function (messages, system, onChunk) {
     var self = this;
     var lastUser = (messages || []).slice().reverse().filter(function (m) { return m.role === 'user'; })[0];
@@ -19228,7 +19239,7 @@ RPGACE.register('mockOracle', {
     // Fail loud (rule 7): a failed write must never come back looking
     // like a successful queue — this is checked explicitly rather than
     // swallowed, unlike a bare .catch(warn-and-continue) would produce.
-    var ackLines = function (pendingCount, writeFailed, writeErr) {
+    var ackLines = function (pendingCount, writeFailed, writeErr, wasDuplicate) {
       if (writeFailed) {
         return [
           '⚠️ [SCOUT QUEUE WRITE FAILED — this question was NOT saved]',
@@ -19238,46 +19249,61 @@ RPGACE.register('mockOracle', {
           'Nothing was queued. Switch back to Real or Dummy mode, or try again — do not assume this was captured.',
         ].join('\n');
       }
-      var lines = [
+      var lines = wasDuplicate ? [
+        '♻️ [ALREADY SCOUTED — /deduplication caught an exact repeat, nothing new queued]',
+        '',
+        'This exact question is already sitting in your scouting queue — a second identical row was NOT created, so it won\'t be reanalysed twice for no reason. Check "📥 Scouted" for its real answer once the daily drain runs.',
+      ] : [
         '📥 [SCOUTED — queued for free fallback processing, not answered live]',
         '',
         'This question was added to your scouting queue instead of calling the real API. It will be answered by the daily Fallback Drain (free, uses Claude Code\'s own access, no Anthropic API spend) — check "📥 Scouted" any time to browse real answers as they land.',
-        '',
-        'Pending in queue: ' + pendingCount,
       ];
+      lines.push('', 'Pending in queue: ' + pendingCount);
       if (pendingCount >= 10) {
         lines.push('', '🔔 10+ items waiting — the next daily drain will answer all of them. This app can\'t auto-fire the drain early from the browser (real limitation, not a bug) — ask a Claude Code session to fire it now if you want them answered sooner.');
       }
       return lines.join('\n');
     };
 
-    var writeFailed = false, writeErr = null;
-    return RPGACE.sb.secureWrite('oracle_fallback_queue', 'insert', [row])
-      .catch(function (e) { writeFailed = true; writeErr = e.message; console.warn('[mockOracle] scout enqueue failed:', e.message); })
-      .then(function () {
-        if (writeFailed) return [];
-        return RPGACE.sb.select('oracle_fallback_queue', "context->>type=eq.scout_item&status=eq.pending&select=id");
-      })
+    var respond = function (pendingCount, writeFailed, writeErr, wasDuplicate) {
+      var full = ackLines(pendingCount, writeFailed, writeErr, wasDuplicate);
+      return new Promise(function (resolve) {
+        if (onChunk) {
+          var parts = full.match(/[\s\S]{1,40}/g) || [full];
+          var i = 0, acc = '';
+          var iv = setInterval(function () {
+            acc += parts[i] || '';
+            onChunk(acc);
+            i++;
+            if (i >= parts.length) {
+              clearInterval(iv);
+              resolve({ content: [{ type: 'text', text: acc }] });
+            }
+          }, 55);
+        } else {
+          setTimeout(function () { resolve({ content: [{ type: 'text', text: full }] }); }, 300);
+        }
+      });
+    };
+
+    // Fetch existing pending scout_item prompts (not just IDs) so an
+    // exact repeat can be caught client-side before inserting - avoids
+    // putting the full (up to ~3000+ char) prompt text into a URL
+    // filter, which real long entries would make unreliable.
+    return RPGACE.sb.select('oracle_fallback_queue', "context->>type=eq.scout_item&status=eq.pending&select=prompt&order=created_at.desc&limit=50")
       .catch(function () { return []; })
-      .then(function (rows) {
-        var full = ackLines((rows || []).length || 1, writeFailed, writeErr);
-        return new Promise(function (resolve) {
-          if (onChunk) {
-            var parts = full.match(/[\s\S]{1,40}/g) || [full];
-            var i = 0, acc = '';
-            var iv = setInterval(function () {
-              acc += parts[i] || '';
-              onChunk(acc);
-              i++;
-              if (i >= parts.length) {
-                clearInterval(iv);
-                resolve({ content: [{ type: 'text', text: acc }] });
-              }
-            }, 55);
-          } else {
-            setTimeout(function () { resolve({ content: [{ type: 'text', text: full }] }); }, 300);
-          }
-        });
+      .then(function (existingRows) {
+        var pending = existingRows || [];
+        var duplicate = pending.some(function (r) { return r.prompt === promptText; });
+        if (duplicate) {
+          return respond(pending.length, false, null, true);
+        }
+        var writeFailed = false, writeErr = null;
+        return RPGACE.sb.secureWrite('oracle_fallback_queue', 'insert', [row])
+          .catch(function (e) { writeFailed = true; writeErr = e.message; console.warn('[mockOracle] scout enqueue failed:', e.message); })
+          .then(function () {
+            return respond(writeFailed ? pending.length : pending.length + 1, writeFailed, writeErr, false);
+          });
       });
   },
 
