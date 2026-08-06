@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎨 Aug 6 (same day, 6th pass) — graphify wired into <code>/5thDimension</code> Phase 1; graph visualization recolored to real RPGACE tokens.</div>
+    <div class="card-body">
+      Two direct follow-ups on pass 5's graphify work.
+      <br><br>
+      <strong>1) `/5thDimension` now keeps the graph current too.</strong> Its Phase 1 ("what's actually built") runs the same free <code>graphify . --update --code-only --no-viz</code> rebuild <code>/update-logging-system</code>'s artifact type 10 already defines — referenced, not duplicated (rule 8) — before treating the graph as real evidence. The real limit carries over explicitly: graphify still can't answer "what does module X do" for anything using <code>RPGACE.register('name', {...})</code>, so its silence on RPGACE's own module names must never read as "this doesn't exist."
+      <br><br>
+      <strong>2) The exported graph now uses RPGACE's own colors.</strong> <code>graphify export html</code> always writes its default Tableau10 palette (10 fixed hex codes, both node fills and UI chrome like the search-focus border). New standalone script, <code>scripts/graphify_recolor.py</code>, does a deterministic hex swap to the real 10 accent colors already defined in <code>style.css</code>'s <code>:root</code> — <code>--gold</code>/<code>--blue</code>/<code>--green</code>/<code>--purple</code>/<code>--red</code>/<code>--orange</code>/<code>--gold2</code>/<code>--hp-col</code>/<code>--mp-col</code>/<code>--muted</code>, none guessed. Deliberately NOT a patch to graphify's own installed package — that's external, upgradeable tooling; a hand-edit there is lost on the next upgrade and isn't RPGACE's own code to maintain. Idempotent (always maps FROM the fixed Tableau10 defaults, so it's safe to re-run after every fresh export). Confirmed on the live file: 3,382 hex occurrences swapped, 0 Tableau10 codes remaining. Wired into <code>/update-logging-system</code>'s artifact type 10 as a standing step whenever an HTML export is regenerated, not a one-off ask.
+      <br><br>
+      Recolored graph re-sent to Alex for a look.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🕸️ Aug 6 (same day, 5th pass) — Live graphify demo + real <code>/paranoia</code>+<code>/restructure</code> verdict: plugged into <code>/update-logging-system</code>, narrowly.</div>
     <div class="card-body">
       Alex had never used graphify and wanted a live run plus a real rundown, then asked for full <code>/paranoia</code>+<code>/restructure</code> scrutiny on whether it could be plugged into <code>/update-logging-system</code> (and the other named skills) to cut token usage without hurting output quality.

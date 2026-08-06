@@ -73,7 +73,17 @@ row that applies, either touch the artifact or state explicitly why not
     extracted as a first-class symbol — a rebuild was tested live and
     did not close it), but it keeps the code-side index from drifting
     further than it already has, and is genuinely free to run. Skip for
-    doc-only sessions — nothing code-side changed.
+    doc-only sessions — nothing code-side changed. **`/5thDimension`'s
+    own Phase 1 ("what's actually built," Aug 6 addition) runs this same
+    step as part of its evidence pass, referencing this artifact rather
+    than restating it — rule 8, one definition of "keep the graph
+    current," not two.**
+    If a visual export is also wanted (`graphify export html`), immediately
+    run `python3 scripts/graphify_recolor.py` afterward — graphify's own
+    export always resets to its default Tableau10 palette, so this
+    deterministic, idempotent RPGACE-palette swap (real tokens from
+    `style.css`'s `:root`, never guessed) needs re-running every time the
+    HTML gets regenerated, not just once.
 
 **Optional, non-authoritative pre-check** (same Aug 6 evidence): before
 marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded
