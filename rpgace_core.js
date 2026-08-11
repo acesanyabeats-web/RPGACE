@@ -6257,7 +6257,8 @@ RPGACE.register('dashDeck', {
       { icon: '🗺️', title: 'System Flow Map', desc: 'Tier (b) — Pipeline flow diagrams, the truth', href: '/system_flow_map.md' },
       { icon: '🤖', title: 'AI Tooling & Rules Map', desc: 'Tier (b) — Skills + rule files + external AI providers', href: '/ai_tooling_and_rules_map.md' },
       { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load — outside the tier system by design', href: '/taxonomy_map.html' },
-      { icon: '🧪', title: 'Smoke Test', desc: 'Layer (d) — real, hand-tickable, what actually works right now', href: '/smoke_test.html' }
+      { icon: '🧪', title: 'Smoke Test', desc: 'Layer (d) — real, hand-tickable, what actually works right now', href: '/smoke_test.html' },
+      { icon: '🔮', title: 'Future Integrations', desc: 'The mirror image of the tier docs — ideas/planned/mid-build, never green', href: '/future_integrations.html' }
     ];
     // Aug 11: the other ~75 dated spec/backlog/debate records moved into
     // records/YYYY-MM/ (real Alex ask - repo root was "a fucking eye

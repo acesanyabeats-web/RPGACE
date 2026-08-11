@@ -1,6 +1,6 @@
 ---
 name: colourgradient
-description: Renders a real, evidence-checked build-status benchmark for a multi-item plan (a /CEO-tracked plan most of all) as green/yellow/red — green (verified built and live, real file/commit/query evidence), yellow (genuinely in progress — real code exists but incomplete/dormant/unverified), red (not started, zero real evidence). Built entirely as a rendering layer over the /drift skill's own procedure — never a competing evidence-gathering method. Use this skill whenever Alex says "/colourgradient", or asks "where am I on [a multi-build plan]" / wants a benchmark of what's done vs in progress vs not built across several plan items at once. Do NOT use this for a single item's status (that's a plain /drift call) or as a replacement for smoke_test.html (different job — smoke_test.html is Alex's own hand-ticked "does this shipped feature still work," this is a computed-fresh "where does this multi-item PLAN stand right now").
+description: Renders a real, evidence-checked build-status benchmark for a multi-item plan (a /CEO-tracked plan most of all) as blue/red/yellow/green — blue (an idea quickly written down, not yet a formal plan), red (a real, specified plan, not built), yellow (genuinely in progress — real code exists but incomplete/dormant/unverified), green (verified built and live, real file/commit/query evidence). Built entirely as a rendering layer over the /drift skill's own procedure — never a competing evidence-gathering method. Only green items are ever written into the real Tier a/b/c/d oversight docs; blue/red/yellow route to future_integrations.html instead, per Alex's own explicit rule. Use this skill whenever Alex says "/colourgradient", or asks "where am I on [a multi-build plan]" / wants a benchmark of what's done vs in progress vs not built across several plan items at once. Do NOT use this for a single item's status (that's a plain /drift call) or as a replacement for smoke_test.html (different job — smoke_test.html is Alex's own hand-ticked "does this shipped feature still work," this is a computed-fresh "where does this multi-item PLAN stand right now").
 ---
 
 # /colourgradient — a real, evidence-checked benchmark of a multi-item plan
@@ -49,38 +49,66 @@ check git log — never trust a doc's own claim), and classify. This is the
 expensive, honest part — do not skip straight to assigning colors without
 this step for each item.
 
-**Step 3 — Map VERDICT+evidence to a color, per item:**
-- 🟢 **GREEN** — real evidence confirms the item is built, live, and
-  (where applicable) wired to its real call sites — not just present as a
-  file that nothing calls. A scaffold that exists but is dormant/unwired is
-  NOT green (see yellow below).
+**Step 3 — Map VERDICT+evidence to a color, per item (4 colors, Aug 11 2026
+extension — Alex's own real commitment-level system, not just a build-
+status readout):**
+- 🔵 **BLUE** — an idea, quickly written down, not yet a real formal plan.
+  Real, checkable signal: the source material itself is explicitly
+  open-ended/unfinished (e.g. "more ideas to come," no concrete spec written
+  yet), not just "not started." Don't confuse this with red — a fully
+  specified plan that simply hasn't been built yet is red, not blue.
+- 🔴 **RED** — a real, specified plan (a concrete spec exists, whether in a
+  compiled doc or a clear verbatim ask), not built. Zero real code/
+  infrastructure evidence found for it.
 - 🟡 **YELLOW** — real code/infrastructure exists (not zero), but is
   incomplete, dormant (gated behind a missing key/flag), unwired to its
   real call sites, or unbenchmarked/unverified in a way that matters for
   the item's actual purpose. State exactly what's missing, don't just say
   "in progress."
-- 🔴 **RED** — zero real evidence found. State what was checked (the real
-  grep patterns / files read / queries run) so a future run isn't repeating
-  the same negative search from scratch.
+- 🟢 **GREEN** — real evidence confirms the item is built, live, and
+  (where applicable) wired to its real call sites — not just present as a
+  file that nothing calls. A scaffold that exists but is dormant/unwired is
+  NOT green (that's yellow).
 - If Step 2 produced a MATERIAL or CAPTURED `/drift` grade instead of a
   clean done/not-done read, report that grade explicitly alongside the
   color — don't silently fold a CAPTURED finding into a plain red without
   flagging that it needs Alex's resolution first (same weight as `/drift`'s
   own guardrail).
 
-**Step 4 — Aggregate + render.** Produce, in this order:
-1. A plain chat report — one line per item, `🟢/🟡/🔴 <item> — <one-line
+**Step 4 — Route by color (Aug 11 2026, Alex's own explicit rule).** This
+is the real, load-bearing addition that makes `/colourgradient` interact
+with the rest of the oversight system, not just report to chat:
+- **🟢 Green items only** ever get written into the real Tier (a)/(b)/(c)/(d)
+  oversight docs (`patch_notes.html`, `manual.html`, `minotaur_map.html`,
+  `interconnection_map.md`, `system_flow_map.md`,
+  `ai_tooling_and_rules_map.md`, `oracleAppGrounding.SELF_KNOWLEDGE`,
+  `smoke_test.html`) — those docs describe what's ACTUALLY TRUE right now,
+  and a non-built idea sitting alongside a real shipped feature makes it
+  harder to tell the two apart at a glance, per Alex's own direct reasoning.
+- **🔵 Blue / 🔴 Red / 🟡 Yellow items route to `future_integrations.html`
+  instead** — the real, new "mirror image" oversight artifact (built Aug 11
+  2026), grouped by color, updated whenever a `/colourgradient`, `/paranoia`,
+  or `/drift` pass generates a real finding and pushes. When an item's color
+  moves to green, it is REMOVED from `future_integrations.html` and its real
+  status is added to the appropriate Tier doc(s) — an item should never sit
+  in both places claiming two different states.
+- `ceo_plan_items.status` is the single shared source of truth both this
+  routing step and `future_integrations.html`'s own snapshot render read
+  from — never derive the two independently (rule 8).
+
+**Step 5 — Aggregate + render.** Produce, in this order:
+1. A plain chat report — one line per item, `🔵/🔴/🟡/🟢 <item> — <one-line
    evidence citation>` — this is the mandatory default output every time.
 2. If Alex's request implies he wants an actual visual artifact (uses words
    like "background highlights," "benchmark I can look at," "visual," or
    directly asks for one) — or if a `/CEO` plan is closing out a real
    milestone worth keeping as a shareable record — publish a self-contained
-   HTML artifact via the `Artifact` tool with real green/yellow/red
-   background blocks per item (load `artifact-design` first, per that
-   tool's own requirement). This step is opt-in, not automatic, per the
-   `/debate` resolution logged in the Part 4 record cited above.
+   HTML artifact via the `Artifact` tool with real per-color background
+   blocks per item (load `artifact-design` first, per that tool's own
+   requirement). This step is opt-in, not automatic, per the `/debate`
+   resolution logged in the Part 4 record cited above.
 
-**Step 5 — Write the dated record.** Same verbatim-record convention as
+**Step 6 — Write the dated record.** Same verbatim-record convention as
 every other RPGACE protocol (rule 5): a `records/YYYY-MM/
 <plan-name>_colourgradient_YYYY-MM-DD.txt` capturing the full per-item
 evidence trail, not just the final colors — a color with no reasoning

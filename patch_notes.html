@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔮 Aug 11 (same day, continued) — /colourgradient gains a 4th color + a real 9th oversight artifact, future_integrations.html; new /misunderstanding skill; real minification ships.</div>
+    <div class="card-body">
+      Three real, separate deliverables from the same pass, per Alex's own direct asks:
+      <br><br>
+      <strong>1. The load-time complaint had a real, deeper root cause.</strong> The earlier cache-header/preconnect fixes were correctly scoped as not touching the actual bottleneck — Alex's own laptop still measured ~12,000ms. Real fix: <code>scripts/minify_client.js</code> (terser, RPGACE's first dev-time-only npm devDependency, never shipped to the client or invoked at runtime), <code>compress:true, mangle:false</code> permanently — mangle is disabled because <code>index.html</code> has 93 inline <code>onclick="fnName(...)"</code> attributes referencing 47 distinct globals a per-file minifier can't see, and renaming any of them would silently break that button. Real, measured result: <code>rpgace_core.js</code> 1.1MB → 660KB raw (309KB → 168KB gzipped), <code>main.js</code> 257KB → 208KB raw (75KB → 60KB gzipped). Verified 3 ways before shipping: every onclick-referenced name checked present in the real output (2 names, pre-existing dead references unrelated to this fix, found and logged separately), <code>node --check</code> clean, a real headless-Chromium load confirming zero JS errors and all modules registering. <code>index.html</code> now loads the <code>.min.js</code> files; the real, edited source stays <code>rpgace_core.js</code>/<code>main.js</code> — a new CLAUDE.md landmine rule requires regenerating both in the same commit as any source change.
+      <br><br>
+      <strong>2. /colourgradient gains a real 4th color (🔵 Blue) and a routing rule.</strong> Alex's own system: 🔵 Blue = an idea quickly jotted down, 🔴 Red = a real specified plan not built, 🟡 Yellow = mid-build, 🟢 Green = verified built and live. New rule: <strong>only Green ever lands in the real Tier a/b/c/d oversight docs</strong> — Blue/Red/Yellow route to a real new 9th artifact, <code>future_integrations.html</code>, the deliberate mirror image of the tier docs (what ISN'T true yet, grouped by real commitment level). Wired into the live Oversight popup, backed by the same <code>ceo_plan_items</code> datasheet `/colourgradient` already reads — updated whenever a `/colourgradient`/`/paranoia`/`/drift` pass generates a real finding and pushes.
+      <br><br>
+      <strong>3. New skill: /misunderstanding.</strong> Alex's own real-time disconnect-repair tool — HE pastes exact confusing text, gets a fixed 3-step repair (quote what he actually said → what was understood and why → the concrete plan forward). Deliberately one-directional and Alex-only (an AI can't detect its own confusing output, only Alex knows he's confused) and never self-triggered. Built as a real Total-systems-portable procedure — no code change needed for Oracle/Engineer CC/Graphify CC to use it, since it's a reasoning shape, not a RPGACE-specific mechanism. Built live using the real Grounded Mode "retroactive vs forward-only" open fork as its own first worked example.
+      <br><br>
+      Also shipped: a real, always-visible top-left "🎯 CEO: ON/OFF" toggle pill in the live app (mirrors the existing Oracle Mode switch pattern), reading/writing the real <code>ceo_plans.status</code>, so `/stopCEO`/`/ResumeCEO` state is visible without opening chat.
+      <br><br>
+      Full evidence trail, the honest answer on what dated records/*.txt files still preserve that skills/CLAUDE.md alone don't, and the Council of 5 report: <code>records/2026-08/decompress_load_fix_colourgradient_bluetier_misunderstanding_paranoia_2026-08-11.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">⚡ Aug 11 (same day, continued) — /decompress skill + real load-time audit, and /CEO grows Grounded Mode + a Supabase datasheet.</div>
     <div class="card-body">
       Alex's real ask: build A1 (the `/decompress` skill), audit RPGACE's actual load time, then make `/CEO` "grounded to every prompt until the plan is done and smoke tested," add `/stopCEO`/`/ResumeCEO`, and tie every loose report/plan into a real Supabase datasheet — "make this my most complete development framework possible."

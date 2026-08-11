@@ -191,6 +191,16 @@ row that applies, either touch the artifact or state explicitly why not
     never a full re-scan on every single push, which would be real
     recurring cost against rule 11 with no evidence backing the need
     (the Aug 11 full scan found zero real table-level duplication).
+15. **A `/colourgradient`, `/paranoia`, or `/drift` pass produces a real
+    blue/red/yellow finding (not green)** (added Aug 11, same day, Alex's
+    own explicit ask: "future integrations on /paranoia and /drift against
+    any file and push just generated") → `future_integrations.html` gets
+    the corresponding card added/updated/removed in its matching color
+    section, sourced from the same `ceo_plan_items.status` row the finding
+    already updated (never re-derived separately, rule 8). A finding that
+    reaches green does the REVERSE — removed from `future_integrations.html`
+    and its real status added to whichever tier doc(s) artifacts 1-14 above
+    already route it to.
 
 **Optional, non-authoritative pre-check** (same Aug 6 evidence): before
 marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded

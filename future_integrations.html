@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Future Integrations</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7}
+  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;overflow-y:auto;z-index:100}
+  .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .sidebar-logo .name{font-family:Georgia,serif;font-size:16px;color:var(--gold);letter-spacing:2px}
+  .sidebar-logo .version{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+  .nav-group{padding:8px 0}
+  .nav-label{padding:4px 20px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  .nav-item{display:block;padding:6px 20px;font-size:12px;color:var(--dim);text-decoration:none;cursor:pointer}
+  .nav-item:hover{color:var(--gold)}
+  .content{margin-left:220px;padding:48px 56px;max-width:1000px}
+  .section{margin-bottom:56px}
+  .section-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
+  .section-title{font-family:Georgia,serif;font-size:26px;color:#E2E2EC;margin-bottom:6px}
+  .section-sub{color:var(--dim);font-size:13px;margin-bottom:28px;max-width:700px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:12px}
+  .card-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .card-body{font-size:12px;color:var(--dim);line-height:1.7}
+  .card.blue{border-color:rgba(74,144,226,0.28);background:rgba(74,144,226,0.05)}
+  .card.red{border-color:rgba(226,84,84,0.25);background:rgba(226,84,84,0.05)}
+  .card.yellow{border-color:rgba(224,196,80,0.3);background:rgba(224,196,80,0.06)}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
+  .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
+  .badge.blue{background:rgba(74,144,226,0.15);color:var(--blue);border:1px solid rgba(74,144,226,0.3)}
+  .badge.red{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .badge.yellow{background:rgba(224,196,80,0.18);color:#E0C450;border:1px solid rgba(224,196,80,0.35)}
+  h3{font-size:13px;font-weight:700;color:#E2E2EC;margin:20px 0 8px}
+  p{color:var(--dim);font-size:13px;margin-bottom:8px}
+  strong{color:#E2E2EC;font-weight:600}
+  .date-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;margin-bottom:16px}
+  hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+  @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">FUTURE INTEGRATIONS</div></div>
+  <div class="nav-group"><div class="nav-label">Non-Green State</div>
+    <a class="nav-item" href="#blue">🔵 Blue — Ideas</a>
+    <a class="nav-item" href="#red">🔴 Red — Planned</a>
+    <a class="nav-item" href="#yellow">🟡 Yellow — Mid-Build</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Format</div>
+    <a class="nav-item" href="#format">How This Doc Works</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Real State</div>
+    <a class="nav-item" href="patch_notes.html">→ Patch Notes (green only)</a>
+  </div>
+</nav>
+
+<div class="content">
+
+<div class="section">
+  <div class="section-eyebrow">Aug 11 2026 · New Oversight Artifact</div>
+  <div class="section-title">Future Integrations</div>
+  <p class="section-sub">A live, constantly-updating log of everything in RPGACE Total systems that is NOT yet real — an idea, a planned-but-unbuilt spec, or a mid-build feature. This doc is deliberately the mirror image of the Tier (a)/(b)/(c)/(d) oversight docs: those describe what IS true right now; this describes what ISN'T yet, so the two never blur into each other.</p>
+  <div class="date-tag">Seeded Aug 11 2026 · /colourgradient's own 4-color system</div>
+</div>
+
+<div class="section" id="format">
+  <h3>How this doc works</h3>
+  <p><strong>Only GREEN (verified built and live) items appear in the real oversight docs</strong> — patch_notes.html, manual.html, minotaur_map.html, interconnection_map.md, system_flow_map.md, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, smoke_test.html. Per Alex's own direct ask: those docs describe what's ACTUALLY TRUE, and a non-built idea sitting alongside real, shipped features made it harder to tell the two apart at a glance.</p>
+  <p><strong>Everything else lives here, grouped by real commitment level:</strong> 🔵 <strong>Blue</strong> — an idea quickly written down, not yet a formal plan. 🔴 <strong>Red</strong> — a real, specified plan, not built yet. 🟡 <strong>Yellow</strong> — genuinely mid-build, real code exists but incomplete. When something reaches Green, it graduates OUT of this doc and INTO the real oversight docs — this doc should never describe something that's actually true right now.</p>
+  <p>Backed by the real Supabase datasheet <code>ceo_plans</code>/<code>ceo_plan_items</code> (part of `/CEO`'s Grounded Mode) — this HTML page is a snapshot rendering of that live data, refreshed whenever `/colourgradient`, `/paranoia`, or `/drift` runs and pushes a real finding, per Alex's own explicit ask ("future integrations on /paranoia and /drift against any file and push just generated").</p>
+</div>
+
+<div class="section" id="blue">
+  <div class="section-eyebrow">🔵 Blue — Ideas, Not Yet Formal Plans</div>
+  <div class="section-title" style="font-size:20px">Quickly written down, real commitment TBD</div>
+
+  <div class="card blue">
+    <div class="card-title">A15 — Chronicles gains more hooks<span class="badge blue">IDEA</span></div>
+    <div class="card-body">Alex's own words: "I think chronicles should register more things, lets come up with ideas of where it could be hooked... more ideas on that to come." Explicitly open-ended — reclassified from Red to Blue this pass (was mis-scoped as a planned item on the first colourgradient benchmark; a spec that's explicitly "more ideas to come" isn't a plan yet, per the /misunderstanding-style self-correction this doc's own build applied to itself).</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">Multi-plan support for /stopCEO / /ResumeCEO<span class="badge blue">IDEA</span></div>
+    <div class="card-body">The current implementation handles more-than-one-active-plan as a real code path, but with only ONE real /CEO-tracked plan existing today, this is genuine speculative generality — flagged honestly in this same day's own /paranoia record as a premature-generalization risk, not yet justified by a second real use case.</div>
+  </div>
+
+  <div class="card blue">
+    <div class="card-title">A "🔄 Rejuvenate" per-node taxonomy button, richer version<span class="badge blue">IDEA</span></div>
+    <div class="card-body">Council-of-5-in-a-popup verdict + approve/reloop cycle for a live subtree /paranoia+/deduplication scan — real design sketch exists, but genuinely needs live Oracle access to produce real verdicts, and the exact reloop state machine is still open. Sits between Blue and Red; kept here since the UI/state-machine specifics are still being worked out, not fixed.</div>
+  </div>
+</div>
+
+<div class="section" id="red">
+  <div class="section-eyebrow">🔴 Red — Real, Specified Plans, Not Built</div>
+  <div class="section-title" style="font-size:20px">Massive Expansion plan, A2–A9</div>
+
+  <div class="card red"><div class="card-title">A2 — Dummy Oracle banner slide-down UI fix<span class="badge red">PLANNED</span></div><div class="card-body">"I want the html to slide down to make space for the oracle status mode, so both don't obstruct each other." Confirmed unbuilt via direct grep.</div></div>
+  <div class="card red"><div class="card-title">A3 — Fallback Scout per-item delete buttons<span class="badge red">PLANNED</span></div><div class="card-body">Remove a queued scout item before it's ever processed. Confirmed unbuilt.</div></div>
+  <div class="card red"><div class="card-title">A4 — Content Intelligence real-insight extraction volume<span class="badge red">PLANNED</span></div><div class="card-body">Placement logic confirmed already working as intended (Alex's own re-check) — the real gap is extraction VOLUME per video, still unaddressed.</div></div>
+  <div class="card red"><div class="card-title">A5 — Research Lab dismantling into Content Pipeline<span class="badge red">PLANNED</span></div><div class="card-body">Idea Bank / Corpus / Beat Log absorbed into Content Pipeline. Research Lab page confirmed fully intact, untouched.</div></div>
+  <div class="card red"><div class="card-title">A6 — Bibliography as its own taxonomy phylum<span class="badge red">PLANNED</span></div><div class="card-body">Each analysed link gets a bidirectionally-traced phylum path. Confirmed unbuilt.</div></div>
+  <div class="card red"><div class="card-title">A7 — OBS Raw → Video Pipeline workflow + YouTube Meme Director<span class="badge red">PLANNED</span></div><div class="card-body">Unified with the beat→music-video workflow, comic-effect script insertion. Confirmed unbuilt.</div></div>
+  <div class="card red"><div class="card-title">A8 — Bookworm absorbs Content Intelligence (videoworm/articleworm)<span class="badge red">PLANNED</span></div><div class="card-body">Closes Research Lab as a standalone dom entirely. Zero matches anywhere in the codebase, on any branch.</div></div>
+  <div class="card red"><div class="card-title">A9 — Agenda overhaul + real time-tracking formula<span class="badge red">PLANNED</span></div><div class="card-body">Real per-execution duration averaging, feeding Schedule Oracle's own timetabling. Confirmed unbuilt — directly overlaps the pre-existing Phylum XP Ledger persistence gap.</div></div>
+</div>
+
+<div class="section" id="yellow">
+  <div class="section-eyebrow">🟡 Yellow — Genuinely Mid-Build</div>
+  <div class="section-title" style="font-size:20px">Real code exists, incomplete or unwired</div>
+
+  <div class="card yellow"><div class="card-title">A10 — Oracle-as-orchestrator via Kimi/Luna<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real server-side scaffold live in <code>api/oracle.js</code> (<code>provider:'kimi'|'luna'</code>) — dormant by design, zero client call sites wired, no live key configured, no benchmark run against Claude yet. The single clearest Yellow example in the project right now.</div></div>
+</div>
+
+<hr>
+<p style="font-size:11px;color:var(--dim)">This doc is a snapshot, regenerated by hand whenever a real /colourgradient, /paranoia, or /drift pass finds a status change — not auto-live. Cross-reference <code>ceo_plan_items</code> in Supabase for the real, queryable version of the same data. First built Aug 11 2026 as part of the /CEO framework's Grounded Mode + Supabase datasheet extension.</p>
+
+</div>
+</body>
+</html>
