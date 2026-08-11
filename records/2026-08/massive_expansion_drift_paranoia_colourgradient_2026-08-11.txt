@@ -1,0 +1,401 @@
+MASSIVE EXPANSION PLAN — /drift + /paranoia BENCHMARK, plus the new /colourgradient
+skill this pass produced. 2026-08-11 (6th taxonomy-week session, run immediately
+after the phylum-renumber Bedtime/Routine close-out).
+
+Source pinned per Alex's own direct request: "run drift exact my txt massive
+expansion plan" = records/2026-08/alex_critique_and_massive_expansion_spec_2026-08-10.txt
+(831 lines, Parts A-G — the compiled 17-item critique-doc spec, its Part B
+18-item existing backlog, Part E/F Aintergration verdicts + real builds, and
+Part G's formal Loop-1 ratification of A13 + A17). Read in full before writing
+this file, not paraphrased from memory.
+
+================================================================
+PART 1 — /drift, Steps 1-5, run against the 17 A-items (the actual "massive
+expansion" ask) plus a short pass on Part B's 18-item backlog
+================================================================
+
+Baseline: RATIFIED for A13 and A17 specifically (Part G, Alex's own words:
+  "I also give a green light for the oversight and total systems changes in
+  the revised plan txt you gave me"). PROVISIONAL for A10/A11/A12/A14 (real
+  work happened after Alex's direct pushback in the same session, but never
+  went through the formal Loop-1 Step 6→7 read-and-approve Alex's own stated
+  process requires for the rest of the document). NONE for A1-A9, A15, A16
+  itself as a literal checklist item (A16 is the meta-framework that GOVERNS
+  the plan, not a line item to grade — it was itself built and is a durable
+  fact, discussed separately below).
+Work map: FULL for the 17 A-items (Part A of the source file enumerates them
+  exhaustively, in Alex's own words, one heading each — a real, checkable
+  list). PARTIAL for Part B's 18-item backlog — CLAUDE.md's own "Open forks
+  that need Alex" section carries the current characterization of most of
+  them, not independently re-verified item-by-item this pass (see the scope
+  note at the end of Part 1).
+
+Verdict: DRIFTED is the wrong word for most of this — 13 of the 17 A-items
+  have NOT been started at all, which per this skill's own guardrail ("A
+  messy or missing plan is never itself graded as drift... don't blame the
+  work for a planning gap") is not drift, it's an honestly unstarted backlog
+  against a mostly-`none`-basis document Alex explicitly said would need his
+  own read/approve pass before real execution ("this report will then be
+  given to me to read and improve"). For the 2 RATIFIED items (A13, A17):
+  ON TRACK — both built the same session they were ratified, verified live.
+  For the 4 PROVISIONAL items (A10/A11/A12/A14): ON TRACK against what was
+  actually asked in the moment (Alex's own real-time pushback), though never
+  formally re-approved as part of the whole-document Loop 1 close.
+
+Findings (real evidence, not assertion — see Part 3 for the full grep/read
+trail; summarized findings only here):
+  1. `.claude/skills/CEO/SKILL.md`, `.claude/skills/drift/SKILL.md` exist —
+     A16 (CEO framework) and A12 (did-we-drift adoption) are real, built,
+     live. `git log` confirms both landed same-session as the spec.
+  2. `scripts/graphify_to_obsidian.py` + `obsidian-vault/` (16 real hub
+     notes) + `graphify-out/obsidian_vault.html` exist — A14 (Obsidian)
+     built, corrected from the Part E first-pass "Not Applicable" verdict
+     per Alex's own direct pushback, per Part F of the source file.
+  3. `session_memory` table exists and is wired into `/Bedtime`/`/Routine`/
+     `/Summary` (confirmed by this very session's own use of it minutes
+     ago) — A11's claude-mem half built as a native Supabase table, not the
+     third-party tool. `api/_context.js`'s `cacheableSystem()` + `phylumPath.
+     _condenseIfLarge()`/`api/_context.js`'s `condenseIfLarge()` mirror exist
+     — A11's Headroom half built as a native equivalent, not the third-party
+     library (correctly Reference-only'd per Part F's own sharpened verdict).
+  4. `api/oracle.js` has a real `provider:'kimi'|'luna'` branch (grep
+     confirmed, lines 4-38+) — A10's server-side scaffold is real. `grep`
+     for `provider.*kimi\|provider.*luna` across `rpgace_core.js`/`main.js`
+     returns ZERO matches — no client call site sends the new field yet.
+     A10 is genuinely half-built: scaffold exists, dormant, unwired,
+     unbenchmarked, no real key.
+  5. `smoke_test.html` exists at repo root, real Supabase-backed
+     (`smoke_test_items` table, queried live) — A17's (d) layer is real,
+     not a stub.
+  6. `grep -n "researchLab"` on `rpgace_core.js` returns the Research Lab
+     dashboard card/page (`P.research`) fully intact, with Idea Bank/Corpus/
+     Beat Log/Bibliography still nested as its own sub-cards exactly as
+     before — A5/A8 (Research Lab dismantling into Content Pipeline/
+     Bookworm) has NOT been touched. Zero matches for `videoworm`/
+     `articleworm` anywhere in the codebase.
+  7. Zero matches for `meme director`, `bibliography.*phylum`, `_deleteScoutItem`,
+     dummy-oracle slide-down CSS, or any per-step/per-workflow time-tracking
+     table/column — A2, A3, A4, A6, A7, A9 are all genuinely untouched, not
+     partially built and mis-reported.
+  8. A15 (Chronicles more hooks) has no fixed target to check against at
+     all — Alex's own words in the source doc are "more ideas of where it
+     could be hooked... more ideas on that to come," i.e. explicitly
+     unfinished as a SPEC, not just unbuilt as CODE. Correctly BASIS: none,
+     not a gap.
+
+Grades:
+  - No MINOR findings — nothing in CLAUDE.md or patch_notes.html claims any
+    of the 13 unstarted A-items are further along than they are; the
+    existing docs already say "compiled, not yet built" honestly.
+  - No MATERIAL findings — no real work happened OUTSIDE what was asked;
+    every real build this week (A10/A11/A12/A13/A14/A16/A17) is real work
+    INSIDE the compiled spec, just not all of it formally ratified yet.
+  - No CAPTURED findings — nothing shows the goal itself silently moving
+    without Alex's own say-so. The gap here is entirely "compiled but not
+    yet executed," the normal, expected state of a multi-day `/CEO` plan
+    mid-flight, not a drift failure.
+
+Next check due: at the next real `/CEO` Loop-1 Step 6→7 event (Alex reading
+  and ratifying more of the document), or the next time any A1-A9/A15 item
+  gets picked up for real building — whichever comes first.
+
+Scope note, honestly stated: Part B's 18-item existing backlog was NOT
+independently re-walked item-by-item with fresh evidence this pass (that
+would mean 18 more grep/read cycles on top of the 17 A-items already
+covered) — its status is carried forward from CLAUDE.md's own "Open forks
+that need Alex" section, itself kept current through this week's own
+sessions. One exception, directly caused by TODAY's own work and worth a
+real correction: B12 ("phyla 12,13,15-21 still need the 7-step framework")
+used the OLD phylum numbers — after today's renumber those are now phyla
+11,14,15-21. Restated correctly in the benchmark table below.
+
+================================================================
+PART 2 — /paranoia-scoped verification of Part 1 (right-sized, not the full
+8-stage ceremony — this is a benchmark-status check, not a single proposed
+architecture change; the full heaviest-protocol treatment is reserved for
+/colourgradient itself as a NEW skill idea, run separately in Part 4)
+================================================================
+
+Real cross-check run against Part 1's own findings, looking specifically for
+anything Part 1 might have gotten wrong in either direction (overclaiming OR
+underclaiming):
+
+- Re-verified A13/A17's RATIFIED status is real, not assumed: Part G of the
+  source file quotes Alex directly ("I also give a green light..."), and
+  both `smoke_test.html` and the Total-section CLAUDE.md extension are real,
+  present files/text, not planned-but-undocumented.
+- Re-verified A10 isn't secretly further along than Part 1 says: read
+  `api/oracle.js` lines 1-60 directly (not just grepped) — confirms the
+  scaffold fails loud with a clear error if `MOONSHOT_API_KEY`/
+  `OPENAI_API_KEY` is unset, matching CLAUDE.md's own "Still open" note.
+  No hidden partial client wiring found anywhere else in the codebase.
+- Re-verified A5/A8 isn't PARTIALLY done somewhere unexpected (e.g. a
+  half-finished migration sitting in a feature branch): `git log --all
+  --oneline --grep="research lab" -i` and `--grep="videoworm"` both return
+  zero commits, on any branch, ever. Genuinely untouched, not almost-done.
+- Checked for the inverse mistake — something Part 1 marked unbuilt that's
+  actually built under a different name than the spec used: no hits for
+  "meme" anywhere in rpgace_core.js/main.js beyond unrelated internet-meme-
+  adjacent copy; no hits for "time_tracking"/"workflow_time" under any
+  plausible alternate column-naming convention (`avg_duration`,
+  `execution_time`, `quest_duration` all checked, zero matches). Confirms
+  A7/A9 are genuinely, not just apparently, unstarted.
+- One real, honest limitation of this whole benchmark, stated plainly per
+  rule 7 (fail loud, never fake completeness): this /paranoia pass did NOT
+  re-run the full Council-of-5-fact-check-with-simplify+scope+godmode+
+  commit-archaeologist ceremony /paranoia's own SKILL.md describes end to
+  end — it ran the evidence-verification core of that ceremony (a second,
+  independent grep/read pass looking for both over- and under-claiming)
+  scaled to match "verify a status benchmark," not "scrutinize one proposed
+  architecture change to the studs." The FULL heaviest-protocol treatment is
+  applied to /colourgradient itself in Part 4, where it's actually warranted
+  (a brand-new skill proposal, not a status check).
+
+Result: Part 1's findings hold. No correction needed beyond the B12
+phylum-numbering restatement already made above.
+
+================================================================
+PART 3 — THE BENCHMARK: green/yellow/red status, the 17 A-items
+================================================================
+
+🟢 GREEN — verified built, live, checked against real evidence (not just a
+doc's own claim):
+  A11 (claude-mem/Headroom halves — session_memory table + cacheableSystem()
+      + _condenseIfLarge() all live and wired)
+  A12 (did-we-drift → /drift skill — built, wired into /scope,
+      commit-archaeologist, GODMODE; its own retroactive Phylum 11/14 check
+      ran and correctly found a real MATERIAL gap — see 🔴 note below)
+  A13 (Total-systems orchestrator dispatch loop — RATIFIED + built)
+  A14 (Obsidian — corrected from Part E's first-pass verdict, built:
+      graphify_to_obsidian.py, obsidian-vault/, obsidian_vault.html, wired
+      into the live Oversight popup)
+  A16 (the CEO framework itself — .claude/skills/CEO/SKILL.md live, and
+      this very benchmark run is a real instance of it operating)
+  A17 (Oversight docs restructuring — RATIFIED + fully executed: Tier a/b
+      formalized, SELF_KNOWLEDGE refreshed, smoke_test.html built as the
+      real 8th oversight doc, Obsidian named as the (e)-layer truth source)
+
+🟡 YELLOW — genuinely in progress, real code exists but is incomplete/
+dormant/unverified:
+  A10 (Oracle-as-orchestrator via Kimi/Luna — server-side scaffold real and
+      live in api/oracle.js, dormant by design: no client call site wired,
+      no real API key configured yet, no live benchmark run against Claude)
+
+🔴 RED — not started, zero real code/doc evidence found:
+  A1  (/decompress performance skill — does not exist in .claude/skills/)
+  A2  (Dummy Oracle banner slide-down UI fix)
+  A3  (Fallback Scout per-item delete buttons)
+  A4  (Content Intelligence real-insight extraction volume increase)
+  A5  (Research Lab dismantling into Content Pipeline — page fully intact,
+      untouched)
+  A6  (Bibliography as its own taxonomy phylum)
+  A7  (OBS Raw→Video Pipeline unified workflow + YouTube Meme Director)
+  A8  (Bookworm absorbing Content Intelligence as videoworm/articleworm —
+      zero matches anywhere in the codebase)
+  A9  (Agenda overhaul + time-tracking formula/tables)
+  A15 (Chronicles — more hooks; not buildable yet, Alex's own spec is
+      explicitly incomplete: "more ideas on that to come")
+
+Sub-finding worth surfacing on its own, not buried in the A12 GREEN line:
+the retroactive Phylum 11/14 framework check A12 asked for DID run (this
+week, per CLAUDE.md's own Aug 11 `/paranoia`+`/CEO` re-pass entry) and found
+a real MATERIAL gap: the fusion-link pass for the (now renumbered) Phylum
+12/13 leaves has essentially zero real evidence — `taxonomy_links` holds
+exactly 1 row touching that pair, dated July 16, predating the July 30
+buildout entirely. That specific fusion-link work is 🔴 RED and open,
+distinct from the audit that found it (🟢 GREEN, the audit ran correctly).
+
+================================================================
+PART 3b — Part B's 18-item existing backlog, carried-forward status
+(scope note: not independently re-verified this pass, see Part 1's own
+honest scope note above — colors reflect CLAUDE.md's own current, this-week
+characterization, restated here only for the single-page benchmark view)
+================================================================
+
+🔴 RED (not started, no Alex answer yet or genuinely zero code):
+  B1  Phylum XP Ledger (architecture fork needs Alex's call)
+  B2  F16/F17/F18 hand-test sweep (pure execution debt, zero code needed)
+  B3  Voice input transcript-duplication (blocked on real console evidence)
+  B4  Real beat-grid audio sync (Slice C)
+  B5  Real audio-similarity audience-matching engine
+  B7  Composio key rotation (needs Alex's action)
+  B8  Swipe-gesture freeze (blocked on live evidence, no 5th blind pass)
+  B9  Journal/Chronicles/Minotaur cross-feed interrogation
+  B13 Schedule Oracle Phase 2
+  B14 EPUB/other-format Bookworm upload
+  B15 Bookworm live-study card-list UI
+  B17 six_table_external_writer_migration_spec (needs Alex's answers)
+  B18 Dummy-Oracle-mode trace-log feature (3 open forks, needs Alex)
+🟡 YELLOW (genuinely partial):
+  B12 Remaining phyla still needing the 7-step Development Framework —
+      renumbered today: now phyla 11, 14, 15-21 (was 12,13,15-21). Phylum
+      12 (Fons Educationis, now 11) got its real proof-of-concept deep
+      restructure this week; the rest are still flat jargon buckets.
+  B16 graphify_jobs queued handover (id 75f63f52) — real, dispatched,
+      explicitly "not urgent," still sitting queued.
+✅ CLOSED (resolved since B was written, worth flagging rather than leaving
+   stale):
+  B6  Paid video provider selection — Alex has ruled this closed (zero
+      monetary spend, unlimited effort); not open, don't re-list as open.
+  B10 Morning Brief redesign — the buildable 2 of 3 sub-parts (bulletin
+      relocation + Oracle-mediated dispatcher) are Adopt-verdict, not yet
+      built as code — stays 🔴, listed here only to flag it's NOT the same
+      as B11.
+  B11 Two open bugs — status unconfirmed this pass, carried forward as-is.
+
+================================================================
+PART 4 — full-strength /paranoia on the /colourgradient skill PROPOSAL
+itself, /CEO-framework link (this is the part actually warranted at full
+protocol weight — a brand-new skill, not a status re-check)
+================================================================
+
+--- Aintergration+/restructure in tandem (does this duplicate existing
+    RPGACE infrastructure — rule 8) ---
+Real candidate collision: `smoke_test.html` already exists as the (d)-layer
+oversight doc, hand-ticked by Alex, function/module-granularity ("does X
+actually work when clicked"). Real, checkable distinction, not a manufactured
+one: smoke_test.html answers "is this ALREADY-SHIPPED thing verified
+working right now" (post-hoc, hand-tested, hand-ticked, persists across
+sessions as a standing state). /colourgradient answers a genuinely different
+question — "where does a MULTI-ITEM PLAN CURRENTLY STAND, item by item,
+mid-build" (a live progress benchmark against a /CEO plan's own work map,
+computed fresh each run from real evidence, not hand-ticked, not meant to
+persist as a standing doc). These are the same shape (a status color) at a
+genuinely different granularity and cadence (per-plan-item vs. per-function;
+computed-on-demand vs. hand-maintained). Verdict: NOT a duplicate — Adopt as
+a new, narrowly-scoped skill, with an explicit non-goal stated in the skill
+file itself (never becomes a 9th persistent oversight doc; a /colourgradient
+run produces a dated snapshot file + a chat report, matching the existing
+verbatim-record convention rule 5 already established, not a new live
+artifact that then needs its own upkeep discipline the way smoke_test.html
+does).
+
+--- GODMODE+scope+commit-archaeologist+Omnitrix+5thDimension reconciliation
+    against real state ---
+Real risk named directly: a color-coded benchmark is only as honest as the
+evidence behind each color, and a rushed run could rubber-stamp GREEN the
+same way `taxonomy_links`' contaminated 100%-confirm rate did (CLAUDE.md's
+own standing caveat). Real mitigation, built into the skill's own procedure
+below: GREEN requires the SAME evidence bar `/drift`'s Step 4 already sets
+(a file:line, a commit hash, a live query result) — never a doc's own claim
+about itself, matching this whole file's Part 1/2 discipline. Omnitrix
+fit: this is Tier 1/2 work (a new skill file, no destructive operation) —
+build directly, no Fable dispatch needed, matching the existing default.
+5thDimension is NOT warranted for a single new skill (its own SKILL.md
+reserves it for whole-project built-vs-reported questions) — correctly
+scoped down to /drift+/scope's shape instead, per the drift skill's own
+"What this replaces, and what it doesn't" section.
+
+--- /debate + /free-for-all-debate — genuine tension worth naming plainly ---
+Real case FOR a richer artifact (an actual HTML page with literal colored
+backgrounds, not just emoji in chat): Alex's own words are "background
+highlights green... red... yellow" — a literal visual ask, and this session
+has Artifact tooling available to build exactly that cheaply. Real case
+AGAINST making that the skill's own MANDATORY default every time: a full
+HTML artifact is real extra build time and a real extra thing to keep in
+sync if invoked mid-build many times across a long `/CEO` execution — for a
+quick "where are we" check during active coding, a plain color-emoji chat
+report is faster and just as informative, and rule 11 (tokens/time are a
+design constraint) argues against over-building the common case. Resolution,
+not a forced tie: the skill defaults to a chat report (🟢🟡🔴) every time,
+AND offers a full visual HTML artifact as an explicit opt-in for a genuine
+"benchmark I want to keep/share" moment — this run itself produces both,
+since Alex asked directly for the visual "background highlights" framing.
+
+--- /interrogation — real open fork, honestly left for Alex rather than
+    guessed ---
+One real design question this pass did NOT resolve unilaterally: should a
+/colourgradient run against a RATIFIED /CEO plan specifically get folded
+into `/CEO`'s own Loop 2 "every build re-checked via /drift" step as a
+STANDING checkpoint (auto-run at defined Loop-2 milestones), or stay
+purely on-demand (Alex invokes it by name whenever he wants a benchmark)?
+Real tradeoff: standing/automatic keeps the benchmark always-fresh but adds
+a recurring cost to every Loop-2 checkpoint even when nobody's about to look
+at it; on-demand costs nothing until asked but can go stale between runs.
+Default chosen for THIS skill (changeable, not locked in): **on-demand
+only** — matches `/investor`'s own precedent (a lens/report, not a standing
+job) and rule 11's cost discipline; Alex can ask for it to become a standing
+Loop-2 checkpoint later if on-demand proves too easy to forget to run.
+
+--- Council of 5 fact-check (folded into Part 5's final report, not
+    duplicated here) ---
+
+--- Link with /CEO framework, explicitly ---
+/colourgradient is the missing VISUALIZATION step for `/CEO`'s own Loop 2
+("every build re-checked via /drift") — Loop 2 already runs `/drift`
+per-item, but had no single-glance, whole-plan view of the results until
+now. Placement: `/colourgradient` = `/drift`'s Step 5 report format (Steps
+1-5 of the drift skill, run once per work-map item instead of once for a
+single fact/task) PLUS a real green/yellow/red rendering layer on top —
+built entirely FROM `/drift`'s own procedure, not a parallel competing one
+(rule 8 applied to skill design itself, matching how `/paranoia` itself is
+"built entirely out of the other four... never a new kind of reasoning of
+its own," per CLAUDE.md's own description of that skill).
+
+================================================================
+PART 5 — where /colourgradient fits in RPGACE Total systems (the second
+half of Alex's explicit ask, "have a look and see where /Colourgradient
+would be suitable within RPGACE total systems too")
+================================================================
+
+- **Primary home: `/CEO` Loop 2 execution**, as the on-demand benchmark-view
+  companion to its existing per-item `/drift` re-checks (see Part 4's "Link
+  with /CEO framework" above) — this is the ONE place a multi-item, multi-
+  session plan with a real work map already exists by construction.
+- **Secondary home: any future `/Routine` session-start** where more than
+  one `/CEO`-scoped plan is active at once — a quick /colourgradient pass
+  across ALL currently-tracked plans (not just one) would tell Alex, in one
+  glance, which of several concurrent multi-day builds needs attention
+  today. NOT built this pass (only one real /CEO-tracked plan — this
+  massive-expansion doc — currently exists, so a multi-plan view has
+  nothing to demonstrate against yet); flagged as a real, cheap future
+  extension once a second concurrent /CEO plan exists.
+- **Total-systems dispatch loop (A13)**: when Orchestrator CC (this
+  session's own named role) dispatches a task to Engineer CC/Graphify CC/a
+  future member and gets back the real a)/b) report pair A13 describes,
+  /colourgradient is the natural place to fold "did that specific dispatch
+  come back GREEN" into the SAME benchmark view as RPGACE-internal plan
+  items — one glance covering both internal build progress and external
+  Total-system dispatch progress, rather than two separate places to check.
+  NOT built this pass (no external dispatch is currently mid-flight to
+  demonstrate against); flagged as real future work, same honesty standard
+  as the multi-plan extension above.
+- **Explicitly NOT a fit**: smoke_test.html's own (d)-layer role (see Part
+  4's Aintergration finding — different granularity, different cadence,
+  deliberately not merged); Chronicles/system_updates (that's a flat
+  append-only event log, not a status-per-item view — folding colour-status
+  into it would make Chronicles do two jobs, the exact rule-8 problem this
+  whole file is trying to avoid creating, not resolve).
+
+================================================================
+PART 6 — Council of 5, final quality/scope check on this whole pass
+================================================================
+
+- **Technical risk**: low — /colourgradient is a read/report skill, no
+  Supabase writes, no destructive operation, matches Tier 1/2 exactly.
+- **Scope/cost (rule 11)**: on-demand-only default keeps it genuinely cheap;
+  the one real cost risk (rubber-stamping GREEN without real evidence) is
+  directly mitigated by inheriting `/drift`'s own evidence bar verbatim,
+  not a weaker one invented for speed.
+- **Maintainability**: built entirely as a thin layer over the already-
+  existing `/drift` skill (Part 4's explicit design constraint) — nothing
+  new to keep in sync if `/drift`'s own procedure changes later.
+- **User experience**: real, literal fulfillment of Alex's own "background
+  highlights green/red/yellow" ask via an actual HTML artifact (not just
+  chat emoji) whenever a benchmark is genuinely wanted, without forcing that
+  overhead on every single invocation.
+- **Honest why-NOT-to-build case, stated plainly rather than skipped**: with
+  only ONE real /CEO-tracked plan currently in flight, a dedicated skill for
+  "benchmark status across N concurrent plans" is arguably premature — the
+  same benchmark could have been produced this one time as a one-off report
+  without naming it a reusable skill at all. Counter-weighing this: Alex
+  explicitly asked for it BY NAME as a skill ("call this the /colourgradient
+  skill"), and CLAUDE.md's own multi-day `/CEO` framework is explicitly
+  designed to keep running across many future sessions/plans — building the
+  skill now, while the pattern is fresh and already needed once, is cheaper
+  than re-deriving the same procedure ad hoc a second time later. Verdict:
+  build it, with the honest premature-generalization risk named here rather
+  than hidden.
+
+Full companion skill file: `.claude/skills/colourgradient/SKILL.md`.
+Companion visual artifact: published this session, URL in the chat report.
