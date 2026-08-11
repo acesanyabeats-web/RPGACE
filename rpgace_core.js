@@ -3195,7 +3195,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): Exactly 12 of 21 knowledge Phyla (numbers 1-10, 11, 14) are actually built out via the Phylum Development Framework - the remaining phyla (12-13, 15-21) exist only as names in the classification list, with no real tree content, no matter how "complete" the 21-name list itself looks. Never call the taxonomy tree "structurally complete" for all 21 - only 12 are. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); phyla 12-13 and 15-21 have no framework pass yet (11 and 14 were built out July 30). A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 3-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 11/14 went through the full 7-step framework including hand-test; the 9 newer phyla (12,13,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); phyla 12,13,15-21 have real jargon-bucket content now (Aug 11) but still need their fusion-link pass and a real hand-test, same as 11/14 (built out July 30) already needed and still have not gotten. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 3-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key.',
 
   init: function() {
     var self = this;
@@ -8159,7 +8159,23 @@ RPGACE.register('phylumPath', {
   // built from Alex's own real category lists), the keyword-collision
   // fix already applied, and Neural Frames -> OpenMontage swapped
   // through every real reference before enabling either phylum here.
-  ENABLED_PHYLA: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 14],
+  // Engineer pass 2026-08-11: the remaining 9 named phyla added in one
+  // real pass, Alex's own explicit ask ("just use it," referring to the
+  // GODMODE+Council-of-5 category-list content he'd already sent for
+  // 12-21) — same real discipline as 11/14: real jargon-bucket leaves
+  // built first (42 leaves across 12/13/15/16/17/18/19/20, "Covers:"
+  // format matching the established convention), _PHYLA_KEYWORDS
+  // enriched from his own category lists with his own overlap-analysis
+  // collision warnings applied directly, a real automated cross-phylum
+  // collision scan run and 2 genuine new collisions fixed ("hook" vs
+  // Phylum 1, "genre evolution" vs Phylum 9 — Historia's own prior
+  // claim, per Alex's own retrospective-vs-forward-looking distinction).
+  // 21 (Miscellaneous Ordinanda) enabled with deliberately zero leaf
+  // content and zero keywords, per Alex's own explicit design for it —
+  // a real, honest "nothing here yet, catch-all only" state, not an
+  // oversight. Fusion-link pass and hand-test both still real, tracked
+  // gaps (same standing status 11/14 have already had since July 30).
+  ENABLED_PHYLA: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
 
   // July 15: "old feeds new" unification - taxonomyTree.proposeLineage()/
   // silentPropose() check this before running their own flat top-down
@@ -12512,8 +12528,33 @@ RPGACE.register('config', {
         {t:'drill darkness',w:2},{t:'grimy atmosphere',w:2},{t:'cold uk sound',w:2},
         {t:'warmth (as feeling)',w:2},{t:'weight of a sound',w:2},
       ] },
-      { num: 12, name: 'Fons Educationis',      keywords: [{t:'tutorial',w:2},{t:'learn',w:1},{t:'teach',w:1},{t:'breakdown',w:1},{t:'guide',w:1},{t:'lesson',w:1}] },
-      { num: 13, name: 'Contentum',             keywords: [{t:'youtube',w:2},{t:'instagram',w:2},{t:'reels',w:2},{t:'hook',w:1},{t:'thumbnail',w:2},{t:'tiktok',w:2},{t:'caption',w:1}] },
+      // Engineer pass 2026-08-11 (Alex's own real jargon-bucket content for
+      // phyla 12-21, the same GODMODE+Council-of-5 discipline that built
+      // 11/14 on July 30 — his own overlap-analysis flagged the real
+      // collision risks below, honoured directly rather than re-derived:
+      // "breakdown" (bare) is dangerously generic across 12/2/4, so kept
+      // compound here ("technique breakdown"); "pitch" bare collides
+      // between 15 (pitching yourself as a collaborator) and 16 (pitching
+      // a beat for sale) — both kept as full compound phrases; "contract"/
+      // "agreement" bare would collide between 16's lease agreements and
+      // 17's general business contracts — 17's terms prefixed "business "
+      // to stay the administrative/structural half, not the transaction-
+      // specific one; "data"/"market"/"trend" (Alex's own flagged weak
+      // discriminators for 19) kept compound ("market analytics," not
+      // bare "data"); 20 deliberately excludes every DAW/plugin-name term
+      // Alex's own analysis said belongs to 6 (Instrumentarium), the
+      // single tightest-scoping pair he named.
+      { num: 12, name: 'Fons Educationis',      keywords: [
+        {t:'tutorial',w:2},{t:'walkthrough',w:1},{t:'step-by-step',w:1},{t:'beginner guide',w:2},{t:'masterclass',w:2},{t:'learning path',w:2},{t:'skill tree',w:2},
+        {t:'technique breakdown',w:2},{t:'quick tip',w:1},{t:'pro tip',w:1},{t:'cheat sheet',w:2},{t:'common mistakes',w:1},{t:'mistakes to avoid',w:2},
+        {t:'case study',w:1},{t:'simplified explanation',w:2},{t:'spaced repetition',w:2},{t:'practice exercise',w:1},{t:'learning curve',w:2},
+      ] },
+      { num: 13, name: 'Contentum',             keywords: [
+        {t:'youtube',w:2},{t:'instagram',w:2},{t:'tiktok',w:2},{t:'reels',w:2},{t:'shorts',w:2},{t:'stories',w:1},{t:'carousel post',w:2},
+        {t:'thumbnail',w:2},{t:'caption',w:1},{t:'hashtag',w:1},{t:'intro hook',w:2},{t:'watch time',w:2},{t:'retention rate',w:2},
+        {t:'click-through rate',w:2},{t:'content calendar',w:2},{t:'content pillar',w:2},{t:'posting schedule',w:2},{t:'trending sound',w:2},
+        {t:'trending audio',w:2},{t:'type beat video',w:2},{t:'beat showcase',w:2},{t:'producer vlog',w:2},{t:'behind the scenes',w:1},
+      ] },
       // Engineer pass 2026-07-30 - "cinematic" (bare) and "neural frames"
       // both REMOVED here: real evidence confirmed "cinematic" as a bare
       // keyword collided with Phylum 11's own legitimate mood vocabulary
@@ -12532,12 +12573,47 @@ RPGACE.register('config', {
         {t:'director style',w:2},{t:'director signature',w:2},
         {t:'openmontage',w:2},{t:'ai video generation',w:2},
       ] },
-      { num: 15, name: 'Collaboratio',          keywords: [{t:'collab',w:2},{t:'feature',w:1},{t:'outreach',w:2},{t:'guest verse',w:2},{t:'networking',w:1},{t:'cross-promotion',w:2}] },
-      { num: 16, name: 'Venditionis Beatorum',  keywords: [{t:'beatstars',w:2},{t:'license',w:2},{t:'lease',w:2},{t:'exclusive rights',w:2},{t:'beat store',w:2},{t:'sell',w:1},{t:'price',w:1}] },
-      { num: 17, name: 'Negotium',              keywords: [{t:'invoice',w:2},{t:'contract',w:2},{t:'accounting',w:2},{t:'tax',w:2},{t:'budget',w:1},{t:'business',w:1}] },
-      { num: 18, name: 'Distributio',           keywords: [{t:'distrokid',w:2},{t:'tunecore',w:2},{t:'release date',w:2},{t:'rollout',w:1},{t:'playlist pitch',w:2},{t:'streaming platforms',w:2}] },
-      { num: 19, name: 'Referentia Mercati',    keywords: [{t:'trending sound',w:2},{t:'competitor',w:2},{t:'benchmark',w:1},{t:'viral',w:1},{t:'industry standard',w:2},{t:'algorithm',w:1}] },
-      { num: 20, name: 'Technologia',           keywords: [{t:'ai tool',w:2},{t:'automation',w:2},{t:'api',w:1},{t:'integration',w:1},{t:'software update',w:2},{t:'tech stack',w:2}] },
+      { num: 15, name: 'Collaboratio',          keywords: [
+        {t:'collab',w:2},{t:'co-production',w:2},{t:'feature',w:1},{t:'joint session',w:2},{t:'remote collaboration',w:2},{t:'split sheet',w:2},
+        {t:'credit split',w:2},{t:'cold outreach',w:2},{t:'industry contact',w:2},{t:'artist relations',w:2},{t:'pitching yourself as a collaborator',w:2},
+        {t:'studio chemistry',w:2},{t:'creative partnership',w:2},{t:'trust building',w:2},{t:'creative compromise',w:2},{t:'collaborative beat',w:2},
+        {t:'stem exchange',w:2},
+      ] },
+      { num: 16, name: 'Venditionis Beatorum',  keywords: [
+        {t:'beatstars',w:2},{t:'airbit',w:2},{t:'beat store',w:2},{t:'beat pricing',w:2},{t:'beat catalogue',w:2},{t:'license',w:1},{t:'lease',w:1},
+        {t:'exclusive rights',w:2},{t:'non-exclusive',w:2},{t:'mechanical license',w:2},{t:'sync license',w:2},{t:'basic lease',w:2},{t:'premium lease',w:2},
+        {t:'unlimited lease',w:2},{t:'trackout lease',w:2},{t:'custom beat request',w:2},{t:'beat store seo',w:2},{t:'tagged beat',w:2},{t:'untagged beat',w:2},
+        {t:'drill beat sale',w:2},{t:'uk drill licensing',w:2},{t:'type beat monetization',w:2},
+      ] },
+      { num: 17, name: 'Negotium',              keywords: [
+        {t:'business model',w:2},{t:'revenue stream',w:2},{t:'sole trader',w:2},{t:'limited company',w:2},{t:'self-employed',w:2},{t:'invoice',w:1},
+        {t:'self-assessment tax',w:2},{t:'business expenses',w:2},{t:'profit margin',w:2},{t:'bookkeeping',w:2},{t:'accounting',w:1},{t:'business contract',w:2},
+        {t:'business agreement',w:2},{t:'intellectual property',w:2},{t:'contract negotiation',w:2},{t:'income diversification',w:2},{t:'passive income',w:2},
+        {t:'business goal setting',w:2},
+      ] },
+      { num: 18, name: 'Distributio',           keywords: [
+        {t:'distrokid',w:2},{t:'tunecore',w:2},{t:'cd baby',w:2},{t:'digital distribution',w:2},{t:'streaming platform',w:1},{t:'single release',w:2},
+        {t:'ep release',w:2},{t:'album release',w:2},{t:'pre-save',w:2},{t:'release schedule',w:2},{t:'drop date',w:1},{t:'streaming royalty',w:2},
+        {t:'mechanical royalty',w:2},{t:'royalty split',w:2},{t:'isrc code',w:2},{t:'playlist placement',w:2},{t:'editorial playlist',w:2},
+        {t:'playlist pitching',w:2},{t:'release rollout',w:2},{t:'release campaign',w:2},
+      ] },
+      { num: 19, name: 'Referentia Mercati',    keywords: [
+        {t:'market trend',w:2},{t:'genre trend',w:2},{t:'sound trend',w:2},{t:'trend forecasting',w:2},{t:'competitor analysis',w:2},{t:'market research',w:2},
+        {t:'industry benchmark',w:2},{t:'industry standard',w:1},{t:'market positioning',w:2},{t:'scene evolution',w:2},
+        {t:'oversaturated genre',w:2},{t:'emerging scene',w:2},{t:'market analytics',w:2},{t:'target demographic',w:2},
+      ] },
+      { num: 20, name: 'Technologia',           keywords: [
+        // Deliberately excludes DAW/plugin-name terms — those stay owned
+        // by Phylum 6 (Instrumentarium) per Alex's own explicit overlap
+        // warning, the tightest-scoping pair in his whole analysis.
+        {t:'generative ai',w:2},{t:'ai plugin',w:1},{t:'ai mastering',w:2},{t:'ai mixing',w:2},{t:'machine learning model',w:2},{t:'neural network',w:2},
+        {t:'ai video generation',w:2},{t:'prompt engineering',w:2},{t:'cloud storage',w:2},{t:'cloud computing',w:2},{t:'plugin architecture',w:2},
+        {t:'vst format',w:2},{t:'tech stack',w:2},{t:'beta tester',w:2},{t:'early access',w:1},
+      ] },
+      // Deliberately unscoped catch-all — Alex's own explicit design note
+      // (his overlap analysis for 21): keeping this near-empty is the
+      // point, not a gap. Real content only ever routes here when it
+      // scores zero everywhere else, never by matching a keyword.
       { num: 21, name: 'Miscellaneous Ordinanda', keywords: [] },
     ];
 

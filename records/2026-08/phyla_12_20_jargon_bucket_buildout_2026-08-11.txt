@@ -1,0 +1,183 @@
+All 21 phyla enabled — real jargon-bucket buildout for phyla
+12,13,15,16,17,18,19,20 using Alex's own already-provided category
+lists, real Engineer pass
+2026-08-11
+
+=====================================================================
+WHAT HAPPENED
+=====================================================================
+Alex asked why he couldn't see phyla 12,13,15-21 in Phylum Path.
+Confirmed real, not a bug: ENABLED_PHYLA gated them out entirely
+(rpgace_core.js:8162, was [1..10,11,14]). Asked which he wanted:
+(1) show empty/coming-soon tabs, (2) actually build them via the
+7-step Development Framework, (3) just list what's missing.
+
+Alex: "2 and i already sent the jargon bucket, jesus christ just use
+it." Earlier the same session he had already pasted a full GODMODE +
+Council of 5 pass, category-organized terms plus a dedicated overlap
+analysis, for phyla 11 through 21 — that content was sitting unused.
+This pass used it directly, exactly as the July 30 Phylum 11/14
+buildout used his own real category lists rather than inventing new
+content.
+
+=====================================================================
+REAL EVIDENCE GATHERED FIRST (rule 1)
+=====================================================================
+- PHYLUM_NAMES/PHYLUM_ENGLISH confirmed the real number->name mapping
+  for all 21 phyla (rpgace_core.js:7367-7383).
+- _PHYLA_KEYWORDS (rpgace_core.js:12152) already had THIN placeholder
+  entries for 12,13,15-21 (~6-7 terms each, same shape 11/14 had
+  before their July 30 enrichment) — the routing infrastructure
+  already existed for all 21, only real taxonomy_tree content and a
+  real keyword enrichment were missing.
+- Phylum 11's real post-enrichment entry (line ~12507, ~20 terms,
+  mostly compound phrases) used as the right-sized density template —
+  NOT the exhaustive 100+ term style of phyla 1-5, matching the real
+  "moderate, not exhaustive" precedent 11/14 actually set.
+- Checked existing taxonomy_tree content per target phylum before
+  inserting anything (rule 8, dedup check) - see the real finding
+  below.
+
+=====================================================================
+BUILT: 42 NEW JARGON-BUCKET LEAVES (taxonomy_tree, Supabase)
+=====================================================================
+One leaf per category block Alex provided, "Covers: term1, term2..."
+explainer format (exact match to Phylum 1's "Cadence & Resolution
+Vocabulary" leaf and the July 30 Phylum 11/14 leaves), deep_content
+carrying the same "Terminology bucket seeded..." note, sources
+[{"type":"phylum_path_manual"}], status 'accepted', gap_score 0 -
+same real column conventions as every prior real seed pass.
+
+Phylum 12 (Fons Educationis), 6 leaves: Tutorial Structure, Teaching
+  Methods, Learning Formats, Skill Progression, Educational Content
+  Types, Feynman & Study Technique.
+Phylum 13 (Contentum), 6 leaves: Platform-Specific, Content Formats,
+  Engagement Mechanics, Content Strategy, Growth Tactics,
+  Genre-Specific Content Types.
+Phylum 15 (Collaboratio), 5 leaves: Collaboration Basics, Outreach &
+  Networking, Working Relationships, Collaboration Communication,
+  Collaborative Production.
+Phylum 16 (Venditionis Beatorum), 6 leaves: Marketplace & Selling,
+  Beat Licensing, Beat Pricing Structure, Beat Buyer Interaction,
+  Beat Sales & Marketing, Genre-Specific Beat Selling.
+Phylum 17 (Negotium), 5 leaves: Business Fundamentals, Financial
+  Operations, Contracts & Legal, Business Operations, Career Business
+  Structure.
+Phylum 18 (Distributio), 5 leaves: Distribution Platforms, Release
+  Mechanics, Streaming & Royalties, Playlist & Discovery, Release
+  Strategy.
+Phylum 19 (Referentia Mercati), 5 leaves: Trend Observation,
+  Competitive Analysis, Industry Landscape, Genre & Scene Evolution,
+  Market Data & Analytics.
+Phylum 20 (Technologia), 4 leaves: General Tech Terminology, AI &
+  Emerging Tools, Computing & Systems, Emerging Production Tech.
+
+Real dedup check hit while inserting (rule 8): Phylum 13 already had
+3 pre-existing nodes from July 19 -- "Beat Selling & Producer
+Business" (branch) -> "Finding & Targeting Artists" (branch) ->
+"Platform-Based Artist Discovery Systems" (leaf). This content is
+about finding/targeting artists for beat-selling, which reads as
+genuinely misfiled under Contentum (YouTube/Instagram content) rather
+than Venditionis Beatorum (beat selling) or Collaboratio (outreach).
+NOT moved this pass -- flagged for Alex, a parent_id/phylum_number
+change is a real taxonomy write needing his own checkpoint (rule 4).
+Phylum 16 also had 7 pre-existing July 16/19 nodes ("Beat Selling
+Strategies", "Business Models for Beat Selling" branches) -- checked
+and these ARE genuinely on-topic for Venditionis Beatorum, no
+conflict, purely additive.
+
+=====================================================================
+BUILT: _PHYLA_KEYWORDS ENRICHMENT (rpgace_core.js)
+=====================================================================
+Replaced the 8 thin placeholder arrays with real, collision-aware
+entries drawn from Alex's own category lists. His own overlap-analysis
+warnings applied directly as real design decisions, not re-derived:
+- P12: "breakdown" (he flagged as dangerously generic) kept compound
+  ("technique breakdown"), never bare.
+- P15/P16: "pitch" (he flagged as meaning something different in each
+  -- pitching yourself as a collaborator vs pitching a beat for sale)
+  kept as two distinct full compound phrases, not the same bare word.
+- P17: "contract"/"agreement" prefixed "business " throughout, so
+  Negotium stays the administrative/structural half and doesn't
+  collide with P16's transaction-specific "lease agreement"/"exclusive
+  agreement" -- his own stated discriminator, applied literally.
+- P19: "data"/"market"/"trend" (his own flagged weak discriminators)
+  kept compound ("market analytics," "market trend"), never bare.
+- P20: every DAW/plugin-name term deliberately excluded -- his own
+  explicit note that this is the single tightest-scoping pair
+  (Phylum 6/Instrumentarium owns those).
+
+=====================================================================
+REAL AUTOMATED COLLISION SCAN (not eyeballing)
+=====================================================================
+Wrote a real Node script (not saved, one-off): parsed the live
+_PHYLA_KEYWORDS array out of the actual file, built a term->[owning
+phyla] map, flagged every term with >1 owner. Ran BEFORE and AFTER
+the 8 new phyla's enrichment to isolate genuinely NEW collisions from
+long-standing pre-existing ones among phyla 1-10 (there are 71 of
+those, none touched, none in scope this pass -- e.g. "reverb" between
+Sonus Designatio/Mixtura, "scale" between Compositio/Anatomia -- all
+pre-date this session).
+
+New collisions found touching the 8 new phyla: 6 total.
+FIXED (2, real bugs matching this project's own standing bare-word-
+collision class):
+  - "hook" (w:1) -- Phylum 1 (Compositio) already had it bare.
+    Removed from Phylum 13's list (already had "intro hook" covering
+    the specific case, no real signal lost).
+  - "genre evolution" (w:2) -- Phylum 9 (Historia) already had it,
+    dated before this pass. Removed from Phylum 19's list --
+    Historia's own usage is retrospective, Referentia Mercati's is
+    forward-looking, exactly the distinction Alex's own overlap
+    analysis for P19 already named as the fix. "scene evolution" and
+    "sound evolution" (non-colliding) still cover the same ground.
+
+KEPT as genuine dual-relevance (4, matching the project's own already-
+accepted "reference track" precedent between Mixtura/Sensus Auris --
+a term that legitimately belongs in two adjacent domains isn't a bug):
+  - "studio chemistry" / "creative compromise" -- Psychologia (the
+    internal/emotional experience) vs Collaboratio (the external
+    working-relationship mechanics). Genuinely different angles on
+    the same real phenomenon.
+  - "type beat video" -- Contentum (a content-strategy format) vs
+    Visio Cinematica (a visual-treatment subject). Both real.
+  - "ai video generation" -- Technologia (general emerging tech) vs
+    Visio Cinematica (a filmmaking tool). Both real.
+
+=====================================================================
+ENABLED_PHYLA UPDATE
+=====================================================================
+[1,2,3,4,5,6,7,8,9,10,11,14] -> [1..21]. Phylum 21 (Miscellaneous
+Ordinanda) enabled with deliberately ZERO leaves and ZERO keywords --
+per Alex's own explicit design note for it ("Recommend keeping this
+phylum's keyword list empty or near-empty... letting it only receive
+content that scores zero everywhere else"). This is a real, honest
+"nothing here yet, catch-all only" state, not an oversight.
+
+=====================================================================
+oracleAppGrounding.SELF_KNOWLEDGE UPDATE (rule 6, mandatory same
+session)
+=====================================================================
+Was: "Exactly 12 of 21 knowledge Phyla... are actually built out...
+Never call the taxonomy tree structurally complete for all 21 - only
+12 are." Now factually wrong post-build. Fixed to: all 21 enabled,
+but explicitly flags that phyla 12,13,15-21 still lack the
+fusion-link pass and hand-test steps (same real gap 11/14 have had
+since July 30) -- so Oracle can't overclaim "fully verified" for any
+of the new 9 either. Also fixed the parallel mid-string mention in
+the "Biggest built-but-rough areas" clause.
+
+=====================================================================
+NOT DONE THIS PASS -- REAL, HONEST GAPS, NOT SILENT
+=====================================================================
+1. Fusion-link pass for all 9 new phyla -- zero real evidence exists
+   yet, same standing gap 11/14 already carry.
+2. Hand-test -- needs Alex's own hands, same standing gap.
+3. Phylum 13's misfiled July 19 content -- flagged, not moved.
+4. The 4 "kept" collisions above are a judgment call, not re-verified
+   with Alex directly -- if he disagrees with any of them being
+   genuinely dual-relevant, they're each a one-line fix.
+
+`node --check rpgace_core.js` clean. Cache-bust bumped (20260811g ->
+h). CLAUDE.md's Taxonomy section + Live-numbers-adjacent claims
+corrected in the same commit.
