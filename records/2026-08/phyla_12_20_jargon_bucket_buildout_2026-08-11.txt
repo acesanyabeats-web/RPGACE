@@ -181,3 +181,33 @@ NOT DONE THIS PASS -- REAL, HONEST GAPS, NOT SILENT
 `node --check rpgace_core.js` clean. Cache-bust bumped (20260811g ->
 h). CLAUDE.md's Taxonomy section + Live-numbers-adjacent claims
 corrected in the same commit.
+
+=====================================================================
+REAL FOLLOW-UP, SAME SESSION: MISFILED PHYLUM 13 CONTENT MOVED
+=====================================================================
+Alex, real answer: "move it, makes sense; and yes leave the fusion
+links etc for later when rpgace oracle ai is back."
+
+Moved the whole 3-node subtree from Phylum 13 (Contentum) to Phylum 16
+(Venditionis Beatorum) -- content is about finding/targeting artists
+to sell beats to, a real fit alongside Phylum 16's own pre-existing
+"Beat Selling Strategies"/"Business Models for Beat Selling" branches.
+Internal structure (parent_id chain, depth, node_type, names)
+untouched -- only phylum_number and each node's own path prefix
+changed (Contentum/... -> Venditionis Beatorum/...), a real, minimal,
+low-risk re-parent rather than restructuring either branch's internals.
+
+  faaf0356-9fd1-43b9-9913-9855a87d230c  "Beat Selling & Producer Business" (branch, depth 1)
+  a72a3677-a4aa-4488-9dc1-3f4fd371f027  "Finding & Targeting Artists" (branch, depth 2)
+  be07adac-b214-4c8b-9eee-4647216954eb  "Platform-Based Artist Discovery Systems" (leaf, depth 3)
+
+Verified: Phylum 13 now 6 nodes (only the new jargon-bucket leaves),
+Phylum 16 now 16 nodes (13 existing + this 3-node subtree).
+
+DECISION, not deferred by accident: fusion-link pass and hand-test for
+all 9 new phyla (and the still-outstanding one from 11/14, July 30)
+are explicitly held until real Oracle/Claude API access is back --
+Alex's own call, standing until then. Not re-attempted with Mock
+Oracle or a workaround; a real fusion-link pass needs real ground-
+worker judgment (decidePlacementScored/concept_fusion), not a
+placeholder run.
