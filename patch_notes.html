@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌊 Aug 11 (same day, continued) — /paranoia + /CEO on minotaur_map.html's River XII-XVI: Alex was right, the missing interlinks were real and already visible in graphify/Obsidian, not just an impression.</div>
+    <div class="card-body">
+      Alex: "why are some rivers not connected to others when they are eg. river 12-16 have clear stakes to others, open montage to river 11, ffmpeg to other rivers etc. still poorly done and it is reflected in graphify and obsidian." Full record: <code>records/2026-08/minotaur_river_interlinks_paranoia_ceo_2026-08-11.txt</code>.
+      <br><br>
+      Real GODMODE evidence check, not taken on his word: <code>scripts/graphify_river_group.py</code>'s <code>RIVER_FLOWS</code> table — the single canonical source feeding both <code>graph.html</code>'s node-info panel and the Obsidian vault's Flows-into/Fed-by sections — had genuinely zero entries for rivers 12-16, confirmed by parsing the live embedded JSON directly (empty arrays across all 5). The table's own comment claimed this was "honest scope match, not a gap" — real and checkable, and wrong: an earlier same-day pass had already declared XII-XVI real peer rivers, but never gave them the same connector treatment I-XI get.
+      <br><br>
+      <strong>Fixed with real, grepped evidence, not invented symmetry</strong>: every <code>RPGACE.api()</code>/Composio caller in <code>rpgace_core.js</code> was resolved to its owning module (<code>morningBrief</code>→River V, <code>contentRepurpose</code>→River XI), giving real basis for 13 new <code>RIVER_FLOWS</code> entries. <code>minotaur_map.html</code> gained matching connectors (reused the existing <code>.river-flow-next</code> class, no new CSS) around River XII and the XIII-XVI block, plus OpenMontage/Composio/Kimi-Luna/librosa/FFmpeg node text now states each connector's real triggering river inline — OpenMontage's real River XI spring/mouth relationship (previously stated only in River IX's own text) now also appears where a reader first meets it in River XII. Regeneration pipeline re-run and verified: <code>graph.html</code>'s embedded RIVER_NOTES now shows real, non-empty flows for all 5 rivers; all 16 Obsidian vault notes regenerated and diffed. div-balance clean on <code>minotaur_map.html</code> (931/931).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧹 Aug 11 (same day, continued) — the archive-report/"current capabilities" diagnostic + real Supabase row-level dedup, planned via /CEO Loop 1 + /paranoia then executed same session. 2 genuine duplicate rows found.</div>
     <div class="card-body">
       Alex: "I also think I should have an archive for all reports when an aspect is changed... oversight needs this as a diagnostic to make it crisp and concise," then "I'd like it to run on supabase too... all supabase tables should also run /deduplications too... make this a constantly updating framework when reporting and pushing... always make this happen, always, I'm tired of this."

@@ -742,7 +742,9 @@
   <div class="river-label" style="margin-top:52px">Rivers XII–XVI</div>
   <div class="river-title">🔗 The Total System Gateway</div>
   <div class="river-sub">Not a translation of a numbered <code>system_flow_map.md</code> diagram like Rivers I-XI above — those track a piece of information moving through RPGACE's own app UI. This is graphify's own extended view, drawn here too: the code-organization rivers that carry a genuinely different kind of real traffic — API calls to external Total-system members, and the dev-process/knowledge layer the Total system's own Claude Code sessions coordinate through. These rivers are real, not second-class: they carry the connectors that let RPGACE receive and push data within the Total system at all.</div>
-  <div class="correspond">↔ a genuinely new section, not a translation of one <code>system_flow_map.md</code> node — the real detail lives in <code>ai_tooling_and_rules_map.md</code>'s "External AI/tool providers" table and <code>scripts/graphify_river_group.py</code>'s <code>EXTERNAL_CONNECTORS</code>, this is the plain-language version</div>
+  <div class="correspond">↔ a genuinely new section, not a translation of one <code>system_flow_map.md</code> node — the real detail lives in <code>ai_tooling_and_rules_map.md</code>'s "External AI/tool providers" table and <code>scripts/graphify_river_group.py</code>'s <code>EXTERNAL_CONNECTORS</code>/<code>RIVER_FLOWS</code>, this is the plain-language version</div>
+
+  <div class="river-flow-next" style="border-top:none;padding-top:0">🌊 fed by ← <strong>River III</strong> (Oracle Current — dormant Kimi/Luna provider calls) · <strong>River V</strong> (morningBrief's real Composio Gmail-fetch) · <strong>River IX</strong> (the fallback drain + Graphify CC's session-start dispatch) · <strong>River XI</strong> (the OpenMontage handoff, librosa's beat_audio_jobs, contentRepurpose's Composio calls)</div>
 
   <div class="flow" style="margin-top:20px">
     <div class="lane">
@@ -750,14 +752,18 @@
     </div>
     <div class="arrow-down"></div>
     <div class="lane">
-      <div class="node stadium"><div class="t">🎬 OpenMontage</div><div class="d">live — agent-operated video pipeline, a separate Claude Code session ("Engineer CC") in its own repo, via the <code>openmontage_jobs</code> reservoir</div></div>
-      <div class="node stadium"><div class="t">📤 Composio</div><div class="d">live — Gmail/Instagram/YouTube/Notion/GitHub connected-account automation</div></div>
-      <div class="node stadium"><div class="t">🌐 Graphify CC</div><div class="d">live — the real 4th Total-system member, via the <code>graphify_jobs</code> reservoir</div></div>
-      <div class="node dashed"><div class="t">🤖 Kimi / Luna</div><div class="d">dormant — real scaffolds in place, waiting on Alex adding an API key</div></div>
+      <div class="node stadium"><div class="t">🎬 OpenMontage</div><div class="d">live — agent-operated video pipeline, a separate Claude Code session ("Engineer CC") in its own repo, via the <code>openmontage_jobs</code> reservoir. Real spring AND mouth both sit in <strong>River XI</strong>: opens at "Generate Video," closes at "Mark ConID as Filmed" — the reservoir is polled, not pushed.</div></div>
+      <div class="node stadium"><div class="t">📤 Composio</div><div class="d">live — Gmail/Instagram/YouTube/Notion/GitHub connected-account automation. Real triggering call sites (grepped, not assumed): <strong>River V</strong>'s morningBrief (Gmail fetch) and <strong>River XI</strong>'s contentRepurpose (Notion + YouTube-via-Supadata)</div></div>
+      <div class="node stadium"><div class="t">🌐 Graphify CC</div><div class="d">live — the real 4th Total-system member, via the <code>graphify_jobs</code> reservoir. Dispatched from <strong>River IX</strong>'s session-start check; deposits real findings back into <strong>River XIV</strong></div></div>
+      <div class="node dashed"><div class="t">🤖 Kimi / Luna</div><div class="d">dormant — real scaffolds in place, waiting on Alex adding an API key. Once live, called from <strong>River III</strong>'s Oracle Current in place of the default Anthropic call</div></div>
       <div class="node dashed"><div class="t">🎨 OpenArt</div><div class="d">deferred — "connect it at a later date," not wired to anything yet</div></div>
-      <div class="node dashed"><div class="t">🎵 librosa / 🎞️ FFmpeg</div><div class="d">occasional — librosa runs locally via Alex's own <code>local_server.py</code>; FFmpeg lives entirely inside Engineer CC's OpenMontage environment, never inside RPGACE's own runtime</div></div>
+      <div class="node dashed"><div class="t">🎵 librosa / 🎞️ FFmpeg</div><div class="d">occasional — librosa runs locally via Alex's own <code>local_server.py</code>, triggered only by <strong>River XI</strong>'s Beat Log; FFmpeg lives entirely inside Engineer CC's OpenMontage environment, reached only via River XI's OpenMontage handoff through this river, never called directly by any RPGACE river</div></div>
     </div>
   </div>
+
+  <div class="river-flow-next">🌊 flows back into → <strong>River XI</strong> (the OpenMontage job result) · <strong>River XIV</strong> (Graphify CC's real findings, via <code>graphify_jobs</code>)</div>
+
+  <div class="river-flow-next" style="border-top:none;padding-top:0">🌊 fed by ← <strong>River XV</strong> feeds <strong>River XIII</strong>'s own Routine session-start check via <code>session_memory</code> · every river above feeds <strong>River XV</strong> whenever a real decision gets a verbatim record (rule 5) · <strong>River XVI</strong>'s own scripts generate this river's <code>graph.html</code></div>
 
   <div class="flow" style="margin-top:20px">
     <div class="lane">
@@ -768,7 +774,9 @@
     </div>
   </div>
 
-  <div class="river-flow-next">🔗 full technical detail on every connector above: <code>ai_tooling_and_rules_map.md</code>, <code>graphify-out/obsidian_vault.html</code></div>
+  <div class="river-flow-next">🌊 <strong>River XIV</strong> flows back into → every river above (I-XVI), since CLAUDE.md's own rule requires reading the relevant section before any nontrivial work · <strong>River XVI</strong> flows into → <strong>River XII</strong> (<code>graph.html</code>/<code>GRAPH_TREE.html</code>) and <strong>River XIV</strong> (<code>obsidian_vault.html</code>)</div>
+
+  <div class="river-flow-next">🔗 full technical detail on every connector above: <code>ai_tooling_and_rules_map.md</code>, <code>scripts/graphify_river_group.py</code>'s <code>RIVER_FLOWS</code>, <code>graphify-out/obsidian_vault.html</code></div>
 
   <!-- ═══════════════ THE OVERSIGHT RIVERS (Aug 11) ═══════════════ -->
   <div class="river-label" style="margin-top:52px">The Oversight Rivers</div>

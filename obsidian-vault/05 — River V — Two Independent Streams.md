@@ -14,17 +14,18 @@ source: "graphify_river_group.py — real, not guessed"
 - [[researchTabs]] — `rpgace_core.js:3579-3742`
 - [[intelBatchList]]
 - [[intelDelete]] — `rpgace_core.js:4995-5581`
-- [[intelDedup]] — `rpgace_core.js:6357-6488`
+- [[intelDedup]] — `rpgace_core.js:6364-6495`
 - [[ciAutoPropose]] — `rpgace_core.js:2867-2953`
-- [[scheduleFixes]] — `rpgace_core.js:17529-17587`
-- [[shiftSync]] — `rpgace_core.js:17462-17527`
+- [[scheduleFixes]] — `rpgace_core.js:17555-17613`
+- [[shiftSync]] — `rpgace_core.js:17488-17553`
 - [[agendaReminder]] — `rpgace_core.js:4658-4730`
-- [[morningBrief]] — `rpgace_core.js:17107-17355`
-- [[journalQoL]] — `rpgace_core.js:17747-17886`
+- [[morningBrief]] — `rpgace_core.js:17133-17381`
+- [[journalQoL]] — `rpgace_core.js:17773-17912`
 
 ## Flows into
 
 - → [[08 — River VIII — The Confluence Pool.md|River VIII — The Confluence Pool]] (Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar)
+- → [[12 — River XII — The API - Auth Layer.md|River XII — The API / Auth Layer]] (morningBrief's real Composio Gmail-fetch call routes out through here)
 
 ## Fed by
 

@@ -15,8 +15,8 @@ source: "graphify_river_group.py — real, not guessed"
 - [[oracleTreeGrounding]] — `rpgace_core.js:2955-3098`
 - [[oracleFetchGuard]] — `rpgace_core.js:3522-3577`
 - [[oracleDevBridge]] — `rpgace_core.js:3444-3520`
-- [[mockOracle]] — `rpgace_core.js:19072-19461`
-- [[agentsIntoOracle]] — `rpgace_core.js:17589-17638`
+- [[mockOracle]] — `rpgace_core.js:19098-19487`
+- [[agentsIntoOracle]] — `rpgace_core.js:17615-17664`
 - [[prodOraclePanel]] — `rpgace_core.js:906-1021`
 - [[instaOraclePanel]] — `rpgace_core.js:1023-1118`
 - [[youtubeOracle]] — `rpgace_core.js:650-772`
@@ -29,6 +29,7 @@ source: "graphify_river_group.py — real, not guessed"
 - → [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]] (a tapped insight badge)
 - → [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]] (special prefix diverts the message)
 - → [[05 — River V — Two Independent Streams.md|River V — Two Independent Streams]] (special prefix diverts the message)
+- → [[12 — River XII — The API - Auth Layer.md|River XII — The API / Auth Layer]] (dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call)
 
 ## Fed by
 

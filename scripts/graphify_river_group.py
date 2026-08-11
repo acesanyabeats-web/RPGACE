@@ -182,21 +182,21 @@ TOTAL_ZONES = 16  # 16 unified rivers: I-XI (narrative info-flow) + XII-XVI (Tot
 # that table's own wording exactly.
 EXTERNAL_CONNECTORS = [
     {'name': 'OpenMontage', 'status': 'live', 'via': 'openmontage_jobs Supabase queue',
-     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("Engineer CC") in its own repo — never RPGACE-embedded'},
+     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("Engineer CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live\'s "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).'},
     {'name': 'Composio', 'status': 'live', 'via': 'api/composio.js / api/executor.js / api/orchestrate.js',
-     'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation'},
+     'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V\'s morningBrief (Gmail fetch) and River XI\'s contentRepurpose (Notion page + YouTube channel data via Supadata).'},
     {'name': 'Moonshot AI (Kimi)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'kimi\'',
-     'note': 'real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set'},
+     'note': 'real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from River III\'s Oracle Current in place of the default Anthropic call once live.'},
     {'name': 'OpenAI (Luna)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'luna\'',
-     'note': 'same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set'},
+     'note': 'same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same River III relationship once live.'},
     {'name': 'librosa', 'status': 'optional/local', 'via': 'beat_audio_jobs + beat-audio bucket, local_server.py',
-     'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service'},
+     'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI\'s Beat Log, nowhere else.'},
     {'name': 'FFmpeg', 'status': 'live (external repo)', 'via': "OpenMontage's own pipeline, confirmed working July 31",
-     'note': "runs inside Engineer CC's OpenMontage environment, not RPGACE's own runtime"},
+     'note': "runs inside Engineer CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river."},
     {'name': 'OpenArt', 'status': 'deferred', 'via': 'none yet',
      'note': '"connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet'},
     {'name': 'Graphify CC', 'status': 'live', 'via': 'graphify_jobs Supabase queue',
-     'note': 'the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph'},
+     'note': 'the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from River IX\'s own session-start check, deposits real findings back into River XIV via graphify_jobs.'},
 ]
 
 # Real, honest per-river role text for XIII-XVI — replaces the old
@@ -247,9 +247,22 @@ MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 # Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
 # connectors (Aug 6 restructure pass) — never guessed. Each entry: real
 # source river number -> list of (target label, real condition/note).
-# Rivers 12-16 (the meta-zones, not named rivers in minotaur_map.html)
-# have no flow-connector data — minotaur_map.html's own scope is the 11
-# named rivers only, honest scope match, not a gap in this table.
+#
+# Rivers 12-16 real flow data added Aug 11 (2nd same-day pass, real Alex
+# critique: "river 12-16 have clear stakes to others... still poorly
+# done and it is reflected in graphify and obsidian"). Real, checkable —
+# the earlier "no flow-connector data, honest scope match" framing this
+# comment used to carry was itself the bug: the Aug 11 (2nd) extension
+# had already declared rivers XII-XVI real, non-lesser peer rivers, but
+# never actually gave them the same flow-connector treatment I-XI get,
+# so graph.html's own node-info panel (flows_into/fed_by, built from
+# this exact table) rendered empty for all 5 of them — confirmed by
+# direct read of build_river_notes() below before this fix. Every new
+# entry traces to a real, grepped call site (RPGACE.api() callers'
+# owning module resolved against RIVER_MODULES; see
+# EXTERNAL_CONNECTORS' own notes for the same facts in prose), not
+# invented for symmetry.
+#
 # Moved here from graphify_to_obsidian.py (Aug 11, rule-8 dedup) so this
 # script — already the canonical source for RIVER_NAME/RIVER_COLOR/
 # RIVER_MODULES — is also the one source for river-flow data; the vault
@@ -267,18 +280,39 @@ RIVER_FLOWS = {
         ('River VI — The Judgment Chamber', 'a tapped insight badge'),
         ('River IV — The Bookworm River', 'special prefix diverts the message'),
         ('River V — Two Independent Streams', 'special prefix diverts the message'),
+        ('River XII — The API / Auth Layer', 'dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call'),
     ],
     4: [('River VI — The Judgment Chamber', 'every insight found here')],
-    5: [('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar')],
+    5: [
+        ('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar'),
+        ('River XII — The API / Auth Layer', "morningBrief's real Composio Gmail-fetch call routes out through here"),
+    ],
     6: [
         ('River VII — The Library Current', "a fresh leaf's teaching page"),
         ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge'),
     ],
     7: [('River VIII — The Confluence Pool', 'a proposed merge')],
     8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there")],
-    9: [('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates")],
+    9: [
+        ('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates"),
+        ('River XII — The API / Auth Layer', 'the Claude Code fallback lane\'s drain and Graphify CC\'s own session-start dispatch both route out through here'),
+    ],
     10: [('— terminal sink for every river above —', 'River XI is the one exception, see below')],
-    11: [('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one')],
+    11: [
+        ('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one'),
+        ('River XII — The API / Auth Layer', "the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here"),
+    ],
+    12: [
+        ('River XI — Content Production Live', 'the OpenMontage job result — the one external connector whose real spring AND mouth both sit back in River XI'),
+        ('River XIV — Oversight Docs', 'Graphify CC deposits real findings here via graphify_jobs, flagged for logging'),
+    ],
+    13: [('River XIV — Oversight Docs', "a skill's behavior change that could make an existing river's own written description go stale")],
+    14: [('— feeds every river\'s own next real session —', "CLAUDE.md's own rule: read the relevant section before any nontrivial work")],
+    15: [('River XIII — Skills', "feeds Routine's own session-start check via session_memory, read at the start of every future session")],
+    16: [
+        ('River XII — The API / Auth Layer', "generates graph.html/GRAPH_TREE.html, this river's own visual form"),
+        ('River XIV — Oversight Docs', 'generates obsidian_vault.html, the human-browsable presentation layer'),
+    ],
 }
 
 

@@ -11,11 +11,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[jargonEncyclopedia]] — `rpgace_core.js:18688-18757`
-- [[encyclopediaQoL]] — `rpgace_core.js:17640-17745`
+- [[jargonEncyclopedia]] — `rpgace_core.js:18714-18783`
+- [[encyclopediaQoL]] — `rpgace_core.js:17666-17771`
 - [[encSync]] — `rpgace_core.js:2770-2865`
 - [[encTaxonomyLink]] — `rpgace_core.js:4544-4656`
-- [[refCorpus]] — `rpgace_core.js:13889-14287`
+- [[refCorpus]] — `rpgace_core.js:13915-14313`
 
 ## Flows into
 

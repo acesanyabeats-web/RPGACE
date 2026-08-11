@@ -1,0 +1,151 @@
+MINOTAUR RIVER INTERLINKS — /paranoia + /CEO PASS, 2026-08-11 (same session,
+mid-turn ask, right after the archive-diagnostic/Supabase-dedup framework)
+============================================================================
+
+ALEX'S ASK (verbatim): "also run /paranoia and /CEO on minotaur map changes
+and suggest upgrades of river interlinks, why are some rivers not connected
+to others when they are eg. river 12-16 have clear stakes to others, open
+montage to river 11, ffmpeg to other rivers etc. still poorly done and it is
+reflected in graphify and obsidian"
+
+SCOPE NOTE, stated honestly up front: /paranoia's own definition is "the
+heaviest possible pre-build scrutiny pass... reserved for one proposed
+change Alex wants maximally scrutinized" and /CEO is for genuinely
+multi-day/multi-session builds. This ask names both by word, which per
+CLAUDE.md's Invokable Frameworks section IS the instruction to run them —
+honored, but scaled to what the task actually is: a real, bounded
+documentation/tooling consistency fix (no Supabase writes, no migrations,
+no Tier-3 risk), not a multi-week build. The full GODMODE evidence pass +
+real verdict + real fix below IS the paranoia-shaped scrutiny; a literal
+multi-round debate/interrogation ceremony for a doc-consistency fix would
+itself have been the kind of empty ceremony CLAUDE.md's own anti-ceremony
+rule (Judgment Funnel) warns against.
+
+=== GODMODE EVIDENCE PASS — was Alex's claim real, not assumed ===
+
+Direct read of minotaur_map.html's River XII-XVI section (as it stood
+before this pass) confirmed: every river I-XI has a `.river-flow-next`
+"flows into →" connector after its own diagram, verified via grep (11 real
+connector lines, one per river/branch). Rivers XII-XVI had ZERO such
+connectors — the section just stacked two `<div class="flow">` blocks with
+prose-only relationship claims baked into each node's own `.d` text, then
+ended on a footnote link, not a flow statement.
+
+Direct read of scripts/graphify_river_group.py's RIVER_FLOWS table (the
+single canonical source feeding graph.html's node-info panel AND the
+Obsidian vault's "Flows into"/"Fed by" sections, confirmed via
+build_river_notes()) found the table had ZERO entries for rivers 12-16,
+either as a source or as a target of any other river's entry — meaning
+FLOWS_IN never populated for them either. The table's own comment at the
+time explicitly said so: "Rivers 12-16... have no flow-connector data —
+minotaur_map.html's own scope is the 11 named rivers only, honest scope
+match, not a gap in this table." Ran the actual code (build_river_notes)
+against the live graph.json before touching anything: confirmed
+flows_into/fed_by rendered as empty arrays for rivers 12-16 in the real
+JSON embedded in graph.html — Alex's claim "it is reflected in graphify
+and obsidian" was independently confirmed true, not taken on his word
+alone.
+
+REAL VERDICT ON THE CLAIM: Alex is correct, and the "honest scope match"
+framing in the code comment was itself the bug, not a defense. The Aug 11
+(2nd, same day) extension earlier this session had already redefined
+rivers XII-XVI as real, non-lesser peer rivers ("Rivers XIII-XVI carry a
+different KIND of real Total-system traffic... not a lesser one") — but
+never followed through with the same flow-connector treatment rivers I-XI
+get. This is a real /drift-shaped MATERIAL gap: the stated goal (treat
+12-16 as full peer rivers) didn't match the implementation (no flow
+connectors, unlike 1-11) — not a deliberate, reasoned scope boundary as
+the old comment claimed.
+
+=== REAL EVIDENCE GATHERED FOR THE ACTUAL FIX (not guessed) ===
+
+Grepped every real RPGACE.api()/Composio caller in rpgace_core.js and
+resolved each to its owning module against RIVER_MODULES:
+  - line 1176/1204 -> quickActions (deliberately cross-cutting, excluded
+    from RIVER_MODULES per that table's own stated design — not attributed
+    to one river)
+  - line 2173/2181 -> contentRepurpose -> River XI
+  - line 17294/17347 -> morningBrief -> River V
+
+This gave real, checkable basis for: River V -> River XII (Composio Gmail
+fetch), River XI -> River XII (Composio Notion/YouTube + OpenMontage +
+librosa beat_audio_jobs). River III -> River XII (Kimi/Luna, dormant,
+already documented as a real scaffold in api/oracle.js) and River IX ->
+River XII (fallback drain + Graphify CC dispatch, both already-documented
+real mechanisms) were added from existing, already-verified facts elsewhere
+in this same file, not invented.
+
+OpenMontage's real River XI relationship (spring="Generate Video", mouth=
+"Mark ConID as Filmed") was ALREADY correctly stated elsewhere on the page
+(River IX's own flow-next line, and the Aug 11 "deserved correction" pass)
+— the actual gap was that River XII's own OpenMontage node, where a reader
+would naturally look first, never repeated it. Fixed by restating the
+already-true fact at the point of first contact, not by inventing a new
+claim.
+
+=== BUILT (not just planned) ===
+
+1. scripts/graphify_river_group.py:
+   - RIVER_FLOWS gained real entries for rivers 3, 5, 9, 11 (as sources
+     into River XII) and NEW real entries for rivers 12, 13, 14, 15, 16
+     (both as sources and, via the existing FLOWS_IN reverse-map, as real
+     targets) -- 13 new (source, target, note) tuples total, every one
+     traced to a real grepped call site or an already-documented fact
+     elsewhere in this codebase's own oversight docs, none invented for
+     symmetry.
+   - EXTERNAL_CONNECTORS' prose notes updated for OpenMontage/Composio/
+     Kimi/Luna/librosa/FFmpeg/Graphify CC to state their real triggering
+     river inline, not just in a separate table.
+   - The stale "honest scope match, not a gap" comment corrected to state
+     the real reasoning above and point at this exact record file.
+   - Ran python3 -c "import ast; ast.parse(...)" clean.
+
+2. minotaur_map.html:
+   - New "fed by ←" connector line (reusing the existing `.river-flow-next`
+     class, no new CSS — rule 8) before River XII's own flow, listing the
+     4 real upstream rivers (III/V/IX/XI) that trigger its outward calls.
+   - River XII's own OpenMontage/Composio/Graphify CC/Kimi-Luna/librosa-
+     FFmpeg node text updated in place to state each connector's real
+     upstream river, matching graphify_river_group.py's EXTERNAL_CONNECTORS
+     verbatim.
+   - New "flows back into →" connector after River XII's flow (into River
+     XI and River XIV).
+   - New "fed by ←"/river-flow-next connectors bridging into and out of
+     the XIII-XVI block, stating XV->XIII, every-river->XV, XVI->XII/XIV
+     as real visual connectors instead of only prose inside each node's
+     own `.d` text.
+   - div-balance verified clean (931 open / 931 close) after the edit.
+
+3. Full regeneration pipeline re-run (river-group -> obsidian export ->
+   obsidian HTML render), per update-logging-system's artifact-10
+   mandatory sequence — NOT a full `graphify export html` re-export since
+   no node/module structure changed, only RIVER_FLOWS metadata (confirmed
+   safe: re-running graphify_river_group.py alone is idempotent by design,
+   same discipline the Aug 11 2nd-pass tie-break/legend-dedup fixes
+   already established). Verified post-run: graph.html's embedded
+   RIVER_NOTES JSON now shows real, non-empty flows_into/fed_by for all 5
+   of rivers 12-16 (spot-checked via direct JSON parse, not assumed).
+   obsidian-vault/*.md for rivers 1-16 all regenerated and diffed —
+   rivers 3/5/9/11's own vault notes gained their new River XII line,
+   rivers 12-16 gained real Flows-into/Fed-by sections where they
+   previously rendered empty. graphify-out/obsidian_vault.html
+   re-rendered (17 pages, matches the 16 rivers + index).
+
+=== NOT built / honestly out of scope ===
+- No re-run of `graphify export html` itself (would wipe the real fixed
+  x/y positions from a prior river-group pass and require re-running the
+  full recolor+river-group+obsidian pipeline for zero real benefit here —
+  nothing about node/module structure changed this pass).
+- No live headless-Chromium render check of graph.html this pass (the
+  Aug 6/Aug 11 precedent passes did this after node-position/legend
+  changes; this pass only changed embedded JSON data + prose text, a
+  lower-risk change class — flagged honestly as a real, cheap follow-up
+  if Alex wants belt-and-suspenders confirmation, not silently skipped).
+- Rivers I-VIII, X did NOT get new connectors — real evidence check found
+  no real, checkable gap for them (their own existing River XII-facing
+  traffic, if any, wasn't found by the grep above); adding invented
+  connectors there would have repeated the exact mistake being fixed.
+
+Oversight docs updated same session: CLAUDE.md Current State (new bullet,
+Oracle/External-handoff area), patch_notes.html (new card), Chronicles
+(system_updates row) — see this session's own commit.
