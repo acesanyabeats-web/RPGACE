@@ -1,0 +1,157 @@
+/CEO Loop 1, Step 1 — Compile
+Real taxonomy restructuring ask: deep Phylum->Variant hierarchies for
+all 21 phyla + insight-accumulating leaf endpoints
+2026-08-11
+
+=====================================================================
+RAW ASK, VERBATIM
+=====================================================================
+"i dont like how it is done, id like to use the jargon to fillout the
+phylum paths for all phylums, like in 1-10, phylum to order to class
+to family etc to variant any number where needed that makes sense,
+then all of these leaves will hold one txt list of insights relevant
+to leaf (eg. compositio - harmony - chord progressions - emotional
+chord progressions - minor and modal frameworks - Emotional (Minor
+Melodic/ Minor Natural / Minor harmonic etc) chord progressions
+(these would be the end point - then the end point leaves would open
+a text file that is readable about the different chord progressions
+that insights have generated specific to this leaf down the phylum
+path, that is worked through with perfect judgement chamber logic
+persisting to make this all work. /CEO and /paranoia this with
+/Engineer and /restructure, then council of 5 output plan to me so i
+can thumbs up for /Engineer to execute. [also make /debate review
+output alongside /drift and /godmode and /scope and
+/commit-archaeologist so that the final output is drift matched to
+accepted final review plan.] everything in [] is a way to apply
+/drift and knowledge base of what built true (actual built - reported
+built but not via /drift) to original plan so the plan executes
+perfectly in accordance to confirmed /CEO plan. apply [] to /engineer
+as a review step to perfect the /Engineer function"
+
+=====================================================================
+WHAT HE'S REACTING AGAINST — REAL, IMMEDIATE CONTEXT
+=====================================================================
+Same session, same day, immediately prior: built 42 new flat, single-
+depth "Vocabulary" jargon-bucket leaves across 8 phyla (12,13,15-20),
+plus enabled all 21 phyla in ENABLED_PHYLA. Each leaf's explainer is a
+static "Covers: term1, term2..." list. Alex: "i dont like how it is
+done" -- rejecting the flat jargon-bucket SHAPE as the real end state
+for the newly-enabled phyla, wanting the same underlying vocabulary
+used instead to build real deep hierarchies matching phyla 1-10's own
+existing shape.
+
+=====================================================================
+REAL EVIDENCE GATHERED (rule 1, before drafting anything)
+=====================================================================
+1. taxonomyTree.RANK_NAMES = ['Phylum','Order','Class','Family',
+   'Genus','Species','Variant'] (rpgace_core.js:7429), depth 0-6.
+   rankNameForDepth(depth) maps directly. Confirmed live in the UI:
+   a depth-1 node under Compositio literally renders "Order Beat
+   Construction Frameworks" -- matches Alex's own worked example
+   exactly (Order=Harmony, Class=Chord Progressions, etc.).
+
+2. THE REAL PLACEMENT MECHANISM (phylumPath._insertNewSteps,
+   rpgace_core.js:9050) -- read in full. Critical finding: this
+   function ONLY EVER INSERTS NEW ROWS. It takes an attachNode (an
+   existing node an insight is being placed under) and a newSteps
+   array (the NEW path segments below that attach point), and chain-
+   inserts one fresh row per step, marking the LAST one 'leaf'. If
+   newSteps is empty (meaning: "this insight belongs on an ALREADY-
+   EXISTING leaf, no new node needed"), the function REJECTS outright
+   ("Oracle returned no new steps to place this insight" --
+   rpgace_core.js:9052). There is no code path anywhere in this
+   function, or in _generateInsightContent (called once per newly-
+   created finalRow only), that APPENDS a second insight onto an
+   already-existing leaf's own content.
+
+   REAL IMPLICATION: right now, every single placed insight mints at
+   least one brand-new taxonomy_tree row. No leaf in this entire
+   project has ever accumulated more than one insight's worth of
+   content. Alex's ask -- "one txt list of insights... that insights
+   have generated specific to this leaf" -- describes a genuinely NEW
+   capability, not a tweak to an existing one. This is the single
+   most important feasibility finding for the whole plan.
+
+3. Existing content shape at a leaf: explainer (short string) +
+   deep_content.generated (one AI-written note, either from
+   _generateNodeContent's 2-layer prompt, _generateInsightContent's
+   3-layer prompt, or the new "Covers:" jargon-bucket format). All
+   THREE are a single field holding ONE piece of content, overwritten
+   whole on any update (_updateExistingNode does `explainer:
+   newExplainer` -- a straight overwrite, not an append).
+
+4. taxonomy_decision_log (rpgace_core.js:9115) already exists and
+   already logs one row per real committed placement (phylum_number,
+   node_id, path, insight_text, source) -- a real, existing append-
+   only audit trail, fire-and-forget, on every _insertNewSteps call.
+   This is genuinely close in shape to what Alex is asking for (a
+   growing list of real insight-text entries tied to a node_id) --
+   real evidence this may not need to be built from zero; it may need
+   to be SURFACED (read back and rendered) rather than newly captured.
+   Real open question: does taxonomy_decision_log currently get
+   written on every insight, or only ones that create a genuinely new
+   leaf (same constraint as #2 above -- if an insight can never attach
+   to an existing leaf without minting a new node under it, then this
+   log's node_id would always point at a freshly-created leaf too,
+   never accumulate multiple rows under one stable node_id either,
+   unless a later insight happens to attach ONE level deeper under
+   that same leaf-turned-branch).
+
+5. taxonomy_tree total 557 rows (before today's +42, so ~599 now
+   across all tables touched this session). Phyla 1-10 are real,
+   deep, human/AI-built hierarchies with individual concept leaves,
+   built over multiple real sessions via the 7-step Development
+   Framework, hand-tested. This is NOT jargon-bucket shaped at all
+   already -- phyla 1-10 already look like what Alex is describing he
+   wants for 11-21. The real open question is whether he wants 1-10
+   TOUCHED/rebuilt too, or used purely as the reference precedent for
+   how 11-21 should end up shaped.
+
+=====================================================================
+ALEX'S OWN WORKED EXAMPLE, MAPPED TO REAL RANKS
+=====================================================================
+Compositio         -> Phylum (root, phylum_number=1, not a tree row)
+Harmony             -> Order   (depth 1)
+Chord Progressions  -> Class   (depth 2)
+Emotional Chord Progressions -> Family (depth 3)
+Minor and Modal Frameworks   -> Genus  (depth 4)
+"Emotional (Minor Melodic/Minor Natural/Minor Harmonic etc)
+  chord progressions"        -> Species or Variant (depth 5 or 6,
+  THE END POINT -- opens the readable insight-list text file)
+
+"any number where needed that makes sense" -- his own words, variable
+depth per path, not every leaf forced to depth 6.
+
+=====================================================================
+REAL SCOPE SIZE, HONEST
+=====================================================================
+This is a genuinely enormous structural build if taken literally at
+full scope ("for all phylums, like in 1-10"):
+- If phyla 1-10 stay as reference/untouched: still means building
+  real multi-level hierarchies (up to 6 ranks deep) for 11 phyla
+  (11,12,13,14... wait 11/14 already partially built... realistically
+  12,13,15-21 = 9 phyla, since 11/14 already have SOME real structure)
+  from the 42+14 flat leaves just built, PLUS designing and building
+  a genuinely new insight-accumulation data model and a new readable-
+  text-file UI surface for every deep-end leaf across the whole tree
+  (existing phyla 1-10 included, since the insight-list mechanism is
+  clearly meant to apply everywhere, not just the new phyla).
+- This is comparable in size to, or larger than, the ENTIRE original
+  10-phyla Phylum Development Framework build (which took multiple
+  real sessions), plus a genuinely new feature (insight-list leaves)
+  that doesn't exist anywhere in the codebase today.
+
+This is exactly the shape /CEO exists for -- a real, multi-day,
+multi-session build -- not a single-pass /Engineer task.
+
+=====================================================================
+REAL OPEN FORKS -- GOING TO /interrogation, NOT GUESSED
+=====================================================================
+See the AskUserQuestion round in the same chat turn as this file.
+Four real forks: (1) restructure-vs-extend the 42+14 flat leaves just
+built; (2) the insight-list mechanism's real data shape (new table vs
+surfacing taxonomy_decision_log vs something else) and whether it
+applies retroactively to phyla 1-10's already-built leaves too; (3)
+whether phyla 1-10 get touched/rebuilt at all, or stay untouched as
+the reference shape; (4) confirming variable-depth is genuinely
+open-ended (not a fixed target depth).
