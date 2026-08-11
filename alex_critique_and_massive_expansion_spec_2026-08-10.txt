@@ -667,3 +667,125 @@ different, smaller ask than replacing the current discipline.
 Full /paranoia-scrutinized re-pass on all 5 (per A16's own instruction)
 is real, tracked follow-up — these are first-pass, evidence-based
 verdicts, not the final word.
+
+================================================================
+PART F — REAL CORRECTIONS + BUILDS, same session, after Alex's own
+direct pushback on 4 of the 5 Part E verdicts (Aug 11, continued)
+================================================================
+
+Alex pushed back directly on Obsidian, did-we-drift, OmniRoute, and
+claude-mem rather than accepting Part E's first-pass verdicts as final —
+real evidence-gathering (live web search, not training-cutoff assumption)
+and real building followed.
+
+--- Obsidian: corrected from "Not Applicable" to "Adopt, scoped to the
+    human-facing knowledge layer, NOT a graphify replacement" ---
+Alex asked directly: "why won't it replace it? what does graphify do that
+obsidian can't?" Real, direct answer: graphify does AST-based code
+parsing (real function/call/import extraction); Obsidian is a markdown
+vault with zero code-parsing capability — structurally cannot do
+graphify's job, not just worse at it. Built: `scripts/
+graphify_to_obsidian.py` — exports graphify_river_group.py's own already-
+computed river/zone structure (RIVER_MODULES, RIVER_NAME, RIVER_COLOR)
+into a real, openable Obsidian vault (`obsidian-vault/`): 16 hub notes
+(11 rivers + 5 zones) with real `[[wikilinks]]` to member modules and to
+real flow connectors extracted verbatim from minotaur_map.html's own
+`.river-flow-next` divs (never guessed), plus one index note. Verified:
+runs clean, idempotent (deterministic re-run, same discipline as
+graphify_recolor.py/graphify_river_group.py), real cross-linked output
+confirmed by direct inspection. v1 scope, honest: hub-level only (16
+notes), not one note per individual graph node (953) — real future work
+if the hub level proves too coarse, not built blind.
+
+--- did-we-drift: Alex's own words, "fuck yes lets go" — built ---
+New `.claude/skills/drift/SKILL.md` — adopts (not clones) the real
+VERDICT (on track/drifted/inconclusive/blocked) / BASIS (ratified/
+provisional/none) split and MINOR/MATERIAL/CAPTURED drift grades. Wired
+into all 3 places Alex named: `/scope`'s own existing "doubles as a
+drift-check" guardrail now references `/drift`'s Steps 4-5 directly;
+`commit-archaeologist` gained an additive RPGACE-integration note (never
+hand-edited the imported third-party skill's own body); CLAUDE.md's
+GODMODE section gained a real "Wired to /drift" paragraph. Also listed
+in CLAUDE.md's "Skills that exist" catalog. Real, incidental fix made
+while wiring `/scope`: its own header still claimed "SIX docs" — stale
+since `ai_tooling_and_rules_map.md` made it seven on July 31; corrected.
+
+--- OmniRoute / Kimi / Luna: re-verified with live evidence, corrected
+    and built per Alex's explicit "we are trying it, end of" ---
+Alex's claims checked via WebSearch (not training-cutoff assumption,
+which predates all of this): GPT-5.6 Luna free/unlimited CHAT is real
+(OpenAI, Aug 6 2026 announcement). Kimi K2.6 genuinely beats Sonnet 4.6
+on SWE-bench Verified (80.2 vs 79.6); K2.7-Code edges Sonnet 4.6 on the
+Artificial Analysis Intelligence Index at far lower cost. OmniRoute is
+real, MIT-licensed, and does support keyless free-tier routing (11
+"free forever" providers, zero of Alex's own keys needed) — more
+permissive than the July 20 verdict assumed. Real, load-bearing
+correction surfaced and given to Alex directly: the "unlimited free" is
+the CONSUMER CHAT product only — there is no free/unlimited developer
+API for either Luna or Kimi. Luna's API is genuinely cheap post-price-cut
+(~$0.20/$1.20 per M tokens in/out); Kimi's needs a real $1 minimum
+account activation, then $0.60-$3/M depending on tier. OmniRoute's own
+architecture is confirmed (fresh evidence) to need a persistent server
+(SQLite-backed) — genuine Vercel-serverless mismatch, same as the
+original verdict, for embedding OmniRoute ITSELF into RPGACE.
+
+Alex's real, final instruction (Aug 11): Claude API credits are
+currently out, so no live benchmark against Claude for now — "just
+build" the routing scaffold targeting Kimi + Luna specifically, gated
+off until real keys/billing exist, "connect it at a later date (like we
+are doing with openart)." Built: `api/oracle.js` gained a real
+`provider` field (`'kimi'|'luna'`) branch, calling each provider's real
+OpenAI-compatible chat/completions endpoint directly and normalizing the
+response to Anthropic's own `{content:[{type:'text',text}]}` shape (rule
+8 — one shared response shape downstream). NOT OmniRoute itself — a
+direct-call scaffold, same "no extra infra" shape as the already-proven
+`MECHANICAL_MODEL` tier, avoiding OmniRoute's own real persistent-server
+mismatch. Folded into the existing `api/oracle.js` file rather than a
+13th `api/*.js` file, per the standing 12-function-cap rule (project was
+at 11/12). Deliberately dormant: fails loud with a clear error if
+`MOONSHOT_API_KEY`/`OPENAI_API_KEY` isn't set, and no existing caller
+sends the new `provider` field yet, so zero behavior change to any
+current Oracle call. `node --check api/oracle.js` clean. **Still
+needed from Alex**: a real Moonshot/Kimi API key (Luna's OpenAI key he
+said he'd get himself, not yet activated/billed). **Not yet done, real
+follow-up**: deciding which specific Oracle sub-tasks are safe/sensible
+candidates to actually route here (client-side wiring), and the live
+side-by-side benchmark once Claude API credits are back.
+
+--- claude-mem: corrected twice in the same exchange, real Supabase
+    build shipped ---
+Alex's first correction: "use supabase again, why didnt you suggest
+that earlier?" — real, fair point, RPGACE already has a durable store
+proven across ephemeral Claude Code Remote containers (`graphify_jobs`/
+`oracle_dev_suggestions` precedent) instead of claude-mem's local
+`~/.claude-mem/` storage. Alex's second message, while the fix was being
+built: "if it solves a problem or obstacle that i dont have anything
+built to solve it, implement it" — real, genuinely-uncovered gap
+confirmed: no semantic/full-text retrieval layer existed over past
+session decisions, rejected alternatives, or explicitly-referenced
+attachments beyond what CLAUDE.md's deliberately-pruned Current State
+and patch_notes.html's dated cards carry. Built: new Supabase table
+`session_memory` (uuid pk, `summary`/`key_decisions`/`open_threads`/
+`referenced_inputs` jsonb, `tags`, a generated `tsvector` column +
+GIN index for real full-text search, `anon_all`+`authenticated_all` RLS
+matching `graphify_jobs`' own posture). Wired into `/Bedtime` (new Step
+1b, writes one row per session), `/Routine` (Step 1 now reads it), and
+`/Summary` (Step 1 now reads it) — real skill-file edits, not just a
+CLAUDE.md mention. A real row was written retroactively this session,
+capturing exactly what happened (the dropped-attachment failure, every
+real decision Alex made in this exchange) — verified queryable via a
+real full-text search test. New CLAUDE.md session-start-check section
+added (matching the existing `oracle_dev_suggestions`/`graphify_jobs`
+pattern). Real, incidental fix made in the same area: CLAUDE.md had two
+identically-headed "## Session-start check — oracle_dev_suggestions"
+sections, the second one's content actually being about `/Routine` —
+pre-existing header bug, unrelated to this session's own work, fixed
+while touching the same part of the file (rule 8).
+
+Real, honest summary of what's still open after this pass: the full
+`/paranoia`-scrutinized re-pass on all 5 verdicts (Alex's own original
+A16 instruction) has still not run — this session did real evidence-
+gathering and real building in direct response to Alex's pushback, which
+is stronger evidence than a first pass alone, but is not the same thing
+as the formal `/paranoia` sequence he originally asked for. Flag this
+honestly for a future session rather than silently calling it done.

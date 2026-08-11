@@ -131,3 +131,15 @@ edits. Do not modify code until the user asks.
 
 - `scripts/archaeologist.py`: offline git history walker and JSON report builder
 - `references/reading-git-history.md`: interpretation and confidence guide
+
+## RPGACE integration note (Aug 11 2026, additive — does not change the imported skill above)
+
+When a dig surfaces a real divergence between a commit's own stated intent
+(subject line, `intent_signals`) and what the code actually does today, or
+what a current RPGACE doc claims about it, classify that divergence using
+the sibling `drift` skill's vocabulary (MINOR/MATERIAL/CAPTURED) instead of
+leaving it as unstructured prose in the "Change risk" section — a function
+whose real behavior diverged from its introducing commit's stated goal is
+exactly a MATERIAL or CAPTURED finding in that vocabulary. Optional, not a
+required step for every dig; use it when the divergence is real and worth
+a graded finding, not for routine historical narration.
