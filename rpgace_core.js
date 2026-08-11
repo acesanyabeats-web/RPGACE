@@ -5726,7 +5726,7 @@ RPGACE.register('dashDeck', {
     // engineer_pass_2026-08-06_11.txt for the full record.
     { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
     { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
-    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'The seven living docs — history, maps, manual, rules.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
+    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'Explaining docs, truth docs, and Smoke Test — what actually works.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
     { key: 'chronicles', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📜', name: 'The Chronicles', desc: 'Every real win, sale, and expense — one searchable log.', go: function() { RPGACE.modules.chroniclesLog._openCard(); } },
   ],
 
@@ -6137,7 +6137,12 @@ RPGACE.register('dashDeck', {
   // ── P2 Oversight popup: the seven primary living docs + working specs,
   // ── each opening in a new tab (same-origin relative URL).
   _openOversight: function() {
-    var pop = this._popup({ eyebrow: '📚 Oversight', title: 'The seven living docs', accent: 'var(--blue)', width: '620px' });
+    // Aug 11 real restructure (A17, /CEO Loop 2): the flat "seven docs"
+    // list is now a real 2-tier + 3-layer system (see CLAUDE.md's own
+    // Oversight section) - smoke_test.html is the genuinely new 8th doc,
+    // added here for the first time (it existed as a file with zero
+    // in-app link until this fix, a real reachability bug Alex caught).
+    var pop = this._popup({ eyebrow: '📚 Oversight', title: 'Explaining docs, truth docs, and 3 new layers', accent: 'var(--blue)', width: '620px' });
     var body = pop.box;
     // July 31 real fix: this list had already unilaterally declared
     // taxonomy_placement_rules.txt "The 7th doc" with no matching entry
@@ -6147,13 +6152,14 @@ RPGACE.register('dashDeck', {
     // specs where it honestly belongs (a narrow ruleset, not a full
     // dated/updated living doc like the other seven).
     var primary = [
-      { icon: '📓', title: 'Patch Notes', desc: 'Build history', href: '/patch_notes.html' },
-      { icon: '🔗', title: 'Interconnection Map', desc: 'Module touchpoints', href: '/interconnection_map.md' },
-      { icon: '📘', title: 'Full Manual', desc: 'Button + table reference', href: '/manual.html' },
-      { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load', href: '/taxonomy_map.html' },
-      { icon: '🗺️', title: 'System Flow Map', desc: 'Pipeline flow diagrams', href: '/system_flow_map.md' },
-      { icon: '🐂', title: 'Minotaur Map', desc: 'The labyrinth mental-map', href: '/minotaur_map.html' },
-      { icon: '🤖', title: 'AI Tooling & Rules Map', desc: 'Skills + rule files, live vs. historical', href: '/ai_tooling_and_rules_map.md' }
+      { icon: '📓', title: 'Patch Notes', desc: 'Tier (a) — Build history', href: '/patch_notes.html' },
+      { icon: '📘', title: 'Full Manual', desc: 'Tier (a) — Button + table reference', href: '/manual.html' },
+      { icon: '🐂', title: 'Minotaur Map', desc: 'Tier (a) — The labyrinth mental-map', href: '/minotaur_map.html' },
+      { icon: '🔗', title: 'Interconnection Map', desc: 'Tier (b) — Module touchpoints, the truth', href: '/interconnection_map.md' },
+      { icon: '🗺️', title: 'System Flow Map', desc: 'Tier (b) — Pipeline flow diagrams, the truth', href: '/system_flow_map.md' },
+      { icon: '🤖', title: 'AI Tooling & Rules Map', desc: 'Tier (b) — Skills + rule files + external AI providers', href: '/ai_tooling_and_rules_map.md' },
+      { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load — outside the tier system by design', href: '/taxonomy_map.html' },
+      { icon: '🧪', title: 'Smoke Test', desc: 'Layer (d) — real, hand-tickable, what actually works right now', href: '/smoke_test.html' }
     ];
     var secondary = [
       { icon: '⚖️', title: 'Placement Rules', desc: 'taxonomy_placement_rules.txt', href: '/taxonomy_placement_rules.txt' },
@@ -6190,7 +6196,7 @@ RPGACE.register('dashDeck', {
       { icon: '🕸️', title: 'Graphify Map', desc: 'Code + doc knowledge graph — auto-refreshed by /update-logging-system, not hand-written', href: '/graphify-out/graph.html' },
       { icon: '🌳', title: 'Graphify Tree', desc: 'D3 collapsible tree view of RPGACE (950 nodes) — built by Graphify CC, the real 4th Total member', href: '/graphify-out/GRAPH_TREE.html' }
     ];
-    addGroup('Primary — the seven', primary, false);
+    addGroup('Primary — 6 file-based docs + the live taxonomy map + Smoke Test', primary, false);
     addGroup('Auto-generated', auto, true);
     addGroup('Working specs', secondary, true);
   },
