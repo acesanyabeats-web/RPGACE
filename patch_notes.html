@@ -74,6 +74,27 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🏗️ Aug 11 (same day, continued) — A17 executed: the oversight system is now a real 2-tier + 3-layer structure, and <code>smoke_test.html</code> is a real, working 8th doc.</div>
+    <div class="card-body">
+      Alex gave the real green light on A17 (deferred earlier this same session as too large to rush) and asked for it to be executed through <code>/CEO</code> Loop 2. Real, sequenced execution, not a single blind pass:
+      <br><br>
+      <strong>Tier (a)/(b) formalized</strong>: CLAUDE.md's own Oversight section restructured — Tier (a) "explaining docs" (Patch Notes, Full Manual, Minotaur Map) feed off Tier (b) "truth docs" (Interconnection Map, System Flow Map, AI Tooling & Rules Map). <code>taxonomy_map.html</code> explicitly named as outside this tier system — a real gap A17's own spec left unaddressed, resolved honestly (it's a live Supabase query, already its own real-time truth source, doesn't fit either tier) rather than force-fitted.
+      <br><br>
+      <strong>(b) docs updated with real findings, not ceremony</strong>: <code>ai_tooling_and_rules_map.md</code> gained the 2 skills that shipped earlier today (<code>/drift</code>, <code>/CEO</code>) plus a new "external AI providers" table (OpenMontage/OpenArt/Composio/Kimi/Luna/OmniRoute) fulfilling this doc's own A17-defined role for the first time. <code>interconnection_map.md</code> gained 2 new architecture sections (the Oracle API-layer changes, <code>session_memory</code>). <code>system_flow_map.md</code> gained a real Aug 11 truth-table block (same established pattern as its Aug 6 block) and its own re-verification date bump. Real dedup check confirmed no overlap between the three — each covers a genuinely different angle (mechanism / tool catalog / verification status).
+      <br><br>
+      <strong>(a) docs checked against the update — a real, honest "no change needed" finding</strong>: today's work is entirely Claude-Code/backend infrastructure with zero new RPGACE UI, so <code>manual.html</code> and <code>minotaur_map.html</code> genuinely need nothing new. Said plainly rather than silently skipped.
+      <br><br>
+      <strong>(c) Oracle self-awareness</strong>: <code>SELF_KNOWLEDGE</code> updated with 3 real facts Oracle should know if asked — prompt caching is live (transparent, zero behavior change), the Kimi/Luna routing option exists but is dormant (never claim RPGACE is "using multiple AI models"), and the oversight system itself is now this new structure.
+      <br><br>
+      <strong>(d) <code>smoke_test.html</code> — a real, new 8th oversight doc, not a mockup.</strong> New Supabase table <code>smoke_test_items</code> (<code>anon_all</code> RLS, same risk class as <code>journal</code>/<code>chronicles_finance</code>) backs a real hand-tick checklist — confirm/un-confirm/mark-broken/re-confirm, each write going straight to Supabase via the same plain anon-key REST pattern <code>taxonomy_map.html</code> already uses. Seeded with 8 real items from today's own session, not built empty. **Actually verified**, not just code-reviewed: headless Chromium with a stateful mock of the Supabase REST API (same established verification pattern this project already uses for Supabase-dependent pages) — load, render, all 4 button flows, zero console errors.
+      <br><br>
+      <strong>(e) Graphify/Obsidian</strong>: formally named as the real truth source feeding (b)/(c) — already built earlier today (<code>graphify_to_obsidian.py</code>/<code>obsidian-vault/</code>).
+      <br><br>
+      <strong>Mandatory graphify refresh</strong> (artifact-10 discipline, real code changed today): <code>graphify . --update --code-only --no-viz</code> (free, AST-only) → <code>cluster-only</code> → recolor → river-group, full pipeline re-run and committed. <code>node --check</code> clean on all 3 touched JS files.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">⚡ Aug 11 (same day, continued) — prompt caching shipped for real, a Headroom-pattern condensing helper built, a real migration-confirmation boundary negotiated, A13 built, A17 ratified.</div>
     <div class="card-body">
       <strong>Prompt caching</strong>: real, live, zero-quality-risk. New <code>cacheableSystem()</code> in <code>api/_context.js</code> wraps every outgoing <code>system</code> string as Anthropic's array-of-blocks form with <code>cache_control:{type:'ephemeral'}</code> — checked first, not assumed: <code>oracleAppGrounding</code>'s own wrapper (rpgace_core.js) builds <code>system</code> as persona-text-then-grounding-block, always in that order, with the dynamic per-question content living in <code>messages</code>, never <code>system</code> — meaning the exact same <code>system</code> string genuinely recurs across real calls, a real caching target, not a guess. Wired into <code>callClaude()</code> (covers every caller, including <code>api/analyst.js</code>, for free — rule 8) and both of <code>api/oracle.js</code>'s direct-fetch paths (streaming, images). <code>node --check</code> clean on both files.

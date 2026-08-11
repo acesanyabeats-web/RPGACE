@@ -26,7 +26,6 @@
       "main_expandencentry",
       "main_exportencyclopedia",
       "main_extracttopic",
-      "main_extractvstcontext",
       "main_fm_session",
       "main_handleglobalselect",
       "main_handleoracleimage",
@@ -46,7 +45,6 @@
       "main_prod_commands",
       "main_quests",
       "main_removescheduledagenda",
-      "main_rendervstfooter",
       "main_reopenfocusoverlay",
       "main_sbinsightdelete",
       "main_scrolltovstinentry",
@@ -70,63 +68,6 @@
       "main_vst_pattern"
     ],
     "1": [
-      "path",
-      "scripts_graphify_river_group",
-      "scripts_graphify_river_group_build_component_zone_map",
-      "scripts_graphify_river_group_build_id_river_map",
-      "scripts_graphify_river_group_deterministic_jitter",
-      "scripts_graphify_river_group_extract_array",
-      "scripts_graphify_river_group_line_of",
-      "scripts_graphify_river_group_parse_module_ranges",
-      "scripts_graphify_river_group_patch_dataset_mapping",
-      "scripts_graphify_river_group_rationale_153",
-      "scripts_graphify_river_group_rationale_170",
-      "scripts_graphify_river_group_rationale_179",
-      "scripts_graphify_river_group_rationale_201",
-      "scripts_graphify_river_group_rationale_325",
-      "scripts_graphify_river_group_rationale_334",
-      "scripts_graphify_river_group_rationale_361",
-      "scripts_graphify_river_group_rationale_389",
-      "scripts_graphify_river_group_river_group",
-      "scripts_graphify_river_group_zone_center",
-      "scripts_rpgace_intel",
-      "scripts_rpgace_intel_add_to_watchlist",
-      "scripts_rpgace_intel_analyse_frames",
-      "scripts_rpgace_intel_banner",
-      "scripts_rpgace_intel_batch_process",
-      "scripts_rpgace_intel_call_claude",
-      "scripts_rpgace_intel_check_ytdlp",
-      "scripts_rpgace_intel_download_video",
-      "scripts_rpgace_intel_encode_frame",
-      "scripts_rpgace_intel_ensure_dirs",
-      "scripts_rpgace_intel_extract_frames",
-      "scripts_rpgace_intel_format_output",
-      "scripts_rpgace_intel_generate_oracle_insights",
-      "scripts_rpgace_intel_get_ffmpeg_path",
-      "scripts_rpgace_intel_get_metadata",
-      "scripts_rpgace_intel_load_json",
-      "scripts_rpgace_intel_log",
-      "scripts_rpgace_intel_main",
-      "scripts_rpgace_intel_process_url",
-      "scripts_rpgace_intel_rationale_122",
-      "scripts_rpgace_intel_rationale_146",
-      "scripts_rpgace_intel_rationale_168",
-      "scripts_rpgace_intel_rationale_196",
-      "scripts_rpgace_intel_rationale_202",
-      "scripts_rpgace_intel_rationale_233",
-      "scripts_rpgace_intel_rationale_262",
-      "scripts_rpgace_intel_rationale_359",
-      "scripts_rpgace_intel_rationale_416",
-      "scripts_rpgace_intel_rationale_46",
-      "scripts_rpgace_intel_rationale_589",
-      "scripts_rpgace_intel_rationale_603",
-      "scripts_rpgace_intel_rationale_99",
-      "scripts_rpgace_intel_save_insight",
-      "scripts_rpgace_intel_save_json",
-      "scripts_rpgace_intel_show_watchlist",
-      "scripts_rpgace_intel_transcribe_audio"
-    ],
-    "2": [
       "api_analyst",
       "api_analyst_handler",
       "api_analyst_type_prompts",
@@ -148,6 +89,7 @@
       "api_context",
       "api_context_accounts",
       "api_context_base_url",
+      "api_context_cacheablesystem",
       "api_context_callclaude",
       "api_context_callcomposio",
       "api_context_fetchurl",
@@ -173,7 +115,9 @@
       "api_lastfm_handler",
       "api_lastfm_lfm",
       "api_oracle",
+      "api_oracle_callfreetierprovider",
       "api_oracle_config",
+      "api_oracle_free_tier_providers",
       "api_oracle_handler",
       "api_orchestrate",
       "api_orchestrate_handler",
@@ -182,7 +126,7 @@
       "api_search",
       "api_search_handler"
     ],
-    "3": [
+    "2": [
       "plans_001_add_real_easing_tokens",
       "plans_001_add_real_easing_tokens_001_replace_bare_ease_with_real_easing_tokens_everywhere",
       "plans_001_add_real_easing_tokens_boundaries",
@@ -228,6 +172,45 @@
       "plans_readme_execution_notes_real_deviations_found_while_implementing_july_25",
       "plans_readme_notes",
       "plans_readme_recommended_execution_order"
+    ],
+    "3": [
+      "path",
+      "scripts_rpgace_intel",
+      "scripts_rpgace_intel_add_to_watchlist",
+      "scripts_rpgace_intel_analyse_frames",
+      "scripts_rpgace_intel_banner",
+      "scripts_rpgace_intel_batch_process",
+      "scripts_rpgace_intel_call_claude",
+      "scripts_rpgace_intel_check_ytdlp",
+      "scripts_rpgace_intel_download_video",
+      "scripts_rpgace_intel_encode_frame",
+      "scripts_rpgace_intel_ensure_dirs",
+      "scripts_rpgace_intel_extract_frames",
+      "scripts_rpgace_intel_format_output",
+      "scripts_rpgace_intel_generate_oracle_insights",
+      "scripts_rpgace_intel_get_ffmpeg_path",
+      "scripts_rpgace_intel_get_metadata",
+      "scripts_rpgace_intel_load_json",
+      "scripts_rpgace_intel_log",
+      "scripts_rpgace_intel_main",
+      "scripts_rpgace_intel_process_url",
+      "scripts_rpgace_intel_rationale_122",
+      "scripts_rpgace_intel_rationale_146",
+      "scripts_rpgace_intel_rationale_168",
+      "scripts_rpgace_intel_rationale_196",
+      "scripts_rpgace_intel_rationale_202",
+      "scripts_rpgace_intel_rationale_233",
+      "scripts_rpgace_intel_rationale_262",
+      "scripts_rpgace_intel_rationale_359",
+      "scripts_rpgace_intel_rationale_416",
+      "scripts_rpgace_intel_rationale_46",
+      "scripts_rpgace_intel_rationale_589",
+      "scripts_rpgace_intel_rationale_603",
+      "scripts_rpgace_intel_rationale_99",
+      "scripts_rpgace_intel_save_insight",
+      "scripts_rpgace_intel_save_json",
+      "scripts_rpgace_intel_show_watchlist",
+      "scripts_rpgace_intel_transcribe_audio"
     ],
     "4": [
       "claude",
@@ -291,7 +274,7 @@
       "rpgace_core_patchintelfns",
       "rpgace_core_pendingsched",
       "rpgace_core_push",
-      "rpgace_core_rationale_18715",
+      "rpgace_core_rationale_18769",
       "rpgace_core_remove",
       "rpgace_core_renderstep",
       "rpgace_core_rendersteps",
@@ -313,6 +296,7 @@
       "main_enc_all_entries",
       "main_extractinsightsauto",
       "main_extractinsightssemiauto",
+      "main_extractvstcontext",
       "main_filterentries",
       "main_generatecontentideasfrominsights",
       "main_generateencbullets",
@@ -326,6 +310,7 @@
       "main_renderbullets",
       "main_renderencentries",
       "main_rendervstchips",
+      "main_rendervstfooter",
       "main_savemanualinsight",
       "main_sbinsightfetch",
       "main_sbinsightpost",
@@ -334,6 +319,38 @@
       "main_sortentries"
     ],
     "7": [
+      "scripts_graphify_river_group",
+      "scripts_graphify_river_group_build_component_zone_map",
+      "scripts_graphify_river_group_build_id_river_map",
+      "scripts_graphify_river_group_classify_mainjs_by_keyword",
+      "scripts_graphify_river_group_deterministic_jitter",
+      "scripts_graphify_river_group_extract_array",
+      "scripts_graphify_river_group_line_of",
+      "scripts_graphify_river_group_parse_module_ranges",
+      "scripts_graphify_river_group_patch_dataset_mapping",
+      "scripts_graphify_river_group_py_path",
+      "scripts_graphify_river_group_rationale_191",
+      "scripts_graphify_river_group_rationale_208",
+      "scripts_graphify_river_group_rationale_217",
+      "scripts_graphify_river_group_rationale_239",
+      "scripts_graphify_river_group_rationale_434",
+      "scripts_graphify_river_group_rationale_470",
+      "scripts_graphify_river_group_rationale_479",
+      "scripts_graphify_river_group_rationale_506",
+      "scripts_graphify_river_group_rationale_534",
+      "scripts_graphify_river_group_river_group",
+      "scripts_graphify_river_group_zone_center",
+      "scripts_graphify_to_obsidian",
+      "scripts_graphify_to_obsidian_build_hub_note",
+      "scripts_graphify_to_obsidian_build_index_note",
+      "scripts_graphify_to_obsidian_export",
+      "scripts_graphify_to_obsidian_note_filename",
+      "scripts_graphify_to_obsidian_py_path",
+      "scripts_graphify_to_obsidian_river_num_from_label",
+      "scripts_graphify_to_obsidian_roman_to_int",
+      "scripts_graphify_to_obsidian_slug"
+    ],
+    "8": [
       "claude_skills_review_animations_skill",
       "claude_skills_review_animations_skill_aggressive_escalation_triggers",
       "claude_skills_review_animations_skill_guidelines",
@@ -362,7 +379,7 @@
       "claude_skills_review_animations_standards_stagger",
       "claude_skills_review_animations_standards_transforms_clip_path"
     ],
-    "8": [
+    "9": [
       "interconnection_map",
       "interconnection_map_accessibility_voice_input",
       "interconnection_map_api_auth_write_proxy_and_rls_current_security_architecture",
@@ -391,27 +408,30 @@
       "interconnection_map_the_two_real_hubs_read_this_first",
       "interconnection_map_unified_placement_engine"
     ],
-    "9": [
+    "10": [
       "main_addschedbuttons",
-      "main_buildmonthslots",
-      "main_buildweekslots",
-      "main_calcellitems",
+      "main_autoapplystoredshifts",
       "main_caldatestr",
-      "main_calfmtshort",
-      "main_calgetschedagendas",
-      "main_calgetshifts",
-      "main_calmondayof",
-      "main_calmonthnav",
-      "main_calweeknav",
-      "main_calyearnav",
+      "main_closepasterota",
       "main_closeschedmodal",
       "main_confirmschedule",
       "main_confirmschedulemodal",
       "main_fracclock",
+      "main_generateagendas",
+      "main_getfreewindows",
+      "main_getshiftcontext",
+      "main_getshifts",
+      "main_getshiftsfordate",
+      "main_gettodayshifts",
+      "main_initagendas",
       "main_initdailynav",
       "main_initschedmodal",
       "main_openschedmodal",
+      "main_parseandsaverota",
+      "main_patchagendacardswithschedule",
+      "main_renderagendas",
       "main_renderdailygrid",
+      "main_rendershiftblocks",
       "main_scheduleagenda",
       "main_scheduleagendabyidx",
       "main_scheduletocalendar",
@@ -419,7 +439,7 @@
       "main_shiftday",
       "main_showsched"
     ],
-    "10": [
+    "11": [
       "rpgace_build",
       "rpgace_build_cmd_add",
       "rpgace_build_cmd_check",
@@ -447,7 +467,7 @@
       "rpgace_build_syntax_check",
       "rpgace_build_write"
     ],
-    "11": [
+    "12": [
       "claude_skills_graphify_skill",
       "claude_skills_graphify_skill_for_graphify_add_and_watch",
       "claude_skills_graphify_skill_for_graphify_query",
@@ -474,7 +494,7 @@
       "claude_skills_graphify_skill_what_graphify_is_for",
       "claude_skills_graphify_skill_what_you_must_do_when_invoked"
     ],
-    "12": [
+    "13": [
       "claude_skills_improve_animations_audit",
       "claude_skills_improve_animations_audit_1_purpose_frequency",
       "claude_skills_improve_animations_audit_2_easing_duration",
@@ -500,7 +520,32 @@
       "claude_skills_improve_animations_skill_tone",
       "claude_skills_improve_animations_skill_workflow"
     ],
-    "13": [
+    "14": [
+      "main_checkserverstatus",
+      "main_fetchfromlocal",
+      "main_fetchfromsupabase",
+      "main_fetchwatchlistfromlocal",
+      "main_fetchwatchlistfromsupabase",
+      "main_firebeatanalysis",
+      "main_handlefocusselect",
+      "main_importinteljson",
+      "main_learnvideo",
+      "main_loadfocusentries",
+      "main_loadintelinsights",
+      "main_loadintelwatchlist",
+      "main_mergebyurl",
+      "main_openfocusoverlay",
+      "main_sbget",
+      "main_setupfocustextselect",
+      "main_showinteltab",
+      "main_startintelpolling",
+      "main_startjobpolling",
+      "main_submitintelurl",
+      "main_switchtoci",
+      "main_syncinteldata",
+      "main_triggerglobalidentify"
+    ],
+    "15": [
       "system_flow_map",
       "system_flow_map_0_verified_component_inventory",
       "system_flow_map_10_built_vs_not_built_the_truth_table_created_july_17_live_numbers_re_queried_july_31",
@@ -524,7 +569,7 @@
       "system_flow_map_supabase_tables",
       "system_flow_map_the_two_real_hubs_confirmed_in_interconnection_map_md"
     ],
-    "14": [
+    "16": [
       "claude_skills_commit_archaeologist_scripts_archaeologist",
       "claude_skills_commit_archaeologist_scripts_archaeologist_archaeologisterror",
       "claude_skills_commit_archaeologist_scripts_archaeologist_blame_authors",
@@ -547,29 +592,7 @@
       "claude_skills_commit_archaeologist_scripts_archaeologist_validate_range",
       "exception"
     ],
-    "15": [
-      "main_checkserverstatus",
-      "main_fetchfromlocal",
-      "main_fetchfromsupabase",
-      "main_fetchwatchlistfromlocal",
-      "main_fetchwatchlistfromsupabase",
-      "main_firebeatanalysis",
-      "main_handlefocusselect",
-      "main_importinteljson",
-      "main_loadfocusentries",
-      "main_loadintelinsights",
-      "main_loadintelwatchlist",
-      "main_mergebyurl",
-      "main_openfocusoverlay",
-      "main_sbget",
-      "main_setupfocustextselect",
-      "main_showinteltab",
-      "main_startintelpolling",
-      "main_switchtoci",
-      "main_syncinteldata",
-      "main_triggerglobalidentify"
-    ],
-    "16": [
+    "17": [
       "fifth_dimension_phase1_2_report_2026_07_23",
       "fifth_dimension_phase1_2_report_2026_07_23_0_repo_shape",
       "fifth_dimension_phase1_2_report_2026_07_23_5thdimension_phase_1_2_evidence_report",
@@ -589,27 +612,6 @@
       "fifth_dimension_phase1_2_report_2026_07_23_system_flow_map_md_381_lines",
       "fifth_dimension_phase1_2_report_2026_07_23_system_updates_supabase_read_in_full_12_rows_newest_first",
       "fifth_dimension_phase1_2_report_2026_07_23_taxonomy_map_html"
-    ],
-    "17": [
-      "main_addinstaquest",
-      "main_addxp",
-      "main_compileencyclopedia",
-      "main_completequest",
-      "main_generatenotes",
-      "main_learnvideo",
-      "main_loadnote",
-      "main_markagendadone",
-      "main_polljobs",
-      "main_renderjobs",
-      "main_rendervideoresults",
-      "main_runvideoworkshop",
-      "main_saveworkshoptonotion",
-      "main_saveytkey",
-      "main_searchvideos",
-      "main_setlearnstatus",
-      "main_showxptoast",
-      "main_startjobpolling",
-      "main_submitintelurl"
     ],
     "18": [
       "claude_skills_animation_vocabulary_skill",
@@ -632,6 +634,41 @@
       "claude_skills_animation_vocabulary_skill_transitions_between_states_connecting_one_state_view_or_element_to_another"
     ],
     "19": [
+      "main_addinstaquest",
+      "main_addxp",
+      "main_compileencyclopedia",
+      "main_completequest",
+      "main_generatenotes",
+      "main_markagendadone",
+      "main_polljobs",
+      "main_renderjobs",
+      "main_rendervideoresults",
+      "main_runvideoworkshop",
+      "main_saveworkshoptonotion",
+      "main_saveytkey",
+      "main_searchvideos",
+      "main_setlearnstatus",
+      "main_showxptoast"
+    ],
+    "20": [
+      "main_acceptjumptoenc",
+      "main_exitfocustoenc",
+      "main_extractvstsfromtext",
+      "main_gotoencfromfocus",
+      "main_loadnote",
+      "main_pushlocaltosupabase",
+      "main_quicksavetoencyclopedia",
+      "main_refreshencyclopediadisplay",
+      "main_saveencwithvsts",
+      "main_saveinteltoencyclopedia",
+      "main_saveoracletoencyclopedia",
+      "main_saveworkshoptoencyclopedia",
+      "main_sendinsighttocmd3",
+      "main_showpage",
+      "main_syncandpush",
+      "main_vst_known"
+    ],
+    "21": [
       "rpgace_architecture",
       "rpgace_architecture_api_pattern_3_different_styles",
       "rpgace_architecture_architecture_diagram",
@@ -650,7 +687,7 @@
       "rpgace_architecture_the_injection_pattern_why_it_keeps_breaking",
       "rpgace_architecture_what_main_js_issues_remain_and_why_we_leave_them"
     ],
-    "20": [
+    "22": [
       "main_agent_actions",
       "main_buildagentactions",
       "main_buildskilltree",
@@ -668,7 +705,7 @@
       "main_updatedbstats",
       "main_updateskilltree"
     ],
-    "21": [
+    "23": [
       "session_handover_2026_07_19",
       "session_handover_2026_07_19_1_how_to_use_this_doc",
       "session_handover_2026_07_19_2_10_security_open_do_not_forget",
@@ -686,24 +723,7 @@
       "session_handover_2026_07_19_4_working_style_that_made_this_session_work_keep_it",
       "session_handover_2026_07_19_rpgace_session_handover_july_18_19_2026_fable_session"
     ],
-    "22": [
-      "main_acceptjumptoenc",
-      "main_exitfocustoenc",
-      "main_extractvstsfromtext",
-      "main_gotoencfromfocus",
-      "main_pushlocaltosupabase",
-      "main_quicksavetoencyclopedia",
-      "main_refreshencyclopediadisplay",
-      "main_saveencwithvsts",
-      "main_saveinteltoencyclopedia",
-      "main_saveoracletoencyclopedia",
-      "main_saveworkshoptoencyclopedia",
-      "main_sendinsighttocmd3",
-      "main_showpage",
-      "main_syncandpush",
-      "main_vst_known"
-    ],
-    "23": [
+    "24": [
       "manifest",
       "manifest_background_color",
       "manifest_description",
@@ -720,7 +740,7 @@
       "ref_minimal_ui",
       "ref_standalone"
     ],
-    "24": [
+    "25": [
       "saved_conversation",
       "saved_conversation_command_1_niche_domination_scan",
       "saved_conversation_confirmed_anchor_pillar_3_fl_studio_secrets_series",
@@ -737,7 +757,7 @@
       "saved_conversation_the_5_oversaturated_angles_to_avoid",
       "saved_conversation_the_gap_what_nobody_is_owning"
     ],
-    "25": [
+    "26": [
       "design",
       "design_10_page_redesign_audit_july_20_2nd_session_godmode_council_of_5_omnitrix_skipped_per_alex_fable_5_ran_out_of_usage_credits_mid_dispatch_so_this_pass_was_done_solo_by_sonnet_5_no_second_agent_review_extra_care_taken_as_a_result_smaller_scope_shipped_than_a_reviewed_pass_would_have",
       "design_1_visual_theme_atmosphere",
@@ -753,7 +773,7 @@
       "design_verdicts_page_by_page",
       "design_what_shipped_ai_advisor_page"
     ],
-    "26": [
+    "27": [
       "main_addmsg",
       "main_agentlog",
       "main_callcomposio",
@@ -769,7 +789,7 @@
       "main_showsuggestionpopup",
       "main_triggeragent"
     ],
-    "27": [
+    "28": [
       "main_agenda_list",
       "main_clearjournal",
       "main_closefocusoverlay",
@@ -783,21 +803,6 @@
       "main_refreshjournaldisplay",
       "main_savejournalentry",
       "main_savetojournal"
-    ],
-    "28": [
-      "main_autoapplystoredshifts",
-      "main_closepasterota",
-      "main_generateagendas",
-      "main_getfreewindows",
-      "main_getshiftcontext",
-      "main_getshifts",
-      "main_getshiftsfordate",
-      "main_gettodayshifts",
-      "main_initagendas",
-      "main_parseandsaverota",
-      "main_patchagendacardswithschedule",
-      "main_renderagendas",
-      "main_rendershiftblocks"
     ],
     "29": [
       "vercel",
@@ -829,6 +834,18 @@
       "ai_tooling_and_rules_map_tier_c_historical_superseded_real_files_but_not_current_authority_a_future_session_should_not_treat_these_as_live_rules"
     ],
     "31": [
+      "main_buildmonthslots",
+      "main_buildweekslots",
+      "main_calcellitems",
+      "main_calfmtshort",
+      "main_calgetschedagendas",
+      "main_calgetshifts",
+      "main_calmondayof",
+      "main_calmonthnav",
+      "main_calweeknav",
+      "main_calyearnav"
+    ],
+    "32": [
       "claude_skills_commit_archaeologist_skill",
       "claude_skills_commit_archaeologist_skill_commit_archaeologist",
       "claude_skills_commit_archaeologist_skill_evidence_rules",
@@ -841,7 +858,7 @@
       "claude_skills_commit_archaeologist_skill_when_to_use",
       "claude_skills_commit_archaeologist_skill_write_the_report"
     ],
-    "32": [
+    "33": [
       "claude_skills_graphify_references_exports",
       "claude_skills_graphify_references_exports_graphify_reference_extra_exports_and_benchmark",
       "claude_skills_graphify_references_exports_step_6b_wiki_only_if_wiki_flag",
@@ -852,7 +869,7 @@
       "claude_skills_graphify_references_exports_step_7d_mcp_server_only_if_mcp_flag",
       "claude_skills_graphify_references_exports_step_8_token_reduction_benchmark_only_if_total_words_5000"
     ],
-    "33": [
+    "34": [
       "main_applyshifts",
       "main_dzdrop",
       "main_dzleave",
@@ -863,7 +880,7 @@
       "main_parsetext",
       "main_showimporterr"
     ],
-    "34": [
+    "35": [
       "rpgace",
       "rpgace_api_rules_never_break_these",
       "rpgace_confirmed_working_tools",
@@ -874,7 +891,7 @@
       "rpgace_url_fetching",
       "rpgace_user"
     ],
-    "35": [
+    "36": [
       "scripts_fourth_rota",
       "scripts_fourth_rota_day_abbr",
       "scripts_fourth_rota_extract",
@@ -885,7 +902,7 @@
       "scripts_fourth_rota_try_click",
       "scripts_fourth_rota_try_fill"
     ],
-    "36": [
+    "37": [
       "claude_archive",
       "claude_archive_claude_md_archive",
       "claude_archive_current_state_july_24_2026_session_end_don_t_re_discover_this",
@@ -895,7 +912,7 @@
       "claude_archive_prior_state_july_23_2026_first_session_still_true_unless_superseded_above",
       "claude_archive_prior_state_july_23_2026_second_session_still_true_unless_superseded_above"
     ],
-    "37": [
+    "38": [
       "claude_skills_commit_archaeologist_references_reading_git_history",
       "claude_skills_commit_archaeologist_references_reading_git_history_authorship_has_two_meanings",
       "claude_skills_commit_archaeologist_references_reading_git_history_change_risk_checklist",
@@ -905,7 +922,7 @@
       "claude_skills_commit_archaeologist_references_reading_git_history_reading_git_history_without_inventing_intent",
       "claude_skills_commit_archaeologist_references_reading_git_history_timeline_categories_are_routing_hints"
     ],
-    "38": [
+    "39": [
       "claude_skills_engineer_skill",
       "claude_skills_engineer_skill_engineer_build_it_then_prove_the_report_about_it_is_true",
       "claude_skills_engineer_skill_guardrails",
@@ -914,7 +931,7 @@
       "claude_skills_engineer_skill_the_objective_completion_gate_the_real_pass_fail",
       "claude_skills_engineer_skill_what_this_skill_is_not"
     ],
-    "39": [
+    "40": [
       "claude_skills_omnitrix_skill",
       "claude_skills_omnitrix_skill_aintergration_third_party_framework_tool_agent_assessment",
       "claude_skills_omnitrix_skill_council_of_5_pre_build_deliberation",
@@ -923,7 +940,7 @@
       "claude_skills_omnitrix_skill_rpgace_judgment_funnel_omnitrix_council_of_5_godmode_aintergration",
       "claude_skills_omnitrix_skill_the_judgment_funnel_which_tier_a_task_sits_at"
     ],
-    "40": [
+    "41": [
       "claude_skills_scope_skill",
       "claude_skills_scope_skill_grouping_the_digestible_bits_output_shape",
       "claude_skills_scope_skill_handing_off_to_the_seven_docs",
@@ -932,7 +949,7 @@
       "claude_skills_scope_skill_what_to_gather_real_evidence_never_a_doc_s_own_claim",
       "claude_skills_scope_skill_when_to_run_this"
     ],
-    "41": [
+    "42": [
       "claude_skills_graphify_references_query",
       "claude_skills_graphify_references_query_for_graphify_explain",
       "claude_skills_graphify_references_query_for_graphify_path",
@@ -940,7 +957,7 @@
       "claude_skills_graphify_references_query_step_0_constrained_query_expansion_required_before_traversal",
       "claude_skills_graphify_references_query_step_1_traversal"
     ],
-    "42": [
+    "43": [
       "claude_skills_loggingregen_skill",
       "claude_skills_loggingregen_skill_loggingregen_per_doc_regeneration_against_role_dedup",
       "claude_skills_loggingregen_skill_procedure_per_doc",
@@ -948,7 +965,7 @@
       "claude_skills_loggingregen_skill_the_two_hard_checks_run_against_every_doc_in_turn",
       "claude_skills_loggingregen_skill_what_this_skill_does_not_do"
     ],
-    "43": [
+    "44": [
       "claude_skills_regeneration_skill",
       "claude_skills_regeneration_skill_guardrails",
       "claude_skills_regeneration_skill_procedure",
@@ -956,7 +973,7 @@
       "claude_skills_regeneration_skill_the_three_tiers_always_run_in_this_order",
       "claude_skills_regeneration_skill_what_this_skill_is_not"
     ],
-    "44": [
+    "45": [
       "claude_skills_routine_skill",
       "claude_skills_routine_skill_guardrails",
       "claude_skills_routine_skill_output",
@@ -964,194 +981,191 @@
       "claude_skills_routine_skill_the_procedure_in_order",
       "claude_skills_routine_skill_when_to_run_it"
     ],
-    "45": [
+    "46": [
       "archiver",
       "package",
       "package_dependencies",
       "package_dependencies_archiver",
       "package_type"
     ],
-    "46": [
+    "47": [
       "claude_skills_5thdimension_skill",
       "claude_skills_5thdimension_skill_5thdimension_built_vs_reported_then_how_to_rewire_it_well",
       "claude_skills_5thdimension_skill_guardrails",
       "claude_skills_5thdimension_skill_the_procedure_in_order",
       "claude_skills_5thdimension_skill_what_everything_built_off_this_means"
     ],
-    "47": [
+    "48": [
       "claude_skills_free_for_all_debate_skill",
       "claude_skills_free_for_all_debate_skill_free_for_all_debate_individual_competitors_not_two_teams",
       "claude_skills_free_for_all_debate_skill_guardrails",
       "claude_skills_free_for_all_debate_skill_the_procedure_in_order",
       "claude_skills_free_for_all_debate_skill_when_to_use_this_instead_of_debate"
     ],
-    "48": [
+    "49": [
       "claude_skills_impeccable_skill",
       "claude_skills_impeccable_skill_as_a_bedtime_summary_sub_step",
       "claude_skills_impeccable_skill_impeccable_design_pattern_scan_standalone_or_as_a_bedtime_summary_sub_step",
       "claude_skills_impeccable_skill_standalone_use_impeccable",
       "claude_skills_impeccable_skill_why_this_feeds_oracle_not_just_claude_code"
     ],
-    "49": [
+    "50": [
       "claude_skills_interrogation_skill",
       "claude_skills_interrogation_skill_guardrails",
       "claude_skills_interrogation_skill_interrogation_ask_before_guessing_on_anything_that_would_actually_change",
       "claude_skills_interrogation_skill_procedure",
       "claude_skills_interrogation_skill_when_to_run_it"
     ],
-    "50": [
+    "51": [
       "fifth_dimension_phase3_4_debate_2026_07_23",
       "fifth_dimension_phase3_4_debate_2026_07_23_5thdimension_phase_3_4_reconciliation_the_rewiring_debate",
       "fifth_dimension_phase3_4_debate_2026_07_23_phase_3_reconciling_side_a_vs_side_b",
       "fifth_dimension_phase3_4_debate_2026_07_23_phase_4_the_rewiring_debate",
       "fifth_dimension_phase3_4_debate_2026_07_23_what_phase_5_actually_needs_from_alex_when_he_s_rested_not_now"
     ],
-    "51": [
+    "52": [
       "claude_skills_bedtime_skill",
       "claude_skills_bedtime_skill_bedtime_closing_out_a_session_for_real_not_just_saying_done",
       "claude_skills_bedtime_skill_guardrails",
       "claude_skills_bedtime_skill_the_procedure_in_order"
     ],
-    "52": [
+    "53": [
       "claude_skills_debate_skill",
       "claude_skills_debate_skill_debate_adversarial_case_building_before_a_real_decision",
       "claude_skills_debate_skill_guardrails",
       "claude_skills_debate_skill_the_procedure_in_order"
     ],
-    "53": [
+    "54": [
       "claude_skills_graphify_references_add_watch",
       "claude_skills_graphify_references_add_watch_for_graphify_add",
       "claude_skills_graphify_references_add_watch_for_watch",
       "claude_skills_graphify_references_add_watch_graphify_reference_add_a_url_and_watch_a_folder"
     ],
-    "54": [
+    "55": [
       "claude_skills_graphify_references_hooks",
       "claude_skills_graphify_references_hooks_for_git_commit_hook",
       "claude_skills_graphify_references_hooks_for_native_claude_md_integration",
       "claude_skills_graphify_references_hooks_graphify_reference_commit_hook_and_native_claude_md_integration"
     ],
-    "55": [
+    "56": [
       "claude_skills_graphify_references_update",
       "claude_skills_graphify_references_update_for_cluster_only",
       "claude_skills_graphify_references_update_for_update_incremental_re_extraction",
       "claude_skills_graphify_references_update_graphify_reference_incremental_update_and_cluster_only"
     ],
-    "56": [
+    "57": [
       "claude_skills_restructure_skill",
       "claude_skills_restructure_skill_guardrails",
       "claude_skills_restructure_skill_restructure_would_this_repo_change_rpgace_claude_code_s_skeleton_and_should_it",
       "claude_skills_restructure_skill_the_procedure_in_order"
     ],
-    "57": [
+    "58": [
       "claude_skills_summary_skill",
       "claude_skills_summary_skill_guardrails",
       "claude_skills_summary_skill_summary_a_real_evidence_checked_recap_when_context_needs_restoring",
       "claude_skills_summary_skill_the_procedure_in_order"
     ],
-    "58": [
+    "59": [
       "claude_skills_graphify_references_github_and_merge",
       "claude_skills_graphify_references_github_and_merge_graphify_reference_github_clone_and_cross_repo_merge",
       "claude_skills_graphify_references_github_and_merge_step_0_clone_github_repo_s_only_if_a_github_url_was_given"
     ],
-    "59": [
+    "60": [
       "claude_skills_graphify_references_transcribe",
       "claude_skills_graphify_references_transcribe_graphify_reference_transcribe_video_and_audio",
       "claude_skills_graphify_references_transcribe_step_2_5_transcribe_video_audio_files_only_if_video_files_detected"
     ],
-    "60": [
+    "61": [
       "n8n_readme",
       "n8n_readme_n8n_workflows",
       "n8n_readme_rota_sync_workflow_json_f10_fourth_rota_sync"
     ],
-    "61": [
+    "62": [
       "scripts_graphify_recolor",
       "scripts_graphify_recolor_py_path",
       "scripts_graphify_recolor_recolor"
     ],
-    "62": [
+    "63": [
       "claude_claude",
       "claude_claude_graphify"
     ],
-    "63": [
+    "64": [
       "claude_skills_graphify_references_extraction_spec",
       "claude_skills_graphify_references_extraction_spec_graphify_reference_extraction_subagent_prompt"
     ],
-    "64": [
+    "65": [
       "scripts_split",
       "scripts_split_rationale_1"
     ],
-    "65": [
+    "66": [
       "sw",
       "sw_precache"
-    ],
-    "66": [
-      "scripts_graphify_river_group_py_path"
     ]
   },
   "cohesion": {
-    "0": 0.03753957485300769,
-    "1": 0.0707070707070707,
-    "2": 0.0936408106219427,
-    "3": 0.044444444444444446,
+    "0": 0.038461538461538464,
+    "1": 0.08834586466165413,
+    "2": 0.044444444444444446,
+    "3": 0.11411411411411411,
     "4": 0.05555555555555555,
     "5": 0.08912655971479501,
-    "6": 0.09788359788359788,
-    "7": 0.07407407407407407,
-    "8": 0.07977207977207977,
-    "9": 0.11384615384615385,
-    "10": 0.23384615384615384,
-    "11": 0.08,
-    "12": 0.08695652173913043,
-    "13": 0.09090909090909091,
-    "14": 0.21904761904761905,
-    "15": 0.13157894736842105,
-    "16": 0.10526315789473684,
-    "17": 0.15789473684210525,
+    "6": 0.0896551724137931,
+    "7": 0.11954022988505747,
+    "8": 0.07407407407407407,
+    "9": 0.07977207977207977,
+    "10": 0.09359605911330049,
+    "11": 0.23384615384615384,
+    "12": 0.08,
+    "13": 0.08695652173913043,
+    "14": 0.11462450592885376,
+    "15": 0.09090909090909091,
+    "16": 0.21904761904761905,
+    "17": 0.10526315789473684,
     "18": 0.1111111111111111,
-    "19": 0.11764705882352941,
-    "20": 0.15,
-    "21": 0.125,
-    "22": 0.17142857142857143,
-    "23": 0.13333333333333333,
+    "19": 0.20952380952380953,
+    "20": 0.15833333333333333,
+    "21": 0.11764705882352941,
+    "22": 0.15,
+    "23": 0.125,
     "24": 0.13333333333333333,
-    "25": 0.14285714285714285,
-    "26": 0.18681318681318682,
-    "27": 0.15384615384615385,
-    "28": 0.1794871794871795,
+    "25": 0.13333333333333333,
+    "26": 0.14285714285714285,
+    "27": 0.18681318681318682,
+    "28": 0.15384615384615385,
     "29": 0.15384615384615385,
     "30": 0.16666666666666666,
-    "31": 0.18181818181818182,
-    "32": 0.2222222222222222,
-    "33": 0.3055555555555556,
-    "34": 0.2222222222222222,
-    "35": 0.3333333333333333,
-    "36": 0.25,
+    "31": 0.26666666666666666,
+    "32": 0.18181818181818182,
+    "33": 0.2222222222222222,
+    "34": 0.3055555555555556,
+    "35": 0.2222222222222222,
+    "36": 0.3333333333333333,
     "37": 0.25,
-    "38": 0.2857142857142857,
+    "38": 0.25,
     "39": 0.2857142857142857,
     "40": 0.2857142857142857,
-    "41": 0.3333333333333333,
+    "41": 0.2857142857142857,
     "42": 0.3333333333333333,
     "43": 0.3333333333333333,
     "44": 0.3333333333333333,
-    "45": 0.4,
+    "45": 0.3333333333333333,
     "46": 0.4,
     "47": 0.4,
     "48": 0.4,
     "49": 0.4,
     "50": 0.4,
-    "51": 0.5,
+    "51": 0.4,
     "52": 0.5,
     "53": 0.5,
     "54": 0.5,
     "55": 0.5,
     "56": 0.5,
     "57": 0.5,
-    "58": 0.6666666666666666,
+    "58": 0.5,
     "59": 0.6666666666666666,
     "60": 0.6666666666666666,
     "61": 0.6666666666666666,
-    "62": 1.0,
+    "62": 0.6666666666666666,
     "63": 1.0,
     "64": 1.0,
     "65": 1.0,
@@ -1164,13 +1178,13 @@
       "degree": 25
     },
     {
-      "id": "api_context_setcors",
-      "label": "setCORS()",
+      "id": "claude_rpgace_claude_md",
+      "label": "RPGACE — CLAUDE.md",
       "degree": 22
     },
     {
-      "id": "claude_rpgace_claude_md",
-      "label": "RPGACE — CLAUDE.md",
+      "id": "api_context_setcors",
+      "label": "setCORS()",
       "degree": 22
     },
     {
@@ -1233,32 +1247,32 @@
       "why": "cross-file semantic connection"
     },
     {
+      "source": "handler()",
+      "target": "requireAuth()",
+      "source_files": [
+        "api/analyst.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "handler()",
+      "target": "setCORS()",
+      "source_files": [
+        "api/analyst.js",
+        "api/_context.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
       "source": "detectChapterListByOracle()",
       "target": "callClaude()",
       "source_files": [
         "api/bookworm-fetch.js",
-        "api/_context.js"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "cross-file semantic connection"
-    },
-    {
-      "source": "handler()",
-      "target": "callClaude()",
-      "source_files": [
-        "api/oracle.js",
-        "api/_context.js"
-      ],
-      "confidence": "EXTRACTED",
-      "relation": "calls",
-      "why": "cross-file semantic connection"
-    },
-    {
-      "source": "handler()",
-      "target": "callClaude()",
-      "source_files": [
-        "api/orchestrate.js",
         "api/_context.js"
       ],
       "confidence": "EXTRACTED",
@@ -1269,28 +1283,28 @@
   "questions": [
     {
       "type": "isolated_nodes",
-      "question": "What connects `MODEL_EXTRACTOR`, `MODEL_GROUND_WORKER`, `TYPE_PROMPTS` to the rest of the system?",
-      "why": "394 weakly-connected nodes found - possible documentation gaps or missing edges."
+      "question": "What connects `TYPE_PROMPTS`, `id`, `name` to the rest of the system?",
+      "why": "395 weakly-connected nodes found - possible documentation gaps or missing edges."
     },
     {
       "type": "low_cohesion",
       "question": "Should `main.js` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.03753957485300769 - nodes in this community are weakly interconnected."
-    },
-    {
-      "type": "low_cohesion",
-      "question": "Should `rpgace_intel.py` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.0707070707070707 - nodes in this community are weakly interconnected."
+      "why": "Cohesion score 0.038461538461538464 - nodes in this community are weakly interconnected."
     },
     {
       "type": "low_cohesion",
       "question": "Should `_context.js` be split into smaller, more focused modules?",
-      "why": "Cohesion score 0.0936408106219427 - nodes in this community are weakly interconnected."
+      "why": "Cohesion score 0.08834586466165413 - nodes in this community are weakly interconnected."
     },
     {
       "type": "low_cohesion",
       "question": "Should `001 — Replace bare `ease` with real easing tokens everywhere` be split into smaller, more focused modules?",
       "why": "Cohesion score 0.044444444444444446 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `rpgace_intel.py` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.11411411411411411 - nodes in this community are weakly interconnected."
     },
     {
       "type": "low_cohesion",

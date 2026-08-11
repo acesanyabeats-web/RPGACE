@@ -811,18 +811,21 @@ already-existing infrastructure (this session was already named
 "orchestrator/planner"; this formalizes what that means), not new risky
 infrastructure. Done.
 
-**A17 — ratified, deliberately NOT built this same pass.** Real, honest
-reasoning, not a stall: A17 redefines the ROLE of all seven existing
-oversight docs, adds 2 entirely new layers (a real smoke-test doc — see
-the CEO skill's own section on this — and a live Oracle-self-awareness
-feedback loop), and is the single largest structural change in the
-whole spec. Building it in the tail end of an already-enormous session
-(this one has already shipped `/drift`, an Obsidian vault exporter, a
-Kimi/Luna routing scaffold, `session_memory`, the `/CEO` skill itself,
-prompt caching, and a Headroom-pattern condensing helper) is exactly the
-kind of rushed execution `/CEO`'s own Loop 1 discipline exists to
-prevent — a plan this size deserves its own dedicated `/Engineer` pass,
-not a tacked-on afterthought. Real next step: a future session runs
-`/CEO` Loop 2 Step 1 (`/Engineer` executes against this now-ratified
-baseline) starting with A17, ideally on its own, not squeezed alongside
-something else.
+**A17 — ratified, then executed the same session after Alex asked
+directly for it.** Real sequenced `/CEO` Loop 2 execution: Tier (a)/(b)
+formalized in CLAUDE.md's Oversight section; both (b) docs
+(`ai_tooling_and_rules_map.md`, `interconnection_map.md`) updated with
+real findings and cross-checked for dedup (none found — each covers a
+genuinely different angle); `system_flow_map.md` gained a real Aug 11
+truth-table block; (a) docs checked and found to need NO changes (today
+is entirely backend infrastructure, a real honest finding, not a skip);
+(c) `SELF_KNOWLEDGE` refreshed with 3 real facts; (d) `smoke_test.html`
+built as a genuine new 8th oversight doc (real Supabase table
+`smoke_test_items`, seeded with 8 real items, verified via headless
+Chromium with a stateful mock — load/render/all 4 button flows/zero
+console errors); (e) graphify/Obsidian formally named as the real truth
+source. `taxonomy_map.html`'s real position (outside the tier system,
+A17's own spec never mentioned it) resolved honestly rather than
+force-fitted. Mandatory graphify refresh (artifact-10) run afterward
+since real code changed today. Full record: patch_notes.html's dated
+card.
