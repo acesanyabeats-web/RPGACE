@@ -111,6 +111,25 @@ row that applies, either touch the artifact or state explicitly why not
     depends on the RPGACE palette already being applied so river colors
     read as a distinct, deliberately different palette from the
     community colors, not a coincidental clash).
+    **Aug 11 addition, real gap found when Alex asked "can I actually
+    reach Obsidian from Oversight" and the honest answer was no**:
+    `obsidian-vault/`'s raw markdown only becomes clickable navigation
+    inside the Obsidian desktop/mobile app itself — there was no URL to
+    click from the in-app Oversight popup the way `graph.html` already
+    has one. Fixed with `scripts/obsidian_vault_to_html.py`, a small
+    self-contained converter (checked against real alternatives first —
+    `obsidianhtml` needs a `pandoc` binary not present in this
+    environment, Quartz is a full Node static-site-generator project;
+    real overkill for a 16-file vault) that renders the vault into one
+    self-contained `graphify-out/obsidian_vault.html`, wired into
+    Oversight's "Auto-generated" group next to Graphify Map/Tree.
+    **Whenever `scripts/graphify_to_obsidian.py` is re-run** (i.e.
+    whenever river/zone structure changes and the vault itself
+    regenerates), immediately re-run `python3 scripts/obsidian_vault_to_html.py`
+    too and commit the refreshed HTML alongside — same "the live link
+    never points at a stale visual" discipline as the graph.html case
+    above, now a 4th step in the same pipeline (export → recolor →
+    river-group → obsidian-vault-html).
 11. **`interconnection_map.md`, `taxonomy_placement_rules.txt`, or a
     skill `.md` file changes in a way that could affect an EXISTING
     minotaur_map.html river's accuracy** (added Aug 6, real `/interrogation`-

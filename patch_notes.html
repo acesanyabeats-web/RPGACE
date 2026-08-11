@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🕮 Aug 11 (same day, continued) — Obsidian is now actually reachable from Oversight, not just a folder waiting for an app.</div>
+    <div class="card-body">
+      Alex asked directly: "how do you reach Obsidian, and can it live in Oversight like graphify does." Honest answer, given straight rather than papered over: it couldn't, and this session should have flagged that gap when <code>obsidian-vault/</code> was first built rather than leaving him to find it. Real reason — <code>graph.html</code> is one self-contained file a browser just opens; <code>obsidian-vault/</code> is a folder of plain markdown using <code>[[wikilink]]</code> syntax that only becomes real clickable navigation inside the Obsidian application itself. A browser (or GitHub's file viewer) just shows the literal brackets.
+      <br><br>
+      <strong>Real alternatives checked before writing anything, not guessed</strong>: <code>obsidianhtml</code> installs cleanly from PyPI but depends on a <code>pandoc</code> binary confirmed NOT present in this environment; Quartz is a full Node static-site-generator project (its own package.json, build pipeline, dozens of transitive deps) — real overkill for a 16-file, ~400-line vault. Given the vault's actual size, a small self-contained script matching this project's own already-proven pattern (<code>graphify_recolor.py</code>/<code>graphify_river_group.py</code>: plain Python, zero new runtime dependency, output committed like <code>graph.html</code> already is) was the right-sized fix.
+      <br><br>
+      <strong>Built</strong>: <code>scripts/obsidian_vault_to_html.py</code> — parses the vault's real markdown subset (frontmatter, headers, bold, inline code, bullet lists, <code>[[wikilink]]</code>/<code>[[wikilink|label]]</code>) and renders one self-contained <code>graphify-out/obsidian_vault.html</code> with a sidebar, hash-based deep-linking, and real working links: a resolved wikilink jumps between pages, an unresolved one (a bare module-name link — v1 scope has no per-node note yet) renders as honest dashed-underline text instead of a dead bracket or a silently faked link. Wired into <code>dashDeck._openOversight</code>'s "Auto-generated" group, right next to Graphify Map/Tree.
+      <br><br>
+      <strong>Verified, not just built</strong>: headless Chromium — default page loads, sidebar nav switches pages, a hash deep-link (<code>#03-river-iii-the-oracle-current</code>) opens the correct page directly, a resolved wikilink click navigates correctly, an unresolved wikilink renders as the honest broken-link style — zero console errors. <code>node --check rpgace_core.js</code> clean; <code>index.html</code>'s cache-bust bumped to <code>20260811b</code> (this session's own Aug 11 bug — a code change without a cache-bust — will not repeat here).
+      <br><br>
+      <code>.claude/skills/update-logging-system/SKILL.md</code>'s artifact-10 pipeline gained a real 4th step (export → recolor → river-group → obsidian-vault-html) so this file is regenerated in the same pass as <code>graphify_to_obsidian.py</code> whenever river/zone structure changes, rather than silently going stale next to <code>graph.html</code>.
+    </div>
+</div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🚨 Aug 11 (same day, continued) — real, serious mistake: today's entire session was never merged to main. Fixed, plus 3 real follow-on bugs Alex caught by hand-checking the live site.</div>
     <div class="card-body">
