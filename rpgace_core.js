@@ -3195,7 +3195,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 12/13 went through the full 7-step framework including hand-test; the 9 newer phyla (11,14,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); a real multi-session /CEO plan (Aug 11) is restructuring the flat jargon-bucket phyla into real deep Phylum->Order->Class->Family->Genus->Species hierarchies matching phyla 1-10s own shape - Phylum 11 (Fons Educationis) is the first one done as the proof-of-concept (6 real Orders, 16 Classes, 16 leaves), phyla 14,15-21 are still flat single-level buckets awaiting the same treatment, and 12/13 also still need it despite predating this pass. Separately, the placement engine (phylumPath._insertNewSteps) was fixed the same day: when a new insight genuinely duplicates an EXISTING leaf, it now extends that leaf\'s own article instead of either rejecting or creating a near-duplicate sibling - a new leaf only ever sprouts for a genuinely new concept. Fusion-link pass and hand-test are both still real, tracked gaps across every phylum built or restructured since July 30. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 3-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key. Aug 11 (later same day): phylum numbers were renumbered to match the app\'s own display grouping order - Fons Educationis is now Phylum 11, Lingua Musicae is now Phylum 12, Visio Cinematica is now Phylum 13, Contentum is now Phylum 14 (previously 12/11/14/13 respectively) - always use the current numbers above, never the old ones from an earlier memory.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 12/13 went through the full 7-step framework including hand-test; the 9 newer phyla (11,14,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); a real multi-session /CEO plan (Aug 11) is restructuring the flat jargon-bucket phyla into real deep Phylum->Order->Class->Family->Genus->Species hierarchies matching phyla 1-10s own shape - Phylum 11 (Fons Educationis) is the first one done as the proof-of-concept (6 real Orders, 16 Classes, 16 leaves), phyla 14,15-21 are still flat single-level buckets awaiting the same treatment, and 12/13 also still need it despite predating this pass. Separately, the placement engine (phylumPath._insertNewSteps) was fixed the same day: when a new insight genuinely duplicates an EXISTING leaf, it now extends that leaf\'s own article instead of either rejecting or creating a near-duplicate sibling - a new leaf only ever sprouts for a genuinely new concept. Fusion-link pass and hand-test are both still real, tracked gaps across every phylum built or restructured since July 30. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 4-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / a new Future Integrations + planned Archive layer / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. Only green (verified built) content lives in the explaining/truth/self-awareness/smoke-test docs; blue (idea)/red (planned)/yellow (mid-build) content lives in future_integrations.html instead, per /colourgradient\'s own 4-color system - never claim something not-yet-built is a shipped feature just because it appears in a report. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key. Aug 11 (later same day): phylum numbers were renumbered to match the app\'s own display grouping order - Fons Educationis is now Phylum 11, Lingua Musicae is now Phylum 12, Visio Cinematica is now Phylum 13, Contentum is now Phylum 14 (previously 12/11/14/13 respectively) - always use the current numbers above, never the old ones from an earlier memory.',
 
   init: function() {
     var self = this;
@@ -6236,7 +6236,7 @@ RPGACE.register('dashDeck', {
   // ── each opening in a new tab (same-origin relative URL).
   _openOversight: function() {
     // Aug 11 real restructure (A17, /CEO Loop 2): the flat "seven docs"
-    // list is now a real 2-tier + 3-layer system (see CLAUDE.md's own
+    // list is now a real 2-tier + 4-layer system (see CLAUDE.md's own
     // Oversight section) - smoke_test.html is the genuinely new 8th doc,
     // added here for the first time (it existed as a file with zero
     // in-app link until this fix, a real reachability bug Alex caught).
@@ -19772,9 +19772,54 @@ RPGACE.register('ceoMode', {
   // exists (today: exactly one, Massive Expansion) - real, honest
   // single-plan scope match to /CEO SKILL.md's own "only one real plan
   // exists as of Aug 11" note.
+  //
+  // Aug 11 (2nd pass, same day) - real auto-off/dormant logic, per Alex's
+  // own explicit spec: "when plan is finished and future plans is
+  // completely empty, /ceo mode switches off automatically until a plan
+  // or report populates the future integrations doc, or /stopceo
+  // switches off the mode too until /resumeceo is prompted." Two
+  // genuinely different OFF states, never conflated:
+  //   'paused'  - manual /stopCEO. Only /ResumeCEO turns it back on,
+  //               never automatically, regardless of what else changes.
+  //   'dormant' - the current plan is complete AND future_integrations
+  //               (every non-green ceo_plan_items row, across every
+  //               plan) is completely empty - nothing left to ground
+  //               against. Fully derived, not a stored flag: the moment
+  //               a new blue/red/yellow item exists anywhere (a new
+  //               plan, a new report), the very next render naturally
+  //               reads 'active' again with zero extra reactivation
+  //               step needed.
   _fetchState: function() {
-    return RPGACE.sb.select('ceo_plans', 'select=id,name,status&order=created_at.desc&limit=1')
-      .then(function(rows) { return (rows && rows[0]) || null; });
+    var self = this;
+    return Promise.all([
+      RPGACE.sb.select('ceo_plans', 'select=id,name,status&order=created_at.desc&limit=1'),
+      RPGACE.sb.select('ceo_plan_items', 'select=id&status=neq.green&limit=1'),
+    ]).then(function(results) {
+      var plan = (results[0] && results[0][0]) || null;
+      var futureIntegrationsHasContent = !!(results[1] && results[1].length);
+      if (!plan) return { plan: null, display: 'none', futureIntegrationsHasContent: futureIntegrationsHasContent };
+
+      // Real auto-complete side effect: an active plan whose own real
+      // work is all green (nothing non-green anywhere) is, by
+      // definition, finished - mark it so rather than leaving it
+      // silently stuck on 'active' forever with nothing left to check.
+      if (plan.status === 'active' && !futureIntegrationsHasContent) {
+        return RPGACE.sb.update('ceo_plans', 'id=eq.' + plan.id, { status: 'complete', completed_at: new Date().toISOString() })
+          .then(function() {
+            plan.status = 'complete';
+            return self._deriveDisplay(plan, futureIntegrationsHasContent);
+          });
+      }
+      return self._deriveDisplay(plan, futureIntegrationsHasContent);
+    });
+  },
+
+  _deriveDisplay: function(plan, futureIntegrationsHasContent) {
+    var display;
+    if (plan.status === 'paused') display = 'paused';
+    else if (futureIntegrationsHasContent) display = 'active'; // real work exists to ground against, regardless of this specific plan's own status
+    else display = 'dormant'; // plan complete (or no plan work active) AND nothing non-green anywhere
+    return { plan: plan, display: display, futureIntegrationsHasContent: futureIntegrationsHasContent };
   },
 
   _injectToggle: function() {
@@ -19794,27 +19839,39 @@ RPGACE.register('ceoMode', {
     var self = this;
     var pill = document.getElementById('ceo-mode-pill');
     if (!pill) return;
-    this._fetchState().then(function(plan) {
+    this._fetchState().then(function(state) {
+      var plan = state.plan;
       if (!plan) {
         pill.textContent = '⋯ CEO: none';
         pill.style.color = 'rgba(255,255,255,0.35)';
         pill.style.borderColor = 'rgba(255,255,255,0.15)';
         pill.title = 'No /CEO plan exists yet';
         pill._planId = null;
+        pill._display = 'none';
         return;
       }
       pill._planId = plan.id;
       pill._planStatus = plan.status;
-      if (plan.status === 'active') {
+      pill._display = state.display;
+      if (state.display === 'active') {
         pill.textContent = '🟢 CEO: ON';
         pill.style.color = '#4CAF82';
         pill.style.borderColor = 'rgba(76,175,130,0.4)';
         pill.title = 'Grounded Mode is active for "' + plan.name + '" - click to /stopCEO (pause)';
-      } else {
+      } else if (state.display === 'paused') {
         pill.textContent = '⏸ CEO: OFF';
         pill.style.color = 'rgba(255,255,255,0.5)';
         pill.style.borderColor = 'rgba(255,255,255,0.2)';
         pill.title = '"' + plan.name + '" is paused - click to /ResumeCEO';
+      } else {
+        // dormant - auto-off, not a manual pause. Real, distinct visual
+        // (blue-grey, not the same grey as a manual pause) since these
+        // mean genuinely different things: paused waits for Alex,
+        // dormant waits for real new work to exist.
+        pill.textContent = '💤 CEO: dormant';
+        pill.style.color = 'rgba(74,144,226,0.75)';
+        pill.style.borderColor = 'rgba(74,144,226,0.3)';
+        pill.title = '"' + plan.name + '" is complete and future_integrations.html is empty - auto-resumes the moment a new plan or report populates it. Not manually clickable.';
       }
     }).catch(function() {
       // Fail quiet, not loud, for this one specific case - a transient
@@ -19852,7 +19909,14 @@ RPGACE.register('ceoMode', {
   _toggle: function() {
     var pill = document.getElementById('ceo-mode-pill');
     if (!pill || !pill._planId) return;
-    if (pill._planStatus === 'active') this.stop(pill._planId);
+    if (pill._display === 'dormant') {
+      // Not a manual state - clicking explains why instead of pretending
+      // to toggle something that isn't really on or off in the same
+      // sense as active/paused.
+      RPGACE.utils.toast('💤 Dormant, not paused - nothing non-green exists to ground against right now. Will auto-resume the moment a new plan or Future Integrations item appears.', 'rgba(74,144,226,0.85)', 4500);
+      return;
+    }
+    if (pill._display === 'active') this.stop(pill._planId);
     else this.resume(pill._planId);
   },
 
