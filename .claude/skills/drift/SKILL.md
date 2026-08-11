@@ -45,6 +45,41 @@ Next check due: <a real trigger — next milestone, next /Bedtime, or "on demand
 - **`/commit-archaeologist`**: when reconstructing why code exists surfaces a real divergence between a commit's own stated intent and what actually shipped (or what a doc claims shipped), classify it with Steps 4-5's grade vocabulary rather than leaving it as unstructured narrative — a `commit-archaeologist` finding that a function's real behavior diverged from its introducing commit's stated goal is exactly a MATERIAL or CAPTURED finding in this vocabulary.
 - **GODMODE** (CLAUDE.md's own `## GODMODE — maximum-rigor deliberation` section): GODMODE's own "exhaustive evidence-gathering before proposing anything" step can invoke `/drift` Steps 1-4 directly when the question at hand is specifically "does this match what was asked," rather than inventing an ad hoc version each time. This does not change GODMODE's own boundary (still never a permission bypass) — `/drift` only sharpens what GODMODE already does, it doesn't add new authority.
 
+## Worked example — "Live-numbers staleness" (Aug 11, real, not hypothetical)
+
+The `BASIS` a session measures against isn't always a plan file — it can
+be a doc's own factual claim about live state, like CLAUDE.md's "Live
+numbers" section ("`style_profiles` **0 rows ever**"). This is the same
+`/drift` shape, just aimed at a fact instead of a task list:
+
+```
+Baseline: RATIFIED (CLAUDE.md "Live numbers," dated Aug 4 per its own header)
+Work map: n/a (single-fact check, not a task list)
+Verdict: DRIFTED
+Findings: 1. Live query (mcp__Supabase__execute_sql, project
+             gripopghczmrbrhqtqbm, Aug 11): style_profiles holds 3 rows,
+             not 0. CLAUDE.md:9 claim is stale.
+Grades: MINOR — the record is wrong, not the underlying system; fix is
+        a one-line doc edit, not new work.
+Next check due: whenever a future session's own evidence next touches
+        this table
+```
+
+**When this fires**: any time a session's own real evidence-gathering
+(a Supabase query it was already running for another reason, a code
+read it was already doing) happens to touch a fact some doc asserts —
+check it right there, in the same pass, rather than noting the number
+and moving on. This is `/update-logging-system`'s artifact 13
+(Aug 11) — mandatory on every real report/push specifically because
+it's free: it never triggers a NEW query just to check staleness, only
+grades what the session was already going to see. Two candidate
+table-vs-table dedup checks were run in the same pass that found this
+(`conid_pot`/`content_productions`, `bibliography`/`intel_bibliography`)
+and BOTH came back as real, distinct data — not every live-vs-doc check
+finds a MINOR; reporting "no drift found" is exactly as valid a `/drift`
+outcome as finding one. Full record:
+`records/2026-08/archive_diagnostic_and_supabase_dedup_ceo_paranoia_2026-08-11.txt`.
+
 ## What this replaces, and what it doesn't
 
 This is the same real shape `/5thDimension`'s Phase 1-2 (built vs. reported reconciliation) already does at whole-project scale, and the same thing rule 4/rule 9's informal "get real evidence before a second attempt" discipline already enforces by hand. `/drift` doesn't replace either — it gives both a shared, precise vocabulary (VERDICT/BASIS/grade) instead of each reinventing its own loose version, which is exactly the rule-8 dedup gap Alex pointed at by asking for this. Reserve full `/5thDimension` for genuinely whole-project questions; `/drift` is right-sized for a single plan, a single spec file, or a single session's own task list.

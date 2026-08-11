@@ -146,6 +146,51 @@ row that applies, either touch the artifact or state explicitly why not
     own standing rule: internal patches belong in `patch_notes.html`,
     not here — this artifact type only fires when a river's own real
     accuracy is at stake, not for every unrelated doc edit.
+12. **A Current State entry (or any equivalent Tier-b "durable fact")
+    is confirmed fully resolved and no longer being actively
+    re-litigated** (added Aug 11, real Alex ask: "make this a constantly
+    updating framework... always make this happen, always" — full
+    design record: `records/2026-08/archive_diagnostic_and_supabase_dedup_ceo_paranoia_2026-08-11.txt`)
+    → move the full narrative verbatim into that doc's paired archive
+    (`CLAUDE.md` → `CLAUDE_archive.md`; `patch_notes.html` →
+    `patch_notes_archive.html`; `ai_tooling_and_rules_map.md` →
+    `records/YYYY-MM/`), then rewrite the live entry to ONE present-tense
+    durable-fact bullet — same discipline the July 31 CLAUDE.md prune
+    already proved works, now a checked item instead of a one-off. Real
+    scope note: `interconnection_map.md`/`system_flow_map.md`/
+    `minotaur_map.html` don't get a paired archive — they're already
+    rule-built to hold only present-tense current state and never
+    accumulate resolved narrative in the first place (a doc drifting
+    into changelog form there is a violation of ITS OWN existing rule,
+    fixed by rewriting to present tense, not by adding an archive step).
+13. **This session's own real evidence-gathering (a Supabase query, a
+    live code read) touches a fact some doc already asserts as current**
+    (added Aug 11, same Alex ask) → compare the live value against the
+    doc's claim right there, in the same pass — don't defer it. If they
+    agree, no action. If they disagree, that's a real `/drift` MINOR
+    finding (see `drift`'s own "Live-numbers staleness" worked example):
+    fix the doc's claim in the same session, same as any other stale
+    fact. **This row is mandatory on every real report/push, not just
+    at Bedtime** — it costs nothing beyond the evidence already
+    gathered for the task at hand; it only checks facts THIS session
+    already touched, never triggers a fresh blanket re-query of
+    everything CLAUDE.md asserts (that would be real, avoidable token
+    cost against rule 11, for drift this session has no actual evidence
+    about either way).
+14. **A Supabase table this session touched gains real new rows, a
+    schema change, or a new write path** (added Aug 11, same Alex ask —
+    real /deduplication extended to Supabase itself, not just RLS/write-
+    path parity) → run `scripts/supabase_dedup_scan.py` against that
+    specific table (read-only, anon key, normalized-key similarity —
+    see the script's own header for the method, mirrors `intelDedup`'s
+    existing real approach). Findings-only, appended to a dated record
+    file — never auto-merges or deletes a row, same human-checkpoint
+    discipline as every other RPGACE mechanism that touches real data.
+    **Scoped, not blanket**: this fires for the table(s) actually
+    touched this session, or as a full 35-table pass at `Bedtime` —
+    never a full re-scan on every single push, which would be real
+    recurring cost against rule 11 with no evidence backing the need
+    (the Aug 11 full scan found zero real table-level duplication).
 
 **Optional, non-authoritative pre-check** (same Aug 6 evidence): before
 marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded
@@ -175,11 +220,18 @@ Change: <one line, what actually happened>
 [x] oracleAppGrounding.SELF_KNOWLEDGE
 [ ] ai_tooling_and_rules_map.md — skipped, no new skill/tool/rule-file
 [ ] <skill>.md — skipped, no new precedent produced
+[ ] Archive fully-resolved entries — skipped, nothing resolved this pass
+[x] Live-fact staleness check on evidence touched this session
+[ ] Supabase dedup scan — skipped, no table meaningfully changed
 ```
 
 Every row gets a mark, every skip gets a real reason (not blank). This
 IS `Bedtime`'s Step 1 now — that step points here instead of restating
-its own ad hoc version.
+its own ad hoc version. **The "Live-fact staleness check" row is
+mandatory on EVERY real report/push, not just at Bedtime** (Aug 11,
+Alex: "always make this happen, always") — see artifact 13 above for
+the exact scope (checks only what this session's own evidence already
+touched, never a blind full re-query).
 
 ## Guardrails
 
@@ -187,6 +239,19 @@ its own ad hoc version.
   per CLAUDE.md's Judgment Funnel. A one-line mechanical fix doesn't need
   the checklist run explicitly — applying it to everything would itself
   become the token-cost problem rule 11 exists to prevent.
+- **Artifacts 12 and 13 are the one deliberate exception to the Tier 2+
+  threshold above** (Aug 11, Alex's own explicit ask, verbatim: "make
+  this a constantly updating framework when reporting and pushing... to
+  prevent same future problems, always make this happen, always, I'm
+  tired of this"). They run on every real report/push regardless of
+  tier, because they're genuinely free — 12 only fires when something is
+  ALREADY confirmed resolved, 13 only checks facts THIS session's own
+  evidence already surfaced. Artifact 14 (the Supabase dedup scan) stays
+  Tier 2+/table-touched-scoped, same as everything else — "always" is
+  honored for the two checks that cost nothing extra, not stretched into
+  a blanket recurring re-scan with no evidence behind it (that would
+  just be rule 11's problem wearing a different name). Full reasoning:
+  `records/2026-08/archive_diagnostic_and_supabase_dedup_ceo_paranoia_2026-08-11.txt`.
 - **A checklist doesn't enforce itself.** This closes the exact gap
   found this session (a stated obligation, missed anyway) by making the
   obligation checkable instead of just stated — but if an artifact goes

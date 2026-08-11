@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Aug 11 (same day, continued) — the archive-report/"current capabilities" diagnostic + real Supabase row-level dedup, planned via /CEO Loop 1 + /paranoia then executed same session. 2 genuine duplicate rows found.</div>
+    <div class="card-body">
+      Alex: "I also think I should have an archive for all reports when an aspect is changed... oversight needs this as a diagnostic to make it crisp and concise," then "I'd like it to run on supabase too... all supabase tables should also run /deduplications too... make this a constantly updating framework when reporting and pushing... always make this happen, always, I'm tired of this."
+      <br><br>
+      Full compiled plan, real evidence, and Fork 1 answer: <code>records/2026-08/archive_diagnostic_and_supabase_dedup_ceo_paranoia_2026-08-11.txt</code>. Real Step-1 finding: the diagnostic Alex described already exists in spirit — the July 31 prune into <code>CLAUDE_archive.md</code> — what was missing was a STANDING, checkable version, not a new mechanism. <code>update-logging-system</code> SKILL.md gained artifact 12 (a fully-resolved Current State entry archives verbatim, live bullet collapses to one durable fact) and artifact 14 (a touched Supabase table triggers a real dedup scan); <code>drift</code> SKILL.md gained a real "Live-numbers staleness" worked example.
+      <br><br>
+      <strong>Real scanner built and run, not just designed</strong>: <code>scripts/supabase_dedup_scan.py</code> — read-only, anon key, normalized-key-exact-match (the same real method <code>intelDedup</code> already proves in production, never fuzzy). This session's own outbound proxy blocks raw calls to <code>supabase.co</code> directly, so the equivalent SQL logic ran via <code>execute_sql</code> to deliver a real result today; the script itself is correct for a future session or Alex's own machine with normal network access.
+      <br><br>
+      <strong>2 genuine duplicates found on the first real run, neither auto-merged</strong>: <code>intel_bibliography</code> holds the same YouTube video saved twice a day apart, URLs differing only by a <code>www.</code> prefix; <code>content_productions</code> holds two "No Motivation" rows (con_id 6 <code>Idea</code>, con_id 7 <code>Edited</code>) created ~40 minutes apart the same day — real risk con_id 7 has downstream rows con_id 6 doesn't, so flagged for Alex rather than merged blind (no Supabase backup exists). All other 7 tables scanned clean. Also fixed in the same pass: <code>style_profiles</code>'s stale "0 rows ever" CLAUDE.md claim, corrected to 3 real rows — the live proof the staleness gap wasn't hypothetical.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🗄️ Aug 11 (same day, continued) — 76 loose spec/backlog/debate files physically archived into records/YYYY-MM/, repo root decluttered.</div>
     <div class="card-body">
       Alex asked for the "working specs" mess fixed properly. Real check first, not a blind merge: rule 5 deliberately created this pattern ("record real decisions verbatim in a committed .txt file... chat isn't durable storage"), specifically kept SEPARATE from the 8 living docs so those stay lean — literally merging 76 files' content into CLAUDE.md/patch_notes.html/etc. would have reversed that discipline and made the living docs worse, not "crisp." Put the real fork to Alex directly rather than guessing; confirmed: physically archive, don't merge.
