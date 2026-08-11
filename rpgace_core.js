@@ -3195,7 +3195,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): Exactly 12 of 21 knowledge Phyla (numbers 1-10, 11, 14) are actually built out via the Phylum Development Framework - the remaining phyla (12-13, 15-21) exist only as names in the classification list, with no real tree content, no matter how "complete" the 21-name list itself looks. Never call the taxonomy tree "structurally complete" for all 21 - only 12 are. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); phyla 12-13 and 15-21 have no framework pass yet (11 and 14 were built out July 30). A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): Exactly 12 of 21 knowledge Phyla (numbers 1-10, 11, 14) are actually built out via the Phylum Development Framework - the remaining phyla (12-13, 15-21) exist only as names in the classification list, with no real tree content, no matter how "complete" the 21-name list itself looks. Never call the taxonomy tree "structurally complete" for all 21 - only 12 are. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); phyla 12-13 and 15-21 have no framework pass yet (11 and 14 were built out July 30). A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 3-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list.',
 
   init: function() {
     var self = this;
@@ -8269,6 +8269,60 @@ RPGACE.register('phylumPath', {
       }
       return (data.content || []).map(function(c) { return c.text || ''; }).join('');
     });
+  },
+
+  // Real Headroom-pattern helper (Aug 11 2026) — Alex asked where token
+  // compression would help without hurting output quality; real answer
+  // given directly, prompt caching built first (zero quality risk, see
+  // api/_context.js's cacheableSystem). This is the second, genuinely
+  // different case: large VARIABLE content (a full video transcript, a
+  // full book chapter) that changes every call, so caching structurally
+  // cannot help it — the real fit for Headroom's own actual mechanic
+  // (compress before it reaches the judgment-making call).
+  //
+  // Real, deliberately conservative design, not a blind "summarize
+  // everything" pass: only fires above a real, generous length
+  // threshold (short/typical content is NEVER touched - zero risk to
+  // the common case); uses the cheap MECHANICAL_MODEL tier (Haiku) for a
+  // narrowly-scoped task - strip genuine filler (intros, sponsor reads,
+  // repeated phrasing), never summarize or drop a specific technique,
+  // quote, plugin name, or attribution - a materially SAFER task for a
+  // cheap model than "produce a good summary," since it only has to
+  // recognize filler, not decide what matters; and fails OPEN on any
+  // error (bad JSON, empty result, a thrown fetch) by returning the
+  // ORIGINAL untouched text - a failed compression attempt must never
+  // silently shrink or corrupt what the real ground-worker judgment call
+  // actually sees.
+  //
+  // NOT wired into any live call site yet in this pass (Bookworm's
+  // _analyzeChapter / Content Intelligence's real dispatch path both
+  // need their own real read first, per rule 1 - wiring a new step into
+  // an already-live judgment pipeline blind is exactly the mistake rule
+  // 1 exists to prevent). This is the real, tested, ready-to-use
+  // building block; wiring it in is real, separate follow-up work.
+  CONDENSE_THRESHOLD_CHARS: 6000,
+
+  _condenseIfLarge: function(text, context) {
+    var self = this;
+    text = text || '';
+    if (text.length <= this.CONDENSE_THRESHOLD_CHARS) return Promise.resolve(text);
+    var prompt = 'Strip ONLY genuine filler from the text below - intros, ' +
+      'sponsor reads, repeated phrasing, off-topic tangents. Do NOT ' +
+      'summarize, shorten, or paraphrase any specific technique, plugin ' +
+      'name, quote, number, or creator/artist attribution - preserve ' +
+      'every one of those exactly as written, in the original order. If ' +
+      'you are not confident a passage is pure filler, keep it. Return ' +
+      'ONLY the cleaned text, no preamble, no markdown fences.\n\n' + text;
+    return this._callGroundWorkerText(prompt, 2000, this.MECHANICAL_MODEL, context)
+      .then(function(cleaned) {
+        cleaned = (cleaned || '').trim();
+        // Fails open on a genuinely broken result too, not just a thrown
+        // error - an empty or suspiciously tiny result is worse than no
+        // compression at all, never trusted over the real original text.
+        if (!cleaned || cleaned.length < text.length * 0.3) return text;
+        return cleaned;
+      })
+      .catch(function() { return text; });
   },
 
   // ── Fallback-answer sweep — called periodically while the app is open ──

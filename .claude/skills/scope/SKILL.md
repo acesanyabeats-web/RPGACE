@@ -7,13 +7,13 @@ description: Gathers the whole real picture of what's happened in RPGACE (this s
 
 RPGACE's oversight docs have repeatedly gone stale or described things as "done" when the code disagreed (CLAUDE.md's own standing warning). The failure mode isn't laziness — it's that "what happened this session" is scattered across git commits, Supabase rows, and scrollback, and no single pass reliably surfaces all of it. This skill is that pass: real evidence, gathered once, organized so each of the six oversight docs can pull exactly the slice it needs.
 
-**Source of truth**: `CLAUDE.md`'s own six-doc list and their individual update conventions (see `## Oversight — now SIX docs`). This skill produces the input to that process; it does not replace it, and CLAUDE.md wins if the two ever disagree.
+**Source of truth**: `CLAUDE.md`'s own seven-doc list and their individual update conventions (see `## Oversight — now SEVEN docs`). This skill produces the input to that process; it does not replace it, and CLAUDE.md wins if the two ever disagree. (Fixed Aug 11 — this line had itself gone stale, still saying "six docs" after `ai_tooling_and_rules_map.md` made it seven on July 31.)
 
 ## When to run this
 
 - The user says "/scope" or "update oversight" for a session covering more than a couple of commits.
 - Before a "session ended here" wrap-up card in `patch_notes.html`.
-- Whenever a doc's claim needs checking against reality — this skill's evidence-gathering step doubles as a drift-check (three real doc-drift corrections were caught exactly this way on July 20).
+- Whenever a doc's claim needs checking against reality — this skill's evidence-gathering step doubles as a drift-check (three real doc-drift corrections were caught exactly this way on July 20). **Aug 11**: when this happens, run the `drift` sibling skill's Steps 4-5 on the specific finding instead of just flagging the mismatch informally — gives it a real VERDICT/BASIS/grade instead of an ungraded note.
 
 ## What to gather (real evidence, never a doc's own claim)
 

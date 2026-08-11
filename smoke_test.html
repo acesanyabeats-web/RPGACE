@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Smoke Test</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0; --amber:#E2A83D;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.45);
+    --ease-out:cubic-bezier(0.16,1,0.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7;padding:0 0 80px}
+  .hero{padding:48px 24px 24px;text-align:center;border-bottom:1px solid var(--border)}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+  .hero h1{font-family:Georgia,serif;font-size:28px;color:#E2E2EC;margin-bottom:10px}
+  .hero p{color:var(--dim);font-size:13px;max-width:640px;margin:0 auto}
+  .wrap{max-width:900px;margin:0 auto;padding:32px 24px}
+  .summary{display:flex;gap:16px;justify-content:center;margin:24px auto 8px;flex-wrap:wrap}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;min-width:110px}
+  .stat .n{font-size:22px;font-weight:700;color:var(--gold)}
+  .stat.green .n{color:var(--green)}
+  .stat.red .n{color:var(--red)}
+  .stat .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:2px}
+  .cat{margin-top:36px}
+  .cat-title{font-family:Georgia,serif;font-size:18px;color:var(--gold);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;transition:border-color .2s var(--ease-out)}
+  .item.confirmed{border-color:rgba(61,170,110,0.35);background:rgba(61,170,110,0.04)}
+  .item.broken{border-color:rgba(226,84,84,0.35);background:rgba(226,84,84,0.04)}
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .item-name{font-size:13px;font-weight:700;color:#E2E2EC}
+  .item-desc{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.6}
+  .item-ref{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;color:var(--dim);margin-top:6px;opacity:.7}
+  .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+  .badge.unverified{background:rgba(226,226,236,0.08);color:var(--dim);border:1px solid var(--border)}
+  .badge.confirmed_working{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
+  .badge.broken{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  button{font-family:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s var(--ease-out)}
+  button:hover{border-color:var(--gold);color:var(--gold)}
+  button.ok:hover{border-color:var(--green);color:var(--green)}
+  button.bad:hover{border-color:var(--red);color:var(--red)}
+  .broken-note{font-size:11px;color:var(--red);margin-top:8px;padding:8px 10px;background:rgba(226,84,84,0.06);border-radius:6px;border-left:2px solid var(--red)}
+  .verified-at{font-size:10px;color:var(--dim);margin-top:6px;opacity:.6}
+  .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
+  .note{max-width:640px;margin:24px auto 0;font-size:12px;color:var(--dim);text-align:center;line-height:1.7}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">RPGACE Oversight · Layer (d)</div>
+  <h1>🧪 Smoke Test</h1>
+  <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work, per <code>/CEO</code>'s own (d)-layer design (Aug 11 2026) — never pre-built empty.</p>
+</div>
+
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+  <div id="items" class="loading">Loading real state from Supabase…</div>
+  <p class="note">This doc's own real role: what layer (c) — Oracle self-awareness — should treat as currently confirmed vs. currently broken. Un-ticking an item after a real failure, with a note of what broke, is exactly as real a use of this page as ticking one for the first time.</p>
+</div>
+
+<script>
+var SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+var HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, function(c) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+
+function fetchItems() {
+  return fetch(SUPABASE_URL + '/rest/v1/smoke_test_items?select=*&order=category.asc,item_name.asc', { headers: HEADERS })
+    .then(function(r) { return r.json(); });
+}
+
+function updateItem(id, patch) {
+  patch.updated_at = new Date().toISOString();
+  return fetch(SUPABASE_URL + '/rest/v1/smoke_test_items?id=eq.' + id, {
+    method: 'PATCH', headers: HEADERS, body: JSON.stringify(patch)
+  });
+}
+
+function render(items) {
+  var confirmed = items.filter(function(i) { return i.status === 'confirmed_working'; }).length;
+  var broken = items.filter(function(i) { return i.status === 'broken'; }).length;
+  var unverified = items.length - confirmed - broken;
+
+  document.getElementById('summary').innerHTML =
+    '<div class="stat green"><div class="n">' + confirmed + '</div><div class="l">Confirmed</div></div>' +
+    '<div class="stat"><div class="n">' + unverified + '</div><div class="l">Unverified</div></div>' +
+    '<div class="stat red"><div class="n">' + broken + '</div><div class="l">Broken</div></div>' +
+    '<div class="stat"><div class="n">' + items.length + '</div><div class="l">Total</div></div>';
+
+  if (!items.length) {
+    document.getElementById('items').innerHTML = '<div class="empty">No real items yet — this page grows as real work actually finishes. Nothing to see here on purpose.</div>';
+    return;
+  }
+
+  var byCat = {};
+  items.forEach(function(i) { (byCat[i.category] = byCat[i.category] || []).push(i); });
+
+  var html = '';
+  Object.keys(byCat).sort().forEach(function(cat) {
+    html += '<div class="cat"><div class="cat-title">' + esc(cat) + '</div>';
+    byCat[cat].forEach(function(it) {
+      var cls = it.status === 'confirmed_working' ? 'confirmed' : (it.status === 'broken' ? 'broken' : '');
+      html += '<div class="item ' + cls + '" data-id="' + it.id + '">' +
+        '<div class="item-top">' +
+          '<div><div class="item-name">' + esc(it.item_name) + '</div>' +
+          '<div class="item-desc">' + esc(it.description) + '</div>' +
+          (it.source_ref ? '<div class="item-ref">' + esc(it.source_ref) + '</div>' : '') + '</div>' +
+          '<span class="badge ' + it.status + '">' + it.status.replace('_', ' ') + '</span>' +
+        '</div>' +
+        (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
+        (it.verified_at ? '<div class="verified-at">Last confirmed: ' + new Date(it.verified_at).toLocaleString() + '</div>' : '') +
+        '<div class="actions">' +
+          (it.status !== 'confirmed_working' ? '<button class="ok" data-act="confirm">✅ Confirm Working</button>' : '<button data-act="unconfirm">↩ Un-confirm</button>') +
+          (it.status !== 'broken' ? '<button class="bad" data-act="break">❌ Mark Broken</button>' : '<button class="ok" data-act="fixed">✅ Fixed, Re-confirm</button>') +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+  document.getElementById('items').innerHTML = html;
+
+  document.querySelectorAll('.item').forEach(function(el) {
+    var id = el.getAttribute('data-id');
+    el.querySelectorAll('button').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var act = btn.getAttribute('data-act');
+        var patch = {};
+        if (act === 'confirm' || act === 'fixed') {
+          patch = { status: 'confirmed_working', verified_at: new Date().toISOString(), broken_note: null };
+        } else if (act === 'unconfirm') {
+          patch = { status: 'unverified' };
+        } else if (act === 'break') {
+          var note = prompt('What broke? (real, specific — e.g. "Kimi call returns 401", "vault note missing a link")');
+          if (note === null) return;
+          patch = { status: 'broken', broken_note: note };
+        }
+        updateItem(id, patch).then(load);
+      });
+    });
+  });
+}
+
+function load() {
+  fetchItems().then(render).catch(function(e) {
+    document.getElementById('items').innerHTML = '<div class="empty">Could not load real state: ' + esc(e.message) + '</div>';
+  });
+}
+load();
+</script>
+</body>
+</html>

@@ -76,6 +76,34 @@ export const BASE_URL = 'https://backend.composio.dev/api/v3.1';
 export const MODEL_EXTRACTOR      = 'claude-fable-5';
 export const MODEL_GROUND_WORKER  = MODEL;
 
+// Real Anthropic prompt-caching fix (Aug 11 2026) — flagged as a known
+// future win July 31 (patch_notes.html), never built until now. Real
+// evidence checked first (not assumed): oracleAppGrounding's own wrapper
+// (rpgace_core.js) builds `system` as `personaPrompt + groundingBlock`,
+// with the persona text ALWAYS first and grounding always appended after
+// — the dynamic per-question content lives in `messages`, never in
+// `system`. That means the exact same `system` string genuinely recurs
+// across many real calls (every message sent through one Oracle persona
+// with the same grounding state), making it a real, safe caching target
+// — not a guess.
+// Wraps `system` as Anthropic's array-of-content-blocks form with one
+// `cache_control:{type:'ephemeral'}` block, which is the ONLY way the
+// API accepts a cache marker (a bare string can't carry one). This is
+// the whole `system` string as ONE cacheable block — deliberately not
+// split into multiple breakpoints, since the client sends it pre-
+// concatenated and this file can't see where persona text ends and
+// grounding begins without a real client-side change (out of scope for
+// this pass, a genuinely bigger one — flagged, not silently done).
+// Real, zero-quality-risk mechanic: byte-identical output either way —
+// a cache hit is just cheaper, a cache miss (system differs from the
+// last call, or the block is under Anthropic's real per-model minimum
+// cacheable length) silently behaves exactly as before. Nothing to get
+// wrong here that could change what Oracle actually says.
+export function cacheableSystem(system) {
+  if (!system) return system;
+  return [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
+}
+
 export async function callClaude(apiKey, messages, system='', maxTokens=1000, model=MODEL){
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -84,7 +112,7 @@ export async function callClaude(apiKey, messages, system='', maxTokens=1000, mo
       'x-api-key': apiKey,
       'anthropic-version': '2023-06-01'
     },
-    body: JSON.stringify({ model: model, max_tokens: maxTokens, system, messages })
+    body: JSON.stringify({ model: model, max_tokens: maxTokens, system: cacheableSystem(system), messages })
   });
   const text = await res.text();
   let data;
