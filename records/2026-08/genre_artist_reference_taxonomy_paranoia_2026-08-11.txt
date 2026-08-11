@@ -1,0 +1,281 @@
+Genre & Artist Reference — real /paranoia + /CEO pass on the other-session
+genre-expansion report (10 genres x 20 names), /restructure + /Engineer
+as advisors, Council of 5 sign-off
+2026-08-11
+
+=====================================================================
+WHAT THIS IS
+=====================================================================
+Alex pasted a "Genre Expansion Report for Taxonomy Tree Seeding"
+produced by a different (non-Claude-Code) session — 10 genres, 20 real
+artists/producers each, with the other session's own honest caveat
+that only the 2 non-standard categories (Russian/French-influenced)
+were web-verified; the other 8 came from model memory, unverified.
+Ask: run this session's REAL /paranoia + /CEO (with /restructure +
+/Engineer as advisors) on it, then hand back a Council of 5 report —
+not just a rubber-stamp of the other session's placement suggestion.
+
+=====================================================================
+GODMODE EVIDENCE — REAL CURRENT STATE (not the other session's guess)
+=====================================================================
+1. Phylum 9 (Historia) queried directly: 32 real nodes, depth 1-5,
+   4 existing depth-1 branches (Genre-Specific History [UK Drill &
+   Trap] / Historical Eras & Genre Evolution / Producer Study &
+   Signature Sound / Sampling & Influence History), each running a
+   4-branch-deep chain down to ONE depth-5 vocabulary leaf. Every
+   existing leaf is a category-bucket, not a per-artist node —
+   e.g. "UK Drill History Vocabulary: Pioneer Collectives, Road Rap
+   Lineage & Genre Timeline" (explainer: a descriptive sentence, not
+   individual names).
+
+2. Real precedent for a "Covers: X, Y, Z" jargon-bucket leaf found at
+   Phylum 1's "Cadence & Resolution Vocabulary" (depth 5): explainer =
+   "Covers: cadence, resolution, tension, i-iv-v, ii-v-i, circle of
+   fifths, pivot chord, modulation, progression." — deep_content.
+   generated restates the same list in a fuller sentence plus a
+   generated_at timestamp. This is the SAME real pattern CLAUDE.md
+   documents for Phylum 11/14 ("one leaf per category... rather than
+   ~110 individual per-term leaves").
+
+3. Phylum 14 queried directly (per the earlier /paranoia pass this
+   session): 8 leaf nodes, 0 branch nodes — a FLAT set of category
+   leaves sitting directly off the phylum, no deep branch chain at
+   all. This is the cheapest, most directly comparable real precedent
+   for "add N reference buckets to an existing phylum."
+
+4. rpgace_core.js:6871 — Phylum 9's OWN keyword-scan entry already
+   includes "west coast," "south atlanta," "french," "russian" as
+   concepts (this scan routes free-text mentions to a phylum, it does
+   NOT hold individual artist names — a separate mechanism from what
+   taxonomy_tree row content holds, which is what oracleTreeGrounding
+   actually searches for real answers).
+
+5. taxonomy_tree total: 557 rows. Adding 8-11 new nodes to Historia is
+   under 2% growth — a real, cheap addition regardless of which exact
+   shape gets picked.
+
+=====================================================================
+REAL VERDICT: THE OTHER SESSION'S PROPOSED SHAPE IS WRONG FOR THIS
+PHYLUM'S OWN ESTABLISHED PATTERN
+=====================================================================
+The other report recommended: "each genre becomes a Level-2 node under
+Historia, with the 20 artists as Level-3 leaves underneath" — i.e.
+~200 individual artist nodes. Real evidence above shows this would be
+a genuine architectural regression against Historia's OWN already-
+shipped, deliberate jargon-bucket convention (same one Phylum 11/14
+already proved out, same one CLAUDE.md already names as the correct,
+cheaper choice over exhaustive per-term leaves). 200 individual leaf
+nodes would nearly 6x Phylum 9's current size for content that is
+fundamentally reference-lookup material, not 200 separate teachable
+concepts each deserving its own node.
+
+Corrected real design (matching BOTH live precedents — Phylum 1's
+"Covers:" format, Phylum 14's flat shallow structure):
+
+- DRILL and TRAP: these already have a real home. Rather than a
+  second, parallel "drill" bucket, add ONE new sibling leaf each
+  directly under the EXISTING depth-1 branch "Genre-Specific History
+  (UK Drill & Trap)" (avoids rule-8 duplication — that branch already
+  owns this territory):
+    "UK Drill Artist & Producer Reference" (leaf, depth 2 under that
+      branch)
+    "Trap Artist & Producer Reference" (leaf, depth 2 under that
+      branch)
+
+- The other 8 genres (West Coast, Old School Hip-Hop, Early 2000s,
+  Boom Bap, Jazz Rap, Pop Rap, Russian-Influenced, French-Influenced)
+  have no existing home under Historia's 4 branches. Real design: ONE
+  new depth-1 branch, "Genre Lineage & Regional Artist Reference,"
+  with the 8 genre leaves as its DIRECT depth-2 children (flat, no
+  extra intermediate branches — mirrors Phylum 14's proven cheap
+  shape rather than Historia's own deeper 5-level convention, since
+  there is no real sub-structure under any one of these 8 genres that
+  would justify 3 more branch layers the way "UK drill pioneer era →
+  regional migration → road rap lineage" genuinely did).
+
+Total new nodes: 1 branch + 10 leaves = 11 (not ~200).
+
+=====================================================================
+REAL FACT-CHECK PASS (Council of 5's fact-check duty, not a rubber
+stamp of the other session's partial verification)
+=====================================================================
+Spot-checked all 10 lists against real domain knowledge. One genuine
+error found, not present in the other session's own honest caveat
+(which only flagged the Russian/French lists as needing verification —
+this error is in a list that WASN'T flagged, i.e. exactly the risk
+that caveat should have covered but didn't catch):
+
+- DRILL list included "Sech." Real evidence: Sech is a Panamanian
+  Latin trap/reggaeton artist ("Otro Trago"), not a UK/Chicago drill
+  artist — no connection to the drill scene at all. This reads as a
+  genuine memory-retrieval error (name-adjacent to nothing in
+  particular), not a defensible edge-case inclusion. REMOVED, replaced
+  with Russ Millions (real, extremely well-known UK drill/rap
+  crossover — "Body" ft. Tion Wayne, UK #1 single 2021) to keep the
+  list at 20 with a low-hallucination-risk, easily-verifiable name.
+
+All other 9 lists spot-checked clean — every name recognized as real
+and correctly genre-placed on direct review. The other session's own
+Russian/French web-verification is taken as real (it explicitly did
+the search and reported real hits), not re-verified a second time —
+re-running an identical search would be pure token cost for zero new
+signal (rule 11).
+
+One honest, unresolved flag carried forward from the other session,
+correctly not overridden: the "Russian sonically resembles Brazilian
+music" premise is Alex's own creative hypothesis, not documented
+critical consensus. Kept as a real, explicit note inside the Russian
+leaf's own deep_content rather than presented as fact.
+
+=====================================================================
+REAL, SEPARATE FINDING HIT WHILE CHECKING THE STAGING TABLE
+=====================================================================
+Queried taxonomy_proposals directly (this session's own evidence,
+not assumed): rejected=80, pending=51, accepted=33 (164 total).
+CLAUDE.md's own "Live numbers" line currently reads "25 pending, 72
+confirmed" — both numbers are now stale (pending has roughly doubled,
+"confirmed"/accepted diverges even more). This is a real /drift-shaped
+finding surfaced incidentally while checking whether taxonomy_proposals
+was the right staging table for this plan (it is — same mechanism
+used throughout the project) — corrected in CLAUDE.md same pass, per
+the standing "check it right there" rule (artifact 13).
+
+=====================================================================
+/restructure-equivalent CHECK (does anything here call for
+INFRASTRUCTURE change, not just content)
+=====================================================================
+No. The existing taxonomy_proposals review-queue + the existing
+_insertNewSteps-style direct-INSERT-with-return=representation pattern
+both already fit this task exactly as they are. Nothing about 11 new
+reference-bucket nodes needs a new mechanism, a new table, or a new
+UI surface. Real, honest "nothing to build here" — matches this
+skill's own guardrail: not every task has a real Side B case.
+
+=====================================================================
+/Engineer-equivalent FEASIBILITY CHECK
+=====================================================================
+Real, buildable now, in one pass, once Alex confirms: 11 INSERTs into
+taxonomy_tree (1 branch, 10 leaves — the 2 drill/trap leaves nested
+under the existing branch id 5dbb7672-43fa-45ad-b3c8-e7de3d9ec2fe, the
+other 8 under a new branch node created first so its real id exists
+for the leaf parent_id values). Each leaf's explainer follows the
+proven "Covers: name1, name2, ..." format exactly. No Oracle call
+needed — the content is already fully specified below, this is a
+direct, human-checkpointed data build exactly like the Phylum 11/14
+July 30 pass, not a judgment-call placement needing Regeneration/
+decidePlacementScored.
+
+=====================================================================
+READY-TO-INSERT CONTENT (pending Alex's go-ahead — rule 4, no taxonomy
+write happens without a real human checkpoint, this file IS that
+checkpoint artifact)
+=====================================================================
+
+NEW BRANCH (parent_id: null-under-phylum-root, i.e. same depth-1 shape
+as Historia's other 4 branches):
+  name: "Genre Lineage & Regional Artist Reference"
+  node_type: branch
+  depth: 1
+  phylum_number: 9
+  explainer: "Genre-specific artist/producer rosters spanning West
+    Coast, Old School, Boom Bap, Jazz Rap, Pop Rap, and the Russian
+    and French rap scenes — reference material for style/reference
+    matching, not a teaching sequence."
+
+LEAVES (depth 2, parent = the new branch above, unless noted):
+
+1. "West Coast Artist & Producer Reference"
+   Covers: Dr. Dre, Snoop Dogg, Ice Cube, N.W.A, Kendrick Lamar,
+   Nipsey Hussle, YG, Warren G, DJ Quik, Nate Dogg, The Game, 2Pac,
+   Tyler The Creator, Schoolboy Q, Mac Dre, E-40, Too $hort, Kurupt,
+   Xzibit, Battlecat.
+
+2. "Old School Hip-Hop Artist Reference"
+   Covers: Grandmaster Flash, Afrika Bambaataa, Kurtis Blow, Run-DMC,
+   LL Cool J, Public Enemy, Rakim, Big Daddy Kane, KRS-One, Slick
+   Rick, Beastie Boys, Salt-N-Pepa, Eric B, DJ Kool Herc, Fab 5
+   Freddy, Whodini, Kool Moe Dee, Doug E. Fresh, Sugarhill Gang,
+   Melle Mel.
+
+3. "Early 2000s Artist & Producer Reference"
+   Covers: 50 Cent, Eminem, Jay-Z, Nas, Ludacris, Missy Elliott,
+   Timbaland, The Neptunes (Pharrell/Chad Hugo), Dr. Dre, Nelly,
+   OutKast, DMX, Cam'ron, Dipset, Twista, Lil Jon, Kanye West, Chingy,
+   Fabolous, Busta Rhymes.
+
+4. "Boom Bap Artist & Producer Reference"
+   Covers: DJ Premier, Pete Rock, Gang Starr, A Tribe Called Quest,
+   Nas (Illmatic era), Wu-Tang Clan, Mobb Deep, De La Soul, Black
+   Moon, Big L, Jeru the Damaja, Buckshot, Lord Finesse, Diamond D,
+   Showbiz & A.G., Main Source, Organized Konfusion, Camp Lo,
+   Smif-N-Wessun, O.C.
+
+5. "Jazz Rap Artist & Producer Reference"
+   Covers: A Tribe Called Quest, De La Soul, Digable Planets, Gang
+   Starr, Guru, Us3, The Roots, Pharcyde, Jungle Brothers, Souls of
+   Mischief, Freestyle Fellowship, Nujabes (producer), Madlib, MF
+   DOOM, J Dilla, Blackalicious, Lupe Fiasco, Common (early), Mos
+   Def, Talib Kweli.
+
+6. "Pop Rap Artist Reference"
+   Covers: Drake, Nicki Minaj, Cardi B, Post Malone, MC Hammer, Will
+   Smith, LL Cool J (crossover era), Puff Daddy, Ja Rule, Flo Rida,
+   Pitbull, B.o.B, Iggy Azalea, Lil Nas X, DaBaby, Doja Cat, Machine
+   Gun Kelly (rap era), Vanilla Ice, Soulja Boy, French Montana.
+
+7. "Russian-Influenced Rap Artist Reference"
+   Covers: Basta, Oxxxymiron, Morgenshtern, Eldzhey, Slava Marlow
+   (producer), Timati, Noize MC, Scriptonite, Pharaoh, Kasta, 25/17,
+   Mnogoznaal, White Punk, Gonzo, ST1M, Ant (Zasada Production), Guf,
+   Loc-Dog, Husky, Face.
+   deep_content note (kept honest, not upgraded to fact): "The
+   'Russian rap sonically resembles Brazilian music' link is Alex's
+   own creative hypothesis, not documented critical consensus — a
+   real taxonomy experiment, not an established genre relationship."
+
+8. "French-Influenced Rap Artist Reference"
+   Covers: Booba, Kaaris, MC Solaar, Suprême NTM (Kool Shen/
+   JoeyStarr), IAM, Damso, Nekfeu, MHD, LaCrim, Oxmo Puccino, PNL,
+   Vald, Niska, SCH, Jul, Orelsan, Lomepal, Youssoupha, DJ Mehdi
+   (producer), Therapy 2093 (producer).
+
+LEAVES (depth 2, parent = EXISTING branch id
+5dbb7672-43fa-45ad-b3c8-e7de3d9ec2fe, "Genre-Specific History (UK
+Drill & Trap)" — placed here, not the new branch, per the real-
+dedup finding above):
+
+9. "UK/Chicago Drill Artist & Producer Reference"
+   Covers: Chief Keef, Lil Durk, G Herbo, King Von, Pop Smoke, Fivio
+   Foreign, Headie One, Digga D, Central Cee, Unknown T, Skepta
+   (grime/drill crossover), 67 (collective), Harlem Spartans, AXL
+   Beats, Ghosty, ATG Beats, Russ Millions, Loski, M24, Bandokay.
+   ("Sech" — the other session's original 20th name — removed: real
+   evidence shows Sech is a Panamanian Latin trap/reggaeton artist,
+   unconnected to drill. Replaced with Russ Millions.)
+
+10. "Trap Artist & Producer Reference"
+    Covers: Gucci Mane, Young Jeezy, T.I., Future, Migos, 21 Savage,
+    Lil Baby, Metro Boomin, Southside, Zaytoven, DJ Toomp, Waka
+    Flocka Flame, Travis Scott, Lex Luger, Chief Keef (crossover),
+    Playboi Carti, Pierre Bourne, Wheezy, Tay Keith, Cardo.
+
+=====================================================================
+COUNCIL OF 5 — FINAL VERDICT
+=====================================================================
+Content: sound, one real correction made (Sech), rest fact-check
+clean. Structure: the other session's proposed shape (200 individual
+artist nodes) REJECTED as a real architectural mismatch against
+Historia's own established jargon-bucket convention; corrected shape
+is 11 nodes total, reusing 2 proven-live patterns exactly. Staging:
+taxonomy_proposals is the right existing mechanism, no new
+infrastructure needed. Execution: real, one-pass, ready the moment
+Alex confirms — not built yet, this file is the confirmation artifact
+per rule 4.
+
+NOT WRITTEN TO SUPABASE. Awaiting Alex's go-ahead on: (a) the
+corrected 11-node structure vs. the other session's 200-node one,
+(b) the Sech->Russ Millions swap, (c) whether to insert directly into
+taxonomy_tree (small, human-reviewed batch, matches the July 30
+Phylum 11/14 precedent) or stage through taxonomy_proposals first
+(the review-queue path, more ceremony for content that's already
+fully specified and reviewed in this file).
