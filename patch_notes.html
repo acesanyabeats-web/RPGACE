@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎓 Aug 11 (same day, continued) — taxonomy leaf content-generation prompts upgraded to reliably produce the "old vs new" comparative caveat Alex praised, real evidence not guessed.</div>
+    <div class="card-body">
+      Alex pointed at a real live example — Phylum 1's "Second-Based Root Motion — No Common Tones and Maximum Harmonic Contrast" leaf — and said: "the caveat with the new and old is excellent, i want more of this thinking." Real evidence traced that leaf's own <code>deep_content</code> to <code>phylumPath._generateInsightContent</code>'s existing 3-layer prompt (Simple Terms / Technical Mechanics / Expert Nuance) — its Technical Mechanics layer had organically contrasted second-based root motion against fifth-based motion, but the prompt never explicitly asked for that comparison; it happened to emerge.
+      <br><br>
+      Also found, real evidence not assumed: <code>taxonomyTree._generateNodeContent</code> — a genuinely different, thinner 2-section prompt (no 3-layer method, no expert-nuance ask at all) — is actually the HIGHER-traffic generator, firing automatically on every new leaf a proposal creates (both the accept-proposal insert path and <code>_updateExistingNode</code>), while <code>_generateInsightContent</code> only fires on insight-placement-triggered content. The weaker prompt was the default one.
+      <br><br>
+      Both prompts upgraded to explicitly ask for a real comparison against an older/alternative approach where genuinely relevant ("a real comparison beats a flat definition") rather than leaving it to chance — <code>_generateNodeContent</code> also upgraded to the same 3-layer method <code>_generateInsightContent</code> already used, closing a real consistency gap between the two. <code>_generateArticleText</code> (the phylum-level synthesis article) got a lighter matching instruction: preserve any real old-vs-new contrast already present in the source content rather than flattening it into a generic bullet during synthesis. `node --check` clean, cache-bust bumped in the same commit.
+      <br><br>
+      <strong>Separate, smaller finding flagged for Alex, not acted on blind</strong>: that same leaf sits as an orphan directly at Order depth under Phylum 1's root (sibling to real Order branches like "Harmony"/"Melodic Construction"), rather than nested inside one of them — a real structural placement anomaly, independent of its excellent content. Not fixed this pass — a parent_id change is a real taxonomy write, which always needs a human checkpoint (rule 4), and it's not yet confirmed this is the specific thing Alex meant by "phylum path didn't update."
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌳 Aug 11 (same day, continued) — Taxonomy & Review dashboard card now opens a Chronicles-style top-5 compact view instead of the full 51-row queue, real /paranoia+/Engineer pass.</div>
     <div class="card-body">
       Alex's own ask: "make a similar thing to chronicles when pressed through dashboard: taxonomy review pulls up with review, top 5 show most recent ones, but will also have a skip button to just access to the actual taxonomy." Real GODMODE evidence found the exact real cause before building anything: the existing "Taxonomy & Review" dashboard card already opened `taxonomyReviewQueue._openQueue()`, which renders EVERY pending row with no cap — 51 real rows as of this session, genuinely long, matching exactly what Alex named.

@@ -8069,12 +8069,26 @@ RPGACE.register('taxonomyTree', {
   // so a real outage here never surfaced anywhere, not even a fallback
   // queue row.
   _generateNodeContent: function(node) {
+    // Aug 11 2026 — Alex's own real ask, pointing at a live example
+    // ("Second-Based Root Motion" under Phylum 1): "the caveat with the
+    // new and old is excellent, i want more of this thinking." That
+    // leaf's quality came from _generateInsightContent's 3-layer method
+    // (below) — this function is the thinner, OLDER 2-section prompt,
+    // and the one that actually fires by default on every new leaf a
+    // proposal creates (see taxonomyTree's leaf-insert path above and
+    // _updateExistingNode) — the highest-traffic content generator in
+    // the tree, and until now the one with the weakest instruction.
+    // Upgraded to the same 3-layer shape, with the comparison/contrast
+    // move made explicit rather than left to chance (that's what
+    // actually produced the praised "new vs old" caveat the first time
+    // — asking for it directly should make it reliable, not lucky).
     var prompt = 'You are a neuro-optimized tutor AND a world-class expert in "' + node.name + '".\n\n' +
       'Context: this is a node in a music production taxonomy tree, path: ' + node.path + '. ' +
       'This is for FL Studio / UK hip hop production, aspiring producers 18-35.\n\n' +
-      'Give me, on "' + node.name + '" specifically:\n\n' +
-      '1. WHAT THIS IS — clear explainer of ' + node.name + ' as a concept\n' +
-      '2. THE ACTUAL TECHNICAL CONTENT — since this is a specific leaf topic, give me the real, specific information (exact notes/settings/techniques/chord identities as relevant), not general theory\n\n' +
+      'Teach "' + node.name + '" using the 3-layer method:\n' +
+      '1. SIMPLE TERMS — what this is, in plain language, 2-3 sentences\n' +
+      '2. TECHNICAL MECHANICS — the real, specific information (exact notes/settings/techniques/chord identities as relevant), not general theory. Where a genuinely different or older/more common alternative approach exists, contrast this against it directly and explain why the difference actually matters in practice — a real comparison beats a flat definition.\n' +
+      '3. EXPERT NUANCE — the one thing about this that most tutorials miss\n\n' +
       'Be specific and technical, but concise — this is a reference entry, not a full course.';
 
     RPGACE.modules.phylumPath._callGroundWorkerText(prompt, 900).then(function(text) {
@@ -9245,10 +9259,18 @@ RPGACE.register('phylumPath', {
             '- Expert nuance: ' + outline.expertNuance + '\n'
           : '';
 
+        // Aug 11 2026 — this exact prompt is what produced the leaf Alex
+        // praised directly ("Second-Based Root Motion," the fifth-based-
+        // vs second-based-motion contrast in its Technical Mechanics
+        // layer) — real evidence, not guessed, since this function's own
+        // output is what's sitting in that node's deep_content. The
+        // contrast wasn't explicitly asked for though; it emerged on its
+        // own. Made explicit now so it's reliable rather than lucky —
+        // same real upgrade just applied to _generateNodeContent above.
         var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ', teaching a UK hip hop / drill producer who works in FL Studio.\n\n' +
           'TOPIC: "' + node.name + '" (part of: ' + node.path + ')\n' +
           'THE INSIGHT THAT PROMPTED THIS: "' + insightText + '"' + outlineBlock + '\n\n' +
-          'Teach this using the 3-layer method: simple terms first, then technical mechanics, then the one expert nuance most tutorials miss. Be specific to FL Studio. Keep this concise — under 350 words total across all 3 layers, this is a reference note attached to one taxonomy leaf, not a full lesson.';
+          'Teach this using the 3-layer method: simple terms first, then technical mechanics (where a genuinely different or older/more common alternative approach exists, contrast this against it directly and explain why the difference matters in practice — a real comparison beats a flat definition), then the one expert nuance most tutorials miss. Be specific to FL Studio. Keep this concise — under 350 words total across all 3 layers, this is a reference note attached to one taxonomy leaf, not a full lesson.';
 
         return self._callGroundWorkerText(prompt, 700);
       })
@@ -9331,7 +9353,7 @@ RPGACE.register('phylumPath', {
             var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + '.\n\n' +
               'Write a reference article for "' + title + '" (' + rankLabel + (node ? ', part of: ' + node.path : ', the root discipline itself') + ').\n\n' +
               'Synthesize the following accumulated teaching content from this topic and everything beneath it in the tree:\n\n' + (contentBlock || '(nothing accumulated yet - write a short foundational overview instead)') + outlineBlock + '\n\n' +
-              'Produce a well-organized synthesis a producer can use as a standing reference, not just a restated list. Keep it under 500 words — concise and usable beats exhaustive.';
+              'Produce a well-organized synthesis a producer can use as a standing reference, not just a restated list. Keep it under 500 words — concise and usable beats exhaustive. If the accumulated content contains a real comparison against an older/alternative approach, keep that contrast intact rather than flattening it into a generic definition — that specific kind of caveat is exactly what makes a reference entry worth reading twice.';
 
             return self._callGroundWorkerText(prompt, 1000);
           })
