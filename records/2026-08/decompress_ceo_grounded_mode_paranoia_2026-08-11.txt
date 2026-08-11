@@ -1,0 +1,225 @@
+/decompress SKILL + REAL LOAD-TIME AUDIT + /CEO GROUNDED MODE/stopCEO/ResumeCEO
++ SUPABASE DATASHEET — /paranoia-scoped verification, 2026-08-11 (3rd major
+pass this day, following the phylum renumber and the colourgradient benchmark).
+
+Alex's real ask, verbatim-scoped: build the `/decompress` skill (A1, was red
+on the colourgradient benchmark), run a full load-time audit, `/paranoia`
+all of it, resume the `/CEO` massive-expansion framework, make `/CEO`
+"grounded to every prompt until the plan is done and smoke tested," add
+`/stopCEO`/`/ResumeCEO`, build a Supabase datasheet tying reports to plans,
+fold all of it into `/CEO` itself, then a Council of 5 report "without
+output quality degradation."
+
+================================================================
+PART 1 — WHAT WAS ACTUALLY BUILT (real diff, not narrative)
+================================================================
+
+1. `.claude/skills/decompress/SKILL.md` — new skill, Alex's 5 verbatim
+   optimization prompts (compress-in-transit, batch writes, circuit-break
+   slow dependencies, optimistic UI, cache fragments) plus RPGACE's own
+   real, quantified load-time baseline (see Part 2). Wired into
+   `.claude/skills/Engineer/SKILL.md` Stage 3 as a standing check for any
+   goal touching the network or making a user wait.
+2. `vercel.json` — new `headers` block, 1-year immutable Cache-Control on
+   `rpgace_core.js`/`main.js`/`style.css`/`icons/*`.
+3. `index.html` — `style.css` given a `?v=` version query string (had
+   none — real gap, would have broken under the new cache header without
+   this fix first); `preconnect` hints added for
+   `fonts.googleapis.com`/`fonts.gstatic.com`.
+4. `.claude/skills/CEO/SKILL.md` — new "Grounded Mode" section (per-prompt
+   relevance check + `/drift` re-verification while a plan is active), new
+   "`/stopCEO`/`/ResumeCEO`" controls, new Supabase datasheet section
+   (`ceo_plans`/`ceo_plan_items`/`ceo_reports` schema + how it ties to
+   `/drift`/`/colourgradient`). Frontmatter description updated to trigger
+   on the two new command names.
+5. Supabase: 3 new tables created (`ceo_plans`, `ceo_plan_items`,
+   `ceo_reports`), RLS `anon_all`+`authenticated_all` matching
+   `session_memory`/`graphify_jobs`'s established posture. Seeded with the
+   real current state: 1 plan row (Massive Expansion, `status='active'`,
+   `basis='ratified'`), 17 `ceo_plan_items` rows (the A1-A17 items, colors/
+   verdicts/evidence matching the same-day colourgradient benchmark, A1
+   updated to green now that the skill exists), 3 `ceo_reports` rows
+   linking the Loop 1 compile file, the colourgradient benchmark file, and
+   this pass's own decompress deliverable back to the plan.
+
+================================================================
+PART 2 — THE REAL LOAD-TIME AUDIT (static code analysis; live Lighthouse/
+PageSpeed remains a confirmed-blocked path from inside this session per
+CLAUDE.md's own Known landmines — not re-attempted)
+================================================================
+
+Real, measured evidence, not estimated:
+- `rpgace_core.js`: 1,124,028 bytes raw, 308,862 bytes gzipped (`gzip -c |
+  wc -c`), 19,749 lines, 4,145 of them (21%) comment lines (`grep -c
+  '^\s*//'`).
+- `main.js`: 257,090 bytes raw, 75,485 bytes gzipped, 4,397 lines, 442
+  comment lines.
+- Both loaded via plain blocking `<script src>` (no `defer`/`async`),
+  positioned near the end of `<body>` (line 458 of 633 total — already
+  good placement, not blocking initial paint), loaded sequentially
+  (main.js then rpgace_core.js). Together ~1.38MB of JS parsed+executed
+  before `rpgace:ready` fires.
+- `vercel.json` had zero `headers` block before this pass — no explicit
+  Cache-Control tuning for static JS/CSS/icons, relying entirely on
+  Vercel's platform defaults.
+- `index.html`'s Google Fonts `<link rel="stylesheet">` had no
+  `preconnect`/`dns-prefetch` — a render-blocking external CSS fetch with
+  a cold DNS/TLS handshake to `fonts.googleapis.com`.
+- 31 `registerBootTask` calls found; 20 use `setTimeout` delays in the
+  1300-1700ms range (the project's own documented convention, protecting
+  against the `hooks.fire()` late-registration landmine — real, load-
+  bearing design, not an oversight).
+
+Real, applied fixes (safe, zero behavior risk, verified before shipping):
+- Immutable 1-year caching on the 4 static-asset classes above — safe
+  specifically because 3 of the 4 (`rpgace_core.js`, `main.js`, and now
+  `style.css`) are query-string versioned; a cached URL's content
+  genuinely never changes, a real content change always mints a new `?v=`
+  URL. Icons never change without a filename bump (matches `sw.js`'s own
+  existing precaching assumption).
+- `style.css` version-string gap fixed BEFORE applying the header — real
+  evidence-check caught this mid-implementation (it had zero `?v=` at
+  all), preventing a new stale-CSS bug the header would otherwise have
+  created.
+- Preconnect hints for both Google Fonts domains.
+- Deployed and confirmed `READY` on production (commit `c5fc54c`) before
+  continuing to the rest of this pass.
+
+Real, honestly NOT fixed this pass, both flagged as genuine open forks
+rather than built blind or silently ignored:
+- **Minification/comment-stripping of `rpgace_core.js`/`main.js`.** Real
+  headroom (21% comment lines in the bigger file), but two real, specific
+  risks named directly: (a) the zero-build-step architecture rule is
+  explicit and load-bearing — any minifier would need to be a committed,
+  hand-re-run repo-generation script (same shape as
+  `scripts/graphify_recolor.py`), never a live Vercel build step; (b) this
+  exact codebase has a standing, NAMED landmine about a naive text-
+  transform corrupting shipped code (the `exportEncyclopedia` fake
+  `</body></html>` string-literal trap, "never use Python string-replace
+  on index.html") — a regex-based stripper risks the same class of bug
+  unless it's a genuine JS-aware minifier (e.g. terser), which would be
+  RPGACE's first-ever dev-time npm dependency. Needs Alex's explicit
+  steer, not decided here.
+- **The 1300-1700ms boot-task stagger.** Real, intentional design
+  protecting against a documented race condition — but it also means
+  many UI modules visibly appear over a second after the page is
+  otherwise ready, real PERCEIVED latency distinct from raw bytes.
+  Reducing/restructuring it is a genuine architecture question (could
+  some modules safely inject earlier? does the 1300-1700ms range itself
+  need to be that wide, or was it picked once and never revisited?), not
+  a blind global speed-up.
+
+================================================================
+PART 3 — /paranoia-scoped verification (right-sized: real evidence re-
+check + the tension-surfacing steps, not a second full 8-stage ceremony —
+same discipline applied to the colourgradient pass earlier today)
+================================================================
+
+--- Aintergration/restructure (does any of this duplicate existing
+    infrastructure — rule 8) ---
+Real candidate collision checked directly: does `ceo_plans`/
+`ceo_plan_items`/`ceo_reports` duplicate `records/*.txt` files or
+`smoke_test.html`? No — by design, and confirmed in the schema itself:
+`ceo_reports.file_path` POINTS AT the real `.txt` file rather than
+replacing its prose (rule 5's verbatim-record convention is explicitly
+preserved, not superseded); `smoke_test.html` remains the real, separate,
+hand-ticked "does this shipped FUNCTION still work" record — the new
+tables track PLAN-ITEM build status, a genuinely different granularity
+(already resolved once today for `/colourgradient` itself, and this
+datasheet is `/colourgradient`'s own real backing store, not a second
+competing one — `/colourgradient`'s SKILL.md explicitly says it will read
+`ceo_plan_items.status` as a cache of evidence already gathered, never a
+new evidence method). No duplication found.
+
+--- GODMODE+scope+commit-archaeologist (real risk: does Grounded Mode
+    violate rule 11, token/time cost discipline?) ---
+Real risk named directly, not glossed over: "grounded to every prompt"
+could be read as "run full `/drift` Steps 1-4 on every single message,"
+which WOULD be a real rule-11 violation — a cheap typo-fix prompt does
+not need a Supabase round-trip plus a drift analysis. Real mitigation
+built into the CEO skill file itself: Grounded Mode is explicitly TWO-
+TIERED — a cheap existence-check + relevance judgment on every prompt
+(genuinely low-cost: one indexed SELECT, one judgment call), escalating
+to the real `/drift` Steps 1-4 cost ONLY when a prompt actually touches a
+plan item. An unrelated one-line fix costs one extra SELECT and nothing
+else. This mirrors the Judgment Funnel's own tiering discipline
+(CLAUDE.md's Tier 0-3), applied to a new recurring check rather than
+inventing a separate cost model.
+
+--- /debate — real tension worth naming plainly rather than hidden ---
+Case FOR Grounded Mode running automatically: Alex's own stated problem
+("keep larger goals in tact... chase long term goals") is real and
+already evidenced this week (CLAUDE.md's own Aug 11 entry: an entire
+session's real work was reported "shipped"/"live" while sitting unmerged
+on a feature branch, caught only because Alex checked the live site
+himself) — an automatic, cheap per-prompt check is a genuine structural
+defense against exactly that failure class recurring, not ceremony for
+its own sake. Case AGAINST always-on: a per-prompt check that's wrong
+often enough (false-positive "this touches the plan" on genuinely
+unrelated work) would itself become the annoyance rule 11 exists to
+prevent, and a badly-calibrated relevance judgment is a real risk with no
+current track record to validate it against. Resolution, not a forced
+tie: ship Grounded Mode as specified (Alex's own explicit ask, not a
+guess), but name this as the first thing to watch — if a future session's
+relevance judgment turns out to be over-triggering on unrelated prompts,
+that is real, concrete feedback for tightening the check, not evidence
+the whole idea was wrong.
+
+--- /interrogation — 2 real open forks, honestly left for Alex rather than
+    guessed ---
+1. Does Grounded Mode apply retroactively to earlier turns in an
+   already-running session (re-checking this whole conversation against
+   the plan), or only forward from the moment a plan goes `active`? This
+   pass assumed FORWARD-ONLY (cheaper, matches how every other RPGACE
+   standing-check convention works — session-start checks, `/Bedtime`
+   Step 1b, etc. all check "from here," never retroactively re-audit prior
+   turns) — flagged as an assumption, not confirmed.
+2. When a plan is `/stopCEO`'d, should it still surface in oversight docs
+   (CLAUDE.md's "Open forks" section, patch_notes.html) as paused, or go
+   fully quiet until resumed? This pass assumed "still visible, marked
+   paused" (matches the existing `taxonomy_proposals`/review-queue
+   convention of showing pending/paused state rather than hiding it) —
+   also flagged as an assumption, not confirmed.
+
+--- Council of 5 fact-check (folded into Part 4, not duplicated here) ---
+
+================================================================
+PART 4 — Council of 5, final quality/scope check
+================================================================
+
+- **Technical risk**: low. All 3 new Supabase tables are purely additive
+  (`CREATE TABLE`, no existing data touched); the `vercel.json`/
+  `index.html` changes were individually verified (JSON validity,
+  version-string gap caught and fixed) and confirmed `READY` on
+  production before this pass continued past them.
+- **Scope/cost (rule 11)**: Grounded Mode's two-tier design keeps the
+  per-prompt cost real but proportionate (Part 3's own GODMODE finding);
+  the Supabase datasheet reuses existing evidence rather than gathering
+  new evidence a second time.
+- **Maintainability**: `/decompress` is a standing checklist wired into
+  one place (`/Engineer` Stage 3), not duplicated across every skill file
+  individually. The CEO datasheet's 3-table shape mirrors `/drift`'s own
+  VERDICT/BASIS/grade vocabulary directly rather than inventing a new one.
+- **User experience**: Alex now has a real, queryable "where do things
+  stand" answer (`ceo_plan_items`) instead of only prose scattered across
+  `records/*.txt` and CLAUDE.md bullets, plus real named controls
+  (`/stopCEO`/`/ResumeCEO`) instead of an implicit, undocumented on/off
+  state.
+- **Honest why-NOT-to-build case**: with only one real `/CEO`-tracked plan
+  existing, some of this (particularly the multi-plan-argument handling in
+  `/stopCEO`/`/ResumeCEO`) is speculative generality built ahead of a
+  second real use case — same honest premature-generalization flag
+  `/colourgradient`'s own record named earlier today, now doubly true.
+  Counter-weighing: Alex explicitly asked for the datasheet AND the named
+  controls together, in the same message, as part of making this "my most
+  complete development framework possible" — building the real shape now,
+  while the pattern and the seed data already exist, is cheaper than
+  retrofitting it once a second plan exists and the schema has to migrate
+  live data instead of starting clean.
+- **Verdict**: build stands. Two real open forks (Part 3's interrogation
+  items) genuinely need Alex's answer, not a guessed default — flagged
+  plainly in the chat report rather than silently assumed and moved past.
+
+Companion files: `.claude/skills/decompress/SKILL.md`,
+`.claude/skills/CEO/SKILL.md` (Grounded Mode + datasheet sections),
+Supabase `ceo_plans`/`ceo_plan_items`/`ceo_reports`.

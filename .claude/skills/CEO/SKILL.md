@@ -1,6 +1,6 @@
 ---
 name: CEO
-description: RPGACE's meta-framework for running a genuinely large, multi-day/multi-session build (the shape rule 5 calls "3+ new pieces," scaled up to "dozens of pieces") end-to-end - from a raw pile of ideas, through a real approved plan, through execution spread across many future sessions, to a real completion record Alex can tick by hand. Two linked loops: a PLANNING loop (compile -> interrogate -> paranoia-advised drafting -> drift-check -> report -> Alex approves) and an EXECUTION loop (the approved plan becomes a real /drift baseline; /Engineer executes against it; every build re-checked via /drift; completed items populate a real "smoke test" oversight doc). Use this skill whenever Alex says "/CEO", or whenever a build is genuinely too large for /interrogation+/paranoia alone to carry through to completion in one sitting - a plan meant to survive across many future sessions, not just one big pass. Named and defined by Alex Aug 11, inline inside the massive-expansion critique-doc build. Do NOT use this for a normal Tier 2 feature - that stays on the standard Omnitrix Judgment Funnel; CEO is for when the answer to "how many sessions will this take" is genuinely "several," not "one."
+description: RPGACE's meta-framework for running a genuinely large, multi-day/multi-session build (the shape rule 5 calls "3+ new pieces," scaled up to "dozens of pieces") end-to-end - from a raw pile of ideas, through a real approved plan, through execution spread across many future sessions, to a real completion record Alex can tick by hand. Two linked loops: a PLANNING loop (compile -> interrogate -> paranoia-advised drafting -> drift-check -> report -> Alex approves) and an EXECUTION loop (the approved plan becomes a real /drift baseline; /Engineer executes against it; every build re-checked via /drift; completed items populate a real "smoke test" oversight doc). While a plan is active, Grounded Mode keeps it live context on every prompt (not just ones that say "/CEO"), backed by a real Supabase datasheet (ceo_plans/ceo_plan_items/ceo_reports) tying every report to the plan item it verified; "/stopCEO"/"/ResumeCEO" pause/resume Grounded Mode without losing state. Use this skill whenever Alex says "/CEO", "/stopCEO", or "/ResumeCEO", or whenever a build is genuinely too large for /interrogation+/paranoia alone to carry through to completion in one sitting - a plan meant to survive across many future sessions, not just one big pass. Named and defined by Alex Aug 11, inline inside the massive-expansion critique-doc build; Grounded Mode + the Supabase datasheet added the same day. Do NOT use this for a normal Tier 2 feature - that stays on the standard Omnitrix Judgment Funnel; CEO is for when the answer to "how many sessions will this take" is genuinely "several," not "one."
 ---
 
 # /CEO — running a real multi-day build without re-litigating it every session
@@ -40,6 +40,70 @@ This is not a new kind of reasoning — same design as `/5thDimension`, `/Routin
 **Step 4 — Errors amend the smoke-test doc, and feed back to Oracle self-awareness.** When a ticked item later breaks (an error surfaces, a hand-test fails), the smoke-test doc's own entry for it gets un-ticked with a real note of what broke — and per Alex's own ask, that state should be reachable by `oracleAppGrounding.SELF_KNOWLEDGE` (the existing live Oracle self-awareness mechanism, not a new parallel one — rule 8) so Oracle itself knows what's currently working vs. currently broken, not just what was built once. When fixed, re-ticked, and self-awareness reflects that too. **Real, honest scope note**: routing live error codes through Supabase into self-awareness automatically (Alex's own stated wish) is real future infrastructure, not built by this skill file alone — it's exactly the kind of concrete piece Loop 1's own Step 3 (`/Engineer` sketches) should size and schedule as its own plan item once a real approved plan calls for it, not invented ad hoc here.
 
 **Step 5 — Ties into Chronicles.** Real plan-item completions and the smoke-test doc's own state changes are exactly the shape of thing `system_updates`/Chronicles already logs — route them there the same way any other real Claude Code change gets logged (rule 6), so the smoke-test doc and Chronicles tell the same story from two angles (a checklist vs. a timeline) rather than drifting apart from each other.
+
+## Grounded Mode — CEO active on every prompt until the plan is smoke-tested (Aug 11 2026, Alex's own explicit ask)
+
+Alex's own words, verbatim: *"from now on CEO framework is grounded to every prompt until the plan is done and smoke tested. this will help continue /drift verification throughout the build phase and iterations along the way to keep larger goals in tact. this will help chase long term goals."* This is a real, standing behavior change, not a one-time instruction — while any `ceo_plans` row has `status = 'active'`, this session (and every future session working on RPGACE) treats that plan as live context for every prompt, not just prompts that explicitly say "/CEO".
+
+**What "grounded to every prompt" actually means in practice** — scoped to stay honest about rule 11 (tokens/time are a design constraint), never the full Loop 2 ceremony on every single message:
+
+1. **Before starting real work on a prompt**, check whether an active plan exists (`SELECT * FROM ceo_plans WHERE status='active'` — cheap, already-open connection, no new cost class). If none, Grounded Mode is a no-op — proceed normally.
+2. **If an active plan exists**, a lightweight relevance check: does this prompt's work touch a `ceo_plan_items` row (by item code, title keyword, or file/module overlap)? If clearly no (a genuinely unrelated bug fix, a one-line UI tweak), say so plainly and proceed without further ceremony — Grounded Mode does not force every unrelated prompt through a plan lens.
+3. **If it does touch a plan item**, run `/drift` Steps 1-4 against that item's own real baseline (same shape as Loop 2 Step 2, just triggered by the prompt itself rather than waiting for a `/CEO`-named invocation) — update that item's `status`/`last_verdict`/`evidence` row in `ceo_plan_items` when the work changes its real state. This is what keeps "larger goals in tact" the way Alex asked: a plan item's real status is never more than one real prompt behind what's actually true, rather than only refreshed when someone remembers to run `/colourgradient` or `/CEO` by name.
+4. **A `CAPTURED`-grade finding during a Grounded Mode check stops and asks**, same weight as every other `CAPTURED` finding in this file — Grounded Mode sharpens how often the check runs, it does not loosen what a bad finding requires.
+
+**`/stopCEO` and `/ResumeCEO` — real, named controls, not implicit.** Alex's own ask: *"/stopCEO and /ResumeCEO will help access plans and stop or resume planned build."*
+
+- **`/stopCEO`** — sets the active plan's `ceo_plans.status` to `'paused'` (with `paused_at` timestamped). Grounded Mode goes fully dormant for that plan — no per-prompt relevance checks, no drift re-verification — until resumed. Real, honest use case: Alex wants to work on something genuinely unrelated to the active plan for a stretch without every prompt getting checked against it, or a plan needs to sit while he thinks about Loop 1 Step 6 feedback. `/stopCEO` never deletes anything — every `ceo_plan_items`/`ceo_reports` row for that plan stays exactly as it was.
+- **`/ResumeCEO`** — sets `status` back to `'active'` (with a fresh `resumed_at` entry, `paused_at` left as history, not overwritten). The next prompt after resuming runs a real `/drift` catch-up pass across all `ceo_plan_items` for that plan (per-item Step 3 of Loop 2) before Grounded Mode resumes its normal per-prompt cadence — a plan that was paused for real days shouldn't resume assuming nothing changed underneath it; check first.
+- **If more than one plan is ever `active` simultaneously** (not the common case today — only one real `/CEO`-tracked plan exists as of Aug 11), `/stopCEO`/`/ResumeCEO` take an explicit plan name/id argument; with none active or exactly one, they act on that one plan without requiring the argument.
+
+## The Supabase datasheet — `ceo_plans` / `ceo_plan_items` / `ceo_reports` (Aug 11 2026, Alex's own explicit ask)
+
+Alex's own words, verbatim: *"making a supabase for this would help a lot, and tie all the loose reports and plans together. tie reports to the plans to make datasheet on all of it."* Real problem this solves: before this table set existed, a `/CEO` plan's real state lived only as prose scattered across CLAUDE.md bullets and dated `records/*.txt` files — genuinely durable (rule 5's own convention), but not queryable, and nothing tied a specific report file back to the specific plan item it verified. Three tables, `anon_all`/`authenticated_all` RLS matching the established internal-dev-tooling posture (`session_memory`, `graphify_jobs` — this is RPGACE-Claude-Code's own working data, not a Tier-3-sensitive table):
+
+```sql
+CREATE TABLE ceo_plans (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,                 -- e.g. 'Massive Expansion'
+  source_file text,                   -- the compiled spec .txt this plan came from
+  status text not null default 'active', -- active | paused | complete
+  basis text,                         -- ratified | provisional | none (drift vocabulary)
+  created_at timestamptz default now(),
+  ratified_at timestamptz,
+  paused_at timestamptz,
+  resumed_at timestamptz,
+  completed_at timestamptz,
+  notes text
+);
+
+CREATE TABLE ceo_plan_items (
+  id uuid primary key default gen_random_uuid(),
+  plan_id uuid references ceo_plans(id),
+  item_code text not null,            -- e.g. 'A1', 'A10' (matches the compiled spec's own numbering)
+  title text not null,
+  status text not null default 'red', -- red | yellow | green (the /colourgradient vocabulary)
+  basis text,                         -- ratified | provisional | none
+  last_verdict text,                  -- on_track | drifted | inconclusive | blocked
+  evidence text,                      -- a real file:line / commit hash / query result citation, never a guess
+  last_checked_at timestamptz default now(),
+  created_at timestamptz default now()
+);
+
+CREATE TABLE ceo_reports (
+  id uuid primary key default gen_random_uuid(),
+  plan_id uuid references ceo_plans(id),
+  plan_item_id uuid references ceo_plan_items(id), -- nullable: a whole-plan report has no single item
+  report_type text not null,          -- drift | paranoia | colourgradient | engineer | ceo_loop1 | ceo_loop2
+  file_path text,                     -- the real records/*.txt this corresponds to, rule 5's own convention
+  summary text,
+  created_at timestamptz default now()
+);
+```
+
+**How this ties in, concretely**: `/drift`'s own Step 5 report shape (Baseline/Work map/Verdict/Findings/Grades) is exactly what populates a `ceo_reports` row's `summary` plus updates the matching `ceo_plan_items` row; `/colourgradient`'s green/yellow/red benchmark reads `ceo_plan_items.status` directly instead of re-deriving it from scratch every run (real speed + consistency win, not a new evidence method — `/colourgradient`'s own guardrail against inventing a second evidence source still holds, this is a cache of the SAME evidence, not a shortcut around gathering it); Grounded Mode's per-prompt check (above) is what keeps these rows fresh without waiting for an explicit `/CEO`/`/drift`/`/colourgradient` invocation. **Never treat a `ceo_plan_items.status` value as truth on its own** — it's a cache of the last real check, timestamped via `last_checked_at`; if that timestamp is old relative to how much has changed, re-verify before trusting it, same "a doc's own claim needs re-verification" discipline as everywhere else in this project.
+
+**Migration note, honest**: this table set is genuinely new infrastructure, built the same session it was asked for (additive `CREATE TABLE` only, no risk to existing data — proceeds under this file's own reduced-friction model without a separate stop-and-ask, per CLAUDE.md's own "CEO-framework Supabase migrations — narrowed, not abolished" carve-out for purely additive schema). It does not retroactively replace `records/*.txt` files as the verbatim-record store (rule 5 still applies — a report's full prose still gets written to a committed file); it ties those files together and makes their real-time STATUS queryable, which prose files alone can't do.
 
 ## The smoke-test doc — a real 8th oversight-doc artifact, grown not pre-built
 
