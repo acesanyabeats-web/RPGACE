@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card red" style="margin-bottom:30px;">
+    <div class="card-title">🔥 Aug 11 (same day, continued) — real, deserved critique: minotaur_map.html had drifted into a changelog, and the new rivers were left disconnected. Full sweep, not spot patches.</div>
+    <div class="card-body">
+      Alex quoted the page's own text back directly: "✅ Aug 5 — the spring feeding this reservoir got real, gated pipes," "🎬 Built July 31 — a fourth channel." He was right — this doc's own stated design (a plain-language spatial map of what RPGACE currently does) had accumulated the exact "narrating a sequence of events" problem CLAUDE.md's own logging rules already warn against for other docs, and this session's own new additions (the Total System Gateway, the Oversight Rivers sections) repeated the same mistake immediately, in the same session.
+      <br><br>
+      <strong>Full sweep of every rendered node/title/paragraph in the file</strong>, not just the ones quoted: the intro paragraph (previously a wall of "Restructured July 23... River XI added July 30... Aug 5... Restructured again Aug 6"), the footnote's reading-order paragraph, a fork label with "(Aug 6)" tacked on, 2 resolved-forks footnote entries, River IX's 4-channel intro, 3 dated node titles inside River IX's OpenMontage channel, River XI's branch-intro node + river-sub, 3 <code>correspond</code> notes with trailing dates, and both of this session's own new sections — all rewritten to state what's true now, not when or how it became true.
+      <br><br>
+      <strong>The other real critique, separate from the dates: rivers drawn as dead ends instead of connected.</strong> River IX's OpenMontage channel already said "River XI's Phase 4" feeds it but never actually drew that as the real spring it is, and never drew where a completed job's water actually goes — Alex asked directly why it wasn't flowing back into River XI, since that's genuinely where videos are tracked. Real, evidence-backed fix (not invented): the channel's opening node is now explicitly the real spring (River XI's "Generate Video" action), and a new closing node shows the real mouth — River XI's own <code>_viewOpenMontageJob</code> and its "Mark ConID as Filmed" acknowledgment, since <code>openmontage_jobs</code> is polled, not pushed. This is the one channel on the whole map whose spring AND mouth both sit in a different river than the one it's drawn inside, now said plainly instead of left implicit. Rivers XIII-XVI (Skills/Oversight Docs/Session Records/Dev Tooling), previously just listed as "carrying a different kind of traffic" with zero real connections drawn, now have real interconnections: Skills → Oversight Docs (a skill change can make a river's own description go stale), Oversight Docs fed by Skills + Graphify CC's real deposits + every river's own Chronicles updates, Session Records fed by every river's own rule-5 decision points, Dev Tooling flowing into both River XII's own visual form and River XIV's Obsidian vault.
+      <br><br>
+      Verified via headless Chromium after every edit: zero console errors, div tags balanced, page renders. This is a correction to work shipped earlier THIS SAME SESSION — logged honestly, not smoothed over.
+    </div>
+</div>
+
 <div class="card" style="margin-bottom:30px;">
     <div class="card-title">🗜️ Aug 11 (same day, continued) — external-contributor audit closes 4 real gaps; Oversight gets its own place in the Minotaur Map; the decompression wiring found a real content-loss bug, not just a speed one.</div>
     <div class="card-body">
