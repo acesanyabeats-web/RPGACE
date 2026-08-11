@@ -1,0 +1,220 @@
+ARCHIVE-DIAGNOSTIC + SUPABASE DEDUPLICATION — /CEO Loop 1 (PLANNING ONLY)
+2026-08-11, RPGACE CC (orchestrator)
+
+=== ALEX'S ORIGINAL ASK (verbatim, this session) ===
+
+"i also think i should have an archive for all reports when an aspect is
+changed - when changed - old updates get stored as current capabilities,
+all logs associated with change get turned to present foundation, with
+new update showing new, then all archived updates get sent to an archive
+report while keeping updates fresh decluttered and dehoarded. oversight
+needs this as a diagnostic to make it crisp and concise."
+
+Follow-up, same session: "I'd like it to run on supabase too where
+necessary, I think all supabase tables should also run /deduplications
+too. /CEO and /Paranoia this, council of 5 the output"
+
+=== STEP 1 — COMPILE: what this literally maps to ===
+
+Re-read literally, Alex's own sentence already describes a real process
+in 5 real clauses:
+  (a) "old updates get stored as current capabilities" — a superseded
+      update, once resolved, becomes a plain CURRENT-STATE fact, not a
+      story about how it became true.
+  (b) "all logs associated with change get turned to present foundation"
+      — narrative/incident detail collapses into present-tense
+      foundational description.
+  (c) "new update showing new" — the live doc shows only the DELTA, not
+      the whole history.
+  (d) "archived updates get sent to an archive report" — superseded
+      material physically moves to a dedicated archive, not deleted.
+  (e) "keeping updates fresh decluttered and dehoarded" — the live view
+      stays lean.
+
+Real, load-bearing finding: this is not a new idea. It is CLAUDE.md's OWN
+already-written doc-discipline rule, word for word in spirit:
+
+  "when a Current state entry's underlying event is done, verified, and
+  no longer being actively re-litigated, collapse it to a single
+  durable-fact bullet... don't leave the full incident narrative sitting
+  in CLAUDE.md indefinitely."
+
+And it has ALREADY been executed once for real: the July 31 prune moved
+every dated "Current state (July 24)" / "Prior state" section verbatim
+into CLAUDE_archive.md, rewrote CLAUDE.md's own Current State section
+into one-line present-tense facts, and went from ~154KB to ~92KB with
+zero durable fact lost. **CLAUDE_archive.md already IS the archive
+report Alex is describing.** The mechanism exists. What does NOT exist
+is a STANDING, CHECKABLE version of it — the July 31 prune was one
+manual pass, not a repeatable discipline, and this session's own
+minotaur_map.html changelog-drift finding (same day, this session) is
+live proof the underlying discipline had already lapsed again in a
+DIFFERENT doc within weeks. Same root problem /update-logging-system was
+built to solve for rule 6 ("a checklist doesn't enforce itself") — this
+is that exact gap, in the archival direction instead of the
+touch-every-doc direction.
+
+=== STEP 1, PART 2 — SUPABASE: real evidence, not guessed ===
+
+Full live table scan (project gripopghczmrbrhqtqbm, 35 tables, real row
+counts, re-queried this session):
+
+intel_reports 37 · intel_watchlist 26 · encyclopedia 70 · intel_jobs 54 ·
+journal 54 · encyclopedia_insights 106 · intel_bibliography 15 ·
+taxonomy_nodes 90 · reference_tracks 32 · content_productions 9 ·
+conid_pot 3 · taxonomy_tree 557 · taxonomy_proposals 164 ·
+rpgace_shifts 15 · rpgace_agendas 1 · video_jobs 9 · taxonomy_links 97 ·
+bookworm_books 1 · bookworm_chapters 26 · bibliography 0 ·
+oracle_dev_suggestions 11 · taxonomy_decision_log 42 ·
+chronicles_finance 0 · system_updates 161 · oracle_fallback_queue 15 ·
+style_profiles 3 · beat_audio_jobs 8 · openmontage_jobs 8 ·
+oracle_module_anatomy 13 · graphify_jobs 4 · total_system_members 4 ·
+session_memory 1 · smoke_test_items 11
+
+**Real dedup candidates checked directly (not assumed), 2 investigated,
+both ruled OUT as false positives:**
+
+1. `conid_pot` (3 rows) vs `content_productions` (9 rows) — both
+   ConID-shaped names, real risk of overlap. Direct code check
+   (rpgace_core.js): `conid_pot` holds `idea_text`/`status:'potential'|
+   'activated'`/`starred` — a real pre-stage idea POOL, activated into
+   a real `content_productions` row when a beat is actually logged.
+   Genuinely distinct roles (backlog vs. committed record), not
+   duplication.
+
+2. `bibliography` (0 rows) vs `intel_bibliography` (15 rows) — same-word
+   collision, different domains, confirmed by direct code check:
+   `bibliography` is Bookworm's own completed-book shelf (real
+   `secureWrite` insert, `rpgace_core.js:11551`); `intel_bibliography` is
+   Content Intelligence's own citation/source table (2 real `_sbInsert`
+   call sites, unrelated pipeline). Not duplication — a real naming
+   COLLISION worth a future rename for clarity, but not merged data and
+   not a bug.
+
+**One real, separate finding this scan surfaced by accident, not
+looked for: `style_profiles` shows 3 rows live.** CLAUDE.md's own
+pasted-in "Live numbers" section (re-queried Aug 4, per its own header)
+states "style_profiles 0 rows ever." That claim is now stale — real,
+live proof of exactly the kind of drift Alex is describing, caught
+because this pass happened to touch the table, not because anything
+was systematically checking it. This is the strongest concrete argument
+IN FAVOR of building the mechanism — not a hypothetical, a real live
+instance found in the same session the ask was made.
+
+**Real, honest existing coverage (row-level DATA dedup), already
+built and working, not proposed here again**: `intelDedup` (normalized-
+URL+title-fallback dedup, Content Intelligence), the taxonomy placement
+engine's per-chapter leaf-name dedup, Encyclopedia's `UNIQUE(title)`
+constraint + preview_bullets dedup (Aug 6), `mockOracle._queueScoutItem`'s
+exact-prompt-match dedup check. RLS/write-path dedup (Approach B) is
+independently confirmed complete and verified (July 24, `pg_policy`
+direct check).
+
+**Real, honest conclusion from the table scan**: RPGACE's Supabase
+schema does NOT have obvious accidental table-level duplication. The
+real gap this evidence supports is STALENESS (a doc's claim about a
+table's real state going stale, like style_profiles), not structural
+duplication. Building a literal "run /deduplication on every table"
+scanner would be solving a problem the evidence doesn't actually show —
+misdirected effort against rule 11 (token cost is a design constraint).
+
+=== STEP 2 — REAL FORKS FOR /interrogation (Alex's actual answers
+needed, not guessed) ===
+
+Put to Alex directly via AskUserQuestion, same session:
+
+FORK 1 — What "Supabase /deduplication" actually means for this build:
+  (A) Extend the SAME staleness-check discipline as the docs — "Live
+      numbers"-style claims get periodically re-verified against real
+      Supabase queries, drift gets flagged (this is what the evidence
+      supports).
+  (B) A literal recurring row-level dedup SCAN across every table
+      (near-duplicate rows, not just claim-staleness) — heavier, no
+      current evidence of a real gap here, would be built pre-emptively.
+  (C) Both.
+
+=== STEP 3 — /paranoia (Aintergration + restructure lens; GODMODE +
+Council of 5 scrutiny) ===
+
+**Aintergration lens**: nothing third-party proposed here — this is a
+pure RPGACE-internal process question. N/A.
+
+**/restructure lens**: does fitting this INSTEAD of `/drift` +
+`/update-logging-system` make anything shorter/faster/better? No — the
+opposite. A brand-new "archive diagnostic" system built parallel to
+`/drift`'s already-existing VERDICT/BASIS/MINOR-MATERIAL-CAPTURED
+machinery and `/update-logging-system`'s already-existing dependency map
+would be a real rule-8 violation: two systems doing overlapping jobs.
+The real, correct move is EXTEND, not invent.
+
+**Council of 5 — real pros/cons, not manufactured balance:**
+
+*For building (extend-not-invent version)*:
+- Real, already-proven precedent (July 31 prune) shows the mechanism
+  works when it runs.
+- The style_profiles finding is real, live proof the underlying gap is
+  costing something concrete right now (a wrong claim sitting in
+  CLAUDE.md's own "Live numbers" section, the exact section built to
+  prevent this).
+- Cheap to build: this is mostly 2 new checklist items on 2 already-
+  existing skill files, not new infrastructure.
+
+*Against (honest, not padded)*:
+- Rule 11 (token cost): a Supabase re-query pass on every session-start
+  for every "Live numbers" claim is real, recurring cost for a class of
+  drift that's usually harmless (a stale row count rarely breaks
+  anything) — should be scoped to WHEN it fires, not blanket every
+  session.
+- Over-archiving risk: if "move to archive the moment it's superseded"
+  is applied too eagerly, CLAUDE.md could lose useful nearby context a
+  session actually needs mid-task — the July 31 prune worked because a
+  human (Alex) was the actual judge of what was "fully resolved," not a
+  mechanical rule. Any standing version of this needs to keep a real
+  judgment step, not become auto-delete.
+- Building a full literal Supabase dedup scanner (Fork 1 option B) with
+  no current evidence of a real duplication gap would be solving an
+  imagined problem, not a real one — against rule 4 (verify before
+  acting) and rule 11.
+
+**Verdict**: adopt the narrow, extend-not-invent version. Do NOT build a
+new parallel "archive diagnostic system" file or Supabase dedup scanner
+service. Do NOT blanket-rescan Supabase every session.
+
+=== STEP 4 — /drift continuous check against Step 1 ===
+
+Re-checked against Alex's own 5 clauses (a-e) from the top of this file:
+all 5 are covered by the extend-not-invent design below. No MATERIAL or
+CAPTURED gap found — this draft has not quietly shrunk the real ask.
+
+=== STEP 5 — THE COMPILED PLAN (subject to Alex's Step 6 approval —
+NOTHING in this section is built yet) ===
+
+1. `.claude/skills/update-logging-system/SKILL.md` gains a new artifact
+   type: "A Current State entry (or equivalent Tier-b fact) is confirmed
+   fully resolved and no longer being re-litigated" -> move the full
+   narrative verbatim into CLAUDE_archive.md (or the equivalent archive
+   file for whichever doc it's in), rewrite the live bullet to one
+   present-tense durable fact, same discipline as the July 31 prune —
+   now a checked item, not a memory.
+2. `.claude/skills/drift/SKILL.md` gains a real "Live-numbers staleness"
+   check as an explicit BASIS-check example: when a session's own real
+   evidence-gathering touches a table CLAUDE.md's "Live numbers" section
+   cites, and the live count disagrees, that's a real MINOR finding
+   (flag + fix the number), reported the same way any other `/drift`
+   finding is — not a new mechanism, an explicit worked example added to
+   an existing one.
+3. Supabase dedup, scoped per Fork 1's answer — if (A): no new
+   infrastructure, just the `/drift` extension above, applied to
+   Supabase claims specifically. If (B) or (C): a real, separate,
+   smaller spec for an actual row-level scan tool, scoped to which
+   tables/fields, run at what cadence — NOT written here, would need its
+   own real design pass once Alex confirms it's wanted.
+4. `style_profiles`'s real "0 rows ever" claim gets corrected to "3 rows
+   live" in CLAUDE.md's Live Numbers section in the SAME session this
+   plan is approved, regardless of which fork answer Alex gives — it's
+   already a confirmed, real, current fact, not a proposal.
+5. No new file, no new oversight doc, no new Supabase table. Everything
+   above is a checklist addition to 2 files already trusted with this
+   exact class of job.
+
+=== STEP 6 — awaiting Alex's read/approval + Fork 1 answer ===
