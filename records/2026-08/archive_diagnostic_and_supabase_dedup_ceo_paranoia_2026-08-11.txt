@@ -218,3 +218,100 @@ NOTHING in this section is built yet) ===
    exact class of job.
 
 === STEP 6 — awaiting Alex's read/approval + Fork 1 answer ===
+
+=== ADDENDUM — concrete envisioned design (Alex asked "show me how you
+envision it" before answering Fork 1; still Loop 1, still nothing built) ===
+
+**The real design is not one new mega-doc.** It's the SAME already-proven
+pattern (a live present-tense doc + a paired archive file) applied
+consistently, gated by one new checklist trigger — not a parallel
+system. Concrete mapping, doc by doc:
+
+  CLAUDE.md              -> CLAUDE_archive.md            EXISTS (July 31)
+  patch_notes.html       -> patch_notes_archive.html      EXISTS (pre-July-12)
+  ai_tooling_and_rules_map.md -> records/YYYY-MM/         EXISTS (this session)
+  interconnection_map.md -> none needed — already present-tense-only by
+                             its own stated rule, never accumulates
+                             narrative in the first place. Real example
+                             of the discipline working BEFORE it's ever
+                             violated, not a gap.
+  system_flow_map.md     -> none needed — truth-table format, same reason.
+  minotaur_map.html      -> none needed — rare-touch by design; this
+                             session's own changelog-drift bug was a
+                             violation of its EXISTING rule, not evidence
+                             it needs a new archive mechanism.
+  manual.html             -> its "fixed bugs" table is the one place here
+                             that could genuinely grow unbounded; no
+                             archive exists yet, flagged as a real
+                             candidate if it ever gets unwieldy — not
+                             urgent, no evidence it's a problem today.
+  smoke_test.html         -> this IS Alex's own "current capabilities"
+                             surface already, per CEO Loop 2 Step 3/4 —
+                             ticked = current, unticked-with-note = known
+                             broken. The mechanism he's asking for already
+                             has its (d)-layer home; it just isn't
+                             systematized as a checklist trigger yet.
+
+**Concrete before/after, using a real entry from CLAUDE.md's own Current
+State section (the Obsidian-vault fix, this session):**
+
+BEFORE (current live form — a full narrative paragraph):
+  "Real gap found and fixed: obsidian-vault/'s raw wikilinks weren't
+  reachable outside the Obsidian app... scripts/obsidian_vault_to_html.py
+  (a small self-contained converter, not obsidianhtml/Quartz — both
+  checked and real-overkill/blocked)... renders it into one self-
+  contained graphify-out/obsidian_vault.html with real working links...
+  wired into Oversight's Auto-generated group... Verified via headless
+  Chromium: sidebar nav, hash deep-linking, and wikilink navigation all
+  confirmed working, zero console errors."
+
+AFTER, once confirmed fully resolved and no longer being re-litigated
+(same threshold /update-logging-system already applies elsewhere —
+Alex's own hands-on confirmation, or enough sessions of silent stability,
+is the real trigger, never a timer):
+  "Obsidian Vault is reachable and browsable from the in-app Oversight
+  popup (graphify-out/obsidian_vault.html)."
+Full original paragraph moves verbatim into CLAUDE_archive.md under a
+new dated heading — nothing lost, just relocated, exactly like the July
+31 prune already did for a whole section at once.
+
+**The Supabase side, concretely: the "Live numbers" section in
+CLAUDE.md already IS the current-capabilities diagnostic Alex is asking
+for.** It just has no re-verification step, which is exactly why
+style_profiles went stale (doc says 0, live shows 3). Concrete shape of
+the fix, no new table or file:
+
+  CLAUDE.md claims              | Live value (re-queried) | Verdict
+  style_profiles: 0 rows ever   | 3 rows                  | MINOR — stale,
+                                                              fix now
+  taxonomy_proposals: 25 pending| (recheck at claim time)  | (re-verify)
+
+This diff format IS the "archive report" for Supabase claims — not a new
+Supabase table, a small structured block /drift produces and appends to
+a dated record file whenever a session's real evidence touches a table
+CLAUDE.md cites, same shape as every other /drift finding in this
+project already.
+
+**If Alex answers Fork 1 with (B) or (C) — what a real row-level dedup
+scanner would concretely look like, sketched but NOT built:**
+  - A standalone script, same convention as scripts/graphify_river_group.py
+    — no new runtime dependency, run on-demand (not scheduled/cron —
+    35 tables, largest is taxonomy_tree at 557 rows, cheap enough to run
+    by hand whenever wanted).
+  - Per table: a normalized-key similarity check (same real pattern
+    intelDedup already uses for Content Intelligence — normalized-URL +
+    title-fallback), not a blind full-row hash — most near-duplicates in
+    a project like this are "same real thing, slightly different text,"
+    not byte-identical rows.
+  - Output: a dated record `.txt`, human-readable, findings only — NEVER
+    auto-deletes or auto-merges a row. Same human-checkpoint discipline
+    as every destructive-adjacent RPGACE mechanism (rule 5's own
+    verbatim-record convention, the 2-click-arm delete pattern, etc.).
+  - Real, honest caveat if Alex picks B/C: this is genuinely new
+    infrastructure with no evidence yet of a live gap to justify it (the
+    35-table scan this session found zero real duplication) — worth
+    building if Alex wants the standing insurance, but the case FOR it
+    is precautionary, not a fix for something currently broken.
+
+Still Loop 1. Still nothing built. Fork 1 (A/B/C) still needs Alex's
+actual answer before Step 5's plan proceeds.
