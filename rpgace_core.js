@@ -4271,95 +4271,7 @@ RPGACE.register('taxonomyReviewQueue', {
           return;
         }
 
-        var sourceLabels = { content_intelligence: '📁 File Analyzer', encyclopedia: '📖 Encyclopedia', oracle: '💬 Oracle', manual: '✎ Manual' };
-
-        rows.forEach(function(p) {
-          var row = document.createElement('div');
-          row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;';
-
-          var head = document.createElement('div');
-          head.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;';
-          var pathEl = document.createElement('div');
-          pathEl.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;line-height:1.5;';
-          pathEl.textContent = p.proposed_path;
-          var isPhylumPath = !!(p.proposed_steps && p.proposed_steps.engine === 'phylum_path');
-          var isConceptFusion = !!(p.proposed_steps && p.proposed_steps.engine === 'concept_fusion');
-          var srcEl = document.createElement('div');
-          srcEl.style.cssText = 'font-size:11px;color:' + (isConceptFusion ? 'rgba(52,152,219,0.7)' : isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
-          srcEl.textContent = isConceptFusion ? '🌌 Concept Fusion' : (isPhylumPath ? '🧬 Phylum Path · ' : '') + (sourceLabels[p.source_type] || p.source_type);
-          head.appendChild(pathEl); head.appendChild(srcEl);
-          row.appendChild(head);
-
-          if (p.matched_existing_node_id && !isPhylumPath && !isConceptFusion) {
-            var warn = document.createElement('div');
-            warn.style.cssText = 'font-size:11px;color:#CC4A4A;margin-bottom:8px;';
-            warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
-            row.appendChild(warn);
-          }
-
-          // Concept Fusion cards show the synthesis text - the whole
-          // point of the proposal is "why does this merge deserve to be
-          // its own new leaf," not just a path string.
-          if (isConceptFusion && p.proposed_steps && p.proposed_steps.synthesis) {
-            var synthEl = document.createElement('div');
-            synthEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
-            synthEl.textContent = p.proposed_steps.synthesis;
-            row.appendChild(synthEl);
-          }
-
-          // July 19: phylum_path cards now show the scored engine's own
-          // reasoning - the justification and 1-10 confidence were being
-          // computed on every silent proposal but thrown away before the
-          // one human who has to judge the card ever saw them.
-          if (isPhylumPath && p.proposed_steps && (p.proposed_steps.justification || p.proposed_steps.confidenceScore)) {
-            var justEl = document.createElement('div');
-            justEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:8px;font-style:italic;';
-            var score = p.proposed_steps.confidenceScore;
-            justEl.textContent = (p.proposed_steps.justification || '') + (score ? ' (confidence ' + score + '/10)' : '');
-            row.appendChild(justEl);
-          }
-
-          var btnRow = document.createElement('div');
-          btnRow.style.cssText = 'display:flex;gap:6px;';
-
-          var acceptBtn = document.createElement('button');
-          acceptBtn.textContent = isConceptFusion ? '✓ Create Merged Leaf' : '✓ Accept';
-          acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          acceptBtn.onclick = function() {
-            row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
-            if (isConceptFusion) { self._acceptConceptFusion(p); }
-            else if (isPhylumPath) { self._acceptPhylumPathProposal(p); }
-            else { RPGACE.modules.taxonomyTree._acceptLineage(self._toProposal(p)); }
-            row.remove();
-          };
-
-          var rejectBtn = document.createElement('button');
-          rejectBtn.textContent = '✗ Reject';
-          rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          rejectBtn.onclick = function() {
-            RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
-            row.remove();
-          };
-
-          btnRow.appendChild(acceptBtn);
-          // Concept Fusion is just Accept/Reject, same as fusion links
-          // below - the proposal is a full node + 2 backlinks, not an
-          // editable multi-step path, so there's nothing granular to edit.
-          if (!isConceptFusion) {
-            var editBtn = document.createElement('button');
-            editBtn.textContent = '✎ Edit';
-            editBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            editBtn.onclick = function() {
-              overlay.remove();
-              if (isPhylumPath) { self._editPhylumPathProposal(p); }
-              else { RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p)); }
-            };
-            btnRow.appendChild(editBtn);
-          }
-          btnRow.appendChild(rejectBtn);
-          row.appendChild(btnRow);
-          box.appendChild(row);
-        });
+        rows.forEach(function(p) { self._renderProposalRow(p, box, overlay); });
 
         // ── Fusion-link candidates (taxonomy_links, status=pending) - a  ──
         // ── separate card type in the same queue. Accept/Reject only, no ──
@@ -4374,55 +4286,7 @@ RPGACE.register('taxonomyReviewQueue', {
         return RPGACE.sb.select('taxonomy_tree', 'id=in.(' + uniqueIds.join(',') + ')&select=id,name,path,phylum_number').then(function(nodeRows) {
           var byId = {};
           (nodeRows || []).forEach(function(n) { byId[n.id] = n; });
-          var tt = RPGACE.modules.taxonomyTree;
-
-          linkRows.forEach(function(l) {
-            var a = byId[l.node_a_id], b = byId[l.node_b_id];
-            if (!a || !b) return;
-            var row = document.createElement('div');
-            row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(52,152,219,0.04);border:1px solid rgba(52,152,219,0.2);border-radius:8px;';
-
-            var head = document.createElement('div');
-            head.style.cssText = 'font-size:11px;font-weight:700;color:rgba(52,152,219,0.7);margin-bottom:6px;';
-            head.textContent = '🔗 Fusion Link';
-            row.appendChild(head);
-
-            var phA = tt ? (tt.PHYLUM_NAMES[a.phylum_number] || '') : '';
-            var phB = tt ? (tt.PHYLUM_NAMES[b.phylum_number] || '') : '';
-            var linkText = document.createElement('div');
-            linkText.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;line-height:1.5;margin-bottom:4px;';
-            linkText.textContent = '[' + phA + '] ' + a.path + '  ⇄  [' + phB + '] ' + b.path;
-            row.appendChild(linkText);
-
-            var insightEl = document.createElement('div');
-            insightEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
-            insightEl.textContent = l.link_insight || '';
-            row.appendChild(insightEl);
-
-            var btnRow2 = document.createElement('div');
-            btnRow2.style.cssText = 'display:flex;gap:6px;';
-
-            var acceptBtn2 = document.createElement('button');
-            acceptBtn2.textContent = '✓ Confirm Link';
-            acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            acceptBtn2.onclick = function() {
-              row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
-              RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'confirmed', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
-              row.remove();
-            };
-
-            var rejectBtn2 = document.createElement('button');
-            rejectBtn2.textContent = '✗ Reject';
-            rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            rejectBtn2.onclick = function() {
-              RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
-              row.remove();
-            };
-
-            btnRow2.appendChild(acceptBtn2); btnRow2.appendChild(rejectBtn2);
-            row.appendChild(btnRow2);
-            box.appendChild(row);
-          });
+          linkRows.forEach(function(l) { self._renderLinkRow(l, box, byId); });
         });
       }).catch(function() {
         box.innerHTML = '';
@@ -4432,6 +4296,232 @@ RPGACE.register('taxonomyReviewQueue', {
         err.textContent = 'Could not load proposals.';
         box.appendChild(err);
       });
+  },
+
+  // ── Shared row-renderers (Aug 11 2026, extracted from _openQueue's own  ──
+  // ── inline forEach bodies, zero behaviour change) — so the new top-5    ──
+  // ── _openCard() below reuses the exact same real accept/reject/edit     ──
+  // ── logic instead of a second hand-rolled copy (rule 8). `overlay` is   ──
+  // ── only used by the Edit button (closes the popup before opening a     ──
+  // ── deeper editor) — _openCard doesn't pass one, so Edit isn't offered   ──
+  // ── on the compact view (Accept/Reject only, matching how tight the      ──
+  // ── card is) but the SAME rows are fully editable once you land on the   ──
+  // ── full queue via _openQueue.                                          ──
+  _renderProposalRow: function(p, box, overlay) {
+    var self = this;
+    var sourceLabels = { content_intelligence: '📁 File Analyzer', encyclopedia: '📖 Encyclopedia', oracle: '💬 Oracle', manual: '✎ Manual' };
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;';
+
+    var head = document.createElement('div');
+    head.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;';
+    var pathEl = document.createElement('div');
+    pathEl.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;line-height:1.5;';
+    pathEl.textContent = p.proposed_path;
+    var isPhylumPath = !!(p.proposed_steps && p.proposed_steps.engine === 'phylum_path');
+    var isConceptFusion = !!(p.proposed_steps && p.proposed_steps.engine === 'concept_fusion');
+    var srcEl = document.createElement('div');
+    srcEl.style.cssText = 'font-size:11px;color:' + (isConceptFusion ? 'rgba(52,152,219,0.7)' : isPhylumPath ? 'rgba(61,170,110,0.7)' : 'rgba(155,89,182,0.6)') + ';white-space:nowrap;flex-shrink:0;';
+    srcEl.textContent = isConceptFusion ? '🌌 Concept Fusion' : (isPhylumPath ? '🧬 Phylum Path · ' : '') + (sourceLabels[p.source_type] || p.source_type);
+    head.appendChild(pathEl); head.appendChild(srcEl);
+    row.appendChild(head);
+
+    if (p.matched_existing_node_id && !isPhylumPath && !isConceptFusion) {
+      var warn = document.createElement('div');
+      warn.style.cssText = 'font-size:11px;color:#CC4A4A;margin-bottom:8px;';
+      warn.textContent = '⚠️ Possible overlap with an existing node — review before accepting.';
+      row.appendChild(warn);
+    }
+
+    if (isConceptFusion && p.proposed_steps && p.proposed_steps.synthesis) {
+      var synthEl = document.createElement('div');
+      synthEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
+      synthEl.textContent = p.proposed_steps.synthesis;
+      row.appendChild(synthEl);
+    }
+
+    if (isPhylumPath && p.proposed_steps && (p.proposed_steps.justification || p.proposed_steps.confidenceScore)) {
+      var justEl = document.createElement('div');
+      justEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:8px;font-style:italic;';
+      var score = p.proposed_steps.confidenceScore;
+      justEl.textContent = (p.proposed_steps.justification || '') + (score ? ' (confidence ' + score + '/10)' : '');
+      row.appendChild(justEl);
+    }
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;';
+
+    var acceptBtn = document.createElement('button');
+    acceptBtn.textContent = isConceptFusion ? '✓ Create Merged Leaf' : '✓ Accept';
+    acceptBtn.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    acceptBtn.onclick = function() {
+      row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
+      if (isConceptFusion) { self._acceptConceptFusion(p); }
+      else if (isPhylumPath) { self._acceptPhylumPathProposal(p); }
+      else { RPGACE.modules.taxonomyTree._acceptLineage(self._toProposal(p)); }
+      row.remove();
+    };
+
+    var rejectBtn = document.createElement('button');
+    rejectBtn.textContent = '✗ Reject';
+    rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn.onclick = function() {
+      RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
+      row.remove();
+    };
+
+    btnRow.appendChild(acceptBtn);
+    if (!isConceptFusion && overlay) {
+      var editBtn = document.createElement('button');
+      editBtn.textContent = '✎ Edit';
+      editBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      editBtn.onclick = function() {
+        overlay.remove();
+        if (isPhylumPath) { self._editPhylumPathProposal(p); }
+        else { RPGACE.modules.taxonomyTree._showProposalPopup(self._toProposal(p)); }
+      };
+      btnRow.appendChild(editBtn);
+    }
+    btnRow.appendChild(rejectBtn);
+    row.appendChild(btnRow);
+    box.appendChild(row);
+  },
+
+  _renderLinkRow: function(l, box, byId) {
+    var a = byId[l.node_a_id], b = byId[l.node_b_id];
+    if (!a || !b) return;
+    var tt = RPGACE.modules.taxonomyTree;
+    var row = document.createElement('div');
+    row.style.cssText = 'padding:12px 14px;margin-bottom:10px;background:rgba(52,152,219,0.04);border:1px solid rgba(52,152,219,0.2);border-radius:8px;';
+
+    var head = document.createElement('div');
+    head.style.cssText = 'font-size:11px;font-weight:700;color:rgba(52,152,219,0.7);margin-bottom:6px;';
+    head.textContent = '🔗 Fusion Link';
+    row.appendChild(head);
+
+    var phA = tt ? (tt.PHYLUM_NAMES[a.phylum_number] || '') : '';
+    var phB = tt ? (tt.PHYLUM_NAMES[b.phylum_number] || '') : '';
+    var linkText = document.createElement('div');
+    linkText.style.cssText = 'font-size:12px;color:#D4DAF5;font-weight:600;line-height:1.5;margin-bottom:4px;';
+    linkText.textContent = '[' + phA + '] ' + a.path + '  ⇄  [' + phB + '] ' + b.path;
+    row.appendChild(linkText);
+
+    var insightEl = document.createElement('div');
+    insightEl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.6);margin-bottom:8px;font-style:italic;';
+    insightEl.textContent = l.link_insight || '';
+    row.appendChild(insightEl);
+
+    var btnRow2 = document.createElement('div');
+    btnRow2.style.cssText = 'display:flex;gap:6px;';
+
+    var acceptBtn2 = document.createElement('button');
+    acceptBtn2.textContent = '✓ Confirm Link';
+    acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    acceptBtn2.onclick = function() {
+      row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
+      RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'confirmed', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
+      row.remove();
+    };
+
+    var rejectBtn2 = document.createElement('button');
+    rejectBtn2.textContent = '✗ Reject';
+    rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    rejectBtn2.onclick = function() {
+      RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
+      row.remove();
+    };
+
+    btnRow2.appendChild(acceptBtn2); btnRow2.appendChild(rejectBtn2);
+    row.appendChild(btnRow2);
+    box.appendChild(row);
+  },
+
+  // ── Real /paranoia+/Engineer build, Aug 11 2026 (Alex's own ask: "make  ──
+  // ── a similar thing to chronicles when pressed through dashboard...     ──
+  // ── top 5 show most recent ones, but will also have a skip button to    ──
+  // ── just access the actual taxonomy"). Real evidence first: _openQueue  ──
+  // ── above renders EVERY pending row (51 real ones as of this session) —
+  // ── genuinely long, exactly the problem being named. Mirrors            ──
+  // ── chroniclesLog._openCard() exactly (same popup shape, same "top 5 +  ──
+  // ── one button to the full page" pattern) rather than inventing a new   ──
+  // ── one. Real, honest tradeoff kept in a comment, not hidden: ordering  ──
+  // ── by most-recent-first (Alex's own explicit ask) means an old pending ──
+  // ── item can in principle sit unseen here indefinitely if newer ones    ──
+  // ── keep queueing on top of it — "Review all N pending →" stays one     ──
+  // ── click away specifically so that never becomes a real dead end.      ──
+  _openCard: function() {
+    var self = this;
+    var dd = RPGACE.modules.dashDeck;
+    if (!dd || !dd._popup) return;
+    var pop = dd._popup({ eyebrow: '🌳 Taxonomy & Review', title: 'Recent proposals', accent: 'var(--green)', width: '520px' });
+    pop.box.innerHTML = '<div id="tx-card-list" style="font-size:12px;color:var(--muted)">Loading…</div>' +
+      '<div id="tx-card-more" style="display:none;margin-top:6px;font-size:11px;color:var(--muted);text-align:center;cursor:pointer;text-decoration:underline;"></div>' +
+      '<button id="tx-card-skip" style="margin-top:14px;width:100%;padding:10px;background:var(--green);border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;">🌳 Skip to Taxonomy Tree →</button>';
+    pop.box.querySelector('#tx-card-skip').onclick = function() {
+      pop.close();
+      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
+    };
+
+    // Real top-5-overall-most-recent, not top-5-per-table: fetching the
+    // top 5 from EACH table first, then merging + sorting + slicing to 5,
+    // is mathematically guaranteed to contain the true combined top 5
+    // (any item outside a table's own top 5 can't be in the overall top 5
+    // either) — cheap and correct, no need for a real cross-table SQL sort.
+    Promise.all([
+      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&order=created_at.desc&limit=5'),
+      RPGACE.sb.select('taxonomy_links', 'status=eq.pending&order=created_at.desc&limit=5'),
+      RPGACE.sb.select('taxonomy_proposals', 'status=eq.pending&select=id'),
+      RPGACE.sb.select('taxonomy_links', 'status=eq.pending&select=id')
+    ]).then(function(results) {
+      var props = results[0] || [], links = results[1] || [];
+      var totalPending = (results[2] || []).length + (results[3] || []).length;
+      var merged = props.map(function(p) { return { kind: 'proposal', row: p, t: p.created_at }; })
+        .concat(links.map(function(l) { return { kind: 'link', row: l, t: l.created_at }; }))
+        .sort(function(a, b) { return new Date(b.t) - new Date(a.t); })
+        .slice(0, 5);
+
+      var listEl = pop.box.querySelector('#tx-card-list');
+      var moreEl = pop.box.querySelector('#tx-card-more');
+      if (!listEl) return;
+
+      if (moreEl) {
+        if (totalPending > merged.length) {
+          moreEl.style.display = 'block';
+          moreEl.textContent = 'Review all ' + totalPending + ' pending →';
+          moreEl.onclick = function() { pop.close(); self._openQueue(); };
+        } else {
+          moreEl.style.display = 'none';
+        }
+      }
+
+      if (!merged.length) { listEl.textContent = 'Nothing waiting — all caught up.'; return; }
+      listEl.innerHTML = '';
+
+      var linkNodeIds = [];
+      merged.forEach(function(m) { if (m.kind === 'link') linkNodeIds.push(m.row.node_a_id, m.row.node_b_id); });
+      var uniqueLinkIds = linkNodeIds.filter(function(id, i) { return linkNodeIds.indexOf(id) === i; });
+
+      var render = function(byId) {
+        merged.forEach(function(m) {
+          if (m.kind === 'proposal') self._renderProposalRow(m.row, listEl, null);
+          else self._renderLinkRow(m.row, listEl, byId || {});
+        });
+      };
+
+      if (uniqueLinkIds.length) {
+        RPGACE.sb.select('taxonomy_tree', 'id=in.(' + uniqueLinkIds.join(',') + ')&select=id,name,path,phylum_number')
+          .then(function(nodeRows) {
+            var byId = {};
+            (nodeRows || []).forEach(function(n) { byId[n.id] = n; });
+            render(byId);
+          }).catch(function() { render({}); });
+      } else {
+        render({});
+      }
+    }).catch(function(e) {
+      var listEl = pop.box.querySelector('#tx-card-list');
+      if (listEl) listEl.textContent = 'Load failed: ' + e.message;
+    });
   },
 
   // ── Phylum Path-engine rows: reconstruct the real attach node (if any)  ──
@@ -5704,10 +5794,18 @@ RPGACE.register('dashDeck', {
     // QUEUE rather than navigating away: _openQueue handles empty gracefully
     // ("Nothing waiting - all caught up"), whereas navigating away from a
     // click that meant "review" is the exact failure reported twice tonight.
+    // Aug 11 2026 (real /paranoia+/Engineer pass, Alex's own ask: "make a
+    // similar thing to chronicles... top 5 show most recent, skip button
+    // to just access the actual taxonomy") — now opens _openCard() (a
+    // compact top-5-most-recent view, mirroring chroniclesLog._openCard()
+    // exactly) instead of the full _openQueue() (which renders every
+    // pending row — 51 real rows as of this session, genuinely long).
+    // _openCard() itself has the skip-to-tree button; the empty-queue
+    // short-circuit below is unchanged, since there's nothing to review.
     { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements and fusion links, or browse your knowledge tree.', go: function() {
       var d = RPGACE.modules.dashDeck;
       var rq = RPGACE.modules.taxonomyReviewQueue;
-      if (d && d._pendingReviewCount !== 0 && rq && rq._openQueue) { rq._openQueue(); return; }
+      if (d && d._pendingReviewCount !== 0 && rq && rq._openCard) { rq._openCard(); return; }
       if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
     } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
@@ -5898,7 +5996,7 @@ RPGACE.register('dashDeck', {
           bits.push(total + ' taxonomy item' + (total === 1 ? '' : 's') + ' waiting for your judgement');
           addItem('Review ' + total + ' pending taxonomy item' + (total === 1 ? '' : 's'), function() {
             var rq = RPGACE.modules.taxonomyReviewQueue;
-            if (rq && rq._openQueue) rq._openQueue(); else if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.dashboard);
+            if (rq && rq._openCard) rq._openCard(); else if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.dashboard);
           });
         }
         books.forEach(function(b) {
