@@ -2,5 +2,8 @@
   "type": "module",
   "dependencies": {
     "archiver": "^7.0.1"
+  },
+  "devDependencies": {
+    "terser": "^5.50.0"
   }
 }

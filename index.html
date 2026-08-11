@@ -457,8 +457,18 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 
 <div class="xp-toast" id="xp-toast">+50 XP</div>
 
-<script src="main.js?v=20260806d"></script>
-  <script src="rpgace_core.js?v=20260811j"></script>
+<!-- Aug 11 2026: switched to the real, verified-safe minified builds
+     (scripts/minify_client.js — compress-only, mangle DISABLED because
+     index.html has 93 inline onclick="fnName(...)" attributes that a
+     mangler cannot see and would silently break). Regenerate BOTH .min.js
+     files in the SAME commit as any change to main.js/rpgace_core.js, and
+     bump these ?v= strings too - a stale .min.js is a silent "nothing
+     changed" bug, same class as every other cache-staleness landmine
+     here. The original main.js/rpgace_core.js remain the real, edited,
+     fully-commented source - always edit those, never the .min.js files
+     directly. -->
+<script src="main.min.js?v=20260811k"></script>
+  <script src="rpgace_core.min.js?v=20260811k"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
