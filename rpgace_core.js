@@ -19747,3 +19747,113 @@ RPGACE.register('mockOracle', {
 
 });
 /* ===END:mockOracle=== */
+
+/* ===MODULE:ceoMode=== */
+// Real, visible /CEO on/off indicator (Aug 11 2026), per Alex's own direct
+// answer to the "should a /stopCEO'd plan stay visible in oversight docs"
+// open fork: "just pop up that say CEO off or on, like a mode toggle" -
+// he wants a real, always-visible UI element, not a doc-only answer.
+// Mirrors mockOracle's own switch pattern (fixed corner pill, click to
+// cycle, toast on change) rather than inventing a new visual convention -
+// positioned top-LEFT specifically to avoid the existing top-right
+// mockOracle switch/scout-button/badge cluster (rule 2 - never guess at
+// positioning without checking what's already there).
+RPGACE.register('ceoMode', {
+
+  init: function() {
+    var self = this;
+    RPGACE.registerBootTask(function() { return self._injectToggle(); });
+  },
+
+  // Reads the real current state from Supabase - never assumed, never
+  // cached stale (same discipline as everywhere else /CEO's own datasheet
+  // gets read). Picks the most-recently-touched plan if more than one
+  // exists (today: exactly one, Massive Expansion) - real, honest
+  // single-plan scope match to /CEO SKILL.md's own "only one real plan
+  // exists as of Aug 11" note.
+  _fetchState: function() {
+    return RPGACE.sb.select('ceo_plans', 'select=id,name,status&order=created_at.desc&limit=1')
+      .then(function(rows) { return (rows && rows[0]) || null; });
+  },
+
+  _injectToggle: function() {
+    if (document.getElementById('ceo-mode-pill')) return;
+    var self = this;
+    var pill = document.createElement('div');
+    pill.id = 'ceo-mode-pill';
+    pill.title = 'Click to pause/resume /CEO Grounded Mode for the current plan';
+    pill.style.cssText = 'position:fixed;top:10px;left:10px;z-index:999999;display:flex;align-items:center;gap:6px;background:#0c0c16;border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:5px 12px;box-shadow:0 4px 16px rgba(0,0,0,.5);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;font-size:12px;font-weight:700;letter-spacing:.3px;';
+    pill.textContent = '⋯ CEO';
+    pill.onclick = function() { self._toggle(); };
+    document.body.appendChild(pill);
+    self._render();
+  },
+
+  _render: function() {
+    var self = this;
+    var pill = document.getElementById('ceo-mode-pill');
+    if (!pill) return;
+    this._fetchState().then(function(plan) {
+      if (!plan) {
+        pill.textContent = '⋯ CEO: none';
+        pill.style.color = 'rgba(255,255,255,0.35)';
+        pill.style.borderColor = 'rgba(255,255,255,0.15)';
+        pill.title = 'No /CEO plan exists yet';
+        pill._planId = null;
+        return;
+      }
+      pill._planId = plan.id;
+      pill._planStatus = plan.status;
+      if (plan.status === 'active') {
+        pill.textContent = '🟢 CEO: ON';
+        pill.style.color = '#4CAF82';
+        pill.style.borderColor = 'rgba(76,175,130,0.4)';
+        pill.title = 'Grounded Mode is active for "' + plan.name + '" - click to /stopCEO (pause)';
+      } else {
+        pill.textContent = '⏸ CEO: OFF';
+        pill.style.color = 'rgba(255,255,255,0.5)';
+        pill.style.borderColor = 'rgba(255,255,255,0.2)';
+        pill.title = '"' + plan.name + '" is paused - click to /ResumeCEO';
+      }
+    }).catch(function() {
+      // Fail quiet, not loud, for this one specific case - a transient
+      // Supabase read failure on a purely-cosmetic status pill shouldn't
+      // toast an error at Alex; the pill just keeps its last known state
+      // until the next successful render.
+    });
+  },
+
+  // Real /stopCEO / /ResumeCEO mechanics, callable from chat (Alex typing
+  // the command) or from this pill (a UI convenience for the exact same
+  // action) - one shared implementation, never two (rule 8).
+  stop: function(planId) {
+    var self = this;
+    var pill = document.getElementById('ceo-mode-pill');
+    var id = planId || (pill && pill._planId);
+    if (!id) return Promise.resolve();
+    return RPGACE.sb.update('ceo_plans', 'id=eq.' + id, { status: 'paused', paused_at: new Date().toISOString() })
+      .then(function() {
+        RPGACE.utils.toast('⏸ /CEO Grounded Mode paused - resume any time with /ResumeCEO', 'rgba(255,255,255,0.7)', 3500);
+        self._render();
+      });
+  },
+  resume: function(planId) {
+    var self = this;
+    var pill = document.getElementById('ceo-mode-pill');
+    var id = planId || (pill && pill._planId);
+    if (!id) return Promise.resolve();
+    return RPGACE.sb.update('ceo_plans', 'id=eq.' + id, { status: 'active', resumed_at: new Date().toISOString() })
+      .then(function() {
+        RPGACE.utils.toast('🟢 /CEO Grounded Mode resumed', '#4CAF82', 3000);
+        self._render();
+      });
+  },
+  _toggle: function() {
+    var pill = document.getElementById('ceo-mode-pill');
+    if (!pill || !pill._planId) return;
+    if (pill._planStatus === 'active') this.stop(pill._planId);
+    else this.resume(pill._planId);
+  },
+
+});
+/* ===END:ceoMode=== */
