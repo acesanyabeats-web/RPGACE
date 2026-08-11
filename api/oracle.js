@@ -1,5 +1,5 @@
 // ORACLE — direct Claude chat with image support
-import { setCORS, requireAuth, callClaude, MODEL } from './_context.js';
+import { setCORS, requireAuth, callClaude, MODEL, cacheableSystem } from './_context.js';
 
 // Real Kimi/Luna free-tier routing scaffold (Aug 11 2026) — Alex's own
 // explicit ask, per the OmniRoute/model-cost Aintergration thread:
@@ -152,7 +152,7 @@ export default async function handler(req, res) {
       const upstream = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: useModel, max_tokens: tokens, system: system || '', messages, stream: true })
+        body: JSON.stringify({ model: useModel, max_tokens: tokens, system: cacheableSystem(system || ''), messages, stream: true })
       });
       if (!upstream.ok || !upstream.body) {
         const errText = await upstream.text().catch(() => '');
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: useModel, max_tokens: tokens, system: system || '', messages })
+        body: JSON.stringify({ model: useModel, max_tokens: tokens, system: cacheableSystem(system || ''), messages })
       });
       if (!response.ok) { const err = await response.text(); throw new Error('Anthropic API error: ' + err); }
       return res.status(200).json(await response.json());

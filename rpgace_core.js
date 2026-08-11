@@ -8271,6 +8271,60 @@ RPGACE.register('phylumPath', {
     });
   },
 
+  // Real Headroom-pattern helper (Aug 11 2026) — Alex asked where token
+  // compression would help without hurting output quality; real answer
+  // given directly, prompt caching built first (zero quality risk, see
+  // api/_context.js's cacheableSystem). This is the second, genuinely
+  // different case: large VARIABLE content (a full video transcript, a
+  // full book chapter) that changes every call, so caching structurally
+  // cannot help it — the real fit for Headroom's own actual mechanic
+  // (compress before it reaches the judgment-making call).
+  //
+  // Real, deliberately conservative design, not a blind "summarize
+  // everything" pass: only fires above a real, generous length
+  // threshold (short/typical content is NEVER touched - zero risk to
+  // the common case); uses the cheap MECHANICAL_MODEL tier (Haiku) for a
+  // narrowly-scoped task - strip genuine filler (intros, sponsor reads,
+  // repeated phrasing), never summarize or drop a specific technique,
+  // quote, plugin name, or attribution - a materially SAFER task for a
+  // cheap model than "produce a good summary," since it only has to
+  // recognize filler, not decide what matters; and fails OPEN on any
+  // error (bad JSON, empty result, a thrown fetch) by returning the
+  // ORIGINAL untouched text - a failed compression attempt must never
+  // silently shrink or corrupt what the real ground-worker judgment call
+  // actually sees.
+  //
+  // NOT wired into any live call site yet in this pass (Bookworm's
+  // _analyzeChapter / Content Intelligence's real dispatch path both
+  // need their own real read first, per rule 1 - wiring a new step into
+  // an already-live judgment pipeline blind is exactly the mistake rule
+  // 1 exists to prevent). This is the real, tested, ready-to-use
+  // building block; wiring it in is real, separate follow-up work.
+  CONDENSE_THRESHOLD_CHARS: 6000,
+
+  _condenseIfLarge: function(text, context) {
+    var self = this;
+    text = text || '';
+    if (text.length <= this.CONDENSE_THRESHOLD_CHARS) return Promise.resolve(text);
+    var prompt = 'Strip ONLY genuine filler from the text below - intros, ' +
+      'sponsor reads, repeated phrasing, off-topic tangents. Do NOT ' +
+      'summarize, shorten, or paraphrase any specific technique, plugin ' +
+      'name, quote, number, or creator/artist attribution - preserve ' +
+      'every one of those exactly as written, in the original order. If ' +
+      'you are not confident a passage is pure filler, keep it. Return ' +
+      'ONLY the cleaned text, no preamble, no markdown fences.\n\n' + text;
+    return this._callGroundWorkerText(prompt, 2000, this.MECHANICAL_MODEL, context)
+      .then(function(cleaned) {
+        cleaned = (cleaned || '').trim();
+        // Fails open on a genuinely broken result too, not just a thrown
+        // error - an empty or suspiciously tiny result is worse than no
+        // compression at all, never trusted over the real original text.
+        if (!cleaned || cleaned.length < text.length * 0.3) return text;
+        return cleaned;
+      })
+      .catch(function() { return text; });
+  },
+
   // ── Fallback-answer sweep — called periodically while the app is open ──
   // Checks oracle_fallback_queue for rows an external Claude Code Remote
   // Routine has already answered, and dispatches each to whichever module

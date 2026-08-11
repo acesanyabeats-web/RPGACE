@@ -789,3 +789,40 @@ gathering and real building in direct response to Alex's pushback, which
 is stronger evidence than a first pass alone, but is not the same thing
 as the formal `/paranoia` sequence he originally asked for. Flag this
 honestly for a future session rather than silently calling it done.
+
+================================================================
+PART G — CEO Loop 1 Step 7: Alex reads, ratifies A13 and A17 (Aug 11,
+continued)
+================================================================
+
+Alex: "I also give a green light for the oversight and total systems
+changes in the revised plan txt you gave me." This is a real Loop 1
+Step 6→7 event for the `/CEO` skill (just built, same session): A13
+(Total-systems orchestrator dispatch loop) and A17 (5-layer oversight-
+doc restructuring) are now `ratified` baseline items, not just drafted
+ideas — future `/drift` checks on either should treat them as approved,
+not provisional.
+
+**A13 — built same session.** Extended CLAUDE.md's existing "Total"
+section (Aug 4) with the real a)/b) report shape (output report +
+infrastructure knowledge) and the `/drift`+`/paranoia` reconciliation
+loop Alex described — a real, bounded, low-risk doc extension on top of
+already-existing infrastructure (this session was already named
+"orchestrator/planner"; this formalizes what that means), not new risky
+infrastructure. Done.
+
+**A17 — ratified, deliberately NOT built this same pass.** Real, honest
+reasoning, not a stall: A17 redefines the ROLE of all seven existing
+oversight docs, adds 2 entirely new layers (a real smoke-test doc — see
+the CEO skill's own section on this — and a live Oracle-self-awareness
+feedback loop), and is the single largest structural change in the
+whole spec. Building it in the tail end of an already-enormous session
+(this one has already shipped `/drift`, an Obsidian vault exporter, a
+Kimi/Luna routing scaffold, `session_memory`, the `/CEO` skill itself,
+prompt caching, and a Headroom-pattern condensing helper) is exactly the
+kind of rushed execution `/CEO`'s own Loop 1 discipline exists to
+prevent — a plan this size deserves its own dedicated `/Engineer` pass,
+not a tacked-on afterthought. Real next step: a future session runs
+`/CEO` Loop 2 Step 1 (`/Engineer` executes against this now-ratified
+baseline) starting with A17, ideally on its own, not squeezed alongside
+something else.
