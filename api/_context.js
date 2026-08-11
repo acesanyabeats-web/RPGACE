@@ -121,6 +121,51 @@ export async function callClaude(apiKey, messages, system='', maxTokens=1000, mo
   return data.content.map(c => c.text || '').join('');
 }
 
+// Real Headroom-pattern condensing, server-side mirror (Aug 11 2026,
+// Alex-confirmed build after the Aintergration re-pass on Headroom).
+// rpgace_core.js's phylumPath._condenseIfLarge() is the original — this is
+// NOT a copy-paste, it's a deliberate re-implementation for a genuinely
+// different runtime (this file runs server-side in a Vercel function,
+// that one runs client-side in the browser and can't be imported here).
+// Rule 8 compliance taken as "same threshold, same narrow prompt, same
+// fail-open discipline," not "same file" — the two can't literally share
+// code across that boundary.
+//
+// Real bug this exists to fix, found while wiring it (rule 1 — read
+// api/analyst.js in full first): the Content Analyst was bare-truncating
+// `content.slice(0, 6000)` with no marker, no log — the exact same
+// silent-content-loss class as the July-31-found, Aug-11-fixed Bookworm
+// `_analyzeChapter()` bug. Condensing first (strip genuine filler via the
+// cheap MECHANICAL tier, preserve every specific technique/quote/number/
+// attribution exactly) means the post-condense safety cap holds far more
+// real substantive content than a bare truncation of the raw text ever
+// could — same reasoning as CLAUDE.md's own standing rule 12.
+export const MODEL_MECHANICAL          = 'claude-haiku-4-5-20251001';
+export const CONDENSE_THRESHOLD_CHARS  = 6000;
+export const CONDENSE_POST_CAP_CHARS   = 12000; // matches the Bookworm precedent
+
+export async function condenseIfLarge(apiKey, text) {
+  text = text || '';
+  if (text.length <= CONDENSE_THRESHOLD_CHARS) return text;
+  const prompt = 'Strip ONLY genuine filler from the text below - intros, ' +
+    'sponsor reads, repeated phrasing, off-topic tangents. Do NOT ' +
+    'summarize, shorten, or paraphrase any specific technique, plugin ' +
+    'name, quote, number, or creator/artist attribution - preserve ' +
+    'every one of those exactly as written, in the original order. If ' +
+    'you are not confident a passage is pure filler, keep it. Return ' +
+    'ONLY the cleaned text, no preamble, no markdown fences.\n\n' + text;
+  try {
+    const cleaned = (await callClaude(apiKey, [{ role: 'user', content: prompt }], '', 2000, MODEL_MECHANICAL) || '').trim();
+    // Fails open on a genuinely broken result too, not just a thrown error
+    // — an empty or suspiciously tiny result is worse than no compression
+    // at all, never trusted over the real original text.
+    if (!cleaned || cleaned.length < text.length * 0.3) return text;
+    return cleaned;
+  } catch (e) {
+    return text;
+  }
+}
+
 export async function callComposio(composioKey, rawTool, input){
   const tool = TOOL_ALIASES[rawTool] || rawTool;
   const appKey = tool.split('_')[0].toLowerCase();

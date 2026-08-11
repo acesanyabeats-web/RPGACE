@@ -1,7 +1,7 @@
 // AGENT 2 — CONTENT ANALYST
 // Job: Deep analysis of content based on its type
 // Cannot: save data, fire Composio, format final notes
-import { setCORS, requireAuth, callClaude, RPGACE_CONTEXT } from './_context.js';
+import { setCORS, requireAuth, callClaude, RPGACE_CONTEXT, condenseIfLarge, CONDENSE_POST_CAP_CHARS } from './_context.js';
 
 const TYPE_PROMPTS = {
   music: `You are an expert music production analyst.
@@ -95,17 +95,28 @@ export default async function handler(req, res){
 
     if(!content && !imageData) throw new Error('No content provided to analyst');
 
+    // Real fix (Aug 11 2026): this used to be a bare `content.slice(0, 6000)`
+    // — a silent content-loss bug, same class as the July-31-found Bookworm
+    // one. Condense first (strips filler, preserves every specific detail
+    // exactly, fails open) so the safety cap below holds far more real
+    // substance than a blind truncation of the raw text ever could.
+    let preparedContent = content;
+    if (content) {
+      preparedContent = await condenseIfLarge(apiKey, content);
+      preparedContent = preparedContent.slice(0, CONDENSE_POST_CAP_CHARS);
+    }
+
     const typePrompt = TYPE_PROMPTS[detectedType] || TYPE_PROMPTS.general;
     const analysisPrompt = `${RPGACE_CONTEXT}
 
 ${typePrompt}
 
-Be thorough, specific and practical. This feeds into a personal knowledge base for Alex — 
+Be thorough, specific and practical. This feeds into a personal knowledge base for Alex —
 an aspiring music producer and content creator. Every insight should be actionable.
 
 CONTENT TITLE: ${title}
 CONTENT TO ANALYSE:
-${content ? content.slice(0, 6000) : '[Image provided]'}`;
+${preparedContent || '[Image provided]'}`;
 
     let messages;
     if(imageData){

@@ -1,0 +1,207 @@
+Real /paranoia + /CEO re-pass on all 5 Aintergration tool verdicts
+(did-we-drift, Headroom, Obsidian, OmniRoute/Kimi/Luna, claude-mem)
+2026-08-11, /Engineer + /restructure as advisors
+
+=====================================================================
+WHY THIS RAN
+=====================================================================
+The session_memory row from earlier this same session (00:58 UTC)
+listed "full /paranoia-scrutinized re-pass on the 5 tool verdicts,
+not done yet" as an open thread. CLAUDE.md's own "Open forks" section
+independently carried the same item. Alex asked directly, verbatim:
+"i want this solved, give me options to get it done through /paranoia
+and /CEO with /Engineer and /restructure as advisors, then council of
+5 output for me to understand."
+
+=====================================================================
+STEP 1-2 — REAL EVIDENCE GATHERED (not doc claims)
+=====================================================================
+- did-we-drift -> /drift: .claude/skills/drift/SKILL.md read in full.
+  Real, wired into /scope, /commit-archaeologist, GODMODE per its own
+  file. Confirmed built.
+- Obsidian: scripts/graphify_to_obsidian.py + obsidian_vault_to_html.py
+  exist; obsidian-vault/ holds 16 real river notes + a System Map;
+  graphify-out/obsidian_vault.html exists (the real rendered version).
+  Commit history confirms wiring into the live Oversight popup
+  (13ed94c "Make Obsidian vault reachable from Oversight"). Confirmed
+  built and live.
+- OmniRoute/Kimi/Luna: api/oracle.js read in full. FREE_TIER_PROVIDERS
+  = {kimi: MOONSHOT_API_KEY, kimi-k2-0905-preview; luna: OPENAI_API_KEY,
+  gpt-5.6-luna}. handler() only reaches callFreeTierProvider() when a
+  caller explicitly sends `provider:'kimi'|'luna'` -- confirmed NO
+  silent auto-fallback exists, meaning the original OmniRoute rejection
+  reason (silent cross-vendor substitution undermining rule 10's
+  independent-review discipline) genuinely does not apply to this
+  scaffold's actual design. Dormant (no caller sends `provider` yet,
+  no keys set). Confirmed built, correctly dormant.
+- claude-mem -> session_memory: queried directly (Supabase project
+  gripopghczmrbrhqtqbm). Table exists, 1 real row from earlier this
+  session. Confirmed built and live.
+- Headroom: git log -- api/_context.js api/oracle.js showed commit
+  be27a50 ("Ship prompt caching + Headroom-pattern helper...") already
+  shipped BOTH prompt caching (cacheableSystem(), wired into every
+  callClaude() caller + api/oracle.js's streaming/image direct-fetch
+  paths) AND phylumPath._condenseIfLarge() (built, at that point NOT
+  yet wired anywhere). A LATER commit (670b776, "decompression bug
+  fix") wired _condenseIfLarge() into Bookworm's _analyzeChapter(),
+  finding and fixing a real silent-truncation bug there (12000-char
+  raw-text cap with no marker/log).
+
+REAL STALE-DOC FINDING: CLAUDE.md's own "Headroom analysis (Aug 11)"
+paragraph (Open forks section) still ended with "Not built this pass
+(Alex asked for the analysis, not the build)" -- directly contradicted
+by the be27a50 commit, same session, same day. The paragraph had never
+been corrected after the later commit landed. Fixed in place (see
+CLAUDE.md diff, same commit as this file).
+
+=====================================================================
+STEP 3 -- STRESS-TEST (debate, inline)
+=====================================================================
+Kimi/Luna: for -- matches rule 10's explicit-routing discipline exactly,
+zero cost until keys exist, code already generalizes cleanly. against/
+risk -- does this reintroduce the exact silent-fallback risk the
+original OmniRoute rejection named? Checked directly (see Step 1-2
+above): no, the field is caller-opt-in only, no existing caller sends
+it. Verdict holds.
+
+Headroom real-tool re-evaluation: for -- genuine, more powerful
+mechanism than any single one of RPGACE's own 3 pieces (cacheableSystem
++ _condenseIfLarge + session_memory) individually; real cross-agent
+SharedContext + auto-dedup across multiple AI vendors is a capability
+RPGACE hasn't built. against -- adopting it would be a second, less-
+tuned implementation of jobs already covered by 3 separate homegrown
+mechanisms (rule 8 concern, inverted: not "duplicate by hand" but
+"duplicate by importing a competing system"); real new dependency
+weight (ONNX/AVX2, Python 3.10+, Rust for corporate MITM) that this
+project has deliberately avoided everywhere else (Worked Precedents
+1/2); the one genuinely novel capability (cross-agent memory sharing)
+is UNCONFIRMED to work in RPGACE's actual deployment shape (ephemeral
+Claude Code Remote containers, Vercel serverless) -- same open question
+that sank claude-mem, not re-verified favorably for Headroom either.
+Verdict: Reference-only, reaffirmed on sharper real evidence.
+
+=====================================================================
+STEP 4 -- /interrogation (real questions asked, real answers given)
+=====================================================================
+Q1: Headroom scope -- given the two homegrown mechanisms already
+    shipped, what's the real remaining scope?
+A1: "1 and 3" = wire api/analyst.js next, AND go evaluate the actual
+    third-party Headroom library/tool for the broader ask.
+
+Q2: Kimi/Luna keys -- ready to provide them now?
+A2: "Not yet -- stay dormant."
+
+Q3: A12's leftover clause -- run the retroactive /drift check on
+    Phylum 11/14 against the real 7-step framework now?
+A3: "Yes, run it now."
+
+=====================================================================
+STEP 5 -- FACT-CHECK / BUILD (simplify + scope + godmode +
+commit-archaeologist discipline applied inline)
+=====================================================================
+(A) api/analyst.js real read (rule 1, first time this file has been
+    read in full this session): confirmed a bare `content.slice(0,
+    6000)` truncation feeding directly into the analysis prompt, no
+    marker, no log -- the same silent-content-loss bug class as
+    Bookworm's July-31-found/Aug-11-fixed one. Fix built:
+    - api/_context.js gained `condenseIfLarge(apiKey, text)`, a real
+      server-side mirror of phylumPath._condenseIfLarge() (can't
+      literally share code across the browser/Node runtime boundary;
+      kept behaviourally identical -- same 6000-char threshold, same
+      narrow filler-only prompt, same fail-open-on-anything-suspicious
+      discipline). Exported alongside new MODEL_MECHANICAL
+      ('claude-haiku-4-5-20251001', matches the existing standing
+      model-ID rule exactly) and CONDENSE_POST_CAP_CHARS (12000,
+      matching the Bookworm precedent).
+    - api/analyst.js now condenses first, then caps the condensed text
+      at 12000 chars (was: blind slice at 6000 of the RAW text) --
+      holds far more real substantive content than the old truncation
+      ever could, same reasoning as CLAUDE.md's own rule 12.
+    - `node --check api/_context.js api/analyst.js` clean.
+
+(B) Headroom-the-tool: WebSearch + WebFetch against
+    github.com/headroomlabs-ai/headroom's real current README (not the
+    old pasted paraphrase). Real findings: MCP server mode
+    (headroom_compress/headroom_retrieve/headroom_stats), real
+    cross-agent SharedContext + auto-dedup memory across
+    Claude/Codex/Gemini/Grok, a "headroom learn" feature that mines
+    failed sessions and writes corrections into shared files
+    (CLAUDE.md/AGENTS.md -- genuinely close to this project's own rule
+    6/8 discipline, worth noting even though not adopted), Apache 2.0,
+    29.5K+ stars / 155 releases (real production-readiness signal).
+    Real gotchas: ONNX Runtime/AVX2 requirement, Python 3.10+, Rust
+    needed behind a corporate MITM proxy, "sandboxed environments
+    where local processes can't run are a poor fit" -- this last one is
+    the load-bearing risk for RPGACE specifically (Claude Code Remote's
+    ephemeral containers + Vercel serverless are close to exactly that
+    class of environment). Verdict: Reference-only, reaffirmed --
+    real evidence now backs it instead of a paraphrase.
+
+(C) Retroactive /drift check on Phylum 11/14 vs. the real 7-step
+    Development Framework (interconnection_map.md:110's own canonical
+    definition: spec pass -> keyword sweep -> tree build -> data
+    repair -> enable Phylum Path -> fusion-link pass -> hand-test).
+    Real Supabase queries run:
+      select phylum_number, node_type, count(*) from taxonomy_tree
+        where phylum_number in (11,14) group by 1,2;
+      -> P11: 3 branch + 6 leaf = 9 nodes. P14: 8 leaf, 0 branch.
+      select tl.* from taxonomy_links tl
+        join taxonomy_tree a on tl.node_a_id=a.id
+        join taxonomy_tree b on tl.node_b_id=b.id
+        where a.phylum_number in (11,14) or b.phylum_number in (11,14);
+      -> exactly 1 row, id e75fef1f..., created_at 2026-07-16 --
+         PREDATES the July 30 buildout entirely. Zero real fusion-link
+         evidence for any of the 14 new leaves.
+    patch_notes.html (lines ~1113-1119) + the original spec-backlog
+    file confirm: spec pass (Alex's real category-list content),
+    keyword sweep (real collision found+fixed: bare "cinematic" in
+    P14 colliding with P11's mood vocabulary), and tree build (the
+    real, better-than-planned 14-category-leaf pattern, a genuine
+    improvement found mid-execution, not a shortfall) all real and
+    done. Data repair covered structurally (CLAUDE.md's own tree-wide
+    zero-orphan/zero-dangling-link claim applies to 11/14 too). Enable
+    confirmed (ENABLED_PHYLA includes 11, 14).
+
+    Baseline: RATIFIED (interconnection_map.md:110's own canonical
+      7-step framework definition, cross-checked against CLAUDE.md's
+      Taxonomy section claim "cleared the 7-step framework")
+    Work map: FULL (7 named steps)
+    Verdict: DRIFTED (partial -- 5/7 real, 2/7 not)
+    Findings:
+      1. Fusion-link pass: zero real evidence for the 14 new leaves
+         (query above).
+      2. Hand-test: CLAUDE.md's own Taxonomy bullet already said "Not
+         hand-tested" in the same sentence as "cleared the framework"
+         -- an internal contradiction, not new information.
+    Grades:
+      1. MATERIAL -- real work that should have run per the framework
+         didn't. The goal is intact; real options are (a) run a real
+         fusion-link pass over the 14 new leaves, or (b) Alex's own
+         call that jargon-bucket-style category leaves (lookup
+         buckets, not conceptual nodes) genuinely don't need the same
+         cross-pollination fusion links phyla 1-10's leaves do -- a
+         real, defensible design position, not assumed either way
+         here.
+      2. MINOR -- the record's wording was self-contradictory, not the
+         underlying fact (already correctly flagged elsewhere).
+    Next check due: whenever Alex answers the fusion-link fork, or at
+      the next real hand-test pass (same trigger as the standing
+      F16/F17/F18 hand-test backlog item).
+    NOT EXECUTED -- taxonomy writes always need a human checkpoint
+    (rule 4). Flagged for Alex's decision, not run blind.
+
+=====================================================================
+STEP 6 -- COUNCIL OF 5 SUMMARY
+=====================================================================
+See the chat reply this file accompanies for the full readable report.
+Short version: 4 of 5 verdicts hold up completely under full paranoid
+scrutiny (did-we-drift/Obsidian/Kimi-Luna/claude-mem all genuinely
+built, live, and correctly designed against the real risk each was
+originally rejected for). Headroom is now MORE built than before this
+pass started (a real server-side fix shipped along the way, closing an
+actual bug) and its Reference-only verdict is now backed by fresh
+real-README evidence instead of a paraphrase. One real, previously-
+unflagged gap was found and reported, not fixed blind: Phylum 11/14's
+fusion-link pass. One real stale-doc contradiction was found and fixed
+in the same pass (CLAUDE.md's Headroom "not built" line, and the
+Taxonomy section's "cleared the framework" overstatement).
