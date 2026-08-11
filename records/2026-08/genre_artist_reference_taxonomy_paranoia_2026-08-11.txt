@@ -279,3 +279,45 @@ taxonomy_tree (small, human-reviewed batch, matches the July 30
 Phylum 11/14 precedent) or stage through taxonomy_proposals first
 (the review-queue path, more ceremony for content that's already
 fully specified and reviewed in this file).
+
+=====================================================================
+REAL EXECUTION (same session, immediately after Alex's go-ahead)
+=====================================================================
+Alex's real answers: show the content first (done, above) -> approve
+the Sech->Russ Millions swap -> "don't add any content, just write out
+the phylum path like we did for 1-10, ill do content injection through
+rpgace."
+
+Built the skeleton only, per that instruction. Real INSERT (direct SQL,
+Supabase project gripopghczmrbrhqtqbm), matching the exact real column
+conventions confirmed by querying live Phylum 9/11 rows first (rule 1):
+path = "Historia/<node name>" format, sources = [{"id":null,"type":
+"phylum_path_manual"}], gap_score 0, status 'accepted', deep_content {}
+(empty -- genuinely a seed node, not the filled Phylum-11-style
+"Terminology bucket seeded..." version, since Alex is injecting the
+real content himself).
+
+11 new rows, real ids:
+  branch  fe74da64-03f4-4b87-b4a2-e120ab99b65e  Genre Lineage & Regional Artist Reference (depth 1, parent null)
+  leaf    43e2a798-92c2-4705-91e3-081c7fc7e134  West Coast Artist & Producer Reference
+  leaf    46000d1e-fa8f-4550-bce5-ec6ffb2aefac  Old School Hip-Hop Artist Reference
+  leaf    0fb6193d-d75b-4120-b53c-59f3c048e139  Early 2000s Artist & Producer Reference
+  leaf    9babf565-d0e9-48c3-a253-6eede6a09f84  Boom Bap Artist & Producer Reference
+  leaf    08496d62-6e9c-4fc4-9697-8479f2fd4a93  Jazz Rap Artist & Producer Reference
+  leaf    f5243011-91ef-4ab8-bc49-f73794a6edc6  Pop Rap Artist Reference
+  leaf    5483cc5e-184a-4dc2-9410-e48fcbbe91f8  Russian-Influenced Rap Artist Reference
+  leaf    1f9bec96-846a-4118-bc26-a5e79bba786e  French-Influenced Rap Artist Reference
+  (all 8 above: parent_id = fe74da64-03f4-4b87-b4a2-e120ab99b65e)
+  leaf    a96dcd0c-bfa7-4bf8-b8cf-9b00ba7a307e  UK/Chicago Drill Artist & Producer Reference
+    (parent_id = 5dbb7672-43fa-45ad-b3c8-e7de3d9ec2fe, the EXISTING
+    "Genre-Specific History (UK Drill & Trap)" branch)
+  leaf    9330c12a-8233-4c4c-9352-c20833557a75  Trap Artist & Producer Reference
+    (parent_id = 5dbb7672-43fa-45ad-b3c8-e7de3d9ec2fe, same existing branch)
+
+Verified: Phylum 9 node count 32 -> 43, no duplicate names introduced.
+
+The full "Covers: name1, name2..." content for all 10 genre leaves (the
+READY-TO-INSERT CONTENT section above, Sech already swapped for Russ
+Millions) is left here for Alex's own reference while he injects it
+through RPGACE -- not written into deep_content/explainer by this
+session, per his explicit instruction.

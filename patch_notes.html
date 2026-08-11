@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌳 Aug 11 (same day, continued) — Genre Lineage & Regional Artist Reference: 11-node taxonomy skeleton built under Historia, real structural correction caught first.</div>
+    <div class="card-body">
+      Alex brought a genre-expansion report from a different session (10 genres x 20 real artists/producers each) and asked this session to run real /paranoia+/CEO on it before anything touched Supabase. Real GODMODE finding: the other session's proposed shape (~200 individual artist leaf nodes) would have been a genuine architectural regression against Phylum 9's own already-shipped jargon-bucket convention — direct query confirmed all 32 existing Historia nodes are category-bucket leaves, zero per-artist nodes anywhere. Corrected to 11 nodes: 1 new branch ("Genre Lineage & Regional Artist Reference") with 8 direct leaf children for the 8 genres with no existing home, plus 2 new leaves nested under the EXISTING "Genre-Specific History (UK Drill & Trap)" branch for Drill/Trap (avoids a duplicate parallel bucket).
+      <br><br>
+      Real fact-check caught one genuine error the other session's own partial verification (Russian/French only) missed: "Sech" was listed under UK Drill — real evidence shows he's a Panamanian Latin trap/reggaeton artist, no drill connection. Alex approved swapping it for Russ Millions. Also hit and fixed a real, unrelated staleness finding while checking the staging table: <code>taxonomy_proposals</code> is actually 51 pending/33 accepted/80 rejected (164 total), not CLAUDE.md's stale "25 pending, 72 confirmed."
+      <br><br>
+      <strong>Per Alex's own explicit instruction, this pass built the tree SKELETON ONLY</strong> — the 11 nodes exist with placeholder explainers ("content pending manual injection"), the same "seed, not yet built out" shape as Phylum 11's original 3 seed branches. Alex is doing the actual content injection (the 200-name rosters) himself through RPGACE directly, not this session. Phylum 9 (Historia) now holds 43 real nodes, up from 32. Full record, including the ready-to-use "Covers:" content for whenever it's wanted: <code>records/2026-08/genre_artist_reference_taxonomy_paranoia_2026-08-11.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔍 Aug 11 (same day, continued) — real /paranoia+/CEO re-pass on all 5 Aintergration tool verdicts (/Engineer+/restructure as advisors): 4 hold up, Headroom sharpened + partly built further, a real gap found and fixed along the way.</div>
     <div class="card-body">
       Closed out the "full /paranoia-scrutinized re-pass on the 5 tool verdicts" item that had sat open since the massive-expansion spec (session_memory's own open_threads). Real evidence check, not a re-read of prior claims: did-we-drift (→ `/drift`), Obsidian, OmniRoute→Kimi/Luna, and claude-mem→`session_memory` all confirmed genuinely built and live — direct code/Supabase/git checks, not doc trust. `api/oracle.js`'s Kimi/Luna scaffold confirmed to have no silent auto-fallback (explicit `provider` field, dormant unless a caller opts in AND a key exists) — the exact failure class the original OmniRoute rejection was worried about doesn't apply here.
