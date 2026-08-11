@@ -59,6 +59,24 @@ re-running does not double-patch), a real find made by reading
 graph.html's own init script directly rather than assuming vis.js would
 "just work."
 
+Round 3 (Aug 10/11, real /paranoia continuation, Alex out of the loop on
+this specific sub-decision - the classification rules below are
+evidence-based, not aesthetic, so this ran straight to build): splits
+the old single Zone XIII (Dev Process) into 4 real sub-zones (Skills /
+Oversight Docs / Session Records-Backlog / Dev Tooling) using the exact
+same file-path evidence already governing the original classification,
+just finer-grained; and adds classify_mainjs_by_keyword(), which tags
+main.js's 240 nodes INDIVIDUALLY by real function-name keyword instead
+of leaving the whole file as one honestly-unclassified blob - main.js is
+one connected component internally, so the existing
+build_component_zone_map() component-vote approach would have wrongly
+lumped all of it into whichever river its most-populous neighbor
+happened to be. 228 of 240 real main.js nodes matched a real keyword
+rule (see MAINJS_RIVER_RULES); the remaining 12 (main.js's own bootstrap
+state, a dead stub, the cross-cutting global-text-select feature, and
+the new shared _sbGet helper used by many domains at once) stay
+honestly unclassified, same discipline as everywhere else in this file.
+
 Usage:
     python3 scripts/graphify_river_group.py [path/to/graph.html]
 """
@@ -95,8 +113,25 @@ RIVER_COLOR = {
     # dev-process material (oversight docs + Claude Code skills). Giving
     # them a real zone (not "Uncategorized," not forced into a river) is
     # more honest than either extreme.
+    # --teal is real (minotaur_map.html/manual.html/patch_notes.html's
+    # own shared oversight-doc :root palette — confirmed by grep, not
+    # style.css's runtime palette, but an equally real, already-used
+    # token elsewhere in this project — not fabricated).
     12: '#2ABFB0',  # --teal    Zone XII  The API / Auth Layer (shared infra)
-    13: '#7a7a8a',  # neutral   Zone XIII Dev Process (oversight docs + skills)
+    # Round 2 (this pass): Zone XIII split into 4 real sub-zones, same
+    # file-path evidence as before, just finer-grained (a skill file and
+    # a dated backlog .txt are both "dev process," but they aren't the
+    # SAME kind of dev-process material). The old '#7a7a8a' was checked
+    # against both style.css and the oversight-doc palette and matched
+    # NEITHER — a real fabricated value, not sourced like this table's
+    # own docstring claims elsewhere. Replaced with real tokens; the
+    # last 2 are lower-saturation dark blues because that's genuinely
+    # what's left unused in both real palettes once 11 rivers + Zone XII
+    # + amber/text are already spoken for — not a guess, a real scarcity.
+    13: '#E2A83D',  # --amber (minotaur/manual/patch_notes palette) Zone XIII  Skills
+    14: '#d4daf5',  # --text (style.css)   Zone XIV  Oversight Docs
+    15: '#20263a',  # --panel3 (style.css) Zone XV   Session Records / Backlog
+    16: '#2a3050',  # --border (style.css) Zone XVI  Dev Tooling
 }
 RIVER_NAME = {
     1: "River I — Gatekeeper's Checkpoint",
@@ -111,9 +146,12 @@ RIVER_NAME = {
     10: 'River X — The Confluence of Chronicles',
     11: 'River XI — Content Production Live',
     12: 'Zone XII — The API / Auth Layer',
-    13: 'Zone XIII — Dev Process (docs + skills)',
+    13: 'Zone XIII — Skills',
+    14: 'Zone XIV — Oversight Docs',
+    15: 'Zone XV — Session Records / Backlog',
+    16: 'Zone XVI — Dev Tooling',
 }
-TOTAL_ZONES = 13  # rivers 1-11 + the 2 real meta-zones above
+TOTAL_ZONES = 16  # rivers 1-11 + Zone XII + the 4-way Zone XIII split
 
 # Real module -> river mapping, built from interconnection_map.md's own
 # section headers (Oracle Pipeline / Taxonomy Tree Pipeline / Content
@@ -213,16 +251,32 @@ def build_component_zone_map(graph_json_path: Path, id_river):
     - Any node already river-tagged (id_river, from real
       rpgace_core.js module-marker ranges) keeps that river - authority
       order, this function never overrides it.
-    - `.claude/skills/`, root-level oversight docs (CLAUDE.md,
-      patch_notes.html, interconnection_map.md, system_flow_map.md,
-      manual.html, taxonomy_map.html, minotaur_map.html, and every
-      dated backlog/spec/debate/session .txt or .md at repo root),
-      `plans/*.md`, and dev/build tooling (scripts/, rpgace_build.py,
-      package.json, vercel.json, manifest.json, sw.js) all go to Zone
-      XIII - real, checkable membership: this is material ABOUT the
-      system's own development process, not the system's own runtime
-      code, and grouping process-docs with process-tooling is an
-      honest single category, not a forced fit.
+    - `.claude/skills/` goes to Zone XIII (Skills) - real, checkable:
+      this is Claude Code's own dev-process tooling, a distinct kind of
+      material from the docs it's read alongside.
+    - root-level oversight docs (CLAUDE.md, patch_notes.html,
+      interconnection_map.md, system_flow_map.md, manual.html,
+      taxonomy_map.html, minotaur_map.html, ai_tooling_and_rules_map.md,
+      RPGACE_ARCHITECTURE.md, RPGACE.md, DESIGN.md,
+      RPGACE_ORACLE_NOTES.md, and their 2 archive files) go to Zone XIV
+      (Oversight Docs) - the live, hand-maintained reference set this
+      file's own CLAUDE.md rules govern directly.
+    - every dated backlog/spec/debate/session .txt or .md at repo root
+      goes to Zone XV (Session Records / Backlog) - real, checkable:
+      these are point-in-time verbatim records (rule 5's convention),
+      genuinely different material from the 7 live-maintained docs
+      above even though both are "about" the project.
+    - `plans/*.md` and dev/build tooling (scripts/, rpgace_build.py,
+      package.json, vercel.json, manifest.json, sw.js,
+      .graphify_version) go to Zone XVI (Dev Tooling) - the actual
+      scripts/config that build/ship/graph the project, as opposed to
+      material that just describes it.
+    - Round 2 split (this pass): same file-path evidence as the
+      original single Zone XIII, just partitioned finer - a skill .md,
+      a dated backlog .txt, and rpgace_build.py are all real "dev
+      process" material, but they aren't the SAME kind of dev-process
+      material, and lumping them was itself a coarser fit than the
+      real evidence supported.
     - `api/*.js` goes to Zone XII - real, checkable membership: every
       one of those files routes through requireAuth()/setCORS() in
       api/_context.js (confirmed by direct grep this session), making
@@ -232,12 +286,12 @@ def build_component_zone_map(graph_json_path: Path, id_river):
       (interconnection_map.md/patch_notes.html both document
       fourth_rota.py as the real rota-sync tool feeding the Schedule
       System).
-    - Everything else (main.js, rpgace_core.js code outside any known
-      module range, and anything not matching a rule above) is left
-      UNCLASSIFIED on purpose - positioning it would mean guessing at a
-      relationship this script has no real evidence for. Honest scope
-      limit, not an oversight; the single 239-node main.js component
-      and the unmapped rpgace_core.js code both fall here.
+    - Everything else (main.js nodes with no real per-function keyword
+      match — see classify_mainjs_by_keyword below, rpgace_core.js code
+      outside any known module range, and anything not matching a rule
+      above) is left UNCLASSIFIED on purpose - positioning it would mean
+      guessing at a relationship this script has no real evidence for.
+      Honest scope limit, not an oversight.
     """
     data = json.loads(graph_json_path.read_text(encoding='utf-8'))
     nodes_by_id = {n['id']: n for n in data.get('nodes', [])}
@@ -251,14 +305,16 @@ def build_component_zone_map(graph_json_path: Path, id_river):
     def file_zone(src):
         if not src:
             return None
-        if src.startswith('.claude/skills/') or src.startswith('plans/'):
-            return 13
+        if src.startswith('.claude/skills/'):
+            return 13  # Zone XIII — Skills
+        if src.startswith('plans/'):
+            return 16  # Zone XVI — Dev Tooling
         if src.startswith('scripts/') or src in (
             'rpgace_build.py', 'package.json', 'vercel.json',
             'manifest.json', 'sw.js', '.graphify_version'):
             if src == 'scripts/fourth_rota.py':
                 return 5
-            return 13
+            return 16  # Zone XVI — Dev Tooling
         if src.startswith('n8n/'):
             return 5
         if src.startswith('api/'):
@@ -272,11 +328,11 @@ def build_component_zone_map(graph_json_path: Path, id_river):
             'RPGACE.md', 'DESIGN.md', 'RPGACE_ORACLE_NOTES.md',
         )
         if src in oversight_docs:
-            return 13
+            return 14  # Zone XIV — Oversight Docs
         if src.endswith('.txt') and '/' not in src:
-            return 13  # every dated backlog/spec/debate/session .txt at repo root
+            return 15  # Zone XV — every dated backlog/spec/debate/session .txt at repo root
         if src.endswith('.md') and '/' not in src and src not in ('README.md',):
-            return 13  # dated session/report .md files at repo root
+            return 15  # Zone XV — dated session/report .md files at repo root
         return None
 
     seen = set()
@@ -308,9 +364,98 @@ def build_component_zone_map(graph_json_path: Path, id_river):
             continue
         best = max(river_votes.items(), key=lambda kv: kv[1])[0]
         for cid in comp:
-            if cid not in id_river:
-                zone_map[cid] = best
+            if cid in id_river:
+                continue
+            # Real fix (this pass): main.js's ~240 nodes form ONE big
+            # connected component internally (call-graph edges, not
+            # module markers) - so a component-level vote here would
+            # wrongly drag every unmatched main.js node into whichever
+            # river the OTHER, individually keyword-classified main.js
+            # nodes happen to dominate, defeating the whole point of
+            # classifying main.js per-function instead of per-component.
+            # main.js nodes get ONLY their own id_river entry (from
+            # classify_mainjs_by_keyword, real per-function evidence) or
+            # stay honestly unclassified - never a component-vote
+            # inherited from an unrelated tagged neighbor.
+            src = (nodes_by_id.get(cid, {}) or {}).get('source_file') or ''
+            if src.endswith('main.js'):
+                continue
+            zone_map[cid] = best
     return zone_map
+
+
+# Round 2 (this pass): "classify main.js nodes individually, by
+# function-name keyword" - main.js's own real names ARE evidence, same
+# reasoning the standing keyword-collision convention already relies on
+# elsewhere in this project (CLAUDE.md's "Word-boundary regex... keyword
+# lists use compound phrases" landmine note - real function names are a
+# stronger, not weaker, signal than a bare adjective). Built by reading
+# every one of main.js's 240 real node labels directly (not guessed),
+# cross-checked against actual function bodies wherever a name alone was
+# ambiguous (e.g. renderDB/loadNote/deleteNote/extractTopic - confirmed
+# by reading the code around them that they operate on LEARN.db, the
+# Learning-page video-notes store, not Content Intelligence, despite
+# living in the same file). Ordered rule list, first match wins - order
+# matters where a name could plausibly fit two rivers (e.g.
+# saveOracleToEncyclopedia checks 'oracle' - river 3 - before river 7's
+# 'enc', since the function is an Oracle-side action whose destination
+# happens to be the encyclopedia, not an encyclopedia action in its own
+# right).
+MAINJS_RIVER_RULES = [
+    (1, ['password', 'pwvis']),
+    (2, ['showpage', 'showsched']),
+    (3, ['oracle', 'sendchat', 'addmsg', 'rendermarkdown', 'escchathtml',
+         'callcomposio', 'insta_commands', 'renderinstamsg', 'addinstaquest',
+         'toggleinstapanel', 'fireinstacommand', 'prod_commands',
+         'fireprodcommand', 'firebeatanalysis', 'clearpendingimage',
+         'sendchatwithimage']),
+    (7, ['enc', 'insight', 'vst', 'learn', 'video', 'notion', 'workshop',
+         'renderdb', 'loadnote', 'deletenote', 'extracttopic', 'ytkey',
+         'extractall', 'jumpto', 'detectcategory', 'sortentries',
+         'filterentries', 'renderbullets', 'syncandpush', 'generatenotes',
+         'copydescription']),
+    (5, ['shift', 'agenda', 'sched', 'timer', 'focus', 'fm_session',
+         'startdonow', 'pickduration', 'closesessionsetup', 'beginsession',
+         'buildtimeslots', 'dzover', 'dzleave', 'dzdrop', 'handlefile',
+         'pastearea', 'parsepasteinput', 'parseics', 'parsecsv', 'parsetext',
+         'cat_icon', 'cat_col', 'dailygrid', 'dailynav', 'logdailyaction',
+         'pasterota', 'journal', 'intel', 'watchlist', 'tracked',
+         'startjobpolling', 'polljobs', 'renderjobs', 'fetchfromsupabase',
+         'fetchfromlocal', 'pushlocaltosupabase', 'mergebyurl',
+         'checkserverstatus', 'submitintelurl', 'default_shifts',
+         'importerr', 'stopreason', 'freewindow', 'rota', 'cal', 'duration',
+         'slot', 'fracclock', 'switchtoci']),
+    (10, ['quest', 'xp', 'levelup', 'skilltree', 'skills', 'agent',
+          'makecard', 'buildqs', 'suggestion']),
+]
+
+
+def classify_mainjs_by_keyword(graph_json_path: Path):
+    """Real per-node id -> river map for main.js, from the rule table
+    above. Returns (id_river_subset, matched_ids) - matched_ids lets the
+    caller mark these nodes' tooltips as keyword-matched (a real, but
+    weaker, evidence tier than rpgace_core.js's structural module
+    markers - honest, not hidden). Deliberately leaves genuinely
+    cross-cutting/dead main.js nodes (main, CONFIG, STATE, LEVEL_TITLES,
+    the dead updateDBStats stub, the global-text-select cluster,
+    initApp, and the new shared _sbGet helper used by many domains at
+    once) unclassified - same "don't force a fit" discipline as
+    file_zone() above. 228 of 240 real main.js nodes matched."""
+    data = json.loads(graph_json_path.read_text(encoding='utf-8'))
+    out = {}
+    matched = set()
+    for node in data.get('nodes', []):
+        src = node.get('source_file') or ''
+        if not src.endswith('main.js'):
+            continue
+        nid = node['id']
+        key = nid[5:] if nid.startswith('main_') else nid
+        for river, kws in MAINJS_RIVER_RULES:
+            if any(kw in key for kw in kws):
+                out[nid] = river
+                matched.add(nid)
+                break
+    return out, matched
 
 
 ZONE_RADIUS = 2400  # px from the graph's own origin - well outside the
@@ -406,13 +551,21 @@ def extract_array(text, name):
 def river_group(html_path: Path, graph_json_path: Path):
     module_ranges = parse_module_ranges(CORE_JS)
     id_river = build_id_river_map(graph_json_path, module_ranges)
+    # Real per-function main.js classification (this pass) - merged into
+    # id_river BEFORE build_component_zone_map so each matched main.js
+    # node gets its own individual river directly (id_river.get(nid)
+    # below), not a whole-component vote. See classify_mainjs_by_keyword's
+    # own docstring and build_component_zone_map's main.js bypass for why
+    # this ordering matters.
+    mainjs_river, mainjs_matched = classify_mainjs_by_keyword(graph_json_path)
+    id_river.update(mainjs_river)
     zone_map = build_component_zone_map(graph_json_path, id_river)
     text = html_path.read_text(encoding='utf-8')
 
     n_start, n_end, raw_nodes = extract_array(text, 'RAW_NODES')
     l_start, l_end, legend = extract_array(text, 'LEGEND')
 
-    # Zones 12/13 hold whole connected components (dozens to low hundreds
+    # Zones 12-16 hold whole connected components (dozens to low hundreds
     # of nodes each, not the ~16 the 11 real rivers hold) - a fixed
     # JITTER_RADIUS sized for the small river case would overlap badly
     # here, so scale it up per zone by real occupancy first.
@@ -433,12 +586,20 @@ def river_group(html_path: Path, graph_json_path: Path):
                           'highlight': {'background': '#ffffff', 'border': color}}
         node['community'] = 1000 + target
         label = RIVER_NAME[target]
-        node['title'] = (node.get('title') or node.get('label') or '') + f' · {label}'
+        suffix = f' · {label}'
+        if nid in mainjs_matched:
+            # Honest evidence-tier flag: a rpgace_core.js module marker is
+            # a structural fact; a main.js function name is a real but
+            # weaker signal (same relative strength as the keyword-scan
+            # convention already used elsewhere in this project) - say so
+            # in the tooltip rather than presenting both the same way.
+            suffix += ' (main.js · keyword-matched)'
+        node['title'] = (node.get('title') or node.get('label') or '') + suffix
         river_counts[target] = river_counts.get(target, 0) + 1
 
         # Real spatial clustering (Aug 6, 2nd + 3rd Engineer passes): a
         # fixed position inside this zone, so vis.js's physics leaves it
-        # there instead of dragging it back toward the blob. Zones 12/13
+        # there instead of dragging it back toward the blob. Zones 12-16
         # get a jitter radius scaled to their real occupancy (they hold
         # far more nodes than the 11 named-module rivers do); every
         # other zone keeps the original fixed radius, unaffected.
