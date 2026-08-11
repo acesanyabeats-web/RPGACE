@@ -2,6 +2,7 @@
 river_number: 5
 river_name: "River V — Two Independent Streams"
 kind: river
+carries_data_flow: true
 color: "#4caf82"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -13,13 +14,13 @@ source: "graphify_river_group.py — real, not guessed"
 - [[researchTabs]] — `rpgace_core.js:3579-3742`
 - [[intelBatchList]]
 - [[intelDelete]] — `rpgace_core.js:4995-5581`
-- [[intelDedup]] — `rpgace_core.js:6350-6481`
+- [[intelDedup]] — `rpgace_core.js:6357-6488`
 - [[ciAutoPropose]] — `rpgace_core.js:2867-2953`
-- [[scheduleFixes]] — `rpgace_core.js:17468-17526`
-- [[shiftSync]] — `rpgace_core.js:17401-17466`
+- [[scheduleFixes]] — `rpgace_core.js:17529-17587`
+- [[shiftSync]] — `rpgace_core.js:17462-17527`
 - [[agendaReminder]] — `rpgace_core.js:4658-4730`
-- [[morningBrief]] — `rpgace_core.js:17046-17294`
-- [[journalQoL]] — `rpgace_core.js:17686-17825`
+- [[morningBrief]] — `rpgace_core.js:17107-17355`
+- [[journalQoL]] — `rpgace_core.js:17747-17886`
 
 ## Flows into
 

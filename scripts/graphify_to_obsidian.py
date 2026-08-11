@@ -38,67 +38,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402  (import after sys.path fix, deliberate)
     RIVER_MODULES, RIVER_NAME, RIVER_COLOR, TOTAL_ZONES, CORE_JS,
+    RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
+    RIVER_ROLE_NOTE, EXTERNAL_CONNECTORS,
     parse_module_ranges,
 )
 
 DEFAULT_VAULT = Path('obsidian-vault')
 
-# Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
-# connectors (Aug 6 restructure pass) — never guessed. Each entry: real
-# source river number -> list of (target label, real condition/note).
-# Rivers 12-16 (the meta-zones, not named rivers in minotaur_map.html)
-# have no flow-connector data — minotaur_map.html's own scope is the 11
-# named rivers only, honest scope match, not a gap in this script.
-RIVER_FLOWS = {
-    1: [('River II — The Great Confluence', 'always')],
-    2: [
-        ('River III — The Oracle Current', 'Oracle page selected'),
-        ('River IV — The Bookworm River', 'Bookworm page selected'),
-        ('River V — Two Independent Streams', 'Schedule/Content Intel page selected'),
-    ],
-    3: [
-        ('River VI — The Judgment Chamber', 'a tapped insight badge'),
-        ('River IV — The Bookworm River', 'special prefix diverts the message'),
-        ('River V — Two Independent Streams', 'special prefix diverts the message'),
-    ],
-    4: [('River VI — The Judgment Chamber', 'every insight found here')],
-    5: [('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar')],
-    6: [
-        ('River VII — The Library Current', "a fresh leaf's teaching page"),
-        ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge'),
-    ],
-    7: [('River VIII — The Confluence Pool', 'a proposed merge')],
-    8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there")],
-    9: [('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates")],
-    10: [('— terminal sink for every river above —', 'River XI is the one exception, see below')],
-    11: [('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one')],
-}
-
-def _roman_to_int(s: str) -> int:
-    vals = {'I': 1, 'V': 5, 'X': 10}
-    total = 0
-    prev = 0
-    for ch in reversed(s):
-        v = vals[ch]
-        total += -v if v < prev else v
-        prev = v
-    return total
-
-
-def _river_num_from_label(label: str) -> int | None:
-    if not label.startswith('River'):
-        return None
-    token = label.split('—')[0].split()[1]
-    return _roman_to_int(token)
-
-
-# Build the reverse map (who flows INTO river N) now that the helper exists.
-FLOWS_IN = {}
-for src, targets in RIVER_FLOWS.items():
-    for label, note in targets:
-        tgt = _river_num_from_label(label)
-        if tgt:
-            FLOWS_IN.setdefault(tgt, []).append((src, note))
+# RIVER_FLOWS/FLOWS_IN (real, verbatim-extracted from minotaur_map.html's
+# own `.river-flow-next` connectors) moved to graphify_river_group.py
+# Aug 11 — rule-8 dedup, now the single canonical source, imported above.
+# graph.html's own new RIVER_NOTES bridge (build_river_notes, same
+# script) uses the identical data — this was previously a second copy.
 
 
 def slug(name: str) -> str:
@@ -112,12 +63,13 @@ def note_filename(num: int) -> str:
 def build_hub_note(num: int, module_ranges) -> str:
     name = RIVER_NAME[num]
     color = RIVER_COLOR[num]
-    is_river = num <= 11
+    carries_data_flow = num <= 11
     lines = []
     lines.append('---')
     lines.append(f'river_number: {num}')
     lines.append(f'river_name: "{name}"')
-    lines.append(f'kind: {"river" if is_river else "zone"}')
+    lines.append('kind: river')
+    lines.append(f'carries_data_flow: {"true" if carries_data_flow else "false"}')
     lines.append(f'color: "{color}"')
     lines.append('source: "graphify_river_group.py — real, not guessed"')
     lines.append('---')
@@ -135,13 +87,25 @@ def build_hub_note(num: int, module_ranges) -> str:
             lines.append(f'- [[{m}]]{loc}')
         lines.append('')
     else:
-        lines.append('## Real membership')
+        # Aug 11, real Alex ask: rivers XII-XVI join the unified river
+        # system (they carry real Total-system traffic, just a
+        # different kind than I-XI's narrative info flow) — see
+        # RIVER_ROLE_NOTE in graphify_river_group.py, the canonical
+        # source for this text.
+        lines.append('## Real role')
         lines.append('')
-        lines.append('File-path rules only (no single-module river tag) — see '
-                      '`scripts/graphify_river_group.py`\'s own `file_zone()` for '
-                      'the exact, checkable membership rule. This is a real Zone '
-                      '(API/Auth layer, Skills, Oversight Docs, Session Records, '
-                      'or Dev Tooling), not a named code river.')
+        lines.append(RIVER_ROLE_NOTE.get(num, ''))
+        lines.append('')
+
+    if num == 12:
+        lines.append('## Total-systems connectors (real, external)')
+        lines.append('')
+        lines.append('Canonical source: `ai_tooling_and_rules_map.md`\'s own '
+                      '"External AI/tool providers" table — mirrored here for '
+                      'graphify/Obsidian display, not a second independent fact-set.')
+        lines.append('')
+        for x in EXTERNAL_CONNECTORS:
+            lines.append(f"- **{x['name']}** ({x['status']}) via `{x['via']}` — {x['note']}")
         lines.append('')
 
     if num in RIVER_FLOWS:
@@ -170,15 +134,22 @@ def build_hub_note(num: int, module_ranges) -> str:
 def build_index_note() -> str:
     lines = ['---', 'title: "RPGACE System Map"', '---', '',
              '# RPGACE System Map', '',
-             'Real, generated index over RPGACE\'s own river/zone structure — the '
+             'Real, generated index over RPGACE\'s own river structure — the '
              'human-facing knowledge layer graphify\'s own code-analysis output '
              'feeds into (Aintergration verdict, Aug 11 2026: Obsidian is not a '
              'graphify replacement, but a real fit for this layer specifically).',
-             '', '## Rivers (named code domains)', '']
+             '',
+             'Aug 11, real Alex ask: 16 unified rivers now, not "11 rivers + 5 '
+             'zones" — rivers XII-XVI carry real Total-systems traffic (external '
+             'AI/tool connectors, or the dev-process/knowledge layer the Total '
+             'system\'s own Claude Code members coordinate through), a different '
+             'KIND of real traffic than I-XI\'s in-app narrative information flow, '
+             'not a lesser one.',
+             '', '## Rivers I-XI (in-app narrative information flow)', '']
     for n in range(1, 12):
         lines.append(f'- [[{note_filename(n)}|{RIVER_NAME[n]}]]')
     lines.append('')
-    lines.append('## Zones (real, file-path-evidenced, not a single named module)')
+    lines.append('## Rivers XII-XVI (Total-systems / dev-process, file-path-evidenced)')
     lines.append('')
     for n in range(12, TOTAL_ZONES + 1):
         lines.append(f'- [[{note_filename(n)}|{RIVER_NAME[n]}]]')

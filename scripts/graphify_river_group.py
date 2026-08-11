@@ -145,13 +145,71 @@ RIVER_NAME = {
     9: 'River IX — The Mirror and the Far Shore',
     10: 'River X — The Confluence of Chronicles',
     11: 'River XI — Content Production Live',
-    12: 'Zone XII — The API / Auth Layer',
-    13: 'Zone XIII — Skills',
-    14: 'Zone XIV — Oversight Docs',
-    15: 'Zone XV — Session Records / Backlog',
-    16: 'Zone XVI — Dev Tooling',
+    12: 'River XII — The API / Auth Layer',
+    13: 'River XIII — Skills',
+    14: 'River XIV — Oversight Docs',
+    15: 'River XV — Session Records / Backlog',
+    16: 'River XVI — Dev Tooling',
 }
-TOTAL_ZONES = 16  # rivers 1-11 + Zone XII + the 4-way Zone XIII split
+# Aug 11, real Alex ask: 12-16 stop being a separate "Zone" species and
+# join the unified river system, because they DO carry real Total-
+# systems traffic — Alex's own correction: "they do have connectors,
+# otherwise it would not receive and push data within the total
+# systems." Real, checkable, not invented: River XII (API/Auth) is
+# literally the layer every external Total-system call (OpenMontage,
+# Kimi/Luna, librosa/ffmpeg, OpenArt, Composio) routes through —
+# api/oracle.js, api/_context.js, api/data-write.js. Rivers XIII-XVI
+# carry a different KIND of real traffic — not runtime API calls, but
+# the dev-process/knowledge layer the Total-system's own Claude Code
+# members (RPGACE CC, Graphify CC, Engineer CC) read from and write
+# into to coordinate (skills define dispatch discipline; oversight docs
+# are the shared truth Graphify CC deposits into via graphify_jobs;
+# session records ARE the real dispatch history; dev tooling is what
+# generates this very graph/vault output). See EXTERNAL_CONNECTORS and
+# RIVER_ROLE_NOTE below for the real, sourced detail — canonical source
+# of truth is ai_tooling_and_rules_map.md's own "External AI/tool
+# providers" table (1d); this mirrors those same facts for graphify/
+# Obsidian display, never invents new ones (rule 8: same underlying
+# facts, not restated from scratch).
+TOTAL_ZONES = 16  # 16 unified rivers: I-XI (narrative info-flow) + XII-XVI (Total-systems/dev-process)
+
+# Real, evidence-mirrored from ai_tooling_and_rules_map.md's own 1d
+# table (the canonical source — this is a presentation-layer mirror for
+# graphify/Obsidian, not a second independent fact-set). River XII is
+# the one river that carries literal runtime API traffic to external
+# Total-system members, so it's the only one that gets this structured
+# connector list; status values ('live'/'dormant'/'deferred') match
+# that table's own wording exactly.
+EXTERNAL_CONNECTORS = [
+    {'name': 'OpenMontage', 'status': 'live', 'via': 'openmontage_jobs Supabase queue',
+     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("Engineer CC") in its own repo — never RPGACE-embedded'},
+    {'name': 'Composio', 'status': 'live', 'via': 'api/composio.js / api/executor.js / api/orchestrate.js',
+     'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation'},
+    {'name': 'Moonshot AI (Kimi)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'kimi\'',
+     'note': 'real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set'},
+    {'name': 'OpenAI (Luna)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'luna\'',
+     'note': 'same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set'},
+    {'name': 'librosa', 'status': 'optional/local', 'via': 'beat_audio_jobs + beat-audio bucket, local_server.py',
+     'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service'},
+    {'name': 'FFmpeg', 'status': 'live (external repo)', 'via': "OpenMontage's own pipeline, confirmed working July 31",
+     'note': "runs inside Engineer CC's OpenMontage environment, not RPGACE's own runtime"},
+    {'name': 'OpenArt', 'status': 'deferred', 'via': 'none yet',
+     'note': '"connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet'},
+    {'name': 'Graphify CC', 'status': 'live', 'via': 'graphify_jobs Supabase queue',
+     'note': 'the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph'},
+]
+
+# Real, honest per-river role text for XIII-XVI — replaces the old
+# negative "no single-module river tag" framing (which read as
+# second-class) with an affirmative statement of their actual real role
+# in the Total system, since that's what they are now presented as.
+RIVER_ROLE_NOTE = {
+    12: 'The one river that carries literal runtime API traffic to external Total-system members — every OpenMontage/Kimi/Luna/librosa/OpenArt/Composio call routes through here (api/oracle.js, api/_context.js, api/data-write.js). File-path membership: `api/*.js`. See "Total-systems connectors" below for the real, per-connector detail.',
+    13: 'The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, Engineer CC) runs against — file-path membership: `.claude/skills/`.',
+    14: 'The shared truth layer Total-system members read from and write into (Graphify CC deposits real findings here via graphify_jobs when a row is flagged "please log to Chronicles"). File-path membership: the live-maintained doc set.',
+    15: 'Real dispatch/session history — dated backlog `.txt`/`.md` at repo root, the same real record `openmontage_jobs`/`graphify_jobs` rows themselves become once resolved.',
+    16: 'The actual scripts/config that build, ship, and graph the Total system — including the very scripts (graphify_recolor.py/graphify_river_group.py/graphify_to_obsidian.py/obsidian_vault_to_html.py) that generate this graph and the Obsidian vault themselves.',
+}
 
 # Real module -> river mapping, built from interconnection_map.md's own
 # section headers (Oracle Pipeline / Taxonomy Tree Pipeline / Content
@@ -185,6 +243,70 @@ RIVER_MODULES = {
          'conidPot', 'contentRepurpose', 'visualOracle'],
 }
 MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
+
+# Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
+# connectors (Aug 6 restructure pass) — never guessed. Each entry: real
+# source river number -> list of (target label, real condition/note).
+# Rivers 12-16 (the meta-zones, not named rivers in minotaur_map.html)
+# have no flow-connector data — minotaur_map.html's own scope is the 11
+# named rivers only, honest scope match, not a gap in this table.
+# Moved here from graphify_to_obsidian.py (Aug 11, rule-8 dedup) so this
+# script — already the canonical source for RIVER_NAME/RIVER_COLOR/
+# RIVER_MODULES — is also the one source for river-flow data; the vault
+# exporter and graph.html's own new RIVER_NOTES bridge (see
+# build_river_notes below) both import it from here instead of each
+# keeping a copy.
+RIVER_FLOWS = {
+    1: [('River II — The Great Confluence', 'always')],
+    2: [
+        ('River III — The Oracle Current', 'Oracle page selected'),
+        ('River IV — The Bookworm River', 'Bookworm page selected'),
+        ('River V — Two Independent Streams', 'Schedule/Content Intel page selected'),
+    ],
+    3: [
+        ('River VI — The Judgment Chamber', 'a tapped insight badge'),
+        ('River IV — The Bookworm River', 'special prefix diverts the message'),
+        ('River V — Two Independent Streams', 'special prefix diverts the message'),
+    ],
+    4: [('River VI — The Judgment Chamber', 'every insight found here')],
+    5: [('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar')],
+    6: [
+        ('River VII — The Library Current', "a fresh leaf's teaching page"),
+        ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge'),
+    ],
+    7: [('River VIII — The Confluence Pool', 'a proposed merge')],
+    8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there")],
+    9: [('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates")],
+    10: [('— terminal sink for every river above —', 'River XI is the one exception, see below')],
+    11: [('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one')],
+}
+
+
+def _roman_to_int(s: str) -> int:
+    vals = {'I': 1, 'V': 5, 'X': 10}
+    total = 0
+    prev = 0
+    for ch in reversed(s):
+        v = vals[ch]
+        total += -v if v < prev else v
+        prev = v
+    return total
+
+
+def _river_num_from_label(label: str) -> int | None:
+    if not label.startswith('River'):
+        return None
+    token = label.split('—')[0].split()[1]
+    return _roman_to_int(token)
+
+
+# Build the reverse map (who flows INTO river N) now that the helper exists.
+FLOWS_IN = {}
+for _src, _targets in RIVER_FLOWS.items():
+    for _label, _note in _targets:
+        _tgt = _river_num_from_label(_label)
+        if _tgt:
+            FLOWS_IN.setdefault(_tgt, []).append((_src, _note))
 
 
 def parse_module_ranges(core_js_path: Path):
@@ -233,6 +355,75 @@ def build_id_river_map(graph_json_path: Path, module_ranges):
                     id_river[node['id']] = river
                 break
     return id_river
+
+
+def build_id_module_map(graph_json_path: Path, module_ranges):
+    """Companion to build_id_river_map, same loop shape, keyed by real
+    module name instead of river number. Aug 11 addition, real Alex ask
+    ("one combined view" — graphify's graph and the Obsidian vault notes
+    together, not two separate disconnected links): this is what lets
+    graph.html's new RIVER_NOTES bridge (build_river_notes below) list,
+    for each river's real member modules, the actual node ids physically
+    inside that module's line range — so clicking a member name in the
+    inline note can select/focus those real nodes in the graph itself,
+    a genuine two-way link, not a decorative list."""
+    data = json.loads(graph_json_path.read_text(encoding='utf-8'))
+    id_module = {}
+    for node in data.get('nodes', []):
+        src = node.get('source_file') or ''
+        if not src.endswith('rpgace_core.js'):
+            continue
+        ln = line_of(node)
+        if ln is None:
+            continue
+        for mod, (start, end) in module_ranges.items():
+            if start <= ln <= end:
+                id_module[node['id']] = mod
+                break
+    return id_module
+
+
+def build_river_notes(module_ranges, id_module):
+    """Real, structured (JSON, not markdown) equivalent of
+    graphify_to_obsidian.py's build_hub_note — same underlying data
+    (RIVER_MODULES/RIVER_NAME/RIVER_COLOR/RIVER_FLOWS/FLOWS_IN, all
+    canonical in this file), reshaped for graph.html's own JS to render
+    inline in the node-info panel rather than as a separate markdown
+    page. Deliberately NOT a call into graphify_to_obsidian.py (would be
+    a circular import — that script imports FROM this one) — the shared
+    truth is the module-level tables above, not the markdown renderer,
+    so this is real reuse, not a second hand-typed copy of the content."""
+    module_to_ids = {}
+    for nid, mod in id_module.items():
+        module_to_ids.setdefault(mod, []).append(nid)
+
+    notes = {}
+    for river in range(1, TOTAL_ZONES + 1):
+        mods = RIVER_MODULES.get(river)
+        members = None
+        if mods:
+            members = []
+            for mod in mods:
+                rng = module_ranges.get(mod)
+                members.append({
+                    'name': mod,
+                    'range': f'{rng[0]}-{rng[1]}' if rng else None,
+                    'node_ids': module_to_ids.get(mod, []),
+                })
+        flows_into = [{'label': label, 'note': note} for label, note in RIVER_FLOWS.get(river, [])]
+        fed_by = [{'label': RIVER_NAME[src], 'note': note} for src, note in FLOWS_IN.get(river, [])]
+        notes[str(river)] = {
+            'name': RIVER_NAME[river],
+            'kind': 'river',
+            'carries_data_flow': river <= 11,
+            'color': RIVER_COLOR[river],
+            'members': members,
+            'zone_note': RIVER_ROLE_NOTE.get(river),
+            'flows_into': flows_into,
+            'fed_by': fed_by,
+            'external_connectors': EXTERNAL_CONNECTORS if river == 12 else None,
+        }
+    return notes
 
 
 def build_component_zone_map(graph_json_path: Path, id_river):
@@ -362,7 +553,16 @@ def build_component_zone_map(graph_json_path: Path, id_river):
                 river_votes[z] = river_votes.get(z, 0) + 1
         if not river_votes:
             continue
-        best = max(river_votes.items(), key=lambda kv: kv[1])[0]
+        # Aug 11, real bug found while extending this script: a tied
+        # vote used to resolve via dict/set iteration order, which
+        # Python randomizes per-process for string keys (PYTHONHASHSEED)
+        # - re-running this script against the SAME graph.json could
+        # silently assign a different river to a tied component each
+        # time, contradicting this file's own "re-running always
+        # reproduces the exact same layout" claim. sorted() first makes
+        # a tie resolve to the lowest river number, always, regardless
+        # of hash seed - real determinism, not just claimed.
+        best = max(sorted(river_votes.items()), key=lambda kv: kv[1])[0]
         for cid in comp:
             if cid in id_river:
                 continue
@@ -530,6 +730,113 @@ def patch_dataset_mapping(text):
     return text.replace(old, new), True
 
 
+RIVER_NOTES_START = '/* RIVER_NOTES_BRIDGE:START — regenerated every run, do not hand-edit */'
+RIVER_NOTES_END = '/* RIVER_NOTES_BRIDGE:END */'
+
+
+def build_river_notes_block(river_notes):
+    """Aug 11, real Alex ask: 'one combined view' — graphify's own
+    graph and the Obsidian vault's river/zone notes together, not two
+    separate disconnected Oversight links. Injects the real river/zone
+    note content (same source data as graphify_to_obsidian.py's
+    markdown notes — RIVER_MODULES/RIVER_NAME/RIVER_COLOR/RIVER_FLOWS/
+    FLOWS_IN, all canonical in this file) as inline JS, plus a small
+    renderer + a click handler on member-module names that selects and
+    focuses their real node ids in the graph — a genuine two-way bridge,
+    not decoration. Wrapped in a marker-delimited region so a re-run
+    always replaces the whole block with fresh data (river/zone content
+    changes over time; the helper JS does not need to, but regenerating
+    both together is simpler and still fully idempotent)."""
+    notes_json = json.dumps(river_notes, ensure_ascii=False).replace('</script', '<\\/script')
+    return (
+        RIVER_NOTES_START + '\n'
+        'const RIVER_NOTES = ' + notes_json + ';\n'
+        'function riverNoteHtml(rn) {\n'
+        '  var html = \'<div class="river-note" style="border-top:2px solid \' + esc(rn.color) + \';margin-top:10px;padding-top:8px;">\';\n'
+        '  html += \'<div class="field" style="color:\' + esc(rn.color) + \';font-weight:700;">\\uD83D\\uDCD6 \' + esc(rn.name) + \'</div>\';\n'
+        '  if (rn.members) {\n'
+        '    html += \'<div class="field" style="margin-top:4px;color:#aaa;font-size:11px;">Real member modules</div>\';\n'
+        '    rn.members.forEach(function(m) {\n'
+        '      var has = m.node_ids && m.node_ids.length;\n'
+        '      html += \'<span class="neighbor-link member-link" \' + (has ? (\'data-ids="\' + esc(m.node_ids.join(\',\')) + \'"\') : \'\')\n'
+        '        + \' style="border-left-color:\' + esc(rn.color) + \';cursor:\' + (has ? \'pointer\' : \'default\') + \';color:\' + (has ? \'#e0e0e0\' : \'#777\') + \';">\'\n'
+        '        + (has ? \'\\u25B6 \' : \'\\u00B7 \') + esc(m.name) + (m.range ? (\' (\' + esc(m.range) + \')\') : \'\') + \'</span>\';\n'
+        '    });\n'
+        '  } else if (rn.zone_note) {\n'
+        '    html += \'<div class="field" style="font-size:11px;color:#999;">\' + esc(rn.zone_note) + \'</div>\';\n'
+        '  }\n'
+        '  if (rn.external_connectors && rn.external_connectors.length) {\n'
+        '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Total-systems connectors</div>\';\n'
+        '    rn.external_connectors.forEach(function(x) {\n'
+        '      var dot = x.status === \'live\' || x.status.indexOf(\'live\') === 0 ? \'#4caf82\' : (x.status === \'deferred\' ? \'#777\' : \'#c9a84c\');\n'
+        '      html += \'<div class="field" style="font-size:11px;"><span style="color:\' + dot + \';">\\u25CF</span> \' + esc(x.name) + \' <span style="color:#777;">(\' + esc(x.status) + \' \\u2014 \' + esc(x.via) + \')</span></div>\';\n'
+        '    });\n'
+        '  }\n'
+        '  if (rn.flows_into && rn.flows_into.length) {\n'
+        '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Flows into</div>\';\n'
+        '    rn.flows_into.forEach(function(f) {\n'
+        '      html += \'<div class="field" style="font-size:11px;">\\u2192 \' + esc(f.label) + \' <span style="color:#777;">(\' + esc(f.note) + \')</span></div>\';\n'
+        '    });\n'
+        '  }\n'
+        '  if (rn.fed_by && rn.fed_by.length) {\n'
+        '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Fed by</div>\';\n'
+        '    rn.fed_by.forEach(function(f) {\n'
+        '      html += \'<div class="field" style="font-size:11px;">\\u2190 \' + esc(f.label) + \' <span style="color:#777;">(\' + esc(f.note) + \')</span></div>\';\n'
+        '    });\n'
+        '  }\n'
+        '  html += \'</div>\';\n'
+        '  return html;\n'
+        '}\n'
+        'document.addEventListener(\'click\', function(e) {\n'
+        '  var el = e.target.closest(\'.member-link\');\n'
+        '  if (el && el.dataset.ids) {\n'
+        '    var ids = el.dataset.ids.split(\',\');\n'
+        '    network.selectNodes(ids);\n'
+        '    network.fit({ nodes: ids, animation: true });\n'
+        '    showInfo(ids[0]);\n'
+        '  }\n'
+        '});\n'
+        + RIVER_NOTES_END
+    )
+
+
+SHOW_INFO_MARKER = 'riverNoteHtml(RIVER_NOTES'  # idempotency check string
+
+
+def patch_river_notes_bridge(text, river_notes):
+    """Injects/refreshes the RIVER_NOTES data+helper block (always
+    replaced in full, so content stays current run to run) and patches
+    showInfo()'s own template literal to render it, exactly once (the
+    showInfo patch itself never needs to change, only the data does)."""
+    block = build_river_notes_block(river_notes)
+    if RIVER_NOTES_START in text:
+        start = text.index(RIVER_NOTES_START)
+        end = text.index(RIVER_NOTES_END) + len(RIVER_NOTES_END)
+        text = text[:start] + block + text[end:]
+    else:
+        marker = '</script>\n<script>\n// Render hyperedges as shaded regions'
+        if marker not in text:
+            raise ValueError('graph.html\'s script-block boundary has changed shape - '
+                              'a graphify version bump likely rewrote its own export '
+                              'template. Re-check by hand before patching blind.')
+        text = text.replace(marker, block + '\n</script>\n<script>\n// Render hyperedges as shaded regions', 1)
+
+    if SHOW_INFO_MARKER not in text:
+        old = ("    ${neighborIds.length ? `<div class=\"field\" style=\"margin-top:8px;color:#aaa;font-size:11px\">"
+               "Neighbors (${neighborIds.length})</div><div id=\"neighbors-list\">${neighborItems}</div>` : ''}\n"
+               "  `;")
+        new = ("    ${neighborIds.length ? `<div class=\"field\" style=\"margin-top:8px;color:#aaa;font-size:11px\">"
+               "Neighbors (${neighborIds.length})</div><div id=\"neighbors-list\">${neighborItems}</div>` : ''}\n"
+               "    ${(n._community >= 1000 && RIVER_NOTES[n._community - 1000]) ? "
+               "riverNoteHtml(RIVER_NOTES[n._community - 1000]) : ''}\n"
+               "  `;")
+        if old not in text:
+            raise ValueError("graph.html's showInfo() template has changed shape - "
+                              're-check by hand before patching blind.')
+        text = text.replace(old, new, 1)
+    return text
+
+
 def extract_array(text, name):
     """Pull `const NAME = [ ... ];` out of the HTML via bracket counting -
     safer than a greedy regex against a 900K+ char single-line file."""
@@ -564,6 +871,16 @@ def river_group(html_path: Path, graph_json_path: Path):
 
     n_start, n_end, raw_nodes = extract_array(text, 'RAW_NODES')
     l_start, l_end, legend = extract_array(text, 'LEGEND')
+    # Aug 11, real bug found: legend.append() below always adds fresh
+    # river/zone entries (cid >= 1000) without checking for ones this
+    # script itself already appended on a PRIOR run against the same
+    # graph.html - re-running river_group() more than once (e.g. after
+    # editing RIVER_NAME/EXTERNAL_CONNECTORS, without a fresh
+    # `graphify export html` first) silently tripled every river's
+    # legend entry. Strip any river/zone entries this script owns
+    # before appending fresh ones - full replace, same idempotency
+    # discipline as the RIVER_NOTES bridge block above.
+    legend = [c for c in legend if c.get('cid', 0) < 1000]
 
     # Zones 12-16 hold whole connected components (dozens to low hundreds
     # of nodes each, not the ~16 the 11 real rivers hold) - a fixed
@@ -613,7 +930,13 @@ def river_group(html_path: Path, graph_json_path: Path):
         node['_river_fixed'] = True
 
     for target, count in sorted(river_counts.items()):
-        icon = '🌊' if target <= 11 else '📍'
+        # Aug 11: both icons now say "river" (unified naming, real Alex
+        # ask) — the distinction kept is honest, not hierarchical: 🌊
+        # carries in-app narrative information flow (rivers I-XI), 🔗
+        # carries real Total-systems traffic instead (rivers XII-XVI —
+        # API/Auth calls to external members, or the dev-process/
+        # knowledge layer those members coordinate through).
+        icon = '🌊' if target <= 11 else '🔗'
         legend.append({'cid': 1000 + target, 'color': RIVER_COLOR[target],
                         'label': f'{icon} {RIVER_NAME[target]}', 'count': count})
 
@@ -625,6 +948,15 @@ def river_group(html_path: Path, graph_json_path: Path):
     text = text[:n_start] + new_nodes_json + text[n_end:]
 
     text, patched = patch_dataset_mapping(text)
+
+    # Aug 11: the real "one combined view" bridge — river/zone notes
+    # (same content as the Obsidian vault's own hub notes) rendered
+    # inline in graph.html's own info panel, with member modules
+    # clickable back into the graph. id_module reuses the exact same
+    # module_ranges already parsed above; no re-parsing.
+    id_module = build_id_module_map(graph_json_path, module_ranges)
+    river_notes = build_river_notes(module_ranges, id_module)
+    text = patch_river_notes_bridge(text, river_notes)
 
     html_path.write_text(text, encoding='utf-8')
     return river_counts, len(module_ranges), patched

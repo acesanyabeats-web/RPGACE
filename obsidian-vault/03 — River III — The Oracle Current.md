@@ -2,6 +2,7 @@
 river_number: 3
 river_name: "River III — The Oracle Current"
 kind: river
+carries_data_flow: true
 color: "#c9a84c"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -14,8 +15,8 @@ source: "graphify_river_group.py — real, not guessed"
 - [[oracleTreeGrounding]] — `rpgace_core.js:2955-3098`
 - [[oracleFetchGuard]] — `rpgace_core.js:3522-3577`
 - [[oracleDevBridge]] — `rpgace_core.js:3444-3520`
-- [[mockOracle]] — `rpgace_core.js:19011-19400`
-- [[agentsIntoOracle]] — `rpgace_core.js:17528-17577`
+- [[mockOracle]] — `rpgace_core.js:19072-19461`
+- [[agentsIntoOracle]] — `rpgace_core.js:17589-17638`
 - [[prodOraclePanel]] — `rpgace_core.js:906-1021`
 - [[instaOraclePanel]] — `rpgace_core.js:1023-1118`
 - [[youtubeOracle]] — `rpgace_core.js:650-772`

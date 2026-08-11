@@ -2,6 +2,7 @@
 river_number: 7
 river_name: "River VII — The Library Current"
 kind: river
+carries_data_flow: true
 color: "#cc7a3a"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -10,11 +11,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[jargonEncyclopedia]] — `rpgace_core.js:18627-18696`
-- [[encyclopediaQoL]] — `rpgace_core.js:17579-17684`
+- [[jargonEncyclopedia]] — `rpgace_core.js:18688-18757`
+- [[encyclopediaQoL]] — `rpgace_core.js:17640-17745`
 - [[encSync]] — `rpgace_core.js:2770-2865`
 - [[encTaxonomyLink]] — `rpgace_core.js:4544-4656`
-- [[refCorpus]] — `rpgace_core.js:13828-14226`
+- [[refCorpus]] — `rpgace_core.js:13889-14287`
 
 ## Flows into
 

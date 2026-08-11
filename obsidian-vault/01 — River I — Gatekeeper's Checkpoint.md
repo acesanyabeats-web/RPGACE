@@ -2,6 +2,7 @@
 river_number: 1
 river_name: "River I — Gatekeeper's Checkpoint"
 kind: river
+carries_data_flow: true
 color: "#cc4a4a"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -10,7 +11,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[authGate]] — `rpgace_core.js:17856-17939`
+- [[authGate]] — `rpgace_core.js:17917-18000`
 
 ## Flows into
 
