@@ -1228,7 +1228,7 @@ RPGACE.register('visualOracle', {
   // embedded in RPGACE's own runtime, so these commands generate a real
   // OpenMontage-ready brief rather than a single AI-video-prompt string).
   CMDS: [
-    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 14 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word OpenMontage brief I can use immediately. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the one director from your 3 matches who fits best>.'],
+    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 13 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word OpenMontage brief I can use immediately. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the one director from your 3 matches who fits best>.'],
     ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Character Reference Block if any recurring character appears across multiple scenes (a fixed physical description — build, face, hair, wardrobe, one or two distinguishing details — written so it can be reused as a consistent image-generation reference in every scene that character appears in, since AI video generators do not remember a character between separate shots on their own), Scene breakdown (4 scenes with duration), OpenMontage production brief (120 words), and export format recommendations for YouTube, Reels, and Beatstars. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the director/visual-style name you were given, or NONE if none was given>.'],
     ['Copyright Risk Analyser', 'Analyse the copyright risk of my planned music video concept. CONCEPT: [DESCRIBE YOUR VIDEO CONCEPT IN DETAIL] VISUAL REFERENCES: [LIST ANY FILMS, MUSIC VIDEOS, OR DIRECTORS YOU PLAN TO REFERENCE] FOOTAGE SOURCES: [LIST WHERE YOU PLAN TO SOURCE FOOTAGE — stock, self-shot, archival, AI-generated]. For each element: copyright risk level (Low / Medium / High), what specifically creates the risk, how to modify the concept to eliminate or reduce the risk, and safe alternative approaches. End with an overall risk score and a clear/proceed/modify verdict.'],
     ['Mood Board Brief', 'Create a detailed mood board brief for my beat visual. BEAT DESCRIPTION: [DESCRIBE YOUR BEAT — genre, mood, key, BPM, feel] TARGET PLATFORM: [YOUTUBE / INSTAGRAM / BEATSTARS / ALL]. The brief must specify: 5 colour hex codes with usage ratios, 3 texture references (describe the material/surface quality), lighting direction (quality, direction, colour temperature), typography direction if text appears, 5 specific shot types with descriptions, 3 real-world location types that fit, and 3 visual DONTs for this concept. Format this so I can hand it directly to a designer or use it in Canva.'],
@@ -1372,7 +1372,7 @@ RPGACE.register('visualOracle', {
     RPGACE.ui.slideInPanel(panel, {edge:'right'});
   },
 
-  // F14: fetches the 50-director Phylum 14 (Visio Cinematica) library and
+  // F14: fetches the 50-director Phylum 13 (Visio Cinematica) library and
   // formats it as a compact reference block for Director Match. Fails open
   // (empty block, same behaviour as before F14) if the fetch fails, rather
   // than blocking the command entirely.
@@ -1425,7 +1425,7 @@ RPGACE.register('visualOracle', {
         // secondary/tertiary), not one multi-select. Real single-fetch
         // above (rows) is shared by all 3 rows below - no re-query.
         var introNote = document.createElement('div');
-        introNote.textContent = 'Pick up to 3 directors to blend their styles. Their Phylum 14 keywords/phrases/insight get conjoined into one grounded reference for Oracle.';
+        introNote.textContent = 'Pick up to 3 directors to blend their styles. Their Phylum 13 keywords/phrases/insight get conjoined into one grounded reference for Oracle.';
         introNote.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);line-height:1.5;margin-bottom:14px;';
         box.appendChild(introNote);
 
@@ -1566,7 +1566,7 @@ RPGACE.register('visualOracle', {
               return d ? ('- ' + d.concept + ': ' + d.definition + ' Palette: ' + d.colour_palette) : ('- ' + name);
             }).join('\n');
           }
-          var out = 'DIRECTOR-BLEND STYLE (Phylum 14 keyword/phrase/insight blend' +
+          var out = 'DIRECTOR-BLEND STYLE (Phylum 13 keyword/phrase/insight blend' +
             (chosenNames.length > 1 ? ', ' + chosenNames.length + ' directors conjoined' : '') + '):\n' + blendText;
           if (insp) out += '\n\nCREATIVE INSPIRATION (Alex\'s own free-text, for this specific beat):\n' + insp;
           callback(out, { names: chosenNames, inspiration: insp });
@@ -3195,7 +3195,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 11/14 went through the full 7-step framework including hand-test; the 9 newer phyla (12,13,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); a real multi-session /CEO plan (Aug 11) is restructuring the flat jargon-bucket phyla into real deep Phylum->Order->Class->Family->Genus->Species hierarchies matching phyla 1-10s own shape - Phylum 12 (Fons Educationis) is the first one done as the proof-of-concept (6 real Orders, 16 Classes, 16 leaves), phyla 13,15-21 are still flat single-level buckets awaiting the same treatment, and 11/14 also still need it despite predating this pass. Separately, the placement engine (phylumPath._insertNewSteps) was fixed the same day: when a new insight genuinely duplicates an EXISTING leaf, it now extends that leaf\'s own article instead of either rejecting or creating a near-duplicate sibling - a new leaf only ever sprouts for a genuinely new concept. Fusion-link pass and hand-test are both still real, tracked gaps across every phylum built or restructured since July 30. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 3-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 12/13 went through the full 7-step framework including hand-test; the 9 newer phyla (11,14,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest() in main.js) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); a real multi-session /CEO plan (Aug 11) is restructuring the flat jargon-bucket phyla into real deep Phylum->Order->Class->Family->Genus->Species hierarchies matching phyla 1-10s own shape - Phylum 11 (Fons Educationis) is the first one done as the proof-of-concept (6 real Orders, 16 Classes, 16 leaves), phyla 14,15-21 are still flat single-level buckets awaiting the same treatment, and 12/13 also still need it despite predating this pass. Separately, the placement engine (phylumPath._insertNewSteps) was fixed the same day: when a new insight genuinely duplicates an EXISTING leaf, it now extends that leaf\'s own article instead of either rejecting or creating a near-duplicate sibling - a new leaf only ever sprouts for a genuinely new concept. Fusion-link pass and hand-test are both still real, tracked gaps across every phylum built or restructured since July 30. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 3-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key. Aug 11 (later same day): phylum numbers were renumbered to match the app\'s own display grouping order - Fons Educationis is now Phylum 11, Lingua Musicae is now Phylum 12, Visio Cinematica is now Phylum 13, Contentum is now Phylum 14 (previously 12/11/14/13 respectively) - always use the current numbers above, never the old ones from an earlier memory.',
 
   init: function() {
     var self = this;
@@ -7364,10 +7364,20 @@ RPGACE.register('knowledgeGap', {
 /* ===MODULE:taxonomyTree=== */
 RPGACE.register('taxonomyTree', {
 
+  // Renumbered Aug 11 to match the chronological/thematic display order
+  // (Craft & Production / Knowledge & Mind / Visual & Creative Identity /
+  // Business & Distribution / Technology & Misc) - real Alex ask, "renumber
+  // the phylums so they match the chronological order above." Swap was
+  // 11<->12 (Lingua Musicae <-> Fons Educationis) and 13<->14 (Contentum <->
+  // Visio Cinematica); the underlying group membership was already correct,
+  // only which NUMBER represents each phylum changed. Supabase's
+  // taxonomy_tree/taxonomy_nodes/taxonomy_proposals were swapped first via a
+  // safe temp-value UPDATE, verified by count, then this code was updated to
+  // match - never the other way around.
   PHYLUM_NAMES: {
     1:'Compositio',2:'Percussio',3:'Sonus Designatio',4:'Mixtura',5:'Magistra',
     6:'Instrumentarium',7:'Sensus Auris',8:'Anatomia',9:'Historia',10:'Psychologia',
-    11:'Lingua Musicae',12:'Fons Educationis',13:'Contentum',14:'Visio Cinematica',
+    11:'Fons Educationis',12:'Lingua Musicae',13:'Visio Cinematica',14:'Contentum',
     15:'Collaboratio',16:'Venditionis Beatorum',17:'Negotium',18:'Distributio',
     19:'Referentia Mercati',20:'Technologia',21:'Miscellaneous Ordinanda'
   },
@@ -7376,8 +7386,8 @@ RPGACE.register('taxonomyTree', {
     1:'Melody, Harmony, Chords',2:'Drums, 808s, Rhythm',3:'Sound Design, Synths, Sampling',
     4:'Mixing, EQ, Compression',5:'Mastering, Loudness',6:'FL Studio, VSTs, DAW Workflow',
     7:'Critical Listening, Reference',8:'Music Theory Fundamentals',9:'Producer History, Influences',
-    10:'Creative Psychology, Flow',11:'Colour, Mood, Visual Language',12:'Tutorials, Learning Resources',
-    13:'YouTube, Instagram, Content',14:'Visual Treatment, Filmmaking',15:'Collaboration, Outreach',
+    10:'Creative Psychology, Flow',11:'Tutorials, Learning Resources',12:'Colour, Mood, Visual Language',
+    13:'Visual Treatment, Filmmaking',14:'YouTube, Instagram, Content',15:'Collaboration, Outreach',
     16:'Beat Selling, Licensing',17:'Business, Operations',18:'Distribution, Release',
     19:'Market Reference, Trends',20:'Technology, Tools',21:'Miscellaneous'
   },
@@ -7396,10 +7406,10 @@ RPGACE.register('taxonomyTree', {
     8:'The underlying theory knowledge (scales, intervals, structure) the other Craft phyla draw on.',
     9:'Knowing the lineage of producers and records that shaped the genres being worked in.',
     10:'The mental/creative-process side of producing — flow state, motivation, creative blocks.',
-    11:'Translating musical feel (key, scale, mood) into a visual/colour language for content and branding.',
-    12:'External learning material — tutorials, courses, educators worth following.',
-    13:'Content creation and posting strategy across platforms.',
-    14:'The visual/cinematic direction for beat videos — directors, camera language, treatment docs.',
+    11:'External learning material — tutorials, courses, educators worth following.',
+    12:'Translating musical feel (key, scale, mood) into a visual/colour language for content and branding.',
+    13:'The visual/cinematic direction for beat videos — directors, camera language, treatment docs.',
+    14:'Content creation and posting strategy across platforms.',
     15:'Finding and reaching out to artists/collaborators.',
     16:'Monetising beats — licensing terms, pricing, marketplace listings.',
     17:'The operational/business admin side of running this as a project.',
@@ -7414,12 +7424,13 @@ RPGACE.register('taxonomyTree', {
   // draw on vs Visual identity vs Business/Distribution vs Tech/Misc).
   // Built July 17 so the phylum switcher can render as a grouped list
   // instead of one flat undifferentiated row - real UX gap found hand-
-  // testing the nav tab with 10 phyla already live.
+  // testing the nav tab with 10 phyla already live. Numbers updated Aug 11
+  // for the 11<->12/13<->14 renumber above; group membership unchanged.
   PHYLUM_SCOPE_GROUPS: [
     { label: 'Craft & Production', phyla: [1, 2, 3, 4, 5, 6, 7] },
-    { label: 'Knowledge & Mind', phyla: [8, 9, 10, 12] },
-    { label: 'Visual & Creative Identity', phyla: [11, 14] },
-    { label: 'Business & Distribution', phyla: [13, 15, 16, 17, 18, 19] },
+    { label: 'Knowledge & Mind', phyla: [8, 9, 10, 11] },
+    { label: 'Visual & Creative Identity', phyla: [12, 13] },
+    { label: 'Business & Distribution', phyla: [14, 15, 16, 17, 18, 19] },
     { label: 'Technology & Misc', phyla: [20, 21] },
   ],
 
@@ -9634,16 +9645,38 @@ RPGACE.register('phylumPath', {
   // Fetches (fresh every render - cache-bust already covers writes) the
   // full Phylum 1 node set once per render pass, rather than once per
   // helper function, to avoid N redundant selects while building one view.
+  //
+  // Aug 11 2026 — real bug found and fixed (Alex's own report: clicking
+  // any Order row just re-showed the exact same root-level view every
+  // time, unchanged). Real root cause: this function had no protection
+  // against overlapping calls. Every child row/breadcrumb/sibling chip
+  // click calls this directly (never through showPage), but
+  // init()'s own 'page:show' listener ALSO calls
+  // `self._loadNodesAndRender(self._focusNodeId)` independently — if
+  // that fires again (a real page:show re-fire is a documented class
+  // of bug in this exact codebase, CLAUDE.md's own hooks.fire()
+  // landmine) while a row-click's own fetch is still in flight, both
+  // calls race, and whichever Supabase response resolves LAST wins —
+  // even if it's the stale, older one (e.g. a page:show re-fire
+  // reading the OLD self._focusNodeId before the click's own
+  // synchronous assignment lands). A real generation token closes the
+  // whole class of "stale async response clobbers a fresher one," not
+  // just one specific trigger of it — the fresher call always wins,
+  // no matter which of several possible sources fired the older one.
+  _renderGeneration: 0,
   _loadNodesAndRender: function(focusId) {
     var self = this;
     self._focusNodeId = focusId;
+    var myGen = ++self._renderGeneration;
     var body = document.getElementById('pp-body');
     if (body) body.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:12px;">Loading...</div>';
 
     RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + self.PHYLUM_NUM + '&order=path.asc')
       .then(function(nodes) {
+        if (myGen !== self._renderGeneration) return; // a newer render already started - discard this stale one
         self._renderDrillDown(nodes || [], focusId);
       }).catch(function(e) {
+        if (myGen !== self._renderGeneration) return;
         if (body) body.innerHTML = '<div style="color:#CC4A4A;font-size:12px;">Load error: ' + e.message + '</div>';
       });
   },
@@ -12549,9 +12582,10 @@ RPGACE.register('config', {
       ] },
       // Engineer pass 2026-07-30 (Phylum 11+14 buildout, real content
       // provided by Alex) - substantially expanded from the July-era
-      // placeholder list. Bare mood adjectives are correct HERE (P11's
-      // own real subject matter), unlike P14 below.
-      { num: 11, name: 'Lingua Musicae',        keywords: [
+      // placeholder list. Bare mood adjectives are correct HERE (P12's
+      // own real subject matter), unlike P13 below. (Renumbered Aug 11:
+      // this was num:11 before the phylum renumber, now num:12.)
+      { num: 12, name: 'Lingua Musicae',        keywords: [
         {t:'colour palette',w:2},{t:'mood board',w:2},{t:'aesthetic',w:2},{t:'visual identity',w:2},{t:'vibe',w:1},{t:'tone',w:1},{t:'brand colours',w:2},
         {t:'sonic palette',w:2},{t:'sonic atmosphere',w:2},{t:'emotional tone',w:2},{t:'emotion-first production',w:2},{t:'sonic storytelling',w:2},
         {t:'moody',w:1},{t:'melancholic',w:1},{t:'euphoric',w:1},{t:'nostalgic',w:1},{t:'eerie',w:1},{t:'haunting',w:1},
@@ -12575,12 +12609,12 @@ RPGACE.register('config', {
       // bare "data"); 20 deliberately excludes every DAW/plugin-name term
       // Alex's own analysis said belongs to 6 (Instrumentarium), the
       // single tightest-scoping pair he named.
-      { num: 12, name: 'Fons Educationis',      keywords: [
+      { num: 11, name: 'Fons Educationis',      keywords: [
         {t:'tutorial',w:2},{t:'walkthrough',w:1},{t:'step-by-step',w:1},{t:'beginner guide',w:2},{t:'masterclass',w:2},{t:'learning path',w:2},{t:'skill tree',w:2},
         {t:'technique breakdown',w:2},{t:'quick tip',w:1},{t:'pro tip',w:1},{t:'cheat sheet',w:2},{t:'common mistakes',w:1},{t:'mistakes to avoid',w:2},
         {t:'case study',w:1},{t:'simplified explanation',w:2},{t:'spaced repetition',w:2},{t:'practice exercise',w:1},{t:'learning curve',w:2},
       ] },
-      { num: 13, name: 'Contentum',             keywords: [
+      { num: 14, name: 'Contentum',             keywords: [
         {t:'youtube',w:2},{t:'instagram',w:2},{t:'tiktok',w:2},{t:'reels',w:2},{t:'shorts',w:2},{t:'stories',w:1},{t:'carousel post',w:2},
         {t:'thumbnail',w:2},{t:'caption',w:1},{t:'hashtag',w:1},{t:'intro hook',w:2},{t:'watch time',w:2},{t:'retention rate',w:2},
         {t:'click-through rate',w:2},{t:'content calendar',w:2},{t:'content pillar',w:2},{t:'posting schedule',w:2},{t:'trending sound',w:2},
@@ -12588,13 +12622,14 @@ RPGACE.register('config', {
       ] },
       // Engineer pass 2026-07-30 - "cinematic" (bare) and "neural frames"
       // both REMOVED here: real evidence confirmed "cinematic" as a bare
-      // keyword collided with Phylum 11's own legitimate mood vocabulary
+      // keyword collided with Phylum 12's own legitimate mood vocabulary
       // (Alex's own diagnosis, independently confirmed in this exact
       // array). Every new term below is a genuinely visual-specific
       // compound phrase, never a bare adjective a music description
       // would also use. "neural frames" removed per the Neural Frames ->
-      // OpenMontage swap (Part 2 of the same pass).
-      { num: 14, name: 'Visio Cinematica',      keywords: [
+      // OpenMontage swap (Part 2 of the same pass). (Renumbered Aug 11:
+      // this was num:14 before the phylum renumber, now num:13.)
+      { num: 13, name: 'Visio Cinematica',      keywords: [
         {t:'camera',w:2},{t:'filmmaker',w:2},{t:'shot',w:1},{t:'b-roll',w:2},{t:'colour grade',w:2},{t:'footage',w:1},
         {t:'wide shot',w:2},{t:'tracking shot',w:2},{t:'drone shot',w:2},{t:'establishing shot',w:2},
         {t:'colour grading',w:2},{t:'lut',w:2},{t:'storyboard',w:2},{t:'mise-en-scène',w:2},{t:'depth of field',w:2},
@@ -12928,7 +12963,7 @@ RPGACE.register('config', {
 /* ===MODULE:beatLog=== */
 RPGACE.register('beatLog', {
 
-  // Colour palette by scale (Phylum 11 — Lingua Musicae, Colour/Mood/Visual Language)
+  // Colour palette by scale (Phylum 12 — Lingua Musicae, Colour/Mood/Visual Language)
   // Kept as a fallback only as of Aug 5 - see MOOD_COLOURS below for why.
   SCALE_COLOURS: {
     'Minor':         { hex: '#1a3a5c', name: 'Cold midnight blue',    rgb: '26,58,92' },
@@ -13826,11 +13861,11 @@ RPGACE.register('beatLog', {
   },
 
   _addNewArtistsToTaxonomy: function(artists, mood) {
-    // Add top emerging artists to taxonomy Phylum 12 (Fons Educationis) if not
+    // Add top emerging artists to taxonomy Phylum 11 (Fons Educationis) if not
     // already there. Bug fixed here: this used to write phylum_number: 17
     // while claiming phylum_name 'Fons Educationis' - 17 is actually Negotium,
-    // Fons Educationis is 12. No rows had been written from this path yet
-    // when caught, so nothing needed migrating.
+    // Fons Educationis was 12, then renumbered to 11 (Aug 11 phylum renumber -
+    // see the CLAUDE.md Current State entry for the full renumber record).
     var emerging = artists.filter(function(a) { return a.listeners > 5000 && a.listeners <= 500000; }).slice(0, 10);
     emerging.forEach(function(a) {
       RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
@@ -13838,7 +13873,7 @@ RPGACE.register('beatLog', {
           if (rows && rows.length > 0) return; // already exists
           RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
             concept:       a.name,
-            phylum_number: 12,
+            phylum_number: 11,
             phylum_name:   'Fons Educationis',
             definition:    'Artist discovered via Last.fm beat matching. Style: ' + mood + '. Listeners: ' + a.listeners,
             source:        'lastfm_beat_match',
@@ -15822,8 +15857,8 @@ RPGACE.register('contentProductionLive', {
         // saved separately (creative_docs.script / .visual_treatment) and
         // are each independently editable here.
         var phases = contentType === 'music_video' ? [
-          { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 11 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
-          { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 14) and generate a real Visual Treatment Doc for this beat.' },
+          { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 12 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
+          { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 13) and generate a real Visual Treatment Doc for this beat.' },
           { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
           { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
         ] : [
