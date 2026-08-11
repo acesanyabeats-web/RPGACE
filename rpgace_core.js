@@ -6161,14 +6161,21 @@ RPGACE.register('dashDeck', {
       { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load — outside the tier system by design', href: '/taxonomy_map.html' },
       { icon: '🧪', title: 'Smoke Test', desc: 'Layer (d) — real, hand-tickable, what actually works right now', href: '/smoke_test.html' }
     ];
+    // Aug 11: the other ~75 dated spec/backlog/debate records moved into
+    // records/YYYY-MM/ (real Alex ask - repo root was "a fucking eye
+    // sore," rule 5's own deliberate separation from the 8 living docs
+    // preserved, just decluttered). These 7 stay as a real, curated
+    // "worth a direct link" shortlist; hrefs updated to match. Full
+    // categorized index of every archived file: ai_tooling_and_rules_map.md
+    // Part 2.
     var secondary = [
       { icon: '⚖️', title: 'Placement Rules', desc: 'taxonomy_placement_rules.txt', href: '/taxonomy_placement_rules.txt' },
       { icon: '📐', title: 'DESIGN.md', desc: 'Structural restructure spec', href: '/DESIGN.md' },
-      { icon: '💰', title: 'Token Cost Audit', desc: 'token_cost_audit_2026-07-19.txt', href: '/token_cost_audit_2026-07-19.txt' },
-      { icon: '🔮', title: 'Oracle Grounding Spec', desc: 'oracle_grounding_spec.txt', href: '/oracle_grounding_spec.txt' },
-      { icon: '📖', title: 'Bookworm Spec Backlog', desc: 'bookworm_spec_backlog.txt', href: '/bookworm_spec_backlog.txt' },
-      { icon: '🗂️', title: 'Fable Master Plan', desc: 'fable_master_plan.txt', href: '/fable_master_plan.txt' },
-      { icon: '📝', title: 'Session Handover', desc: 'session_handover_2026-07-19.md', href: '/session_handover_2026-07-19.md' }
+      { icon: '💰', title: 'Token Cost Audit', desc: 'records/2026-07/token_cost_audit_2026-07-19.txt', href: '/records/2026-07/token_cost_audit_2026-07-19.txt' },
+      { icon: '🔮', title: 'Oracle Grounding Spec', desc: 'records/2026-07/oracle_grounding_spec.txt', href: '/records/2026-07/oracle_grounding_spec.txt' },
+      { icon: '📖', title: 'Bookworm Spec Backlog', desc: 'records/2026-07/bookworm_spec_backlog.txt', href: '/records/2026-07/bookworm_spec_backlog.txt' },
+      { icon: '🗂️', title: 'Fable Master Plan', desc: 'records/2026-07/fable_master_plan.txt', href: '/records/2026-07/fable_master_plan.txt' },
+      { icon: '📝', title: 'Session Handover', desc: 'records/2026-07/session_handover_2026-07-19.md', href: '/records/2026-07/session_handover_2026-07-19.md' }
     ];
     var addGroup = function(gtitle, arr, isSec) {
       var gt = document.createElement('div');

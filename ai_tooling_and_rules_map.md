@@ -80,7 +80,82 @@ These trigger on their own subject matter and have no real connection to RPGACE'
 - **Every `SKILL.md` file** (both scopes) — each one is a rule file for exactly one procedure; `/Routine`'s own text states this plainly ("Source of truth: CLAUDE.md's Invokable frameworks section... If this file and CLAUDE.md ever disagree, CLAUDE.md wins and this file is stale" — the explicit subordination pattern every RPGACE skill follows).
 
 ### Tier B — Real, committed verbatim decision records (rule 5's "chat isn't durable storage" convention) — authoritative for the ONE decision they document, not standing rules
-A genuinely large population: `bookworm_spec_backlog.txt`, `chronicles_spec_backlog.txt`, `phylum_xp_ledger_spec_backlog_2026-07-28.txt`, `beat_log_matching_spec_backlog_2026-07-28.txt`, `content_pipeline_overseer_spec_backlog_2026-07-28.txt`, `beat_video_workflow_separation_and_6step_chain_spec_backlog_2026-07-30.txt`, `phylum_11_14_buildout_and_openmontage_spec_backlog_2026-07-30.txt`, `video_pipeline_director_phylum_spec_backlog_2026-07-30.txt`, `video_visual_treatment_wiring_and_conid_ux_spec_2026-07-31.txt`, `six_table_external_writer_migration_spec_2026-07-24.txt`, `openmontage_and_claude_fallback_spec_backlog_2026-07-24.txt`, `claude_fallback_build_plan_2026-07-24.txt`, `journal_chronicles_oversight_crossfeed_spec_backlog.txt`, `research_lab_lazyload_spec_backlog.txt`, `token_cost_audit_2026-07-19.txt`, `item7_process_debate_2026-07-24.txt`, `taxonomy_review_session_debate_2026-07-25.txt`, `oversight_doc_dedup_audit_2026-07-28.txt`, `oversight_doc_audit_and_reshape_2026-07-31.txt`, `manual_html_minotaur_sidekick_debate_2026-07-31.txt`, `oracle_architecture_anatomy_db_debate_2026-07-31.txt`, every `daily_priorities_debate_YYYY-MM-DD*.txt` (six on record), every `engineer_pass_YYYY-MM-DD_NN.txt` (five on record), `openmontage_kickoff_prompt_2026-07-31.txt`, `oracle_grounding_spec.txt`, `restructure_report_*` (three), `weekly_recap_2026-07-25.txt`, `STEP1_README.txt`. None of these override CLAUDE.md; each is the honest paper trail for one real decision, consulted only when that specific decision needs re-litigating or citing (rule 4's "query real evidence, don't re-derive from memory" applies to these files too — they ARE the real evidence for their own topic).
+
+**Aug 11, real Alex ask ("do it properly, one real categorized index"): physically moved out of repo root into `records/YYYY-MM/` — root was "a fucking eye sore," 76 dated files.** This does NOT reverse rule 5's own deliberate separation from the 8 living docs (that separation stays exactly as designed — these are still never merged into CLAUDE.md/patch_notes.html/etc.); it only declutters WHERE they physically sit. None of these override CLAUDE.md; each is the honest paper trail for one real decision, consulted only when that specific decision needs re-litigating or citing (rule 4's "query real evidence, don't re-derive from memory" applies to these files too — they ARE the real evidence for their own topic). "Topic" below is derived from the filename itself, not a re-read summary — open the file for the real content.
+
+<details><summary><strong>records/2026-07/</strong> (42 files)</summary>
+
+| File | Date | Topic |
+|---|---|---|
+| `beat_log_matching_spec_backlog_2026-07-28.txt` | 07-28 | Beat Log matching spec |
+| `beat_video_workflow_separation_and_6step_chain_spec_backlog_2026-07-30.txt` | 07-30 | Beat/video workflow separation + 6-step chain |
+| `bookworm_spec_backlog.txt` | — | Bookworm spec |
+| `chronicles_spec_backlog.txt` | — | Chronicles spec |
+| `claude_fallback_build_plan_2026-07-24.txt` | 07-24 | Claude fallback build plan |
+| `content_pipeline_overseer_spec_backlog_2026-07-28.txt` | 07-28 | Content Pipeline overseer spec |
+| `daily_priorities_debate_2026-07-23.txt` | 07-23 | Daily priorities debate |
+| `daily_priorities_debate_2026-07-24.txt` | 07-24 | Daily priorities debate |
+| `daily_priorities_debate_2026-07-25_2.txt` | 07-25 | Daily priorities debate |
+| `daily_priorities_debate_2026-07-28.txt` | 07-28 | Daily priorities debate |
+| `daily_priorities_debate_2026-07-28_2.txt` | 07-28 | Daily priorities debate |
+| `daily_priorities_debate_2026-07-30.txt` | 07-30 | Daily priorities debate |
+| `engineer_pass_2026-07-28_01.txt` / `_02.txt` | 07-28 | Engineer pass record |
+| `engineer_pass_2026-07-30_01.txt` / `_02.txt` / `_03.txt` | 07-30 | Engineer pass record |
+| `fable_handoff_backlog.txt` | — | Fable handoff backlog (Tier C — superseded) |
+| `fable_master_plan.txt` | — | Fable master plan (Tier C — superseded) |
+| `fifth_dimension_phase1_2_report_2026-07-23.md` | 07-23 | First real `/5thDimension` run, Phase 1-2 |
+| `fifth_dimension_phase3_4_debate_2026-07-23.md` | 07-23 | First real `/5thDimension` run, Phase 3-4 |
+| `item7_process_debate_2026-07-24.txt` | 07-24 | Item 7 process debate |
+| `journal_chronicles_oversight_crossfeed_spec_backlog.txt` | — | Journal/Chronicles/Oversight crossfeed spec |
+| `manual_html_minotaur_sidekick_debate_2026-07-31.txt` | 07-31 | Manual/Minotaur Sidekick debate |
+| `openmontage_and_claude_fallback_spec_backlog_2026-07-24.txt` | 07-24 | OpenMontage + Claude fallback spec |
+| `openmontage_kickoff_prompt_2026-07-31.txt` | 07-31 | OpenMontage kickoff prompt |
+| `oracle_architecture_anatomy_db_debate_2026-07-31.txt` | 07-31 | Oracle architecture/anatomy DB debate |
+| `oracle_grounding_spec.txt` | — | Oracle grounding spec |
+| `oversight_doc_audit_and_reshape_2026-07-31.txt` | 07-31 | Oversight doc audit + reshape |
+| `oversight_doc_dedup_audit_2026-07-28.txt` | 07-28 | Oversight doc dedup audit |
+| `phylum_11_14_buildout_and_openmontage_spec_backlog_2026-07-30.txt` | 07-30 | Phylum 11/14 buildout + OpenMontage spec |
+| `phylum_xp_ledger_spec_backlog_2026-07-28.txt` | 07-28 | Phylum XP Ledger spec |
+| `research_lab_lazyload_spec_backlog.txt` | — | Research Lab lazyload spec |
+| `restructure_report_agent_tooling_batch_2026-07-29.txt` | 07-29 | `/restructure` report |
+| `restructure_report_awesome_llm_apps_2026-07-29.txt` | 07-29 | `/restructure` report |
+| `restructure_report_domintegration_and_architecture_2026-07-29.txt` | 07-29 | `/restructure` report |
+| `session_handover_2026-07-19.md` | 07-19 | Session handover (Tier C — historical) |
+| `six_table_external_writer_migration_spec_2026-07-24.txt` | 07-24 | 6-table external-writer migration spec |
+| `taxonomy_review_session_debate_2026-07-25.txt` | 07-25 | Taxonomy review session debate |
+| `token_cost_audit_2026-07-19.txt` | 07-19 | Token cost audit |
+| `video_pipeline_director_phylum_spec_backlog_2026-07-30.txt` | 07-30 | Video pipeline / Director phylum spec |
+| `video_visual_treatment_wiring_and_conid_ux_spec_2026-07-31.txt` | 07-31 | Visual Treatment wiring + ConID UX spec |
+| `weekly_recap_2026-07-25.txt` | 07-25 | Weekly recap (Tier C — historical) |
+
+</details>
+
+<details><summary><strong>records/2026-08/</strong> (34 files)</summary>
+
+| File | Date | Topic |
+|---|---|---|
+| `alex_critique_and_massive_expansion_spec_2026-08-10.txt` | 08-10 | Massive-expansion critique doc spec |
+| `beat_audience_matching_engine_future_idea_2026-08-05.txt` | 08-05 | Beat audience-matching engine (future idea) |
+| `beat_deliverables_autoport_backlog_2026-08-05.txt` | 08-05 | Beat deliverables autoport (Phase H) |
+| `content_intelligence_bookworm_insight_bundling_spec_2026-08-04.txt` | 08-04 | Content Intelligence/Bookworm insight bundling |
+| `content_video_pipeline_unification_spec_2026-08-05.txt` | 08-05 | Content/Video Pipeline unification (Phases A-H) |
+| `daily_priorities_debate_2026-08-04.txt` / `_06.txt` | 08-04/06 | Daily priorities debate |
+| `dummy_mode_tracelog_and_update_logging_system_paranoia_2026-08-06.txt` | 08-06 | Dummy-mode tracelog + update-logging-system paranoia |
+| `engineer_pass_2026-08-05_01` through `_09.txt` | 08-05 | Engineer pass record (Phases A-H) |
+| `engineer_pass_2026-08-06_10` through `_14.txt` | 08-06 | Engineer pass record |
+| `graphify_orphan_scripts_cleanup_2026-08-06.txt` | 08-06 | Graphify orphan-scripts cleanup |
+| `graphify_restructure_paranoia_2026-08-06.txt` | 08-06 | Graphify `/restructure`+`/paranoia` |
+| `main_js_dedup_paranoia_2026-08-06.txt` | 08-06 | main.js dedup `/paranoia` |
+| `minotaur_graphify_river_paranoia_2026-08-06.txt` | 08-06 | Minotaur/graphify river `/paranoia` |
+| `morning_brief_redesign_and_measured_doses_spec_backlog_2026-08-06.txt` | 08-06 | Morning Brief redesign + measured doses |
+| `openmontage_colab_kaggle_integration_spec_2026-08-04.txt` | 08-04 | OpenMontage Colab/Kaggle integration |
+| `oracle_3mode_toggle_and_investor_skill_spec_backlog_2026-08-06.txt` | 08-06 | Oracle 3-mode toggle + `/investor` skill |
+| `oracle_dev_suggestions_review_2026-08-06.txt` | 08-06 | Full `oracle_dev_suggestions` review |
+| `oversight_doc_dedup_paranoia_2026-08-06.txt` | 08-06 | Oversight doc dedup `/paranoia` |
+| `oversight_sweep_2026-08-05.txt` | 08-05 | Oversight sweep |
+| `restructure_report_notebooklm_founderos_opengenai_2026-08-04.txt` | 08-04 | `/restructure` report |
+
+</details>
 
 ### Tier C — Historical / superseded — real files, but NOT current authority (a future session should not treat these as live rules)
 - **`CLAUDE_archive.md`** — explicitly, per CLAUDE.md's own text, "never read for current state — historical only."
@@ -88,10 +163,10 @@ A genuinely large population: `bookworm_spec_backlog.txt`, `chronicles_spec_back
 - **`RPGACE.md`** — dated "Last updated: 2026-06-18," a pre-CLAUDE.md-era context file (Composio connected-account IDs, user goals). Superseded by CLAUDE.md's own "Who you're working with" section and `api/_context.js`'s real `ACCOUNTS` map — real risk if a future session reads this INSTEAD of `api/_context.js` for account IDs, since CLAUDE.md rule 8 already documents once that a stale hand-copied `ACCOUNTS` map caused a real silent wrong-account bug (`api/composio.js`, June 28). This file could cause that exact class of bug again if trusted over the live code.
 - **`RPGACE_ARCHITECTURE.md`** — dated June 26, "Pre-Step-8 Hardening," diagnosing a "no extension system, every feature requires editing the source file" problem. Genuinely historical: the `RPGACE.register()` module system this diagnosis argued for now exists and is exactly how every module in `rpgace_core.js` is built. Kept for archaeology (why the module system exists), not as a live rule.
 - **`saved_conversation.md`** — a single archived Oracle content-strategy session (June 21), not a rule file at all — a content-brainstorm transcript.
-- **`session_handover_2026-07-19.md`** — a real historical handover written for the July 19 session specifically; itself explicitly points to CLAUDE.md as the actual authority ("Read in this order... 1. CLAUDE.md"), meaning it already correctly subordinates itself — kept as a record of that session's real state, not consulted for anything current.
+- **`records/2026-07/session_handover_2026-07-19.md`** — a real historical handover written for the July 19 session specifically; itself explicitly points to CLAUDE.md as the actual authority ("Read in this order... 1. CLAUDE.md"), meaning it already correctly subordinates itself — kept as a record of that session's real state, not consulted for anything current.
 - **`fifth_dimension_phase1_2_report_2026-07-23.md`** / **`fifth_dimension_phase3_4_debate_2026-07-23.md`** — the first real `/5thDimension` run's output, same Tier B/C boundary as the dated debate `.txt` files above: real record of that specific run, not a standing rule.
-- **`fable_handoff_backlog.txt`** / **`fable_master_plan.txt`** — pre-Omnitrix-rebalance planning artifacts from when Fable was the default researcher; superseded by the July 20 rebalance (Sonnet is now default researcher/planner) documented in CLAUDE.md's own Omnitrix section.
-- **`weekly_recap_2026-07-25.txt`** — explicitly flagged in CLAUDE.md itself as "six days old... no longer 'the next run's' recap," historical-with-a-warning-label already, not repeated here.
+- **`records/2026-07/fable_handoff_backlog.txt`** / **`records/2026-07/fable_master_plan.txt`** — pre-Omnitrix-rebalance planning artifacts from when Fable was the default researcher; superseded by the July 20 rebalance (Sonnet is now default researcher/planner) documented in CLAUDE.md's own Omnitrix section.
+- **`records/2026-07/weekly_recap_2026-07-25.txt`** — explicitly flagged in CLAUDE.md itself as "six days old... no longer 'the next run's' recap," historical-with-a-warning-label already, not repeated here.
 
 ### Notably absent — a real gap, not an oversight
 **`RPGACE_ORACLE_NOTES.md` does not exist.** CLAUDE.md's own "Oracle-editable section" names this file as where Oracle proposes development-plan ideas back to Claude Code sessions ("create on first use"). Confirmed via direct file check (July 31): Oracle has never used this path — every real Oracle→Claude-Code suggestion so far has gone through the `oracle_dev_suggestions` Supabase table + the "🧪 Flag for Claude Code" button instead (a DIFFERENT, already-built mechanism). This doesn't mean the file-based path is broken; it means it has genuinely never been exercised, and a future session should not assume it holds any content without checking first.

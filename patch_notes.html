@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🗄️ Aug 11 (same day, continued) — 76 loose spec/backlog/debate files physically archived into records/YYYY-MM/, repo root decluttered.</div>
+    <div class="card-body">
+      Alex asked for the "working specs" mess fixed properly. Real check first, not a blind merge: rule 5 deliberately created this pattern ("record real decisions verbatim in a committed .txt file... chat isn't durable storage"), specifically kept SEPARATE from the 8 living docs so those stay lean — literally merging 76 files' content into CLAUDE.md/patch_notes.html/etc. would have reversed that discipline and made the living docs worse, not "crisp." Put the real fork to Alex directly rather than guessing; confirmed: physically archive, don't merge.
+      <br><br>
+      All 76 dated <code>.txt</code>/<code>.md</code> files moved via <code>git mv</code> (full history preserved) into <code>records/2026-07/</code> (42 files) and <code>records/2026-08/</code> (34 files), sorted by the date in each filename or real file mtime as fallback. 11 genuinely live/reference files stay at root (CLAUDE.md, CLAUDE_archive.md, DESIGN.md, RPGACE.md, RPGACE_ARCHITECTURE.md, ai_tooling_and_rules_map.md, interconnection_map.md, system_flow_map.md, saved_conversation.md, taxonomy_placement_rules.txt, STEP1_README.txt) plus the 8 living HTML docs.
+      <br><br>
+      <strong>5 of the moved files were real, live links inside the app's own Oversight popup</strong> (<code>dashDeck._openOversight</code>'s "Working specs" group) — hrefs in <code>rpgace_core.js</code> updated to their new <code>records/2026-07/...</code> paths so nothing 404s. <code>ai_tooling_and_rules_map.md</code>'s Tier B gained a real categorized index (2 collapsible tables, one per month, File/Date/Topic) replacing the old flat comma-list, plus Tier C's own file-path mentions updated to match. <code>node --check</code> clean, <code>index.html</code> cache-bust bumped.
+    </div>
+</div>
+
 <div class="card red" style="margin-bottom:30px;">
     <div class="card-title">🔥 Aug 11 (same day, continued) — real, deserved critique: minotaur_map.html had drifted into a changelog, and the new rivers were left disconnected. Full sweep, not spot patches.</div>
     <div class="card-body">
