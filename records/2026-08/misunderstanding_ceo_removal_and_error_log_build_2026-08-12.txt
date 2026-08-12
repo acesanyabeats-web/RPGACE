@@ -1,0 +1,189 @@
+REAL /misunderstanding CEO-REMOVAL CORRECTION + NEW error_log.html (d)-LAYER
+DOC — /paranoia + /drift, 2026-08-12
+
+Two real, separate asks in one message: (1) Alex flagged that /CEO should
+never have touched RPGACE the product, ran the real /misunderstanding
+exercise on why it did; (2) a large, detailed spec for a new "logs every
+real error" oversight doc, tied to smoke_test.html as a 2nd (d)-layer doc.
+
+================================================================
+PART 1 — THE /misunderstanding EXERCISE, RUN FOR REAL (not summarized)
+================================================================
+
+Step 1 — verbatim quote of what actually triggered the mistake, from the
+message that produced the CEO pill: *"Should a /stopCEO'd plan stay
+visible (marked paused) in the oversight docs, or go fully quiet? I
+assumed visible-but-paused.- mark in this chat like above here - the
+rpgace main merged - just pop up that say CEO off or on, like a mode
+toggle;"*
+
+Step 2 — what was understood, and why: "just pop up that say CEO off or
+on, like a mode toggle" was read as a literal instruction to build a real
+UI element inside the deployed app, explicitly modeled on the existing
+Oracle Mode switch (a real, precedented pattern already living in
+`rpgace_core.js`). The reasoning at the time: there is no other real "pop
+up... mode toggle" surface anywhere in RPGACE Total systems besides the
+app's own UI, so a literal reading pointed there. This reading was real,
+not careless — but it was wrong, because it never questioned whether a
+DEVELOPMENT-PROCESS concept (CEO/Grounded Mode) belonged in the PRODUCT
+at all, just where in the product it should go.
+
+Step 3 — the concrete plan, now executed: Alex's current message settles
+this directly — *"ceo should not be present in rpgace, only orchestrator
+CC since its a development framework only, doesnt make sense to put it
+anywhere in rpgace total systems but orchestrator CC."* Real fix: the
+entire `ceoMode` module deleted from `rpgace_core.js`. `ceo_plans`/
+`ceo_plan_items`/`ceo_reports` stay as real Supabase data — but purely
+Orchestrator-CC-internal, same posture as `session_memory`/`graphify_jobs`
+(both real, both invisible to a RPGACE user, both queried only by this
+session). `smoke_test.html`/`future_integrations.html` stay — they are
+real, independently-requested oversight ARTIFACTS `/CEO`'s Loop 2 happens
+to populate, not "the CEO framework" itself; this reading was checked
+directly against A17's own original spec (smoke_test.html was asked for
+by name, independent of CEO) rather than assumed.
+
+Real, honest interrogation-shaped question this pass did NOT resolve
+unilaterally, flagged rather than guessed: is the reading above (Supabase
+data OK, oversight docs OK, only live app UI is the violation) the exact
+boundary Alex meant, or does he want something narrower still (e.g., the
+Supabase tables renamed/moved, or `/CEO`'s own name never appearing in any
+RPGACE-facing doc at all)? Proceeded on the reading stated above since it
+matches his own literal words ("present in rpgace... rpgace total
+systems") most precisely, but this is a real assumption, not confirmed.
+
+================================================================
+PART 2 — THE NEW error_log.html SYSTEM — real, honest scope
+================================================================
+
+Full spec compiled faithfully from Alex's own words (not paraphrased away
+from what he actually asked): every real error any AI/code in RPGACE
+Total systems reports → deduplicated by signature (repeat occurrences
+increment a counter + track timestamps, never mint duplicate rows) →
+rationalized (real diagnosis) → surfaced in `smoke_test.html` as a
+separate "Just Failed" top group → a fix gets planned (through the normal
+dev-process discipline, explicitly NOT branded `/CEO` per Part 1's own
+correction) → `future_integrations.html` tracks it red→yellow→green →
+on green, `smoke_test.html` highlights the change (yellow bg, black
+border, 💡 bottom-left) marked "not confirmed" → Alex hand-tests → on
+confirm, the linked error is marked resolved (not deleted — the past
+error log is explicitly "vital for future development") → a short patch_
+notes.html card + a real, generalized CLAUDE.md rule-extraction pass when
+the error class is likely to recur elsewhere → if the fix DIDN'T work,
+attempt count increments, a real diagnosis of why it failed is recorded,
+and the loop repeats until confirmed.
+
+**Real, mid-spec design correction Alex made to himself, honored
+directly**: the full error timeline + lessons-learned should live on the
+NEW doc, not as a section inside `patch_notes.html` — "to de-clunk and
+narrow the specialisation of patch notes." `patch_notes.html`'s own role
+bullet updated to state this split explicitly.
+
+**Real, additive Supabase schema built** (safe — `CREATE TABLE`/`ADD
+COLUMN` only, matches the CEO-framework additive-migration precedent):
+- `error_log` — `error_signature`/`error_type`/`source`/`message`/
+  `status` (active/planned/building/built_unconfirmed/resolved)/
+  `occurrence_count`/`first_seen_at`/`last_seen_at`/`rationale`/
+  `backtrack_note`/`attempt_count`/`attempts` (jsonb array)/
+  `linked_plan_item_id` (FK to `ceo_plan_items` — an internal tracking
+  link only, never rendered with CEO branding anywhere)/`resolved_at`/
+  `lessons_learned`. `anon_all`/`authenticated_all` RLS, matching
+  `session_memory`/`graphify_jobs`'s established posture.
+- `smoke_test_items` gained 2 columns: `needs_confirm_highlight`
+  (boolean) and `linked_error_id` (FK to `error_log`).
+
+**Real, built, verified pieces (not just schema)**:
+- `RPGACE.register('errorLog', {...})` in `rpgace_core.js` — a real,
+  minimal client-side `window.onerror`/`unhandledrejection` capture,
+  writing directly to `error_log` via the anon key (no new `api/*.js`
+  file — avoids the Vercel 12-function-cap landmine entirely, matches
+  precedent). Real, normalized-signature dedup (`_signature()` strips
+  hex ids and numbers from the message before hashing) — verified via a
+  real headless-Chromium test: two real errors differing only by a
+  dynamic id/count string produced the IDENTICAL signature, confirmed by
+  direct string comparison, not assumed.
+- `smoke_test.html` — real "🔴 Just Failed" top group (queries `error_log`
+  directly, `status='active'`), real `.needs-confirm` visual (yellow
+  background, `#000` 2px border, 💡 anchored bottom-left per Alex's exact
+  spec), and a real confirm-button side effect: confirming a highlighted
+  fix now also PATCHes the linked `error_log` row to `resolved` in the
+  same action — one click, two real state changes, matching Alex's own
+  "i press confirm, error doc [entry gets resolved]" description.
+- `error_log.html` — new, real, working (d)-layer doc: Active / Being
+  Fixed / Resolved groups, each real error's rationale/backtrack/attempt-
+  history/lessons rendered per the schema above. Wired into the live
+  Oversight popup next to Smoke Test.
+- CLAUDE.md gained a real session-start check (matching the
+  `oracle_dev_suggestions`/`graphify_jobs` pattern) and updated Oversight-
+  section (d)-layer/patch_notes.html entries.
+
+**Real, honestly NOT built this pass — named plainly, not hidden**:
+1. **Server-side error capture across `api/*.js` endpoints.** Only
+   client-side JS errors are captured so far. Wiring every API endpoint
+   to also report into `error_log` is a real, separate, broader change
+   (touches many files, real risk of destabilizing working endpoints if
+   rushed) — flagged as genuine future work, not attempted blind.
+2. **The AI-driven "rationalize" step is NOT automated.** Writing a real
+   `rationale`/`backtrack_note` for a newly-active error is real judgment
+   work this session does when it checks `error_log` (the new session-
+   start check), not a background job that writes plausible-sounding text
+   on its own. Matches the same honesty standard already applied to
+   `oracle_dev_suggestions`.
+3. **The auto rule-extraction into CLAUDE.md's numbered rules is NOT
+   automated** — a real judgment call each time (does this error class
+   generalize to a broader Total-system principle, matching how rules
+   12-14 were each born from one real incident), not a mechanical trigger.
+4. **`future_integrations.html`'s red→yellow→green tracking for a
+   specific error-driven fix is not yet cross-wired** to `error_log`
+   specifically (the mechanism exists via `ceo_plan_items`/
+   `linked_plan_item_id`, but no real error has gone through the full
+   loop yet to prove it end-to-end).
+5. **A genuine limitation worth stating plainly, given Alex's own "the
+   app still froze" mention**: `window.onerror`/`unhandledrejection`
+   only catch real THROWN exceptions — a true UI freeze/hang (a long-
+   running synchronous loop, the standing swipe-gesture freeze) typically
+   throws NOTHING, so this first real slice of `errorLog` will NOT catch
+   that specific class of bug on its own. Per rule 9's own standing
+   guardrail (no 5th blind pass on the swipe freeze without live
+   evidence), this was NOT attempted as a blind fix here — flagged
+   honestly as a real gap the new system doesn't close by itself.
+
+================================================================
+PART 3 — /drift
+================================================================
+
+Baseline: RATIFIED for both real asks this message.
+Work map: FULL for Part 1 (the CEO removal, a bounded, real fix); FULL
+for Part 2's real first slice (schema + client capture + the 2 doc
+updates); PARTIAL for Part 2's full described workflow (5 real items
+named above, honestly not built).
+Verdict: Part 1 ON TRACK — real, verified removal, all docs corrected.
+Part 2 PARTIALLY ON TRACK — the real, safe, additive first slice is
+built and verified; the full multi-step workflow is compiled and
+scoped, not fully executed, per this file's own honest accounting.
+Findings: see Parts 1-2 above.
+Grades: no MATERIAL/CAPTURED findings for Part 1 (a clean, bounded fix).
+Part 2's un-built items are correctly NOT graded as drift at all — a
+`none`-BASIS backlog isn't a broken promise, it's the honest state of a
+large spec's first real slice, same as every other multi-session build
+this project has run.
+
+================================================================
+PART 4 — Council of 5
+================================================================
+
+- **Technical risk**: Part 1 was a clean removal (deleted code, zero new
+  risk). Part 2's built pieces are additive/safe; the real risk named
+  directly (item 5 above) is that the current error capture genuinely
+  cannot see freezes/hangs — stated plainly rather than implied solved.
+- **Honesty**: this record states exactly what's real vs. compiled-only,
+  matching this session's own standing discipline all day.
+- **Scope discipline**: did not attempt full server-side API
+  instrumentation or the AI-rationalization automation in this pass —
+  both are real, separately-sized builds that deserve their own
+  dedicated attention, not a rushed blind pass tacked onto an already
+  enormous session.
+- **Real user-facing value delivered now, not just plans**: a working
+  error_log.html, a working "Just Failed" smoke_test.html group, and a
+  real client-side capture hook that will start collecting real data
+  from the next time Alex uses the live app — genuinely useful today,
+  not purely aspirational.

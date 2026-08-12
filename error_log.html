@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Error Log</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0; --amber:#E2A83D;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.45);
+    --ease-out:cubic-bezier(0.16,1,0.3,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7;padding:0 0 80px}
+  .hero{padding:48px 24px 24px;text-align:center;border-bottom:1px solid var(--border)}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+  .hero h1{font-family:Georgia,serif;font-size:28px;color:#E2E2EC;margin-bottom:10px}
+  .hero p{color:var(--dim);font-size:13px;max-width:680px;margin:0 auto}
+  .hero a{color:var(--blue)}
+  .wrap{max-width:900px;margin:0 auto;padding:32px 24px}
+  .summary{display:flex;gap:16px;justify-content:center;margin:24px auto 8px;flex-wrap:wrap}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 22px;text-align:center;min-width:110px}
+  .stat .n{font-size:22px;font-weight:700;color:var(--gold)}
+  .stat.red .n{color:var(--red)}
+  .stat.amber .n{color:var(--amber)}
+  .stat.green .n{color:var(--green)}
+  .stat .l{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-top:2px}
+  .cat{margin-top:36px}
+  .cat-title{font-family:Georgia,serif;font-size:18px;color:var(--gold);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .cat-title.active{color:var(--red)}
+  .cat-title.resolved{color:var(--dim)}
+  .item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px}
+  .item.active{border-color:rgba(226,84,84,0.35);background:rgba(226,84,84,0.04)}
+  .item.resolved{opacity:.6}
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .item-name{font-size:13px;font-weight:700;color:#E2E2EC}
+  .item-desc{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.6}
+  .item-meta{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;color:var(--dim);margin-top:6px;opacity:.7}
+  .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+  .badge.active{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .badge.planned{background:rgba(226,84,84,0.1);color:var(--red);border:1px solid rgba(226,84,84,0.25)}
+  .badge.building{background:rgba(224,196,80,0.18);color:#E0C450;border:1px solid rgba(224,196,80,0.35)}
+  .badge.built_unconfirmed{background:rgba(61,170,110,0.12);color:var(--green);border:1px solid rgba(61,170,110,0.25)}
+  .badge.resolved{background:rgba(255,255,255,0.06);color:var(--dim);border:1px solid var(--border)}
+  .rationale{font-size:12px;color:var(--text);margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid var(--blue)}
+  .rationale b{color:var(--blue)}
+  .backtrack{font-size:12px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid var(--purple)}
+  .backtrack b{color:var(--purple)}
+  .attempts{margin-top:10px}
+  .attempt{font-size:11px;color:var(--dim);padding:6px 10px;border-left:2px solid var(--amber);margin-bottom:4px;background:rgba(226,168,61,0.04)}
+  .attempt b{color:var(--amber)}
+  .lessons{font-size:12px;color:var(--text);margin-top:10px;padding:8px 10px;background:rgba(61,170,110,0.06);border-radius:6px;border-left:2px solid var(--green)}
+  .lessons b{color:var(--green)}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  button{font-family:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s var(--ease-out)}
+  button:hover{border-color:var(--gold);color:var(--gold)}
+  .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">RPGACE Oversight · Layer (d), 2nd doc</div>
+  <h1>🩹 Error Log</h1>
+  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
+</div>
+
+<div class="wrap">
+  <div class="summary" id="summary"></div>
+  <div id="items" class="loading">Loading real state from Supabase…</div>
+</div>
+
+<script>
+var SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
+var SUPABASE_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+var HEADERS = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+
+function esc(s) {
+  return String(s || '').replace(/[&<>"']/g, function(c) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+
+function fetchErrors() {
+  return fetch(SUPABASE_URL + '/rest/v1/error_log?select=*&order=last_seen_at.desc', { headers: HEADERS })
+    .then(function(r) { return r.json(); });
+}
+
+function render(items) {
+  var active = items.filter(function(i) { return i.status === 'active'; });
+  var inProgress = items.filter(function(i) { return i.status === 'planned' || i.status === 'building' || i.status === 'built_unconfirmed'; });
+  var resolved = items.filter(function(i) { return i.status === 'resolved'; });
+
+  document.getElementById('summary').innerHTML =
+    '<div class="stat red"><div class="n">' + active.length + '</div><div class="l">Active</div></div>' +
+    '<div class="stat amber"><div class="n">' + inProgress.length + '</div><div class="l">Being Fixed</div></div>' +
+    '<div class="stat green"><div class="n">' + resolved.length + '</div><div class="l">Resolved</div></div>' +
+    '<div class="stat"><div class="n">' + items.length + '</div><div class="l">Total Ever Logged</div></div>';
+
+  if (!items.length) {
+    document.getElementById('items').innerHTML = '<div class="empty">No real errors logged yet — this page grows only from real, actually-captured errors, never pre-built.</div>';
+    return;
+  }
+
+  function renderItem(e) {
+    var cls = e.status === 'resolved' ? 'resolved' : 'active';
+    var attemptsHtml = '';
+    if (e.attempts && e.attempts.length) {
+      attemptsHtml = '<div class="attempts">' + e.attempts.map(function(a) {
+        return '<div class="attempt"><b>Attempt ' + a.attempt_number + ':</b> ' + esc(a.what_was_tried) + (a.why_it_failed ? ' — <em>failed: ' + esc(a.why_it_failed) + '</em>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    return '<div class="item ' + cls + '">' +
+      '<div class="item-top"><div>' +
+        '<div class="item-name">' + esc(e.error_type) + (e.source ? ' — ' + esc(e.source) : '') + '</div>' +
+        '<div class="item-desc">' + esc(e.message) + '</div>' +
+        '<div class="item-meta">Seen ' + e.occurrence_count + '× · first ' + new Date(e.first_seen_at).toLocaleString() + ' · last ' + new Date(e.last_seen_at).toLocaleString() + (e.attempt_count ? ' · ' + e.attempt_count + ' fix attempt(s)' : '') + '</div>' +
+      '</div><span class="badge ' + e.status + '">' + e.status.replace('_', ' ') + '</span></div>' +
+      (e.rationale ? '<div class="rationale"><b>Rationale:</b> ' + esc(e.rationale) + '</div>' : '') +
+      (e.backtrack_note ? '<div class="backtrack"><b>Backtrack (what likely broke upstream):</b> ' + esc(e.backtrack_note) + '</div>' : '') +
+      attemptsHtml +
+      (e.lessons_learned ? '<div class="lessons"><b>Lesson learned:</b> ' + esc(e.lessons_learned) + '</div>' : '') +
+    '</div>';
+  }
+
+  var html = '';
+  if (active.length) html += '<div class="cat"><div class="cat-title active">🔴 Active — needs a plan</div>' + active.map(renderItem).join('') + '</div>';
+  if (inProgress.length) html += '<div class="cat"><div class="cat-title">🟡 Being Fixed</div>' + inProgress.map(renderItem).join('') + '</div>';
+  if (resolved.length) html += '<div class="cat"><div class="cat-title resolved">✅ Resolved — past error log</div>' + resolved.map(renderItem).join('') + '</div>';
+  document.getElementById('items').innerHTML = html;
+}
+
+function load() {
+  fetchErrors().then(render).catch(function(e) {
+    document.getElementById('items').innerHTML = '<div class="empty">Could not load real state: ' + esc(e.message) + '</div>';
+  });
+}
+load();
+</script>
+</body>
+</html>

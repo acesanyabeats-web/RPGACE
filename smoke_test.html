@@ -31,6 +31,11 @@
   .item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;transition:border-color .2s var(--ease-out)}
   .item.confirmed{border-color:rgba(61,170,110,0.35);background:rgba(61,170,110,0.04)}
   .item.broken{border-color:rgba(226,84,84,0.35);background:rgba(226,84,84,0.04)}
+  .item.needs-confirm{border:2px solid #000;background:rgba(226,168,61,0.16);position:relative;padding-bottom:26px}
+  .item.needs-confirm .item-name,.item.needs-confirm .item-desc{color:#2a2200}
+  .item.needs-confirm .bulb{position:absolute;left:10px;bottom:6px;font-size:14px}
+  .just-failed{margin-bottom:32px;padding-bottom:20px;border-bottom:2px dashed var(--red)}
+  .just-failed .cat-title{color:var(--red)}
   .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
   .item-name{font-size:13px;font-weight:700;color:#E2E2EC}
   .item-desc{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.6}
@@ -56,7 +61,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight · Layer (d)</div>
   <h1>🧪 Smoke Test</h1>
-  <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work, per <code>/CEO</code>'s own (d)-layer design (Aug 11 2026) — never pre-built empty.</p>
+  <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work (Aug 11 2026) — never pre-built empty. Paired with <a href="error_log.html" style="color:var(--blue)">error_log.html</a> (Aug 12 2026) — the (d)-layer's other doc: it logs what's currently BROKEN and why; this page logs the CURRENT confirmed/unconfirmed state of every real function. The "🔴 Just Failed" group at the top mirrors error_log's own active errors live.</p>
 </div>
 
 <div class="wrap">
@@ -81,6 +86,17 @@ function fetchItems() {
     .then(function(r) { return r.json(); });
 }
 
+// Real, new Aug 12 — the "Just Failed" top group reads directly from
+// error_log (status='active'), the companion (d)-tier doc this page now
+// links from. Kept as a genuinely separate query (not a join) since
+// error_log is the source of truth for active errors; this page only
+// ever displays them, never edits error_log rows directly (that
+// happens on error_log.html itself).
+function fetchActiveErrors() {
+  return fetch(SUPABASE_URL + '/rest/v1/error_log?select=*&status=eq.active&order=last_seen_at.desc', { headers: HEADERS })
+    .then(function(r) { return r.json(); });
+}
+
 function updateItem(id, patch) {
   patch.updated_at = new Date().toISOString();
   return fetch(SUPABASE_URL + '/rest/v1/smoke_test_items?id=eq.' + id, {
@@ -88,7 +104,7 @@ function updateItem(id, patch) {
   });
 }
 
-function render(items) {
+function render(items, activeErrors) {
   var confirmed = items.filter(function(i) { return i.status === 'confirmed_working'; }).length;
   var broken = items.filter(function(i) { return i.status === 'broken'; }).length;
   var unverified = items.length - confirmed - broken;
@@ -99,7 +115,26 @@ function render(items) {
     '<div class="stat red"><div class="n">' + broken + '</div><div class="l">Broken</div></div>' +
     '<div class="stat"><div class="n">' + items.length + '</div><div class="l">Total</div></div>';
 
-  if (!items.length) {
+  // Real, new Aug 12 — "Just Failed" top group, always rendered first,
+  // separate from the normal categorized items below. Pulls straight
+  // from error_log (status='active') — see error_log.html for the full
+  // rationale/backtrack/attempt-history record per error.
+  var failedHtml = '';
+  if (activeErrors && activeErrors.length) {
+    failedHtml = '<div class="cat just-failed"><div class="cat-title">🔴 Just Failed (' + activeErrors.length + ')</div>';
+    activeErrors.forEach(function(e) {
+      failedHtml += '<div class="item broken">' +
+        '<div class="item-top"><div><div class="item-name">' + esc(e.error_type) + (e.source ? ' — ' + esc(e.source) : '') + '</div>' +
+        '<div class="item-desc">' + esc(e.message) + (e.occurrence_count > 1 ? ' <em>(seen ' + e.occurrence_count + '× since ' + new Date(e.first_seen_at).toLocaleString() + ')</em>' : '') + '</div></div>' +
+        '<span class="badge broken">active</span></div>' +
+        (e.rationale ? '<div class="broken-note">🔍 ' + esc(e.rationale) + '</div>' : '') +
+        '<div class="item-ref">Full record + fix history: <a href="error_log.html" style="color:inherit">error_log.html</a></div>' +
+      '</div>';
+    });
+    failedHtml += '</div>';
+  }
+
+  if (!items.length && !failedHtml) {
     document.getElementById('items').innerHTML = '<div class="empty">No real items yet — this page grows as real work actually finishes. Nothing to see here on purpose.</div>';
     return;
   }
@@ -107,17 +142,23 @@ function render(items) {
   var byCat = {};
   items.forEach(function(i) { (byCat[i.category] = byCat[i.category] || []).push(i); });
 
-  var html = '';
+  var html = failedHtml;
   Object.keys(byCat).sort().forEach(function(cat) {
     html += '<div class="cat"><div class="cat-title">' + esc(cat) + '</div>';
     byCat[cat].forEach(function(it) {
       var cls = it.status === 'confirmed_working' ? 'confirmed' : (it.status === 'broken' ? 'broken' : '');
-      html += '<div class="item ' + cls + '" data-id="' + it.id + '">' +
+      // Real Aug 12 addition: a fix that just landed (green) but hasn't
+      // been hand-tested yet gets a real, distinct visual — separate
+      // from the plain "unverified" look every never-yet-tested item
+      // already has, since this one has a real, specific reason to
+      // check it (a real fix, not just an unreviewed backlog item).
+      if (it.needs_confirm_highlight) cls += ' needs-confirm';
+      html += '<div class="item ' + cls + '" data-id="' + it.id + '"' + (it.linked_error_id ? ' data-linked-error="' + it.linked_error_id + '"' : '') + '>' +
         '<div class="item-top">' +
           '<div><div class="item-name">' + esc(it.item_name) + '</div>' +
           '<div class="item-desc">' + esc(it.description) + '</div>' +
           (it.source_ref ? '<div class="item-ref">' + esc(it.source_ref) + '</div>' : '') + '</div>' +
-          '<span class="badge ' + it.status + '">' + it.status.replace('_', ' ') + '</span>' +
+          '<span class="badge ' + it.status + '">' + (it.needs_confirm_highlight ? 'fix not confirmed' : it.status.replace('_', ' ')) + '</span>' +
         '</div>' +
         (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
         (it.verified_at ? '<div class="verified-at">Last confirmed: ' + new Date(it.verified_at).toLocaleString() + '</div>' : '') +
@@ -125,6 +166,7 @@ function render(items) {
           (it.status !== 'confirmed_working' ? '<button class="ok" data-act="confirm">✅ Confirm Working</button>' : '<button data-act="unconfirm">↩ Un-confirm</button>') +
           (it.status !== 'broken' ? '<button class="bad" data-act="break">❌ Mark Broken</button>' : '<button class="ok" data-act="fixed">✅ Fixed, Re-confirm</button>') +
         '</div>' +
+        (it.needs_confirm_highlight ? '<span class="bulb">💡</span>' : '') +
       '</div>';
     });
     html += '</div>';
@@ -138,7 +180,7 @@ function render(items) {
         var act = btn.getAttribute('data-act');
         var patch = {};
         if (act === 'confirm' || act === 'fixed') {
-          patch = { status: 'confirmed_working', verified_at: new Date().toISOString(), broken_note: null };
+          patch = { status: 'confirmed_working', verified_at: new Date().toISOString(), broken_note: null, needs_confirm_highlight: false };
         } else if (act === 'unconfirm') {
           patch = { status: 'unverified' };
         } else if (act === 'break') {
@@ -146,16 +188,34 @@ function render(items) {
           if (note === null) return;
           patch = { status: 'broken', broken_note: note };
         }
-        updateItem(id, patch).then(load);
+        var el = btn.closest('.item');
+        var linkedErrorId = el ? el.getAttribute('data-linked-error') : null;
+        updateItem(id, patch).then(function() {
+          // Real Aug 12 addition, per Alex's own workflow: confirming a
+          // fix that resolved a real logged error marks that error row
+          // resolved too — one real action, two real state changes, not
+          // a manual second step. The row itself is kept (not deleted)
+          // as the permanent "past error log" Alex asked for — status
+          // moves to 'resolved', it just stops showing in the live
+          // "Just Failed" group.
+          if ((act === 'confirm' || act === 'fixed') && linkedErrorId) {
+            fetch(SUPABASE_URL + '/rest/v1/error_log?id=eq.' + linkedErrorId, {
+              method: 'PATCH', headers: HEADERS,
+              body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString() })
+            }).catch(function() {});
+          }
+        }).then(load);
       });
     });
   });
 }
 
 function load() {
-  fetchItems().then(render).catch(function(e) {
-    document.getElementById('items').innerHTML = '<div class="empty">Could not load real state: ' + esc(e.message) + '</div>';
-  });
+  Promise.all([fetchItems(), fetchActiveErrors()])
+    .then(function(results) { render(results[0], results[1]); })
+    .catch(function(e) {
+      document.getElementById('items').innerHTML = '<div class="empty">Could not load real state: ' + esc(e.message) + '</div>';
+    });
 }
 load();
 </script>
