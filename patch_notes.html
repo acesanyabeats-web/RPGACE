@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔧 Aug 12 — real /misunderstanding correction: the CEO Mode pill was removed from the live app entirely.</div>
+    <div class="card-body">
+      Alex's direct correction: "ceo should not be present in rpgace, only orchestrator CC since its a development framework only, doesnt make sense to put it anywhere in rpgace total systems but orchestrator CC. if i said otherwise, show me a prompt where i said this and ill make my judgement. this is a /misunderstanding scenario on why this was built in."
+      <br><br>
+      Ran the exercise directly: the earlier pass's own real trigger was Alex's answer "just pop up that say CEO off or on, like a mode toggle" — a real quote, but read too literally as "build this into the app's own UI" when nothing else in RPGACE Total systems has a "pop up... mode toggle" surface except the deployed product itself. That reading was wrong.
+      <br><br>
+      <strong>Fixed</strong>: the entire <code>ceoMode</code> module (the pill, its derive/fetch/toggle logic) deleted from <code>rpgace_core.js</code> — RPGACE the product now has zero code, zero UI, zero visible trace of <code>/CEO</code>. Real, permanent distinction now stated plainly across every doc that touches this: <code>ceo_plans</code>/<code>ceo_plan_items</code>/<code>ceo_reports</code> stay as Orchestrator-CC-internal Supabase data (same posture as <code>session_memory</code>/<code>graphify_jobs</code>) — never rendered anywhere a real RPGACE user would see it. Checking Grounded Mode's status going forward means asking this session directly in chat, not clicking anything in the app. <code>node --check</code> clean, minified files regenerated, all 47 onclick-referenced globals re-verified intact.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔍 Aug 11/12 (real session continuation) — a)-d) oversight docs audited and fixed for real; f) trickle-down honestly stopped, not faked.</div>
     <div class="card-body">
       Alex's real ask: confirm a)-d) actually reflect today's changes, and update f) (Graphify/Obsidian) as a trickle-down effect since it's sourced from a)-d)'s content.
