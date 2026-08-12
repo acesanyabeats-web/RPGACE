@@ -1,0 +1,166 @@
+a)-d) OVERSIGHT-DOC AUDIT + REAL (f) TRICKLE-DOWN ATTEMPT — /paranoia + /drift,
+2026-08-12 (continuation of the same real session, date rolled over past midnight)
+
+Alex's real ask: confirm a)-d) docs actually reflect today's real changes, and
+update f) (Graphify/Obsidian) as a trickle-down effect since it's sourced
+from a)-d)'s own content.
+
+================================================================
+PART 1 — REAL AUDIT OF a)-d), NOT ASSUMED CLEAN
+================================================================
+
+Real evidence gathered first (grep, not assumption) — checked every Tier
+a/b doc plus (c)/(d) for any mention of today's real new work (ceoMode,
+colourgradient's blue tier, future_integrations.html, the 3 new skills,
+the minification fix):
+
+| Doc | Before this pass | Real gap found |
+|---|---|---|
+| patch_notes.html | Up to date | None — cards were added same-session throughout |
+| manual.html | 0 mentions | Real gap. Also surfaced a PRE-EXISTING gap unrelated to today: the Aug 6 Oracle Mode toggle was never added either. |
+| interconnection_map.md | 0 mentions | Real gap — no `ceoMode`/`ceo_plans`/`future_integrations` touchpoint documented |
+| system_flow_map.md | 0 mentions | Real gap — truth table stopped at the Aug 11 (earlier) block |
+| ai_tooling_and_rules_map.md | 0 mentions | Real gap — the 3 new skills (`decompress`/`colourgradient`/`misunderstanding`) were never added to section 1c despite that section's own explicit "new RPGACE skill ships" update trigger |
+| oracleAppGrounding.SELF_KNOWLEDGE | Partial (layer count only) | Updated earlier this session for the (e)/(f) renumber, but not for the load-time fix or the 3 new skills |
+| smoke_test.html | 0 real new rows | Real gap — none of today's testable features (CEO pill, minified JS, colourgradient routing) had rows |
+| minotaur_map.html | 0 mentions | Judged: a genuine new wing (a 9th real doc + a whole new tense-organized layer), not an internal patch — added a small, real addition per the doc's own rare-touch rule |
+
+**Fixed, all real, all verified**: manual.html gained 2 new GLOBAL rows
+(retroactively including the Aug 6 Oracle Mode toggle, which should have
+been there already — a real, pre-existing gap, not something today's
+session broke); `interconnection_map.md` gained a new `ceoMode` structural
+touchpoint paragraph; `system_flow_map.md` gained a new Aug 11/12 truth-
+table block AND two separate, real stale-fact fixes found along the way
+(see Part 2); `ai_tooling_and_rules_map.md` section 1c updated with all 3
+new skills; `smoke_test.html` gained 4 new real `smoke_test_items` rows
+(Supabase, `status='unverified'`, never pre-ticked); `minotaur_map.html`
+gained a real new river-block for layer (e) plus an updated flow-next line.
+
+================================================================
+PART 2 — TWO REAL, UNRELATED STALE-FACT FINDINGS, CAUGHT DURING THE AUDIT
+(not this session's own new work — pre-existing drift, found because the
+audit actually read the files instead of assuming them current)
+================================================================
+
+1. **`system_flow_map.md`'s own "remaining phyla" bullet used the OLD phylum
+   numbers** (12,13,15-21 — 11 and 14 cleared) — stale since THIS SESSION's
+   own earlier phylum renumber (Fons Educationis 12→11, Lingua Musicae
+   11→12, Visio Cinematica 14→13, Contentum 13→14). Fixed to the real
+   current numbers (14,15-21 remaining; 11 and 12 cleared), with a pointer
+   to CLAUDE.md's own mapping.
+2. **`system_flow_map.md`'s "Website performance audit — never done" line
+   was stale** the moment this session's own load-time audit + real
+   minification fix landed. Fixed to reflect: the STATIC audit + real fix
+   are genuinely done; only a live Lighthouse/PageSpeed run remains
+   confirmed-blocked (a real, narrower, still-true claim).
+3. **A real, pre-existing lettering COLLISION found in `interconnection_map.md`**:
+   its own "Future Integration Vision (a-f)" section (a 6-item conceptual
+   roadmap, unrelated to today's work) used the exact same "(a)-(f)"
+   pattern the NEW oversight-tier lettering now uses for something
+   completely different — a genuine, real source of confusion for any
+   future reader or Oracle grounding query, not manufactured to justify a
+   fix. Renamed to plain numbered items (1-6), content unchanged.
+   **Same collision found a second place**: `patch_notes.html`'s own
+   "Tier 6 — Future Integrations (a-f)" heading directly collides with
+   the NEW `future_integrations.html` filename/artifact — same phrase,
+   two different real things. Renamed the heading, content unchanged.
+
+================================================================
+PART 3 — THE (f) TRICKLE-DOWN ATTEMPT — a real, honest STOP, not a
+completed task
+================================================================
+
+Real attempt made, not skipped: `graphifyy` (the npm package backing the
+`/graphify` skill) was installed fresh (`npm install -g graphifyy` — real,
+reachable, v0.10.1) and `graphify update . --scope tracked` was run to
+capture today's real code changes (the new `ceoMode` module, growth in
+`rpgace_core.js`) into a fresh graph, as the mandatory first step of
+`/update-logging-system`'s artifact 10 pipeline (export → recolor →
+river-group → obsidian-vault-html).
+
+**Real, unexpected finding that stopped the pipeline here, per rule 4
+("one failed fix = stop, get real evidence, don't patch blind a second
+time")**: the installed graphify version (0.10.1) is a materially
+different major version from whatever produced the currently-committed
+`graphify-out/graph.json` (967 nodes) — its own CLI has a genuinely
+different state model (`.graphify/` instead of `graphify-out/` for
+`update`/`watch` commands specifically, though `export` commands still
+default to reading `graphify-out/graph.json`) and, more seriously, a
+**materially different extraction result**: the fresh rebuild produced
+**744 nodes**, 223 fewer than the committed 967 — a real, large
+discrepancy, not a rounding difference. Real, honest uncertainty: this
+could be (a) a genuine scope difference (`--scope tracked` excluding
+something a full/auto scan included), (b) a real extraction-methodology
+change between graphify versions, or (c) partially real (some files
+genuinely were archived/consolidated this week — the 76-file
+`records/2026-08/`+`records/2026-07/` move, the `scripts/` cleanup —
+which WOULD reduce the real node count, just not by an amount confirmed
+to exactly match 223 here).
+
+**Real decision, not a silent skip**: did NOT proceed to export/recolor/
+river-group/obsidian-export against this new, differently-shaped graph.
+Overwriting the currently-committed, already-tuned, already-linked-from-
+the-live-Oversight-popup `graphify-out/graph.html`/`obsidian_vault.html`
+with output from a graph this session doesn't yet understand the real
+shape-change of would risk breaking a genuinely working oversight
+artifact to "complete" a checklist item — the wrong tradeoff. The
+untracked `.graphify/` directory and the global `graphifyy` npm install
+were both cleaned up (removed) rather than left as stray, half-finished
+state.
+
+**Real, honest status of (f)**: NOT updated this pass. This is a genuine
+open item, not a completed trickle-down — flagged plainly to Alex rather
+than claimed done. A future session should investigate the 744-vs-967
+discrepancy directly (diff the two `graph.json`'s own file lists) before
+attempting a real re-export, and should decide whether to adopt the CLI's
+own recommended `.graphify` state migration (`git mv graphify-out
+.graphify`) — a real, separate architectural decision this pass correctly
+did not make unilaterally, since it would also require updating every
+hardcoded `graphify-out/` reference in `rpgace_core.js`'s Oversight popup,
+possibly `vercel.json`, and every oversight doc that names the path.
+
+================================================================
+PART 4 — /drift
+================================================================
+
+Baseline: RATIFIED (Alex's own direct ask this message: confirm a)-d) are
+updated, update f) as a trickle-down effect).
+Work map: FULL — a)-d) audit (8 real docs) + f) trickle-down (1 real
+attempt).
+Verdict: **PARTIALLY ON TRACK, honestly graded, not oversold.**
+- a)-d): ON TRACK. All 8 real docs checked with real evidence; every gap
+  found was fixed, not just noted. 2 real, unrelated bonus stale-fact
+  fixes caught along the way (Part 2).
+- f): BLOCKED, not on track and not silently claimed done. A real,
+  external tool-version change (not this session's own doing) surfaced a
+  genuine data discrepancy that needs real investigation before it's safe
+  to complete — reported as blocked rather than forced through or hidden.
+Findings: see Parts 1-3 above, each with a real citation.
+Grades: MINOR on the 3 pre-audit doc gaps (the record was incomplete, not
+the underlying work — a straightforward doc-catch-up, now fixed). MINOR
+on the 2 stale-fact findings (same class — the record was wrong, not the
+system). No MATERIAL/CAPTURED findings — nothing here shows a goal moving
+without Alex's say-so; the f)-layer stop is a real, evidence-based
+decision to NOT act blind, not a missed goal.
+Next check due: whenever a future session investigates the 744-vs-967
+graphify discrepancy and completes the real trickle-down re-export.
+
+================================================================
+PART 5 — Council of 5, final quality check
+================================================================
+
+- **Technical risk**: the a)-d) doc edits are all additive/corrective text
+  changes to already-existing docs, zero code risk. The f)-layer STOP was
+  itself the risk-avoidance decision — proceeding blind against a 223-node
+  discrepancy would have been the actual risky move.
+- **Honesty**: this record states plainly what was and wasn't completed —
+  f) is genuinely NOT done, not glossed over as "mostly done" or "done
+  with a caveat." Matches rule 1/rule 4's own standard.
+- **Scope discipline**: did not attempt to resolve the graphify version
+  question inline (a real, separate investigation, out of proportion to
+  "update f) as a trickle-down effect" as originally asked) — flagged for
+  a dedicated future pass instead.
+- **Real user-facing win, not just doc hygiene**: the 2 stale-fact catches
+  (old phylum numbers, the "audit never done" line) are genuinely useful
+  corrections a future session or Oracle grounding query would otherwise
+  have gotten wrong.

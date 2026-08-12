@@ -195,15 +195,16 @@ Grouped by **shared destination**, not by domain — anything in the same row al
 
 ---
 
-## Future Integration Vision (a-f) — confirmed direction, not yet scoped
+## Future Integration Vision (Items 1-6) — confirmed direction, not yet scoped
+**Renamed from "(a-f)" Aug 11, real /paranoia-audit finding**: this section's own old lettering collided with the NEW, unrelated oversight-tier lettering (a)-(f) named in CLAUDE.md's Oversight section (Tier a/b, layers c/d/e/f) — same letters, two completely different meanings, a real confusion risk for any future reader or Oracle grounding query. Renumbered to plain items, content unchanged.
 
-Full detail in `patch_notes.html`'s Tier 6. One-line summary per item, each extending an existing touchpoint above except (e):
-- **(a)** Social platform integrations — extends Composio connectors. **Aug 5 scope confirmed via `/interrogation`**: the Content/Video Pipeline unification explicitly stops at Captions Generating (captions saved to the ConID, stage marked complete) — Composio auto-posting is a real, separately-scoped follow-up, not folded into that build. Full spec: `content_video_pipeline_unification_spec_2026-08-05.txt`.
-- **(b)** Video editing/scripting integration — extends F17/F18 (Content Production Pipeline)
-- **(c)** Full learning environment — unifies Feynman + Encyclopedia + Taxonomy Tree into one curriculum
-- **(d)** Auto-logging videos/beats/career progress — extends Journal + Content Production Live
-- **(e)** Autonomous RPGACE self-improvement meta-agent — the one genuinely novel governance shape: permission required to *adopt* a new idea, no permission required to *correct* a confirmed-bad existing implementation. Needs careful scoping before any build.
-- **(f)** Competitor/book insight pipeline into Taxonomy — insight → tree leaf → structured "complete outlook" summary → clickable footnote back to source (reuses `intel_bibliography`). The shared placement engine this depends on already exists (see "Taxonomy Sorting Agent" above, corrected July 22) — books/competitor research can already become just another proposal source alongside Oracle/Content Intelligence/Encyclopedia sync; this item is now genuinely just the bibliography-footnote UI work, not blocked on any agent.
+Full detail in `patch_notes.html`'s Tier 6. One-line summary per item, each extending an existing touchpoint above except Item 5:
+- **1.** Social platform integrations — extends Composio connectors. **Aug 5 scope confirmed via `/interrogation`**: the Content/Video Pipeline unification explicitly stops at Captions Generating (captions saved to the ConID, stage marked complete) — Composio auto-posting is a real, separately-scoped follow-up, not folded into that build. Full spec: `content_video_pipeline_unification_spec_2026-08-05.txt`.
+- **2.** Video editing/scripting integration — extends F17/F18 (Content Production Pipeline)
+- **3.** Full learning environment — unifies Feynman + Encyclopedia + Taxonomy Tree into one curriculum
+- **4.** Auto-logging videos/beats/career progress — extends Journal + Content Production Live
+- **5.** Autonomous RPGACE self-improvement meta-agent — the one genuinely novel governance shape: permission required to *adopt* a new idea, no permission required to *correct* a confirmed-bad existing implementation. Needs careful scoping before any build.
+- **6.** Competitor/book insight pipeline into Taxonomy — insight → tree leaf → structured "complete outlook" summary → clickable footnote back to source (reuses `intel_bibliography`). The shared placement engine this depends on already exists (see "Taxonomy Sorting Agent" above, corrected July 22) — books/competitor research can already become just another proposal source alongside Oracle/Content Intelligence/Encyclopedia sync; this item is now genuinely just the bibliography-footnote UI work, not blocked on any agent.
 
 ---
 
@@ -276,6 +277,10 @@ Three real additions to `api/_context.js`/`api/oracle.js`, all deliberately serv
 ## `session_memory` — Supabase-backed cross-session context (Aug 11)
 
 A real answer to the claude-mem Aintergration ask, but built as RPGACE's own Supabase table (`session_memory` — `summary`/`key_decisions`/`open_threads`/`referenced_inputs` jsonb, a generated `tsvector` column for full-text search) rather than adopting the third-party tool, because claude-mem's local `~/.claude-mem/` storage doesn't survive Claude Code Remote's ephemeral per-session containers. `/Bedtime`'s new Step 1b writes one row per session; `/Routine` and `/Summary` both read it as part of their own evidence pass. Deliberately distinct from CLAUDE.md's own Current State (durable, hand-pruned facts) and `patch_notes.html` (what shipped) — `session_memory`'s real, distinct job is capturing the fuller texture neither of those keeps: rejected alternatives, small real asides, and explicit attachment references, searchable by content rather than requiring a session to know which dated file to open.
+
+## `ceoMode` + the `/CEO` datasheet — Supabase-backed plan/build-status tracking (Aug 11)
+
+`RPGACE.register('ceoMode', {...})` is a real, live UI module (a fixed top-left pill, mirroring `mockOracle`'s own switch pattern) reading/writing `ceo_plans`/`ceo_plan_items`/`ceo_reports` — the Supabase datasheet backing `/CEO`'s Grounded Mode and `/colourgradient`'s benchmark reads. `_deriveDisplay()` is the one shared, pure function computing the real on/off state from a plan's own `status` plus a live count of non-green `ceo_plan_items` — the same function both the pill's own render and any future chat-facing status check should call (rule 8, one shared implementation). Two genuinely different OFF states: `paused` (manual `/stopCEO`, only `/ResumeCEO` resumes it) and `dormant` (fully derived — auto-resumes the instant new non-green content exists anywhere, no stored flag). `future_integrations.html` is the real, new, queryable presentation of the same `ceo_plan_items.status` column, filtered to non-green rows — never a second copy of the same data (rule 8), a snapshot render of it.
 
 ## Accessibility — voice input
 
