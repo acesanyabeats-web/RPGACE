@@ -581,3 +581,85 @@ manual.html's own redundant sections — it did NOT attempt G2 itself
 (the actual visual galaxy build), which stays real, ratified, future
 Loop 2 work per the earlier same-day ratification.
 
+================================================================
+SAME DAY, 4TH PASS — "update obsidian and graphify where needed,"
+real /deduplication + /paranoia + /restructure on the structural-
+freshness question, resolving (not just re-hitting) the Aug 12 stop
+================================================================
+
+Alex pasted graph.html's own live Communities/legend panel as real
+evidence of current state and asked for a real graphify/Obsidian
+update, run through /deduplication+/paranoia+/restructure.
+
+**Confirmed first, before touching anything**: `graphify-out/graph.
+html`/`obsidian_vault.html` already fully reflect this session's real
+content work (Supabase/bridges_to/interaction-type badges present,
+zero "Engineer CC" leftover, `git diff --stat` clean against the last
+commit) — the 3rd pass's pipeline re-run already covered this. What
+this pass actually investigated: whether the underlying `graph.json`
+STRUCTURE itself (967 nodes) is stale relative to this session's real
+code changes — confirmed yes, `errorLog` (a real module added a
+session ago) has zero graph.json representation.
+
+**Real re-attempt of the Aug 12 structural refresh, this time with an
+actual explanation, not just a repeat of the same stop.** Fresh
+`graphifyy` 0.10.1 install (npm global, cleaned up after) surfaced a
+real new tool feature since Aug 12: `graphify migrate-state` — an
+official, safe migration path from the old `graphify-out/` state
+convention to the new `.graphify/` one (`--dry-run` confirmed 13
+clean copies, 0 conflicts). Did NOT run the full migration — see
+below for why. Ran `graphify update . --scope tracked --no-description`
+(the real, zero-LLM-cost code-only rebuild) instead: **744 nodes vs
+the committed 967 — the exact same discrepancy as Aug 12.** Per rule
+9 (a defect surviving a second attempt stops the loop), did NOT force
+a third blind pass — but this time did the real diagnostic work
+Aug 12 didn't have the chance to: diffed the two `graph.json` file
+lists directly.
+
+**Real, now-fully-explained finding, not a mystery anymore**: the gap
+is not a tool bug. `--scope tracked --no-description` is explicitly
+code-only (confirmed by its own console output, "no LLM needed") — it
+never touches markdown/doc files at all. The "missing" 223 nodes are
+almost entirely real doc-file nodes the ORIGINAL richer export
+included (CLAUDE.md 36, interconnection_map.md 27, multiple skill
+`.md` files, system_flow_map.md 22, and more — genuine semantic
+extraction that needs a real LLM pass, which `--no-description`
+explicitly skips to stay free). The fresh run DID correctly find real,
+genuinely new code nodes the old graph never had: `main.min.js`/
+`rpgace_core.min.js` (269 nodes — this session's own minified build
+output) and 3 real hand-authored scripts (`obsidian_vault_to_html.py`,
+`supabase_dedup_scan.py`, `minify_client.js`).
+
+**Real decision, not deferred, matching this project's own established
+precedent (the "56 real components is an honest picture, leave it"
+call) for exactly this shape of tradeoff**: did NOT overwrite the
+committed `graph.json` with the code-only rebuild. Real reasoning,
+each axis checked directly: **/deduplication** — the migrate-state
+dry-run would have created a second, verbatim-duplicate copy of every
+file already in `graphify-out/` (13 files) under `.graphify/`, a real
+rule-8 violation if kept; cleaned up rather than committed. **/paranoia**
+— blindly accepting the code-only rebuild would have silently deleted
+~300 real doc-cross-reference nodes just found this same session to be
+exactly what Alex asked the galaxy map system to protect ("f) has
+truth source alongside b) docs") — the wrong direction on his own
+stated goal. **/restructure** — checked directly against its own real
+axes (shorter/quicker/more detailed output): the new `.graphify`
+code-only convention is NOT more detailed for RPGACE's actual use case
+(it's measurably less detailed, losing doc semantics) — verdict: stick
+with the current `graphify-out/` convention and its richer graph, not
+a genuine improvement to switch.
+
+**Real, honest, small residual gap, named rather than hidden**:
+`errorLog` (3 real functions) and the 3 new real scripts above have
+zero graph.json node representation — the same class of gap
+`main.js`'s own 12 honestly-unclassified nodes already carry, not a
+functional break (river-group's module-marker parsing reads directly
+from `rpgace_core.js`'s own source for river/zone assignment, not
+from graph.json's node list). **Real, deliberately NOT decided here**:
+closing this gap for real needs either (a) accepting the doc-coverage
+loss of a code-only rebuild, or (b) a real semantic re-export (LLM
+cost, genuinely small but real spend) to refresh BOTH code and docs
+together without the tradeoff — a real open fork for Alex, not
+guessed. `.graphify/` directory + the global npm install both cleaned
+up, nothing untracked left behind.
+
