@@ -663,3 +663,69 @@ together without the tradeoff — a real open fork for Alex, not
 guessed. `.graphify/` directory + the global npm install both cleaned
 up, nothing untracked left behind.
 
+================================================================
+SAME DAY, 5TH PASS — "run a small semantic re-export to close the
+errorLog gap": investigated first, found the real request wouldn't
+have worked, did the fix that actually closes it instead
+================================================================
+
+Real evidence check BEFORE running anything (rule 1) found the
+literal ask wouldn't have worked. Fresh `graphify update --scope
+tracked --no-description` (free, zero-cost, code-only — the "no LLM
+needed" mode) was re-run and directly checked for `errorLog` nodes:
+**still zero**, even in a pure AST pass with no semantic/description
+step involved at all. This proves the gap is NOT a missing-description
+problem (which a semantic re-export would fix) — it's a missing-
+EXTRACTION problem (nothing for a description to attach to in the
+first place). Running the literal semantic re-export Alex asked for
+would have burned real effort and still left the gap open, so it
+wasn't run blind.
+
+**Real root cause, found by direct measurement, not guessed**:
+`rpgace_core.js` is 19,812 lines; graphify's own extractor's last real
+captured node in BOTH the original 967-node graph AND the fresh 744-
+node rebuild sits at line ~18,844 — the same cutoff point in both,
+confirming this is a structural/tool limitation, not something a
+fresher rebuild fixes. The blind ~1,000-line tail contains 6 whole
+real modules with zero graph.json representation: `jargonEncyclopedia`,
+`pathRouter`, `perfWatch`, `voiceInput`, `mockOracle`, `errorLog` — 34
+real methods total, not just errorLog's 3. This is a real, confirmed
+EXTENSION of the already-documented `RPGACE.register()`-invisible-to-
+graphify finding (known since Aug 6), now localized to a specific line
+range rather than a vague "somewhere in the file."
+
+**Real fix applied — hand-entering accurate ground-truth nodes, not a
+semantic pass, since I already have complete real knowledge of this
+code (built errorLog + 2 of the 3 recently-added scripts myself this
+session)**: parsed the 6 modules' real method names + real line
+numbers directly from source (regex against the actual 2-space-indent
+`name: function(` pattern these modules use), built 34 real node
+entries matching graphify's own schema exactly (verified against a
+real existing node's shape first), and merged them into BOTH
+`graphify-out/graph.json` (967→1001 nodes, 0 id collisions) and
+`graph.html`'s own separately-embedded `RAW_NODES` array (extracted/
+re-injected via the script's own real `extract_array` bracket-counting
+helper, not a fragile regex — a first regex attempt genuinely failed
+on the 900K+ char single-line file, confirming why the script's own
+helper exists). Re-ran `graphify_river_group.py`: 955→976 river-tagged
+nodes, the 3 river-mapped modules (`jargonEncyclopedia`->River VII,
+`pathRouter`->River II, `mockOracle`->River III) correctly recolored
+from a neutral gray placeholder into their real river colors, verified
+directly (`#cc7a3a`/`#4a8ccc`/`#c9a84c` respectively); `perfWatch`/
+`voiceInput`/`errorLog` correctly stayed the neutral placeholder,
+matching the same cross-cutting-infra treatment `leftNav`/popup
+scaffolding already get. `graphify_to_obsidian.py`/
+`obsidian_vault_to_html.py` re-run — genuinely produced byte-identical
+output (the vault's own module notes list real module NAME+line-range,
+not per-function node counts, so this was expected, not a bug).
+Verified: div-balance clean (29/29 on graph.html), embedded `<script>`
+blocks re-extracted and run through `node --check` — clean.
+
+**Real, honest caveat documented in the script itself, not just this
+record**: a future FULL `graphify export`-family rebuild will very
+likely drop these 34 hand-entered nodes again, hitting the same tail-
+cutoff — a comment was added directly above `EXTERNAL_CONNECTORS` in
+`scripts/graphify_river_group.py` so a future session re-applies this
+same fix rather than being surprised by it. `.graphify/` scratch dir
++ global npm install cleaned up again, nothing untracked left behind.
+

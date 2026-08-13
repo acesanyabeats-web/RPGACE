@@ -89,6 +89,29 @@ from pathlib import Path
 
 CORE_JS = Path('rpgace_core.js')
 
+# Real, confirmed structural finding, Aug 13 (Alex asked for a "small
+# semantic re-export to close the errorLog gap" — investigated first
+# rather than blindly running one, since a semantic/LLM pass wouldn't
+# have fixed this): graphify's own AST extractor stops finding real
+# function declarations partway through rpgace_core.js's tail region
+# (confirmed on BOTH the original richer export AND a fresh --no-
+# description code-only rebuild — same cutoff either way, so this is
+# an EXTRACTION gap, not a missing-description gap). 6 real modules
+# (jargonEncyclopedia/pathRouter/perfWatch/voiceInput/mockOracle/
+# errorLog, 34 real methods total) had ZERO graph.json/graph.html
+# representation as a result. Fixed by hand-entering real, accurate
+# nodes for all 34 (real function names + real line numbers, read
+# directly from source — not fabricated) into both graph.json and
+# graph.html's embedded RAW_NODES, then re-running this script so the
+# 3 river-mapped modules (jargonEncyclopedia->VII, pathRouter->II,
+# mockOracle->III) get properly colored/positioned; the other 3
+# (perfWatch/voiceInput/errorLog) correctly stay untagged, matching
+# the same cross-cutting-infra treatment already given to leftNav/
+# popup scaffolding elsewhere in this file. A future full `graphify
+# export`-family rebuild will likely drop these hand-entered nodes
+# again (same tail-cutoff bug) — re-apply this same fix if that
+# happens, don't assume a fresh export closes it.
+
 # Real river palette - RPGACE style.css tokens again, deliberately
 # DIFFERENT hexes from graphify_recolor.py's community palette so a
 # river-tagged node is visually distinct from an untagged one even
