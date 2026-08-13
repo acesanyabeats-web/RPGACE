@@ -300,6 +300,41 @@ When a real change lands anywhere in the hierarchy above:
    maximal-scrutiny pass, or a real disconnect only Alex can resolve) —
    never reflexively, per each skill's own existing invocation rule.
 
+## 9. Level-2 layout principle — flow runs left (input) to right (output)
+
+Real, standing rule (Alex's own direct correction, Aug 13, after seeing
+a radial Level-2 diagram): "it should be flowing from left (input) to
+right (output) and depict contributers along the way from left to
+right... the river flows through modules into river 2." This is the
+required layout for any river with real modules, not a one-off fix:
+
+- **Far left**: the river's own identity hub, and any real incoming
+  `RIVER_FLOWS`/`FLOWS_IN` connection from another river (real input).
+- **Middle band, ordered by real evidence** (`compute_module_flow_rank`
+  in `graphify_river_group.py`): modules position left-to-right by
+  their real relationship to the river's own computed terminal — direct
+  upstream feeders sit left of it, the terminal itself sits at the real
+  convergence point, real downstream helpers (modules the terminal
+  calls out to) sit just past it. A module with no computed
+  relationship gets a neutral, honestly-unranked position — never
+  guessed onto the flow line.
+- **Far right**: any real outgoing `RIVER_FLOWS` connection (real
+  output), plus the terminal's own 👁️/🤖 badge (a real visible-in-app
+  output, a real external-AI connection, or both).
+- **Contributors** (dashboard cards, G0 external connectors, skill
+  streams) attach as real tributaries at the specific module's position
+  when a real citation supports it, or near the terminal when it
+  doesn't — "joining the flow along the way," per Alex's own words,
+  never scattered in a separate ring disconnected from the flow itself.
+
+**Real, stated exception**: a river with NO real registered modules
+(Rivers XII-XVI) has no module flow to reorient — these keep the
+original radial layout, since forcing a left-right shape onto a river
+that structurally has nothing to flow through would be decorative, not
+evidence-based. This also preserves River XIII's own real skill "web"
+(25 nodes), which Alex explicitly wanted kept radial ("itll look like a
+slow trickle or spider web... but will explain rivers so much better").
+
 ---
 
 Full compiled spec, open forks, and paranoia/drift/restructure scrutiny

@@ -89,7 +89,7 @@ from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminal,
-    ALL_SKILLS, SKILL_SECONDARY_RIVER,
+    ALL_SKILLS, SKILL_SECONDARY_RIVER, compute_module_flow_rank, dashboard_card_target_module,
 )
 
 OUT = Path('graphify-out/galaxy_map_module.html')
@@ -134,104 +134,26 @@ def build_river_section(rnum):
         skills_here = [(s, None) for s in ALL_SKILLS]
     else:
         skills_here = [(s, note) for s, (r, note) in SKILL_SECONDARY_RIVER.items() if r == rnum]
-    # River XIII's own real skill count (25) needs real extra canvas
-    # room — every other river stays the standard size.
-    if rnum == SKILL_RIVER:
+    mods = RIVER_MODULES.get(rnum, [])
+    cards = CARDS_BY_RIVER.get(rnum, [])
+    # Real canvas sizing: rivers with modules use the new WIDE left-to-
+    # right flow layout; River XIII's own real 25-skill radial catalog
+    # needs real extra room; every other module-less river stays the
+    # standard radial size.
+    if mods:
+        W, H = 1900, 950
+    elif rnum == SKILL_RIVER:
         W, H = 1550, 1500
     else:
         W, H = 1200, 1150
     cx, cy = W / 2, H / 2
     color = RIVER_COLOR[rnum]
     river_label = RIVER_NAME[rnum]
-    mods = RIVER_MODULES.get(rnum, [])
-    cards = CARDS_BY_RIVER.get(rnum, [])
 
     nodes_svg = []
     edges_svg = []
     edge_colors_used = {color}
-
-    # --- river hub ---
-    nodes_svg.append(
-        f'<g class="node central"><circle cx="{cx}" cy="{cy}" r="40" fill="#0f0f1a" stroke="{color}" stroke-width="3" filter="url(#glow)"/>'
-        f'<text x="{cx}" y="{cy-4}" text-anchor="middle" font-size="22">🌊</text>'
-        f'<text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="10" fill="#E2E2EC" font-weight="700">{river_label.split(chr(8212))[0].strip()}</text></g>'
-    )
-
-    # --- real registered modules, inner ring ---
     term_module, term_kind = compute_river_terminal(rnum, FLOW_EDGES)
-    n_mods = len(mods) or 1
-    mod_radius = 230
-    mod_pos = {}
-    for i, m in enumerate(mods):
-        ang = -90 + (360 * i / n_mods)
-        mx, my = polar(cx, cy, mod_radius, ang)
-        mod_pos[m] = (mx, my)
-        edges_svg.append(_curved_edge(cx, cy, mx, my, color, real=True, r1=40, r2=22))
-        is_term = (m == term_module)
-        term_badge = ''
-        if is_term:
-            term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(term_kind, '')
-            term_badge = f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="12">{term_icon}</text>'
-        ring_w = '3.5' if is_term else '2'
-        weight_attr = ' font-weight="700"' if is_term else ''
-        nodes_svg.append(
-            f'{term_badge}<g class="node"><circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="{ring_w}" filter="url(#glow)"/>'
-            f'<text x="{mx}" y="{my+5}" text-anchor="middle" font-size="14">{MODULE_ICON}</text></g>'
-            f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
-        )
-
-    # --- Aug 13, real Alex ask/observation: "these should show
-    # relationships between each other, then all conjoin eventually at
-    # [a real visible output]... the modules are the flows of the
-    # river, so it makes sense as a river." Real, mechanical, code-
-    # derived edges (compute_intra_river_flow(), never hand-authored)
-    # drawn directly between module bubbles, distinct from the hub-
-    # to-module spokes above (thinner, no glow, so the hub structure
-    # stays legible underneath the real flow lines).
-    for frm, to in FLOW_EDGES.get(rnum, []):
-        if frm in mod_pos and to in mod_pos:
-            fx, fy = mod_pos[frm]
-            tx, ty = mod_pos[to]
-            edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, r1=22, r2=22, offset_mult=1.6))
-            edge_colors_used.add(color)
-
-    # --- real dashboard cards, outer ring, visually distinct (dashed
-    # square-ish diamond, gold accent) — genuinely a different node
-    # TYPE (a UI entry point), not just a smaller module ---
-    n_cards = len(cards) or 1
-    card_radius = 320
-    for i, c in enumerate(cards):
-        ang = -90 + (360 * i / n_cards) + (180 / n_cards if n_cards > 1 else 0)
-        px, py = polar(cx, cy, card_radius, ang)
-        dash = ' stroke-dasharray="3,3"' if c.get('partial') else ''
-        # Real dedup (rule 8): was a hand-rolled <path>, now routes
-        # through the shared _curved_edge() so it gets the same real
-        # X-start/arrowhead markers every other edge in the Galaxy Map
-        # gets, instead of a second, marker-less line convention.
-        edges_svg.append(_curved_edge(cx, cy, px, py, '#C9A84C', real=True, dashed=True, r1=40, r2=27))
-        edge_colors_used.add('#C9A84C')
-        icon = c['label'].split(' ')[0]
-        label = ' '.join(c['label'].split(' ')[1:])
-        badge = ' <tspan fill="#E0A040">(partial)</tspan>' if c.get('partial') else ''
-        nodes_svg.append(
-            f'<g class="node"><rect x="{px-19}" y="{py-19}" width="38" height="38" rx="8" '
-            f'fill="#0f0f1a" stroke="#C9A84C" stroke-width="2"{dash} transform="rotate(45 {px} {py})" filter="url(#glow)"/>'
-            f'<text x="{px}" y="{py+5}" text-anchor="middle" font-size="15">{icon}</text></g>'
-            f'<text x="{px}" y="{py+30}" text-anchor="middle" font-size="9" fill="#C9A84C">{label}{badge}</text>'
-        )
-
-    # --- Aug 13, real Alex ask: "level 2 maps dont conjoin to other
-    # rivers in a circle and arrow" — a real, third outer ring showing
-    # exactly which OTHER rivers this one connects to, reusing the exact
-    # same RIVER_FLOWS (outgoing) / FLOWS_IN (incoming) data already
-    # drawn on Level 1, never re-derived (rule 8). Each bubble is a real
-    # in-page <a href="#river-N"> jump to that other river's own Level-2
-    # section (the existing hashchange listener already handles this,
-    # zero new JS needed), colored with THAT river's own RIVER_COLOR so
-    # it reads as "a different river," not this one's own module/card
-    # rings. Same real terminal-sink/fan-out exclusion as Level 1 — a
-    # RIVER_FLOWS target that isn't a real river number gets skipped
-    # here too, honest about what the data actually encodes.
     conns = []
     for target_label, note, itype in RIVER_FLOWS.get(rnum, []):
         other = _river_num_from_label(target_label)
@@ -239,77 +161,211 @@ def build_river_section(rnum):
             conns.append(('out', other, note, itype))
     for other, note, itype in FLOWS_IN.get(rnum, []):
         conns.append(('in', other, note, itype))
-
-    n_conn = len(conns) or 1
-    conn_radius = 400
-    for i, (direction, other, note, itype) in enumerate(conns):
-        ang = -90 + (360 * i / n_conn) + (180 / n_conn if n_conn > 1 else 0)
-        bx, by = polar(cx, cy, conn_radius, ang)
-        other_color = RIVER_COLOR[other]
-        other_short = RIVER_NAME[other].split('—')[0].strip()
-        if direction == 'out':
-            edges_svg.append(_curved_edge(cx, cy, bx, by, other_color, real=True, r1=40, r2=17))
-        else:
-            edges_svg.append(_curved_edge(bx, by, cx, cy, other_color, real=True, r1=17, r2=40))
-        edge_colors_used.add(other_color)
-        arrow = '→' if direction == 'out' else '←'
-        nodes_svg.append(
-            f'<a href="#river-{other}" class="drill-link"><g class="node">'
-            f'<circle cx="{bx}" cy="{by}" r="17" fill="#0f0f1a" stroke="{other_color}" stroke-width="2" filter="url(#glow)"/>'
-            f'<text x="{bx}" y="{by+5}" text-anchor="middle" font-size="12">🌊</text></g>'
-            f'<text x="{bx}" y="{by+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
-        )
-
-    # --- Aug 13, real Alex ask: "all rivers should also connect with
-    # G0 objects within level 2 maps to show how externals contribute
-    # to rivers." A real 4th, outermost ring — one hexagon bubble per
-    # real EXTERNAL_CONNECTORS entry that has a real, cited connection
-    # into THIS river (EXTERNAL_RIVER_LINKS, sourced directly from each
-    # connector's own real note text, never re-derived). Distinct
-    # accent color (EXTERNAL_COLOR) so this ring reads as "external
-    # infra," not confused with the river-colored module ring or the
-    # gold dashboard-card ring or the other-river-colored connection
-    # ring. Not clickable (no per-connector anchor exists at Level 0
-    # to jump to) — a real info marker, same restraint as everywhere
-    # else in this build: don't fake interactivity that isn't real.
     links = LINKS_BY_RIVER.get(rnum, [])
-    n_links = len(links) or 1
-    ext_radius = 490
-    for i, link in enumerate(links):
-        ang = -90 + (360 * i / n_links) + (180 / n_links if n_links > 1 else 0) + 15
-        ex, ey = polar(cx, cy, ext_radius, ang)
-        edges_svg.append(_curved_edge(cx, cy, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=40, r2=19))
-        edge_colors_used.add(EXTERNAL_COLOR)
-        icon = _connector_icon(link['name'])
-        pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
-        nodes_svg.append(
-            f'<g class="node">'
-            f'<polygon points="{pts}" fill="#0f0f1a" stroke="{EXTERNAL_COLOR}" stroke-width="2" filter="url(#glow)"/>'
-            f'<text x="{ex}" y="{ey+5}" text-anchor="middle" font-size="13">{icon}</text></g>'
-            f'<text x="{ex}" y="{ey+32}" text-anchor="middle" font-size="8.5" fill="{EXTERNAL_COLOR}">{link["name"]}</text>'
-        )
-
-    # --- Aug 13, real Alex ask: "skills are like streams that join the
-    # river flow." A real 5th ring — pentagons, River XIII's own real
-    # amber accent (RIVER_COLOR[13], the color that already represents
-    # "Skills" thematically). River XIII gets its full real list (25
-    # skills, its own genuine structural contents); a handful of other
-    # rivers get one real, cited skill each (SKILL_SECONDARY_RIVER).
-    skill_radius = 700 if rnum == SKILL_RIVER else 560
-    n_skills = len(skills_here) or 1
     skill_color = RIVER_COLOR[SKILL_RIVER]
-    for i, (skill, note) in enumerate(skills_here):
-        ang = -90 + (360 * i / n_skills)
-        skx, sky = polar(cx, cy, skill_radius, ang)
-        edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17))
-        edge_colors_used.add(skill_color)
-        pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
+
+    if mods:
+        # =========================================================
+        # Aug 13, real Alex correction — the STANDING layout PRINCIPLE
+        # for every river with real modules, going forward: "it should
+        # be flowing from left (input) to right (output) and depict
+        # contributers along the way from left to right... the river
+        # flows through modules into river 2." Real, evidence-derived
+        # x-position per module via compute_module_flow_rank() — never
+        # a decorative rearrangement, the geometry itself IS the claim
+        # ("this is upstream of that," "this is what it produces").
+        # =========================================================
+        rank = compute_module_flow_rank(rnum, FLOW_EDGES, term_module)
+        X_HUB, X_IN, X_R0, X_R1, X_TERM, X_RM1, X_OUT = 70, 260, 560, 880, 1200, 1500, 1780
+        mod_pos = {}
+        buckets = {2: [], 1: [], 0: [], -1: []}
+        for m in mods:
+            buckets.setdefault(rank.get(m, 0), []).append(m)
+        rank_x = {2: X_TERM, 1: X_R1, 0: X_R0, -1: X_RM1}
+
+        def _place_col(items, x):
+            n = len(items) or 1
+            for i, it in enumerate(items):
+                mod_pos[it] = (x, cy + (i - (n - 1) / 2) * 100)
+        for r, x in rank_x.items():
+            _place_col(buckets.get(r, []), x)
+
+        # river-identity hub, far left — the real entry point
         nodes_svg.append(
-            f'<g class="node">'
-            f'<polygon points="{pts5}" fill="#0f0f1a" stroke="{skill_color}" stroke-width="2" filter="url(#glow)"/>'
-            f'<text x="{skx}" y="{sky+4}" text-anchor="middle" font-size="10">🧵</text></g>'
-            f'<text x="{skx}" y="{sky+30}" text-anchor="middle" font-size="8" fill="{skill_color}">/{skill}</text>'
+            f'<g class="node central"><circle cx="{X_HUB}" cy="{cy}" r="34" fill="#0f0f1a" stroke="{color}" stroke-width="3" filter="url(#glow)"/>'
+            f'<text x="{X_HUB}" y="{cy-4}" text-anchor="middle" font-size="18">🌊</text>'
+            f'<text x="{X_HUB}" y="{cy+55}" text-anchor="middle" font-size="9.5" fill="#E2E2EC" font-weight="700">{river_label.split(chr(8212))[0].strip()}</text></g>'
         )
+        entry_targets = buckets.get(0) or buckets.get(1) or ([term_module] if term_module else [])
+        for m in entry_targets:
+            mx, my = mod_pos[m]
+            edges_svg.append(_curved_edge(X_HUB, cy, mx, my, color, real=True, r1=34, r2=22))
+
+        for m in mods:
+            if m not in mod_pos:
+                continue
+            mx, my = mod_pos[m]
+            is_term = (m == term_module)
+            term_badge = ''
+            if is_term:
+                term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(term_kind, '')
+                term_badge = f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="12">{term_icon}</text>'
+            ring_w = '3.5' if is_term else '2'
+            weight_attr = ' font-weight="700"' if is_term else ''
+            nodes_svg.append(
+                f'{term_badge}<g class="node"><circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="{ring_w}" filter="url(#glow)"/>'
+                f'<text x="{mx}" y="{my+5}" text-anchor="middle" font-size="14">{MODULE_ICON}</text></g>'
+                f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
+            )
+        for frm, to in FLOW_EDGES.get(rnum, []):
+            if frm in mod_pos and to in mod_pos:
+                fx, fy = mod_pos[frm]
+                tx, ty = mod_pos[to]
+                edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, r1=22, r2=22, offset_mult=1.3))
+                edge_colors_used.add(color)
+
+        # real "flow anchor" for anything without a per-module citation
+        # of its own (externals/skills) — the terminal if one exists,
+        # else the river's own single/first module (matches the real
+        # River I case: authGate has no computed terminal but is still
+        # the one real module producing this river's real output).
+        flow_anchor = mod_pos.get(term_module) or (mod_pos.get(mods[0]) if mods else None) or (X_TERM, cy)
+
+        # real dashboard cards — anchored to the exact module their own
+        # `via` text cites when unambiguous, else to the flow anchor.
+        card_anchor = {}
+        for c in cards:
+            target = dashboard_card_target_module(c.get('via', ''), mods)
+            card_anchor.setdefault(target, []).append(c)
+        for anchor_mod, clist in card_anchor.items():
+            ax, ay = mod_pos.get(anchor_mod, flow_anchor)
+            for i, c in enumerate(clist):
+                px, py = ax, ay - 90 - i * 60
+                dash = ' stroke-dasharray="3,3"' if c.get('partial') else ''
+                edges_svg.append(_curved_edge(ax, ay, px, py, '#C9A84C', real=True, dashed=True, r1=22, r2=19))
+                edge_colors_used.add('#C9A84C')
+                icon = c['label'].split(' ')[0]
+                label = ' '.join(c['label'].split(' ')[1:])
+                badge = ' <tspan fill="#E0A040">(partial)</tspan>' if c.get('partial') else ''
+                nodes_svg.append(
+                    f'<g class="node"><rect x="{px-16}" y="{py-16}" width="32" height="32" rx="7" '
+                    f'fill="#0f0f1a" stroke="#C9A84C" stroke-width="2"{dash} transform="rotate(45 {px} {py})" filter="url(#glow)"/>'
+                    f'<text x="{px}" y="{py+5}" text-anchor="middle" font-size="13">{icon}</text></g>'
+                    f'<text x="{px}" y="{py+26}" text-anchor="middle" font-size="8.5" fill="#C9A84C">{label}{badge}</text>'
+                )
+
+        # real river IN (far left, before the hub) / OUT (far right,
+        # after the terminal) connections — the actual input/output
+        # edges of this river's own diagram.
+        def _place_river_col(items, x, source_side):
+            n = len(items) or 1
+            for i, (direction, other, note, itype) in enumerate(items):
+                y = cy + (i - (n - 1) / 2) * 90
+                other_color = RIVER_COLOR[other]
+                other_short = RIVER_NAME[other].split('—')[0].strip()
+                if source_side == 'out':
+                    sx, sy = flow_anchor
+                    edges_svg.append(_curved_edge(sx, sy, x, y, other_color, real=True, r1=22, r2=17))
+                else:
+                    edges_svg.append(_curved_edge(x, y, X_HUB, cy, other_color, real=True, r1=17, r2=34))
+                edge_colors_used.add(other_color)
+                arrow = '→' if direction == 'out' else '←'
+                nodes_svg.append(
+                    f'<a href="#river-{other}" class="drill-link"><g class="node">'
+                    f'<circle cx="{x}" cy="{y}" r="17" fill="#0f0f1a" stroke="{other_color}" stroke-width="2" filter="url(#glow)"/>'
+                    f'<text x="{x}" y="{y+5}" text-anchor="middle" font-size="12">🌊</text></g>'
+                    f'<text x="{x}" y="{y+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
+                )
+        _place_river_col([c for c in conns if c[0] == 'in'], X_IN - 130, 'in')
+        _place_river_col([c for c in conns if c[0] == 'out'], X_OUT, 'out')
+
+        # real external connectors — a compact cluster below the flow
+        # anchor (most cited externals are invoked to help PRODUCE the
+        # river's real output, not an earlier pipeline stage).
+        ax, ay = flow_anchor
+        for i, link in enumerate(links):
+            ex, ey = ax + 55 + i * 14, ay + 130 + i * 68
+            edges_svg.append(_curved_edge(ax, ay, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=22, r2=19))
+            edge_colors_used.add(EXTERNAL_COLOR)
+            icon = _connector_icon(link['name'])
+            pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
+            nodes_svg.append(
+                f'<g class="node"><polygon points="{pts}" fill="#0f0f1a" stroke="{EXTERNAL_COLOR}" stroke-width="2" filter="url(#glow)"/>'
+                f'<text x="{ex}" y="{ey+5}" text-anchor="middle" font-size="13">{icon}</text></g>'
+                f'<text x="{ex}" y="{ey+32}" text-anchor="middle" font-size="8.5" fill="{EXTERNAL_COLOR}">{link["name"]}</text>'
+            )
+
+        # real skill streams — a compact cluster above the flow anchor
+        # (they govern/inform the whole process, not one pipeline stage).
+        for i, (skill, note) in enumerate(skills_here):
+            skx, sky = ax - 55 - i * 14, ay - 130 - i * 68
+            edges_svg.append(_curved_edge(ax, ay, skx, sky, skill_color, real=True, dashed=True, r1=22, r2=17))
+            edge_colors_used.add(skill_color)
+            pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
+            nodes_svg.append(
+                f'<g class="node"><polygon points="{pts5}" fill="#0f0f1a" stroke="{skill_color}" stroke-width="2" filter="url(#glow)"/>'
+                f'<text x="{skx}" y="{sky+4}" text-anchor="middle" font-size="10">🧵</text></g>'
+                f'<text x="{skx}" y="{sky+30}" text-anchor="middle" font-size="8" fill="{skill_color}">/{skill}</text>'
+            )
+
+    else:
+        # =========================================================
+        # ORIGINAL RADIAL LAYOUT — module-less rivers only (XII/XIII/
+        # XIV/XV/XVI). There's no real module flow here to reorient
+        # left-to-right; River XIII's own real skill catalog is also
+        # the one case Alex explicitly wanted to KEEP as a radial "web."
+        # =========================================================
+        nodes_svg.append(
+            f'<g class="node central"><circle cx="{cx}" cy="{cy}" r="40" fill="#0f0f1a" stroke="{color}" stroke-width="3" filter="url(#glow)"/>'
+            f'<text x="{cx}" y="{cy-4}" text-anchor="middle" font-size="22">🌊</text>'
+            f'<text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="10" fill="#E2E2EC" font-weight="700">{river_label.split(chr(8212))[0].strip()}</text></g>'
+        )
+        n_conn = len(conns) or 1
+        conn_radius = 400
+        for i, (direction, other, note, itype) in enumerate(conns):
+            ang = -90 + (360 * i / n_conn) + (180 / n_conn if n_conn > 1 else 0)
+            bx, by = polar(cx, cy, conn_radius, ang)
+            other_color = RIVER_COLOR[other]
+            other_short = RIVER_NAME[other].split('—')[0].strip()
+            if direction == 'out':
+                edges_svg.append(_curved_edge(cx, cy, bx, by, other_color, real=True, r1=40, r2=17))
+            else:
+                edges_svg.append(_curved_edge(bx, by, cx, cy, other_color, real=True, r1=17, r2=40))
+            edge_colors_used.add(other_color)
+            arrow = '→' if direction == 'out' else '←'
+            nodes_svg.append(
+                f'<a href="#river-{other}" class="drill-link"><g class="node">'
+                f'<circle cx="{bx}" cy="{by}" r="17" fill="#0f0f1a" stroke="{other_color}" stroke-width="2" filter="url(#glow)"/>'
+                f'<text x="{bx}" y="{by+5}" text-anchor="middle" font-size="12">🌊</text></g>'
+                f'<text x="{bx}" y="{by+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
+            )
+        n_links = len(links) or 1
+        ext_radius = 490
+        for i, link in enumerate(links):
+            ang = -90 + (360 * i / n_links) + (180 / n_links if n_links > 1 else 0) + 15
+            ex, ey = polar(cx, cy, ext_radius, ang)
+            edges_svg.append(_curved_edge(cx, cy, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=40, r2=19))
+            edge_colors_used.add(EXTERNAL_COLOR)
+            icon = _connector_icon(link['name'])
+            pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
+            nodes_svg.append(
+                f'<g class="node"><polygon points="{pts}" fill="#0f0f1a" stroke="{EXTERNAL_COLOR}" stroke-width="2" filter="url(#glow)"/>'
+                f'<text x="{ex}" y="{ey+5}" text-anchor="middle" font-size="13">{icon}</text></g>'
+                f'<text x="{ex}" y="{ey+32}" text-anchor="middle" font-size="8.5" fill="{EXTERNAL_COLOR}">{link["name"]}</text>'
+            )
+        skill_radius = 700 if rnum == SKILL_RIVER else 560
+        n_skills = len(skills_here) or 1
+        for i, (skill, note) in enumerate(skills_here):
+            ang = -90 + (360 * i / n_skills)
+            skx, sky = polar(cx, cy, skill_radius, ang)
+            edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17))
+            edge_colors_used.add(skill_color)
+            pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
+            nodes_svg.append(
+                f'<g class="node"><polygon points="{pts5}" fill="#0f0f1a" stroke="{skill_color}" stroke-width="2" filter="url(#glow)"/>'
+                f'<text x="{skx}" y="{sky+4}" text-anchor="middle" font-size="10">🧵</text></g>'
+                f'<text x="{skx}" y="{sky+30}" text-anchor="middle" font-size="8" fill="{skill_color}">/{skill}</text>'
+            )
 
     legend = (f'<p class="rlegend-role">{RIVER_ROLE_NOTE.get(rnum, "")}</p>'
               if RIVER_ROLE_NOTE.get(rnum) else '')

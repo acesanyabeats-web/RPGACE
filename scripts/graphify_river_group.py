@@ -709,10 +709,9 @@ def compute_river_terminal(rnum, flow_edges):
     # exact single-module dashboard-card citation (only unambiguous ones)
     ui_module = None
     for c in CARDS_BY_RIVER.get(rnum, []):
-        via = c.get('via', '')
-        m = re.search(r'->\s*(\w+)\s+module\b', via)
-        if m and m.group(1) in RIVER_MODULES.get(rnum, []):
-            ui_module = m.group(1)
+        found = dashboard_card_target_module(c.get('via', ''), RIVER_MODULES.get(rnum, []))
+        if found:
+            ui_module = found
             break
     if not ui_module and indeg:
         ui_module = max(indeg, key=indeg.get)
@@ -732,6 +731,63 @@ def compute_river_terminal(rnum, flow_edges):
     if ai_module:
         return (ai_module, 'ai')
     return (None, None)
+
+
+def dashboard_card_target_module(via, valid_mods):
+    """Real, shared extraction (rule 8 — same regex compute_river_
+    terminal() already uses, now reusable from one place): pulls the
+    exact single module a DASHBOARD_CARDS entry's own `via` text names,
+    if it's an unambiguous `-> X module` citation naming a real member
+    of this river. Returns None on any ambiguity — never guessed."""
+    m = re.search(r'->\s*(\w+)\s+module\b', via or '')
+    if m and m.group(1) in valid_mods:
+        return m.group(1)
+    return None
+
+
+def compute_module_flow_rank(rnum, flow_edges, terminal):
+    """Real, LEFT-TO-RIGHT flow position per module — Aug 13, real Alex
+    correction on the original radial layout: "it should be flowing
+    from left (input) to right (output) and depict contributers along
+    the way from left to right... the river flows through modules into
+    river 2. make this a principal of how level 2 maps work for future
+    updates." This is now the STANDING layout rule for every Level-2
+    river diagram, not a one-off fix.
+
+    Returns {module: rank} where rank is a real, evidence-derived
+    x-position class:
+      2  = the real terminal (rightmost among modules — a real visible
+           output or AI connection, per compute_river_terminal)
+      1  = a real DIRECT upstream feeder (has an edge straight INTO
+           the terminal) — sits just left of it
+      0  = a module with no real edge to/from the terminal at all
+           (the honest, neutral default — most single-module rivers
+           and any module compute_intra_river_flow found no evidence
+           for land here, never guessed into 1/-1)
+      -1 = a real downstream HELPER (the terminal, or an upstream
+           feeder, calls OUT to it — real evidence it's invoked TO
+           PRODUCE the output, not a step before it) — sits just
+           right of the terminal, alongside the real river-flow OUT
+           band, matching "a helper joining near the output," not a
+           second output stage.
+    Real, stated limit: this is a simple 2-hop classification from
+    direct edges only, not a full topological sort — genuinely
+    faithful to what compute_intra_river_flow's own direct-call
+    evidence supports, and no more."""
+    edges = flow_edges.get(rnum, [])
+    rank = {}
+    if not terminal:
+        return rank
+    rank[terminal] = 2
+    for frm, to in edges:
+        if to == terminal and frm != terminal:
+            rank[frm] = max(rank.get(frm, -99), 1)
+    for frm, to in edges:
+        if frm == terminal and to != terminal and to not in rank:
+            rank[to] = -1
+        elif frm in rank and rank.get(frm) == 1 and to != terminal and to not in rank:
+            rank[to] = -1
+    return rank
 
 
 def line_of(node):

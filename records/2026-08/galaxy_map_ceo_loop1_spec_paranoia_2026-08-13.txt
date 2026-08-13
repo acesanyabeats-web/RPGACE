@@ -1945,3 +1945,73 @@ updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`,
 `rpgace_core.js` (Oversight popup Level-2 description). `rpgace_core.
 min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
 `?v=20260813j`.
+
+================================================================
+SAME DAY, 21ST PASS — Level 2 rebuilt as a genuine left-to-right flow
+layout (real, standing principle for all future updates)
+================================================================
+
+Alex's real, direct correction on the (until now radial) River I
+diagram: "it should be flowing from left (input) to right (output)
+and depict contributers along the way from left to right if it makes
+sense. the river flows through modules into river 2. make this a
+principal of how level 2 maps work for future updates."
+
+**New `compute_module_flow_rank()`** (graphify_river_group.py) — a
+real, evidence-derived x-position class per module, computed from the
+exact same `compute_intra_river_flow()` edges already built: 2 = the
+real terminal (rightmost among modules), 1 = a real direct upstream
+feeder (has an edge straight into the terminal), -1 = a real
+downstream helper (the terminal calls it out), 0 = the honest neutral
+default for anything with no computed relationship — never guessed
+onto the flow line. A shared `dashboard_card_target_module()` helper
+was pulled out of `compute_river_terminal()`'s own regex (real rule-8
+dedup) so the new layout code and the terminal computation share one
+citation-extraction method.
+
+**`galaxy_map_module.py` rebuilt with a real branch**: any river with
+real modules (`RIVER_MODULES` non-empty) now renders left-to-right —
+river-identity hub far left, real incoming `FLOWS_IN` connections
+further left still, modules positioned by their real computed rank,
+the terminal with its 👁️/🤖 badge, real outgoing `RIVER_FLOWS`
+connections far right. Dashboard cards attach to the exact module
+their own `via` text cites when unambiguous (real per-module pinning,
+not just per-river); external connectors and skill streams attach as
+compact clusters near the real flow anchor (the terminal, or the
+river's own single module when no terminal was computed — matches
+River I's real case: `authGate` has no dashboard-card citation but is
+still the one real module producing the river's real output).
+
+**Rivers with NO real modules (XII-XVI) deliberately kept the original
+radial layout** — there's no real module flow to reorient there, and
+this also preserves River XIII's own real 25-skill "web," which Alex
+explicitly wanted to keep radial: "itll look like a slow trickle or
+spider web... but will explain rivers so much better." A clean,
+real, evidence-backed scope boundary (module presence/absence), not
+an arbitrary split.
+
+**Codified as a real, standing principle**: `system_map_spec.md`
+gained a new §9, "Level-2 layout principle — flow runs left (input) to
+right (output)," stating the rule for all future Level-2 work, with
+the module-less-river exception stated explicitly.
+
+**Real verification, 3 cases, not assumed**: headless-Chromium pass on
+River I (the exact case Alex flagged — hub → authGate → River II,
+confirmed genuinely left-to-right), River XI (the real multi-module
+flow case — feeders left, terminal center-right, helpers/dashboard
+card/externals correctly attached, River X/XII connections far
+right), and River XIII (confirmed the radial skill web rendered
+byte-identical to before). Zero console errors on all three.
+div/svg/a/polygon-balance clean on all 3 regenerated files
+(L2: 252/252/16/16/52/52/46 polygons, unchanged counts — same real
+content, new positions).
+
+**`ceo_plan_items` G4** got a real appended verdict note.
+**Oversight updated same session**: `system_map_spec.md` (new §9, the
+real methodology home for this principle), `oracleAppGrounding.
+SELF_KNOWLEDGE` (node --check clean — another `''`-vs-`\'` slip
+caught and fixed immediately, 3rd time this session, worth flagging
+as a real recurring risk when SQL and JS string-editing interleave in
+one long session), `rpgace_core.js` (Oversight popup Level-2
+description). `rpgace_core.min.js`/`main.min.js` re-minified,
+`index.html` cache-bust bumped to `?v=20260813k`.
