@@ -1607,3 +1607,67 @@ it recurred twice in one session doing back-to-back SQL+JS edits),
 `interconnection_map.md`, `system_flow_map.md`, `rpgace_core.js`
 (Oversight popup entry). `rpgace_core.min.js`/`main.min.js`
 re-minified, `index.html` cache-bust bumped to `?v=20260813e`.
+
+================================================================
+SAME DAY, 16TH PASS — G4 shipped: Level-2 drill-down (river -> real
+modules + real dashboard cards, per Alex's own explicit addition)
+================================================================
+
+Alex's real ask: "yes now do g4; we should also include dashboard
+cards as reference points too."
+
+**Real evidence gathered before building**: `dashDeck.MODULES`
+(rpgace_core.js) is the real, live list of 12 top-level dashboard
+cards, each with a real `go()` handler stating exactly what it opens.
+Resolved each card's real target through the existing `MODULE_RIVER`
+map (built from `RIVER_MODULES`) rather than guessing river
+membership. Two genuine, honest edge cases found and represented
+rather than smoothed over: 'taxonomy' branches at runtime (review
+queue vs. Phylum Path browse) - both real target rivers (VIII and VI)
+shown; 'agenda' opens a page whose core Quest Board content lives in
+main.js and has never been river-tagged - its real target
+(`agendaReminder`, River V) is a genuine but partial relationship,
+flagged `partial: True` rather than presented as the whole story.
+
+**New `DASHBOARD_CARDS`/`CARDS_BY_RIVER` tables** added to
+`graphify_river_group.py` (the canonical single source every
+galaxy_map*.py script already imports from) - a real, sourced mirror
+of `dashDeck.MODULES`, same "doc first, mirror second" discipline
+already governing `EXTERNAL_CONNECTORS`. Rule 8: dashDeck.MODULES
+stays the one real source of the card list/labels/order; this is a
+presentation-layer reflection of it, not a second independent list.
+
+**New `scripts/galaxy_map_module.py`** generates
+`graphify-out/galaxy_map_module.html` - ONE file holding all 16
+rivers' Level-2 detail (matching the "one file per level" convention
+G2/G3 already set, rather than 16 separate files), each river its own
+`<section>` toggled by `location.hash` via a small vanilla-JS tab
+switcher (zero framework). Each river shows its real modules (round
+nodes, reused from `RIVER_MODULES`) and its real dashboard-card entry
+points (diamond nodes, visually distinct - a genuinely different kind
+of thing, a UI entry point rather than a code module) radially around
+a river hub, reusing `polar()`/`_curved_edge()` from `galaxy_map.py`.
+
+**Level-1 wired to drill into it**: every one of the 16 river nodes on
+`galaxy_map_river.html` is now a real `<a href="galaxy_map_module.html
+#river-N">`, matching G3's own drill-link precedent on Level 0's
+central node.
+
+**Real verification, full chain**: headless-Chromium pass confirmed
+zero console/page errors across Level 0 -> Level 1 -> Level 2, all 16
+Level-1 drill-links present with correct hrefs, hash-based deep-
+linking (`#river-6`) landing on the right section, and JS tab-click
+switching (river-6 -> river-11) both working. div/svg/section-balance
+checked directly on all 3 files (all matched). Screenshots reviewed
+visually - River VI (1 module + 1 partial-labeled card) and River XI
+(6 modules + 1 card) both render clean and legible.
+
+**`ceo_plan_items` G4** flipped green with real evidence cited.
+**Oversight updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`
+(node --check clean), `interconnection_map.md`, `system_flow_map.md`,
+`rpgace_core.js` (Oversight popup, 2 new entries: Level 1 desc updated
++ new Level 2 entry). `rpgace_core.min.js`/`main.min.js` re-minified,
+`index.html` cache-bust bumped to `?v=20260813f`.
+
+**Remaining G5-G9 still honestly queued** - not attempted this pass,
+same real multi-session discipline as before.

@@ -46,7 +46,13 @@ real drill-down link, not a dead end.** `scripts/galaxy_map_river.py`
 generates `graphify-out/galaxy_map_river.html` (Level 1: RPGACE
 Architecture's own 16 rivers, real `RIVER_FLOWS` edges) — the central
 RPGACE Architecture node here now wraps in a real `<a href=...>` to it.
-Function-level drill-down (G4) is still real, separate, NOT-yet-built.
+
+**Aug 13, 4th pass — G4 shipped too.** `scripts/galaxy_map_module.py`
+generates `graphify-out/galaxy_map_module.html` (Level 2: each river's
+own real modules PLUS the real dashboard cards, from `dashDeck.
+MODULES`, that actually route into it — Alex's own explicit ask to
+include dashboard cards as reference points, not just code modules).
+Reachable by clicking any river node on Level 1.
 """
 import math
 import sys

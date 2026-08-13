@@ -336,6 +336,63 @@ RIVER_MODULES = {
 }
 MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 
+# Real, sourced mirror of dashDeck.MODULES (rpgace_core.js) — Alex's
+# own Aug 13 ask for G4: "we should also include dashboard cards as
+# reference points too." A dashboard card is not itself a river member
+# (dashDeck is deliberately excluded from RIVER_MODULES above — it's
+# cross-cutting UI, same as leftNav/popup scaffolding) but it IS a
+# real, user-clickable entry point Alex actually uses to reach a
+# river — exactly the kind of Total-systems relationship the Galaxy
+# Map exists to show. Each entry's `rivers` list is read directly off
+# that card's own real `go()` handler in rpgace_core.js (grepped, not
+# guessed) resolved through MODULE_RIVER above — never re-derived from
+# scratch, same "doc first, mirror second" discipline as
+# EXTERNAL_CONNECTORS. Rule 8: this is a presentation-layer mirror,
+# dashDeck.MODULES stays the one real source of the card list/labels/
+# order itself.
+#
+# Two real, honest multi-value/partial cases, not smoothed over for
+# symmetry: 'taxonomy' branches at runtime (review queue when pending
+# items exist, else Phylum Path browse) — genuinely 2 real target
+# rivers, both shown. 'agenda' opens a page whose CORE content (the
+# Quest Board / addXP()/completeQuest()) lives in main.js and has never
+# been river-tagged (same standing scope limit RIVER_MODULES' own
+# docstring already names for cross-cutting main.js code) — its listed
+# river is real (agendaReminder, a genuine QoL layer on the same page)
+# but is honestly flagged as partial, not the page's whole story.
+DASHBOARD_CARDS = [
+    {'key': 'research', 'label': '🧠 Research Lab', 'rivers': [5],
+     'via': "dashDeck._openResearch() -> researchTabs/intelBatchList etc"},
+    {'key': 'bookworm', 'label': '📖 Bookworm', 'rivers': [4],
+     'via': "dashDeck._openBookworm() -> bookworm module"},
+    {'key': 'taxonomy', 'label': '🌳 Taxonomy & Review', 'rivers': [8, 6],
+     'via': "taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse",
+     'partial': False},
+    {'key': 'oracle', 'label': '⚡ Oracle', 'rivers': [3],
+     'via': "showPage(pages.oracle) -> oracleAppGrounding/oracleTreeGrounding etc"},
+    {'key': 'agenda', 'label': '📋 Agenda', 'rivers': [5],
+     'via': "showPage(pages.agenda) -> agendaReminder (QoL layer only; the page's own Quest Board core lives in main.js, not river-tagged)",
+     'partial': True},
+    {'key': 'morningBrief', 'label': '🌅 Morning Brief', 'rivers': [5],
+     'via': "dashDeck._openMorningBrief() -> morningBrief module"},
+    {'key': 'gaps', 'label': '🕳️ Knowledge Gaps', 'rivers': [9],
+     'via': "dashDeck._openGaps() -> knowledgeGap module"},
+    {'key': 'pipeline', 'label': '🎬 Content Pipeline', 'rivers': [11],
+     'via': "dashDeck._openPipeline() -> contentProductionLive module"},
+    {'key': 'encyclopedia', 'label': '📖 Encyclopedia', 'rivers': [7],
+     'via': "showPage(pages.encyclopedia) -> jargonEncyclopedia module"},
+    {'key': 'journal', 'label': '📓 Journal', 'rivers': [5],
+     'via': "showPage(pages.journal) -> journalQoL module"},
+    {'key': 'oversight', 'label': '📚 Oversight', 'rivers': [14],
+     'via': "dashDeck._openOversight() -> Zone/River XIV, the shared oversight-doc truth layer"},
+    {'key': 'chronicles', 'label': '📜 The Chronicles', 'rivers': [10],
+     'via': "chroniclesLog._openCard() -> chroniclesLog module"},
+]
+CARDS_BY_RIVER = {}
+for _c in DASHBOARD_CARDS:
+    for _r in _c['rivers']:
+        CARDS_BY_RIVER.setdefault(_r, []).append(_c)
+
 # Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
 # connectors (Aug 6 restructure pass) — never guessed. Each entry: real
 # source river number -> list of (target label, real condition/note).

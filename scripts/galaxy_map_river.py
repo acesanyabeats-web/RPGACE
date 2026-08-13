@@ -89,7 +89,15 @@ def build_svg():
         color = RIVER_COLOR[rnum]
         edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True))
         short_label = RIVER_NAME[rnum].split('—')[0].strip()
-        nodes_svg.append(node_circle(rx, ry, 30, color, '🌊', short_label, label_color=color))
+        # G4 shipped — every river node is now a real clickable drill-down
+        # into its own Level-2 module/dashboard-card detail, not a
+        # decorative dead end (matches G3's own drill-link precedent on
+        # Level 0's central node).
+        nodes_svg.append(
+            f'<a href="galaxy_map_module.html#river-{rnum}" class="drill-link">'
+            + node_circle(rx, ry, 30, color, '🌊', short_label, label_color=color)
+            + '</a>'
+        )
         mods = RIVER_MODULES.get(rnum, [])
         mods_txt = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '(no single-module home — see zone role note)'
         role = RIVER_ROLE_NOTE.get(rnum, '')
@@ -155,6 +163,9 @@ TEMPLATE = """<!DOCTYPE html>
   .hero a{{color:var(--gold)}}
   .canvas-wrap{{max-width:1300px;margin:0 auto;overflow-x:auto}}
   svg text{{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}}
+  a.drill-link{{cursor:pointer}}
+  a.drill-link .node circle{{transition:filter 0.15s}}
+  a.drill-link:hover .node circle{{filter:url(#glow) brightness(1.3)}}
   .legend{{max-width:900px;margin:0 auto 20px;padding:0 24px}}
   .legend h2{{font-family:Georgia,serif;font-size:16px;color:var(--gold);margin:24px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}}
   .legend-row{{font-size:12px;color:var(--dim);padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.6}}
@@ -172,7 +183,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
   <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Function/module-level drill-down (G4) is a real, separate, not-yet-built next step.</p>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2, G4, now real).</b></p>
 </div>
 
 <div class="canvas-wrap">
@@ -204,7 +215,8 @@ TEMPLATE = """<!DOCTYPE html>
   <code>RIVER_MODULES</code>/<code>RIVER_ROLE_NOTE</code>/<code>RIVER_FLOWS</code> (never re-derived), and
   <code>galaxy_map.py</code>'s own <code>polar()</code>/<code>_curved_edge()</code> layout helpers.
   Mapping rules: <code>system_map_spec.md</code>. G3 of the ratified "RPGACE Total Systems
-  Galaxy Map" /CEO plan — G4 (function-level drill-down) is real, separate, not yet built.
+  Galaxy Map" /CEO plan — G4 (<a href="galaxy_map_module.html">module + dashboard-card
+  drill-down, click any river above</a>) is now real and live.
 </div>
 
 </body>

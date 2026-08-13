@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌊 Aug 13 (same day, 16th pass) — G4 SHIPPED: Level-2 drill-down shows each river's real modules PLUS the real dashboard cards that route into it, per Alex's own explicit ask.</div>
+    <div class="card-body">
+      "yes now do g4; we should also include dashboard cards as reference points too." A new sourced <code>DASHBOARD_CARDS</code> table (<code>graphify_river_group.py</code>) mirrors <code>dashDeck.MODULES</code>'s 12 real cards, each resolved to its real target river(s) via that card's own <code>go()</code> handler — 2 honest edge cases kept rather than smoothed over: "Taxonomy & Review" genuinely branches to 2 rivers at runtime, "Agenda" is flagged <code>partial</code> since its real Quest Board core lives in untagged main.js code.
+      <br><br>
+      New <code>scripts/galaxy_map_module.py</code> generates <code>graphify-out/galaxy_map_module.html</code> — all 16 rivers in one file, tab-switched, each showing round module nodes next to diamond dashboard-card nodes (a genuinely different kind of thing — code entity vs. user-clickable entry point — shown distinctly, not merged). Level-1 river nodes are now real clickable links into it. Verified via headless Chromium across the full Level 0→1→2 drill chain: zero console errors, hash deep-linking and tab-click switching both confirmed, div/svg/section-balance clean on all 3 levels. G5-G9 remain honestly queued as separate multi-session work. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code> (16th pass).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🏛️ Aug 13 (same day, 15th pass) — G13 logged (a future full-coverage <code>smoke_test.html</code> report), G3 (Level-1 river drill-down) SHIPPED: 16 real rivers, radial, clickable from the Galaxy Map's own central node.</div>
     <div class="card-body">
       Alex's ask: log the full-report idea into <code>future_integrations.html</code>, then move down the G-steps with real rigor. <b>G13 logged, deliberately NOT built</b> — a genuine full connections+functions <code>smoke_test.html</code> report needs G11's full <code>/perspective</code> sweep (52 modules, 240+ functions, 93 onclick handlers) to land first; rushing it now would repeat the "judgement chamber" mistake this project already named once. It appears in <code>future_integrations.html</code> automatically (that page already live-fetches <code>ceo_plan_items</code>).
