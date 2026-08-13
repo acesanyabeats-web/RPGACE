@@ -98,6 +98,8 @@ exact wiring point.
 - It does not retroactively tag every existing doc/table Consumer/
   Developer — that's real, separate, future work, not silently done
   as a side effect of this skill existing.
-- The `system_map_flags` table it references is a real, compiled
-  RECOMMENDATION as of Aug 13 — not yet built. Check the same-day
-  record file for its proposed schema before assuming it exists.
+- The `system_map_flags` table is real and live as of Aug 13 (Alex's
+  own confirm) — `detected_by`/`map_level`/`change_summary`/
+  `friction_note`/`severity`/`visibility`/`status`/`linked_plan_item_id`.
+  Query `status='flagged'` rows at session start, same passive-pull
+  discipline as `oracle_dev_suggestions`/`graphify_jobs`/`error_log`.

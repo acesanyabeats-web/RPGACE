@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Level 0)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #12121e 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:0}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:30px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12.5px;max-width:760px;margin:0 auto}
+  .canvas-wrap{max-width:1400px;margin:0 auto;overflow-x:auto}
+  svg text{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}
+  .node{cursor:default}
+  .legend{max-width:900px;margin:0 auto 60px;padding:0 24px}
+  .legend h2{font-family:Georgia,serif;font-size:16px;color:var(--gold);margin:24px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}
+  .legend-row{font-size:12px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.6}
+  .legend-row b{color:#E2E2EC}
+  .legend-row .meta{display:block;font-size:10.5px;color:#6a6a78;margin-top:2px}
+  .legend-row.small{font-size:11px}
+  .legend-row .warn{color:#E0A040;font-weight:700}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+  .note{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
+  <h1>🌌 The Galaxy Map</h1>
+  <p>The real top-level view — 4 galaxies (RPGACE Architecture + 3 real Total-system members), Oracle and self-awareness as their own nodes since RPGACE is the harness they operate through, and every real external connector RPGACE Architecture touches — styled radially, per Alex's own Assassin's Creed Valhalla reference. Untested connectors are shown with a dashed ring and reduced opacity, never hidden. River-level (G3) and function-level (G4) drill-down are real, separate, not-yet-built future items — this is Level 0 only.</p>
+</div>
+
+<div class="canvas-wrap">
+<svg viewBox="0 0 1400 1000" width="100%" style="max-width:1400px;display:block;margin:0 auto">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M 700.0 620.0 Q 547.4551732809566 504.2153903091735 370.9103465619133 430.0" fill="none" stroke="#4A90E2" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 724.0 430.0 700.0 240.0" fill="none" stroke="#E25454" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 876.5448267190434 545.7846096908265 1029.0896534380868 430.0" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 738.1962083858515 683.3801993129132 807.246222036657 709.9902653561155" fill="none" stroke="#9B59B6" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 676.0 690.0 700.0 760.0" fill="none" stroke="#9B59B6" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 579.7468245269451 661.7153903091735 483.4936490538903 745.0" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 573.0185104116155 611.2420720535622 451.8227814754865 650.1341700638309" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 586.6124551800733 562.1703823312904 459.8704720921569 550.4456340208868" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 618.3530687858322 522.3538089667142 506.3487595430863 461.8886561011557" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.4" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 663.1605481102059 498.1646406642983 583.8192069890579 398.6359935866975" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.4" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 713.8638543056302 493.4741388340223 679.8833578208183 370.81067296644756" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.4" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 762.3483738319156 509.0329766078422 779.1669984503682 382.86588951321363" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 800.8545902362058 542.3511002763914 865.7806645601988 432.8723129572247" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.4" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 823.2199257999711 588.0962402552674 925.8626086525956 512.8268596492364" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 825.8650073340722 638.9472934424408 949.7972495428924 609.9335149726462" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 808.366513046656 686.766000704767 933.7540606713537 708.6512217606339" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 773.5249214337465 723.8994029249513 880.3006118359538 793.1810883773996" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.4" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 726.9163195846977 744.4046290939948 797.9916524650189 849.994860914706" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.4" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+<path d="M 700.0 620.0 Q 676.0 745.0 700.0000000000001 870.0" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 451.8227814754865 650.1341700638309 Q 596.4447649698112 457.4920817178645 700.0 240.0" fill="none" stroke="#E25454" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)"/>
+  <g class="node central" data-id="rpgace_architecture"><circle cx="700.0" cy="620.0" r="46" fill="#0f0f1a" stroke="#C9A84C" stroke-width="3" filter="url(#glow)"/><text x="700.0" y="614.0" text-anchor="middle" font-size="26">🏛️</text><text x="700.0" y="638.0" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">RPGACE Architecture</text></g>
+<g class="node galaxy" data-id="orchestrator_cc"><circle cx="370.9103465619133" cy="430.0" r="34" fill="#0f0f1a" stroke="#4A90E2" stroke-width="2.5" filter="url(#glow)"/><text x="370.9103465619133" y="426.0" text-anchor="middle" font-size="20">🧭</text><text x="370.9103465619133" y="464.0" text-anchor="middle" font-size="10.5" fill="#4A90E2" font-weight="700">Orchestrator CC</text></g>
+<g class="node galaxy" data-id="openmontage_cc"><circle cx="700.0" cy="240.0" r="34" fill="#0f0f1a" stroke="#E25454" stroke-width="2.5" filter="url(#glow)"/><text x="700.0" y="236.0" text-anchor="middle" font-size="20">🎬</text><text x="700.0" y="274.0" text-anchor="middle" font-size="10.5" fill="#E25454" font-weight="700">OpenMontage CC</text></g>
+<g class="node galaxy" data-id="graphify_cc"><circle cx="1029.0896534380868" cy="430.0" r="34" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="2.5" filter="url(#glow)"/><text x="1029.0896534380868" y="426.0" text-anchor="middle" font-size="20">🌐</text><text x="1029.0896534380868" y="464.0" text-anchor="middle" font-size="10.5" fill="#3DAA6E" font-weight="700">Graphify CC</text></g>
+<g class="node harness" data-id="oracle_api"><circle cx="807.246222036657" cy="709.9902653561155" r="22" fill="#0f0f1a" stroke="#9B59B6" stroke-width="2"/><text x="807.246222036657" y="714.9902653561155" text-anchor="middle" font-size="15">🔮</text></g><text x="807.246222036657" y="747.9902653561155" text-anchor="middle" font-size="9" fill="#c9a8e0">Oracle (Claude API harness)</text>
+<g class="node harness" data-id="self_awareness"><circle cx="700.0" cy="760.0" r="22" fill="#0f0f1a" stroke="#9B59B6" stroke-width="2"/><text x="700.0" y="765.0" text-anchor="middle" font-size="15">🪞</text></g><text x="700.0" y="798.0" text-anchor="middle" font-size="9" fill="#c9a8e0">Self-Awareness (SELF_KNOWLEDGE)</text>
+<g class="node connector" data-id="ext_0" opacity="1"><circle cx="483.4936490538903" cy="745.0" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="483.4936490538903" y="750.0" text-anchor="middle" font-size="12">🔮</text></g><text x="483.4936490538903" y="773.0" text-anchor="middle" font-size="8.5" fill="#cfd6e0">Anthropic (Claude API)</text>
+<g class="node connector" data-id="ext_1" opacity="1"><circle cx="451.8227814754865" cy="650.1341700638309" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="451.8227814754865" y="655.1341700638309" text-anchor="middle" font-size="12">🎬</text></g><text x="451.8227814754865" y="678.1341700638309" text-anchor="middle" font-size="8.5" fill="#cfd6e0">OpenMontage</text>
+<g class="node connector" data-id="ext_2" opacity="1"><circle cx="459.8704720921569" cy="550.4456340208868" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="459.8704720921569" y="555.4456340208868" text-anchor="middle" font-size="12">🔗</text></g><text x="459.8704720921569" y="578.4456340208868" text-anchor="middle" font-size="8.5" fill="#cfd6e0">Composio</text>
+<g class="node connector" data-id="ext_3" opacity="0.55"><circle cx="506.3487595430863" cy="461.8886561011557" r="16" fill="#0f0f1a" stroke="#E0A040" stroke-width="1.6" stroke-dasharray="4,3"/><text x="506.3487595430863" y="466.8886561011557" text-anchor="middle" font-size="12">🌙</text></g><text x="506.3487595430863" y="489.8886561011557" text-anchor="middle" font-size="8.5" fill="#9a9aa8">Moonshot AI (Kimi)</text>
+<g class="node connector" data-id="ext_4" opacity="0.55"><circle cx="583.8192069890579" cy="398.6359935866975" r="16" fill="#0f0f1a" stroke="#E0A040" stroke-width="1.6" stroke-dasharray="4,3"/><text x="583.8192069890579" y="403.6359935866975" text-anchor="middle" font-size="12">🌟</text></g><text x="583.8192069890579" y="426.6359935866975" text-anchor="middle" font-size="8.5" fill="#9a9aa8">OpenAI (Luna)</text>
+<g class="node connector" data-id="ext_5" opacity="0.55"><circle cx="679.8833578208183" cy="370.81067296644756" r="16" fill="#0f0f1a" stroke="#E0A040" stroke-width="1.6" stroke-dasharray="4,3"/><text x="679.8833578208183" y="375.81067296644756" text-anchor="middle" font-size="12">🎵</text></g><text x="679.8833578208183" y="398.81067296644756" text-anchor="middle" font-size="8.5" fill="#9a9aa8">librosa</text>
+<g class="node connector" data-id="ext_6" opacity="1"><circle cx="779.1669984503682" cy="382.86588951321363" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="779.1669984503682" y="387.86588951321363" text-anchor="middle" font-size="12">🎞️</text></g><text x="779.1669984503682" y="410.86588951321363" text-anchor="middle" font-size="8.5" fill="#cfd6e0">FFmpeg</text>
+<g class="node connector" data-id="ext_7" opacity="0.55"><circle cx="865.7806645601988" cy="432.8723129572247" r="16" fill="#0f0f1a" stroke="#E0A040" stroke-width="1.6" stroke-dasharray="4,3"/><text x="865.7806645601988" y="437.8723129572247" text-anchor="middle" font-size="12">🎨</text></g><text x="865.7806645601988" y="460.8723129572247" text-anchor="middle" font-size="8.5" fill="#9a9aa8">OpenArt</text>
+<g class="node connector" data-id="ext_8" opacity="1"><circle cx="925.8626086525956" cy="512.8268596492364" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="925.8626086525956" y="517.8268596492364" text-anchor="middle" font-size="12">🌐</text></g><text x="925.8626086525956" y="540.8268596492364" text-anchor="middle" font-size="8.5" fill="#cfd6e0">Graphify CC</text>
+<g class="node connector" data-id="ext_9" opacity="1"><circle cx="949.7972495428924" cy="609.9335149726462" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="949.7972495428924" y="614.9335149726462" text-anchor="middle" font-size="12">🕸️</text></g><text x="949.7972495428924" y="637.9335149726462" text-anchor="middle" font-size="8.5" fill="#cfd6e0">Jina AI</text>
+<g class="node connector" data-id="ext_10" opacity="1"><circle cx="933.7540606713537" cy="708.6512217606339" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="933.7540606713537" y="713.6512217606339" text-anchor="middle" font-size="12">📻</text></g><text x="933.7540606713537" y="736.6512217606339" text-anchor="middle" font-size="8.5" fill="#cfd6e0">Last.fm</text>
+<g class="node connector" data-id="ext_11" opacity="0.55"><circle cx="880.3006118359538" cy="793.1810883773996" r="16" fill="#0f0f1a" stroke="#E0A040" stroke-width="1.6" stroke-dasharray="4,3"/><text x="880.3006118359538" y="798.1810883773996" text-anchor="middle" font-size="12">⚙️</text></g><text x="880.3006118359538" y="821.1810883773996" text-anchor="middle" font-size="8.5" fill="#9a9aa8">n8n</text>
+<g class="node connector" data-id="ext_12" opacity="0.55"><circle cx="797.9916524650189" cy="849.994860914706" r="16" fill="#0f0f1a" stroke="#E0A040" stroke-width="1.6" stroke-dasharray="4,3"/><text x="797.9916524650189" y="854.994860914706" text-anchor="middle" font-size="12">🎙️</text></g><text x="797.9916524650189" y="877.994860914706" text-anchor="middle" font-size="8.5" fill="#9a9aa8">Whisper (OpenAI, local)</text>
+<g class="node connector" data-id="ext_13" opacity="1"><circle cx="700.0000000000001" cy="870.0" r="16" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="1.6" stroke-dasharray="none"/><text x="700.0000000000001" y="875.0" text-anchor="middle" font-size="12">🗄️</text></g><text x="700.0000000000001" y="898.0" text-anchor="middle" font-size="8.5" fill="#cfd6e0">Supabase</text>
+</svg>
+</div>
+
+<div class="legend">
+  <h2>Galaxies</h2>
+  <div class="legend-row"><span class="dot" style="background:#4A90E2"></span><b>Orchestrator CC</b> — This session — planner/orchestrator. Evidence-gathering, dispatch-writing, RPGACE-side schema/UI/doc work. <span class="meta">bridges to: no separate repo — runs inside RPGACE itself</span></div>
+<div class="legend-row"><span class="dot" style="background:#E25454"></span><b>OpenMontage CC</b> — Agent-operated video pipeline — hands-on execution inside its own repo. <span class="meta">bridges to: calesthio/OpenMontage (real cached count: 11,280 nodes) · channel: <code>openmontage_jobs</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#3DAA6E"></span><b>Graphify CC</b> — Real 4th Total-system member — generates GRAPH_TREE.html + the cross-repo global graph. <span class="meta">bridges to: graphifyy (PyPI) — a separate Claude Code session · channel: <code>graphify_jobs</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#9B59B6"></span><b>Oracle (Claude API harness)</b> — RPGACE is the harness — Oracle is the real fan-out point to every AI provider below.</div>
+<div class="legend-row"><span class="dot" style="background:#9B59B6"></span><b>Self-Awareness (SELF_KNOWLEDGE)</b> — oracleAppGrounding.SELF_KNOWLEDGE — Oracle's own live self-knowledge layer, layer (c) of Oversight.</div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Anthropic (Claude API)</b> — the real default Oracle provider — every ungrounded Oracle call routes here unless a dormant provider (Kimi/Luna) is live. River III's Oracle Current is the harness; this IS the real external call, not RPGACE code. <span class="meta">bridges to: Anthropic's own hosted API — no separate repo/galaxy to bridge to, the real default provider</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>OpenMontage</b> — agent-operated video pipeline, driven by a separate Claude Code session ("OpenMontage CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live's "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed). <span class="meta">bridges to: calesthio/OpenMontage repo, operated by a separate Claude Code session ("OpenMontage CC")</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Composio</b> — Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion page + YouTube channel data via Supadata). <span class="meta">bridges to: Gmail / Instagram / YouTube / Notion / GitHub connected accounts</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>Moonshot AI (Kimi)</b> <span class="warn">⚠ not tested</span> — real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from River III's Oracle Current in place of the default Anthropic call once live. <span class="meta">bridges to: Moonshot AI's own hosted API (api.moonshot.ai/v1)</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>OpenAI (Luna)</b> <span class="warn">⚠ not tested</span> — same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same River III relationship once live. <span class="meta">bridges to: OpenAI's own hosted API</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>librosa</b> <span class="warn">⚠ not tested</span> — BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI's Beat Log, nowhere else. <span class="meta">bridges to: Alex's own local machine, via local_server.py (not a hosted service)</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>FFmpeg</b> — runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river. <span class="meta">bridges to: runs inside the OpenMontage galaxy itself, not a separate bridge</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>OpenArt</b> <span class="warn">⚠ not tested</span> — "connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet <span class="meta">bridges to: not wired — a named future companion galaxy to OpenMontage</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Graphify CC</b> — the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from River IX's own session-start check, deposits real findings back into River XIV via graphify_jobs. <span class="meta">bridges to: graphifyy (PyPI), operated by a separate Claude Code session ("Graphify CC")</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Jina AI</b> — real, live URL-to-text fetch — load-bearing for Bookworm URL ingestion, Schedule Oracle, and chat-pasted-URL handling. Confirmed by direct grep, not assumed. <span class="meta">bridges to: Jina AI's own hosted read/fetch API</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Last.fm</b> — real artist/tag discovery — refCorpus.findMatches()'s real fallback when no reference-corpus match exists; grows the corpus from its own results. <span class="meta">bridges to: Last.fm's own hosted API</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>n8n</b> <span class="warn">⚠ not tested</span> — real, importable workflow for F10's rota-sync automation — never test-run against a live unattended execution (2 manual login-confirmation gates deliberately untouched). <span class="meta">bridges to: a self-hosted/cloud n8n instance Alex imports the workflow into</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>Whisper (OpenAI, local)</b> <span class="warn">⚠ not tested</span> — local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata->download->Whisper->frame extraction->Claude Vision->Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py's other integrations — do not claim active without asking Alex. <span class="meta">bridges to: Alex's own local machine — not in this repo</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Supabase</b> — the real hub every river writes into/reads from — not a "connector" in the OpenMontage/Composio sense (RPGACE owns this data, it does not hand off to an external agent), but a real, load-bearing Total-system member in its own right, used by nearly every real river. <span class="meta">bridges to: Supabase's own hosted Postgres project (gripopghczmrbrhqtqbm) — RPGACE's real persistence layer, not a separate operated galaxy</span></div>
+</div>
+
+<div class="note">
+  Generated by <code>scripts/galaxy_map.py</code> — real data reused from
+  <code>scripts/graphify_river_group.py</code>'s own <code>EXTERNAL_CONNECTORS</code>/<code>SUPABASE_CORE</code>
+  (never re-derived). Mapping rules: <code>system_map_spec.md</code>.
+  G2 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — G3
+  (river drill-down) and G4 (function drill-down) are real, separate,
+  not yet built.
+</div>
+
+</body>
+</html>

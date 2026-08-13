@@ -875,3 +875,76 @@ stay PARTIAL/open-fork rather than guessed defaults substituted in
 their place — no MATERIAL/CAPTURED drift, an honest fork isn't a
 broken promise.
 
+================================================================
+SAME DAY, 7TH PASS — Alex's real answers: G9 reclassified blue,
+system_map_flags confirmed and built, G2 (the actual galaxy visual)
+built and shipped
+================================================================
+
+Real, decisive answers, not another round of questions: "flag as blue
+for this plan, it it way further down the line when rpgace is scoped
+for consumers and its is a ready product, flag the recommendation
+too." — G9 (Consumer/Developer visibility tiering) reclassified
+red->blue in `ceo_plan_items` (confirmed genuinely far-future, not a
+near-term plan) and added to `future_integrations.html`'s Blue section
+in its own real group ("Product readiness — Consumer/Developer
+split"), correctly not present in the Red plan-group (it had never
+been added there — checked directly before assuming a removal was
+needed). "1. yes" — confirmed the proposed `system_map_flags` schema;
+built for real via `apply_migration` (additive, matches the CEO-
+framework's own reduced-friction carve-out), `anon_all`/
+`authenticated_all` RLS matching `session_memory`/`graphify_jobs`/
+`ceo_plans`. `.claude/skills/cartographer/SKILL.md` + `system_map_spec.
+md` §8 updated from "recommended, not built" to real/live. New
+session-start check added to CLAUDE.md (same passive-pull pattern as
+`oracle_dev_suggestions`/`graphify_jobs`/`error_log`).
+
+"then build g2" — built for real, not deferred again. New
+`scripts/galaxy_map.py` generates `graphify-out/galaxy_map.html`: a
+real hand-rolled radial SVG (NOT vis.js — a genuinely different tool
+for a genuinely different job, per the earlier /aintergration
+verdict), reusing `EXTERNAL_CONNECTORS`/`SUPABASE_CORE` directly from
+`graphify_river_group.py` (imported, never re-derived — rule 8). 4
+real galaxies per `system_map_spec.md` §1/§3 (RPGACE Architecture
+central, Orchestrator CC/OpenMontage CC/Graphify CC as satellites —
+external API-only providers correctly do NOT get their own galaxies,
+per §3's own rule), Oracle and self-awareness as their own harness
+nodes (the design constraint logged on G2 itself), all 14 real
+connector/core nodes styled tested/untested (dashed ring + reduced
+opacity for unconfirmed ones, never hidden), and — a real content fix
+caught during the FIRST screenshot review, not assumed correct — a
+second bridge line drawn directly between the OpenMontage connector
+node and the OpenMontage CC galaxy node, since Fork 3's confirmed
+answer ("the openmontage node will be the connector to openmontage
+repo and rpgace repo, so both can exist in the galaxy output") wasn't
+actually visually expressed in the first render.
+
+**Real verification, not just code inspection**: rendered via an
+actual headless-Chromium screenshot (`/opt/pw-browsers`, no Playwright
+package needed — direct CLI screenshot flag) and visually reviewed
+twice — once before the OpenMontage-bridge fix, once after, confirming
+the fix rendered correctly (a visible dashed red line from the
+connector cluster up to the OpenMontage CC galaxy). Node/edge counts
+verified against the real expected math (20 circles = 4 galaxies + 2
+harness + 14 connectors; 19 paths = 3 satellite + 2 harness + 14
+connector edges, before the extra bridge line). Div-balance clean.
+
+Wired into the live app: a new "Galaxy Map (Level 0)" entry added to
+`dashDeck._openOversight`'s real Auto-generated group (`rpgace_core.js`)
+— `node --check` clean, re-minified (`rpgace_core.min.js` 663,301
+bytes), onclick-name safety re-verified (all 47 real handlers present;
+the same 2 known pre-existing dead buttons still missing, plus a real,
+harmless false-positive from the verification script itself —
+`quickPrompt` is a runtime-rewired onclick string, not a plain global
+function, confirmed pre-existing and untouched by this diff, not a
+regression). `oracleAppGrounding.SELF_KNOWLEDGE` updated same pass
+(rule 6) with the new Galaxy Map's real scope, explicitly stating it's
+Level 0 only so Oracle never claims the drill-down levels exist yet.
+`index.html`'s cache-bust bumped to `20260813a`.
+
+G2 marked green in `ceo_plan_items` with full real evidence. G3
+(river-level drill-down) and G4 (function-level drill-down) remain
+real, ratified, NOT built — each is its own future `/Engineer` pass,
+reusing this same script's structure once picked up, not started
+blind here.
+

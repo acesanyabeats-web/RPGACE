@@ -141,11 +141,10 @@ When a real change lands anywhere in the hierarchy above:
 2. Cross-reference against this map + Tier (b) truth docs for real
    integration friction — does anything downstream (or upstream) now
    describe something that's gone stale?
-3. A real finding gets a row in the trickle-tracking mechanism (see the
-   Aug 13 record's recommended `system_map_flags` table), tagged
-   `visibility` per §7, and — per Alex's own explicit expansion of his
-   original idea — surfaced to HIM directly, not just logged for the
-   next AI session to maybe notice.
+3. A real finding gets a row in the real, live `system_map_flags`
+   table (built Aug 13), tagged `visibility` per §7, and — per Alex's
+   own explicit expansion of his original idea — surfaced to HIM
+   directly, not just logged for the next AI session to maybe notice.
 4. `/drift`, `/paranoia`, or `/misunderstanding` get invoked where the
    finding's own shape calls for them (a goal-vs-baseline check, a
    maximal-scrutiny pass, or a real disconnect only Alex can resolve) —
