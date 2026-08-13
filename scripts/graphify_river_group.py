@@ -269,49 +269,86 @@ MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 # exporter and graph.html's own new RIVER_NOTES bridge (see
 # build_river_notes below) both import it from here instead of each
 # keeping a copy.
+# Real, functionally-grounded interaction-type taxonomy for RIVER_FLOWS
+# edges (Aug 13, real Alex ask/G1 of the Galaxy Map plan — "right axis,
+# but... all these edges dont have a strong distiction between what they
+# do, only what river or node etc that it came from"). Deliberately NOT
+# derived from river/node membership (that's already conveyed by node
+# color/position) — each type below describes the real MECHANICAL ACTION
+# happening at that edge, grepped/read against the actual call site each
+# RIVER_FLOWS note already cites, not invented for symmetry. 10 real
+# types, kept to a legible legend size rather than one-off per-edge
+# labels. Colors are real RPGACE style.css tokens, deliberately a
+# DIFFERENT swatch set from RIVER_COLOR so the two legends never get
+# visually confused with each other.
+INTERACTION_TYPE_LABEL = {
+    'nav_route': 'Page / UI routing',
+    'ai_judgment_call': 'Oracle / Claude judgment call',
+    'external_extract_call': 'Extracts data from outside RPGACE',
+    'write_commit': 'Real persisted write',
+    'human_confirm_gate': "Needs Alex's explicit confirm",
+    'dispatch_trigger': 'Queues/drains an async Total-system job',
+    'oversight_deposit': 'Writes into an oversight doc / Chronicles',
+    'session_start_pull': 'Passive read at session start',
+    'doc_staleness_flag': 'Advisory: may need a human doc update',
+    'terminal_sink': 'No further real downstream flow',
+}
+INTERACTION_TYPE_COLOR = {
+    'nav_route': '#6b7280',
+    'ai_judgment_call': '#9B59B6',
+    'external_extract_call': '#E2A83D',
+    'write_commit': '#3DAA6E',
+    'human_confirm_gate': '#E25454',
+    'dispatch_trigger': '#4A90E2',
+    'oversight_deposit': '#C9A84C',
+    'session_start_pull': '#2ABFB0',
+    'doc_staleness_flag': '#E0A040',
+    'terminal_sink': '#4a4a55',
+}
+
 RIVER_FLOWS = {
-    1: [('River II — The Great Confluence', 'always')],
+    1: [('River II — The Great Confluence', 'always', 'nav_route')],
     2: [
-        ('River III — The Oracle Current', 'Oracle page selected'),
-        ('River IV — The Bookworm River', 'Bookworm page selected'),
-        ('River V — Two Independent Streams', 'Schedule/Content Intel page selected'),
+        ('River III — The Oracle Current', 'Oracle page selected', 'nav_route'),
+        ('River IV — The Bookworm River', 'Bookworm page selected', 'nav_route'),
+        ('River V — Two Independent Streams', 'Schedule/Content Intel page selected', 'nav_route'),
     ],
     3: [
-        ('River VI — The Judgment Chamber', 'a tapped insight badge'),
-        ('River IV — The Bookworm River', 'special prefix diverts the message'),
-        ('River V — Two Independent Streams', 'special prefix diverts the message'),
-        ('River XII — The API / Auth Layer', 'dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call'),
+        ('River VI — The Judgment Chamber', 'a tapped insight badge', 'nav_route'),
+        ('River IV — The Bookworm River', 'special prefix diverts the message', 'nav_route'),
+        ('River V — Two Independent Streams', 'special prefix diverts the message', 'nav_route'),
+        ('River XII — The API / Auth Layer', 'dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call', 'ai_judgment_call'),
     ],
-    4: [('River VI — The Judgment Chamber', 'every insight found here')],
+    4: [('River VI — The Judgment Chamber', 'every insight found here', 'ai_judgment_call')],
     5: [
-        ('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar'),
-        ('River XII — The API / Auth Layer', "morningBrief's real Composio Gmail-fetch call routes out through here"),
+        ('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar', 'write_commit'),
+        ('River XII — The API / Auth Layer', "morningBrief's real Composio Gmail-fetch call routes out through here", 'external_extract_call'),
     ],
     6: [
-        ('River VII — The Library Current', "a fresh leaf's teaching page"),
-        ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge'),
+        ('River VII — The Library Current', "a fresh leaf's teaching page", 'ai_judgment_call'),
+        ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge', 'human_confirm_gate'),
     ],
-    7: [('River VIII — The Confluence Pool', 'a proposed merge')],
-    8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there")],
+    7: [('River VIII — The Confluence Pool', 'a proposed merge', 'human_confirm_gate')],
+    8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there", 'write_commit')],
     9: [
-        ('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates"),
-        ('River XII — The API / Auth Layer', 'the Claude Code fallback lane\'s drain and Graphify CC\'s own session-start dispatch both route out through here'),
+        ('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates", 'oversight_deposit'),
+        ('River XII — The API / Auth Layer', 'the Claude Code fallback lane\'s drain and Graphify CC\'s own session-start dispatch both route out through here', 'dispatch_trigger'),
     ],
-    10: [('— terminal sink for every river above —', 'River XI is the one exception, see below')],
+    10: [('— terminal sink for every river above —', 'River XI is the one exception, see below', 'terminal_sink')],
     11: [
-        ('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one'),
-        ('River XII — The API / Auth Layer', "the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here"),
+        ('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one', 'oversight_deposit'),
+        ('River XII — The API / Auth Layer', "the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here", 'dispatch_trigger'),
     ],
     12: [
-        ('River XI — Content Production Live', 'the OpenMontage job result — the one external connector whose real spring AND mouth both sit back in River XI'),
-        ('River XIV — Oversight Docs', 'Graphify CC deposits real findings here via graphify_jobs, flagged for logging'),
+        ('River XI — Content Production Live', 'the OpenMontage job result — the one external connector whose real spring AND mouth both sit back in River XI', 'dispatch_trigger'),
+        ('River XIV — Oversight Docs', 'Graphify CC deposits real findings here via graphify_jobs, flagged for logging', 'oversight_deposit'),
     ],
-    13: [('River XIV — Oversight Docs', "a skill's behavior change that could make an existing river's own written description go stale")],
-    14: [('— feeds every river\'s own next real session —', "CLAUDE.md's own rule: read the relevant section before any nontrivial work")],
-    15: [('River XIII — Skills', "feeds Routine's own session-start check via session_memory, read at the start of every future session")],
+    13: [('River XIV — Oversight Docs', "a skill's behavior change that could make an existing river's own written description go stale", 'doc_staleness_flag')],
+    14: [('— feeds every river\'s own next real session —', "CLAUDE.md's own rule: read the relevant section before any nontrivial work", 'session_start_pull')],
+    15: [('River XIII — Skills', "feeds Routine's own session-start check via session_memory, read at the start of every future session", 'session_start_pull')],
     16: [
-        ('River XII — The API / Auth Layer', "generates graph.html/GRAPH_TREE.html, this river's own visual form"),
-        ('River XIV — Oversight Docs', 'generates obsidian_vault.html, the human-browsable presentation layer'),
+        ('River XII — The API / Auth Layer', "generates graph.html/GRAPH_TREE.html, this river's own visual form", 'write_commit'),
+        ('River XIV — Oversight Docs', 'generates obsidian_vault.html, the human-browsable presentation layer', 'write_commit'),
     ],
 }
 
@@ -337,10 +374,10 @@ def _river_num_from_label(label: str) -> int | None:
 # Build the reverse map (who flows INTO river N) now that the helper exists.
 FLOWS_IN = {}
 for _src, _targets in RIVER_FLOWS.items():
-    for _label, _note in _targets:
+    for _label, _note, _itype in _targets:
         _tgt = _river_num_from_label(_label)
         if _tgt:
-            FLOWS_IN.setdefault(_tgt, []).append((_src, _note))
+            FLOWS_IN.setdefault(_tgt, []).append((_src, _note, _itype))
 
 
 def parse_module_ranges(core_js_path: Path):
@@ -444,8 +481,16 @@ def build_river_notes(module_ranges, id_module):
                     'range': f'{rng[0]}-{rng[1]}' if rng else None,
                     'node_ids': module_to_ids.get(mod, []),
                 })
-        flows_into = [{'label': label, 'note': note} for label, note in RIVER_FLOWS.get(river, [])]
-        fed_by = [{'label': RIVER_NAME[src], 'note': note} for src, note in FLOWS_IN.get(river, [])]
+        flows_into = [
+            {'label': label, 'note': note, 'itype': itype,
+             'itype_label': INTERACTION_TYPE_LABEL.get(itype), 'itype_color': INTERACTION_TYPE_COLOR.get(itype)}
+            for label, note, itype in RIVER_FLOWS.get(river, [])
+        ]
+        fed_by = [
+            {'label': RIVER_NAME[src], 'note': note, 'itype': itype,
+             'itype_label': INTERACTION_TYPE_LABEL.get(itype), 'itype_color': INTERACTION_TYPE_COLOR.get(itype)}
+            for src, note, itype in FLOWS_IN.get(river, [])
+        ]
         notes[str(river)] = {
             'name': RIVER_NAME[river],
             'kind': 'river',
@@ -806,16 +851,20 @@ def build_river_notes_block(river_notes):
         '      html += \'<div class="field" style="font-size:11px;"><span style="color:\' + dot + \';">\\u25CF</span> \' + esc(x.name) + \' <span style="color:#777;">(\' + esc(x.status) + \' \\u2014 \' + esc(x.via) + \')</span></div>\';\n'
         '    });\n'
         '  }\n'
+        '  function itypeBadge(f) {\n'
+        '    if (!f.itype_label) return \'\';\n'
+        '    return \' <span style="display:inline-block;font-size:9px;font-weight:700;letter-spacing:.3px;padding:1px 6px;border-radius:8px;border:1px solid \' + esc(f.itype_color) + \';color:\' + esc(f.itype_color) + \';">\' + esc(f.itype_label) + \'</span>\';\n'
+        '  }\n'
         '  if (rn.flows_into && rn.flows_into.length) {\n'
         '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Flows into</div>\';\n'
         '    rn.flows_into.forEach(function(f) {\n'
-        '      html += \'<div class="field" style="font-size:11px;">\\u2192 \' + esc(f.label) + \' <span style="color:#777;">(\' + esc(f.note) + \')</span></div>\';\n'
+        '      html += \'<div class="field" style="font-size:11px;">\\u2192 \' + esc(f.label) + itypeBadge(f) + \' <span style="color:#777;">(\' + esc(f.note) + \')</span></div>\';\n'
         '    });\n'
         '  }\n'
         '  if (rn.fed_by && rn.fed_by.length) {\n'
         '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Fed by</div>\';\n'
         '    rn.fed_by.forEach(function(f) {\n'
-        '      html += \'<div class="field" style="font-size:11px;">\\u2190 \' + esc(f.label) + \' <span style="color:#777;">(\' + esc(f.note) + \')</span></div>\';\n'
+        '      html += \'<div class="field" style="font-size:11px;">\\u2190 \' + esc(f.label) + itypeBadge(f) + \' <span style="color:#777;">(\' + esc(f.note) + \')</span></div>\';\n'
         '    });\n'
         '  }\n'
         '  html += \'</div>\';\n'

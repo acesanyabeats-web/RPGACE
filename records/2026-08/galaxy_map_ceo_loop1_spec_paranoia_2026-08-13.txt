@@ -314,3 +314,167 @@ already built+verified+pushed — not part of what needs approval)
 
 3. **Session dating corrected going forward** — today is 2026-08-13,
    not the 11th; new work this session is dated accordingly.
+
+================================================================
+STEP 6/7 — Alex's real answers + RATIFICATION (same day, 2nd pass)
+================================================================
+
+Alex's own verbatim answers to the 5 forks, real and decisive — this
+IS Loop 1 Step 6 (read, push back where needed, approve). Quoted in
+full, not paraphrased, because Fork 2's answer materially expands the
+plan's own scope beyond the original draft.
+
+**Fork 1**: "drill down" — confirmed as drafted.
+
+**Fork 2 — real, substantial elaboration, not a simple pick.**
+Verbatim: "no, make this output do that so f) has truth source
+alongside b) docs truth source. this mind map will also have this
+purpose. if anything upstream updates, this output is then read by me
+along with a) docs and others (not b)), and you read it too with
+truth docs (b)) so minimal /misunderstanding and /drift doesnt even
+have a chance to occur in the first place. these docs then get used
+to suggest changes to downstream or further upstream connectors to
+make the update integrate better with the system. this will be the
+basis for the trickle down/up system that will then hand reports of
+suggestions and errors that will be compiled into a report for me to
+analyse and make decisions off of. This whole framework would be
+crucial for CEO to not only make updates better, but also minimise
+friction with already existing infrastructure and keep correct
+documentation of what current, the all passes go through relevant
+colour for plans, then go through /drift and everything when needed
+to verify how well it integrated and how well my plan was executed to
+a tee."
+
+Real reading, checked plainly rather than assumed: the galaxy map is
+NOT a decorative overview layered on top of the real truth docs — it
+becomes a real SECOND truth source, sitting alongside Tier (b) rather
+than under it. Two distinct real readers, two distinct real purposes:
+Alex reads the galaxy map alongside Tier (a) (never Tier (b) directly
+— matches the existing a)/(b) split, where (a) is "plain language for
+Alex"); this session reads the galaxy map alongside Tier (b) as a
+cross-check, specifically so a real drift/misunderstanding has less
+surface to occur on BEFORE it happens, not just a faster way to catch
+one after the fact. On top of that, a new mechanism is asked for: a
+real "trickle down/up" system — when a real upstream change happens,
+cross-reference the galaxy map + Tier (b) to surface real downstream
+integration friction (and the reverse: a downstream change checked
+against upstream expectations), producing real suggestions + errors
+compiled into one report for Alex's own review/decision. This
+explicitly becomes a standing part of `/CEO`'s own Loop 2 discipline
+going forward — every real build passes through colourgradient, then
+`/drift` (and other verification as needed) to confirm how well it
+actually integrated and matched the plan.
+
+**Fork 3**: "yes, the openmontage node will be the connector to
+openmontage repo and rpgace repo, so both can exist in the galaxy
+output." Confirmed — a single real OpenMontage node acts as the
+bridge between the RPGACE-architecture galaxy and a real OpenMontage
+galaxy, both shown in the same output. Matches Graphify CC's already-
+cached real cross-repo count (RPGACE 955 + OpenMontage 11,280 nodes)
+— no new repo access needed to represent this.
+
+**Fork 4**: "right axis, but extract call etc. all these edges dont
+have a strong distiction between what they do, only what river or
+node etc that it came from, not useful information if you get me."
+Confirmed the axis, corrected the categories: needed to describe the
+real MECHANICAL ACTION at each edge (an extract call, a write, etc.),
+not be redundant with river/node membership (already conveyed by
+color/position). **Built this same pass** (see below) — a real,
+evidence-grounded 10-type taxonomy, not the original 5 generic
+categories.
+
+**Fork 5**: "represented connection of course." Confirmed — carry the
+existing real Oversight-river-flow connection into the new visual
+language as-is.
+
+**Ending directive**: "/paranoia and /ceo, with /restructure,
+/engineer and /drift advising along every step of the way." Read as
+real approval-with-refinement (Loop 1 Step 6), not a request to
+re-plan from scratch — the draft's own structure held up, Fork 2's
+answer is treated as a real scope amendment, not a rejection.
+
+**RATIFICATION (Loop 1 Step 7)**: this plan is now the ratified
+`/drift` baseline. `ceo_plans` row created: name "RPGACE Total Systems
+Galaxy Map", `basis='ratified'`, `status='active'`, `source_file`
+pointing to this record. Real item breakdown for Loop 2 (`/Engineer`
+picks up the next unstarted item each session, per the skill's own
+discipline — not all built in one sitting):
+
+- **G1 — Edge interaction-type taxonomy.** SHIPPED this same pass (see
+  below) — a real, additive, evidence-grounded fix to the EXISTING
+  `graph.html`/Obsidian pipeline, and the real foundation G2+'s own
+  edge coloring will reuse.
+- **G2 — Level-0 Galaxy View.** The top-level galaxies only
+  (Orchestrator CC / OpenMontage CC as the real RPGACE↔OpenMontage
+  connector / Graphify CC / external providers / RPGACE Architecture),
+  styled per the reference image, reusing `taxonomy_map.html`'s real
+  circle-pack/click-to-drill precedent. Real next Loop 2 item, NOT
+  built this pass — a genuine visual-design build deserving its own
+  full `/Engineer` pass rather than a rushed same-turn add-on, per
+  this session's own standing "don't diminish output quality" rule.
+- **G3 — Level-1 drill-down.** RPGACE Architecture galaxy → the 16
+  real rivers, radial view, `RIVER_MODULES`/`RIVER_FLOWS` data reused
+  directly, click-through from G2.
+- **G4 — Level-2 drill-down.** A river → its real tagged functions/
+  nodes (`graph.json`'s river-tagged 955 nodes) — the literal
+  "minotaur logic" breakdown Alex asked for.
+- **G5 — Oversight-connection representation.** A visually distinct
+  connector class showing each level's real flow into Oversight docs,
+  reusing `minotaur_map.html`'s existing river-flow-next data (Fork 5).
+- **G6 — Truth-source promotion.** Real doc updates (CLAUDE.md's
+  Oversight section, `interconnection_map.md`) formally declaring the
+  galaxy map's new role as a second real truth source read by Alex
+  (with Tier a) and this session (with Tier b) — not merely derived
+  from them.
+- **G7 — Trickle-down/up suggestion-and-error report system.** The
+  real, largest, most open item: detect a real upstream/downstream
+  change (likely via `git diff` mapped through `RIVER_MODULES`), cross
+  -reference against the galaxy map + Tier (b) for real integration
+  friction, generate real suggestions (a genuine judgment call each
+  time, same honesty discipline as `error_log.html`'s "rationalize"
+  step — NOT an automated text generator), and compile into a report
+  Alex reviews and decides on. Needs its own real `/interrogation`
+  pass before it's buildable — how "upstream change" is detected
+  concretely, and where the report lives (a new doc, or folded into
+  `error_log.html`'s existing active/resolved shape) are both real
+  open questions, not decided here.
+- **G8 — `/CEO` Loop 2 wiring.** A process change to
+  `.claude/skills/CEO/SKILL.md` itself: every future plan item's real
+  build passes through colourgradient status, then this new galaxy-
+  map/Tier(b) cross-check for integration friction, then `/drift`
+  verification against the plan — formalizing what Alex's own ending
+  directive already asked for.
+
+================================================================
+G1 — SHIPPED THIS SAME PASS (real, verified)
+================================================================
+
+`scripts/graphify_river_group.py` gained a real, evidence-grounded
+`INTERACTION_TYPE_LABEL`/`INTERACTION_TYPE_COLOR` taxonomy (10 types:
+nav_route, ai_judgment_call, external_extract_call, write_commit,
+human_confirm_gate, dispatch_trigger, oversight_deposit,
+session_start_pull, doc_staleness_flag, terminal_sink) — each of the
+16 `RIVER_FLOWS` entries' real 2-tuple `(label, note)` extended to a
+3-tuple `(label, note, itype)`, classified by re-reading what the
+existing note text actually cites (not invented), e.g. "morningBrief's
+real Composio Gmail-fetch call" → `external_extract_call`, "any
+confirmable fusion-link bridge" → `human_confirm_gate`. `FLOWS_IN`'s
+build loop and `build_river_notes()`'s `flows_into`/`fed_by` output
+updated to carry `itype`/`itype_label`/`itype_color` through;
+`riverNoteHtml()`'s JS template gained a small, real colored badge
+per flow entry. `graphify_to_obsidian.py`'s matching `## Flows into`/
+`## Fed by` sections updated to the same 3-tuple unpacking, badge
+text rendered as real bold Markdown instead of a CSS badge (matches
+each surface's own real format). Colors are real RPGACE style.css
+tokens, deliberately a different swatch set from `RIVER_COLOR` so the
+two legends never visually collide.
+
+Verified: `python3 -c "import ast; ast.parse(...)"` clean on both
+files; full pipeline re-run (`graphify_river_group.py` →
+`graphify_to_obsidian.py` → `obsidian_vault_to_html.py`), all 3 exit
+clean; direct grep confirms real `itype_label` values appear in
+`graph.html`'s embedded JSON and the Obsidian vault's real Markdown
+output; the embedded `<script>` blocks in `graph.html` extracted and
+run through `node --check` — clean, no syntax corruption from the
+Python string-template edit.
+

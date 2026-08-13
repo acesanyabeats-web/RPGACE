@@ -40,6 +40,7 @@ from graphify_river_group import (  # noqa: E402  (import after sys.path fix, de
     RIVER_MODULES, RIVER_NAME, RIVER_COLOR, TOTAL_ZONES, CORE_JS,
     RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     RIVER_ROLE_NOTE, EXTERNAL_CONNECTORS,
+    INTERACTION_TYPE_LABEL,
     parse_module_ranges,
 )
 
@@ -111,16 +112,18 @@ def build_hub_note(num: int, module_ranges) -> str:
     if num in RIVER_FLOWS:
         lines.append('## Flows into')
         lines.append('')
-        for label, note in RIVER_FLOWS[num]:
+        for label, note, itype in RIVER_FLOWS[num]:
             target_note = f'[[{note_filename(_river_num_from_label(label))}|{label}]]' if label.startswith('River') else label
-            lines.append(f'- → {target_note} ({note})')
+            itype_label = INTERACTION_TYPE_LABEL.get(itype, itype)
+            lines.append(f'- → {target_note} — **{itype_label}** ({note})')
         lines.append('')
 
     if num in FLOWS_IN:
         lines.append('## Fed by')
         lines.append('')
-        for src, note in FLOWS_IN[num]:
-            lines.append(f'- ← [[{note_filename(src)}|{RIVER_NAME[src]}]] ({note})')
+        for src, note, itype in FLOWS_IN[num]:
+            itype_label = INTERACTION_TYPE_LABEL.get(itype, itype)
+            lines.append(f'- ← [[{note_filename(src)}|{RIVER_NAME[src]}]] — **{itype_label}** ({note})')
         lines.append('')
 
     lines.append('---')
