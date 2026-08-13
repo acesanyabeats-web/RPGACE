@@ -50,6 +50,8 @@
   button.ok:hover{border-color:var(--green);color:var(--green)}
   button.bad:hover{border-color:var(--red);color:var(--red)}
   .broken-note{font-size:11px;color:var(--red);margin-top:8px;padding:8px 10px;background:rgba(226,84,84,0.06);border-radius:6px;border-left:2px solid var(--red)}
+  .crossref-note{font-size:11px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(42,191,176,0.06);border-radius:6px;border-left:2px solid var(--teal)}
+  .crossref-note b{color:var(--teal)}
   .verified-at{font-size:10px;color:var(--dim);margin-top:6px;opacity:.6}
   .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
   .note{max-width:640px;margin:24px auto 0;font-size:12px;color:var(--dim);text-align:center;line-height:1.7}
@@ -161,6 +163,7 @@ function render(items, activeErrors) {
           '<span class="badge ' + it.status + '">' + (it.needs_confirm_highlight ? 'fix not confirmed' : it.status.replace('_', ' ')) + '</span>' +
         '</div>' +
         (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
+        (it.cross_ref_note ? '<div class="crossref-note">🗺️ <b>Cross-reference finding:</b> ' + esc(it.cross_ref_note) + '</div>' : '') +
         (it.verified_at ? '<div class="verified-at">Last confirmed: ' + new Date(it.verified_at).toLocaleString() + '</div>' : '') +
         '<div class="actions">' +
           (it.status !== 'confirmed_working' ? '<button class="ok" data-act="confirm">✅ Confirm Working</button>' : '<button data-act="unconfirm">↩ Un-confirm</button>') +

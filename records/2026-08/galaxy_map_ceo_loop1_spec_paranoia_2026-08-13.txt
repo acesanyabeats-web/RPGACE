@@ -1420,3 +1420,104 @@ real evidence (screenshots, a Node harness replay against real
 production data, `node --check`), and every genuine limitation (this
 sandbox's own network block, the judgment-vs-mechanical boundary) was
 stated plainly rather than glossed over.
+
+================================================================
+SAME DAY, 13TH PASS — Baseline Reconciliation: /cartographer feeds
+smoke_test.html from a real 5-source cross-reference, /paranoia+/CEO
+with /restructure+/drift+/Engineer as advisors
+================================================================
+
+Alex's real ask: "the baseline for error log to manifest itself into
+smoke test instead using minotaur map, b) docs, graphify and obsidian,
+self awareness and galaxy map to map out everything into working, not
+working." Real evidence gathered first (`smoke_test_items` schema:
+`id/category/item_name/description/status/verified_at/broken_note/
+source_ref/needs_confirm_highlight/linked_error_id`) before touching
+anything.
+
+**Real, load-bearing design boundary, resolved directly rather than
+silently assumed either way**: `smoke_test.html`'s own CLAUDE.md design
+is explicit — "ticked by Alex's own hand after he verifies it live —
+never auto-ticked." A 5-source cross-reference genuinely could be read
+as overriding that (an AI-computed "working" verdict written straight
+in) — that would be wrong, and would repeat exactly the kind of
+overreach this project's own rule 4/9 guard against. Real resolution:
+this is a SUGGESTION layer, not a verdict layer — it reuses
+`needs_confirm_highlight` (already built, already Alex-approved for
+exactly this "surface for a real hand-confirm" purpose) rather than
+writing straight to `status='confirmed_working'`. Two new additive
+columns (`cross_ref_note` text, `cross_ref_sources` jsonb) hold the
+real citations; `smoke_test.html` renders `cross_ref_note` inline
+(new teal block, matching `error_log.html`'s own baseline-block
+styling) — div-balance confirmed 40/40.
+
+**/restructure verdict (real, not full ceremony given the size of this
+session already, but the actual question genuinely answered)**: does
+this need a NEW skill, or does fitting it into `/cartographer` win on
+the 3 real axes? `/cartographer` already does cross-doc consistency
+checking against Tier (b)/graphify/Obsidian and already surfaces
+findings to Alex directly — a new skill would duplicate that job
+description almost entirely (shorter code loses), take longer to wire
+into `/CEO` Grounded Mode (quicker loses), and produce a second,
+uncoordinated findings channel instead of one consolidated cross-talk
+layer (better output loses). Verdict: extend `/cartographer` with a
+new Step 7, "Baseline Reconciliation" — not a 7th named protocol.
+
+**Step 7's real procedure** (full text in `.claude/skills/cartographer/
+SKILL.md`): for a real scope, check what each of the 5 named sources
+(`minotaur_map.html`, Tier (b) docs, graphify+Obsidian, self-awareness/
+`SELF_KNOWLEDGE`, the Galaxy Map) actually says — a source with no
+mention is real "no signal," never counted as agreement OR
+disagreement (the honesty discipline `/drift`'s own BASIS grading
+already holds itself to). Sources agreeing + a matching row already
+exists → nothing to log (a real negative result). Sources agreeing +
+no row yet → write one (`status='unverified'`, real
+`cross_ref_note`/`cross_ref_sources`) — real discovery, still needs
+Alex's own hand-test. Sources genuinely conflicting, or conflicting
+with an existing row → `needs_confirm_highlight=true` with the real
+conflict stated plainly.
+
+**Real pilot run, proving the mechanism rather than just describing
+it**: cross-referenced the Galaxy Map (G2) itself against the other 4
+sources (it can't be its own source). Real, direct-grepped findings:
+self-awareness (`SELF_KNOWLEDGE`, updated earlier this session)
+correctly describes the artifact and its real Level-0-only scope —
+confirms. `minotaur_map.html`, `interconnection_map.md`, and
+`system_flow_map.md` all have ZERO mention (grepped, not assumed) — a
+real, honest gap, not a contradiction: none of them have been touched
+to reference this brand-new artifact yet. `graphify-out/graph.json`
+has zero nodes for ANY `scripts/*.py` file, not just this one — a
+real, already-logged limitation from the Aug 12 trickle-down
+investigation (a version-mismatch pause), correctly NOT treated as new
+contradicting evidence. Written into a real `smoke_test_items` row
+(category "Oversight system," `status='unverified'`, full
+`cross_ref_note`+`cross_ref_sources` citing all 4 checks) — the row
+did not exist before this pilot, a real, concrete gap the mechanism
+closed on its first real run.
+
+**The minotaur_map.html question flagged, not auto-fixed**: whether
+the Galaxy Map counts as a real "new wing" under that doc's own
+rare-touch update rule is a genuine judgment call, not something to
+rush blind this pass — a real `system_map_flags` row was written
+(`severity='material'`) instead, per `/cartographer`'s own Step 4
+surface-don't-silently-patch discipline.
+
+**`ceo_plan_items` G12** ("Baseline Reconciliation — smoke_test.html
+fed by a real 5-source cross-reference") logged green — built and
+real-piloted, evidence cited (the skill file, the real smoke_test_items
+row, the real system_map_flags row).
+
+**`/drift`**: VERDICT on track, BASIS ratified (Alex's own explicit
+ask this turn). No gap — the hand-tick boundary was preserved
+explicitly rather than silently crossed, the mechanism was proven with
+one real pilot rather than just described, and the one open question
+it surfaced (minotaur_map.html's wing) was flagged rather than
+guessed at either way.
+
+**Oversight updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`
+(node --check clean, one JS-string-escaping slip caught and fixed
+immediately per rule 12 — `''` instead of `\'` — same standing lesson
+this project has already named once), `smoke_test.html` (new
+`cross_ref_note` render + CSS), `.claude/skills/cartographer/SKILL.md`
+(Step 7 + frontmatter description). `rpgace_core.min.js`/`main.min.js`
+re-minified, `index.html` cache-bust bumped to `?v=20260813d`.

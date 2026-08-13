@@ -1,6 +1,6 @@
 ---
 name: cartographer
-description: RPGACE's Total-systems mapping-and-cross-talk discipline — grounds graphify/Obsidian's own output against `system_map_spec.md` (the real mapping methodology doc) and Tier (b) truth docs, runs the trickle-down/up procedure whenever a real change lands anywhere in the Galaxy→River→Module→Connector hierarchy (does it create real integration friction upstream or downstream, and does Alex need to see it directly), and tags new artifacts Consumer/Developer per the visibility convention. Use this skill whenever Alex says "/cartographer", whenever `scripts/graphify_river_group.py`'s real data (RIVER_MODULES/RIVER_FLOWS/EXTERNAL_CONNECTORS) changes, whenever a new Total-system galaxy/connector is added, or as a standing step inside `/CEO` Grounded Mode while a plan is active (see that skill's own Grounded Mode section). Invokes `/drift`, `/paranoia`, or `/misunderstanding` where the finding's own shape calls for them — never reflexively. Do NOT use this for a routine content-only doc update that doesn't touch the mapping hierarchy itself (that stays on the normal `update-logging-system` artifact map) — this is specifically the cross-talk/trickle layer, not a second oversight-logging ritual.
+description: RPGACE's Total-systems mapping-and-cross-talk discipline — grounds graphify/Obsidian's own output against `system_map_spec.md` (the real mapping methodology doc) and Tier (b) truth docs, runs the trickle-down/up procedure whenever a real change lands anywhere in the Galaxy→River→Module→Connector hierarchy (does it create real integration friction upstream or downstream, and does Alex need to see it directly), tags new artifacts Consumer/Developer per the visibility convention, and (Aug 13, 4th pass) cross-references `minotaur_map.html`/Tier (b) docs/graphify+Obsidian/self-awareness/the Galaxy Map to feed `smoke_test.html` a real evidence-grounded working/not-working suggestion — never an auto-tick, always routed through Alex's own hand-confirm. Use this skill whenever Alex says "/cartographer", whenever `scripts/graphify_river_group.py`'s real data (RIVER_MODULES/RIVER_FLOWS/EXTERNAL_CONNECTORS) changes, whenever a new Total-system galaxy/connector is added, or as a standing step inside `/CEO` Grounded Mode while a plan is active (see that skill's own Grounded Mode section). Invokes `/drift`, `/paranoia`, or `/misunderstanding` where the finding's own shape calls for them — never reflexively. Do NOT use this for a routine content-only doc update that doesn't touch the mapping hierarchy itself (that stays on the normal `update-logging-system` artifact map) — this is specifically the cross-talk/trickle layer, not a second oversight-logging ritual.
 ---
 
 # /cartographer — the real mapping-and-cross-talk discipline
@@ -74,6 +74,55 @@ to maybe notice.
    (never self-triggered, same boundary that skill already has). This
    skill is the grounding/cross-talk layer these get invoked FROM, not
    a replacement for any of them.
+
+7. **Baseline Reconciliation — feed `smoke_test.html` from a real
+   5-source cross-reference (Aug 13, same day 4th pass, Alex's own
+   explicit ask).** His own words: cross-check `minotaur_map.html`,
+   Tier (b) docs, graphify+Obsidian, self-awareness (`SELF_KNOWLEDGE`),
+   and the Galaxy Map "to map out everything into working, not
+   working." **Real, load-bearing boundary, stated once and never
+   silently relaxed**: `smoke_test.html`'s own design (CLAUDE.md, layer
+   (d)) is Alex's own HAND-TICKED record — "never auto-ticked" — and
+   this step does not change that. What it adds is a real, evidence-
+   grounded SUGGESTION layer sitting alongside it, exactly the same
+   shape `needs_confirm_highlight` already uses for "a fix just landed,
+   go hand-test it" — this just adds a second real reason that same
+   flag can fire: "5 independent sources agree/disagree on this
+   element's state, go confirm which is true."
+
+   The real procedure, for a given scope (a galaxy/node/river/module/
+   feature — same units `/perspective` already uses, and a `/perspective`
+   report for that scope, if one exists, is itself read as one of the
+   real sources, not a 6th competing baseline):
+   1. Check what each of the 5 sources actually says about this scope's
+      working state — cite each real answer (a `minotaur_map.html`
+      river-flow line, a Tier (b) paragraph, a graphify/Obsidian node's
+      real presence or absence, `SELF_KNOWLEDGE`'s own claim, a Galaxy
+      Map node/edge). A source that simply doesn't mention the scope is
+      a real "no signal," not evidence either way — never counted as
+      agreement or disagreement.
+   2. If the sources broadly AGREE and a `smoke_test_items` row already
+      matches that state — nothing to do, this is a real, useful
+      negative result, not logged as a finding.
+   3. If the sources broadly agree but NO `smoke_test_items` row exists
+      yet for the scope — write one (`status='unverified'`, real
+      `cross_ref_note` citing what the 5 sources actually said,
+      `cross_ref_sources` jsonb with each source's real answer). This
+      is real DISCOVERY, not a claim of confirmed truth — it still
+      needs Alex's own hand-test to become `confirmed_working`.
+   4. If the sources genuinely CONFLICT with each other, or with an
+      existing row's current status — set `needs_confirm_highlight=true`
+      on the existing row (or the new one) with a real `cross_ref_note`
+      explaining the conflict plainly, so Alex sees exactly which
+      sources disagreed and why, not just "something's off."
+   5. Never invent agreement to force a clean answer — a genuine
+      3-sources-silent, 2-sources-conflicting result gets reported
+      exactly that way in `cross_ref_note`, same honesty discipline
+      `/drift`'s own BASIS grading already holds itself to.
+   This is JUDGMENT work, same explicit boundary `/perspective`'s Step 5
+   and `error_log.html`'s own doc already state — a session runs this
+   for real scopes it's actually touching or auditing, never a
+   background job pretending to do the judgment on its own.
 
 ## How this wires into `/CEO`
 
