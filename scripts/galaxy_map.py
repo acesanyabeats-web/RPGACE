@@ -110,7 +110,7 @@ HARNESS_NODES = [
     {'id': 'self_awareness', 'label': 'Self-Awareness (SELF_KNOWLEDGE)', 'icon': '🪞',
      'note': "oracleAppGrounding.SELF_KNOWLEDGE — Oracle's own live self-knowledge layer, layer (c) of Oversight."},
     {'id': 'human_gate_alex', 'label': 'Human Gate — Alex', 'icon': '🧑',
-     'note': 'The real, standing human-in-the-loop across Total Systems — every Tier-3 action (spend, destructive ops, taxonomy writes) routes through a real confirm here, not automated.'},
+     'note': 'The real, standing human-in-the-loop across Total Systems — every Tier-3 action (spend, destructive ops, taxonomy writes) routes through a real confirm here, not automated. Same real recurring actor as the "🧑 Alex" bubble at Levels 1-3 (same accent color, deliberately) — this Level-0 node is the coarse, governance-granularity version (Tier-3 confirmation); Levels 1-3 show the fine-grained version (which real modules/functions Alex actually sees and clicks). Not rebuilt at Level 0 itself — DOM/button-level detail genuinely doesn\'t fit galaxy granularity, "where it makes sense" per Alex\'s own wording.'},
 ]
 
 # Real, evidence-grounded interaction type per real AI provider Oracle

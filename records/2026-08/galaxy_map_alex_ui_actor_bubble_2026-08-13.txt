@@ -1,0 +1,141 @@
+GALAXY MAP: PERMANENT "ALEX" UI-ACTOR BUBBLE, ALL LEVELS — 2026-08-13
+Real /paranoia+/CEO+/restructure+/drift-checked pass, /Engineer supervising.
+=====================================================================
+
+ALEX'S REAL ASK (verbatim, 2 messages, same conversation as the
+connectivity/crossing/navigation pass logged the same day)
+---------------------------------------------------------------
+1. "now make it so all functions at level 3 also connect to a ui exit
+   i can see if it makes sense (can still go down level 3) also make it
+   a permanent overarch bubble titled Alex so i know where the input is
+   show to me (doms and their pop-up systems) the buttons i can press
+   (so also my input) what combines with my input to go to another
+   function. this will add more depth in explaining the system
+   visually. /Paranoia and /CEO and /restructure with /drift and
+   /Engineer as advisors."
+2. "make this change also present at level0, 1 and 2 where it makes
+   sense"
+
+/restructure CHECK (real, quick — no third-party tool applies)
+-------------------------------------------------------------------
+This is pure extension of the already-established mechanical-grep
+extraction pattern this whole pipeline already uses (compute_intra_
+river_flow's own 4-signal detection, compute_cross_module_function_
+calls' own literal-call grep). No external library/tool changes this
+verdict — stays entirely inside the existing infra, same discipline
+Aintergration/`restructure` verdicts have reached every other time this
+question came up in this project.
+
+/drift CHECK — no conflict with the ratified plan
+------------------------------------------------------
+Real, direct continuation of G14 (Level 3 drill-down + full node-
+documentation coverage) — the same plan item this session's earlier
+connectivity/crossing/navigation pass already extended. No new G-item
+needed; logged as further G14 evidence in ceo_plan_items.
+
+REAL DESIGN — two mechanical signals, shared everywhere (rule 8)
+---------------------------------------------------------------------
+New in graphify_river_group.py:
+  UI_OUTPUT_PATTERN — real DOM/popup-rendering evidence:
+    document.createElement( | innerHTML= | RPGACE.ui.slideInPanel( |
+    _popup( | .appendChild(
+  UI_INPUT_PATTERN — real button-wiring/input-reading evidence:
+    .onclick= | addEventListener('click | getElementById(...).value |
+    .dispatchEvent(
+  compute_function_ui_signals(module) — per-FUNCTION granularity
+    (Level 3's own detail level): {func: {output: bool, input: bool}}.
+  compute_module_ui_signal(module) — MODULE-granularity aggregate
+    (Level 2's own detail level): True if ANY real function in the
+    module carries that signal. Rolled up further for Level 1's own
+    per-river badge (river_has_alex = any signal across any of its
+    modules).
+A function/module with neither signal is honest, ordinary internal
+logic — never forced to connect ("if it makes sense," per Alex's own
+wording — the design is evidence-gated by construction, not opt-in by
+a human decision per node).
+
+Real, pre-existing rule-8 catch made while building this: the per-
+function body-splitting logic (finding each function's own real source
+span inside a module block) was about to be pasted a THIRD time — once
+each for compute_module_function_flow()/compute_cross_module_function_
+calls()/this new detector. Factored into one shared _function_bodies()
+helper first; compute_module_function_flow()/compute_cross_module_
+function_calls() refactored to use it too. Verified behavior-preserving
+(same 81 cross-module calls, same 19 beatLog edges, before and after).
+
+REAL COVERAGE (all 44 modules / 426 functions)
+---------------------------------------------------
+132 of 426 real functions (31%) carry real UI-output evidence.
+101 of 426 real functions (24%) carry real UI-input evidence.
+97 carry both. Busiest module: phylumPath (40 funcs, 28 real Alex
+edges) — genuinely dense but not unmanageable, comparable to Level 2's
+own busiest river sections (externals/skills/cards already converge
+similarly there).
+34 of 44 real modules carry output evidence, 30 carry input evidence
+(Level 2 granularity). 9 of 16 rivers get the Level-1 badge (Level-1
+granularity, aggregated further).
+
+PER-LEVEL TREATMENT — "where it makes sense," not a blind copy-paste
+--------------------------------------------------------------------------
+- Level 3 (galaxy_map_level3.py): full treatment, exactly as asked.
+  A real, PERMANENT "🧑 Alex" bubble on every module section, fixed
+  top-center position (never module-conditional — always present, per
+  Alex's own "overarch" wording). Dashed edge INTO Alex per real
+  output-signal function ("shown to me"); dashed edge OUT of Alex per
+  real input-signal function ("buttons I press"). "What combines with
+  my input to go to another function" is satisfied by the EXISTING
+  same-module call edges already drawn — Alex's input edges land on
+  the real entry function, and that function's own outgoing calls
+  (already on the diagram) show where it goes next; no new edges
+  needed for that part, avoiding a real duplicate-claim (rule 8).
+  "Can still go down level 3" — nothing removed, this is additive on
+  the same page.
+- Level 2 (galaxy_map_module.py): same real bubble, MODULE granularity,
+  one per river-with-modules section (module-less rivers correctly get
+  none — nothing to roll up). Fixed top-center position; canvas height
+  grown by a real top margin (cy formula untouched, so every existing
+  y-position calculation in this large function needed zero changes —
+  the taller canvas just opens real empty space above the existing
+  content, a genuinely low-risk way to make room).
+- Level 1 (galaxy_map_river.py): a real, LIGHTER aggregate — a 🧑 badge
+  (not a full bubble+edges) on any river with at least one real UI-
+  facing module. A real, deliberate design choice, not a shortcut: 16
+  nodes is too coarse for meaningful per-module edge fan-out (would be
+  real visual noise, not real signal) — the same judgment call already
+  made for Level 2's own externals/skills rings at Level 1 (aggregated
+  to a badge, not drawn individually).
+- Level 0 (galaxy_map.py): NOT rebuilt — a real "Human Gate — Alex"
+  node already exists here (built earlier this session), already using
+  the exact same accent color (#E25454) this pass's new bubbles use,
+  confirmed by direct code read, not coincidence. Cross-referenced in
+  its own note text instead of duplicating a second "Alex" concept at
+  the same level (a real rule-8 catch — Level 0's node is the coarse,
+  GOVERNANCE-granularity version of this same recurring actor, Tier-3
+  confirmation gates; Levels 1-3's new bubbles are the fine-grained
+  DOM/button version — genuinely different questions, same actor,
+  worth stating plainly rather than either silently duplicating or
+  silently ignoring the overlap).
+
+VERIFICATION
+----------------
+All 4 regenerated HTML files: div/svg-balanced (36/36, 61/61, 253/253,
+664/664; svg 1/1, 1/1, 16/16, 44/44). Levels 2 and 3 independently
+confirmed idempotent across fresh process re-runs (same discipline as
+the earlier same-day pass, after that pass's own non-determinism
+catch). `python3 -m py_compile` clean on every touched script.
+
+WHAT'S STILL OPEN, NOT SILENTLY CLOSED
+-------------------------------------------
+- No live/hand-test or headless-Chromium render check this pass
+  (time-scoped, same standing gap as the earlier same-day pass) —
+  everything above is verified by direct code/data evidence and exact
+  balance checks, not by looking at the rendered page.
+- The two UI signals are real but deliberately narrow (same "honest
+  scope limit" discipline as every other detector in this pipeline) —
+  a function using a DIFFERENT DOM-rendering idiom not in the pattern
+  list (there may be some; not exhaustively audited) would be a real,
+  silent false-negative, same class of gap as compute_intra_river_
+  flow's own stated blind spots.
+- Level 1's badge is a coarse aggregate by design — a reader wanting
+  the real detail always needs to drill to Level 2/3, which is the
+  intended, honest trade-off, not a shortcut hiding real information.

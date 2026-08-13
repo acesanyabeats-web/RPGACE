@@ -90,8 +90,13 @@ from graphify_river_group import (  # noqa: E402
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminals,
     ALL_SKILLS, SKILL_SECONDARY_RIVER, compute_module_flow_rank, dashboard_card_target_module,
-    LEVEL3_MODULES,
+    LEVEL3_MODULES, compute_module_ui_signal,
 )
+
+# Real, shared "Alex" actor color — same as Level 3/Level 0's own
+# "Human Gate — Alex" node (rule 8, one consistent identity, not a
+# per-level reinvention).
+ALEX_COLOR = '#E25454'
 
 OUT = Path('graphify-out/galaxy_map_module.html')
 
@@ -145,7 +150,14 @@ def build_river_section(rnum):
     # needs real extra room; every other module-less river stays the
     # standard radial size.
     if mods:
-        W, H = 1900, 950
+        # Real, fixed top margin (Aug 13, Alex's own ask, "also present
+        # at level 0, 1 and 2 where it makes sense") — extra height so
+        # the permanent "Alex" bubble sits above the flow with real
+        # headroom; cy stays H/2 so every existing y = cy + offset
+        # calculation below is untouched, it just centers lower in a
+        # taller canvas, opening real empty space at the top (rule 8 —
+        # zero-touch on the many existing position formulas).
+        W, H = 1900, 1210
     elif rnum == SKILL_RIVER:
         W, H = 1550, 1500
     else:
@@ -221,6 +233,40 @@ def build_river_section(rnum):
                 mod_pos[it] = (x, cy + (i - (n - 1) / 2) * 100)
         for r, x in rank_x.items():
             _place_col(buckets.get(r, []), x)
+
+        # Real, permanent "Alex" bubble (Aug 13, Alex's own direct ask,
+        # extended down from Level 3 — "also present at level 0, 1 and
+        # 2 where it makes sense"). Same fixed top position on EVERY
+        # river-with-modules section. MODULE-granularity aggregate
+        # (compute_module_ui_signal(), rule 8 — real per-function
+        # evidence rolled up, not re-derived): a module connects if ANY
+        # of its own real functions has real DOM/popup-render evidence
+        # ("shown to me") or real button/input-wiring evidence
+        # ("buttons i can press"). Module-less rivers (no RIVER_MODULES)
+        # have nothing to roll up, so they correctly get no Alex bubble
+        # — "where it makes sense," per Alex's own wording.
+        ALEX_X, ALEX_Y = W / 2, 60
+        n_out = n_in = 0
+        for m in mods:
+            if m not in mod_pos:
+                continue
+            sig = compute_module_ui_signal(m)
+            mx, my = mod_pos[m]
+            if sig['output']:
+                n_out += 1
+                ox = ALEX_X + (n_out * 13 if n_out % 2 == 0 else -n_out * 13)
+                edges_svg.append(_curved_edge(mx, my, ox, ALEX_Y, ALEX_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5))
+            if sig['input']:
+                n_in += 1
+                ix = ALEX_X + (n_in * 17 if n_in % 2 == 1 else -n_in * 17)
+                edges_svg.append(_curved_edge(ix, ALEX_Y, mx, my, ALEX_COLOR, real=True, dashed=True, r1=20, r2=22, offset_mult=-0.5))
+        edge_colors_used.add(ALEX_COLOR)
+        nodes_svg.append(
+            f'<g class="node central"><circle cx="{ALEX_X}" cy="{ALEX_Y}" r="30" fill="#0f0f1a" stroke="{ALEX_COLOR}" stroke-width="3.5" filter="url(#glow)"/>'
+            f'<text x="{ALEX_X}" y="{ALEX_Y-3}" text-anchor="middle" font-size="17">🧑</text>'
+            f'<text x="{ALEX_X}" y="{ALEX_Y+42}" text-anchor="middle" font-size="10" fill="{ALEX_COLOR}" font-weight="700">Alex</text>'
+            f'<text x="{ALEX_X}" y="{ALEX_Y+55}" text-anchor="middle" font-size="7.5" fill="{ALEX_COLOR}" opacity="0.85">{n_out} modules shown to me · {n_in} modules I input into</text></g>'
+        )
 
         # Real z-order + spacing fix (Alex's own direct ask): "the
         # rivers connecting to river at beginning should be behind the
@@ -608,7 +654,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
   <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIII's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs).</p>
+  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIII's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs). <b>🧑 Alex</b> (top, permanent on every river-with-modules section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means that module has at least one real function with DOM/popup-rendering evidence; a dashed line OUT of Alex means at least one real function has button/input-wiring evidence.</p>
 </div>
 
 <div class="tabs">{tabs}</div>

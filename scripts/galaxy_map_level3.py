@@ -43,8 +43,17 @@ from galaxy_map import _curved_edge, _build_markers, barycenter_order  # noqa: E
 from graphify_river_group import (  # noqa: E402
     LEVEL3_MODULES, RIVER_COLOR, RIVER_NAME, RIVER_MODULES,
     parse_module_functions, compute_module_function_flow,
-    compute_cross_module_function_calls,
+    compute_cross_module_function_calls, compute_function_ui_signals,
 )
+
+# Real, shared "Alex" actor color — Aug 13, Alex's own direct ask: "a
+# permanent overarch bubble titled Alex... where the input is shown to
+# me... the buttons i can press." Same real accent Level 0's own
+# "Human Gate — Alex" node already uses (galaxy_map.py's HARNESS_NODES)
+# — deliberate visual continuity so the SAME recurring human actor
+# reads as one consistent identity across every level, not a
+# per-level reinvention (rule 8).
+ALEX_COLOR = '#E25454'
 
 OUT = Path('graphify-out/galaxy_map_level3.html')
 
@@ -169,7 +178,15 @@ def build_module_section(module_name):
     # that's the real axis depth actually measures.
     max_col = max((len(v) for v in buckets.values()), default=1)
     W = max(1400, 260 + max_depth * 260)
-    H = max(700, 90 * (max_col + 1))
+    # Real, fixed top margin (Aug 13, Alex's own ask) — room for the
+    # permanent "Alex" bubble above the function grid, on EVERY module
+    # section, not sized off any per-module data (a "permanent overarch
+    # bubble" per Alex's own wording — always present, always the same
+    # relative position, so it reads as one consistent recurring actor).
+    ALEX_Y = 95
+    ALEX_MARGIN = 190
+    H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
+    grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
     # Real "backdoor" column (Aug 13, Alex's own ask): any function in
     # THIS module with a real, direct RPGACE.modules.X.fn() call into
     # another module gets a real gateway node, one column right of the
@@ -187,11 +204,11 @@ def build_module_section(module_name):
         n = len(items)
         x = 140 + d * 260
         for i, f in enumerate(items):
-            y = (H / 2) + (i - (n - 1) / 2) * 90
+            y = grid_cy + (i - (n - 1) / 2) * 90
             pos[f] = (x, y)
 
     nodes_svg, edges_svg = [], []
-    edge_colors_used = {color}
+    edge_colors_used = {color, ALEX_COLOR}
     for a, b in edges:
         if a in pos and b in pos:
             ax, ay = pos[a]
@@ -211,6 +228,42 @@ def build_module_section(module_name):
             f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>'
         )
 
+    # Real, permanent "Alex" bubble (Aug 13, Alex's own direct ask) —
+    # ALWAYS drawn, same fixed position on every module section, so it
+    # reads as one consistent recurring actor rather than a per-module
+    # invention. Two real, mechanical signals per function
+    # (compute_function_ui_signals(), rule 8): OUTPUT = real DOM/popup-
+    # rendering evidence ("shown to me"), INPUT = real button-wiring/
+    # input-reading evidence ("buttons i can press"). A function with
+    # neither signal (the honest majority — pure internal logic) simply
+    # doesn't connect; "if it makes sense" per Alex's own wording, never
+    # forced. What a real INPUT function does with that input onward is
+    # already visible via its own existing outgoing call edges (drawn
+    # above) — the Alex edges don't duplicate that, they just show
+    # where the human enters/exits the chain.
+    ui_sigs = compute_function_ui_signals(module_name)
+    alex_x, alex_y = W / 2, ALEX_Y
+    n_out = n_in = 0
+    for f in funcs:
+        if f not in pos:
+            continue
+        sig = ui_sigs.get(f, {})
+        fx, fy = pos[f]
+        if sig.get('output'):
+            n_out += 1
+            ox = alex_x + (n_out * 11 if n_out % 2 == 0 else -n_out * 11)
+            edges_svg.append(_curved_edge(fx, fy, ox, alex_y, ALEX_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
+        if sig.get('input'):
+            n_in += 1
+            ix = alex_x + (n_in * 15 if n_in % 2 == 1 else -n_in * 15)
+            edges_svg.append(_curved_edge(ix, alex_y, fx, fy, ALEX_COLOR, real=True, dashed=True, r1=20, r2=26, offset_mult=-0.6))
+    nodes_svg.append(
+        f'<g class="node central"><circle cx="{alex_x}" cy="{alex_y}" r="34" fill="#0f0f1a" stroke="{ALEX_COLOR}" stroke-width="3.5" filter="url(#glow)"/>'
+        f'<text x="{alex_x}" y="{alex_y-4}" text-anchor="middle" font-size="20">🧑</text>'
+        f'<text x="{alex_x}" y="{alex_y+50}" text-anchor="middle" font-size="10.5" fill="{ALEX_COLOR}" font-weight="700">Alex</text>'
+        f'<text x="{alex_x}" y="{alex_y+64}" text-anchor="middle" font-size="8" fill="{ALEX_COLOR}" opacity="0.85">{n_out} shown to me · {n_in} buttons I press</text></g>'
+    )
+
     # Real backdoor nodes — real, clickable, drawn distinctly (dashed
     # edge, a door icon, target module's own river color) from a same-
     # module function-call edge, honest about being a cross-module jump.
@@ -224,7 +277,7 @@ def build_module_section(module_name):
             seen_targets.setdefault(target_mod, []).append((fname, target_fn))
         n_targets = len(seen_targets) or 1
         for i, (target_mod, calls) in enumerate(seen_targets.items()):
-            by = (H / 2) + (i - (n_targets - 1) / 2) * 100
+            by = grid_cy + (i - (n_targets - 1) / 2) * 100
             tcolor = RIVER_COLOR.get(_owning_river(target_mod), '#C9A84C')
             for fname, target_fn in calls:
                 fx, fy = pos[fname]
@@ -260,7 +313,7 @@ def build_module_section(module_name):
 <section class="mod-section" id="mod-{module_name}" style="display:none">
   <div class="rhead"><span class="rdot" style="background:{color}"></span><h2>⚙️ {module_name} — real function-call chain</h2></div>
   {back_btn}
-  <p class="rlegend-role">Drilled down from {river_link}'s own Level-2 module node. 🚪 = a real entry point (nothing calls it, or it's <code>init</code> itself) · 🏁 = a real leaf/terminal function (calls nothing else in this module) · ⚙️ = an intermediate real function{' · 🚪 (right, dashed) = a real cross-module backdoor' if has_backdoors else ''}. {len(funcs)} real functions, {len(edges)} real direct call edges — same grep-based direct-call-only technique as the module-level flow one level up, same honest blind spot: a relationship reached via a callback reference or <code>RPGACE.hooks</code> is invisible here.</p>
+  <p class="rlegend-role">Drilled down from {river_link}'s own Level-2 module node. 🚪 = a real entry point (nothing calls it, or it's <code>init</code> itself) · 🏁 = a real leaf/terminal function (calls nothing else in this module) · ⚙️ = an intermediate real function{' · 🚪 (right, dashed) = a real cross-module backdoor' if has_backdoors else ''}. {len(funcs)} real functions, {len(edges)} real direct call edges — same grep-based direct-call-only technique as the module-level flow one level up, same honest blind spot: a relationship reached via a callback reference or <code>RPGACE.hooks</code> is invisible here. <b>🧑 Alex</b> (top, permanent on every module) is the real human actor — a dashed line INTO Alex means that function has real DOM/popup-rendering evidence (something you'd actually see); a dashed line OUT of Alex means that function has real button/input-wiring evidence (something you actually click or type into). A function with neither is honest, normal internal logic — not everything is user-facing.</p>
   <div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">
     <defs>
       <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>

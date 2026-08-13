@@ -850,11 +850,43 @@ def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     return funcs
 
 
+def _function_bodies(module_name, core_js_path: Path = CORE_JS):
+    """Real, shared per-function source-span splitter (rule 8 — Aug 13,
+    factored out here after a real self-audit caught this exact
+    splitting logic about to be pasted a THIRD time, once each for
+    compute_module_function_flow()/compute_cross_module_function_calls()/
+    the new UI-signal detector below — the same "eliminate duplication
+    gaps" discipline this file already applies to everything else).
+    Finds each real function's own definition line inside the module's
+    marker-delimited block, then takes everything up to the next real
+    top-level function definition (or the end of the module) as that
+    function's real body. Returns {func_name: body_text}."""
+    ranges = parse_module_ranges(core_js_path)
+    if module_name not in ranges:
+        return {}
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    s, e = ranges[module_name]
+    block_lines = lines[s - 1:e]
+    funcs = parse_module_functions(module_name, core_js_path)
+    if not funcs:
+        return {}
+    def_lines = []
+    for i, line in enumerate(block_lines):
+        m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
+        if m and m.group(1) in funcs:
+            def_lines.append((i, m.group(1)))
+    bodies = {}
+    for idx, (start_i, fname) in enumerate(def_lines):
+        end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
+        bodies[fname] = '\n'.join(block_lines[start_i:end_i])
+    return bodies
+
+
 def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
     """Real, mechanical function-to-function call edges WITHIN one
     module — the function-grain sibling of compute_intra_river_flow()
     (rule 8, same technique, one level deeper). For each of the
-    module's own real functions (parse_module_functions()), greps that
+    module's own real functions (_function_bodies()), greps that
     function's own real source body for a literal `self.<sibling>(` or
     `<moduleName>.<sibling>(` call to another function in the same
     module. Returns [(from_func, to_func), ...].
@@ -864,28 +896,10 @@ def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
     RPGACE.hooks.fire(), a callback passed by reference, or a dynamic
     property lookup is invisible here — an absence is not proof no
     real relationship exists, only that no direct call was found."""
-    ranges = parse_module_ranges(core_js_path)
-    if module_name not in ranges:
-        return []
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
-    s, e = ranges[module_name]
-    block_lines = lines[s - 1:e]
-    funcs = parse_module_functions(module_name, core_js_path)
-    if not funcs:
-        return []
-    # Split the module block into per-function real source spans by
-    # finding each function's own definition line, then taking
-    # everything up to the next top-level function definition (or the
-    # end of the module) as that function's real body.
-    def_lines = []
-    for i, line in enumerate(block_lines):
-        m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
-        if m and m.group(1) in funcs:
-            def_lines.append((i, m.group(1)))
+    bodies = _function_bodies(module_name, core_js_path)
+    funcs = list(bodies.keys())
     edges = []
-    for idx, (start_i, fname) in enumerate(def_lines):
-        end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
-        body = '\n'.join(block_lines[start_i:end_i])
+    for fname, body in bodies.items():
         for other in funcs:
             if other == fname:
                 continue
@@ -893,6 +907,43 @@ def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
                re.search(re.escape(module_name) + r'\.' + re.escape(other) + r'\s*\(', body):
                 edges.append((fname, other))
     return edges
+
+
+# Real, shared UI-actor detection patterns (Aug 13, Alex's own direct
+# ask: "make it so all functions at level 3 also connect to a ui exit
+# i can see if it makes sense... a permanent overarch bubble titled
+# Alex... where the input is shown to me (doms and their pop-up
+# systems) the buttons i can press (so also my input)"). Two real,
+# mechanical, checkable signals, deliberately narrow (never a guess):
+# OUTPUT = this function renders something Alex would actually see on
+# screen; INPUT = this function wires up or reads a real user-triggered
+# control. A function can be neither (pure internal logic — the honest,
+# common case), one, or both.
+UI_OUTPUT_PATTERN = re.compile(
+    r'document\.createElement\(|innerHTML\s*=|RPGACE\.ui\.slideInPanel\(|_popup\(|\.appendChild\(')
+UI_INPUT_PATTERN = re.compile(
+    r'\.onclick\s*=|addEventListener\(\s*[\'"]click|getElementById\([^)]*\)\.value|\.dispatchEvent\(')
+
+
+def compute_function_ui_signals(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION UI-actor signal (Level 3's own granularity) —
+    {func_name: {'output': bool, 'input': bool}}. Reuses
+    _function_bodies() (rule 8, not re-split a 3rd time)."""
+    bodies = _function_bodies(module_name, core_js_path)
+    return {f: {'output': bool(UI_OUTPUT_PATTERN.search(b)),
+                'input': bool(UI_INPUT_PATTERN.search(b))}
+            for f, b in bodies.items()}
+
+
+def compute_module_ui_signal(module_name, core_js_path: Path = CORE_JS):
+    """Real, MODULE-granularity aggregate (Level 2's own granularity,
+    per Alex's "also present at level 0, 1 and 2 where it makes
+    sense") — True for a signal if ANY real function in this module
+    carries it, per compute_function_ui_signals() (rule 8, not
+    re-derived). {'output': bool, 'input': bool}."""
+    sigs = compute_function_ui_signals(module_name, core_js_path)
+    return {'output': any(v['output'] for v in sigs.values()),
+            'input': any(v['input'] for v in sigs.values())}
 
 
 def compute_cross_module_function_calls(core_js_path: Path = CORE_JS):
@@ -917,23 +968,9 @@ def compute_cross_module_function_calls(core_js_path: Path = CORE_JS):
     not scoped to one river (a real backdoor can and does cross rivers,
     e.g. taxonomyTree calling into dashDeck)."""
     ranges = parse_module_ranges(core_js_path)
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
-    all_mods = list(ranges.keys())
     result = []
-    for m in all_mods:
-        s, e = ranges[m]
-        block_lines = lines[s - 1:e]
-        funcs = parse_module_functions(m, core_js_path)
-        if not funcs:
-            continue
-        def_lines = []
-        for i, line in enumerate(block_lines):
-            fm = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
-            if fm and fm.group(1) in funcs:
-                def_lines.append((i, fm.group(1)))
-        for idx, (start_i, fname) in enumerate(def_lines):
-            end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
-            body = '\n'.join(block_lines[start_i:end_i])
+    for m in ranges:
+        for fname, body in _function_bodies(m, core_js_path).items():
             for call_mod, call_fn in re.findall(r'RPGACE\.modules\.(\w+)\.(\w+)\s*\(', body):
                 if call_mod != m and call_mod in ranges:
                     result.append((m, fname, call_mod, call_fn))

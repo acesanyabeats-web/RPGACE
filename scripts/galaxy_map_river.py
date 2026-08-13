@@ -38,6 +38,7 @@ from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers, cou
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
+    compute_module_ui_signal,
 )
 
 
@@ -181,6 +182,19 @@ def build_svg():
             bx, by = polar(rx, ry, 34, -45)
             nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="13" opacity="0.85" title="Feeds Oversight (River XIV)">📚</text>')
         mods = RIVER_MODULES.get(rnum, [])
+        # Real, LIGHTWEIGHT Alex-presence badge (Aug 13, Alex's own ask,
+        # "also present at level 0, 1 and 2 where it makes sense") — a
+        # full bubble+edges (Level 2/3's own treatment) would be real
+        # noise at 16-node granularity (every river with ANY UI module
+        # would need dozens of fanned edges into one shared point); a
+        # real, cheap aggregate badge is the honest right-sized version
+        # here: is there at least one real module in this river with
+        # real DOM/input evidence at all (compute_module_ui_signal(),
+        # rule 8, rolled up one level further than Level 2's own use)?
+        river_has_alex = any(v for m in mods for v in compute_module_ui_signal(m).values())
+        if river_has_alex:
+            hx, hy = polar(rx, ry, 34, 45)
+            nodes_svg.append(f'<text x="{hx}" y="{hy}" text-anchor="middle" font-size="13" opacity="0.85" title="Has real DOM/input-facing modules — see Level 2/3">🧑</text>')
         mods_txt = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '(no single-module home — see zone role note)'
         role = RIVER_ROLE_NOTE.get(rnum, '')
         oversight_note = ''
@@ -188,6 +202,8 @@ def build_svg():
             oversight_note = '<br><span class="meta">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI (see below).</span>'
         elif rnum in oversight_feeders:
             oversight_note = '<br><span class="meta">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</span>'
+        if river_has_alex:
+            oversight_note += '<br><span class="meta">🧑 Has at least one real module with DOM/input-facing evidence — see its own real Alex bubble at Level 2/3.</span>'
         legend_rows.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
             f'<b>{RIVER_NAME[rnum]}</b><br>'
@@ -296,7 +312,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
   <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XIV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XIV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 16 nodes; see Level 2/3 for the real "Alex" bubble + edges). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">
