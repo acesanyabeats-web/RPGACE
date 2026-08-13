@@ -37,11 +37,16 @@ works) are shown at once, never conflated.
 
 Scope, per the ratified plan and system_map_spec.md §3: ONLY the top-
 level galaxies + RPGACE Architecture's own connector bridge-nodes.
-River-level (G3) and function-level (G4) drill-down are real, separate,
-NOT-yet-built future items — this file deliberately does not attempt
-them; each level gets its own generator when its own item is built,
-matching the "generate from real data, never hand-author" discipline
-every other graphify/Obsidian script in this repo already follows.
+Each level gets its own generator, matching the "generate from real
+data, never hand-author" discipline every other graphify/Obsidian
+script in this repo already follows.
+
+**Aug 13, 3rd pass — G3 shipped, this file's own central node is now a
+real drill-down link, not a dead end.** `scripts/galaxy_map_river.py`
+generates `graphify-out/galaxy_map_river.html` (Level 1: RPGACE
+Architecture's own 16 rivers, real `RIVER_FLOWS` edges) — the central
+RPGACE Architecture node here now wraps in a real `<a href=...>` to it.
+Function-level drill-down (G4) is still real, separate, NOT-yet-built.
 """
 import math
 import sys
@@ -165,12 +170,17 @@ def build_svg():
         col = INTERACTION_TYPE_COLOR.get(itype, '#6b7280')
         return _curved_edge(x1, y1, x2, y2, col, real=tested, dashed=not tested, offset_mult=offset_mult)
 
-    # --- central RPGACE Architecture node ---
+    # --- central RPGACE Architecture node — a real, clickable drill-down
+    # into G3 (galaxy_map_river.html), not just a decorative label. The
+    # G2 docstring's own "River-level (G3)... not-yet-built" note is now
+    # stale the moment G3 ships — this link is the real proof it's live.
     rpgace = GALAXIES[0]
     nodes_svg.append(
+        f'<a href="galaxy_map_river.html" class="drill-link">'
         f'<g class="node central"><circle cx="{cx}" cy="{cy}" r="46" fill="#0f0f1a" stroke="{rpgace["color"]}" stroke-width="3" filter="url(#glow)"/>'
         f'<text x="{cx}" y="{cy-6}" text-anchor="middle" font-size="26">{rpgace["icon"]}</text>'
-        f'<text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">{rpgace["label"]}</text></g>'
+        f'<text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">{rpgace["label"]}</text>'
+        f'<text x="{cx}" y="{cy+32}" text-anchor="middle" font-size="8" fill="{rpgace["color"]}">▸ click: 16 rivers</text></g></a>'
     )
 
     galaxy_pos = {}
@@ -438,6 +448,9 @@ TEMPLATE = """<!DOCTYPE html>
   .canvas-wrap{{max-width:1400px;margin:0 auto;overflow-x:auto}}
   svg text{{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}}
   .node{{cursor:default}}
+  a.drill-link{{cursor:pointer}}
+  a.drill-link .central circle{{transition:filter 0.15s}}
+  a.drill-link:hover .central circle{{filter:url(#glow) brightness(1.3)}}
   .legend{{max-width:900px;margin:0 auto 20px;padding:0 24px}}
   .legend h2{{font-family:Georgia,serif;font-size:16px;color:var(--gold);margin:24px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}}
   .legend-row{{font-size:12px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.6}}
@@ -456,7 +469,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 The Galaxy Map</h1>
-  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. River-level (G3) and function-level (G4) drill-down are real, separate, not-yet-built future items — this is Level 0 only.</p>
+  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. <b>Click the RPGACE Architecture node to drill into its own 16 rivers (Level 1).</b> Function-level drill-down (G4) is a real, separate, not-yet-built next step.</p>
 </div>
 
 <div class="canvas-wrap">
@@ -491,8 +504,8 @@ TEMPLATE = """<!DOCTYPE html>
   <code>scripts/graphify_river_group.py</code>'s own <code>EXTERNAL_CONNECTORS</code>/<code>SUPABASE_CORE</code>/
   <code>INTERACTION_TYPE_COLOR</code> (never re-derived). Mapping rules: <code>system_map_spec.md</code>.
   G2 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — G3
-  (river drill-down) and G4 (function drill-down) are real, separate,
-  not yet built.
+  (<a href="galaxy_map_river.html">river drill-down, click the central node above</a>)
+  is now real and live. G4 (function drill-down) is real, separate, not yet built.
 </div>
 
 </body>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Level 1 — Rivers)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #12121e 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:0}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:28px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12.5px;max-width:800px;margin:0 auto}
+  .hero a{color:var(--gold)}
+  .canvas-wrap{max-width:1300px;margin:0 auto;overflow-x:auto}
+  svg text{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}
+  .legend{max-width:900px;margin:0 auto 20px;padding:0 24px}
+  .legend h2{font-family:Georgia,serif;font-size:16px;color:var(--gold);margin:24px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}
+  .legend-row{font-size:12px;color:var(--dim);padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.6}
+  .legend-row b{color:#E2E2EC}
+  .legend-row .meta{display:block;font-size:10.5px;color:#6a6a78;margin-top:2px}
+  .legend-row.small{font-size:11px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+  .itype-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+  .note{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
+  <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Function/module-level drill-down (G4) is a real, separate, not-yet-built next step.</p>
+</div>
+
+<div class="canvas-wrap">
+<svg viewBox="0 0 1300 1300" width="100%" style="max-width:1300px;display:block;margin:0 auto">
+  <defs>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <path d="M 650.0 650.0 Q 674.0 410.0 650.0 170.0" fill="none" stroke="#cc4a4a" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 764.0171325478925 437.4533145740533 833.6880475352432 206.53782439458234" fill="none" stroke="#4a8ccc" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 836.6761902332486 497.26493526370575 989.4112549695428 310.58874503045723" fill="none" stroke="#c9a84c" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 880.9154901794709 580.3290850126493 1093.4621756054175 466.3119524647569" fill="none" stroke="#9b6ec8" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 890.0 674.0 1130.0 650.0" fill="none" stroke="#4caf82" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 862.5466854259466 764.0171325478925 1093.4621756054175 833.6880475352431" fill="none" stroke="#e8c96a" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 802.7350647362942 836.6761902332486 989.4112549695428 989.4112549695428" fill="none" stroke="#cc7a3a" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 719.6709149873507 880.9154901794709 833.6880475352432 1093.4621756054175" fill="none" stroke="#5588ee" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 626.0 890.0 650.0 1130.0" fill="none" stroke="#e05555" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 535.9828674521075 862.5466854259466 466.3119524647569 1093.4621756054175" fill="none" stroke="#868db8" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 463.3238097667514 802.7350647362942 310.58874503045723 989.4112549695428" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 419.08450982052904 719.6709149873507 206.53782439458234 833.6880475352432" fill="none" stroke="#2ABFB0" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 410.0 626.0 170.0 650.0000000000001" fill="none" stroke="#E2A83D" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 437.45331457405325 535.9828674521075 206.5378243945823 466.3119524647569" fill="none" stroke="#d4daf5" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 497.26493526370575 463.3238097667514 310.5887450304571 310.58874503045723" fill="none" stroke="#20263a" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 650.0 Q 580.3290850126494 419.084509820529 466.31195246475704 206.5378243945823" fill="none" stroke="#2a3050" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 170.0 Q 737.1618560392345 211.80775892696872 833.6880475352432 206.53782439458234" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 833.6880475352432 206.53782439458234 Q 898.2159656599225 278.5185554077809 989.4112549695428 310.58874503045723" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 833.6880475352432 206.53782439458234 Q 946.6045488218532 353.39545117814674 1093.4621756054175 466.3119524647569" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 833.6880475352432 206.53782439458234 Q 961.8887530723605 441.6025977897616 1130.0 650.0" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 989.4112549695428 310.58874503045723 Q 1017.8978685578027 576.8205640112373 1093.4621756054175 833.6880475352431" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 989.4112549695428 310.58874503045723 Q 1021.4814445922191 401.78403434007754 1093.4621756054175 466.3119524647569" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 989.4112549695428 310.58874503045723 Q 1037.5325187045005 489.4787748919907 1130.0 650.0" fill="none" stroke="#6b7280" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 989.4112549695428 310.58874503045723 Q 584.6408540895922 552.1831255875891 206.53782439458234 833.6880475352432" fill="none" stroke="#9B59B6" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 1093.4621756054175 466.3119524647569 Q 1069.4621756054175 650.0 1093.4621756054175 833.6880475352431" fill="none" stroke="#9B59B6" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 1130.0 650.0 Q 961.8887530723605 858.3974022102383 833.6880475352432 1093.4621756054175" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 1130.0 650.0 Q 663.5867444689042 718.3051770379441 206.53782439458234 833.6880475352432" fill="none" stroke="#E2A83D" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 1093.4621756054175 833.6880475352431 Q 1021.4814445922191 898.2159656599225 989.4112549695428 989.4112549695428" fill="none" stroke="#9B59B6" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 1093.4621756054175 833.6880475352431 Q 946.6045488218532 946.6045488218532 833.6880475352432 1093.4621756054175" fill="none" stroke="#E25454" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 989.4112549695428 989.4112549695428 Q 898.2159656599225 1021.4814445922191 833.6880475352432 1093.4621756054175" fill="none" stroke="#E25454" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 833.6880475352432 1093.4621756054175 Q 857.6880475352432 650.0 833.6880475352432 206.53782439458234" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 1130.0 Q 562.8381439607655 1088.1922410730313 466.3119524647569 1093.4621756054175" fill="none" stroke="#C9A84C" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 650.0 1130.0 Q 441.6025977897616 961.8887530723605 206.53782439458234 833.6880475352432" fill="none" stroke="#4A90E2" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<circle cx="433.24810390841316" cy="1173.2853672143926" r="3" fill="#4a4a55" opacity="0.7"/>
+<path d="M 310.58874503045723 989.4112549695428 Q 375.1166631551367 1061.3919859827413 466.3119524647569 1093.4621756054175" fill="none" stroke="#C9A84C" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 310.58874503045723 989.4112549695428 Q 278.5185554077809 898.2159656599225 206.53782439458234 833.6880475352432" fill="none" stroke="#4A90E2" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 206.53782439458234 833.6880475352432 Q 238.60801401725874 924.8833368448635 310.58874503045723 989.4112549695428" fill="none" stroke="#4A90E2" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 206.53782439458234 833.6880475352432 Q 230.53782439458232 650.0 206.5378243945823 466.3119524647569" fill="none" stroke="#C9A84C" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 170.0 650.0000000000001 Q 211.8077589269687 562.8381439607656 206.5378243945823 466.3119524647569" fill="none" stroke="#E0A040" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<circle cx="126.71463278560711" cy="433.24810390841316" r="3" fill="#2ABFB0" opacity="0.7"/>
+<path d="M 310.5887450304571 310.58874503045723 Q 218.12126373495767 471.10997013846657 170.0 650.0000000000001" fill="none" stroke="#2ABFB0" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 466.31195246475704 206.5378243945823 Q 314.2517796493988 510.9285335881506 206.53782439458234 833.6880475352432" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+<path d="M 466.31195246475704 206.5378243945823 Q 319.4543256811925 319.4543256811925 206.5378243945823 466.3119524647569" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
+  <g class="node central"><circle cx="650.0" cy="650.0" r="42" fill="#0f0f1a" stroke="#C9A84C" stroke-width="3" filter="url(#glow)"/><text x="650.0" y="644.0" text-anchor="middle" font-size="24">🏛️</text><text x="650.0" y="666.0" text-anchor="middle" font-size="10" fill="#E2E2EC" font-weight="700">RPGACE Architecture</text></g>
+<g class="node"><circle cx="650.0" cy="170.0" r="30" fill="#0f0f1a" stroke="#cc4a4a" stroke-width="2.2" filter="url(#glow)"/><text x="650.0" y="175.0" text-anchor="middle" font-size="21.0">🌊</text></g><text x="650.0" y="215.0" text-anchor="middle" font-size="9.5" fill="#cc4a4a">River I</text>
+<g class="node"><circle cx="833.6880475352432" cy="206.53782439458234" r="30" fill="#0f0f1a" stroke="#4a8ccc" stroke-width="2.2" filter="url(#glow)"/><text x="833.6880475352432" y="211.53782439458234" text-anchor="middle" font-size="21.0">🌊</text></g><text x="833.6880475352432" y="251.53782439458234" text-anchor="middle" font-size="9.5" fill="#4a8ccc">River II</text>
+<g class="node"><circle cx="989.4112549695428" cy="310.58874503045723" r="30" fill="#0f0f1a" stroke="#c9a84c" stroke-width="2.2" filter="url(#glow)"/><text x="989.4112549695428" y="315.58874503045723" text-anchor="middle" font-size="21.0">🌊</text></g><text x="989.4112549695428" y="355.58874503045723" text-anchor="middle" font-size="9.5" fill="#c9a84c">River III</text>
+<g class="node"><circle cx="1093.4621756054175" cy="466.3119524647569" r="30" fill="#0f0f1a" stroke="#9b6ec8" stroke-width="2.2" filter="url(#glow)"/><text x="1093.4621756054175" y="471.3119524647569" text-anchor="middle" font-size="21.0">🌊</text></g><text x="1093.4621756054175" y="511.3119524647569" text-anchor="middle" font-size="9.5" fill="#9b6ec8">River IV</text>
+<g class="node"><circle cx="1130.0" cy="650.0" r="30" fill="#0f0f1a" stroke="#4caf82" stroke-width="2.2" filter="url(#glow)"/><text x="1130.0" y="655.0" text-anchor="middle" font-size="21.0">🌊</text></g><text x="1130.0" y="695.0" text-anchor="middle" font-size="9.5" fill="#4caf82">River V</text>
+<g class="node"><circle cx="1093.4621756054175" cy="833.6880475352431" r="30" fill="#0f0f1a" stroke="#e8c96a" stroke-width="2.2" filter="url(#glow)"/><text x="1093.4621756054175" y="838.6880475352431" text-anchor="middle" font-size="21.0">🌊</text></g><text x="1093.4621756054175" y="878.6880475352431" text-anchor="middle" font-size="9.5" fill="#e8c96a">River VI</text>
+<g class="node"><circle cx="989.4112549695428" cy="989.4112549695428" r="30" fill="#0f0f1a" stroke="#cc7a3a" stroke-width="2.2" filter="url(#glow)"/><text x="989.4112549695428" y="994.4112549695428" text-anchor="middle" font-size="21.0">🌊</text></g><text x="989.4112549695428" y="1034.4112549695428" text-anchor="middle" font-size="9.5" fill="#cc7a3a">River VII</text>
+<g class="node"><circle cx="833.6880475352432" cy="1093.4621756054175" r="30" fill="#0f0f1a" stroke="#5588ee" stroke-width="2.2" filter="url(#glow)"/><text x="833.6880475352432" y="1098.4621756054175" text-anchor="middle" font-size="21.0">🌊</text></g><text x="833.6880475352432" y="1138.4621756054175" text-anchor="middle" font-size="9.5" fill="#5588ee">River VIII</text>
+<g class="node"><circle cx="650.0" cy="1130.0" r="30" fill="#0f0f1a" stroke="#e05555" stroke-width="2.2" filter="url(#glow)"/><text x="650.0" y="1135.0" text-anchor="middle" font-size="21.0">🌊</text></g><text x="650.0" y="1175.0" text-anchor="middle" font-size="9.5" fill="#e05555">River IX</text>
+<g class="node"><circle cx="466.3119524647569" cy="1093.4621756054175" r="30" fill="#0f0f1a" stroke="#868db8" stroke-width="2.2" filter="url(#glow)"/><text x="466.3119524647569" y="1098.4621756054175" text-anchor="middle" font-size="21.0">🌊</text></g><text x="466.3119524647569" y="1138.4621756054175" text-anchor="middle" font-size="9.5" fill="#868db8">River X</text>
+<g class="node"><circle cx="310.58874503045723" cy="989.4112549695428" r="30" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.2" filter="url(#glow)"/><text x="310.58874503045723" y="994.4112549695428" text-anchor="middle" font-size="21.0">🌊</text></g><text x="310.58874503045723" y="1034.4112549695428" text-anchor="middle" font-size="9.5" fill="#3a4570">River XI</text>
+<g class="node"><circle cx="206.53782439458234" cy="833.6880475352432" r="30" fill="#0f0f1a" stroke="#2ABFB0" stroke-width="2.2" filter="url(#glow)"/><text x="206.53782439458234" y="838.6880475352432" text-anchor="middle" font-size="21.0">🌊</text></g><text x="206.53782439458234" y="878.6880475352432" text-anchor="middle" font-size="9.5" fill="#2ABFB0">River XII</text>
+<g class="node"><circle cx="170.0" cy="650.0000000000001" r="30" fill="#0f0f1a" stroke="#E2A83D" stroke-width="2.2" filter="url(#glow)"/><text x="170.0" y="655.0000000000001" text-anchor="middle" font-size="21.0">🌊</text></g><text x="170.0" y="695.0000000000001" text-anchor="middle" font-size="9.5" fill="#E2A83D">River XIII</text>
+<g class="node"><circle cx="206.5378243945823" cy="466.3119524647569" r="30" fill="#0f0f1a" stroke="#d4daf5" stroke-width="2.2" filter="url(#glow)"/><text x="206.5378243945823" y="471.3119524647569" text-anchor="middle" font-size="21.0">🌊</text></g><text x="206.5378243945823" y="511.3119524647569" text-anchor="middle" font-size="9.5" fill="#d4daf5">River XIV</text>
+<g class="node"><circle cx="310.5887450304571" cy="310.58874503045723" r="30" fill="#0f0f1a" stroke="#20263a" stroke-width="2.2" filter="url(#glow)"/><text x="310.5887450304571" y="315.58874503045723" text-anchor="middle" font-size="21.0">🌊</text></g><text x="310.5887450304571" y="355.58874503045723" text-anchor="middle" font-size="9.5" fill="#20263a">River XV</text>
+<g class="node"><circle cx="466.31195246475704" cy="206.5378243945823" r="30" fill="#0f0f1a" stroke="#2a3050" stroke-width="2.2" filter="url(#glow)"/><text x="466.31195246475704" y="211.5378243945823" text-anchor="middle" font-size="21.0">🌊</text></g><text x="466.31195246475704" y="251.5378243945823" text-anchor="middle" font-size="9.5" fill="#2a3050">River XVI</text>
+</svg>
+</div>
+
+<div class="legend">
+  <h2>Edge legend — what each line actually means</h2>
+  <div class="itype-grid"><div class="legend-row small"><span class="dot" style="background:#9B59B6"></span><b>Oracle / Claude judgment call</b></div><div class="legend-row small"><span class="dot" style="background:#4A90E2"></span><b>Queues/drains an async Total-system job</b></div><div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>Advisory: may need a human doc update</b></div><div class="legend-row small"><span class="dot" style="background:#E2A83D"></span><b>Extracts data from outside RPGACE</b></div><div class="legend-row small"><span class="dot" style="background:#E25454"></span><b>Needs Alex's explicit confirm</b></div><div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>Page / UI routing</b></div><div class="legend-row small"><span class="dot" style="background:#C9A84C"></span><b>Writes into an oversight doc / Chronicles</b></div><div class="legend-row small"><span class="dot" style="background:#2ABFB0"></span><b>Passive read at session start</b></div><div class="legend-row small"><span class="dot" style="background:#4a4a55"></span><b>No further real downstream flow</b></div><div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>Real persisted write</b></div></div>
+</div>
+
+<div class="legend">
+  <h2>The 16 rivers</h2>
+  <div class="legend-row"><span class="dot" style="background:#cc4a4a"></span><b>River I — Gatekeeper's Checkpoint</b><br><span class="meta">Modules: <code>authGate</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#4a8ccc"></span><b>River II — The Great Confluence</b><br><span class="meta">Modules: <code>pathRouter</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#c9a84c"></span><b>River III — The Oracle Current</b><br><span class="meta">Modules: <code>oracleAppGrounding</code>, <code>oracleTreeGrounding</code>, <code>oracleFetchGuard</code>, <code>oracleDevBridge</code>, <code>mockOracle</code>, <code>agentsIntoOracle</code>, <code>prodOraclePanel</code>, <code>instaOraclePanel</code>, <code>youtubeOracle</code>, <code>tiktokOracle</code>, <code>scheduleOracle</code>, <code>feynman</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#9b6ec8"></span><b>River IV — The Bookworm River</b><br><span class="meta">Modules: <code>bookworm</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#4caf82"></span><b>River V — Two Independent Streams</b><br><span class="meta">Modules: <code>researchTabs</code>, <code>intelBatchList</code>, <code>intelDelete</code>, <code>intelDedup</code>, <code>ciAutoPropose</code>, <code>scheduleFixes</code>, <code>shiftSync</code>, <code>agendaReminder</code>, <code>morningBrief</code>, <code>journalQoL</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#e8c96a"></span><b>River VI — The Judgment Chamber</b><br><span class="meta">Modules: <code>phylumPath</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#cc7a3a"></span><b>River VII — The Library Current</b><br><span class="meta">Modules: <code>jargonEncyclopedia</code>, <code>encyclopediaQoL</code>, <code>encSync</code>, <code>encTaxonomyLink</code>, <code>refCorpus</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#5588ee"></span><b>River VIII — The Confluence Pool</b><br><span class="meta">Modules: <code>taxonomyReviewQueue</code>, <code>taxonomySync</code>, <code>taxonomyTree</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#e05555"></span><b>River IX — The Mirror and the Far Shore</b><br><span class="meta">Modules: <code>knowledgeGap</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#868db8"></span><b>River X — The Confluence of Chronicles</b><br><span class="meta">Modules: <code>chroniclesLog</code>, <code>careerStatCard</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#3a4570"></span><b>River XI — Content Production Live</b><br><span class="meta">Modules: <code>contentProductionLive</code>, <code>beatLog</code>, <code>videoPipeline</code>, <code>videoSummary</code>, <code>conidPot</code>, <code>contentRepurpose</code>, <code>visualOracle</code></span></div>
+<div class="legend-row"><span class="dot" style="background:#2ABFB0"></span><b>River XII — The API / Auth Layer</b><br><span class="meta">Modules: (no single-module home — see zone role note)</span><br><span class="meta">The one river that carries literal runtime API traffic to external Total-system members — every OpenMontage/Kimi/Luna/librosa/OpenArt/Composio call routes through here (api/oracle.js, api/_context.js, api/data-write.js). File-path membership: `api/*.js`. See "Total-systems connectors" below for the real, per-connector detail.</span></div>
+<div class="legend-row"><span class="dot" style="background:#E2A83D"></span><b>River XIII — Skills</b><br><span class="meta">Modules: (no single-module home — see zone role note)</span><br><span class="meta">The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, OpenMontage CC) runs against — file-path membership: `.claude/skills/`.</span></div>
+<div class="legend-row"><span class="dot" style="background:#d4daf5"></span><b>River XIV — Oversight Docs</b><br><span class="meta">Modules: (no single-module home — see zone role note)</span><br><span class="meta">The shared truth layer Total-system members read from and write into (Graphify CC deposits real findings here via graphify_jobs when a row is flagged "please log to Chronicles"). File-path membership: the live-maintained doc set.</span></div>
+<div class="legend-row"><span class="dot" style="background:#20263a"></span><b>River XV — Session Records / Backlog</b><br><span class="meta">Modules: (no single-module home — see zone role note)</span><br><span class="meta">Real dispatch/session history — dated backlog `.txt`/`.md` at repo root, the same real record `openmontage_jobs`/`graphify_jobs` rows themselves become once resolved.</span></div>
+<div class="legend-row"><span class="dot" style="background:#2a3050"></span><b>River XVI — Dev Tooling</b><br><span class="meta">Modules: (no single-module home — see zone role note)</span><br><span class="meta">The actual scripts/config that build, ship, and graph the Total system — including the very scripts (graphify_recolor.py/graphify_river_group.py/graphify_to_obsidian.py/obsidian_vault_to_html.py) that generate this graph and the Obsidian vault themselves.</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River I → River II</b> <span class="meta">always · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River II → River III</b> <span class="meta">Oracle page selected · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River II → River IV</b> <span class="meta">Bookworm page selected · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River II → River V</b> <span class="meta">Schedule/Content Intel page selected · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River III → River VI</b> <span class="meta">a tapped insight badge · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River III → River IV</b> <span class="meta">special prefix diverts the message · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#6b7280"></span><b>River III → River V</b> <span class="meta">special prefix diverts the message · Page / UI routing</span></div>
+<div class="legend-row small"><span class="dot" style="background:#9B59B6"></span><b>River III → River XII</b> <span class="meta">dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call · Oracle / Claude judgment call</span></div>
+<div class="legend-row small"><span class="dot" style="background:#9B59B6"></span><b>River IV → River VI</b> <span class="meta">every insight found here · Oracle / Claude judgment call</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>River V → River VIII</b> <span class="meta">Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar · Real persisted write</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E2A83D"></span><b>River V → River XII</b> <span class="meta">morningBrief's real Composio Gmail-fetch call routes out through here · Extracts data from outside RPGACE</span></div>
+<div class="legend-row small"><span class="dot" style="background:#9B59B6"></span><b>River VI → River VII</b> <span class="meta">a fresh leaf's teaching page · Oracle / Claude judgment call</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E25454"></span><b>River VI → River VIII</b> <span class="meta">any confirmable fusion-link bridge · Needs Alex's explicit confirm</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E25454"></span><b>River VII → River VIII</b> <span class="meta">a proposed merge · Needs Alex's explicit confirm</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>River VIII → River II</b> <span class="meta">into The Great Tree, River II's own estuary — readable by every other river from there · Real persisted write</span></div>
+<div class="legend-row small"><span class="dot" style="background:#C9A84C"></span><b>River IX → River X</b> <span class="meta">the Far Shore's own real changes, via system_updates · Writes into an oversight doc / Chronicles</span></div>
+<div class="legend-row small"><span class="dot" style="background:#4A90E2"></span><b>River IX → River XII</b> <span class="meta">the Claude Code fallback lane's drain and Graphify CC's own session-start dispatch both route out through here · Queues/drains an async Total-system job</span></div>
+<div class="legend-row small"><span class="dot" style="background:#4a4a55"></span><b>River X → — terminal sink for every river above —</b> <span class="meta">River XI is the one exception, see below · No further real downstream flow</span></div>
+<div class="legend-row small"><span class="dot" style="background:#C9A84C"></span><b>River XI → River X</b> <span class="meta">both branches loop back into the same shared estuary, not a new one · Writes into an oversight doc / Chronicles</span></div>
+<div class="legend-row small"><span class="dot" style="background:#4A90E2"></span><b>River XI → River XII</b> <span class="meta">the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here · Queues/drains an async Total-system job</span></div>
+<div class="legend-row small"><span class="dot" style="background:#4A90E2"></span><b>River XII → River XI</b> <span class="meta">the OpenMontage job result — the one external connector whose real spring AND mouth both sit back in River XI · Queues/drains an async Total-system job</span></div>
+<div class="legend-row small"><span class="dot" style="background:#C9A84C"></span><b>River XII → River XIV</b> <span class="meta">Graphify CC deposits real findings here via graphify_jobs, flagged for logging · Writes into an oversight doc / Chronicles</span></div>
+<div class="legend-row small"><span class="dot" style="background:#E0A040"></span><b>River XIII → River XIV</b> <span class="meta">a skill's behavior change that could make an existing river's own written description go stale · Advisory: may need a human doc update</span></div>
+<div class="legend-row small"><span class="dot" style="background:#2ABFB0"></span><b>River XIV → — feeds every river's own next real session —</b> <span class="meta">CLAUDE.md's own rule: read the relevant section before any nontrivial work · Passive read at session start</span></div>
+<div class="legend-row small"><span class="dot" style="background:#2ABFB0"></span><b>River XV → River XIII</b> <span class="meta">feeds Routine's own session-start check via session_memory, read at the start of every future session · Passive read at session start</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>River XVI → River XII</b> <span class="meta">generates graph.html/GRAPH_TREE.html, this river's own visual form · Real persisted write</span></div>
+<div class="legend-row small"><span class="dot" style="background:#3DAA6E"></span><b>River XVI → River XIV</b> <span class="meta">generates obsidian_vault.html, the human-browsable presentation layer · Real persisted write</span></div>
+</div>
+
+<div class="note">
+  Generated by <code>scripts/galaxy_map_river.py</code> — real data reused from
+  <code>scripts/graphify_river_group.py</code>'s own <code>RIVER_NAME</code>/<code>RIVER_COLOR</code>/
+  <code>RIVER_MODULES</code>/<code>RIVER_ROLE_NOTE</code>/<code>RIVER_FLOWS</code> (never re-derived), and
+  <code>galaxy_map.py</code>'s own <code>polar()</code>/<code>_curved_edge()</code> layout helpers.
+  Mapping rules: <code>system_map_spec.md</code>. G3 of the ratified "RPGACE Total Systems
+  Galaxy Map" /CEO plan — G4 (function-level drill-down) is real, separate, not yet built.
+</div>
+
+</body>
+</html>

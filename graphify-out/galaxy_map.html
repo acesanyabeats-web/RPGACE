@@ -15,6 +15,9 @@
   .canvas-wrap{max-width:1400px;margin:0 auto;overflow-x:auto}
   svg text{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}
   .node{cursor:default}
+  a.drill-link{cursor:pointer}
+  a.drill-link .central circle{transition:filter 0.15s}
+  a.drill-link:hover .central circle{filter:url(#glow) brightness(1.3)}
   .legend{max-width:900px;margin:0 auto 20px;padding:0 24px}
   .legend h2{font-family:Georgia,serif;font-size:16px;color:var(--gold);margin:24px 0 10px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}
   .legend-row{font-size:12px;color:var(--dim);padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);line-height:1.6}
@@ -33,7 +36,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 The Galaxy Map</h1>
-  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. River-level (G3) and function-level (G4) drill-down are real, separate, not-yet-built future items — this is Level 0 only.</p>
+  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. <b>Click the RPGACE Architecture node to drill into its own 16 rivers (Level 1).</b> Function-level drill-down (G4) is a real, separate, not-yet-built next step.</p>
 </div>
 
 <div class="canvas-wrap">
@@ -72,7 +75,7 @@
 <path d="M 700.0 230.0 Q 816.054731473783 549.607862833682 1125.8152695588751 689.8444334128282" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
 <path d="M 1046.4101615137756 430.0 Q 1053.9795860738413 569.7416866996078 1125.8152695588751 689.8444334128282" fill="none" stroke="#3DAA6E" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
 <path d="M 1046.4101615137756 430.0 Q 885.2050807568878 309.2153903091735 700.0 230.0" fill="none" stroke="#5FB3D9" stroke-width="1.8" opacity="0.85" filter="url(#edgeglow)"/>
-  <g class="node central"><circle cx="700.0" cy="630.0" r="46" fill="#0f0f1a" stroke="#C9A84C" stroke-width="3" filter="url(#glow)"/><text x="700.0" y="624.0" text-anchor="middle" font-size="26">🏛️</text><text x="700.0" y="648.0" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">RPGACE Architecture</text></g>
+  <a href="galaxy_map_river.html" class="drill-link"><g class="node central"><circle cx="700.0" cy="630.0" r="46" fill="#0f0f1a" stroke="#C9A84C" stroke-width="3" filter="url(#glow)"/><text x="700.0" y="624.0" text-anchor="middle" font-size="26">🏛️</text><text x="700.0" y="648.0" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">RPGACE Architecture</text><text x="700.0" y="662.0" text-anchor="middle" font-size="8" fill="#C9A84C">▸ click: 16 rivers</text></g></a>
 <g class="node" opacity="1"><circle cx="353.5898384862245" cy="430.0" r="34" fill="#0f0f1a" stroke="#4A90E2" stroke-width="2"  filter="url(#glow)"/><text x="353.5898384862245" y="435.0" text-anchor="middle" font-size="25.5">🧭</text></g><text x="353.5898384862245" y="480.0" text-anchor="middle" font-size="9" fill="#4A90E2">Orchestrator CC</text>
 <g class="node" opacity="1"><circle cx="700.0" cy="230.0" r="34" fill="#0f0f1a" stroke="#E25454" stroke-width="2"  filter="url(#glow)"/><text x="700.0" y="235.0" text-anchor="middle" font-size="25.5">🎬</text></g><text x="700.0" y="280.0" text-anchor="middle" font-size="9" fill="#E25454">OpenMontage CC</text>
 <g class="node" opacity="1"><circle cx="1046.4101615137756" cy="430.0" r="34" fill="#0f0f1a" stroke="#3DAA6E" stroke-width="2"  filter="url(#glow)"/><text x="1046.4101615137756" y="435.0" text-anchor="middle" font-size="25.5">🌐</text></g><text x="1046.4101615137756" y="480.0" text-anchor="middle" font-size="9" fill="#3DAA6E">Graphify CC</text>
@@ -131,8 +134,8 @@
   <code>scripts/graphify_river_group.py</code>'s own <code>EXTERNAL_CONNECTORS</code>/<code>SUPABASE_CORE</code>/
   <code>INTERACTION_TYPE_COLOR</code> (never re-derived). Mapping rules: <code>system_map_spec.md</code>.
   G2 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — G3
-  (river drill-down) and G4 (function drill-down) are real, separate,
-  not yet built.
+  (<a href="galaxy_map_river.html">river drill-down, click the central node above</a>)
+  is now real and live. G4 (function drill-down) is real, separate, not yet built.
 </div>
 
 </body>
