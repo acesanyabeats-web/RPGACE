@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📚 Aug 13 (same day, 18th pass) — G5 SHIPPED: real Oversight-connection badges, plus a real river-to-river connection ring on Level 2.</div>
+    <div class="card-body">
+      Per <code>system_map_spec.md</code> §6 (already-written spec, no new design needed): a 📚 badge marks River XIV (Oversight Docs) and any river with a real, direct <code>RIVER_FLOWS</code> edge into it (rivers 12/13/16, confirmed by direct query) — on both Level 1 and, carried down honestly as legend text, Level 2. Rivers X/XV are real, thematically adjacent record-keeping rivers but stay unbadged — no literal <code>RIVER_FLOWS</code> edge into River XIV exists for either, and §6's own "reuse RIVER_FLOWS, never re-derive" instruction rules out badging them on a guess.
+      <br><br>
+      Mid-pass, Alex's own direct follow-up: "level 2 maps dont conjoin to other rivers in a circle and arrow," pasting the full real <code>RIVER_FLOWS</code> text as the source. Each of the 16 Level-2 sections gained a real 3rd outer ring — one bubble per real outgoing/incoming river connection (reusing <code>RIVER_FLOWS</code> + the existing <code>FLOWS_IN</code> reverse map, never re-derived), each a real in-page jump link to that other river's own section. Verified via headless Chromium on River XII (7 real connections, the stress case): zero console errors, correct bubble positions/directions, a real bubble click correctly navigated to the target river. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code> (18th pass).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">➡️ Aug 13 (same day, 17th pass) — every Galaxy Map edge now carries a real ✕ mark at its start and an arrowhead at its end, across all 3 levels.</div>
     <div class="card-body">
       "make the lines have an arrow head and an x as the start to show relationships via the edge lines too." Built once, shared: a new <code>_build_markers()</code> helper in <code>galaxy_map.py</code> plus real geometry-trim params (<code>r1</code>/<code>r2</code>) on <code>_curved_edge()</code> so markers land at each node's visible boundary instead of buried at its exact center — every edge call site across all 3 files updated with its own already-known real node radius. A pre-existing small dedup gap closed along the way: <code>galaxy_map_module.py</code>'s dashboard-card connector lines were hand-rolled paths, not routed through the shared helper — now they are, and get the same real markers.

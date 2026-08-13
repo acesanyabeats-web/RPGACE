@@ -26,6 +26,17 @@ module (main.js's 240+ functions, index.html's 93 onclick handlers)
 is explicitly G11's job (the full /perspective sweep), not this file's
 — this stops at module/card granularity, the real level G4 was scoped
 to.
+
+**Aug 13, later pass — real river-to-river connection ring added, per
+Alex's direct ask** ("level 2 maps dont conjoin to other rivers in a
+circle and arrow"). Each section gained a 3rd outer ring: one bubble
+per real `RIVER_FLOWS` (outgoing) / `FLOWS_IN` (incoming) connection —
+same real data Level 1 already draws, never re-derived — each a real
+in-page `<a href="#river-N">` jump to that other river's own section
+(the existing hashchange listener already handles it, zero new JS).
+Also carries G5's real Oversight-connection note down from Level 1
+(§6) — River XIV itself and any river with a real direct edge into it
+get a 📚 legend line, using the same computation, not a new one.
 """
 import sys
 from pathlib import Path
@@ -34,17 +45,34 @@ sys.path.insert(0, str(Path(__file__).parent))
 from galaxy_map import polar, _curved_edge, _build_markers  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
-    DASHBOARD_CARDS, CARDS_BY_RIVER,
+    DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
 )
 
 OUT = Path('graphify-out/galaxy_map_module.html')
+
+# G5, Aug 13 (system_map_spec.md §6): "every level of this hierarchy
+# that has a real, standing connection into Oversight represents that
+# connection explicitly." Same real computation galaxy_map_river.py's
+# own G5 badge uses (rule 8 — not re-derived, just reused at this
+# level too) — River XIV itself, plus any river with a real RIVER_FLOWS
+# edge targeting it. At module granularity there's no real per-module
+# oversight-connection data (RIVER_FLOWS is a river-level aggregate,
+# per §1a) — this carries the real river-level fact down into the
+# section's own legend text honestly, rather than fabricating a
+# module-level edge no evidence supports.
+OVERSIGHT_RIVER = 14
+OVERSIGHT_FEEDERS = {
+    src for src, flows in RIVER_FLOWS.items()
+    for target_label, _note, _itype in flows
+    if _river_num_from_label(target_label) == OVERSIGHT_RIVER
+}
 
 MODULE_ICON = '⚙️'
 CARD_ICON_FALLBACK = '🎯'
 
 
 def build_river_section(rnum):
-    W, H = 900, 700
+    W, H = 1000, 820
     cx, cy = W / 2, H / 2
     color = RIVER_COLOR[rnum]
     river_label = RIVER_NAME[rnum]
@@ -100,8 +128,52 @@ def build_river_section(rnum):
             f'<text x="{px}" y="{py+30}" text-anchor="middle" font-size="9" fill="#C9A84C">{label}{badge}</text>'
         )
 
+    # --- Aug 13, real Alex ask: "level 2 maps dont conjoin to other
+    # rivers in a circle and arrow" — a real, third outer ring showing
+    # exactly which OTHER rivers this one connects to, reusing the exact
+    # same RIVER_FLOWS (outgoing) / FLOWS_IN (incoming) data already
+    # drawn on Level 1, never re-derived (rule 8). Each bubble is a real
+    # in-page <a href="#river-N"> jump to that other river's own Level-2
+    # section (the existing hashchange listener already handles this,
+    # zero new JS needed), colored with THAT river's own RIVER_COLOR so
+    # it reads as "a different river," not this one's own module/card
+    # rings. Same real terminal-sink/fan-out exclusion as Level 1 — a
+    # RIVER_FLOWS target that isn't a real river number gets skipped
+    # here too, honest about what the data actually encodes.
+    conns = []
+    for target_label, note, itype in RIVER_FLOWS.get(rnum, []):
+        other = _river_num_from_label(target_label)
+        if other:
+            conns.append(('out', other, note, itype))
+    for other, note, itype in FLOWS_IN.get(rnum, []):
+        conns.append(('in', other, note, itype))
+
+    n_conn = len(conns) or 1
+    conn_radius = 400
+    for i, (direction, other, note, itype) in enumerate(conns):
+        ang = -90 + (360 * i / n_conn) + (180 / n_conn if n_conn > 1 else 0)
+        bx, by = polar(cx, cy, conn_radius, ang)
+        other_color = RIVER_COLOR[other]
+        other_short = RIVER_NAME[other].split('—')[0].strip()
+        if direction == 'out':
+            edges_svg.append(_curved_edge(cx, cy, bx, by, other_color, real=True, r1=40, r2=17))
+        else:
+            edges_svg.append(_curved_edge(bx, by, cx, cy, other_color, real=True, r1=17, r2=40))
+        edge_colors_used.add(other_color)
+        arrow = '→' if direction == 'out' else '←'
+        nodes_svg.append(
+            f'<a href="#river-{other}" class="drill-link"><g class="node">'
+            f'<circle cx="{bx}" cy="{by}" r="17" fill="#0f0f1a" stroke="{other_color}" stroke-width="2" filter="url(#glow)"/>'
+            f'<text x="{bx}" y="{by+5}" text-anchor="middle" font-size="12">🌊</text></g>'
+            f'<text x="{bx}" y="{by+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
+        )
+
     legend = (f'<p class="rlegend-role">{RIVER_ROLE_NOTE.get(rnum, "")}</p>'
               if RIVER_ROLE_NOTE.get(rnum) else '')
+    if rnum == OVERSIGHT_RIVER:
+        legend += '<p class="rlegend-role">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI.</p>'
+    elif rnum in OVERSIGHT_FEEDERS:
+        legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</p>'
     mod_list = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '<i>no single-module home — see role note</i>'
     def _card_row(c):
         partial_badge = ' <span class="warn">partial</span>' if c.get('partial') else ''
@@ -111,16 +183,27 @@ def build_river_section(rnum):
     card_list = ''.join(_card_row(c) for c in cards) or \
         '<div class="legend-row small"><span class="meta">No dashboard card routes directly into this river.</span></div>'
 
+    def _conn_row(direction, other, note, itype):
+        arrow = '→' if direction == 'out' else '←'
+        this_short = river_label.split('—')[0].strip()
+        other_short = RIVER_NAME[other].split('—')[0].strip()
+        left, right = (this_short, other_short) if direction == 'out' else (other_short, this_short)
+        return (f'<div class="legend-row small"><span class="dot" style="background:{RIVER_COLOR[other]}"></span>'
+                f'<b>{left} {arrow} {right}</b> <span class="meta">{note}</span></div>')
+    conn_list = ''.join(_conn_row(d, o, n, i) for d, o, n, i in conns) or \
+        '<div class="legend-row small"><span class="meta">No real river-to-river RIVER_FLOWS connection.</span></div>'
+
     body = (
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
         f'{legend}'
-        f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:900px;display:block;margin:0 auto">'
+        f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:1000px;display:block;margin:0 auto">'
         f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
         f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
         f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
         f'<div class="legend"><h3>Real modules</h3><p class="modlist">{mod_list}</p>'
         f'<h3>Real dashboard-card entry points</h3>{card_list}</div>'
+        f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
         f'</section>'
     )
     return body
@@ -152,6 +235,9 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   .rlegend-role{{text-align:center;color:var(--dim);font-size:11.5px;max-width:760px;margin:0 auto 16px;line-height:1.6}}
   .canvas-wrap{{overflow-x:auto}}
   svg text{{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}}
+  a.drill-link{{cursor:pointer}}
+  a.drill-link .node circle{{transition:filter 0.15s}}
+  a.drill-link:hover .node circle{{filter:url(#glow) brightness(1.4)}}
   .legend{{max-width:820px;margin:16px auto 0}}
   .legend h3{{font-family:Georgia,serif;font-size:13px;color:var(--gold);margin:16px 0 8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:5px}}
   .legend .modlist{{font-size:11.5px;color:var(--dim);line-height:2}}
@@ -169,7 +255,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
   <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round nodes are the river's own real registered modules. A dashed diamond/"(partial)" label means the card's real target only partially covers the river (see that card's own note).</p>
+  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules; the outer-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in) — click a bubble to jump straight there. A dashed diamond/"(partial)" label means the card's real target only partially covers the river (see that card's own note). A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs).</p>
 </div>
 
 <div class="tabs">{tabs}</div>

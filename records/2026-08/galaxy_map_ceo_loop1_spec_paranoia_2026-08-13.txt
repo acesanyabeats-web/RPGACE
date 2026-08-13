@@ -1760,3 +1760,58 @@ cache-bust bumped to `?v=20260813g`.
 
 **Per Alex's explicit instruction, moving straight to G5** (Oversight-
 connection representation) next in this same session, no pause.
+
+================================================================
+SAME DAY, 18TH PASS — G5 shipped: real Oversight-connection badges
+(§6) + a real river-to-river connection ring on Level 2
+================================================================
+
+Alex's real ask: proceed to G5 (per §6's own already-written spec),
+then a mid-turn follow-up: "i dont like that level 2 maps dont conjoin
+to other rivers in a circle and arrow" — pasting the FULL real
+RIVER_FLOWS text verbatim as the source data to use.
+
+**G5 proper, per system_map_spec.md §6**: "every level of this
+hierarchy that has a real, standing connection into Oversight
+represents that connection explicitly... reusing RIVER_FLOWS, never
+re-derived." Real, narrow computation (not thematic guessing): any
+river with a real RIVER_FLOWS edge whose target is River XIV
+specifically (rivers 12/13/16, confirmed by direct query) gets a 📚
+badge; River XIV itself gets the hub badge. River X (Chronicles) and
+River XV (Session Records) — real, thematically adjacent record-
+keeping rivers — deliberately stay unbadged, since neither has a
+literal RIVER_FLOWS edge into River XIV; badging them anyway would
+have been guessing past what §6's own "reuse RIVER_FLOWS" instruction
+actually supports.
+
+**The follow-up ask (river-to-river connection ring, Level 2)**: real,
+substantial addition to `galaxy_map_module.py` — each of the 16
+sections gained a 3rd outer ring built from the exact same
+`RIVER_FLOWS` (outgoing) + `FLOWS_IN` (the existing real reverse map,
+already built in `graphify_river_group.py`, not re-derived) data
+already drawn on Level 1. Each bubble: colored with the OTHER river's
+own real color (never this section's own), direction-labeled (→ out /
+← in), a real in-page `<a href="#river-N">` link — the existing
+hashchange listener already handles the navigation, zero new JS
+needed. Canvas grew 900×700 → 1000×820 to fit the new ring without
+crowding (computed real per-river max connection count first: River
+XII has 7, the real stress case, used for verification).
+
+**Real verification, not assumed**: headless-Chromium pass on River
+XII specifically (the densest real case) — zero console errors, all 7
+bubbles render at correct positions with correct arrow direction,
+clicking a bubble correctly navigated to `#river-11`. div/svg/a-tag
+balance checked directly on all 3 regenerated files (all matched:
+L0 36/36/1/1/2/2, L1 60/60/1/1/18/18, L2 153/153/16/16/52/52).
+Screenshot reviewed visually — River XII's connection ring, badge,
+and legend list all confirmed matching the real RIVER_FLOWS text
+Alex pasted, exactly.
+
+**`ceo_plan_items` G5** flipped green with real evidence cited.
+**Oversight updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`,
+`rpgace_core.js` (Oversight popup Level-2 description). `rpgace_core.
+min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
+`?v=20260813h`.
+
+**Remaining G6-G9 honestly queued** — same real multi-session
+discipline as every prior G-step this session.

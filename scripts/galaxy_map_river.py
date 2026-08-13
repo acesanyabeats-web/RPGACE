@@ -79,6 +79,24 @@ def build_svg():
         f'<text x="{cx}" y="{cy+16}" text-anchor="middle" font-size="10" fill="#E2E2EC" font-weight="700">RPGACE Architecture</text></g>'
     )
 
+    # --- G5, Aug 13 (real ratified plan item, per system_map_spec.md §6):
+    # "every level of this hierarchy that has a real, standing connection
+    # into Oversight represents that connection explicitly — reusing
+    # RIVER_FLOWS, never re-derived." Real, evidence-only computation, no
+    # new data: any river with a real RIVER_FLOWS edge TARGETING River
+    # XIV (Oversight Docs) — currently rivers 12/13/16 — plus River XIV
+    # itself as the real destination hub. Deliberately narrow (§6's own
+    # "real, standing connection," not "thematically related") — River X
+    # (Chronicles) and River XV (Session Records) are real, adjacent
+    # record-keeping rivers but have no literal RIVER_FLOWS edge into
+    # River XIV, so they stay unbadged rather than guessed in.
+    OVERSIGHT_RIVER = 14
+    oversight_feeders = {
+        src for src, flows in RIVER_FLOWS.items()
+        for target_label, _note, _itype in flows
+        if _river_num_from_label(target_label) == OVERSIGHT_RIVER
+    }
+
     # --- 16 rivers, evenly spaced around the hub ---
     river_radius = 480
     n = len(RIVER_NAME)
@@ -100,14 +118,28 @@ def build_svg():
             + node_circle(rx, ry, 30, color, '🌊', short_label, label_color=color)
             + '</a>'
         )
+        # G5 badge — a real "feeds/is Oversight" marker, distinct from
+        # any single edge, so the connection reads at a glance.
+        if rnum == OVERSIGHT_RIVER:
+            bx, by = polar(rx, ry, 34, -45)
+            nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="16" title="Oversight hub">📚</text>')
+        elif rnum in oversight_feeders:
+            bx, by = polar(rx, ry, 34, -45)
+            nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="13" opacity="0.85" title="Feeds Oversight (River XIV)">📚</text>')
         mods = RIVER_MODULES.get(rnum, [])
         mods_txt = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '(no single-module home — see zone role note)'
         role = RIVER_ROLE_NOTE.get(rnum, '')
+        oversight_note = ''
+        if rnum == OVERSIGHT_RIVER:
+            oversight_note = '<br><span class="meta">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI (see below).</span>'
+        elif rnum in oversight_feeders:
+            oversight_note = '<br><span class="meta">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</span>'
         legend_rows.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
             f'<b>{RIVER_NAME[rnum]}</b><br>'
             f'<span class="meta">Modules: {mods_txt}</span>'
             + (f'<br><span class="meta">{role}</span>' if role else '')
+            + oversight_note
             + '</div>'
         )
 
@@ -187,7 +219,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
   <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XIV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">
