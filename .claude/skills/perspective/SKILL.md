@@ -91,10 +91,48 @@ enforces).
   directly (same as both pilots did) and/or write a `system_map_flags` row,
   same as `/cartographer`'s own routing.
 - **A finding that's really "this used to work, evidence now says it
-  doesn't"** → this is exactly `/colourgradient`'s new 🟣 purple case. Cite
-  the relevant `perspective_reports.expected_behavior` as the real prior
-  baseline being compared against, and write (or point to) the real
-  `error_log` row per that skill's Step 4 purple routing.
+  doesn't"** → this is exactly `/colourgradient`'s new 🟣 purple case, and
+  the real, named tie-together Alex asked for (Aug 13, same day 2nd pass):
+  a fresh `/perspective` re-check (or a `/paranoia` pass that happens to
+  touch a scope with an existing baseline) is the real DETECTOR; `error_log`
+  is the real RECORD; `/colourgradient` purple is the real STATUS SIGNAL.
+  None of the three re-derive what the others already hold (rule 8). The
+  concrete steps, every time a real mismatch is confirmed:
+  1. Generate a real, stable `error_code` — `PERSPECTIVE-<SCOPE_ID upper,
+     hyphens for spaces>-<NN>`, `NN` a 2-digit sequence number (query
+     `error_log` for the highest existing `NN` on that `scope_id` prefix
+     first — never guess a number that might collide). This is what makes
+     "even the smallest function or step" genuinely trackable, per Alex's
+     own words — a real, citable name for a specific broken thing, not a
+     vague description.
+  2. Write the real `error_log` row: `error_code`, `linked_perspective_id`,
+     `expected_baseline` (copied verbatim from the perspective report),
+     `rationale` (what the fresh evidence actually shows, cited), and
+     `backtrack_note` (what likely broke it, traced upstream — a real
+     diagnosis, never a guess dressed as one).
+  3. If a `ceo_plan_items` row exists for that scope and was genuinely
+     `green` at its last check, flip it to `purple` with the same real
+     evidence — this is what makes it show up in `future_integrations.html`'s
+     purple section, which per its own design also states "how to possibly
+     fix it" (draw that straight from `backtrack_note` — one real diagnosis,
+     shown in both places, never written twice independently).
+  4. This is JUDGMENT work — same explicit boundary `error_log.html`'s own
+     doc already states for its mechanical-vs-judgment split. There is no
+     background job doing steps 1-3 automatically; a session (Orchestrator
+     CC) runs them for real, the same way this session has written every
+     `perspective_reports`/`error_log` row so far.
+- **Oracle-side flagging (in-app, not this session) uses the renamed
+  channel**: `oracleDevBridge`'s "🧪 Flag to Orchestrator CC" button (Aug 13
+  rename — Total Systems now has 3 real Claude Code sessions, so "Claude
+  Code" alone had gone ambiguous; this channel has only ever been read by
+  THIS session, per CLAUDE.md's own session-start check) is the real
+  backdrain path when Oracle-from-within notices something — it lands in
+  `oracle_dev_suggestions`, reviewed at the next session start, same as
+  always. It does NOT auto-generate an `error_code`/purple flip on its
+  own; a flagged suggestion becomes a real error_log/purple entry only
+  once a session actually investigates it and confirms a mismatch (same
+  judgment boundary as point 4 above) — flagging is not the same claim as
+  diagnosing.
 - **Anything smaller** — report to Alex directly in chat, same as the
   pilots did; don't force every MINOR finding into a Supabase row.
 

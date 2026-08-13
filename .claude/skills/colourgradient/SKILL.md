@@ -114,7 +114,13 @@ with the rest of the oversight system, not just report to chat:
   `error_log.html`'s Supabase table (`error_log`), since a regression is a
   real error Total Systems should track and eventually resolve, not just an
   unbuilt idea sitting in `future_integrations.html` — the same "surface
-  it, don't just log it" discipline `/cartographer` already applies.
+  it, don't just log it" discipline `/cartographer` already applies. That
+  row carries a real, stable `error_code` (Aug 13, same day 2nd pass —
+  `/perspective`'s own Step 5 defines the exact format) so even the
+  smallest scope has a trackable identifier once it regresses, and its
+  `backtrack_note` doubles as the real "how to possibly fix it" text
+  shown alongside the purple card — one diagnosis, cited in both places,
+  never written twice.
 - `ceo_plan_items.status` is the single shared source of truth both this
   routing step and `future_integrations.html`'s own snapshot render read
   from — never derive the two independently (rule 8).

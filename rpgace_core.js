@@ -3443,7 +3443,11 @@ RPGACE.register('oracleAppGrounding', {
 
 /* ===MODULE:oracleDevBridge=== */
 // July 22 — Phase 2 of the same request: the "Oracle suggests back to
-// Claude Code" bridge CLAUDE.md already specs (RPGACE_ORACLE_NOTES.md)
+// Orchestrator CC" bridge (renamed Aug 13 from "Claude Code" — Total
+// Systems now has 3 real Claude Code sessions, so the generic name had
+// gone ambiguous; this table has only ever been read by THIS session,
+// the orchestrator, per CLAUDE.md's own session-start-check convention)
+// CLAUDE.md already specs (RPGACE_ORACLE_NOTES.md)
 // but which was never built, and which can't work exactly as originally
 // written - Oracle runs as a stateless Vercel serverless function with no
 // persistent or git-writable filesystem, so it can never literally edit
@@ -3477,7 +3481,7 @@ RPGACE.register('oracleDevBridge', {
       if (lastMsg.nextElementSibling && lastMsg.nextElementSibling.classList && lastMsg.nextElementSibling.classList.contains('odb-flag-btn')) return;
       var btn = document.createElement('button');
       btn.className = 'odb-flag-btn';
-      btn.textContent = '🧪 Flag for Claude Code';
+      btn.textContent = '🧪 Flag to Orchestrator CC';
       btn.style.cssText = 'display:inline-block;background:none;border:1px solid rgba(74,144,226,.3);color:#4A8CCC;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin:2px 0 8px 0;';
       btn.onclick = function() { RPGACE.modules.oracleDevBridge._flag(text, btn); };
       lastMsg.insertAdjacentElement('afterend', btn);
@@ -3507,11 +3511,11 @@ RPGACE.register('oracleDevBridge', {
     var toSave = text.length > 16000 ? (text.slice(0, 16000) + '\n\n[...truncated - original reply was ' + text.length + ' chars]') : text;
     RPGACE.sb.secureWrite(this.TABLE, 'insert', [{ suggestion_text: toSave, category: 'oracle-flagged', status: 'new', source: 'oracle' }])
     .then(function() {
-      btn.textContent = '✓ Sent to Claude Code';
-      RPGACE.utils.toast('🧪 Logged for the next Claude Code session', 'rgba(74,144,226,0.9)', 2400);
+      btn.textContent = '✓ Sent to Orchestrator CC';
+      RPGACE.utils.toast('🧪 Logged for the next Orchestrator CC session', 'rgba(74,144,226,0.9)', 2400);
     }).catch(function(e) {
       btn.disabled = false;
-      btn.textContent = '🧪 Flag for Claude Code';
+      btn.textContent = '🧪 Flag to Orchestrator CC';
       RPGACE.utils.toast('⚠️ Could not log: ' + e.message, '#CC4A4A', 3200);
     });
   },

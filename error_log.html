@@ -68,7 +68,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight · Layer (d), 2nd doc</div>
   <h1>🩹 Error Log</h1>
-  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Where a real <code>/perspective</code> self-report exists for the affected element, its <code>expected_behavior</code> baseline renders inline (teal) — the real "what correct looked like" a row is judged against, added Aug 13 2026. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
+  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Where a real <code>/perspective</code> self-report exists for the affected element, its <code>expected_behavior</code> baseline renders inline (teal) — the real "what correct looked like" a row is judged against, added Aug 13 2026. Each row can also carry a stable <code>error_code</code> (Aug 13, same day 2nd pass) so even the smallest function/step in Total Systems has a real, trackable identifier once it's ever misbehaved. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
 </div>
 
 <div class="wrap">
@@ -118,7 +118,7 @@ function render(items) {
     }
     return '<div class="item ' + cls + '">' +
       '<div class="item-top"><div>' +
-        '<div class="item-name">' + esc(e.error_type) + (e.source ? ' — ' + esc(e.source) : '') + '</div>' +
+        '<div class="item-name">' + (e.error_code ? '<code>' + esc(e.error_code) + '</code> ' : '') + esc(e.error_type) + (e.source ? ' — ' + esc(e.source) : '') + '</div>' +
         '<div class="item-desc">' + esc(e.message) + '</div>' +
         '<div class="item-meta">Seen ' + e.occurrence_count + '× · first ' + new Date(e.first_seen_at).toLocaleString() + ' · last ' + new Date(e.last_seen_at).toLocaleString() + (e.attempt_count ? ' · ' + e.attempt_count + ' fix attempt(s)' : '') + '</div>' +
       '</div><span class="badge ' + e.status + '">' + e.status.replace('_', ' ') + '</span></div>' +

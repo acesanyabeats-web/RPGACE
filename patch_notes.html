@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌌 Aug 13 (same day, 13th pass) — Galaxy Map crowding fixed, <code>future_integrations.html</code>'s repeated staleness bug closed at the root, and the real <code>/perspective</code>↔<code>error_log</code>↔<code>/colourgradient</code> purple tie-together.</div>
+    <div class="card-body">
+      Three real, separate fixes in one pass. <strong>Crowding</strong>: `galaxy_map.py`'s harness/connector angles had real, objective collisions (Whisper and Self-Awareness sat exactly colinear from center) — moved OpenMontage the connector into a local cluster next to OpenMontage CC (removing the single biggest clutter source, a long diagonal line crossing the whole canvas), widened the harness/provider fan for legibility, split the generic connector ring into 2 buffered arcs, and repositioned Supabase near the galaxies it actually writes to instead of directly opposite them. Verified via 4 rounds of real screenshots.
+      <br><br>
+      <strong>Staleness</strong>: Alex caught G2 showing "PLANNED" in <code>future_integrations.html</code> for hours after it had actually gone green in <code>ceo_plan_items</code> — a real, repeated instance of "why doesn't every push update the docs." Root-caused and fixed structurally: the Galaxy Map plan's cards are now LIVE-rendered from <code>ceo_plan_items</code> on page load (same real Supabase-fetch pattern <code>error_log.html</code>/<code>smoke_test.html</code> already use), verified against real production data via a Node harness replay since this sandbox's own network can't reach Supabase (same standing landmine as the Lighthouse note).
+      <br><br>
+      <strong>Purple tie-together</strong>: <code>error_log</code> gained a stable <code>error_code</code> column; <code>/perspective</code> and <code>/paranoia</code> now both route a confirmed regression through the same real detector→record→status-signal chain (never re-derived twice); <code>oracleDevBridge</code>'s "Flag for Claude Code" button renamed to "Flag to Orchestrator CC" since Total Systems now has 3 real Claude Code sessions. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code> (12th pass).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🗺️ Aug 13 (same day, 12th pass) — real terminology fix: a river is a grouping label, not an actor.</div>
     <div class="card-body">
       Alex's direct correction: "no RPGACE river is the group in which the caller exists, no the river itself, it just an overarching group for me to understand in terms that both me and RPGACE total systems can communicate in so /misunderstanding becomes less frequent." Real evidence check found the exact slip: <code>system_map_spec.md</code> §1 listed <code>river↔river</code> as a peer edge type alongside real actor-to-actor edges, and §6 said "a river flowing into River XIV" — both implied a river itself could be the source/target of a real relationship.

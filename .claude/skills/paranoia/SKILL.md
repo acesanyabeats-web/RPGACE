@@ -93,6 +93,23 @@ from what actually happened (not recalled from memory), and an
 independent Truth Check on the final /Summary before it's handed to
 Alex as fact.
 
+## Real tie-in, Aug 13 — when a /paranoia pass finds a regression
+
+Step 2 and Step 5 both gather real evidence against live code/Supabase/
+deployment state — if that evidence contradicts an EXISTING `/perspective`
+baseline (`perspective_reports.expected_behavior`) for the scope being
+scrutinized, that's not just a finding for the Step 6 `/Summary` — it's a
+real regression, and it routes through the exact same mechanism
+`/perspective`'s own Step 5 defines: a stable `error_code`, a real
+`error_log` row (rationale + backtrack_note), and — if the scope had a
+`ceo_plan_items` row that was genuinely green — a flip to `/colourgradient`
+purple. `/paranoia` never re-derives this routing itself (rule 8); it
+defers to `/perspective`'s own procedure the moment it recognizes the
+shape. Named explicitly here because Alex's own real ask ("this could be
+paired with /perspective and /paranoia... any difference... highlights as
+purple if broken now") means a `/paranoia` pass is a real, valid SOURCE of
+a purple finding, not just `/perspective` running standalone.
+
 ## Guardrails
 
 - **This is genuinely the heaviest protocol in the project — heavier

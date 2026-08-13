@@ -108,20 +108,9 @@
     </div>
   </div>
 
-  <div class="group">
-    <div class="group-label">Dev process — <code>/perspective</code> skill <span class="n">1 idea</span></div>
-    <div class="card blue">
-      <div class="card-title">G11 — /perspective full sweep, everything Alex controls<span class="badge blue">IDEA</span></div>
-      <div class="card-body">Alex's own extension, same day the skill shipped: "would it also be possible to make /perspective also work on everything i have control over in RPGACE total system, so i get all nuances, even the smallest ones getting flagged and logged." Tier A (the 4 galaxies + 17 harness/provider/connector nodes) is real and green — see <code>perspective_reports</code>, 21 rows. Tier B (the 16 rivers) is the real near-term next step. Tier C/D (52 rpgace_core.js modules, 240+ main.js functions, 93 index.html onclick handlers) is genuinely large multi-session work — real plan is opportunistic coverage (write a report for whatever's already being touched that session), never a blind exhaustive pass in one go.</div>
-    </div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">Product readiness — Consumer/Developer split <span class="n">1 idea</span></div>
-    <div class="card blue">
-      <div class="card-title">G9 — Consumer/Developer visibility tiering<span class="badge blue">IDEA</span></div>
-      <div class="card-body">A real <code>visibility</code> tag (<code>developer</code>/<code>consumer</code>) so RPGACE's own oversight/dev-process detail can be hidden from a future end user once RPGACE is scoped as a market-facing product. Real Alex correction, Aug 13: reclassified from Red to Blue — "it is way further down the line when rpgace is scoped for consumers and it is a ready product," not a near-term plan. The rule is written (<code>system_map_spec.md</code> §7); the tagging-granularity recommendation (per-doc vs. per-section vs. per-row) stays flagged here too, same commitment level, until that day actually arrives.</div>
-    </div>
+  <div class="group" id="cpi-live-blue-wrap" style="display:none">
+    <div class="group-label">🌌 RPGACE Total Systems Galaxy Map <span class="n">live from ceo_plan_items</span></div>
+    <div id="cpi-live-blue"></div>
   </div>
 
   <div class="group">
@@ -148,14 +137,8 @@
 
   <div class="plan-group">
     <div class="plan-label">🌌 RPGACE Total Systems Galaxy Map — ratified /CEO plan</div>
-    <div class="plan-sub">Ratified Aug 13 (<code>ceo_plans.basis='ratified'</code>). A drill-down, Assassin's Creed-Valhalla-styled graphify/Obsidian visualization of RPGACE Total Systems, promoted to a real second truth source alongside Tier (b), feeding a planned trickle-down/up integration-suggestion system into <code>/CEO</code> Loop 2. <strong>G1 already shipped — not shown here, it graduated to green</strong> (see <code>graphify_river_group.py</code>'s real edge interaction-type taxonomy). 7 real items below, each its own explained step. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code>.</div>
-    <div class="card red"><div class="card-title">G2 — Level-0 Galaxy View<span class="badge red">PLANNED</span></div><div class="card-body">The top-level galaxies only (Orchestrator CC / OpenMontage CC as the real RPGACE↔OpenMontage connector / Graphify CC / external providers / RPGACE Architecture), styled per the reference image, reusing <code>taxonomy_map.html</code>'s real circle-pack/click-to-drill precedent.</div></div>
-    <div class="card red"><div class="card-title">G3 — Level-1 drill-down<span class="badge red">PLANNED</span></div><div class="card-body">RPGACE Architecture galaxy → the 16 real rivers, radial view, reusing <code>RIVER_MODULES</code>/<code>RIVER_FLOWS</code> data directly, click-through from G2.</div></div>
-    <div class="card red"><div class="card-title">G4 — Level-2 drill-down<span class="badge red">PLANNED</span></div><div class="card-body">A river → its real tagged functions/nodes (<code>graph.json</code>'s 955 river-tagged nodes) — the literal "minotaur logic" breakdown.</div></div>
-    <div class="card red"><div class="card-title">G5 — Oversight-connection representation<span class="badge red">PLANNED</span></div><div class="card-body">A visually distinct connector class showing each level's real flow into Oversight docs, reusing <code>minotaur_map.html</code>'s existing river-flow-next data.</div></div>
-    <div class="card red"><div class="card-title">G6 — Truth-source promotion<span class="badge red">PLANNED</span></div><div class="card-body">Real doc updates formally declaring the galaxy map's new role as a second real truth source read by Alex (with Tier a) and this session (with Tier b) — not merely derived from them.</div></div>
-    <div class="card red"><div class="card-title">G7 — Trickle-down/up suggestion-and-error report system<span class="badge red">PLANNED</span></div><div class="card-body">The largest, most open item: detect a real upstream/downstream change, cross-reference against the galaxy map + Tier (b) for integration friction, generate real suggestions, compile into a report Alex reviews. Needs its own <code>/interrogation</code> pass before it's buildable.</div></div>
-    <div class="card red"><div class="card-title">G8 — /CEO Loop 2 wiring<span class="badge red">PLANNED</span></div><div class="card-body">Every future plan item's build passes through colourgradient status, then the galaxy-map/Tier(b) cross-check, then <code>/drift</code> verification — formalizing the standing discipline this plan itself was ratified under.</div></div>
+    <div class="plan-sub">Ratified Aug 13 (<code>ceo_plans.basis='ratified'</code>). A drill-down, Assassin's Creed-Valhalla-styled graphify/Obsidian visualization of RPGACE Total Systems, promoted to a real second truth source alongside Tier (b), feeding a planned trickle-down/up integration-suggestion system into <code>/CEO</code> Loop 2. <strong>Real Aug 13 fix (3rd pass) — the cards below are now LIVE-rendered from <code>ceo_plan_items</code> on every page load, never hand-typed status</strong>: this section used to show G2 as "PLANNED" for hours after it had actually gone green in the database — a real, repeated staleness bug Alex caught directly ("why is it that every update and push, not all oversight contents and docs update to have true information"). A hand-authored snapshot can always be forgotten to re-sync; a live fetch against the same table `/colourgradient` itself reads from cannot go stale this way again. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code>.</div>
+    <div id="cpi-live-red-galaxy_map">Loading live plan status from Supabase…</div>
   </div>
 
   <div class="group">
@@ -191,6 +174,11 @@
   <div class="section-eyebrow">🟡 Yellow — Genuinely Mid-Build</div>
   <div class="section-title" style="font-size:20px">Real code exists, incomplete or unwired</div>
 
+  <div class="group" id="cpi-live-yellow-wrap" style="display:none">
+    <div class="group-label">🌌 RPGACE Total Systems Galaxy Map <span class="n">live from ceo_plan_items</span></div>
+    <div id="cpi-live-yellow"></div>
+  </div>
+
   <div class="group">
     <div class="group-label">River III — The Oracle Current · External: Moonshot AI / OpenAI <span class="n">1 item</span></div>
     <div class="card yellow"><div class="card-title">A10 — Oracle-as-orchestrator via Kimi/Luna<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real server-side scaffold live in <code>api/oracle.js</code> (<code>provider:'kimi'|'luna'</code>) — dormant by design, zero client call sites wired, no live key configured, no benchmark run against Claude yet. The single clearest Yellow example in the project right now.</div></div>
@@ -200,12 +188,69 @@
 <div class="section" id="purple">
   <div class="section-eyebrow">🟣 Purple — Regressed</div>
   <div class="section-title" style="font-size:20px">Used to work, real evidence now shows it broken</div>
-  <p class="section-sub" style="margin-bottom:16px">Added Aug 13 2026, real Alex ask. Empty by design until a real <code>/colourgradient</code> pass finds an actual regression — never pre-populated with a guess. Each real purple finding also gets a row in <code>error_log.html</code>; check there too for the full fix-attempt history once one exists.</p>
-  <p style="color:var(--dim);font-size:12px;font-style:italic">No real regressions found yet.</p>
+  <p class="section-sub" style="margin-bottom:16px">Added Aug 13 2026, real Alex ask. Empty by design until a real <code>/colourgradient</code>, <code>/perspective</code>, or <code>/paranoia</code> pass finds an actual regression against a real prior baseline — never pre-populated with a guess. Each real purple finding also gets a row in <code>error_log.html</code> (with an <code>error_code</code>, Aug 13 3rd pass) explaining what broke and how to possibly fix it; check there too for the full fix-attempt history once one exists.</p>
+  <div id="cpi-live-purple-wrap" style="display:none">
+    <div class="group-label">🌌 RPGACE Total Systems Galaxy Map <span class="n">live from ceo_plan_items</span></div>
+    <div id="cpi-live-purple"></div>
+  </div>
+  <p id="purple-empty-note" style="color:var(--dim);font-size:12px;font-style:italic">No real regressions found yet.</p>
 </div>
 
 <hr>
-<p style="font-size:11px;color:var(--dim)">This doc is a snapshot, regenerated by hand whenever a real /colourgradient, /paranoia, or /drift pass finds a status change — not auto-live. Cross-reference <code>ceo_plan_items</code> in Supabase for the real, queryable version of the same data. First built Aug 11 2026 as part of the /CEO framework's Grounded Mode + Supabase datasheet extension.</p>
+<p style="font-size:11px;color:var(--dim)">The 🌌 Galaxy Map plan's own cards on this page are live-rendered from <code>ceo_plan_items</code> on every load (Aug 13, 3rd pass — real fix for a repeated staleness bug) — everything else is a snapshot, regenerated by hand whenever a real /colourgradient, /paranoia, or /drift pass finds a status change. Cross-reference <code>ceo_plan_items</code> in Supabase for the real, queryable version of the same data. First built Aug 11 2026 as part of the /CEO framework's Grounded Mode + Supabase datasheet extension.</p>
+
+<script>
+(function(){
+  var SB_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
+  var SB_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+  var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+  var BADGE_LABEL = { blue: 'IDEA', red: 'PLANNED', yellow: 'MID-BUILD', purple: 'REGRESSED' };
+  function cardHTML(it) {
+    var body = (it.last_verdict || it.title || '').slice(0, 420);
+    if ((it.last_verdict || '').length > 420) body += '…';
+    return '<div class="card ' + it.status + '"><div class="card-title">' + esc(it.item_code) + ' — ' + esc(it.title) +
+      '<span class="badge ' + it.status + '">' + (BADGE_LABEL[it.status] || it.status.toUpperCase()) + '</span></div>' +
+      '<div class="card-body">' + esc(body) + '</div></div>';
+  }
+  fetch(SB_URL + '/rest/v1/ceo_plans?basis=eq.ratified&select=id,name', { headers: HEADERS })
+    .then(function(r) { return r.json(); })
+    .then(function(plans) {
+      if (!plans || !plans.length) throw new Error('no ratified plans');
+      var ids = plans.map(function(p) { return p.id; }).join(',');
+      return fetch(SB_URL + '/rest/v1/ceo_plan_items?plan_id=in.(' + ids + ')&status=neq.green&select=*&order=item_code.asc', { headers: HEADERS })
+        .then(function(r) { return r.json(); });
+    })
+    .then(function(items) {
+      items = items || [];
+      var redEl = document.getElementById('cpi-live-red-galaxy_map');
+      var redItems = items.filter(function(i) { return i.status === 'red'; });
+      if (redEl) redEl.innerHTML = redItems.length ? redItems.map(cardHTML).join('') : '<p style="color:var(--dim);font-size:12px;font-style:italic">No real ratified-plan items are currently Red.</p>';
+
+      ['blue', 'yellow', 'purple'].forEach(function(status) {
+        var group = items.filter(function(i) { return i.status === status; });
+        var wrap = document.getElementById('cpi-live-' + status + '-wrap');
+        var target = document.getElementById('cpi-live-' + status);
+        if (group.length && wrap && target) {
+          target.innerHTML = group.map(cardHTML).join('');
+          wrap.style.display = '';
+          if (status === 'purple') {
+            var note = document.getElementById('purple-empty-note');
+            if (note) note.style.display = 'none';
+          }
+        }
+      });
+    })
+    .catch(function(e) {
+      var redEl = document.getElementById('cpi-live-red-galaxy_map');
+      if (redEl) redEl.innerHTML = '<p style="color:var(--dim);font-size:12px;font-style:italic">Could not load live plan status from Supabase: ' + esc(e.message) + '</p>';
+    });
+})();
+</script>
 
 </div>
 </body>

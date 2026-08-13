@@ -1298,3 +1298,125 @@ was purely in how the RULE was worded, not in what was actually built.
 **/drift**: VERDICT on track, BASIS provisional-becomes-ratified (a
 real, direct correction from Alex in this exact conversation). No
 further gap — `python3 -m py_compile` clean on `graphify_river_group.py`.
+
+================================================================
+SAME DAY, 12TH PASS — real crowding fix to galaxy_map.py + a real,
+recurring future_integrations.html staleness bug closed at the root +
+the /perspective<->error_log<->/colourgradient purple tie-together,
+plus a real Flag-for-Claude-Code -> Flag-to-Orchestrator-CC rename
+================================================================
+
+**Part 1 — galaxy_map.py crowding, real Alex ask: "make it so that
+interacting groups stay closer to make a less cluttered visual."**
+Real, objective bugs found by direct angle math, not just subjective
+clutter: the old harness angles (118/90/150) sat EXACTLY on top of the
+old connector ring's own start/end angles (150/90) — Whisper and
+self_awareness were literally colinear from center, same for the old
+OpenMontage connector and human_gate_alex. Fixed:
+- OpenMontage (the external connector) moved out of the generic ring
+  entirely into a local cluster attached directly to OpenMontage CC's
+  own position (same real precedent as FFmpeg's Aug 13 2nd-pass fix) —
+  this removed the single biggest clutter source, a long diagonal
+  dashed line crossing the whole canvas.
+- Harness cluster (Oracle/self-awareness/Human Gate) widened to
+  radius 195, angles 95/120/145 — real buffer to the galaxy ring (70)
+  and to the generic connector arc (never overlapping again).
+- AI providers fan widened to radius 155, angles 65/100/135 — fixed a
+  real label-overlap regression from an earlier too-tight version
+  (caught via screenshot, not shipped blind).
+- Generic connectors (Composio/librosa/OpenArt/Jina AI/Last.fm/n8n/
+  Whisper) moved from one wraparound ring to 2 explicit arcs (west:
+  Composio/librosa; east: the remaining 5), each with a real buffer
+  from both the galaxy ring and the harness cluster.
+- Supabase repositioned from ~115 (opposite the galaxies it writes to)
+  to angle 8 (close to Graphify CC, 45 apart instead of ~215) — real
+  evidence: 2 of its 4 edges go to OM CC/Graphify CC, both north.
+- The one edge that must stay genuinely long (OpenMontage CC ->
+  Supabase) gets a real, distinct wide bow (offset_mult 5.5 vs 1.4 for
+  the now-short Graphify CC edge) so it arcs around the crowded center
+  instead of slicing through it.
+Verified via 4 rounds of real headless-Chromium screenshots
+(galaxy_v7/v7_full/v8/v9.png) — v9 confirmed clean: no long diagonal
+crossings, no overlapping labels, OpenMontage+FFmpeg visibly grouped
+with their real galaxy. `/impeccable` run per Alex's ask — scoped to
+`index.html`/`style.css` only (confirmed via the skill's own file, not
+guessed), 37 pre-existing findings, none new/regressed from this pass,
+not the target file (`galaxy_map.html` is a generated standalone page
+outside that skill's real scope) — reported honestly rather than
+forced.
+
+**Part 2 — the real future_integrations.html staleness bug, root-caused
+and fixed structurally, not just patched once.** Alex's direct catch:
+G2 showed "PLANNED" (red) in the hand-authored snapshot for hours after
+`ceo_plan_items.status` had genuinely gone green — a real, repeated
+instance of exactly the "why doesn't every push update the docs"
+frustration. Real root cause: this section was hand-authored prose,
+manually re-synced only when someone remembered to — and this session
+had updated `ceo_plan_items` for G2 multiple times without ever going
+back to edit the static HTML. Real, structural fix (not a checklist
+reminder that could be forgotten again): the Galaxy Map plan's own
+cards (previously 7 static `<div class="card red">` blocks) are now
+LIVE-RENDERED from `ceo_plan_items` on every page load, same real
+Supabase anon-key fetch pattern `error_log.html`/`smoke_test.html`
+already use successfully in production. A small inline `<script>`
+fetches ratified plans -> their non-green items -> groups by status ->
+injects into whichever of #blue/#red/#yellow/#purple actually matches
+the LIVE status, hiding an empty group entirely. Verified two ways
+(this sandbox's own outbound network to Supabase is blocked from
+headless Chromium, same standing landmine as the Lighthouse note — not
+a new finding): (a) `node --check` on the extracted script, (b) a real
+Node harness replaying the exact production `ceo_plan_items` rows
+(queried live this session) through the actual render logic — confirmed
+G2 correctly excluded (green), G3-G7 correctly rendered red, G8 yellow,
+G9/G11 blue, purple correctly stays hidden with its "no regressions"
+note showing. Freeform hand-authored ideas with no `ceo_plan_items` row
+(A2-A15 etc.) are untouched — no live source exists for those, so they
+correctly stay static. Real, honest limitation stated in the file's own
+footer text now, replacing the old blanket "regenerated by hand...
+not auto-live" claim (which was itself the thing that misled Alex).
+
+**Part 3 — the /perspective <-> error_log <-> /colourgradient purple
+tie-together, Alex's own explicit ask, /paranoia+/CEO with /drift+
+/Engineer as advisors.** Real, concrete build, not just a design note:
+- `error_log.error_code` (new column, additive migration) — a real,
+  stable per-scope identifier (`PERSPECTIVE-<SCOPE_ID>-<NN>`) so "even
+  the smallest function or step" gets something citable once it's ever
+  misbehaved, exactly Alex's own framing.
+- `.claude/skills/perspective/SKILL.md` Step 5 rewritten with the real
+  concrete procedure: a fresh `/perspective` check (or a `/paranoia`
+  pass touching an existing baseline) is the DETECTOR, `error_log` is
+  the RECORD, `/colourgradient` purple is the STATUS SIGNAL — each one
+  read once, never re-derived (rule 8). `backtrack_note` explicitly
+  doubles as the "how to possibly fix it" text the purple card shows,
+  rather than writing that diagnosis twice.
+- `.claude/skills/paranoia/SKILL.md` gained a real, named tie-in
+  section: a `/paranoia` pass that finds a regression against a real
+  `/perspective` baseline routes through the exact same mechanism,
+  never a second, competing one.
+- `.claude/skills/colourgradient/SKILL.md`'s purple bullet updated to
+  cite `error_code` + the shared `backtrack_note`-as-fix-explanation
+  convention.
+- **Real, honest boundary stated explicitly, not glossed over**: the
+  MECHANICAL parts (the column, the fetch/render pipeline) are real and
+  live; the JUDGMENT parts (deciding something actually regressed,
+  writing the real rationale/backtrack_note, generating the code) are
+  NOT automated — a session does this for real each time, same standing
+  boundary `error_log.html`'s own doc already states. Oracle-side
+  flagging from inside the app does not auto-produce an error_code or
+  purple flip on its own; it queues a suggestion for the next session
+  to actually investigate.
+- **Real rename, same ask's own parenthetical**: `oracleDevBridge`'s
+  "🧪 Flag for Claude Code" button (+ its 2 toast strings) renamed to
+  "🧪 Flag to Orchestrator CC" — Total Systems now has 3 real Claude
+  Code sessions (Orchestrator CC/OpenMontage CC/Graphify CC), so the
+  generic name had gone genuinely ambiguous; this channel
+  (`oracle_dev_suggestions`) has only ever been read by this session,
+  matching CLAUDE.md's own session-start-check convention. `node
+  --check` clean.
+
+**`/drift`**: VERDICT on track, BASIS ratified (all 3 parts trace to
+Alex's own explicit asks this turn). No gap — each part shipped with
+real evidence (screenshots, a Node harness replay against real
+production data, `node --check`), and every genuine limitation (this
+sandbox's own network block, the judgment-vs-mechanical boundary) was
+stated plainly rather than glossed over.
