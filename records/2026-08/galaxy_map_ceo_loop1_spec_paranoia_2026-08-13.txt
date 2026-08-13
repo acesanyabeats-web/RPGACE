@@ -1869,3 +1869,79 @@ updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`,
 `rpgace_core.js` (Oversight popup Level-2 description). `rpgace_core.
 min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
 `?v=20260813i`.
+
+================================================================
+SAME DAY, 20TH PASS — real intra-river module flow + a computed
+terminal marker, and Skills as a real 5th "stream" ring
+================================================================
+
+Alex's real, direct observation on River XI's own diagram: "shouldn't
+these show relationships between each other, then all conjoin
+eventually at content pipeline that is the output i see? all rivers
+at level 2 should either connect output i see on rpgace app visible
+to me, or at an external ai." Follow-up: "the modules are the flows
+of the river, so it makes sense as a river." Then: "i think adding
+skills as a bubble category at all levels would show what skills play
+into which actions and relationships etc," refined by "skills are
+like streams that join the river flow, along with other modules,
+rivers etc... itll look like a slow trickle or spider web... but will
+explain rivers so much better."
+
+**Real evidence gathered first, not built blind**: grepped River XI's
+own 7 module source blocks (real `parse_module_ranges()` reuse,
+rule 8) for literal `RPGACE.modules.X` calls into siblings — found 8
+real edges, all converging on `contentProductionLive` (in-degree 3),
+which is ALSO the exact module the "Content Pipeline" dashboard card's
+own real `via` text cites. Alex's intuition was correct and now has
+real code evidence behind it, not just a visual impression.
+
+**New `compute_intra_river_flow()`** (graphify_river_group.py) runs
+this same grep for all 16 rivers mechanically — found real edges on
+rivers 3, 8, 10, 11 (4 rivers); the rest genuinely have none via this
+method (either single-module rivers where no edge is possible, or a
+real, stated blind spot: RPGACE.hooks-mediated relationships aren't
+literal `.modules.X` calls, invisible to this grep — same class of gap
+graphify's own AST extractor has for `RPGACE.register()` itself,
+stated honestly, not hidden).
+
+**New `compute_river_terminal()`** computes, per river, which module
+the flow actually converges on: an exact `-> X module` citation from a
+DASHBOARD_CARDS entry (real visible-in-app output), real in-degree
+from the flow edges, or a real AI-provider EXTERNAL_RIVER_LINKS
+citation (only pinned to a specific module when `oracleAppGrounding`
+— the real `window.callOracle` wrap — is a real member of that river).
+River III came back 'both' (`oracleAppGrounding`) — a genuinely
+meaningful real result: it's simultaneously the visible Oracle chat
+surface AND the actual external-AI call wrapper. Rivers with no
+computed terminal say so honestly in the legend rather than forcing a
+guess.
+
+**Level 2 wiring**: module bubbles gained real thin flow-edges to each
+other (distinct from the hub-spoke edges), and the terminal module
+gets a 👁️/🤖/👁️🤖 badge plus a bold label and thicker ring.
+
+**Skills as a real 5th ring**: `ALL_SKILLS` (25 real skills, mirrored
+from `ai_tooling_and_rules_map.md`'s own canonical catalog, never
+re-derived) all render as pentagon bubbles around River XIII — its own
+real structural content, no citation needed. `SKILL_SECONDARY_RIVER`
+gives 7 skills (Regeneration, loggingregen, update-logging-system,
+colourgradient, cartographer, impeccable, graphify) one real, CITED
+second tributary into another river, sourced from that skill's own
+already-written description — the remaining 18 are genuinely
+cross-cutting Claude-Code dev-process protocols and stay honestly
+scoped to River XIII alone, never force-mapped elsewhere. River XIII's
+own canvas grew to 1550×1500 (radius 700) specifically to fit 25 real
+nodes without label collision — verified visually, not assumed.
+
+**Real verification**: headless-Chromium pass on River XI (flow +
+terminal, the concrete example Alex was looking at) and River XIII
+(the 25-skill density stress case) — zero console errors on both, all
+5 rings render simultaneously and legibly, div/svg/a/polygon-balance
+clean on all 3 regenerated files (L2: 252/252/16/16/52/52/46 polygons).
+
+**`ceo_plan_items` G4** got a real appended verdict note (again
+extends G4's own exact scope, no new G-item invented). **Oversight
+updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`,
+`rpgace_core.js` (Oversight popup Level-2 description). `rpgace_core.
+min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
+`?v=20260813j`.

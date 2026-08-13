@@ -438,6 +438,42 @@ for _l in EXTERNAL_RIVER_LINKS:
     for _r in _l['rivers']:
         LINKS_BY_RIVER.setdefault(_r, []).append(_l)
 
+# Real, sourced skill catalog — Aug 13, real Alex ask: "adding skills
+# as a bubble category at all levels would show what skills play into
+# which actions and relationships," followed by his own real framing:
+# "skills are like streams that join the river flow, along with other
+# modules, rivers etc." Full real list mirrored from
+# ai_tooling_and_rules_map.md's own canonical catalog (never re-
+# derived — that doc is the source; this is a presentation mirror,
+# same discipline as EXTERNAL_CONNECTORS/DASHBOARD_CARDS). River XIII
+# (Skills) is these skills' own real home river — ALL of them are real
+# "streams" feeding it, no citation needed beyond "this is what River
+# XIII structurally contains." A handful ALSO get a real, SECOND
+# tributary into one other specific river — but only where that
+# skill's own already-written description explicitly names that
+# river/table/doc (same discipline as EXTERNAL_RIVER_LINKS — never
+# guessed in). The rest are real, genuinely cross-cutting Claude-Code
+# dev-process protocols (they govern HOW this session builds RPGACE,
+# not a specific river of the running app) and stay honestly scoped to
+# River XIII alone, not force-mapped elsewhere.
+ALL_SKILLS = [
+    'Engineer', 'Regeneration', 'restructure', 'free-for-all-debate',
+    'loggingregen', 'scope', 'debate', '5thDimension', 'Routine',
+    'Summary', 'Bedtime', 'impeccable', 'interrogation', 'paranoia',
+    'investor', 'update-logging-system', 'drift', 'CEO', 'colourgradient',
+    'decompress', 'misunderstanding', 'cartographer', 'perspective',
+    'omnitrix', 'graphify',
+]
+SKILL_SECONDARY_RIVER = {
+    'Regeneration': (6, "Sweeps the whole taxonomy tree and the Phylum Path pipeline"),
+    'loggingregen': (14, "Regenerates ONE oversight doc at a time against its own stated role"),
+    'update-logging-system': (14, "Names SELF_KNOWLEDGE and skill .md files as required-artifact targets"),
+    'colourgradient': (14, "Only green routes to the real oversight docs; everything else routes to future_integrations.html"),
+    'cartographer': (14, "Baseline Reconciliation cross-references Tier (b) docs, feeding smoke_test.html real suggestions"),
+    'impeccable': (16, "Runs a real design-pattern scan against index.html/style.css, the dev-tooling scan layer"),
+    'graphify': (16, "The actual scripts (graphify_river_group.py etc.) that generate this graph and the Obsidian vault themselves"),
+}
+
 # Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
 # connectors (Aug 6 restructure pass) — never guessed. Each entry: real
 # source river number -> list of (target label, real condition/note).
@@ -616,6 +652,86 @@ def parse_module_ranges(core_js_path: Path):
             ranges[stack[0]] = (stack[1], i)
             stack = None
     return ranges
+
+
+def compute_intra_river_flow(core_js_path: Path = CORE_JS):
+    """Real, mechanical module-to-module call edges WITHIN each river —
+    Aug 13, real Alex ask/observation: "these should show relationships
+    between each other, then all conjoin eventually at [a real visible
+    output]... the modules are the flows of the river, so it makes
+    sense as a river." Reuses parse_module_ranges() (rule 8, not
+    re-parsed) — for each river's own module set, greps each module's
+    real source block for a literal `RPGACE.modules.<sibling>` call.
+    Real, honest scope limit stated plainly, not hidden: this only
+    catches DIRECT calls; a relationship carried through
+    RPGACE.hooks.fire()/shared Supabase state (real, but dynamic-
+    dispatch, same confirmed extraction blind spot graphify's own AST
+    extractor has for RPGACE.register()) is invisible to this method
+    and simply won't show an edge — an absence here is not proof no
+    real relationship exists, only that no DIRECT call was found.
+    Returns {river_num: [(from_module, to_module), ...]}."""
+    ranges = parse_module_ranges(core_js_path)
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    flows = {}
+    for rnum, mods in RIVER_MODULES.items():
+        edges = []
+        for m in mods:
+            if m not in ranges:
+                continue
+            s, e = ranges[m]
+            block = '\n'.join(lines[s - 1:e])
+            for other in mods:
+                if other == m or other not in ranges:
+                    continue
+                if re.search(r'RPGACE\.modules\.' + re.escape(other) + r'\b', block):
+                    edges.append((m, other))
+        if edges:
+            flows[rnum] = edges
+    return flows
+
+
+def compute_river_terminal(rnum, flow_edges):
+    """Real, computed 'where does this river's own module flow actually
+    land' marker — Alex's own "conjoin eventually at [a visible output]"
+    ask. A module is a real UI terminal if a DASHBOARD_CARDS entry's own
+    `via` text names it as its exact single real target (never guessed
+    — only an unambiguous literal citation counts), OR it has real
+    in-degree > 0 from compute_intra_river_flow() (other real modules in
+    this river call directly INTO it). A module is a real AI terminal if
+    it's cited by an EXTERNAL_RIVER_LINKS entry whose own name matches a
+    real AI provider (Anthropic/Kimi/Luna) for this same river. Returns
+    (module_or_None, kind) where kind in {'ui','ai','both',None} — None
+    is a real, honest gap, never forced to a guess."""
+    edges = flow_edges.get(rnum, [])
+    indeg = {}
+    for _f, t in edges:
+        indeg[t] = indeg.get(t, 0) + 1
+    # exact single-module dashboard-card citation (only unambiguous ones)
+    ui_module = None
+    for c in CARDS_BY_RIVER.get(rnum, []):
+        via = c.get('via', '')
+        m = re.search(r'->\s*(\w+)\s+module\b', via)
+        if m and m.group(1) in RIVER_MODULES.get(rnum, []):
+            ui_module = m.group(1)
+            break
+    if not ui_module and indeg:
+        ui_module = max(indeg, key=indeg.get)
+    ai_module = None
+    ai_names = {'Anthropic (Claude API)', 'Moonshot AI (Kimi)', 'OpenAI (Luna)'}
+    if any(l['name'] in ai_names for l in LINKS_BY_RIVER.get(rnum, [])):
+        # real, narrow heuristic: the module cited by the AI-mediating
+        # skill panel (oracleAppGrounding, the actual window.callOracle
+        # wrap) if it's a real member of this river; else no specific
+        # module, just "this river has a real AI connection" (still
+        # honest, just not module-pinpointed)
+        ai_module = 'oracleAppGrounding' if 'oracleAppGrounding' in RIVER_MODULES.get(rnum, []) else None
+    if ui_module and ai_module and ui_module == ai_module:
+        return (ui_module, 'both')
+    if ui_module:
+        return (ui_module, 'ui')
+    if ai_module:
+        return (ai_module, 'ai')
+    return (None, None)
 
 
 def line_of(node):

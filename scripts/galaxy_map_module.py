@@ -51,6 +51,33 @@ outermost ring — one hexagon per real external connector — visually
 distinct (a fixed accent color, not a river's own) from every other
 ring so "external infrastructure" always reads as a different KIND of
 thing than a module, a card, or another river.
+
+**Aug 13, later pass still — real intra-river module flow + terminal
+marker + a 5th "skill streams" ring, per Alex's direct observation and
+ask.** He noticed River XI's own modules looked like isolated spokes:
+"shouldn't these show relationships between each other, then all
+conjoin eventually at [a real visible output]... the modules are the
+flows of the river, so it makes sense as a river."
+`compute_intra_river_flow()` (new, `graphify_river_group.py`) greps
+each real module's own source block for a literal call into a sibling
+— genuine code evidence, not invented — drawn as real edges between
+module bubbles. `compute_river_terminal()` then identifies which
+module the flow actually converges on: a real dashboard-card citation,
+real in-degree, or a real AI-provider link (`oracleAppGrounding`,
+River III) — marked with a 👁️/🤖/👁️🤖 badge. A river with no computed
+terminal says so honestly (a real, stated blind spot: RPGACE.hooks-
+mediated relationships aren't literal `RPGACE.modules.X` calls, so
+they're invisible to this grep — same confirmed gap class graphify's
+own AST extractor already has for `RPGACE.register()`).
+
+Then Alex's own framing for skills: "skills are like streams that join
+the river flow, along with other modules, rivers etc." A real 5th
+ring — River XIII gets its own full real catalog (25 skills, its
+genuine structural content); a handful of other rivers get one real,
+CITED skill each (`SKILL_SECONDARY_RIVER`, sourced from that skill's
+own already-written description, never guessed) — the rest are real,
+genuinely cross-cutting Claude-Code dev-process protocols that stay
+honestly scoped to River XIII alone.
 """
 import math
 import sys
@@ -61,10 +88,16 @@ from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon  # n
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
-    EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER,
+    EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminal,
+    ALL_SKILLS, SKILL_SECONDARY_RIVER,
 )
 
 OUT = Path('graphify-out/galaxy_map_module.html')
+
+# Real, computed once (not per-section — re-reading rpgace_core.js 16
+# times would be wasteful): the actual module-to-module call edges
+# within every river, per Alex's own Aug 13 ask.
+FLOW_EDGES = compute_intra_river_flow()
 
 # G5, Aug 13 (system_map_spec.md §6): "every level of this hierarchy
 # that has a real, standing connection into Oversight represents that
@@ -88,10 +121,25 @@ CARD_ICON_FALLBACK = '🎯'
 
 
 EXTERNAL_COLOR = '#5FB3D9'  # same family as Supabase's Level-0 accent — "external infra," not a river's own color
+SKILL_RIVER = 13  # River XIII — Skills' own real home; every real skill is a stream feeding it
 
 
 def build_river_section(rnum):
-    W, H = 1200, 1150
+    # Real, sourced skill "streams" — Alex's own framing: "skills are
+    # like streams that join the river flow." River XIII genuinely
+    # contains ALL of them (no citation needed — that's its real
+    # structural role); a few others get one real, CITED secondary
+    # skill each (SKILL_SECONDARY_RIVER, sourced not guessed).
+    if rnum == SKILL_RIVER:
+        skills_here = [(s, None) for s in ALL_SKILLS]
+    else:
+        skills_here = [(s, note) for s, (r, note) in SKILL_SECONDARY_RIVER.items() if r == rnum]
+    # River XIII's own real skill count (25) needs real extra canvas
+    # room — every other river stays the standard size.
+    if rnum == SKILL_RIVER:
+        W, H = 1550, 1500
+    else:
+        W, H = 1200, 1150
     cx, cy = W / 2, H / 2
     color = RIVER_COLOR[rnum]
     river_label = RIVER_NAME[rnum]
@@ -110,17 +158,42 @@ def build_river_section(rnum):
     )
 
     # --- real registered modules, inner ring ---
+    term_module, term_kind = compute_river_terminal(rnum, FLOW_EDGES)
     n_mods = len(mods) or 1
     mod_radius = 230
+    mod_pos = {}
     for i, m in enumerate(mods):
         ang = -90 + (360 * i / n_mods)
         mx, my = polar(cx, cy, mod_radius, ang)
+        mod_pos[m] = (mx, my)
         edges_svg.append(_curved_edge(cx, cy, mx, my, color, real=True, r1=40, r2=22))
+        is_term = (m == term_module)
+        term_badge = ''
+        if is_term:
+            term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(term_kind, '')
+            term_badge = f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="12">{term_icon}</text>'
+        ring_w = '3.5' if is_term else '2'
+        weight_attr = ' font-weight="700"' if is_term else ''
         nodes_svg.append(
-            f'<g class="node"><circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="2" filter="url(#glow)"/>'
+            f'{term_badge}<g class="node"><circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="{ring_w}" filter="url(#glow)"/>'
             f'<text x="{mx}" y="{my+5}" text-anchor="middle" font-size="14">{MODULE_ICON}</text></g>'
-            f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}">{m}</text>'
+            f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
         )
+
+    # --- Aug 13, real Alex ask/observation: "these should show
+    # relationships between each other, then all conjoin eventually at
+    # [a real visible output]... the modules are the flows of the
+    # river, so it makes sense as a river." Real, mechanical, code-
+    # derived edges (compute_intra_river_flow(), never hand-authored)
+    # drawn directly between module bubbles, distinct from the hub-
+    # to-module spokes above (thinner, no glow, so the hub structure
+    # stays legible underneath the real flow lines).
+    for frm, to in FLOW_EDGES.get(rnum, []):
+        if frm in mod_pos and to in mod_pos:
+            fx, fy = mod_pos[frm]
+            tx, ty = mod_pos[to]
+            edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, r1=22, r2=22, offset_mult=1.6))
+            edge_colors_used.add(color)
 
     # --- real dashboard cards, outer ring, visually distinct (dashed
     # square-ish diamond, gold accent) — genuinely a different node
@@ -216,12 +289,41 @@ def build_river_section(rnum):
             f'<text x="{ex}" y="{ey+32}" text-anchor="middle" font-size="8.5" fill="{EXTERNAL_COLOR}">{link["name"]}</text>'
         )
 
+    # --- Aug 13, real Alex ask: "skills are like streams that join the
+    # river flow." A real 5th ring — pentagons, River XIII's own real
+    # amber accent (RIVER_COLOR[13], the color that already represents
+    # "Skills" thematically). River XIII gets its full real list (25
+    # skills, its own genuine structural contents); a handful of other
+    # rivers get one real, cited skill each (SKILL_SECONDARY_RIVER).
+    skill_radius = 700 if rnum == SKILL_RIVER else 560
+    n_skills = len(skills_here) or 1
+    skill_color = RIVER_COLOR[SKILL_RIVER]
+    for i, (skill, note) in enumerate(skills_here):
+        ang = -90 + (360 * i / n_skills)
+        skx, sky = polar(cx, cy, skill_radius, ang)
+        edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17))
+        edge_colors_used.add(skill_color)
+        pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
+        nodes_svg.append(
+            f'<g class="node">'
+            f'<polygon points="{pts5}" fill="#0f0f1a" stroke="{skill_color}" stroke-width="2" filter="url(#glow)"/>'
+            f'<text x="{skx}" y="{sky+4}" text-anchor="middle" font-size="10">🧵</text></g>'
+            f'<text x="{skx}" y="{sky+30}" text-anchor="middle" font-size="8" fill="{skill_color}">/{skill}</text>'
+        )
+
     legend = (f'<p class="rlegend-role">{RIVER_ROLE_NOTE.get(rnum, "")}</p>'
               if RIVER_ROLE_NOTE.get(rnum) else '')
     if rnum == OVERSIGHT_RIVER:
         legend += '<p class="rlegend-role">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI.</p>'
     elif rnum in OVERSIGHT_FEEDERS:
         legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</p>'
+    if term_module:
+        reason = {'ui': 'a real, visible output you\'d actually see in the app',
+                   'ai': 'a real, direct connection to an external AI provider',
+                   'both': 'both a real visible output AND a real external-AI connection'}[term_kind]
+        legend += f'<p class="rlegend-role">🎯 Real terminal: <code>{term_module}</code> — {reason}.</p>'
+    elif mods:
+        legend += '<p class="rlegend-role">🎯 No computed terminal — a real relationship may still exist through a UI path or RPGACE.hooks dispatch this mechanical check can\'t see (same confirmed blind spot as graphify\'s own AST extractor), not claimed as a real gap in the app itself.</p>'
     mod_list = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '<i>no single-module home — see role note</i>'
     def _card_row(c):
         partial_badge = ' <span class="warn">partial</span>' if c.get('partial') else ''
@@ -247,6 +349,14 @@ def build_river_section(rnum):
     link_list = ''.join(_link_row(link) for link in links) or \
         '<div class="legend-row small"><span class="meta">No real G0 external connector cites this river directly.</span></div>'
 
+    def _skill_row(skill, note):
+        label = f'/{skill}'
+        meta = note or ("River XIII's own real skill catalog — no per-river citation needed, this IS its structural content." )
+        return (f'<div class="legend-row small"><span class="dot" style="background:{skill_color}"></span>'
+                f'<b>{label}</b> <span class="meta">{meta}</span></div>')
+    skill_list = ''.join(_skill_row(s, n) for s, n in skills_here) or \
+        '<div class="legend-row small"><span class="meta">No real skill has a direct, cited relationship with this river.</span></div>'
+
     body = (
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
@@ -259,6 +369,7 @@ def build_river_section(rnum):
         f'<h3>Real dashboard-card entry points</h3>{card_list}</div>'
         f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
         f'<div class="legend"><h3>External connectors (G0) that contribute here</h3>{link_list}</div>'
+        f'<div class="legend"><h3>Skill streams that join this river</h3>{skill_list}</div>'
         f'</section>'
     )
     return body
@@ -310,7 +421,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
   <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules; the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outermost hexagons are real G0 external connectors (Level 0's own galaxies/providers) that have a real, cited relationship to this specific river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river (see that card's own note). A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs).</p>
+  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIII's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs).</p>
 </div>
 
 <div class="tabs">{tabs}</div>
