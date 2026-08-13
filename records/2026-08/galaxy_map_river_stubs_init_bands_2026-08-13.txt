@@ -1,0 +1,154 @@
+GALAXY MAP: RIVER-BOUNDARY FUNCTION STUBS, INIT REMOVAL, RANK-BAND SPLIT
+2026-08-13, real /paranoia+/CEO+/restructure+/drift-checked pass, /Engineer supervising.
+=====================================================================
+
+ALEX'S REAL ASK (verbatim)
+------------------------------
+"now i want it so both ends of river have the next function chaining
+off it unconnected. it should be an indicator of what function is next
+at level 3 when river is switched, with the gateway to level 3. this
+helps understand relationships a bit better too. also i'd say that
+river 3 travels into bookworm where the cog function exists and that
+should show at level 3 for gateway. at level 3, no init should exist.
+the previous change should give indication of what should stand
+instead of init (explain what init is, maybe pair with what comes from
+level 3 function in previous river if it makes sense); also level 3
+looks very crowded, we need to make more levels to make it digestable"
+
+Clarifying question asked (genuine ambiguity — "make more levels"
+could mean several structurally different things, real consequence for
+future work, matched rule 5's own spec-first discipline): rank-band
+sub-pages within Level 3 vs. a real new Level 4 vs. something else.
+Alex confirmed: rank-band sub-pages (my recommendation).
+
+PART 1 — RIVER-BOUNDARY "NEXT FUNCTION" STUBS
+--------------------------------------------------
+Real evidence check FIRST (rule 4), not built on Alex's own worked
+example blind: RIVER III → River IV's own RIVER_FLOWS note reads
+"special prefix diverts the message." compute_cross_module_function_
+calls() confirmed ZERO direct calls from any River III module into
+bookworm — the real mechanism is bookworm's own TRIGGER_PREFIXES /
+window.sendChat wrap, traced to the real function `_patchChatTrigger`
+(grep-confirmed: `window.sendChat = function() {{ ... TRIGGER_PREFIXES
+... }}`). This matches Alex's own "cog function" description (⚙️ icon,
+mid-chain, not entry/leaf).
+
+New real, shared detector (graphify_river_group.py):
+  find_wrap_installer_function(module) — resolves a module's real
+    window.callOracle/sendChat wrap-installer to its specific function
+    name (same WRAP_TARGETS regex compute_intra_river_flow() already
+    uses at membership grain, now resolved to one function, rule 8).
+  attribute_river_connection_function(from_river, to_river, note) —
+    two real, ORDERED signals: (1) a traced compute_cross_module_
+    function_calls() edge between the two rivers' modules (strongest);
+    (2) a real wrap-installer in the target river, GATED on the
+    connection's own note text actually naming a message/prefix
+    mechanism (_WRAP_NOTE_KEYWORDS).
+
+Real over-attribution bug caught testing this (rule 4, not shipped
+blind): signal 2 applied without the note-gate returned bookworm.
+_patchChatTrigger for River II's own "Bookworm page selected"
+connection too — a real navigation click, not a chat-prefix divert.
+Fixed by requiring the note text to actually suggest the mechanism
+before signal 2 fires. Re-verified: River III→IV correctly resolves,
+River II→IV correctly returns no attribution.
+
+Real perf fix found along the way: recomputing compute_cross_module_
+function_calls() per connection made a full 16-river sweep time out
+(120s+). Fixed by accepting a pre-computed list (cross_calls param);
+find_wrap_installer_function() also memoized (44 real modules, result
+never changes within one run). Full sweep now ~7s.
+
+Real, honest coverage across all 25 real RIVER_FLOWS connections: 5
+get a real attribution, 20 honestly show none — never forced.
+
+Shipped in galaxy_map_module.py: a small dashed "🔽 module.function"
+stub next to EVERY river-connection bubble (both IN and OUT — "both
+ends"), deliberately NOT wired into the main flow graph ("unconnected"
+per Alex's own wording — a separate preview annotation, not a 3rd real
+node type), linking to that function's own module Level-3 page when
+real evidence exists.
+
+PART 2 — NO `init` NODE AT LEVEL 3
+---------------------------------------
+compute_function_rank() no longer treats `init` as a forced depth-0
+entry — its own real direct callees become the true depth-0 entries
+instead (any OTHER function with genuinely zero real callers stays a
+real entry too, unchanged). `init` still participates in depth
+computation (so its callees land at the correct depth) but is filtered
+out of rendering entirely. 43 of 44 real Level-3 modules have an
+`init` — a real, meaningful fix, not a one-off.
+
+Legend now explains what init actually is (real bootstrap plumbing —
+boot-task registration, RPGACE.hooks wiring, page:show re-injection —
+never called by real code inside the module, only by RPGACE.register()
+'s own external machinery) whenever a module has one.
+
+Real pairing (Alex's own ask: "maybe pair with what comes from level 3
+function in previous river if it makes sense") — reuses Part 1's exact
+same attribution evidence: a new _incoming_attribution_for_module()
+checks whether any real incoming river connection lands specifically
+on one of THIS module's own functions; if so, that entry gets a real
+"⬅ from River N" badge right on the node — a genuine, evidence-backed
+stand-in for the removed init, not a generic label.
+
+PART 3 — RANK-BAND SUB-PAGES (Alex-confirmed option)
+---------------------------------------------------------
+Real, cheap threshold: modules with >15 real functions get split.
+Verified against real depth-distribution data before building (not
+assumed even) — phylumPath/contentProductionLive/bookworm all spread
+functions across many depth values rather than spiking at one, so
+depth-range banding genuinely reduces node count per view (not just
+theoretically). Bands balanced by real FUNCTION COUNT (not raw depth-
+width) via a greedy accumulation over real depth buckets in order.
+8 of 44 modules banded (beatLog, bookworm, contentProductionLive,
+feynman, intelDelete, phylumPath, taxonomyTree, videoSummary) — the
+other 36 render exactly as before, zero behavior change (real, cheap
+early-return in _split_into_bands() when under threshold).
+
+Real, substantial refactor: build_module_section()'s single-canvas
+logic factored into a new _render_band() helper, called once per band.
+Real cross-band edges (a function in Band 1 calling one in Band 2) are
+NEVER silently dropped — a real dangling "↦ Band N: func" stub at the
+sending band's own right edge, "⬅ Band N: func" at the receiving
+band's own left edge, reusing the exact same visual language as the
+river-connection stub (Part 1) and the existing backdoor gateway (same
+established pattern, not invented fresh — rule 8). Alex bubble,
+backdoor gateways, and the init-pairing badge are all scoped per-band
+(honest — the counts shown reflect what's actually on screen in that
+band, not a global module total).
+
+Real bug caught before shipping: the new band-tab buttons were first
+given the SAME `.tab` class as the existing top-level module switcher.
+The existing JS reads `dataset.target` on every `.tab` click — a band-
+tab only has `dataset.bandTarget`, so sharing the class would have set
+`location.hash = undefined` on every band-tab click, silently breaking
+navigation. Fixed with a distinct `.band-tab` class and its own,
+separate click-handling JS block.
+
+VERIFICATION
+----------------
+All 4 regenerated files: div/svg-balanced (36/36·1/1, 61/61·1/1,
+253/253·16/16, 616/616·59/59). Levels 2 and 3 re-confirmed idempotent
+across fresh process runs. `python3 -m py_compile` clean on every
+touched script. Manually traced the bookworm/_patchChatTrigger example
+end-to-end (River III→IV connection stub, module-level attribution,
+Level-3 incoming-badge pairing) to confirm the real chain of evidence
+holds together, not just that each piece runs without error.
+
+WHAT'S STILL OPEN, NOT SILENTLY CLOSED
+-------------------------------------------
+- No hand-test / headless-Chromium render check this pass (time-scoped,
+  same standing gap as every Aug 13 galaxy-map shipment this session).
+- attribute_river_connection_function()'s signal 2 (wrap-installer) is
+  gated on note-text keywords — a real, cheap heuristic, not a
+  guarantee; a connection whose real note describes a message-diversion
+  mechanism in different words than _WRAP_NOTE_KEYWORDS would honestly
+  show no attribution rather than a false positive (the safer failure
+  direction, deliberately chosen).
+- Band boundaries are chosen once per module at generation time — if
+  RIVER_MODULES/the underlying function set changes materially, bands
+  will be recomputed fresh next regen (no stale caching risk), but a
+  developer editing rpgace_core.js mid-session won't see updated bands
+  until the pipeline re-runs (same standing fact as every other part of
+  this generated-not-hand-authored system).

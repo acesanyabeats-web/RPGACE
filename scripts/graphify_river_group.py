@@ -946,6 +946,98 @@ def compute_module_ui_signal(module_name, core_js_path: Path = CORE_JS):
             'input': any(v['input'] for v in sigs.values())}
 
 
+WRAP_TARGETS = ('callOracle', 'sendChat')
+
+
+_WRAP_INSTALLER_CACHE = {}
+
+
+def find_wrap_installer_function(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-module wrap-installer lookup — Aug 13, built for the
+    "next function at Level 3" river-boundary indicator. Returns the
+    real function name that does `window.callOracle = function`/
+    `window.sendChat = function` inside this module (the same real
+    pattern compute_intra_river_flow()'s own 'wrap' signal already
+    detects at module grain, rule 8 — same WRAP_TARGETS, now resolved
+    to a specific FUNCTION rather than just membership). None if this
+    module doesn't install a wrap.
+
+    Real, module-level memoized (rule 11 — only 44 real modules, result
+    never changes within one script run; found necessary the same pass
+    attribute_river_connection_function() needed its own efficiency
+    fix, same root cause: a bare-file re-read/re-parse per call adds up
+    fast across dozens of connections/modules)."""
+    key = (module_name, str(core_js_path))
+    if key in _WRAP_INSTALLER_CACHE:
+        return _WRAP_INSTALLER_CACHE[key]
+    result = None
+    for fname, body in _function_bodies(module_name, core_js_path).items():
+        for target in WRAP_TARGETS:
+            if re.search(r'window\.' + target + r'\s*=\s*function', body):
+                result = fname
+                break
+        if result:
+            break
+    _WRAP_INSTALLER_CACHE[key] = result
+    return result
+
+
+_WRAP_NOTE_KEYWORDS = ('prefix', 'message', 'chat', 'divert', 'trigger')
+
+
+def attribute_river_connection_function(from_river, to_river, note='', core_js_path: Path = CORE_JS, cross_calls=None):
+    """Real, evidence-gated attribution of WHICH function a river-to-
+    river connection actually lands on — Aug 13, Alex's own direct ask
+    ("both ends of river have the next function chaining off it...
+    river 3 travels into bookworm where the cog function exists").
+    Real evidence check first (rule 4): compute_cross_module_function_
+    calls() found ZERO direct calls from any real River III module into
+    bookworm — the actual mechanism, per RIVER_FLOWS' own note text
+    ("special prefix diverts the message"), is bookworm's own
+    TRIGGER_PREFIXES / window.sendChat wrap (find_wrap_installer_
+    function() resolves this to the real `_patchChatTrigger`).
+
+    Two real, ordered signals — never a guess:
+      1. A real compute_cross_module_function_calls() edge whose source
+         module's river is `from_river` and target module's river is
+         `to_river` — the strongest evidence (a literal traced call).
+      2. Any module in `to_river` with a real wrap-installer function
+         (find_wrap_installer_function()) — the real mechanism behind
+         a "special prefix diverts the message"-shaped RIVER_FLOWS
+         note. Real over-attribution bug caught testing this (rule 4):
+         signal 2 applied blindly returned `_patchChatTrigger` for
+         River II's own "Bookworm page selected" connection too — a
+         real navigation click, not a chat-prefix divert, so that
+         attribution would have been WRONG, not just imprecise. Gated
+         on `note` actually naming a message/prefix-shaped mechanism
+         (_WRAP_NOTE_KEYWORDS) before signal 2 fires at all — an empty
+         or unrelated note correctly returns no attribution rather
+         than reusing whatever wrap function happens to exist.
+    Returns (from_module_or_None, to_module, to_func, real_reason) or
+    None if neither signal finds anything — an honest gap, never
+    fabricated to fill the space.
+
+    `cross_calls`: pass a pre-computed compute_cross_module_function_
+    calls() list when checking many connections in a loop (a real,
+    necessary efficiency fix found testing this against all 16 rivers —
+    the bare function does a full rpgace_core.js re-parse per call, and
+    recomputing it once per connection made a full sweep time out)."""
+    to_mods = RIVER_MODULES.get(to_river, [])
+    from_mods = RIVER_MODULES.get(from_river, [])
+    if cross_calls is None:
+        cross_calls = compute_cross_module_function_calls(core_js_path)
+    for from_mod, from_func, to_mod, to_func in cross_calls:
+        if from_mod in from_mods and to_mod in to_mods:
+            return (from_mod, to_mod, to_func, 'a real, traced direct function call')
+    note_lower = (note or '').lower()
+    if any(kw in note_lower for kw in _WRAP_NOTE_KEYWORDS):
+        for to_mod in to_mods:
+            wrap_fn = find_wrap_installer_function(to_mod, core_js_path)
+            if wrap_fn:
+                return (None, to_mod, wrap_fn, 'a real callOracle/sendChat wrap installer')
+    return None
+
+
 def compute_cross_module_function_calls(core_js_path: Path = CORE_JS):
     """Real, mechanical FUNCTION-level cross-MODULE call detection —
     Aug 13, real Alex ask: "there should also be a back button to river

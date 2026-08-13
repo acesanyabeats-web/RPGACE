@@ -90,7 +90,8 @@ from graphify_river_group import (  # noqa: E402
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminals,
     ALL_SKILLS, SKILL_SECONDARY_RIVER, compute_module_flow_rank, dashboard_card_target_module,
-    LEVEL3_MODULES, compute_module_ui_signal,
+    LEVEL3_MODULES, compute_module_ui_signal, compute_cross_module_function_calls,
+    attribute_river_connection_function,
 )
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
@@ -104,6 +105,12 @@ OUT = Path('graphify-out/galaxy_map_module.html')
 # times would be wasteful): the actual module-to-module call edges
 # within every river, per Alex's own Aug 13 ask.
 FLOW_EDGES = compute_intra_river_flow()
+
+# Real, computed once (rule 11 — a real perf fix found building the
+# river-boundary "next function" stub below: recomputing this per
+# connection made a full 16-river sweep time out). Feeds
+# attribute_river_connection_function()'s own signal 1.
+CROSS_CALLS = compute_cross_module_function_calls()
 
 # G5, Aug 13 (system_map_spec.md §6): "every level of this hierarchy
 # that has a real, standing connection into Oversight represents that
@@ -296,6 +303,46 @@ def build_river_section(rnum):
                     f'<text x="{x}" y="{y+5}" text-anchor="middle" font-size="12">🌊</text></g>'
                     f'<text x="{x}" y="{y+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
                 )
+                # Real "next function at Level 3" preview stub (Aug 13,
+                # Alex's own direct ask: "both ends of river have the
+                # next function chaining off it unconnected... it
+                # should be an indicator of what function is next at
+                # level 3 when river is switched, with the gateway to
+                # level 3"). Deliberately NOT wired into the main flow
+                # graph (edges_svg above already draws the real river-
+                # to-river edge) — this is a separate, dangling preview
+                # annotation, styled distinctly (muted, dashed, smaller)
+                # so it reads as "a look-ahead," not a 3rd node type
+                # competing with real modules/cards. IN connections show
+                # the real function THIS river's own module lands on
+                # (attribute_river_connection_function(other, rnum));
+                # OUT connections show the real function in the TARGET
+                # river's module that this river's own output reaches
+                # (attribute_river_connection_function(rnum, other)) —
+                # honest and gated: only drawn when real evidence exists
+                # (compute_cross_module_function_calls or a real wrap-
+                # installer keyword-matched against the note), never a
+                # guess. See attribute_river_connection_function()'s own
+                # docstring for the real over-attribution bug this
+                # gating fixed before shipping.
+                attr = (attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_CALLS)
+                        if direction == 'in' else
+                        attribute_river_connection_function(rnum, other, note, cross_calls=CROSS_CALLS))
+                if attr:
+                    _from_mod, to_mod, to_func, _reason = attr
+                    sx_ = x + (-70 if direction == 'in' else 70)
+                    sy_ = y + 46
+                    t_rnum = next((r for r, mods in RIVER_MODULES.items() if to_mod in mods), None)
+                    l3_href = f'galaxy_map_level3.html#mod-{to_mod}' if to_mod in LEVEL3_MODULES else None
+                    stub_inner = (
+                        f'<rect x="{sx_-46}" y="{sy_-13}" width="92" height="26" rx="6" fill="#0f0f1a" '
+                        f'stroke="{other_color}" stroke-width="1.3" stroke-dasharray="3,2" opacity="0.8"/>'
+                        f'<text x="{sx_}" y="{sy_+4}" text-anchor="middle" font-size="8" fill="{other_color}" opacity="0.9">🔽 {to_mod}.{to_func}</text>'
+                    )
+                    if l3_href:
+                        nodes_svg.append(f'<a href="{l3_href}" class="drill-link">{stub_inner}</a>')
+                    else:
+                        nodes_svg.append(stub_inner)
         _place_river_col([c for c in conns if c[0] == 'in'], X_IN, 'in', (X_HUB, cy))
 
         # river-identity hub — deliberately added to nodes_svg AFTER the
@@ -654,7 +701,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
   <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIII's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs). <b>🧑 Alex</b> (top, permanent on every river-with-modules section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means that module has at least one real function with DOM/popup-rendering evidence; a dashed line OUT of Alex means at least one real function has button/input-wiring evidence.</p>
+  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIII's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs). <b>🧑 Alex</b> (top, permanent on every river-with-modules section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means that module has at least one real function with DOM/popup-rendering evidence; a dashed line OUT of Alex means at least one real function has button/input-wiring evidence. A small dashed "🔽 module.function" tag next to a river connection bubble is a real preview of the specific Level-3 function that connection actually lands on (real evidence-gated — only shown when a traced function call or a real message-wrap installer was actually found; most connections honestly show none).</p>
 </div>
 
 <div class="tabs">{tabs}</div>

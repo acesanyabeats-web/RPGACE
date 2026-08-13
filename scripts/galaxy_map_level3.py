@@ -44,6 +44,7 @@ from graphify_river_group import (  # noqa: E402
     LEVEL3_MODULES, RIVER_COLOR, RIVER_NAME, RIVER_MODULES,
     parse_module_functions, compute_module_function_flow,
     compute_cross_module_function_calls, compute_function_ui_signals,
+    FLOWS_IN, attribute_river_connection_function,
 )
 
 # Real, shared "Alex" actor color — Aug 13, Alex's own direct ask: "a
@@ -71,6 +72,32 @@ def _owning_river(module_name):
     for rnum, mods in RIVER_MODULES.items():
         if module_name in mods:
             return rnum
+    return None
+
+
+def _incoming_attribution_for_module(module_name):
+    """Real pairing (Aug 13, Alex's own direct ask: "the previous
+    change should give indication of what should stand instead of
+    init... maybe pair with what comes from level 3 function in
+    previous river if it makes sense") — reuses the exact same real
+    evidence Level 2's own "next function" stub already found
+    (attribute_river_connection_function(), rule 8, not re-derived):
+    does any real river-to-river connection actually land on ONE OF
+    THIS MODULE'S OWN FUNCTIONS specifically? If so, that's the real,
+    evidence-backed answer to "where does this module's real logic
+    actually get entered from," standing in for the removed `init`
+    node far more honestly than a generic bootstrap-wiring node ever
+    did. Returns (from_river_num, to_func, reason) or None — most
+    modules honestly have no such attribution (the connection either
+    doesn't target this module specifically, or no real evidence for
+    any function exists at all), never guessed to fill the gap."""
+    rnum = _owning_river(module_name)
+    if rnum is None:
+        return None
+    for other, note, _itype in FLOWS_IN.get(rnum, []):
+        attr = attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_MODULE_CALLS)
+        if attr and attr[1] == module_name:
+            return (other, attr[2], attr[3])
     return None
 
 
@@ -112,9 +139,28 @@ def compute_function_rank(funcs, edges):
             callees[a].add(b)
         if b in callers:
             callers[b].add(a)
-    entries = [f for f in funcs if not callers.get(f) or f == 'init']
+    # Real, deliberate exclusion (Aug 13, Alex's own direct ask: "at
+    # level 3, no init should exist") — `init` is real, standing RPGACE
+    # convention (rule 1 in "Building guide for lower models": "init()
+    # wires listeners/injection with setTimeout delays... plus a
+    # page:show hook to re-inject on navigation") — real bootstrap
+    # PLUMBING (boot-task registration, hook wiring), not the module's
+    # own real business logic, and it's invoked externally by
+    # RPGACE.register()'s own machinery, never by a real caller inside
+    # the module — it was always a forced, artificial "entry" rather
+    # than evidence-derived like every other node here. Its own real
+    # direct callees become the real depth-0 entries instead (the
+    # functions init actually wires up ARE the module's true starting
+    # points); any other function with genuinely zero real callers
+    # (not reached via init at all) stays a real entry too, unchanged.
+    init_callees = callees.get('init', set())
+    if 'init' in funcs:
+        entries = sorted(init_callees) + [f for f in funcs if f != 'init' and not callers.get(f) and f not in init_callees]
+    else:
+        entries = [f for f in funcs if not callers.get(f)]
     if not entries:
-        entries = funcs[:1]
+        entries = [f for f in funcs if f != 'init'] or funcs[:1]
+        entries = entries[:1]
     depth = {}
     on_stack = set()
     visited = set()
@@ -149,102 +195,263 @@ def compute_function_rank(funcs, edges):
     return depth
 
 
+BAND_LABELS = ['🚪 Entry & Early Logic', '⚙️ Core Logic', '🏁 Output & Terminal']
+BAND_THRESHOLD = 15  # real, cheap threshold — matches where crowding was actually observed
+
+
+def _split_into_bands(funcs, depth):
+    """Real depth-range banding for crowded modules — Aug 13, Alex-
+    confirmed design ("rank-band sub-pages within Level 3") after his
+    own direct complaint that Level 3 looked "very crowded." Splits
+    the module's real functions into up to 3 depth-ordered bands,
+    boundaries chosen by real FUNCTION COUNT (not raw depth-width,
+    since real depth distribution is often uneven — verified against
+    phylumPath/contentProductionLive/bookworm before shipping, not
+    assumed even). A module at or under BAND_THRESHOLD functions gets
+    exactly ONE band (unchanged single-canvas behavior — no added
+    complexity where the crowding this fixes was never real).
+    Returns [{'label': str, 'funcs': [...]}, ...], real depth order
+    preserved within each band."""
+    if len(funcs) <= BAND_THRESHOLD:
+        return [{'label': None, 'funcs': list(funcs)}]
+    by_depth = {}
+    for f in funcs:
+        by_depth.setdefault(depth[f], []).append(f)
+    depths_sorted = sorted(by_depth)
+    target = len(funcs) / 3
+    bands, cur = [], []
+    for d in depths_sorted:
+        cur.extend(by_depth[d])
+        if len(cur) >= target and len(bands) < 2 and d != depths_sorted[-1]:
+            bands.append(cur)
+            cur = []
+    if cur:
+        bands.append(cur)
+    return [{'label': BAND_LABELS[i] if i < len(BAND_LABELS) else f'Band {i + 1}', 'funcs': b}
+            for i, b in enumerate(bands)]
+
+
 def build_module_section(module_name):
     color = RIVER_COLOR.get(_owning_river(module_name), '#C9A84C')
-    funcs = parse_module_functions(module_name)
+    all_funcs = parse_module_functions(module_name)
     edges = compute_module_function_flow(module_name)
-    depth = compute_function_rank(funcs, edges)
-    max_depth = max(depth.values()) if depth else 0
+    depth = compute_function_rank(all_funcs, edges)
+    # Real exclusion (Aug 13, Alex's own direct ask: "at level 3, no
+    # init should exist") — depth computed above using the FULL
+    # function list (so init's own real callees correctly land at
+    # depth 0, per compute_function_rank()'s own docstring), but init
+    # itself is never rendered as a node below. has_init drives the
+    # legend explanation of what it actually is.
+    has_init = 'init' in all_funcs
+    funcs = [f for f in all_funcs if f != 'init']
+    incoming_attr = _incoming_attribution_for_module(module_name)
 
-    # bucket functions by real computed depth, place top-to-bottom
-    # within each depth column, left-to-right by depth itself
-    buckets = {}
-    for f in funcs:
-        buckets.setdefault(depth[f], []).append(f)
-    # Real crossing-reduction pass (Aug 13, Alex's own rule: "make it so
-    # no edges ever cross each other, way more important than keeping
-    # bubbles in a row") — same shared barycenter heuristic Level 2
-    # uses (rule 8), applied one level deeper across real depth columns.
-    rank_order = sorted(buckets.keys())
-    buckets = barycenter_order(buckets, edges, rank_order)
-    # Real sizing fix (found the same pass the compute_function_rank
-    # cycle-cap fix shipped, testing against all 44 real modules):
-    # canvas HEIGHT must come from the WIDEST real column (most
-    # functions sharing one computed depth) — a module can have a
-    # small max_depth but many functions converging at one depth
-    # (a real fan-out/fan-in shape), and the old formula sized H from
-    # depth count alone, which would silently crowd/overlap nodes in
-    # exactly that real case. WIDTH still comes from depth count —
-    # that's the real axis depth actually measures.
-    max_col = max((len(v) for v in buckets.values()), default=1)
-    W = max(1400, 260 + max_depth * 260)
     # Real, fixed top margin (Aug 13, Alex's own ask) — room for the
-    # permanent "Alex" bubble above the function grid, on EVERY module
-    # section, not sized off any per-module data (a "permanent overarch
-    # bubble" per Alex's own wording — always present, always the same
+    # permanent "Alex" bubble above the function grid, on EVERY module/
+    # band section, not sized off any per-module data (a "permanent
+    # overarch bubble" per Alex's own wording — always present, same
     # relative position, so it reads as one consistent recurring actor).
     ALEX_Y = 95
-    ALEX_MARGIN = 190
-    H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
-    grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
-    # Real "backdoor" column (Aug 13, Alex's own ask): any function in
+    # Real "backdoor" gateways (Aug 13, Alex's own ask): any function in
     # THIS module with a real, direct RPGACE.modules.X.fn() call into
-    # another module gets a real gateway node, one column right of the
-    # rightmost real rank — a genuine cross-module (often cross-river)
-    # jump straight into that module's own Level-3 page, bypassing the
-    # climb back up through Level 2/1.
+    # another module gets a real gateway node at its own band's right
+    # edge — a genuine cross-module (often cross-river) jump straight
+    # into that module's own Level-3 page, bypassing the climb back up
+    # through Level 2/1. Real layout/sizing (max_depth-derived width,
+    # barycenter reordering, per-column height) now computed PER BAND
+    # inside _render_band() below, not once for the whole module — the
+    # real fix "level 3 looks very crowded" needed.
     backdoors = [(from_func, to_mod, to_func) for from_mod, from_func, to_mod, to_func in CROSS_MODULE_CALLS
                  if from_mod == module_name and to_mod in LEVEL3_MODULES]
     has_backdoors = bool(backdoors)
-    if has_backdoors:
+
+    # Real rank-band split (Aug 13, Alex-confirmed: "level 3 looks very
+    # crowded, we need to make more levels to make it digestable" —
+    # rank-band sub-pages within Level 3, his own chosen option). A
+    # module at/under BAND_THRESHOLD gets exactly ONE band (unchanged
+    # behavior — see _split_into_bands()'s own docstring).
+    ui_sigs = compute_function_ui_signals(module_name)
+    bands = _split_into_bands(funcs, depth)
+    func_to_band = {f: i for i, b in enumerate(bands) for f in b['funcs']}
+    multi_band = len(bands) > 1
+
+    band_tabs = []
+    band_canvases = []
+    for bi, band in enumerate(bands):
+        band_funcs = band['funcs']
+        band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
+        w, h, svg_inner, legend_rows_b, edge_colors_b = _render_band(
+            module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
+            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors)
+        if multi_band:
+            # Real, deliberate DIFFERENT class from the top-level `.tab`
+            # module switcher — a real bug caught before shipping: the
+            # existing hash-routing JS selects `.tab` globally and reads
+            # `dataset.target`, which a band-tab never has (only
+            # `dataset.bandTarget`), so sharing the class would have
+            # wired a broken click handler (location.hash = undefined)
+            # onto every band-tab. `.band-tab` gets its own, separate
+            # JS block instead.
+            active = ' active' if bi == 0 else ''
+            band_tabs.append(
+                f'<div class="band-tab{active}" data-band-target="{band_id}">'
+                f'{band["label"]} <span class="meta">({len(band_funcs)})</span></div>')
+        display = '' if bi == 0 else 'display:none'
+        band_canvases.append(
+            f'<div class="band-canvas" id="{band_id}" style="{display}">'
+            f'<div class="canvas-wrap"><svg viewBox="0 0 {w} {h}" width="100%" style="max-width:{w}px;display:block;margin:0 auto">'
+            f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+            f'<filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+            f'{_build_markers(edge_colors_b)}</defs>{svg_inner}</svg></div>'
+            f'<div class="legend"><h3>Real function-call edges{" — " + band["label"] if band["label"] else ""}</h3>{legend_rows_b}</div>'
+            f'</div>'
+        )
+
+    rnum = _owning_river(module_name)
+    river_link = f'<a href="galaxy_map_module.html#river-{rnum}">River {rnum}</a>' if rnum else 'an unrouted module'
+    back_btn = (f'<a href="galaxy_map_module.html#river-{rnum}" class="back-btn">← Back to River {rnum} (Level 2)</a>'
+                if rnum else '')
+
+    init_note = ''
+    if has_init:
+        init_note = (' <code>init</code> itself is never shown as a node (Alex’s own direct ask) '
+                     '— it is real bootstrap PLUMBING (boot-task registration, RPGACE.hooks wiring, '
+                     'DOM re-injection on page:show), not this module’s own business logic, and '
+                     'nothing inside the module ever really calls it (RPGACE.register()’s own '
+                     'machinery does). Its real direct callees are the true starting points instead, '
+                     'shown as \U0001F6AA entries.')
+    pairing_note = ''
+    if incoming_attr:
+        pairing_note = (f' The entry marked "⬅ from River {incoming_attr[0]}" is a real, '
+                         'evidence-backed pairing — this is the actual function an incoming river '
+                         'connection lands on (same evidence Level 2’s own connection stub shows), '
+                         'a far more honest stand-in for the removed init than a generic bootstrap '
+                         'node ever was.')
+    band_note = ''
+    if multi_band:
+        band_note = (f' This module has {len(funcs)} real functions — too many for one readable '
+                     'canvas (Alex\'s own direct call, "level 3 looks very crowded") — split into '
+                     f'{len(bands)} real bands by computed depth-range, balanced by real function '
+                     'count. A dashed "↦"/"⬅" stub at a band\'s own edge is a real cross-band call, '
+                     'never silently dropped — click a band tab below to switch.')
+
+    band_tabs_html = f'<div class="tabs band-tabs">{"".join(band_tabs)}</div>' if multi_band else ''
+
+    return f'''
+<section class="mod-section" id="mod-{module_name}" style="display:none">
+  <div class="rhead"><span class="rdot" style="background:{color}"></span><h2>⚙️ {module_name} — real function-call chain</h2></div>
+  {back_btn}
+  <p class="rlegend-role">Drilled down from {river_link}'s own Level-2 module node. 🚪 = a real entry point (nothing calls it, once <code>init</code> is stripped out) · 🏁 = a real leaf/terminal function (calls nothing else in this module) · ⚙️ = an intermediate real function{' · 🚪 (right, dashed) = a real cross-module backdoor' if has_backdoors else ''}. {len(funcs)} real functions, {len(edges)} real direct call edges — same grep-based direct-call-only technique as the module-level flow one level up, same honest blind spot: a relationship reached via a callback reference or <code>RPGACE.hooks</code> is invisible here.{init_note}{pairing_note}{band_note} <b>🧑 Alex</b> (permanent on every module/band) is the real human actor — a dashed line INTO Alex means that function has real DOM/popup-rendering evidence (something you'd actually see); a dashed line OUT of Alex means that function has real button/input-wiring evidence (something you actually click or type into). A function with neither is honest, normal internal logic — not everything is user-facing.</p>
+  {band_tabs_html}
+  {''.join(band_canvases)}
+</section>'''
+
+
+def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges, ui_sigs,
+                  incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module):
+    """Real, per-band canvas builder (Aug 13, Alex-confirmed rank-band
+    design) — factored out of build_module_section() so a crowded
+    module renders 1-3 of these instead of one dense canvas. Same real
+    layout/Alex-bubble/backdoor logic as before, scoped to this band's
+    own real functions. Cross-band edges (a real call from a function
+    in this band to one in ANOTHER band) get a real dangling stub —
+    "↦ Band N: func" on the right for an outgoing cross-band call,
+    "⬅ Band N: func" on the left for an incoming one — reusing the
+    exact same visual language as Level 2's own river-boundary stub
+    and this file's own backdoor gateway (rule 8), never silently
+    dropped just because it crosses a band."""
+    band_funcs_set = set(band_funcs)
+    band_depths = [depth[f] for f in band_funcs]
+    min_d, max_d = min(band_depths, default=0), max(band_depths, default=0)
+    buckets = {}
+    for f in band_funcs:
+        buckets.setdefault(depth[f], []).append(f)
+    intra_edges = [(a, b) for a, b in edges if a in band_funcs_set and b in band_funcs_set]
+    rank_order = sorted(buckets.keys())
+    buckets = barycenter_order(buckets, intra_edges, rank_order)
+    max_col = max((len(v) for v in buckets.values()), default=1)
+    W = max(1400, 260 + (max_d - min_d) * 260)
+    ALEX_MARGIN = 190
+    H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
+    grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
+    my_backdoors = [(f, tm, tf) for f, tm, tf in backdoors if f in band_funcs_set]
+    if my_backdoors:
         W += 260
+    STUB_MARGIN = 220
+    cross_out = [(a, b) for a, b in edges if a in band_funcs_set and b not in band_funcs_set and b in all_module_funcs]
+    cross_in = [(a, b) for a, b in edges if b in band_funcs_set and a not in band_funcs_set and a in all_module_funcs]
+    if cross_out or cross_in:
+        W += STUB_MARGIN
 
     pos = {}
     for d, items in buckets.items():
         n = len(items)
-        x = 140 + d * 260
+        x = STUB_MARGIN if cross_in else 140
+        x += (d - min_d) * 260
         for i, f in enumerate(items):
             y = grid_cy + (i - (n - 1) / 2) * 90
             pos[f] = (x, y)
 
     nodes_svg, edges_svg = [], []
     edge_colors_used = {color, ALEX_COLOR}
-    for a, b in edges:
+    for a, b in intra_edges:
         if a in pos and b in pos:
             ax, ay = pos[a]
             bx, by = pos[b]
             edges_svg.append(_curved_edge(ax, ay, bx, by, color, real=True, r1=26, r2=26))
-    for f in funcs:
+    for f in band_funcs:
         if f not in pos:
             continue
         x, y = pos[f]
-        is_entry = (f == 'init' or depth[f] == 0)
+        is_entry = (depth[f] == 0)
         is_leaf = not any(a == f for a, _b in edges)
         icon = '🚪' if is_entry else ('🏁' if is_leaf else '⚙️')
         ring = '3' if is_entry else '2'
+        incoming_badge = ''
+        if is_entry and incoming_attr and f == incoming_attr[1]:
+            from_river_name = RIVER_NAME.get(incoming_attr[0], '').split('—')[0].strip()
+            incoming_badge = f'<text x="{x}" y="{y-32}" text-anchor="middle" font-size="8" fill="{color}" opacity="0.9">⬅ from River {incoming_attr[0]} ({from_river_name})</text>'
         nodes_svg.append(
-            f'<g class="node"><circle cx="{x}" cy="{y}" r="26" fill="#0f0f1a" stroke="{color}" stroke-width="{ring}" filter="url(#glow)"/>'
+            f'{incoming_badge}<g class="node"><circle cx="{x}" cy="{y}" r="26" fill="#0f0f1a" stroke="{color}" stroke-width="{ring}" filter="url(#glow)"/>'
             f'<text x="{x}" y="{y+6}" text-anchor="middle" font-size="15">{icon}</text></g>'
             f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>'
         )
 
-    # Real, permanent "Alex" bubble (Aug 13, Alex's own direct ask) —
-    # ALWAYS drawn, same fixed position on every module section, so it
-    # reads as one consistent recurring actor rather than a per-module
-    # invention. Two real, mechanical signals per function
-    # (compute_function_ui_signals(), rule 8): OUTPUT = real DOM/popup-
-    # rendering evidence ("shown to me"), INPUT = real button-wiring/
-    # input-reading evidence ("buttons i can press"). A function with
-    # neither signal (the honest majority — pure internal logic) simply
-    # doesn't connect; "if it makes sense" per Alex's own wording, never
-    # forced. What a real INPUT function does with that input onward is
-    # already visible via its own existing outgoing call edges (drawn
-    # above) — the Alex edges don't duplicate that, they just show
-    # where the human enters/exits the chain.
-    ui_sigs = compute_function_ui_signals(module_name)
-    alex_x, alex_y = W / 2, ALEX_Y
+    # Real cross-band stubs — a real edge, never silently dropped just
+    # because its other end sits in a different band's own canvas.
+    if cross_out:
+        out_x = W - (260 if my_backdoors else 40)
+        for i, (a, b) in enumerate(sorted(set(cross_out))):
+            if a not in pos:
+                continue
+            ax, ay = pos[a]
+            sy = grid_cy + (i - (len(cross_out) - 1) / 2) * 40
+            tgt_band = bands[func_to_band[b]]['label'] if b in func_to_band else '?'
+            edges_svg.append(_curved_edge(ax, ay, out_x, sy, color, real=True, dashed=True, r1=26, r2=8))
+            nodes_svg.append(
+                f'<rect x="{out_x-52}" y="{sy-10}" width="104" height="20" rx="5" fill="#0f0f1a" stroke="{color}" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.85"/>'
+                f'<text x="{out_x}" y="{sy+4}" text-anchor="middle" font-size="7.5" fill="{color}">↦ {tgt_band}: {b}</text>'
+            )
+    if cross_in:
+        for i, (a, b) in enumerate(sorted(set(cross_in))):
+            if b not in pos:
+                continue
+            bx, by = pos[b]
+            sy = grid_cy + (i - (len(cross_in) - 1) / 2) * 40
+            src_band = bands[func_to_band[a]]['label'] if a in func_to_band else '?'
+            edges_svg.append(_curved_edge(60, sy, bx, by, color, real=True, dashed=True, r1=8, r2=26))
+            nodes_svg.append(
+                f'<rect x="8" y="{sy-10}" width="104" height="20" rx="5" fill="#0f0f1a" stroke="{color}" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.85"/>'
+                f'<text x="60" y="{sy+4}" text-anchor="middle" font-size="7.5" fill="{color}">⬅ {src_band}: {a}</text>'
+            )
+
+    # Real, permanent "Alex" bubble — see build_module_section()'s own
+    # docstring comment for the full real design rationale (rule 8, not
+    # repeated per band); scoped here to just this band's own functions
+    # so the counts shown are an honest reflection of what's on screen.
+    alex_x, alex_y = W / 2, alex_y_const
     n_out = n_in = 0
-    for f in funcs:
+    for f in band_funcs:
         if f not in pos:
             continue
         sig = ui_sigs.get(f, {})
@@ -263,15 +470,14 @@ def build_module_section(module_name):
         f'<text x="{alex_x}" y="{alex_y+50}" text-anchor="middle" font-size="10.5" fill="{ALEX_COLOR}" font-weight="700">Alex</text>'
         f'<text x="{alex_x}" y="{alex_y+64}" text-anchor="middle" font-size="8" fill="{ALEX_COLOR}" opacity="0.85">{n_out} shown to me · {n_in} buttons I press</text></g>'
     )
+    edge_colors_used.add(ALEX_COLOR)
 
-    # Real backdoor nodes — real, clickable, drawn distinctly (dashed
-    # edge, a door icon, target module's own river color) from a same-
-    # module function-call edge, honest about being a cross-module jump.
+    # Real backdoor nodes — scoped to this band's own source functions.
     backdoor_legend = []
-    if has_backdoors:
-        bx_col = 140 + (max_depth + 1) * 260
+    if my_backdoors:
+        bx_col = W - 20
         seen_targets = {}
-        for fname, target_mod, target_fn in backdoors:
+        for fname, target_mod, target_fn in my_backdoors:
             if fname not in pos:
                 continue
             seen_targets.setdefault(target_mod, []).append((fname, target_fn))
@@ -300,31 +506,11 @@ def build_module_section(module_name):
     legend_rows = ''.join(
         f'<div class="legend-row small"><span class="dot" style="background:{color}"></span>'
         f'<code>{a}</code> → <code>{b}</code></div>'
-        for a, b in edges
-    ) or '<div class="legend-row small"><span class="meta">No real direct same-module calls found between this module\'s own functions.</span></div>'
+        for a, b in intra_edges
+    ) or '<div class="legend-row small"><span class="meta">No real direct same-module calls found between this band\'s own functions.</span></div>'
     legend_rows += ''.join(backdoor_legend)
 
-    rnum = _owning_river(module_name)
-    river_link = f'<a href="galaxy_map_module.html#river-{rnum}">River {rnum}</a>' if rnum else 'an unrouted module'
-    back_btn = (f'<a href="galaxy_map_module.html#river-{rnum}" class="back-btn">← Back to River {rnum} (Level 2)</a>'
-                if rnum else '')
-
-    return f'''
-<section class="mod-section" id="mod-{module_name}" style="display:none">
-  <div class="rhead"><span class="rdot" style="background:{color}"></span><h2>⚙️ {module_name} — real function-call chain</h2></div>
-  {back_btn}
-  <p class="rlegend-role">Drilled down from {river_link}'s own Level-2 module node. 🚪 = a real entry point (nothing calls it, or it's <code>init</code> itself) · 🏁 = a real leaf/terminal function (calls nothing else in this module) · ⚙️ = an intermediate real function{' · 🚪 (right, dashed) = a real cross-module backdoor' if has_backdoors else ''}. {len(funcs)} real functions, {len(edges)} real direct call edges — same grep-based direct-call-only technique as the module-level flow one level up, same honest blind spot: a relationship reached via a callback reference or <code>RPGACE.hooks</code> is invisible here. <b>🧑 Alex</b> (top, permanent on every module) is the real human actor — a dashed line INTO Alex means that function has real DOM/popup-rendering evidence (something you'd actually see); a dashed line OUT of Alex means that function has real button/input-wiring evidence (something you actually click or type into). A function with neither is honest, normal internal logic — not everything is user-facing.</p>
-  <div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">
-    <defs>
-      <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      <filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-      {_build_markers(edge_colors_used)}
-    </defs>
-    {''.join(edges_svg)}
-    {''.join(nodes_svg)}
-  </svg></div>
-  <div class="legend"><h3>Real function-call edges</h3>{legend_rows}</div>
-</section>'''
+    return W, H, ''.join(edges_svg) + ''.join(nodes_svg), legend_rows, edge_colors_used
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -352,6 +538,10 @@ TEMPLATE = """<!DOCTYPE html>
   .tabs{{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}}
   .tab{{padding:6px 14px;border-radius:16px;font-size:11.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
   .tab.active{{background:var(--gold);color:#1a1a12;font-weight:700}}
+  .band-tabs{{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:6px 24px 10px}}
+  .band-tab{{padding:5px 12px;border-radius:14px;font-size:10.5px;cursor:pointer;background:rgba(255,255,255,0.04);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .band-tab .meta{{opacity:0.7}}
+  .band-tab.active{{background:var(--gold);color:#1a1a12;font-weight:700;border-color:var(--gold)}}
   .rhead{{display:flex;align-items:center;gap:10px;justify-content:center;padding:24px 24px 6px}}
   .rdot{{width:12px;height:12px;border-radius:50%}}
   .rhead h2{{font-family:Georgia,serif;font-size:19px;color:#fff}}
@@ -406,6 +596,24 @@ TEMPLATE = """<!DOCTYPE html>
   }});
   var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
   show(id0);
+}})();
+(function() {{
+  // Real, separate band-tab switcher (Aug 13, Alex-confirmed rank-band
+  // design) — deliberately its own click-handling block, not merged
+  // into the module-tab switcher above (real bug caught building this:
+  // a shared `.tab` class + a band-tab with no `dataset.target` would
+  // have broken the module switcher's own click handler).
+  document.querySelectorAll('.band-tab').forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      var group = t.closest('.band-tabs');
+      var target = t.dataset.bandTarget;
+      group.querySelectorAll('.band-tab').forEach(function(o) {{ o.classList.toggle('active', o === t); }});
+      var parentSection = t.closest('.mod-section');
+      parentSection.querySelectorAll('.band-canvas').forEach(function(c) {{
+        c.style.display = (c.id === target) ? '' : 'none';
+      }});
+    }});
+  }});
 }})();
 </script>
 </body>
