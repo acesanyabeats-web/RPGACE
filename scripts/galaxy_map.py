@@ -270,6 +270,27 @@ def build_svg():
         gx, gy = galaxy_pos['openmontage_cc']
         edges_svg.append(_curved_edge(oox, ooy, gx, gy, '#E25454', real=True, dashed=True))
 
+    # --- real Graphify CC <-> OpenMontage CC edge, found Aug 13 via the
+    # galaxy-interview pilot (Finding 1, MATERIAL) — Graphify CC really
+    # does `graphify clone` OpenMontage's own repo directly (11,280 real
+    # nodes merged into its cross-repo graph), independent of RPGACE
+    # Architecture. A real, one-way read relationship neither galaxy's
+    # own RPGACE-mediated dispatch shows — confirmed via total_system_
+    # members + graphify_jobs history, not invented for symmetry. ---
+    if 'graphify_cc' in galaxy_pos and 'openmontage_cc' in galaxy_pos:
+        g2x, g2y = galaxy_pos['graphify_cc']
+        o2x, o2y = galaxy_pos['openmontage_cc']
+        edges_svg.append(edge(g2x, g2y, o2x, o2y, 'read_query'))
+        legend_rows.append(
+            '<div class="legend-row"><span class="dot" style="background:'
+            + INTERACTION_TYPE_COLOR['read_query'] + '"></span>'
+            '<b>Graphify CC → OpenMontage CC (repo read)</b> — a real, '
+            'direct <code>graphify clone</code> of OpenMontage\'s own repo '
+            '(11,280 real nodes merged into Graphify CC\'s cross-repo graph), '
+            'independent of RPGACE Architecture — neither galaxy\'s own '
+            'RPGACE-mediated dispatch shows this relationship.</div>'
+        )
+
     # --- real interaction-type legend, only types actually used ---
     itype_legend = ''.join(
         f'<div class="legend-row small"><span class="dot" style="background:{INTERACTION_TYPE_COLOR[t]}"></span>'
