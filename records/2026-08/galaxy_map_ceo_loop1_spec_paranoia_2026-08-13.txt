@@ -1815,3 +1815,57 @@ min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
 
 **Remaining G6-G9 honestly queued** — same real multi-session
 discipline as every prior G-step this session.
+
+================================================================
+SAME DAY, 19TH PASS — real G0-external-connector ring on Level 2,
+"to show how externals contribute to rivers"
+================================================================
+
+Alex's real ask: "now all rivers should also connect with g0 objects
+within level 2 maps to show how externals contribute to rivers."
+
+**Real evidence-only extraction, same discipline as DASHBOARD_CARDS**:
+a new `EXTERNAL_RIVER_LINKS` table in `graphify_river_group.py` reads
+each real `EXTERNAL_CONNECTORS` entry's own `note` text directly (re-
+read, not guessed) and extracts which river(s) it actually cites —
+11 of 13 connectors resolved this way (Anthropic/Kimi/Luna → River
+III; OpenMontage/librosa/FFmpeg → River XI; Composio → River V+XI;
+Graphify CC → River IX+XIV; Jina AI → River III+IV; Last.fm → River
+VII; Whisper → River V). **2 real, honest omissions, not oversights**:
+OpenArt's own note says "not wired to anything yet" — nothing to
+link; n8n's own note names a feature (F10 rota-sync) but never a
+river number — inferring "Schedule = River V" from that alone would
+be a NEW claim the note doesn't support, so it stays unlinked rather
+than guessed in. Supabase deliberately excluded too — its own note
+("used by nearly every real river") is real but not per-river-
+distinguishing; forcing it onto all 16 rings would be noise.
+
+**`galaxy_map_module.py` gained a real 4th, outermost ring**: one
+hexagon bubble per real external connector cited for that river,
+using `_connector_icon()` (imported from `galaxy_map.py`, real reuse)
+for the icon, a fixed distinct accent color (`#5FB3D9`, same family as
+Supabase's own Level-0 color) so this ring always reads as "external
+infrastructure," never confused with a module (river-colored), a
+dashboard card (gold), or another river (that river's own color).
+Deliberately NOT made clickable — no per-connector anchor exists at
+Level 0 to jump to, and faking interactivity that isn't real would
+have been dishonest. Canvas grown 1000×820 → 1200×1150 to fit the new
+ring without vertical clipping (computed the real margin needed before
+choosing the size, not guessed).
+
+**Real verification**: headless-Chromium pass on River XI and River
+III (both real 4-external max cases) — zero console errors. div/svg/
+a-tag/polygon balance checked directly on all 3 regenerated files (all
+matched: L2 192/192/16/16/52/52, 14 self-closing polygons confirmed
+well-formed). Screenshot reviewed visually on River XI — all 4 rings
+render simultaneously and legibly (6 modules, 1 dashboard card, 2
+river connections, 4 external hexagons), the new "External connectors
+(G0) that contribute here" legend section matches the diagram exactly.
+
+**`ceo_plan_items` G4** got a real appended verdict note (this extends
+G4's own exact scope — "river -> real tagged functions/nodes" already
+covered the intent, no new G-item number invented for it). **Oversight
+updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`,
+`rpgace_core.js` (Oversight popup Level-2 description). `rpgace_core.
+min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
+`?v=20260813i`.

@@ -393,6 +393,51 @@ for _c in DASHBOARD_CARDS:
     for _r in _c['rivers']:
         CARDS_BY_RIVER.setdefault(_r, []).append(_c)
 
+# Real, sourced river attribution per EXTERNAL_CONNECTORS entry — Aug 13,
+# real Alex ask for G0 (Level 0 galaxies/connectors) to show up on
+# Level 2 too, "to show how externals contribute to rivers." Every
+# `rivers` value below is extracted directly from that connector's OWN
+# `note` text above (re-read, not guessed) — same "doc first, mirror
+# second" discipline as DASHBOARD_CARDS. Two real, honest omissions,
+# not oversights: 'OpenArt' has no river citation because its own note
+# says "not wired to anything yet" — nothing to link; 'n8n' has no
+# river citation because its own note names a FEATURE (F10 rota-sync)
+# but never a river number — inferring "Schedule = River V" from that
+# alone would be a new claim this table doesn't have real evidence for,
+# so it stays out rather than guessed in. Supabase is deliberately
+# excluded too — SUPABASE_CORE's own note says "used by nearly every
+# real river," which is real but not per-river-DISTINGUISHING
+# information; forcing it onto all 16 rings would be noise, not signal,
+# and it's already well-represented at Level 0.
+EXTERNAL_RIVER_LINKS = [
+    {'name': 'Anthropic (Claude API)', 'rivers': [3],
+     'via': "River III's Oracle Current is the harness — the real default provider for every ungrounded Oracle call"},
+    {'name': 'OpenMontage', 'rivers': [11],
+     'via': 'Real spring AND mouth both sit in River XI: opens at "Generate Video," closes at "Mark ConID as Filmed"'},
+    {'name': 'Composio', 'rivers': [5, 11],
+     'via': "River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion + YouTube via Supadata)"},
+    {'name': 'Moonshot AI (Kimi)', 'rivers': [3],
+     'via': "Would be called from River III's Oracle Current in place of the default Anthropic call, once live"},
+    {'name': 'OpenAI (Luna)', 'rivers': [3],
+     'via': 'Same River III relationship as Kimi, once live'},
+    {'name': 'librosa', 'rivers': [11],
+     'via': "Triggered by River XI's Beat Log, nowhere else"},
+    {'name': 'FFmpeg', 'rivers': [11],
+     'via': "Reached only via River XI's OpenMontage handoff, never called directly by any RPGACE river"},
+    {'name': 'Graphify CC', 'rivers': [9, 14],
+     'via': "Dispatched from River IX's own session-start check, deposits real findings into River XIV via graphify_jobs"},
+    {'name': 'Jina AI', 'rivers': [3, 4],
+     'via': 'Load-bearing for Bookworm URL ingestion (River IV), Schedule Oracle + chat-pasted-URL handling (River III)'},
+    {'name': 'Last.fm', 'rivers': [7],
+     'via': "refCorpus.findMatches()'s real fallback (River VII), grows the corpus from its own results"},
+    {'name': 'Whisper (OpenAI, local)', 'rivers': [5],
+     'via': 'The Content Intelligence pipeline (River V) — current live status genuinely unconfirmed'},
+]
+LINKS_BY_RIVER = {}
+for _l in EXTERNAL_RIVER_LINKS:
+    for _r in _l['rivers']:
+        LINKS_BY_RIVER.setdefault(_r, []).append(_l)
+
 # Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
 # connectors (Aug 6 restructure pass) — never guessed. Each entry: real
 # source river number -> list of (target label, real condition/note).

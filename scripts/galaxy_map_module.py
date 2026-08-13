@@ -37,15 +37,31 @@ in-page `<a href="#river-N">` jump to that other river's own section
 Also carries G5's real Oversight-connection note down from Level 1
 (§6) — River XIV itself and any river with a real direct edge into it
 get a 📚 legend line, using the same computation, not a new one.
+
+**Aug 13, later pass still — real G0-to-river ring, per Alex's direct
+ask** ("all rivers should also connect with g0 objects within level 2
+maps to show how externals contribute to rivers"). A new
+`EXTERNAL_RIVER_LINKS` table in `graphify_river_group.py` extracts a
+real per-river attribution from each `EXTERNAL_CONNECTORS` entry's own
+`note` text (re-read, not guessed) — 2 real, honest omissions: OpenArt
+("not wired to anything yet") and n8n (its own note names a feature,
+F10, never a river number) have no real river citation and stay out
+rather than inferred in. Each qualifying river gets a real 4th,
+outermost ring — one hexagon per real external connector — visually
+distinct (a fixed accent color, not a river's own) from every other
+ring so "external infrastructure" always reads as a different KIND of
+thing than a module, a card, or another river.
 """
+import math
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map import polar, _curved_edge, _build_markers  # noqa: E402
+from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
+    EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER,
 )
 
 OUT = Path('graphify-out/galaxy_map_module.html')
@@ -71,8 +87,11 @@ MODULE_ICON = '⚙️'
 CARD_ICON_FALLBACK = '🎯'
 
 
+EXTERNAL_COLOR = '#5FB3D9'  # same family as Supabase's Level-0 accent — "external infra," not a river's own color
+
+
 def build_river_section(rnum):
-    W, H = 1000, 820
+    W, H = 1200, 1150
     cx, cy = W / 2, H / 2
     color = RIVER_COLOR[rnum]
     river_label = RIVER_NAME[rnum]
@@ -168,6 +187,35 @@ def build_river_section(rnum):
             f'<text x="{bx}" y="{by+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
         )
 
+    # --- Aug 13, real Alex ask: "all rivers should also connect with
+    # G0 objects within level 2 maps to show how externals contribute
+    # to rivers." A real 4th, outermost ring — one hexagon bubble per
+    # real EXTERNAL_CONNECTORS entry that has a real, cited connection
+    # into THIS river (EXTERNAL_RIVER_LINKS, sourced directly from each
+    # connector's own real note text, never re-derived). Distinct
+    # accent color (EXTERNAL_COLOR) so this ring reads as "external
+    # infra," not confused with the river-colored module ring or the
+    # gold dashboard-card ring or the other-river-colored connection
+    # ring. Not clickable (no per-connector anchor exists at Level 0
+    # to jump to) — a real info marker, same restraint as everywhere
+    # else in this build: don't fake interactivity that isn't real.
+    links = LINKS_BY_RIVER.get(rnum, [])
+    n_links = len(links) or 1
+    ext_radius = 490
+    for i, link in enumerate(links):
+        ang = -90 + (360 * i / n_links) + (180 / n_links if n_links > 1 else 0) + 15
+        ex, ey = polar(cx, cy, ext_radius, ang)
+        edges_svg.append(_curved_edge(cx, cy, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=40, r2=19))
+        edge_colors_used.add(EXTERNAL_COLOR)
+        icon = _connector_icon(link['name'])
+        pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
+        nodes_svg.append(
+            f'<g class="node">'
+            f'<polygon points="{pts}" fill="#0f0f1a" stroke="{EXTERNAL_COLOR}" stroke-width="2" filter="url(#glow)"/>'
+            f'<text x="{ex}" y="{ey+5}" text-anchor="middle" font-size="13">{icon}</text></g>'
+            f'<text x="{ex}" y="{ey+32}" text-anchor="middle" font-size="8.5" fill="{EXTERNAL_COLOR}">{link["name"]}</text>'
+        )
+
     legend = (f'<p class="rlegend-role">{RIVER_ROLE_NOTE.get(rnum, "")}</p>'
               if RIVER_ROLE_NOTE.get(rnum) else '')
     if rnum == OVERSIGHT_RIVER:
@@ -193,17 +241,24 @@ def build_river_section(rnum):
     conn_list = ''.join(_conn_row(d, o, n, i) for d, o, n, i in conns) or \
         '<div class="legend-row small"><span class="meta">No real river-to-river RIVER_FLOWS connection.</span></div>'
 
+    def _link_row(link):
+        return (f'<div class="legend-row small"><span class="dot" style="background:{EXTERNAL_COLOR}"></span>'
+                f'<b>{link["name"]}</b> <span class="meta">{link["via"]}</span></div>')
+    link_list = ''.join(_link_row(link) for link in links) or \
+        '<div class="legend-row small"><span class="meta">No real G0 external connector cites this river directly.</span></div>'
+
     body = (
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
         f'{legend}'
-        f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:1000px;display:block;margin:0 auto">'
+        f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">'
         f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
         f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
         f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
         f'<div class="legend"><h3>Real modules</h3><p class="modlist">{mod_list}</p>'
         f'<h3>Real dashboard-card entry points</h3>{card_list}</div>'
         f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
+        f'<div class="legend"><h3>External connectors (G0) that contribute here</h3>{link_list}</div>'
         f'</section>'
     )
     return body
@@ -255,7 +310,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
   <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules; the outer-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in) — click a bubble to jump straight there. A dashed diamond/"(partial)" label means the card's real target only partially covers the river (see that card's own note). A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs).</p>
+  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules; the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outermost hexagons are real G0 external connectors (Level 0's own galaxies/providers) that have a real, cited relationship to this specific river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river (see that card's own note). A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs).</p>
 </div>
 
 <div class="tabs">{tabs}</div>
