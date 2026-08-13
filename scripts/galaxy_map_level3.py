@@ -39,13 +39,23 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map import _curved_edge, _build_markers  # noqa: E402
+from galaxy_map import _curved_edge, _build_markers, barycenter_order  # noqa: E402
 from graphify_river_group import (  # noqa: E402
-    LEVEL3_MODULES, RIVER_COLOR, RIVER_MODULES,
+    LEVEL3_MODULES, RIVER_COLOR, RIVER_NAME, RIVER_MODULES,
     parse_module_functions, compute_module_function_flow,
+    compute_cross_module_function_calls,
 )
 
 OUT = Path('graphify-out/galaxy_map_level3.html')
+
+# Real, computed once (rule 8 — not re-derived per module): every real
+# function-level call that crosses a MODULE boundary anywhere in the
+# codebase — Aug 13, real Alex ask: "there should also be a back button
+# to river too, with connecting level 3 from previous river being the
+# backdoor." A genuine cross-module (often cross-river) function call
+# is a real "backdoor" — a direct jump between two modules' own
+# Level-3 pages that bypasses climbing back up through Level 2/1.
+CROSS_MODULE_CALLS = compute_cross_module_function_calls()
 
 
 def _owning_river(module_name):
@@ -108,7 +118,18 @@ def compute_function_rank(funcs, edges):
         depth[f] = max(depth.get(f, -1), d)
         visited.add(f)
         on_stack.add(f)
-        for c in callees.get(f, ()):
+        # Real, pre-existing non-determinism bug found + fixed Aug 13,
+        # same navigation-overhaul pass (rule 4 — this diagram claims
+        # to be deterministic; a fresh re-run genuinely produced a
+        # different layout, caught by an actual idempotency re-check,
+        # not assumed). `callees.get(f, ())` is a `set()` — Python
+        # hash-randomizes string set iteration order PER PROCESS
+        # (PYTHONHASHSEED unset, confirmed) — this visit order feeds
+        # `depth[]` directly, so two back-to-back runs of this exact
+        # script on the exact same source could silently produce
+        # different node positions. sorted() makes the traversal order
+        # (and therefore the whole diagram) reproducible again.
+        for c in sorted(callees.get(f, ())):
             visit(c, d + 1)
         on_stack.discard(f)
 
@@ -131,6 +152,12 @@ def build_module_section(module_name):
     buckets = {}
     for f in funcs:
         buckets.setdefault(depth[f], []).append(f)
+    # Real crossing-reduction pass (Aug 13, Alex's own rule: "make it so
+    # no edges ever cross each other, way more important than keeping
+    # bubbles in a row") — same shared barycenter heuristic Level 2
+    # uses (rule 8), applied one level deeper across real depth columns.
+    rank_order = sorted(buckets.keys())
+    buckets = barycenter_order(buckets, edges, rank_order)
     # Real sizing fix (found the same pass the compute_function_rank
     # cycle-cap fix shipped, testing against all 44 real modules):
     # canvas HEIGHT must come from the WIDEST real column (most
@@ -143,6 +170,18 @@ def build_module_section(module_name):
     max_col = max((len(v) for v in buckets.values()), default=1)
     W = max(1400, 260 + max_depth * 260)
     H = max(700, 90 * (max_col + 1))
+    # Real "backdoor" column (Aug 13, Alex's own ask): any function in
+    # THIS module with a real, direct RPGACE.modules.X.fn() call into
+    # another module gets a real gateway node, one column right of the
+    # rightmost real rank — a genuine cross-module (often cross-river)
+    # jump straight into that module's own Level-3 page, bypassing the
+    # climb back up through Level 2/1.
+    backdoors = [(from_func, to_mod, to_func) for from_mod, from_func, to_mod, to_func in CROSS_MODULE_CALLS
+                 if from_mod == module_name and to_mod in LEVEL3_MODULES]
+    has_backdoors = bool(backdoors)
+    if has_backdoors:
+        W += 260
+
     pos = {}
     for d, items in buckets.items():
         n = len(items)
@@ -172,19 +211,56 @@ def build_module_section(module_name):
             f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>'
         )
 
+    # Real backdoor nodes — real, clickable, drawn distinctly (dashed
+    # edge, a door icon, target module's own river color) from a same-
+    # module function-call edge, honest about being a cross-module jump.
+    backdoor_legend = []
+    if has_backdoors:
+        bx_col = 140 + (max_depth + 1) * 260
+        seen_targets = {}
+        for fname, target_mod, target_fn in backdoors:
+            if fname not in pos:
+                continue
+            seen_targets.setdefault(target_mod, []).append((fname, target_fn))
+        n_targets = len(seen_targets) or 1
+        for i, (target_mod, calls) in enumerate(seen_targets.items()):
+            by = (H / 2) + (i - (n_targets - 1) / 2) * 100
+            tcolor = RIVER_COLOR.get(_owning_river(target_mod), '#C9A84C')
+            for fname, target_fn in calls:
+                fx, fy = pos[fname]
+                edges_svg.append(_curved_edge(fx, fy, bx_col, by, tcolor, real=True, dashed=True, r1=26, r2=24))
+                edge_colors_used.add(tcolor)
+            t_rnum = _owning_river(target_mod)
+            nodes_svg.append(
+                f'<a href="galaxy_map_level3.html#mod-{target_mod}" class="drill-link"><g class="node">'
+                f'<rect x="{bx_col-24}" y="{by-24}" width="48" height="48" rx="10" fill="#0f0f1a" stroke="{tcolor}" stroke-width="2.5" filter="url(#glow)"/>'
+                f'<text x="{bx_col}" y="{by+7}" text-anchor="middle" font-size="18">🚪</text></g>'
+                f'<text x="{bx_col}" y="{by+42}" text-anchor="middle" font-size="9.5" fill="{tcolor}">{target_mod}</text>'
+                f'<text x="{bx_col}" y="{by+54}" text-anchor="middle" font-size="8" fill="{tcolor}" opacity="0.8">River {t_rnum} backdoor</text></a>'
+            )
+            backdoor_legend.append(
+                f'<div class="legend-row small"><span class="dot" style="background:{tcolor}"></span>'
+                f'<b>{", ".join(f for f, _t in calls)}</b> → <code>{target_mod}</code> (River {t_rnum}) '
+                f'<span class="meta">Real cross-module backdoor — jumps directly to that module\'s own Level-3 chain.</span></div>'
+            )
+
     legend_rows = ''.join(
         f'<div class="legend-row small"><span class="dot" style="background:{color}"></span>'
         f'<code>{a}</code> → <code>{b}</code></div>'
         for a, b in edges
     ) or '<div class="legend-row small"><span class="meta">No real direct same-module calls found between this module\'s own functions.</span></div>'
+    legend_rows += ''.join(backdoor_legend)
 
     rnum = _owning_river(module_name)
     river_link = f'<a href="galaxy_map_module.html#river-{rnum}">River {rnum}</a>' if rnum else 'an unrouted module'
+    back_btn = (f'<a href="galaxy_map_module.html#river-{rnum}" class="back-btn">← Back to River {rnum} (Level 2)</a>'
+                if rnum else '')
 
     return f'''
 <section class="mod-section" id="mod-{module_name}" style="display:none">
   <div class="rhead"><span class="rdot" style="background:{color}"></span><h2>⚙️ {module_name} — real function-call chain</h2></div>
-  <p class="rlegend-role">Drilled down from {river_link}'s own Level-2 module node. 🚪 = a real entry point (nothing calls it, or it's <code>init</code> itself) · 🏁 = a real leaf/terminal function (calls nothing else in this module) · ⚙️ = an intermediate real function. {len(funcs)} real functions, {len(edges)} real direct call edges — same grep-based direct-call-only technique as the module-level flow one level up, same honest blind spot: a relationship reached via a callback reference or <code>RPGACE.hooks</code> is invisible here.</p>
+  {back_btn}
+  <p class="rlegend-role">Drilled down from {river_link}'s own Level-2 module node. 🚪 = a real entry point (nothing calls it, or it's <code>init</code> itself) · 🏁 = a real leaf/terminal function (calls nothing else in this module) · ⚙️ = an intermediate real function{' · 🚪 (right, dashed) = a real cross-module backdoor' if has_backdoors else ''}. {len(funcs)} real functions, {len(edges)} real direct call edges — same grep-based direct-call-only technique as the module-level flow one level up, same honest blind spot: a relationship reached via a callback reference or <code>RPGACE.hooks</code> is invisible here.</p>
   <div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">
     <defs>
       <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
@@ -212,6 +288,14 @@ TEMPLATE = """<!DOCTYPE html>
   .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}}
   .hero h1{{font-family:Georgia,serif;font-size:28px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}}
+  .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px}}
+  .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
+  .breadcrumb a:hover{{color:var(--gold);border-color:var(--gold)}}
+  .breadcrumb .bc-here{{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}}
+  .breadcrumb .bc-sep{{color:#4a4a58}}
+  .river-toggle{{max-width:1400px;margin:16px auto 0;padding:0 24px}}
+  .river-toggle-group{{margin-bottom:8px}}
+  .river-toggle-label{{font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px 4px}}
   .tabs{{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}}
   .tab{{padding:6px 14px;border-radius:16px;font-size:11.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
   .tab.active{{background:var(--gold);color:#1a1a12;font-weight:700}}
@@ -219,6 +303,8 @@ TEMPLATE = """<!DOCTYPE html>
   .rdot{{width:12px;height:12px;border-radius:50%}}
   .rhead h2{{font-family:Georgia,serif;font-size:19px;color:#fff}}
   .rlegend-role{{text-align:center;color:var(--dim);font-size:11.5px;max-width:820px;margin:0 auto 16px;line-height:1.6;padding:0 24px}}
+  .back-btn{{display:block;text-align:center;font-size:11px;font-weight:700;color:var(--gold);text-decoration:none;margin:0 0 10px}}
+  .back-btn:hover{{text-decoration:underline}}
   .canvas-wrap{{max-width:1600px;margin:0 auto;overflow-x:auto}}
   svg text{{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}}
   .legend{{max-width:820px;margin:16px auto 40px;padding:0 24px}}
@@ -231,18 +317,23 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
+  <span class="bc-here">🔽 Level 3</span>
+</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 3</div>
   <h1>🔽 Function-Level Drill-Down</h1>
-  <p>Drilled down from <a href="galaxy_map_module.html">a river's own modules (Level 2)</a>, from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Real proof-of-concept — currently {n_modules} of 44 real Level-2 modules have a built Level-3 page; a module without one stays a plain (non-clickable) node at Level 2. Each section shows that module's own real functions and the real direct calls between them, left (entry) to right (terminal), same principle as every other level.</p>
+  <p>Drilled down from <a href="galaxy_map_module.html">a river's own modules (Level 2)</a>, from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. All {n_modules} of 44 real Level-2 modules now have a built Level-3 page. Each section shows that module's own real functions and the real direct calls between them, left (entry) to right (terminal), same principle as every other level. A dashed 🚪 gateway on the far right is a real cross-module "backdoor" — a genuine <code>RPGACE.modules.X.fn()</code> call reaching directly into another module's own chain, jumping there without climbing back up through Level 2/1. Use the river-grouped switcher below to jump between modules without leaving Level 3, or the "← Back to River" button on each section to return to Level 2.</p>
 </div>
-<div class="tabs">{tabs}</div>
+<div class="river-toggle">{river_toggle}</div>
 {sections}
 <div class="note">
   Generated by <code>scripts/galaxy_map_level3.py</code> — real data from <code>graphify_river_group.py</code>'s
-  <code>parse_module_functions()</code>/<code>compute_module_function_flow()</code> (never re-derived, real grep-based
-  direct-call evidence). Real, honest scope: proof-of-concept on {n_modules} module(s)
-  (<code>LEVEL3_MODULES</code>) — the full 44-module rollout is real, scoped, tracked separately.
+  <code>parse_module_functions()</code>/<code>compute_module_function_flow()</code>/<code>compute_cross_module_function_calls()</code>
+  (never re-derived, real grep-based direct-call evidence). All 44 real Level-2 modules built.
   Mapping rules: <code>system_map_spec.md</code>.
 </div>
 <script>
@@ -271,11 +362,27 @@ TEMPLATE = """<!DOCTYPE html>
 
 def main():
     mods = sorted(LEVEL3_MODULES)
-    tabs = ''.join(
-        f'<div class="tab" data-target="mod-{m}">{m}</div>' for m in mods
-    )
+    # Real river-grouped switcher (Aug 13, Alex's own ask: "a toggle
+    # button panel to switch level 2 objects") — organizes the module
+    # switcher by real owning river (_owning_river(), rule 8, not
+    # re-derived) instead of one flat 44-tab wall, so jumping to a
+    # sibling module in the SAME river (the common case) is a short
+    # visual scan, not a search across an unsorted list.
+    by_river = {}
+    for m in mods:
+        by_river.setdefault(_owning_river(m), []).append(m)
+    river_toggle = []
+    for rnum in sorted(by_river, key=lambda r: (r is None, r)):
+        rmods = by_river[rnum]
+        rcolor = RIVER_COLOR.get(rnum, '#8a8a9a')
+        rname = RIVER_NAME.get(rnum, 'Unrouted').split('—')[0].strip()
+        tabs_html = ''.join(f'<div class="tab" data-target="mod-{m}">{m}</div>' for m in rmods)
+        river_toggle.append(
+            f'<div class="river-toggle-group"><div class="river-toggle-label" style="color:{rcolor}">River {rnum} — {rname}</div>'
+            f'<div class="tabs" style="border-bottom:none;padding:0 0 8px;justify-content:flex-start">{tabs_html}</div></div>'
+        )
     sections = ''.join(build_module_section(m) for m in mods)
-    html = TEMPLATE.format(tabs=tabs, sections=sections, n_modules=len(mods))
+    html = TEMPLATE.format(river_toggle=''.join(river_toggle), sections=sections, n_modules=len(mods))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
     total_funcs = sum(len(parse_module_functions(m)) for m in mods)

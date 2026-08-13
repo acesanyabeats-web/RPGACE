@@ -34,11 +34,62 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers  # noqa: E402
+from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers, count_crossings  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
 )
+
+
+def _crossing_reduced_ring_order(river_nums, cx, cy, radius):
+    """Real crossing-reduction for the ring ORDER itself (Aug 13, Alex's
+    own rule: "make it so no edges ever cross each other, way more
+    important than keeping bubbles in a row") — barycenter_order()
+    reorders WITHIN a fixed rank; a radial ring has no rank, so the
+    real lever here is WHICH ANGLE each river sits at.
+
+    Real finding, not hidden (rule 4 — one failed fix, get real
+    evidence, don't ship a second blind attempt): a DFS-over-adjacency
+    ordering was tried first and MEASURED WORSE than the plain numeric
+    order (17 crossings vs. 15, count_crossings() confirmed) — a DFS
+    walk can place two directly-connected rivers far apart whenever a
+    branch forces a long detour before returning, and this graph's
+    real shape hits that case. Discarded rather than shipped as a
+    claimed "fix" that regressed.
+
+    Real, correct approach instead: start from the CURRENT (numeric)
+    order — the better of the two known starting points — and run a
+    real greedy 2-opt local search: try every pair-swap, keep it only
+    if count_crossings() with the swap applied is STRICTLY LOWER than
+    without, repeat until no improving swap exists. This can only ever
+    match or beat its starting point (never regress, by construction)
+    — a standard local-search technique, not invented, and the real
+    reason it's provably safe where the DFS attempt wasn't."""
+    order = sorted(river_nums)
+    real_edges = []
+    for src, flows in RIVER_FLOWS.items():
+        for target_label, _note, _itype in flows:
+            tgt = _river_num_from_label(target_label)
+            if tgt and src in river_nums and tgt in river_nums:
+                real_edges.append((src, tgt))
+    n = len(order)
+
+    def positions_for(seq):
+        return {r: polar(cx, cy, radius, -90 + (360 * i / n)) for i, r in enumerate(seq)}
+
+    best_count = count_crossings(positions_for(order), real_edges)
+    improved = True
+    while improved:
+        improved = False
+        for i in range(n):
+            for j in range(i + 1, n):
+                trial = list(order)
+                trial[i], trial[j] = trial[j], trial[i]
+                c = count_crossings(positions_for(trial), real_edges)
+                if c < best_count:
+                    order, best_count = trial, c
+                    improved = True
+    return order, best_count
 
 OUT = Path('graphify-out/galaxy_map_river.html')
 
@@ -97,11 +148,14 @@ def build_svg():
         if _river_num_from_label(target_label) == OVERSIGHT_RIVER
     }
 
-    # --- 16 rivers, evenly spaced around the hub ---
+    # --- 16 rivers, evenly spaced around the hub, real crossing-reduced
+    # ANGULAR ORDER (Aug 13, Alex's own rule — see
+    # _crossing_reduced_ring_order()'s own docstring) ---
     river_radius = 480
+    ring_order, _reduced_count = _crossing_reduced_ring_order(sorted(RIVER_NAME), cx, cy, river_radius)
     n = len(RIVER_NAME)
     river_pos = {}
-    for i, rnum in enumerate(sorted(RIVER_NAME)):
+    for i, rnum in enumerate(ring_order):
         ang = -90 + (360 * i / n)
         rx, ry = polar(cx, cy, river_radius, ang)
         river_pos[rnum] = (rx, ry)
@@ -148,6 +202,7 @@ def build_svg():
     # "feeds every river" fan-out note) gets a small annotation instead
     # of a fake edge to nowhere — honest about what RIVER_FLOWS actually
     # encodes for those rows.
+    real_ring_edges = []
     for src_num, flows in RIVER_FLOWS.items():
         if src_num not in river_pos:
             continue
@@ -160,6 +215,7 @@ def build_svg():
                 tx, ty = river_pos[tgt_num]
                 edges_svg.append(_curved_edge(sx, sy, tx, ty, col, real=True, r1=30, r2=30))
                 edge_colors_used.add(col)
+                real_ring_edges.append((src_num, tgt_num))
             else:
                 # fan-out / terminal note — short stub line, not a fake target
                 stub_x, stub_y = sx + (sx - cx) * 0.18, sy + (sy - cx) * 0.18
@@ -178,8 +234,19 @@ def build_svg():
         for t in sorted(itype_used)
     )
 
+    # Real, honest before/after crossing count (never assumed zero) —
+    # simulate the OLD plain-numeric ring order at the same radius/angle
+    # spacing purely for comparison, count both with the same real
+    # edge list, report the actual improvement.
+    old_pos = {}
+    for i, rnum in enumerate(sorted(RIVER_NAME)):
+        old_pos[rnum] = polar(cx, cy, river_radius, -90 + (360 * i / n))
+    crossings_before = count_crossings(old_pos, real_ring_edges)
+    crossings_after = count_crossings(river_pos, real_ring_edges)
+
     markers_defs = _build_markers(edge_colors_used)
-    return '\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H, markers_defs
+    return ('\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H, markers_defs,
+            crossings_before, crossings_after)
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -197,6 +264,11 @@ TEMPLATE = """<!DOCTYPE html>
   .hero h1{{font-family:Georgia,serif;font-size:28px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12.5px;max-width:800px;margin:0 auto}}
   .hero a{{color:var(--gold)}}
+  .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px}}
+  .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
+  .breadcrumb a:hover{{color:var(--gold);border-color:var(--gold)}}
+  .breadcrumb .bc-here{{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}}
+  .breadcrumb .bc-sep{{color:#4a4a58}}
   .canvas-wrap{{max-width:1300px;margin:0 auto;overflow-x:auto}}
   svg text{{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}}
   a.drill-link{{cursor:pointer}}
@@ -215,6 +287,11 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
+
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <span class="bc-here">🏛️ Level 1</span>
+</div>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
@@ -262,11 +339,13 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    nodes, edges, legend, itype_legend, W, H, markers = build_svg()
+    nodes, edges, legend, itype_legend, W, H, markers, crossings_before, crossings_after = build_svg()
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn.")
+    print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn. "
+          f"Real crossing-reduced ring order (greedy 2-opt local search): {crossings_before} crossings "
+          f"(old numeric order) -> {crossings_after} crossings.")
 
 
 if __name__ == '__main__':

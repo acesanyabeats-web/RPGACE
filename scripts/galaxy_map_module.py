@@ -84,7 +84,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon  # noqa: E402
+from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon, barycenter_order, count_crossings  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
@@ -205,6 +205,16 @@ def build_river_section(rnum):
             buckets.setdefault(rank.get(m, 0), []).append(m)
         rank_x = {2: X_TERM, 1: X_R1, 0: X_R0, -1: X_RM1}
 
+        # Real crossing-reduction pass (Aug 13, Alex's own rule: "make it
+        # so no edges ever cross each other, way more important than
+        # keeping bubbles in a row") — barycenter_order() reorders each
+        # bucket's own vertical stacking by the real edges connecting it
+        # to the buckets on either side, sweeping left-to-right/right-
+        # to-left across the real rank sequence (rule 8, shared helper,
+        # not reinvented per level).
+        pair_edges = [(f, t) for f, t, _k in FLOW_EDGES.get(rnum, [])]
+        buckets = barycenter_order(buckets, pair_edges, [-1, 0, 1, 2])
+
         def _place_col(items, x):
             n = len(items) or 1
             for i, it in enumerate(items):
@@ -254,6 +264,20 @@ def build_river_section(rnum):
             mx, my = mod_pos[m]
             edges_svg.append(_curved_edge(X_HUB, cy, mx, my, color, real=True, r1=34, r2=22))
 
+        # Real, explicit terminal-DESTINATION rule (Aug 13, Alex's own
+        # direct ask): "each level 2 should have an end point [that]
+        # should flow into another level 2 or level 3 map down the
+        # river (or say output is shown to RPGACE ui output)... if it
+        # doesnt, its not the true end of the map." A terminal only
+        # counts as a real, honest end-of-map if it declares ONE of:
+        # a real UI-visible output, a real external-AI connection, or a
+        # real river-to-river RIVER_FLOWS exit — Level 3 (🔽) is real
+        # and always shown too, but per Alex's own wording it's an
+        # ADDITION ("still keep view of level 3"), not a substitute for
+        # a real declared destination.
+        real_out_conns = [c for c in conns if c[0] == 'out']
+        out_targets_str = ', '.join(RIVER_NAME[o].split('—')[0].strip() for _d, o, _n, _i in real_out_conns[:2]) or None
+
         for m in mods:
             if m not in mod_pos:
                 continue
@@ -261,8 +285,18 @@ def build_river_section(rnum):
             is_term = (m in terminal_mods)
             term_badge = ''
             if is_term:
-                term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(terminal_kind.get(m), '')
+                tk = terminal_kind.get(m)
+                term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(tk, '')
                 term_badge = f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="12">{term_icon}</text>'
+                if tk in ('ui', 'both'):
+                    dest_txt, dest_col = '🖥️ Output: RPGACE UI', '#3DAA6E'
+                elif out_targets_str:
+                    dest_txt, dest_col = f'→ {out_targets_str}', color
+                elif tk == 'ai':
+                    dest_txt, dest_col = '🔮 Output: external AI provider', '#9B59B6'
+                else:
+                    dest_txt, dest_col = '⚠️ No declared downstream', '#E0A040'
+                term_badge += f'<text x="{mx}" y="{my-44}" text-anchor="middle" font-size="7.5" fill="{dest_col}">{dest_txt}</text>'
             ring_w = '3.5' if is_term else '2'
             weight_attr = ' font-weight="700"' if is_term else ''
             has_l3 = m in LEVEL3_MODULES
@@ -281,12 +315,46 @@ def build_river_section(rnum):
                     f'{term_badge}<g class="node">{node_inner}</g>'
                     f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
                 )
-        for frm, to in FLOW_EDGES.get(rnum, []):
+        # Real, honest distinction (Aug 13, /misunderstanding fix — see
+        # compute_intra_river_flow()'s own docstring): a 'direct' edge
+        # is a literal RPGACE.modules.X() call, drawn solid; 'wrap'/
+        # 'utility'/'dom' are real but INFERRED convergence (a shared
+        # window.callOracle/sendChat wrap chain, a shared RPGACE.utils.
+        # sendToOracle/fillGaps call, or direct #chat-input/#send-btn
+        # DOM triggering) — drawn dashed + labeled, never presented as
+        # the same strength of evidence as a direct call.
+        INDIRECT_LABEL = {'wrap': 'via callOracle/sendChat wrap chain',
+                           'utility': 'via shared RPGACE.utils.sendToOracle', 'dom': 'via direct chat-input/send-btn DOM trigger'}
+        edge_touched = set()
+        for frm, to, kind in FLOW_EDGES.get(rnum, []):
             if frm in mod_pos and to in mod_pos:
                 fx, fy = mod_pos[frm]
                 tx, ty = mod_pos[to]
-                edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, r1=22, r2=22, offset_mult=1.3))
+                dashed = kind != 'direct'
+                edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, dashed=dashed, r1=22, r2=22, offset_mult=1.3))
                 edge_colors_used.add(color)
+                edge_touched.add(frm); edge_touched.add(to)
+                if dashed:
+                    mxm, mym = (fx + tx) / 2, (fy + ty) / 2 - 8
+                    nodes_svg.append(f'<text x="{mxm}" y="{mym}" text-anchor="middle" font-size="7.5" fill="{color}" opacity="0.75">{INDIRECT_LABEL[kind]}</text>')
+
+        # Real, honest flag (Aug 13, Alex's own rule: "at level 2 nothing
+        # should be disconnected... it should flow in one coherent
+        # pipeline") — a module that STILL has zero real edge after all
+        # 4 detection signals is a genuine remaining gap, marked plainly
+        # rather than left as a silent dead-end spoke.
+        for m in mods:
+            if m in mod_pos and m not in edge_touched and m not in terminal_mods:
+                mx, my = mod_pos[m]
+                # Precise wording, not "no detected link" bare — real
+                # cross-RIVER function calls (Level 3's own backdoor
+                # data) can and do exist for a module that's genuinely
+                # isolated WITHIN its own river; this flag is honestly
+                # scoped to intra-river connectivity only, which is what
+                # this diagram actually draws.
+                nodes_svg.append(
+                    f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="9.5" fill="#E0A040">⚠️ no link within River {rnum}</text>'
+                )
 
         # real "flow anchor" for anything without a per-module citation
         # of its own (externals/skills, and the OUT river connections)
@@ -498,6 +566,11 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12px;max-width:800px;margin:0 auto}}
   .hero a{{color:var(--gold)}}
+  .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px}}
+  .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
+  .breadcrumb a:hover{{color:var(--gold);border-color:var(--gold)}}
+  .breadcrumb .bc-here{{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}}
+  .breadcrumb .bc-sep{{color:#4a4a58}}
   .tabs{{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:1100px;margin:20px auto 8px;padding:0 16px}}
   .tab{{font-size:10.5px;padding:6px 10px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--dim);cursor:pointer;white-space:nowrap}}
   .tab:hover{{border-color:var(--gold)}}
@@ -525,6 +598,12 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
+
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
+  <span class="bc-here">🌊 Level 2</span>
+</div>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
