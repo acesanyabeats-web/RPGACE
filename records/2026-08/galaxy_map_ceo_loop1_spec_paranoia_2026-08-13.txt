@@ -1031,3 +1031,75 @@ and G4 each got a real, direct answer to "does this get inherited or
 re-derived" (inherited — the taxonomy + Oracle-mediation rule are now
 standing convention, not something a future session re-invents).
 
+================================================================
+SAME DAY, 9TH PASS — real /misunderstanding: system_map_spec.md never
+actually explained how RPGACE Total Systems works, then a real
+correction found to be wrong even after the first fix
+================================================================
+
+Alex's real, direct complaint (pasted back my own G3/G4 answer as the
+example): *"you didnt actually include how rpgace total systems works
+in a document that explain how rpgace total systems works... This is
+ridiculous claude, fix up."* Real /misunderstanding repair, run
+directly:
+
+**What was understood, and why**: `system_map_spec.md` was built as a
+pure METHODOLOGY doc — the RULES for constructing a map (hierarchy
+levels, connector conventions, the interaction taxonomy) — deliberately
+never restating real facts other docs already own, per this same
+session's own hard-enforced rule-8 discipline (the manual.html
+dedup pass, done just hours earlier the same day). "A document that
+tells them how to map it all out" was read as "the rules for HOW to
+map," not "the actual content of WHAT is being mapped." Wrong — a doc
+meant to ground graphify/Obsidian/`/cartographer` on "how RPGACE Total
+Systems works" has to actually STATE what Total Systems concretely
+IS, not just the rules for drawing it.
+
+**Real fix, 1st attempt**: added a new §0 — a real inventory of the 4
+galaxies, 16 rivers, and the harness/connector list, explicitly framed
+as sourced from canonical data (never re-invented), at the doc's own
+methodology-level altitude (names + one-line roles, not
+`interconnection_map.md`'s full module-level depth — avoiding a 2nd
+rule-8 violation in the act of fixing the first one).
+
+**Real, separate finding caught immediately after, before Alex even
+saw it — a genuine 2nd bug in the "fix" itself, per Alex's follow-up
+"make sure its all grounded by all oversight docs a) to last"**: the
+16 river one-liners in that first §0 draft were written from
+`RIVER_MODULES`' code-membership list (which module lives in which
+river) rather than `minotaur_map.html`'s own real narrative
+`.river-sub` text (what the river actually DOES) — a real, checkable
+inaccuracy, not a stylistic difference. Concretely wrong example
+caught: River VII was described as "jargonEncyclopedia + encyclopedia
+sync/taxonomy-linking" (inferred from module names) when
+`minotaur_map.html`'s own real text says its actual role is "how a
+branch of the Tree becomes a real, readable article, and how two
+distant branches sometimes merge into something new" (article
+generation + concept fusion) — a materially different, more accurate
+description. Similarly River IX was under-described (just
+"knowledge-gap tracking") when the real text names 4 real Claude-Code-
+bridge channels (Flagged Suggestion/Morning Brief/Fallback Drain/
+OpenMontage Commission).
+
+**Real fix, 2nd pass**: re-pulled all 11 of River I-XI's real
+`.river-sub` text directly from `minotaur_map.html` (grepped by real
+line number, not recalled from memory) and rewrote §0's table to match
+verbatim/close-paraphrase; XII-XVI kept from `RIVER_ROLE_NOTE` (already
+verified accurate against the same source in earlier passes this
+session). A real explanatory note added to §0 itself, naming the
+mistake plainly (`RIVER_MODULES` says WHICH modules, `minotaur_map.
+html` says WHAT the river does — the first draft conflated the two),
+so a future session editing this doc doesn't repeat it.
+
+**Real, honest scope of this fix**: §0 is now grounded against Tier
+(a) (`minotaur_map.html`) and the canonical Python data
+(`RIVER_NAME`/`RIVER_MODULES`/`RIVER_ROLE_NOTE`/`EXTERNAL_CONNECTORS`/
+`SUPABASE_CORE`), cross-checked against `total_system_members`
+(Supabase) for the 4 galaxies. Not independently re-verified against
+every remaining Tier (b)/(c)/(d)/(e) doc line-by-line in this pass —
+that would be a much larger `/loggingregen`-shaped audit; the real,
+targeted fix here closes the specific gap Alex named (the doc didn't
+explain Total Systems at all) with real, checked content, not a
+blanket promise of exhaustive cross-verification beyond what was
+actually done.
+

@@ -3,21 +3,108 @@
 **The real mapping methodology graphify + Obsidian (and the `/cartographer`
 skill) read from.** Built Aug 13 2026, real Alex ask: "make a document for
 graphify and obsidian to read grounded by oversight and RPGACE total
-systems that will tell them how to map it all out." This doc does NOT
-restate facts other docs already own — it states the RULES for turning
-those facts into a map. If a rule here conflicts with a fact in Tier (b)
-(`interconnection_map.md`/`system_flow_map.md`/`ai_tooling_and_rules_map.md`),
-Tier (b) wins; fix this doc, not the other way round (this doc is
-methodology, not truth).
+systems that will tell them how to map it all out."
 
-**Real, standing update discipline**: this doc changes only when the
-mapping METHODOLOGY changes (a new hierarchy level, a new tagging rule,
-a new interaction type) — not on every ordinary content update, which
-still routes through `scripts/graphify_river_group.py`'s own real data
-tables as before. Wired into `update-logging-system`'s artifact map (see
-that skill's own file) and into `/CEO` Grounded Mode (see
-`.claude/skills/CEO/SKILL.md`) so a plan touching the mapping system
-checks this doc first.
+**Real correction, Aug 13, same day — a genuine gap, not a wording
+nuance.** The first version of this doc stated only the RULES for
+drawing a map (hierarchy levels, connector conventions, interaction
+types) and deliberately left out the actual CONTENT of what those
+rules apply to — Alex's own direct correction: *"you didnt actually
+include how rpgace total systems works in a document that explain how
+rpgace total systems works."* He's right — a doc meant to ground
+graphify/Obsidian on how Total Systems works has to actually SAY what
+Total Systems concretely IS (the real galaxies, the real 16 rivers,
+the real connectors), not just the abstract rules for mapping it.
+**Section 0 below is the fix** — a real, concrete inventory, sourced
+directly from the same canonical data every other section already
+points at (never re-invented), read FIRST, before the methodology
+sections that follow. Section 0 is intentionally NOT a second copy of
+`interconnection_map.md`'s own deeper module-level detail — it's the
+real inventory at THIS doc's own galaxy/river altitude (names + real
+one-line roles), the level `/cartographer` and graphify actually need
+to ground a map at.
+
+**Real, standing update discipline**: Section 0 updates whenever a
+real galaxy/river/connector is added or its role changes (the same
+trigger as `scripts/graphify_river_group.py`'s own tables, since
+Section 0 is sourced from them). The methodology sections (1 onward)
+change only when the mapping RULES themselves change. Wired into
+`update-logging-system`'s artifact map (see that skill's own file) and
+into `/CEO` Grounded Mode (see `.claude/skills/CEO/SKILL.md`) so a
+plan touching the mapping system checks this doc first.
+
+---
+
+## 0. The real Total Systems inventory — what actually exists
+
+**4 real galaxies** (own operating boundary, per §3's rule below):
+
+- **RPGACE Architecture** 🏛️ — the app/codebase itself. Every real
+  external connector and AI provider routes through here (or through
+  Oracle specifically, for AI providers — see §3's sharpened rule).
+  Contains the 16 real rivers listed below.
+- **Orchestrator CC** 🧭 — this Claude Code session. Planner/orchestrator:
+  evidence-gathering, dispatch-writing, RPGACE-side schema/UI/doc work.
+  No separate repo — runs inside RPGACE itself.
+- **OpenMontage CC** 🎬 — a separate Claude Code session, agent-operated
+  video pipeline, hands-on execution inside its own repo
+  (`calesthio/OpenMontage`). Real dispatch channel: `openmontage_jobs`.
+- **Graphify CC** 🌐 — the real 4th Total-system member, a separate
+  Claude Code session generating `GRAPH_TREE.html` + the cross-repo
+  global graph. Real dispatch channel: `graphify_jobs`.
+
+**16 real rivers**, all inside the RPGACE Architecture galaxy. Real
+names + real role, sourced Aug 13 (2nd correction, same day) directly
+from `minotaur_map.html`'s own `.river-sub` narrative text for I-XI
+(the authoritative real-role description — pulled verbatim/close-
+paraphrase, NOT re-inferred from `RIVER_MODULES`' code-membership list
+alone, which was the mistake the first version of this section made:
+`RIVER_MODULES` says WHICH modules sit in a river, `minotaur_map.html`
+says WHAT the river actually does) and `RIVER_ROLE_NOTE` for XII-XVI:
+
+| River | Real role (grounded against `minotaur_map.html`) |
+|---|---|
+| I — Gatekeeper's Checkpoint | The real first step of every visit — nothing else happens until this river is crossed (`authGate`) |
+| II — The Great Confluence | Once through the gate: every kind of information that can enter RPGACE, and the two great estuaries it all eventually reaches (`pathRouter` + the Great Tree's own commit point) |
+| III — The Oracle Current | The most common entry point — what happens between typing a message and seeing a reply |
+| IV — The Bookworm River | The longest river in RPGACE — a whole book carried from its cover to a finished shelf entry |
+| V — Two Independent Streams | Content Intelligence still feeds the Great Tree; Schedule Oracle never does — its own separate river, start to finish |
+| VI — The Judgment Chamber | Where ideas from the three entry rivers (Oracle/Bookworm/Content Intel) converge — how RPGACE decides where a new idea belongs in the Great Tree, and how confident it is (`phylumPath`) |
+| VII — The Library Current | Downstream of a real placement — how a branch of the Tree becomes a real, readable article, and how two distant branches sometimes merge into something new (article generation + concept fusion) |
+| VIII — The Confluence Pool | Everything still uncertain, from every river above, gathers in one place, waiting for Alex's own judgment (the real review queue) |
+| IX — The Mirror and the Far Shore | Oracle learns to see its own reflection on everything above — and water leaves RPGACE entirely, carried to a Claude Code session. 4 real channels: Flagged Suggestion, Morning Brief, Fallback Drain, OpenMontage Commission (the one whose far shore is a genuinely different repository) |
+| X — The Confluence of Chronicles | The final estuary — every river above flows into one shared place Alex can see and click into; water from River IX flows back the other way too |
+| XI — Content Production Live | A beat or idea becomes a tracked ConID, carried through its own real phases, with an Oracle bar riding alongside so the conversation and the tracker never drift apart |
+| XII — The API / Auth Layer | The one river carrying literal runtime API traffic to external Total-system members — every OpenMontage/Kimi/Luna/librosa/OpenArt/Composio call routes through here |
+| XIII — Skills | The dispatch discipline every Total-system Claude Code session (Orchestrator CC/Graphify CC/OpenMontage CC) runs against |
+| XIV — Oversight Docs | The shared truth layer Total-system members read from and write into |
+| XV — Session Records / Backlog | Real dispatch/session history — the same real record `openmontage_jobs`/`graphify_jobs` rows themselves become once resolved |
+| XVI — Dev Tooling | The actual scripts that build, ship, and graph the Total system itself (`graphify_river_group.py`/`graphify_to_obsidian.py`/`galaxy_map.py`) |
+
+Rivers XII-XVI are real, not second-class — `minotaur_map.html`'s own
+"🔗 The Total System Gateway" section states this directly: they carry
+the connectors that let RPGACE receive and push data within the Total
+system at all, a genuinely different kind of real traffic than I-XI's
+in-app information flow, not a lesser one.
+
+**Real harness + connector inventory** (canonical source: `EXTERNAL_
+CONNECTORS`/`SUPABASE_CORE` in `scripts/graphify_river_group.py` —
+full per-connector detail, including `tested`/`bridges_to`, lives
+there and in `ai_tooling_and_rules_map.md`'s own 1d/1e tables; this is
+the at-a-glance list, not a 3rd copy of the full detail):
+
+- **Oracle** 🔮 — the real AI-provider harness inside RPGACE
+  Architecture, mediating Anthropic (live/primary), Moonshot AI/Kimi
+  (dormant), and OpenAI/Luna (dormant) — never a direct RPGACE→provider
+  edge (§3).
+- **Self-Awareness** 🪞 — `oracleAppGrounding.SELF_KNOWLEDGE`, Oracle's
+  own live self-knowledge layer.
+- **Supabase** 🗄️ — core infrastructure (not an "external provider" —
+  RPGACE's own persistence layer), real communication (reads) vs.
+  execution (writes) edges (§4).
+- **10 real external connectors**: OpenMontage, Composio, librosa,
+  FFmpeg, OpenArt (deferred), Jina AI, Last.fm, n8n, Whisper — each a
+  real bridge node per §2, tagged tested/untested, never hidden.
 
 ---
 

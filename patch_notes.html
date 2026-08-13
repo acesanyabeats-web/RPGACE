@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🩹 Aug 13 (same day, 9th pass) — real /misunderstanding: <code>system_map_spec.md</code> never actually explained how RPGACE Total Systems works. Fixed twice — the first fix was itself inaccurate.</div>
+    <div class="card-body">
+      Alex's real, direct complaint: "you didnt actually include how rpgace total systems works in a document that explain how rpgace total systems works... This is ridiculous claude, fix up." Correct — the doc stated mapping RULES only, never the actual CONTENT of Total Systems. Added a new §0 real inventory (4 galaxies, 16 rivers, the harness/connector list).
+      <br><br>
+      <strong>A real 2nd bug found in that fix, before it even shipped, per Alex's follow-up "make sure its all grounded by all oversight docs"</strong>: the first §0 draft described the 16 rivers by inferring roles from <code>RIVER_MODULES</code>' code-membership list, not from <code>minotaur_map.html</code>'s own real narrative text — a genuine, checkable inaccuracy (e.g. River VII was described as "encyclopedia sync" when its real documented role is article generation + concept fusion). Re-pulled all 11 river descriptions directly from <code>minotaur_map.html</code> by line number, rewrote §0 to match, and added an explicit note in the doc itself distinguishing "which modules live in a river" from "what the river actually does" so this mistake isn't repeated. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🔧 Aug 13 (same day, 8th pass) — 2 real G2 topology bugs fixed: Oracle now mediates all 3 AI providers; Supabase gets real distinct communication/execution edges.</div>
     <div class="card-body">
       Alex's real direct question first: will G3/G4 (river/function drill-down) fix G2's own relationship bugs? <strong>No</strong> — deeper levels add more detail, they don't correct Level-0 topology. Two real bugs needed a direct fix. <strong>(1)</strong> "oracle is using claude api to orchestrate kimi and luna" — G2's first build had Anthropic/Kimi/Luna as 3 flat, independent connectors off RPGACE Architecture, same as any other. Wrong — Oracle is the real harness deciding which provider gets called. Fixed: all 3 now hang off Oracle specifically (RPGACE Architecture → Oracle → provider), each with a real role label. <strong>(2)</strong> "supabase links should also exist, its communication lines, not execution and changing" — real gap: G1's already-built 11-type interaction taxonomy (this session, earlier) was never actually applied to G2's edges at all. Fixed: every G2 edge now colored by its real interaction type; Supabase specifically gets 2 real distinct edges (<code>read_query</code> + <code>write_commit</code>). A genuine new type, <code>read_query</code>, was added since nothing in the original 10 covered a general real-time read.
