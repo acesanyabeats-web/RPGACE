@@ -1231,3 +1231,70 @@ real citation source, never a substitute for checking live state.
 SKILL.md`. `rpgace_core.min.js`/`main.min.js` re-minified,
 `index.html`'s `rpgace_core.min.js` cache-bust bumped to
 `?v=20260813b`.
+
+================================================================
+SAME DAY, 11TH PASS — real terminology correction: a river is a
+grouping label, not an actor. Alex's own direct fix, folded into the
+spec + the canonical data source + /perspective itself
+================================================================
+
+Alex's real correction, verbatim: "no RPGACE river is the group in
+which the caller exists, no the river itself, it just an overarching
+group for me to understand in terms that both me and RPGACE total
+systems can communicate in so /misunderstanding becomes less
+frequent."
+
+**Real evidence check first**: read `system_map_spec.md` §1 directly
+and found the exact slip — item 2 correctly defines a river as a real
+grouping, but item 4 ("Connector edge... galaxy<->galaxy, river<->river,
+or river<->external") lists river<->river as a peer EDGE TYPE alongside
+real actor-to-actor edges, and §6 said "a river flowing into River
+XIV" — both phrasings imply a river itself can be the source/target of
+a functional relationship, which is exactly the mental model Alex just
+corrected. `RIVER_FLOWS` in `scripts/graphify_river_group.py` (feeding
+both `graph.html`'s node-info panel and `minotaur_map.html`'s
+`.river-flow-next` connectors) had no comment stating this distinction
+either.
+
+**Real, scoped fix — not a rip-out of the established river metaphor**
+(Alex's own long-standing `minotaur_map.html` labyrinth narrative stays
+exactly as-is; the fix is to the literal EDGE SEMANTICS a map/report
+draws, not the human-facing storytelling device):
+1. `system_map_spec.md` gained new §1a — states the rule directly,
+   with Alex's own words quoted, and 2 concrete "what this changes"
+   bullets: every real functional edge has a real actor at each end
+   (never a bare river name); a river<->river flow is a real, GROUNDED
+   AGGREGATE view (must trace to an actual underlying caller-level
+   edge) for human/AI orientation, never a literal 12th interaction
+   type alongside §4's real 11.
+2. §1 item 4 and §6 reworded to remove the river-as-endpoint framing.
+3. `scripts/graphify_river_group.py`'s `RIVER_FLOWS` table gained a
+   real doc comment stating the same rule at its own canonical source,
+   so `/cartographer` and graphify inherit it without a second
+   re-derivation.
+4. **Real, direct implication for `/perspective` itself, caught before
+   it caused a future mistake**: the skill's own Step 1 scope list
+   included `river` as a plain first-person scope alongside galaxy/
+   node/module/feature — writing a first-person "I am River XI" report
+   would have reified the exact mental model Alex just corrected.
+   Fixed: `river` is now a documented special, non-actor scope — a
+   `/perspective` pass at river level compiles a real third-person
+   SYNTHESIS over the real module-level reports grouped inside that
+   river, never a first-person voice claiming the river itself has
+   relationships. Tier B's own description updated to match. Frontmatter
+   description corrected too (river-level reports removed from the
+   "writes a first-person account for X" list).
+
+**Real, honest scope of what was NOT touched**: `minotaur_map.html`'s
+own river-as-metaphor narrative prose (the whole point of that doc) is
+untouched — this fix is about the SYSTEM's literal edge/actor
+semantics (what graphify/`/perspective`/`galaxy_map.py` treat as a real
+relationship), not about retiring a storytelling device Alex actively
+uses and likes. `galaxy_map.py` itself needed zero code change — direct
+check confirmed every edge it draws already connects real actors
+(galaxies/nodes/connectors), never a bare river node — the violation
+was purely in how the RULE was worded, not in what was actually built.
+
+**/drift**: VERDICT on track, BASIS provisional-becomes-ratified (a
+real, direct correction from Alex in this exact conversation). No
+further gap — `python3 -m py_compile` clean on `graphify_river_group.py`.

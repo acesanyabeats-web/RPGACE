@@ -126,9 +126,47 @@ the at-a-glance list, not a 3rd copy of the full detail):
    (`RPGACE.register()` boundaries) and their real functions, per
    `graph.json`'s own AST-extracted nodes (or hand-entered ground-truth
    nodes where the extractor has a confirmed blind spot — see §5).
-4. **Connector edge** — a real, functional link between any two of the
-   above (galaxy↔galaxy, river↔river, or river↔external), tagged by its
-   real interaction TYPE (§4), never by mere proximity.
+4. **Connector edge** — a real, functional link between two real
+   ACTORS (a galaxy, a module/function, or a connector/provider bridge
+   node — see §1a below), tagged by its real interaction TYPE (§4),
+   never by mere proximity.
+
+### 1a. Rivers are a grouping label, not an actor — real Aug 13 correction
+
+**A river never acts, calls, communicates, or gets called — only the
+real caller INSIDE it does.** Alex's own direct correction: "no RPGACE
+river is the group in which the caller exists, not the river itself,
+it's just an overarching group for me to understand in terms that both
+me and RPGACE total systems can communicate in so /misunderstanding
+becomes less frequent." A river is a real, useful CATEGORY — the same
+kind of thing a folder or a tag is — that lets a human and an AI talk
+about "the group of modules that handle X" in one word instead of
+naming every module every time. It has no agency of its own.
+
+**What this changes, concretely:**
+- A real functional edge (§4's interaction types) always has a real
+  ACTOR at each end — a specific galaxy, module/function, or connector
+  — never a bare river name. "River XI triggers OpenMontage" is
+  shorthand for "Content Production Live's own 'Generate Video' button
+  (a real function, which happens to live inside River XI's group)
+  triggers OpenMontage" — the shorthand is fine in prose, but the
+  underlying real edge always cites the real caller, not the river.
+- A "river → river" flow (`RIVER_FLOWS` in `graphify_river_group.py`,
+  drawn as `.river-flow-next` in `minotaur_map.html`) is a real,
+  legitimate AGGREGATE view — it must be grounded in at least one real
+  underlying caller-level edge crossing from a module in river A to a
+  module/connector in river B (never invented for narrative symmetry)
+  — but it is a rolled-up SUMMARY for human/AI orientation, not a
+  literal 12th interaction type sitting alongside §4's 11 real ones.
+  Never point `/perspective`, `galaxy_map.py`, or any Level 0-2 map at
+  a river as if it were itself a Total-system member with its own
+  relationships — that question is only ever answerable by asking the
+  real module/function that lives inside it.
+- This does not deprecate the river metaphor anywhere it already
+  works well (`minotaur_map.html`'s whole labyrinth narrative, this
+  doc's own §0 table) — it only fixes the literal EDGE semantics so a
+  future map/report/self-report never implies a river itself did
+  something, communicated something, or has its own opinion.
 
 **Recursion rule**: keep descending exactly this far — Galaxy → River →
 Module/Function — and no deeper by default. A future 5th level (e.g.
@@ -226,11 +264,12 @@ re-deriving it from scratch.
 ## 6. Oversight connection — how a map level shows its own documentation trail
 
 Per Alex's own explicit rule (Aug 13, Fork 5): every level of this
-hierarchy that has a real, standing connection into Oversight (a river
-flowing into River XIV, a galaxy's own real doc trail) represents that
-connection explicitly — reusing `minotaur_map.html`'s existing
-`.river-flow-next` connector data (`RIVER_FLOWS` in the same Python
-script), never re-derived.
+hierarchy that has a real, standing connection into Oversight (a real
+caller inside one river whose output lands in River XIV, a galaxy's
+own real doc trail) represents that connection explicitly — reusing
+`minotaur_map.html`'s existing `.river-flow-next` connector data
+(`RIVER_FLOWS` in the same Python script — a real aggregate view per
+§1a, always grounded in an actual caller-level edge), never re-derived.
 
 ## 7. Consumer / Developer visibility (real, proposed convention — see the
 Aug 13 record for the open fork this still needs Alex's confirm on)

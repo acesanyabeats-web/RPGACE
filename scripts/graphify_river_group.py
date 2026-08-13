@@ -416,6 +416,15 @@ INTERACTION_TYPE_COLOR = {
     'read_query': '#5FB3D9',
 }
 
+# Real Aug 13 correction (Alex's own words): a river never acts, calls,
+# or communicates — only the real caller (a module/function) living
+# inside it does. Every entry below is a real, GROUNDED AGGREGATE view
+# (at least one actual caller-level edge crosses from a module in the
+# source river into a module/connector in the target river) rolled up
+# for human/AI orientation — never treat a river itself as a Total-
+# system actor with its own relationships. See system_map_spec.md §1a
+# for the full rule; /perspective and galaxy_map.py never draw a river
+# as an edge endpoint, only real galaxies/modules/connectors.
 RIVER_FLOWS = {
     1: [('River II — The Great Confluence', 'always', 'nav_route')],
     2: [

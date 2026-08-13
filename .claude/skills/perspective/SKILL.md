@@ -1,6 +1,6 @@
 ---
 name: perspective
-description: RPGACE's evidence-grounded self-report method — writes a real, first-person "here's who I am, who I actually talk to, and what my correct output looks like" account for any real Total-system element (a galaxy, a harness node, an AI provider, a connector, a river, a module, or — scoped rollout — an individual feature/button), reconstructed from real code/Supabase/doc evidence, never live AI-to-AI dialogue (Claude Code sessions cannot reach each other directly — confirmed via ListAgents). Cross-reading multiple reports surfaces real relationship/topology gaps a top-down map misses (proven twice: 3 galaxy-level findings, 3 node-level findings, both real MATERIAL/CAPTURED/MINOR grade). Each report also writes a real `expected_behavior` baseline to the `perspective_reports` Supabase table — the same baseline `error_log`'s `expected_baseline`/`linked_perspective_id` and `/colourgradient`'s purple-regression check both read, so "what correct looks like" is asserted once and reused, never re-derived per consumer (rule 8). Use this skill whenever Alex says "/perspective", whenever a new Total-system galaxy/node/connector/river is added or changes shape, whenever `/colourgradient` needs a real prior-baseline to grade a purple regression against, or whenever `error_log` needs a real "what should this have looked like" reference for a rationale. Do NOT use this for ordinary code review or a single bug's root-cause (that's `commit-archaeologist`/`/Engineer`'s Truth Check) — `/perspective` answers "what does this element believe its own job and relationships are," not "why did this one thing break."
+description: RPGACE's evidence-grounded self-report method — writes a real, first-person "here's who I am, who I actually talk to, and what my correct output looks like" account for any real Total-system ACTOR (a galaxy, a harness node, an AI provider, a connector, a module, or — scoped rollout — an individual feature/button), reconstructed from real code/Supabase/doc evidence, never live AI-to-AI dialogue (Claude Code sessions cannot reach each other directly — confirmed via ListAgents). A river is NOT an actor and never gets a first-person report (Aug 13 correction — a river is a grouping label, not a caller); a river-level pass instead compiles a real, evidence-grounded SYNTHESIS of the actual reports already written for the real callers grouped inside it. Cross-reading multiple reports surfaces real relationship/topology gaps a top-down map misses (proven twice: 3 galaxy-level findings, 3 node-level findings, both real MATERIAL/CAPTURED/MINOR grade). Each report also writes a real `expected_behavior` baseline to the `perspective_reports` Supabase table — the same baseline `error_log`'s `expected_baseline`/`linked_perspective_id` and `/colourgradient`'s purple-regression check both read, so "what correct looks like" is asserted once and reused, never re-derived per consumer (rule 8). Use this skill whenever Alex says "/perspective", whenever a new Total-system galaxy/node/connector/river is added or changes shape, whenever `/colourgradient` needs a real prior-baseline to grade a purple regression against, or whenever `error_log` needs a real "what should this have looked like" reference for a rationale. Do NOT use this for ordinary code review or a single bug's root-cause (that's `commit-archaeologist`/`/Engineer`'s Truth Check) — `/perspective` answers "what does this element believe its own job and relationships are," not "why did this one thing break."
 ---
 
 # /perspective — real self-reports as a shared behavioral baseline
@@ -34,15 +34,26 @@ topology bug that a normal review pass had already missed twice.
 
 ## Procedure
 
-**Step 1 — Pin the real scope.** One element, one report. Valid scope
-levels, real and growing (see Step 6 for the honest rollout state):
-`galaxy` (RPGACE Architecture / Orchestrator CC / OpenMontage CC / Graphify
-CC), `node` (Oracle, Self-Awareness, Human Gate, the 3 AI providers, the 10
-connectors), `river` (the 16 rivers), `module` (an `RPGACE.register()`
-module or main.js function cluster), `feature` (one real button/flow a user
+**Step 1 — Pin the real scope.** One element, one report. Valid ACTOR
+scope levels, real and growing (see Step 6 for the honest rollout
+state): `galaxy` (RPGACE Architecture / Orchestrator CC / OpenMontage
+CC / Graphify CC), `node` (Oracle, Self-Awareness, Human Gate, the 3 AI
+providers, the 10 connectors), `module` (an `RPGACE.register()` module
+or main.js function cluster), `feature` (one real button/flow a user
 actually clicks). Never write a report for an abstraction with no real
-evidence trail — if you can't cite code/Supabase for it, it isn't in scope
-yet.
+evidence trail — if you can't cite code/Supabase for it, it isn't in
+scope yet.
+
+**`river` is a special, non-actor scope (system_map_spec.md §1a)** — a
+river is the real GROUP a caller lives inside, not itself a caller.
+Never write a first-person "I am River XI" report; it would reify a
+grouping label as if it had agency, exactly what Alex's Aug 13
+correction flags. A river-level `/perspective` pass instead means:
+gather the real `module`-level reports for everything grouped inside
+that river (writing any that don't exist yet), then compile one real,
+third-person SYNTHESIS — "here is what the real callers grouped under
+this river actually do and relate to, in one place" — citing each
+underlying module report rather than speaking as the river itself.
 
 **Step 2 — Gather real evidence before writing a word.** Grep the actual
 call sites, read the actual module, query the actual Supabase table this
@@ -101,8 +112,11 @@ everywhere else:
   further, rule 8: don't build a NEW baseline layer while the FIRST one
   still exists only in a `.txt` file).
 - **Tier B — real next step, not started.** The 16 rivers — a bounded,
-  enumerable set, matches `minotaur_map.html`'s own real structure. A
-  natural `/CEO` Loop 2 plan item once Tier A's rows are real.
+  enumerable set, matches `minotaur_map.html`'s own real structure. Per
+  the non-actor river rule above, this tier is 16 real SYNTHESIS
+  reports over the real module-level reports grouped inside each
+  river, not 16 more first-person self-reports. A natural `/CEO` Loop 2
+  plan item once Tier A's rows are real.
 - **Tier C/D — genuinely future, explicitly not scoped in detail here.**
   Module-level and individual-feature-level reports could number in the
   hundreds (52 registered rpgace_core.js modules alone, 240+ main.js

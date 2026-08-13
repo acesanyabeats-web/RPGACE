@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🗺️ Aug 13 (same day, 12th pass) — real terminology fix: a river is a grouping label, not an actor.</div>
+    <div class="card-body">
+      Alex's direct correction: "no RPGACE river is the group in which the caller exists, no the river itself, it just an overarching group for me to understand in terms that both me and RPGACE total systems can communicate in so /misunderstanding becomes less frequent." Real evidence check found the exact slip: <code>system_map_spec.md</code> §1 listed <code>river↔river</code> as a peer edge type alongside real actor-to-actor edges, and §6 said "a river flowing into River XIV" — both implied a river itself could be the source/target of a real relationship.
+      <br><br>
+      Fixed at the source, not just reworded: new §1a states the rule directly (every real edge cites a real actor at each end; a river-to-river flow in <code>RIVER_FLOWS</code> is a real, grounded AGGREGATE summary, never a literal 12th interaction type). <code>scripts/graphify_river_group.py</code>'s <code>RIVER_FLOWS</code> table gained a matching doc comment. Caught a real forward-looking mistake in the brand-new <code>/perspective</code> skill before it caused trouble: <code>river</code> was listed as a plain first-person scope — fixed so a river-level pass is a third-person synthesis over its real module-level reports, never an "I am River XI" voice. <code>minotaur_map.html</code>'s river-as-metaphor narrative is untouched — this fixes literal edge/actor semantics, not the storytelling device Alex actively uses. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code> (11th pass).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🪞 Aug 13 (same day, 11th pass) — <code>/perspective</code> built for real: node-level interview found 3 more real topology bugs, then the skill + a real 21-row Supabase baseline table shipped.</div>
     <div class="card-body">
       Continuation of the galaxy-level pilot (below): Alex pasted the full 13-node legend and asked for the same evidence-grounded self-report treatment on every node/connector. Same discipline — no live AI-to-AI dialogue, every report built from real grep/query evidence. <strong>3 more real findings, all fixed in <code>galaxy_map.py</code></strong>: a duplicate Graphify CC node (rendered as both its own galaxy and a flat connector — real rule-8 violation); FFmpeg wrongly drawn with a direct RPGACE Architecture edge when its own documented note says it's never called directly by any river (reattached to OpenMontage CC); and 2 missing real Supabase write edges (OpenMontage CC and Graphify CC both write directly to Supabase with the plain anon key, bypassing RPGACE Architecture — a real relationship the map didn't show).
