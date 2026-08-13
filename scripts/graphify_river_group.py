@@ -690,6 +690,98 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
     return flows
 
 
+LEVEL3_MODULES = {'beatLog'}
+# Aug 13, real Level-3 proof-of-concept (Alex's own direct ask: "flow
+# through a level 3 structure which is a module or function... those
+# flow through buttons being the gateway to level 3 diagrams"). The
+# real, canonical list of modules that actually have a built Level-3
+# page — a module only ever becomes a clickable Level-2 gateway
+# (galaxy_map_module.py) once it's genuinely in this set, never a
+# guessed/empty destination. beatLog is the proof-of-concept: 19 real
+# functions, 19 real call edges (compute_module_function_flow()),
+# matching manual.html's own long-standing "4 parallel actions (see
+# Level 2 diagram)" cross-reference note. Full rollout across all 44
+# real Level-2 modules is real, scoped, deliberately NOT built this
+# pass — see ceo_plan_items G14, same "prove the pattern on one case
+# first" discipline already used for Phylum 11's own restructure.
+
+
+def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
+    """Real, mechanical function inventory for ONE module — Aug 13 Level-3
+    proof-of-concept (Alex's own ask: "flow through a level 3 structure
+    which is a module or function... those flow through buttons being
+    the gateway to level 3 diagrams"). Greps the module's own real
+    source block (parse_module_ranges(), rule 8) for its own top-level
+    `_funcName: function(...)` / `funcName: function(...)` definitions —
+    the same real object-literal-method shape every RPGACE.register()
+    module uses. Returns [func_name, ...] in real source order (top to
+    bottom), never alphabetized or reordered — source order is itself
+    real evidence of a module's own intended read order.
+
+    Real, honest scope limit: only catches DIRECT `name: function` /
+    `name: async function` top-level methods on the module object
+    literal — a function nested inside another function's own body
+    (a closure) is deliberately not surfaced as a separate node, since
+    it isn't part of the module's own real public/callable surface."""
+    ranges = parse_module_ranges(core_js_path)
+    if module_name not in ranges:
+        return []
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    s, e = ranges[module_name]
+    block_lines = lines[s - 1:e]
+    funcs = []
+    for line in block_lines:
+        m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
+        if m and m.group(1) not in funcs:
+            funcs.append(m.group(1))
+    return funcs
+
+
+def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
+    """Real, mechanical function-to-function call edges WITHIN one
+    module — the function-grain sibling of compute_intra_river_flow()
+    (rule 8, same technique, one level deeper). For each of the
+    module's own real functions (parse_module_functions()), greps that
+    function's own real source body for a literal `self.<sibling>(` or
+    `<moduleName>.<sibling>(` call to another function in the same
+    module. Returns [(from_func, to_func), ...].
+
+    Real, honest scope limit, same shape as the module-level version:
+    only DIRECT same-module calls are caught. A call reached through
+    RPGACE.hooks.fire(), a callback passed by reference, or a dynamic
+    property lookup is invisible here — an absence is not proof no
+    real relationship exists, only that no direct call was found."""
+    ranges = parse_module_ranges(core_js_path)
+    if module_name not in ranges:
+        return []
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    s, e = ranges[module_name]
+    block_lines = lines[s - 1:e]
+    funcs = parse_module_functions(module_name, core_js_path)
+    if not funcs:
+        return []
+    # Split the module block into per-function real source spans by
+    # finding each function's own definition line, then taking
+    # everything up to the next top-level function definition (or the
+    # end of the module) as that function's real body.
+    def_lines = []
+    for i, line in enumerate(block_lines):
+        m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
+        if m and m.group(1) in funcs:
+            def_lines.append((i, m.group(1)))
+    edges = []
+    for idx, (start_i, fname) in enumerate(def_lines):
+        end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
+        body = '\n'.join(block_lines[start_i:end_i])
+        for other in funcs:
+            if other == fname:
+                continue
+            if re.search(r'\bself\.' + re.escape(other) + r'\s*\(', body) or \
+               re.search(re.escape(module_name) + r'\.' + re.escape(other) + r'\s*\(', body):
+                edges.append((fname, other))
+    return edges
+
+
 def compute_river_terminals(rnum, flow_edges):
     """Real, computed 'where does this river's own module flow actually
     land' marker — Alex's own "conjoin eventually at [a visible output]"

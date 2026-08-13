@@ -2089,3 +2089,90 @@ SELF_KNOWLEDGE` (node --check clean this time on first try — the
 `\'` vs `''` lesson from earlier this session held). `rpgace_core.
 min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
 `?v=20260813l`.
+
+===============================================================
+SAME DAY, 23RD PASS — G14 logged + real Level-3 proof-of-concept
+shipped (function-level drill-down).
+===============================================================
+
+Alex's exact ask: "okay lets do g6 now, ill do more critique later,
+want every node to get documented in the galaxy map. the galaxy map
+will be the data primarily used to fill out smoke test with
+categories and groups in place with different levels, and full
+manual to combine with it to show whats in a button to help diagnose
+errors for purple regression. and i'd like to reitterate level 2
+diagram left to right: it should only end as rivers as exits and
+flow through a level 3 structure which is a module or function, with
+those flow through buttons being the gateway to level 3 diagrams"
+
+**Real mismatch caught before building anything**: the ratified G6 in
+ceo_plan_items is actually "Truth-source promotion: doc updates
+declaring the galaxy map a real Tier (f) truth source" — a docs task,
+not what Alex described. Flagged to him directly rather than silently
+building the wrong thing under the "G6" label. What he described is
+new, larger scope, logged as a new item instead:
+
+**G14 (new, ratified, red)**: "Level 3 drill-down (module -> real
+functions) + full node-documentation coverage + smoke_test.html
+group/level restructuring + manual.html Button/Chain fusion for
+purple-regression diagnosis." Real, honest scope split into 4 real
+facets, only the first one built this pass:
+
+1. **Level 3 function-level drill-down — REAL PROOF-OF-CONCEPT SHIPPED
+   this pass.** Real evidence gathered first: `manual.html`'s own
+   "Log Beat + Find Artists" row already said "4 parallel actions (see
+   Level 2 diagram)" — a real, unfulfilled cross-reference. Confirmed
+   `beatLog` has 19 real top-level functions via a direct grep test
+   before writing any generator code.
+   - New `parse_module_functions()`/`compute_module_function_flow()`
+     in `graphify_river_group.py` — same real grep-based direct-call
+     technique as `compute_intra_river_flow()`, one level deeper
+     (rule 8, not reinvented): finds real `self._fn()` calls within
+     each function's own real source span.
+   - New `LEVEL3_MODULES = {'beatLog'}` — the real, canonical,
+     honestly-scoped list of modules with an actual built Level-3
+     page (currently 1 of 44 real Level-2 modules).
+   - New `scripts/galaxy_map_level3.py` — one section per
+     LEVEL3_MODULES entry, real left-to-right layout by computed
+     call-depth (`compute_function_rank()`, real BFS from real entry
+     points, same principle as every other level), reuses
+     `_curved_edge()`/`_build_markers()` from galaxy_map.py (rule 8).
+   - `galaxy_map_module.py`: qualifying module nodes (currently just
+     beatLog in River XI) become a real `<a href="galaxy_map_level3.
+     html#mod-beatLog">` drill-link with a 🔽 badge — Alex's own
+     literal ask, "those flow through buttons being the gateway to
+     level 3 diagrams." A real legend line names which module(s) in
+     that river have a built Level-3 page.
+
+   Real verification: headless Chromium confirmed the Level-2
+   drill-link resolves correctly, the Level-3 page renders beatLog's
+   real 19-function/19-edge chain with zero console errors, div/svg/
+   a/g/section balance clean on all 4 regenerated files.
+
+2. **Full node-documentation coverage (all 44 modules getting Level 3,
+   not just beatLog)** — real, scoped, explicitly NOT built this pass.
+   Matches the Phylum-11-restructure precedent: prove the pattern on
+   one real case, verify it, THEN scale — not attempted all at once to
+   protect quality.
+
+3. **smoke_test.html real category/group/level restructuring, sourced
+   from the galaxy map hierarchy** — real evidence gathered: current
+   `smoke_test_items` schema has a flat `category` text column, no
+   `group`/`level` columns exist yet. Real, scoped, NOT built this
+   pass — needs its own real schema design pass tied to the galaxy
+   hierarchy (galaxy/river/module/function), not guessed blind.
+
+4. **manual.html Button/Chain data fused with the galaxy map for
+   purple-regression diagnosis** — real evidence gathered: manual.
+   html's own "Chain" column already holds real button->function
+   call-chain prose, organized by DOMAIN (GLOBAL/ORACLE/CONTENT/etc),
+   not by river — and confirmed via grep that River I's own authGate
+   isn't represented in manual.html at ALL, a real, concrete instance
+   of the "not every node is documented" gap Alex named. Real, scoped,
+   NOT built this pass.
+
+**Oversight updated same session**: `oracleAppGrounding.
+SELF_KNOWLEDGE` (node --check clean), Oversight popup gained a new
+"Galaxy Map (Level 3 — Function Chains)" auto-generated entry.
+`ceo_plan_items` gained the real G14 row, all 4 facets recorded, only
+facet 1 marked built.

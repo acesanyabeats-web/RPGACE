@@ -90,6 +90,7 @@ from graphify_river_group import (  # noqa: E402
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminals,
     ALL_SKILLS, SKILL_SECONDARY_RIVER, compute_module_flow_rank, dashboard_card_target_module,
+    LEVEL3_MODULES,
 )
 
 OUT = Path('graphify-out/galaxy_map_module.html')
@@ -118,6 +119,9 @@ OVERSIGHT_FEEDERS = {
 
 MODULE_ICON = '⚙️'
 CARD_ICON_FALLBACK = '🎯'
+# LEVEL3_MODULES imported above from graphify_river_group.py (rule 8 —
+# the real canonical list of modules with a built Level-3 page lives
+# with its own computation, not duplicated here).
 
 
 EXTERNAL_COLOR = '#5FB3D9'  # same family as Supabase's Level-0 accent — "external infra," not a river's own color
@@ -261,11 +265,22 @@ def build_river_section(rnum):
                 term_badge = f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="12">{term_icon}</text>'
             ring_w = '3.5' if is_term else '2'
             weight_attr = ' font-weight="700"' if is_term else ''
-            nodes_svg.append(
-                f'{term_badge}<g class="node"><circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="{ring_w}" filter="url(#glow)"/>'
-                f'<text x="{mx}" y="{my+5}" text-anchor="middle" font-size="14">{MODULE_ICON}</text></g>'
-                f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
+            has_l3 = m in LEVEL3_MODULES
+            l3_badge = '<text x="{0}" y="{1}" text-anchor="middle" font-size="10">🔽</text>'.format(mx + 17, my - 17) if has_l3 else ''
+            node_inner = (
+                f'<circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="{ring_w}" filter="url(#glow)"/>'
+                f'<text x="{mx}" y="{my+5}" text-anchor="middle" font-size="14">{MODULE_ICON}</text>'
             )
+            if has_l3:
+                nodes_svg.append(
+                    f'{term_badge}<a href="galaxy_map_level3.html#mod-{m}" class="drill-link"><g class="node">{node_inner}</g></a>{l3_badge}'
+                    f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
+                )
+            else:
+                nodes_svg.append(
+                    f'{term_badge}<g class="node">{node_inner}</g>'
+                    f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
+                )
         for frm, to in FLOW_EDGES.get(rnum, []):
             if frm in mod_pos and to in mod_pos:
                 fx, fy = mod_pos[frm]
@@ -413,6 +428,10 @@ def build_river_section(rnum):
             legend += f'<p class="rlegend-role">🎯 Real terminal: <code>{m}</code> — {reason_map[terminal_kind[m]]}.</p>'
     elif mods:
         legend += '<p class="rlegend-role">🎯 No computed terminal — a real relationship may still exist through a UI path or RPGACE.hooks dispatch this mechanical check can\'t see (same confirmed blind spot as graphify\'s own AST extractor), not claimed as a real gap in the app itself.</p>'
+    l3_here = [m for m in mods if m in LEVEL3_MODULES]
+    if l3_here:
+        l3_list = ', '.join(f'<code>{m}</code>' for m in l3_here)
+        legend += f'<p class="rlegend-role">🔽 Real Level-3 drill-down exists for: {l3_list} — click its node to see that module\'s own real function-call chain.</p>'
     mod_list = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '<i>no single-module home — see role note</i>'
     def _card_row(c):
         partial_badge = ' <span class="warn">partial</span>' if c.get('partial') else ''
