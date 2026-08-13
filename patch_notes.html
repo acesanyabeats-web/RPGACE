@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🩺 Aug 13 (same day, 22nd pass) — real <code>/misunderstanding</code>: co-terminal computation fixed (River V was silently picking one of two real terminals), plus a genuine z-order/spacing fix so incoming river connections stop crossing the hub.</div>
+    <div class="card-body">
+      Alex's direct ask, 2 screenshots attached: "now the rivers connecting to river at beginning should be behind the river in focus, left to right is also chronological order of operations and delving me from one end to my desired output. why is morning brief separated from the rest? /misunderstanding the code causing this so i can come up with a fix"
+      <br><br>
+      Real root cause, found by direct evidence: the old <code>compute_river_terminal()</code> (singular) returned the FIRST dashboard-card-cited module it found — River V genuinely has two equally real terminals (morningBrief, journalQoL, each with its own dashboard card), and an unrelated table's definition order happened to put morningBrief first, silently discarding journalQoL's own equally valid citation. Not a typo — a real gap in the terminal-selection algorithm's own design. Fixed: <code>compute_river_terminals()</code> (plural) now returns every real co-terminal, disambiguating via in-degree only when it strictly favors one over ALL others.
+      <br><br>
+      Z-order fix, Alex's own literal ask: incoming connection bubbles were drawn AFTER the hub's own markup, so in real SVG paint order they rendered on top of it. Fixed by drawing them first. A first attempt at widening the gap (<code>X_IN=-140</code>) introduced a real second bug — that sat outside the canvas's own <code>viewBox="0 0 1900 950"</code>, making the nodes genuinely invisible, caught by re-checking the actual rendered SVG rather than assuming the fix worked. Real fix: moved the hub itself right (X_HUB 90→280) to make genuine on-canvas room, incoming connections at X_IN=90 — now visibly and correctly LEFT of the hub.
+      <br><br>
+      Verified via headless Chromium on River V (both terminals now render together, incoming connections clear of the hub), River I and River XI (regression checks, both clean) — zero console errors, div/svg/a/g balance clean. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code> (22nd pass).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">➡️ Aug 13 (same day, 21st pass) — Level 2 rebuilt as a genuine left-to-right flow: a real, standing layout principle for all future updates.</div>
     <div class="card-body">
       Alex's direct correction on the (until now radial) River I diagram: "it should be flowing from left (input) to right (output) and depict contributers along the way... the river flows through modules into river 2. make this a principal of how level 2 maps work for future updates."

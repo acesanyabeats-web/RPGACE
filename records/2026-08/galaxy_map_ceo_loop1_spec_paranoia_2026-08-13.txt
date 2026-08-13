@@ -2015,3 +2015,77 @@ as a real recurring risk when SQL and JS string-editing interleave in
 one long session), `rpgace_core.js` (Oversight popup Level-2
 description). `rpgace_core.min.js`/`main.min.js` re-minified,
 `index.html` cache-bust bumped to `?v=20260813k`.
+
+===============================================================
+SAME DAY, 22ND PASS — real /misunderstanding-diagnosed fix: co-
+terminal computation + incoming-connection z-order/spacing.
+===============================================================
+
+Alex's exact ask, two screenshots attached (River V hub area with
+incoming-connection bubbles visually crossing the hub; morningBrief
+rendered isolated far from its 9 real siblings): "now the rivers
+connecting to river at beginning should be behind the river in
+focus, left to right is also chronological order of operations and
+delving me from one end to my desired output. why is morning brief
+separated from the rest? /misunderstanding the code causing this so
+i can come up with a fix"
+
+**Root cause, found via real evidence (not guessed)**: the OLD
+`compute_river_terminal()` (singular) iterated `CARDS_BY_RIVER`
+looking for a dashboard-card citation and returned the FIRST match —
+River V has two equally real, equally cited terminals (morningBrief,
+the Morning Brief dashboard card; journalQoL, the Journal dashboard
+card), and DASHBOARD_CARDS' own unrelated definition order happened
+to put morningBrief first. The function had no concept of "more than
+one real terminal" — it silently discarded journalQoL's own equally
+valid citation, then `compute_module_flow_rank()` ranked
+morningBrief 2 (terminal) and journalQoL fell to a lower rank,
+physically separating it from its own real sibling. Not a coding
+typo — a real design gap in the terminal-selection algorithm itself.
+
+**Fix**: `compute_river_terminal()` → `compute_river_terminals()`
+(plural), returning every real co-terminal — disambiguating via
+in-degree ONLY when it strictly favors one candidate over ALL
+others, otherwise keeping every equally-cited module. River V now
+correctly returns `[('morningBrief','ui'), ('journalQoL','ui')]`.
+`compute_module_flow_rank()` updated to accept a list. Verified
+directly in Python before touching the generator: `terminals =
+compute_river_terminals(5, FLOW_EDGES)` → both modules present.
+
+**Z-order fix (Alex's own literal ask — "behind the river in
+focus")**: incoming (FLOWS_IN) connection bubbles/edges were being
+appended to `nodes_svg`/`edges_svg` AFTER the hub's own `<g
+class="node central">` markup — in real SVG paint order (later =
+on top), this put them visually ON TOP of the hub, exactly what the
+screenshot showed. Fixed by drawing incoming connections FIRST, hub
+markup appended after.
+
+**Real second bug caught by re-verifying, not assumed away**: the
+first fix attempt set `X_IN = -140` to also widen the gap — this sat
+OUTSIDE the canvas's own `viewBox="0 0 1900 950"` (starts at x=0),
+making incoming-connection nodes genuinely invisible, not just
+tightly spaced. Caught by re-running the headless-Chromium check and
+reading the actual rendered `<circle cx>` values before declaring
+this done (rule 1 — pull real evidence, don't assume a fix worked).
+Real fix: moved `X_HUB` itself right (90→280) to make genuine
+on-canvas room, `X_IN=90` — incoming connections now sit clearly
+LEFT of the hub, fully visible, embodying the same left(input)-to-
+right(output) principle already governing modules/terminals/outgoing
+connections, not just a z-order patch bolted on separately.
+
+**Real verification, 3 rivers, not assumed**: headless Chromium on
+River V (confirmed both morningBrief AND journalQoL render together
+as co-terminals with the 👁️ badge, confirmed incoming River II/III
+connections render left of the hub with zero visual crossing),
+River I (regression check — hub→authGate→River II unchanged), River
+XI (regression check — real multi-module flow + terminal + externals
+unchanged, River XII incoming connection also correctly left of
+hub). Zero console errors on all three. div/svg/a/g balance clean
+across all 3 regenerated files (module file: 252/252/16/16/52/52).
+
+**`ceo_plan_items` G4** got a real appended verdict note.
+**Oversight updated same session**: `oracleAppGrounding.
+SELF_KNOWLEDGE` (node --check clean this time on first try — the
+`\'` vs `''` lesson from earlier this session held). `rpgace_core.
+min.js`/`main.min.js` re-minified, `index.html` cache-bust bumped to
+`?v=20260813l`.

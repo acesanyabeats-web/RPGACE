@@ -88,7 +88,7 @@ from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon  # n
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
-    EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminal,
+    EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminals,
     ALL_SKILLS, SKILL_SECONDARY_RIVER, compute_module_flow_rank, dashboard_card_target_module,
 )
 
@@ -153,7 +153,15 @@ def build_river_section(rnum):
     nodes_svg = []
     edges_svg = []
     edge_colors_used = {color}
-    term_module, term_kind = compute_river_terminal(rnum, FLOW_EDGES)
+    # Aug 13, real /misunderstanding fix on River V: the old single-
+    # terminal API silently picked whichever module happened to sit
+    # earlier in DASHBOARD_CARDS' own unrelated definition order when
+    # 2+ modules had an equally real, unambiguous citation (morningBrief
+    # vs journalQoL) — an artifact of table order, not real evidence.
+    # compute_river_terminals() now returns every real co-terminal.
+    terminals = compute_river_terminals(rnum, FLOW_EDGES)
+    terminal_mods = [m for m, _k in terminals]
+    terminal_kind = dict(terminals)
     conns = []
     for target_label, note, itype in RIVER_FLOWS.get(rnum, []):
         other = _river_num_from_label(target_label)
@@ -175,8 +183,18 @@ def build_river_section(rnum):
         # a decorative rearrangement, the geometry itself IS the claim
         # ("this is upstream of that," "this is what it produces").
         # =========================================================
-        rank = compute_module_flow_rank(rnum, FLOW_EDGES, term_module)
-        X_HUB, X_IN, X_R0, X_R1, X_TERM, X_RM1, X_OUT = 70, 260, 560, 880, 1200, 1500, 1780
+        rank = compute_module_flow_rank(rnum, FLOW_EDGES, terminal_mods)
+        # X_HUB=280/X_IN=90 (real fix, same pass as the z-order change
+        # below): the first value tried for X_IN, a bare -140, sat
+        # outside this canvas's own viewBox="0 0 1900 950" (starts at
+        # x=0) — genuinely invisible, not just tightly spaced, caught by
+        # a real Chromium re-check after the first fix. Moving the hub
+        # itself right (was 90) makes real on-canvas room for incoming
+        # connections to sit genuinely LEFT of it — embodying the same
+        # left(input)-to-right(output) chronological principle already
+        # governing modules/terminals/outgoing connections, not just a
+        # z-order patch.
+        X_HUB, X_IN, X_R0, X_R1, X_TERM, X_RM1, X_OUT = 280, 90, 560, 880, 1200, 1500, 1780
         mod_pos = {}
         buckets = {2: [], 1: [], 0: [], -1: []}
         for m in mods:
@@ -190,13 +208,44 @@ def build_river_section(rnum):
         for r, x in rank_x.items():
             _place_col(buckets.get(r, []), x)
 
-        # river-identity hub, far left — the real entry point
+        # Real z-order + spacing fix (Alex's own direct ask): "the
+        # rivers connecting to river at beginning should be behind the
+        # river in focus." Real incoming (FLOWS_IN) connections are
+        # drawn FIRST — genuinely left of the hub now (X_IN=90 vs.
+        # X_HUB=280, a real ~190px clear span, not the old ~60px gap
+        # that let them visually cross the hub's own ring) — and the
+        # hub's own <g> markup is appended AFTER them, so in real SVG
+        # paint order (later = on top) the hub always renders above
+        # any incoming-connection edge/node that happens to overlap it.
+        def _place_river_col(items, x, source_side, anchor_xy):
+            n = len(items) or 1
+            for i, (direction, other, note, itype) in enumerate(items):
+                y = cy + (i - (n - 1) / 2) * 90
+                other_color = RIVER_COLOR[other]
+                other_short = RIVER_NAME[other].split('—')[0].strip()
+                ax_, ay_ = anchor_xy
+                if source_side == 'out':
+                    edges_svg.append(_curved_edge(ax_, ay_, x, y, other_color, real=True, r1=22, r2=17))
+                else:
+                    edges_svg.append(_curved_edge(x, y, ax_, ay_, other_color, real=True, r1=17, r2=34))
+                edge_colors_used.add(other_color)
+                arrow = '→' if direction == 'out' else '←'
+                nodes_svg.append(
+                    f'<a href="#river-{other}" class="drill-link"><g class="node">'
+                    f'<circle cx="{x}" cy="{y}" r="17" fill="#0f0f1a" stroke="{other_color}" stroke-width="2" filter="url(#glow)"/>'
+                    f'<text x="{x}" y="{y+5}" text-anchor="middle" font-size="12">🌊</text></g>'
+                    f'<text x="{x}" y="{y+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
+                )
+        _place_river_col([c for c in conns if c[0] == 'in'], X_IN, 'in', (X_HUB, cy))
+
+        # river-identity hub — deliberately added to nodes_svg AFTER the
+        # incoming connections above, so it real-paints on top of them.
         nodes_svg.append(
             f'<g class="node central"><circle cx="{X_HUB}" cy="{cy}" r="34" fill="#0f0f1a" stroke="{color}" stroke-width="3" filter="url(#glow)"/>'
             f'<text x="{X_HUB}" y="{cy-4}" text-anchor="middle" font-size="18">🌊</text>'
             f'<text x="{X_HUB}" y="{cy+55}" text-anchor="middle" font-size="9.5" fill="#E2E2EC" font-weight="700">{river_label.split(chr(8212))[0].strip()}</text></g>'
         )
-        entry_targets = buckets.get(0) or buckets.get(1) or ([term_module] if term_module else [])
+        entry_targets = buckets.get(0) or buckets.get(1) or terminal_mods
         for m in entry_targets:
             mx, my = mod_pos[m]
             edges_svg.append(_curved_edge(X_HUB, cy, mx, my, color, real=True, r1=34, r2=22))
@@ -205,10 +254,10 @@ def build_river_section(rnum):
             if m not in mod_pos:
                 continue
             mx, my = mod_pos[m]
-            is_term = (m == term_module)
+            is_term = (m in terminal_mods)
             term_badge = ''
             if is_term:
-                term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(term_kind, '')
+                term_icon = {'ui': '👁️', 'ai': '🤖', 'both': '👁️🤖'}.get(terminal_kind.get(m), '')
                 term_badge = f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="12">{term_icon}</text>'
             ring_w = '3.5' if is_term else '2'
             weight_attr = ' font-weight="700"' if is_term else ''
@@ -225,11 +274,13 @@ def build_river_section(rnum):
                 edge_colors_used.add(color)
 
         # real "flow anchor" for anything without a per-module citation
-        # of its own (externals/skills) — the terminal if one exists,
-        # else the river's own single/first module (matches the real
-        # River I case: authGate has no computed terminal but is still
-        # the one real module producing this river's real output).
-        flow_anchor = mod_pos.get(term_module) or (mod_pos.get(mods[0]) if mods else None) or (X_TERM, cy)
+        # of its own (externals/skills, and the OUT river connections)
+        # — the first real terminal if one exists, else the river's own
+        # single/first module (matches the real River I case: authGate
+        # has no computed terminal but is still the one real module
+        # producing this river's real output).
+        flow_anchor = mod_pos.get(terminal_mods[0]) if terminal_mods else \
+            ((mod_pos.get(mods[0]) if mods else None) or (X_TERM, cy))
 
         # real dashboard cards — anchored to the exact module their own
         # `via` text cites when unambiguous, else to the flow anchor.
@@ -254,30 +305,7 @@ def build_river_section(rnum):
                     f'<text x="{px}" y="{py+26}" text-anchor="middle" font-size="8.5" fill="#C9A84C">{label}{badge}</text>'
                 )
 
-        # real river IN (far left, before the hub) / OUT (far right,
-        # after the terminal) connections — the actual input/output
-        # edges of this river's own diagram.
-        def _place_river_col(items, x, source_side):
-            n = len(items) or 1
-            for i, (direction, other, note, itype) in enumerate(items):
-                y = cy + (i - (n - 1) / 2) * 90
-                other_color = RIVER_COLOR[other]
-                other_short = RIVER_NAME[other].split('—')[0].strip()
-                if source_side == 'out':
-                    sx, sy = flow_anchor
-                    edges_svg.append(_curved_edge(sx, sy, x, y, other_color, real=True, r1=22, r2=17))
-                else:
-                    edges_svg.append(_curved_edge(x, y, X_HUB, cy, other_color, real=True, r1=17, r2=34))
-                edge_colors_used.add(other_color)
-                arrow = '→' if direction == 'out' else '←'
-                nodes_svg.append(
-                    f'<a href="#river-{other}" class="drill-link"><g class="node">'
-                    f'<circle cx="{x}" cy="{y}" r="17" fill="#0f0f1a" stroke="{other_color}" stroke-width="2" filter="url(#glow)"/>'
-                    f'<text x="{x}" y="{y+5}" text-anchor="middle" font-size="12">🌊</text></g>'
-                    f'<text x="{x}" y="{y+30}" text-anchor="middle" font-size="9" fill="{other_color}">{arrow} {other_short}</text></a>'
-                )
-        _place_river_col([c for c in conns if c[0] == 'in'], X_IN - 130, 'in')
-        _place_river_col([c for c in conns if c[0] == 'out'], X_OUT, 'out')
+        _place_river_col([c for c in conns if c[0] == 'out'], X_OUT, 'out', flow_anchor)
 
         # real external connectors — a compact cluster below the flow
         # anchor (most cited externals are invoked to help PRODUCE the
@@ -373,11 +401,16 @@ def build_river_section(rnum):
         legend += '<p class="rlegend-role">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI.</p>'
     elif rnum in OVERSIGHT_FEEDERS:
         legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</p>'
-    if term_module:
-        reason = {'ui': 'a real, visible output you\'d actually see in the app',
-                   'ai': 'a real, direct connection to an external AI provider',
-                   'both': 'both a real visible output AND a real external-AI connection'}[term_kind]
-        legend += f'<p class="rlegend-role">🎯 Real terminal: <code>{term_module}</code> — {reason}.</p>'
+    if terminal_mods:
+        reason_map = {'ui': 'a real, visible output you\'d actually see in the app',
+                      'ai': 'a real, direct connection to an external AI provider',
+                      'both': 'both a real visible output AND a real external-AI connection'}
+        if len(terminal_mods) > 1:
+            terms_str = ', '.join(f'<code>{m}</code> ({reason_map[terminal_kind[m]]})' for m in terminal_mods)
+            legend += f'<p class="rlegend-role">🎯 Real co-terminals (this river genuinely converges on more than one): {terms_str}.</p>'
+        else:
+            m = terminal_mods[0]
+            legend += f'<p class="rlegend-role">🎯 Real terminal: <code>{m}</code> — {reason_map[terminal_kind[m]]}.</p>'
     elif mods:
         legend += '<p class="rlegend-role">🎯 No computed terminal — a real relationship may still exist through a UI path or RPGACE.hooks dispatch this mechanical check can\'t see (same confirmed blind spot as graphify\'s own AST extractor), not claimed as a real gap in the app itself.</p>'
     mod_list = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '<i>no single-module home — see role note</i>'

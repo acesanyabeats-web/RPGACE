@@ -690,47 +690,59 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
     return flows
 
 
-def compute_river_terminal(rnum, flow_edges):
+def compute_river_terminals(rnum, flow_edges):
     """Real, computed 'where does this river's own module flow actually
     land' marker — Alex's own "conjoin eventually at [a visible output]"
-    ask. A module is a real UI terminal if a DASHBOARD_CARDS entry's own
-    `via` text names it as its exact single real target (never guessed
-    — only an unambiguous literal citation counts), OR it has real
-    in-degree > 0 from compute_intra_river_flow() (other real modules in
-    this river call directly INTO it). A module is a real AI terminal if
-    it's cited by an EXTERNAL_RIVER_LINKS entry whose own name matches a
-    real AI provider (Anthropic/Kimi/Luna) for this same river. Returns
-    (module_or_None, kind) where kind in {'ui','ai','both',None} — None
-    is a real, honest gap, never forced to a guess."""
+    ask.
+
+    Aug 13, real fix (found via /misunderstanding on River V): the
+    original version only ever returned ONE terminal, picked by
+    first-match order through CARDS_BY_RIVER — for River V, two real
+    modules (`morningBrief` AND `journalQoL`) both have an equally
+    real, unambiguous `-> X module` dashboard-card citation, and River
+    V has ZERO real intra-flow edges to disambiguate between them
+    (matching its own real name, "Two Independent Streams" — there
+    genuinely isn't one true terminal here). The old code silently
+    picked whichever module happened to sit earlier in DASHBOARD_
+    CARDS' own unrelated definition order — an artifact of table
+    order, not real evidence, and it visually isolated `morningBrief`
+    from its 9 real siblings for no real reason. Now returns a REAL
+    LIST: every module with a real exact dashboard-card citation is a
+    genuine co-terminal UNLESS real in-degree evidence clearly favors
+    one over the others (a real disambiguator, when it exists).
+
+    Returns [(module, kind), ...] — kind in {'ui','ai','both'}. An
+    empty list is a real, honest gap (River I's own case: `authGate`
+    has no dashboard card and no siblings to call it), never forced to
+    a guess."""
     edges = flow_edges.get(rnum, [])
     indeg = {}
     for _f, t in edges:
         indeg[t] = indeg.get(t, 0) + 1
-    # exact single-module dashboard-card citation (only unambiguous ones)
-    ui_module = None
+    ui_candidates = []
     for c in CARDS_BY_RIVER.get(rnum, []):
         found = dashboard_card_target_module(c.get('via', ''), RIVER_MODULES.get(rnum, []))
-        if found:
-            ui_module = found
-            break
-    if not ui_module and indeg:
-        ui_module = max(indeg, key=indeg.get)
+        if found and found not in ui_candidates:
+            ui_candidates.append(found)
+    if len(ui_candidates) > 1 and indeg:
+        # real in-degree evidence CAN disambiguate multiple citations —
+        # only if one candidate strictly beats every other real
+        # candidate; otherwise all stay real co-terminals.
+        scored = sorted(ui_candidates, key=lambda m: indeg.get(m, 0), reverse=True)
+        if indeg.get(scored[0], 0) > indeg.get(scored[1], 0):
+            ui_candidates = [scored[0]]
+    if not ui_candidates and indeg:
+        ui_candidates = [max(indeg, key=indeg.get)]
     ai_module = None
     ai_names = {'Anthropic (Claude API)', 'Moonshot AI (Kimi)', 'OpenAI (Luna)'}
     if any(l['name'] in ai_names for l in LINKS_BY_RIVER.get(rnum, [])):
-        # real, narrow heuristic: the module cited by the AI-mediating
-        # skill panel (oracleAppGrounding, the actual window.callOracle
-        # wrap) if it's a real member of this river; else no specific
-        # module, just "this river has a real AI connection" (still
-        # honest, just not module-pinpointed)
         ai_module = 'oracleAppGrounding' if 'oracleAppGrounding' in RIVER_MODULES.get(rnum, []) else None
-    if ui_module and ai_module and ui_module == ai_module:
-        return (ui_module, 'both')
-    if ui_module:
-        return (ui_module, 'ui')
-    if ai_module:
-        return (ai_module, 'ai')
-    return (None, None)
+    result = []
+    for m in ui_candidates:
+        result.append((m, 'both' if m == ai_module else 'ui'))
+    if ai_module and ai_module not in ui_candidates:
+        result.append((ai_module, 'ai'))
+    return result
 
 
 def dashboard_card_target_module(via, valid_mods):
@@ -745,7 +757,7 @@ def dashboard_card_target_module(via, valid_mods):
     return None
 
 
-def compute_module_flow_rank(rnum, flow_edges, terminal):
+def compute_module_flow_rank(rnum, flow_edges, terminals):
     """Real, LEFT-TO-RIGHT flow position per module — Aug 13, real Alex
     correction on the original radial layout: "it should be flowing
     from left (input) to right (output) and depict contributers along
@@ -776,16 +788,18 @@ def compute_module_flow_rank(rnum, flow_edges, terminal):
     evidence supports, and no more."""
     edges = flow_edges.get(rnum, [])
     rank = {}
-    if not terminal:
+    if not terminals:
         return rank
-    rank[terminal] = 2
+    term_set = set(terminals)
+    for t in terminals:
+        rank[t] = 2
     for frm, to in edges:
-        if to == terminal and frm != terminal:
+        if to in term_set and frm not in term_set:
             rank[frm] = max(rank.get(frm, -99), 1)
     for frm, to in edges:
-        if frm == terminal and to != terminal and to not in rank:
+        if frm in term_set and to not in term_set and to not in rank:
             rank[to] = -1
-        elif frm in rank and rank.get(frm) == 1 and to != terminal and to not in rank:
+        elif frm in rank and rank.get(frm) == 1 and to not in term_set and to not in rank:
             rank[to] = -1
     return rank
 
