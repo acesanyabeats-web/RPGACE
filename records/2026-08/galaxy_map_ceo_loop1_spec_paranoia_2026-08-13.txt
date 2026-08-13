@@ -1103,3 +1103,131 @@ explain Total Systems at all) with real, checked content, not a
 blanket promise of exhaustive cross-verification beyond what was
 actually done.
 
+
+================================================================
+SAME DAY, 10TH PASS — node-level galaxy interview (the 13-node
+legend Alex pasted back), 3 more real findings, all fixed; then
+/perspective built as a real skill, /paranoia + /CEO + /drift
+supervising throughout, per Alex's own explicit ask
+================================================================
+
+Real continuation of pass 9's methodology: after the 4-galaxy pilot
+found 3 real findings, Alex pasted the FULL node-level legend (Oracle,
+Self-Awareness, Human Gate, 3 AI providers, 10 connectors, Supabase)
+and asked for the same evidence-grounded self-report treatment on
+every one of them. Same discipline as before: no live AI-to-AI
+dialogue (still confirmed impossible via ListAgents), every self-report
+built from real grep/query evidence, first person.
+
+**3 real findings, all MATERIAL-grade topology bugs, all fixed in
+`scripts/galaxy_map.py` and verified via headless-Chromium screenshots
+(galaxy_v4/v5/v5_full/v6.png):**
+
+1. **Duplicate Graphify CC node.** Writing Graphify CC's own node-level
+   self-report (as the connector legend entry) alongside its already-
+   existing galaxy-level self-report from pass 9 surfaced the
+   contradiction directly: I was rendering "Graphify CC" TWICE — once
+   as its own galaxy, once again as a flat `EXTERNAL_CONNECTORS` entry
+   — a real rule-8 violation the node interview caught by forcing a
+   side-by-side comparison a normal review pass hadn't done. Fixed:
+   `SKIP_FLAT = {'Graphify CC', 'FFmpeg'}` excludes it from the generic
+   connector loop.
+
+2. **FFmpeg topology contradiction.** FFmpeg's own real
+   `EXTERNAL_CONNECTORS` note already said "never called directly by
+   any RPGACE river" — but `galaxy_map.py` drew it with a direct RPGACE
+   Architecture edge anyway, same class of bug as pass 8's Oracle/
+   Kimi/Luna fix. Fixed: FFmpeg removed from the generic connector loop,
+   redrawn attached to OpenMontage CC's own galaxy position (a dashed
+   `dispatch_trigger` edge), matching what its own note has always said.
+
+3. **Missing real Supabase<->external-galaxy write edges.** Both
+   OpenMontage CC and Graphify CC self-reports independently stated a
+   real fact the map didn't show: both galaxies write directly to
+   Supabase (`openmontage_jobs`/`graphify_jobs`) with the plain anon
+   key, bypassing RPGACE Architecture entirely — a real, separate
+   relationship from their RPGACE-mediated dispatch. Fixed: 2 new real
+   `write_commit` edges (OpenMontage CC -> Supabase, Graphify CC ->
+   Supabase); Supabase repositioned to a larger radius
+   (`conn_radius + 110`) since it now has 4 real edges converging on it
+   instead of 2.
+
+**`ceo_plan_items` G2 evidence updated** to reflect all 3 node-level
+fixes on top of pass 8's galaxy-level fixes — same item, cumulative
+real evidence, not a new item (G2 is still "Level-0 Galaxy View," these
+are all real corrections to the same one artifact).
+
+================================================================
+`/perspective` BUILT — Alex's own bar ("if it works again, then make
+/perspective") cleared twice; real Aug 13 extension folded in
+================================================================
+
+Real skill shipped: `.claude/skills/perspective/SKILL.md`. Not a new
+methodology — a faithful packaging of exactly what worked twice
+(galaxy pilot, node pilot), same rule as every other RPGACE skill's
+own genesis. Real, new infrastructure to make it load-bearing rather
+than a one-off exercise, per Alex's own same-day extension ("give
+basis for error log to utilise... errors or /drift from my intention
+... logged for me to review"):
+
+- **New `perspective_reports` Supabase table** (additive migration,
+  CEO-framework carve-out — no stop-and-wait needed). Real columns:
+  `scope_level`/`scope_id`/`scope_label`/`self_report`/
+  `expected_behavior`/`evidence` jsonb/`findings` jsonb/`status`/
+  `superseded_by`. `expected_behavior` is the real, reusable baseline
+  — written once per element, read by both `error_log` and
+  `/colourgradient`, never re-derived per consumer (rule 8).
+- **Tier A populated for real, same pass** — not left as prose in this
+  record file alone (the skill's own Step 6 explicitly calls this out
+  as the first real obligation before extending further): 21 real rows
+  — 4 galaxies + 17 nodes/connectors (Oracle, Self-Awareness, Human
+  Gate, Anthropic/Kimi/Luna, OpenMontage/Composio/librosa/FFmpeg/
+  OpenArt/Jina/Last.fm/n8n/Whisper/Graphify-CC-connector, Supabase) —
+  each with a real `expected_behavior` baseline and, where the pilots
+  found one, the real MATERIAL/CAPTURED/MINOR finding that produced a
+  fix, cited inline.
+- **`error_log.linked_perspective_id` + `error_log.expected_baseline`**
+  (additive columns, same migration) — `error_log.html` now renders
+  the baseline inline (new teal `.baseline` block) whenever a logged
+  error cites one, giving Alex the real "what correct looks like"
+  comparison point his own ask named directly.
+- **`/colourgradient`'s purple step updated** to read
+  `perspective_reports.expected_behavior` as its real preferred prior-
+  baseline source (falling back to `ceo_plan_items`' own evidence if no
+  perspective report exists yet for that item) — one real baseline
+  concept, reused, not two competing ones (rule 8).
+- **`ceo_plan_items` G10** (the skill + Tier A rows) marked green with
+  real evidence cited. **G11** (Alex's "everything I have control
+  over" extension — Tier C/D: 52 rpgace_core.js modules, 240+ main.js
+  functions, 93 index.html onclick handlers) logged blue, real and
+  ratified but explicitly NOT attempted in one pass — CLAUDE.md rule 4/
+  5 discipline applied directly: this is genuinely large, multi-session
+  work, and the skill's own Step 6 states the real opportunistic-
+  coverage plan (write a report for whatever's already being touched
+  that session) rather than promising a blind exhaustive sweep. Logged
+  in `future_integrations.html`'s blue section with the same reasoning.
+
+**`/drift`**: VERDICT on track, BASIS ratified (Alex's own explicit
+"if it works again, then make /perspective" + the same-day extension
+ask). No gap — the skill was built to the proven shape, the baseline
+infrastructure was built to the explicitly-asked-for shape (error_log
+basis + colourgradient purple comparison), and the "everything I
+control" scope was honestly split into a done Tier A + an explicitly
+future, ratified-but-unbuilt Tier C/D rather than either ignored or
+faked as complete.
+
+**/paranoia-shaped self-check**: the one real risk worth naming — Tier
+A's 21 `expected_behavior` baselines are honest reconstructions, not
+live-verified facts (e.g. Kimi/Luna's baselines describe what SHOULD
+happen once a key exists, not confirmed live behavior — stated as such
+in the row text itself). A future `/colourgradient` purple check reading
+one of these baselines must still gather its OWN fresh evidence per
+`/drift`'s own Step 2 discipline — a `perspective_reports` row is a
+real citation source, never a substitute for checking live state.
+
+**Oversight updated same session**: `oracleAppGrounding.SELF_KNOWLEDGE`
+(node --check clean), `error_log.html`, `future_integrations.html`
+(div-balance 115/115 confirmed), `.claude/skills/colourgradient/
+SKILL.md`. `rpgace_core.min.js`/`main.min.js` re-minified,
+`index.html`'s `rpgace_core.min.js` cache-bust bumped to
+`?v=20260813b`.

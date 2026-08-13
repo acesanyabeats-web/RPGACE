@@ -54,6 +54,8 @@
   .attempt b{color:var(--amber)}
   .lessons{font-size:12px;color:var(--text);margin-top:10px;padding:8px 10px;background:rgba(61,170,110,0.06);border-radius:6px;border-left:2px solid var(--green)}
   .lessons b{color:var(--green)}
+  .baseline{font-size:12px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(42,191,176,0.06);border-radius:6px;border-left:2px solid var(--teal)}
+  .baseline b{color:var(--teal)}
   .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   button{font-family:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s var(--ease-out)}
   button:hover{border-color:var(--gold);color:var(--gold)}
@@ -66,7 +68,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight · Layer (d), 2nd doc</div>
   <h1>🩹 Error Log</h1>
-  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
+  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Where a real <code>/perspective</code> self-report exists for the affected element, its <code>expected_behavior</code> baseline renders inline (teal) — the real "what correct looked like" a row is judged against, added Aug 13 2026. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
 </div>
 
 <div class="wrap">
@@ -120,6 +122,7 @@ function render(items) {
         '<div class="item-desc">' + esc(e.message) + '</div>' +
         '<div class="item-meta">Seen ' + e.occurrence_count + '× · first ' + new Date(e.first_seen_at).toLocaleString() + ' · last ' + new Date(e.last_seen_at).toLocaleString() + (e.attempt_count ? ' · ' + e.attempt_count + ' fix attempt(s)' : '') + '</div>' +
       '</div><span class="badge ' + e.status + '">' + e.status.replace('_', ' ') + '</span></div>' +
+      (e.expected_baseline ? '<div class="baseline"><b>Expected baseline (/perspective):</b> ' + esc(e.expected_baseline) + '</div>' : '') +
       (e.rationale ? '<div class="rationale"><b>Rationale:</b> ' + esc(e.rationale) + '</div>' : '') +
       (e.backtrack_note ? '<div class="backtrack"><b>Backtrack (what likely broke upstream):</b> ' + esc(e.backtrack_note) + '</div>' : '') +
       attemptsHtml +

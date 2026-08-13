@@ -224,8 +224,22 @@ def build_svg():
             f'<span class="meta">mediated by Oracle, not called by RPGACE Architecture directly · {INTERACTION_TYPE_LABEL[prov["itype"]]}</span></div>'
         )
 
-    # --- remaining real connectors (everything except the 3 AI providers, handled above) ---
-    connectors = [c for c in EXTERNAL_CONNECTORS if c['name'] not in ORACLE_PROVIDER_NAMES]
+    # --- remaining real connectors ---
+    # Aug 13, 2nd real interview pass — 2 real, confirmed bugs found and
+    # fixed here, same class as the Oracle/Kimi/Luna fix earlier:
+    # (a) 'Graphify CC' was appearing TWICE — once as its own real
+    #     galaxy (correct, per system_map_spec.md §3), once again as a
+    #     flat EXTERNAL_CONNECTORS entry drawn off RPGACE Architecture —
+    #     a real rule-8 duplicate node, now excluded from this loop.
+    # (b) FFmpeg's own real note has always said "reached only via River
+    #     XI's OpenMontage handoff... never called directly by any
+    #     RPGACE river" — but it was drawn with a direct RPGACE
+    #     Architecture -> FFmpeg edge anyway, contradicting its own
+    #     description. Fixed: FFmpeg is excluded from the generic loop
+    #     and instead drawn attached to the OpenMontage CC galaxy
+    #     directly, matching its real topology.
+    SKIP_FLAT = {'Graphify CC', 'FFmpeg'}
+    connectors = [c for c in EXTERNAL_CONNECTORS if c['name'] not in ORACLE_PROVIDER_NAMES and c['name'] not in SKIP_FLAT]
     for c in connectors:
         c.setdefault('icon', _connector_icon(c['name']))
     conn_radius = 260
@@ -248,8 +262,28 @@ def build_svg():
             f'<span class="meta">{INTERACTION_TYPE_LABEL[itype]} · bridges to: {c.get("bridges_to","—")}</span></div>'
         )
 
+    # --- FFmpeg — real fix: attached to OpenMontage CC, not RPGACE Architecture ---
+    ffmpeg = next((c for c in EXTERNAL_CONNECTORS if c['name'] == 'FFmpeg'), None)
+    if ffmpeg and 'openmontage_cc' in galaxy_pos:
+        omx, omy = galaxy_pos['openmontage_cc']
+        fx, fy = polar(omx, omy, 70, -60)
+        edges_svg.append(edge(omx, omy, fx, fy, 'dispatch_trigger'))
+        col = INTERACTION_TYPE_COLOR['dispatch_trigger']
+        nodes_svg.append(node_circle(fx, fy, 14, col, _connector_icon('FFmpeg'), 'FFmpeg', glow=False, label_color='#cfd6e0'))
+        legend_rows.append(
+            f'<div class="legend-row small"><span class="dot" style="background:{col}"></span>'
+            f'<b>FFmpeg</b> — {ffmpeg.get("note","")} '
+            f'<span class="meta">Real topology fix, Aug 13 (2nd interview pass): attached to OpenMontage CC directly, '
+            f'never RPGACE Architecture — matches its own real "never called directly by any RPGACE river" note.</span></div>'
+        )
+
     # --- Supabase — the real 2nd fix: communication (read) vs execution (write), two real edges ---
-    sup_x, sup_y = polar(cx, cy, conn_radius, start_angle + span + 25)
+    # Pushed to a larger radius than the connector ring (Aug 13, 2nd
+    # interview pass) — it now has 4 real edges converging on it
+    # (read/write from RPGACE Architecture + 2 real writes from
+    # OpenMontage CC/Graphify CC), so it needs more room than a
+    # standard connector to stay legible against the harness cluster.
+    sup_x, sup_y = polar(cx, cy, conn_radius + 110, start_angle + span + 25)
     sup = dict(SUPABASE_CORE, icon='🗄️')
     # Real, distinct offsets so both edges are actually visible as two
     # separate lines, not one drawn silently on top of the other —
@@ -263,6 +297,24 @@ def build_svg():
         f'<span class="meta">TWO real edges: {INTERACTION_TYPE_LABEL["read_query"]} + {INTERACTION_TYPE_LABEL["write_commit"]} — '
         f'communication (reads) is genuinely distinct from execution/changing (writes), per Alex\'s own explicit ask.</span></div>'
     )
+
+    # --- real Supabase <-> OpenMontage CC / Graphify CC direct-write edges ---
+    # Aug 13, 2nd interview pass, real finding: OpenMontage CC and
+    # Graphify CC both write DIRECTLY to Supabase (openmontage_jobs/
+    # graphify_jobs, plain anon key per CLAUDE.md's own standing
+    # landmine note) — bypassing RPGACE Architecture's own code
+    # entirely. Not shown on any earlier version of this map.
+    for gal_id, real_table in (('openmontage_cc', 'openmontage_jobs'), ('graphify_cc', 'graphify_jobs')):
+        if gal_id in galaxy_pos:
+            gx2, gy2 = galaxy_pos[gal_id]
+            edges_svg.append(edge(gx2, gy2, sup_x, sup_y, 'write_commit'))
+            legend_rows.append(
+                f'<div class="legend-row small"><span class="dot" style="background:{INTERACTION_TYPE_COLOR["write_commit"]}"></span>'
+                f'<b>{[g["label"] for g in GALAXIES if g["id"]==gal_id][0]} → Supabase (direct write)</b> — '
+                f'writes directly to <code>{real_table}</code> with the plain anon key, bypassing RPGACE '
+                f'Architecture\'s own code entirely — a real relationship found via the galaxy-interview pilot, '
+                f'not previously shown.</div>'
+            )
 
     # --- the real OpenMontage connector<->galaxy bridge, Alex-confirmed Fork 3 ---
     if 'OpenMontage' in connector_pos and 'openmontage_cc' in galaxy_pos:
@@ -406,9 +458,10 @@ def main():
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
+    skipped = len(ORACLE_PROVIDER_NAMES) + 2  # +2 = Graphify CC (dup of the real galaxy) + FFmpeg (moved to OpenMontage CC)
     print(f"Wrote {OUT} — {len(GALAXIES)} galaxies, {len(HARNESS_NODES)} harness nodes, "
           f"{len(ORACLE_PROVIDERS)} AI providers under Oracle, "
-          f"{len(EXTERNAL_CONNECTORS) - len(ORACLE_PROVIDER_NAMES) + 1} remaining connector/core nodes.")
+          f"{len(EXTERNAL_CONNECTORS) - skipped} flat connectors + FFmpeg (under OpenMontage CC) + Supabase.")
 
 
 if __name__ == '__main__':

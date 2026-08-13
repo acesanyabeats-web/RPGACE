@@ -33,11 +33,13 @@
   .card.blue{border-color:rgba(74,144,226,0.28);background:rgba(74,144,226,0.05)}
   .card.red{border-color:rgba(226,84,84,0.25);background:rgba(226,84,84,0.05)}
   .card.yellow{border-color:rgba(224,196,80,0.3);background:rgba(224,196,80,0.06)}
+  .card.purple{border-color:rgba(155,89,182,0.35);background:rgba(155,89,182,0.06)}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
   .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
   .badge.blue{background:rgba(74,144,226,0.15);color:var(--blue);border:1px solid rgba(74,144,226,0.3)}
   .badge.red{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
   .badge.yellow{background:rgba(224,196,80,0.18);color:#E0C450;border:1px solid rgba(224,196,80,0.35)}
+  .badge.purple{background:rgba(155,89,182,0.18);color:var(--purple);border:1px solid rgba(155,89,182,0.35)}
   h3{font-size:13px;font-weight:700;color:#E2E2EC;margin:20px 0 8px}
   p{color:var(--dim);font-size:13px;margin-bottom:8px}
   strong{color:#E2E2EC;font-weight:600}
@@ -66,6 +68,7 @@
     <a class="nav-item" href="#blue">🔵 Blue — Ideas</a>
     <a class="nav-item" href="#red">🔴 Red — Planned</a>
     <a class="nav-item" href="#yellow">🟡 Yellow — Mid-Build</a>
+    <a class="nav-item" href="#purple">🟣 Purple — Regressed</a>
   </div>
   <div class="nav-group"><div class="nav-label">Format</div>
     <a class="nav-item" href="#format">How This Doc Works</a>
@@ -87,7 +90,7 @@
 <div class="section" id="format">
   <h3>How this doc works</h3>
   <p><strong>Only GREEN (verified built and live) items appear in the real oversight docs</strong> — patch_notes.html, manual.html, minotaur_map.html, interconnection_map.md, system_flow_map.md, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, smoke_test.html. Per Alex's own direct ask: those docs describe what's ACTUALLY TRUE, and a non-built idea sitting alongside real, shipped features made it harder to tell the two apart at a glance.</p>
-  <p><strong>Everything else lives here, grouped by real commitment level:</strong> 🔵 <strong>Blue</strong> — an idea quickly written down, not yet a formal plan. 🔴 <strong>Red</strong> — a real, specified plan, not built yet. 🟡 <strong>Yellow</strong> — genuinely mid-build, real code exists but incomplete. When something reaches Green, it graduates OUT of this doc and INTO the real oversight docs — this doc should never describe something that's actually true right now.</p>
+  <p><strong>Everything else lives here, grouped by real commitment level:</strong> 🔵 <strong>Blue</strong> — an idea quickly written down, not yet a formal plan. 🔴 <strong>Red</strong> — a real, specified plan, not built yet. 🟡 <strong>Yellow</strong> — genuinely mid-build, real code exists but incomplete. 🟣 <strong>Purple</strong> (added Aug 13) — a real REGRESSION: this was genuinely Green at some earlier real check, and current evidence shows it's now broken. Purple is not the same as Red — Red never worked yet, Purple worked and stopped; a Purple item also gets a real row in <code>error_log.html</code>, since a regression is a real error to track, not just an unbuilt idea. When something reaches Green, it graduates OUT of this doc and INTO the real oversight docs — this doc should never describe something that's actually true right now.</p>
   <p>Backed by the real Supabase datasheet <code>ceo_plans</code>/<code>ceo_plan_items</code> (part of `/CEO`'s Grounded Mode) — this HTML page is a snapshot rendering of that live data, refreshed whenever `/colourgradient`, `/paranoia`, or `/drift` runs and pushes a real finding, per Alex's own explicit ask ("future integrations on /paranoia and /drift against any file and push just generated").</p>
   <p><strong>Real Aug 13 grouping convention, standing going forward</strong>: a multi-step CEO plan (2+ `ceo_plan_items` sharing one `ceo_plans` row) renders as ONE labeled plan-group, each step its own explained subgroup card — never scattered loose cards mixed with unrelated items. Every other item is grouped by what it actually changes — a named river (matching `minotaur_map.html`/graphify's own real river names), a dashboard card, or an external connector — instead of a flat list under each color. When a new item is added, find its real river/card/connector home first; only create a new group label if it genuinely doesn't fit an existing one.</p>
 </div>
@@ -102,6 +105,14 @@
     <div class="card blue">
       <div class="card-title">A15 — Chronicles gains more hooks<span class="badge blue">IDEA</span></div>
       <div class="card-body">Alex's own words: "I think chronicles should register more things, lets come up with ideas of where it could be hooked... more ideas on that to come." Explicitly open-ended — reclassified from Red to Blue this pass (was mis-scoped as a planned item on the first colourgradient benchmark; a spec that's explicitly "more ideas to come" isn't a plan yet).</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">Dev process — <code>/perspective</code> skill <span class="n">1 idea</span></div>
+    <div class="card blue">
+      <div class="card-title">G11 — /perspective full sweep, everything Alex controls<span class="badge blue">IDEA</span></div>
+      <div class="card-body">Alex's own extension, same day the skill shipped: "would it also be possible to make /perspective also work on everything i have control over in RPGACE total system, so i get all nuances, even the smallest ones getting flagged and logged." Tier A (the 4 galaxies + 17 harness/provider/connector nodes) is real and green — see <code>perspective_reports</code>, 21 rows. Tier B (the 16 rivers) is the real near-term next step. Tier C/D (52 rpgace_core.js modules, 240+ main.js functions, 93 index.html onclick handlers) is genuinely large multi-session work — real plan is opportunistic coverage (write a report for whatever's already being touched that session), never a blind exhaustive pass in one go.</div>
     </div>
   </div>
 
@@ -184,6 +195,13 @@
     <div class="group-label">River III — The Oracle Current · External: Moonshot AI / OpenAI <span class="n">1 item</span></div>
     <div class="card yellow"><div class="card-title">A10 — Oracle-as-orchestrator via Kimi/Luna<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real server-side scaffold live in <code>api/oracle.js</code> (<code>provider:'kimi'|'luna'</code>) — dormant by design, zero client call sites wired, no live key configured, no benchmark run against Claude yet. The single clearest Yellow example in the project right now.</div></div>
   </div>
+</div>
+
+<div class="section" id="purple">
+  <div class="section-eyebrow">🟣 Purple — Regressed</div>
+  <div class="section-title" style="font-size:20px">Used to work, real evidence now shows it broken</div>
+  <p class="section-sub" style="margin-bottom:16px">Added Aug 13 2026, real Alex ask. Empty by design until a real <code>/colourgradient</code> pass finds an actual regression — never pre-populated with a guess. Each real purple finding also gets a row in <code>error_log.html</code>; check there too for the full fix-attempt history once one exists.</p>
+  <p style="color:var(--dim);font-size:12px;font-style:italic">No real regressions found yet.</p>
 </div>
 
 <hr>

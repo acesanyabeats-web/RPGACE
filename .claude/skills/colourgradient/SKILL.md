@@ -1,6 +1,6 @@
 ---
 name: colourgradient
-description: Renders a real, evidence-checked build-status benchmark for a multi-item plan (a /CEO-tracked plan most of all) as blue/red/yellow/green — blue (an idea quickly written down, not yet a formal plan), red (a real, specified plan, not built), yellow (genuinely in progress — real code exists but incomplete/dormant/unverified), green (verified built and live, real file/commit/query evidence). Built entirely as a rendering layer over the /drift skill's own procedure — never a competing evidence-gathering method. Only green items are ever written into the real Tier a/b/c/d oversight docs; blue/red/yellow route to future_integrations.html instead, per Alex's own explicit rule. Use this skill whenever Alex says "/colourgradient", or asks "where am I on [a multi-build plan]" / wants a benchmark of what's done vs in progress vs not built across several plan items at once. Do NOT use this for a single item's status (that's a plain /drift call) or as a replacement for smoke_test.html (different job — smoke_test.html is Alex's own hand-ticked "does this shipped feature still work," this is a computed-fresh "where does this multi-item PLAN stand right now").
+description: Renders a real, evidence-checked build-status benchmark for a multi-item plan (a /CEO-tracked plan most of all) as blue/red/yellow/green/purple — blue (an idea quickly written down, not yet a formal plan), red (a real, specified plan, not built), yellow (genuinely in progress — real code exists but incomplete/dormant/unverified), green (verified built and live, real file/commit/query evidence), purple (Aug 13 — a real REGRESSION: was genuinely green before, real evidence now shows it broken). Built entirely as a rendering layer over the /drift skill's own procedure — never a competing evidence-gathering method. Only green items are ever written into the real Tier a/b/c/d oversight docs; blue/red/yellow/purple route to future_integrations.html instead, per Alex's own explicit rule (a purple item ALSO gets a real error_log.html row, since a regression is a real error, not just an unbuilt idea). Use this skill whenever Alex says "/colourgradient", or asks "where am I on [a multi-build plan]" / wants a benchmark of what's done vs in progress vs not built across several plan items at once. Do NOT use this for a single item's status (that's a plain /drift call) or as a replacement for smoke_test.html (different job — smoke_test.html is Alex's own hand-ticked "does this shipped feature still work," this is a computed-fresh "where does this multi-item PLAN stand right now").
 ---
 
 # /colourgradient — a real, evidence-checked benchmark of a multi-item plan
@@ -74,6 +74,23 @@ status readout):**
   color — don't silently fold a CAPTURED finding into a plain red without
   flagging that it needs Alex's resolution first (same weight as `/drift`'s
   own guardrail).
+- 🟣 **PURPLE** — added Aug 13 2026, real Alex ask ("make things that used
+  to work but are now broken purple"). A real REGRESSION: this item's
+  `ceo_plan_items.status` was genuinely `green` at some earlier real
+  `last_checked_at`, and THIS check finds real evidence it no longer works
+  (a broken call site, a failing query, a real error). Never assign purple
+  from a guess — same evidence bar as every other color, plus the real
+  PRIOR green timestamp/evidence to compare against. Purple is NOT the
+  same as red: red never worked yet; purple worked and stopped.
+  **Real prior-baseline source (added same day, `/perspective` skill)**: if
+  a `perspective_reports` row exists for the item (`status='active'`), its
+  `expected_behavior` field IS the real prior-working baseline to compare
+  fresh evidence against — read it rather than reconstructing "what it used
+  to do" from memory or a stale doc. If no `perspective_reports` row exists
+  yet, fall back to whatever real prior evidence `ceo_plan_items` itself
+  holds (the same `last_checked_at` evidence this bullet already used before
+  `/perspective` existed) — don't block a real purple finding on a baseline
+  that hasn't been written yet, just note the gap honestly.
 
 **Step 4 — Route by color (Aug 11 2026, Alex's own explicit rule).** This
 is the real, load-bearing addition that makes `/colourgradient` interact
@@ -85,13 +102,19 @@ with the rest of the oversight system, not just report to chat:
   `smoke_test.html`) — those docs describe what's ACTUALLY TRUE right now,
   and a non-built idea sitting alongside a real shipped feature makes it
   harder to tell the two apart at a glance, per Alex's own direct reasoning.
-- **🔵 Blue / 🔴 Red / 🟡 Yellow items route to `future_integrations.html`
-  instead** — the real, new "mirror image" oversight artifact (built Aug 11
-  2026), grouped by color, updated whenever a `/colourgradient`, `/paranoia`,
-  or `/drift` pass generates a real finding and pushes. When an item's color
-  moves to green, it is REMOVED from `future_integrations.html` and its real
-  status is added to the appropriate Tier doc(s) — an item should never sit
-  in both places claiming two different states.
+- **🔵 Blue / 🔴 Red / 🟡 Yellow / 🟣 Purple items route to
+  `future_integrations.html` instead** — the real, new "mirror image"
+  oversight artifact (built Aug 11 2026), grouped by color, updated whenever
+  a `/colourgradient`, `/paranoia`, or `/drift` pass generates a real
+  finding and pushes. When an item's color moves to green, it is REMOVED
+  from `future_integrations.html` and its real status is added to the
+  appropriate Tier doc(s) — an item should never sit in both places
+  claiming two different states. **A purple item gets one more real,
+  mandatory step (Aug 13, Alex's own ask)**: it also gets a real row in
+  `error_log.html`'s Supabase table (`error_log`), since a regression is a
+  real error Total Systems should track and eventually resolve, not just an
+  unbuilt idea sitting in `future_integrations.html` — the same "surface
+  it, don't just log it" discipline `/cartographer` already applies.
 - `ceo_plan_items.status` is the single shared source of truth both this
   routing step and `future_integrations.html`'s own snapshot render read
   from — never derive the two independently (rule 8).
