@@ -13,14 +13,14 @@ source: "graphify_river_group.py — real, not guessed"
 
 - [[researchTabs]] — `rpgace_core.js:3579-3742`
 - [[intelBatchList]]
-- [[intelDelete]] — `rpgace_core.js:4995-5581`
-- [[intelDedup]] — `rpgace_core.js:6364-6495`
+- [[intelDelete]] — `rpgace_core.js:5085-5671`
+- [[intelDedup]] — `rpgace_core.js:6464-6595`
 - [[ciAutoPropose]] — `rpgace_core.js:2867-2953`
-- [[scheduleFixes]] — `rpgace_core.js:17555-17613`
-- [[shiftSync]] — `rpgace_core.js:17488-17553`
-- [[agendaReminder]] — `rpgace_core.js:4658-4730`
-- [[morningBrief]] — `rpgace_core.js:17133-17381`
-- [[journalQoL]] — `rpgace_core.js:17773-17912`
+- [[scheduleFixes]] — `rpgace_core.js:17819-17877`
+- [[shiftSync]] — `rpgace_core.js:17752-17817`
+- [[agendaReminder]] — `rpgace_core.js:4748-4820`
+- [[morningBrief]] — `rpgace_core.js:17397-17645`
+- [[journalQoL]] — `rpgace_core.js:18037-18176`
 
 ## Flows into
 

@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌌 Aug 13 — "Engineer CC" retired (now "OpenMontage CC"); mockOracle wrapper verified sound; Galaxy Map Loop 1 plan compiled, awaiting approval.</div>
+    <div class="card-body">
+      Three real, separate things. <strong>(1) Rename</strong>: Alex's own call — "Engineer CC" collided with `/Engineer`, a skill living inside this session, wrongly implying a connection that never existed. Fixed across <code>total_system_members</code> (Supabase), every current-state doc (<code>ai_tooling_and_rules_map.md</code>/<code>manual.html</code>/<code>interconnection_map.md</code>/<code>minotaur_map.html</code>/<code>.claude/skills/misunderstanding/SKILL.md</code>/<code>scripts/graphify_river_group.py</code>), then the real graphify→Obsidian pipeline re-run in place (no fresh <code>graphify export</code>, avoiding the Aug 12 node-count-mismatch risk) and verified zero "Engineer CC" references remain in generated output. CLAUDE.md's own dated bullets keep the old name per its own doc-discipline (phylum-renumber precedent) — one correction bullet added.
+      <br><br>
+      <strong>(2) mockOracle worry, resolved with real evidence</strong>: Alex was worried infrastructure only ever exercises the dummy path. Checked directly — <code>main.js</code>'s <code>callOracle()</code> is the sole real dispatch point, checking BOTH <code>mockOracle.isEnabled()</code> and <code>mockOracle.isFallbackMode()</code> before any real API fetch, and all 3 grounding wrappers chain to it via <code>orig.apply(this, arguments)</code> (full forwarding, confirmed by grep) — the architecture already correctly supports all 3 real modes.
+      <br><br>
+      <strong>(3) Galaxy Map</strong>: a large new ask (graphify + Obsidian output styled like an Assassin's Creed Valhalla skill tree, RPGACE Total Systems as "galaxies," recursive per-node breakdown). Real CEO Loop 1 planning pass run per Alex's own "/paranoia and /ceo this" — compiled, cross-referenced against real existing infra (the 16-river system already covers most of the underlying data), 5 real open forks named for his answer, /Engineer shape-sketched a concrete build (a new hand-rolled SVG radial-drill-down generator, reusing <code>taxonomy_map.html</code>'s own real circle-pack precedent), /aintergration + /restructure found no third-party tooling gap. Nothing built — Loop 1 produces a plan, not code. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🩹 Aug 12 — new error_log.html: layer (d)'s 2nd doc, real first slice built and live.</div>
     <div class="card-body">
       Alex's real spec: every real error any AI/code in RPGACE Total systems reports should land in one deduplicated, backtrackable log — repeat occurrences increment a counter rather than mint duplicate rows, a fix gets planned/tracked through <code>future_integrations.html</code>'s red→yellow→green, <code>smoke_test.html</code> highlights the change as unconfirmed until Alex hand-tests and confirms, and the resolved history stays permanently ("vital for future development and coherence of RPGACE total systems"). Mid-spec he also moved the error timeline + lessons-learned OUT of <code>patch_notes.html</code> and onto the new doc instead, "to de-clunk and narrow the specialisation of patch notes" — <code>patch_notes.html</code>'s own role bullet updated to reflect that split.

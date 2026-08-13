@@ -15,13 +15,13 @@ source: "graphify_river_group.py — real, not guessed"
 - [[oracleTreeGrounding]] — `rpgace_core.js:2955-3098`
 - [[oracleFetchGuard]] — `rpgace_core.js:3522-3577`
 - [[oracleDevBridge]] — `rpgace_core.js:3444-3520`
-- [[mockOracle]] — `rpgace_core.js:19098-19487`
-- [[agentsIntoOracle]] — `rpgace_core.js:17615-17664`
+- [[mockOracle]] — `rpgace_core.js:19362-19751`
+- [[agentsIntoOracle]] — `rpgace_core.js:17879-17928`
 - [[prodOraclePanel]] — `rpgace_core.js:906-1021`
 - [[instaOraclePanel]] — `rpgace_core.js:1023-1118`
 - [[youtubeOracle]] — `rpgace_core.js:650-772`
 - [[tiktokOracle]] — `rpgace_core.js:774-904`
-- [[scheduleOracle]] — `rpgace_core.js:4732-4993`
+- [[scheduleOracle]] — `rpgace_core.js:4822-5083`
 - [[feynman]] — `rpgace_core.js:2221-2768`
 
 ## Flows into

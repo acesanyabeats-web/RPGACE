@@ -11,7 +11,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real role
 
-The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, Engineer CC) runs against — file-path membership: `.claude/skills/`.
+The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, OpenMontage CC) runs against — file-path membership: `.claude/skills/`.
 
 ## Flows into
 

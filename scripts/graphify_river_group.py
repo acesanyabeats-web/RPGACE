@@ -161,7 +161,7 @@ RIVER_NAME = {
 # api/oracle.js, api/_context.js, api/data-write.js. Rivers XIII-XVI
 # carry a different KIND of real traffic — not runtime API calls, but
 # the dev-process/knowledge layer the Total-system's own Claude Code
-# members (RPGACE CC, Graphify CC, Engineer CC) read from and write
+# members (RPGACE CC, Graphify CC, OpenMontage CC) read from and write
 # into to coordinate (skills define dispatch discipline; oversight docs
 # are the shared truth Graphify CC deposits into via graphify_jobs;
 # session records ARE the real dispatch history; dev tooling is what
@@ -182,7 +182,7 @@ TOTAL_ZONES = 16  # 16 unified rivers: I-XI (narrative info-flow) + XII-XVI (Tot
 # that table's own wording exactly.
 EXTERNAL_CONNECTORS = [
     {'name': 'OpenMontage', 'status': 'live', 'via': 'openmontage_jobs Supabase queue',
-     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("Engineer CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live\'s "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).'},
+     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("OpenMontage CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live\'s "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).'},
     {'name': 'Composio', 'status': 'live', 'via': 'api/composio.js / api/executor.js / api/orchestrate.js',
      'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V\'s morningBrief (Gmail fetch) and River XI\'s contentRepurpose (Notion page + YouTube channel data via Supadata).'},
     {'name': 'Moonshot AI (Kimi)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'kimi\'',
@@ -192,7 +192,7 @@ EXTERNAL_CONNECTORS = [
     {'name': 'librosa', 'status': 'optional/local', 'via': 'beat_audio_jobs + beat-audio bucket, local_server.py',
      'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI\'s Beat Log, nowhere else.'},
     {'name': 'FFmpeg', 'status': 'live (external repo)', 'via': "OpenMontage's own pipeline, confirmed working July 31",
-     'note': "runs inside Engineer CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river."},
+     'note': "runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river."},
     {'name': 'OpenArt', 'status': 'deferred', 'via': 'none yet',
      'note': '"connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet'},
     {'name': 'Graphify CC', 'status': 'live', 'via': 'graphify_jobs Supabase queue',
@@ -205,7 +205,7 @@ EXTERNAL_CONNECTORS = [
 # in the Total system, since that's what they are now presented as.
 RIVER_ROLE_NOTE = {
     12: 'The one river that carries literal runtime API traffic to external Total-system members — every OpenMontage/Kimi/Luna/librosa/OpenArt/Composio call routes through here (api/oracle.js, api/_context.js, api/data-write.js). File-path membership: `api/*.js`. See "Total-systems connectors" below for the real, per-connector detail.',
-    13: 'The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, Engineer CC) runs against — file-path membership: `.claude/skills/`.',
+    13: 'The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, OpenMontage CC) runs against — file-path membership: `.claude/skills/`.',
     14: 'The shared truth layer Total-system members read from and write into (Graphify CC deposits real findings here via graphify_jobs when a row is flagged "please log to Chronicles"). File-path membership: the live-maintained doc set.',
     15: 'Real dispatch/session history — dated backlog `.txt`/`.md` at repo root, the same real record `openmontage_jobs`/`graphify_jobs` rows themselves become once resolved.',
     16: 'The actual scripts/config that build, ship, and graph the Total system — including the very scripts (graphify_recolor.py/graphify_river_group.py/graphify_to_obsidian.py/obsidian_vault_to_html.py) that generate this graph and the Obsidian vault themselves.',

@@ -363,13 +363,13 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   <div class="section-sub">Aug 11, real Alex ask: Oversight now covers the whole Total system, not just RPGACE's own internal architecture. "Total" means RPGACE the app, this Claude Code session (orchestrator), and every other real member/connector that pushes or pulls real data. Full detail: <code>ai_tooling_and_rules_map.md</code>'s own "External AI/tool providers" table (the canonical source); the spatial version: <code>minotaur_map.html</code>'s "Rivers XII-XVI — The Total System Gateway"; the code-structure version: <code>graphify-out/graph.html</code>'s River XII node-info panel and <code>graphify-out/obsidian_vault.html</code>.</div>
   <table>
     <tr><th>Connector</th><th>Status</th><th>Real role</th></tr>
-    <tr><td>OpenMontage</td><td>Live</td><td>Agent-operated video pipeline, a separate Claude Code session ("Engineer CC") in its own repo, via the <code>openmontage_jobs</code> queue — never RPGACE-embedded.</td></tr>
+    <tr><td>OpenMontage</td><td>Live</td><td>Agent-operated video pipeline, a separate Claude Code session ("OpenMontage CC") in its own repo, via the <code>openmontage_jobs</code> queue — never RPGACE-embedded.</td></tr>
     <tr><td>Composio</td><td>Live</td><td>Gmail/Instagram/YouTube/Notion/GitHub connected-account automation, <code>api/composio.js</code>/<code>api/executor.js</code>/<code>api/orchestrate.js</code>.</td></tr>
     <tr><td>Graphify CC</td><td>Live</td><td>The real 4th Total-system member, via the <code>graphify_jobs</code> queue — generates <code>GRAPH_TREE.html</code> and the cross-repo global graph.</td></tr>
     <tr><td>Moonshot AI (Kimi)</td><td>Dormant</td><td>Real OpenAI-compatible scaffold in <code>api/oracle.js</code>, dormant until <code>MOONSHOT_API_KEY</code> is set.</td></tr>
     <tr><td>OpenAI (Luna)</td><td>Dormant</td><td>Same scaffold shape as Kimi, dormant until <code>OPENAI_API_KEY</code> is set.</td></tr>
     <tr><td>librosa</td><td>Optional/local</td><td>BPM + Major/Minor key analysis only, via <code>beat_audio_jobs</code> + a locally-run Python snippet — not a hosted service.</td></tr>
-    <tr><td>FFmpeg</td><td>Live (external repo)</td><td>Runs inside Engineer CC's OpenMontage environment, confirmed working July 31 — never inside RPGACE's own runtime.</td></tr>
+    <tr><td>FFmpeg</td><td>Live (external repo)</td><td>Runs inside OpenMontage CC's OpenMontage environment, confirmed working July 31 — never inside RPGACE's own runtime.</td></tr>
     <tr><td>OpenArt</td><td>Deferred</td><td>A named future video-gen companion to OpenMontage — "connect it at a later date," not wired to anything yet.</td></tr>
   </table>
 </div>

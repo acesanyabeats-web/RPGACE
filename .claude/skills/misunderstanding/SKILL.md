@@ -1,6 +1,6 @@
 ---
 name: misunderstanding
-description: Alex's own real-time disconnect-repair tool — when HE feels a gap between what he meant and what an AI (this session, RPGACE Oracle, Engineer CC, Graphify CC, or any other Total-system AI) typed back, he pastes the exact confusing text and this runs a fixed 3-step repair (quote what he actually said → state what was understood and why → state the concrete plan going forward) so both sides are provably on the same page before more work happens on a possibly-wrong premise. Use this skill ONLY when Alex explicitly invokes it ("/misunderstanding", or pastes back something an AI said with "this confused me" / similar) — never proactively, and never self-triggered by the AI side, because only Alex can experience his own confusion.
+description: Alex's own real-time disconnect-repair tool — when HE feels a gap between what he meant and what an AI (this session, RPGACE Oracle, OpenMontage CC, Graphify CC, or any other Total-system AI) typed back, he pastes the exact confusing text and this runs a fixed 3-step repair (quote what he actually said → state what was understood and why → state the concrete plan going forward) so both sides are provably on the same page before more work happens on a possibly-wrong premise. Use this skill ONLY when Alex explicitly invokes it ("/misunderstanding", or pastes back something an AI said with "this confused me" / similar) — never proactively, and never self-triggered by the AI side, because only Alex can experience his own confusion.
 ---
 
 # /misunderstanding — Alex's confusion, repaired in 3 fixed steps
@@ -53,14 +53,14 @@ Alex's own explicit ask: *"make it a RPGACE total systems skill too, so i
 can always ask any extranal ai or oracle ai or orchestrator CC and other
 CCs to close this gap, very valuable."* Real, honest scope given the
 standing Total-systems constraint (CLAUDE.md's own "Total" section):
-Engineer CC / Graphify CC / any future Total-system member cannot literally
+OpenMontage CC / Graphify CC / any future Total-system member cannot literally
 invoke a `.claude/skills/` file that isn't in their own repo — the same
 constraint that already means `/Engineer`/`/GODMODE`/`/scope` don't
 transfer there either. What DOES transfer, per that section's own
 established pattern (prose-embedded discipline in every dispatch, not
 skill-name infrastructure): the 3-step PROCEDURE itself is portable —
 Alex can paste this file's Step 1-3 shape directly into a message to
-Oracle, Engineer CC, Graphify CC, or any other AI and get the same real
+Oracle, OpenMontage CC, Graphify CC, or any other AI and get the same real
 repair, even without that system having this file installed. RPGACE
 Oracle specifically: no code change needed to "have" this skill — Alex can
 just paste a confusing Oracle reply back into the SAME Oracle conversation

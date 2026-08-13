@@ -1,0 +1,316 @@
+RPGACE TOTAL SYSTEMS GALAXY MAP — /CEO Loop 1 PLANNING PASS
+(/paranoia-shaped, /Engineer + /aintergration + /restructure as advisors,
+/drift-checked against Alex's own compiled ask) — 2026-08-13
+
+Loop 1 produces an approved plan and builds nothing (per .claude/skills/
+CEO/SKILL.md). This file is Step 1 (compile) + Step 2 (interrogation,
+folded in as named open forks) + Step 3 (paranoia-shaped scrutiny) +
+Step 4 (drift-check against Alex's own words) + Step 5 (the report).
+Step 6 (Alex reads/pushes back/approves) happens in chat, not here.
+No code for the galaxy map itself was built this pass. Two small,
+real, separately-scoped fixes WERE built this pass (see "Also done
+this session" at the end) — neither is part of the plan below.
+
+================================================================
+STEP 1 — COMPILE, close to verbatim
+================================================================
+
+Alex's real ask, compiled from his own words: build a new visual
+output for graphify + Obsidian styled closely on the Assassin's
+Creed Valhalla "All Skills" reference image — an organic, radial,
+category-clustered skill-web (Melee/Ranged/Stealth branches fanning
+out from a central figure, glowing connecting lines, named nodes with
+icons). Applied to RPGACE Total Systems, using minotaur_map.html's
+own river logic as the guide for "what currently exists," and
+future_integrations.html for "where future update files will live"
+within this same landscape — framed as an "astrological-esque"
+starmap.
+
+Structure requested, in his own order:
+1. Top level = "galaxies": Orchestrator CC (this session), OpenMontage
+   CC (renamed this session from "Engineer CC" — done, see below),
+   and any external AI that plays a real role in Total-systems
+   operations, each its own galaxy.
+2. External galaxies show their real repo in graphify "to make it
+   look bigger" and help a viewer deduce what they do, visually —
+   explicit constraint: "these repos cant be touched, just shown in
+   my own and your combined interpretation."
+3. The RPGACE architecture galaxy breaks down, 2 steps down within a
+   named parent sub-category, into the real Rivers — depicting where
+   each river flows from and to.
+4. Rivers break down via "minotaur logic," using the real truth docs,
+   into every function/button/etc.
+5. These depictions connect to Oversight as a river-flow, showing how
+   Oversight docs get updated/store information.
+6. Edges may need a different color scheme to show what KIND of
+   interaction is occurring.
+7. Recurse: keep breaking down every node until each one has its own
+   logical path — this full per-node blueprint becomes what graphify
+   + Obsidian work from for every future explain/document/visualize
+   output.
+
+Ends with: "/paranoia and /ceo this with /drift and /engineer as
+advisors."
+
+**Real cross-reference against what already exists — this is NOT a
+from-scratch ask, a large amount of the real underlying DATA this
+needs is already built and live**, confirmed by direct read this
+session, not assumed:
+- `scripts/graphify_river_group.py` already implements a real 16-river
+  taxonomy (I-XVI) with a curated `RIVER_MODULES` table (module →
+  river, from real `/* ===MODULE:x=== */` markers), a real
+  `RIVER_FLOWS` table (which river flows into which, with the real
+  condition/trigger note for each edge — this is already a real,
+  evidence-grepped "what kind of interaction" tag, just not yet
+  color-coded separately from river membership), and a real
+  `EXTERNAL_CONNECTORS` table (OpenMontage/Composio/Kimi/Luna/
+  librosa/FFmpeg/OpenArt/Graphify CC, each with real status/via/note).
+- `total_system_members` (Supabase) already has the real galaxy-level
+  member list Alex is asking for at the top: RPGACE app, RPGACE CC/
+  Orchestrator CC, OpenMontage CC (renamed this session), Graphify CC.
+- Graphify CC already ran a real `graphify clone` against
+  `calesthio/OpenMontage` (public, no credentials) and built a real
+  cross-repo graph (`~/.graphify/global-graph.json`: RPGACE 955 nodes
+  + OpenMontage 11,280 nodes) — this is a real, already-gathered
+  "show the size without touching it live" data point that directly
+  answers point 2 above without a new repo access this session.
+- `minotaur_map.html` already has the real river → river
+  `.river-flow-next` connectors and the real "Oversight Rivers"
+  section (built Aug 11) describing exactly how information flows
+  into a)-(f) oversight docs — this is the real source for point 5.
+- The current pipeline (`graphify_recolor.py` → `graphify_river_group.py`
+  → `graphify_to_obsidian.py` → `obsidian_vault_to_html.py`) already
+  produces `graphify-out/graph.html` (a real, working, physics-based
+  vis.js force-directed graph with river-zone clustering) and
+  `graphify-out/obsidian_vault.html` (a real, working, linked
+  human-browsable vault) — both wired into the live Oversight popup.
+
+**Real, honest gap — the actual new work this ask is asking for**:
+none of the above renders anything like the reference image's real
+visual language — a hand-illustrated, organic, radial branching web
+with glowing curved connectors and no visible force-directed "blob"
+physics. `graph.html`'s vis.js renderer is a real, correct, working
+TRUTH graph — it was never designed or intended to look like a game
+skill tree, and doesn't. Matching the reference image is a genuinely
+new, separate FRONTEND VISUALIZATION build, not a config change to
+the existing pipeline — this is the actual scope of what's being
+asked for, named plainly rather than undersold.
+
+================================================================
+STEP 2 — Real open forks (/interrogation) — Alex's answers needed
+================================================================
+
+**Fork 1 — rendering mechanism.** The reference image is a hand-laid-
+out, curated illustration (~80 skills, positioned by a human artist
+for legibility and visual balance). RPGACE Total Systems, at the
+"break down until each node has its own logical path" depth Alex
+asked for, is a different order of magnitude — 955 river-tagged nodes
+in `graph.json` alone, before counting main.js's ~240 keyword-matched
+nodes, before counting the external galaxies. A single flat image at
+that node count cannot read the way the reference image reads, no
+matter the styling — it would be an unreadable wall of nodes.
+Two real, honest options:
+  (a) **Drill-down, matching "as many times as it takes" literally.**
+      Top level shows only the galaxies (Orchestrator CC/OpenMontage
+      CC/Graphify CC/external providers/RPGACE architecture) as a
+      small number of large stylized nodes, styled close to the
+      reference image. Click a galaxy → a fresh radial view scoped to
+      JUST that galaxy's own children (e.g. RPGACE architecture →
+      its 16 rivers, styled the same way). Click a river → its real
+      functions/buttons. Each level is its own small, legible,
+      reference-image-styled diagram; the FULL depth Alex asked for
+      exists, just spread across levels instead of one flat image.
+  (b) **One giant flat image, real depth, accept illegibility at the
+      full node count**, and cap the literal per-node breakdown at a
+      shallower real tier (e.g. river-level, not function-level) to
+      keep it as one screen. This does not honor "break down... until
+      each node has its own logical path" literally.
+  Recommendation: (a) — it's the only option that actually delivers
+  what he described ("as many times as it takes"), and it reuses the
+  EXACT same real river/module data already gathered rather than
+  inventing a new shallower taxonomy.
+
+**Fork 2 — is this a new artifact or a replacement.** The current
+`graph.html`/`obsidian_vault.html` pipeline is real, working, wired
+into Oversight, and IS layer (f)'s real present-tense truth source
+per CLAUDE.md's own tier system — it answers "what does the AST
+actually say," a genuinely different job than a curated, illustrated
+overview. Recommendation: build the galaxy map as a NEW, additional
+artifact (a real new HTML page, generated from the SAME underlying
+JSON the existing pipeline already produces — not a second, divergent
+data source, per rule 8) rather than replacing graph.html — but this
+doubles the real maintenance surface (two pipeline outputs instead of
+one), which is a real cost Alex should weigh, not one I should decide
+for him.
+
+**Fork 3 — external galaxy sizing, given "cant be touched."** Read
+literally, "shown in my own and your combined interpretation" reads
+as: don't re-clone or re-analyze the external repo THIS pass — use
+what's already known/cached (the real OpenMontage 11,280-node count
+already sitting in `~/.graphify/global-graph.json` from Graphify CC's
+Aug 6 run) plus a real, human-written description (what CLAUDE.md
+already documents about what OpenMontage does), rather than a purely
+invented illustrative size. Recommendation: use the real cached count
+as a visual-size input (bigger galaxy = more real nodes, an honest
+signal) alongside hand-written descriptive text — confirm this
+reading is what "your combined interpretation" meant, since the
+alternative (purely artistic sizing, zero real number behind it)
+is also a legitimate reading of "just shown."
+
+**Fork 4 — edge color taxonomy.** `RIVER_FLOWS` already has a real,
+evidence-grepped condition/trigger note per edge (e.g. "Oracle page
+selected," "a real error is captured," "the OpenMontage handoff...
+routes out through here") — these ARE already real interaction-type
+data, just not yet color-differentiated as their own legend axis
+separate from river-membership color. Real candidate categories,
+derived from what's actually in the data already (not invented):
+page-navigation trigger, Oracle/API call-out, Supabase write,
+human-confirm checkpoint, external Total-system dispatch. Confirm
+this is the right axis, or if a different interaction taxonomy was
+intended.
+
+**Fork 5 — Oversight-as-river-flow.** `minotaur_map.html`'s real
+"Oversight Rivers" section + `RIVER_FLOWS`' existing entries into
+River XIV already model this. Confirm whether this pass should just
+CARRY this existing real connection into the new galaxy map's visual
+language (same underlying fact, new presentation) or whether Alex
+wants a genuinely new/different oversight-connection mechanic drawn.
+
+================================================================
+STEP 3 — /paranoia-shaped scrutiny, advisors folded in
+================================================================
+
+**/Engineer's shape-sketch (a concrete implementation, not vague)**:
+the realistic build is a NEW Python script (pattern-matching the
+existing `graphify_river_group.py`/`graphify_to_obsidian.py`
+convention — same repo, same "generate from real JSON, never
+hand-author the diagram" discipline) that reads the SAME
+`graph.json`/`RIVER_MODULES`/`RIVER_FLOWS`/`EXTERNAL_CONNECTORS`/
+`total_system_members` data already gathered, and emits a hand-rolled
+SVG (not vis.js — vis.js is a force-directed physics engine, wrong
+tool for a curated radial layout) per drill-down level: a small,
+deterministic radial/organic layout (golden-angle spiral positioning,
+same technique `taxonomy_map.html`'s own real circle-pack diagram
+already uses — real, working precedent in this exact codebase,
+confirmed by direct read Aug 6), styled with CSS glow/blur filters
+and curved (quadratic-bezier) connector paths to approximate the
+reference image's look, one static self-contained HTML file per
+level OR one file with JS-driven level-switching (closer to
+`taxonomy_map.html`'s own click-to-drill pattern — real, proven,
+reusable precedent, satisfies rule 8 directly).
+
+**/aintergration verdict on tooling**: no third-party JS charting
+library is needed or recommended — `taxonomy_map.html`'s own hand-
+rolled radial layout is a real, working, zero-dependency precedent
+already proven in this exact codebase for exactly this shape of
+problem (circle-pack, click-to-drill, golden-angle positioning).
+Reaching for D3/a game-engine/a canvas library would be Reference-
+only at best (same verdict class as every prior Aintergration pass
+on a framework RPGACE doesn't structurally need) — the zero-npm-
+runtime rule doesn't even technically block it here (this is a
+static, dev-generated oversight artifact, not the live RPGACE app),
+but there's no real capability gap the hand-rolled approach doesn't
+already cover, so pulling one in would be unjustified added surface.
+
+**/restructure verdict**: this does NOT change RPGACE-Claude-Code's
+own skeleton — it's a new presentational artifact over already-
+existing data, same class of addition as `taxonomy_map.html`'s circle
+-pack view was to the taxonomy system in Aug 6. No existing
+infrastructure needs replacing.
+
+**Real risk, stated plainly, not softened**: recursive per-node depth
+at RPGACE's real scale (955+ nodes) is a genuinely large generation
+job even with real data already gathered — likely several real build-
+verify passes across multiple future sessions, not one sitting. This
+is explicitly why Alex named `/CEO` for it himself; sizing it
+honestly here rather than promising a one-pass build protects output
+quality, per this session's own standing instruction not to let scope
+compress quality.
+
+**Real "why NOT to build this" case, stated honestly**: the existing
+`graph.html`/`obsidian_vault.html` pipeline already serves layer (f)'s
+real job (present-tense structural truth) and is already wired into
+Oversight; a second, purely-presentational "pretty" artifact is real,
+ongoing double maintenance (any future river/module change needs BOTH
+pipelines re-run) for a genuine but non-functional benefit (easier
+visual digestion, not new information). This is a legitimate case for
+scoping this as "nice, not urgent" relative to Total-systems items
+that close real functional gaps (e.g. server-side error_log capture,
+the fusion-link gap on phyla 11/14) — worth Alex weighing explicitly,
+not decided for him here.
+
+================================================================
+STEP 4 — /drift-check against Alex's own compiled ask (Step 1)
+================================================================
+
+Baseline: PROVISIONAL — this is a fresh ask this session, no prior
+ratified plan exists for it yet (this file, once Alex reads/approves
+it, becomes the real ratified baseline per Loop 1 Step 7).
+Verdict: on the draft above (Steps 1-3), covers all 7 of Alex's own
+numbered structure points from Step 1 — none silently dropped or
+reworded into a smaller ask; 5 real, load-bearing open forks named
+rather than guessed defaults substituted in their place.
+Grade: no MATERIAL/CAPTURED findings — the draft has not silently
+redefined the goal. The 5 forks are correctly NOT drift findings
+themselves (an honest fork ≠ a broken promise) — they're the real
+Step 2 interrogation this ask needs before Step 5's report can become
+a buildable plan.
+
+================================================================
+STEP 5 — the report (delivered in chat, this file is its record)
+================================================================
+
+See chat response for the actual Council-of-5-shaped delivery to
+Alex. Nothing in this plan is built. Per Loop 1 Step 6, it becomes
+buildable only once Alex reads this, resolves the 5 forks above (or
+tells me to use my own judgment on any of them), and approves.
+
+================================================================
+ALSO DONE THIS SESSION (separate from the plan above, real, small,
+already built+verified+pushed — not part of what needs approval)
+================================================================
+
+1. **"Engineer CC" retired, "OpenMontage CC" is now the real name
+   everywhere current-state docs use it** — Alex's own direct call:
+   the old name collided with `/Engineer`, a skill living inside THIS
+   session, wrongly implying a connection that never existed. Fixed
+   in `total_system_members` (Supabase), `ai_tooling_and_rules_map.md`,
+   `manual.html`, `interconnection_map.md`, `minotaur_map.html`,
+   `.claude/skills/misunderstanding/SKILL.md`, and
+   `scripts/graphify_river_group.py`'s `EXTERNAL_CONNECTORS`/river-
+   role text — then the real pipeline (`graphify_river_group.py` →
+   `graphify_to_obsidian.py` → `obsidian_vault_to_html.py`) re-run in
+   place against the EXISTING graph.json (no fresh `graphify export`,
+   deliberately avoiding the Aug 12 node-count-mismatch risk that
+   stopped an earlier trickle-down attempt) and verified: zero
+   "Engineer CC" references remain in any generated output. CLAUDE.md
+   dated bullets that predate the rename keep the old name, per this
+   file's own doc-discipline (same precedent as the Aug 11 phylum
+   renumber) — one correction bullet added stating the rename and
+   pointing here.
+
+2. **Real /misunderstanding-shaped check on the mockOracle wrapper
+   architecture, resolved with direct evidence, not just reassurance.**
+   Alex's real worry: that RPGACE infrastructure only ever exercises
+   `mockOracle` for execution, rather than all 3 real Oracle modes
+   (Real API / Dummy / Fallback Scout) via a proper wrapper. Checked
+   directly: `main.js`'s `callOracle()` is the SOLE real dispatch
+   point (confirmed by grep — exactly one `async function callOracle`
+   in the whole codebase), and it checks BOTH
+   `mockOracle.isEnabled()` (dummy) AND `mockOracle.isFallbackMode()`
+   (fallback) before ever falling through to the real `/api/oracle`
+   fetch — the module named `mockOracle` (a legacy name from before
+   the Aug 6 3-mode extension) IS the real wrapper deciding among all
+   3 modes, not a mock-only shortcut. All 3 grounding wrappers
+   (`oracleTreeGrounding`/`oracleAppGrounding`/`oracleFetchGuard`)
+   chain to it via `orig.apply(this, arguments)` (confirmed by grep —
+   every `orig.apply` call site forwards the full real `arguments`
+   object, never a hand-listed subset), so none of them can silently
+   bypass the mode check. Nothing in the codebase calls
+   `mockOracle._fakeReply` directly outside this one real dispatch
+   point. The architecture is already correct — errorLog (built the
+   prior session) doesn't call Oracle at all, so it was never part of
+   this concern either way.
+
+3. **Session dating corrected going forward** — today is 2026-08-13,
+   not the 11th; new work this session is dated accordingly.
