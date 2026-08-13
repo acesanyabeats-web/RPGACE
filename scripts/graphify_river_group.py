@@ -4,6 +4,18 @@ graphify_river_group.py — Aug 6, real Alex ask: "id also like graphify to
 resemble more of a river, with functions skills and modules to be grouped
 based on river... to make minotaur mapping easier."
 
+**Aug 13 update — this script's real methodology now has a canonical
+prose home: `system_map_spec.md`.** That doc states the RULES (the
+Galaxy->River->Module->Connector hierarchy, the connector-bridge-node
+convention, the interaction-type taxonomy, the known extraction blind
+spots); the tables below (RIVER_MODULES/RIVER_FLOWS/EXTERNAL_CONNECTORS/
+INTERACTION_TYPE_LABEL) remain the real LIVE DATA that methodology
+governs. Update the spec doc first when the METHODOLOGY changes, this
+script when the DATA changes — same "doc first, mirror second"
+discipline already governing RIVER_FLOWS' own relationship to
+minotaur_map.html. See `.claude/skills/cartographer/SKILL.md` for the
+real cross-talk/trickle-down-up discipline built around this relationship.
+
 Real, bounded scope (Alex-confirmed via /interrogation, Aug 6): NAMED
 MODULES ONLY — not every node. graphify's own AST extractor cannot see
 RPGACE.register('name', {...}) boundaries (confirmed, see

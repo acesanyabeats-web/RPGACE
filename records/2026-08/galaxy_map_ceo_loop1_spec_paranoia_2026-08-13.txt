@@ -729,3 +729,149 @@ cutoff — a comment was added directly above `EXTERNAL_CONNECTORS` in
 same fix rather than being surprised by it. `.graphify/` scratch dir
 + global npm install cleaned up again, nothing untracked left behind.
 
+================================================================
+SAME DAY, 6TH PASS — a real mapping-methodology doc + the /cartographer
+skill, real recommendations for new tables, Consumer/Dev tiering,
+CEO wiring. /paranoia+/drift with /restructure+/Engineer advising.
+================================================================
+
+Alex's real ask, compiled close to verbatim: a document graphify/
+Obsidian read to know how to map RPGACE Total Systems out; real
+recommendations for new docs/tables that let externals (and RPGACE's
+own self-awareness) map and execute what he wants, invoking /drift,
+/paranoia, /misunderstanding where needed; make this a real skill in
+the RPGACE skillbase; real cross-talk between all Total-system members
+via these tables, using trickle-down/up to also flag needed updates
+back to HIM directly (an explicit expansion of G7's original scope,
+not a new idea); a Consumer/Developer visibility split so a future
+market-facing product can hide dev-only detail; wire all of it into
+`/CEO` so it runs whenever CEO mode is on.
+
+**Real cross-reference against what already exists, before building
+anything new (rule 8 discipline)**: the ratified Galaxy Map plan
+already had G6 (truth-source promotion), G7 (trickle-down/up), and G8
+(CEO wiring) sitting exactly where this ask lands — this message is
+real, substantive content for those items (especially G7's own
+explicit "needs its own /interrogation pass before buildable," which
+this message directly supplies), not a new parallel initiative. Only
+the Consumer/Developer tiering is genuinely NEW — no existing G-item
+covered it — so it became a real new G9, not folded artificially into
+an unrelated one.
+
+**Built, real, low-risk (process/prose artifacts, no schema commitment
+baked in)**:
+- `system_map_spec.md` — the real methodology doc, 8 sections (the
+  Galaxy->River->Module->Connector hierarchy; the connector-bridge-node
+  rule, generalizing the OpenMontage pattern per the earlier mid-turn
+  correction; when an external earns a full galaxy vs. a plain bridge
+  node; the 10-type interaction taxonomy; the confirmed extraction
+  blind-spot precedent from this same day's 5th pass, written down so
+  it doesn't get re-discovered from scratch; the Oversight-connection
+  rule; the Consumer/Developer convention (rule stated, NOT yet
+  applied — see G9); the trickle-down/up procedure). Real /deduplication
+  check applied to its own drafting: it states RULES, never re-states
+  FACTS `interconnection_map.md`/`ai_tooling_and_rules_map.md` already
+  own — verified by re-reading each section against those docs before
+  finalizing.
+- `.claude/skills/cartographer/SKILL.md` — the real skill, 6 real
+  steps (ground against the spec doc -> identify the change's real
+  level -> trickle-down/up cross-reference against Tier (b) -> surface
+  real findings to Alex directly, his own explicit expansion -> tag
+  Consumer/Developer on NEW artifacts only -> invoke /drift/paranoia/
+  misunderstanding where the finding's own shape calls for them, never
+  reflexively). Added to `ai_tooling_and_rules_map.md`'s skill catalog
+  same pass (rule 6/artifact-9 obligation).
+- `.claude/skills/CEO/SKILL.md` gained a real new Grounded Mode Step 5:
+  when a touched plan item sits in the mapping hierarchy, `/cartographer`'s
+  own trickle-down/up check runs alongside the existing `/drift` check
+  — this is the literal "update into ceo so it happens when ceo mode is
+  on" ask, done. `ceo_plan_items` G6/G7/G8 evidence updated to reflect
+  all of this; G8 moved red->yellow (real code shipped, zero real hand-
+  test yet — honestly not green).
+
+**Real recommendation, NOT built this pass — a genuine proposal for
+Alex, per his own "recommendations for creating new documents or
+tables" framing, not silently executed**: a new `system_map_flags`
+Supabase table, the real persistent-tracking half of the trickle-down/
+up procedure (the skill surfaces a finding to Alex live in chat; this
+table is what keeps it from being lost between sessions too — both
+real, not a choice between them). Proposed schema:
+
+```sql
+CREATE TABLE system_map_flags (
+  id uuid primary key default gen_random_uuid(),
+  detected_by text not null,        -- which real session/skill found it
+                                     -- (e.g. 'orchestrator_cc_cartographer')
+  map_level text not null,          -- galaxy | river | module | connector
+  change_summary text not null,     -- the real change that triggered this
+  friction_note text not null,      -- what's now stale upstream/downstream
+  severity text not null,           -- minor | material | captured (drift vocab)
+  visibility text not null default 'developer', -- developer | consumer
+  status text not null default 'flagged', -- flagged | alex_reviewed | resolved
+  linked_plan_item_id uuid references ceo_plan_items(id),
+  created_at timestamptz default now(),
+  reviewed_at timestamptz,
+  resolution_note text
+);
+```
+`anon_all`/`authenticated_all` RLS, matching the established internal-
+dev-tooling posture (`session_memory`/`graphify_jobs`/`ceo_plans`) —
+this is RPGACE-Claude-Code's own working data, additive per the CEO-
+framework's own reduced-friction carve-out, so this table CAN be built
+without a separate stop-and-ask once Alex confirms the shape above is
+what he wants (a real, small, genuine confirm — not guessed, since the
+exact column set is a real design choice, not obviously the only
+option).
+
+**Real open fork, explicitly NOT decided — Consumer/Developer tagging
+granularity (G9)**: `system_map_spec.md` §7 states the RULE (a real
+`visibility` tag, `developer`/`consumer`) but deliberately does NOT
+commit to WHERE it attaches. Three real options, not guessed at:
+(a) per-DOC (a whole oversight artifact is one or the other — coarse,
+cheap, but `manual.html` genuinely has both consumer-relevant and
+dev-only content mixed in one file today); (b) per-SECTION (finer,
+matches how `manual.html`'s own `<details class="domain-group">`
+sections are already structured — real, reusable precedent); (c) per-
+Supabase-ROW (finest, needed for tables like `smoke_test_items`/
+`future_integrations` where individual items genuinely differ in
+consumer-relevance). Real recommendation, not forced: (b)+(c) together
+— doc-level tagging is too coarse to be honest given `manual.html`'s
+own real mixed content confirmed this same session — but this is a
+recommendation, not executed; Alex's own confirm decides it.
+
+**/paranoia-shaped scrutiny, real risks named**: the biggest real risk
+in this whole ask is scope creep into a permanent, heavy ceremony
+layered onto ordinary work — mitigated directly in the skill's own
+"real, honest scope" section (explicit: doesn't replace `update-
+logging-system` for ordinary content edits, only fires on a real
+mapping-hierarchy change) and in CEO's own new Step 5 (only fires when
+a touched plan item is actually in the hierarchy, not every prompt).
+A second real risk: `system_map_flags` as proposed could become a
+second, competing home for findings `error_log.html`/`future_
+integrations.html` already own — checked directly: `error_log` is real
+RUNTIME errors (thrown exceptions), `future_integrations.html` is real
+NOT-YET-BUILT ideas: `system_map_flags` is neither — it's a real,
+distinct third thing (a real, ALREADY-BUILT thing that's gone stale
+relative to something else that changed), genuinely not covered by
+either existing table. Kept separate rather than force-fit.
+
+**/restructure verdict**: this doesn't change RPGACE-Claude-Code's own
+skeleton — it's a new methodology doc + a new skill layered on top of
+already-existing real infra (`ceo_plans`/`session_memory`/`graphify_jobs`/
+the river/connector data already built this session), same class of
+addition as `/cartographer`'s own sibling skills.
+
+**/Engineer's shape-sketch, for `system_map_flags` once confirmed**: a
+real, small addition to the existing session-start-check pattern
+(`oracle_dev_suggestions`/`graphify_jobs`/`error_log` already query
+Supabase at session start) — query `status='flagged'` rows the same
+way, no new mechanism invented.
+
+**/drift-check against Alex's own compiled ask (Step 1 of this pass)**:
+Baseline PROVISIONAL (fresh ask, becomes ratified once Alex reads this).
+Verdict: ON TRACK for the built pieces (spec doc + skill + CEO wiring
+cover his real words directly); the new-table/tiering pieces correctly
+stay PARTIAL/open-fork rather than guessed defaults substituted in
+their place — no MATERIAL/CAPTURED drift, an honest fork isn't a
+broken promise.
+
