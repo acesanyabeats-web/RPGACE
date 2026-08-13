@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">➡️ Aug 13 (same day, 17th pass) — every Galaxy Map edge now carries a real ✕ mark at its start and an arrowhead at its end, across all 3 levels.</div>
+    <div class="card-body">
+      "make the lines have an arrow head and an x as the start to show relationships via the edge lines too." Built once, shared: a new <code>_build_markers()</code> helper in <code>galaxy_map.py</code> plus real geometry-trim params (<code>r1</code>/<code>r2</code>) on <code>_curved_edge()</code> so markers land at each node's visible boundary instead of buried at its exact center — every edge call site across all 3 files updated with its own already-known real node radius. A pre-existing small dedup gap closed along the way: <code>galaxy_map_module.py</code>'s dashboard-card connector lines were hand-rolled paths, not routed through the shared helper — now they are, and get the same real markers.
+      <br><br>
+      Verified via headless Chromium across the full L0→L1→L2 chain: zero console errors, marker-attribute counts matched edge counts exactly on every file. No documented prior spec for this exact convention was found in the repo — built on best judgement (standard directed-graph arrowhead + a literal ✕ source mark) per Alex's own "leave as is, straight to g5" signal to keep moving rather than stop and ask.
+      <br><br>
+      Separately, the "Agenda" dashboard card's real <code>partial</code> flag (River V, from G4) was left exactly as built, per Alex's own explicit call — its nuance (whether the Aug 11 main.js keyword-classification pass already covers the Quest Board functions this flag is honestly avoiding) is logged as a real future idea in <code>future_integrations.html</code>'s blue section, not silently dropped. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code> (17th pass).
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌊 Aug 13 (same day, 16th pass) — G4 SHIPPED: Level-2 drill-down shows each river's real modules PLUS the real dashboard cards that route into it, per Alex's own explicit ask.</div>
     <div class="card-body">
       "yes now do g4; we should also include dashboard cards as reference points too." A new sourced <code>DASHBOARD_CARDS</code> table (<code>graphify_river_group.py</code>) mirrors <code>dashDeck.MODULES</code>'s 12 real cards, each resolved to its real target river(s) via that card's own <code>go()</code> handler — 2 honest edge cases kept rather than smoothed over: "Taxonomy & Review" genuinely branches to 2 rivers at runtime, "Agenda" is flagged <code>partial</code> since its real Quest Board core lives in untagged main.js code.

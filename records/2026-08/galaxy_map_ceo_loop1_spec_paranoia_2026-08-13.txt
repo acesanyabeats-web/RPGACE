@@ -1671,3 +1671,92 @@ visually - River VI (1 module + 1 partial-labeled card) and River XI
 
 **Remaining G5-G9 still honestly queued** - not attempted this pass,
 same real multi-session discipline as before.
+
+================================================================
+SAME DAY, 17TH PASS — every edge gets a real X-start mark + arrowhead
+across all 3 levels; Agenda partial-flag nuance logged per Alex's ask
+================================================================
+
+Alex's real ask: "now also make the lines have an arrow head and an x
+as the start to show relationships via the edge lines too - i have
+ideas for this, it is the way it is, all up to date with what ive
+planned out with you" + "leave [the Agenda partial flag] as is for
+now by your judgement, log your nuance for thought in its blue
+section" + "/paranoia and /ceo this with /drift /engineer/ and
+/rstructure" + (mid-turn) "and then straight to g5."
+
+**Real evidence check before building**: grepped the whole repo
+(records/, system_map_spec.md, interconnection_map.md,
+minotaur_map.html) for any prior documented "X-start/arrowhead"
+convention — found none. Given Alex's explicit "straight to g5"
+follow-up signaling he wanted forward momentum, not a blocking
+clarifying question, proceeded on my own best-judgement interpretation
+(a filled-triangle arrowhead at the target end, a real ✕-cross glyph
+at the source end — the standard directed-graph convention) rather
+than stopping to ask, and documented that choice plainly here so a gap
+against what he actually had in mind stays visible and correctable,
+per rule 1's "don't claim a match you can't verify" discipline.
+
+**Real /restructure-shaped decision**: implement once, in the shared
+`_curved_edge()`/new `_build_markers()` helpers in `galaxy_map.py` (the
+file all 3 levels already import from), rather than duplicating marker
+logic 3 times — same rule-8 discipline as `polar()`/`_curved_edge()`
+itself.
+
+**Real geometry fix, not just decoration**: a path drawn center-to-
+center would put both new markers exactly at each node's CENTER,
+invisible under its fill/icon. `_curved_edge()` gained real `r1`/`r2`
+params that trim each endpoint inward by the actual node radius before
+computing the curve, so markers land at the visible boundary. Every
+edge call site across all 3 files (~24 in galaxy_map.py, ~18 in
+galaxy_map_river.py, ~7 per river section × 16 in galaxy_map_module.py)
+was updated with its own real, already-known node radius (46/34/22/15/
+14/16/18 for Level 0; 42/30 for Level 1; 40/22/27 for Level 2) — no
+guessed values, all pulled from each script's own existing
+`node_circle()`/rect-node calls.
+
+**Real dedup caught along the way**: `galaxy_map_module.py`'s
+dashboard-card connector lines were hand-rolled `<path>` elements, not
+routed through `_curved_edge()` — converted to the shared helper so
+they get the same real markers as every other edge, closing a small
+pre-existing rule-8 gap rather than adding a 4th special case.
+
+**`_build_markers(colors)`** emits one `<marker>` pair (arrow triangle
++ X-cross) per real color actually used in that diagram — same "only
+what's real" discipline as the existing `itype_used`-driven legend.
+Fixed-color-per-marker (never CSS `context-stroke`/`context-fill`) —
+zero browser-version risk for a real Android/desktop PWA target.
+Real, checked non-issue: gold (`#C9A84C`) markers repeat byte-
+identically across every river section in `galaxy_map_module.py`
+(one `<svg>` per river, 16 total) — technically duplicate `id`
+attributes in one HTML document, but content-identical, same class of
+harmless duplication the pre-existing `id="glow"` filter def (already
+repeated 16× before this pass) already has — not a new risk class.
+
+**Real verification, full chain**: headless-Chromium pass across all
+3 levels, zero console/page errors. Direct count check: marker-start/
+marker-end attribute counts matched edge counts exactly on every file
+(L0: 24/24/24, L1: 41/41/46-marker-defs, L2: 57/57/52-marker-defs).
+Screenshots reviewed visually at multiple zoom levels — arrowheads
+confirmed rendering clearly outside node boundaries (not buried),
+X-marks confirmed visible at cluster/source points, no regressions on
+existing edges (River XI's module fan-out, the OpenMontage/FFmpeg
+local cluster, the central hub).
+
+**Agenda partial-flag nuance logged, not acted on**, per Alex's own
+explicit "leave as is for now, log your nuance" — a new blue-section
+card in `future_integrations.html` (River V group): the real, unasked
+question of whether the Aug 11 `classify_mainjs_by_keyword()` pass
+(228/240 main.js functions resolved) already covers the Quest Board
+functions the Agenda card's `partial` flag is honestly avoiding —
+flagged as a real future check, not guessed either way this pass.
+
+**`ceo_plan_items` G2/G3/G4** all got a real appended verdict note
+citing this pass's evidence. **Oversight updated same session**:
+`oracleAppGrounding.SELF_KNOWLEDGE`, `rpgace_core.js` (Oversight popup
+Level-0 description), `future_integrations.html` (new blue card).
+`rpgace_core.min.js`/`main.min.js` re-minified, `index.html`
+cache-bust bumped to `?v=20260813g`.
+
+**Per Alex's explicit instruction, moving straight to G5** (Oversight-
+connection representation) next in this same session, no pause.

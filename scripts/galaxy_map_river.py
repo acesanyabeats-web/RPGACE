@@ -34,7 +34,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map import polar, _curved_edge, _connector_icon  # noqa: E402
+from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
@@ -60,6 +60,7 @@ def build_svg():
     edges_svg = []
     legend_rows = []
     itype_used = set()
+    edge_colors_used = set()
 
     def node_circle(x, y, r, color, icon, label_below=None, label_color=None):
         s = (f'<g class="node">'
@@ -87,7 +88,8 @@ def build_svg():
         rx, ry = polar(cx, cy, river_radius, ang)
         river_pos[rnum] = (rx, ry)
         color = RIVER_COLOR[rnum]
-        edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True))
+        edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, r1=42, r2=30))
+        edge_colors_used.add(color)
         short_label = RIVER_NAME[rnum].split('—')[0].strip()
         # G4 shipped — every river node is now a real clickable drill-down
         # into its own Level-2 module/dashboard-card detail, not a
@@ -124,7 +126,8 @@ def build_svg():
             col = INTERACTION_TYPE_COLOR.get(itype, '#6b7280')
             if tgt_num and tgt_num in river_pos:
                 tx, ty = river_pos[tgt_num]
-                edges_svg.append(_curved_edge(sx, sy, tx, ty, col, real=True))
+                edges_svg.append(_curved_edge(sx, sy, tx, ty, col, real=True, r1=30, r2=30))
+                edge_colors_used.add(col)
             else:
                 # fan-out / terminal note — short stub line, not a fake target
                 stub_x, stub_y = sx + (sx - cx) * 0.18, sy + (sy - cx) * 0.18
@@ -143,7 +146,8 @@ def build_svg():
         for t in sorted(itype_used)
     )
 
-    return '\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H
+    markers_defs = _build_markers(edge_colors_used)
+    return '\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H, markers_defs
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -183,7 +187,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
   <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2, G4, now real).</b></p>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">
@@ -193,6 +197,7 @@ TEMPLATE = """<!DOCTYPE html>
       <feGaussianBlur stdDeviation="4" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    {markers}
   </defs>
   {edges}
   {nodes}
@@ -225,8 +230,8 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    nodes, edges, legend, itype_legend, W, H = build_svg()
-    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H)
+    nodes, edges, legend, itype_legend, W, H, markers = build_svg()
+    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn.")

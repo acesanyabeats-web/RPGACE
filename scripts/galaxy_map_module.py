@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map import polar, _curved_edge  # noqa: E402
+from galaxy_map import polar, _curved_edge, _build_markers  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER,
@@ -53,6 +53,7 @@ def build_river_section(rnum):
 
     nodes_svg = []
     edges_svg = []
+    edge_colors_used = {color}
 
     # --- river hub ---
     nodes_svg.append(
@@ -67,7 +68,7 @@ def build_river_section(rnum):
     for i, m in enumerate(mods):
         ang = -90 + (360 * i / n_mods)
         mx, my = polar(cx, cy, mod_radius, ang)
-        edges_svg.append(_curved_edge(cx, cy, mx, my, color, real=True))
+        edges_svg.append(_curved_edge(cx, cy, mx, my, color, real=True, r1=40, r2=22))
         nodes_svg.append(
             f'<g class="node"><circle cx="{mx}" cy="{my}" r="22" fill="#0f0f1a" stroke="{color}" stroke-width="2" filter="url(#glow)"/>'
             f'<text x="{mx}" y="{my+5}" text-anchor="middle" font-size="14">{MODULE_ICON}</text></g>'
@@ -83,10 +84,12 @@ def build_river_section(rnum):
         ang = -90 + (360 * i / n_cards) + (180 / n_cards if n_cards > 1 else 0)
         px, py = polar(cx, cy, card_radius, ang)
         dash = ' stroke-dasharray="3,3"' if c.get('partial') else ''
-        edges_svg.append(
-            f'<path d="M {cx} {cy} L {px} {py}" stroke="#C9A84C" stroke-width="1.3" '
-            f'stroke-dasharray="2,4" opacity="0.55" fill="none"/>'
-        )
+        # Real dedup (rule 8): was a hand-rolled <path>, now routes
+        # through the shared _curved_edge() so it gets the same real
+        # X-start/arrowhead markers every other edge in the Galaxy Map
+        # gets, instead of a second, marker-less line convention.
+        edges_svg.append(_curved_edge(cx, cy, px, py, '#C9A84C', real=True, dashed=True, r1=40, r2=27))
+        edge_colors_used.add('#C9A84C')
         icon = c['label'].split(' ')[0]
         label = ' '.join(c['label'].split(' ')[1:])
         badge = ' <tspan fill="#E0A040">(partial)</tspan>' if c.get('partial') else ''
@@ -115,7 +118,7 @@ def build_river_section(rnum):
         f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:900px;display:block;margin:0 auto">'
         f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
         f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
-        f'</filter></defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
+        f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
         f'<div class="legend"><h3>Real modules</h3><p class="modlist">{mod_list}</p>'
         f'<h3>Real dashboard-card entry points</h3>{card_list}</div>'
         f'</section>'

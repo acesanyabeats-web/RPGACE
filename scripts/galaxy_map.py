@@ -157,6 +157,7 @@ def build_svg():
     edges_svg = []
     legend_rows = []
     itype_used = set()
+    edge_colors_used = set()
 
     def node_circle(x, y, r, color, icon, label_below=None, tested=True, glow=True, label_color=None):
         dash = 'stroke-dasharray="4,3"' if not tested else ''
@@ -171,10 +172,11 @@ def build_svg():
             s += f'<text x="{x}" y="{y+r+16}" text-anchor="middle" font-size="9" fill="{lc}">{label_below}</text>'
         return s
 
-    def edge(x1, y1, x2, y2, itype, tested=True, offset_mult=1):
+    def edge(x1, y1, x2, y2, itype, tested=True, offset_mult=1, r1=0, r2=0):
         itype_used.add(itype)
         col = INTERACTION_TYPE_COLOR.get(itype, '#6b7280')
-        return _curved_edge(x1, y1, x2, y2, col, real=tested, dashed=not tested, offset_mult=offset_mult)
+        edge_colors_used.add(col)
+        return _curved_edge(x1, y1, x2, y2, col, real=tested, dashed=not tested, offset_mult=offset_mult, r1=r1, r2=r2)
 
     # --- central RPGACE Architecture node — a real, clickable drill-down
     # into G3 (galaxy_map_river.html), not just a decorative label. The
@@ -199,7 +201,8 @@ def build_svg():
     for gal, ang in zip(satellites, sat_angles):
         sx, sy = polar(cx, cy, sat_radius, ang)
         galaxy_pos[gal['id']] = (sx, sy)
-        edges_svg.append(_curved_edge(cx, cy, sx, sy, gal['color'], real=True))
+        edges_svg.append(_curved_edge(cx, cy, sx, sy, gal['color'], real=True, r1=46, r2=34))
+        edge_colors_used.add(gal['color'])
         nodes_svg.append(node_circle(sx, sy, 34, gal['color'], gal['icon'], gal['label'], glow=True, label_color=gal['color']))
         legend_rows.append(
             f'<div class="legend-row"><span class="dot" style="background:{gal["color"]}"></span>'
@@ -224,7 +227,7 @@ def build_svg():
         hx, hy = polar(cx, cy, harness_radius, ang)
         harness_xy[hn['id']] = (hx, hy)
         itype = 'ai_judgment_call' if hn['id'] == 'oracle_api' else ('read_query' if hn['id'] == 'self_awareness' else 'human_confirm_gate')
-        edges_svg.append(edge(cx, cy, hx, hy, itype))
+        edges_svg.append(edge(cx, cy, hx, hy, itype, r1=46, r2=22))
         col = '#9B59B6' if hn['id'] != 'human_gate_alex' else '#E25454'
         nodes_svg.append(node_circle(hx, hy, 22, col, hn['icon'], hn['label'], glow=False, label_color=col))
         legend_rows.append(f'<div class="legend-row"><span class="dot" style="background:{col}"></span><b>{hn["label"]}</b> — {hn["note"]}</div>')
@@ -235,7 +238,7 @@ def build_svg():
     prov_angles = [65, 100, 135]  # fans outward in the same direction oracle_api itself sits from center
     for prov, ang in zip(ORACLE_PROVIDERS, prov_angles):
         px, py = polar(ox, oy, prov_radius, ang)
-        edges_svg.append(edge(ox, oy, px, py, prov['itype'], tested=prov['tested']))
+        edges_svg.append(edge(ox, oy, px, py, prov['itype'], tested=prov['tested'], r1=22, r2=15))
         col = INTERACTION_TYPE_COLOR[prov['itype']]
         nodes_svg.append(node_circle(px, py, 15, col, prov['icon'], prov['name'], tested=prov['tested'], glow=False, label_color='#9a9aa8' if not prov['tested'] else '#cfd6e0'))
         badge = '' if prov['tested'] else ' <span class="warn">⚠ not tested</span>'
@@ -278,7 +281,7 @@ def build_svg():
         for conn, local_ang, itype, note in local_cluster:
             px, py = polar(omx, omy, 78, local_ang)
             connector_pos[conn['name']] = (px, py)
-            edges_svg.append(edge(omx, omy, px, py, itype))
+            edges_svg.append(edge(omx, omy, px, py, itype, r1=34, r2=14))
             col = INTERACTION_TYPE_COLOR[itype]
             nodes_svg.append(node_circle(px, py, 14, col, _connector_icon(conn['name']), conn['name'], glow=False, label_color='#cfd6e0'))
             legend_rows.append(
@@ -291,7 +294,8 @@ def build_svg():
         # galaxy instead of across the canvas from it.
         if om_conn and om_conn['name'] in connector_pos:
             oox, ooy = connector_pos[om_conn['name']]
-            edges_svg.append(_curved_edge(oox, ooy, omx, omy, '#E25454', real=True, dashed=True))
+            edges_svg.append(_curved_edge(oox, ooy, omx, omy, '#E25454', real=True, dashed=True, r1=14, r2=34))
+            edge_colors_used.add('#E25454')
 
     # --- remaining, genuinely galaxy-agnostic connectors ---
     # Aug 13, 3rd pass, real crowding fix: replaced the old single
@@ -320,7 +324,7 @@ def build_svg():
         tested = c.get('tested', True)
         itype = CONNECTOR_ITYPE.get(c['name'], 'external_extract_call')
         col = INTERACTION_TYPE_COLOR[itype]
-        edges_svg.append(edge(cx, cy, px, py, itype, tested=tested))
+        edges_svg.append(edge(cx, cy, px, py, itype, tested=tested, r1=46, r2=16))
         nodes_svg.append(node_circle(px, py, 16, col, c['icon'], c['name'], tested=tested, glow=False, label_color='#9a9aa8' if not tested else '#cfd6e0'))
         badge = '' if tested else ' <span class="warn">⚠ not tested</span>'
         legend_rows.append(
@@ -344,8 +348,8 @@ def build_svg():
     # Real, distinct offsets so both edges are actually visible as two
     # separate lines, not one drawn silently on top of the other —
     # caught during the Aug 13 screenshot review (2nd pass).
-    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'read_query', offset_mult=2.2))
-    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'write_commit', offset_mult=-2.2))
+    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'read_query', offset_mult=2.2, r1=46, r2=18))
+    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'write_commit', offset_mult=-2.2, r1=46, r2=18))
     nodes_svg.append(node_circle(sup_x, sup_y, 18, '#5FB3D9', sup['icon'], sup['name'], glow=True, label_color='#5FB3D9'))
     legend_rows.append(
         f'<div class="legend-row"><span class="dot" style="background:#5FB3D9"></span>'
@@ -371,7 +375,7 @@ def build_svg():
     for gal_id, real_table in (('openmontage_cc', 'openmontage_jobs'), ('graphify_cc', 'graphify_jobs')):
         if gal_id in galaxy_pos:
             gx2, gy2 = galaxy_pos[gal_id]
-            edges_svg.append(edge(gx2, gy2, sup_x, sup_y, 'write_commit', offset_mult=SUPABASE_WRITE_OFFSET.get(gal_id, 1)))
+            edges_svg.append(edge(gx2, gy2, sup_x, sup_y, 'write_commit', offset_mult=SUPABASE_WRITE_OFFSET.get(gal_id, 1), r1=34, r2=18))
             legend_rows.append(
                 f'<div class="legend-row small"><span class="dot" style="background:{INTERACTION_TYPE_COLOR["write_commit"]}"></span>'
                 f'<b>{[g["label"] for g in GALAXIES if g["id"]==gal_id][0]} → Supabase (direct write)</b> — '
@@ -395,7 +399,7 @@ def build_svg():
     if 'graphify_cc' in galaxy_pos and 'openmontage_cc' in galaxy_pos:
         g2x, g2y = galaxy_pos['graphify_cc']
         o2x, o2y = galaxy_pos['openmontage_cc']
-        edges_svg.append(edge(g2x, g2y, o2x, o2y, 'read_query'))
+        edges_svg.append(edge(g2x, g2y, o2x, o2y, 'read_query', r1=34, r2=34))
         legend_rows.append(
             '<div class="legend-row"><span class="dot" style="background:'
             + INTERACTION_TYPE_COLOR['read_query'] + '"></span>'
@@ -413,7 +417,8 @@ def build_svg():
         for t in sorted(itype_used)
     )
 
-    return '\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H
+    markers_defs = _build_markers(edge_colors_used)
+    return '\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H, markers_defs
 
 
 def _connector_icon(name):
@@ -425,16 +430,65 @@ def _connector_icon(name):
     return icons.get(name, '●')
 
 
-def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1):
-    mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+def _cid(color):
+    """Real, stable per-color id for a <marker> def — Aug 13 (5th pass),
+    Alex's own explicit ask: every edge gets a real X mark at its start
+    and a real arrowhead at its end, so the diagrams show relationship
+    DIRECTION, not just presence of a line. One marker pair per real
+    color actually used (never emitted for a color unused in that
+    diagram — same "only what's real" discipline as itype_legend's own
+    itype_used set)."""
+    return color.replace('#', '').lower()
+
+
+def _build_markers(colors):
+    """Real, shared marker defs (arrowhead + X-start) for a given set of
+    real colors — called once per file, right before its own </defs>,
+    covers every edge that file draws regardless of which script built
+    it (galaxy_map.py/galaxy_map_river.py/galaxy_map_module.py all
+    import this). Deliberately NOT using CSS context-stroke/context-fill
+    (real portability risk — this app targets Android/desktop PWA via
+    real Chrome, and while modern Chromium supports it, a fixed-color-
+    per-marker approach has zero browser-version risk and costs only a
+    few extra <marker> defs)."""
+    out = []
+    for c in sorted(set(colors)):
+        cid = _cid(c)
+        out.append(
+            f'<marker id="arrow-{cid}" viewBox="0 0 10 10" refX="8.5" refY="5" '
+            f'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
+            f'<path d="M0,0 L10,5 L0,10 z" fill="{c}"/></marker>'
+        )
+        out.append(
+            f'<marker id="xstart-{cid}" viewBox="0 0 10 10" refX="5" refY="5" '
+            f'markerWidth="6" markerHeight="6">'
+            f'<path d="M1,1 L9,9 M9,1 L1,9" stroke="{c}" stroke-width="2" fill="none"/></marker>'
+        )
+    return ''.join(out)
+
+
+def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, r1=0, r2=0, markers=True):
     dx, dy = x2 - x1, y2 - y1
     length = math.hypot(dx, dy) or 1
+    ux, uy = dx / length, dy / length
+    # Real geometry fix, same pass: trim each endpoint inward by the
+    # real radius of the node it touches, so the X-start/arrow-end
+    # markers land AT the node's visible boundary instead of buried
+    # under its fill/icon at the node's exact center (a path drawn
+    # center-to-center would render both markers invisible). r1/r2
+    # default to 0 (no trim) for any caller that hasn't been updated
+    # with real radius info yet — never breaks a call site, just skips
+    # the trim there.
+    tx1, ty1 = x1 + ux * r1, y1 + uy * r1
+    tx2, ty2 = x2 - ux * r2, y2 - uy * r2
+    mx, my = (tx1 + tx2) / 2, (ty1 + ty2) / 2
     ox, oy = -dy / length * 24 * offset_mult, dx / length * 24 * offset_mult
     cx_, cy_ = mx + ox, my + oy
     dash = ' stroke-dasharray="5,4"' if dashed else ''
     op = '0.85' if real else '0.4'
-    return (f'<path d="M {x1} {y1} Q {cx_} {cy_} {x2} {y2}" fill="none" '
-            f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"/>')
+    mk = f' marker-start="url(#xstart-{_cid(color)})" marker-end="url(#arrow-{_cid(color)})"' if markers else ''
+    return (f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
+            f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}/>')
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -475,7 +529,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 The Galaxy Map</h1>
-  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. <b>Click the RPGACE Architecture node to drill into its own 16 rivers (Level 1).</b> Function-level drill-down (G4) is a real, separate, not-yet-built next step.</p>
+  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. <b>Every edge now carries a real ✕ mark at its start and a real arrowhead at its end</b> — the ✕ marks WHERE a relationship begins, the arrowhead shows WHAT it points to, so direction is legible even without color. <b>Click the RPGACE Architecture node to drill into its own 16 rivers (Level 1), then click a river to reach its own modules + dashboard cards (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">
@@ -489,6 +543,7 @@ TEMPLATE = """<!DOCTYPE html>
       <feGaussianBlur stdDeviation="1.4" result="blur"/>
       <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
+    {markers}
   </defs>
   {edges}
   {nodes}
@@ -520,8 +575,8 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    nodes, edges, legend, itype_legend, W, H = build_svg()
-    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H)
+    nodes, edges, legend, itype_legend, W, H, markers = build_svg()
+    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
     skipped = len(ORACLE_PROVIDER_NAMES) + 3  # +3 = Graphify CC (dup of the real galaxy) + FFmpeg + OpenMontage (both moved to OpenMontage CC's own local cluster)

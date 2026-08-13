@@ -114,6 +114,14 @@
   </div>
 
   <div class="group">
+    <div class="group-label">River V — Two Independent Streams (Agenda dashboard card) <span class="n">1 idea</span></div>
+    <div class="card blue">
+      <div class="card-title">Real nuance on the "Agenda" card's <code>partial</code> flag — worth a future look, not a bug<span class="badge blue">IDEA</span></div>
+      <div class="card-body">Logged per Alex's own explicit ask (Aug 13, G4 build): "leave as is for now by your judgement, log your nuance for thought." <code>DASHBOARD_CARDS</code>'s 'agenda' entry is flagged <code>partial: True</code> because its real target module (<code>agendaReminder</code>, River V) only covers the QoL layer — the page's actual Quest Board core (<code>addXP()</code>/<code>completeQuest()</code>) lives in untagged <code>main.js</code> code with no river of its own. Real thought worth keeping: the Aug 11 <code>classify_mainjs_by_keyword()</code> pass (built for graphify's own component-zone-map, not for this) already resolved 228 of 240 real main.js function names to a river/zone via per-function keyword matching — it's a genuine open question, not yet checked, whether the Quest Board functions specifically already landed somewhere real in that classification. If they did, the honest fix isn't a permanent "partial" flag — it's pulling that existing classification in as a real second river edge for this card, the same way <code>agendaReminder</code> already is one. If they didn't (main.js's own docstring already names 12 functions, including cross-cutting ones, as genuinely unclassified — Quest Board could be among them), <code>partial</code> stays the honest answer indefinitely. Not investigated this pass — a real, bounded future check, not a guess either way.</div>
+    </div>
+  </div>
+
+  <div class="group">
     <div class="group-label">Dev process — <code>/CEO</code> framework itself <span class="n">1 idea</span></div>
     <div class="card blue">
       <div class="card-title">Multi-plan support for /stopCEO / /ResumeCEO<span class="badge blue">IDEA</span></div>
