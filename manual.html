@@ -76,17 +76,14 @@
 <div class="nav-toggle sidebar-open" id="navToggle" onclick="toggleSidebar()">☰</div>
 
 <nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">FULL MANUAL · edited to JULY 31 2026</div></div>
+  <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">FULL MANUAL · edited to AUG 13 2026</div></div>
   <div class="nav-group"><div class="nav-label">Foundation</div>
     <a class="nav-item" href="#governing-rule">Governing Rule</a>
     <a class="nav-item" href="#architecture">Architecture</a>
     <a class="nav-item" href="#history">Session History</a>
   </div>
   <div class="nav-group"><div class="nav-label">Diagram Chain</div>
-    <a class="nav-item" href="#diagram-atomic">Level 1 — Atomic</a>
-    <a class="nav-item" href="#diagram-module">Level 2 — Module</a>
-    <a class="nav-item" href="#diagram-domain">Level 3 — Domain</a>
-    <a class="nav-item" href="#diagram-system">Level 4 — Full System</a>
+    <a class="nav-item" href="#diagram-atomic">Information Flow Diagrams</a>
   </div>
   <div class="nav-group"><div class="nav-label">Full Reference</div>
     <a class="nav-item" href="#button-catalog">Every Button</a>
@@ -97,8 +94,7 @@
     <a class="nav-item" href="#bugs-fixed">Fixed Bugs</a>
   </div>
   <div class="nav-group"><div class="nav-label">Roadmap</div>
-    <a class="nav-item" href="#roadmap">F0–F18 Roadmap</a>
-    <a class="nav-item" href="#future-integrations">Future Integrations a–f</a>
+    <a class="nav-item" href="#roadmap">F0–F18 &amp; Future Integrations</a>
     <a class="nav-item" href="#dev-rules">Standing Rules</a>
   </div>
 </nav>
@@ -136,76 +132,17 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
 <div class="section" id="history">
   <div class="section-eyebrow">Foundation</div>
   <div class="section-title">Session History</div>
-  <p><strong>July 1</strong> — Content Repurpose v2, Content Production Live, ConIDPot shipped. 104 duplicate encyclopedia rows found and fixed via UNIQUE constraint after a false-start 4-fix architecture change.</p>
-  <p><strong>July 2</strong> — Global taxonomy detection shipped (3-layer stack). Real <code>rpgace:ready</code> event-replay bug found and fixed.</p>
-  <p><strong>July 6</strong> — Full recursive taxonomy tree shipped. Rota automation fully closed. Daily calendar rebuilt (6 iterations, root cause: positioning math before real-source verification). 3 UTC date bugs fixed. Two parallel scheduling systems merged. Schedule Oracle fully spec'd, deferred whole.</p>
-  <p><strong>July 8</strong> — Content Intelligence confirmed fully working end-to-end. F0 + F1 shipped. Real cross-device data-loss bug fixed (scheduled tasks now sync via <code>rpgace_agendas</code>). Taxonomy Sorting Agent architecture locked. 3 smoke-test bugs fixed (phyla count mismatch, encyclopedia 409 spam, stale popup crash). Oracle 504 timeout partially addressed. Dashboard docs-links box + 4-widget instant-load fix shipped. Diagram chain (16-part Interconnection Map) completed.</p>
+  <div class="section-sub"><strong>Real /deduplication pass, Aug 13</strong> — this section used to carry a day-by-day July 1-8 narrative that's the exact job <code>patch_notes.html</code> (live) and <code>patch_notes_archive.html</code> (pre-July-12) already own, verbatim in more detail. Kept as a pointer only, per this doc's own new standing anti-redundancy rule below.</div>
+  <p>Full day-by-day build history: <a href="patch_notes.html">patch_notes.html</a> (live, current) → <a href="patch_notes_archive.html">patch_notes_archive.html</a> (pre-July-12, including the July 1/2/6/8 entries this section used to duplicate).</p>
 </div>
 
 <hr>
 
 <div class="section" id="diagram-atomic">
-  <div class="section-eyebrow">Diagram Chain — Level 1</div>
-  <div class="section-title">Atomic — One Button, One Path</div>
-  <pre>[💡 Save Ideas]  →  conidPot.saveIdea()  →  Supabase conid_pot
-
-[Click free calendar row]  →  scheduleToCalendar()
-        ├──▶ localStorage (instant UI)
-        └──▶ Supabase rpgace_agendas (cross-device)
-
-[🌳 Propose lineage]  →  proposeLineage()  →  Oracle generates path
-        →  accept/edit/reject popup  →  (on accept) Supabase taxonomy_tree</pre>
-</div>
-
-<div class="section" id="diagram-module">
-  <div class="section-eyebrow">Diagram Chain — Level 2</div>
-  <div class="section-title">Module — Several Atomic Paths Combined</div>
-  <p><strong>Beat Log — one click, four parallel paths:</strong></p>
-  <pre>[⚡ Log Beat + Find Artists]
-        ├──▶ Supabase video_jobs
-        ├──▶ refCorpus.findMatches() ──▶ Last.fm API (fallback)
-        ├──▶ taxonomySync.markApplied()
-        └──▶ Oracle content brief ──▶ Journal + XP</pre>
-  <p><strong>Taxonomy Tree — the full propose/accept cycle:</strong></p>
-  <pre>[Insight] → proposeLineage() → Oracle generates path
-        → _checkForMorph() (duplicate check)
-                ├─ New → accept/edit/reject → write real nodes
-                └─ Match found → offer: update existing
-        → (on accept) _generateNodeContent() → Oracle deep leaf content</pre>
-</div>
-
-<div class="section" id="diagram-domain">
-  <div class="section-eyebrow">Diagram Chain — Level 3</div>
-  <div class="section-title">Domain — Modules Combined</div>
-  <p><strong>CONTENT domain:</strong></p>
-  <pre>Beat Log → ideas + brief → 🔀 Repurpose (3-step popup)
-        → 4 platform outputs + contentProductionLive.createEntry()
-        → New ConID (Idea→Scripted→Filmed→Edited→Posted→Analysed)</pre>
-  <p><strong>LEARNING domain:</strong></p>
-  <pre>Encyclopedia entry ──┬──▶ Knowledge Gap Tracker → 🧠 Study Now → Feynman Loop
-                       └──▶ 🌳 Propose lineage → Taxonomy Tree</pre>
-</div>
-
-<div class="section" id="diagram-system">
-  <div class="section-eyebrow">Diagram Chain — Level 4</div>
-  <div class="section-title">Full System — Every Domain, Two Hubs</div>
-  <pre>                    ┌─────────────┐
-                    │ ORACLE HUB  │
-                    └──────┬──────┘
-        4 Oracle Panels ◀──┴──▶ Every response auto-scans (🌿)
-                                        │
-                                        ▼
-                          ┌───────────────────────┐
-                          │  TAXONOMY TREE HUB     │
-                          └──────────┬─────────────┘
-        Manual entry ◀───────────────┴──────────▶ Knowledge Gap Tracker
-
-  Independent track:
-  rpgace_shifts ◀─sync─▶ shiftSync ◀─sync─▶ rpgace_agendas
-                                │
-                                ▼
-                      Weekly/Daily/Monthly Calendar</pre>
-  <p><strong>Key insight:</strong> Schedule is the only domain with zero taxonomy dependency — could be extracted independently. Every other domain ripples when Oracle or Taxonomy changes.</p>
+  <div class="section-eyebrow">Diagram Chain</div>
+  <div class="section-title">Information Flow Diagrams</div>
+  <div class="section-sub"><strong>Real /deduplication pass, Aug 13</strong> — the 4-level atomic→module→domain→system diagram chain this section used to carry is the same real content <code>interconnection_map.md</code> (structural/textual form) and <code>minotaur_map.html</code> (spatial/visual form) already own — <code>system_flow_map.md</code> carries the Mermaid flow-diagram version of the same underlying pipelines. Kept as a pointer only.</div>
+  <p>Full diagram chain: <a href="interconnection_map.md">interconnection_map.md</a> · spatial version: <a href="minotaur_map.html">minotaur_map.html</a> · yes/no flow diagrams: <code>system_flow_map.md</code>.</p>
 </div>
 
 <hr>
@@ -362,16 +299,23 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
   <div class="section-title">The Total System — real external connectors</div>
   <div class="section-sub">Aug 11, real Alex ask: Oversight now covers the whole Total system, not just RPGACE's own internal architecture. "Total" means RPGACE the app, this Claude Code session (orchestrator), and every other real member/connector that pushes or pulls real data. Full detail: <code>ai_tooling_and_rules_map.md</code>'s own "External AI/tool providers" table (the canonical source); the spatial version: <code>minotaur_map.html</code>'s "Rivers XII-XVI — The Total System Gateway"; the code-structure version: <code>graphify-out/graph.html</code>'s River XII node-info panel and <code>graphify-out/obsidian_vault.html</code>.</div>
   <table>
-    <tr><th>Connector</th><th>Status</th><th>Real role</th></tr>
+    <tr><th>Member</th><th>Status</th><th>Real role</th></tr>
+    <tr><td>Supabase</td><td>Live · core infra</td><td>Not an "external provider" — RPGACE's own persistence layer, the real hub nearly every river writes into/reads from. See the full per-table breakdown above.</td></tr>
+    <tr><td>Anthropic (Claude API)</td><td>Live</td><td>The real default Oracle provider — every ungrounded Oracle call routes here via <code>api/oracle.js</code>'s <code>callClaude()</code>.</td></tr>
     <tr><td>OpenMontage</td><td>Live</td><td>Agent-operated video pipeline, a separate Claude Code session ("OpenMontage CC") in its own repo, via the <code>openmontage_jobs</code> queue — never RPGACE-embedded.</td></tr>
     <tr><td>Composio</td><td>Live</td><td>Gmail/Instagram/YouTube/Notion/GitHub connected-account automation, <code>api/composio.js</code>/<code>api/executor.js</code>/<code>api/orchestrate.js</code>.</td></tr>
     <tr><td>Graphify CC</td><td>Live</td><td>The real 4th Total-system member, via the <code>graphify_jobs</code> queue — generates <code>GRAPH_TREE.html</code> and the cross-repo global graph.</td></tr>
+    <tr><td>Jina AI</td><td>Live</td><td>Real URL-to-text fetch, 4 real call sites (scout.js/bookworm-fetch.js/main.js/_context.js) — load-bearing for Bookworm/Schedule Oracle/chat-URL ingestion.</td></tr>
+    <tr><td>Last.fm</td><td>Live</td><td>Real artist/tag discovery, <code>api/lastfm.js</code> — <code>refCorpus.findMatches()</code>'s real fallback when no corpus match exists.</td></tr>
     <tr><td>Moonshot AI (Kimi)</td><td>Dormant</td><td>Real OpenAI-compatible scaffold in <code>api/oracle.js</code>, dormant until <code>MOONSHOT_API_KEY</code> is set.</td></tr>
     <tr><td>OpenAI (Luna)</td><td>Dormant</td><td>Same scaffold shape as Kimi, dormant until <code>OPENAI_API_KEY</code> is set.</td></tr>
     <tr><td>librosa</td><td>Optional/local</td><td>BPM + Major/Minor key analysis only, via <code>beat_audio_jobs</code> + a locally-run Python snippet — not a hosted service.</td></tr>
     <tr><td>FFmpeg</td><td>Live (external repo)</td><td>Runs inside OpenMontage CC's OpenMontage environment, confirmed working July 31 — never inside RPGACE's own runtime.</td></tr>
+    <tr><td>n8n</td><td>Built, not tested ⚠</td><td>Real, importable rota-sync workflow (F10) — never run against a live unattended execution. Shown because it's real and built, flagged unconfirmed rather than hidden.</td></tr>
+    <tr><td>Whisper (OpenAI, local)</td><td>Built, not tested ⚠</td><td>Local speech-to-text, historically confirmed working July 7 — current live status genuinely unconfirmed this session (runs on Alex's own machine, not in this repo).</td></tr>
     <tr><td>OpenArt</td><td>Deferred</td><td>A named future video-gen companion to OpenMontage — "connect it at a later date," not wired to anything yet.</td></tr>
   </table>
+  <p style="margin-top:10px;font-size:11px;color:var(--dim);"><strong>Real, standing rule (Aug 13):</strong> every genuinely built/integrated Total-system connector is listed here regardless of whether it's been hand-tested — an untested one is marked ⚠, never omitted. Untested status is also tracked on <code>smoke_test.html</code>.</p>
 </div>
 
 <div class="section" id="oracle-background-capabilities">
@@ -387,96 +331,24 @@ LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js</pre>
 <div class="section" id="bugs-open">
   <div class="section-eyebrow">Full Reference</div>
   <div class="section-title">Currently Open Bugs</div>
-  <div class="card red">
-    <div class="card-title">Oracle 504 timeout on long structured responses</div>
-    <div class="card-body">maxDuration raised to 60s — insufficient. Response-shape-dependent: long 3-layer teaching format times out, shorter Socratic-method mode completes fine on identical topic. July 15: reproduced concretely in Phylum Path's article-generation call (max_tokens:1800 failed outright with a JSON-parse error) — confirmed the failure scales with requested length (700 tokens worked, 1200 got truncated, 1800 failed). Mitigated for those 2 calls via trimmed prompts + lower token ceilings, but the underlying timeout is untouched — needs streaming or chunked generation, not another blind trim.</div>
-  </div>
-  <div class="card red">
-    <div class="card-title">~25 places in rpgace_core.js may share the rpgace:ready re-subscription bug</div>
-    <div class="card-body">Found July 16 diagnosing the Phase 2 nav tab: <code>RPGACE.register()</code> wires every module's <code>init()</code> as a listener on <code>'rpgace:ready'</code> itself, so a module calling <code>RPGACE.hooks.on('rpgace:ready', ...)</code> from inside its own <code>init()</code> registers too late — <code>RPGACE.hooks.fire()</code>'s plain <code>Array.forEach</code> never revisits listeners pushed during its own iteration, so that listener can silently never fire. <code>phylumPath</code>'s 2 occurrences fixed (call the injector directly instead of re-subscribing); ~25 more occurrences of the same call elsewhere in the file are flagged but not individually audited.</div>
-  </div>
+  <div class="section-sub"><strong>Real staleness fix, Aug 13</strong> — both bugs this section used to list are actually resolved: the Oracle 504 timeout was fixed July 28 (real server-backed SSE streaming, <code>api/oracle.js</code>) and the "~25 places may share the re-subscription bug" item was re-audited and closed July 29/31 (exactly one real occurrence found, and it's <code>RPGACE.register()</code>'s own canonical init machinery, not a bug site — see CLAUDE.md's own landmines section). This wasn't just redundant, it was actively wrong — fixed rather than just pointed elsewhere.</div>
+  <p>The real, current open-bug list lives in CLAUDE.md's own "Open forks that need Alex" section — check there, not here, for what's genuinely still open.</p>
 </div>
 
 <div class="section" id="bugs-fixed">
   <div class="section-eyebrow">Full Reference</div>
   <div class="section-title">Every Bug Found + Fixed</div>
-  <table>
-    <tr><th>Bug</th><th>Root cause</th></tr>
-    <tr><td>Early UI/data bugs (July 1-6, 7 total)</td><td>Encyclopedia lag (104 dup rows), taxonomy badge silent (event-replay), shift date off-by-one ×3 (UTC/local mismatch), scheduled agendas invisible (key mismatch), duplicate Start/Done buttons, compaction blocks misaligned (absolute-positioning), no title field on schedule modal — full detail in <code>patch_notes_archive.html</code></td></tr>
-    <tr><td>Content Intelligence double-submit</td><td>No pre-insert check (F0, fixed)</td></tr>
-    <tr><td>Tasks invisible across devices</td><td>localStorage-only, no Supabase sync (fixed)</td></tr>
-    <tr><td>Phyla badge count ≠ button count</td><td>Two different thresholds, now matched (2+)</td></tr>
-    <tr><td>Encyclopedia 409 spam</td><td>Raw insert, no upsert — fixed</td></tr>
-    <tr><td>Console crash on load</td><td>Stale onboarding popup element, now guarded</td></tr>
-    <tr><td>Taxonomy lineages landed flat, not nested (parent_id always null)</td><td>Insert used shared helper defaulting to <code>return=minimal</code>, never got a row id back to chain to — fixed July 12</td></tr>
-    <tr><td>taxonomySync zero-score fallback self-contradictory</td><td><code>{num:10,name:'Technologia'}</code> when 10 is actually Psychologia — fixed July 12</td></tr>
-    <tr><td>Director Match had no real filmmaker data</td><td>Prompt told Claude to imagine "the Phylum XXV library" — never existed until July 12's 50-profile insert</td></tr>
-    <tr><td>Overlapping Oracle requests could cross-wire responses</td><td>send-btn.disabled is visual-only; shared STATE.chatHistory + #typing-indicator — fixed July 13 with an in-flight guard</td></tr>
-    <tr><td>Beat Log saves were silently failing since it shipped</td><td><code>video_jobs</code> table never actually existed in Supabase — insert error swallowed by a console-only catch; table created July 13 while scoping F17</td></tr>
-    <tr><td>Phylum 14 mislabeled "Phylum XXV" across visualOracle's UI + prompts</td><td>Leftover from an old numbering scheme; data was always correctly tagged phylum_number=14 in Supabase, only display/prompt text was stale — fixed July 13</td></tr>
-    <tr><td>lastfm_beat_match mislabeled phylum 17 as Fons Educationis</td><td>Fons Educationis is actually phylum 12; 17 is Negotium — fixed the insert to write 12, matching its own stated intent — fixed July 13</td></tr>
-    <tr><td>RPGACE.cache's clear() never actually busted anything</td><td>Cache keys are table+'|'+params but clear() was called with a bare table name, which never matched a real key — stale cached reads could persist up to 60s after any write, on any cached table — fixed July 14</td></tr>
-    <tr><td>phylumPath's auto-detect duplicated the shared phyla-scan observer</td><td>Installed a second MutationObserver on #send-btn doing the same DOM query as RPGACE.utils._initPhylaObserver — consolidated onto a shared 'oracle:response-scanned' hook instead — fixed July 14, same session it shipped</td></tr>
-    <tr><td>proposeLineage/silentPropose could create duplicate/overlapping branches</td><td>Duplicate-check only matched exact names — created a whole new "Harmony & Chord Theory" Order beside the existing "Harmony" Order for near-identical content, confirmed live — fixed July 15 by routing Phylum 1 placement through Phylum Path's structure-aware 5-check decision instead of the old flat generation</td></tr>
-    <tr><td>Phylum Path wrote straight to taxonomy_tree with zero confirm step</td><td>Every other proposal path in RPGACE has an accept/edit/reject checkpoint; Phylum Path committed the instant Oracle decided a placement — fixed July 15 with a new confirm/deny/modify popup between decision and insert</td></tr>
-    <tr><td>Oracle invented fictional taxonomy categories in normal chat</td><td>Asked directly "which phylum is this," invented a "Kingdom" rank that doesn't exist and a phylum name that isn't one of the real 21 — ORACLE_SYS had zero real-taxonomy awareness — fixed July 15 by reading the real 21-phylum list live into the system prompt (deliberate, logged main.js exception)</td></tr>
-    <tr><td>Phase 2 nav tab never rendered on first page load</td><td>phylumPath.init() re-subscribed to 'rpgace:ready' from inside itself (twice) — that event only fires once, and RPGACE.hooks.fire()'s plain Array.forEach never revisits listeners pushed during its own iteration, so the re-subscribed listeners could never fire on the pass invoking them — fixed July 16 by calling the injector functions directly instead</td></tr>
-    <tr><td>Stale JS cache could serve a pre-Phase-2 copy of the app indefinitely</td><td>rpgace_core.js/main.js script tags had no cache-busting query string at all — fixed July 16 by adding ?v=20260716a to both</td></tr>
-    <tr><td>Mobile nav tab labels overlapped/clipped</td><td>.nav-tab had flex:1 + min-width:50px inside an overflow-x:auto container, a contradictory combination that squeezed every tab into an equal tiny slice — fixed July 16 by removing flex:1, bumping padding/font-size, adding scroll-arrow buttons</td></tr>
-    <tr><td>Bare "roll"/"fill" keywords in Percussio's list could false-match unrelated phyla</td><td>F8's matcher is word-boundary regex (\bterm\b), and a hyphen counts as a word boundary — bare "roll" matched inside Phylum 14's own "b-roll" term, bare "fill" matched ordinary English — fixed July 17 by dropping both, keeping their specific compound siblings (hi-hat roll, drum fill, etc.)</td></tr>
-    <tr><td>Phylum Path could only ever cover one phylum (Compositio)</td><td>PHYLUM_NUM was a single hardcoded scalar, not a parameter - generalized July 17 into ENABLED_PHYLA + mutable active-phylum state, switched via a new phylum-switcher pill UI; Percussio now live alongside Compositio</td></tr>
-    <tr><td>Sonus Designatio's "Synthesizers" branch had flat parent_id (5 rows)</td><td>Same pre-July-12 bug pattern as Phylum 1's original data - backfilled July 17 via path-matching (regexp_replace to derive the parent path), zero orphans remaining</td></tr>
-    <tr><td>Mixtura's "Vocal Processing" branch had flat parent_id (3 rows)</td><td>Same recurring pre-July-12 pattern, third phylum found with it - backfilled July 17 the same way, zero orphans remaining</td></tr>
-    <tr><td>Left nav briefly stopped responding for ~10s after login, then caused a live crash</td><td>An early fix made <code>leftNav._buildDrawer()</code> run outside the <code>rpgace:ready</code> gate, aborting module registration mid-parse — reverted immediately, then root-caused for real as a <code>leftNav</code>/<code>config</code> file-order race (guard + retry added). A second, deeper report led to the real systemic cause: <code>onReady()</code> gated every module's startup behind the <code>window.load</code> event (every image/font) instead of <code>DOMContentLoaded</code> — the real dependency (login) was always decoupled from page-load timing. Fixed July 22, verified via real headless Playwright runs.</td></tr>
-    <tr><td>Profile stat card's HP/MP/Streak did nothing, XP/Level reset every page load</td><td>Confirmed via grep: zero code anywhere ever touched the HP/MP bars or Streak chip; XP/Level lived only in in-memory <code>STATE</code> with no persistence. Rebuilt July 22 onto real Supabase-derived data (Output/Growth lanes) instead.</td></tr>
-    <tr><td>Finance detail popup claimed sales fed the career-score Output lane</td><td>The code deliberately does NOT do this (finance is a separate visibility lane, confirmed via interrogation) — a real doc-vs-code inconsistency caught and fixed during this same July 22 sweep, before Alex ever saw it.</td></tr>
-    <tr><td>Taxonomy review-queue badge silently never rendered</td><td><code>page.insertBefore(badge, dd-needs)</code> threw <code>NotFoundError</code> on every run since <code>#dd-needs</code> is a child of <code>#dd-deck</code>, not a direct child of the insertion target — swallowed by a trailing empty catch. An earlier same-day anchor fix never actually worked live because of this. Fixed July 25 by deleting the floating-badge approach entirely and folding the count into <code>dashDeck</code>'s existing "Needs you now" list.</td></tr>
-    <tr><td>Review-queue popup's close button threw on every close</td><td>Called a <code>self._inject()</code> that had been deleted along with the floating badge above — the popup still visually closed (the throw happened after <code>overlay.remove()</code>), so it was invisible, but the dashboard's pending count never refreshed after a real review session. Fixed July 25 to clear the (secureWrite-bypassed) cache and call <code>dashDeck._refreshGlance()</code> directly.</td></tr>
-    <tr><td>14 taxonomy nodes marked <code>leaf</code> held real children; 2 duplicate-name clusters and a YouTube-title-as-node existed in the live tree</td><td>Found by <code>/Regeneration</code>'s first real Tier 0 SQL pass (free, zero model calls) — a manual review session had only caught 1 of the 14 in 85 minutes. Fixed July 25 per Alex's own per-node keep/delete rule: 10 reclassified <code>leaf</code>→<code>branch</code> (real categories, just mislabeled), 3 reparented out from under keyword-glossary leaves, 6 duplicate nodes merged/deleted (fusion links re-pointed before deletion, not discarded), 13 legitimate phylum-11/13/16 seed nodes correctly left untouched after checking they were real pre-launch content, not cruft.</td></tr>
-  </table>
+  <div class="section-sub"><strong>Real /deduplication pass, Aug 13</strong> — this table's own bug-history role is <code>patch_notes.html</code>'s explicitly stated job ("day-by-day build history... every bug found/fixed"), and every entry here already exists there in more detail, with root-cause narrative this table only summarized. Kept as a pointer only.</div>
+  <p>Full bug history, every fix: <a href="patch_notes.html">patch_notes.html</a> (live) → <a href="patch_notes_archive.html">patch_notes_archive.html</a> (pre-July-12).</p>
 </div>
 
 <hr>
 
 <div class="section" id="roadmap">
   <div class="section-eyebrow">Roadmap</div>
-  <div class="section-title">F0–F18, Full Dependency-Ordered Plan</div>
-  <table>
-    <tr><th>Step</th><th>Status</th><th>What</th></tr>
-    <tr><td>F0</td><td><span class="badge live">SHIPPED</span></td><td>Duplicate-submission guard, Content Intelligence</td></tr>
-    <tr><td>F1</td><td><span class="badge live">SHIPPED</span></td><td>Shared getOracleMessageElements() helper</td></tr>
-    <tr><td>F2</td><td><span class="badge live">SHIPPED</span></td><td>Shared phylaKeywordScore() helper</td></tr>
-    <tr><td>F3</td><td><span class="badge live">SHIPPED</span></td><td>Removed dead encSync dedup logic</td></tr>
-    <tr><td>F4</td><td><span class="badge live">SHIPPED</span></td><td>Content Intelligence auto-propose to taxonomy (queues, doesn't write directly)</td></tr>
-    <tr><td>F5</td><td><span class="badge live">SHIPPED</span></td><td>Encyclopedia sync auto-propose to taxonomy</td></tr>
-    <tr><td>F6</td><td><span class="badge live">SHIPPED</span></td><td>Dashboard proposal review queue (Accept/Edit/Reject)</td></tr>
-    <tr><td>F7</td><td><span class="badge live">SHIPPED</span></td><td>Encyclopedia ↔ Taxonomy bidirectional linking, per-entry button</td></tr>
-    <tr><td>F8</td><td><span class="badge live">SHIPPED</span></td><td>Formal phylum-selection criteria — 21-phylum coverage, weighted scoring, word-boundary matching</td></tr>
-    <tr><td>F9</td><td><span class="badge live">SHIPPED</span></td><td>Reminder button (Start/Done/Reminder)</td></tr>
-    <tr><td>F10</td><td><span class="badge gap">PARTIAL — n8n workflow ready, not test-run</span></td><td>Rota sync automation (pivoted from Windows Task Scheduler to n8n)</td></tr>
-    <tr><td>F11</td><td><span class="badge live">SHIPPED (Phase 1 / MVP)</span></td><td>Schedule Oracle — 3 entry points, scout+analyst ingestion, 3-option sequential reveal</td></tr>
-    <tr><td>F12</td><td><span class="badge gap">NOT STARTED — depends on F11</span></td><td>Schedule Oracle Phase 2 — carousel, two-tier session memory, auto-routing</td></tr>
-    <tr><td>F13</td><td><span class="badge live">CLOSED, superseded by F5</span></td><td>Taxonomy sync expansion — confirmed no separate work needed</td></tr>
-    <tr><td>F14</td><td><span class="badge live">SHIPPED</span></td><td>Phylum XXV Filmmaker Library — 50 real director profiles, Director Match now grounded in real data</td></tr>
-    <tr><td>F15</td><td><span class="badge live">SHIPPED</span></td><td>Beat Selling Integration — licence/price columns on content_productions</td></tr>
-    <tr><td>F16</td><td><span class="badge live">SHIPPED — SCOPED DOWN</span></td><td>Beatstars listing generator — no public API exists to auto-create listings (confirmed), so generates ready-to-paste title/description/tags/licence content via Oracle instead</td></tr>
-    <tr><td>F17</td><td><span class="badge live">SHIPPED — SCOPED DOWN</span></td><td>Video Pipeline tracker — no render/EDL backend exists (confirmed), so it's a status tracker only (Beat Logged → <strong>In Production</strong> → Edited → Rendered → Exported — renamed from "Raw" July 30, a beat-driven music video has no raw footage to log) over video_jobs, no in-app rendering</td></tr>
-    <tr><td>F18</td><td><span class="badge live">SHIPPED</span></td><td>Auto Visual Treatment Doc — optional checkbox on Beat Log fires visualOracle's own template automatically with real beat data, F14-grounded</td></tr>
-  </table>
-</div>
-
-<div class="section" id="future-integrations">
-  <div class="section-eyebrow">Roadmap</div>
-  <div class="section-title">Future Integrations, a–f</div>
-  <div class="card blue"><div class="card-body"><strong>a</strong> Social media platforms — extends Composio. <strong>b</strong> Video editing/scripting — extends F17/F18. <strong>c</strong> Full learning environment — unifies Feynman+Encyclopedia+Taxonomy. <strong>d</strong> Auto-logging beats/videos/progress.</div></div>
-  <div class="card purple">
-    <div class="card-title">e — Autonomous self-improvement meta-agent</div>
-    <div class="card-body">Two-tier autonomy: asks permission to adopt new ideas, acts directly (no permission) to correct confirmed-poor existing implementations. The most structurally novel item in the whole roadmap.</div>
-  </div>
-  <div class="card gold">
-    <div class="card-title">f — Competitor/book insight pipeline</div>
-    <div class="card-body">Worked template: insight → taxonomy leaf node → structured summary (what/how/used-on-what) → clickable footnote via <code>intel_bibliography</code>. The shared placement engine this needs already exists (confirmed July 22 — book and non-book inputs already route through the same function) — this is now just the bibliography-footnote UI work, not blocked on anything.</div>
-  </div>
+  <div class="section-title">F0–F18 Roadmap &amp; Future Integrations</div>
+  <div class="section-sub"><strong>Real /deduplication pass, Aug 13</strong> — this section used to carry the full F0-F18 status table plus an old lettered (a–f) future-roadmap card set. Both are <code>patch_notes.html</code>'s own explicitly-stated job (its "Future Patch Notes (F1-F18)" section is the live, current version of the exact same table) — and the old a–f lettering had already collided with the NEW oversight-tier a)-(f) lettering once (fixed in <code>interconnection_map.md</code>/<code>patch_notes.html</code> Aug 11), a fix this doc's own copy had been missed by. Kept as a pointer only, avoiding a second stale copy of the same collision risk.</div>
+  <p>F0-F18 status: <a href="patch_notes.html#future-roadmap">patch_notes.html</a> · not-yet-built ideas, colour-graded by real build status (blue=idea/red=planned/yellow=building): <a href="future_integrations.html">future_integrations.html</a> · the original 6 renamed items: <code>interconnection_map.md</code>'s "Future Integration Vision (Items 1-6)".</p>
 </div>
 
 <div class="section" id="dev-rules">

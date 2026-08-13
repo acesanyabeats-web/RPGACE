@@ -180,24 +180,81 @@ TOTAL_ZONES = 16  # 16 unified rivers: I-XI (narrative info-flow) + XII-XVI (Tot
 # Total-system members, so it's the only one that gets this structured
 # connector list; status values ('live'/'dormant'/'deferred') match
 # that table's own wording exactly.
+# Real, full parity pass Aug 13 — synced against ai_tooling_and_rules_map.md's
+# own canonical 1d table (this dict was missing 5 real, already-catalogued
+# rows: Jina AI, Last.fm, n8n, Whisper, Anthropic — a real staleness gap,
+# not new discovery). Alex's own real ask, same pass: "implement all
+# externals built and included... ones that arent tests should be present,
+# just logged to smoke test as not tested, yet visible... do this for
+# all of them" (the OpenMontage connector-node pattern — a real bridge
+# node into its own external galaxy — generalized to every real
+# connector, not just OpenMontage). Two new real fields per entry:
+# 'tested' (real hand-verified working, vs. built-but-unconfirmed — NEVER
+# hides an entry, only feeds a future smoke_test.html flag) and
+# 'bridges_to' (the real external system/repo this connector is the real
+# spring/mouth into — the concrete "own galaxy" this node bridges to for
+# the future Galaxy Map's G2/G3 build). Supabase is deliberately NOT in
+# this list — it's core RPGACE infrastructure, not an external "provider"
+# in the same sense (see the new 1e section in ai_tooling_and_rules_map.md
+# + this file's own SUPABASE_CORE constant below).
 EXTERNAL_CONNECTORS = [
-    {'name': 'OpenMontage', 'status': 'live', 'via': 'openmontage_jobs Supabase queue',
+    {'name': 'Anthropic (Claude API)', 'status': 'live', 'tested': True, 'via': 'api/oracle.js callClaude()',
+     'bridges_to': 'Anthropic\'s own hosted API — no separate repo/galaxy to bridge to, the real default provider',
+     'note': 'the real default Oracle provider — every ungrounded Oracle call routes here unless a dormant provider (Kimi/Luna) is live. River III\'s Oracle Current is the harness; this IS the real external call, not RPGACE code.'},
+    {'name': 'OpenMontage', 'status': 'live', 'tested': True, 'via': 'openmontage_jobs Supabase queue',
+     'bridges_to': 'calesthio/OpenMontage repo, operated by a separate Claude Code session ("OpenMontage CC")',
      'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("OpenMontage CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live\'s "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).'},
-    {'name': 'Composio', 'status': 'live', 'via': 'api/composio.js / api/executor.js / api/orchestrate.js',
+    {'name': 'Composio', 'status': 'live', 'tested': True, 'via': 'api/composio.js / api/executor.js / api/orchestrate.js',
+     'bridges_to': 'Gmail / Instagram / YouTube / Notion / GitHub connected accounts',
      'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V\'s morningBrief (Gmail fetch) and River XI\'s contentRepurpose (Notion page + YouTube channel data via Supadata).'},
-    {'name': 'Moonshot AI (Kimi)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'kimi\'',
+    {'name': 'Moonshot AI (Kimi)', 'status': 'dormant', 'tested': False, 'via': 'api/oracle.js provider:\'kimi\'',
+     'bridges_to': 'Moonshot AI\'s own hosted API (api.moonshot.ai/v1)',
      'note': 'real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from River III\'s Oracle Current in place of the default Anthropic call once live.'},
-    {'name': 'OpenAI (Luna)', 'status': 'dormant', 'via': 'api/oracle.js provider:\'luna\'',
+    {'name': 'OpenAI (Luna)', 'status': 'dormant', 'tested': False, 'via': 'api/oracle.js provider:\'luna\'',
+     'bridges_to': 'OpenAI\'s own hosted API',
      'note': 'same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same River III relationship once live.'},
-    {'name': 'librosa', 'status': 'optional/local', 'via': 'beat_audio_jobs + beat-audio bucket, local_server.py',
+    {'name': 'librosa', 'status': 'optional/local', 'tested': False, 'via': 'beat_audio_jobs + beat-audio bucket, local_server.py',
+     'bridges_to': 'Alex\'s own local machine, via local_server.py (not a hosted service)',
      'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI\'s Beat Log, nowhere else.'},
-    {'name': 'FFmpeg', 'status': 'live (external repo)', 'via': "OpenMontage's own pipeline, confirmed working July 31",
+    {'name': 'FFmpeg', 'status': 'live (external repo)', 'tested': True, 'via': "OpenMontage's own pipeline, confirmed working July 31",
+     'bridges_to': 'runs inside the OpenMontage galaxy itself, not a separate bridge',
      'note': "runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river."},
-    {'name': 'OpenArt', 'status': 'deferred', 'via': 'none yet',
+    {'name': 'OpenArt', 'status': 'deferred', 'tested': False, 'via': 'none yet',
+     'bridges_to': 'not wired — a named future companion galaxy to OpenMontage',
      'note': '"connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet'},
-    {'name': 'Graphify CC', 'status': 'live', 'via': 'graphify_jobs Supabase queue',
+    {'name': 'Graphify CC', 'status': 'live', 'tested': True, 'via': 'graphify_jobs Supabase queue',
+     'bridges_to': 'graphifyy (PyPI), operated by a separate Claude Code session ("Graphify CC")',
      'note': 'the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from River IX\'s own session-start check, deposits real findings back into River XIV via graphify_jobs.'},
+    {'name': 'Jina AI', 'status': 'live', 'tested': True, 'via': 'r.jina.ai, 4 real call sites (scout.js/bookworm-fetch.js/main.js/_context.js)',
+     'bridges_to': 'Jina AI\'s own hosted read/fetch API',
+     'note': 'real, live URL-to-text fetch — load-bearing for Bookworm URL ingestion, Schedule Oracle, and chat-pasted-URL handling. Confirmed by direct grep, not assumed.'},
+    {'name': 'Last.fm', 'status': 'live', 'tested': True, 'via': 'api/lastfm.js, LASTFM_API_KEY',
+     'bridges_to': 'Last.fm\'s own hosted API',
+     'note': 'real artist/tag discovery — refCorpus.findMatches()\'s real fallback when no reference-corpus match exists; grows the corpus from its own results.'},
+    {'name': 'n8n', 'status': 'built, unconfirmed', 'tested': False, 'via': 'n8n/rota_sync_workflow.json (Cron -> scripts/fourth_rota.py)',
+     'bridges_to': 'a self-hosted/cloud n8n instance Alex imports the workflow into',
+     'note': 'real, importable workflow for F10\'s rota-sync automation — never test-run against a live unattended execution (2 manual login-confirmation gates deliberately untouched).'},
+    {'name': 'Whisper (OpenAI, local)', 'status': 'built, unconfirmed this session', 'tested': False, 'via': 'local_server.py / Python scripts on Alex\'s own machine',
+     'bridges_to': 'Alex\'s own local machine — not in this repo',
+     'note': 'local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata->download->Whisper->frame extraction->Claude Vision->Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py\'s other integrations — do not claim active without asking Alex.'},
 ]
+
+# Supabase is deliberately its own real category, not folded into
+# EXTERNAL_CONNECTORS above — it's core RPGACE infrastructure (the
+# persistence layer nearly every river writes to/reads from), not an
+# optional external provider the app reaches OUT to. Real Alex ask, same
+# pass: "i think supabase should also be part of the galaxy and minotaur
+# river system, since it is part of RPGACE total systems and is used a
+# lot." Kept as a single real summary entry (not per-table) since every
+# individual table is already covered in manual.html's own Supabase
+# Tables section — this is the CONNECTOR-LEVEL fact, one real hub node
+# every river writes into.
+SUPABASE_CORE = {
+    'name': 'Supabase', 'status': 'live', 'tested': True,
+    'via': 'RPGACE.sb.* (anon key, RLS-gated) + /api/data-write.js (service-role proxy for 19 restricted tables)',
+    'bridges_to': 'Supabase\'s own hosted Postgres project (gripopghczmrbrhqtqbm) — RPGACE\'s real persistence layer, not a separate operated galaxy',
+    'note': 'the real hub every river writes into/reads from — not a "connector" in the OpenMontage/Composio sense (RPGACE owns this data, it does not hand off to an external agent), but a real, load-bearing Total-system member in its own right, used by nearly every real river.',
+}
 
 # Real, honest per-river role text for XIII-XVI — replaces the old
 # negative "no single-module river tag" framing (which read as
@@ -501,6 +558,7 @@ def build_river_notes(module_ranges, id_module):
             'flows_into': flows_into,
             'fed_by': fed_by,
             'external_connectors': EXTERNAL_CONNECTORS if river == 12 else None,
+            'core_infrastructure': [SUPABASE_CORE] if river == 12 else None,
         }
     return notes
 
@@ -844,12 +902,18 @@ def build_river_notes_block(river_notes):
         '  } else if (rn.zone_note) {\n'
         '    html += \'<div class="field" style="font-size:11px;color:#999;">\' + esc(rn.zone_note) + \'</div>\';\n'
         '  }\n'
+        '  function connectorRow(x) {\n'
+        '    var dot = x.status === \'live\' || x.status.indexOf(\'live\') === 0 ? \'#4caf82\' : (x.status === \'deferred\' ? \'#777\' : \'#c9a84c\');\n'
+        '    var testedMark = x.tested ? \'\' : \' <span style="color:#e0a040;" title="Built, not hand-verified working">\\u26A0 not tested</span>\';\n'
+        '    return \'<div class="field" style="font-size:11px;"><span style="color:\' + dot + \';">\\u25CF</span> \' + esc(x.name) + \' <span style="color:#777;">(\' + esc(x.status) + \' \\u2014 \' + esc(x.via) + \')</span>\' + testedMark + \'</div>\';\n'
+        '  }\n'
+        '  if (rn.core_infrastructure && rn.core_infrastructure.length) {\n'
+        '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Core infrastructure</div>\';\n'
+        '    rn.core_infrastructure.forEach(function(x) { html += connectorRow(x); });\n'
+        '  }\n'
         '  if (rn.external_connectors && rn.external_connectors.length) {\n'
-        '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Total-systems connectors</div>\';\n'
-        '    rn.external_connectors.forEach(function(x) {\n'
-        '      var dot = x.status === \'live\' || x.status.indexOf(\'live\') === 0 ? \'#4caf82\' : (x.status === \'deferred\' ? \'#777\' : \'#c9a84c\');\n'
-        '      html += \'<div class="field" style="font-size:11px;"><span style="color:\' + dot + \';">\\u25CF</span> \' + esc(x.name) + \' <span style="color:#777;">(\' + esc(x.status) + \' \\u2014 \' + esc(x.via) + \')</span></div>\';\n'
-        '    });\n'
+        '    html += \'<div class="field" style="margin-top:6px;color:#aaa;font-size:11px;">Total-systems connectors — all real/built ones shown, tested or not</div>\';\n'
+        '    rn.external_connectors.forEach(function(x) { html += connectorRow(x); });\n'
         '  }\n'
         '  function itypeBadge(f) {\n'
         '    if (!f.itype_label) return \'\';\n'

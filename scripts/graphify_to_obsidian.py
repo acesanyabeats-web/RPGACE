@@ -39,7 +39,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402  (import after sys.path fix, deliberate)
     RIVER_MODULES, RIVER_NAME, RIVER_COLOR, TOTAL_ZONES, CORE_JS,
     RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
-    RIVER_ROLE_NOTE, EXTERNAL_CONNECTORS,
+    RIVER_ROLE_NOTE, EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_LABEL,
     parse_module_ranges,
 )
@@ -99,14 +99,22 @@ def build_hub_note(num: int, module_ranges) -> str:
         lines.append('')
 
     if num == 12:
+        lines.append('## Core infrastructure')
+        lines.append('')
+        lines.append(f"- **{SUPABASE_CORE['name']}** ({SUPABASE_CORE['status']}) via "
+                      f"`{SUPABASE_CORE['via']}` — {SUPABASE_CORE['note']}")
+        lines.append('')
         lines.append('## Total-systems connectors (real, external)')
         lines.append('')
         lines.append('Canonical source: `ai_tooling_and_rules_map.md`\'s own '
                       '"External AI/tool providers" table — mirrored here for '
-                      'graphify/Obsidian display, not a second independent fact-set.')
+                      'graphify/Obsidian display, not a second independent fact-set. '
+                      'Every real, built connector is listed regardless of test status — '
+                      'an untested one is marked, never hidden.')
         lines.append('')
         for x in EXTERNAL_CONNECTORS:
-            lines.append(f"- **{x['name']}** ({x['status']}) via `{x['via']}` — {x['note']}")
+            tested_note = '' if x.get('tested') else ' **(not tested)**'
+            lines.append(f"- **{x['name']}** ({x['status']}) via `{x['via']}`{tested_note} — {x['note']}")
         lines.append('')
 
     if num in RIVER_FLOWS:

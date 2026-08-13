@@ -200,7 +200,16 @@ row that applies, either touch the artifact or state explicitly why not
     already updated (never re-derived separately, rule 8). A finding that
     reaches green does the REVERSE — removed from `future_integrations.html`
     and its real status added to whichever tier doc(s) artifacts 1-14 above
-    already route it to.
+    already route it to. **Real grouping rule, added Aug 13 (Alex's own
+    ask, "mark your output... with all the steps in a group, with each
+    subgroup explained... combined by what they are changing")**: a
+    multi-step CEO plan (2+ `ceo_plan_items` sharing one `ceo_plans` row)
+    always renders as ONE labeled plan-group with each step its own
+    explained subgroup card — never scattered loose cards. Every other
+    item gets grouped under its real affected river/dashboard-card/
+    external-connector (matching `minotaur_map.html`'s own river names),
+    not left flat under a bare color heading — find its real home first,
+    only add a new group label if nothing existing fits.
 
 **Optional, non-authoritative pre-check** (same Aug 6 evidence): before
 marking a doc artifact `[ ] — skipped`, a single properly vocab-expanded
@@ -213,6 +222,32 @@ something isn't covered — the doc-side graph is only as current as its
 last real semantic rebuild (which needs an LLM pass, not run by default,
 a genuine cost/benefit call per rule 11), so an empty result means
 "check by hand," not "confirmed absent."
+
+16. **Content is about to be ADDED to `manual.html` (or any Tier (a)
+    explaining doc)** (added Aug 13, real Alex ask after a genuine
+    redundancy audit found `manual.html` had accumulated 4 whole
+    sections — Session History, the 4-level Diagram Chain, the full bug
+    table, the F0-F18 roadmap table — that were verbatim duplicates of
+    content `patch_notes.html`/`patch_notes_archive.html`/
+    `interconnection_map.md`/`minotaur_map.html` already owned, one of
+    them (the old "Future Integrations a-f" lettering) also a repeat of
+    a naming collision already fixed everywhere else once) → before
+    writing new narrative/history/table content into a Tier (a) doc,
+    check whether it's already narrated in full elsewhere: `patch_notes.
+    html`/`patch_notes_archive.html` own ALL day-by-day build history and
+    bug root-cause narrative (Tier (a)'s own stated role is "shown/
+    explaining," never a second copy of the story); `interconnection_map.
+    md`/`system_flow_map.md`/`minotaur_map.html` own ALL structural/flow
+    diagrams. **The real obstacle this closes**: Tier (a) docs are edited
+    far more often than Tier (b) truth docs (they're the ones a fresh
+    session reaches for first), so new content naturally lands there
+    first and never gets moved to its rightful canonical home — the fix
+    isn't "audit occasionally," it's "check before adding," the same
+    shape as artifact 8's own dedup discipline for the tooling catalog.
+    If the content is genuinely NEW (not already told anywhere), it still
+    goes in its rightful canonical doc first (per whichever artifact type
+    above matches its real content), with Tier (a) getting only a short
+    pointer — never the full narrative twice.
 
 ## How to actually run this (the enforceable part)
 

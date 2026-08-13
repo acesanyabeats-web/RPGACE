@@ -478,3 +478,106 @@ output; the embedded `<script>` blocks in `graph.html` extracted and
 run through `node --check` — clean, no syntax corruption from the
 Python string-template edit.
 
+================================================================
+SAME DAY, 3RD PASS — a paste-and-annotate manual.html audit + connector
+completeness fixes + doc-cleanup automation (Alex's real ask, run
+through the same /paranoia+/CEO framework, /restructure+/engineer+
+/drift+/colourgradient as advisors)
+================================================================
+
+Alex pasted a large real chunk of manual.html's own content with 4
+inline annotations, plus a mid-turn correction generalizing the
+OpenMontage connector-node pattern to every external. Real work done:
+
+**1. manual.html real /deduplication pass, 4 sections trimmed to
+pointers, verified against real duplication before touching anything
+(never deleted a fact, only ever pointed to its rightful home):**
+Session History (redundant with patch_notes.html/patch_notes_archive.
+html, confirmed by grep — 16 real hits for the same dates already
+there), the 4-level Diagram Chain (redundant with interconnection_map.
+md, confirmed 5 real hits for the same function names), "Every Bug
+Found + Fixed" (patch_notes.html's own explicitly-stated role, 33 real
+F-series hits alone confirming overlap), F0-F18 Roadmap + the old
+lettered "Future Integrations a-f" (patch_notes.html's live F-series
+table + interconnection_map.md's already-renamed "Items 1-6" — this
+manual.html copy had been MISSED by the Aug 11 collision fix and was
+still using the stale a-f lettering that collides with the NEW
+oversight-tier lettering). **Real, separate staleness bug also fixed,
+not just dedup**: "Currently Open Bugs" listed 2 bugs that are BOTH
+actually resolved per CLAUDE.md's own current state (Oracle 504 fixed
+July 28 via real streaming; the ~25-places re-subscription bug closed
+July 29/31) — this section was actively wrong, not just redundant.
+Sidebar nav updated to match every real anchor change; div-balance
+verified (63/63); all nav hrefs verified resolving to a real id.
+**Kept exactly as Alex asked, untouched**: the Supabase Tables section
+("keep this text in full manual, love it").
+
+**2. Total-systems connector completeness — real gaps found and
+fixed, not assumed.** Alex: "why isnt Supabase or whisper here?"
+Real check: Whisper WAS already in `ai_tooling_and_rules_map.md`'s
+canonical table (added Aug 11) but missing from BOTH `manual.html`'s
+own mirror AND `scripts/graphify_river_group.py`'s `EXTERNAL_
+CONNECTORS` mirror — a real, silent drift between 3 copies of the same
+fact, not a fresh discovery. Supabase was missing from all 3 — a
+genuinely new gap, and correctly NOT folded into the "external
+provider" table (RPGACE owns this data, it isn't handing off to an
+external agent) — given its own real "1e — Core infrastructure"
+section in the canonical doc, `SUPABASE_CORE` in the Python mirror,
+and its own row in manual.html's table. Full parity restored across
+all 3 copies: Anthropic (a real, previously undocumented row — the
+actual default Oracle provider), Jina AI, Last.fm, n8n added
+everywhere they were missing.
+
+**3. The OpenMontage connector-node pattern generalized to every real
+connector** (Alex's mid-turn correction: "this is only one worked
+example for an external ai... do this for all of them"). Every
+`EXTERNAL_CONNECTORS` entry gained a real `bridges_to` field — the
+actual external system/repo/account that connector is the real spring/
+mouth into, the concrete design basis G2's future galaxy-map build
+reads from. A `tested` boolean added to every entry too, per Alex's
+separate real ask ("ones that arent tests should be present, just
+logged to smoke test as not tested, yet visible in rivers and galaxies
+since they are actually present") — an untested connector (Whisper,
+n8n) is now flagged ⚠ in both the graph.html node-info panel and the
+Obsidian vault, never hidden. Full pipeline (river-group → to-obsidian
+→ vault-html) re-run clean, `node --check` on extracted embedded JS
+clean, real grep confirms Supabase/Whisper present in generated
+output. **Real design notes logged to G2's own `ceo_plan_items.
+evidence`** (not built yet, since G2 itself isn't built) for whoever
+picks up that item: Oracle API becomes its own distinct galaxy node
+(RPGACE is the harness, not the provider), self-awareness
+(`oracleAppGrounding.SELF_KNOWLEDGE`) becomes its own node+edges.
+
+**4. `future_integrations.html` restructured** per Alex's real ask
+("mark your output... with all the steps in a group, with each
+subgroup explained... other changes... combined by what they are
+changing as in the river... or other extranals connections"). The
+Galaxy Map plan's G2-G8 now render as ONE labeled plan-group (a real
+new `.plan-group` CSS treatment, visually distinct from loose cards),
+each step its own explained subgroup card — G1 correctly does NOT
+appear, since it already graduated to green. Every other existing item
+(A2-A10, the 3 blue ideas) regrouped under its real affected river/
+dashboard-card/external-connector (River III/Oracle Current, River V/
+Two Independent Streams, River XI/Content Production Live + External:
+OpenMontage, River VI-VII/Taxonomy, River IV/Bookworm, River X/
+Chronicles, the /CEO framework itself) instead of a flat list per
+color. Div-balance verified (102/102).
+
+**5. The "make cleanup auto" ask — a real standing rule, not just a
+one-off fix.** New artifact type 16 in `update-logging-system` SKILL.
+md: before adding narrative/history/table content to a Tier (a)
+explaining doc, check whether it's already told in full elsewhere
+first (Tier (a) docs get edited more often than Tier (b), so new
+content naturally lands there and never gets moved to its rightful
+home — this closes that specific obstacle, named honestly rather than
+just "audit occasionally"). Artifact 15 also gained the real grouping
+rule (plan-group-first, then river/card/connector grouping) as a
+standing discipline for future `future_integrations.html` updates,
+not just this pass's own manual regrouping.
+
+Real, honest scope note: this pass fixed 3 copies of the connector
+list (canonical/Python-mirror/manual.html-display) and trimmed
+manual.html's own redundant sections — it did NOT attempt G2 itself
+(the actual visual galaxy build), which stays real, ratified, future
+Loop 2 work per the earlier same-day ratification.
+

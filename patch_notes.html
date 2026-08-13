@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Aug 13 (same day, 3rd pass) — manual.html deduplicated; Supabase/Whisper/Anthropic added to the Total-systems connector table; future_integrations.html regrouped; new standing anti-redundancy rule.</div>
+    <div class="card-body">
+      Alex pasted a real chunk of <code>manual.html</code>'s own content with direct annotations. <strong>Deduplication</strong>: 4 sections (Session History, the 4-level Diagram Chain, Every Bug Found+Fixed, F0-F18 Roadmap + the stale lettered "Future Integrations a-f") trimmed to pointers, each verified genuinely redundant against <code>patch_notes.html</code>/<code>patch_notes_archive.html</code>/<code>interconnection_map.md</code> by direct grep before touching anything. A real, separate staleness bug caught along the way: "Currently Open Bugs" listed 2 bugs BOTH already resolved per CLAUDE.md's own current state — fixed, not just pointed elsewhere. The Supabase Tables section stayed exactly as-is, per Alex's own "keep this text in full manual, love it."
+      <br><br>
+      <strong>Connector completeness</strong>: real gaps found across 3 copies of the same fact (canonical <code>ai_tooling_and_rules_map.md</code> table, <code>graphify_river_group.py</code>'s <code>EXTERNAL_CONNECTORS</code> mirror, manual.html's own display) — Whisper existed in the canonical doc but had silently drifted out of the other two; Supabase was missing from all 3, correctly given its own new "core infrastructure" category rather than forced into the "external provider" framing (RPGACE owns that data). Anthropic added as a genuinely new row — the actual default Oracle provider, previously undocumented. Per Alex's mid-turn correction, every connector gained a real <code>bridges_to</code> field (generalizing the OpenMontage "connector node bridging two galaxies" pattern to all of them) and a <code>tested</code> flag (an untested real connector like Whisper/n8n is now flagged ⚠, never hidden). Pipeline re-run clean, verified.
+      <br><br>
+      <strong><code>future_integrations.html</code> restructured</strong>: the Galaxy Map plan's G2-G8 now render as one labeled plan-group with each step its own explained card (G1 correctly absent, already graduated green); every other item regrouped by its real affected river/dashboard-card/external-connector instead of a flat per-color list.
+      <br><br>
+      <strong>Standing rule, not just a one-off fix</strong>: new artifact type 16 in <code>update-logging-system</code> SKILL.md — check whether new content already has a canonical home before adding it to a Tier (a) doc, closing the real obstacle (Tier a docs get touched more often, so new content naturally lands there first and never migrates). Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌌 Aug 13 (same day, 2nd pass) — Galaxy Map plan RATIFIED; G1 (edge interaction-type taxonomy) shipped.</div>
     <div class="card-body">
       Alex answered all 5 open forks from the compiled plan directly. Real scope amendment on Fork 2: the galaxy map isn't a decorative overview — it's promoted to a real SECOND truth source sitting alongside Tier (b), read by Alex with Tier (a) and by this session with Tier (b), specifically to shrink the surface real drift/misunderstanding can occur on before it happens. A new "trickle-down/up" system is asked for on top of that: real upstream/downstream changes get cross-referenced against the galaxy map + truth docs to surface integration friction, generating a compiled report of suggestions + errors for Alex to decide on — wired into <code>/CEO</code>'s own Loop 2 discipline going forward (colourgradient → this cross-check → <code>/drift</code>, every plan item).
