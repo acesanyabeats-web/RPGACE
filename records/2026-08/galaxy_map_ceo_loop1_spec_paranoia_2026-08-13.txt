@@ -948,3 +948,86 @@ real, ratified, NOT built — each is its own future `/Engineer` pass,
 reusing this same script's structure once picked up, not started
 blind here.
 
+================================================================
+SAME DAY, 8TH PASS — real G2 topology bugs caught by Alex, fixed
+directly (not deferred to G3/G4). /CEO+/paranoia with /drift+/Engineer.
+================================================================
+
+Alex's real direct question, answered plainly first (this session's
+own honesty discipline over silently building without addressing it):
+**will G3/G4 fix relationship bugs in G2? No.** Deeper drill-down
+levels add MORE DETAIL at a deeper level — they do not correct
+topology at Level 0. Two real, confirmed bugs needed a direct G2 fix:
+
+1. **Oracle-mediation bug**: "oracle is using claude api to
+   orchestrate kimi and luna, so would oracle connect to luna and
+   moonshot" — real, confirmed correct. G2's first build had drawn
+   Anthropic/Kimi/Luna as 3 flat, independent connectors off RPGACE
+   Architecture, same as Composio/Jina AI/etc. — architecturally
+   wrong, since Oracle is the real harness deciding which provider
+   gets called (`api/oracle.js`'s `provider:'kimi'|'luna'` scaffold,
+   confirmed by direct code read). Fixed: Anthropic/Kimi/Luna now hang
+   off the Oracle node specifically (RPGACE Architecture -> Oracle ->
+   provider), each with a real role label (Anthropic: primary/live;
+   Kimi/Luna: dormant alternate). `system_map_spec.md` §3 gained a
+   real, sharpened standing rule so any future AI provider added to
+   the map follows the same topology, not re-derived each time.
+
+2. **Supabase communication-vs-execution bug**: "supabase links should
+   also exist, its communication lines, not execution and changing
+   with updates lines" — real, confirmed gap: the existing 11-type
+   interaction taxonomy (built earlier this session for G1/graph.html)
+   was NEVER APPLIED to G2's own edges at all — G2 used a flat
+   tested/untested green/amber scheme instead, a real
+   `/deduplication` gap in this session's own work (two systems built
+   the same day, only one used the shared taxonomy). Fixed by applying
+   `INTERACTION_TYPE_COLOR`/`LABEL` to every G2 edge directly (imported,
+   never re-derived — rule 8), and by giving Supabase 2 real distinct
+   edges (`read_query` + `write_commit`) instead of one generic edge.
+   A genuine NEW gap found applying this: no existing type covered a
+   general real-time read (only `session_start_pull`, scoped narrowly)
+   — added `read_query` as an 11th real type, not forced into the
+   wrong bucket.
+
+**Alex's broader framing, mapped onto the existing taxonomy directly,
+not a second system**: "the lines should represent what affects what
+(`doc_staleness_flag`), what communicates with what (`read_query`/
+`external_extract_call`), what information change-output is done
+(`ai_judgment_call`/`write_commit`), then where it is transported to
+(`dispatch_trigger`/`oversight_deposit`), with human gates
+(`human_confirm_gate`)." This is a real, direct validation that the
+G1 taxonomy already covers his 5-concept framing — confirmed by
+mapping each of his 5 words onto a real, already-built type, not
+inventing a parallel classification. A new "Human Gate — Alex" node
+was added to G2 itself, representing the standing human-in-the-loop
+across Total Systems (Tier-3 confirms) — a real, honest way to show
+this dimension at Level 0 without inventing per-connector human-gates
+that don't exist at this level.
+
+**Real bug caught during the 2nd screenshot review, not assumed
+fixed**: the two new Supabase edges were drawn with IDENTICAL curve
+coordinates (same start/end points, same offset math) — meaning the
+2nd edge drawn would have silently and completely covered the 1st,
+defeating the entire point of making them visually distinct. Fixed
+with a real `offset_mult` parameter added to `_curved_edge()`, opposite
+signs for the two Supabase edges, confirmed via a 3rd screenshot pass
+and a real path-count check (22 real `<path>` elements, matching exact
+expected math). A 2nd, smaller real fix in the same review: the
+Oracle/provider harness cluster's original angular position collided
+with the Last.fm/Jina AI connector labels — repositioned into the one
+genuinely empty angular wedge in the layout, re-verified.
+
+**/drift-check**: Baseline RATIFIED (G2 already green from the 1st
+pass; this is a real correction to an already-shipped item, not a
+fresh ask). Verdict: the correction is ON TRACK — both of Alex's real
+technical catches are now fixed and verified, not just acknowledged.
+Grade: this counts as a real MINOR finding on the 1st pass's own
+"green" claim (G2 was marked done before its edges had been checked
+against the already-built interaction taxonomy) — corrected same
+session, not left standing.
+
+`ceo_plan_items` G2's evidence updated with the full 2nd-pass fix; G3
+and G4 each got a real, direct answer to "does this get inherited or
+re-derived" (inherited — the taxonomy + Oracle-mediation rule are now
+standing convention, not something a future session re-invents).
+

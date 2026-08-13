@@ -373,6 +373,22 @@ MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 # labels. Colors are real RPGACE style.css tokens, deliberately a
 # DIFFERENT swatch set from RIVER_COLOR so the two legends never get
 # visually confused with each other.
+# Aug 13, 2nd pass (real Alex ask on G2's own real topology bugs):
+# "the lines should represent what affects what, what communicates with
+# what, what information change output is done, then where it is
+# transported to, with human gates on my end showing what i see and
+# what i decide." Real, checked mapping of his own 5-word framing onto
+# the 11 types below (not a second taxonomy — one shared vocabulary,
+# rule 8): AFFECTS -> doc_staleness_flag; COMMUNICATES -> read_query/
+# external_extract_call/session_start_pull; INFORMATION-CHANGE-OUTPUT
+# -> ai_judgment_call/write_commit; TRANSPORTED-TO -> dispatch_trigger/
+# oversight_deposit; HUMAN GATES -> human_confirm_gate. Real, genuine
+# gap found applying this to Supabase specifically (Alex: "supabase
+# links should also exist, its communication lines, not execution and
+# changing with updates lines") — the existing 10 types had no general
+# real-time READ type (session_start_pull is real but scoped narrowly
+# to session-start reads only); added read_query as an 11th real type
+# rather than force Supabase's real reads into the wrong bucket.
 INTERACTION_TYPE_LABEL = {
     'nav_route': 'Page / UI routing',
     'ai_judgment_call': 'Oracle / Claude judgment call',
@@ -384,6 +400,7 @@ INTERACTION_TYPE_LABEL = {
     'session_start_pull': 'Passive read at session start',
     'doc_staleness_flag': 'Advisory: may need a human doc update',
     'terminal_sink': 'No further real downstream flow',
+    'read_query': 'Real-time data read (communication, not a change)',
 }
 INTERACTION_TYPE_COLOR = {
     'nav_route': '#6b7280',
@@ -396,6 +413,7 @@ INTERACTION_TYPE_COLOR = {
     'session_start_pull': '#2ABFB0',
     'doc_staleness_flag': '#E0A040',
     'terminal_sink': '#4a4a55',
+    'read_query': '#5FB3D9',
 }
 
 RIVER_FLOWS = {

@@ -83,16 +83,40 @@ its own distinct node (River III's real harness), not folded into
 real providers, RPGACE is the harness routing to it (Alex's own
 explicit correction, Aug 13).
 
+**Real, sharpened rule, Aug 13 2nd pass — a genuine G2 topology bug
+found and fixed, not just a naming nuance**: every real AI-provider
+edge (Anthropic/Kimi/Luna) draws FROM Oracle, never from RPGACE
+Architecture directly — Oracle is the real mediator "orchestrating"
+which provider actually gets called (Alex's own words), so the
+topology must be RPGACE Architecture → Oracle → {provider}, never a
+flat RPGACE Architecture → provider edge sitting parallel to Oracle's
+own edge. The same discipline applies to any FUTURE AI provider added
+to the map — it hangs off Oracle, not off RPGACE Architecture.
+
 ## 4. Interaction-type taxonomy (edges, not node color)
 
-10 real types, evidence-grounded against actual call sites, never
-derived from river/node membership alone (redundant with node color/
-position otherwise): `nav_route`, `ai_judgment_call`,
-`external_extract_call`, `write_commit`, `human_confirm_gate`,
-`dispatch_trigger`, `oversight_deposit`, `session_start_pull`,
-`doc_staleness_flag`, `terminal_sink`. Canonical definitions + live
-color tokens: `INTERACTION_TYPE_LABEL`/`INTERACTION_TYPE_COLOR` in
-`scripts/graphify_river_group.py`. New types get added there first,
+11 real types (10 original + `read_query`, added Aug 13 2nd pass — see
+below), evidence-grounded against actual call sites, never derived
+from river/node membership alone (redundant with node color/position
+otherwise): `nav_route`, `ai_judgment_call`, `external_extract_call`,
+`write_commit`, `human_confirm_gate`, `dispatch_trigger`,
+`oversight_deposit`, `session_start_pull`, `doc_staleness_flag`,
+`terminal_sink`, `read_query`. Canonical definitions + live color
+tokens: `INTERACTION_TYPE_LABEL`/`INTERACTION_TYPE_COLOR` in
+`scripts/graphify_river_group.py`.
+
+**Real Alex framing, Aug 13 2nd pass, mapped onto these 11 types
+directly (not a second taxonomy)**: "the lines should represent what
+AFFECTS what (`doc_staleness_flag`), what COMMUNICATES with what
+(`read_query`/`external_extract_call`/`session_start_pull`), what
+INFORMATION-CHANGE-OUTPUT is done (`ai_judgment_call`/`write_commit`),
+then where it is TRANSPORTED TO (`dispatch_trigger`/
+`oversight_deposit`), with HUMAN GATES on my end (`human_confirm_gate`)."
+`read_query` was added specifically because Supabase's real reads had
+no honest home in the original 10 — `session_start_pull` is real but
+scoped narrowly to session-start reads only, and forcing an ongoing
+real-time read into that bucket would have been dishonest. New types
+get added there first,
 this doc updated to match — never the reverse.
 
 ## 5. Extraction blind spots — a known, real limitation, not a bug to keep re-discovering
