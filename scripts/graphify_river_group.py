@@ -690,20 +690,33 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
     return flows
 
 
-LEVEL3_MODULES = {'beatLog'}
-# Aug 13, real Level-3 proof-of-concept (Alex's own direct ask: "flow
-# through a level 3 structure which is a module or function... those
-# flow through buttons being the gateway to level 3 diagrams"). The
+# Aug 13, real Level-3 rollout (Alex's own direct ask: "flow through a
+# level 3 structure which is a module or function... those flow
+# through buttons being the gateway to level 3 diagrams," then "lets
+# finish g14 so we mark down all components into galaxy map"). The
 # real, canonical list of modules that actually have a built Level-3
 # page — a module only ever becomes a clickable Level-2 gateway
 # (galaxy_map_module.py) once it's genuinely in this set, never a
-# guessed/empty destination. beatLog is the proof-of-concept: 19 real
-# functions, 19 real call edges (compute_module_function_flow()),
-# matching manual.html's own long-standing "4 parallel actions (see
-# Level 2 diagram)" cross-reference note. Full rollout across all 44
-# real Level-2 modules is real, scoped, deliberately NOT built this
-# pass — see ceo_plan_items G14, same "prove the pattern on one case
-# first" discipline already used for Phylum 11's own restructure.
+# guessed/empty destination. Proof-of-concept shipped on beatLog first
+# (19 real functions, 19 real call edges), matching manual.html's own
+# long-standing "4 parallel actions (see Level 2 diagram)" cross-
+# reference note — the pattern held up under a real stress test against
+# all 44 modules (2 real bugs found and fixed: an infinite-loop risk on
+# a genuine function-call cycle in compute_function_rank(), and a
+# canvas-height formula that sized by depth-COUNT instead of the
+# widest real column), then rolled out to all 44 real Level-2 modules.
+LEVEL3_MODULES = set(m for mods in RIVER_MODULES.values() for m in mods)
+# Real, full rollout: every module RIVER_MODULES already knows about
+# gets a real Level-3 page — never a hand-picked subset, so this stays
+# correct automatically as RIVER_MODULES grows (rule 8, single source
+# of truth). intelBatchList needed a real one-time fix first: it was
+# sitting inside uiBatchList's own /* ===MODULE:x=== */ marker block
+# with no markers of its own (a genuine pre-existing gap in this
+# file's marker convention, found by this exact rollout's own test
+# pass), so parse_module_ranges() silently returned zero functions for
+# it — fixed directly in rpgace_core.js (real marker split, zero
+# behavior change), confirmed via a fresh parse: 44 of 44 modules now
+# return at least 1 real function.
 
 
 def parse_module_functions(module_name, core_js_path: Path = CORE_JS):

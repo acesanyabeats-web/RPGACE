@@ -60,9 +60,32 @@ def compute_function_rank(funcs, edges):
     technique as compute_module_flow_rank() one level up (rule 8):
     real terminals (nothing calls OUT to another local function) sit
     rightmost; real entry points (nothing calls IN, or `init` itself)
-    sit leftmost; everything else ranked by real longest-path depth
-    from an entry point, computed by a plain BFS over the real edges
-    (never guessed, never alphabetized)."""
+    sit leftmost; everything else ranked by real longest FORWARD-path
+    depth from an entry point (never guessed, never alphabetized).
+
+    Real bug #1, found and fixed testing against all 44 real modules
+    (rule 4 - verified against real data, not shipped blind): a plain
+    "grow depth whenever an update strictly increases it" BFS infinite-
+    loops on any real function-call CYCLE (A calls B calls A - a real,
+    legitimate JS pattern, e.g. a UI revert/redo mutual-call pair like
+    contentProductionLive's own _refreshWidget<->_revertToStage). A
+    hard round-cap stopped the hang but produced real bug #2: cycle-
+    trapped nodes kept climbing toward the cap every round, landing at
+    an artificially huge depth far from their real callers, stretching
+    the canvas into a mostly-empty diagram with the real content
+    squeezed into one corner - confirmed by direct visual inspection
+    (headless-Chromium screenshot of contentProductionLive, the real
+    module that surfaced it) before shipping, not assumed fixed just
+    because the hang stopped.
+
+    Real, correct fix: a standard DFS with an explicit recursion-stack
+    check for BACK edges (an edge pointing at a node already on the
+    current DFS path — the textbook definition of a graph cycle). A
+    back edge is real and still DRAWN (compute_module_function_flow()'s
+    own edge list is untouched), it's just excluded from the DEPTH
+    computation — so a cycle no longer inflates anyone's rank, and
+    every node gets a real, finite, honestly-small depth reflecting its
+    actual forward distance from an entry point."""
     callers = {f: set() for f in funcs}
     callees = {f: set() for f in funcs}
     for a, b in edges:
@@ -74,17 +97,23 @@ def compute_function_rank(funcs, edges):
     if not entries:
         entries = funcs[:1]
     depth = {}
-    frontier = [(f, 0) for f in entries]
-    for f, _d in frontier:
-        depth[f] = 0
-    while frontier:
-        nxt = []
-        for f, d in frontier:
-            for c in callees.get(f, ()):
-                if c not in depth or depth[c] < d + 1:
-                    depth[c] = d + 1
-                    nxt.append((c, d + 1))
-        frontier = nxt
+    on_stack = set()
+    visited = set()
+
+    def visit(f, d):
+        if f in on_stack:
+            return  # real back edge — a genuine cycle, not a deeper path
+        if f in visited and depth.get(f, -1) >= d:
+            return  # already reached at an equal-or-greater real depth
+        depth[f] = max(depth.get(f, -1), d)
+        visited.add(f)
+        on_stack.add(f)
+        for c in callees.get(f, ()):
+            visit(c, d + 1)
+        on_stack.discard(f)
+
+    for e in entries:
+        visit(e, 0)
     for f in funcs:
         depth.setdefault(f, 0)
     return depth
@@ -96,14 +125,24 @@ def build_module_section(module_name):
     edges = compute_module_function_flow(module_name)
     depth = compute_function_rank(funcs, edges)
     max_depth = max(depth.values()) if depth else 0
-    W = max(1400, 260 + max_depth * 260)
-    H = max(700, 90 * (max(depth.values(), default=0) + 2))
 
     # bucket functions by real computed depth, place top-to-bottom
     # within each depth column, left-to-right by depth itself
     buckets = {}
     for f in funcs:
         buckets.setdefault(depth[f], []).append(f)
+    # Real sizing fix (found the same pass the compute_function_rank
+    # cycle-cap fix shipped, testing against all 44 real modules):
+    # canvas HEIGHT must come from the WIDEST real column (most
+    # functions sharing one computed depth) — a module can have a
+    # small max_depth but many functions converging at one depth
+    # (a real fan-out/fan-in shape), and the old formula sized H from
+    # depth count alone, which would silently crowd/overlap nodes in
+    # exactly that real case. WIDTH still comes from depth count —
+    # that's the real axis depth actually measures.
+    max_col = max((len(v) for v in buckets.values()), default=1)
+    W = max(1400, 260 + max_depth * 260)
+    H = max(700, 90 * (max_col + 1))
     pos = {}
     for d, items in buckets.items():
         n = len(items)
