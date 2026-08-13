@@ -1136,6 +1136,45 @@ def dashboard_card_target_module(via, valid_mods):
     return None
 
 
+def dashboard_card_primary_module(via, valid_mods):
+    """Real, PRIMARY-destination-only classifier — Aug 13, Alex-
+    confirmed rule after 2 disproven hypotheses on the same real
+    example. Real GODMODE evidence found the "isolated flag" and
+    "strict -> X module regex" hypotheses both WRONGLY dropped
+    phylumPath, which Alex explicitly confirmed as a real, legitimate
+    Alex-bubble connection — reverted rather than shipped wrong twice
+    (rule 4), his own real answer put to him directly instead of
+    guessed a third time. The real rule: a module counts only when a
+    card's own `via` text names it as the PRIMARY/fallback thing that
+    card actually opens — not merely one of several siblings sharing a
+    card, and not a module the via text itself explicitly demotes.
+
+    Two real, narrow patterns (never a broad keyword match):
+      1. An exact "-> X module" citation (dashboard_card_target_
+         module()'s own pattern, reused here, rule 8) — e.g.
+         "dashDeck._openMorningBrief() -> morningBrief module".
+      2. An "else X page/browse" fallback citation — e.g.
+         "...else phylumPath page browse", a real distinct "this is
+         what you land on by default" signal, not a shared-sibling one.
+    Real, explicit demotion check: a via text containing "QoL layer"
+    (case-insensitive) means the named module is NOT primary regardless
+    of an otherwise-matching pattern — agendaReminder's own via text
+    literally says "QoL layer only... not the core," Alex's own real
+    disqualifying example. A module named only via a slash-joined
+    sibling list ("-> X/Y etc") correctly matches neither pattern and
+    returns None — researchTabs/intelBatchList/oracleAppGrounding's own
+    real case, Alex's other disqualifying example."""
+    if not via or 'qol layer' in via.lower():
+        return None
+    m = re.search(r'->\s*(\w+)\s+module\b', via)
+    if m and m.group(1) in valid_mods:
+        return m.group(1)
+    m2 = re.search(r'else\s+(\w+)\s+(?:page|browse)\b', via)
+    if m2 and m2.group(1) in valid_mods:
+        return m2.group(1)
+    return None
+
+
 def compute_module_flow_rank(rnum, flow_edges, terminals):
     """Real, LEFT-TO-RIGHT flow position per module — Aug 13, real Alex
     correction on the original radial layout: "it should be flowing

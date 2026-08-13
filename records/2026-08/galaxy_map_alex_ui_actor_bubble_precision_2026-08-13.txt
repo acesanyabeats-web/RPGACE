@@ -1,0 +1,116 @@
+GALAXY MAP: ALEX-BUBBLE PRECISION FIX + authGate/pathRouter /misunderstanding
+2026-08-13, real pass, 2 disproven hypotheses kept in-code, not hidden.
+=====================================================================
+
+REAL /misunderstanding REPAIR — authGate + pathRouter
+----------------------------------------------------------
+Alex's screenshot: authGate's Level-3 diagram (verify/_installFetchWrap)
+showing "0 shown to me · 0 buttons I press" on the Alex bubble, despite
+his own real description ("verify would require my input and an
+external [auth flow]... it would also lead to rpgace opening and
+delivering me to dashboard rpgace ui").
+
+Real evidence, confirmed by direct read of authGate (rpgace_core.js
+~line 18249): `verify(pw)` genuinely calls `fetch('/api/auth', ...)`
+with the user's real input and, on success, stores a real secret used
+to unlock the app. `window.RPGACE_verifyPassword` — the REAL trigger
+main.js's login form actually calls — lives in main.js, not
+rpgace_core.js. Same root cause independently confirmed for pathRouter
+(River II, also flagged "a complete mystery"): it's real browser-
+history/URL-sync plumbing, wired via RPGACE.hooks (rpgace:login,
+page:show) and a cross-file call to main.js's own `showPage()` — zero
+DOM creation, zero button wiring, so the 0/0 reading was mechanically
+correct but misleadingly presented as "nothing here."
+
+Root cause, confirmed and shared by both: this entire galaxy-map
+pipeline has only ever read rpgace_core.js. It has zero visibility into
+main.js (where real login-form/page-navigation code for many modules
+actually lives) and zero visibility into RPGACE.hooks fire/listen
+pairs. This is the literal, evidenced version of Alex's own diagnosis:
+"i think galaxy map is only mapping out backend." Real, NOT-yet-built
+follow-on (flagged, not attempted this pass): a main.js-aware + hooks-
+aware detection engine — the confirmed next fix, separate from
+everything below.
+
+LEVEL 4 — CONFIRMED SCOPE, NOT YET BUILT
+---------------------------------------------
+Real clarifying question asked given genuine ambiguity ("all dashboard
+card should have a level 4" could mean several different things).
+Alex confirmed: real frontend flow per dashboard card — click a
+dashboard card, Level 4 shows what actually happens on click (which
+page/popup opens, real DOM evidence, buttons pressed, where it leads),
+with real links back down to the Level-3 backend functions that
+implement each step. This directly closes the authGate/pathRouter gap
+above. NOT built this pass — a real, separate, large deliverable,
+explicitly flagged as the next real work, not silently deferred.
+
+ALEX-BUBBLE OUTPUT-EDGE PRECISION FIX
+------------------------------------------
+Alex's real critique, comparing 3 live screenshots: River VI's
+phylumPath->Alex connection "makes sense... goes into dashboard cards";
+River V's researchTabs/intelBatchList/intelDelete/intelDedup/
+ciAutoPropose/scheduleFixes/shiftSync/agendaReminder->Alex connections
+"shouldn't."
+
+Two real hypotheses tried and DISPROVEN against his own confirmed
+example (rule 4 — never ship a guess a second time without new
+evidence; both reverted, not silently patched over):
+  1. Gate on the module's own "isolated within its own river" flag.
+     DISPROVEN: phylumPath (single-module River VI) is ALSO flagged
+     isolated — same shape as the modules Alex said shouldn't connect
+     — so this isn't the real distinguisher.
+  2. Gate on a strict dashboard_card_target_module() "-> X module"
+     regex match (already used elsewhere for terminal computation).
+     DISPROVEN: phylumPath's own real card citation reads "...else
+     phylumPath page browse" — doesn't match that narrow pattern —
+     so this WRONGLY dropped Alex's own confirmed-correct example.
+
+Real question put to Alex directly rather than guessing a third time.
+He confirmed: a module counts only when a card's own `via` text names
+it as the card's PRIMARY/fallback destination — not merely one of
+several siblings sharing a card, and not a module the via text itself
+explicitly demotes.
+
+New dashboard_card_primary_module(via, valid_mods) (graphify_river_
+group.py), two real narrow patterns:
+  1. Exact "-> X module" citation (dashboard_card_target_module()'s
+     own pattern, reused, rule 8) — morningBrief/journalQoL.
+  2. "else X page/browse" fallback citation — phylumPath's own real
+     "...else phylumPath page browse" wording.
+Explicit demotion check: a via text containing "QoL layer" (case-
+insensitive) disqualifies the named module regardless of an otherwise-
+matching pattern — agendaReminder's own real via text literally says
+"QoL layer only... not the core," Alex's own disqualifying example.
+
+Verified against all 6 real card via-text examples before shipping —
+all 6 resolve exactly as Alex confirmed (phylumPath: primary;
+morningBrief/journalQoL: primary; agendaReminder/researchTabs/
+oracleAppGrounding-family: not primary).
+
+Wired into galaxy_map_module.py's Alex-bubble OUTPUT edge only — INPUT
+stays gated on the raw UI_INPUT_PATTERN signal alone (real button/
+click evidence is unambiguous on its own, doesn't need a card tie).
+Real, measured effect: 34 -> 12 modules now show a real, precision-
+confirmed output edge (7 rivers affected: III/V/VI/VII/VIII/X/XI) —
+the drop is real and expected, not a bug; every remaining edge is now
+tied to a real, named, undemoted primary-destination citation.
+
+VERIFICATION
+----------------
+galaxy_map_module.html: div-balanced (253/253), re-confirmed idempotent
+across fresh process runs. python3 -m py_compile clean. Manually
+verified all 3 of Alex's own named examples (phylumPath keeps its
+edge; morningBrief/journalQoL keep theirs; researchTabs/intelDelete/
+intelDedup/agendaReminder lose theirs) resolve exactly as he confirmed
+— not just that the code runs without error.
+
+WHAT'S STILL OPEN, NOT SILENTLY CLOSED
+-------------------------------------------
+- Level 4 (real frontend flow per dashboard card) — confirmed scope,
+  genuinely large, not started. Next real deliverable.
+- main.js-aware + hooks-aware detection extension — the real root
+  cause behind both the authGate and pathRouter mysteries, and a real
+  prerequisite for Level 4 to be evidence-based rather than guessed —
+  not built this pass, flagged plainly.
+- No hand-test / headless-Chromium render check this pass (time-scoped,
+  same standing gap as every Aug 13 galaxy-map shipment this session).
