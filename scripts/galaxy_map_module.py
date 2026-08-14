@@ -92,13 +92,17 @@ from graphify_river_group import (  # noqa: E402
     ALL_SKILLS, SKILL_SECONDARY_RIVER, compute_module_flow_rank, dashboard_card_target_module,
     dashboard_card_primary_module,
     LEVEL3_MODULES, compute_module_ui_signal, compute_cross_module_function_calls,
-    attribute_river_connection_function,
+    attribute_river_connection_function, compute_module_oracle_call_count,
 )
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
 # "Human Gate — Alex" node (rule 8, one consistent identity, not a
 # per-level reinvention).
 ALEX_COLOR = '#E25454'
+# Real, shared "Oracle" actor color/icon — same `#9B59B6`/`🔮` identity
+# Level 0's "Oracle (AI harness)" node and Level 3's own Oracle bubble
+# already use (rule 8). Aug 14, real evidence-driven — never forced.
+ORACLE_COLOR = '#9B59B6'
 
 OUT = Path('graphify-out/galaxy_map_module.html')
 
@@ -287,6 +291,35 @@ def build_river_section(rnum):
             f'<text x="{ALEX_X}" y="{ALEX_Y+42}" text-anchor="middle" font-size="10" fill="{ALEX_COLOR}" font-weight="700">Alex</text>'
             f'<text x="{ALEX_X}" y="{ALEX_Y+55}" text-anchor="middle" font-size="7.5" fill="{ALEX_COLOR}" opacity="0.85">{n_out} modules shown to me · {n_in} modules I input into</text></g>'
         )
+
+        # Real, evidence-driven "Oracle" bubble (Aug 14, Level-2 rollup
+        # of the same real per-function Oracle-call counts Level 3 now
+        # shows — compute_module_oracle_call_count(), rule 8, never
+        # re-derived). Alex's own real correction: NOT forced-permanent
+        # — only drawn when this river's own modules genuinely have a
+        # real Oracle-call count > 0. Positioned below Alex's own
+        # bubble, same fixed-top-of-canvas convention.
+        oracle_mods = [(m, compute_module_oracle_call_count(m)) for m in mods if m in mod_pos]
+        oracle_mods = [(m, c) for m, c in oracle_mods if c > 0]
+        if oracle_mods:
+            ORACLE_X, ORACLE_Y = W / 2, ALEX_Y + 85
+            n_calls = 0
+            for m, cnt in oracle_mods:
+                n_calls += 1
+                mx, my = mod_pos[m]
+                ox = ORACLE_X + (n_calls * 15 if n_calls % 2 == 0 else -n_calls * 15)
+                edges_svg.append(_curved_edge(mx, my, ox, ORACLE_Y, ORACLE_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5))
+                lx, ly = (mx + ox) / 2, (my + ORACLE_Y) / 2
+                nodes_svg.append(f'<circle cx="{lx}" cy="{ly}" r="8" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="1"/>'
+                                  f'<text x="{lx}" y="{ly+3}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" font-weight="700">{cnt}</text>')
+            edge_colors_used.add(ORACLE_COLOR)
+            total_calls = sum(c for _m, c in oracle_mods)
+            nodes_svg.append(
+                f'<g class="node"><circle cx="{ORACLE_X}" cy="{ORACLE_Y}" r="24" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="3" filter="url(#glow)"/>'
+                f'<text x="{ORACLE_X}" y="{ORACLE_Y+5}" text-anchor="middle" font-size="15">🔮</text>'
+                f'<text x="{ORACLE_X}" y="{ORACLE_Y+38}" text-anchor="middle" font-size="9.5" fill="{ORACLE_COLOR}" font-weight="700">Oracle</text>'
+                f'<text x="{ORACLE_X}" y="{ORACLE_Y+50}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" opacity="0.85">{len(oracle_mods)} module(s) · {total_calls} real call(s)</text></g>'
+            )
 
         # Real z-order + spacing fix (Alex's own direct ask): "the
         # rivers connecting to river at beginning should be behind the

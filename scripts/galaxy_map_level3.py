@@ -45,6 +45,7 @@ from graphify_river_group import (  # noqa: E402
     parse_module_functions, compute_module_function_flow,
     compute_cross_module_function_calls, compute_function_ui_signals,
     FLOWS_IN, attribute_river_connection_function,
+    compute_oracle_call_counts,
 )
 
 # Real, shared "Alex" actor color — Aug 13, Alex's own direct ask: "a
@@ -55,6 +56,19 @@ from graphify_river_group import (  # noqa: E402
 # reads as one consistent identity across every level, not a
 # per-level reinvention (rule 8).
 ALEX_COLOR = '#E25454'
+
+# Real, shared "Oracle" actor color/icon — Aug 14, Alex's own direct ask
+# ("permanent bubble of oracle ai wrapper... connecting once per action
+# on smallest object on level n, and a number next to edge to show how
+# many actions are done"), with his own real correction the same
+# session: NOT forced-permanent — a real, evidence-driven bubble (same
+# discipline as everywhere else in this file) that will look prevalent
+# for Oracle specifically because Claude API genuinely IS called from a
+# lot of real places right now, not because it's faked. Same real
+# `#9B59B6`/`🔮` identity Level 0's own "Oracle (AI harness)" node
+# already uses (galaxy_map.py's HARNESS_NODES) — deliberate visual
+# continuity, rule 8.
+ORACLE_COLOR = '#9B59B6'
 
 OUT = Path('graphify-out/galaxy_map_level3.html')
 
@@ -271,6 +285,7 @@ def build_module_section(module_name):
     # module at/under BAND_THRESHOLD gets exactly ONE band (unchanged
     # behavior — see _split_into_bands()'s own docstring).
     ui_sigs = compute_function_ui_signals(module_name)
+    oracle_counts = compute_oracle_call_counts(module_name)
     # Real, evidence-consistent fix (Aug 14, found while re-verifying
     # pathRouter's Alex bubble against real before/after HTML — pathRouter's
     # own real INPUT evidence, `window.addEventListener('popstate', ...)`,
@@ -317,7 +332,7 @@ def build_module_section(module_name):
         band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
         w, h, svg_inner, legend_rows_b, edge_colors_b = _render_band(
             module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
-            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors)
+            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts)
         if multi_band:
             # Real, deliberate DIFFERENT class from the top-level `.tab`
             # module switcher — a real bug caught before shipping: the
@@ -383,7 +398,8 @@ def build_module_section(module_name):
 
 
 def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges, ui_sigs,
-                  incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module):
+                  incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module,
+                  oracle_counts=None):
     """Real, per-band canvas builder (Aug 13, Alex-confirmed rank-band
     design) — factored out of build_module_section() so a crowded
     module renders 1-3 of these instead of one dense canvas. Same real
@@ -406,7 +422,11 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     buckets = barycenter_order(buckets, intra_edges, rank_order)
     max_col = max((len(v) for v in buckets.values()), default=1)
     W = max(1400, 260 + (max_d - min_d) * 260)
-    ALEX_MARGIN = 190
+    # Real, Aug 14 bump (190 -> 260) — real headroom for the new
+    # evidence-gated Oracle bubble (drawn at alex_y_const+90, its own
+    # label text extending to roughly alex_y_const+150) sitting below
+    # the existing Alex bubble without colliding into the function grid.
+    ALEX_MARGIN = 260
     H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
     grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
     my_backdoors = [(f, tm, tf) for f, tm, tf in backdoors if f in band_funcs_set]
@@ -506,6 +526,35 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         f'<text x="{alex_x}" y="{alex_y+64}" text-anchor="middle" font-size="8" fill="{ALEX_COLOR}" opacity="0.85">{n_out} shown to me · {n_in} buttons I press</text></g>'
     )
     edge_colors_used.add(ALEX_COLOR)
+
+    # Real, evidence-driven "Oracle" bubble (Aug 14, Alex's own ask,
+    # with his own real correction: NOT forced-permanent — only drawn
+    # when this band's own functions genuinely have a real Oracle-call
+    # count > 0, same discipline as every other detector in this file).
+    # Real "number next to the edge" — each edge is labeled with the
+    # actual count of real sendToOracle()/callOracle()/fillGaps() calls
+    # inside that specific function's own body, not a bare presence flag.
+    oracle_counts = oracle_counts or {}
+    band_oracle = [(f, oracle_counts.get(f, 0)) for f in band_funcs if oracle_counts.get(f, 0) > 0 and f in pos]
+    if band_oracle:
+        oracle_x, oracle_y = W / 2, alex_y_const + 90
+        n_calls = 0
+        for f, cnt in band_oracle:
+            n_calls += 1
+            fx, fy = pos[f]
+            ox = oracle_x + (n_calls * 13 if n_calls % 2 == 0 else -n_calls * 13)
+            edges_svg.append(_curved_edge(fx, fy, ox, oracle_y, ORACLE_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
+            mx, my = (fx + ox) / 2, (fy + oracle_y) / 2
+            nodes_svg.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="1"/>'
+                              f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" font-weight="700">{cnt}</text>')
+        total_calls = sum(c for _f, c in band_oracle)
+        nodes_svg.append(
+            f'<g class="node"><circle cx="{oracle_x}" cy="{oracle_y}" r="26" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="2.5" filter="url(#glow)"/>'
+            f'<text x="{oracle_x}" y="{oracle_y+6}" text-anchor="middle" font-size="16">🔮</text>'
+            f'<text x="{oracle_x}" y="{oracle_y+42}" text-anchor="middle" font-size="9.5" fill="{ORACLE_COLOR}" font-weight="700">Oracle</text>'
+            f'<text x="{oracle_x}" y="{oracle_y+55}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" opacity="0.85">{len(band_oracle)} function(s) · {total_calls} real call(s)</text></g>'
+        )
+        edge_colors_used.add(ORACLE_COLOR)
 
     # Real backdoor nodes — scoped to this band's own source functions.
     backdoor_legend = []

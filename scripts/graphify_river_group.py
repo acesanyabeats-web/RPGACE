@@ -1192,6 +1192,46 @@ def compute_module_ui_signal(module_name, core_js_path: Path = CORE_JS):
             'input': any(v['input'] for v in sigs.values())}
 
 
+# Aug 14, later pass — the real "Oracle bubble" + edge-action-count
+# feature. Alex's own direct ask, with a real, important correction on
+# the follow-up: "other externals don't have to be permanent, oracle
+# too tbh, its just going to be very prevalent since claude api runs a
+# lot of the architecture until moonshot and luna is added." This is
+# NOT a forced-everywhere bubble — it's a real, evidence-driven one,
+# same discipline as every other detector in this file: it will look
+# prevalent for Oracle specifically because Oracle genuinely IS called
+# from a lot of real places right now, not because the code fakes it.
+# Real, confirmed call-site patterns (direct grep, not guessed):
+# `sendToOracle(` (17 real occurrences), `callOracle(` (7),
+# `fillGaps(` (6) — RPGACE.utils' own real Oracle-send helpers plus the
+# direct callOracle() entry point.
+ORACLE_CALL_PATTERNS = ('sendToOracle(', 'callOracle(', 'fillGaps(')
+
+
+def compute_oracle_call_counts(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION count of how many times a function's own body
+    references a real Oracle-call pattern (ORACLE_CALL_PATTERNS) — the
+    real "number next to the edge" Alex asked for (how many real
+    actions happen between Oracle and this function). Reuses
+    _function_bodies() (rule 8). Returns {func_name: count}, 0 for a
+    function with no real Oracle call. Real, honest scope limit: a
+    literal substring count, same class of limit as every other
+    pattern-based detector here — a call reached through a stored
+    reference or built dynamically is invisible to this method."""
+    bodies = _function_bodies(module_name, core_js_path)
+    return {f: sum(b.count(p) for p in ORACLE_CALL_PATTERNS) for f, b in bodies.items()}
+
+
+def compute_module_oracle_call_count(module_name, core_js_path: Path = CORE_JS):
+    """Real, MODULE-granularity aggregate — the real sum of every real
+    function's own Oracle-call count (rule 8, not re-derived). A
+    module with 0 total genuinely never calls Oracle directly (it may
+    still be reached indirectly, e.g. via a hook or a sibling — same
+    honest scope limit as everywhere else)."""
+    counts = compute_oracle_call_counts(module_name, core_js_path)
+    return sum(counts.values())
+
+
 # Aug 14 — G15's real data source (Level 4: "click a dashboard card, see
 # the real frontend flow"). Alex's own confirmed scope: what actually
 # happens on click (which page/popup opens, real DOM evidence, buttons
