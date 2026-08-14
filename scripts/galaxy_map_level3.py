@@ -47,6 +47,15 @@ from graphify_river_group import (  # noqa: E402
     FLOWS_IN, attribute_river_connection_function,
     compute_oracle_call_counts,
 )
+# G19 (Aug 14) — real forward-link cross-reference: which (module, func)
+# pairs have a curated Level-5 decision-point write-up. Reused directly
+# from galaxy_map_level5.py's own DECISION_POINTS (rule 8, never a 2nd
+# hand-maintained copy) — only entries with a real, verified `func` get
+# a forward link; entries with none (e.g. dashDeck's own decision,
+# dashDeck isn't a tracked Level-3 module) correctly get no link rather
+# than a fabricated one.
+from galaxy_map_level5 import DECISION_POINTS as _L5_DECISIONS  # noqa: E402
+LEVEL5_BY_FUNC = {(dp['module'], dp['func']): dp for dp in _L5_DECISIONS if dp.get('func')}
 
 # Real, shared "Alex" actor color — Aug 13, Alex's own direct ask: "a
 # permanent overarch bubble titled Alex... where the input is shown to
@@ -466,10 +475,27 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         if is_entry and incoming_attr and f == incoming_attr[1]:
             from_river_name = RIVER_NAME.get(incoming_attr[0], '').split('—')[0].strip()
             incoming_badge = f'<text x="{x}" y="{y-32}" text-anchor="middle" font-size="8" fill="{color}" opacity="0.9">⬅ from River {incoming_attr[0]} ({from_river_name})</text>'
+        # G19 (Aug 14, Alex's own ask): leftmost/entry objects get a
+        # real "zoom out" link up to the SPECIFIC level-(N-1) object
+        # they actually belong to — this module's own Level-2 node,
+        # never a generic unevidenced "back" button. Rightmost/terminal
+        # objects get a real "drill deeper" link FORWARD into Level 5's
+        # curated logic, but ONLY where a real decision write-up
+        # actually exists for that exact function (LEVEL5_BY_FUNC) —
+        # most terminals correctly get no forward link, same evidence
+        # discipline as everywhere else in this pipeline.
+        nav_badge = ''
+        if is_entry:
+            nav_badge = (f'<a href="galaxy_map_module.html#mod-{module_name}">'
+                         f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="#5FB3D9" text-decoration="underline">🔭 zoom out: Level 2</text></a>')
+        elif is_leaf and (module_name, f) in LEVEL5_BY_FUNC:
+            dp = LEVEL5_BY_FUNC[(module_name, f)]
+            nav_badge = (f'<a href="galaxy_map_level5.html#d-{dp["id"]}">'
+                         f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" text-decoration="underline">🧠 into the logic: Level 5</text></a>')
         nodes_svg.append(
             f'{incoming_badge}<g class="node"><circle cx="{x}" cy="{y}" r="26" fill="#0f0f1a" stroke="{color}" stroke-width="{ring}" filter="url(#glow)"/>'
             f'<text x="{x}" y="{y+6}" text-anchor="middle" font-size="15">{icon}</text></g>'
-            f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>'
+            f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>{nav_badge}'
         )
 
     # Real cross-band stubs — a real edge, never silently dropped just
@@ -648,7 +674,9 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <span class="bc-here">🔽 Level 3</span>
+  <span class="bc-here">🔽 Level 3</span><span class="bc-sep">→</span>
+  <a href="galaxy_map_level4.html">🖱️ Level 4</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_level5.html">🧠 Level 5</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 3</div>

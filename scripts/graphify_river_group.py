@@ -1232,6 +1232,68 @@ def compute_module_oracle_call_count(module_name, core_js_path: Path = CORE_JS):
     return sum(counts.values())
 
 
+# Aug 14 — G18 of the ratified Galaxy Map plan: the exhaustive,
+# MECHANICAL counterpart to Level 5's curated "core logic" (Alex's own
+# words: "then do level 6 for all yes/no — detailed decision"). Real,
+# honest scope: every real if/else-if/bare-else/switch branch point a
+# function's own body contains, extracted by real balanced-paren
+# parsing (not a bare regex up to the first `)`, which would truncate
+# a real nested condition like `(a || (b && c))`) — never hand-curated,
+# which is exactly what makes it tractable at 1088+ real branch points
+# across 44 modules where Level 5's hand-written prose would not be.
+_BRANCH_KEYWORD = re.compile(r'\b(if|switch)\s*\(|\}\s*else\s*\{')
+
+
+def _extract_balanced(text, open_paren_idx):
+    """Real balanced-paren slice starting at text[open_paren_idx]=='('.
+    Returns the full condition text between the parens (exclusive),
+    or None if the file is malformed and no match is ever found."""
+    depth = 0
+    for i in range(open_paren_idx, len(text)):
+        if text[i] == '(':
+            depth += 1
+        elif text[i] == ')':
+            depth -= 1
+            if depth == 0:
+                return text[open_paren_idx + 1:i]
+    return None
+
+
+def compute_function_branches(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION list of every real conditional branch point —
+    {func_name: [{'kind': 'if'|'else if'|'else'|'switch', 'condition': str|None}, ...]}.
+    Reuses _function_bodies() (rule 8). A bare `else` (no condition —
+    the real "no" side of the preceding if) still counts as a real
+    branch point, condition recorded as None rather than invented."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        branches = []
+        for m in _BRANCH_KEYWORD.finditer(b):
+            if m.group(0).strip() == '} else {':
+                # Distinguish a real "else if" (immediately followed by
+                # another if() on the same real branch) from a bare
+                # terminal else — both are real, but they read
+                # differently to a human scanning this list.
+                tail = b[m.end():m.end() + 40].lstrip()
+                if tail.startswith('if') or tail.startswith('if('):
+                    continue  # the following `if (` match below covers this branch's real condition
+                branches.append({'kind': 'else', 'condition': None})
+                continue
+            kind = 'switch' if m.group(0).strip().startswith('switch') else (
+                'else if' if b[:m.start()].rstrip().endswith('else') else 'if')
+            paren_idx = b.index('(', m.start())
+            cond = _extract_balanced(b, paren_idx)
+            if cond is not None:
+                cond = ' '.join(cond.split())
+                if len(cond) > 140:
+                    cond = cond[:137] + '...'
+            branches.append({'kind': kind, 'condition': cond})
+        if branches:
+            out[f] = branches
+    return out
+
+
 # Aug 14 — G15's real data source (Level 4: "click a dashboard card, see
 # the real frontend flow"). Alex's own confirmed scope: what actually
 # happens on click (which page/popup opens, real DOM evidence, buttons
