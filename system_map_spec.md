@@ -131,6 +131,26 @@ the at-a-glance list, not a 3rd copy of the full detail):
    node — see §1a below), tagged by its real interaction TYPE (§4),
    never by mere proximity.
 
+**Real, honest documentation gap found and fixed Aug 14 (G7 retroactive
+scan)**: **Alex himself is a real, standing ACTOR in §4's own sense** —
+every real UI_OUTPUT/UI_INPUT signal (the "Alex bubble," built Aug 13
+across Levels 1-3, and Level 0's own "Human Gate — Alex" node) is a real
+Connector edge between a module/function and Alex specifically, not a
+5th hierarchy tier — this doc's "4 levels" stays correct as written, the
+gap was only that Alex-as-actor had never been named here even though
+the code already treated him as one. **Level 4 of the HTML Galaxy Map
+(`galaxy_map_level4.html`, G15) is this same tier-4 Connector-edge
+concept, rendered at a finer real grain** — a dashboard card's own
+`go:` trigger IS a real UI-input connector edge from Alex into a
+module/function (tier 3), traced one real hop through main.js/a popup's
+own sub-injector where the code shows one. The Galaxy Map's own 5 HTML
+pages (Level 0-4) are a real, separate VISUAL page count, deliberately
+finer than this doc's 4 CONCEPTUAL tiers (Level 0 previews all 4 tiers
+at once; Levels 1-3 walk down tiers 1-3; Level 4 is a dedicated view of
+tier-4 Connector edges specifically for the Alex↔dashboard-card case) —
+the two numbering schemes are not meant to match 1:1, and a future
+reader should not "fix" one to equal the other.
+
 ### 1a. Rivers are a grouping label, not an actor — real Aug 13 correction
 
 **A river never acts, calls, communicates, or gets called — only the

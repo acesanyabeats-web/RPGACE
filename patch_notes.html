@@ -74,6 +74,49 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🗺️ Aug 14 (31st pass) — G7 retroactive scan: 2 real stale-count fixes, one open <code>system_map_flags</code> item closed, <code>system_map_spec.md</code> gains a real "Alex as tier-4 actor" clarification.</div>
+    <div class="card-body">
+      Alex: "yep do them, want to see final product with all g steps that arent developer/consumer based, way too early for this on our journey of development" — G9 (Consumer/Developer tiering) stays deliberately deferred; G7/G8 proceeded.
+      <br><br>
+      A real, pre-existing <code>system_map_flags</code> row (the minotaur_map.html "does the Galaxy Map count as a new wing" open question) was found already answered YES in the live doc — the wing exists, the flag row had just never been closed. Marked resolved. A genuinely stale "426 real functions"/"4 real levels deep" appeared in 3 real places (<code>minotaur_map.html</code>, <code>ai_tooling_and_rules_map.md</code>, <code>interconnection_map.md</code>) — all fixed to the real current 427/5.
+      <br><br>
+      Real documentation gap found: <code>system_map_spec.md</code> §1 (the actual methodology doc) never named Alex himself as an ACTOR, even though the code has treated him as one (the "Alex bubble") since Aug 13. Fixed with a real clarifying addition — Alex is a real tier-4 Connector-edge actor, and the HTML Galaxy Map's 5 visual pages (Level 0-4) are deliberately a different, finer-grained numbering than this doc's 4 conceptual tiers, not meant to be reconciled to match.
+      <br><br>
+      <code>interconnection_map.md</code>'s isolated-module count corrected: the Level-2-only "no link within River N" flag (20) is unchanged by the Aug 14 hook-signal detection (real, honest — zero same-river hook pairs exist anywhere), but the sharper module-to-module isolation figure (no intra-river edge + no backdoor + no hook evidence, any river) is real: 11→3.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🖱️ Aug 14 (30th pass) — G15 shipped: Level 4, real frontend flow per dashboard card.</div>
+    <div class="card-body">
+      Alex confirmed the hook-signal finding from the previous pass ("the code doesn't actually have any rivers, it was a concept i came up with for minotaur map") and said "yes go g15."
+      <br><br>
+      New <code>graphify-out/galaxy_map_level4.html</code> (<code>scripts/galaxy_map_level4.py</code>): one real section per dashboard card (all 12), tracing <code>dashDeck.MODULES</code>' own real <code>go:</code> trigger — never the hand-written <code>via</code> label — into what it actually opens. New <code>compute_dashboard_card_flow()</code>/<code>parse_dashboard_card_go()</code> in <code>graphify_river_group.py</code>.
+      <br><br>
+      Real bug caught before shipping: a bare <code>RPGACE.modules.X.Y(</code> regex silently missed taxonomy's own real conditional popup branch (<code>var rq = RPGACE.modules.taxonomyReviewQueue; ... rq._openCard();</code>) since <code>rq</code> is a local alias — this codebase's own established style. Fixed with a real, generalized alias resolver, reused everywhere a cross-module call is detected in this file (rule 8), not a taxonomy-specific patch.
+      <br><br>
+      Real, confirmed pattern found by direct read: 5 of <code>dashDeck</code>'s own <code>_openX()</code> popup-openers hand off to a real target module's own <code>_inject*()</code> function BEFORE opening the popup — that module (<code>bookworm</code>/<code>morningBrief</code>/<code>knowledgeGap</code>/<code>contentProductionLive</code>) is the real content owner, not <code>dashDeck</code> itself, which is confirmed NOT one of the 44 real <code>RIVER_MODULES</code>-tracked modules. Level 2's dashboard-card diamonds are now real clickable links into Level 4; a real, separate gap found and fixed same pass — the SVG diamond only draws for rivers with modules, so 'oversight' (River XIV, zero real modules) had no diamond and no real Level-4 link at all — fixed via the always-rendered text legend row instead.
+      <br><br>
+      Measured: 12/12 real dashboard cards built, 7 of 9 real popup targets resolve to a real linked Level-3 page. Idempotent (2 fresh 5-file pipeline runs, identical md5), div/a/section-balance clean. <code>rpgace_core.js</code>'s Oversight popup gained a real Level-4 entry, <code>SELF_KNOWLEDGE</code> a real Aug 14 paragraph. <code>ceo_plan_items</code> G15 flipped green. Full record: <code>records/2026-08/galaxy_map_mainjs_hooks_detection_extension_2026-08-14.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔌 Aug 14 (29th pass) — the real main.js + <code>RPGACE.hooks</code>-aware detection extension: G15's own stated prerequisite, authGate/pathRouter's Alex-bubble finally resolves.</div>
+    <div class="card-body">
+      Locked via <code>/Routine</code> at session start (item 1 of the Top 10). Closes the confirmed structural gap from the previous session's <code>/misunderstanding</code> pass: the whole Galaxy Map pipeline only ever read <code>rpgace_core.js</code>, zero visibility into <code>main.js</code>'s own real DOM/button triggers or <code>RPGACE.hooks</code> fire/listen pairs.
+      <br><br>
+      New <code>compute_mainjs_window_bridge()</code> — a real 2-hop chain resolving RPGACE's own documented override convention (main.js defines an original/stub, a module's <code>init()</code>/<code>_intercept()</code> reassigns <code>window.X</code> to the real implementation). Confirmed chain: <code>index.html:61</code> onclick="checkPassword()" → main.js <code>checkPassword()</code> → <code>window.RPGACE_verifyPassword</code> → <code>authGate</code>.
+      <br><br>
+      New <code>compute_hook_signal_edges()</code> + <code>CORE_WRAPPER_HOOKS</code> — real <code>RPGACE.hooks.fire()</code>/<code>hooks.on()</code> module pairing detection, including rpgace_core.js's own real "FUNCTION WRAPPERS" section (its own comment: "Do NOT patch main.js — wrap here instead"), which bridges 6 real main.js UI functions to named hooks <code>pathRouter</code> listens on directly.
+      <br><br>
+      A third fix (<code>_module_def_line_match()</code>) taught the function-inventory parser to recognize a real bare, zero-indent <code>window.&lt;Name&gt; = function</code> module-scope statement — <code>authGate</code>'s own <code>window.RPGACE_verifyPassword</code> bridge was invisible as a Level-3 NODE entirely (not just missing UI evidence), the ONE such case in the whole file.
+      <br><br>
+      Measured, verified result (real before/after HTML diff): <code>authGate</code> Alex-bubble 0/0→0/1, <code>pathRouter</code> 0/0→3/1 — both "mystery" modules resolved with real evidence. Modules with a fully 0/0 Alex-bubble: 10→6. Module-to-module isolation: 11→3. Real, honest negative finding: wiring hook-signal edges into Level 2's own same-river check changed nothing (20 flags before and after) — zero same-river hook pairs exist anywhere in the codebase; <code>RPGACE.hooks</code> is a purely cross-river mechanism here, a real structural fact, not a detector bug. Idempotency re-verified, div/svg-balance clean. Full record: <code>records/2026-08/galaxy_map_mainjs_hooks_detection_extension_2026-08-14.txt</code>.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌌 Aug 13 (same day, 28th pass, SESSION CLOSED) — the "Galaxy Development Framework" named; Alex-bubble precision fix; authGate/pathRouter <code>/misunderstanding</code> resolved; Level 4 scoped.</div>
     <div class="card-body">
       Real close-out pass. Alex named the whole standing Galaxy Map effort (this card + the 4 below it) the "Galaxy Development Framework" — full definition, which sibling skills compose it (<code>/CEO</code>/<code>/cartographer</code>/<code>/drift</code>/<code>/perspective</code>/<code>/misunderstanding</code>/<code>/paranoia</code>/<code>/restructure</code>), and its own real design goal (stable, cache-friendly reference docs for Oracle + Orchestrator CC) now live in <code>.claude/skills/CEO/SKILL.md</code>'s own new section. Real, stated future convergence, not built: unifying with the Taxonomy restructure effort into one coherent system, once Alex resumes that work.

@@ -53,6 +53,8 @@
   .crossref-note{font-size:11px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(42,191,176,0.06);border-radius:6px;border-left:2px solid var(--teal)}
   .crossref-note b{color:var(--teal)}
   .verified-at{font-size:10px;color:var(--dim);margin-top:6px;opacity:.6}
+  .galaxy-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .galaxy-tag{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
   .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
   .note{max-width:640px;margin:24px auto 0;font-size:12px;color:var(--dim);text-align:center;line-height:1.7}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
@@ -63,7 +65,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight · Layer (d)</div>
   <h1>🧪 Smoke Test</h1>
-  <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work (Aug 11 2026) — never pre-built empty. Paired with <a href="error_log.html" style="color:var(--blue)">error_log.html</a> (Aug 12 2026) — the (d)-layer's other doc: it logs what's currently BROKEN and why; this page logs the CURRENT confirmed/unconfirmed state of every real function. The "🔴 Just Failed" group at the top mirrors error_log's own active errors live.</p>
+  <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work (Aug 11 2026) — never pre-built empty. Paired with <a href="error_log.html" style="color:var(--blue)">error_log.html</a> (Aug 12 2026) — the (d)-layer's other doc: it logs what's currently BROKEN and why; this page logs the CURRENT confirmed/unconfirmed state of every real function. The "🔴 Just Failed" group at the top mirrors error_log's own active errors live. Each item's real 🌊 river / 🔽 level tags (Aug 14, G14) are sourced directly from the <a href="/graphify-out/galaxy_map.html" style="color:var(--gold)">Galaxy Map</a>'s own real hierarchy — where an item doesn't map to a specific RPGACE app river/module (most of this page today — dev-process/skills/oversight artifacts), it's honestly tagged to the real dev-process river (XIII-XVI) that actually owns it, never guessed onto an app river it doesn't belong to.</p>
 </div>
 
 <div class="wrap">
@@ -159,7 +161,13 @@ function render(items, activeErrors) {
         '<div class="item-top">' +
           '<div><div class="item-name">' + esc(it.item_name) + '</div>' +
           '<div class="item-desc">' + esc(it.description) + '</div>' +
-          (it.source_ref ? '<div class="item-ref">' + esc(it.source_ref) + '</div>' : '') + '</div>' +
+          (it.source_ref ? '<div class="item-ref">' + esc(it.source_ref) + '</div>' : '') +
+          (it.galaxy_river || it.galaxy_level ?
+            '<div class="galaxy-tags">' +
+              (it.galaxy_river ? '<span class="galaxy-tag">🌊 ' + esc(it.galaxy_river) + '</span>' : '') +
+              (it.galaxy_level ? '<span class="galaxy-tag">🔽 ' + esc(it.galaxy_level) + '</span>' : '') +
+            '</div>' : '') +
+          '</div>' +
           '<span class="badge ' + it.status + '">' + (it.needs_confirm_highlight ? 'fix not confirmed' : it.status.replace('_', ' ')) + '</span>' +
         '</div>' +
         (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
