@@ -45,7 +45,7 @@ from graphify_river_group import (  # noqa: E402
     parse_module_functions, compute_module_function_flow,
     compute_cross_module_function_calls, compute_function_ui_signals,
     FLOWS_IN, attribute_river_connection_function,
-    compute_oracle_call_counts,
+    compute_oracle_call_counts, compute_external_call_sites,
 )
 # G19 (Aug 14) — real forward-link cross-reference: which (module, func)
 # pairs have a curated Level-5 decision-point write-up. Reused directly
@@ -87,6 +87,12 @@ ALEX_COLOR = '#E25454'
 # already uses (galaxy_map.py's HARNESS_NODES) — deliberate visual
 # continuity, rule 8.
 ORACLE_COLOR = '#9B59B6'
+# Real "other externals" color (Aug 14, G16 continuation — "other
+# externals" was the explicitly stated remaining scope). Composio is
+# the one other real, mechanically-detectable external at this grain
+# (RPGACE.api() calls, compute_external_call_sites()) — a real,
+# distinct accent, not reused from Oracle/Alex.
+COMPOSIO_COLOR = '#4CAF82'
 
 OUT = Path('graphify-out/galaxy_map_level3.html')
 
@@ -304,6 +310,8 @@ def build_module_section(module_name):
     # behavior — see _split_into_bands()'s own docstring).
     ui_sigs = compute_function_ui_signals(module_name)
     oracle_counts = compute_oracle_call_counts(module_name)
+    composio_sites = compute_external_call_sites(module_name)
+    composio_counts = {f: len(a) for f, a in composio_sites.items()}
     # Real, evidence-consistent fix (Aug 14, found while re-verifying
     # pathRouter's Alex bubble against real before/after HTML — pathRouter's
     # own real INPUT evidence, `window.addEventListener('popstate', ...)`,
@@ -350,7 +358,7 @@ def build_module_section(module_name):
         band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
         w, h, svg_inner, legend_rows_b, edge_colors_b = _render_band(
             module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
-            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts)
+            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts)
         if multi_band:
             # Real, deliberate DIFFERENT class from the top-level `.tab`
             # module switcher — a real bug caught before shipping: the
@@ -417,7 +425,7 @@ def build_module_section(module_name):
 
 def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges, ui_sigs,
                   incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module,
-                  oracle_counts=None):
+                  oracle_counts=None, composio_counts=None):
     """Real, per-band canvas builder (Aug 13, Alex-confirmed rank-band
     design) — factored out of build_module_section() so a crowded
     module renders 1-3 of these instead of one dense canvas. Same real
@@ -440,11 +448,12 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     buckets = barycenter_order(buckets, intra_edges, rank_order)
     max_col = max((len(v) for v in buckets.values()), default=1)
     W = max(1400, 260 + (max_d - min_d) * 260)
-    # Real, Aug 14 bump (190 -> 260) — real headroom for the new
-    # evidence-gated Oracle bubble (drawn at alex_y_const+90, its own
-    # label text extending to roughly alex_y_const+150) sitting below
-    # the existing Alex bubble without colliding into the function grid.
-    ALEX_MARGIN = 260
+    # Real, Aug 14 bump (190 -> 260 -> 340) — real headroom for the
+    # evidence-gated Oracle bubble (alex_y_const+90) AND the new
+    # Composio "other externals" bubble (alex_y_const+180, G16
+    # continuation) stacking below the existing Alex bubble without
+    # colliding into the function grid.
+    ALEX_MARGIN = 340
     H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
     grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
     my_backdoors = [(f, tm, tf) for f, tm, tf in backdoors if f in band_funcs_set]
@@ -599,6 +608,34 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             f'<text x="{oracle_x}" y="{oracle_y+55}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" opacity="0.85">{len(band_oracle)} function(s) · {total_calls} real call(s)</text></g>'
         )
         edge_colors_used.add(ORACLE_COLOR)
+
+    # Real, evidence-driven "Composio" bubble (Aug 14, G16 continuation
+    # — Alex: "move on with next phase or step of g-series that are
+    # planned"; G16's own stated remaining scope was "Level 0/1/4 and
+    # other externals still open"). Same real evidence-gate discipline
+    # as Oracle's own bubble just above — only drawn where this band's
+    # functions genuinely have a real RPGACE.api() Composio call.
+    composio_counts = composio_counts or {}
+    band_composio = [(f, composio_counts.get(f, 0)) for f in band_funcs if composio_counts.get(f, 0) > 0 and f in pos]
+    if band_composio:
+        cx_, cy_ = W / 2, alex_y_const + 180
+        n_calls = 0
+        for f, cnt in band_composio:
+            n_calls += 1
+            fx, fy = pos[f]
+            ox = cx_ + (n_calls * 13 if n_calls % 2 == 0 else -n_calls * 13)
+            edges_svg.append(_curved_edge(fx, fy, ox, cy_, COMPOSIO_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
+            mx, my = (fx + ox) / 2, (fy + cy_) / 2
+            nodes_svg.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{COMPOSIO_COLOR}" stroke-width="1"/>'
+                              f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{COMPOSIO_COLOR}" font-weight="700">{cnt}</text>')
+        total_calls = sum(c for _f, c in band_composio)
+        nodes_svg.append(
+            f'<g class="node"><circle cx="{cx_}" cy="{cy_}" r="26" fill="#0f0f1a" stroke="{COMPOSIO_COLOR}" stroke-width="2.5" filter="url(#glow)"/>'
+            f'<text x="{cx_}" y="{cy_+6}" text-anchor="middle" font-size="16">🔗</text>'
+            f'<text x="{cx_}" y="{cy_+42}" text-anchor="middle" font-size="9.5" fill="{COMPOSIO_COLOR}" font-weight="700">Composio</text>'
+            f'<text x="{cx_}" y="{cy_+55}" text-anchor="middle" font-size="8" fill="{COMPOSIO_COLOR}" opacity="0.85">{len(band_composio)} function(s) · {total_calls} real call(s)</text></g>'
+        )
+        edge_colors_used.add(COMPOSIO_COLOR)
 
     # Real backdoor nodes — scoped to this band's own source functions.
     backdoor_legend = []

@@ -1252,6 +1252,31 @@ def compute_module_oracle_call_count(module_name, core_js_path: Path = CORE_JS):
     return sum(counts.values())
 
 
+def compute_card_oracle_call_count(card, card_flow, core_js_path: Path = CORE_JS):
+    """Real, DASHBOARD-CARD-granularity aggregate (Aug 14, G16
+    continuation — Alex: "move on with next phase or step of g-series
+    that are planned"). Reuses compute_dashboard_card_flow()'s own
+    already-resolved real target modules (rule 8, never re-derived): a
+    'popup' target's own module + its real sub_injector module (the
+    established _openX() -> _inject*() handoff), or — for a 'page'
+    target — every real module in the card's own CARDS_BY_RIVER
+    river(s), same honest "no single owning module" treatment
+    compute_dashboard_card_flow() already applies. Returns a real int,
+    0 for a card with no real Oracle-calling module anywhere in its
+    resolved flow."""
+    entry = card_flow.get(card['key'], {'targets': []})
+    mods = set()
+    for t in entry['targets']:
+        if t['kind'] == 'page':
+            for r in card['rivers']:
+                mods.update(RIVER_MODULES.get(r, []))
+        else:
+            mods.add(t['module'])
+            if t.get('sub_injector'):
+                mods.add(t['sub_injector'][0])
+    return sum(compute_module_oracle_call_count(m, core_js_path) for m in mods)
+
+
 # Aug 14 — G18 of the ratified Galaxy Map plan: the exhaustive,
 # MECHANICAL counterpart to Level 5's curated "core logic" (Alex's own
 # words: "then do level 6 for all yes/no — detailed decision"). Real,

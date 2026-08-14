@@ -40,6 +40,7 @@ from graphify_river_group import (  # noqa: E402
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
     compute_module_ui_signal, rivers_needing_meanders,
     compute_river_flow_cycles, describe_river_cycle,
+    compute_module_oracle_call_count,
 )
 
 
@@ -215,6 +216,17 @@ def build_svg():
         if river_has_alex:
             hx, hy = polar(rx, ry, 34, 45)
             nodes_svg.append(f'<text x="{hx}" y="{hy}" text-anchor="middle" font-size="13" opacity="0.85" title="Has real DOM/input-facing modules — see Level 2/3">🧑</text>')
+        # G16 (Aug 14, real continuation — Alex: "move on with next
+        # phase or step of g-series that are planned"). Same real,
+        # LIGHTWEIGHT aggregate-badge treatment as 🧑 above — a full
+        # bubble+edges (Level 2/3's own real Oracle bubble) would be
+        # noise at 16-node granularity. Real, evidence-gated: only
+        # rivers with a real Oracle call count > 0 get this (4 of 16,
+        # checked against live data — III/V/IX/XI).
+        river_oracle_n = sum(compute_module_oracle_call_count(m) for m in mods)
+        if river_oracle_n > 0:
+            ox_, oy_ = polar(rx, ry, 34, -135)
+            nodes_svg.append(f'<text x="{ox_}" y="{oy_}" text-anchor="middle" font-size="13" opacity="0.85" title="{river_oracle_n} real Oracle call(s) across this river — see Level 2/3">🔮</text>')
         mods_txt = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '(no single-module home — see zone role note)'
         role = RIVER_ROLE_NOTE.get(rnum, '')
         oversight_note = ''
@@ -224,6 +236,8 @@ def build_svg():
             oversight_note = '<br><span class="meta">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</span>'
         if river_has_alex:
             oversight_note += '<br><span class="meta">🧑 Has at least one real module with DOM/input-facing evidence — see its own real Alex bubble at Level 2/3.</span>'
+        if river_oracle_n > 0:
+            oversight_note += f'<br><span class="meta">🔮 {river_oracle_n} real Oracle call(s) across this river — see its own real Oracle bubble at Level 2/3.</span>'
         legend_rows.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
             f'<b>{RIVER_NAME[rnum]}</b><br>'

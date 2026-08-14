@@ -37,6 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     DASHBOARD_CARDS, LEVEL3_MODULES, compute_dashboard_card_flow,
     CARDS_BY_RIVER, RIVER_MODULES, RIVER_NAME, RIVER_COLOR,
+    compute_card_oracle_call_count,
 )
 
 OUT = Path('graphify-out/galaxy_map_level4.html')
@@ -125,8 +126,15 @@ def build_card_section(card):
         go_body = go_body[:_close[-1].end()]
     go_body_esc = (go_body or '(no real go: trigger found)').replace('<', '&lt;').replace('>', '&gt;')
 
+    # G16 continuation (Aug 14) — real, evidence-gated Oracle badge,
+    # same lightweight-aggregate treatment as Level 1's own (rule 8):
+    # reuses compute_card_oracle_call_count() over this card's own
+    # already-resolved real target modules, never re-derived.
+    oracle_n = compute_card_oracle_call_count(card, FLOW)
+    oracle_badge = f'<span class="oracle-badge" title="Real Oracle calls across this card&#39;s own resolved target module(s)">🔮 {oracle_n} real Oracle call(s)</span>' if oracle_n else ''
+
     return f'''<section class="card-section" id="card-{key}" style="display:none">
-  <div class="chead"><span class="cdot" style="background:{color}"></span><h2>{card['label']} — real frontend flow</h2></div>
+  <div class="chead"><span class="cdot" style="background:{color}"></span><h2>{card['label']} — real frontend flow</h2>{oracle_badge}</div>
   <div class="crivers">{rivers_html}</div>
   <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
   <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>{go_body_esc}</pre></div>
@@ -157,6 +165,7 @@ TEMPLATE = """<!DOCTYPE html>
   .tab{{padding:6px 14px;border-radius:16px;font-size:11.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
   .tab.active{{background:var(--gold);color:#1a1a12;font-weight:700}}
   .chead{{display:flex;align-items:center;gap:10px;justify-content:center;padding:24px 24px 6px}}
+  .oracle-badge{{font-size:9.5px;font-weight:700;padding:2px 9px;border-radius:10px;background:rgba(155,89,182,0.12);color:#9B59B6;border:1px solid rgba(155,89,182,0.3)}}
   .cdot{{width:12px;height:12px;border-radius:50%}}
   .chead h2{{font-family:Georgia,serif;font-size:19px;color:#fff}}
   .crivers{{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 24px 10px}}
