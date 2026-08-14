@@ -271,6 +271,41 @@ def build_module_section(module_name):
     # module at/under BAND_THRESHOLD gets exactly ONE band (unchanged
     # behavior — see _split_into_bands()'s own docstring).
     ui_sigs = compute_function_ui_signals(module_name)
+    # Real, evidence-consistent fix (Aug 14, found while re-verifying
+    # pathRouter's Alex bubble against real before/after HTML — pathRouter's
+    # own real INPUT evidence, `window.addEventListener('popstate', ...)`,
+    # lives inside init()'s own body, but init is never rendered as a
+    # node (has_init exclusion above), so that real signal was silently
+    # dropped rather than attributed anywhere. This module's own docstring
+    # already states the honest stand-in for a removed init: "Its real
+    # direct callees are the true starting points instead" — extending
+    # that SAME stated design to UI evidence too (not a new philosophy)
+    # by OR-ing init's own real output/input onto its real depth-0
+    # entries, the same functions already standing in for init elsewhere
+    # on this page.
+    if has_init and ui_sigs.get('init') and (ui_sigs['init']['output'] or ui_sigs['init']['input']):
+        init_sig = ui_sigs['init']
+        # Real, deliberate SINGLE-anchor choice, not a fan-out to every
+        # depth-0 entry — init carries exactly ONE real mechanism here
+        # (pathRouter's own real evidence: one popstate listener), and
+        # attributing it to every stand-in would inflate the Alex-bubble
+        # count (n_out/n_in below, one dashed line per function) into
+        # implying several independent real UI touches where there's
+        # one. incoming_attr (a real, already-evidence-backed specific
+        # pairing) wins if one exists for this module; otherwise the
+        # first real depth-0 entry in source order (funcs is already
+        # real source order per parse_module_functions()'s own contract)
+        # is the honest, deterministic single stand-in.
+        anchor = incoming_attr[1] if incoming_attr and incoming_attr[1] in ui_sigs else next(
+            (f for f in funcs if depth.get(f) == 0), None)
+        if anchor and anchor in ui_sigs:
+            ui_sigs[anchor] = {
+                'output': ui_sigs[anchor]['output'] or init_sig['output'],
+                'input': ui_sigs[anchor]['input'] or init_sig['input'],
+                'bridge': ui_sigs[anchor].get('bridge') or (
+                    f'{module_name}.init()’s own real event wiring (real entry-point stand-in)'
+                    if init_sig['input'] else None),
+            }
     bands = _split_into_bands(funcs, depth)
     func_to_band = {f: i for i, b in enumerate(bands) for f in b['funcs']}
     multi_band = len(bands) > 1

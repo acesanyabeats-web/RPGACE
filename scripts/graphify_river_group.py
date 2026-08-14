@@ -100,6 +100,8 @@ import sys
 from pathlib import Path
 
 CORE_JS = Path('rpgace_core.js')
+MAIN_JS = Path('main.js')
+INDEX_HTML = Path('index.html')
 
 # Real, confirmed structural finding, Aug 13 (Alex asked for a "small
 # semantic re-export to close the errorLog gap" — investigated first
@@ -785,6 +787,21 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
                     kind = 'utility' if m in util_users else 'dom'
                     edges.append((m, target, kind))
                     touched.add(m)
+
+        # Signal 5 (Aug 14, real main.js/hooks-aware detection extension
+        # — closes the exact gap this function's own docstring names as
+        # invisible: "a relationship carried through RPGACE.hooks.fire()
+        # ... is invisible to this method"). Real RPGACE.hooks.fire()/
+        # hooks.on() pairing WITHIN this same river only — a firer
+        # outside this river (including a real 'core-wrapper[mainjs:x]'
+        # bridge firer) is genuine, real evidence too, but belongs at
+        # the cross-river/backdoor layer, not drawn as an intra-river
+        # edge here (same honest scoping this function already applies
+        # to signals 1-4).
+        for f, t, hook in _HOOK_SIGNAL_EDGES:
+            if f in mods and t in mods and f != t:
+                edges.append((f, t, 'hook'))
+                touched.add(f); touched.add(t)
         if edges:
             flows[rnum] = edges
     return flows
@@ -819,6 +836,38 @@ LEVEL3_MODULES = set(m for mods in RIVER_MODULES.values() for m in mods)
 # return at least 1 real function.
 
 
+def _module_def_line_match(line):
+    """Real, shared single-line definition-matcher (rule 8) — one regex
+    check used by BOTH parse_module_functions() and _function_bodies(),
+    so the two never silently diverge on what counts as a real function.
+    Matches the standard `name: function(...)`/`name: async function`
+    module-method shape, OR (Aug 14, real evidence: rpgace_core.js:18309,
+    `window.RPGACE_verifyPassword = function(pw){...}`, authGate's own
+    real password-verify bridge — sitting OUTSIDE the register() object
+    literal, at true zero indentation, so it was invisible to the
+    key:function pattern alone and never became a Level-3 node at all —
+    a real, deeper root cause behind the Aug 13 authGate
+    /misunderstanding, not just missing UI evidence on an already-drawn
+    node) a real, module-SCOPE `window.<Name> = function(...) {` bare
+    assignment. Deliberately anchored at column 0 (`^window\.`, no
+    leading whitespace) — confirmed by direct grep this is the ONLY
+    such zero-indent case in the whole file; the same `window.X =
+    function` shape appears ~20 more times elsewhere but always
+    nested 4+ spaces deep inside a real containing method (e.g.
+    `_intercept: function(){ ... window.toggleInstaPanel = ... }`) —
+    those are correctly left alone here, since they're already part of
+    their containing method's own real body, and treating them as a
+    second top-level definition would wrongly truncate that method's
+    real span. Returns the real function name, or None."""
+    m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
+    if m:
+        return m.group(1)
+    m = re.match(r'window\.(\w+)\s*=\s*function\b', line)
+    if m:
+        return m.group(1)
+    return None
+
+
 def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     """Real, mechanical function inventory for ONE module — Aug 13 Level-3
     proof-of-concept (Alex's own ask: "flow through a level 3 structure
@@ -827,15 +876,18 @@ def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     source block (parse_module_ranges(), rule 8) for its own top-level
     `_funcName: function(...)` / `funcName: function(...)` definitions —
     the same real object-literal-method shape every RPGACE.register()
-    module uses. Returns [func_name, ...] in real source order (top to
+    module uses, plus (Aug 14) any real bare module-scope `window.<Name>
+    = function` statement via the shared _module_def_line_match()
+    (rule 8). Returns [func_name, ...] in real source order (top to
     bottom), never alphabetized or reordered — source order is itself
     real evidence of a module's own intended read order.
 
     Real, honest scope limit: only catches DIRECT `name: function` /
     `name: async function` top-level methods on the module object
-    literal — a function nested inside another function's own body
-    (a closure) is deliberately not surfaced as a separate node, since
-    it isn't part of the module's own real public/callable surface."""
+    literal (plus the one real zero-indent window.X pattern above) — a
+    function nested inside another function's own body (a closure) is
+    deliberately not surfaced as a separate node, since it isn't part
+    of the module's own real public/callable surface."""
     ranges = parse_module_ranges(core_js_path)
     if module_name not in ranges:
         return []
@@ -844,9 +896,9 @@ def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     block_lines = lines[s - 1:e]
     funcs = []
     for line in block_lines:
-        m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
-        if m and m.group(1) not in funcs:
-            funcs.append(m.group(1))
+        name = _module_def_line_match(line)
+        if name and name not in funcs:
+            funcs.append(name)
     return funcs
 
 
@@ -872,9 +924,9 @@ def _function_bodies(module_name, core_js_path: Path = CORE_JS):
         return {}
     def_lines = []
     for i, line in enumerate(block_lines):
-        m = re.match(r'\s*(_?[A-Za-z0-9]+)\s*:\s*(?:async\s+)?function\b', line)
-        if m and m.group(1) in funcs:
-            def_lines.append((i, m.group(1)))
+        name = _module_def_line_match(line)
+        if name and name in funcs:
+            def_lines.append((i, name))
     bodies = {}
     for idx, (start_i, fname) in enumerate(def_lines):
         end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
@@ -919,20 +971,214 @@ def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
 # screen; INPUT = this function wires up or reads a real user-triggered
 # control. A function can be neither (pure internal logic — the honest,
 # common case), one, or both.
+# Aug 14 — broadened per real, direct evidence (grep of
+# rpgace_core.js's own addEventListener usage, not a guess): the
+# original INPUT pattern only checked for 'click'/.value/.dispatchEvent
+# and missed real, already-live event types this exact codebase uses —
+# 'input'×5, 'keydown'×3, 'popstate'×1 (pathRouter's own real browser
+# back/forward handler, one of the two Aug 13 "mystery" modules), plus
+# 'change' and drag/touch events. Also adds a bare `showPage(` call
+# (35 real occurrences in rpgace_core.js — a load-bearing OUTPUT signal
+# needing zero cross-file scanning, since it's a call already inside
+# the file already being read) to OUTPUT.
 UI_OUTPUT_PATTERN = re.compile(
-    r'document\.createElement\(|innerHTML\s*=|RPGACE\.ui\.slideInPanel\(|_popup\(|\.appendChild\(')
+    r'document\.createElement\(|innerHTML\s*=|RPGACE\.ui\.slideInPanel\(|_popup\(|\.appendChild\(|\bshowPage\(')
 UI_INPUT_PATTERN = re.compile(
-    r'\.onclick\s*=|addEventListener\(\s*[\'"]click|getElementById\([^)]*\)\.value|\.dispatchEvent\(')
+    r'\.onclick\s*=|addEventListener\(\s*[\'"](click|input|keydown|change|popstate|dragover|dragleave|drop|touchstart|touchend|focusin)|getElementById\([^)]*\)\.value|\.dispatchEvent\(')
+
+
+# Aug 14 — the real main.js/index.html-aware detection extension,
+# G15's own stated blocking prerequisite (ceo_plan_items). Real
+# evidence, GODMODE pass (never guessed): the whole Galaxy Map pipeline
+# only ever scans rpgace_core.js — Alex's own diagnosis, "i think
+# galaxy map is only mapping out backend," confirmed literally true.
+# Two real, distinct bridges close this, both grep-only/read-only,
+# never touching main.js or index.html:
+#
+# (1) CORE_WRAPPER_HOOKS — rpgace_core.js's own real "FUNCTION
+# WRAPPERS" section (lines ~395-544, its own comment: "Wraps existing
+# main.js functions to add hook fire points... Do NOT patch main.js —
+# wrap here instead") is a genuine, already-built, self-documenting
+# bridge: it wraps 6 real main.js-defined UI functions and fires a
+# named RPGACE.hooks event right after each one runs. This is the
+# actual, confirmed mechanism resolving BOTH Aug 13 "mystery" modules
+# at once — checkPassword() (index.html:61 onclick, main.js:12) is
+# wrapped here to fire 'rpgace:login', which pathRouter.init() listens
+# for directly (RPGACE.hooks.on('rpgace:login', ...)); showPage() is
+# wrapped here to fire 'page:show', which pathRouter ALSO listens for.
+CORE_WRAPPER_HOOKS = {
+    'showSched': 'sched:show',
+    'showPage': 'page:show',
+    'renderAgendas': 'agendas:rendered',
+    'addXP': 'xp:awarded',
+    'checkPassword': 'rpgace:login',
+    'saveToJournal': 'journal:saved',
+}
+
+
+def compute_hook_signal_edges(core_js_path: Path = CORE_JS):
+    """(2) Real module-to-module RPGACE.hooks.fire()/hooks.on() pairing
+    — closes the exact gap compute_intra_river_flow()'s own docstring
+    names as invisible ("a relationship carried through
+    RPGACE.hooks.fire()... is invisible to this method"). For every
+    real hook name, finds every module whose own source block contains
+    a real `hooks.fire('name'` (the firer) and every module whose
+    block contains a real `hooks.on('name'` (the listener), plus
+    CORE_WRAPPER_HOOKS' own real firers (labeled
+    'core-wrapper[mainjs:<fn>]' since they're not owned by any single
+    RPGACE.register() module — they're rpgace_core.js's own top-level
+    bridge code, wrapping a real main.js UI function).
+
+    Returns [(from_label, to_module, hook_name), ...]. Real, honest
+    scope limit: only catches a DIRECT `hooks.fire('name'`/
+    `hooks.on('name'` literal string match — a hook name built
+    dynamically (never done anywhere in this codebase, confirmed by
+    grep) would be invisible, same class of limit as every other
+    detector in this file."""
+    ranges = parse_module_ranges(core_js_path)
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    fire_map, listen_map = {}, {}
+    for mod, (s, e) in ranges.items():
+        block = '\n'.join(lines[s - 1:e])
+        for h in re.findall(r"hooks\.fire\(\s*'([^']+)'", block):
+            fire_map.setdefault(h, set()).add(mod)
+        for h in re.findall(r"hooks\.on\(\s*'([^']+)'", block):
+            listen_map.setdefault(h, set()).add(mod)
+    for fn, hook in CORE_WRAPPER_HOOKS.items():
+        fire_map.setdefault(hook, set()).add('core-wrapper[mainjs:%s]' % fn)
+    edges = []
+    for hook, listeners in listen_map.items():
+        for f in sorted(fire_map.get(hook, ())):
+            for l in sorted(listeners):
+                if f == l:
+                    continue
+                edges.append((f, l, hook))
+    return edges
+
+
+# Real, module-level precompute (rule 11 — same 44-module scale as
+# _WRAP_INSTALLER_CACHE, cheap and never changes within one script run;
+# compute_intra_river_flow() reads this directly rather than
+# recomputing per-river, matching CROSS_MODULE_CALLS' own eager-
+# precompute convention in galaxy_map_level3.py). Safe regardless of
+# definition order — compute_intra_river_flow() only reads this name
+# when it's actually CALLED by an external script, by which point this
+# whole module has finished importing.
+_HOOK_SIGNAL_EDGES = compute_hook_signal_edges()
+
+
+def _mainjs_function_bodies(main_js_path: Path = MAIN_JS):
+    """Real, main.js-side sibling of _function_bodies() (rule 8, same
+    "until the next top-level definition" splitting technique, applied
+    to main.js's own flatter top-level-function shape rather than a
+    RPGACE.register() module object literal). Read-only evidence
+    gathering — never mutates main.js. Matches `function name(...) {`/
+    `async function name(...) {` at real column-0 indentation
+    (confirmed by direct read: checkPassword/togglePwVis/etc. are all
+    true top-level declarations, not indented). Real, honest scope
+    limit: a function assigned via `const x = function(){}` or one
+    nested inside another function's body is not split out separately
+    here — same class of limit _function_bodies() already states."""
+    if not main_js_path.exists():
+        return {}
+    lines = main_js_path.read_text(encoding='utf-8', errors='ignore').splitlines()
+    def_lines = []
+    for i, line in enumerate(lines):
+        m = re.match(r'(?:async\s+)?function\s+(\w+)\s*\(', line)
+        if m:
+            def_lines.append((i, m.group(1)))
+    bodies = {}
+    for idx, (start_i, fname) in enumerate(def_lines):
+        end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(lines)
+        bodies[fname] = '\n'.join(lines[start_i:end_i])
+    return bodies
+
+
+_MAINJS_BRIDGE_CACHE = {}
+
+
+def compute_mainjs_window_bridge(core_js_path: Path = CORE_JS, main_js_path: Path = MAIN_JS,
+                                  index_html_path: Path = INDEX_HTML):
+    """The real 2-hop UI-trigger bridge — Aug 14, built directly off
+    Alex's own words: "verify would require my input... i think galaxy
+    map is only mapping out backend. make it show frontend too." A
+    real rpgace_core.js function that does `window.X = function` gets
+    no real input evidence under the plain per-function scan if X is
+    never itself the literal onclick target in index.html — because
+    RPGACE's own documented override convention (CLAUDE.md: main.js
+    defines an original/stub, a rpgace_core.js module's init()/
+    _intercept() reassigns window.X to the real implementation) means
+    the button's onclick often names a DIFFERENT function, defined in
+    main.js, which then calls window.X internally.
+
+    Real, confirmed evidence chain (Aug 14, direct read, not guessed):
+    index.html:61 `onclick="checkPassword()"` -> main.js's own
+    `checkPassword()` body contains the literal text
+    `window.RPGACE_verifyPassword` -> rpgace_core.js's authGate module
+    does `window.RPGACE_verifyPassword = function(pw){...}` (now a
+    real Level-3 node itself, see _module_def_line_match()).
+
+    Returns {(module, func): evidence_string} for every real
+    rpgace_core.js function whose own `window.Y = function`
+    assignment is genuinely reachable this way — either directly
+    (index.html names Y itself) or via one real main.js hop. Real,
+    honest scope limit: only a DIRECT textual `window.<name>`
+    reference inside the main.js function body counts — a call
+    reached through a variable alias is invisible here, same class of
+    limit as every other detector in this file. Module-level memoized
+    (rule 11 — same pattern as find_wrap_installer_function(), this
+    doesn't change within one script run)."""
+    key = (str(core_js_path), str(main_js_path), str(index_html_path))
+    if key in _MAINJS_BRIDGE_CACHE:
+        return _MAINJS_BRIDGE_CACHE[key]
+    onclick_targets = set()
+    if index_html_path.exists():
+        onclick_targets = set(re.findall(
+            r'on(?:click|change|input)="(\w+)\(',
+            index_html_path.read_text(encoding='utf-8', errors='ignore')))
+    mainjs_bodies = _mainjs_function_bodies(main_js_path)
+    # Which window.<Y> globals does each real, index.html-triggered
+    # main.js function body actually reference (the one real hop)?
+    bridged_globals = {}
+    for fn in onclick_targets:
+        body = mainjs_bodies.get(fn)
+        if not body:
+            continue
+        for g in re.findall(r'window\.(\w+)', body):
+            bridged_globals.setdefault(g, fn)
+    result = {}
+    for mod in parse_module_ranges(core_js_path):
+        for fname, body in _function_bodies(mod, core_js_path).items():
+            for m in re.finditer(r'window\.(\w+)\s*=\s*function', body):
+                gname = m.group(1)
+                if gname in onclick_targets:
+                    result[(mod, fname)] = 'index.html onclick="%s(...)"' % gname
+                elif gname in bridged_globals:
+                    src_fn = bridged_globals[gname]
+                    result[(mod, fname)] = (
+                        'index.html onclick="%s(...)" -> main.js %s() -> window.%s'
+                        % (src_fn, src_fn, gname))
+    _MAINJS_BRIDGE_CACHE[key] = result
+    return result
 
 
 def compute_function_ui_signals(module_name, core_js_path: Path = CORE_JS):
     """Real, per-FUNCTION UI-actor signal (Level 3's own granularity) —
-    {func_name: {'output': bool, 'input': bool}}. Reuses
-    _function_bodies() (rule 8, not re-split a 3rd time)."""
+    {func_name: {'output': bool, 'input': bool, 'bridge': str|None}}.
+    Reuses _function_bodies() (rule 8, not re-split a 3rd time). Aug 14:
+    'input' is also true, and 'bridge' names the real evidence chain,
+    when compute_mainjs_window_bridge() confirms this exact function is
+    genuinely reachable from a real index.html control via main.js —
+    the fix for authGate/pathRouter reading as false-isolated."""
     bodies = _function_bodies(module_name, core_js_path)
-    return {f: {'output': bool(UI_OUTPUT_PATTERN.search(b)),
-                'input': bool(UI_INPUT_PATTERN.search(b))}
-            for f, b in bodies.items()}
+    bridge = compute_mainjs_window_bridge(core_js_path)
+    sigs = {}
+    for f, b in bodies.items():
+        bridge_ev = bridge.get((module_name, f))
+        sigs[f] = {'output': bool(UI_OUTPUT_PATTERN.search(b)),
+                   'input': bool(UI_INPUT_PATTERN.search(b)) or bool(bridge_ev),
+                   'bridge': bridge_ev}
+    return sigs
 
 
 def compute_module_ui_signal(module_name, core_js_path: Path = CORE_JS):

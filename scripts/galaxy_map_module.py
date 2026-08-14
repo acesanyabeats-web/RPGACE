@@ -424,13 +424,18 @@ def build_river_section(rnum):
         # Real, honest distinction (Aug 13, /misunderstanding fix — see
         # compute_intra_river_flow()'s own docstring): a 'direct' edge
         # is a literal RPGACE.modules.X() call, drawn solid; 'wrap'/
-        # 'utility'/'dom' are real but INFERRED convergence (a shared
-        # window.callOracle/sendChat wrap chain, a shared RPGACE.utils.
-        # sendToOracle/fillGaps call, or direct #chat-input/#send-btn
-        # DOM triggering) — drawn dashed + labeled, never presented as
-        # the same strength of evidence as a direct call.
+        # 'utility'/'dom'/'hook' are real but INFERRED convergence (a
+        # shared window.callOracle/sendChat wrap chain, a shared
+        # RPGACE.utils.sendToOracle/fillGaps call, direct #chat-input/
+        # #send-btn DOM triggering, or — Aug 14, the real main.js/hooks
+        # detection extension, closing the exact gap this function's
+        # own docstring used to name as invisible — a real
+        # RPGACE.hooks.fire()/hooks.on() pairing) — drawn dashed +
+        # labeled, never presented as the same strength of evidence as
+        # a direct call.
         INDIRECT_LABEL = {'wrap': 'via callOracle/sendChat wrap chain',
-                           'utility': 'via shared RPGACE.utils.sendToOracle', 'dom': 'via direct chat-input/send-btn DOM trigger'}
+                           'utility': 'via shared RPGACE.utils.sendToOracle', 'dom': 'via direct chat-input/send-btn DOM trigger',
+                           'hook': 'via RPGACE.hooks.fire/on pairing'}
         edge_touched = set()
         for frm, to, kind in FLOW_EDGES.get(rnum, []):
             if frm in mod_pos and to in mod_pos:

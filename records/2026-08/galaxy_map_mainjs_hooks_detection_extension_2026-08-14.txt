@@ -1,0 +1,187 @@
+GALAXY MAP — main.js/RPGACE.hooks-aware detection extension — 2026-08-14
+Real /Routine lock-in (daily_priorities_debate_2026-08-14.txt, item 1), /CEO Grounded
+Mode active (Galaxy Development Framework, ceo_plans id 6f8536fd-7d98-4565-9369-
+c75a149fce8f). G15's own stated blocking prerequisite.
+=====================================================================
+
+CONTEXT / ALEX'S OWN WORDS (Aug 13, verbatim, the finding this pass closes)
+---------------------------------------------------------------------------
+"verify would require my input and an external im using 0auth (image 1) - it
+would also lead to rpgace opening and delivering me to dashboard rpgace ui. i
+think galaxy map is only mapping out backend. make it show frontend too and
+include it in the analysis. river 2 output (image 2) is a complete mystery to
+me, real /misunderstanding here on why it comes out like this based on code.
+path router is also a mystery."
+
+REAL ROOT CAUSE, CONFIRMED (GODMODE evidence pass, not guessed)
+---------------------------------------------------------------------------
+The entire Galaxy Map detection pipeline (compute_intra_river_flow's 4 signals,
+compute_function_ui_signals' 2 signals) only ever reads rpgace_core.js. It has
+zero visibility into:
+  - main.js, where the real DOM/button-trigger side of many modules lives
+    (RPGACE's own documented override convention: main.js defines an
+    original/stub function, a rpgace_core.js module's init()/_intercept()
+    reassigns window.X to the real implementation).
+  - index.html's own 93 real inline onclick="fnName(...)" attributes — the
+    most direct, confirmable evidence of a real user-facing control.
+  - RPGACE.hooks.fire()/hooks.on() pairing — already named as an invisible
+    gap in compute_intra_river_flow()'s own docstring, never actually built.
+
+Confirmed concrete evidence chain for authGate (the sharper of the two
+"mystery" cases — its real function wasn't even a Level-3 NODE, not just
+missing UI evidence):
+  index.html:61 <button onclick="checkPassword()">ENTER THE REALM</button>
+  -> main.js:12 async function checkPassword(){ ... window.RPGACE_verifyPassword ... }
+  -> rpgace_core.js:18309 window.RPGACE_verifyPassword = function(pw){ return
+     RPGACE.modules.authGate.verify(pw); };  (zero indentation — true module-
+     scope, OUTSIDE the register() object literal, the ONLY such case in the
+     whole file, confirmed by a dedicated grep)
+
+Because this assignment sits outside the `key: function` object-literal
+shape every other module method uses, parse_module_functions()'s original
+regex never saw it at all — authGate genuinely only had 2 Level-3 nodes
+(verify, _installFetchWrap) before this pass, with its real password-verify
+bridge invisible to the whole pipeline.
+
+pathRouter's real evidence (rpgace_core.js:19069-19146):
+  RPGACE.hooks.on('rpgace:login', ...) / RPGACE.hooks.on('page:show', ...)
+  window.addEventListener('popstate', function(e){ ... showPage(name); ...})
+Both hooks are fired from rpgace_core.js's own real "FUNCTION WRAPPERS"
+section (lines ~395-544, its own comment: "Wraps existing main.js functions
+to add hook fire points... Do NOT patch main.js — wrap here instead") —
+checkPassword() is wrapped to fire 'rpgace:login' on a real successful
+login; showPage() is wrapped to fire 'page:show' after every nav switch.
+Neither hook-firing nor the popstate listener were detected by anything
+before this pass.
+
+WHAT WAS BUILT (scripts/graphify_river_group.py, scripts/galaxy_map_level3.py)
+---------------------------------------------------------------------------
+1. _module_def_line_match() — new shared single-line matcher (rule 8, used
+   by both parse_module_functions() and _function_bodies() so they can
+   never silently diverge). Matches the standard `name: function`/`name:
+   async function` shape, OR a real zero-indent `window.<Name> = function`
+   module-scope statement — deliberately anchored at column 0 so the ~20
+   OTHER window.X assignments elsewhere in the file (all nested 4+ spaces
+   deep inside a real containing method, e.g. `_intercept: function(){...
+   window.toggleInstaPanel = ...}`) are correctly left alone, since
+   treating them as a second top-level definition would wrongly truncate
+   their real containing method's span.
+   VERIFIED: total Level-3 function count across all 44 modules 426 -> 427
+   (exactly +1, RPGACE_verifyPassword — the ONE real new node, nothing else
+   changed).
+
+2. UI_OUTPUT_PATTERN/UI_INPUT_PATTERN broadened per real, direct grep
+   evidence of rpgace_core.js's own addEventListener usage (never guessed):
+   added 'input'(x5)/'keydown'(x3)/'popstate'(x1)/'change'/drag+touch/
+   focusin event types to INPUT, and a bare `showPage(` call (35 real
+   occurrences) to OUTPUT — a load-bearing signal needing zero cross-file
+   scanning since it's already inside the file being read.
+
+3. compute_mainjs_window_bridge() — the real 2-hop UI-trigger bridge.
+   _mainjs_function_bodies() (main.js's own top-level-function sibling of
+   _function_bodies(), same splitting technique) extracts every real
+   main.js function body; for every index.html onclick/onchange/oninput
+   target, checks whether that main.js function's own body references a
+   `window.<Y>` global; cross-references every rpgace_core.js function that
+   does `window.<Y> = function` — direct OR via the one real main.js hop.
+   Wired into compute_function_ui_signals() (drop-in, backward compatible —
+   existing callers automatically inherit the improved evidence with zero
+   further code changes needed on their part).
+
+4. CORE_WRAPPER_HOOKS + compute_hook_signal_edges() — real
+   RPGACE.hooks.fire()/hooks.on() module-to-module pairing detection,
+   including rpgace_core.js's own real "FUNCTION WRAPPERS" section as a
+   real 'core-wrapper[mainjs:<fn>]' firer. Wired into
+   compute_intra_river_flow() as a new same-river Signal 5 (real, honest,
+   MEASURED finding: zero same-river hook pairs exist anywhere in this
+   44-module codebase — RPGACE.hooks is a purely CROSS-river mechanism
+   here, a real structural fact about this codebase, not a bug in the new
+   detector). New 'hook' edge kind + INDIRECT_LABEL entry in
+   galaxy_map_module.py ("via RPGACE.hooks.fire/on pairing").
+
+5. galaxy_map_level3.py — a real, evidence-consistent fix for init's own
+   UI signal (found while re-verifying pathRouter specifically): the
+   popstate listener lives inside init()'s own body, but init is never
+   rendered as a Level-3 node (Aug 13's own "no init should exist" design).
+   The module's own existing docstring already states the honest stand-in
+   ("Its real direct callees are the true starting points instead") — this
+   pass extends that SAME stated design to UI evidence, not a new
+   philosophy: init's own real output/input is OR'd onto exactly ONE real
+   anchor (incoming_attr's own evidence-backed target if one exists, else
+   the first real depth-0 entry in source order) — deliberately NOT fanned
+   out to every depth-0 entry, since pathRouter's own real evidence is ONE
+   mechanism (one popstate listener), and fanning it across all 4 stand-ins
+   would have inflated the Alex-bubble's n_out/n_in counts into implying
+   several independent real UI touches where there's genuinely one.
+
+MEASURED, VERIFIED RESULTS (real before/after diff, not assumed)
+---------------------------------------------------------------------------
+Alex-bubble (output, input) — direct diff of the committed HTML against the
+freshly regenerated file:
+  authGate:    (0, 0) -> (0, 1)   [real, honest — it genuinely never renders]
+  pathRouter:  (0, 0) -> (3, 1)   [both Aug 13 "mystery" modules resolved]
+  beatLog, bookworm, contentProductionLive, encyclopediaQoL, feynman,
+  instaOraclePanel, intelDedup, jargonEncyclopedia, journalQoL,
+  prodOraclePanel, researchTabs — all gained real additional evidence too
+  (15 modules changed total, zero regressions — every change is a net gain).
+
+Modules with a fully 0/0 Alex-bubble: 10 -> 6.
+  Resolved: authGate, ciAutoPropose, encSync, pathRouter.
+  Remain honestly 0/0 (real, evidence-checked — genuine pure-logic/Oracle-
+  grounding-wrap modules with no real UI touch of their own, not a
+  remaining detection gap): intelBatchList, oracleAppGrounding,
+  oracleFetchGuard, oracleTreeGrounding, scheduleFixes, shiftSync.
+
+Module-to-module isolation (no intra-river edge + no cross-module backdoor
++ no hook-signal evidence, freshly computed this pass, real methodology —
+this number is NOT the same "13" cited in an earlier session's own summary,
+which used a different/stale snapshot; this is the real, current, directly
+measured figure): 11 -> 3.
+  Resolved by hook-signal evidence: encyclopediaQoL, intelDelete,
+  jargonEncyclopedia, journalQoL, oracleDevBridge, pathRouter,
+  scheduleFixes, shiftSync.
+  Remain genuinely isolated at the module-to-module relationship level
+  (real, honest remaining gap, not silently claimed fixed): agentsIntoOracle,
+  authGate, intelBatchList. (authGate's separate UI-evidence gap IS
+  resolved — this is a different, still-real "no module calls/is called by
+  it, no hook fire/listen pairing" fact, correctly left standing since it's
+  genuinely true: authGate has no real code-level peer relationship, only a
+  real main.js/index.html UI-level one, which the Alex-bubble already
+  captures.)
+
+Level 2's own "no link within River N" flag count: UNCHANGED, 20 before and
+after (real, honest, measured — not a bug). Confirmed why: zero real
+same-river hook pairs exist anywhere in the codebase (checked directly),
+so Signal 5 correctly finds nothing to add at the intra-river grain Level 2
+draws. The real improvement from hook-signal evidence is a genuinely
+CROSS-river fact, which Level 2 deliberately does not draw (its own
+existing text: "this flag is honestly scoped to intra-river connectivity
+only, which is what this diagram actually draws") — Level 3's Alex-bubble
+and this record are the current, real, honest place that cross-river hook
+evidence in effect.
+
+VERIFICATION DISCIPLINE APPLIED
+---------------------------------------------------------------------------
+- Idempotency: 2 fresh full-pipeline runs (galaxy_map.py -> _river.py ->
+  _module.py -> _level3.py), identical md5 across all 4 output files.
+- div/svg balance: clean on all 4 regenerated files (galaxy_map.html 36/36
+  div, 1/1 svg; galaxy_map_river.html 61/61, 1/1; galaxy_map_module.html
+  253/253, 16/16; galaxy_map_level3.html 616/616, 59/59).
+- python3 import sanity: all 5 touched/dependent scripts import clean.
+- node --check rpgace_core.js: clean (sanity check only — this pass never
+  touched rpgace_core.js itself, read-only evidence gathering throughout).
+- Real before/after diff against the actual committed HTML (git show HEAD:),
+  not assumed from re-reading the new code alone (rule 4).
+
+NOT BUILT THIS PASS, EXPLICITLY FLAGGED (locked Top-10 items still open)
+---------------------------------------------------------------------------
+- Item 3: G15 itself — the real Level 4 build (click a dashboard card ->
+  real frontend flow -> real links back to Level 3). This pass built and
+  verified its stated prerequisite; the actual Level 4 page is a separate,
+  substantial next deliverable, not attempted in this same pass (deliberate
+  scope discipline, not silently dropped).
+- Item 5: G7 — /cartographer trickle-down/up retroactive scan.
+- Item 6: G8 — hand-test /CEO Loop 2 wiring live.
+- The remaining 3 genuinely-isolated modules (agentsIntoOracle, authGate,
+  intelBatchList) and the unchanged Level-2 "no link within river" count
+  are real, honest, named gaps — not silently presented as fixed.
