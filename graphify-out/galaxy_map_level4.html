@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Level 4)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #12121e 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:28px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}
+  .breadcrumb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px}
+  .breadcrumb a{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
+  .breadcrumb a:hover{color:var(--gold);border-color:var(--gold)}
+  .breadcrumb .bc-here{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}
+  .breadcrumb .bc-sep{color:#4a4a58}
+  .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .tab{padding:6px 14px;border-radius:16px;font-size:11.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}
+  .tab.active{background:var(--gold);color:#1a1a12;font-weight:700}
+  .chead{display:flex;align-items:center;gap:10px;justify-content:center;padding:24px 24px 6px}
+  .cdot{width:12px;height:12px;border-radius:50%}
+  .chead h2{font-family:Georgia,serif;font-size:19px;color:#fff}
+  .crivers{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:0 24px 10px}
+  .river-chip{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid;text-decoration:none;background:rgba(255,255,255,0.03)}
+  .clegend-role{text-align:center;color:var(--dim);font-size:11.5px;max-width:760px;margin:0 auto 16px;line-height:1.6;padding:0 24px}
+  .back-btn{display:block;text-align:center;font-size:11px;font-weight:700;color:var(--gold);text-decoration:none;margin:0 0 10px}
+  .back-btn:hover{text-decoration:underline}
+  .gobody{max-width:760px;margin:0 auto 18px;padding:0 24px}
+  .gobody-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+  .gobody pre{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;color:#c8c8d8;white-space:pre-wrap;line-height:1.6;overflow-x:auto}
+  .targets{max-width:760px;margin:0 auto 48px;padding:0 24px;display:flex;flex-direction:column;gap:14px}
+  .tblock{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:16px 18px}
+  .tkind{font-size:12.5px;font-weight:700;color:var(--gold);margin-bottom:8px}
+  .tcode{margin-bottom:10px}
+  .evrow{display:flex;gap:16px;font-size:10.5px;color:var(--dim);margin-bottom:8px;flex-wrap:wrap}
+  .tnote{font-size:10.5px;color:#6a6a78;margin:8px 0 6px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .mod-chip{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(201,168,76,0.12);color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,0.3)}
+  .mod-chip-none{background:rgba(255,255,255,0.04);color:var(--dim);border:1px dashed rgba(255,255,255,0.15);cursor:help}
+  .mod-chip .meta{opacity:0.7;font-weight:400}
+  .chip-sm{font-size:9.5px;color:#a8a8b8;background:rgba(255,255,255,0.04);padding:2px 8px;border-radius:8px}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
+  a{color:var(--gold)}
+  .note{max-width:820px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_level3.html">🔽 Level 3</a><span class="bc-sep">→</span>
+  <span class="bc-here">🖱️ Level 4</span>
+</div>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 4</div>
+  <h1>🖱️ Real Frontend Flow, Per Dashboard Card</h1>
+  <p>All 12 of 12 real dashboard cards (<code>dashDeck.MODULES</code>) shown. Click a card below to see what actually happens on click — which page/popup opens, real DOM/button evidence, and real links back down to <a href="galaxy_map_level3.html">Level 3</a>'s own function-chain pages. Reached from <a href="galaxy_map_module.html">Level 2</a>'s own diamond nodes.</p>
+</div>
+<div class="tabs"><div class="tab" data-target="card-research">🧠 Research Lab</div><div class="tab" data-target="card-bookworm">📖 Bookworm</div><div class="tab" data-target="card-taxonomy">🌳 Taxonomy & Review</div><div class="tab" data-target="card-oracle">⚡ Oracle</div><div class="tab" data-target="card-agenda">📋 Agenda</div><div class="tab" data-target="card-morningBrief">🌅 Morning Brief</div><div class="tab" data-target="card-gaps">🕳️ Knowledge Gaps</div><div class="tab" data-target="card-pipeline">🎬 Content Pipeline</div><div class="tab" data-target="card-encyclopedia">📖 Encyclopedia</div><div class="tab" data-target="card-journal">📓 Journal</div><div class="tab" data-target="card-oversight">📚 Oversight</div><div class="tab" data-target="card-chronicles">📜 The Chronicles</div></div>
+<section class="card-section" id="card-research" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>🧠 Research Lab — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-5" class="river-chip" style="border-color:#4caf82;color:#4caf82">🌊 River V</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'research', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🧠', name: 'Research Lab', desc: 'Analyse videos, mine books, bank ideas — every source becomes placed knowledge.', go: function() { RPGACE.modules.dashDeck._openResearch(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.dashDeck._openResearch()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>✅ real buttons/input wired</span></div><div class="tnote">Further real cross-module touches inside this popup — where the buttons inside it lead:</div><div class="chips"><a href="galaxy_map_level3.html#mod-researchTabs" class="mod-chip">🔽 researchTabs.show()</a></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck <span class="meta">(no Level-3 page)</span></span></div></div></div>
+</section><section class="card-section" id="card-bookworm" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>📖 Bookworm — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-4" class="river-chip" style="border-color:#9b6ec8;color:#9b6ec8">🌊 River IV</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.dashDeck._openBookworm()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>— no direct input evidence</span></div><div class="tnote">Hands off to the real content-owning module (the established <code>_openX()</code> → target-module-own-<code>_inject*()</code> pattern, confirmed by direct read):</div><div class="chips"><a href="galaxy_map_level3.html#mod-bookworm" class="mod-chip">🔽 bookworm._injectDashboardWidget()</a></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck <span class="meta">(no Level-3 page)</span></span></div></div></div>
+</section><section class="card-section" id="card-taxonomy" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>🌳 Taxonomy & Review — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-8" class="river-chip" style="border-color:#5588ee;color:#5588ee">🌊 River VIII</a><a href="galaxy_map_module.html#river-6" class="river-chip" style="border-color:#e8c96a;color:#e8c96a">🌊 River VI</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements and fusion links, or browse your knowledge tree.', go: function() {
+      var d = RPGACE.modules.dashDeck;
+      var rq = RPGACE.modules.taxonomyReviewQueue;
+      if (d && d._pendingReviewCount !== 0 && rq && rq._openCard) { rq._openCard(); return; }
+      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
+    } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.taxonomyReviewQueue._openCard()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>✅ real buttons/input wired</span></div><div class="tnote">Further real cross-module touches inside this popup — where the buttons inside it lead:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck._popup() <span class="meta">(no Level-3 page)</span></span></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><a href="galaxy_map_level3.html#mod-taxonomyReviewQueue" class="mod-chip">🔽 taxonomyReviewQueue</a></div></div><div class="tblock"><div class="tkind">🖥️ Real page navigation</div><div class="tcode"><code>showPage(RPGACE.CONFIG.pages.phylumPath)</code></div><div class="tnote">No single owning module — this page is fed by every real module in its own river(s), honestly listed (never forced to one guessed winner):</div><div class="chips"><a href="galaxy_map_level3.html#mod-taxonomyReviewQueue" class="mod-chip">🔽 taxonomyReviewQueue</a><a href="galaxy_map_level3.html#mod-taxonomySync" class="mod-chip">🔽 taxonomySync</a><a href="galaxy_map_level3.html#mod-taxonomyTree" class="mod-chip">🔽 taxonomyTree</a><a href="galaxy_map_level3.html#mod-phylumPath" class="mod-chip">🔽 phylumPath</a></div></div></div>
+</section><section class="card-section" id="card-oracle" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>⚡ Oracle — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-3" class="river-chip" style="border-color:#c9a84c;color:#c9a84c">🌊 River III</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">🖥️ Real page navigation</div><div class="tcode"><code>showPage(RPGACE.CONFIG.pages.oracle)</code></div><div class="tnote">No single owning module — this page is fed by every real module in its own river(s), honestly listed (never forced to one guessed winner):</div><div class="chips"><a href="galaxy_map_level3.html#mod-oracleAppGrounding" class="mod-chip">🔽 oracleAppGrounding</a><a href="galaxy_map_level3.html#mod-oracleTreeGrounding" class="mod-chip">🔽 oracleTreeGrounding</a><a href="galaxy_map_level3.html#mod-oracleFetchGuard" class="mod-chip">🔽 oracleFetchGuard</a><a href="galaxy_map_level3.html#mod-oracleDevBridge" class="mod-chip">🔽 oracleDevBridge</a><a href="galaxy_map_level3.html#mod-mockOracle" class="mod-chip">🔽 mockOracle</a><a href="galaxy_map_level3.html#mod-agentsIntoOracle" class="mod-chip">🔽 agentsIntoOracle</a><a href="galaxy_map_level3.html#mod-prodOraclePanel" class="mod-chip">🔽 prodOraclePanel</a><a href="galaxy_map_level3.html#mod-instaOraclePanel" class="mod-chip">🔽 instaOraclePanel</a><a href="galaxy_map_level3.html#mod-youtubeOracle" class="mod-chip">🔽 youtubeOracle</a><a href="galaxy_map_level3.html#mod-tiktokOracle" class="mod-chip">🔽 tiktokOracle</a><a href="galaxy_map_level3.html#mod-scheduleOracle" class="mod-chip">🔽 scheduleOracle</a><a href="galaxy_map_level3.html#mod-feynman" class="mod-chip">🔽 feynman</a></div></div></div>
+</section><section class="card-section" id="card-agenda" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>📋 Agenda — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-5" class="river-chip" style="border-color:#4caf82;color:#4caf82">🌊 River V</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">🖥️ Real page navigation</div><div class="tcode"><code>showPage(RPGACE.CONFIG.pages.agenda)</code></div><div class="tnote">No single owning module — this page is fed by every real module in its own river(s), honestly listed (never forced to one guessed winner):</div><div class="chips"><a href="galaxy_map_level3.html#mod-researchTabs" class="mod-chip">🔽 researchTabs</a><a href="galaxy_map_level3.html#mod-intelBatchList" class="mod-chip">🔽 intelBatchList</a><a href="galaxy_map_level3.html#mod-intelDelete" class="mod-chip">🔽 intelDelete</a><a href="galaxy_map_level3.html#mod-intelDedup" class="mod-chip">🔽 intelDedup</a><a href="galaxy_map_level3.html#mod-ciAutoPropose" class="mod-chip">🔽 ciAutoPropose</a><a href="galaxy_map_level3.html#mod-scheduleFixes" class="mod-chip">🔽 scheduleFixes</a><a href="galaxy_map_level3.html#mod-shiftSync" class="mod-chip">🔽 shiftSync</a><a href="galaxy_map_level3.html#mod-agendaReminder" class="mod-chip">🔽 agendaReminder</a><a href="galaxy_map_level3.html#mod-morningBrief" class="mod-chip">🔽 morningBrief</a><a href="galaxy_map_level3.html#mod-journalQoL" class="mod-chip">🔽 journalQoL</a></div></div></div>
+</section><section class="card-section" id="card-morningBrief" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>🌅 Morning Brief — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-5" class="river-chip" style="border-color:#4caf82;color:#4caf82">🌊 River V</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.dashDeck._openMorningBrief()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>— no direct input evidence</span></div><div class="tnote">Hands off to the real content-owning module (the established <code>_openX()</code> → target-module-own-<code>_inject*()</code> pattern, confirmed by direct read):</div><div class="chips"><a href="galaxy_map_level3.html#mod-morningBrief" class="mod-chip">🔽 morningBrief._injectButton()</a></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck <span class="meta">(no Level-3 page)</span></span></div></div></div>
+</section><section class="card-section" id="card-gaps" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>🕳️ Knowledge Gaps — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-9" class="river-chip" style="border-color:#e05555;color:#e05555">🌊 River IX</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.dashDeck._openGaps()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>— no direct input evidence</span></div><div class="tnote">Hands off to the real content-owning module (the established <code>_openX()</code> → target-module-own-<code>_inject*()</code> pattern, confirmed by direct read):</div><div class="chips"><a href="galaxy_map_level3.html#mod-knowledgeGap" class="mod-chip">🔽 knowledgeGap._inject()</a></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck <span class="meta">(no Level-3 page)</span></span></div></div></div>
+</section><section class="card-section" id="card-pipeline" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>🎬 Content Pipeline — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-11" class="river-chip" style="border-color:#3a4570;color:#3a4570">🌊 River XI</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.dashDeck._openPipeline()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>— no direct input evidence</span></div><div class="tnote">Hands off to the real content-owning module (the established <code>_openX()</code> → target-module-own-<code>_inject*()</code> pattern, confirmed by direct read):</div><div class="chips"><a href="galaxy_map_level3.html#mod-contentProductionLive" class="mod-chip">🔽 contentProductionLive._injectDashboardWidget()</a></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck <span class="meta">(no Level-3 page)</span></span></div></div></div>
+</section><section class="card-section" id="card-encyclopedia" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>📖 Encyclopedia — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-7" class="river-chip" style="border-color:#cc7a3a;color:#cc7a3a">🌊 River VII</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">🖥️ Real page navigation</div><div class="tcode"><code>showPage(RPGACE.CONFIG.pages.encyclopedia)</code></div><div class="tnote">No single owning module — this page is fed by every real module in its own river(s), honestly listed (never forced to one guessed winner):</div><div class="chips"><a href="galaxy_map_level3.html#mod-jargonEncyclopedia" class="mod-chip">🔽 jargonEncyclopedia</a><a href="galaxy_map_level3.html#mod-encyclopediaQoL" class="mod-chip">🔽 encyclopediaQoL</a><a href="galaxy_map_level3.html#mod-encSync" class="mod-chip">🔽 encSync</a><a href="galaxy_map_level3.html#mod-encTaxonomyLink" class="mod-chip">🔽 encTaxonomyLink</a><a href="galaxy_map_level3.html#mod-refCorpus" class="mod-chip">🔽 refCorpus</a></div></div></div>
+</section><section class="card-section" id="card-journal" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>📓 Journal — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-5" class="river-chip" style="border-color:#4caf82;color:#4caf82">🌊 River V</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">🖥️ Real page navigation</div><div class="tcode"><code>showPage(RPGACE.CONFIG.pages.journal)</code></div><div class="tnote">No single owning module — this page is fed by every real module in its own river(s), honestly listed (never forced to one guessed winner):</div><div class="chips"><a href="galaxy_map_level3.html#mod-researchTabs" class="mod-chip">🔽 researchTabs</a><a href="galaxy_map_level3.html#mod-intelBatchList" class="mod-chip">🔽 intelBatchList</a><a href="galaxy_map_level3.html#mod-intelDelete" class="mod-chip">🔽 intelDelete</a><a href="galaxy_map_level3.html#mod-intelDedup" class="mod-chip">🔽 intelDedup</a><a href="galaxy_map_level3.html#mod-ciAutoPropose" class="mod-chip">🔽 ciAutoPropose</a><a href="galaxy_map_level3.html#mod-scheduleFixes" class="mod-chip">🔽 scheduleFixes</a><a href="galaxy_map_level3.html#mod-shiftSync" class="mod-chip">🔽 shiftSync</a><a href="galaxy_map_level3.html#mod-agendaReminder" class="mod-chip">🔽 agendaReminder</a><a href="galaxy_map_level3.html#mod-morningBrief" class="mod-chip">🔽 morningBrief</a><a href="galaxy_map_level3.html#mod-journalQoL" class="mod-chip">🔽 journalQoL</a></div></div></div>
+</section><section class="card-section" id="card-oversight" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>📚 Oversight — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-14" class="river-chip" style="border-color:#d4daf5;color:#d4daf5">🌊 River XIV</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'Explaining docs, truth docs, and Smoke Test — what actually works.', go: function() { RPGACE.modules.dashDeck._openOversight(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.dashDeck._openOversight()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>✅ real buttons/input wired</span></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck <span class="meta">(no Level-3 page)</span></span></div></div></div>
+</section><section class="card-section" id="card-chronicles" style="display:none">
+  <div class="chead"><span class="cdot" style="background:#C9A84C"></span><h2>📜 The Chronicles — real frontend flow</h2></div>
+  <div class="crivers"><a href="galaxy_map_module.html#river-10" class="river-chip" style="border-color:#868db8;color:#868db8">🌊 River X</a></div>
+  <p class="clegend-role">What actually happens when this dashboard card is clicked, traced from <code>dashDeck.MODULES</code>'s own real <code>go:</code> trigger in <code>rpgace_core.js</code> — never a guessed description. Real links down to Level 3 attach wherever a target module has a built function-chain page.</p>
+  <div class="gobody"><div class="gobody-label">Real <code>go:</code> trigger (verbatim, from rpgace_core.js)</div><pre>key: 'chronicles', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📜', name: 'The Chronicles', desc: 'Every real win, sale, and expense — one searchable log.', go: function() { RPGACE.modules.chroniclesLog._openCard(); } }</pre></div>
+  <div class="targets"><div class="tblock"><div class="tkind">💬 Real popup/panel</div><div class="tcode"><code>RPGACE.modules.chroniclesLog._openCard()</code></div><div class="evrow"><span>✅ real DOM/popup rendering</span><span>✅ real buttons/input wired</span></div><div class="tnote">Further real cross-module touches inside this popup — where the buttons inside it lead:</div><div class="chips"><span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">dashDeck._popup() <span class="meta">(no Level-3 page)</span></span><a href="galaxy_map_level3.html#mod-careerStatCard" class="mod-chip">🔽 careerStatCard._fetchAll()</a><a href="galaxy_map_level3.html#mod-careerStatCard" class="mod-chip">🔽 careerStatCard._isShipped()</a><a href="galaxy_map_level3.html#mod-careerStatCard" class="mod-chip">🔽 careerStatCard._buildItems()</a><a href="galaxy_map_level3.html#mod-careerStatCard" class="mod-chip">🔽 careerStatCard._relTime()</a><a href="galaxy_map_level3.html#mod-careerStatCard" class="mod-chip">🔽 careerStatCard._showDetail()</a></div><div class="tnote">Own Level-3 chain:</div><div class="chips"><a href="galaxy_map_level3.html#mod-chroniclesLog" class="mod-chip">🔽 chroniclesLog</a></div></div></div>
+</section>
+<div class="note">
+  Generated by <code>scripts/galaxy_map_level4.py</code> — real data from <code>graphify_river_group.py</code>'s
+  <code>compute_dashboard_card_flow()</code> (reads <code>dashDeck.MODULES</code>' own real <code>go:</code> trigger
+  directly from rpgace_core.js, never DASHBOARD_CARDS' own hand-written <code>via</code> label). All 12 real
+  dashboard cards built. Mapping rules: <code>system_map_spec.md</code>.
+</div>
+<script>
+(function() {
+  var tabs = document.querySelectorAll('.tab');
+  var sections = document.querySelectorAll('.card-section');
+  function show(id) {
+    sections.forEach(function(s) { s.style.display = (s.id === id) ? '' : 'none'; });
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.target === id); });
+  }
+  tabs.forEach(function(t) {
+    t.addEventListener('click', function() { location.hash = t.dataset.target; });
+  });
+  window.addEventListener('hashchange', function() {
+    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
+    show(id);
+  });
+  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
+  show(id0);
+})();
+</script>
+</body>
+</html>

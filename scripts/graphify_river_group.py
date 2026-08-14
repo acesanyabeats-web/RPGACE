@@ -1192,6 +1192,130 @@ def compute_module_ui_signal(module_name, core_js_path: Path = CORE_JS):
             'input': any(v['input'] for v in sigs.values())}
 
 
+# Aug 14 — G15's real data source (Level 4: "click a dashboard card, see
+# the real frontend flow"). Alex's own confirmed scope: what actually
+# happens on click (which page/popup opens, real DOM evidence, buttons
+# pressed, where it leads), with real links back to Level 3. Reads
+# dashDeck.MODULES' own real `go:` trigger directly — DASHBOARD_CARDS'
+# `via` field above is a real, independently-useful hand-written label,
+# not this function's source of truth.
+def parse_dashboard_card_go(core_js_path: Path = CORE_JS):
+    """Real, mechanical per-card `go:` body extraction from
+    rpgace_core.js's own dashDeck.MODULES array — same "capture until
+    the next similarly-shaped marker" technique as _function_bodies()/
+    _mainjs_function_bodies() (rule 8), splitting at each real
+    `key: '<x>'` boundary. Returns {key: go_body_text} for all 12 real
+    cards. Real, honest scope limit: a raw substring capture, not a
+    real JS parser — confirmed by direct read this doesn't mis-close on
+    any of the 12 current cards (no `}` sits inside a string literal in
+    any of their real go: bodies)."""
+    text = core_js_path.read_text(encoding='utf-8')
+    m = re.search(r'MODULES:\s*\[(.*?)\n  \],\n', text, re.S)
+    if not m:
+        return {}
+    block = m.group(1)
+    positions = [(mm.start(), mm.group(1)) for mm in re.finditer(r"key:\s*'(\w+)'", block)]
+    result = {}
+    for i, (start, key) in enumerate(positions):
+        end = positions[i + 1][0] if i + 1 < len(positions) else len(block)
+        result[key] = block[start:end]
+    return result
+
+
+def resolve_dashboard_card_target(go_body):
+    """Real classification of a card's own go: body into what it
+    genuinely opens — a real popup/panel call or a real page navigation
+    (`showPage(RPGACE.CONFIG.pages.X)`). Popup-call detection reuses
+    compute_module_calls_with_aliases() (rule 8, not a raw regex here
+    and the alias-aware one elsewhere) — real evidence found this
+    matters: taxonomy's own go: body reads `var rq =
+    RPGACE.modules.taxonomyReviewQueue; ... rq._openCard();`, a real
+    aliased call a literal `RPGACE.modules.X.Y(` regex alone would have
+    silently missed entirely. Returns [(kind, a, b), ...] since a
+    card's go: can genuinely branch (taxonomy: a real conditional
+    between a popup call and a page navigation — both real, both kept,
+    never arbitrarily picking one), excluding dashDeck._popup()/
+    _pendingReviewCount-shaped false positives isn't needed here since
+    _popup itself is never called directly inside a top-level go: body
+    (confirmed by direct read of all 12)."""
+    targets = [('popup', mod, fn) for mod, fn in compute_module_calls_with_aliases(go_body)]
+    for page in re.findall(r'showPage\(\s*RPGACE\.CONFIG\.pages\.(\w+)\s*\)', go_body):
+        targets.append(('page', page, None))
+    return targets
+
+
+def _resolve_module_aliases(body):
+    """Real, mechanical alias resolution — this codebase's own
+    established real style (`var self = this`, `var rt =
+    RPGACE.modules.researchTabs`, `var bw = RPGACE.modules.bookworm`,
+    all real, confirmed examples) assigns a local alias to
+    `RPGACE.modules.<name>` before calling `alias.method(...)`, which a
+    literal `RPGACE.modules.<name>.<method>(` regex alone misses.
+    Returns {alias: module_name}."""
+    return dict(re.findall(r'var\s+(\w+)\s*=\s*RPGACE\.modules\.(\w+)\s*;', body))
+
+
+def compute_module_calls_with_aliases(body):
+    """Real cross-module call extraction that also resolves the real
+    local-alias pattern above — the SAME literal `RPGACE.modules.X.Y(`
+    signal compute_intra_river_flow()/compute_cross_module_function_calls()
+    already use (rule 8, not a second detection method), extended to
+    also catch the aliased form. Returns [(module, func), ...], real
+    source order, duplicates kept (a real call count, not a set)."""
+    calls = list(re.findall(r'RPGACE\.modules\.(\w+)\.(\w+)\s*\(', body))
+    for alias, mod in _resolve_module_aliases(body).items():
+        for fn in re.findall(r'\b' + re.escape(alias) + r'\.(\w+)\s*\(', body):
+            calls.append((mod, fn))
+    return calls
+
+
+def compute_dashboard_card_flow(core_js_path: Path = CORE_JS):
+    """Real, evidence-based per-dashboard-card frontend flow — Aug 14,
+    G15's actual data source. For each of DASHBOARD_CARDS' 12 real
+    cards, resolves the ACTUAL `go:` trigger one real hop deep: for a
+    popup target, real evidence found by direct read of 5 of these
+    functions (_openBookworm/_openMorningBrief/_openGaps/_openPipeline,
+    plus _openResearch's own different real shape) shows the SAME
+    established pattern — dashDeck's own `_openX()` calls a real target
+    module's own `_inject*` function BEFORE opening the popup (e.g.
+    `bookworm._injectDashboardWidget()`), which is genuinely the real
+    destination module, not dashDeck itself. Surfaced here as
+    `sub_injector` via compute_module_calls_with_aliases() (rule 8),
+    never hardcoded per card. Also surfaces every other real
+    cross-module call inside that popup's own body (sub_calls) and
+    whether the popup body itself carries real UI_OUTPUT/UI_INPUT
+    evidence. For a page-navigation target, the real candidate modules
+    come from CARDS_BY_RIVER's own already-sourced `rivers` list — page
+    ownership is honestly multi-module here (e.g. the Oracle page has
+    no single owning module, confirmed by direct read elsewhere in this
+    file), never forced into one guessed winner.
+
+    Returns {card_key: {'go_body': str, 'targets': [...]}}."""
+    go_map = parse_dashboard_card_go(core_js_path)
+    result = {}
+    for card in DASHBOARD_CARDS:
+        key = card['key']
+        go_body = go_map.get(key, '')
+        raw_targets = resolve_dashboard_card_target(go_body)
+        entry = {'go_body': go_body.strip(), 'targets': []}
+        for kind, a, b in raw_targets:
+            if kind == 'page':
+                entry['targets'].append({'kind': 'page', 'page': a})
+                continue
+            mod, fn = a, b
+            body = _function_bodies(mod, core_js_path).get(fn, '')
+            sub_calls = compute_module_calls_with_aliases(body)
+            sub_injector = next(((m, f) for m, f in sub_calls if f.startswith('_inject')), None)
+            entry['targets'].append({
+                'kind': 'popup', 'module': mod, 'func': fn,
+                'sub_injector': sub_injector, 'sub_calls': sub_calls,
+                'output': bool(UI_OUTPUT_PATTERN.search(body)),
+                'input': bool(UI_INPUT_PATTERN.search(body)),
+            })
+        result[key] = entry
+    return result
+
+
 WRAP_TARGETS = ('callOracle', 'sendChat')
 
 

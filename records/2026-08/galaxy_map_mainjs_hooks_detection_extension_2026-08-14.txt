@@ -173,15 +173,91 @@ VERIFICATION DISCIPLINE APPLIED
 - Real before/after diff against the actual committed HTML (git show HEAD:),
   not assumed from re-reading the new code alone (rule 4).
 
-NOT BUILT THIS PASS, EXPLICITLY FLAGGED (locked Top-10 items still open)
+ITEM 3 — G15 ITSELF (LEVEL 4), SAME SESSION, SAME-DAY CONTINUATION
 ---------------------------------------------------------------------------
-- Item 3: G15 itself — the real Level 4 build (click a dashboard card ->
-  real frontend flow -> real links back to Level 3). This pass built and
-  verified its stated prerequisite; the actual Level 4 page is a separate,
-  substantial next deliverable, not attempted in this same pass (deliberate
-  scope discipline, not silently dropped).
+Alex confirmed the "zero same-river hook pairs" finding above is correct
+and expected ("the code doesn't actually have any rivers, it was a concept
+i came up with for minotaur map") and said "yes go g15" — Level 4 was
+built in the same session, real, evidence-based throughout, never guessed.
+
+WHAT WAS BUILT (scripts/graphify_river_group.py, new scripts/galaxy_map_level4.py)
+- parse_dashboard_card_go() — real, mechanical extraction of every one of
+  DASHBOARD_CARDS' 12 real cards' own `go:` trigger body straight from
+  rpgace_core.js's dashDeck.MODULES array (never DASHBOARD_CARDS' own
+  hand-written `via` label, which stays a real, separately-useful summary).
+- resolve_dashboard_card_target() + _resolve_module_aliases() +
+  compute_module_calls_with_aliases() — real classification into a popup
+  call or a showPage() page navigation. A real bug caught and fixed before
+  shipping: the first version used a bare `RPGACE.modules.X.Y(` regex and
+  silently missed taxonomy's own real conditional popup branch (`var rq =
+  RPGACE.modules.taxonomyReviewQueue; ... rq._openCard();`) since `rq` is a
+  local alias — this codebase's own established style (self/rt/bw/mb/kg/cpl
+  are all real, confirmed examples). Fixed with a real, generalized alias
+  resolver reused everywhere a cross-module call is detected in this file
+  (rule 8), not a taxonomy-specific patch.
+- compute_dashboard_card_flow() — for each card, resolves one real hop
+  past the popup call: 5 of dashDeck's own `_openX()` functions
+  (_openBookworm/_openMorningBrief/_openGaps/_openPipeline, confirmed by
+  direct read) call a real target module's own `_inject*()` function
+  BEFORE opening the popup — that target module (bookworm, morningBrief,
+  knowledgeGap, contentProductionLive) is the real content owner, not
+  dashDeck itself, which is confirmed NOT one of the 44 real
+  RIVER_MODULES-tracked modules (a real, pre-existing structural fact).
+  _openResearch has a genuinely different real shape (no single
+  sub-injector — each real tab row's own onclick calls `rt.show(t.key)`,
+  resolved via the same alias fix); _openOversight has neither (a real,
+  honest self-contained popup of static doc links, correctly shown with
+  no further Level-3 link).
+- galaxy_map_level4.py — one section per real dashboard card: the real
+  go: trigger verbatim, each real resolved target (popup or page), real
+  UI_OUTPUT/UI_INPUT evidence, the real sub-injector hop and every other
+  real cross-module touch inside the popup (each independently linked to
+  its own Level-3 page when one exists), and for page-navigation targets,
+  the real candidate module list from that card's own CARDS_BY_RIVER
+  rivers (honestly multi-module, never forced to one guessed winner).
+- galaxy_map_module.py (Level 2) — every dashboard-card diamond node is
+  now a real clickable link into its own Level-4 section
+  (galaxy_map_level4.html#card-<key>), plus every card's own text legend
+  row also links there. A real, separate gap found and fixed: the SVG
+  diamond only draws inside the `if mods:` flow-layout branch, so
+  'oversight' (the one card whose sole river, XIV, has zero real
+  registered modules) had NO diamond and would have had zero real Level-4
+  link anywhere on Level 2 — fixed via the legend-row link, which every
+  river section renders regardless of module count.
+
+MEASURED, VERIFIED RESULT
+- 12 of 12 real dashboard cards built. 7 of 9 real popup-kind targets
+  resolve to a real, linked Level-3 page (taxonomy/chronicles directly;
+  bookworm/morningBrief/gaps/pipeline via their real sub-injector;
+  research via its real per-tab cross-module call). oversight and the
+  page-navigation-only cards (oracle/agenda/encyclopedia/journal) honestly
+  show no single Level-3 owner or a real multi-module candidate list,
+  per the actual code shape — never forced.
+- All 12 cards now have at least one real, working Level-2→Level-4 link
+  (verified via direct grep of the regenerated HTML: 11 cards via the SVG
+  diamond, all 12 via the legend-row link, taxonomy appearing twice since
+  it spans 2 real rivers).
+- Idempotency: 2 fresh full 5-file pipeline runs (galaxy_map.py through
+  galaxy_map_level4.py), identical md5 across all 5 output files.
+- div/a/section balance: clean on all 5 regenerated files (galaxy_map_
+  level4.html 164/164 div, 72/72 a, 12/12 section; galaxy_map_module.html
+  253/253 div, 133/133 a after the new links, both up from 253/120 pre-G15).
+- node --check rpgace_core.js clean (SELF_KNOWLEDGE gained a real Aug 14
+  paragraph; the Oversight popup's Auto-generated group gained a real
+  Level-4 entry, and the stale Level-3 "426 real functions" count was
+  corrected to 427 in the same edit). rpgace_core.min.js re-minified,
+  index.html's cache-bust bumped to ?v=20260814a.
+
+STILL OPEN (locked Top-10, real, named, not silently dropped)
+---------------------------------------------------------------------------
 - Item 5: G7 — /cartographer trickle-down/up retroactive scan.
 - Item 6: G8 — hand-test /CEO Loop 2 wiring live.
 - The remaining 3 genuinely-isolated modules (agentsIntoOracle, authGate,
-  intelBatchList) and the unchanged Level-2 "no link within river" count
-  are real, honest, named gaps — not silently presented as fixed.
+  intelBatchList), the unchanged Level-2 "no link within river" count, and
+  the module-less-river SVG-diamond gap (worked around via the legend-row
+  link for 'oversight' specifically, not fixed at its root for any future
+  module-less-river card) are real, honest, named gaps — not silently
+  presented as fixed.
+- No real hand-test/headless-Chromium render check on Level 4 or the new
+  Level-2 links this pass — same standing gap as every other Galaxy Map
+  shipment this multi-day effort, flagged plainly, not hidden.
