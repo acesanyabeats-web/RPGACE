@@ -54,9 +54,18 @@ def build_module_section(mod, branches):
             f'<code class="bcond">{esc(b["condition"]) if b["condition"] else "(no condition — real fallback branch)"}</code></div>'
             for b in branches[f]
         )
+        # G20/Q3 (Aug 14, Alex's own answer): "most logic steps wont
+        # have another logic step to transfer to at level 6, so it just
+        # connects to n-1 next step function." Real, honest scope: Level
+        # 3's own hash-router only resolves at MODULE granularity (its
+        # bands/functions have no individual anchor id of their own),
+        # so this link's real destination is the function's own module
+        # page, not a scrolled-to individual node — stated plainly, not
+        # overclaimed as function-precise.
         func_blocks.append(
             f'<div class="fblock"><div class="fname">{esc(f)}() '
-            f'<span class="fcount">{len(branches[f])} real branch point(s)</span></div>{rows}</div>'
+            f'<span class="fcount">{len(branches[f])} real branch point(s)</span>'
+            f'<a class="n1-link" href="galaxy_map_level3.html#mod-{mod}" title="Real n-1 — this function\'s own module page (Level 3 has no per-function anchor, so this lands on the module, not a scrolled-to node)">🔭 n-1: {mod}.{esc(f)}()</a></div>{rows}</div>'
         )
     return f'''<section class="msection" id="m-{mod}" style="display:none">
   <div class="mhead"><h2>{mod}</h2><span class="river-chip">{river_label}</span><span class="mtotal">{total} real branch point(s) across {len(branches)} function(s)</span></div>
@@ -95,6 +104,8 @@ TEMPLATE = """<!DOCTYPE html>
   .mod-chip{{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(155,89,182,0.12);color:var(--purple);text-decoration:none;border:1px solid rgba(155,89,182,0.3);display:inline-block;margin:8px 0 16px}}
   .fblock{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;margin-bottom:10px}}
   .fname{{font-size:11.5px;font-weight:700;color:var(--gold);margin-bottom:6px}}
+  .n1-link{{float:right;font-size:9px;font-weight:700;color:#5FB3D9;text-decoration:none}}
+  .n1-link:hover{{text-decoration:underline}}
   .fcount{{font-size:9.5px;color:var(--dim);font-weight:400}}
   .branch-row{{display:flex;gap:10px;align-items:baseline;font-size:10.5px;padding:3px 0;flex-wrap:wrap}}
   .bkind{{color:var(--purple);font-weight:700;min-width:62px}}

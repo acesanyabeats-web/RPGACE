@@ -93,6 +93,7 @@ from graphify_river_group import (  # noqa: E402
     dashboard_card_primary_module,
     LEVEL3_MODULES, compute_module_ui_signal, compute_cross_module_function_calls,
     attribute_river_connection_function, compute_module_oracle_call_count,
+    rivers_needing_meanders,
 )
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
@@ -692,14 +693,37 @@ def build_river_section(rnum):
     skill_list = ''.join(_skill_row(s, n) for s, n in skills_here) or \
         '<div class="legend-row small"><span class="meta">No real skill has a direct, cited relationship with this river.</span></div>'
 
+    # G20 (Aug 14, Alex's own direct ask, real evidence: this river's own
+    # crowded fan-out of mostly-isolated modules crossed by Alex/Oracle
+    # bubble edges was the exact screenshot he flagged as "very messy").
+    # rivers_needing_meanders() is the same real, mechanical rule
+    # galaxy_map_meanders.py uses (rule 8, never re-derived) — a river
+    # only gets this simplified swap where it genuinely has 2+ real
+    # dashboard cards to split by. Every other river's canvas is fully
+    # untouched (nodes_svg/edges_svg are still computed exactly as
+    # before above this point — discarded only here, only for a
+    # qualifying river, zero risk to the other 15).
+    if rnum in rivers_needing_meanders():
+        canvas_html = (
+            f'<div class="meander-notice">'
+            f'<p>This river has {len(mods)} real modules across {len(cards)} real dashboard cards — genuinely too many to '
+            f'usefully fan out on one canvas without the crossing Alex/Oracle bubble mess this used to show. '
+            f'It has been split into real meanders (one per dashboard card) instead.</p>'
+            f'<a class="meander-link" href="galaxy_map_meanders.html#river-{rnum}">🌾 View {river_label.split("—")[0].strip()}\'s real meanders (Level 1.5) →</a>'
+            f'</div>'
+        )
+    else:
+        canvas_html = (
+            f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">'
+            f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
+            f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
+            f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
+        )
     body = (
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
         f'{legend}'
-        f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">'
-        f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
-        f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
-        f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
+        f'{canvas_html}'
         f'<div class="legend"><h3>Real modules</h3><p class="modlist">{mod_list}</p>'
         f'<h3>Real dashboard-card entry points</h3>{card_list}</div>'
         f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
@@ -740,6 +764,10 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   .rdot{{width:12px;height:12px;border-radius:50%;display:inline-block}}
   .rlegend-role{{text-align:center;color:var(--dim);font-size:11.5px;max-width:760px;margin:0 auto 16px;line-height:1.6}}
   .canvas-wrap{{overflow-x:auto}}
+  .meander-notice{{max-width:640px;margin:20px auto;padding:20px 24px;background:rgba(95,179,217,0.06);border:1px solid rgba(95,179,217,0.25);border-radius:12px;text-align:center}}
+  .meander-notice p{{font-size:12px;color:var(--dim);line-height:1.7;margin-bottom:14px}}
+  .meander-link{{display:inline-block;font-size:12.5px;font-weight:700;color:#5FB3D9;text-decoration:none;padding:8px 18px;border:1px solid rgba(95,179,217,0.4);border-radius:20px}}
+  .meander-link:hover{{background:rgba(95,179,217,0.12)}}
   svg text{{font-family:'Segoe UI',system-ui,sans-serif;user-select:none}}
   a.drill-link{{cursor:pointer}}
   a.drill-link .node circle{{transition:filter 0.15s}}
@@ -761,6 +789,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_meanders.html">🌾 Level 1.5</a><span class="bc-sep">→</span>
   <span class="bc-here">🌊 Level 2</span>
 </div>
 

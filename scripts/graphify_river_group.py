@@ -1259,6 +1259,43 @@ def _extract_balanced(text, open_paren_idx):
     return None
 
 
+# Aug 14, later pass (Alex's own Q2 answer on the meanders/Level-1.5
+# ask): "1.5 could also be used to show how externals integrate into
+# dashboard too with each function." Real, confirmed call convention
+# (direct grep, not guessed): `RPGACE.api('ACTION_NAME', params)` is
+# THIS codebase's one real Composio-proxy call site (8 real occurrences
+# total, e.g. 'GMAIL_FETCH_EMAILS', 'SUPADATA_GET_YOUTUBE_CHANNEL') —
+# confirmed against its own real definition site. Oracle already has
+# its own richer detector (compute_oracle_call_counts) — this covers
+# the other real, mechanically-detectable external, Composio.
+_COMPOSIO_CALL = re.compile(r"RPGACE\.api\(\s*['\"]([A-Z_]+)['\"]")
+
+
+def compute_external_call_sites(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION list of real Composio action calls —
+    {func_name: [action_name, ...]}. Reuses _function_bodies() (rule 8).
+    Empty for a function with no real RPGACE.api() call — most of them,
+    honestly, since only 8 real call sites exist project-wide."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        actions = _COMPOSIO_CALL.findall(b)
+        if actions:
+            out[f] = actions
+    return out
+
+
+def rivers_needing_meanders():
+    """Real, mechanical rule (Alex's own confirmed answer, Aug 14): a
+    river gets a Level-1.5 meanders page only where it can actually be
+    split by something real — 2+ real dashboard cards (CARDS_BY_RIVER).
+    A river with 0-1 cards has nothing real to split by, even if it has
+    many modules (e.g. River III: 12 modules, but all 12 feed the same
+    single 'oracle' card — no real meander boundary exists there).
+    Checked against live data (Aug 14): exactly River V qualifies."""
+    return [r for r, cards in CARDS_BY_RIVER.items() if len(cards) >= 2]
+
+
 def compute_function_branches(module_name, core_js_path: Path = CORE_JS):
     """Real, per-FUNCTION list of every real conditional branch point —
     {func_name: [{'kind': 'if'|'else if'|'else'|'switch', 'condition': str|None}, ...]}.

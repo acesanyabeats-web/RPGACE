@@ -38,7 +38,7 @@ from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers, cou
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
-    compute_module_ui_signal,
+    compute_module_ui_signal, rivers_needing_meanders,
 )
 
 
@@ -181,6 +181,18 @@ def build_svg():
         elif rnum in oversight_feeders:
             bx, by = polar(rx, ry, 34, -45)
             nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="13" opacity="0.85" title="Feeds Oversight (River XIV)">📚</text>')
+        # G20 (Aug 14) — a real "🌾" badge + direct link on any river that
+        # genuinely qualifies for a Level-1.5 meanders split
+        # (rivers_needing_meanders(), rule 8, same rule galaxy_map_
+        # meanders.py itself uses). NOT nested inside the existing
+        # drill-link <a> above (invalid HTML) — a separate small link
+        # placed just outside it.
+        if rnum in rivers_needing_meanders():
+            mx, my = polar(rx, ry, 34, 45)
+            nodes_svg.append(
+                f'<a href="galaxy_map_meanders.html#river-{rnum}">'
+                f'<text x="{mx}" y="{my}" text-anchor="middle" font-size="15" title="Has a real Level-1.5 meanders split">🌾</text></a>'
+            )
         mods = RIVER_MODULES.get(rnum, [])
         # Real, LIGHTWEIGHT Alex-presence badge (Aug 13, Alex's own ask,
         # "also present at level 0, 1 and 2 where it makes sense") — a
@@ -306,7 +318,9 @@ TEMPLATE = """<!DOCTYPE html>
 
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <span class="bc-here">🏛️ Level 1</span>
+  <span class="bc-here">🏛️ Level 1</span><span class="bc-sep">→</span>
+  <a href="galaxy_map_meanders.html">🌾 Level 1.5</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_module.html">🌊 Level 2</a>
 </div>
 
 <div class="hero">
