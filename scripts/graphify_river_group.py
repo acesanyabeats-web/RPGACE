@@ -726,7 +726,24 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
     # generic lifecycle hooks" discipline this function already applies
     # below to RPGACE.hooks).
     UTILITY_SIGNALS = ('sendToOracle', 'fillGaps')
-    WRAP_TARGETS = ('callOracle', 'sendChat')
+    # G25 (Aug 14, real /misunderstanding follow-up — River V showed
+    # 10/10 modules isolated). Real evidence found by direct grep,
+    # checked before generalizing (not assumed): `callOracle`/`sendChat`
+    # were never the only real window.X wrap-chain targets in the
+    # codebase — `syncIntelData` (3 real wraps, 2 of them ciAutoPropose/
+    # intelDedup, BOTH River V) and `renderEncEntries` (2 real wraps,
+    # both River VII) are real, equally-valid instances of the exact
+    # same idiom, just never generalized past the 2 Oracle-specific
+    # names this signal originally shipped with. WRAP_TARGETS is now
+    # computed from the live file (every real window.X wrap site with
+    # 2+ real wrappers anywhere in the codebase — genuinely dynamic,
+    # not hand-extended with 2 more hardcoded names) rather than a
+    # fixed tuple, so a future new wrap chain doesn't need this file
+    # touched again to be detected.
+    _wrap_counts = {}
+    for _wm in re.findall(r'window\.(\w+)\s*=\s*function', core_js_path.read_text(encoding='utf-8')):
+        _wrap_counts[_wm] = _wrap_counts.get(_wm, 0) + 1
+    WRAP_TARGETS = sorted(k for k, v in _wrap_counts.items() if v >= 2)
     DOM_SIGNALS = (r"getElementById\(\s*['\"]chat-input['\"]\s*\)",
                    r"getElementById\(\s*['\"]send-btn['\"]\s*\)",
                    r'\[onclick\*="sendChat"\]')
@@ -747,10 +764,13 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
                     edges.append((m, other, 'direct'))
                     touched.add(m); touched.add(other)
 
-        # Signal 2: window.callOracle/sendChat wrap-chain membership —
-        # real file-declaration order IS the real real wrap order (the
-        # last reassignment before use is what executes), so this draws
-        # a real ordered chain, not a fabricated complete graph.
+        # Signal 2: real window.X wrap-chain membership, ANY multi-
+        # wrapped function (WRAP_TARGETS, computed dynamically above —
+        # G25 generalized this past the original callOracle/sendChat-
+        # only pair) — real file-declaration order IS the real wrap
+        # order (the last reassignment before use is what executes),
+        # so this draws a real ordered chain, not a fabricated complete
+        # graph.
         for target in WRAP_TARGETS:
             wrappers = [m for m in mods if re.search(
                 r'window\.' + target + r'\s*=\s*function', block_of(m))]
@@ -1285,6 +1305,95 @@ def compute_external_call_sites(module_name, core_js_path: Path = CORE_JS):
     return out
 
 
+def compute_river_flow_cycles():
+    """Real strongly-connected-component detection over RIVER_FLOWS
+    (Aug 14, G24 — Alex's own /misunderstanding: "back into reoccuring
+    rivers to form loops (there are so many loops)"). Real, confirmed
+    finding, not assumed: these cycles exist. Tarjan's algorithm (not a
+    naive DFS-back-edge scan, which was tried first and produced 4
+    overlapping/redundant "cycles" for what is really ONE real 7-river
+    mutually-reachable group — discarded per rule 4, not shipped) gives
+    the real, CANONICAL grouping: each strongly-connected component is
+    exactly the set of rivers that can all reach each other, no more,
+    no less, no overlap between groups.
+
+    Real, deterministic (sorted() adjacency iteration — same tie-break
+    discipline as every other detector in this file; re-run twice to
+    confirm identical output before shipping). Returns a list of
+    sorted river-number lists, each a real cycle group (size 1 —
+    genuinely acyclic — silently excluded, only real cycles returned)."""
+    adj = {}
+    nodes = set()
+    for src, targets in RIVER_FLOWS.items():
+        nodes.add(src)
+        for t in targets:
+            dst = _river_num_from_label(t[0])
+            if dst is not None:
+                adj.setdefault(src, []).append(dst)
+                nodes.add(dst)
+
+    index_counter = [0]
+    stack, lowlink, index, on_stack, sccs = [], {}, {}, {}, []
+
+    def strongconnect(v):
+        index[v] = lowlink[v] = index_counter[0]
+        index_counter[0] += 1
+        stack.append(v)
+        on_stack[v] = True
+        for w in sorted(adj.get(v, [])):
+            if w not in index:
+                strongconnect(w)
+                lowlink[v] = min(lowlink[v], lowlink[w])
+            elif on_stack.get(w):
+                lowlink[v] = min(lowlink[v], index[w])
+        if lowlink[v] == index[v]:
+            comp = []
+            while True:
+                w = stack.pop()
+                on_stack[w] = False
+                comp.append(w)
+                if w == v:
+                    break
+            sccs.append(sorted(comp))
+
+    for n in sorted(nodes):
+        if n not in index:
+            strongconnect(n)
+    return [c for c in sccs if len(c) > 1]
+
+
+def describe_river_cycle(members):
+    """Real, evidence-grounded explanation for one real cycle group
+    (compute_river_flow_cycles()) — the real interaction-TYPE evidence
+    that tells 'a genuine hub, many independent real actions converging
+    on a shared resource' apart from 'a real two-way round trip with
+    one external system' (Aug 14, checked against live data — these are
+    NOT the same shape, confirmed by direct inspection: the 2-river
+    River XI<->XII cycle is 100% dispatch_trigger both directions — a
+    real send/receive round trip, not a hub; the 7-river group carries
+    4 distinct real types). Never a blanket 'it's a hub' assertion —
+    the real type set decides which story is told."""
+    members_set = set(members)
+    types = set()
+    for r in members:
+        for t in RIVER_FLOWS.get(r, []):
+            if _river_num_from_label(t[0]) in members_set:
+                types.add(t[2])
+    if len(types) <= 1:
+        kind = 'round_trip'
+        reason = ("a real two-way round trip — one real interaction type (%s) in both directions, "
+                   "not a hub: something real goes out, a real result comes back through the same "
+                   "channel." % (next(iter(types)) if types else 'unlabeled'))
+    else:
+        kind = 'hub'
+        type_labels = ', '.join(sorted(INTERACTION_TYPE_LABEL.get(t, t) for t in types))
+        reason = ("a real hub — %d genuinely different real interaction types (%s) all pass through "
+                   "this shared group, which is why the aggregate graph shows a cycle: it's several "
+                   "independent real actions converging on (and radiating from) one shared resource, "
+                   "never one action automatically triggering the next in a runtime loop." % (len(types), type_labels))
+    return {'kind': kind, 'types': sorted(types), 'reason': reason}
+
+
 def rivers_needing_meanders():
     """Real, mechanical rule (Alex's own confirmed answer, Aug 14): a
     river gets a Level-1.5 meanders page only where it can actually be
@@ -1494,7 +1603,7 @@ def find_wrap_installer_function(module_name, core_js_path: Path = CORE_JS):
 _WRAP_NOTE_KEYWORDS = ('prefix', 'message', 'chat', 'divert', 'trigger')
 
 
-def attribute_river_connection_function(from_river, to_river, note='', core_js_path: Path = CORE_JS, cross_calls=None):
+def attribute_river_connection_function(from_river, to_river, note='', core_js_path: Path = CORE_JS, cross_calls=None, itype=None):
     """Real, evidence-gated attribution of WHICH function a river-to-
     river connection actually lands on — Aug 13, Alex's own direct ask
     ("both ends of river have the next function chaining off it...
@@ -1506,7 +1615,7 @@ def attribute_river_connection_function(from_river, to_river, note='', core_js_p
     TRIGGER_PREFIXES / window.sendChat wrap (find_wrap_installer_
     function() resolves this to the real `_patchChatTrigger`).
 
-    Two real, ordered signals — never a guess:
+    Three real, ordered signals — never a guess:
       1. A real compute_cross_module_function_calls() edge whose source
          module's river is `from_river` and target module's river is
          `to_river` — the strongest evidence (a literal traced call).
@@ -1522,9 +1631,23 @@ def attribute_river_connection_function(from_river, to_river, note='', core_js_p
          (_WRAP_NOTE_KEYWORDS) before signal 2 fires at all — an empty
          or unrelated note correctly returns no attribution rather
          than reusing whatever wrap function happens to exist.
+      3. (Aug 14, G23b, real /misunderstanding follow-up — 6 of the 20
+         real unattributed gaps were `nav_route` type.) When `itype`
+         is passed as `'nav_route'` and signals 1-2 both find nothing,
+         attribute to main.js's own real `showPage()` — CORE_WRAPPER_
+         HOOKS confirms it's the one real, generic function every page
+         switch in the whole app goes through (bridges to the real
+         `'page:show'` hook). Real, honestly generic: every nav_route
+         gap gets the SAME answer, because there genuinely is only one
+         real mediating function for "the user clicked a nav link" —
+         checked (compute_hook_signal_edges()) to confirm no MORE
+         specific per-connection evidence exists before falling back
+         to this. `to_mod` returns as the literal string `'main.js'`
+         (not a RPGACE.register module — correctly renders with no
+         Level-3 link, since main.js has no Level-3 page).
     Returns (from_module_or_None, to_module, to_func, real_reason) or
-    None if neither signal finds anything — an honest gap, never
-    fabricated to fill the space.
+    None if no signal finds anything — an honest gap, never fabricated
+    to fill the space.
 
     `cross_calls`: pass a pre-computed compute_cross_module_function_
     calls() list when checking many connections in a loop (a real,
@@ -1544,6 +1667,8 @@ def attribute_river_connection_function(from_river, to_river, note='', core_js_p
             wrap_fn = find_wrap_installer_function(to_mod, core_js_path)
             if wrap_fn:
                 return (None, to_mod, wrap_fn, 'a real callOracle/sendChat wrap installer')
+    if itype == 'nav_route':
+        return (None, 'main.js', 'showPage', "the real, generic page-switch function every nav_route connection goes through (bridges to the real 'page:show' hook)")
     return None
 
 

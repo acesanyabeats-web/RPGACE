@@ -117,8 +117,8 @@ def _incoming_attribution_for_module(module_name):
     rnum = _owning_river(module_name)
     if rnum is None:
         return None
-    for other, note, _itype in FLOWS_IN.get(rnum, []):
-        attr = attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_MODULE_CALLS)
+    for other, note, itype in FLOWS_IN.get(rnum, []):
+        attr = attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_MODULE_CALLS, itype=itype)
         if attr and attr[1] == module_name:
             return (other, attr[2], attr[3])
     return None

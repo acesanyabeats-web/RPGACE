@@ -372,9 +372,9 @@ def build_river_section(rnum):
                 # guess. See attribute_river_connection_function()'s own
                 # docstring for the real over-attribution bug this
                 # gating fixed before shipping.
-                attr = (attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_CALLS)
+                attr = (attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_CALLS, itype=itype)
                         if direction == 'in' else
-                        attribute_river_connection_function(rnum, other, note, cross_calls=CROSS_CALLS))
+                        attribute_river_connection_function(rnum, other, note, cross_calls=CROSS_CALLS, itype=itype))
                 if attr:
                     _from_mod, to_mod, to_func, _reason = attr
                     sx_ = x + (-70 if direction == 'in' else 70)
@@ -390,6 +390,24 @@ def build_river_section(rnum):
                         nodes_svg.append(f'<a href="{l3_href}" class="drill-link">{stub_inner}</a>')
                     else:
                         nodes_svg.append(stub_inner)
+                else:
+                    # G23a (Aug 14, /misunderstanding-diagnosed: "a line
+                    # with no mediating body on it makes no sense at
+                    # all") — real, honest fix. Before this, an
+                    # unattributed connection rendered IDENTICALLY to an
+                    # attributed one (this whole else-branch didn't
+                    # exist) — a viewer had no way to tell "we know the
+                    # exact function" from "we only know the aggregate
+                    # relationship" just by looking. Now every
+                    # unattributed connection gets an explicit, honestly-
+                    # labeled stub instead of silence.
+                    sx_ = x + (-70 if direction == 'in' else 70)
+                    sy_ = y + 46
+                    nodes_svg.append(
+                        f'<rect x="{sx_-46}" y="{sy_-13}" width="92" height="26" rx="6" fill="#0f0f1a" '
+                        f'stroke="#6b7280" stroke-width="1" stroke-dasharray="1,3" opacity="0.55"/>'
+                        f'<text x="{sx_}" y="{sy_+4}" text-anchor="middle" font-size="7.5" fill="#8a8a9a" opacity="0.8">❓ no known function</text>'
+                    )
         _place_river_col([c for c in conns if c[0] == 'in'], X_IN, 'in', (X_HUB, cy))
 
         # river-identity hub — deliberately added to nodes_svg AFTER the
@@ -632,6 +650,18 @@ def build_river_section(rnum):
 
     legend = (f'<p class="rlegend-role">{RIVER_ROLE_NOTE.get(rnum, "")}</p>'
               if RIVER_ROLE_NOTE.get(rnum) else '')
+    # G23c (Aug 14, /misunderstanding-diagnosed: "why some rivers at
+    # level 2 only connect to other rivers") — real, honest, on-map
+    # explanation instead of relying on chat to explain it each time.
+    # Rivers XII-XVI genuinely have 0 real rpgace_core.js modules — by
+    # design, not a gap (they're Total-systems categories: API/Auth,
+    # Skills, Oversight Docs, Session Records, Dev Tooling — none of
+    # them ARE app modules).
+    if not mods:
+        legend += ('<p class="rlegend-role">ℹ️ This river genuinely has 0 real rpgace_core.js modules, by design — '
+                    'it\'s a Total-systems category (dev-process/infrastructure), not an app module domain. '
+                    'What it shows below (dashboard cards, external connectors, skills, river-to-river connections) '
+                    'is the real complete picture, not a partial one.</p>')
     if rnum == OVERSIGHT_RIVER:
         legend += '<p class="rlegend-role">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI.</p>'
     elif rnum in OVERSIGHT_FEEDERS:

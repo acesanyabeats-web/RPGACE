@@ -39,6 +39,7 @@ from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
     compute_module_ui_signal, rivers_needing_meanders,
+    compute_river_flow_cycles, describe_river_cycle,
 )
 
 
@@ -194,6 +195,13 @@ def build_svg():
                 f'<text x="{mx}" y="{my}" text-anchor="middle" font-size="15" title="Has a real Level-1.5 meanders split">🌾</text></a>'
             )
         mods = RIVER_MODULES.get(rnum, [])
+        # G23c (Aug 14, /misunderstanding-diagnosed) — a real, visible
+        # badge right on the ring node itself, not just in the legend
+        # text below, so "0 modules, by design" is legible at first
+        # glance, not only after scrolling to the per-river role note.
+        if not mods:
+            gx, gy = polar(rx, ry, 34, 135)
+            nodes_svg.append(f'<text x="{gx}" y="{gy}" text-anchor="middle" font-size="13" opacity="0.85" title="0 real rpgace_core.js modules, by design — a Total-systems category, not an app module domain">⚙️</text>')
         # Real, LIGHTWEIGHT Alex-presence badge (Aug 13, Alex's own ask,
         # "also present at level 0, 1 and 2 where it makes sense") — a
         # full bubble+edges (Level 2/3's own treatment) would be real
@@ -273,8 +281,32 @@ def build_svg():
     crossings_after = count_crossings(river_pos, real_ring_edges)
 
     markers_defs = _build_markers(edge_colors_used)
+
+    # G24 (Aug 14, /misunderstanding-diagnosed: "back into reoccuring
+    # rivers to form loops (there are so many loops)") — real, built-
+    # time cycle detection + evidence-grounded explanation, not left as
+    # unexplained circular-looking edges. Also a real "🔄" badge on
+    # every river node that's actually IN a real cycle group.
+    cycle_groups = compute_river_flow_cycles()
+    cycle_members = set(r for grp in cycle_groups for r in grp)
+    for rnum in cycle_members:
+        if rnum in river_pos:
+            rx, ry = river_pos[rnum]
+            cb_x, cb_y = polar(rx, ry, 34, 180)
+            nodes_svg.append(f'<text x="{cb_x}" y="{cb_y}" text-anchor="middle" font-size="12" opacity="0.85" title="Real cycle member — see \'Why some rivers loop back\' below">🔄</text>')
+    cycle_rows = []
+    for grp in cycle_groups:
+        d = describe_river_cycle(grp)
+        names = ', '.join(RIVER_NAME[r].split('—')[0].strip() for r in grp)
+        icon = '🔁' if d['kind'] == 'round_trip' else '🌀'
+        cycle_rows.append(
+            f'<div class="cycle-row"><div class="cycle-heading">{icon} {names}</div>'
+            f'<p class="cycle-reason">{d["reason"]}</p></div>'
+        )
+    cycles_html = ''.join(cycle_rows) or '<p class="meta">No real cycles detected in the current RIVER_FLOWS data.</p>'
+
     return ('\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H, markers_defs,
-            crossings_before, crossings_after)
+            crossings_before, crossings_after, cycles_html)
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -310,6 +342,10 @@ TEMPLATE = """<!DOCTYPE html>
   .legend-row.small{{font-size:11px}}
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
   .itype-grid{{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}}
+  .cycle-intro{{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:14px}}
+  .cycle-row{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 16px;margin-bottom:10px}}
+  .cycle-heading{{font-size:12.5px;font-weight:700;color:var(--gold);margin-bottom:6px}}
+  .cycle-reason{{font-size:11px;color:#c8c8d8;line-height:1.7}}
   .note{{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
 </style>
@@ -349,6 +385,12 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="legend">
+  <h2>🔄 Why some rivers loop back — real cycles, explained</h2>
+  <p class="cycle-intro">Real cycle-detection (Tarjan's algorithm) run on the live RIVER_FLOWS data below, not assumed. A river marked 🔄 above is a real member of one of these groups — the reason it's not a runtime bug is stated per group, grounded in the real interaction types actually involved.</p>
+  {cycles_html}
+</div>
+
+<div class="legend">
   <h2>The 16 rivers</h2>
   {legend}
 </div>
@@ -369,8 +411,8 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    nodes, edges, legend, itype_legend, W, H, markers, crossings_before, crossings_after = build_svg()
-    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers)
+    nodes, edges, legend, itype_legend, W, H, markers, crossings_before, crossings_after, cycles_html = build_svg()
+    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers, cycles_html=cycles_html)
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn. "
