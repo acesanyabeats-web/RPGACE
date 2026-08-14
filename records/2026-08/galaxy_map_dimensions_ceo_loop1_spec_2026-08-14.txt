@@ -1,0 +1,235 @@
+GALAXY MAP — "DIMENSIONS" RESTRUCTURING + 5 OTHER ASKS
+CEO Loop 1 compiled spec, Aug 14 2026
+Real /interrogation run before this compile — 4 AskUserQuestion answers
+below, all folded in verbatim.
+
+============================================================
+STEP 1 — COMPILE (Alex's raw ask, close to verbatim, split into
+6 distinct real items — cross-referenced against the existing G-series
+backlog for overlaps, noted per item)
+============================================================
+
+ITEM A — Orchestrator CC ↔ OpenMontage CC interaction dimension
+-----------------------------------------------------------------
+Verbatim: "we can add another dimension with orchestrator CC and
+openmontage CC interacting with relevant parts of mapped out RPGACE
+total systems with other dimensions also being explained."
+Overlap check: NOT a duplicate of G27 (Externals) — G27 covers tool/
+provider connectors (Anthropic, Composio, Jina, etc.), this is
+specifically about two Claude Code SESSIONS and how their real
+dispatch history (openmontage_jobs) touches other real dimensions.
+Real evidence available: `openmontage_jobs`, `total_system_members`,
+`total_system_activity` (Supabase), the standing "no live session-to-
+session communication, Supabase queue only" constraint already
+documented in CLAUDE.md's Total-systems section.
+
+ITEM B — Level 0 becomes "dimensions" (the big structural ask)
+-----------------------------------------------------------------
+Verbatim: "i think level 0 should be dimensions, which then breakdown
+into perspective of one bubble with how it interacts with other
+dimensions to explain how it all interconnects, since supabase is the
+glue, just group tables by relationship from /perspective of one level
+0 item with another, then the relationship and how files interact
+become hierarchal until lowest of one dimension connects with other
+dimension lowest."
+Real /interrogation answers (Aug 14):
+  - Q: CEO Loop 1 first, or build incrementally? → CEO Loop 1 first
+    (this document is that step).
+  - Q: Replace Level 0, or sit above it as a new layer? → REPLACE
+    Level 0. The 4 existing galaxies (RPGACE Architecture/Orchestrator
+    CC/OpenMontage CC/Graphify CC) stop being the top layer themselves
+    and become real evidence INSIDE whichever dimension(s) they belong
+    to.
+  - Q: What's the real dimension set? → ALL of: the 4 existing
+    galaxies + Decisions/Externals/Skills (G26-28) + the new
+    Orchestrator↔OpenMontage dimension (Item A) — PLUS Alex's own
+    explicit note: "and i might come up with more" — the set is
+    real but NOT closed. Any new build must treat the dimension list
+    as extensible, not hardcoded as fixed forever.
+Real mechanism Alex specified, not vague: "supabase is the glue" —
+cross-dimension relationships should be computed from REAL Supabase
+table overlap (which tables does dimension X actually read/write,
+cross-referenced against which other dimensions also touch those same
+tables) — not invented or guessed. Below that table-relationship
+layer, real FILE/function-level connections become the next hierarchy
+tier, drilling down until "the lowest of one dimension connects with
+the lowest of another" — i.e. a real leaf-to-leaf cross-dimension edge
+(e.g. a specific skill's real function touching a specific
+rpgace_core.js function).
+Overlap check: this does NOT throw away G1-G25's existing Level 0-6
+work — the existing galaxy→river→module→function→logic→branch
+hierarchy is real, evidenced infrastructure that gets RE-HOMED under
+dimensions, not rebuilt from scratch. The real open engineering
+question (flagged below, not decided here) is whether a river/module/
+function belongs to exactly ONE dimension or can genuinely belong to
+several at once.
+
+ITEM C — External bubbles + connecting bubbles, level-1-gated
+-----------------------------------------------------------------
+Verbatim: "id like external to have bubles and connecting bubbles from
+logical bubbles of said connection of dimension from /perspective. an
+external can attach to any level 0-6 if it has connections at level 1."
+Real reading: extends G27 (Externals). An external connector should
+get (a) its own real bubble/node (matching the existing Oracle/
+Composio bubble pattern at Level 3) and (b) real "connecting bubbles"
+— intermediate nodes on the edge itself, matching the existing real
+mid-edge count-circles Oracle/Composio bubbles already use at Level 3.
+The gating rule: an external is only ELIGIBLE to attach anywhere in
+the 0-6 hierarchy if it has a real Level-1 (river-level) connection
+already (the existing `EXTERNAL_RIVER_LINKS` table) — connectors with
+zero real river-level evidence (OpenArt, Kimi, Luna — dormant/
+deferred) stay excluded from deeper bubbles even if some weaker signal
+existed elsewhere, matching R12's existing evidence-gating discipline.
+Overlap check: this is a real, SMALLER, well-scoped extension of
+already-built G16/G27 infrastructure — comparatively cheap relative to
+Item B, not a new build from scratch.
+
+ITEM D — /cartographer ↔ GODMODE/scope/commit-archaeologist
+-----------------------------------------------------------------
+Verbatim: "make /cartographer use galaxy map as reference point too
+since it has the mapping. make /godmode /scope and /commit-
+archaeologist use /cartographer too, or would this not make sense (use
+/paranoia and /drift to tell me if it a good idea.)"
+REAL VERDICT ALREADY DELIVERED (same session, before this compile —
+see chat). Literal /drift doesn't apply (no ratified baseline exists
+for a brand-new "should X integrate with Y" question) — /restructure-
+shaped 2-sided reasoning was used instead, real and honest about that
+substitution:
+  - `/cartographer` ALREADY references the Galaxy Map (Step 7,
+    Baseline Reconciliation, built Aug 13) — this part of the ask is
+    already real, not a gap.
+  - `/scope` + `/cartographer`: YES, makes sense, CONDITIONALLY — same
+    shape as scope's existing conditional `/drift` trigger. Real,
+    cheap, no redundancy.
+  - GODMODE + `/cartographer`: YES, same conditional shape — NOT a
+    mandatory step on every GODMODE call (most have nothing to do with
+    the map).
+  - `/commit-archaeologist` + `/cartographer`: NO — genuinely different
+    questions (git-history WHY vs. map-consistency WHETHER), forcing
+    this would be artificial.
+This item is DECIDED, not open — folded into the report's "already
+resolved" section, real skill-file edits still need doing (see Loop 2
+scope below).
+
+ITEM E — /colourgradient as "ultimate smoke test," 3-axis grounding
+-----------------------------------------------------------------
+Verbatim: "i want /colourgradient to also work with all three axes to
+makes it the ultimate smoke test update, use that as grounding tool
+data (same for possible error logs)."
+Real reading: `/colourgradient` currently renders blue/red/yellow/
+green/purple from `ceo_plan_items.status` alone. Alex wants it to also
+surface, per item, which of G27/G28's 3 real axes (🔮 external AI /
+🖥️ UI / 🗄️ backend) that item touches — reusing G27/G28's own already-
+built classification data (rule 8, never re-derived) rather than
+inventing a 4th axis system. "Grounding tool data (same for possible
+error logs)" — the 3-axis tag should also be attachable to
+`error_log.html` rows, so an error can be tagged by WHICH axis broke
+(external-AI-call failure vs UI-render failure vs backend/data
+failure), giving real structured diagnostic signal instead of a flat
+description.
+Overlap check: real, moderate-sized, reuses existing data — the real
+open question is which `ceo_plan_items` rows/error_log rows map to
+which of G27's 13 connectors or G28's 24 skills (not every plan item
+obviously maps to one).
+
+ITEM F — /omnitrix in the Oracle wrapper, 2 real levels
+-----------------------------------------------------------------
+Verbatim: "/omnitrix should be used in oracle wrapper in 2 levels (lvl
+1 - moonshot/luna/claude; lvl 2, Fable/Sonnet/Opus; lvl 3 - with or
+without fable) to make the concept run properly."
+Real /interrogation answer: 2 levels confirmed — lvl3 folds into lvl2
+(the "with or without Fable" question is lvl2's own EXISTING Omnitrix
+judgment call — default Sonnet-direct, Fable only when its specific
+research shape earns the cost — not a separate 3rd level).
+Real reading, flagged honestly as MY interpretation, not yet Alex-
+confirmed at this granularity: lvl 1 = which AI PROVIDER answers an
+Oracle chat call (Moonshot/Luna/Claude — the already-scaffolded-but-
+dormant `api/oracle.js` `provider:` routing); lvl 2 = which Claude
+Code MODEL handles a related dev/orchestration task feeding or
+reacting to that Oracle interaction (the existing Fable/Sonnet/Opus
+Omnitrix role split). These operate on genuinely different real
+surfaces today (lvl1 = end-user Oracle chat; lvl2 = RPGACE's own dev
+process) — "to make the concept run properly" could mean either (i) a
+documentation/framing unification (name them as one coherent 2-level
+model, no functional code change) or (ii) a real functional decision
+tree where a single action picks both a provider AND a Claude Code
+model together. This distinction changes the real build size a lot —
+flagged as a genuine open fork in the report, not guessed.
+
+ITEM G — Skills page (G28) real "adjacent bubbles" per skill
+-----------------------------------------------------------------
+Verbatim: "i want these skills to show adjacent bubbles to each path it
+auto combines with" [pasted the live G28 table as reference].
+Real reading: replace/extend the current flat classification table
+with a real bubble-diagram view — each skill as a node with real
+visual edges to the specific axis-bubbles (🔮/🖥️/🗄️) it touches,
+reusing the exact visual pattern already proven at Level 3 (Oracle/
+Composio bubbles with real edges + mid-edge count circles) rather than
+inventing a new visual language.
+Overlap check: real, bounded, reuses an already-proven rendering
+pattern — the smallest item in this whole compile.
+
+ITEM H — Skills-build-skills composition network, its own bubble system
+-----------------------------------------------------------------
+Verbatim (sent mid-compile, folded in same pass): "also certain skills
+building other skills that then create a network of steps, this should
+be included with its own bubble system too."
+Real reading: distinct from Item G (which axis a skill touches) — this
+is SKILL-TO-SKILL composition (e.g. /paranoia's own documented
+sequence calls Aintergration+restructure in tandem, then GODMODE+
+/scope+/commit-archaeologist+Omnitrix+/5thDimension, then /debate+
+/free-for-all-debate, then /interrogation, then a fact-checking Council
+of 5 pass, then /Summary — all under /Engineer supervision; /CEO Loop 1
+Step 3 itself calls /paranoia with /Engineer+/aintergration+/restructure
+as advisors; /5thDimension calls GODMODE+/scope+/debate+Council of 5;
+/scope's own drift-conditional trigger calls /drift). Real evidence
+source: every skill's own SKILL.md already documents which other
+skills it invokes and when — this is a real, already-written
+dependency graph, not something that needs new detection.
+Overlap check: NOT the same as Item G's AI/UI/Backend axis bubbles —
+this is skill-CALLS-skill composition, a real dependency network. A
+real, bounded build: parse each of the 24 real skill files for their
+own documented "invokes X" language, render as a real node-and-edge
+bubble diagram (skills as nodes, real documented invocations as
+directed edges) — same visual language Level 3's Oracle/Composio
+bubbles and Item G's proposed skill bubbles already establish, reused
+not reinvented (rule 8).
+
+============================================================
+STEP 2 — /interrogation (already run, folded into items above)
+============================================================
+4 real AskUserQuestion answers, all incorporated: (1) CEO Loop 1 first;
+(2) Replace Level 0; (3) dimension set = all 4 listed groups, openly
+extensible; (4) 2 real Oracle-wrapper levels, lvl3 folds into lvl2.
+Item F's provider-vs-model-unification ambiguity is the one real fork
+NOT yet closed by the interrogation round — surfaced in the report,
+Step 6.
+
+============================================================
+STEP 3 — /paranoia lens (Engineer/Aintergration/Restructure as
+advisors — applied at the weight this planning pass earns, not the
+full heaviest-protocol ceremony)
+============================================================
+- **/Engineer shape-sketches**: written inline per item above (real,
+  concrete "what this would actually look like," not hand-wavy).
+- **/Aintergration**: no third-party tool proposed anywhere in this
+  ask — not applicable this round.
+- **/restructure flag**: Item B is a genuine RPGACE-Claude-Code-
+  skeleton change, not just a feature addition — the Galaxy Map's own
+  Level 0 identity (galaxies → dimensions) changes what every
+  downstream level, every cross-link, and every "how do I navigate
+  this" habit means. This is exactly the class of question
+  `/restructure` exists for, at the SAME rarity `/5thDimension` and
+  `/restructure` itself are reserved for — real, not overstated.
+
+============================================================
+STEP 4 — /drift-check the draft against Step 1's compiled source
+============================================================
+Checked: all 8 real items (A-H) from the raw message(s) are represented
+in Step 1, none silently dropped or reworded into a smaller ask. The
+one real, honest gap: Item F's exact functional shape (documentation-
+only vs. real functional decision tree) is NOT resolved — correctly
+left open rather than quietly assumed either way. Item D is the one
+item that's fully DECIDED already (verdict delivered same session) —
+correctly separated from the still-open items in the report below so
+Alex doesn't have to re-answer something already settled.
