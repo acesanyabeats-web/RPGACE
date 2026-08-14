@@ -74,7 +74,7 @@ DECISION_POINTS = [
     {
         'id': 'video-summary-delete', 'category': 'destructive',
         'title': 'Delete a video summary report (legacy fallback path)',
-        'module': 'videoSummary', 'func': '_delete', 'lines': (6916, 6924),
+        'module': 'videoSummary', 'func': '_delete', 'lines': (6918, 6926),
         'anchor': "window.confirm('Delete \"' + title + '\"?')",
         'trigger': 'Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn\'t available, using a bare browser `confirm()` instead of the richer popup.',
         'logic': 'A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.',
@@ -82,7 +82,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (17297, 17303),
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (17299, 17305),
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -90,7 +90,7 @@ DECISION_POINTS = [
     {
         'id': 'bookworm-delete', 'category': 'destructive',
         'title': 'Delete a Bookworm book (2-click arm/confirm)',
-        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (10319, 10334),
+        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (10321, 10336),
         'anchor': 'var armed = false;',
         'trigger': 'A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.',
         'logic': 'No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.',
@@ -98,7 +98,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (8989, 8989),
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (8991, 8991),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (Level 5\'s own real decision point — see there for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -107,7 +107,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (9457, 9457),
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (9459, 9459),
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (Level 5\'s own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -140,7 +140,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (14741, 14746),
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (14743, 14748),
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',
@@ -225,7 +225,9 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level3.html">🔽 Level 3</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level5.html">🧠 Level 5</a><span class="bc-sep">→</span>
-  <span class="bc-here">🚦 Decisions</span>
+  <span class="bc-here">🚦 Decisions</span><span class="bc-sep">→</span>
+  <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_skills.html">🧩 Skills</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
