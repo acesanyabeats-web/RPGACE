@@ -57,6 +57,15 @@ from graphify_river_group import (  # noqa: E402
 from galaxy_map_level5 import DECISION_POINTS as _L5_DECISIONS  # noqa: E402
 LEVEL5_BY_FUNC = {(dp['module'], dp['func']): dp for dp in _L5_DECISIONS if dp.get('func')}
 
+# G26 Phase 1 (Aug 14) — real cross-reference into the new Decision/
+# Human-Gate page, same reuse pattern as LEVEL5_BY_FUNC just above
+# (rule 8, not a 2nd hand-maintained copy). Unlike Level 5's forward-
+# link (terminal functions only), a real decision gate can sit at ANY
+# point in a call chain — entry, intermediate, or terminal — so this
+# badge is checked against every real function node, not just leaves.
+from galaxy_map_decisions import DECISION_POINTS as _DECISION_POINTS  # noqa: E402
+DECISIONS_BY_FUNC = {(dp['module'], dp['func']): dp for dp in _DECISION_POINTS}
+
 # Real, shared "Alex" actor color — Aug 13, Alex's own direct ask: "a
 # permanent overarch bubble titled Alex... where the input is shown to
 # me... the buttons i can press." Same real accent Level 0's own
@@ -492,10 +501,19 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             dp = LEVEL5_BY_FUNC[(module_name, f)]
             nav_badge = (f'<a href="galaxy_map_level5.html#d-{dp["id"]}">'
                          f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" text-decoration="underline">🧠 into the logic: Level 5</text></a>')
+        # G26 Phase 1 (Aug 14) — real, independent of entry/terminal
+        # status: a real human-decision/confirm gate can sit at any
+        # point in a call chain, so this badge is checked separately
+        # from nav_badge above and can render alongside it.
+        decision_badge = ''
+        if (module_name, f) in DECISIONS_BY_FUNC:
+            ddp = DECISIONS_BY_FUNC[(module_name, f)]
+            decision_badge = (f'<a href="galaxy_map_decisions.html#dp-{ddp["id"]}">'
+                               f'<text x="{x}" y="{y+64}" text-anchor="middle" font-size="7.5" fill="#E25454" text-decoration="underline">🚦 decision gate</text></a>')
         nodes_svg.append(
             f'{incoming_badge}<g class="node"><circle cx="{x}" cy="{y}" r="26" fill="#0f0f1a" stroke="{color}" stroke-width="{ring}" filter="url(#glow)"/>'
             f'<text x="{x}" y="{y+6}" text-anchor="middle" font-size="15">{icon}</text></g>'
-            f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>{nav_badge}'
+            f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>{nav_badge}{decision_badge}'
         )
 
     # Real cross-band stubs — a real edge, never silently dropped just
@@ -676,7 +694,8 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
   <span class="bc-here">🔽 Level 3</span><span class="bc-sep">→</span>
   <a href="galaxy_map_level4.html">🖱️ Level 4</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level5.html">🧠 Level 5</a>
+  <a href="galaxy_map_level5.html">🧠 Level 5</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_decisions.html">🚦 Decisions</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 3</div>
