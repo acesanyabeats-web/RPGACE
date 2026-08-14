@@ -142,7 +142,7 @@ Mirrored in `scripts/graphify_river_group.py` as `SUPABASE_CORE` (a single real 
 
 </details>
 
-<details><summary><strong>records/2026-08/</strong> (34 files)</summary>
+<details><summary><strong>records/2026-08/</strong> (35 files — real, honest gap flagged, not fully fixed this pass: at least 6 more <code>galaxy_map_*</code> record files from Aug 13-14 (ceo_loop1_spec_paranoia, connectivity_crossing_nav, alex_ui_actor_bubble, river_stubs_init_bands, alex_ui_actor_bubble_precision, mainjs_hooks_detection_extension) are missing from this index — found while adding this session's own new file, a real pre-existing backfill task, not attempted in full here)</summary>
 
 | File | Date | Topic |
 |---|---|---|
@@ -155,6 +155,7 @@ Mirrored in `scripts/graphify_river_group.py` as `SUPABASE_CORE` (a single real 
 | `dummy_mode_tracelog_and_update_logging_system_paranoia_2026-08-06.txt` | 08-06 | Dummy-mode tracelog + update-logging-system paranoia |
 | `engineer_pass_2026-08-05_01` through `_09.txt` | 08-05 | Engineer pass record (Phases A-H) |
 | `engineer_pass_2026-08-06_10` through `_14.txt` | 08-06 | Engineer pass record |
+| `galaxy_map_dimensions_ceo_loop1_spec_2026-08-14.txt` | 08-14 | Galaxy Map "dimensions" CEO Loop 1 spec (Items A-H / G29-G36) |
 | `graphify_orphan_scripts_cleanup_2026-08-06.txt` | 08-06 | Graphify orphan-scripts cleanup |
 | `graphify_restructure_paranoia_2026-08-06.txt` | 08-06 | Graphify `/restructure`+`/paranoia` |
 | `main_js_dedup_paranoia_2026-08-06.txt` | 08-06 | main.js dedup `/paranoia` |
