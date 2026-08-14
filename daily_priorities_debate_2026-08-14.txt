@@ -1,0 +1,92 @@
+DAILY PRIORITIES — 2026-08-14
+/Routine, real /CEO Grounded Mode active (Galaxy Development Framework, ceo_plans id 6f8536fd-7d98-4565-9369-c75a149fce8f)
+=====================================================================
+
+ALEX'S OWN DIRECTIVE (verbatim): "/routine, i want to continue with g steps
+to finish glaxay map. /ceo"
+
+Per this skill's own guardrail ("If Alex answers a blocking question for
+item 1 (or any item) in the same message that triggers /Routine, act on
+that answer directly rather than re-asking — the skill decides priority,
+it doesn't override an answer Alex already gave"), this is treated as a
+real, explicit answer to "what should today be" — the debate below checks
+whether anything real should override it, not what today should be from
+a blank slate.
+
+TEAM 1 — EVIDENCE PASS
+---------------------------
+Real `ceo_plan_items` query (project gripopghczmrbrhqtqbm, plan
+6f8536fd-7d98-4565-9369-c75a149fce8f):
+  G1  green    Edge interaction-type taxonomy
+  G2  green    Level-0 Galaxy View
+  G3  green    Level-1 river drill-down
+  G4  green    Level-2 module + dashboard-card drill-down
+  G5  green    Oversight-connection representation
+  G6  green    Truth-source promotion
+  G7  red      Trickle-down/up suggestion-and-error report system — real
+               evidence not yet a completed retroactive scan
+  G8  yellow   /CEO Loop 2 wiring — real but never hand-tested live
+  G9  blue     Consumer/Developer visibility tiering — Alex's own
+               explicit "way further down the line" deferral
+  G10 green    /perspective skill, Tier A rows real (21)
+  G11 blue     /perspective full sweep (Tier C/D) — real future scope
+  G12 green    Baseline Reconciliation
+  G13 blue     smoke_test.html full-coverage report — depends on G11
+  G14 yellow (fully closed same-day facets logged, real evidence trail
+               in CLAUDE.md/system_flow_map.md)
+  G15 red      Level 4 (real frontend flow per dashboard card) —
+               last_verdict: "blocked" on its own stated prerequisite,
+               a main.js-aware + RPGACE.hooks-aware detection extension
+
+Real, non-Claude-Code activity check (the reverse half of the shared
+timeline, per this skill's own Step 1): `journal` — nothing since Aug 6
+(4 beats, 1 content-production session, all already known). `taxonomy_
+proposals` — 51 pending, 33 accepted, 80 rejected, UNCHANGED from the
+last known figure. No `chronicles_finance` activity checked as material
+either way. Nothing here competes for today's priority.
+
+TEAM 2 — COUNTER-CASE
+--------------------------
+A genuine, evidence-based check for a real reason to override Alex's own
+explicit directive. Found: none. The standing open-forks list (Phylum XP
+Ledger, F16/F17/F18 hand-test sweep, voice-input duplication bug, swipe-
+gesture freeze, Composio key rotation) are all real, but every one of
+them is either (a) explicitly gated on Alex's own hands/decision (hand-
+tests, key rotation) — not something a session can advance blind right
+now — or (b) has a standing "do not attempt a 5th/3rd blind pass" rule
+already in force (swipe gesture, voice input). None of them is a real,
+actionable alternative to what Alex just asked for. Team 2's honest
+conclusion: nothing outranks continuing the G-steps today.
+
+LOCKED TOP 10 (dependency-ordered, not by arbitrary priority label)
+-------------------------------------------------------------------------
+1. Build the main.js + RPGACE.hooks-aware detection extension — G15's
+   own stated prerequisite (ceo_plan_items last_verdict), and it
+   retroactively improves G4's existing connectivity data too (several
+   of the 13 modules still flagged isolated are suspected main.js-side
+   cases, not confirmed absences).
+2. Re-run the full 4-level pipeline; specifically re-verify authGate/
+   pathRouter (the two real /misunderstanding examples from Aug 13) now
+   resolve with real evidence instead of reading as false-isolated.
+3. Build G15 — Level 4: real frontend flow per dashboard card, with real
+   links back to Level 3's backend functions.
+4. Re-check the 13-module isolated list against the new detection —
+   report the real, honest before/after count, not assumed improved.
+5. G7 — /cartographer trickle-down/up retroactive scan across CURRENT
+   Total-systems state (the skill + system_map_flags table already
+   exist; this is the one real piece still open).
+6. G8 — hand-test /CEO Loop 2 wiring live; flag plainly if this needs
+   Alex's own action rather than attempting to fake a hand-test.
+7. Update oversight docs (interconnection_map.md/CLAUDE.md/system_flow_
+   map.md) with the new detection engine's real findings.
+8. Regenerate + verify all 4 levels (div-balance, idempotency) after
+   the detection change.
+9. Update ceo_plan_items G4/G14/G15 evidence with the new real state.
+10. Close out / hand off with real remaining items named plainly — no
+    silent scope creep into a new, unrelated ask.
+
+DROPPED, NAMED HONESTLY
+---------------------------
+Nothing from today's real backlog was dropped to make room for this —
+Team 2's own pass found no real competing item. The standing open-forks
+list stays exactly where CLAUDE.md already has it, untouched by this run.
