@@ -820,7 +820,8 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_meanders.html">🌾 Level 1.5</a><span class="bc-sep">→</span>
-  <span class="bc-here">🌊 Level 2</span>
+  <span class="bc-here">🌊 Level 2</span><span class="bc-sep">→</span>
+  <a href="galaxy_map_level2_5.html">🚪 Level 2.5</a>
 </div>
 
 <div class="hero">

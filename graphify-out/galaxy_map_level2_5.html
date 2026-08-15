@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Level 2.5 — UI/Alex Accessibility)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --red:#E25454; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #10141a 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}
+  .breadcrumb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}
+  .breadcrumb a{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
+  .breadcrumb a:hover{color:var(--gold);border-color:var(--gold)}
+  .breadcrumb .bc-here{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}
+  .breadcrumb .bc-sep{color:#4a4a58}
+  .tabs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .tab{padding:5px 11px;border-radius:14px;font-size:10.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}
+  .tab.active{background:var(--gold);color:#1a1608;font-weight:700}
+  .rsection{max-width:1000px;margin:0 auto;padding:24px}
+  .rhead{display:flex;align-items:center;gap:10px;border-left:3px solid;padding-left:12px;margin-bottom:16px;flex-wrap:wrap}
+  .rhead h2{font-family:Georgia,serif;font-size:19px}
+  .rcount{font-size:10px;color:var(--dim);font-weight:700}
+  .cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .ccard{background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:14px 16px}
+  .chead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .cicon{font-size:12.5px;font-weight:700;color:#fff}
+  .uibadge{font-size:9px;color:var(--gold)}
+  .cvia{font-size:10px;color:var(--dim);line-height:1.5;margin-bottom:8px;font-family:'Cascadia Code','Fira Mono',monospace}
+  .partial{color:#E0A040}
+  .modlink{font-size:10.5px;font-weight:700;color:var(--red);text-decoration:none}
+  .clinks{margin-bottom:6px}
+  .modlink.r2{color:#5FB3D9;font-size:10px}
+  .nomod{font-size:10px;color:var(--dim)}
+  .nocard{font-size:11.5px;color:var(--dim);font-style:italic;padding:10px 0}
+  .rback{margin-top:14px}
+  .rback a{font-size:10.5px;color:#5FB3D9;text-decoration:none}
+  a{color:var(--gold)}
+  .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
+  <span class="bc-here">🚪 Level 2.5</span><span class="bc-sep">→</span>
+  <a href="galaxy_map_level3.html">🔽 Level 3</a>
+</div>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2.5 (G38)</div>
+  <h1>🚪 Rivers Regrouped by UI/Alex Accessibility</h1>
+  <p>The real generalized successor to Meanders (Level 1.5, which only ever covered River V) — all 16 rivers, each pointing to its own real dashboard card(s), each card resolved to the real primary module that contains its functions. Alex's own framing: "regrouping rivers by what is accessible by ui and alex" — the real connective layer for future dimension-building.</p>
+</div>
+<div class="tabs"><div class="tab" data-target="river-1">I</div><div class="tab" data-target="river-2">II</div><div class="tab" data-target="river-3">III</div><div class="tab" data-target="river-4">IV</div><div class="tab" data-target="river-5">V</div><div class="tab" data-target="river-6">VI</div><div class="tab" data-target="river-7">VII</div><div class="tab" data-target="river-8">VIII</div><div class="tab" data-target="river-9">IX</div><div class="tab" data-target="river-10">X</div><div class="tab" data-target="river-11">XI</div><div class="tab" data-target="river-12">XII</div><div class="tab" data-target="river-13">XIII</div><div class="tab" data-target="river-14">XIV</div><div class="tab" data-target="river-15">XV</div><div class="tab" data-target="river-16">XVI</div></div>
+<section class="rsection" id="river-1" style="display:none">
+  <div class="rhead" style="border-color:#cc4a4a"><h2 style="color:#cc4a4a">River I — Gatekeeper's Checkpoint</h2><span class="rcount">0 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-1">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-2" style="display:none">
+  <div class="rhead" style="border-color:#4a8ccc"><h2 style="color:#4a8ccc">River II — The Great Confluence</h2><span class="rcount">0 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-2">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-3" style="display:none">
+  <div class="rhead" style="border-color:#c9a84c"><h2 style="color:#c9a84c">River III — The Oracle Current</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">⚡ Oracle</span></div>
+  <div class="cvia">showPage(pages.oracle) -&gt; oracleAppGrounding/oracleTreeGrounding etc</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-3">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-3">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-4" style="display:none">
+  <div class="rhead" style="border-color:#9b6ec8"><h2 style="color:#9b6ec8">River IV — The Bookworm River</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">📖 Bookworm</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">dashDeck._openBookworm() -&gt; bookworm module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-4">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-bookworm">🔽 bookworm — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-4">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-5" style="display:none">
+  <div class="rhead" style="border-color:#4caf82"><h2 style="color:#4caf82">River V — Two Independent Streams</h2><span class="rcount">4 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">🧠 Research Lab</span></div>
+  <div class="cvia">dashDeck._openResearch() -&gt; researchTabs/intelBatchList etc</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span></div>
+</div><div class="ccard">
+  <div class="chead"><span class="cicon">📋 Agenda</span></div>
+  <div class="cvia">showPage(pages.agenda) -&gt; agendaReminder (QoL layer only; the page's own Quest Board core lives in main.js, not river-tagged) <span class="partial">(partial — via text names a QoL-layer-only module)</span></div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span></div>
+</div><div class="ccard">
+  <div class="chead"><span class="cicon">🌅 Morning Brief</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">dashDeck._openMorningBrief() -&gt; morningBrief module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-morningBrief">🔽 morningBrief — its own functions on Level 3</a></div>
+</div><div class="ccard">
+  <div class="chead"><span class="cicon">📓 Journal</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">showPage(pages.journal) -&gt; journalQoL module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-journalQoL">🔽 journalQoL — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-5">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-6" style="display:none">
+  <div class="rhead" style="border-color:#e8c96a"><h2 style="color:#e8c96a">River VI — The Judgment Chamber</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">🌳 Taxonomy & Review</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-8">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-6">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-7" style="display:none">
+  <div class="rhead" style="border-color:#cc7a3a"><h2 style="color:#cc7a3a">River VII — The Library Current</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">📖 Encyclopedia</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">showPage(pages.encyclopedia) -&gt; jargonEncyclopedia module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-7">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-jargonEncyclopedia">🔽 jargonEncyclopedia — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-7">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-8" style="display:none">
+  <div class="rhead" style="border-color:#5588ee"><h2 style="color:#5588ee">River VIII — The Confluence Pool</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">🌳 Taxonomy & Review</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-8">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-8">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-9" style="display:none">
+  <div class="rhead" style="border-color:#e05555"><h2 style="color:#e05555">River IX — The Mirror and the Far Shore</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">🕳️ Knowledge Gaps</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">dashDeck._openGaps() -&gt; knowledgeGap module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-9">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-knowledgeGap">🔽 knowledgeGap — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-9">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-10" style="display:none">
+  <div class="rhead" style="border-color:#868db8"><h2 style="color:#868db8">River X — The Confluence of Chronicles</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">📜 The Chronicles</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">chroniclesLog._openCard() -&gt; chroniclesLog module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-10">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-chroniclesLog">🔽 chroniclesLog — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-10">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-11" style="display:none">
+  <div class="rhead" style="border-color:#3a4570"><h2 style="color:#3a4570">River XI — Content Production Live</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">🎬 Content Pipeline</span><span class="uibadge">🧑 real UI/input evidence</span></div>
+  <div class="cvia">dashDeck._openPipeline() -&gt; contentProductionLive module</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-11">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-contentProductionLive">🔽 contentProductionLive — its own functions on Level 3</a></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-11">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-12" style="display:none">
+  <div class="rhead" style="border-color:#2ABFB0"><h2 style="color:#2ABFB0">River XII — The API / Auth Layer</h2><span class="rcount">0 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-12">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-13" style="display:none">
+  <div class="rhead" style="border-color:#E2A83D"><h2 style="color:#E2A83D">River XIII — Skills</h2><span class="rcount">0 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-13">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-14" style="display:none">
+  <div class="rhead" style="border-color:#d4daf5"><h2 style="color:#d4daf5">River XIV — Oversight Docs</h2><span class="rcount">1 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="ccard">
+  <div class="chead"><span class="cicon">📚 Oversight</span></div>
+  <div class="cvia">dashDeck._openOversight() -&gt; Zone/River XIV, the shared oversight-doc truth layer</div>
+  <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-14">🌊 Level 2 (backend home)</a></div>
+  <div class="cmod"><span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span></div>
+</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-14">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-15" style="display:none">
+  <div class="rhead" style="border-color:#20263a"><h2 style="color:#20263a">River XV — Session Records / Backlog</h2><span class="rcount">0 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-15">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section><section class="rsection" id="river-16" style="display:none">
+  <div class="rhead" style="border-color:#2a3050"><h2 style="color:#2a3050">River XVI — Dev Tooling</h2><span class="rcount">0 real dashboard card(s)</span></div>
+  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
+  <div class="rback"><a href="galaxy_map_module.html#river-16">🔭 zoom out: Level 2 (this river's own modules)</a></div>
+</section>
+<div class="note">
+  Generated by <code>scripts/galaxy_map_level2_5.py</code> — real data reused from
+  <code>CARDS_BY_RIVER</code>/<code>dashboard_card_primary_module()</code>/<code>compute_module_ui_signal()</code>
+  (rule 8, never re-derived). G38 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
+</div>
+<script>
+(function() {
+  var tabs = document.querySelectorAll('.tab');
+  var sections = document.querySelectorAll('.rsection');
+  function show(id) {
+    sections.forEach(function(s) { s.style.display = (s.id === id) ? '' : 'none'; });
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.target === id); });
+  }
+  tabs.forEach(function(t) { t.addEventListener('click', function() { location.hash = t.dataset.target; }); });
+  window.addEventListener('hashchange', function() {
+    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
+    show(id);
+  });
+  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
+  show(id0);
+})();
+</script>
+</body>
+</html>
