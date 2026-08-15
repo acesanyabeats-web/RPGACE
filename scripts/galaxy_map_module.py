@@ -734,12 +734,21 @@ def build_river_section(rnum):
     # before above this point — discarded only here, only for a
     # qualifying river, zero risk to the other 15).
     if rnum in rivers_needing_meanders():
+        # Real, Aug 14 repoint (same day, later pass — Alex: "i dont want
+        # 1.5 it doesnt make sense... meanders should become the central
+        # point where all ui/alex/backend/externals all eventually
+        # meet"). Level 1.5 is retired as a standalone level; its real
+        # River-V-declutter role now lives inside the expanded Level 2.5,
+        # which shows the exact same real per-card split plus real
+        # externals/UI evidence Level 1.5 never had. Link updated, old
+        # page kept on disk (not deleted) so nothing 404s, just no
+        # longer a first-class level.
         canvas_html = (
             f'<div class="meander-notice">'
             f'<p>This river has {len(mods)} real modules across {len(cards)} real dashboard cards — genuinely too many to '
             f'usefully fan out on one canvas without the crossing Alex/Oracle bubble mess this used to show. '
-            f'It has been split into real meanders (one per dashboard card) instead.</p>'
-            f'<a class="meander-link" href="galaxy_map_meanders.html#river-{rnum}">🌾 View {river_label.split("—")[0].strip()}\'s real meanders (Level 1.5) →</a>'
+            f'It has been split by real dashboard card instead — see Level 2.5.</p>'
+            f'<a class="meander-link" href="galaxy_map_level2_5.html#river-{rnum}">🚪 View {river_label.split("—")[0].strip()}\'s real card-split (Level 2.5) →</a>'
             f'</div>'
         )
     else:
@@ -819,7 +828,6 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_meanders.html">🌾 Level 1.5</a><span class="bc-sep">→</span>
   <span class="bc-here">🌊 Level 2</span><span class="bc-sep">→</span>
   <a href="galaxy_map_level2_5.html">🚪 Level 2.5</a>
 </div>

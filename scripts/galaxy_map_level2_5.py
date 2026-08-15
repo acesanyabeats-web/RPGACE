@@ -12,17 +12,25 @@ alex, this will help connect dimensions later on" — the organizing
 principle here is real UI/Alex-accessibility, not just "cards under a
 river."
 
-Real, confirmed shape (his own direct answer to the one open question):
-a new, ADDITIVE page — not a Level 3 rewrite. All 16 rivers shown, each
-with its own real dashboard card(s) (CARDS_BY_RIVER, already-sourced —
-never re-derived), each card resolved to its real PRIMARY module via
-dashboard_card_primary_module() (the same Alex-confirmed classifier
-Level 4 already uses, rule 8) plus a real UI-accessibility badge
-(compute_module_ui_signal(), same evidence Level 2/3's own Alex bubble
-already reads), linking down into that module's existing Level 3 page.
-Rivers with zero real dashboard cards (I/II/XII/XIII/XV/XVI — dev-
-process/backend-only rivers) are shown honestly as such, never guessed
-a card.
+Real, confirmed shape: a new, ADDITIVE page — not a Level 3 rewrite,
+same position in the hierarchy (between Level 2 and Level 3). Real
+restructure, Aug 14 same day later pass, 3 real /interrogation answers
+(Alex: "i dont want 1.5 it doesnt make sense... meanders should become
+the central point where all ui/alex/backend/externals all eventually
+meet"): (1) Level 1.5 (Meanders) is retired as a standalone level —
+River V's own real card-declutter role folds in here; (2) this stays
+Level 2.5, not a new hub-level concept; (3) real dimension-links are a
+real, honest deferred stub pending G30 (Level 0 -> dimensions), never
+faked ahead of it. Real, confirmed scoping fix (his own direct ask,
+"only take into account rivers that actually have them"): ONLY rivers
+with a real dashboard card get a tab/section — I/II/XII/XIII/XV/XVI
+(zero real cards, confirmed via CARDS_BY_RIVER) are silently excluded,
+not shown as an empty placeholder.
+
+Real externals-attachment layer (his own ask, "they could feature where
+externals attach too") reuses EXTERNAL_RIVER_LINKS (rule 8, the same
+real per-river connector citations Level 2's own 4th ring already
+shows) — never re-derived.
 """
 from pathlib import Path
 import sys
@@ -31,12 +39,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, CARDS_BY_RIVER, DASHBOARD_CARDS,
     dashboard_card_primary_module, compute_module_ui_signal,
-    LEVEL3_MODULES,
+    LEVEL3_MODULES, EXTERNAL_RIVER_LINKS,
 )
 
 OUT = Path('graphify-out/galaxy_map_level2_5.html')
 
-RIVER_NUMS = list(range(1, 17))
+RIVER_NUMS = sorted(r for r in range(1, 17) if CARDS_BY_RIVER.get(r))
 
 
 def esc(s):
@@ -78,6 +86,21 @@ def build_card_block(card):
 </div>'''
 
 
+def build_externals_block(rnum):
+    """Real per-river external-connector attachment (Alex: "they could
+    feature where externals attach too") — reuses EXTERNAL_RIVER_LINKS
+    verbatim (rule 8), the same real citations Level 2's own 4th ring
+    already shows. Honest empty state, never guessed."""
+    hits = [c for c in EXTERNAL_RIVER_LINKS if rnum in c.get('rivers', [])]
+    if not hits:
+        return '<div class="extnone">No real external connector cited for this river.</div>'
+    chips = ''.join(
+        f'<div class="extchip"><b>{esc(c["name"])}</b><span>{esc(c.get("via", ""))}</span></div>'
+        for c in hits
+    )
+    return f'<div class="extgrid">{chips}</div>'
+
+
 def build_river_section(rnum):
     _full_name = RIVER_NAME.get(rnum, f'River {rnum} — Untitled')
     name = _full_name.split('—', 1)[1].strip() if '—' in _full_name else _full_name
@@ -89,13 +112,15 @@ def build_river_section(rnum):
         if c['key'] not in seen:
             seen.add(c['key'])
             unique_cards.append(c)
-    if unique_cards:
-        cards_html = ''.join(build_card_block(c) for c in unique_cards)
-    else:
-        cards_html = '<div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div>'
+    cards_html = ''.join(build_card_block(c) for c in unique_cards)
+    externals_html = build_externals_block(rnum)
     return f'''<section class="rsection" id="river-{rnum}" style="display:none">
   <div class="rhead" style="border-color:{color}"><h2 style="color:{color}">River {_roman(rnum)} — {esc(name)}</h2><span class="rcount">{len(unique_cards)} real dashboard card(s)</span></div>
   <div class="cgrid">{cards_html}</div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div>{externals_html}</div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-{rnum}">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section>'''
 
@@ -148,6 +173,14 @@ TEMPLATE = """<!DOCTYPE html>
   .modlink.r2{{color:#5FB3D9;font-size:10px}}
   .nomod{{font-size:10px;color:var(--dim)}}
   .nocard{{font-size:11.5px;color:var(--dim);font-style:italic;padding:10px 0}}
+  .convrow{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}}
+  .convblock{{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px}}
+  .convlabel{{font-size:9.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}}
+  .extgrid{{display:flex;flex-direction:column;gap:6px}}
+  .extchip{{font-size:10.5px;display:flex;flex-direction:column;gap:2px}}
+  .extchip b{{color:#fff}}
+  .extchip span{{color:var(--dim);font-size:9.5px}}
+  .extnone,.dimstub{{font-size:10.5px;color:var(--dim);font-style:italic}}
   .rback{{margin-top:14px}}
   .rback a{{font-size:10.5px;color:#5FB3D9;text-decoration:none}}
   a{{color:var(--gold)}}
@@ -165,7 +198,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2.5 (G38)</div>
   <h1>🚪 Rivers Regrouped by UI/Alex Accessibility</h1>
-  <p>The real generalized successor to Meanders (Level 1.5, which only ever covered River V) — all 16 rivers, each pointing to its own real dashboard card(s), each card resolved to the real primary module that contains its functions. Alex's own framing: "regrouping rivers by what is accessible by ui and alex" — the real connective layer for future dimension-building.</p>
+  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the {n_rivers} of 16 real rivers with an actual dashboard card get a section — each card points forward into Level 3 (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}
@@ -199,11 +232,11 @@ TEMPLATE = """<!DOCTYPE html>
 def main():
     tabs = ''.join(f'<div class="tab" data-target="river-{r}">{_roman(r)}</div>' for r in RIVER_NUMS)
     sections = ''.join(build_river_section(r) for r in RIVER_NUMS)
-    html = TEMPLATE.format(tabs=tabs, sections=sections)
+    html = TEMPLATE.format(tabs=tabs, sections=sections, n_rivers=len(RIVER_NUMS))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
     total_cards = sum(len({c['key'] for c in CARDS_BY_RIVER.get(r, [])}) for r in RIVER_NUMS)
-    print(f"Wrote {OUT} — 16 rivers, {total_cards} real river-card placements.")
+    print(f"Wrote {OUT} — {len(RIVER_NUMS)} real card-having rivers (of 16 total), {total_cards} real river-card placements.")
 
 
 if __name__ == '__main__':

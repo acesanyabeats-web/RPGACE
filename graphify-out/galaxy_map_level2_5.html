@@ -36,6 +36,14 @@
   .modlink.r2{color:#5FB3D9;font-size:10px}
   .nomod{font-size:10px;color:var(--dim)}
   .nocard{font-size:11.5px;color:var(--dim);font-style:italic;padding:10px 0}
+  .convrow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+  .convblock{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px}
+  .convlabel{font-size:9.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .extgrid{display:flex;flex-direction:column;gap:6px}
+  .extchip{font-size:10.5px;display:flex;flex-direction:column;gap:2px}
+  .extchip b{color:#fff}
+  .extchip span{color:var(--dim);font-size:9.5px}
+  .extnone,.dimstub{font-size:10.5px;color:var(--dim);font-style:italic}
   .rback{margin-top:14px}
   .rback a{font-size:10.5px;color:#5FB3D9;text-decoration:none}
   a{color:var(--gold)}
@@ -53,18 +61,10 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2.5 (G38)</div>
   <h1>🚪 Rivers Regrouped by UI/Alex Accessibility</h1>
-  <p>The real generalized successor to Meanders (Level 1.5, which only ever covered River V) — all 16 rivers, each pointing to its own real dashboard card(s), each card resolved to the real primary module that contains its functions. Alex's own framing: "regrouping rivers by what is accessible by ui and alex" — the real connective layer for future dimension-building.</p>
+  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the 10 of 16 real rivers with an actual dashboard card get a section — each card points forward into Level 3 (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
 </div>
-<div class="tabs"><div class="tab" data-target="river-1">I</div><div class="tab" data-target="river-2">II</div><div class="tab" data-target="river-3">III</div><div class="tab" data-target="river-4">IV</div><div class="tab" data-target="river-5">V</div><div class="tab" data-target="river-6">VI</div><div class="tab" data-target="river-7">VII</div><div class="tab" data-target="river-8">VIII</div><div class="tab" data-target="river-9">IX</div><div class="tab" data-target="river-10">X</div><div class="tab" data-target="river-11">XI</div><div class="tab" data-target="river-12">XII</div><div class="tab" data-target="river-13">XIII</div><div class="tab" data-target="river-14">XIV</div><div class="tab" data-target="river-15">XV</div><div class="tab" data-target="river-16">XVI</div></div>
-<section class="rsection" id="river-1" style="display:none">
-  <div class="rhead" style="border-color:#cc4a4a"><h2 style="color:#cc4a4a">River I — Gatekeeper's Checkpoint</h2><span class="rcount">0 real dashboard card(s)</span></div>
-  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
-  <div class="rback"><a href="galaxy_map_module.html#river-1">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section><section class="rsection" id="river-2" style="display:none">
-  <div class="rhead" style="border-color:#4a8ccc"><h2 style="color:#4a8ccc">River II — The Great Confluence</h2><span class="rcount">0 real dashboard card(s)</span></div>
-  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
-  <div class="rback"><a href="galaxy_map_module.html#river-2">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section><section class="rsection" id="river-3" style="display:none">
+<div class="tabs"><div class="tab" data-target="river-3">III</div><div class="tab" data-target="river-4">IV</div><div class="tab" data-target="river-5">V</div><div class="tab" data-target="river-6">VI</div><div class="tab" data-target="river-7">VII</div><div class="tab" data-target="river-8">VIII</div><div class="tab" data-target="river-9">IX</div><div class="tab" data-target="river-10">X</div><div class="tab" data-target="river-11">XI</div><div class="tab" data-target="river-14">XIV</div></div>
+<section class="rsection" id="river-3" style="display:none">
   <div class="rhead" style="border-color:#c9a84c"><h2 style="color:#c9a84c">River III — The Oracle Current</h2><span class="rcount">1 real dashboard card(s)</span></div>
   <div class="cgrid"><div class="ccard">
   <div class="chead"><span class="cicon">⚡ Oracle</span></div>
@@ -72,6 +72,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-3">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Anthropic (Claude API)</b><span>River III's Oracle Current is the harness — the real default provider for every ungrounded Oracle call</span></div><div class="extchip"><b>Moonshot AI (Kimi)</b><span>Would be called from River III's Oracle Current in place of the default Anthropic call, once live</span></div><div class="extchip"><b>OpenAI (Luna)</b><span>Same River III relationship as Kimi, once live</span></div><div class="extchip"><b>Jina AI</b><span>Load-bearing for Bookworm URL ingestion (River IV), Schedule Oracle + chat-pasted-URL handling (River III)</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-3">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-4" style="display:none">
   <div class="rhead" style="border-color:#9b6ec8"><h2 style="color:#9b6ec8">River IV — The Bookworm River</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -81,6 +85,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-4">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-bookworm">🔽 bookworm — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Jina AI</b><span>Load-bearing for Bookworm URL ingestion (River IV), Schedule Oracle + chat-pasted-URL handling (River III)</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-4">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-5" style="display:none">
   <div class="rhead" style="border-color:#4caf82"><h2 style="color:#4caf82">River V — Two Independent Streams</h2><span class="rcount">4 real dashboard card(s)</span></div>
@@ -105,6 +113,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-journalQoL">🔽 journalQoL — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Composio</b><span>River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion + YouTube via Supadata)</span></div><div class="extchip"><b>Whisper (OpenAI, local)</b><span>The Content Intelligence pipeline (River V) — current live status genuinely unconfirmed</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-5">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-6" style="display:none">
   <div class="rhead" style="border-color:#e8c96a"><h2 style="color:#e8c96a">River VI — The Judgment Chamber</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -114,6 +126,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-8">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extnone">No real external connector cited for this river.</div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-6">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-7" style="display:none">
   <div class="rhead" style="border-color:#cc7a3a"><h2 style="color:#cc7a3a">River VII — The Library Current</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -123,6 +139,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-7">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-jargonEncyclopedia">🔽 jargonEncyclopedia — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Last.fm</b><span>refCorpus.findMatches()'s real fallback (River VII), grows the corpus from its own results</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-7">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-8" style="display:none">
   <div class="rhead" style="border-color:#5588ee"><h2 style="color:#5588ee">River VIII — The Confluence Pool</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -132,6 +152,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-8">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extnone">No real external connector cited for this river.</div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-8">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-9" style="display:none">
   <div class="rhead" style="border-color:#e05555"><h2 style="color:#e05555">River IX — The Mirror and the Far Shore</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -141,6 +165,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-9">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-knowledgeGap">🔽 knowledgeGap — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Graphify CC</b><span>Dispatched from River IX's own session-start check, deposits real findings into River XIV via graphify_jobs</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-9">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-10" style="display:none">
   <div class="rhead" style="border-color:#868db8"><h2 style="color:#868db8">River X — The Confluence of Chronicles</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -150,6 +178,10 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-10">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-chroniclesLog">🔽 chroniclesLog — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extnone">No real external connector cited for this river.</div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-10">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-11" style="display:none">
   <div class="rhead" style="border-color:#3a4570"><h2 style="color:#3a4570">River XI — Content Production Live</h2><span class="rcount">1 real dashboard card(s)</span></div>
@@ -159,15 +191,11 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-11">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-contentProductionLive">🔽 contentProductionLive — its own functions on Level 3</a></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>OpenMontage</b><span>Real spring AND mouth both sit in River XI: opens at "Generate Video," closes at "Mark ConID as Filmed"</span></div><div class="extchip"><b>Composio</b><span>River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion + YouTube via Supadata)</span></div><div class="extchip"><b>librosa</b><span>Triggered by River XI's Beat Log, nowhere else</span></div><div class="extchip"><b>FFmpeg</b><span>Reached only via River XI's OpenMontage handoff, never called directly by any RPGACE river</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-11">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section><section class="rsection" id="river-12" style="display:none">
-  <div class="rhead" style="border-color:#2ABFB0"><h2 style="color:#2ABFB0">River XII — The API / Auth Layer</h2><span class="rcount">0 real dashboard card(s)</span></div>
-  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
-  <div class="rback"><a href="galaxy_map_module.html#river-12">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section><section class="rsection" id="river-13" style="display:none">
-  <div class="rhead" style="border-color:#E2A83D"><h2 style="color:#E2A83D">River XIII — Skills</h2><span class="rcount">0 real dashboard card(s)</span></div>
-  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
-  <div class="rback"><a href="galaxy_map_module.html#river-13">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section><section class="rsection" id="river-14" style="display:none">
   <div class="rhead" style="border-color:#d4daf5"><h2 style="color:#d4daf5">River XIV — Oversight Docs</h2><span class="rcount">1 real dashboard card(s)</span></div>
   <div class="cgrid"><div class="ccard">
@@ -176,15 +204,11 @@
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-14">🌊 Level 2 (backend home)</a></div>
   <div class="cmod"><span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span></div>
 </div></div>
+  <div class="convrow">
+    <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Graphify CC</b><span>Dispatched from River IX's own session-start check, deposits real findings into River XIV via graphify_jobs</span></div></div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+  </div>
   <div class="rback"><a href="galaxy_map_module.html#river-14">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section><section class="rsection" id="river-15" style="display:none">
-  <div class="rhead" style="border-color:#20263a"><h2 style="color:#20263a">River XV — Session Records / Backlog</h2><span class="rcount">0 real dashboard card(s)</span></div>
-  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
-  <div class="rback"><a href="galaxy_map_module.html#river-15">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section><section class="rsection" id="river-16" style="display:none">
-  <div class="rhead" style="border-color:#2a3050"><h2 style="color:#2a3050">River XVI — Dev Tooling</h2><span class="rcount">0 real dashboard card(s)</span></div>
-  <div class="cgrid"><div class="nocard">No real dashboard card for this river — a dev-process/backend-only river with no direct end-user UI entry point.</div></div>
-  <div class="rback"><a href="galaxy_map_module.html#river-16">🔭 zoom out: Level 2 (this river's own modules)</a></div>
 </section>
 <div class="note">
   Generated by <code>scripts/galaxy_map_level2_5.py</code> — real data reused from

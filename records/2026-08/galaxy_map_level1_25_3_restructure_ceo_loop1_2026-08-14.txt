@@ -1,0 +1,102 @@
+GALAXY MAP — LEVEL 1/1.5/2/2.5/3 RESTRUCTURE, MEANDERS AS CONVERGENCE POINT
+CEO Loop 1 compiled spec, Aug 14 2026
+
+============================================================
+STEP 1 — COMPILE (Alex's raw ask, close to verbatim)
+============================================================
+Verbatim: "so i think we should rethink how 1,1.5,2,2.5, 3 is all
+structured, i dont want 1.5 it doesnt make sense - remember what i said
+about meanders and rivers? a lot of the rivers have dashboard ui, so
+just having the ui show where they go at level 2, 3, and alex/ui would
+help massively (also at 2.5, only take into account rivers that
+actually have them, they could feature where externals attach too, as
+well as other dimensions. meanders should become the central point
+where all ui/alex/backend/externals all eventually meet."
+
+Real, distinct asks inside this one message:
+A. Level 1.5 (Meanders, current form) is rejected outright — "doesn't
+   make sense" as a separate small level.
+B. Real UI-accessibility evidence (already computed — compute_module_
+   ui_signal, the Alex bubble) should show directly AT Level 2 and
+   Level 3, not concentrated in one separate level.
+C. A real "alex/ui" concept — referenced but not fully defined; ties to
+   G37 (the Alex decision-tree bubble system, still blue) and the
+   deferred 3rd G38 link ("a UI/Alex bubble that sends off into the
+   alex/ui conjoined dimension").
+D. Level 2.5 should be scoped strictly to rivers that actually HAVE a
+   real dashboard card — no placeholder sections for card-less rivers
+   (a real, clean scoping fix vs. G38's current build, which shows an
+   explicit "no card" note for all 16 rivers).
+E. Level 2.5 should also show where EXTERNALS (G27/G31) attach, and
+   reference other DIMENSIONS (G30, not yet built).
+F. The biggest reframe: "Meanders" — not 1.5, not 2.5 as currently
+   scoped — becomes THE CENTRAL CONVERGENCE POINT where UI, Alex,
+   backend, and externals ALL meet. This is a materially larger,
+   more architecturally central role than either the old Level 1.5 or
+   the current Level 2.5 build.
+
+Real cross-reference against existing state (not re-derived):
+- G38 (Level 2.5, shipped same session) already does part of D/E
+  partially — cards resolve to primary modules, but shows placeholder
+  notes for card-less rivers (the exact thing Alex now rejects in D),
+  and does NOT yet show externals or dimension-links (E).
+- Level 1.5 (Meanders) currently exists ONLY for River V (its original,
+  narrower "this one river's Level-2 canvas was too crowded" purpose).
+- G30 (Level 0 -> dimensions) is STILL genuinely unresolved (the real
+  single-home-vs-multi-home question) — this new ask makes G30's
+  resolution MORE urgent, since Meanders-as-convergence explicitly
+  wants to reference dimensions.
+- G37 (Alex decision-tree bubble system) is still blue, unbuilt.
+
+============================================================
+STEP 2 — REAL PARANOIA/RESTRUCTURE-SHAPED EVALUATION
+(literal /drift does not apply — no ratified baseline exists for a
+brand-new restructuring proposal, same honest substitution used for
+the cartographer question and the Meanders-2.5 question earlier this
+session)
+============================================================
+
+Real case FOR doing this now:
+- Real, growing conceptual pressure already visible in this session's
+  own work: G38 was built, then immediately Alex asked for 3 link
+  types per card (2 of 3 shipped), then asked to eliminate the
+  placeholder noise and add externals/dimensions — the SAME underlying
+  vision ("cards are where UI/Alex/backend/externals meet") has been
+  expressed 3 times now, each time a little more precisely. Building
+  the REAL end-state now, once, is more honest than iterating G38
+  piecemeal a 4th and 5th time.
+- Real reuse available: compute_module_ui_signal (UI/Alex evidence),
+  EXTERNAL_RIVER_LINKS (external attachment evidence), CARDS_BY_RIVER
+  (card ownership) all already exist — this is a real RESTRUCTURING of
+  already-computed evidence into a new shape, not new detection work.
+
+Real case AGAINST doing this blind, right now:
+- G30 (dimensions) is a real, load-bearing DEPENDENCY of this ask (E
+  explicitly wants dimension-links) and is itself still unresolved.
+  Building "Meanders points to dimensions" before dimensions exist
+  would mean either faking the link (dishonest, against this whole
+  project's own standing discipline) or building a placeholder that
+  needs rework once G30 lands (real, avoidable waste).
+- "The central point where all ui/alex/backend/externals all eventually
+  meet" is describing something structurally bigger than a page — it
+  sounds like it wants to be Level 0/1's own real successor concept
+  (a genuine hub), not a mid-hierarchy insert between 2 and 3. Building
+  the wrong SHAPE (a page vs. a hub-level restructuring) would be a
+  real, expensive mistake to redo.
+- Removing Level 1.5 outright has one real, already-shipped dependency:
+  River V's own Level-2 canvas currently links OUT to Meanders instead
+  of rendering its own crowded 10-module fan-out directly (the reason
+  Meanders was built in the first place, Aug 14 earlier this session).
+  If Meanders disappears without a replacement, River V's Level 2
+  regresses to the ORIGINAL crowded/messy rendering Alex specifically
+  asked to fix.
+
+Real /restructure flag: this is a genuine skeleton change (renumbering/
+re-scoping 3 existing levels plus creating a new central-hub concept),
+at the same rarity /5thDimension and /restructure are already reserved
+for in this project — not a normal Tier-2 addition.
+
+============================================================
+STEP 3 — REAL /interrogation (the genuine open forks, put to Alex
+directly rather than guessed)
+============================================================

@@ -192,8 +192,8 @@ def build_svg():
         if rnum in rivers_needing_meanders():
             mx, my = polar(rx, ry, 34, 45)
             nodes_svg.append(
-                f'<a href="galaxy_map_meanders.html#river-{rnum}">'
-                f'<text x="{mx}" y="{my}" text-anchor="middle" font-size="15" title="Has a real Level-1.5 meanders split">🌾</text></a>'
+                f'<a href="galaxy_map_level2_5.html#river-{rnum}">'
+                f'<text x="{mx}" y="{my}" text-anchor="middle" font-size="15" title="Has a real Level-2.5 card-split">🚪</text></a>'
             )
         mods = RIVER_MODULES.get(rnum, [])
         # G23c (Aug 14, /misunderstanding-diagnosed) — a real, visible
@@ -369,8 +369,8 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <span class="bc-here">🏛️ Level 1</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_meanders.html">🌾 Level 1.5</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_module.html">🌊 Level 2</a>
+  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_level2_5.html">🚪 Level 2.5</a>
 </div>
 
 <div class="hero">
