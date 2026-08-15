@@ -779,6 +779,30 @@ def compute_intra_river_flow(core_js_path: Path = CORE_JS):
                 edges.append((a, b, 'wrap'))
                 touched.add(a); touched.add(b)
 
+        # Signal 2b (Aug 14, real G22 module-by-module evidence pass —
+        # Alex: "lets do g26 to finish mid build, then g11, g22...").
+        # Real root cause found by direct investigation of intelBatchList
+        # (the last-standing false-isolated module in River V after
+        # G25): it DOES wrap a real WRAP_TARGETS member (loadIntelInsights,
+        # 3 real global wrappers — genuinely in WRAP_TARGETS already) —
+        # but those 3 wrappers span 2 DIFFERENT rivers (intelBatchList/
+        # River V, videoSummary/River XI) plus an unrivered `config`
+        # module, so WITHIN River V specifically there is only ONE real
+        # wrapper — Signal 2's own same-river chain (`zip(wrappers,
+        # wrappers[1:])`) correctly finds no same-river peer to connect
+        # to and silently produces zero edges, even though the module
+        # genuinely isn't isolated — it has a real CROSS-river connection
+        # via a shared main.js function. Reuses the exact same pseudo-
+        # node naming convention compute_hook_signal_edges() already
+        # established for main.js-side evidence (`core-wrapper[mainjs:X]`)
+        # so downstream rendering needs zero special-casing.
+        for target in WRAP_TARGETS:
+            wrappers = [m for m in mods if re.search(
+                r'window\.' + target + r'\s*=\s*function', block_of(m))]
+            if len(wrappers) == 1:
+                edges.append((wrappers[0], f'core-wrapper[mainjs:{target}]', 'wrap'))
+                touched.add(wrappers[0])
+
         # Signal 3: shared RPGACE.utils.<oracle-send> convergence — each
         # qualifying module gets a real edge INTO this river's own
         # already-computed terminal (a genuine "feeds the same real
