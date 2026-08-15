@@ -262,6 +262,12 @@ a genuine cost/benefit call per rule 11), so an empty result means
     `error_log.html` (runtime/code errors, not process/methodology) and
     from `patch_notes.html` (what shipped, not why a decision was hard).
     Hand-authored per session like `patch_notes.html`, not Supabase-live.
+    **Same day, real follow-up (CEO SKILL.md Loop 1 Step 6)**: every card
+    opens with the real prompt scope that was active when the episode
+    happened, sourced from Alex's own words where he gave them — written
+    BEFORE the other blocks, never synthesized afterward from the
+    solution (which would launder away exactly the "scope narrowed once
+    real evidence came in" signal this field exists to preserve).
 
 ## How to actually run this (the enforceable part)
 

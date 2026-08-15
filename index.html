@@ -248,8 +248,15 @@
 
   <div class="learn-layout">
 
-    <!-- PANEL 1: File Analyzer (was Content Intelligence, renamed July 23) -->
-    <div class="learn-panel learn-full">
+    <!-- PANEL 1: File Analyzer (was Content Intelligence, renamed July 23).
+         Aug 15 2026 (A5/A8, real Alex ask: "i want these in bookworm under
+         the bookworm update i wanted too") - Research Lab's dashboard card
+         is retired; this panel is now reached via dashDeck._openBookworm()'s
+         own "📁 Open File Analyzer" jump button. Starts display:none, same
+         reasoning as #video-workshop-panel above (static markup, no lazy-
+         inject to gate it) - dashDeck._jumpToResearchPanel clears it back
+         to the CSS default on real demand. -->
+    <div class="learn-panel learn-full" id="file-analyzer-panel" style="display:none">
       <h3>📁 1 — FILE ANALYZER</h3>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
         <div id="intel-server-status" style="display:flex;align-items:center;gap:6px;font-size:12px">
@@ -330,8 +337,11 @@
       </div>
     </div>
 
-    <!-- PANEL 2: Video Finder -->
-    <div class="learn-panel">
+    <!-- PANEL 2: Video Finder. Aug 15 2026 (A5/A8) - reached via
+         dashDeck._openBookworm()'s own "🎬 Open Video Finder" jump button
+         now, not Research Lab. Starts display:none, same reasoning as
+         #file-analyzer-panel above. -->
+    <div class="learn-panel" id="video-finder-panel" style="display:none">
       <h3>🎬 2 — VIDEO FINDER AI</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Search YouTube without an API key — powered by Supadata.</p>
       <div class="learn-input-row">
@@ -478,7 +488,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      fully-commented source - always edit those, never the .min.js files
      directly. -->
 <script src="main.min.js?v=20260811k"></script>
-  <script src="rpgace_core.min.js?v=20260815a"></script>
+  <script src="rpgace_core.min.js?v=20260815b"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

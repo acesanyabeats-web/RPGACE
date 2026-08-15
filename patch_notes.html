@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">📖🐛 Aug 15 (37th pass) — Research Lab fully retired; File Analyzer + Video Finder move to Bookworm; a real "worm family" vision logged for later; new CEO Loop 1 Step 6.</div>
+    <div class="card-body">
+      Alex hand-tested Phase 1 live (the Research Lab popup, now showing only File Analyzer + Video Finder) and said: "Close - i want these in bookworm under the bookworm update i wanted too" — referencing A8, "Bookworm absorbs Content Intelligence entirely."
+      <br><br>
+      Real evidence first (rule 15): File Analyzer is backed by River V's Content Intelligence modules (<code>intelBatchList</code>/<code>intelDedup</code>/<code>ciAutoPropose</code>); Video Finder is a raw <code>main.js</code> feature with zero module/river structure at all. Asked one targeted question — Phase 1 (UI move only) vs. also building A8's full videoworm/articleworm backend integration now. Alex confirmed "phase 1," then laid out a much larger real vision in the same answer: Corpus becomes "MusicWorm" (real audio-listening capability, explicitly flagged "just a bare idea right now"); Bookworm becomes a "which worm?" picker landing on a toggleable worm-family research station; each worm feeds relevant context into Oracle chat alongside the existing platform-Oracle panels.
+      <br><br>
+      <b>Built exactly what was confirmed</b>: File Analyzer + Video Finder now open from the 📖 Bookworm card via 2 new jump buttons (both static index.html markup, given real ids, default <code>display:none</code> like Upload Workshop). <code>researchTabs.TABS</code> is now genuinely empty — Research Lab has zero content of its own left. The "🧠 Research Lab" dashboard card AND its leftNav entry are both fully retired (nothing left to justify either); a stale "Open Research Lab" quick-action link repointed to Bookworm. <code>dashDeck._openResearch()</code> stays defined but unreferenced — same "kept on disk, nothing 404s" precedent as the Meanders page.
+      <br><br>
+      <b>Not built, logged instead</b> — the larger worm-family vision, verbatim, in <code>researchTabs.TABS</code>' own code comment and in <code>session_lessons.html</code>: renaming File Analyzer → Videoworm/Articleworm with real insights routed through Bookworm's own placement logic (A8's full ask); Corpus → MusicWorm with real audio-listening capability mapped against taxonomy phyla; a real worm-switcher page; Oracle-context wiring from each worm.
+      <br><br>
+      <b>New CEO Loop 1 Step 6</b> (Alex's own direct ask, same session): every <code>session_lessons.html</code>/<code>ceo_reports</code> entry now opens with the real prompt scope that produced it, before the obstacle/reasoning/solution blocks — his own reasoning: he wants to see what was actually asked versus what real evidence narrowed it down to, not just the outcome. Retrofitted onto all 3 prior cards; this pass's own card is the first one built under the rule from the start.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped. <b>Untested by hand.</b>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🧭🎼 Aug 15 (36th pass) — A5 Phase 1 shipped: Research Lab dismantled into its real owning cards, real "use the Galaxy Map, not grep" rule adopted, new Session Lessons doc.</div>
     <div class="card-body">
       Alex: "sick lets do a5 then rest of g-steps we want to do next." Investigated using the Galaxy Map's own computed data (per his direct mid-turn correction, "you have galaxy map now for reading it, use it") instead of a cold grep sweep — 2 cheap Python queries against <code>graphify_river_group.py</code>'s <code>RIVER_MODULES</code>/<code>DASHBOARD_CARDS</code> found <code>conidPot</code>/<code>beatLog</code>/<code>contentProductionLive</code>/<code>videoPipeline</code> were ALREADY River XI (Content Pipeline) modules and <code>refCorpus</code> was ALREADY grouped with taxonomy-linking code (River VII) — reframing A5 from a feared backend rewrite into a real, contained UI-routing fix. Reported to Alex with real before/after evidence and a phased plan before writing code (rule 5); confirmed "Build Phase 1 now."
