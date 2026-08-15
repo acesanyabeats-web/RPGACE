@@ -343,9 +343,18 @@
       <div class="video-results" id="video-results"></div>
     </div>
 
-    <!-- PANEL 2: Video Workshop -->
-    <div class="learn-panel learn-full" id="video-workshop-panel">
-      <h3>🎬 3 — VIDEO WORKSHOP — Upload Strategy</h3>
+    <!-- PANEL 2: Upload Workshop (renamed from "Video Workshop" Aug 15 2026,
+         A5 Phase 1 — Alex's own exact wording; "3 —" step-numbering dropped
+         since this panel moved into Content Pipeline, no longer a Research
+         Lab tab position. Reached via dashDeck._openPipeline()'s own
+         "🔀 Open Upload Workshop" button now, not researchTabs. Starts
+         display:none — this is static markup (never JS-injected), so
+         unlike the other 3 relocated panels (which simply don't exist
+         until asked for) this one needs an explicit default-hidden state
+         so Research Lab reads clean; dashDeck._jumpToResearchPanel clears
+         it back to the CSS default (display:flex) on real demand. -->
+    <div class="learn-panel learn-full" id="video-workshop-panel" style="display:none">
+      <h3>🎬 UPLOAD WORKSHOP</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Paste the transcript of your final video. AI builds a complete upload strategy — titles, thumbnails, short clips, description, tags and chapters — ready to publish.</p>
 
       <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
@@ -469,7 +478,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      fully-commented source - always edit those, never the .min.js files
      directly. -->
 <script src="main.min.js?v=20260811k"></script>
-  <script src="rpgace_core.min.js?v=20260814k"></script>
+  <script src="rpgace_core.min.js?v=20260815a"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

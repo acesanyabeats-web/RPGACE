@@ -1,6 +1,6 @@
 ---
 name: update-logging-system
-description: A shared change-type → required-artifact checklist (CLAUDE.md Current State, patch_notes.html, Chronicles, interconnection_map.md, system_flow_map.md, minotaur_map.html, manual.html, taxonomy_map.html, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, and the specific skill .md file whose behavior evolved) that closes the gap where a real fix updates SOME oversight docs but not all the ones it should. Use this skill at the same point CLAUDE.md rule 6 already requires doc updates (any Tier 2+ real change, and always as part of Bedtime's Step 1) — run through the dependency map, mark each artifact touched/skipped-with-reason, explicitly. Do NOT use this for Tier 0/1 mechanical edits (same threshold as Council of 5/GODMODE) — it is a completeness gate for real changes, not a per-commit ritual.
+description: A shared change-type → required-artifact checklist (CLAUDE.md Current State, patch_notes.html, Chronicles, interconnection_map.md, system_flow_map.md, minotaur_map.html, manual.html, taxonomy_map.html, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, session_lessons.html, and the specific skill .md file whose behavior evolved) that closes the gap where a real fix updates SOME oversight docs but not all the ones it should. Use this skill at the same point CLAUDE.md rule 6 already requires doc updates (any Tier 2+ real change, and always as part of Bedtime's Step 1) — run through the dependency map, mark each artifact touched/skipped-with-reason, explicitly. Do NOT use this for Tier 0/1 mechanical edits (same threshold as Council of 5/GODMODE) — it is a completeness gate for real changes, not a per-commit ritual.
 ---
 
 # /update-logging-system — one shared map, so nothing goes stale by accident
@@ -248,6 +248,20 @@ a genuine cost/benefit call per rule 11), so an empty result means
     goes in its rightful canonical doc first (per whichever artifact type
     above matches its real content), with Tier (a) getting only a short
     pointer — never the full narrative twice.
+17. **A real `/misunderstanding`, `/drift` finding, or genuine obstacle
+    gets resolved during a session** (added Aug 15, real Alex ask: "make a
+    doc that records any /misunderstandings, /drift, challanges and
+    obstacles faced, and how the solution was created and what the
+    solution is... record future rules and changes during a session, then
+    /Bedtime and pushes would record this for reflection") → `session_lessons.html`
+    (new 11th oversight doc), one card per episode: the trigger, the real
+    obstacle, how the solution was actually reached (the reasoning, not
+    just the outcome), the solution, and any resulting standing rule
+    (cross-referenced to its CLAUDE.md rule number or a skill's own R-N,
+    never restated in full — rule 8). Genuinely different from
+    `error_log.html` (runtime/code errors, not process/methodology) and
+    from `patch_notes.html` (what shipped, not why a decision was hard).
+    Hand-authored per session like `patch_notes.html`, not Supabase-live.
 
 ## How to actually run this (the enforceable part)
 
