@@ -74,6 +74,25 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">⏳📚 Aug 15 (38th pass) — Load Dimension (G39) shipped; session_lessons.html retroactively seeded from patch_notes.html.</div>
+    <div class="card-body">
+      Alex: "we should also make a load dimension (what ui, backend or alex trigger certain backend and ui to load, in what steps etc) this could help tie everything together for diagnosing." Ran a real 2-round <code>/interrogation</code> first — confirmed: all 3 real load-trigger idioms tracked as SEPARATE categories, never merged; serves both diagnostic-correctness and boot-performance visibility equally.
+      <br><br>
+      Real, confirmed mechanism (not guessed): <code>registerBootTask(fn)</code> runs <code>fn()</code> synchronously the instant it's called, queuing into a single <code>Promise.all(...).then(_hideBootOnce)</code> gate (a real 20s hard ceiling on the boot-loader hide) — real source order IS real fire order.
+      <br><br>
+      Built: 3 new detection functions in <code>graphify_river_group.py</code> (<code>compute_boot_task_registrations</code>/<code>compute_page_nav_triggers</code>/<code>compute_click_load_triggers</code>, the last one sourced from this same session's own A5/Bookworm work), new <code>scripts/galaxy_map_load.py</code> → <code>graphify-out/galaxy_map_load.html</code> — 27 real boot-task registrations, 29 real page-nav trigger pairs across 22 modules, 5 real click-load triggers, each cross-linked into Level 2/3. Wired into the Oversight popup.
+      <br><br>
+      <b>Real idempotency bug found and fixed before shipping (R5)</b>: <code>LEVEL3_MODULES</code> is a Python <code>set()</code>, hash-randomized iteration order per process — two fresh runs produced differently-ordered (but same-content) rows. Fixed with <code>sorted()</code>, re-verified identical across 3 fresh runs.
+      <br><br>
+      <b>Explicitly NOT built, logged not hidden</b>: a real Level 2/3 hub "⏳ Load" bubble mirroring the existing Oracle/Composio bubble pattern, with bubble-conjoining when a node has evidence in 2+ categories (per Alex's own ask) — a real, separate follow-on. <code>ceo_plan_items</code> G39 logged, status yellow.
+      <br><br>
+      <b>Separately, same pass</b>: Alex asked to retroactively seed <code>session_lessons.html</code> from <code>patch_notes.html</code>'s own history, "just mark as blue, will plan it later." New <code>scripts/session_lessons_retroactive_seed.py</code> (R10 — a real generator, never 257 cards hand-curated one at a time) mechanically scanned every real card title for genuine misunderstanding/correction/obstacle signal keywords and emitted 39 real title+date entries into a new blue-marked block, each pointing back to its own full <code>patch_notes.html</code> card rather than re-narrating it (rule 8). Idempotency-guarded (won't double-insert on a second run).
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped, all real HTML div/table/tr/td-balanced. <b>Untested by hand.</b>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">📖🐛 Aug 15 (37th pass) — Research Lab fully retired; File Analyzer + Video Finder move to Bookworm; a real "worm family" vision logged for later; new CEO Loop 1 Step 6.</div>
     <div class="card-body">
       Alex hand-tested Phase 1 live (the Research Lab popup, now showing only File Analyzer + Video Finder) and said: "Close - i want these in bookworm under the bookworm update i wanted too" — referencing A8, "Bookworm absorbs Content Intelligence entirely."

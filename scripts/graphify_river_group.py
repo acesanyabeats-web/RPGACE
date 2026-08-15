@@ -1379,6 +1379,101 @@ def compute_lastfm_call_sites(module_name, core_js_path: Path = CORE_JS):
     return out
 
 
+# G39, "Load Dimension" (Aug 15 2026, real Alex ask: "we should also make
+# a load dimension (what ui, backend or alex trigger certain backend and
+# ui to load, in what steps etc) this could help tie everything together
+# for diagnosing"). Real /interrogation resolved the shape: 3 real,
+# separately-tracked categories (not merged), serving both diagnostic-
+# correctness AND performance-visibility equally. Real, confirmed
+# mechanism first (not guessed): RPGACE.registerBootTask(fn) at
+# rpgace_core.js:194 runs fn() SYNCHRONOUSLY the moment it's called and
+# queues its return value into R._bootTasks, which a single
+# Promise.all(...).then(_hideBootOnce) gates the real boot-loader hide
+# on (a real 20s hard ceiling) — so real SOURCE order of registerBootTask
+# calls genuinely IS real fire order, a legitimate diagnostic proxy, not
+# an assumption.
+_BOOT_TASK_CALL = re.compile(r'registerBootTask\(')
+_PAGE_SHOW_HOOK = re.compile(
+    r"hooks\.on\(\s*['\"]page:show['\"]\s*,\s*function\s*\(\s*(\w+)\s*\)\s*\{([\s\S]{0,400}?)\n\s*\}\s*\)"
+)
+_PAGE_CONST_REF = re.compile(r'RPGACE\.CONFIG\.pages\.(\w+)|===\s*[\'"](\w+)[\'"]')
+
+
+def compute_boot_task_registrations(core_js_path: Path = CORE_JS):
+    """Real, GLOBAL sequence of every registerBootTask(...) call in the
+    file, in real source order (== real fire order, per the module
+    header above). Returns a list of {module, line, seq} dicts, seq
+    being the real 1-based position among all real registrations
+    project-wide. Module resolved via parse_module_ranges() (rule 8)."""
+    ranges = parse_module_ranges(core_js_path)
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    out = []
+    seq = 0
+    for i, line in enumerate(lines, start=1):
+        if _BOOT_TASK_CALL.search(line):
+            mod = next((m for m, (s, e) in ranges.items() if s <= i <= e), None)
+            if mod is None:
+                continue  # a real registration outside any module marker (main.js-side); not this detector's scope
+            seq += 1
+            out.append({'module': mod, 'line': i, 'seq': seq})
+    return out
+
+
+def compute_page_nav_triggers(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION list of page:show hook registrations and the
+    real page constant(s) each one gates on — {func_name: [page_name,...]}.
+    Reuses _function_bodies() (rule 8). A function with no real page:show
+    registration is simply absent from the returned dict."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        pages = []
+        for m in _PAGE_SHOW_HOOK.finditer(b):
+            inner = m.group(2)
+            for pm in _PAGE_CONST_REF.finditer(inner):
+                name = pm.group(1) or pm.group(2)
+                if name and name not in pages:
+                    pages.append(name)
+        if pages:
+            out[f] = pages
+    return out
+
+
+# Real, confirmed on-demand/click idiom (Aug 15, sourced from THIS SAME
+# session's own A5/Bookworm work): dashDeck's own _open*() functions
+# check for an existing DOM node, and — if missing — call a target
+# module's real inject function directly before showing a popup. Real,
+# already-proven examples: _openGaps->knowledgeGap._inject,
+# _openCorpus->refCorpus._inject, _openBookworm->bookworm._injectDashboardWidget
+# + bookworm._injectBibliographySection, _openPipeline->
+# contentProductionLive._injectDashboardWidget + beatLog._inject +
+# conidPot._injectIdeaBank, _openMorningBrief->morningBrief._injectButton.
+_CLICK_LOAD_PATTERN = re.compile(
+    r'RPGACE\.modules\.(\w+)[\s\S]{0,150}?\.(_inject\w*)\s*\(\s*\)'
+)
+
+
+def compute_click_load_triggers(module_name='dashDeck', core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION list of (target_module, inject_fn) pairs a
+    dashDeck open-function calls on demand — {func_name: [(module, fn),...]}.
+    Defaults to dashDeck since that's the one real, confirmed source of
+    this idiom project-wide; kept as a real param (not hardcoded) in
+    case a future module adopts the same pattern."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        if not f.startswith('_open'):
+            continue
+        pairs = []
+        for m in _CLICK_LOAD_PATTERN.finditer(b):
+            pair = (m.group(1), m.group(2))
+            if pair not in pairs:
+                pairs.append(pair)
+        if pairs:
+            out[f] = pairs
+    return out
+
+
 def compute_river_flow_cycles():
     """Real strongly-connected-component detection over RIVER_FLOWS
     (Aug 14, G24 — Alex's own /misunderstanding: "back into reoccuring
