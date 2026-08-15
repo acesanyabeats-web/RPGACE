@@ -59,7 +59,16 @@ def _mod_link(mod, label=None):
 def _river_link(rnum):
     color = RIVER_COLOR.get(rnum, '#8a8a9a')
     name = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
-    return f'<a href="galaxy_map_module.html#river-{rnum}" class="river-chip" style="border-color:{color};color:{color}">🌊 {name}</a>'
+    # Real /deduplication+/paranoia fix (Aug 15) — real evidence found
+    # Level 4 (this page, per-card DOM/button-level flow detail) and
+    # Level 2.5 (river-grouped card->primary-module + UI-accessibility
+    # summary) are NOT duplicates (different real granularity, same
+    # non-instance precedent as taxonomy_nodes vs taxonomy_tree), but
+    # Level 4 only ever linked back to Level 2, never to the newer
+    # Level 2.5 convergence point — a real, cheap navigation gap, now
+    # fixed with a second real chip, not a restructure.
+    return (f'<a href="galaxy_map_module.html#river-{rnum}" class="river-chip" style="border-color:{color};color:{color}">🌊 {name} · L2</a>'
+            f'<a href="galaxy_map_level2_5.html#river-{rnum}" class="river-chip" style="border-color:{color};color:{color}">🚪 {name} · L2.5</a>')
 
 
 def build_card_section(card):

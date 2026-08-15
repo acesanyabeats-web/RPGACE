@@ -42,7 +42,7 @@ DECISION_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (19412, 19451), 'anchor': "MODES: ['real', 'dummy', 'fallback']",
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (19596, 19637), 'anchor': "MODES: ['real', 'dummy', 'fallback']",
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -52,7 +52,7 @@ DECISION_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy dashboard card: popup vs. page fallback',
         'decider': 'Code logic (real pending-review count)',
-        'module': 'dashDeck', 'lines': (5823, 5831),
+        'module': 'dashDeck', 'lines': (5878, 5883),
         'anchor': "_pendingReviewCount !== 0",
         'decides': 'Whether clicking the "🌳 Taxonomy & Review" dashboard card opens the review-queue popup or navigates straight to the taxonomy tree page.',
         'changes': 'A real, live-queried count (RPGACE.modules.dashDeck._pendingReviewCount, set by _refreshGlance from a real taxonomy_proposals SELECT) — not a static config flag.',
@@ -63,7 +63,7 @@ DECISION_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (8837, 8871),
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (9021, 9060),
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -74,7 +74,7 @@ DECISION_POINTS = [
         'id': 'dedup-extend',
         'title': 'Taxonomy dedup: extend existing leaf vs. reject',
         'decider': 'Code logic (real empty-newSteps + existing-leaf check)',
-        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (9105, 9120),
+        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (9289, 9304),
         'anchor': '_insertNewSteps: function',
         'decides': 'What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).',
         'changes': "attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.",
@@ -96,7 +96,7 @@ DECISION_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (14664, 14670),
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (15618, 15637),
         'anchor': 'MUSIC_VIDEO_PRIMARY_ACTION',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",
@@ -107,7 +107,7 @@ DECISION_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (13900, 13907),
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (14082, 14093),
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -166,7 +166,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 5</div>
   <h1>🧠 Logic — Real, Named Decision Points</h1>
-  <p>A real, curated set of {n} core decision points — where Alex, Oracle, or the code itself decides something that changes what happens next. NOT exhaustive (that's Level 6) — this is the hand-picked "core logic" Alex asked for. Every code excerpt below is read live from rpgace_core.js at build time, cited by real line number.</p>
+  <p>A real, curated set of {n} core decision points — where Alex, Oracle, or the code itself decides something that changes what happens next. NOT exhaustive (that's Level 6) — this is the hand-picked "core logic" Alex asked for. Every code excerpt below is read live from rpgace_core.js at build time, cited by real line number. Real, additive companion (Aug 15): <a href="galaxy_map_logic_dimension.html">📖 the Logic Dimension</a> — every river-to-river connection, external connector, and skill stream as its own clickable passage, river-grouped.</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}
