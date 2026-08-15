@@ -46,6 +46,7 @@ from graphify_river_group import (  # noqa: E402
     compute_cross_module_function_calls, compute_function_ui_signals,
     FLOWS_IN, attribute_river_connection_function,
     compute_oracle_call_counts, compute_external_call_sites,
+    compute_lastfm_call_sites,
 )
 # G19 (Aug 14) — real forward-link cross-reference: which (module, func)
 # pairs have a curated Level-5 decision-point write-up. Reused directly
@@ -93,6 +94,9 @@ ORACLE_COLOR = '#9B59B6'
 # (RPGACE.api() calls, compute_external_call_sites()) — a real,
 # distinct accent, not reused from Oracle/Alex.
 COMPOSIO_COLOR = '#4CAF82'
+# G31 (Aug 14) — real 2nd "other externals" connector with a genuine
+# detectable client-side call site (fetch('/api/lastfm'), beatLog).
+LASTFM_COLOR = '#D9534F'
 
 OUT = Path('graphify-out/galaxy_map_level3.html')
 
@@ -312,6 +316,8 @@ def build_module_section(module_name):
     oracle_counts = compute_oracle_call_counts(module_name)
     composio_sites = compute_external_call_sites(module_name)
     composio_counts = {f: len(a) for f, a in composio_sites.items()}
+    lastfm_sites = compute_lastfm_call_sites(module_name)
+    lastfm_counts = {f: 1 for f in lastfm_sites}
     # Real, evidence-consistent fix (Aug 14, found while re-verifying
     # pathRouter's Alex bubble against real before/after HTML — pathRouter's
     # own real INPUT evidence, `window.addEventListener('popstate', ...)`,
@@ -358,7 +364,7 @@ def build_module_section(module_name):
         band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
         w, h, svg_inner, legend_rows_b, edge_colors_b = _render_band(
             module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
-            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts)
+            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts, lastfm_counts)
         if multi_band:
             # Real, deliberate DIFFERENT class from the top-level `.tab`
             # module switcher — a real bug caught before shipping: the
@@ -425,7 +431,7 @@ def build_module_section(module_name):
 
 def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges, ui_sigs,
                   incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module,
-                  oracle_counts=None, composio_counts=None):
+                  oracle_counts=None, composio_counts=None, lastfm_counts=None):
     """Real, per-band canvas builder (Aug 13, Alex-confirmed rank-band
     design) — factored out of build_module_section() so a crowded
     module renders 1-3 of these instead of one dense canvas. Same real
@@ -448,12 +454,12 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     buckets = barycenter_order(buckets, intra_edges, rank_order)
     max_col = max((len(v) for v in buckets.values()), default=1)
     W = max(1400, 260 + (max_d - min_d) * 260)
-    # Real, Aug 14 bump (190 -> 260 -> 340) — real headroom for the
-    # evidence-gated Oracle bubble (alex_y_const+90) AND the new
-    # Composio "other externals" bubble (alex_y_const+180, G16
-    # continuation) stacking below the existing Alex bubble without
-    # colliding into the function grid.
-    ALEX_MARGIN = 340
+    # Real, Aug 14 bump (190 -> 260 -> 340 -> 420) — real headroom for
+    # the evidence-gated Oracle bubble (alex_y_const+90), the Composio
+    # bubble (alex_y_const+180, G16), and the new Last.fm bubble
+    # (alex_y_const+270, G31) stacking below the existing Alex bubble
+    # without colliding into the function grid.
+    ALEX_MARGIN = 420
     H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
     grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
     my_backdoors = [(f, tm, tf) for f, tm, tf in backdoors if f in band_funcs_set]
@@ -636,6 +642,33 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             f'<text x="{cx_}" y="{cy_+55}" text-anchor="middle" font-size="8" fill="{COMPOSIO_COLOR}" opacity="0.85">{len(band_composio)} function(s) · {total_calls} real call(s)</text></g>'
         )
         edge_colors_used.add(COMPOSIO_COLOR)
+
+    # Real, evidence-driven "Last.fm" bubble (Aug 14, G31 — Alex: "an
+    # external can attach to any level 0-6 if it has connections at
+    # level 1"). Same real evidence-gate discipline as Oracle/Composio
+    # above — only drawn where this band's functions genuinely have a
+    # real fetch('/api/lastfm') call.
+    lastfm_counts = lastfm_counts or {}
+    band_lastfm = [(f, lastfm_counts.get(f, 0)) for f in band_funcs if lastfm_counts.get(f, 0) > 0 and f in pos]
+    if band_lastfm:
+        lx_, ly_ = W / 2, alex_y_const + 270
+        n_calls = 0
+        for f, cnt in band_lastfm:
+            n_calls += 1
+            fx, fy = pos[f]
+            ox = lx_ + (n_calls * 13 if n_calls % 2 == 0 else -n_calls * 13)
+            edges_svg.append(_curved_edge(fx, fy, ox, ly_, LASTFM_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
+            mx, my = (fx + ox) / 2, (fy + ly_) / 2
+            nodes_svg.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{LASTFM_COLOR}" stroke-width="1"/>'
+                              f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{LASTFM_COLOR}" font-weight="700">{cnt}</text>')
+        total_calls = sum(c for _f, c in band_lastfm)
+        nodes_svg.append(
+            f'<g class="node"><circle cx="{lx_}" cy="{ly_}" r="26" fill="#0f0f1a" stroke="{LASTFM_COLOR}" stroke-width="2.5" filter="url(#glow)"/>'
+            f'<text x="{lx_}" y="{ly_+6}" text-anchor="middle" font-size="16">🎵</text>'
+            f'<text x="{lx_}" y="{ly_+42}" text-anchor="middle" font-size="9.5" fill="{LASTFM_COLOR}" font-weight="700">Last.fm</text>'
+            f'<text x="{lx_}" y="{ly_+55}" text-anchor="middle" font-size="8" fill="{LASTFM_COLOR}" opacity="0.85">{len(band_lastfm)} function(s) · {total_calls} real call(s)</text></g>'
+        )
+        edge_colors_used.add(LASTFM_COLOR)
 
     # Real backdoor nodes — scoped to this band's own source functions.
     backdoor_legend = []

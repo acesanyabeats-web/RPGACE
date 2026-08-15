@@ -1354,6 +1354,31 @@ def compute_external_call_sites(module_name, core_js_path: Path = CORE_JS):
     return out
 
 
+# G31 (Aug 14, real continuation — Alex: "an external can attach to any
+# level 0-6 if it has connections at level 1"). Real, second connector
+# with a genuine client-side call site detectable at function grain
+# (confirmed by direct grep: fetch('/api/lastfm', beatLog, rpgace_core.js
+# line 13824) — extends the same real evidence-gate pattern proven for
+# Composio, not a new mechanism. Real, honest scope: 9 more connectors
+# have real Level-1 (EXTERNAL_RIVER_LINKS) eligibility but no detectable
+# client-side rpgace_core.js call site — most real call sites live in
+# api/*.js server-side files, a genuinely different scope this function
+# doesn't reach; not claimed done here.
+_LASTFM_CALL = re.compile(r"fetch\(\s*['\"]/api/lastfm['\"]")
+
+
+def compute_lastfm_call_sites(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION flag for a real fetch('/api/lastfm') call site.
+    {func_name: True} — same shape discipline as compute_external_call_sites,
+    reused not re-derived (rule 8)."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        if _LASTFM_CALL.search(b):
+            out[f] = True
+    return out
+
+
 def compute_river_flow_cycles():
     """Real strongly-connected-component detection over RIVER_FLOWS
     (Aug 14, G24 — Alex's own /misunderstanding: "back into reoccuring

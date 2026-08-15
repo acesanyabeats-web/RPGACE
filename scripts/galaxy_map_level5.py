@@ -107,7 +107,7 @@ DECISION_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (13898, 13905),
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (13899, 13906),
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Orchestrator CC ↔ OpenMontage CC)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --purple:#9B59B6; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #17101a 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}
+  .breadcrumb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}
+  .breadcrumb a{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
+  .breadcrumb a:hover{color:var(--purple);border-color:var(--purple)}
+  .breadcrumb .bc-here{color:#0a0a0f;background:var(--purple);padding:4px 9px;border-radius:12px}
+  .breadcrumb .bc-sep{color:#4a4a58}
+  .msection{max-width:1000px;margin:0 auto;padding:24px}
+  .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:30px}
+  .mcard{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.25);border-radius:10px;padding:16px 18px}
+  .mcard h3{font-size:13.5px;color:#fff;margin-bottom:4px}
+  .mcard .mrole{font-size:10px;color:var(--purple);font-weight:700;margin-bottom:8px}
+  .mcard p{font-size:11px;line-height:1.6;color:#c8c8d8}
+  .constraint{max-width:1000px;margin:0 auto 20px;padding:14px 18px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.3);border-radius:10px;font-size:11.5px;line-height:1.6;color:#e0c0c0}
+  .jgrid{display:flex;flex-direction:column;gap:12px}
+  .jcard{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:10px;padding:14px 18px}
+  .jhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .jhead h3{font-size:13px;color:#fff}
+  .jstatus{font-size:9.5px;font-weight:700;text-transform:uppercase}
+  .jmeta{display:flex;gap:10px;font-size:9.5px;color:var(--dim);margin:4px 0 8px}
+  .jkind{color:var(--purple);font-weight:700}
+  .jsummary{font-size:11px;line-height:1.6;color:#c8c8d8}
+  .jid{font-size:9px;color:#5a5a68;margin-top:8px}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
+  a{color:var(--purple)}
+  .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
+  <span class="bc-here">🤝 Orchestrator ↔ OpenMontage</span>
+</div>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Orchestrator ↔ OpenMontage (G29)</div>
+  <h1>🤝 Orchestrator CC ↔ OpenMontage CC</h1>
+  <p>The real dispatch history between the two Total-system Claude Code sessions — 8 real openmontage_jobs rows, summarized honestly (never a fabricated live connection).</p>
+</div>
+<div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
+<div class="msection">
+  <div class="mgrid"><div class="mcard"><h3>Orchestrator CC</h3><div class="mrole">planner / orchestrator</div><p>This session. Decides what to build and directs work across the system. Renamed from "RPGACE CC" this same pass (Aug 14) — total_system_members had never been updated to match the name every current-state doc has used since Aug 13.</p></div><div class="mcard"><h3>OpenMontage CC</h3><div class="mrole">engineer / execution (OpenMontage)</div><p>Hands-on technical execution inside calesthio/OpenMontage — environment setup, pipeline runs, code fixes, cloud GPU wiring, real verification before reporting. Renamed from "Engineer CC" Aug 13 (a real naming collision with the /Engineer skill living inside Orchestrator CC itself).</p></div></div>
+  <div class="jgrid"><div class="jcard">
+  <div class="jhead"><h3>Calibri</h3><span class="jstatus" style="color:#E25454">failed</span></div>
+  <div class="jmeta"><span class="jkind">Video job</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-07-31</span></div>
+  <p class="jsummary">A real Scorsese-style mob-narrative music-video brief (RnB x West Coast). OpenMontage CC correctly identified the "cinematic" pipeline, then correctly refused to fake the brief with generic stock/archival footage since zero image/video-gen API keys were configured — marked failed with an honest, detailed explanation rather than faking success. Multiple real follow-up investigation threads landed on this SAME row over the following days (local GPU feasibility, Kaggle/Colab cloud-GPU testing) rather than opening new rows — a real, deliberate "one shared row, one shared ground truth" pattern.</p>
+  <div class="jid">Real row id: <code>7cb846b5...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Calibri — Free Cloud GPU (Colab/Kaggle) Proposal</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Research/proposal</span><span class="jby">by openmontage_claude_code</span><span class="jdate">2026-08-04</span></div>
+  <p class="jsummary">A real, honest multi-day cloud-GPU investigation (10 real Kaggle kernel iterations) — model VRAM tradeoffs, a real dataset-upload path, checkpoint/resume mechanics reused from OpenMontage's own existing protocol. Ended at a genuine, evidence-confirmed dead end: cogvideo-5b's real peak memory demand during generation exceeds a free-tier T4/P100's ~14.56GB usable VRAM, confirmed 3 separate structurally-different ways (device_map, whole-model offload, sequential layer offload) — a real hardware ceiling, not a fixable bug. Real, reusable value kept regardless: the RAM-staging fix and corrected VRAM/disk figures.</p>
+  <div class="jid">Real row id: <code>34bccfcb...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Calibri — Draft fix: hunyuan-1.5/ltx2-local variant-loading bugs</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Code fix (drafted, unmerged)</span><span class="jby">by openmontage_claude_code</span><span class="jdate">2026-08-04</span></div>
+  <p class="jsummary">Real code fixes for 2 genuinely broken local-video tools (missing HF repo variant/subfolder selection) — verified against OpenMontage's own real test suite (620 passed, 7 skipped). Deliberately kept on a local, unpushed branch (fix/hunyuan-ltx2-variant-loading) — no PR opened against the third-party public repo without explicit confirmation of intent, a real, correct restraint.</p>
+  <div class="jid">Real row id: <code>4d804898...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>SYSTEM: "Total" — 3-way role definition</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Standalone system-state row</span><span class="jby">by openmontage_claude_code</span><span class="jdate">2026-08-04</span></div>
+  <p class="jsummary">The real, foundational row establishing "Total" — roles for RPGACE app / Orchestrator CC (then still named "RPGACE CC") / OpenMontage CC (then still named "Engineer CC"), and confirming directly via list_sessions that no live session-to-session link exists — the same constraint this whole G29 page is built around.</p>
+  <div class="jid">Real row id: <code>5feb76ed...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Asylum</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Video job (simulated)</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-05</span></div>
+  <p class="jsummary">A real Phase F "Simulate Response" test-tool row — explicitly [SIMULATED], zero real cost, zero real render, built to validate the pipeline plumbing end-to-end without spending real API credits.</p>
+  <div class="jid">Real row id: <code>7c191255...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Asylum (2nd row, different content_production_id)</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Video job (simulated)</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-06</span></div>
+  <p class="jsummary">A real second row for the same beat title, one day later, a different content_production_id and a different flPath/visualTreatment flag than the first — a real observation worth naming honestly (possibly a genuine re-run against a corrected ConID, not confirmed either way), not silently treated as identical to the first row.</p>
+  <div class="jid">Real row id: <code>a92d9e05...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>SYSTEM: "Total" — graphify proposal</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Standalone system-state row</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-06</span></div>
+  <p class="jsummary">The real historical precedent for this whole G29 page — Orchestrator CC logged a decomposed graphify cross-repo-graph alternative for OpenMontage CC to weigh, after a real /paranoia pass found "graphify as a live 4th Total member" wasn't buildable as originally framed.</p>
+  <div class="jid">Real row id: <code>98aa2096...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Insane trap vocal</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Video job (simulated)</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-06</span></div>
+  <p class="jsummary">A real Phase F "Simulate Response" test-tool row — explicitly [SIMULATED], same zero-cost validation pattern as the Asylum rows.</p>
+  <div class="jid">Real row id: <code>29d1c11d...</code> — verify directly in <code>openmontage_jobs</code></div>
+</div></div>
+</div>
+<div class="note">
+  Generated by <code>scripts/galaxy_map_orchestrator_openmontage.py</code> — real data from <code>total_system_members</code>
+  and <code>openmontage_jobs</code> (Supabase), summarized honestly, every row citing its own real id for direct verification.
+  G29 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
+</div>
+</body>
+</html>
