@@ -1,0 +1,341 @@
+GALAXY MAP — L0/DIMENSION/RIVER/CURRENT REDEFINITION
+Compiled per /CEO Loop 1 Step 1 (verbatim record, rule 5 — chat isn't durable storage)
+Date compiled: 2026-08-18
+Continuation of: the Aug 13-15 "RPGACE Total Systems Galaxy Map" /CEO plan (ceo_plans, plan_id 6f8536fd-7d98-4565-9369-c75a149fce8f, G1-G41)
+
+=====================================================================
+PART 1 — THE TRIGGER: Alex's hand-drawn schematic + first prompt
+=====================================================================
+
+Alex shared a hand-drawn schematic image plus this prompt (verbatim):
+
+"i drew this schematic yesterday of how I see we restructure the
+architecture of rpgace total systems within galaxy map. use
+/misunderstanding if you don't understand a drawing. I want to redefine
+dimensions, rivers, level structure and objects, and include currents as
+parts within modules to portray logic, some rivers will become dimensions
+and merge where needed to make sense. tell me what you understand off the
+drawing and my prompt, identify you /misunderstanding clearly, then I
+clarify and we plan out what I've got in my head. /paranoia and /CEO"
+
+Orchestrator CC's first response (a plain-text interpretation of the
+drawing plus explicit /misunderstanding flags, no tools called) was
+REJECTED outright by Alex: "no youve mucked it up completely." The
+reading below is NOT that rejected interpretation — it is Alex's own
+full corrected replacement, and is the only version that governs planning
+from this point forward.
+
+=====================================================================
+PART 2 — THE REAL, AUTHORITATIVE SPEC (Alex's verbatim correction)
+=====================================================================
+
+"no youve mucked it up completely. L0 - leave as is, but each unit
+(external ai individually, RPGACE architecture (UI + Backend), Skills,
+Orchestrator CC as developer station, Alex as acting body on all needed,
+supabase as database storage for all units involved, oversight docs as
+documentation of context for all members too (i think it deserves a L0
+promotion)). each edge between 2 units is a dimension (supabase and
+skills will have their own structure). so when i click a unit (eg.
+Orchestrator CC) it will show what choice dimension i can go for (1
+choice for each edge - eg. Orchestrator CC - oversight docs, Orchestrator
+CC and RPGACE architecture (L1 to L5)) and then does a drop of what
+communication and work goes on between the 2 using bubbles to resemble
+structures and yes/no fork as guidance to explain whats happenning.
+Dimension matrix would be the table vision of l0 map layout with all
+dimensions showing whats happening (externals also know which ai is
+used, supabase should have its own /perspective, column and bubble or
+tables explained to document what tables are used where in level and
+river systems, ui/alex accessability, skills should be treated same as
+supabase), then at dimensions we can go to rivers (i think rivers should
+be redifined into how modules interact and bundle rather than be by
+action on ui, so both interactive and non-interactive processes can be
+explained, also i think in many ways dimensions are just far shore
+rivers like in minotaur map too) dimensions shows how communication and
+information processing between units work, rivers put those units into
+context of how it is used in sequence to fulfill a goal (each rivers has
+a use and goal to get to as we can see in current structure), then
+rivers breakdown into modules and their interactions with L0 units to
+explain rivers, helps explain reach a goal by breaking it up into steps,
+then a current explains each step of a modules (where it receives input
+from (can be multiple), how the function receiving it handles the signal
+(use logic l6 and logic dimension to explain this), how the output is
+formed, and what function it ships to next to become input, thus making
+a chain to follow) make oversight docs be an external change
+documentation in respect to rpgace architecture, but chronicles be
+mostly an internal one, but also reflect external through system
+updates, i love this change. oversight should also have taxonomy as a
+partnering body too, ill think that through later. /paranoia and /CEO
+and /drift and /interrogation , with /restructure and /Engineer becoming
+members that will scrutinize the idea to make changes to coding where it
+makes sense to map out galaxy map to reflect actual existing code. this
+plan will help clean up the build up of htmls representing RPGACE total
+systems and groupings into a digestible and neat document to explain the
+full capabilities and structure to even the biggest idiot, so that no
+matter what i can always understand whats going on"
+
+=====================================================================
+PART 3 — REAL, DISTINCT CLAIMS EXTRACTED (for /interrogation + /paranoia)
+=====================================================================
+
+3.1 L0 — "leave as is" but redefine its unit LIST
+    - L0 stays the top level (galaxies), structurally unchanged in kind.
+    - Real unit list, verbatim from Alex:
+        1. External AI (each one individually — not one lumped "externals" node)
+        2. RPGACE Architecture (UI + Backend combined into ONE unit)
+        3. Skills (RPGACE's own Claude Code skills)
+        4. Orchestrator CC (this session, "developer station")
+        5. Alex ("acting body on all needed" — the human actor)
+        6. Supabase (database storage FOR all units involved — a shared resource,
+           not just one more peer node)
+        7. Oversight Docs — "documentation of context for all members too"
+           — explicitly requested as a NEW L0 promotion (was previously part of
+           layer (a)-(f) tier system inside RPGACE Architecture's own scope,
+           not a top-level unit)
+    - Current live L0 (galaxy_map.py's HARNESS_NODES) needs to be
+      cross-checked against this list — real gap-check, not assumed identical.
+
+3.2 Dimension — REDEFINED as an EDGE between two L0 units, not a page/color/mode
+    - "each edge between 2 units is a dimension"
+    - Supabase and Skills "will have their own structure" — i.e. their
+      dimension pages aren't a plain 2-unit edge explainer, they need
+      dedicated real documentation (see 3.6/3.7).
+    - Interaction model: click a unit (e.g. Orchestrator CC) -> shows the
+      list of dimensions (edges) available from that unit, one per
+      connected unit (e.g. "Orchestrator CC <-> Oversight Docs",
+      "Orchestrator CC <-> RPGACE Architecture (L1 to L5)") -> clicking one
+      "does a drop" showing real communication/work between the two units,
+      rendered with:
+        - bubbles "to resemble structures"
+        - yes/no forks "as guidance to explain whats happening"
+    - This directly reuses/repurposes existing Galaxy Map primitives
+      already built this multi-day effort: the Alex-bubble (evidence-gated,
+      R12), the Oracle-bubble (also evidence-gated), Decisions/G26's real
+      yes/no fork pages, Dimensions Matrix/G30 (multi-home per-module tags).
+      This is NOT proposing new primitives from nothing — it's proposing a
+      new TOP-LEVEL organizing structure (L0 units -> their edges) that
+      those primitives get surfaced through.
+
+3.3 Dimension Matrix — REDEFINED relationship to existing G30 Dimensions Matrix
+    - "Dimension matrix would be the table vision of l0 map layout with
+      all dimensions showing whats happening"
+    - This is explicitly the table/grid view companion to the new L0 map,
+      NOT simply the existing G30 "44 modules x 5 dimension-tags" page —
+      real, open question whether G30 gets repurposed/extended or a new
+      matrix is built at the L0-unit grain. (Flagged for /interrogation.)
+    - Real content requirements stated for the matrix cells:
+        - externals: "know which ai is used" (per-external-AI identity)
+        - supabase: "its own /perspective, column and bubble or tables
+          explained to document what tables are used where in level and
+          river systems"
+        - ui/alex: "accessability" (reuses the existing UI/Alex-accessibility
+          detection signal, already built — G2x work)
+        - skills: "treated same as supabase" (i.e. skills also get a real
+          documented structure of what/where they're used across levels
+          and rivers, not just the existing flat Skills/G28 axis page)
+
+3.4 River — REDEFINED from "grouped by UI action" to "how modules interact
+    and bundle"
+    - Old definition (current 16 rivers, `interconnection_map.md`/
+      `minotaur_map.html`): grouped substantially around user-facing action
+      flows.
+    - New definition: rivers group by real MODULE INTERACTION/BUNDLING —
+      "so both interactive and non-interactive processes can be
+      explained." This is explicitly meant to widen river membership to
+      include real backend-only processes that don't have a clean UI
+      action to hang off of.
+    - Alex's own aside, worth preserving verbatim: "also i think in many
+      ways dimensions are just far shore rivers like in minotaur map too"
+      — i.e. he sees dimensions (L0-unit edges) and rivers as related,
+      not two unrelated concepts; a dimension can be read as a "far shore"
+      version of a river in minotaur_map.html's own river metaphor.
+    - "some rivers will become dimensions and merge where needed to make
+      sense" (from the original trigger prompt) — i.e. this is NOT purely
+      additive; some of the current 16 rivers may need to be reclassified
+      as dimensions instead, or merged with each other, once the new
+      module-interaction-based grouping is actually computed from real
+      evidence. Real, open, needs real data before deciding which (if any)
+      rivers actually merge/convert — not to be guessed blind.
+
+3.5 Level ladder — REAL, CONFIRMED HIERARCHY (this is the actual chain,
+    stated as one coherent flow, correcting the earlier rejected reading):
+        L0 units
+          -> Dimensions (edges between 2 L0 units; click a unit, pick an edge)
+          -> Dimension Matrix (table/grid vision of the same L0 map)
+          -> Rivers (dimensions "at rivers we can go to" — rivers put units
+             into the CONTEXT of a sequence toward a goal; "each river has
+             a use and goal to get to as we can see in current structure" —
+             this explicitly confirms the EXISTING per-river goal framing
+             stays, only the grouping/membership rule changes)
+          -> Modules (rivers break down into modules and their interactions
+             with L0 units — this is the existing Level 2/Level 3 module
+             layer, now explicitly framed as explaining a river's goal by
+             breaking it into steps)
+          -> Currents (a NEW concept, inside/parts-of a module, portraying
+             LOGIC — see 3.6)
+    - Real, explicit confirmation: this is a strict top-down explanatory
+      chain (L0 -> Dimension -> Dimension Matrix -> River -> Module ->
+      Current), each level existing to explain the one above it by
+      breaking it into smaller real steps. This directly answers/corrects
+      the earlier rejected reading, which had proposed L0-L4 as a flat
+      renumbered ladder with different per-level meanings — that reading
+      is explicitly wrong and discarded.
+
+3.6 Current — NEW concept, "parts within modules to portray logic"
+    - A current explains ONE STEP of a module's real behavior:
+        (a) where it receives input from (can be MULTIPLE sources)
+        (b) how the function receiving it handles the signal — explicitly
+            "use logic l6 and logic dimension to explain this" (i.e. reuse
+            the already-built Level 6 exhaustive branch listing AND the
+            already-built Logic Dimension page — rule 8, not a new
+            mechanism)
+        (c) how the output is formed
+        (d) what function it ships to NEXT to become input elsewhere —
+            "thus making a chain to follow"
+    - This is explicitly a REUSE of already-shipped real data
+      (Level 3's function-call chains, Level 6's branch listing, the Logic
+      Dimension's edge-passages) recomposed into a new per-module "current"
+      view, not a request for new detection logic from scratch. Real,
+      open question: is a "current" a NEW page/artifact, or a new lens/tab
+      on the EXISTING Level 3 module page? (Flagged for /interrogation.)
+
+3.7 Supabase and Skills — need their OWN dedicated structure/documentation
+    - Supabase: "should have its own /perspective, column and bubble or
+      tables explained to document what tables are used where in level
+      and river systems" — i.e. a real Supabase-focused Galaxy Map
+      artifact: per-table usage mapped across Levels/Rivers, likely using
+      the `/perspective` skill's own report format as the base (rule 8 —
+      `/perspective` already exists and is already used this multi-day
+      effort for exactly this kind of per-unit documentation, e.g. the 44
+      module-level perspective reports).
+    - Skills: "should be treated same as supabase" — i.e. Skills also
+      needs a real per-skill usage map across Levels/Rivers, not just the
+      existing flat G28 Skills axis page (external-AI/UI/backend touch)
+      and G36 Skill Composition Network (skill-to-skill invocation edges).
+      Real, open question: does this mean extending G28/G36, or a new
+      dedicated Skills-as-L0-unit page mirroring whatever the new Supabase
+      page looks like? (Flagged for /interrogation.)
+
+3.8 Oversight Docs / Chronicles — REDEFINED roles
+    - Oversight Docs: promoted to a real L0 unit (see 3.1); redefined role
+      is "external change documentation in respect to rpgace architecture"
+      — i.e. Oversight Docs document changes FROM THE OUTSIDE, looking IN
+      at RPGACE Architecture (and, implicitly, at the other L0 units too,
+      since it's described as "documentation of context for all members").
+    - Chronicles (`system_updates` table / `#page-chronicles`): redefined
+      as "mostly an internal one, but also reflect external through system
+      updates" — i.e. Chronicles is RPGACE Architecture's own internal
+      change log, which also surfaces externally-relevant events via the
+      `system_updates` rows other Total-system members (Graphify CC,
+      OpenMontage CC) or Alex himself might read.
+    - Alex's own reaction, kept verbatim: "i love this change."
+    - Taxonomy: explicitly NOT resolved yet — "oversight should also have
+      taxonomy as a partnering body too, ill think that through later."
+      MUST NOT be built or guessed at; wait for Alex to raise it again.
+
+3.9 Protocol stack explicitly invoked by Alex for this planning pass
+    - `/paranoia` (already invoked once, in the original trigger prompt,
+      and again in the correction — invoked TWICE total)
+    - `/CEO` (also invoked twice)
+    - `/drift`
+    - `/interrogation`
+    - `/restructure` and `/Engineer` explicitly named as SCRUTINIZING
+      MEMBERS whose job is specifically to flag "where it makes sense to
+      map out galaxy map to reflect actual existing code" — i.e. real code
+      changes (not just new static HTML pages) are explicitly in scope IF
+      the evidence supports them, not ruled out as "visualization only."
+
+3.10 Stated real goal / success criterion (verbatim)
+    "this plan will help clean up the build up of htmls representing
+    RPGACE total systems and groupings into a digestible and neat document
+    to explain the full capabilities and structure to even the biggest
+    idiot, so that no matter what i can always understand whats going on"
+    - Real, explicit anti-goal implied: the CURRENT proliferation of
+      standalone Galaxy Map HTML pages (galaxy_map.html, galaxy_map_river,
+      galaxy_map_module, galaxy_map_level3/4/5/6, galaxy_map_meanders,
+      galaxy_map_decisions, galaxy_map_externals, galaxy_map_skills,
+      galaxy_map_skill_network, galaxy_map_dimensions, galaxy_map_alex_path,
+      galaxy_map_load, galaxy_map_logic_dimension, galaxy_map_orchestrator_
+      openmontage — 19 real files as of Aug 15) has itself become the
+      readability problem this redefinition needs to fix, not just add a
+      20th page on top of.
+
+=====================================================================
+PART 4 — REAL FORKS / AMBIGUITIES FOR /interrogation (not yet resolved)
+=====================================================================
+
+F1. Does "RPGACE Architecture (UI + Backend)" as one L0 unit REPLACE the
+    existing 4-galaxy Level-0 structure (`galaxy_map.py`'s HARNESS_NODES),
+    or does it sit ALONGSIDE the other new units as a peer, with the
+    existing 4-galaxy breakdown becoming what you see once you drill into
+    THAT unit's own dimensions (i.e. "RPGACE Architecture" is a folder,
+    not a replacement)?
+
+F2. "External AI individually" — does this reuse/extend the already-built
+    G27 Externals page (13 connectors classified on 3 axes), or is it a
+    new, separate per-AI-provider L0 view? How does it relate to the new
+    `oracleProviderMode` module (G34) and the existing Oracle-bubble
+    evidence system?
+
+F3. What is the concrete, buildable shape of "Supabase should have its own
+    /perspective, column and bubble or tables explained to document what
+    tables are used where in level and river systems"? Is this:
+      (a) one new /perspective report scoped to Supabase-as-a-whole, or
+      (b) one /perspective report PER TABLE (mirroring the 44 per-module
+          reports already built for G11), or
+      (c) a new Galaxy Map HTML page (like Skills/G28) listing every real
+          table with which Level/River/Module reads or writes it?
+    Real evidence exists to build any of these (table read/write call
+    sites are greppable), but the actual deliverable shape needs picking.
+
+F4. Does "Skills should be treated same as Supabase" mean extending the
+    EXISTING G28 (galaxy_map_skills.html) / G36 (skill network) pages with
+    a new Level/River usage column, or does it mean a wholly new page
+    mirroring whatever gets decided for F3?
+
+F5. Is a "Current" a NEW standalone artifact/page, or a new tab/section
+    added onto the EXISTING Level 3 module page (which already shows
+    function-call chains) — reusing Level 6 + Logic Dimension content
+    inline rather than re-deriving it?
+
+F6. River redefinition: does this require RECOMPUTING all 16 existing
+    rivers' membership from real module-interaction evidence (a
+    structural rebuild), or does it mean ADDING a new module-interaction-
+    based view ALONGSIDE the existing UI-action-based one, with actual
+    river merges/conversions decided only where real evidence clearly
+    supports it (conservative, incremental)?
+
+F7. "some rivers will become dimensions" — concretely, which rivers (if
+    any) are single-module-interaction-only enough that they're better
+    modeled as a dimension EDGE than a river? Needs real data (module
+    interaction counts per river) before naming candidates — not to be
+    guessed.
+
+F8. Does the Dimension Matrix (3.3) repurpose/extend the EXISTING G30
+    galaxy_map_dimensions.html (44 modules x 5 dimension tags), or is a
+    NEW matrix needed at L0-unit grain (7 units x their real edges)? These
+    are different grains and probably both real and both needed — but
+    worth confirming whether G30 gets renamed/reframed as part of this
+    work or stays a separate, still-useful artifact.
+
+F9. Scope of "/restructure and /Engineer... to make changes to coding
+    where it makes sense" — does Alex want CODE changes proposed and
+    executed as PART of this same Loop 1/Loop 2 pass, or does he want them
+    surfaced as a report first (Loop 1 Step 5) with his own explicit
+    approval (Step 6) before any code touches ship? Per the CEO skill's
+    own standing design and Tier-2/Tier-3 discipline, the default answer
+    is "report first, build after approval" — but worth confirming given
+    how much of this multi-day effort has already run under a looser
+    "just do it" cadence on ratified plan items.
+
+=====================================================================
+PART 5 — NEXT STEPS (per /CEO Loop 1)
+=====================================================================
+Step 1 (this file): COMPLETE.
+Step 2: /interrogation — resolve F1-F9 above via targeted AskUserQuestion
+        rounds, not guessed defaults.
+Step 3: /paranoia-advised draft, with /restructure + /Engineer scrutiny on
+        any real code-change candidates, /drift-checked against this
+        compiled spec as the ratified basis.
+Step 5: One compiled report back to Alex.
+Step 6: Alex reads/approves before Loop 2 (execution) begins. Nothing in
+        this file authorizes building anything yet.

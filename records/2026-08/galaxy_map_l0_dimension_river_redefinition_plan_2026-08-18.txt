@@ -1,0 +1,307 @@
+GALAXY MAP — L0/DIMENSION/RIVER/CURRENT REDEFINITION — /CEO LOOP 1 PLAN
+Steps 2 (/interrogation, complete), 3 (/paranoia-advised draft), 5 (report)
+Companion file: galaxy_map_l0_dimension_river_redefinition_spec_2026-08-18.txt
+                 (Step 1 — the verbatim compiled spec)
+Date: 2026-08-18
+Advisors: /restructure, /Engineer (code-change scrutiny per Alex's own ask)
+Basis for /drift: NONE YET — this plan IS the candidate ratified baseline;
+                   no prior ratified baseline exists for this specific
+                   redefinition, so /drift here checks the DRAFT against
+                   the compiled spec (Step 1), not against old shipped work.
+
+=====================================================================
+STEP 2 — /interrogation ANSWERS (all 9 forks resolved with Alex directly)
+=====================================================================
+F1 (L0 nesting): PEER UNIT, drill into it. The 7 new L0 units sit at the
+   top; clicking "RPGACE Architecture" is the door into the EXISTING
+   4-galaxy / Dimension->River->Module->Current chain. Nothing existing
+   is thrown away.
+F2 (External AI unit): EXTEND existing G27 (galaxy_map_externals.html).
+F3 (Supabase artifact): ONE new page, all real tables, which
+   Level/River/Module reads or writes each.
+F4 (Skills artifact): EXTEND existing G28 (galaxy_map_skills.html) +
+   G36 (galaxy_map_skill_network.html) with the same Level/River usage
+   mapping, not a new file.
+F5 (Current shape): NEW TAB on the EXISTING Level 3 module page, reusing
+   its already-built function-call-chain data plus Level 6 + Logic
+   Dimension content inline — not a 20th standalone file.
+F6/F7 (River rebuild aggressiveness): Alex chose FULL REBUILD — recompute
+   all 16 rivers' membership from real module-interaction/bundling
+   evidence, not the conservative "add a view, merge only with clear
+   evidence" option I had recommended. **See the real /paranoia finding
+   in Part 2 below — this choice needs one more real decision now that
+   real data exists to look at.**
+F8 (Matrix relationship): TWO SEPARATE matrices. G30 (module-grain, 44
+   modules x 5 tags) stays exactly as-is. A NEW L0-unit-grain matrix (7
+   units x their real edges) gets built fresh for the new top map.
+F9 (code-change gate): REPORT FIRST, build only after explicit approval.
+   Nothing in this pass touches rpgace_core.js/main.js or ships a new
+   Galaxy Map HTML file — this whole document is Step 5 of Loop 1, not
+   Loop 2 execution.
+
+=====================================================================
+PART 1 — WHERE EACH L0 UNIT ALREADY HAS REAL, EXISTING GROUND TO STAND ON
+=====================================================================
+Real /restructure-flavored evidence check (does existing infrastructure
+already cover part of this, before proposing anything new — rule 8):
+
+1.1 Rivers XII-XVI ALREADY EXIST as zero-module "zones," built Aug 6/11
+    from real file-path evidence, and line up remarkably closely with
+    Alex's new L0 unit list:
+        River XII  — "The API / Auth Layer"      (RPGACE_MODULES: none)
+        River XIII — "Skills"                     (RIVER_MODULES: none)
+        River XIV  — "Oversight Docs"              (RIVER_MODULES: none)
+        River XV   — "Session Records / Backlog"   (RIVER_MODULES: none)
+        River XVI  — "Dev Tooling"                 (RIVER_MODULES: none)
+    This is a REAL, PRE-EXISTING, evidence-backed precedent for exactly
+    two of Alex's asked-for L0 units:
+        - "Skills" (L0 unit) <-> River XIII, already named "Skills"
+        - "Oversight Docs" (L0 unit, explicit "deserves a L0 promotion")
+          <-> River XIV, already named "Oversight Docs"
+    Real, honest implication: Alex is not asking for these to be invented
+    from nothing — he's asking for something that ALREADY EXISTS as a
+    river-shaped zone to be promoted to a first-class L0 unit with its
+    own dimension-edges to the other 6 units. This narrows real build
+    risk considerably and is a strong point in favor of the "peer unit"
+    F1 answer already chosen: the new L0 layer is a real re-framing of
+    already-computed zone data, not a green-field build.
+    River XII ("API/Auth Layer") is also a strong real candidate for
+    where "RPGACE Architecture (backend)" boundary work already lives —
+    worth citing explicitly inside that unit's own drill-down rather than
+    re-deriving it.
+
+1.2 Real module census (fresh run, this pass): 57 total top-level modules
+    exist in rpgace_core.js. Only 45 are assigned to a river (Rivers 1-11
+    hold real code; 12-16 hold zero, by design, per 1.1). **12 modules are
+    in NEITHER any river NOR any zone**: `config`, `dashDeck`, `docsLinks`,
+    `errorLog`, `leftNav`, `perfWatch`, `pwaInstall`, `quickActions`,
+    `suppressQuestPopup`, `uiBatchList`, `uiSlidePanel`, `voiceInput`. This
+    is a real, fresh, previously-uncaught gap (distinct from the Aug 14
+    "main.js 12 unclassified nodes" finding — this is rpgace_core.js
+    modules, a different file/layer). Most of these are real, legitimate
+    cross-cutting/global infrastructure (dashDeck IS the dashboard shell
+    itself; leftNav/perfWatch/pwaInstall/voiceInput are app-wide chrome,
+    not river-scoped features) — flagged as a real, honest finding for
+    /restructure to weigh, NOT fixed blind here. A real candidate
+    resolution once this plan is approved: these 12 modules may belong
+    under the new "RPGACE Architecture" L0 unit's own top-level
+    Dimension/River drill-down as a real "cross-cutting / app shell"
+    grouping rather than being forced into one of the 16 goal-oriented
+    rivers where they don't actually fit thematically.
+
+=====================================================================
+PART 2 — REAL /paranoia FINDING: literal full-graph river rebuild, TESTED
+=====================================================================
+Per rule 4 ("get real evidence, don't patch blind a second time") and
+GODMODE's "honest why-NOT-to-build-this" requirement, before drafting a
+16-river rebuild I actually computed it, using every real module-
+interaction signal already built and proven in this codebase (direct
+RPGACE.modules.X() calls, window.X wrap-chains, shared RPGACE.utils.
+sendToOracle/fillGaps convergence, RPGACE.hooks.fire()/on() pairing) —
+the same 4 signal classes compute_intra_river_flow() already uses, just
+computed GLOBALLY across all 57 modules instead of scoped inside each
+river. Real script, real run, not simulated:
+
+    Total modules: 57 | Total real edges: 148 (81 direct, 9 wrap,
+    45 utility, 13 hook) | mainjs-bridge hook edges (excluded from
+    module-to-module clustering, a different real signal kind): 32
+
+    Real result — 19 connected components:
+      - ONE giant component: 39 of 57 modules (68%), spanning 9 of the
+        16 current rivers (III, IV, V, VI, VII, VIII, IX, X, XI) —
+        everything that ever calls RPGACE.utils.sendToOracle/fillGaps
+        (the Oracle-send utility) collapses into a single undifferentiated
+        blob, because that ONE shared convergence point alone connects
+        modules across 9 different real goal-domains.
+      - 18 further components, every one a SINGLETON (1 module each) —
+        agentsIntoOracle, authGate, docsLinks, errorLog, jargonEncyclopedia,
+        journalQoL, oracleProviderMode, pathRouter, perfWatch, pwaInstall,
+        quickActions, scheduleFixes, shiftSync, suppressQuestPopup,
+        uiBatchList, uiSlidePanel, voiceInput, youtubeOracle.
+
+    Real per-river breakdown (which of the 16 current rivers a pure
+    interaction rebuild would actually SPLIT internally):
+      River III (Oracle Current, 13 mods)  -> 4 real components [SPLIT]
+      River V   (Two Independent Streams, 10 mods) -> 4 real components [SPLIT]
+      River VII (Library Current, 5 mods)  -> 2 real components [SPLIT]
+      Rivers I, II, IV, VI, VIII, IX, X, XI -> unified (1 component each,
+        several trivially so since they're already single-module rivers)
+
+HONEST VERDICT, stated plainly rather than built silently: a LITERAL
+full rebuild — river membership recomputed from module-interaction
+evidence ALONE, discarding the current goal-based grouping — actively
+WORKS AGAINST the stated success criterion ("digestible... explain to
+even the biggest idiot"). It would replace 16 real, named, goal-oriented
+rivers with 1 giant undifferentiated 39-module blob plus 18 disconnected
+singletons — objectively LESS legible, not more, because one shared
+utility function (`RPGACE.utils.sendToOracle`) is real but far too
+generic a signal to carry real thematic meaning on its own (the same
+"a scanner artifact, not a bug" class of over-broad signal this project
+has hit before — c.f. the deliberately-excluded RPGACE.utils.toast()
+exclusion already noted in compute_intra_river_flow()'s own docstring).
+
+This is NOT a reason to abandon Alex's real, stated intent — "rivers
+should be redefined into how modules interact and bundle... so both
+interactive and non-interactive processes can be explained" is a
+genuinely good, real widening of river membership rules (several
+current rivers are single-module precisely BECAUSE they're goal-
+categories with no interaction to show, which the new definition
+explicitly wants to keep legible). The finding is narrower and sharper:
+CONNECTED-COMPONENTS ON RAW INTERACTION DATA ALONE is the wrong
+algorithm for what Alex actually wants, because it has no concept of
+"goal" or "purpose" at all — it only knows "did code literally touch
+code." Alex's own explicit words already say the goal-framing must
+survive: "rivers put those units into context of how it is used in
+SEQUENCE TO FULFILL A GOAL... each river has a use and goal to get to
+as we can see in current structure" [emphasis added] — this is a
+real, explicit instruction that the interaction rebuild must be
+RECONCILED against, not replace.
+
+RECOMMENDED RECONCILIATION (real, evidenced, not a guess): treat the
+interaction-component data above as a real DIAGNOSTIC OVERLAY on the
+existing 16 goal-based rivers, not as the sole new definition:
+  - The 13 unified/trivially-unified rivers are CONFIRMED as-is — real
+    evidence supports keeping their current membership.
+  - The 3 SPLIT rivers (III, V, VII) get a real, evidenced closer look —
+    genuine candidates for the "some rivers will become dimensions and
+    merge where needed" language in Alex's original trigger prompt. Note
+    River V splitting into 4 components matches the ALREADY-KNOWN G22/G25
+    finding (7 of 10 River V modules still show no detected connection,
+    logged blue as `ceo_plan_items` G22) — this is not a new problem, it's
+    the same one, now with sharper data.
+  - River membership going forward is decided by BOTH signals together:
+    real interaction evidence (this pass's new data) AND real shared-goal
+    coherence (the existing per-river "use and goal" framing, unchanged)
+    — never interaction evidence alone. This is the literal meaning of
+    "so both interactive and non-interactive processes can be explained":
+    a river can legitimately hold non-interacting modules if they share
+    one real goal (as most already do), and the new work is widening the
+    EVIDENCE a river's description can cite, not discarding purpose as
+    the organizing principle.
+
+**This is the one point in this whole plan that genuinely conflicts with
+your literal "Full rebuild" answer, backed by real numbers rather than my
+earlier hedge — flagged directly rather than quietly downgraded to my
+original recommendation.** See the question at the end of this report.
+
+=====================================================================
+PART 3 — CONCRETE SHAPE OF EVERY OTHER PIECE (ready to execute on approval)
+=====================================================================
+
+3.1 L0 map (peer unit, F1) — 7 units, real edges:
+    External AI | RPGACE Architecture (UI+Backend) | Skills |
+    Orchestrator CC | Alex | Supabase | Oversight Docs
+    Click a unit -> list of real dimension-edges from that unit (one per
+    connected unit) -> click an edge -> real drop panel: bubbles
+    ("structures") + yes/no forks (reusing Decisions/G26's already-built
+    fork pattern) explaining real communication/work between the two.
+    RPGACE Architecture's own edge to itself-as-a-system is where the
+    existing Dimension->River->Module->Current chain lives (per F1).
+
+3.2 Dimension Matrix, L0-grain (F8, new, separate from G30):
+    7 units x their real edges, table form — externals show which AI is
+    used (reuses G27/oracleProviderMode data); Supabase/Skills columns
+    point into the new pages from 3.3/3.4; UI/Alex column reuses the
+    already-built accessibility-badge evidence (G2x work).
+
+3.3 New Supabase page (F3): every real table (grep-derivable from
+    `RPGACE.sb.*`/`secureWrite`/`ALLOWED_TABLES` call sites, same
+    detection-script discipline as every other Galaxy Map page), which
+    Level/River/Module reads or writes each. A real `/perspective`-style
+    write-up frames the page's own intro (reusing that skill's report
+    shape per F3's answer), not a full per-table report set.
+
+3.4 Skills page extension (F4): add a Level/River usage column to the
+    existing G28 axis table and a corresponding cross-reference on G36's
+    skill-network page — no new file.
+
+3.5 "Current" tab (F5): a new tab on the existing Level 3 module page.
+    Per-function, chained: (a) real input sources (can be plural,
+    already-detected via Level 3's own call-chain data), (b) real
+    handling logic (pulls the matching Level 6 branch listing + any
+    Logic Dimension passage inline, reuse not re-derivation), (c) real
+    output formation, (d) real next-function hop. This is a genuine
+    reuse of 3 already-shipped data sources recomposed into one new lens
+    — zero new detection logic required.
+
+3.6 River redefinition (F6/F7): per Part 2's reconciliation — pending
+    your answer to the one open question below before any river
+    membership actually changes.
+
+3.7 Oversight Docs / Chronicles role redefinition: real, cheap doc-text
+    change once approved — Oversight Docs' own description becomes
+    "external change documentation in respect to RPGACE Architecture";
+    Chronicles' own description becomes "mostly internal, reflecting
+    externally via system_updates." No code change, no schema change —
+    a real CLAUDE.md / interconnection_map.md / minotaur_map.html prose
+    update, Tier 1 once approved.
+
+3.8 Taxonomy-as-partner: explicitly NOT touched. Per your own words,
+    "ill think that through later" — nothing here proposes a shape for
+    it, and nothing should until you raise it again.
+
+=====================================================================
+PART 4 — /restructure + /Engineer SCRUTINY (real code-change candidates)
+=====================================================================
+Per F9's answer (report only, build after approval), these are FLAGGED,
+NOT BUILT:
+  R1. The 12 rpgace_core.js modules with no river/zone home at all
+      (Part 1.2) are a real, standing gap independent of this whole
+      redefinition — worth a real decision (fold into "RPGACE Architecture"
+      L0 unit's own cross-cutting grouping, or give them a real 17th
+      River/Zone) regardless of which river-rebuild path gets chosen.
+  R2. No rpgace_core.js/main.js runtime code needs to change to build
+      ANY of Part 3's pieces — every one of them is read-only detection-
+      script + new/extended static HTML, matching the standing "Galaxy
+      Map is auto-generated, never hand-authored" discipline. /Engineer's
+      shape-sketch requirement is satisfied trivially: no build risk to
+      live Oracle/taxonomy/beat-pipeline behavior exists in this plan at
+      all — the entire redefinition is a documentation/visualization
+      layer change, not an app-behavior change. This is a real, positive
+      finding worth stating plainly: this whole plan is low Tier-2 risk,
+      not Tier-3, once the Part 2 open question is settled.
+
+=====================================================================
+PART 5 — /drift CHECK
+=====================================================================
+BASIS: provisional (this plan IS the not-yet-ratified draft; Step 1's
+compiled spec is the real source it's checked against).
+VERDICT: on track, with one MATERIAL gap surfaced and returned to you
+rather than silently resolved — Part 2's literal-vs-reconciled river
+rebuild question. Every other fork (F1-F5, F8, F9) has a concrete,
+evidence-grounded shape ready to execute. No CAPTURED-grade finding
+(nothing was built without your say-so; no destructive/Tier-3 action
+proposed).
+
+=====================================================================
+PART 6 — RESOLVED: river rebuild path (Alex's answer, same session)
+=====================================================================
+Given the real numbers in Part 2 (1 giant 39-module blob + 18 singletons
+under pure connected-components), Alex chose the RECONCILED path:
+"Reconciled: interaction data overlays goal-framing (Recommended)."
+
+Real, final scope this locks in:
+  - The 13 already-unified/trivially-unified rivers (I, II, IV, VI, VIII,
+    IX, X, XI, plus the always-unified single-module ones) keep their
+    current membership — real evidence confirms them, no change.
+  - Rivers III (Oracle Current), V (Two Independent Streams), VII
+    (Library Current) each get a real, evidenced closer look in Loop 2 —
+    a possible internal split, a merge, or a conversion of part of a
+    river into a dimension-edge instead, decided per-river from BOTH the
+    real interaction-component data (Part 2) AND real shared-goal
+    coherence, never interaction data alone.
+  - River V's 4-way split is the SAME already-known gap as `ceo_plan_items`
+    G22 (7 of 10 modules still undetected) — Loop 2 work on River V
+    should resolve G22 and this redefinition in the same pass, not
+    twice (rule 8).
+
+=====================================================================
+STEP 6 — ALL FORKS NOW RESOLVED. AWAITING ALEX'S FULL-PLAN APPROVAL.
+=====================================================================
+Every real fork in this document (F1-F9, plus the Part 2/6 river-rebuild
+method) now has a concrete, evidence-grounded answer. Nothing has been
+built yet — no rpgace_core.js/main.js edit, no new/changed Galaxy Map
+HTML file, no Supabase write beyond this plan's own dated record files.
+Per the CEO skill's own Loop 1 Step 6, this compiled plan is handed back
+to Alex in full (a chat-level summary accompanies this file) for him to
+read and explicitly approve before Loop 2 execution begins.
