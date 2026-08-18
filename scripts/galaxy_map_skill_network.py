@@ -28,6 +28,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 from galaxy_map_skills import SKILLS
+from graphify_river_group import SKILL_SECONDARY_RIVER, RIVER_NAME  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_skill_network.html')
 SKILLS_DIR = Path('.claude/skills')
@@ -70,9 +71,19 @@ def build_skill_section(name, callees, callers):
         for c in callees
     ) or '<div class="empty-note">No real outgoing invocation of another skill.</div>'
     in_html = ', '.join(f'/{esc(c)}' for c in callers) if callers else 'none'
+    # G46 (Aug 18) — real River usage line, same data as galaxy_map_skills.py's
+    # own new column (rule 8, not re-derived): every skill lives in River
+    # XIII by default; SKILL_SECONDARY_RIVER adds a real secondary
+    # citation for the 7 that have one.
+    river_bits = ['River XIII']
+    sec = SKILL_SECONDARY_RIVER.get(name)
+    if sec:
+        river_bits.append(RIVER_NAME.get(sec[0], f'River {sec[0]}').split('—')[0].strip())
+    river_line = f'<p class="modline">Real River usage: {" + ".join(river_bits)} · Level: N/A (dev-process, not app-runtime)</p>'
     return f'''<section class="ssection" id="skillnet-{esc(name)}" style="display:none">
   <div class="shead"><h2>/{esc(name)}</h2><span class="pcount">{len(callees)} real outgoing invocation(s)</span></div>
   <p class="modline">Invoked BY: {in_html}</p>
+  {river_line}
   {out_html}
 </section>'''
 

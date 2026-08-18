@@ -1366,6 +1366,48 @@ def compute_external_call_sites(module_name, core_js_path: Path = CORE_JS):
 # doesn't reach; not claimed done here.
 _LASTFM_CALL = re.compile(r"fetch\(\s*['\"]/api/lastfm['\"]")
 
+# G45 (Aug 18 2026, real Part 10 evidence — Alex: "skills and supabase
+# should always be shown as a injection tool... it is data pulling based
+# on prompts"). Real per-FUNCTION Supabase table-touch detector, same
+# regex family already proven at Current-grain
+# (RPGACE.sb.select/insert/update/del/secureWrite('table' — the exact
+# real idiom this whole codebase uses, confirmed by direct grep before
+# committing to build it: 113 of 502 real functions, 22%, have a real
+# touch, across 25 distinct tables). Reused for both G45 (the new
+# Supabase table page) and G47/G49 (Current/River-grain injection
+# badges) — one detector, never re-derived (rule 8).
+_SUPABASE_TABLE_CALL = re.compile(
+    r"RPGACE\.sb\.(select|insert|update|del|secureWrite)\(\s*'([^']+)'")
+
+
+def compute_supabase_table_touches(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION list of real Supabase table touches —
+    {func_name: [(op, table), ...]}. Empty for most functions (only 22%
+    of all 502 real functions touch a table directly)."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        touches = _SUPABASE_TABLE_CALL.findall(b)
+        if touches:
+            out[f] = touches
+    return out
+
+
+def compute_all_supabase_table_touches(core_js_path: Path = CORE_JS):
+    """Real, project-wide roll-up — {table_name: [(module, func, op), ...]}
+    — every real function that touches each table, module-grouped
+    upstream at parse_module_ranges() (rule 8, not re-parsed). Powers
+    the real G45 Supabase page (which Level/River/Module touches which
+    table) and River-grain injection aggregation (G49)."""
+    ranges = parse_module_ranges(core_js_path)
+    by_table = {}
+    for m in ranges:
+        touches = compute_supabase_table_touches(m, core_js_path)
+        for f, ops in touches.items():
+            for op, tbl in ops:
+                by_table.setdefault(tbl, []).append((m, f, op))
+    return by_table
+
 
 def compute_lastfm_call_sites(module_name, core_js_path: Path = CORE_JS):
     """Real, per-FUNCTION flag for a real fetch('/api/lastfm') call site.

@@ -27,9 +27,23 @@ Sourced from each skill's own real, already-documented behavior
 section) — a real judgment call per skill, same curation discipline as
 Level 5's decision points, not mechanically derived.
 """
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+from graphify_river_group import SKILL_SECONDARY_RIVER, RIVER_NAME  # noqa: E402
+
 OUT = Path('graphify-out/galaxy_map_skills.html')
+
+# G46 (Aug 18 2026, real Part 4F/10 ask — "skills should be treated same
+# as supabase," i.e. its own documented Level/River usage). Real reuse,
+# not re-derived (rule 8): every real skill lives in River XIII by
+# default (its own full 25-skill catalog, already built at
+# galaxy_map_module.py's River XIII section); SKILL_SECONDARY_RIVER adds
+# a real citation for the 7 skills whose own description names a
+# SPECIFIC other river. "Level" is honestly N/A for a skill — skills
+# document Orchestrator CC's own dev process, not runtime app code, so
+# no Level 0-6 grain applies; stated plainly rather than forced.
 
 # Real, curated classification — {name: {ai, ui, backend, note}}.
 # ai/ui/backend are bool; note is the real, short justification.
@@ -116,15 +130,25 @@ def build_group_section(grp):
         if s['ui']: b.append('<span class="axbubble ax-ui" title="Touches real app UI">🖥️</span>')
         if s['backend']: b.append('<span class="axbubble ax-be" title="Touches real backend">🗄️</span>')
         return ''.join(b) or '<span class="axbubble ax-none" title="No real axis touched">💭</span>'
+    def _river_usage(name):
+        chips = ['<span class="river-chip">🌊 River XIII</span>']
+        sec = SKILL_SECONDARY_RIVER.get(name)
+        if sec:
+            rnum, note = sec
+            rlabel = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+            chips.append(f'<span class="river-chip river-sec" title="{esc(note)}">🌊 {rlabel}</span>')
+        return ''.join(chips)
+
     rows = ''.join(
         f'<tr><td class="skname">/{esc(name)} {_bubbles(s)} '
         f'<a class="netlink" href="galaxy_map_skill_network.html#skillnet-{esc(name)}" title="Skill Composition Network">🕸️</a></td>'
-        f'<td class="sknote">{esc(s["note"])}</td></tr>'
+        f'<td class="sknote">{esc(s["note"])}</td>'
+        f'<td class="skriver">{_river_usage(name)}<div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr>'
         for name, s in members
     )
     return f'''<section class="gsection" id="grp-{grp['id']}" style="display:none">
   <div class="ghead"><h2>{grp['label']}</h2><span class="gcount">{len(members)} real skill(s)</span></div>
-  <table class="sktable"><thead><tr><th>Skill (axis bubbles + network link)</th><th>Real justification</th></tr></thead>
+  <table class="sktable"><thead><tr><th>Skill (axis bubbles + network link)</th><th>Real justification</th><th>Real Level/River usage</th></tr></thead>
   <tbody>{rows}</tbody></table>
 </section>'''
 
@@ -165,6 +189,10 @@ TEMPLATE = """<!DOCTYPE html>
   .netlink{{margin-left:6px;text-decoration:none;font-size:11px;opacity:0.7}}
   .netlink:hover{{opacity:1}}
   .sknote{{color:#c8c8d8;line-height:1.5}}
+  .skriver{{white-space:nowrap}}
+  .river-chip{{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(42,191,176,0.12);color:#2ABFB0;margin:0 4px 4px 0}}
+  .river-sec{{background:rgba(201,168,76,0.12);color:var(--gold)}}
+  .lvl-na{{font-size:8.5px;color:var(--dim);margin-top:3px}}
   a{{color:var(--orange)}}
   .note{{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
 </style>
