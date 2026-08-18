@@ -685,6 +685,49 @@ PART 9 — REAL EXTENSION: Level 3 replaced, Level 4 repurposed (Part 4E)
     Alex's own already-established append convention for these rows).
 
 =====================================================================
+PART 10 — REAL EXTENSION: Skills + Supabase as "injection tool" (Part 4F)
+=====================================================================
+
+10.1 Concrete design: Skills and Supabase render as a distinct bubble
+     kind — a "💉 injection" badge, visually different from the actor-
+     bubbles (Alex/Oracle/Orchestrator CC) — attached to a step's
+     HANDLING specifically (not its input or output), representing
+     something the step reaches for mid-process rather than something
+     that performed the step.
+
+10.2 RIVER grain: reuses `SKILL_SECONDARY_RIVER` (already built, real,
+     7 of 25 skills cite a secondary river beyond XIII's own full
+     catalog) for Skills-injection; a NEW real per-river Supabase
+     table-touch aggregation (rolled up from the Current-grain detector
+     below) for Supabase-injection.
+
+10.3 CURRENT grain: a NEW real per-function Supabase table-touch
+     detector — same grep methodology already proven for
+     `compute_external_call_sites()`/`compute_lastfm_call_sites()`,
+     scanning for `RPGACE.sb.select/insert/update/del/secureWrite('table'`
+     inside each function's own real body. Confirmed real and
+     substantial before committing to build it (rule 4): 113 of 502
+     real functions (22%), 25 distinct tables. Skills-injection at this
+     grain is honestly expected to be sparse-to-empty (no per-function
+     skill citation evidence exists) — shown only where real evidence
+     happens to reach that specific grain, never forced or faked.
+
+10.4 Real, flagged inference (Alex named River and Current explicitly,
+     not Module) — recommending Module ALSO gets the same treatment for
+     internal consistency, since Module already rolls up Current data
+     per 4D.3/G48 and skipping the middle tier of an otherwise-continuous
+     roll-up (Current -> Module -> River) would be an odd gap, not a
+     deliberate omission as far as real evidence suggests. Flagged
+     plainly rather than silently assumed — correct if wrong.
+
+10.5 New/changed G-items: no new number minted — folds into the
+     already-tracked G45 (Supabase page), G46 (Skills extension), G47
+     (Current), and G49 (River v2) rows, each evidence-appended in
+     Supabase to note the injection-tool framing as part of their real
+     scope (rule 8 — one real idea, one place, cross-referenced from
+     every deliverable it touches rather than a duplicate G-item).
+
+=====================================================================
 STEP 6 — ALL FORKS NOW RESOLVED. AWAITING ALEX'S FULL-PLAN APPROVAL.
 =====================================================================
 Every real fork in this document (F1-F9, plus the Part 2/6 river-rebuild

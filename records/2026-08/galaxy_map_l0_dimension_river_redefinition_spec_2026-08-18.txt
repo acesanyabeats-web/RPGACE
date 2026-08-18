@@ -584,6 +584,47 @@ naturally arrive at something close to 1:1 for several rivers over
 time -- exactly as designed, never forced.
 
 =====================================================================
+PART 4F — REAL EXTENSION: Skills + Supabase as "injection tool," verbatim
+=====================================================================
+
+Alex's own words:
+
+"also i want it to be clear that skills and supabase should always be
+shown as a injection tool when performing steps and goals as it is data
+pulling based on prompts or built in frameworks, so implementing that at
+river and current levels would be representative of what they do"
+
+Real, distinct claims extracted:
+
+4F.1 Skills and Supabase get a DISTINCT visual/conceptual treatment from
+     the other L0 units — an "injection tool" (something a step reaches
+     for to help perform its handling), not an "actor" (something that
+     decides/performs the step itself, like Alex/Oracle/Orchestrator CC).
+
+4F.2 The real reason given, read closely: Supabase = "data pulling based
+     on prompts" (a query built/run as part of forming a decision or
+     response); Skills = "built in frameworks" (a skill IS a reusable,
+     defined procedure — matches the already-established L0 definition,
+     "RPGACE's own Claude Code skills," not a new meaning).
+
+4F.3 This treatment should apply "at river and current levels" —
+     explicitly named, both. (Module not explicitly named — see the
+     plan file's own real, flagged inference on this.)
+
+4F.4 Real evidence gathered before finalizing (rule 4): a fresh per-
+     function grep for `RPGACE.sb.select/insert/update/del/secureWrite`
+     found 113 of 502 real functions (22%) have a genuine, checkable
+     Supabase table touch, across 25 distinct tables — a real, solid,
+     buildable signal for Current-grain injection. `SKILL_SECONDARY_RIVER`
+     (already built, 7 of 25 skills cite a real secondary river) is the
+     real, reusable evidence source for River-grain Skills injection —
+     no Current-grain (per-function) skill-citation evidence exists or
+     is expected to exist in meaningful volume (skills document
+     Orchestrator CC's own dev process, not runtime app code) — stated
+     honestly as a real, expected near-empty result at that grain, not a
+     gap to force-fill.
+
+=====================================================================
 PART 5 — NEXT STEPS (per /CEO Loop 1)
 =====================================================================
 Step 1 (this file): COMPLETE.
