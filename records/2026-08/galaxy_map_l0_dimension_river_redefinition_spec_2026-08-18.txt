@@ -328,6 +328,62 @@ F9. Scope of "/restructure and /Engineer... to make changes to coding
     "just do it" cadence on ratified plan items.
 
 =====================================================================
+PART 4B — REAL ADDENDUM (same day, after the Loop 1 report + Part 6
+river-rebuild answer): Oversight Docs bubble system, verbatim
+=====================================================================
+
+Alex's own words, added after reading the compiled plan report:
+
+"oversight docs should also have its own bubble system to explain how
+the documents interact with skills and orchestrator CC + Alex during
+development (this chat is evidence of everything Alex could ever choose
+to do with Orchestrator CC, should be its own list citing capabilities
+we can do together). oversight docs should show interactions based on
+what they document, where it is in the data space, and how they
+influence each other. self awareness is in many ways to influence
+knowledge of RPGACE app on its own capabilities."
+
+Real, distinct claims extracted:
+
+4B.1 Oversight Docs gets its own evidence-gated BUBBLE SYSTEM (reusing
+     the already-built, already-named pattern -- R12 in CEO SKILL.md,
+     "evidence-gated bubbles, never forced-permanent" -- same mechanism
+     as the existing Alex-bubble/Oracle-bubble/Composio-bubble) showing
+     its real interaction with 3 other L0 units specifically: Skills,
+     Orchestrator CC, and Alex.
+
+4B.2 A real, NEW, distinct artifact is requested inside/alongside the
+     Oversight-Docs<->Orchestrator-CC relationship: "this chat is
+     evidence of everything Alex could ever choose to do with
+     Orchestrator CC, should be its own list citing capabilities we can
+     do together." -- i.e. a real capabilities catalog, sourced from the
+     genuinely demonstrated capability surface of this whole session/
+     project relationship (git ops, Supabase queries/migrations, skill
+     invocations, subagent dispatch, oversight-doc updates, Galaxy Map
+     generation, CEO-framework planning cycles, etc.), not a
+     speculative/aspirational list.
+
+4B.3 Oversight Docs' own bubbles/interactions should be organized along
+     3 real axes:
+       (a) WHAT a given doc documents (its real topic/scope)
+       (b) WHERE it sits in the data space (mapped to Level/River/
+           Module/Supabase-table -- the same F3/F4 "column and bubble"
+           treatment already approved for Supabase and Skills, now
+           explicitly extended to Oversight Docs itself)
+       (c) HOW oversight docs influence EACH OTHER (a real inter-doc
+           dependency graph -- e.g. patch_notes.html feeding
+           session_lessons.html's retroactive seed, SELF_KNOWLEDGE being
+           hand-curated FROM the oversight docs, etc.)
+
+4B.4 "self awareness is in many ways to influence knowledge of RPGACE
+     app on its own capabilities" -- names a real, already-existing,
+     concrete instance of 4B.3(c): `oracleAppGrounding.SELF_KNOWLEDGE`
+     (layer (c), the Oracle self-awareness artifact) is itself literally
+     curated FROM oversight-doc content -- a real, citable
+     Oversight-Docs -> RPGACE-Architecture influence edge, not a new
+     mechanism to build, just a real edge that should be shown.
+
+=====================================================================
 PART 5 — NEXT STEPS (per /CEO Loop 1)
 =====================================================================
 Step 1 (this file): COMPLETE.

@@ -296,6 +296,108 @@ Real, final scope this locks in:
     twice (rule 8).
 
 =====================================================================
+PART 7 — REAL ADDENDUM: Oversight Docs bubble system (Part 4B of the spec)
+=====================================================================
+Real /interrogation answers on the 2 new forks this addendum raised:
+  - Capabilities-list HOME: inside the Oversight-Docs<->Orchestrator-CC
+    dimension edge's own drop panel — not a new standalone page, not a
+    new ai_tooling_and_rules_map.md section. Lives exactly where you
+    click for it.
+  - Capabilities-list METHOD: hand-compiled from real demonstrated
+    project history, not mechanically scanned — same judgment-driven
+    discipline as session_lessons.html's own retroactive seed.
+
+7.1 Oversight Docs bubble system — concrete shape:
+    A real, evidence-gated bubble trio (R12 discipline: never forced-
+    permanent) on the Oversight Docs L0 unit, showing its real
+    interaction with exactly 3 other units — Skills, Orchestrator CC,
+    Alex — during development:
+      - Oversight Docs <-> Skills: evidenced by real skill .md files
+        that cite oversight-doc maintenance as part of their own
+        procedure (CEO SKILL.md's Loop 2 "populate smoke_test.html",
+        update-logging-system SKILL.md's whole dependency map, Bedtime
+        SKILL.md's Step 1, colourgradient's error_log cross-check) —
+        real, grep-checkable citations, not asserted.
+      - Oversight Docs <-> Orchestrator CC: evidenced by the standing
+        rule-6 obligation itself (every confirmed idea/fix updates
+        oversight docs same-session) plus the real commit history
+        touching these files — and carries the new capabilities catalog
+        (7.2 below) as its actual drop-panel content.
+      - Oversight Docs <-> Alex: evidenced by the explicit human-checkpoint
+        pattern already named throughout this file (Alex reading/
+        confirming Current State entries, the "update oversight"/
+        "end session" trigger phrases, his own direct corrections like
+        this session's schematic re-read) — real, cited, not invented.
+
+7.2 The real capabilities catalog (Oversight-Docs<->Orchestrator-CC
+    drop-panel content) — hand-compiled from actually-demonstrated
+    project history, not aspirational:
+
+    WHAT ALEX AND ORCHESTRATOR CC CAN DO TOGETHER (real, evidenced):
+    1. Direct code implementation — rpgace_core.js/main.js/api/*.js
+       edits following the RPGACE.register()/module-marker convention,
+       node --check discipline, real merge-to-main-before-hand-test
+       gating.
+    2. Supabase schema + data work — migrations, RLS policy changes
+       (the real Approach-B flip, independently verified via pg_policy,
+       not just applied), dedup scans, direct evidence queries.
+    3. Multi-angle deliberation frameworks — Omnitrix/Council-of-5/
+       GODMODE/Aintergration, /CEO, /paranoia, /interrogation, /drift,
+       /restructure, /Engineer, /debate, /5thDimension, /scope,
+       /colourgradient, /perspective, /cartographer — real structured
+       scrutiny before a big build, not agreement-then-build (this
+       whole document is a live instance of it).
+    4. Oversight documentation upkeep — keeping all 11 real oversight
+       artifacts (patch_notes/manual/minotaur_map/interconnection_map/
+       system_flow_map/ai_tooling_and_rules_map/smoke_test/error_log/
+       session_lessons/future_integrations/CLAUDE.md) truthful against
+       live code/Supabase, same session as any real change (rule 6).
+    5. The Galaxy Map / graphify pipeline — building and regenerating a
+       whole multi-level, evidence-derived visualization system (7
+       levels + a dozen dimension pages) from real detection scripts,
+       with idempotency and anchor-verification checked, not assumed.
+    6. Genuine collaborative decision-making — surfacing real forks via
+       AskUserQuestion with real evidence attached (like Part 2's river-
+       rebuild math) instead of guessing or agreeing reflexively; Alex
+       overriding a recommendation is a normal, expected outcome, not a
+       failure state.
+    7. Subagent orchestration — Sonnet/Opus/Fable role-splitting
+       (Omnitrix), background dispatch, and real Total-systems
+       coordination with OpenMontage CC / Graphify CC via Supabase
+       dispatch tables (openmontage_jobs/graphify_jobs), honestly
+       scoped around the real constraint that no live session-to-
+       session channel exists.
+    8. Session-continuity infrastructure — session_memory,
+       /Bedtime/Routine/Summary — durable state across ephemeral
+       containers, catching real gaps like a compaction silently
+       dropping an attached file.
+    9. Error/lesson tracking with real promotion to standing rules —
+       error_log.html's dedup-by-signature + resolution history,
+       session_lessons.html's obstacle/reasoning/solution cards, and
+       CLAUDE.md's own numbered rules 12-15 as real examples of a
+       one-off mistake becoming a permanent, generalized guardrail.
+    10. Security/architecture hardening done carefully — the API-auth
+        fix, the RLS flip, the password-gate redesign — real Tier-3
+        work, independently verified against production (a live 401,
+        a direct pg_policy query), never taken on trust alone.
+    11. Scheduling / automation — Routines/triggers (Morning Brief,
+        Fallback Drain), push notifications, cron dispatch that survives
+        container restarts.
+    12. Real third-party tool judgment — Aintergration verdicts
+        (Adopt/Adopt-with-modification/Reference-only/Not-applicable/
+        Reject) grounded in the tool's actual docs and RPGACE's actual
+        architecture, never a pitch taken at face value.
+    13. Live mid-build course correction — Alex catching a genuine
+        misreading (this exact session's schematic reinterpretation is
+        itself a live instance) and Orchestrator CC re-planning from his
+        real correction rather than defending the wrong reading.
+
+    Honest framing note for the eventual drop-panel copy: this list is
+    itself evidence-of-itself — every single item above is something
+    that has actually happened in this project's real history, not a
+    marketing description of hypothetical capability.
+
+=====================================================================
 STEP 6 — ALL FORKS NOW RESOLVED. AWAITING ALEX'S FULL-PLAN APPROVAL.
 =====================================================================
 Every real fork in this document (F1-F9, plus the Part 2/6 river-rebuild
