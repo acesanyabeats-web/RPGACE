@@ -53,8 +53,14 @@ OUT = Path('graphify-out/galaxy_map_meanders.html')
 # shiftSync/scheduleFixes sit under the real /* ===DOMAIN:SCHEDULE=== */
 # marker; the rest are 1:1 with their own card's real name).
 RIVER_MEANDERS = {
+    # G49 (Aug 18): the 'research' meander is REMOVED — its own real
+    # modules (researchTabs/intelBatchList/intelDelete/intelDedup/
+    # ciAutoPropose) moved to the new River XVII in the real River-v2
+    # split (RIVER_MODULES), so they're no longer real members of River
+    # V at all. River 5 now has only 3 real dashboard cards
+    # (agenda/morningBrief/journal) — still >= 2, still qualifies for
+    # Level 1.5 via rivers_needing_meanders(), just a smaller real page.
     5: {
-        'research': ['researchTabs', 'intelBatchList', 'intelDelete', 'intelDedup', 'ciAutoPropose'],
         'agenda': ['agendaReminder', 'scheduleFixes', 'shiftSync'],
         'morningBrief': ['morningBrief'],
         'journal': ['journalQoL'],

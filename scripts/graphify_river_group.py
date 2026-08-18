@@ -135,7 +135,7 @@ RIVER_COLOR = {
     2: '#4a8ccc',   # --blue    River II  The Great Confluence
     3: '#c9a84c',   # --gold    River III The Oracle Current
     4: '#9b6ec8',   # --purple  River IV  The Bookworm River
-    5: '#4caf82',   # --green   River V   Two Independent Streams
+    5: '#4caf82',   # --green   River V   Daily Ops: Agenda, Schedule & Journal (renamed G49, Aug 18 — see RIVER_NAME)
     6: '#e8c96a',   # --gold2   River VI  The Judgment Chamber
     7: '#cc7a3a',   # --orange  River VII The Library Current
     8: '#5588ee',   # --mp-col  River VIII The Confluence Pool
@@ -169,13 +169,20 @@ RIVER_COLOR = {
     14: '#d4daf5',  # --text (style.css)   Zone XIV  Oversight Docs
     15: '#20263a',  # --panel3 (style.css) Zone XV   Session Records / Backlog
     16: '#2a3050',  # --border (style.css) Zone XVI  Dev Tooling
+    # G49 (Aug 18 2026) — River XVII, a real split off River V. Real,
+    # sourced color: minotaur_map.html's own --blue (#4A90E2) — a
+    # GENUINELY different real token from style.css's own --blue
+    # (#4a8ccc, already River II's color) despite the same semantic
+    # name, confirmed distinct by direct hex comparison before reuse —
+    # not fabricated, not a collision.
+    17: '#4A90E2',  # --blue (minotaur/manual/patch_notes palette) River XVII Research & Intel Stream
 }
 RIVER_NAME = {
     1: "River I — Gatekeeper's Checkpoint",
     2: 'River II — The Great Confluence',
     3: 'River III — The Oracle Current',
     4: 'River IV — The Bookworm River',
-    5: 'River V — Two Independent Streams',
+    5: 'River V — Daily Ops: Agenda, Schedule & Journal',  # G49 (Aug 18): renamed after the real split — "Two Independent Streams" no longer applies, this river now holds one coherent real theme
     6: 'River VI — The Judgment Chamber',
     7: 'River VII — The Library Current',
     8: 'River VIII — The Confluence Pool',
@@ -187,6 +194,7 @@ RIVER_NAME = {
     14: 'River XIV — Oversight Docs',
     15: 'River XV — Session Records / Backlog',
     16: 'River XVI — Dev Tooling',
+    17: 'River XVII — The Research & Intel Stream',
 }
 # Aug 11, real Alex ask: 12-16 stop being a separate "Zone" species and
 # join the unified river system, because they DO carry real Total-
@@ -324,8 +332,21 @@ RIVER_MODULES = {
         'instaOraclePanel', 'youtubeOracle', 'tiktokOracle', 'scheduleOracle',
         'feynman'],
     4: ['bookworm'],
-    5: ['researchTabs', 'intelBatchList', 'intelDelete', 'intelDedup',
-        'ciAutoPropose', 'scheduleFixes', 'shiftSync', 'agendaReminder',
+    # G49 (Aug 18 2026) — real River-v2 closer look, per the already-
+    # locked Part 6 reconciled approach (interaction evidence + shared-
+    # goal coherence, never interaction alone). Real evidence gathered:
+    # a fresh global module-interaction-graph run (same 4-signal method
+    # as compute_intra_river_flow(), computed river-internally this
+    # time) found River V splits into 9 real components along an exact
+    # line the river's OWN NAME already predicted — "Two Independent
+    # Streams." The 5 Content-Intelligence/research modules share ZERO
+    # real interaction with the 5 agenda/schedule/journal modules, and
+    # no real shared GOAL beyond "dashboard content that isn't Oracle/
+    # taxonomy/beat-pipeline" — genuinely two different real features,
+    # not one goal split into steps. This is the real, evidenced case
+    # for a split (unlike River III/VII below, where goal-coherence
+    # held even without full interaction evidence). Moved to River 17.
+    5: ['scheduleFixes', 'shiftSync', 'agendaReminder',
         'morningBrief', 'journalQoL'],
     6: ['phylumPath'],
     7: ['jargonEncyclopedia', 'encyclopediaQoL', 'encSync', 'encTaxonomyLink',
@@ -335,6 +356,13 @@ RIVER_MODULES = {
     10: ['chroniclesLog', 'careerStatCard'],
     11: ['contentProductionLive', 'beatLog', 'videoPipeline', 'videoSummary',
          'conidPot', 'contentRepurpose', 'visualOracle'],
+    # G49 (Aug 18 2026) — the real Research/Intel half split off River V
+    # (see River 5's own comment for the full real evidence). Real
+    # shared goal: Content Intelligence ingestion, dedup, and review —
+    # a genuinely different real feature from River 5's remaining
+    # agenda/schedule/journal content.
+    17: ['researchTabs', 'intelBatchList', 'intelDelete', 'intelDedup',
+         'ciAutoPropose'],
 }
 MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 
@@ -363,7 +391,7 @@ MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 # river is real (agendaReminder, a genuine QoL layer on the same page)
 # but is honestly flagged as partial, not the page's whole story.
 DASHBOARD_CARDS = [
-    {'key': 'research', 'label': '🧠 Research Lab', 'rivers': [5],
+    {'key': 'research', 'label': '🧠 Research Lab', 'rivers': [17],  # G49 (Aug 18): moved 5->17, its own target modules moved with the real split
      'via': "dashDeck._openResearch() -> researchTabs/intelBatchList etc"},
     {'key': 'bookworm', 'label': '📖 Bookworm', 'rivers': [4],
      'via': "dashDeck._openBookworm() -> bookworm module"},
@@ -432,8 +460,8 @@ EXTERNAL_RIVER_LINKS = [
      'via': 'Load-bearing for Bookworm URL ingestion (River IV), Schedule Oracle + chat-pasted-URL handling (River III)'},
     {'name': 'Last.fm', 'rivers': [7],
      'via': "refCorpus.findMatches()'s real fallback (River VII), grows the corpus from its own results"},
-    {'name': 'Whisper (OpenAI, local)', 'rivers': [5],
-     'via': 'The Content Intelligence pipeline (River V) — current live status genuinely unconfirmed'},
+    {'name': 'Whisper (OpenAI, local)', 'rivers': [17],  # G49 (Aug 18): moved 5->17 with Content Intelligence's own real modules
+     'via': 'The Content Intelligence pipeline (River XVII) — current live status genuinely unconfirmed'},
 ]
 LINKS_BY_RIVER = {}
 for _l in EXTERNAL_RIVER_LINKS:
@@ -570,18 +598,29 @@ RIVER_FLOWS = {
     2: [
         ('River III — The Oracle Current', 'Oracle page selected', 'nav_route'),
         ('River IV — The Bookworm River', 'Bookworm page selected', 'nav_route'),
-        ('River V — Two Independent Streams', 'Schedule/Content Intel page selected', 'nav_route'),
+        # G49 (Aug 18): split into 2 real edges, one per real post-split
+        # river — the old single "Schedule/Content Intel" entry
+        # genuinely named both halves of what's now 2 separate rivers.
+        ('River V — Daily Ops: Agenda, Schedule & Journal', 'Schedule page selected', 'nav_route'),
+        ('River XVII — The Research & Intel Stream', 'Content Intel page selected', 'nav_route'),
     ],
     3: [
         ('River VI — The Judgment Chamber', 'a tapped insight badge', 'nav_route'),
         ('River IV — The Bookworm River', 'special prefix diverts the message', 'nav_route'),
-        ('River V — Two Independent Streams', 'special prefix diverts the message', 'nav_route'),
+        ('River V — Daily Ops: Agenda, Schedule & Journal', 'special prefix diverts the message (scheduleOracle)', 'nav_route'),
         ('River XII — The API / Auth Layer', 'dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call', 'ai_judgment_call'),
     ],
     4: [('River VI — The Judgment Chamber', 'every insight found here', 'ai_judgment_call')],
     5: [
-        ('River VIII — The Confluence Pool', 'Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar', 'write_commit'),
+        # G49 (Aug 18): the Content Intelligence -> River VIII flow moved
+        # to River 17's own entry below — its real source modules
+        # (ciAutoPropose etc.) moved there. River 5 is now terminal on
+        # this axis, ending at the Schedule Calendar (a real main.js UI
+        # destination, no further river hop).
         ('River XII — The API / Auth Layer', "morningBrief's real Composio Gmail-fetch call routes out through here", 'external_extract_call'),
+    ],
+    17: [
+        ('River VIII — The Confluence Pool', 'Content Intelligence real write path — the pending-proposal/review-queue flow', 'write_commit'),
     ],
     6: [
         ('River VII — The Library Current', "a fresh leaf's teaching page", 'ai_judgment_call'),

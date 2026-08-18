@@ -55,7 +55,12 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Real: every window.callOracle() call in main.js checks getMode() first. 'dummy' short-circuits to a synthetic labeled reply, zero API cost. 'fallback' queues the real prompt into oracle_fallback_queue instead of calling the live API. 'real' calls the live Anthropic API as normal.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19596-19637)</div><pre>  LEGACY_KEY: 'rpgace_mock_oracle',
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19596-19637)</div><pre>  // source of truth survives (rule 8). isEnabled() is kept as the exact
+  // same method name/meaning ("is Dummy mode active") specifically because
+  // main.js's callOracle() already calls it - zero change needed at that
+  // call site for the dummy-mode branch.
+  MODE_KEY: 'rpgace_oracle_mode',
+  LEGACY_KEY: 'rpgace_mock_oracle',
   MODES: ['real', 'dummy', 'fallback'],
 
   init: function() {
@@ -91,12 +96,7 @@
   // Back-compat: "isEnabled" has always meant "is Dummy mode active" -
   // main.js's callOracle() calls this exact method name/meaning already.
   isEnabled: function() { return this.getMode() === 'dummy'; },
-  isFallbackMode: function() { return this.getMode() === 'fallback'; },
-  // Cycles Real -&gt; Dummy -&gt; Fallback -&gt; Real on click.
-  toggle: function() {
-    var order = ['real', 'dummy', 'fallback'];
-    var next = order[(order.indexOf(this.getMode()) + 1) % order.length];
-    this.setMode(next);</pre>
+  isFallbackMode: function() { return this.getMode() === 'fallback'; },</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, not silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_level3.html#mod-mockOracle">🔽 mockOracle — Level 3</a>
   </div>
@@ -119,7 +119,12 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A real, structured JSON verdict — fits (bool), attachTo (node number or null), newSteps, explainers, a one-sentence justification citing which check(s) drove it, and a self-scored 1-10 confidence — fed into _resolvePlacementDecision() and, past a human checkpoint, an actual taxonomy_tree write.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9021-9060)</div><pre>  // because every insight was placed blind to its siblings.
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9021-9060)</div><pre>  // that hold even if a model regression slips past the wording.
+  // priorLeaves: optional array of leaf names already created by the
+  // same batch (e.g. earlier insights from the same book chapter) —
+  // audit finding: without this, one chapter about inversions created
+  // 5+ overlapping sibling leaves, each individually scored 9/10,
+  // because every insight was placed blind to its siblings.
   decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
     var self = this;
     return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
@@ -153,12 +158,7 @@
         '1. NAMING: every step name is a general CONCEPT label - never a video/song/book title, never an artist name, never a year, never platform text like "| FL Studio Tutorial". If the insight text is itself a content title, name the leaf after the TECHNIQUE it teaches.\n' +
         '2. NO NEAR-DUPLICATE SIBLINGS: if an existing leaf (or a batch leaf listed above) already covers this concept or a facet of it, attach to/extend THAT area - do not create another sibling restating it. Several narrow facets of one concept belong as ONE leaf, not five.\n' +
         '3. STEPS ARE SINGLE RANKS: each newSteps entry is ONE new rank\'s own name - never a "/"-joined path, never a restatement of the attach path or any earlier step, never two ideas joined by "; then" or similar.\n' +
-        '4. DEPTH: the rank chain is Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) - a placement may NEVER exceed depth 6. Prefer 1-2 new steps; more than 3 is almost always padding.\n\n' +
-        'Return ONLY JSON: {"fits": true, "attachTo": 12, "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8} (attachTo: node NUMBER or null)';
-      return self._callGroundWorkerJSON(prompt, 700, undefined, fallbackContext).then(function(parsed) {
-        return self._resolvePlacementDecision(parsed, phylumNumber, existing);
-      });
-    });</pre>
+        '4. DEPTH: the rank chain is Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) - a placement may NEVER exceed depth 6. Prefer 1-2 new steps; more than 3 is almost always padding.\n\n' +</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, not silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — Level 3</a>
   </div>
@@ -167,7 +167,12 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Existing leaf: regenerate that leaf's own article via _generateInsightContent() (the real 'extend' behavior, logged to taxonomy_decision_log) — a real dedup-extend, not a silent drop. No attach point: Promise.reject('Oracle returned no new steps to place this insight').</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9289-9304)</div><pre>  // promised but the code never delivered.
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9289-9304)</div><pre>  // refresh that one leaf's own article with the new insight folded
+  // in (_generateInsightContent, the same real 3-layer generator every
+  // other leaf already uses), never reject. A genuinely new insight
+  // still sprouts its own new leaf exactly as before — this only
+  // closes the real duplicate-prevention path the prompt already
+  // promised but the code never delivered.
   _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText) {
     var self = this;
     if (!newSteps.length) {
@@ -177,12 +182,7 @@
           phylum_number: phylumNumber,
           node_id: attachNode.id,
           path: attachNode.path,
-          insight_text: (insightText || '').slice(0, 2000),
-          source: 'phylum_path_dedup_extend',
-        }).catch(function() {});
-        return self._generateInsightContent(attachNode, phylumNumber, insightText);
-      }
-      return Promise.reject(new Error('Oracle returned no new steps to place this insight'));</pre>
+          insight_text: (insightText || '').slice(0, 2000),</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, not silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — Level 3</a>
   </div>
@@ -211,7 +211,12 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 "duplicate stage" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A single real MUSIC_VIDEO_PRIMARY_ACTION[row.status] lookup returns exactly one {label, fn} pair to render — 'Posted'/'Analysed' correctly render nothing further (real last-stage), never a guessed extra button.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 15618-15637)</div><pre>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 15618-15637)</div><pre>          item.appendChild(topActions);
+
+          // Action buttons row
+          var actions = document.createElement('div');
+          actions.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+
           // Aug 6 (Engineer pass, 2nd real hand-test round, items 5/7/13) —
           // real fix for the recurring "duplicate stage" bug Alex hit
           // twice. music_video ConIDs now get ONE stage-aware primary
@@ -225,12 +230,7 @@
           // unchanged (their workflow was never the one Alex complained
           // about).
           if (isMusicVideo) {
-            var primary = self.MUSIC_VIDEO_PRIMARY_ACTION[row.status];
-            if (primary) {
-              var primaryBtn = document.createElement('button');
-              primaryBtn.textContent = primary.label;
-              primaryBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              primaryBtn.onclick = function() { self[primary.fn](row); };</pre>
+            var primary = self.MUSIC_VIDEO_PRIMARY_ACTION[row.status];</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, not silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_level3.html#mod-contentProductionLive">🔽 contentProductionLive — Level 3</a>
   </div>
@@ -239,18 +239,18 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Every new artist row from this path lands in Phylum 11 (Fons Educationis, post-renumber) — a real, silent-miss risk if this literal is ever forgotten in a future renumber.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14082-14093)</div><pre>      RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14082-14093)</div><pre>    // while claiming phylum_name 'Fons Educationis' - 17 is actually Negotium,
+    // Fons Educationis was 12, then renumbered to 11 (Aug 11 phylum renumber -
+    // see the CLAUDE.md Current State entry for the full renumber record).
+    var emerging = artists.filter(function(a) { return a.listeners &gt; 5000 && a.listeners &lt;= 500000; }).slice(0, 10);
+    emerging.forEach(function(a) {
+      RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
         .then(function(rows) {
           if (rows && rows.length &gt; 0) return; // already exists
           RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
             concept:       a.name,
             phylum_number: 11,
-            phylum_name:   'Fons Educationis',
-            definition:    'Artist discovered via Last.fm beat matching. Style: ' + mood + '. Listeners: ' + a.listeners,
-            source:        'lastfm_beat_match',
-            gap_score:     5.0,
-          }).catch(function(){});
-        }).catch(function(){});</pre>
+            phylum_name:   'Fons Educationis',</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, not silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_level3.html#mod-beatLog">🔽 beatLog — Level 3</a>
   </div>

@@ -98,7 +98,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (9173, 9173),
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (9178, 9178),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (Level 5\'s own real decision point — see there for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -107,7 +107,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (9641, 9641),
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (9646, 9646),
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (Level 5\'s own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -140,7 +140,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (14921, 14929),
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (14927, 14933),
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',
