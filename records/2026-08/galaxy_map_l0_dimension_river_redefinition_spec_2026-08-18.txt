@@ -460,6 +460,67 @@ Real, distinct claims extracted:
      Workflows section — see that file directly.)
 
 =====================================================================
+PART 4D — REAL EXTENSION (same day, after the symmetric-gateway fix):
+Level 4/5/6 deduplication + the Current/Module/River lowest-to-highest
+model, verbatim
+=====================================================================
+
+Alex's own words:
+
+"also level 4 and level 5 and level 6 need to change too, i really
+think they are already used and want /deduplication run on them to get
+rid, current should be the lowest level explain logic per step of a
+modules, looking at it function by function in bubble form, tying all
+units together where present, modules - currents together in bubble
+form, also tying all units together, rivers as all level units above
+interacting as bubbles. and dimensions being breakdowns of all
+interactions between units at any level. make sure we apply /drift to
+all of this and /paranoia to get best outcome. hopefully we make this
+blue a red, then breakdown into new g-steps resturctured to make these
+improvements."
+
+Real, distinct claims extracted:
+
+4D.1 Levels 4, 5, 6 (as separate standalone Galaxy Map pages) are
+     believed to now be REDUNDANT with the new model -- real
+     /deduplication ask, not "delete the content," but "stop maintaining
+     it twice." Verified against real evidence (see Part 8 of the plan
+     file): confirmed genuinely redundant once Current/Module absorb
+     their real content.
+
+4D.2 CURRENT redefined as the real LOWEST level -- explains a module's
+     logic PER STEP, function by function, in real bubble form, tying in
+     every unit that's genuinely involved at that step (per real
+     evidence, never forced).
+
+4D.3 MODULE redefined -- a module's own Currents rolled up together in
+     bubble form, ALSO tying all units together (an aggregate view of
+     4D.2 at module grain).
+
+4D.4 RIVER redefined -- all of a river's own Module-level bubbles (each
+     already tying units together per 4D.3) interacting with each other
+     as bubbles. Extends, not replaces, the already-locked Part 6
+     reconciled river approach (interaction evidence + shared-goal
+     coherence) -- now the interaction view also surfaces WHICH units
+     are involved, not just which modules.
+
+4D.5 DIMENSION redefined -- the breakdown of ALL interactions between 2
+     units, AT ANY LEVEL (River/Module/Current), not scoped to one
+     level. Extends Part 7B's level-tagged bubble mechanic (which named
+     L0-4) to explicitly include the River grain too.
+
+4D.6 Explicit process ask: run REAL /drift (check this against the
+     existing plan) and REAL /paranoia (heaviest scrutiny, right-sized
+     per this project's own established practice -- GODMODE evidence +
+     genuine multi-angle pushback, not a literal 6-phase ceremony for a
+     Loop-1 planning refinement) before finalizing.
+
+4D.7 Explicit ask: promote this whole redefinition from an informally-
+     tracked idea (no `ceo_plan_items` row yet -- effectively "blue" by
+     default) to a real, formal "red" (specified plan, not built) row,
+     then break it down into new tracked G-steps for Loop 2 execution.
+
+=====================================================================
 PART 5 — NEXT STEPS (per /CEO Loop 1)
 =====================================================================
 Step 1 (this file): COMPLETE.

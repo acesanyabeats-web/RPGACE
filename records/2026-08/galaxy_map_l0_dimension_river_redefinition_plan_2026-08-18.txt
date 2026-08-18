@@ -494,6 +494,136 @@ not in his ask. Fixed at 3.1 above.
      after approval" (which scopes the Galaxy Map deliverable itself).
 
 =====================================================================
+PART 8 — REAL EXTENSION: Level 4/5/6 /deduplication + Current/Module/
+River lowest-to-highest model (Part 4D of the spec)
+=====================================================================
+
+8.1 REAL EVIDENCE GATHERED FIRST (rule 4 -- read the actual files, don't
+    assume duplication): direct read of the 3 named scripts today.
+      - Level 4 (`galaxy_map_level4.py`): per-DASHBOARD-CARD real
+        frontend flow -- click a card -> real go: trigger ->
+        popup/page/module, with real DOM output/input evidence and a
+        real Oracle-call badge. Entry point = a real UI click.
+      - Level 5 (`galaxy_map_level5.py`): 7 hand-curated "core logic"
+        decision points, function-scoped, verbatim code excerpts, a real
+        `decider` field (WHICH actor decides -- Alex/Oracle/code-logic),
+        plus decides/changes/result prose.
+      - Level 6 (`galaxy_map_level6.py`): the exhaustive, mechanical
+        counterpart -- every real if/else-if/else/switch branch
+        (1088 real branch points, `compute_function_branches()`),
+        module->function grouped, condition text only, unnarrated.
+
+8.2 REAL MAPPING onto the new model (this is what makes it a genuine
+    /deduplication case, not just Alex's hunch taken on faith):
+      - Level 6's exhaustive per-function branch data IS what 4D.2 (
+        "current... function by function... logic per step") is asking
+        for, once the unit-bubble-tying mechanic (7B.2) is laid over it.
+      - Level 5's curated `decider`/decides/changes/result framing is the
+        real PROTOTYPE of the unit-tying idea, applied so far to only 7
+        hand-picked functions instead of every one.
+      - Level 4's dashboard-card-click evidence is real, concrete proof
+        of the Alex/UI unit's own involvement in a specific module --
+        exactly the kind of evidence 4D.3 ("modules... tying all units
+        together") needs, just currently organized by card instead of by
+        module.
+      - Level 3 (function-call chains) is NOT named by Alex for change
+        and stays as the real navigational container page -- Current
+        becomes its new tab (F5, already agreed), not a replacement.
+
+    CONFIRMED, not assumed: Levels 4/5/6 as SEPARATE STANDALONE PAGES do
+    become genuinely redundant once Current (absorbing 5+6's content)
+    and Module (absorbing 4's content) are built as specified. Alex's
+    "i really think" was right.
+
+8.3 REAL /paranoia (right-sized -- GODMODE evidence + genuine multi-angle
+    pushback, not the full 6-phase ceremony, matching how this whole
+    session has already scaled the protocol to a Loop-1 planning
+    refinement rather than a from-scratch adoption question):
+
+    Con 1 -- Level 5's curated 7-item "what actually matters" view is a
+    real, useful FAST browsing path; an undifferentiated function-by-
+    function firehose (all ~1088 branches presented with equal weight)
+    could be LESS legible, not more -- the same "raw exhaustive data
+    isn't automatically more useful than curated data" lesson Part 2's
+    river-rebuild finding already taught this exact plan once today.
+      MITIGATION: fold, don't discard -- Level 5's curation becomes a
+      real "⭐ notable" tag on the matching Current entries (not a
+      separate page, a real filter/sort inside Current), so the fast
+      7-item browsing path survives inside the richer view instead of
+      being lost.
+
+    Con 2 -- Level 4's dashboard-card entry point is a genuinely
+    different STARTING navigational path ("start from what I actually
+    click in the live app") than starting from a module and drilling in.
+    Folding it flat into Module risks losing that "start from the UI"
+    path.
+      MITIGATION: Level 4's real click-evidence becomes the concrete
+      data feeding the Alex<->RPGACE-Architecture dimension lens (7B.2,
+      already designed) -- the "start from what I click" path still
+      exists, just correctly homed under Alex's own unit-lens instead of
+      as an unrelated flat numbered level.
+
+    Con 3 -- real rebuild surface across multiple existing scripts
+    (level3/4/5/6, module, river) carries the same anchor-drift/
+    idempotency risk this whole build has hit repeatedly (R5).
+      MITIGATION: no new risk class -- apply the exact same standing
+      verification discipline (idempotency re-run + diff, anchor
+      verification, div/svg-balance check) already proven across every
+      prior Galaxy Map shipment.
+
+    Verdict: the /deduplication call holds. Nothing of real value gets
+    deleted -- Level 5's curation and Level 4's UI-entry evidence both
+    get FOLDED into the richer new model (their real content lives on,
+    just no longer duplicated across a separate standalone page), which
+    is the correct reading of rule 8 ("eliminate deduplication gaps")
+    established throughout this whole project -- rule 8 has never meant
+    "delete real content," only "route it through one shared place."
+
+8.4 REAL /drift CHECK: BASIS = provisional (this whole document, still
+    being refined same-session). VERDICT = on track -- every claim in
+    4D is additive/consistent with what's already agreed (F5's Current-
+    as-new-tab, Part 6's reconciled river approach, Part 7B's level-
+    tagged bubble mechanic), not a contradiction of any prior decision.
+    No MATERIAL gap found.
+
+8.5 New/changed real deliverables, per Loop-2 G-step (item codes G42-G50
+    minted in `ceo_plan_items`, all status=red -- "a real, specified
+    plan, not built," per Alex's own explicit ask to move this from an
+    untracked idea to a real red row, then a real breakdown):
+
+      G42 (umbrella) — L0/Dimension/River/Module/Current redefinition,
+          Galaxy Development Framework restructure. Evidence: this file
+          + its companion spec file.
+      G43 — L0 map, 7 peer units, symmetric per-unit dimension gateways
+          (no privileged unit — the corrected 3.1/7B model).
+      G44 — Dimension Matrix, L0-unit grain (F8/3.2), separate from G30.
+      G45 — New Supabase page: every real table x Level/River/Module
+          (F3/3.3).
+      G46 — Skills page extension: Level/River usage column on the
+          existing G28/G36 pages (F4/3.4).
+      G47 — Current tab on the existing Level 3 page: absorbs Level 5
+          (curated decisions, kept as a "notable" tag) + Level 6
+          (exhaustive branches) content, real unit-bubble-tying per
+          function/step (F5/3.5/4D.2). Retires galaxy_map_level5.html/
+          galaxy_map_level6.html as standalone pages once built.
+      G48 — Module-level real unit-tying (4D.3); retires
+          galaxy_map_level4.html as a standalone page, its real
+          dashboard-card-click evidence folded into the Module page +
+          the Alex<->RPGACE-Architecture dimension lens (7B.2).
+      G49 — River redefinition v2 (4D.4): all of a river's Module-level
+          unit-bubbles interacting with each other, extending the
+          already-locked Part 6 reconciled approach (III/V/VII closer
+          look) with real unit-visibility, not just module-interaction.
+      G50 — Oversight Docs bubble system + the hand-compiled
+          Orchestrator-CC capabilities catalog (Part 7, already drafted
+          in full at 7.2).
+
+    All 9 rows inserted into Supabase `ceo_plan_items`
+    (plan_id 6f8536fd-7d98-4565-9369-c75a149fce8f) at status=red per
+    Alex's own explicit ask -- nothing moves to yellow/green until Loop 2
+    execution actually starts on that specific item.
+
+=====================================================================
 STEP 6 — ALL FORKS NOW RESOLVED. AWAITING ALEX'S FULL-PLAN APPROVAL.
 =====================================================================
 Every real fork in this document (F1-F9, plus the Part 2/6 river-rebuild
