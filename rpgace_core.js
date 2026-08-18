@@ -5819,6 +5819,18 @@ RPGACE.register('dashDeck', {
       '.dd-pop-rtitle{font-size:13px;font-weight:700;color:var(--text);line-height:1.3}' +
       '.dd-pop-rdesc{font-size:11px;color:var(--muted);line-height:1.4}' +
       '.dd-pop-sec .dd-pop-rtitle{font-size:12px;color:var(--muted);font-weight:600}' +
+      // Aug 18 real restructure — collapsible <details> groups replace
+      // the old flat 40-row popup (Alex's own "too clunky" ask), same
+      // real precedent as manual.html's Aug 6 <details>-by-Domain fix.
+      '.dd-pop-details{margin-bottom:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel2);overflow:hidden}' +
+      '.dd-pop-details .dd-pop-rows{padding:2px 12px 12px}' +
+      '.dd-pop-summary{cursor:pointer;list-style:none;padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px}' +
+      '.dd-pop-summary::-webkit-details-marker{display:none}' +
+      '.dd-pop-summary:hover{color:var(--gold2)}' +
+      '.dd-pop-summary::after{content:"\\25B8";color:var(--muted);transition:transform .15s var(--ease-out);flex-shrink:0}' +
+      '.dd-pop-details[open]>.dd-pop-summary::after{transform:rotate(90deg)}' +
+      '.dd-pop-subdetails{margin:8px 0;border:1px solid var(--border);background:var(--panel3);border-radius:8px}' +
+      '.dd-pop-subdetails .dd-pop-summary{font-size:10px;padding:9px 12px}' +
       '.dd-chip{display:inline-block;border-radius:10px;padding:2px 9px;font-size:11px;font-weight:700}' +
       '@media (max-width:600px){#dd-grid{grid-template-columns:1fr}#dd-needs{grid-template-columns:1fr}#dd-needs .dd-glancebox{order:-1}.dd-go{min-height:44px}.dd-pop-row{min-height:44px}#kg-grid{grid-template-columns:1fr !important}}' +
       '@media (prefers-reduced-motion:reduce){.dd-card,#dd-needs{animation:none !important}}';
@@ -6381,11 +6393,18 @@ RPGACE.register('dashDeck', {
       { icon: '🗂️', title: 'Fable Master Plan', desc: 'records/2026-07/fable_master_plan.txt', href: '/records/2026-07/fable_master_plan.txt' },
       { icon: '📝', title: 'Session Handover', desc: 'records/2026-07/session_handover_2026-07-19.md', href: '/records/2026-07/session_handover_2026-07-19.md' }
     ];
-    var addGroup = function(gtitle, arr, isSec) {
-      var gt = document.createElement('div');
-      gt.className = 'dd-pop-gtitle';
-      gt.textContent = gtitle;
-      body.appendChild(gt);
+    // Aug 18 real restructure — Alex's own direct ask ("too clunky"),
+    // pasting the actual flat 40-row popup content back at Orchestrator
+    // CC. Real root cause: 3 flat addGroup() sections, one (auto) alone
+    // holding 24 rows with zero collapsing — same "flat list gets
+    // unreadable past a certain size" problem manual.html's own 50-row
+    // button catalog already hit and fixed (Aug 6, 9 real collapsible
+    // <details> sections by Domain). Same real fix, same precedent, not
+    // a new pattern invented here (rule 8). addGroup() now renders a
+    // real <details>/<summary> per top-level category; addRows() is the
+    // shared row-list renderer both addGroup() and its nested sub-
+    // groups call, so a row's own markup/click-handler is defined once.
+    var addRows = function(container, arr, isSec) {
       arr.forEach(function(d) {
         var row = document.createElement('div');
         row.className = 'dd-pop-row' + (isSec ? ' dd-pop-sec' : '');
@@ -6400,38 +6419,89 @@ RPGACE.register('dashDeck', {
         tw.appendChild(t); tw.appendChild(ds);
         row.appendChild(tw);
         row.onclick = function() { window.open(d.href, '_blank', 'noopener'); };
-        body.appendChild(row);
+        container.appendChild(row);
       });
     };
-    var auto = [
+    var addGroup = function(gtitle, arr, isSec, openByDefault, subgroups) {
+      var det = document.createElement('details');
+      det.className = 'dd-pop-details';
+      if (openByDefault) det.open = true;
+      var sum = document.createElement('summary');
+      sum.className = 'dd-pop-summary';
+      var count = subgroups ? subgroups.reduce(function(n, sg) { return n + sg.items.length; }, 0) : arr.length;
+      sum.textContent = gtitle + ' (' + count + ')';
+      det.appendChild(sum);
+      var rows = document.createElement('div');
+      rows.className = 'dd-pop-rows';
+      det.appendChild(rows);
+      if (subgroups) {
+        subgroups.forEach(function(sg) {
+          var subDet = document.createElement('details');
+          subDet.className = 'dd-pop-details dd-pop-subdetails';
+          var subSum = document.createElement('summary');
+          subSum.className = 'dd-pop-summary';
+          subSum.textContent = sg.title + ' (' + sg.items.length + ')';
+          subDet.appendChild(subSum);
+          var subRows = document.createElement('div');
+          subRows.className = 'dd-pop-rows';
+          addRows(subRows, sg.items, isSec);
+          subDet.appendChild(subRows);
+          rows.appendChild(subDet);
+        });
+      } else {
+        addRows(rows, arr, isSec);
+      }
+      body.appendChild(det);
+    };
+    // Aug 18 restructure: the old flat 24-item `auto` array is now 5
+    // real sub-groups by actual role, matching the same grouping logic
+    // this whole session's own G-series work already established
+    // (core drill-down chain vs. dimension/analysis pages vs. logic
+    // pages vs. superseded-but-kept reference pages) — not invented
+    // fresh for this popup, just finally surfaced here too.
+    var graphifyGroup = [
       { icon: '🕸️', title: 'Graphify Map', desc: 'Code + doc knowledge graph — auto-refreshed by /update-logging-system, not hand-written', href: '/graphify-out/graph.html' },
       { icon: '🌳', title: 'Graphify Tree', desc: 'D3 collapsible tree view of RPGACE (950 nodes) — built by Graphify CC, the real 4th Total member', href: '/graphify-out/GRAPH_TREE.html' },
-      { icon: '🕮', title: 'Obsidian Vault (browsable)', desc: 'River/zone knowledge notes with real working links — a static export since raw [[wikilinks]] only render inside the Obsidian app itself', href: '/graphify-out/obsidian_vault.html' },
+      { icon: '🕮', title: 'Obsidian Vault (browsable)', desc: 'River/zone knowledge notes with real working links — a static export since raw [[wikilinks]] only render inside the Obsidian app itself', href: '/graphify-out/obsidian_vault.html' }
+    ];
+    var galaxyCoreGroup = [
       { icon: '🌌', title: 'Galaxy Map (L0 — 7 Units)', desc: 'G43 of the ratified redefinition (Aug 18) — the real new top-level entry point: External AI, RPGACE Architecture, Skills, Orchestrator CC, Alex, Supabase, Oversight Docs, no privileged gateway. Click a unit for its own real dimension-edges (17 hand-curated, of 21 possible pairs); click an edge for a real drop panel (bubbles, yes/no forks where evidence exists, a 💉 injection badge for Skills/Supabase). Untested by hand.', href: '/graphify-out/galaxy_map_l0_units.html' },
       { icon: '🏛️', title: 'Galaxy Map (Level 0 — RPGACE Architecture)', desc: 'The real 4-galaxy Total-systems view — Oracle + self-awareness as their own nodes, every real external connector, styled per the Assassin\'s Creed Valhalla reference. Now reached as the "RPGACE Architecture" unit\'s own real content from L0 (above), not a privileged gateway. Click the RPGACE Architecture node to drill into Level 1.', href: '/graphify-out/galaxy_map.html' },
-      { icon: '🏛️', title: 'Galaxy Map (Level 1 — Rivers)', desc: 'G3 of the ratified Galaxy Map plan — RPGACE Architecture\'s own 16 rivers, radial, cross-linked by real RIVER_FLOWS data. Also reachable by clicking the RPGACE Architecture node on Level 0. Click any river to drill into Level 2.', href: '/graphify-out/galaxy_map_river.html' },
+      { icon: '🏛️', title: 'Galaxy Map (Level 1 — Rivers)', desc: 'G3 of the ratified Galaxy Map plan — RPGACE Architecture\'s own 17 rivers, radial, cross-linked by real RIVER_FLOWS data. Also reachable by clicking the RPGACE Architecture node on Level 0. Click any river to drill into Level 2.', href: '/graphify-out/galaxy_map_river.html' },
       { icon: '🌊', title: 'Galaxy Map (Level 2 — Modules, Flow, Externals & Skills)', desc: 'G4+G5 of the ratified Galaxy Map plan — for any river with real modules, a real LEFT-TO-RIGHT flow (input → modules ordered by real evidence → output), with a 👁️/🤖 badge on the terminal each flow converges on, dashboard cards/externals/skills attached as real tributaries along the way. Module-less rivers (including River XIII\'s own skill web) keep a radial layout. A 📚 note marks any river with a real connection into Oversight.', href: '/graphify-out/galaxy_map_module.html' },
+      { icon: '🧬', title: 'Galaxy Map (Current Series — replaces Level 3)', desc: 'G47 — the real replacement for Level 3\'s old call-chain-graph role: 436 real Currents (functions) across 45 modules, each with real input/handling/output/next detail, unit-bubbles wherever real evidence exists, and a ⭐ on the 5 functions Level 5 also curates. The old call-chain graph stays on disk for reference.', href: '/graphify-out/galaxy_map_current.html' },
+      { icon: '🔎', title: 'Galaxy Map (Zoomed Current Walkthrough — Level 4 repurposed)', desc: 'G47 continuation — Level 4\'s freed slot, walking one Current at a time with a real "Continue →" to whatever it calls next, until a genuine terminal or a module boundary. 436 real zoomed cards.', href: '/graphify-out/galaxy_map_zoom.html' }
+    ];
+    var galaxyLogicGroup = [
+      { icon: '🧠', title: 'Galaxy Map (Level 5 — Logic)', desc: 'G17 of the ratified Galaxy Map plan — a real, curated set of "core logic" decision points (the Oracle Mode toggle, taxonomy placement scoring, the dedup-extend branch, and more), each with a verbatim rpgace_core.js excerpt checked against the live file at build time. NOT exhaustive — the hand-picked subset worth explaining in prose.', href: '/graphify-out/galaxy_map_level5.html' },
+      { icon: '📖', title: 'Galaxy Map (Logic Dimension)', desc: 'Real Aug 15 companion to Level 5 — every river-to-river connection, external connector, and skill stream as its own clickable passage, river-grouped (the same grouping unit modules already use). Where a connection has real function-level attribution, that deeper detail merges into the same passage. 96 real clickable edges across 17 rivers.', href: '/graphify-out/galaxy_map_logic_dimension.html' },
+      { icon: '🔢', title: 'Galaxy Map (Level 6 — Detailed Decision)', desc: 'G18 of the ratified Galaxy Map plan — the exhaustive, mechanical counterpart to Level 5: every real if/else-if/else/switch branch a function contains, extracted by real balanced-paren parsing. 1089 real branch points across 45 modules, listed not narrated.', href: '/graphify-out/galaxy_map_level6.html' },
+      { icon: '🚦', title: 'Galaxy Map (Decisions — Website Perspective)', desc: 'G26 Phase 1 of the ratified Galaxy Map plan — 10 real decision/human-confirmation-gate points (destructive deletes, taxonomy placement/review confirms, content pipeline reverts), grouped by what kind of decision each one asks Alex to make, cross-linked into Level 3 and Level 5. RPGACE app code only — Total-systems-wide scope (Phase 2/3) is real, deferred future work.', href: '/graphify-out/galaxy_map_decisions.html' }
+    ];
+    var galaxyDimensionGroup = [
       { icon: '📊', title: 'Galaxy Map (L0 Dimension Matrix)', desc: 'G44 — the same 7 real L0 units and 17 hand-curated dimension-edges as the L0 units page, as a 7x7 table instead of click-through. Separate from the existing module-grain Dimensions Matrix — different grain, both real.', href: '/graphify-out/galaxy_map_l0_matrix.html' },
       { icon: '🗄️', title: 'Galaxy Map (Supabase)', desc: 'G45 — every real Supabase table with a genuine client-side touch (113 of 502 real functions, 22%, across 25 tables), which Level/River/Module reads or writes each. Server-side (api/*.js) touches aren\'t reachable by this detector.', href: '/graphify-out/galaxy_map_supabase.html' },
-      { icon: '🧬', title: 'Galaxy Map (Current Series — replaces Level 3)', desc: 'G47 — the real replacement for Level 3\'s old call-chain-graph role: 436 real Currents (functions) across 45 modules, each with real input/handling/output/next detail, unit-bubbles wherever real evidence exists, and a ⭐ on the 5 functions Level 5 also curates. The old call-chain graph stays on disk for reference.', href: '/graphify-out/galaxy_map_current.html' },
-      { icon: '🔎', title: 'Galaxy Map (Zoomed Current Walkthrough — Level 4 repurposed)', desc: 'G47 continuation — Level 4\'s freed slot, walking one Current at a time with a real "Continue →" to whatever it calls next, until a genuine terminal or a module boundary. 436 real zoomed cards.', href: '/graphify-out/galaxy_map_zoom.html' },
-      { icon: '🔽', title: 'Galaxy Map (Level 3 — Function Chains, superseded, kept for reference)', desc: 'G47 (Aug 18): this page\'s own call-chain-graph role is retired — the Current Series page (above) is the real primary destination now. Every module\'s node on Level 2 still links here as a secondary reference.', href: '/graphify-out/galaxy_map_level3.html' },
-      { icon: '🖱️', title: 'Galaxy Map (Level 4 — Frontend Flow, superseded, kept for reference)', desc: 'G48 (Aug 18): this page\'s own numbered role is retired — its real dashboard-card-click evidence now feeds the Module page\'s 💉 Supabase bubble + the Alex dimension lens, and the freed "Level 4" slot is repurposed as the zoomed Current walkthrough. Kept unbroken as detailed per-card click-flow reference (rule 8).', href: '/graphify-out/galaxy_map_level4.html' },
-      { icon: '🧠', title: 'Galaxy Map (Level 5 — Logic)', desc: 'G17 of the ratified Galaxy Map plan — a real, curated set of "core logic" decision points (the Oracle Mode toggle, taxonomy placement scoring, the dedup-extend branch, and more), each with a verbatim rpgace_core.js excerpt checked against the live file at build time. NOT exhaustive — the hand-picked subset worth explaining in prose.', href: '/graphify-out/galaxy_map_level5.html' },
-      { icon: '📖', title: 'Galaxy Map (Logic Dimension)', desc: 'Real Aug 15 companion to Level 5 — every river-to-river connection, external connector, and skill stream as its own clickable passage, river-grouped (the same grouping unit modules already use). Where a connection has real function-level attribution, that deeper detail merges into the same passage. 96 real clickable edges across 16 rivers.', href: '/graphify-out/galaxy_map_logic_dimension.html' },
-      { icon: '🔢', title: 'Galaxy Map (Level 6 — Detailed Decision)', desc: 'G18 of the ratified Galaxy Map plan — the exhaustive, mechanical counterpart to Level 5: every real if/else-if/else/switch branch a function contains, extracted by real balanced-paren parsing. 1088 real branch points across 44 modules, listed not narrated.', href: '/graphify-out/galaxy_map_level6.html' },
-      { icon: '🚦', title: 'Galaxy Map (Decisions — Website Perspective)', desc: 'G26 Phase 1 of the ratified Galaxy Map plan — 10 real decision/human-confirmation-gate points (destructive deletes, taxonomy placement/review confirms, content pipeline reverts), grouped by what kind of decision each one asks Alex to make, cross-linked into Level 3 and Level 5. RPGACE app code only — Total-systems-wide scope (Phase 2/3) is real, deferred future work.', href: '/graphify-out/galaxy_map_decisions.html' },
       { icon: '🔀', title: 'Galaxy Map (Externals — UI + Backend Dimension)', desc: 'G27 of the ratified Galaxy Map plan — all 13 real external connectors, grouped by whether each genuinely touches a real UI trigger/output AND real backend processing. 5 real connectors (Anthropic, OpenMontage, Composio, Jina AI, Last.fm) touch both; the rest are honestly one-sided or not yet active.', href: '/graphify-out/galaxy_map_externals.html' },
       { icon: '🧩', title: 'Galaxy Map (Skills — AI/UI/Backend Dimension)', desc: 'G28 of the ratified Galaxy Map plan — 24 real RPGACE-authored skills, classified on whether each one reaches an external AI (Oracle or a Total-system member), touches real app UI, or touches real backend, with a real justification per skill.', href: '/graphify-out/galaxy_map_skills.html' },
       { icon: '🤝', title: 'Galaxy Map (Orchestrator ↔ OpenMontage)', desc: 'G29 of the ratified Galaxy Map plan — the real dispatch history between Orchestrator CC and OpenMontage CC, 8 real openmontage_jobs rows summarized honestly. No live session-to-session link exists — every row is a real, asynchronous Supabase message.', href: '/graphify-out/galaxy_map_orchestrator_openmontage.html' },
-      { icon: '🚪', title: 'Galaxy Map (Level 2.5 — UI/Alex Accessibility)', desc: 'G38 of the ratified Galaxy Map plan — the real generalized successor to Meanders, all 16 rivers pointing to their own real dashboard card(s), each card resolved to the real primary module containing its functions. Alex\'s own framing: regrouping rivers by what\'s accessible by UI and Alex.', href: '/graphify-out/galaxy_map_level2_5.html' },
+      { icon: '🚪', title: 'Galaxy Map (Level 2.5 — UI/Alex Accessibility)', desc: 'G38 of the ratified Galaxy Map plan — the real generalized successor to Meanders, all real rivers pointing to their own real dashboard card(s), each card resolved to the real primary module containing its functions. Alex\'s own framing: regrouping rivers by what\'s accessible by UI and Alex.', href: '/graphify-out/galaxy_map_level2_5.html' },
       { icon: '⏳', title: 'Galaxy Map (Load Dimension)', desc: 'G39 of the ratified Galaxy Map plan — 3 real, separately-tracked load-trigger categories: boot-time sequence (registerBootTask, real fire order), page-navigation triggers (page:show hooks), on-demand/click triggers (dashDeck\'s own inject-on-open idiom). Alex\'s own framing: "what ui, backend or alex trigger certain backend and ui to load... this could help tie everything together for diagnosing."', href: '/graphify-out/galaxy_map_load.html' },
-      { icon: '🧭', title: 'Galaxy Map (Dimensions Matrix)', desc: 'G30 of the ratified Galaxy Map plan — real multi-home overlap: for each of the 44 real modules, which of the 5 shipped dimensions (Externals/UI-Alex/Load/Decision/Orchestrator↔OpenMontage) it genuinely touches. A real cross-dimension ANALYSIS view, not a Level-0 replacement — the 4 galaxies stay as they are.', href: '/graphify-out/galaxy_map_dimensions.html' },
+      { icon: '🧭', title: 'Galaxy Map (Dimensions Matrix)', desc: 'G30 of the ratified Galaxy Map plan — real multi-home overlap: for each of the 45 real modules, which of the 5 shipped dimensions (Externals/UI-Alex/Load/Decision/Orchestrator↔OpenMontage) it genuinely touches. A real cross-dimension ANALYSIS view, not a Level-0 replacement — the 4 galaxies stay as they are.', href: '/graphify-out/galaxy_map_dimensions.html' },
       { icon: '🧑', title: "Galaxy Map (Alex's Decision Path)", desc: 'G37 of the ratified Galaxy Map plan — for each of the 12 real dashboard cards, the real Level-4 flow to its target module(s), then the real Y/N fork (Decisions/G26) Alex actually hits on that path, if any. A real synthesis of already-shipped data, not new detection.', href: '/graphify-out/galaxy_map_alex_path.html' }
     ];
-    addGroup('Primary — 6 file-based docs + the live taxonomy map + Smoke Test', primary, false);
-    addGroup('Auto-generated', auto, true);
-    addGroup('Working specs', secondary, true);
+    var galaxySupersededGroup = [
+      { icon: '🔽', title: 'Galaxy Map (Level 3 — Function Chains, superseded, kept for reference)', desc: 'G47 (Aug 18): this page\'s own call-chain-graph role is retired — the Current Series page (above) is the real primary destination now. Every module\'s node on Level 2 still links here as a secondary reference.', href: '/graphify-out/galaxy_map_level3.html' },
+      { icon: '🖱️', title: 'Galaxy Map (Level 4 — Frontend Flow, superseded, kept for reference)', desc: 'G48 (Aug 18): this page\'s own numbered role is retired — its real dashboard-card-click evidence now feeds the Module page\'s 💉 Supabase bubble + the Alex dimension lens, and the freed "Level 4" slot is repurposed as the zoomed Current walkthrough. Kept unbroken as detailed per-card click-flow reference (rule 8).', href: '/graphify-out/galaxy_map_level4.html' }
+    ];
+    addGroup('Primary — 6 file-based docs + the live taxonomy map + Smoke Test', primary, false, true);
+    addGroup('Auto-generated', null, true, false, [
+      { title: '🕸️ Graphify / Obsidian', items: graphifyGroup },
+      { title: '🌌 Galaxy Map — Core Chain (L0 → River → Module → Current)', items: galaxyCoreGroup },
+      { title: '🧠 Galaxy Map — Logic & Decisions', items: galaxyLogicGroup },
+      { title: '🧭 Galaxy Map — Dimension & Analysis Pages', items: galaxyDimensionGroup },
+      { title: '📦 Galaxy Map — Superseded (kept for reference)', items: galaxySupersededGroup }
+    ]);
+    addGroup('Working specs', secondary, true, false);
   },
 
   // ── P4 Knowledge Gaps popup. July 20 Pass 1: relocates the LIVE Knowledge
