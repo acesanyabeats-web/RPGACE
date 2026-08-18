@@ -93,13 +93,14 @@ from graphify_river_group import (  # noqa: E402
     dashboard_card_primary_module,
     LEVEL3_MODULES, compute_module_ui_signal, compute_cross_module_function_calls,
     attribute_river_connection_function, compute_module_oracle_call_count,
-    rivers_needing_meanders,
+    rivers_needing_meanders, compute_module_supabase_touch_count,
 )
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
 # "Human Gate — Alex" node (rule 8, one consistent identity, not a
 # per-level reinvention).
 ALEX_COLOR = '#E25454'
+SUPABASE_COLOR = '#2ABFB0'
 # Real, shared "Oracle" actor color/icon — same `#9B59B6`/`🔮` identity
 # Level 0's "Oracle (AI harness)" node and Level 3's own Oracle bubble
 # already use (rule 8). Aug 14, real evidence-driven — never forced.
@@ -302,8 +303,14 @@ def build_river_section(rnum):
         # bubble, same fixed-top-of-canvas convention.
         oracle_mods = [(m, compute_module_oracle_call_count(m)) for m in mods if m in mod_pos]
         oracle_mods = [(m, c) for m, c in oracle_mods if c > 0]
+        # Real bug fix (G48, Aug 18): ORACLE_X/ORACLE_Y must be defined
+        # unconditionally — the new Supabase bubble below anchors off
+        # ORACLE_Y regardless of whether THIS river has any real Oracle
+        # calls, and a river with zero Oracle calls used to leave these
+        # names unbound, crashing the build the moment a Supabase touch
+        # existed with no Oracle touch alongside it.
+        ORACLE_X, ORACLE_Y = W / 2, ALEX_Y + 85
         if oracle_mods:
-            ORACLE_X, ORACLE_Y = W / 2, ALEX_Y + 85
             n_calls = 0
             for m, cnt in oracle_mods:
                 n_calls += 1
@@ -320,6 +327,35 @@ def build_river_section(rnum):
                 f'<text x="{ORACLE_X}" y="{ORACLE_Y+5}" text-anchor="middle" font-size="15">🔮</text>'
                 f'<text x="{ORACLE_X}" y="{ORACLE_Y+38}" text-anchor="middle" font-size="9.5" fill="{ORACLE_COLOR}" font-weight="700">Oracle</text>'
                 f'<text x="{ORACLE_X}" y="{ORACLE_Y+50}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" opacity="0.85">{len(oracle_mods)} module(s) · {total_calls} real call(s)</text></g>'
+            )
+
+        # Real, evidence-driven "Supabase" injection-tool bubble (G48,
+        # Aug 18 2026 — Part 10's "Skills and Supabase should always be
+        # shown as an injection tool" ask, applied at Module grain per
+        # 4D.3 "modules... tying all units together"). Same real
+        # module-level-rollup pattern as the Oracle bubble immediately
+        # above (rule 8) — compute_module_supabase_touch_count(), never
+        # forced-permanent, only drawn where a real touch count exists.
+        sb_mods = [(m, compute_module_supabase_touch_count(m)) for m in mods if m in mod_pos]
+        sb_mods = [(m, cnt, n_tot, tabs) for m, (cnt, n_tot, tabs) in sb_mods if n_tot > 0]
+        if sb_mods:
+            SB_X, SB_Y = W / 2, ORACLE_Y + 85
+            n_sb = 0
+            for m, _fcnt, n_tot, _tabs in sb_mods:
+                n_sb += 1
+                mx, my = mod_pos[m]
+                sx = SB_X + (n_sb * 15 if n_sb % 2 == 0 else -n_sb * 15)
+                edges_svg.append(_curved_edge(mx, my, sx, SB_Y, SUPABASE_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5))
+                lx, ly = (mx + sx) / 2, (my + SB_Y) / 2
+                nodes_svg.append(f'<circle cx="{lx}" cy="{ly}" r="8" fill="#0f0f1a" stroke="{SUPABASE_COLOR}" stroke-width="1"/>'
+                                  f'<text x="{lx}" y="{ly+3}" text-anchor="middle" font-size="8" fill="{SUPABASE_COLOR}" font-weight="700">{n_tot}</text>')
+            edge_colors_used.add(SUPABASE_COLOR)
+            total_sb = sum(n_tot for _m, _fcnt, n_tot, _tabs in sb_mods)
+            nodes_svg.append(
+                f'<g class="node"><circle cx="{SB_X}" cy="{SB_Y}" r="24" fill="#0f0f1a" stroke="{SUPABASE_COLOR}" stroke-width="3" filter="url(#glow)"/>'
+                f'<text x="{SB_X}" y="{SB_Y+5}" text-anchor="middle" font-size="15">💉</text>'
+                f'<text x="{SB_X}" y="{SB_Y+38}" text-anchor="middle" font-size="9.5" fill="{SUPABASE_COLOR}" font-weight="700">Supabase</text>'
+                f'<text x="{SB_X}" y="{SB_Y+50}" text-anchor="middle" font-size="7.5" fill="{SUPABASE_COLOR}" opacity="0.85">{len(sb_mods)} module(s) · {total_sb} real injection(s)</text></g>'
             )
 
         # Real z-order + spacing fix (Alex's own direct ask): "the

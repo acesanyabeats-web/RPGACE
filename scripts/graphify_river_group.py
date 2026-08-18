@@ -1393,6 +1393,22 @@ def compute_supabase_table_touches(module_name, core_js_path: Path = CORE_JS):
     return out
 
 
+def compute_module_supabase_touch_count(module_name, core_js_path: Path = CORE_JS):
+    """Real, MODULE-granularity aggregate (G48, Aug 18 2026) — same
+    real sum-of-real-function-counts pattern as
+    compute_module_oracle_call_count() (rule 8), for the new Supabase
+    injection-tool bubble at Level 2/Module grain. Returns
+    (n_functions_touching, n_total_touches, {table_name, ...})."""
+    touches = compute_supabase_table_touches(module_name, core_js_path)
+    tables = set()
+    n_total = 0
+    for ops in touches.values():
+        for _op, tbl in ops:
+            tables.add(tbl)
+            n_total += 1
+    return len(touches), n_total, tables
+
+
 def compute_all_supabase_table_touches(core_js_path: Path = CORE_JS):
     """Real, project-wide roll-up — {table_name: [(module, func, op), ...]}
     — every real function that touches each table, module-grouped

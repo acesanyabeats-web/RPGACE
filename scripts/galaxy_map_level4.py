@@ -211,9 +211,9 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map_level5.html">🧠 Level 5</a>
 </div>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 4</div>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 4 (superseded, kept for reference)</div>
   <h1>🖱️ Real Frontend Flow, Per Dashboard Card</h1>
-  <p>All {n_cards} of 12 real dashboard cards (<code>dashDeck.MODULES</code>) shown. Click a card below to see what actually happens on click — which page/popup opens, real DOM/button evidence, and real links back down to <a href="galaxy_map_level3.html">Level 3</a>'s own function-chain pages. Reached from <a href="galaxy_map_module.html">Level 2</a>'s own diamond nodes.</p>
+  <p><b>G48, Aug 18 — this page's own numbered role is retired.</b> Its real dashboard-card-click evidence is folded into <a href="galaxy_map_module.html">the Module page</a>'s own new 💉 Supabase injection bubble and the Alex↔RPGACE-Architecture dimension lens (<a href="galaxy_map_l0_units.html">L0 units</a>) — the freed "Level 4" slot is repurposed as <a href="galaxy_map_zoom.html">the zoomed Current walkthrough</a>. This page stays on disk, real and unbroken, as detailed per-card click-flow reference (rule 8 — real content never destroyed, just no longer the primary destination). All {n_cards} of 12 real dashboard cards (<code>dashDeck.MODULES</code>) shown below.</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}
