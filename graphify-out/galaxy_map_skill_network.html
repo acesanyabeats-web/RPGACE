@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Skill Composition Network)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --orange:#E2A83D; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #1a1610 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:900px;margin:0 auto}
+  .breadcrumb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}
+  .breadcrumb a{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
+  .breadcrumb a:hover{color:var(--orange);border-color:var(--orange)}
+  .breadcrumb .bc-here{color:#1a0f04;background:var(--orange);padding:4px 9px;border-radius:12px}
+  .breadcrumb .bc-sep{color:#4a4a58}
+  .tabs{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .tab{padding:4px 10px;border-radius:14px;font-size:9.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}
+  .tab.active{background:var(--orange);color:#1a0f04;font-weight:700}
+  .wrap{max-width:900px;margin:0 auto;padding:24px}
+  .shead{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  .shead h2{font-family:'Cascadia Code','Fira Mono',monospace;font-size:18px;color:var(--gold)}
+  .pcount{font-size:10px;color:var(--orange);font-weight:700}
+  .modline{font-size:11px;color:var(--dim);margin-bottom:14px}
+  .passage{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 12px;margin-bottom:8px}
+  .passage summary{cursor:pointer;font-size:12px;font-weight:700;color:#E2E2EC;list-style:none;font-family:'Cascadia Code','Fira Mono',monospace}
+  .passage summary::-webkit-details-marker{display:none}
+  .passage summary::before{content:'▶ ';color:var(--orange);font-size:9px}
+  .passage[open] summary::before{content:'▼ '}
+  .passage p{font-size:11px;color:#b8b8c8;line-height:1.6;margin-top:8px}
+  .empty-note{font-size:11px;color:var(--dim);font-style:italic}
+  .note{max-width:900px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  a{color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="breadcrumb">
+  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_skills.html">🧩 Skills (G28)</a><span class="bc-sep">→</span>
+  <span class="bc-here">🕸️ Skill Composition Network</span>
+</div>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skill Composition Network (G36)</div>
+  <h1>🕸️ Skill Composition Network — Which Skills Build Other Skills</h1>
+  <p>Real, distinct from the AI/UI/Backend dimension (G28/Skills page) — this is skill-CALLS-skill composition: 117 real invocations across 24 skills, mechanically detected from each skill's own SKILL.md prose (a real `/otherSkillName` mention), never invented. Click any invocation to see it named.</p>
+</div>
+<div class="tabs"><div class="tab" data-target="skillnet-5thDimension">/5thDimension</div><div class="tab" data-target="skillnet-Bedtime">/Bedtime</div><div class="tab" data-target="skillnet-CEO">/CEO</div><div class="tab" data-target="skillnet-Engineer">/Engineer</div><div class="tab" data-target="skillnet-Regeneration">/Regeneration</div><div class="tab" data-target="skillnet-Routine">/Routine</div><div class="tab" data-target="skillnet-Summary">/Summary</div><div class="tab" data-target="skillnet-cartographer">/cartographer</div><div class="tab" data-target="skillnet-colourgradient">/colourgradient</div><div class="tab" data-target="skillnet-debate">/debate</div><div class="tab" data-target="skillnet-decompress">/decompress</div><div class="tab" data-target="skillnet-drift">/drift</div><div class="tab" data-target="skillnet-free-for-all-debate">/free-for-all-debate</div><div class="tab" data-target="skillnet-impeccable">/impeccable</div><div class="tab" data-target="skillnet-interrogation">/interrogation</div><div class="tab" data-target="skillnet-investor">/investor</div><div class="tab" data-target="skillnet-loggingregen">/loggingregen</div><div class="tab" data-target="skillnet-misunderstanding">/misunderstanding</div><div class="tab" data-target="skillnet-omnitrix">/omnitrix</div><div class="tab" data-target="skillnet-paranoia">/paranoia</div><div class="tab" data-target="skillnet-perspective">/perspective</div><div class="tab" data-target="skillnet-restructure">/restructure</div><div class="tab" data-target="skillnet-scope">/scope</div><div class="tab" data-target="skillnet-update-logging-system">/update-logging-system</div></div>
+<div class="wrap"><section class="ssection" id="skillnet-5thDimension" style="display:none">
+  <div class="shead"><h2>/5thDimension</h2><span class="pcount">2 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /Engineer, /Routine, /Summary, /drift, /free-for-all-debate, /interrogation, /paranoia, /restructure, /update-logging-system</p>
+  <details class="passage"><summary>→ /debate</summary><p>5thDimension invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>5thDimension invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-Bedtime" style="display:none">
+  <div class="shead"><h2>/Bedtime</h2><span class="pcount">2 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /drift, /impeccable, /update-logging-system</p>
+  <details class="passage"><summary>→ /CEO</summary><p>Bedtime invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>Bedtime invokes /Routine as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-CEO" style="display:none">
+  <div class="shead"><h2>/CEO</h2><span class="pcount">13 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /Bedtime, /Engineer, /Routine, /Summary, /cartographer, /colourgradient, /decompress, /misunderstanding, /perspective</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>CEO invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>CEO invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>CEO invokes /Routine as part of its own documented sequence.</p></details><details class="passage"><summary>→ /cartographer</summary><p>CEO invokes /cartographer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /colourgradient</summary><p>CEO invokes /colourgradient as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>CEO invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /interrogation</summary><p>CEO invokes /interrogation as part of its own documented sequence.</p></details><details class="passage"><summary>→ /investor</summary><p>CEO invokes /investor as part of its own documented sequence.</p></details><details class="passage"><summary>→ /misunderstanding</summary><p>CEO invokes /misunderstanding as part of its own documented sequence.</p></details><details class="passage"><summary>→ /paranoia</summary><p>CEO invokes /paranoia as part of its own documented sequence.</p></details><details class="passage"><summary>→ /perspective</summary><p>CEO invokes /perspective as part of its own documented sequence.</p></details><details class="passage"><summary>→ /restructure</summary><p>CEO invokes /restructure as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>CEO invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-Engineer" style="display:none">
+  <div class="shead"><h2>/Engineer</h2><span class="pcount">9 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /decompress, /free-for-all-debate, /misunderstanding, /paranoia, /perspective, /restructure, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>Engineer invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /CEO</summary><p>Engineer invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Regeneration</summary><p>Engineer invokes /Regeneration as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>Engineer invokes /Routine as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>Engineer invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /decompress</summary><p>Engineer invokes /decompress as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>Engineer invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /omnitrix</summary><p>Engineer invokes /omnitrix as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>Engineer invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-Regeneration" style="display:none">
+  <div class="shead"><h2>/Regeneration</h2><span class="pcount">1 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /Engineer</p>
+  <details class="passage"><summary>→ /scope</summary><p>Regeneration invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-Routine" style="display:none">
+  <div class="shead"><h2>/Routine</h2><span class="pcount">4 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /Bedtime, /CEO, /Engineer, /Summary, /drift, /free-for-all-debate, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>Routine invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /CEO</summary><p>Routine invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>Routine invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>Routine invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-Summary" style="display:none">
+  <div class="shead"><h2>/Summary</h2><span class="pcount">5 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /free-for-all-debate, /impeccable, /paranoia, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>Summary invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /CEO</summary><p>Summary invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>Summary invokes /Routine as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>Summary invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>Summary invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-cartographer" style="display:none">
+  <div class="shead"><h2>/cartographer</h2><span class="pcount">6 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /colourgradient, /omnitrix, /perspective, /scope</p>
+  <details class="passage"><summary>→ /CEO</summary><p>cartographer invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>cartographer invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /misunderstanding</summary><p>cartographer invokes /misunderstanding as part of its own documented sequence.</p></details><details class="passage"><summary>→ /paranoia</summary><p>cartographer invokes /paranoia as part of its own documented sequence.</p></details><details class="passage"><summary>→ /perspective</summary><p>cartographer invokes /perspective as part of its own documented sequence.</p></details><details class="passage"><summary>→ /restructure</summary><p>cartographer invokes /restructure as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-colourgradient" style="display:none">
+  <div class="shead"><h2>/colourgradient</h2><span class="pcount">8 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /paranoia, /perspective, /update-logging-system</p>
+  <details class="passage"><summary>→ /CEO</summary><p>colourgradient invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /cartographer</summary><p>colourgradient invokes /cartographer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>colourgradient invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>colourgradient invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /investor</summary><p>colourgradient invokes /investor as part of its own documented sequence.</p></details><details class="passage"><summary>→ /paranoia</summary><p>colourgradient invokes /paranoia as part of its own documented sequence.</p></details><details class="passage"><summary>→ /perspective</summary><p>colourgradient invokes /perspective as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>colourgradient invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-debate" style="display:none">
+  <div class="shead"><h2>/debate</h2><span class="pcount">0 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /5thDimension, /Engineer, /Routine, /Summary, /colourgradient, /free-for-all-debate, /interrogation, /loggingregen, /paranoia, /restructure</p>
+  <div class="empty-note">No real outgoing invocation of another skill.</div>
+</section><section class="ssection" id="skillnet-decompress" style="display:none">
+  <div class="shead"><h2>/decompress</h2><span class="pcount">3 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /Engineer</p>
+  <details class="passage"><summary>→ /CEO</summary><p>decompress invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>decompress invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /paranoia</summary><p>decompress invokes /paranoia as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-drift" style="display:none">
+  <div class="shead"><h2>/drift</h2><span class="pcount">5 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /Engineer, /cartographer, /colourgradient, /misunderstanding, /omnitrix, /perspective, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>drift invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Bedtime</summary><p>drift invokes /Bedtime as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>drift invokes /Routine as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>drift invokes /scope as part of its own documented sequence.</p></details><details class="passage"><summary>→ /update-logging-system</summary><p>drift invokes /update-logging-system as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-free-for-all-debate" style="display:none">
+  <div class="shead"><h2>/free-for-all-debate</h2><span class="pcount">6 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /loggingregen, /paranoia</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>free-for-all-debate invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>free-for-all-debate invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>free-for-all-debate invokes /Routine as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Summary</summary><p>free-for-all-debate invokes /Summary as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>free-for-all-debate invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>free-for-all-debate invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-impeccable" style="display:none">
+  <div class="shead"><h2>/impeccable</h2><span class="pcount">2 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: none</p>
+  <details class="passage"><summary>→ /Bedtime</summary><p>impeccable invokes /Bedtime as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Summary</summary><p>impeccable invokes /Summary as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-interrogation" style="display:none">
+  <div class="shead"><h2>/interrogation</h2><span class="pcount">2 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /paranoia, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>interrogation invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>interrogation invokes /debate as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-investor" style="display:none">
+  <div class="shead"><h2>/investor</h2><span class="pcount">2 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /colourgradient</p>
+  <details class="passage"><summary>→ /paranoia</summary><p>investor invokes /paranoia as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>investor invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-loggingregen" style="display:none">
+  <div class="shead"><h2>/loggingregen</h2><span class="pcount">3 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: none</p>
+  <details class="passage"><summary>→ /debate</summary><p>loggingregen invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /free-for-all-debate</summary><p>loggingregen invokes /free-for-all-debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>loggingregen invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-misunderstanding" style="display:none">
+  <div class="shead"><h2>/misunderstanding</h2><span class="pcount">4 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /cartographer, /update-logging-system</p>
+  <details class="passage"><summary>→ /CEO</summary><p>misunderstanding invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>misunderstanding invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>misunderstanding invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>misunderstanding invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-omnitrix" style="display:none">
+  <div class="shead"><h2>/omnitrix</h2><span class="pcount">4 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /Engineer, /paranoia, /restructure</p>
+  <details class="passage"><summary>→ /cartographer</summary><p>omnitrix invokes /cartographer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>omnitrix invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /restructure</summary><p>omnitrix invokes /restructure as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>omnitrix invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-paranoia" style="display:none">
+  <div class="shead"><h2>/paranoia</h2><span class="pcount">11 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /cartographer, /colourgradient, /decompress, /investor, /perspective, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>paranoia invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>paranoia invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Summary</summary><p>paranoia invokes /Summary as part of its own documented sequence.</p></details><details class="passage"><summary>→ /colourgradient</summary><p>paranoia invokes /colourgradient as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>paranoia invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /free-for-all-debate</summary><p>paranoia invokes /free-for-all-debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /interrogation</summary><p>paranoia invokes /interrogation as part of its own documented sequence.</p></details><details class="passage"><summary>→ /omnitrix</summary><p>paranoia invokes /omnitrix as part of its own documented sequence.</p></details><details class="passage"><summary>→ /perspective</summary><p>paranoia invokes /perspective as part of its own documented sequence.</p></details><details class="passage"><summary>→ /restructure</summary><p>paranoia invokes /restructure as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>paranoia invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-perspective" style="display:none">
+  <div class="shead"><h2>/perspective</h2><span class="pcount">7 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /cartographer, /colourgradient, /paranoia</p>
+  <details class="passage"><summary>→ /CEO</summary><p>perspective invokes /CEO as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>perspective invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /cartographer</summary><p>perspective invokes /cartographer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /colourgradient</summary><p>perspective invokes /colourgradient as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>perspective invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /paranoia</summary><p>perspective invokes /paranoia as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>perspective invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-restructure" style="display:none">
+  <div class="shead"><h2>/restructure</h2><span class="pcount">5 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /CEO, /cartographer, /omnitrix, /paranoia, /update-logging-system</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>restructure invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>restructure invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /debate</summary><p>restructure invokes /debate as part of its own documented sequence.</p></details><details class="passage"><summary>→ /omnitrix</summary><p>restructure invokes /omnitrix as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>restructure invokes /scope as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-scope" style="display:none">
+  <div class="shead"><h2>/scope</h2><span class="pcount">1 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /5thDimension, /CEO, /Engineer, /Regeneration, /Routine, /Summary, /colourgradient, /drift, /free-for-all-debate, /investor, /loggingregen, /misunderstanding, /omnitrix, /paranoia, /perspective, /restructure, /update-logging-system</p>
+  <details class="passage"><summary>→ /cartographer</summary><p>scope invokes /cartographer as part of its own documented sequence.</p></details>
+</section><section class="ssection" id="skillnet-update-logging-system" style="display:none">
+  <div class="shead"><h2>/update-logging-system</h2><span class="pcount">12 real outgoing invocation(s)</span></div>
+  <p class="modline">Invoked BY: /drift</p>
+  <details class="passage"><summary>→ /5thDimension</summary><p>update-logging-system invokes /5thDimension as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Bedtime</summary><p>update-logging-system invokes /Bedtime as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Engineer</summary><p>update-logging-system invokes /Engineer as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Routine</summary><p>update-logging-system invokes /Routine as part of its own documented sequence.</p></details><details class="passage"><summary>→ /Summary</summary><p>update-logging-system invokes /Summary as part of its own documented sequence.</p></details><details class="passage"><summary>→ /colourgradient</summary><p>update-logging-system invokes /colourgradient as part of its own documented sequence.</p></details><details class="passage"><summary>→ /drift</summary><p>update-logging-system invokes /drift as part of its own documented sequence.</p></details><details class="passage"><summary>→ /interrogation</summary><p>update-logging-system invokes /interrogation as part of its own documented sequence.</p></details><details class="passage"><summary>→ /misunderstanding</summary><p>update-logging-system invokes /misunderstanding as part of its own documented sequence.</p></details><details class="passage"><summary>→ /paranoia</summary><p>update-logging-system invokes /paranoia as part of its own documented sequence.</p></details><details class="passage"><summary>→ /restructure</summary><p>update-logging-system invokes /restructure as part of its own documented sequence.</p></details><details class="passage"><summary>→ /scope</summary><p>update-logging-system invokes /scope as part of its own documented sequence.</p></details>
+</section></div>
+<div class="note">
+  Generated by <code>scripts/galaxy_map_skill_network.py</code>, reusing <code>galaxy_map_skills.py</code>'s own real 24-skill
+  <code>SKILLS</code> dict as the canonical name list (rule 8). G36 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
+  Honest scope limit: only a real `/name` slash-mention counts — a skill referenced only by prose description is invisible to
+  this detector. Mapping rules: <code>system_map_spec.md</code>.
+</div>
+<script>
+(function() {
+  var tabs = document.querySelectorAll('.tab');
+  var sections = document.querySelectorAll('.ssection');
+  function show(id) {
+    sections.forEach(function(s) { s.style.display = (s.id === id) ? '' : 'none'; });
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.target === id); });
+  }
+  tabs.forEach(function(t) { t.addEventListener('click', function() { location.hash = t.dataset.target; }); });
+  window.addEventListener('hashchange', function() {
+    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
+    show(id);
+  });
+  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
+  show(id0);
+})();
+</script>
+</body>
+</html>

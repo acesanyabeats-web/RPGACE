@@ -99,17 +99,32 @@ def esc(s):
 
 def build_group_section(grp):
     members = [(name, s) for name, s in SKILLS.items() if grp['test'](s)]
+    # Aug 15 (G35, real Alex ask: "i want these skills to show adjacent
+    # bubbles to each path it auto combines with") — real, bounded visual
+    # fix: the 3 axis markers move from separate flat table COLUMNS to
+    # real small bubble badges rendered directly ADJACENT to the skill
+    # name (one cell, not three), reusing the exact bubble visual
+    # language (small rounded pill, colored border) already established
+    # at Level 3 for the Oracle/Composio actor bubbles — never a new
+    # visual vocabulary invented for this one page. Each row also gets a
+    # real cross-link into the new Skill Composition Network (G36) —
+    # ties the two "skill dimensions" together the way Alex asked for
+    # this whole session ("tie everything together").
+    def _bubbles(s):
+        b = []
+        if s['ai']: b.append('<span class="axbubble ax-ai" title="Touches external AI">🔮</span>')
+        if s['ui']: b.append('<span class="axbubble ax-ui" title="Touches real app UI">🖥️</span>')
+        if s['backend']: b.append('<span class="axbubble ax-be" title="Touches real backend">🗄️</span>')
+        return ''.join(b) or '<span class="axbubble ax-none" title="No real axis touched">💭</span>'
     rows = ''.join(
-        f'<tr><td class="skname">/{esc(name)}</td>'
-        f'<td class="skicon">{"🔮" if s["ai"] else ""}</td>'
-        f'<td class="skicon">{"🖥️" if s["ui"] else ""}</td>'
-        f'<td class="skicon">{"🗄️" if s["backend"] else ""}</td>'
+        f'<tr><td class="skname">/{esc(name)} {_bubbles(s)} '
+        f'<a class="netlink" href="galaxy_map_skill_network.html#skillnet-{esc(name)}" title="Skill Composition Network">🕸️</a></td>'
         f'<td class="sknote">{esc(s["note"])}</td></tr>'
         for name, s in members
     )
     return f'''<section class="gsection" id="grp-{grp['id']}" style="display:none">
   <div class="ghead"><h2>{grp['label']}</h2><span class="gcount">{len(members)} real skill(s)</span></div>
-  <table class="sktable"><thead><tr><th>Skill</th><th>AI</th><th>UI</th><th>Backend</th><th>Real justification</th></tr></thead>
+  <table class="sktable"><thead><tr><th>Skill (axis bubbles + network link)</th><th>Real justification</th></tr></thead>
   <tbody>{rows}</tbody></table>
 </section>'''
 
@@ -145,6 +160,10 @@ TEMPLATE = """<!DOCTYPE html>
   .sktable td{{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top}}
   .skname{{font-family:'Cascadia Code','Fira Mono',monospace;font-weight:700;color:var(--gold);white-space:nowrap}}
   .skicon{{text-align:center;font-size:13px}}
+  .axbubble{{display:inline-block;font-size:11px;padding:1px 5px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);margin-left:3px}}
+  .axbubble.ax-none{{opacity:0.5}}
+  .netlink{{margin-left:6px;text-decoration:none;font-size:11px;opacity:0.7}}
+  .netlink:hover{{opacity:1}}
   .sknote{{color:#c8c8d8;line-height:1.5}}
   a{{color:var(--orange)}}
   .note{{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
@@ -155,7 +174,8 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_decisions.html">🚦 Decisions</a><span class="bc-sep">→</span>
   <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
-  <span class="bc-here">🧩 Skills</span>
+  <span class="bc-here">🧩 Skills</span><span class="bc-sep">→</span>
+  <a href="galaxy_map_skill_network.html">🕸️ Skill Composition Network</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skills (G28)</div>

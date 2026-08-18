@@ -14,6 +14,7 @@ RPGACE's oversight docs have repeatedly gone stale or described things as "done"
 - The user says "/scope" or "update oversight" for a session covering more than a couple of commits.
 - Before a "session ended here" wrap-up card in `patch_notes.html`.
 - Whenever a doc's claim needs checking against reality — this skill's evidence-gathering step doubles as a drift-check (three real doc-drift corrections were caught exactly this way on July 20). **Aug 11**: when this happens, run the `drift` sibling skill's Steps 4-5 on the specific finding instead of just flagging the mismatch informally — gives it a real VERDICT/BASIS/grade instead of an ungraded note.
+- **Aug 15 (G32, real verdict decided Aug 14): whenever the session's own touched work sits anywhere in the Galaxy→River→Module→Connector mapping hierarchy** (a change to `scripts/graphify_river_group.py`'s real data, a new Galaxy Map level/dimension, a new/changed river or module marker), this evidence pass also runs `.claude/skills/cartographer/SKILL.md`'s own trickle-down/up cross-reference — conditional, not mandatory on every `/scope` call, same shape as the existing `drift` conditional trigger directly above. A `/scope` sweep that never touches the mapping hierarchy skips this step entirely, no ceremony added for unrelated work.
 
 ## What to gather (real evidence, never a doc's own claim)
 

@@ -136,6 +136,36 @@ async function callOracle(messages, system, maxTokens=1000, onChunk){
   if (window.RPGACE && RPGACE.modules.mockOracle && RPGACE.modules.mockOracle.isFallbackMode()) {
     return RPGACE.modules.mockOracle._queueScoutItem(messages, system, onChunk);
   }
+  // G34 Level 1 (Aug 15 2026, real /CEO plan item) — a real, separate
+  // axis: WHICH provider answers a genuine real call, not whether one
+  // happens at all. Checked inside this same function, same reasoning as
+  // the mockOracle checks above (never a 4th outer window.callOracle
+  // wrap). Real, load-bearing landmine avoided: api/oracle.js's own
+  // `provider` branch runs BEFORE its `stream` branch and always returns
+  // plain JSON, never SSE — so this always sends `stream:false`
+  // regardless of whether the caller passed an onChunk, and forwards the
+  // real final text to onChunk ONCE at the end so a streaming caller's
+  // UI still renders correctly (an honest UX difference for this mode —
+  // no word-by-word animation — not a silent bug). Dormant until a real
+  // MOONSHOT_API_KEY/OPENAI_API_KEY is configured server-side; until
+  // then this fails loud with api/oracle.js's own honest error text.
+  if (window.RPGACE && RPGACE.modules.oracleProviderMode && RPGACE.modules.oracleProviderMode.isExternal()) {
+    const providerName = RPGACE.modules.oracleProviderMode.getProviderName();
+    let res;
+    try {
+      res = await fetch('/api/oracle', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({messages, system, maxTokens, provider: providerName})
+      });
+    } catch(e) { throw new Error('Cannot reach /api/oracle — check Vercel deployment. ' + e.message); }
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { throw new Error('Oracle returned non-JSON: ' + text.slice(0,100)); }
+    if(!res.ok) throw new Error(data.error || (providerName + ' error ' + res.status));
+    if (onChunk && data.content && data.content[0]) onChunk(data.content[0].text || '');
+    return data;
+  }
   if (onChunk) {
     let res;
     try {

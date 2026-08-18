@@ -49,6 +49,8 @@ check git log — never trust a doc's own claim), and classify. This is the
 expensive, honest part — do not skip straight to assigning colors without
 this step for each item.
 
+**Step 2b — Real 3-axis grounding, where it genuinely applies (G33, Aug 15 2026, Alex's own verbatim ask): "i want colourgradient to also work with all three axes to make it the ultimate smoke test update, use that as grounding tool data (same for possible error logs)."** When the item being benchmarked corresponds to a real G27 external connector (`galaxy_map_externals.html`) or a real G28 skill (`galaxy_map_skills.html`), pull that page's own already-computed AI/UI/Backend axis evidence in as ADDITIONAL grounding for Step 2's `/drift` verdict — never a replacement for it, an extra real citation. A connector/skill that's real-and-verified on 2+ axes is stronger, more specific evidence for green than a single file:line alone; one that's genuinely un-cited on all 3 axes is itself a signal worth noting in the color's evidence trail. **Real, honest scope limit, stated plainly (not claimed as universal coverage)**: not every `ceo_plan_items`/`error_log` row maps cleanly onto one of G27's 13 connectors or G28's 24 skills — this step applies per-row judgment, and a row with no real axis-page counterpart simply skips it and falls back to Step 2's own plain `/drift` evidence, same as before this addition existed.
+
 **Step 3 — Map VERDICT+evidence to a color, per item (4 colors, Aug 11 2026
 extension — Alex's own real commitment-level system, not just a build-
 status readout):**
@@ -120,7 +122,12 @@ with the rest of the oversight system, not just report to chat:
   smallest scope has a trackable identifier once it regresses, and its
   `backtrack_note` doubles as the real "how to possibly fix it" text
   shown alongside the purple card — one diagnosis, cited in both places,
-  never written twice.
+  never written twice. **Aug 15 (G33, "same for possible error logs")**:
+  when Step 2b found real G27/G28 axis grounding for this item, that same
+  citation goes into the `error_log` row's `rationale`/`backtrack_note`
+  too — which axis regressed (a connector that lost its UI trigger, a
+  skill that stopped touching backend) is often the sharpest real diagnosis
+  available, cheaper to state than re-deriving one from scratch.
 - `ceo_plan_items.status` is the single shared source of truth both this
   routing step and `future_integrations.html`'s own snapshot render read
   from — never derive the two independently (rule 8).
