@@ -593,6 +593,11 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 
+<div class="breadcrumb" style="text-align:center;padding:12px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px">
+  <a href="galaxy_map_l0_units.html" style="color:#8a8a9a;text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)">🌌 L0 — 7 Units</a>
+  <span style="color:#4a4a58"> → </span>
+  <span style="color:#0a0a0f;background:#C9A84C;padding:4px 9px;border-radius:12px">🏛️ RPGACE Architecture's own content</span>
+</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 The Galaxy Map</h1>
