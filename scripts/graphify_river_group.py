@@ -320,7 +320,7 @@ RIVER_MODULES = {
     1: ['authGate'],
     2: ['pathRouter'],
     3: ['oracleAppGrounding', 'oracleTreeGrounding', 'oracleFetchGuard',
-        'oracleDevBridge', 'mockOracle', 'agentsIntoOracle', 'prodOraclePanel',
+        'oracleDevBridge', 'mockOracle', 'oracleProviderMode', 'agentsIntoOracle', 'prodOraclePanel',
         'instaOraclePanel', 'youtubeOracle', 'tiktokOracle', 'scheduleOracle',
         'feynman'],
     4: ['bookworm'],
