@@ -521,6 +521,69 @@ Real, distinct claims extracted:
      then break it down into new tracked G-steps for Loop 2 execution.
 
 =====================================================================
+PART 4E — REAL EXTENSION: Level 3 replaced by a Current-series, Level 4
+repurposed as the zoomed Current walkthrough, verbatim
+=====================================================================
+
+Alex's own words, in direct response to "Level 3 stays... Current becomes
+its new tab":
+
+"i think we can replace it tbh (Level 3 (function-call chains) stays --
+you didn't name it, and Current becomes its new tab rather than
+replacing it.) if each river is defined to one module, then level 3
+will be a series of currents and its logic, then level 4 is each
+current viewed in zoom, following current after current until a new
+modules is reached. run /interrogation and /paranoia for this"
+
+Real, distinct claims extracted:
+
+4E.1 Level 3's OLD role (a per-module function-call-chain graph) gets
+     replaced, not extended with a bolted-on tab: Level 3 becomes "a
+     series of Currents and its logic" -- a compact, ordered, per-module
+     list of that module's own real Currents.
+
+4E.2 Level 4 (already slated by G48 to lose its OLD role -- dashboard-
+     card click flow, folding into Module/the Alex-lens) gets REPURPOSED
+     with a new role: "each current viewed in zoom, following current
+     after current until a new modules is reached" -- a real, linear
+     zoomed walkthrough, one Current at a time, stopping naturally when
+     the chain crosses into a different module.
+
+4E.3 A genuine, explicitly conditional structural question floated
+     alongside it: "if each river is defined to one module" -- does
+     river cardinality need to become strictly 1-module-per-river for
+     this Level 3/4 model to make sense, or can it stand on its own
+     regardless of how many modules end up sharing a river?
+
+4E.4 Explicit process ask: run REAL /interrogation (resolve the real
+     forks directly) and REAL /paranoia (scrutinize before locking in)
+     -- not guessed.
+
+Real /interrogation run (2 questions, both answered as recommended):
+  - River cardinality: EMERGENT, not forced. G49's already-scoped
+    interaction+goal closer look (rivers III/V/VII) determines real
+    per-river module count going forward -- no blanket "split every
+    river to 1 module" rule. Real numbers grounding this: 5 of 11
+    code-bearing rivers are already 1:1; forcing the rest would jump the
+    project from 16 to 50 total top-level groupings and discard the
+    already-locked Part 6 reconciled approach -- not done.
+  - Current-walk scope: PER-MODULE, not per-river. Level 3/4's new roles
+    (4E.1/4E.2) apply identically to a module regardless of how many
+    siblings share its river -- "reaching a new module" (the real,
+    already-built compute_cross_module_function_calls() signal) is the
+    natural stop, whether that module is in the same river or a
+    different one.
+
+Real /paranoia payoff: this DECOUPLES a genuinely good, buildable UX
+idea (the Level 3/4 redefinition) from a much riskier, unnecessary
+structural forcing (making every river exactly 1 module) that would have
+undone real, evidence-backed work already locked in earlier this same
+session (Part 6, G49). The good idea ships; the risky one doesn't need
+to, and G49's own already-planned evidence-driven work may still
+naturally arrive at something close to 1:1 for several rivers over
+time -- exactly as designed, never forced.
+
+=====================================================================
 PART 5 — NEXT STEPS (per /CEO Loop 1)
 =====================================================================
 Step 1 (this file): COMPLETE.

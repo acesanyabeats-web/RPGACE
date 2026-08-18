@@ -624,6 +624,67 @@ River lowest-to-highest model (Part 4D of the spec)
     execution actually starts on that specific item.
 
 =====================================================================
+PART 9 — REAL EXTENSION: Level 3 replaced, Level 4 repurposed (Part 4E)
+=====================================================================
+
+9.1 /interrogation, run per Alex's explicit ask — both real forks
+    resolved as the recommended option:
+      - River cardinality: EMERGENT (G49's existing evidence-driven
+        III/V/VII closer look decides real per-river module count going
+        forward) — NOT a forced blanket "every river becomes exactly 1
+        module" rule. Real grounding number: forcing it now would take
+        the project from 16 to 50 total top-level groupings and discard
+        Part 6's already-locked reconciled approach for no real gain —
+        confirmed the right call not to force it.
+      - Current-walk scope: PER-MODULE, not per-river. "Reaching a new
+        module" (the already-built cross-module-call detector) is the
+        real stop, independent of river boundaries.
+
+9.2 /paranoia payoff: this DECOUPLES the good Level 3/4 UX idea from the
+    much riskier river-cardinality-forcing idea Alex floated alongside
+    it — the good idea ships in full, the risky one doesn't need
+    forcing (G49's own real evidence-driven work may still arrive at
+    something close to 1:1 for individual rivers over time, exactly as
+    already designed).
+
+9.3 CONCRETE, REVISED SHAPE — G47 and G48 updated in place (not two new
+    items; this refines their already-tracked scope, rule 8):
+
+      G47 (revised) — Level 3's OLD role (a per-module function-call-
+        chain graph) is RETIRED, not extended with a bolted-on tab.
+        Level 3's new role: a compact, ordered, per-module list of that
+        module's own real Currents (absorbing Level 6's exhaustive
+        branch data + Level 5's curated `decider` framing, kept as a
+        real "⭐ notable" tag — same fold-not-delete verdict as Part 8,
+        unchanged by this revision).
+
+      G48 (revised) — Level 4's OLD role (dashboard-card click flow) is
+        RETIRED, folded into the Module page + the Alex<->RPGACE-
+        Architecture dimension lens (unchanged from Part 8). Level 4's
+        FREED slot gets a genuinely NEW role: the zoomed, per-Current
+        detail walkthrough — click a Current from Level 3's list, see
+        its full input/handling/output/next breakdown (4D.2/7B.2's
+        unit-bubble-tying), and keep walking forward, Current after
+        Current, until the chain crosses into a different module (the
+        real, already-built compute_cross_module_function_calls()
+        signal) — the natural, evidence-backed hand-off point to that
+        module's own Level 3 list.
+
+    This is a genuinely cleaner design than the original G47/G48 split
+    (a bolted-on tab plus a separately-retired page) — Level 3 and
+    Level 4's OWN numbered slots get real, coherent new jobs instead of
+    one page growing an extra tab and the other simply disappearing.
+
+    G49 (river v2, unchanged) — confirmed still correct as scoped: the
+    emergent/evidence-driven answer on river cardinality means G49's
+    real interaction+goal closer look on III/V/VII proceeds exactly as
+    already planned, with no forcing.
+
+    No new G-item numbers needed — G47/G48's Supabase rows updated in
+    place with this refined description (evidence field appended, per
+    Alex's own already-established append convention for these rows).
+
+=====================================================================
 STEP 6 — ALL FORKS NOW RESOLVED. AWAITING ALEX'S FULL-PLAN APPROVAL.
 =====================================================================
 Every real fork in this document (F1-F9, plus the Part 2/6 river-rebuild
