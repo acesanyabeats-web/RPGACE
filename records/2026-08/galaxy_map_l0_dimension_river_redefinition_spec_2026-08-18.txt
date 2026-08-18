@@ -384,6 +384,82 @@ Real, distinct claims extracted:
      mechanism to build, just a real edge that should be shown.
 
 =====================================================================
+PART 4C — REAL CORRECTION (same day, after the full plan report): symmetric
+unit-gateway model + level-tagged decision/current bubbles, verbatim
+=====================================================================
+
+Alex's own words, a direct rejection of Part 3.1's original framing:
+
+"no each bubbles on a unit is a gateway to its ivolved dimensions,
+RPGACE architecure should not be the one gate to see further structures,
+that doesnt make sense. come on, i thought you knew that and i wouldnt
+have to explain it. this type of logic you dont show kills me, its
+obvious. this is an obstacle claude you will need to find a solution to.
+you should always, and i mean ALWAYS, make considerations like this (its
+QoL updates, who doesnt love them?). i think some rivers should be
+promoted to dimensions. also make it that all dimensions should have
+connections to rpgace architecture based on what level river, modules
+and current it hits as their own /perspective (eg. Alex has l0,l1,l2,l3
+and l4 decisions to make, so make level steps as bubbles for the
+decision to make, then that goes as output of decision made, but that
+bubble should also be getting an input from another l0,l1,l2,l3 or l4
+structure that injected its output to ui portion as input for alex to
+see) so having this for all units would be beneficial to see how these
+interactions change. breakdown like this for dimensions would help
+categorize edges by what done depending on river modules etc whilst
+keeping level perspective in tact."
+
+Real, distinct claims extracted:
+
+4C.1 REAL BUG in the plan's own Part 3.1: RPGACE Architecture was wrongly
+     special-cased as "the one gate" into the deeper Level 0-4 structure.
+     Correct model: EVERY unit's own bubbles are gateways into ITS OWN
+     real dimensions — the L0-4 structure isn't reached through one
+     privileged unit, it's reached through whichever unit's real edge
+     actually touches it, each from that unit's own real vantage point.
+     (This is, on re-reading, literally what Alex's ORIGINAL Part 2 spec
+     already said — "click a unit... shows what choice dimension i can
+     go for" — the bug was introduced in Part 3.1's own summarizing
+     prose, not in the original ask.)
+
+4C.2 Some rivers should be promoted to dimensions — stated now as Alex's
+     own affirmative belief ("i think"), not just a hypothetical framed
+     in the original trigger prompt. Directly informs the real River
+     III/V/VII closer-look work already locked in at Part 6 — dimension-
+     promotion is a real, live candidate outcome for that work, not just
+     split/merge.
+
+4C.3 NEW MECHANIC — every dimension gets real, /perspective-grounded
+     connections into RPGACE Architecture, tagged by exactly which
+     level/river/module/current it hits. Worked example given (Alex's
+     own): Alex has real decisions to make at multiple levels (L0-L4) —
+     each becomes a bubble representing that decision. Each such bubble
+     is itself a real, chained mini-process:
+       - INPUT: comes from some OTHER real level/structure whose output
+         got surfaced to the UI for Alex to see
+       - HANDLING: the actual decision Alex makes
+       - OUTPUT: the decision made (which becomes an input somewhere
+         else downstream)
+     "so having this for all units would be beneficial" — this same
+     level-tagged input->handling->output bubble pattern applies to
+     EVERY unit's own dimension with RPGACE Architecture, not just
+     Alex's, each filtered through that unit's own real evidence.
+     "breakdown like this for dimensions would help categorize edges by
+     what done depending on river modules etc whilst keeping level
+     perspective in tact" — the real payoff: this lets an edge be
+     understood BOTH by what real river/module work it does AND by which
+     level it belongs to, simultaneously, never losing one for the other.
+
+4C.4 Real, generalizable process lesson, Alex's own explicit instruction:
+     "you should always... make considerations like this" — a standing
+     rule that a design giving ONE peer among structurally-equal units
+     special/exclusive treatment (without a real, stated reason) is
+     probably an oversight, not a decision, and should be checked for on
+     every future structural design pass — not scoped to this one fix.
+     (Logged as a new standing rule, R16, in CEO SKILL.md's Rules and
+     Workflows section — see that file directly.)
+
+=====================================================================
 PART 5 — NEXT STEPS (per /CEO Loop 1)
 =====================================================================
 Step 1 (this file): COMPLETE.

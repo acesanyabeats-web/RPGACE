@@ -188,15 +188,22 @@ original recommendation.** See the question at the end of this report.
 PART 3 — CONCRETE SHAPE OF EVERY OTHER PIECE (ready to execute on approval)
 =====================================================================
 
-3.1 L0 map (peer unit, F1) — 7 units, real edges:
+3.1 L0 map (peer unit, F1) — 7 units, real edges — CORRECTED per Part 7B:
     External AI | RPGACE Architecture (UI+Backend) | Skills |
     Orchestrator CC | Alex | Supabase | Oversight Docs
     Click a unit -> list of real dimension-edges from that unit (one per
     connected unit) -> click an edge -> real drop panel: bubbles
     ("structures") + yes/no forks (reusing Decisions/G26's already-built
     fork pattern) explaining real communication/work between the two.
-    RPGACE Architecture's own edge to itself-as-a-system is where the
-    existing Dimension->River->Module->Current chain lives (per F1).
+    **Correction (was wrong in the original draft, see Part 7B): RPGACE
+    Architecture is NOT a privileged single gateway into the L0-4
+    structure.** EVERY one of the 6 other units' own dimension-edge WITH
+    RPGACE Architecture is its own real, independent doorway into that
+    same underlying L0-4 hierarchy, entered from that unit's own real
+    vantage point (Alex's decisions, Supabase's tables, Skills'
+    procedures, External AI's calls, Orchestrator CC's commits,
+    Oversight Docs' coverage) — never through one unit alone. See Part 7
+    for the concrete per-unit shape.
 
 3.2 Dimension Matrix, L0-grain (F8, new, separate from G30):
     7 units x their real edges, table form — externals show which AI is
@@ -396,6 +403,95 @@ Real /interrogation answers on the 2 new forks this addendum raised:
     itself evidence-of-itself — every single item above is something
     that has actually happened in this project's real history, not a
     marketing description of hypothetical capability.
+
+=====================================================================
+PART 7B — REAL CORRECTION: symmetric unit-gateway model + level-tagged
+decision/current bubbles (Part 4C of the spec)
+=====================================================================
+Real bug in the original Part 3.1 draft, Alex's own words: "RPGACE
+architecure should not be the one gate to see further structures, that
+doesnt make sense." Confirmed on re-read: his ORIGINAL spec already said
+this correctly ("click a unit... shows what choice dimension i can go
+for") — the error was introduced in this plan's own summarizing prose,
+not in his ask. Fixed at 3.1 above.
+
+7B.1 The corrected model, concretely: the L0-4 Galaxy Map hierarchy isn't
+     behind one privileged door. It's ONE real underlying dataset that
+     every other unit's own dimension-edge with RPGACE Architecture
+     provides a genuinely different, real, evidence-grounded LENS over —
+     filtered to what that specific unit actually touches. Clicking into
+     Alex's dimension shows Alex's real touchpoints; clicking into
+     Supabase's shows Supabase's; both are looking at the same real L0-4
+     structure, from different, equally real vantage points. No lens is
+     the "main" one.
+
+7B.2 The level-tagged bubble/current mechanic, per unit, using ONLY
+     already-built real evidence (rule 8 — no new detection logic):
+
+     ALEX <-> RPGACE Architecture: reuses Decisions/G26's already-built
+       DECISION_POINTS (10 real human-gate decisions, already anchor-
+       verified against live code, already cross-linked into Level 3/5).
+       Each decision point becomes a bubble tagged by the real level(s)
+       it touches (typically L2 module / L3 function, some also L5
+       logic). INPUT = the real UI element that surfaces the choice to
+       Alex (a confirm popup, an arm/confirm button — real DOM evidence
+       already cited in G26). HANDLING = Alex's actual yes/no. OUTPUT =
+       the write/action taken, which G26 already documents. This is
+       ~90% already-built data being re-presented through Alex's own
+       dimension-lens, not new work.
+
+     SUPABASE <-> RPGACE Architecture: reuses the new Supabase page
+       (3.3). Each real table gets a bubble per level/module that reads
+       or writes it. INPUT = the function issuing the query. HANDLING =
+       the query itself. OUTPUT = the row(s) returned/written. NEXT =
+       whichever function consumes the result (Current-chain data,
+       3.5).
+
+     EXTERNAL AI <-> RPGACE Architecture: reuses the already-built
+       Oracle-bubble call-count data (`compute_module_oracle_call_count`/
+       `compute_card_oracle_call_count`, G16) and the G27 Externals page.
+       A bubble per module/level with a real call_count > 0. INPUT = the
+       prompt/context assembled there. OUTPUT = the model's reply. NEXT
+       = whichever function consumes it.
+
+     SKILLS <-> RPGACE Architecture: reuses the extended G28/G36 data
+       (F4/3.4). A bubble per real skill x level pairing where that
+       skill's own procedure names a real touch. INPUT = what triggers
+       the skill (Alex naming it, or another skill invoking it per G36's
+       skill-network edges). OUTPUT = what the skill actually changes.
+
+     ORCHESTRATOR CC <-> RPGACE Architecture: real git commit history
+       touching rpgace_core.js/main.js/api/*, tagged by which level/
+       river/module the touched code lives in. A bubble per level
+       summarizing real, dated commit activity there.
+
+     OVERSIGHT DOCS <-> RPGACE Architecture: a bubble per real doc x
+       level pairing — which doc documents which level (minotaur_map.html
+       ~ River-level, system_flow_map.md ~ pipeline/flow-level,
+       smoke_test.html ~ per-feature/module-level). INPUT = the real
+       shipped change that prompted the doc update. OUTPUT = the doc's
+       own new content. Matches 4B.3(b) exactly (rule 8, same axis, not
+       redefined twice).
+
+     Every one of these 6 lenses reuses data this multi-day effort has
+     already built — the "new" work is a real cross-cutting PRESENTATION
+     layer (level-tagging + input/handling/output framing per bubble),
+     not 6 new detection subsystems.
+
+7B.3 River-to-dimension promotion (4C.2): folded directly into the
+     already-locked-in Part 6 River III/V/VII closer look — dimension-
+     promotion is now an explicit, real candidate outcome for that work
+     (not just split/merge), decided per-river from the same real
+     evidence already gathered.
+
+7B.4 Standing process rule (4C.4): added as R16 in
+     `.claude/skills/CEO/SKILL.md`'s Rules and Workflows section (same
+     file/format as R1-R15) — a structural design that special-cases one
+     peer among structurally-equal units without a stated real reason is
+     probably an oversight, check every peer before finalizing. Done,
+     not deferred — this is a process-documentation fix, not a Galaxy
+     Map code/HTML change, so it isn't gated by F9's "report first, build
+     after approval" (which scopes the Galaxy Map deliverable itself).
 
 =====================================================================
 STEP 6 — ALL FORKS NOW RESOLVED. AWAITING ALEX'S FULL-PLAN APPROVAL.
