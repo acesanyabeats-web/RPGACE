@@ -380,7 +380,7 @@ def build_river_section(rnum):
                     sx_ = x + (-70 if direction == 'in' else 70)
                     sy_ = y + 46
                     t_rnum = next((r for r, mods in RIVER_MODULES.items() if to_mod in mods), None)
-                    l3_href = f'galaxy_map_level3.html#mod-{to_mod}' if to_mod in LEVEL3_MODULES else None
+                    l3_href = f'galaxy_map_current.html#mod-{to_mod}' if to_mod in LEVEL3_MODULES else None
                     stub_inner = (
                         f'<rect x="{sx_-46}" y="{sy_-13}" width="92" height="26" rx="6" fill="#0f0f1a" '
                         f'stroke="{other_color}" stroke-width="1.3" stroke-dasharray="3,2" opacity="0.8"/>'
@@ -465,7 +465,7 @@ def build_river_section(rnum):
             )
             if has_l3:
                 nodes_svg.append(
-                    f'{term_badge}<a href="galaxy_map_level3.html#mod-{m}" class="drill-link"><g class="node">{node_inner}</g></a>{l3_badge}'
+                    f'{term_badge}<a href="galaxy_map_current.html#mod-{m}" class="drill-link"><g class="node">{node_inner}</g></a>{l3_badge}'
                     f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
                 )
             else:
