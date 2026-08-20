@@ -183,7 +183,7 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map_l0_units.html">🌌 L0</a>
+  <a href="galaxy_map_l0.html">🌌 L0</a>
   <a href="galaxy_map_module.html">🌊 Level 2</a>
   <span class="bc-here">🧬 Current Series (replaces Level 3)</span>
 </div>

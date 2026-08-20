@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (L0 Units)</title>
+<title>RPGACE — Galaxy Map (L0)</title>
 <style>
   :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --purple:#9B59B6; }
   *{box-sizing:border-box;margin:0;padding:0}
@@ -12,10 +12,11 @@
   .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
   .hero h1{font-family:Georgia,serif;font-size:28px;color:#fff;margin-bottom:8px}
   .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto;line-height:1.6}
-  .breadcrumb{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px}
-  .breadcrumb a{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
-  .breadcrumb a:hover{color:var(--gold);border-color:var(--gold)}
-  .breadcrumb .bc-here{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}
+  .toggle-row{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}
+  .toggle-btn{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
+  .toggle-btn.active{background:var(--gold);color:#1a1608;border-color:var(--gold)}
+  .view{display:none}
+  .view.active{display:block}
   .units-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:980px;margin:24px auto;padding:0 24px}
   .unit-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .15s,border-color .15s}
   .unit-card:hover{transform:translateY(-3px)}
@@ -26,7 +27,9 @@
   .uhead{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:8px}
   .udot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
   .uhead h2{font-family:Georgia,serif;font-size:19px;color:#fff}
-  .urole{text-align:center;color:var(--dim);font-size:11.5px;max-width:680px;margin:0 auto 18px;line-height:1.6}
+  .urole{text-align:center;color:var(--dim);font-size:11.5px;max-width:680px;margin:0 auto 10px;line-height:1.6}
+  .sublevel-link{display:block;text-align:center;font-size:11px;font-weight:700;color:var(--gold);text-decoration:none;margin-bottom:16px}
+  .sublevel-link:hover{text-decoration:underline}
   .edge-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
   .edges{display:flex;flex-direction:column;gap:6px}
   .edge-row{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;cursor:pointer}
@@ -50,55 +53,83 @@
   .catalog ol{padding-left:18px;font-size:11px;line-height:1.7;color:var(--text)}
   .deep-link{display:inline-block;font-size:10.5px;font-weight:700;color:var(--gold);text-decoration:none;margin-top:6px}
   .deep-link:hover{text-decoration:underline}
+  .matrix-wrap{max-width:640px;margin:24px auto;padding:0 24px;overflow-x:auto}
+  table{border-collapse:collapse;margin:0 auto;font-size:16px}
+  th,td{border:1px solid rgba(255,255,255,0.08);width:40px;height:40px;text-align:center}
+  th{font-size:16px}
+  th.rowhead{font-size:10px;text-align:left;padding:0 8px;white-space:nowrap;width:auto}
+  td.diag{background:rgba(255,255,255,0.02);color:#333}
+  td.none{color:#333}
+  td.hit{cursor:pointer}
+  td.hit.inject{background:rgba(155,89,182,0.1)}
+  td.hit.actor{background:rgba(226,84,84,0.08)}
+  td.hit:hover{outline:1px solid var(--gold)}
+  .legend{display:flex;gap:16px;justify-content:center;font-size:10.5px;margin:14px 0;color:var(--dim)}
+  .details{max-width:700px;margin:0 auto 40px;padding:0 24px}
+  .detail-row{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 18px;margin-bottom:12px}
   a{color:var(--gold)}
-  .note{max-width:820px;margin:30px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  .note{max-width:820px;margin:20px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
 </style>
 </head>
 <body>
-<div class="breadcrumb"><span class="bc-here">🌌 L0 — 7 Units</span></div>
-<div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · L0 Units</div>
-  <h1>🌌 Seven Peer Units</h1>
-  <p>External AI, RPGACE Architecture, Skills, Orchestrator CC, Alex, Supabase, Oversight Docs — no privileged gateway. Click a unit to see its own real dimension-edges, then click an edge to see the real communication between them. Skills and Supabase render as a real 💉 injection tool wherever they appear — something a step reaches for mid-process, not an actor that performs it.</p>
+<div class="breadcrumb" style="text-align:center;padding:12px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px">
+  <span style="color:#0a0a0f;background:#C9A84C;padding:4px 9px;border-radius:12px">🌌 L0</span>
 </div>
-<div class="units-grid"><div class="unit-card" data-unit="external_ai"><div class="unit-icon">🔮</div><div class="unit-name">External AI</div></div><div class="unit-card" data-unit="rpgace_architecture"><div class="unit-icon">🏛️</div><div class="unit-name">RPGACE Architecture</div></div><div class="unit-card" data-unit="skills"><div class="unit-icon">🧩</div><div class="unit-name">Skills</div></div><div class="unit-card" data-unit="orchestrator_cc"><div class="unit-icon">🧭</div><div class="unit-name">Orchestrator CC</div></div><div class="unit-card" data-unit="alex"><div class="unit-icon">🧑</div><div class="unit-name">Alex</div></div><div class="unit-card" data-unit="supabase"><div class="unit-icon">🗄️</div><div class="unit-name">Supabase</div></div><div class="unit-card" data-unit="oversight_docs"><div class="unit-icon">📚</div><div class="unit-name">Oversight Docs</div></div></div>
-<section class="unit-panel" id="unit-external_ai" style="display:none">
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · L0</div>
+  <h1>🌌 Seven Peer Units</h1>
+  <p>External AI, RPGACE Architecture, Skills, Orchestrator CC, Alex, Supabase, Oversight Docs — no privileged gateway. Two real representations of the exact same 17 hand-curated edges, toggle below. Skills and Supabase render as a real 💉 injection tool wherever they appear — something a step reaches for mid-process, not an actor that performs it.</p>
+</div>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view</div>
+</div>
+<div class="view active" id="view-map">
+  <div class="units-grid"><div class="unit-card" data-unit="external_ai"><div class="unit-icon">🔮</div><div class="unit-name">External AI</div></div><div class="unit-card" data-unit="rpgace_architecture"><div class="unit-icon">🏛️</div><div class="unit-name">RPGACE Architecture</div></div><div class="unit-card" data-unit="skills"><div class="unit-icon">🧩</div><div class="unit-name">Skills</div></div><div class="unit-card" data-unit="orchestrator_cc"><div class="unit-icon">🧭</div><div class="unit-name">Orchestrator CC</div></div><div class="unit-card" data-unit="alex"><div class="unit-icon">🧑</div><div class="unit-name">Alex</div></div><div class="unit-card" data-unit="supabase"><div class="unit-icon">🗄️</div><div class="unit-name">Supabase</div></div><div class="unit-card" data-unit="oversight_docs"><div class="unit-icon">📚</div><div class="unit-name">Oversight Docs</div></div></div>
+  <section class="unit-panel" id="unit-external_ai" style="display:none">
   <div class="uhead"><span class="udot" style="background:#9B59B6"></span><h2>🔮 External AI</h2></div>
-  <p class="urole">Anthropic (live) + Kimi/Luna (dormant scaffolds) — mediated entirely through Oracle, RPGACE Architecture's own AI harness. Drills into galaxy_map.html's existing Oracle/provider nodes.</p>
+  <p class="urole">Anthropic (live) + Kimi/Luna (dormant scaffolds) — mediated entirely through Oracle, RPGACE Architecture's own AI harness. Its own 0.5-level page (below) lists each real external individually.</p>
+  <a class="sublevel-link" href="galaxy_map_externals.html">🔎 External AI's own 0.5-level page →</a>
   <div class="edge-label">Real dimensions from this unit (3) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="alex-external"><span class="edot" style="background:#E25454"></span><span class="etxt">External AI ↔ Alex</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-external"><span class="edot" style="background:#C9A84C"></span><span class="etxt">External AI ↔ RPGACE Architecture</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="external-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">External AI ↔ Oversight Docs</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section><section class="unit-panel" id="unit-rpgace_architecture" style="display:none">
   <div class="uhead"><span class="udot" style="background:#C9A84C"></span><h2>🏛️ RPGACE Architecture</h2></div>
-  <p class="urole">UI + Backend, one unit. Drilling in is the door into the EXISTING Dimension→River→Module→Current chain (galaxy_map.html and everything below it) — NOT a privileged gateway for the other 6 units, just this unit's own real content.</p>
+  <p class="urole">UI + Backend, one unit. Drilling in is the door into the EXISTING Dimension→River→Module→Current chain — NOT a privileged gateway for the other 6 units, just this unit's own real content.</p>
+  <a class="sublevel-link" href="galaxy_map.html">🔎 Drill into RPGACE Architecture's own structural chain →</a>
   <div class="edge-label">Real dimensions from this unit (6) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="alex-rpgace"><span class="edot" style="background:#E25454"></span><span class="etxt">RPGACE Architecture ↔ Alex</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-rpgace"><span class="edot" style="background:#4A90E2"></span><span class="etxt">RPGACE Architecture ↔ Orchestrator CC</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-external"><span class="edot" style="background:#9B59B6"></span><span class="etxt">RPGACE Architecture ↔ External AI</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-supabase"><span class="edot" style="background:#2ABFB0"></span><span class="etxt">RPGACE Architecture ↔ Supabase</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-skills"><span class="edot" style="background:#3DAA6E"></span><span class="etxt">RPGACE Architecture ↔ Skills</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">RPGACE Architecture ↔ Oversight Docs</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section><section class="unit-panel" id="unit-skills" style="display:none">
   <div class="uhead"><span class="udot" style="background:#3DAA6E"></span><h2>🧩 Skills</h2></div>
-  <p class="urole">RPGACE's own Claude Code skills (.claude/skills/) — real, already-catalogued at galaxy_map_skills.html/galaxy_map_skill_network.html.</p>
+  <p class="urole">RPGACE's own Claude Code skills (.claude/skills/) — real, already-catalogued at its own 0.5-level page.</p>
+  <a class="sublevel-link" href="galaxy_map_skills.html">🔎 Skills's own 0.5-level page →</a>
   <div class="edge-label">Real dimensions from this unit (5) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="alex-skills"><span class="edot" style="background:#E25454"></span><span class="etxt">Skills ↔ Alex</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-skills"><span class="edot" style="background:#4A90E2"></span><span class="etxt">Skills ↔ Orchestrator CC</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-skills"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Skills ↔ RPGACE Architecture</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="skills-supabase"><span class="edot" style="background:#2ABFB0"></span><span class="etxt">Skills ↔ Supabase</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="skills-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Skills ↔ Oversight Docs</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section><section class="unit-panel" id="unit-orchestrator_cc" style="display:none">
   <div class="uhead"><span class="udot" style="background:#4A90E2"></span><h2>🧭 Orchestrator CC</h2></div>
   <p class="urole">This session — developer station. Planner/orchestrator, evidence-gathering, dispatch-writing, RPGACE-side schema/UI/doc work.</p>
+  <a class="sublevel-link" href="galaxy_map_orchestrator_openmontage.html">🔎 Orchestrator CC's own 0.5-level page →</a>
   <div class="edge-label">Real dimensions from this unit (5) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="alex-orchestrator"><span class="edot" style="background:#E25454"></span><span class="etxt">Orchestrator CC ↔ Alex</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-rpgace"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Orchestrator CC ↔ RPGACE Architecture</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-skills"><span class="edot" style="background:#3DAA6E"></span><span class="etxt">Orchestrator CC ↔ Skills</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-supabase"><span class="edot" style="background:#2ABFB0"></span><span class="etxt">Orchestrator CC ↔ Supabase</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Orchestrator CC ↔ Oversight Docs</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section><section class="unit-panel" id="unit-alex" style="display:none">
   <div class="uhead"><span class="udot" style="background:#E25454"></span><h2>🧑 Alex</h2></div>
   <p class="urole">Acting body on all Tier-3 confirmations, real decisions, and direct app use. Same recurring actor as the Alex-bubble at Levels 1-3 and the Human Gate node at Level 0.</p>
+  <a class="sublevel-link" href="galaxy_map_decisions.html">🔎 Alex's own 0.5-level page →</a>
   <div class="edge-label">Real dimensions from this unit (5) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="alex-rpgace"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Alex ↔ RPGACE Architecture</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="alex-orchestrator"><span class="edot" style="background:#4A90E2"></span><span class="etxt">Alex ↔ Orchestrator CC</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="alex-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Alex ↔ Oversight Docs</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="alex-skills"><span class="edot" style="background:#3DAA6E"></span><span class="etxt">Alex ↔ Skills</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="alex-external"><span class="edot" style="background:#9B59B6"></span><span class="etxt">Alex ↔ External AI</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section><section class="unit-panel" id="unit-supabase" style="display:none">
   <div class="uhead"><span class="udot" style="background:#2ABFB0"></span><h2>🗄️ Supabase</h2></div>
   <p class="urole">Database storage for all units involved — a shared resource every other unit reads/writes through, not just one more peer.</p>
+  <a class="sublevel-link" href="galaxy_map_supabase.html">🔎 Supabase's own 0.5-level page →</a>
   <div class="edge-label">Real dimensions from this unit (4) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="orch-supabase"><span class="edot" style="background:#4A90E2"></span><span class="etxt">Supabase ↔ Orchestrator CC</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-supabase"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Supabase ↔ RPGACE Architecture</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="skills-supabase"><span class="edot" style="background:#3DAA6E"></span><span class="etxt">Supabase ↔ Skills</span><span class="k-badge k-inject">💉 injection</span><span class="echev">▸</span></div><div class="edge-row" data-edge="supabase-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Supabase ↔ Oversight Docs</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section><section class="unit-panel" id="unit-oversight_docs" style="display:none">
   <div class="uhead"><span class="udot" style="background:#C9A84C"></span><h2>📚 Oversight Docs</h2></div>
   <p class="urole">Documentation of context for all members — external change documentation in respect to RPGACE Architecture. Promoted from a Tier layer to a real L0 unit, Aug 18.</p>
+  
   <div class="edge-label">Real dimensions from this unit (6) — click one:</div>
   <div class="edges"><div class="edge-row" data-edge="alex-oversight"><span class="edot" style="background:#E25454"></span><span class="etxt">Oversight Docs ↔ Alex</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="orch-oversight"><span class="edot" style="background:#4A90E2"></span><span class="etxt">Oversight Docs ↔ Orchestrator CC</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="rpgace-oversight"><span class="edot" style="background:#C9A84C"></span><span class="etxt">Oversight Docs ↔ RPGACE Architecture</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="external-oversight"><span class="edot" style="background:#9B59B6"></span><span class="etxt">Oversight Docs ↔ External AI</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="skills-oversight"><span class="edot" style="background:#3DAA6E"></span><span class="etxt">Oversight Docs ↔ Skills</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div><div class="edge-row" data-edge="supabase-oversight"><span class="edot" style="background:#2ABFB0"></span><span class="etxt">Oversight Docs ↔ Supabase</span><span class="k-badge k-actor">🧑 actor</span><span class="echev">▸</span></div></div>
 </section>
-<div class="drop-panel" id="drop-alex-rpgace" style="display:none">
+  <div class="drop-panel" id="drop-alex-rpgace" style="display:none">
   <div class="dhead">
     <span class="udot" style="background:#E25454"></span>🧑 Alex
     <span class="dsep">↔</span>
@@ -145,7 +176,7 @@
   <div class="evidence"><span class="ev-label">Real evidence:</span> Alex directly invokes skills by name in chat ("/CEO", "/paranoia", "/interrogation", etc.) — the literal trigger mechanism named in every skill's own frontmatter.</div>
   
   
-  
+  <a class="deep-link" href="galaxy_map_skills.html">🔽 Drill into the real underlying data →</a>
 </div><div class="drop-panel" id="drop-alex-external" style="display:none">
   <div class="dhead">
     <span class="udot" style="background:#E25454"></span>🧑 Alex
@@ -157,7 +188,7 @@
   <div class="evidence"><span class="ev-label">Real evidence:</span> Alex uses RPGACE's own Oracle chat directly as a real app user — RPGACE Architecture's own deployed feature, not mediated through Orchestrator CC.</div>
   
   
-  
+  <a class="deep-link" href="galaxy_map_externals.html">🔽 Drill into the real underlying data →</a>
 </div><div class="drop-panel" id="drop-orch-rpgace" style="display:none">
   <div class="dhead">
     <span class="udot" style="background:#4A90E2"></span>🧭 Orchestrator CC
@@ -169,7 +200,7 @@
   <div class="evidence"><span class="ev-label">Real evidence:</span> Real git commit history touching rpgace_core.js/main.js/api/*.js — the whole build history of this project.</div>
   
   
-  
+  <a class="deep-link" href="galaxy_map.html">🔽 Drill into the real underlying data →</a>
 </div><div class="drop-panel" id="drop-orch-skills" style="display:none">
   <div class="dhead">
     <span class="udot" style="background:#4A90E2"></span>🧭 Orchestrator CC
@@ -181,7 +212,7 @@
   <div class="evidence"><span class="ev-label">Real evidence:</span> Every real skill invocation this session and every prior session — the whole Judgment Funnel/Galaxy Development Framework.</div>
   
   
-  
+  <a class="deep-link" href="galaxy_map_skills.html">🔽 Drill into the real underlying data →</a>
 </div><div class="drop-panel" id="drop-orch-supabase" style="display:none">
   <div class="dhead">
     <span class="udot" style="background:#4A90E2"></span>🧭 Orchestrator CC
@@ -193,7 +224,7 @@
   <div class="evidence"><span class="ev-label">Real evidence:</span> Direct MCP tool queries/migrations — the exact mechanism used to build this very page's own tracked ceo_plan_items rows.</div>
   
   
-  
+  <a class="deep-link" href="galaxy_map_supabase.html">🔽 Drill into the real underlying data →</a>
 </div><div class="drop-panel" id="drop-orch-oversight" style="display:none">
   <div class="dhead">
     <span class="udot" style="background:#4A90E2"></span>🧭 Orchestrator CC
@@ -303,31 +334,53 @@
   
   
 </div>
+</div>
+<div class="view" id="view-table">
+  <div class="matrix-wrap"><table id="matrix"><tr><th></th><th title="External AI">🔮</th><th title="RPGACE Architecture">🏛️</th><th title="Skills">🧩</th><th title="Orchestrator CC">🧭</th><th title="Alex">🧑</th><th title="Supabase">🗄️</th><th title="Oversight Docs">📚</th></tr><tr><th class="rowhead">🔮 External AI</th><td class="diag">—</td><td class="hit actor" title="RPGACE Architecture's own Oracle harness mediates every real call to Anthropic (live) and the dormant Kimi/Luna scaffolds — never a provider called directly." data-edge="rpgace-external">🧑</td><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="hit actor" title="Alex types a prompt into Oracle chat; External AI (via RPGACE Architecture's Oracle harness) returns a real reply rendered in the app UI." data-edge="alex-external">🧑</td><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="hit actor" title="Oversight Docs feed Oracle's own self-knowledge; External AI answers questions about RPGACE using content that originated in Oversight Docs." data-edge="external-oversight">🧑</td></tr><tr><th class="rowhead">🏛️ RPGACE Architecture</th><td class="hit actor" title="RPGACE Architecture's own Oracle harness mediates every real call to Anthropic (live) and the dormant Kimi/Luna scaffolds — never a provider called directly." data-edge="rpgace-external">🧑</td><td class="diag">—</td><td class="hit inject" title="A skill is a real "built in framework" — reused, defined procedure a river/module's own development draws on, injected as dev-process citation, not a runtime call." data-edge="rpgace-skills">💉</td><td class="hit actor" title="Orchestrator CC edits real code following the RPGACE.register()/module-marker convention, runs node --check, merges to main before any hand-test claim." data-edge="orch-rpgace">🧑</td><td class="hit actor" title="Alex makes the real yes/no call at every human-confirmation gate RPGACE Architecture surfaces. Input = the real UI element (a confirm popup, an arm/confirm button). Output = the write/action taken." data-edge="alex-rpgace">🧑</td><td class="hit inject" title="RPGACE Architecture's own functions pull/push real data as part of forming their output — "data pulling based on prompts," Alex's own words." data-edge="rpgace-supabase">💉</td><td class="hit actor" title="Oversight Docs document RPGACE Architecture's own real state — "external change documentation in respect to RPGACE Architecture," Alex's own redefinition." data-edge="rpgace-oversight">🧑</td></tr><tr><th class="rowhead">🧩 Skills</th><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="hit inject" title="A skill is a real "built in framework" — reused, defined procedure a river/module's own development draws on, injected as dev-process citation, not a runtime call." data-edge="rpgace-skills">💉</td><td class="diag">—</td><td class="hit actor" title="Orchestrator CC invokes skills as its own standing development discipline — multi-angle deliberation before big builds, never agreement-then-build." data-edge="orch-skills">🧑</td><td class="hit actor" title="Alex names a skill; Orchestrator CC runs its real, defined procedure. A skill's own output (a report, a plan, a built artifact) becomes real input Alex reacts to." data-edge="alex-skills">🧑</td><td class="hit inject" title="A skill's own defined procedure directly reads/writes Supabase as part of doing its job — a real, direct injection, not mediated through anything else." data-edge="skills-supabase">💉</td><td class="hit actor" title="Several skills name real oversight-doc updates as part of their own defined job — not incidental, a stated procedural step." data-edge="skills-oversight">🧑</td></tr><tr><th class="rowhead">🧭 Orchestrator CC</th><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="hit actor" title="Orchestrator CC edits real code following the RPGACE.register()/module-marker convention, runs node --check, merges to main before any hand-test claim." data-edge="orch-rpgace">🧑</td><td class="hit actor" title="Orchestrator CC invokes skills as its own standing development discipline — multi-angle deliberation before big builds, never agreement-then-build." data-edge="orch-skills">🧑</td><td class="diag">—</td><td class="hit actor" title="The real, hand-compiled capabilities catalog lives here — see the drop panel for the full 13-item list." data-edge="alex-orchestrator">🧑</td><td class="hit inject" title="Orchestrator CC reads/writes Supabase directly via MCP tools for evidence-gathering, plan tracking, and real schema work — a real injection tool for getting dev-process work done." data-edge="orch-supabase">💉</td><td class="hit actor" title="Orchestrator CC keeps all 11 real oversight artifacts truthful against live code/Supabase, same session as any real change." data-edge="orch-oversight">🧑</td></tr><tr><th class="rowhead">🧑 Alex</th><td class="hit actor" title="Alex types a prompt into Oracle chat; External AI (via RPGACE Architecture's Oracle harness) returns a real reply rendered in the app UI." data-edge="alex-external">🧑</td><td class="hit actor" title="Alex makes the real yes/no call at every human-confirmation gate RPGACE Architecture surfaces. Input = the real UI element (a confirm popup, an arm/confirm button). Output = the write/action taken." data-edge="alex-rpgace">🧑</td><td class="hit actor" title="Alex names a skill; Orchestrator CC runs its real, defined procedure. A skill's own output (a report, a plan, a built artifact) becomes real input Alex reacts to." data-edge="alex-skills">🧑</td><td class="hit actor" title="The real, hand-compiled capabilities catalog lives here — see the drop panel for the full 13-item list." data-edge="alex-orchestrator">🧑</td><td class="diag">—</td><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="hit actor" title="Alex reads and confirms real Current State entries; oversight docs never silently claim something is true without his eventual sign-off on the underlying work." data-edge="alex-oversight">🧑</td></tr><tr><th class="rowhead">🗄️ Supabase</th><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="hit inject" title="RPGACE Architecture's own functions pull/push real data as part of forming their output — "data pulling based on prompts," Alex's own words." data-edge="rpgace-supabase">💉</td><td class="hit inject" title="A skill's own defined procedure directly reads/writes Supabase as part of doing its job — a real, direct injection, not mediated through anything else." data-edge="skills-supabase">💉</td><td class="hit inject" title="Orchestrator CC reads/writes Supabase directly via MCP tools for evidence-gathering, plan tracking, and real schema work — a real injection tool for getting dev-process work done." data-edge="orch-supabase">💉</td><td class="none" title="No direct real edge — mediated through another unit">·</td><td class="diag">—</td><td class="hit actor" title="Not every oversight artifact is a static file — several ARE Supabase tables, so this edge is Supabase serving as oversight infrastructure directly, not just a data source oversight docs describe." data-edge="supabase-oversight">🧑</td></tr><tr><th class="rowhead">📚 Oversight Docs</th><td class="hit actor" title="Oversight Docs feed Oracle's own self-knowledge; External AI answers questions about RPGACE using content that originated in Oversight Docs." data-edge="external-oversight">🧑</td><td class="hit actor" title="Oversight Docs document RPGACE Architecture's own real state — "external change documentation in respect to RPGACE Architecture," Alex's own redefinition." data-edge="rpgace-oversight">🧑</td><td class="hit actor" title="Several skills name real oversight-doc updates as part of their own defined job — not incidental, a stated procedural step." data-edge="skills-oversight">🧑</td><td class="hit actor" title="Orchestrator CC keeps all 11 real oversight artifacts truthful against live code/Supabase, same session as any real change." data-edge="orch-oversight">🧑</td><td class="hit actor" title="Alex reads and confirms real Current State entries; oversight docs never silently claim something is true without his eventual sign-off on the underlying work." data-edge="alex-oversight">🧑</td><td class="hit actor" title="Not every oversight artifact is a static file — several ARE Supabase tables, so this edge is Supabase serving as oversight infrastructure directly, not just a data source oversight docs describe." data-edge="supabase-oversight">🧑</td><td class="diag">—</td></tr></table></div>
+  <div class="legend"><span>💉 injection tool</span><span>🧑 actor</span><span>· no direct real edge (mediated)</span></div>
+  <div class="details"><div class="detail-row" id="tdrop-alex-rpgace" style="display:none"><div class="dhead">🧑 Alex ↔ 🏛️ RPGACE Architecture <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Alex makes the real yes/no call at every human-confirmation gate RPGACE Architecture surfaces. Input = the real UI element (a confirm popup, an arm/confirm button). Output = the write/action taken.</div><div class="evidence">Real evidence: Decisions/G26 — 10 real human-gate decision points, e.g. taxonomy placement confirms, ConID delete confirms.</div></div><div class="detail-row" id="tdrop-alex-orchestrator" style="display:none"><div class="dhead">🧑 Alex ↔ 🧭 Orchestrator CC <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">The real, hand-compiled capabilities catalog lives here — see the drop panel for the full 13-item list.</div><div class="evidence">Real evidence: This whole session/relationship — every real build, plan, and correction across the project's history.</div></div><div class="detail-row" id="tdrop-alex-oversight" style="display:none"><div class="dhead">🧑 Alex ↔ 📚 Oversight Docs <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Alex reads and confirms real Current State entries; oversight docs never silently claim something is true without his eventual sign-off on the underlying work.</div><div class="evidence">Real evidence: The explicit human-checkpoint pattern (Current State confirmations, "update oversight"/"end session" trigger phrases, direct corrections like this session's own schematic re-read).</div></div><div class="detail-row" id="tdrop-alex-skills" style="display:none"><div class="dhead">🧑 Alex ↔ 🧩 Skills <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Alex names a skill; Orchestrator CC runs its real, defined procedure. A skill's own output (a report, a plan, a built artifact) becomes real input Alex reacts to.</div><div class="evidence">Real evidence: Alex directly invokes skills by name in chat ("/CEO", "/paranoia", "/interrogation", etc.) — the literal trigger mechanism named in every skill's own frontmatter.</div></div><div class="detail-row" id="tdrop-alex-external" style="display:none"><div class="dhead">🧑 Alex ↔ 🔮 External AI <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Alex types a prompt into Oracle chat; External AI (via RPGACE Architecture's Oracle harness) returns a real reply rendered in the app UI.</div><div class="evidence">Real evidence: Alex uses RPGACE's own Oracle chat directly as a real app user — RPGACE Architecture's own deployed feature, not mediated through Orchestrator CC.</div></div><div class="detail-row" id="tdrop-orch-rpgace" style="display:none"><div class="dhead">🧭 Orchestrator CC ↔ 🏛️ RPGACE Architecture <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Orchestrator CC edits real code following the RPGACE.register()/module-marker convention, runs node --check, merges to main before any hand-test claim.</div><div class="evidence">Real evidence: Real git commit history touching rpgace_core.js/main.js/api/*.js — the whole build history of this project.</div></div><div class="detail-row" id="tdrop-orch-skills" style="display:none"><div class="dhead">🧭 Orchestrator CC ↔ 🧩 Skills <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Orchestrator CC invokes skills as its own standing development discipline — multi-angle deliberation before big builds, never agreement-then-build.</div><div class="evidence">Real evidence: Every real skill invocation this session and every prior session — the whole Judgment Funnel/Galaxy Development Framework.</div></div><div class="detail-row" id="tdrop-orch-supabase" style="display:none"><div class="dhead">🧭 Orchestrator CC ↔ 🗄️ Supabase <span class="k-badge k-inject">💉 injection</span></div><div class="bubble">Orchestrator CC reads/writes Supabase directly via MCP tools for evidence-gathering, plan tracking, and real schema work — a real injection tool for getting dev-process work done.</div><div class="evidence">Real evidence: Direct MCP tool queries/migrations — the exact mechanism used to build this very page's own tracked ceo_plan_items rows.</div></div><div class="detail-row" id="tdrop-orch-oversight" style="display:none"><div class="dhead">🧭 Orchestrator CC ↔ 📚 Oversight Docs <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Orchestrator CC keeps all 11 real oversight artifacts truthful against live code/Supabase, same session as any real change.</div><div class="evidence">Real evidence: Rule 6 (every confirmed idea/fix updates oversight docs same-session) + R17 (oversight docs stem from the Galaxy Map, scoped per G-step).</div></div><div class="detail-row" id="tdrop-rpgace-external" style="display:none"><div class="dhead">🏛️ RPGACE Architecture ↔ 🔮 External AI <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">RPGACE Architecture's own Oracle harness mediates every real call to Anthropic (live) and the dormant Kimi/Luna scaffolds — never a provider called directly.</div><div class="evidence">Real evidence: api/oracle.js — the whole Oracle chat feature, the single heaviest real edge in this entire map.</div></div><div class="detail-row" id="tdrop-rpgace-supabase" style="display:none"><div class="dhead">🏛️ RPGACE Architecture ↔ 🗄️ Supabase <span class="k-badge k-inject">💉 injection</span></div><div class="bubble">RPGACE Architecture's own functions pull/push real data as part of forming their output — "data pulling based on prompts," Alex's own words.</div><div class="evidence">Real evidence: Real per-function grep, this session: 113 of 502 real functions (22%) have a genuine Supabase table touch, across 25 distinct tables.</div></div><div class="detail-row" id="tdrop-rpgace-skills" style="display:none"><div class="dhead">🏛️ RPGACE Architecture ↔ 🧩 Skills <span class="k-badge k-inject">💉 injection</span></div><div class="bubble">A skill is a real "built in framework" — reused, defined procedure a river/module's own development draws on, injected as dev-process citation, not a runtime call.</div><div class="evidence">Real evidence: SKILL_SECONDARY_RIVER (already built, 7 of 25 skills cite a real secondary river beyond River XIII's own full catalog).</div></div><div class="detail-row" id="tdrop-rpgace-oversight" style="display:none"><div class="dhead">🏛️ RPGACE Architecture ↔ 📚 Oversight Docs <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Oversight Docs document RPGACE Architecture's own real state — "external change documentation in respect to RPGACE Architecture," Alex's own redefinition.</div><div class="evidence">Real evidence: The whole Tier (a)-(f) oversight system, all 11 real artifacts.</div></div><div class="detail-row" id="tdrop-external-oversight" style="display:none"><div class="dhead">🔮 External AI ↔ 📚 Oversight Docs <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Oversight Docs feed Oracle's own self-knowledge; External AI answers questions about RPGACE using content that originated in Oversight Docs.</div><div class="evidence">Real evidence: oracleAppGrounding.SELF_KNOWLEDGE — hand-curated FROM oversight-doc content, the real "self-awareness influences knowledge of RPGACE app" edge Alex named directly (4B.4).</div></div><div class="detail-row" id="tdrop-skills-supabase" style="display:none"><div class="dhead">🧩 Skills ↔ 🗄️ Supabase <span class="k-badge k-inject">💉 injection</span></div><div class="bubble">A skill's own defined procedure directly reads/writes Supabase as part of doing its job — a real, direct injection, not mediated through anything else.</div><div class="evidence">Real evidence: Real skill-to-table writes: /perspective → perspective_reports, /CEO → ceo_plan_items, /colourgradient reads ceo_plan_items, /Bedtime → session_memory.</div></div><div class="detail-row" id="tdrop-skills-oversight" style="display:none"><div class="dhead">🧩 Skills ↔ 📚 Oversight Docs <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Several skills name real oversight-doc updates as part of their own defined job — not incidental, a stated procedural step.</div><div class="evidence">Real evidence: Skill .md files that literally cite oversight-doc maintenance in their own procedure (CEO's Loop 2 smoke_test.html population, update-logging-system's whole dependency map, Bedtime's Step 1).</div></div><div class="detail-row" id="tdrop-supabase-oversight" style="display:none"><div class="dhead">🗄️ Supabase ↔ 📚 Oversight Docs <span class="k-badge k-actor">🧑 actor</span></div><div class="bubble">Not every oversight artifact is a static file — several ARE Supabase tables, so this edge is Supabase serving as oversight infrastructure directly, not just a data source oversight docs describe.</div><div class="evidence">Real evidence: smoke_test_items, error_log, session_memory, ceo_plan_items — real Supabase tables that ARE part of the oversight system itself, per layer (d)/the CEO datasheet.</div></div></div>
+</div>
 <div class="note">
-  Generated by <code>scripts/galaxy_map_l0_units.py</code> — 7 real peer units, 17 real hand-curated
-  dimension-edges (of 21 possible pairs; 4 excluded as mediated through another unit, not directly evidenced).
-  RPGACE Architecture's own drill-down is the existing <a href="galaxy_map.html">galaxy_map.html</a> — unchanged,
-  reached as this unit's own real content, not a privileged gateway for the other 6.
+  Generated by <code>scripts/galaxy_map_l0.py</code> — 7 real peer units, 17 real hand-curated
+  dimension-edges (of 21 possible pairs; 4 excluded as mediated through another unit, not directly
+  evidenced), ONE real dataset rendered two ways (rule 8 — real /deduplication fix, merging what used
+  to be 2 separate files). RPGACE Architecture's own drill-down is the existing
+  <a href="galaxy_map.html">galaxy_map.html</a> — unchanged, reached as this unit's own real content,
+  not a privileged gateway for the other 6.
 </div>
 <script>
 (function() {
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  toggles.forEach(function(t) {
+    t.addEventListener('click', function() {
+      toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+      views.forEach(function(v) { v.classList.toggle('active', v.id === 'view-' + t.dataset.view); });
+    });
+  });
   var cards = document.querySelectorAll('.unit-card');
   var panels = document.querySelectorAll('.unit-panel');
-  var drops = document.querySelectorAll('.drop-panel');
+  var dropsMap = document.querySelectorAll('#view-map .drop-panel');
   function showUnit(id) {
     panels.forEach(function(p) { p.style.display = (p.id === 'unit-' + id) ? '' : 'none'; });
     cards.forEach(function(c) { c.classList.toggle('active', c.dataset.unit === id); });
-    drops.forEach(function(d) { d.style.display = 'none'; });
+    dropsMap.forEach(function(d) { d.style.display = 'none'; });
   }
-  cards.forEach(function(c) {
-    c.addEventListener('click', function() { showUnit(c.dataset.unit); });
-  });
-  document.querySelectorAll('.edge-row').forEach(function(row) {
+  cards.forEach(function(c) { c.addEventListener('click', function() { showUnit(c.dataset.unit); }); });
+  document.querySelectorAll('#view-map .edge-row').forEach(function(row) {
     row.addEventListener('click', function() {
       var id = row.dataset.edge;
-      drops.forEach(function(d) { d.style.display = (d.id === 'drop-' + id) ? '' : 'none'; });
+      dropsMap.forEach(function(d) { d.style.display = (d.id === 'drop-' + id) ? '' : 'none'; });
       var el = document.getElementById('drop-' + id);
       if (el) el.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  document.querySelectorAll('td.hit').forEach(function(td) {
+    td.addEventListener('click', function() {
+      var id = td.dataset.edge;
+      document.querySelectorAll('#view-table .detail-row').forEach(function(d) { d.style.display = 'none'; });
+      var el = document.getElementById('tdrop-' + id);
+      if (el) { el.style.display = ''; el.scrollIntoView({behavior:'smooth', block:'nearest'}); }
     });
   });
 })();
