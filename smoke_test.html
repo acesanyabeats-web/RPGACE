@@ -157,7 +157,7 @@ function render(items, activeErrors) {
       // already has, since this one has a real, specific reason to
       // check it (a real fix, not just an unreviewed backlog item).
       if (it.needs_confirm_highlight) cls += ' needs-confirm';
-      html += '<div class="item ' + cls + '" data-id="' + it.id + '"' + (it.linked_error_id ? ' data-linked-error="' + it.linked_error_id + '"' : '') + '>' +
+      html += '<div class="item ' + cls + '" data-id="' + it.id + '"' + (it.linked_error_id ? ' data-linked-error="' + it.linked_error_id + '"' : '') + (it.linked_plan_item_id ? ' data-linked-plan="' + it.linked_plan_item_id + '"' : '') + '>' +
         '<div class="item-top">' +
           '<div><div class="item-name">' + esc(it.item_name) + '</div>' +
           '<div class="item-desc">' + esc(it.description) + '</div>' +
@@ -201,6 +201,7 @@ function render(items, activeErrors) {
         }
         var el = btn.closest('.item');
         var linkedErrorId = el ? el.getAttribute('data-linked-error') : null;
+        var linkedPlanId = el ? el.getAttribute('data-linked-plan') : null;
         updateItem(id, patch).then(function() {
           // Real Aug 12 addition, per Alex's own workflow: confirming a
           // fix that resolved a real logged error marks that error row
@@ -215,10 +216,58 @@ function render(items, activeErrors) {
               body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString() })
             }).catch(function() {});
           }
+          // Real Aug 20 addition — G51 (the yellow<->smoke_test<->green
+          // confirm loop, Alex's own "banging idea"): confirming a
+          // shipped G-step's own smoke_test row flips its real
+          // ceo_plan_items row to green too — one real action, two real
+          // state changes, same discipline as the error_log cross-write
+          // above. An un-confirm/break does NOT auto-revert the plan
+          // item (a real regression there is a /colourgradient purple
+          // call, made with real evidence, not a side effect of a
+          // single click).
+          if ((act === 'confirm' || act === 'fixed') && linkedPlanId) {
+            fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?id=eq.' + linkedPlanId, {
+              method: 'PATCH', headers: HEADERS,
+              body: JSON.stringify({ status: 'green', last_checked_at: new Date().toISOString() })
+            }).then(function() { checkUmbrellaAutoFlip(); }).catch(function() {});
+          }
         }).then(load);
       });
     });
   });
+}
+
+// Real Aug 20 addition — G51's umbrella-auto-derive rule, confirmed via
+// AskUserQuestion (Alex's recommended option): G42 (the "L0/Dimension/
+// River/Module/Current redefinition" umbrella) never gets its own
+// smoke_test row or confirm click — it flips green automatically once
+// all 8 of its real children (G43-G50) are independently confirmed.
+// A real, small, finite relationship (one umbrella, 8 children) —
+// hardcoded rather than a generic parent/child schema, since inventing
+// that machinery for exactly one instance would be over-building
+// (rule 11). If a 2nd umbrella item is ever added, generalize then.
+var CEO_PLAN_ID = '6f8536fd-7d98-4565-9369-c75a149fce8f';
+var UMBRELLA_CODE = 'G42';
+var UMBRELLA_CHILDREN = ['G43','G44','G45','G46','G47','G48','G49','G50'];
+
+function checkUmbrellaAutoFlip() {
+  var codesFilter = UMBRELLA_CHILDREN.concat([UMBRELLA_CODE]).map(function(c) { return '"' + c + '"'; }).join(',');
+  return fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?select=item_code,status&plan_id=eq.' + CEO_PLAN_ID + '&item_code=in.(' + codesFilter + ')', { headers: HEADERS })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      var byCode = {};
+      rows.forEach(function(r) { byCode[r.item_code] = r.status; });
+      var umbrella = byCode[UMBRELLA_CODE];
+      if (umbrella === 'green') return; // already flipped, nothing to do
+      var allChildrenGreen = UMBRELLA_CHILDREN.every(function(c) { return byCode[c] === 'green'; });
+      if (allChildrenGreen) {
+        return fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?plan_id=eq.' + CEO_PLAN_ID + '&item_code=eq.' + UMBRELLA_CODE, {
+          method: 'PATCH', headers: HEADERS,
+          body: JSON.stringify({ status: 'green', last_checked_at: new Date().toISOString() })
+        }).catch(function() {});
+      }
+    })
+    .catch(function() {});
 }
 
 function load() {
