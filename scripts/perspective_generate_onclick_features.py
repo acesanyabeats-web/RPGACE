@@ -33,7 +33,11 @@ review before execution — never auto-applied.
 import re
 from pathlib import Path
 
-MAIN_JS = Path('main.js').read_text(encoding='utf-8')
+from graphify_river_group import _legacy_mainjs_text  # rule 8 — real shared
+# reader for main.js's legacy section, not re-derived. Aug 20 2026: main.js
+# was mechanically merged into rpgace_core.js, so this now sources from
+# that file's own legacy section instead of a separate main.js file.
+MAIN_JS = _legacy_mainjs_text()
 CORE_JS = Path('rpgace_core.js').read_text(encoding='utf-8')
 INDEX_HTML = Path('index.html').read_text(encoding='utf-8')
 OUT = Path('perspective_onclick_batch_2026-08-14.sql')

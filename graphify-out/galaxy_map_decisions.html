@@ -62,7 +62,7 @@
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button on a Content Intelligence report card — routes through the shared `_deleteUnified()` path.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Shows a real popup ("Delete Report" + "Save URL to bibliography?") with 2 real choices — the onDecide callback branches on which button was pressed, never a bare JS `confirm()`.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 5667-5685)</div><pre>  _confirm: function(title, url, card, onDecide) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 10118-10136)</div><pre>  _confirm: function(title, url, card, onDecide) {
     var ov = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10001;display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;';
     var box = document.createElement('div');
@@ -87,45 +87,34 @@
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn't available, using a bare browser `confirm()` instead of the richer popup.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 7103-7111)</div><pre>    if (!found) { if (card) card.remove(); return; }
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 11621-11629)</div><pre>  _delete: function(key, card) {
+    var found = this._findByKey(key);
+    if (!found) { if (card) card.remove(); return; }
     var title = this._cleanTitle(found.entry);
     var del = RPGACE.modules.intelDelete;
     var self = this;
     if (del && del._deleteUnified) {
       del._deleteUnified(found.entry, title, card, null);
-    } else if (window.confirm('Delete "' + title + '"?')) {
-      var arr = this._reports();
-      arr.splice(found.idx, 1);</pre></div>
+    } else if (window.confirm('Delete "' + title + '"?')) {</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-videoSummary">🔽 videoSummary._delete() — Level 3</a>
 </div><div class="dpcard" id="dp-conidpot-delete">
   <div class="dphead"><h3>Delete an idea from the Idea Bank (ConID Pot)</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button rendered per-row inside the Idea Bank list.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `confirm()` — real, same minimal-context shape as videoSummary's.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 17483-17489)</div><pre>                // Update pot status to activated
-                RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated' }, 'id=eq.' + row.id)
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 22008-22013)</div><pre>            { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
+              if (confirm('Delete "' + row.title + '"?')) {
+                RPGACE.sb.secureWrite('conid_pot', 'delete', null, 'id=eq.' + row.id)
                   .then(function() { self._refreshIdeaBank(filter || 'All'); });
               }
-            }},
-            { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
-              if (confirm('Delete "' + row.title + '"?')) {</pre></div>
+            }},</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-conidPot">🔽 conidPot._refreshIdeaBank() — Level 3</a>
 </div><div class="dpcard" id="dp-bookworm-delete">
   <div class="dphead"><h3>Delete a Bookworm book (2-click arm/confirm)</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 10502-10520)</div><pre>            // Delete button - real request after duplicate/dud books piled
-            // up in this list from earlier detection-bug retries (each
-            // retry creates a genuinely new book row, nothing gets
-            // cleaned up automatically). Two clicks required (arms, then
-            // confirms) since deletion isn't reversible - no separate
-            // popup needed for something this low-risk-but-permanent.
-            var delBtn = document.createElement('button');
-            delBtn.textContent = '🗑';
-            delBtn.title = 'Delete this book';
-            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';
-            var armed = false;
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 15032-15050)</div><pre>            var armed = false;
             delBtn.onclick = function(e) {
               e.stopPropagation();
               if (!armed) {
@@ -133,7 +122,17 @@
                 delBtn.textContent = '❌ Confirm';
                 delBtn.style.color = '#CC4A4A';
                 setTimeout(function() { armed = false; delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)'; }, 3000);
-                return;</pre></div>
+                return;
+              }
+              RPGACE.sb.secureWrite('bookworm_books', 'delete', null, 'id=eq.' + book.id).then(function() {
+                RPGACE.utils.toast('🗑 Deleted: ' + book.title, 'rgba(226,226,236,0.5)', 2500);
+                self._refreshWidget();
+              }).catch(function(err) { RPGACE.utils.toast('Error: ' + err.message, '#CC4A4A', 3500); });
+            };
+            topRow.appendChild(nameEl); topRow.appendChild(delBtn);
+            topRow.onclick = function() { self._openBook(book.id); };
+
+            // Total is known upfront regardless of source now (URL fetch</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-bookworm">🔽 bookworm._refreshWidget() — Level 3</a>
 </div></div>
 </section><section class="csection" id="cat-taxonomy" style="display:none">
@@ -144,35 +143,35 @@
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown automatically after `decidePlacementScored()` (Level 5's own real decision point — see there for the full scoring logic) returns a real placement candidate.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A real popup showing Oracle's own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.</p></div>
   <div class="dblock"><div class="dlabel">Also a curated Level 5 decision point</div><p><a href="galaxy_map_level5.html#d-placement-scored">🧠 See the full real scoring/logic write-up on Level 5 →</a></p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9178-9178)</div><pre>  _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 13698-13698)</div><pre>  _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) {</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath._showPlacementConfirm() — Level 3</a>
 </div><div class="dpcard" id="dp-article-confirm">
   <div class="dphead"><h3>Dedup-extend article regeneration — approve before overwriting an existing leaf</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown when `_insertNewSteps()` (Level 5's own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf's own article instead of creating a new one.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf's content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.</p></div>
   <div class="dblock"><div class="dlabel">Also a curated Level 5 decision point</div><p><a href="galaxy_map_level5.html#d-dedup-extend">🧠 See the full real scoring/logic write-up on Level 5 →</a></p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9646-9646)</div><pre>  _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14166-14166)</div><pre>  _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath._showArticleConfirm() — Level 3</a>
 </div><div class="dpcard" id="dp-accept-phylumpath-proposal">
   <div class="dphead"><h3>Review Queue: accept a pending taxonomy_proposals row</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card's popup.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A real, separate SECOND checkpoint from `_showPlacementConfirm` above — this one clears a `taxonomy_proposals` row that was already staged (not a live in-the-moment placement), matching rule 4's "or staging through taxonomy_proposals → review queue" alternate path.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 4590-4590)</div><pre>  _acceptPhylumPathProposal: function(p) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9041-9041)</div><pre>  _acceptPhylumPathProposal: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptPhylumPathProposal() — Level 3</a>
 </div><div class="dpcard" id="dp-accept-concept-fusion">
   <div class="dphead"><h3>Review Queue: accept a proposed fusion-link bridge</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII's own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 4615-4615)</div><pre>  _acceptConceptFusion: function(p) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9066-9066)</div><pre>  _acceptConceptFusion: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptConceptFusion() — Level 3</a>
 </div><div class="dpcard" id="dp-edit-phylumpath-proposal">
   <div class="dphead"><h3>Review Queue: edit a pending proposal before accepting it</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Real, distinct from a bare accept/reject — lets Alex correct Oracle's own proposed placement before it commits, rather than only a binary yes/no.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 4653-4653)</div><pre>  _editPhylumPathProposal: function(p) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9104-9104)</div><pre>  _editPhylumPathProposal: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._editPhylumPathProposal() — Level 3</a>
 </div></div>
 </section><section class="csection" id="cat-pipeline" style="display:none">
@@ -183,13 +182,14 @@
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14927-14933)</div><pre>  _undoLastStage: function(row) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19447-19454)</div><pre>  _undoLastStage: function(row) {
     var target = this.MUSIC_VIDEO_PREV_STAGE[row.status];
     if (!target) {
       RPGACE.utils.toast('Nothing to undo — ConID #' + row.con_id + ' is already at its first stage', 'rgba(226,226,236,0.4)', 2500);
       return;
     }
-    if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;</pre></div>
+    if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
+    this._revertToStage(row, target);</pre></div>
   <a class="mod-chip" href="galaxy_map_level3.html#mod-contentProductionLive">🔽 contentProductionLive._undoLastStage() — Level 3</a>
 </div></div>
 </section>

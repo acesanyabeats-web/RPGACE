@@ -55,7 +55,7 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Everything else (index.html, rpgace_core.js, main.js, style.css, ...):
+  // Everything else (index.html, rpgace_core.js, style.css, ...):
   // network-first, falling back to cache only when truly offline. This is
   // what stops the SW itself from ever becoming a second, worse source of
   // stale-code bugs on top of the cache-busting version string.

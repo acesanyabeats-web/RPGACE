@@ -100,7 +100,10 @@ import sys
 from pathlib import Path
 
 CORE_JS = Path('rpgace_core.js')
-MAIN_JS = Path('main.js')
+# main.js was mechanically merged into rpgace_core.js Aug 20 2026 (Alex's
+# own direct ask) — there is no separate main.js file to point at anymore.
+# Every former MAIN_JS reader now sources from CORE_JS's own legacy
+# section instead, via _legacy_mainjs_text().
 INDEX_HTML = Path('index.html')
 
 # Real, confirmed structural finding, Aug 13 (Alex asked for a "small
@@ -1150,21 +1153,58 @@ def compute_hook_signal_edges(core_js_path: Path = CORE_JS):
 _HOOK_SIGNAL_EDGES = compute_hook_signal_edges()
 
 
-def _mainjs_function_bodies(main_js_path: Path = MAIN_JS):
+_LEGACY_MAINJS_TEXT_CACHE = {}
+
+
+def _legacy_mainjs_text(core_js_path: Path = CORE_JS) -> str:
+    """Real, Aug 20 2026 fix: main.js was mechanically merged into
+    rpgace_core.js (Alex's own direct ask — one file instead of two,
+    zero logic rewrite; see that file's own header comment). Every
+    detector below that used to read a separate main.js file now reads
+    THIS instead — the text between the /* ===LEGACY:mainjs=== */ and
+    /* ===END:LEGACY:mainjs=== */ sentinel lines, which is byte-
+    identical to the old main.js content. Returns '' if the markers
+    are ever missing (fails open to empty, same as the old
+    main_js_path.exists() check it replaces — never crashes the
+    pipeline on a missing/renamed marker). Module-level memoized (rule
+    11, same pattern as _HOOK_SIGNAL_EDGES/find_wrap_installer_function
+    above): pre-merge this read a separate ~258KB main.js file; post-
+    merge it's a ~1.2MB rpgace_core.js read + DOTALL regex scan, real
+    overhead if called once per function instead of once per script
+    run — caught during this pass's own regen-and-verify pass (2
+    scripts, galaxy_map_module.py/galaxy_map_zoom.py, timing out where
+    they hadn't before)."""
+    key = str(core_js_path)
+    if key in _LEGACY_MAINJS_TEXT_CACHE:
+        return _LEGACY_MAINJS_TEXT_CACHE[key]
+    if not core_js_path.exists():
+        return ''
+    text = core_js_path.read_text(encoding='utf-8', errors='ignore')
+    m = re.search(r'/\* ===LEGACY:mainjs=== \*/\n(.*?)/\* ===END:LEGACY:mainjs=== \*/',
+                  text, re.DOTALL)
+    result = m.group(1) if m else ''
+    _LEGACY_MAINJS_TEXT_CACHE[key] = result
+    return result
+
+
+def _mainjs_function_bodies(core_js_path: Path = CORE_JS):
     """Real, main.js-side sibling of _function_bodies() (rule 8, same
     "until the next top-level definition" splitting technique, applied
     to main.js's own flatter top-level-function shape rather than a
     RPGACE.register() module object literal). Read-only evidence
-    gathering — never mutates main.js. Matches `function name(...) {`/
+    gathering — never mutates anything. Matches `function name(...) {`/
     `async function name(...) {` at real column-0 indentation
     (confirmed by direct read: checkPassword/togglePwVis/etc. are all
     true top-level declarations, not indented). Real, honest scope
     limit: a function assigned via `const x = function(){}` or one
     nested inside another function's body is not split out separately
-    here — same class of limit _function_bodies() already states."""
-    if not main_js_path.exists():
+    here — same class of limit _function_bodies() already states.
+    Aug 20 2026: sources from _legacy_mainjs_text() (the merged
+    file's own legacy section) instead of a separate main.js file."""
+    text = _legacy_mainjs_text(core_js_path)
+    if not text:
         return {}
-    lines = main_js_path.read_text(encoding='utf-8', errors='ignore').splitlines()
+    lines = text.splitlines()
     def_lines = []
     for i, line in enumerate(lines):
         m = re.match(r'(?:async\s+)?function\s+(\w+)\s*\(', line)
@@ -1180,7 +1220,7 @@ def _mainjs_function_bodies(main_js_path: Path = MAIN_JS):
 _MAINJS_BRIDGE_CACHE = {}
 
 
-def compute_mainjs_window_bridge(core_js_path: Path = CORE_JS, main_js_path: Path = MAIN_JS,
+def compute_mainjs_window_bridge(core_js_path: Path = CORE_JS,
                                   index_html_path: Path = INDEX_HTML):
     """The real 2-hop UI-trigger bridge — Aug 14, built directly off
     Alex's own words: "verify would require my input... i think galaxy
@@ -1192,7 +1232,7 @@ def compute_mainjs_window_bridge(core_js_path: Path = CORE_JS, main_js_path: Pat
     defines an original/stub, a rpgace_core.js module's init()/
     _intercept() reassigns window.X to the real implementation) means
     the button's onclick often names a DIFFERENT function, defined in
-    main.js, which then calls window.X internally.
+    main.js's legacy section, which then calls window.X internally.
 
     Real, confirmed evidence chain (Aug 14, direct read, not guessed):
     index.html:61 `onclick="checkPassword()"` -> main.js's own
@@ -1201,17 +1241,24 @@ def compute_mainjs_window_bridge(core_js_path: Path = CORE_JS, main_js_path: Pat
     does `window.RPGACE_verifyPassword = function(pw){...}` (now a
     real Level-3 node itself, see _module_def_line_match()).
 
+    Aug 20 2026: main.js was mechanically merged into rpgace_core.js —
+    `_mainjs_function_bodies()` now sources from that file's own
+    legacy section (`_legacy_mainjs_text()`) instead of a separate
+    file, so this bridge keeps working identically post-merge. The
+    real evidence chain above is unchanged; only where the "main.js
+    text" comes from changed.
+
     Returns {(module, func): evidence_string} for every real
     rpgace_core.js function whose own `window.Y = function`
     assignment is genuinely reachable this way — either directly
-    (index.html names Y itself) or via one real main.js hop. Real,
-    honest scope limit: only a DIRECT textual `window.<name>`
-    reference inside the main.js function body counts — a call
-    reached through a variable alias is invisible here, same class of
-    limit as every other detector in this file. Module-level memoized
-    (rule 11 — same pattern as find_wrap_installer_function(), this
-    doesn't change within one script run)."""
-    key = (str(core_js_path), str(main_js_path), str(index_html_path))
+    (index.html names Y itself) or via one real main.js-legacy-section
+    hop. Real, honest scope limit: only a DIRECT textual `window.<name>`
+    reference inside the legacy function body counts — a call reached
+    through a variable alias is invisible here, same class of limit as
+    every other detector in this file. Module-level memoized (rule 11
+    — same pattern as find_wrap_installer_function(), this doesn't
+    change within one script run)."""
+    key = (str(core_js_path), str(index_html_path))
     if key in _MAINJS_BRIDGE_CACHE:
         return _MAINJS_BRIDGE_CACHE[key]
     onclick_targets = set()
@@ -1219,7 +1266,7 @@ def compute_mainjs_window_bridge(core_js_path: Path = CORE_JS, main_js_path: Pat
         onclick_targets = set(re.findall(
             r'on(?:click|change|input)="(\w+)\(',
             index_html_path.read_text(encoding='utf-8', errors='ignore')))
-    mainjs_bodies = _mainjs_function_bodies(main_js_path)
+    mainjs_bodies = _mainjs_function_bodies(core_js_path)
     # Which window.<Y> globals does each real, index.html-triggered
     # main.js function body actually reference (the one real hop)?
     bridged_globals = {}
