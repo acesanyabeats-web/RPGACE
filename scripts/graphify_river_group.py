@@ -1102,57 +1102,6 @@ CORE_WRAPPER_HOOKS = {
 }
 
 
-def compute_hook_signal_edges(core_js_path: Path = CORE_JS):
-    """(2) Real module-to-module RPGACE.hooks.fire()/hooks.on() pairing
-    — closes the exact gap compute_intra_river_flow()'s own docstring
-    names as invisible ("a relationship carried through
-    RPGACE.hooks.fire()... is invisible to this method"). For every
-    real hook name, finds every module whose own source block contains
-    a real `hooks.fire('name'` (the firer) and every module whose
-    block contains a real `hooks.on('name'` (the listener), plus
-    CORE_WRAPPER_HOOKS' own real firers (labeled
-    'core-wrapper[mainjs:<fn>]' since they're not owned by any single
-    RPGACE.register() module — they're rpgace_core.js's own top-level
-    bridge code, wrapping a real main.js UI function).
-
-    Returns [(from_label, to_module, hook_name), ...]. Real, honest
-    scope limit: only catches a DIRECT `hooks.fire('name'`/
-    `hooks.on('name'` literal string match — a hook name built
-    dynamically (never done anywhere in this codebase, confirmed by
-    grep) would be invisible, same class of limit as every other
-    detector in this file."""
-    ranges = parse_module_ranges(core_js_path)
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
-    fire_map, listen_map = {}, {}
-    for mod, (s, e) in ranges.items():
-        block = '\n'.join(lines[s - 1:e])
-        for h in re.findall(r"hooks\.fire\(\s*'([^']+)'", block):
-            fire_map.setdefault(h, set()).add(mod)
-        for h in re.findall(r"hooks\.on\(\s*'([^']+)'", block):
-            listen_map.setdefault(h, set()).add(mod)
-    for fn, hook in CORE_WRAPPER_HOOKS.items():
-        fire_map.setdefault(hook, set()).add('core-wrapper[mainjs:%s]' % fn)
-    edges = []
-    for hook, listeners in listen_map.items():
-        for f in sorted(fire_map.get(hook, ())):
-            for l in sorted(listeners):
-                if f == l:
-                    continue
-                edges.append((f, l, hook))
-    return edges
-
-
-# Real, module-level precompute (rule 11 — same 44-module scale as
-# _WRAP_INSTALLER_CACHE, cheap and never changes within one script run;
-# compute_intra_river_flow() reads this directly rather than
-# recomputing per-river, matching CROSS_MODULE_CALLS' own eager-
-# precompute convention in galaxy_map_level3.py). Safe regardless of
-# definition order — compute_intra_river_flow() only reads this name
-# when it's actually CALLED by an external script, by which point this
-# whole module has finished importing.
-_HOOK_SIGNAL_EDGES = compute_hook_signal_edges()
-
-
 _LEGACY_MAINJS_TEXT_CACHE = {}
 
 
@@ -1215,6 +1164,91 @@ def _mainjs_function_bodies(core_js_path: Path = CORE_JS):
         end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(lines)
         bodies[fname] = '\n'.join(lines[start_i:end_i])
     return bodies
+
+
+def compute_hook_signal_edges(core_js_path: Path = CORE_JS):
+    """Real module-to-legacy-section relationship edges, 2 real signal
+    types merged into one list (rule 8 — one shared function, every
+    consumer picks up both automatically):
+
+    (1) RPGACE.hooks.fire()/hooks.on() pairing — closes the exact gap
+    compute_intra_river_flow()'s own docstring names as invisible ("a
+    relationship carried through RPGACE.hooks.fire()... is invisible
+    to this method"). For every real hook name, finds every module
+    whose own source block contains a real `hooks.fire('name'` (the
+    firer) and every module whose block contains a real
+    `hooks.on('name'` (the listener), plus CORE_WRAPPER_HOOKS' own
+    real firers (labeled 'core-wrapper[mainjs:<fn>]' since they're not
+    owned by any single RPGACE.register() module — they're the legacy
+    section's own top-level bridge code, wrapping a real main.js UI
+    function).
+
+    (2) Aug 20 2026, G22 continuation post-main.js-merge — the mirror
+    image of (1): a legacy-section function calling a real module
+    DIRECTLY via `RPGACE.modules.<mod>.<method>(...)`, labeled
+    'direct-call' instead of a hook name. Real, confirmed find:
+    oracleProviderMode (G34) fell through every existing signal
+    because its entire connection to the app is main.js's own
+    callOracle() calling it directly — no hook, no window.X bridge, no
+    cross-module call from another module. Same
+    'core-wrapper[mainjs:<fn>]' pseudo-node naming as (1).
+
+    Returns [(from_label, to_module, hook_or_kind), ...]. Real, honest
+    scope limit: only catches a DIRECT `hooks.fire('name'`/
+    `hooks.on('name'` literal string match — a hook name built
+    dynamically (never done anywhere in this codebase, confirmed by
+    grep) would be invisible, same class of limit as every other
+    detector in this file."""
+    ranges = parse_module_ranges(core_js_path)
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    fire_map, listen_map = {}, {}
+    for mod, (s, e) in ranges.items():
+        block = '\n'.join(lines[s - 1:e])
+        for h in re.findall(r"hooks\.fire\(\s*'([^']+)'", block):
+            fire_map.setdefault(h, set()).add(mod)
+        for h in re.findall(r"hooks\.on\(\s*'([^']+)'", block):
+            listen_map.setdefault(h, set()).add(mod)
+    for fn, hook in CORE_WRAPPER_HOOKS.items():
+        fire_map.setdefault(hook, set()).add('core-wrapper[mainjs:%s]' % fn)
+    edges = []
+    for hook, listeners in listen_map.items():
+        for f in sorted(fire_map.get(hook, ())):
+            for l in sorted(listeners):
+                if f == l:
+                    continue
+                edges.append((f, l, hook))
+
+    # Real, 2nd signal type (Aug 20 2026, G22 continuation post-main.js-
+    # merge): a legacy-section function calling a real module DIRECTLY
+    # via `RPGACE.modules.<mod>.<method>(...)` — the mirror image of
+    # CORE_WRAPPER_HOOKS above (which only catches the module -> legacy
+    # direction, a real `window.X = function` a legacy function reads).
+    # Real, confirmed find: oracleProviderMode (G34, Aug 15 2026) fell
+    # through EVERY existing signal (same-river, cross-module backdoor,
+    # hook pairing, main.js window-bridge) because its entire real
+    # connection to the rest of the app is main.js's own callOracle()
+    # calling `RPGACE.modules.oracleProviderMode.isExternal()`/
+    # `.getProviderName()` directly — a real, live relationship no
+    # existing detector was built to see. Reuses the exact same
+    # `core-wrapper[mainjs:<fn>]` pseudo-node naming CORE_WRAPPER_HOOKS
+    # already established, labeled 'direct-call' instead of a real hook
+    # name so a reader can tell the two signal types apart at a glance.
+    for fname, body in _mainjs_function_bodies(core_js_path).items():
+        for called_mod in set(re.findall(r'RPGACE\.modules\.(\w+)\.', body)):
+            if called_mod in ranges:
+                edges.append(('core-wrapper[mainjs:%s]' % fname, called_mod, 'direct-call'))
+    return edges
+
+
+# Real, module-level precompute (rule 11 — same 44-module scale as
+# _WRAP_INSTALLER_CACHE, cheap and never changes within one script run;
+# compute_intra_river_flow() reads this directly rather than
+# recomputing per-river, matching CROSS_MODULE_CALLS' own eager-
+# precompute convention in galaxy_map_level3.py). Safe regardless of
+# definition order — compute_intra_river_flow() only reads this name
+# when it's actually CALLED by an external script, by which point this
+# whole module has finished importing.
+_HOOK_SIGNAL_EDGES = compute_hook_signal_edges()
 
 
 _MAINJS_BRIDGE_CACHE = {}
