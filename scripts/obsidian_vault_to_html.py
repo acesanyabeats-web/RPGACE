@@ -88,9 +88,12 @@ def render_inline(text: str, pages_by_key: dict) -> str:
         slug = pages_by_key.get(key)
         if slug:
             return f'<a href="#{slug}" class="wl" onclick="nav(\'{slug}\');return false;">{escape(label)}</a>'
-        # Honest unresolved link — real gap (v1 scope has no per-module
-        # note yet), shown distinctly rather than hidden or faked.
-        return f'<span class="wl-broken" title="Not yet its own note (v1 scope) — see obsidian-vault/ README in graphify_to_obsidian.py">{escape(label)}</span>'
+        # Honest unresolved link — as of v2 scope (G57, Aug 20 2026) all
+        # 45 real modules have their own note; a genuinely unresolved
+        # link now means the target is something else entirely (a
+        # skill name, a main.js-legacy function, a non-module concept)
+        # rather than a known-missing module note.
+        return f'<span class="wl-broken" title="No note exists for this target — see obsidian-vault/ in graphify_to_obsidian.py">{escape(label)}</span>'
 
     text = re.sub(r'\[\[([^\]|]+)(?:\|([^\]]+))?\]\]', wikilink, text)
     text = escape(text, quote=False).replace('&lt;a ', '<a ').replace('&lt;/a&gt;', '</a>') \

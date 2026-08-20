@@ -11,8 +11,8 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[chroniclesLog]] — `rpgace_core.js:18695-18976`
-- [[careerStatCard]] — `rpgace_core.js:18292-18693`
+- [[chroniclesLog]] — `rpgace_core.js:23429-23710`
+- [[careerStatCard]] — `rpgace_core.js:23026-23427`
 
 ## Flows into
 

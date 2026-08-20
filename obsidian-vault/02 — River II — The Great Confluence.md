@@ -11,13 +11,14 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[pathRouter]] — `rpgace_core.js:19049-19126`
+- [[pathRouter]] — `rpgace_core.js:23783-23860`
 
 ## Flows into
 
 - → [[03 — River III — The Oracle Current.md|River III — The Oracle Current]] — **Page / UI routing** (Oracle page selected)
 - → [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]] — **Page / UI routing** (Bookworm page selected)
-- → [[05 — River V — Two Independent Streams.md|River V — Two Independent Streams]] — **Page / UI routing** (Schedule/Content Intel page selected)
+- → [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]] — **Page / UI routing** (Schedule page selected)
+- → [[17 — River XVII — The Research & Intel Stream.md|River XVII — The Research & Intel Stream]] — **Page / UI routing** (Content Intel page selected)
 
 ## Fed by
 

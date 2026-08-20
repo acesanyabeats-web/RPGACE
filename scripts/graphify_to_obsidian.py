@@ -41,7 +41,11 @@ from graphify_river_group import (  # noqa: E402  (import after sys.path fix, de
     RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     RIVER_ROLE_NOTE, EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_LABEL,
-    parse_module_ranges,
+    parse_module_ranges, LEVEL3_MODULES,
+    compute_intra_river_flow, compute_cross_module_function_calls,
+    compute_hook_signal_edges, compute_mainjs_window_bridge,
+    compute_module_ui_signal, compute_module_oracle_call_count,
+    compute_module_supabase_touch_count, compute_external_call_sites,
 )
 
 DEFAULT_VAULT = Path('obsidian-vault')
@@ -142,6 +146,139 @@ def build_hub_note(num: int, module_ranges) -> str:
     return '\n'.join(lines)
 
 
+# ─── v2 scope (G57, Aug 20 2026) — real per-module notes ───────────────
+# Alex's own real ask: he was looking at the real Obsidian app and saw
+# every [[moduleName]] wikilink (e.g. [[taxonomyReviewQueue]]) rendering
+# as unresolved — v1 scope (above) only ever wrote 16 river-hub notes,
+# never one per individual module, exactly as this file's own v1-scope
+# docstring already stated plainly. This closes that gap for all 45 real
+# RIVER_MODULES-tracked modules, reusing the EXACT same real detection
+# functions perspective_generate_modules.py already proved (rule 8, not
+# re-derived) — never fabricated content, every relationship a real
+# citation from graphify_river_group.py's own already-computed data.
+_MODULE_RIVER = {}
+for _r, _mods in RIVER_MODULES.items():
+    for _m in _mods:
+        _MODULE_RIVER[_m] = _r
+
+_INTRA_FLOW = compute_intra_river_flow()
+_CROSS_CALLS = compute_cross_module_function_calls()
+_HOOK_EDGES = compute_hook_signal_edges()
+_BRIDGE = compute_mainjs_window_bridge()
+
+
+def module_note_filename(mod: str) -> str:
+    # Deliberately just "<mod>.md", no prefix — build_hub_note() above
+    # already writes plain [[moduleName]] wikilinks (established before
+    # this v2 scope existed); matching that exact filename convention is
+    # what resolves those links, rather than needing to touch every
+    # existing hub note's own link text.
+    return f'{slug(mod)}.md'
+
+
+def build_module_note(mod: str, module_ranges) -> str:
+    rnum = _MODULE_RIVER.get(mod)
+    rng = module_ranges.get(mod)
+    ui = compute_module_ui_signal(mod)
+    oracle_calls = compute_module_oracle_call_count(mod)
+    sb_touches = compute_module_supabase_touch_count(mod)
+    externals = compute_external_call_sites(mod)
+
+    lines = ['---', f'module_name: "{mod}"', 'kind: module']
+    if rnum:
+        lines.append(f'river_number: {rnum}')
+        lines.append(f'river_name: "{RIVER_NAME[rnum]}"')
+    if rng:
+        lines.append(f'source_lines: "{rng[0]}-{rng[1]}"')
+    lines.append('source: "graphify_river_group.py — real, not guessed"')
+    lines.append('---')
+    lines.append('')
+    lines.append(f'# {mod}')
+    lines.append('')
+    if rng:
+        lines.append(f'`rpgace_core.js:{rng[0]}-{rng[1]}`')
+        lines.append('')
+    if rnum:
+        lines.append(f'Member of [[{note_filename(rnum)}|{RIVER_NAME[rnum]}]].')
+        lines.append('')
+
+    # Real UI/Oracle/Supabase/external evidence — same 3 axes the Galaxy
+    # Map's own Level 2/3 Alex/Oracle/Supabase bubbles already compute.
+    lines.append('## Real touch evidence')
+    lines.append('')
+    lines.append(f"- **UI**: {'renders real output' if ui['output'] else 'no direct output'}, "
+                  f"{'takes real input' if ui['input'] else 'no direct input'}.")
+    if oracle_calls:
+        lines.append(f'- **Oracle**: {oracle_calls} real call site(s) (sendToOracle/callOracle/fillGaps).')
+    n_sb_funcs, n_sb_total, sb_tables = sb_touches
+    if n_sb_total:
+        lines.append(f'- **Supabase**: {n_sb_total} real touch(es) across {", ".join(sorted(sb_tables))}.')
+    if externals:
+        all_actions = sorted({a for acts in externals.values() for a in acts})
+        lines.append(f'- **External connectors**: {", ".join(all_actions)}.')
+    lines.append('')
+
+    # Real relationships to OTHER modules — the actual value of a
+    # per-module note over a river-hub note: resolving module-to-module
+    # wikilinks, not just module-to-river.
+    calls_out, calls_in = set(), set()
+    for rn, edges in _INTRA_FLOW.items():
+        for f, t, kind in edges:
+            if f == mod:
+                calls_out.add(t)
+            if t == mod:
+                calls_in.add(f)
+    for fmod, ffunc, tmod, tfunc in _CROSS_CALLS:
+        if fmod == mod:
+            calls_out.add(tmod)
+        if tmod == mod:
+            calls_in.add(fmod)
+    hooks_fired, hooks_heard = [], []
+    for frm, to, kind in _HOOK_EDGES:
+        if to == mod and not frm.startswith('core-wrapper'):
+            hooks_heard.append((frm, kind))
+        if to == mod and frm.startswith('core-wrapper'):
+            hooks_heard.append((frm, kind))
+    bridged = [f for (m, fn) in _BRIDGE if m == mod]
+
+    real_mods_out = {m for m in calls_out if m in LEVEL3_MODULES and m != mod}
+    real_mods_in = {m for m in calls_in if m in LEVEL3_MODULES and m != mod}
+    if real_mods_out:
+        lines.append('## Calls into')
+        lines.append('')
+        for t in sorted(real_mods_out):
+            lines.append(f'- → [[{module_note_filename(t)}|{t}]]')
+        lines.append('')
+    if real_mods_in:
+        lines.append('## Called by')
+        lines.append('')
+        for f in sorted(real_mods_in):
+            lines.append(f'- ← [[{module_note_filename(f)}|{f}]]')
+        lines.append('')
+    if hooks_heard:
+        lines.append('## Hook signals received')
+        lines.append('')
+        for frm, kind in sorted(set(hooks_heard)):
+            lines.append(f'- ← `{frm}` (**{kind}**)')
+        lines.append('')
+    if bridged:
+        lines.append('## Legacy-section bridge')
+        lines.append('')
+        lines.append('Real functions in rpgace_core.js\'s own legacy section '
+                      '(merged from the old main.js, Aug 20 2026) call this module directly:')
+        lines.append('')
+        for fn in sorted(set(bridged)):
+            lines.append(f'- `{fn}()`')
+        lines.append('')
+
+    lines.append('---')
+    lines.append('*Generated by `scripts/graphify_to_obsidian.py` (v2 scope, G57) — real data '
+                  'from `graphify_river_group.py`\'s own already-computed detection functions, '
+                  'never fabricated. Re-run after rpgace_core.js changes; this file is fully '
+                  'regenerated each time, not hand-edited.*')
+    return '\n'.join(lines)
+
+
 def build_index_note() -> str:
     lines = ['---', 'title: "RPGACE System Map"', '---', '',
              '# RPGACE System Map', '',
@@ -180,12 +317,47 @@ def export(vault_dir: Path):
     (vault_dir / 'RPGACE System Map.md').write_text(build_index_note(), encoding='utf-8')
 
     count = 0
+    expected = {'RPGACE System Map.md'}
     for n in range(1, TOTAL_ZONES + 1):
         text = build_hub_note(n, module_ranges)
-        (vault_dir / note_filename(n)).write_text(text, encoding='utf-8')
+        fname = note_filename(n)
+        (vault_dir / fname).write_text(text, encoding='utf-8')
+        expected.add(fname)
         count += 1
 
-    return count
+    # Real, honest bug fix (Aug 20 2026, found by this same session's own
+    # file-count sanity check, not a hypothetical): a river RENAME (e.g.
+    # the Aug 18 G49 River V split — "Two Independent Streams" became
+    # "Daily Ops: Agenda, Schedule & Journal") changes note_filename()'s
+    # OWN output for that river number, but nothing ever deleted the OLD
+    # filename — this script only ever WROTE current files, never
+    # cleaned up stale ones a prior run had left behind. Confirmed real:
+    # a genuinely stale "05 — River V — Two Independent Streams.md" sat
+    # in the vault since Aug 18, invisible until counted directly. Fixed
+    # below, after all module notes are known too (same expected-set
+    # sweep covers both real causes at once).
+
+    # v2 scope (G57, Aug 20 2026) — one real note per module, resolving
+    # every [[moduleName]] wikilink the hub notes above already write.
+    module_count = 0
+    for mod in sorted(LEVEL3_MODULES):
+        fname = module_note_filename(mod)
+        text = build_module_note(mod, module_ranges)
+        (vault_dir / fname).write_text(text, encoding='utf-8')
+        expected.add(fname)
+        module_count += 1
+
+    # Real cleanup sweep — delete any .md file in the vault that this
+    # run did NOT just write. Catches the stale-rename bug above for
+    # both hub and module notes, present and future (a module rename,
+    # a river split/merge, a module removed from RIVER_MODULES).
+    removed = 0
+    for f in vault_dir.glob('*.md'):
+        if f.name not in expected:
+            f.unlink()
+            removed += 1
+
+    return count, module_count, removed
 
 
 if __name__ == '__main__':
@@ -193,6 +365,7 @@ if __name__ == '__main__':
     if not CORE_JS.exists():
         print(f'ERROR: {CORE_JS} not found — run from the repo root.')
         sys.exit(1)
-    n = export(vault)
-    print(f'Wrote {n} hub notes + 1 index note to {vault}/')
+    n, m, removed = export(vault)
+    print(f'Wrote {n} hub notes + {m} module notes + 1 index note to {vault}/'
+          + (f' (removed {removed} stale file(s))' if removed else ''))
     print('Open this folder as a vault in Obsidian (File -> Open folder as vault).')

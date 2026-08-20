@@ -11,7 +11,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[authGate]] — `rpgace_core.js:18207-18290`
+- [[authGate]] — `rpgace_core.js:22941-23024`
 
 ## Flows into
 

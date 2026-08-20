@@ -43,7 +43,7 @@ Canonical source: `ai_tooling_and_rules_map.md`'s own "External AI/tool provider
 ## Fed by
 
 - ← [[03 — River III — The Oracle Current.md|River III — The Oracle Current]] — **Oracle / Claude judgment call** (dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call)
-- ← [[05 — River V — Two Independent Streams.md|River V — Two Independent Streams]] — **Extracts data from outside RPGACE** (morningBrief's real Composio Gmail-fetch call routes out through here)
+- ← [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]] — **Extracts data from outside RPGACE** (morningBrief's real Composio Gmail-fetch call routes out through here)
 - ← [[09 — River IX — The Mirror and the Far Shore.md|River IX — The Mirror and the Far Shore]] — **Queues/drains an async Total-system job** (the Claude Code fallback lane's drain and Graphify CC's own session-start dispatch both route out through here)
 - ← [[11 — River XI — Content Production Live.md|River XI — Content Production Live]] — **Queues/drains an async Total-system job** (the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here)
 - ← [[16 — River XVI — Dev Tooling.md|River XVI — Dev Tooling]] — **Real persisted write** (generates graph.html/GRAPH_TREE.html, this river's own visual form)

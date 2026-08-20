@@ -11,9 +11,9 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[taxonomyReviewQueue]] — `rpgace_core.js:4193-4632`
-- [[taxonomySync]] — `rpgace_core.js:6952-7161`
-- [[taxonomyTree]] — `rpgace_core.js:7366-8117`
+- [[taxonomyReviewQueue]] — `rpgace_core.js:8702-9141`
+- [[taxonomySync]] — `rpgace_core.js:11686-11895`
+- [[taxonomyTree]] — `rpgace_core.js:12100-12851`
 
 ## Flows into
 
@@ -21,7 +21,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Fed by
 
-- ← [[05 — River V — Two Independent Streams.md|River V — Two Independent Streams]] — **Real persisted write** (Content Intelligence branch only — the Schedule branch is terminal, ends at the Schedule Calendar)
+- ← [[17 — River XVII — The Research & Intel Stream.md|River XVII — The Research & Intel Stream]] — **Real persisted write** (Content Intelligence real write path — the pending-proposal/review-queue flow)
 - ← [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]] — **Needs Alex's explicit confirm** (any confirmable fusion-link bridge)
 - ← [[07 — River VII — The Library Current.md|River VII — The Library Current]] — **Needs Alex's explicit confirm** (a proposed merge)
 

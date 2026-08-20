@@ -219,7 +219,13 @@ RIVER_NAME = {
 # providers" table (1d); this mirrors those same facts for graphify/
 # Obsidian display, never invents new ones (rule 8: same underlying
 # facts, not restated from scratch).
-TOTAL_ZONES = 16  # 16 unified rivers: I-XI (narrative info-flow) + XII-XVI (Total-systems/dev-process)
+TOTAL_ZONES = 17  # Real, stale-fact bug fixed Aug 20 2026 (found via this session's own
+# Obsidian-vault v2-scope build, not a hypothetical): RIVER_NAME already had 17 real
+# entries since the Aug 18 G49 River-v2 split (River XVII — The Research & Intel
+# Stream), but this constant was never updated to match, silently dropping River
+# XVII from every consumer (the Obsidian vault's own hub-note loop, and the
+# zone_center() angle formula below - a real rendering risk, since river=17's old
+# angle 2*pi*16/16 collided with river=1's angle 2*pi*0/16).
 
 # Real, evidence-mirrored from ai_tooling_and_rules_map.md's own 1d
 # table (the canonical source — this is a presentation-layer mirror for

@@ -11,24 +11,25 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[oracleAppGrounding]] — `rpgace_core.js:3100-3442`
-- [[oracleTreeGrounding]] — `rpgace_core.js:2955-3098`
-- [[oracleFetchGuard]] — `rpgace_core.js:3522-3577`
-- [[oracleDevBridge]] — `rpgace_core.js:3444-3520`
-- [[mockOracle]] — `rpgace_core.js:19362-19751`
-- [[agentsIntoOracle]] — `rpgace_core.js:17879-17928`
-- [[prodOraclePanel]] — `rpgace_core.js:906-1021`
-- [[instaOraclePanel]] — `rpgace_core.js:1023-1118`
-- [[youtubeOracle]] — `rpgace_core.js:650-772`
-- [[tiktokOracle]] — `rpgace_core.js:774-904`
-- [[scheduleOracle]] — `rpgace_core.js:4822-5083`
-- [[feynman]] — `rpgace_core.js:2221-2768`
+- [[oracleAppGrounding]] — `rpgace_core.js:7551-7893`
+- [[oracleTreeGrounding]] — `rpgace_core.js:7406-7549`
+- [[oracleFetchGuard]] — `rpgace_core.js:7977-8032`
+- [[oracleDevBridge]] — `rpgace_core.js:7895-7975`
+- [[mockOracle]] — `rpgace_core.js:24096-24485`
+- [[oracleProviderMode]] — `rpgace_core.js:24487-24612`
+- [[agentsIntoOracle]] — `rpgace_core.js:22613-22662`
+- [[prodOraclePanel]] — `rpgace_core.js:5357-5472`
+- [[instaOraclePanel]] — `rpgace_core.js:5474-5569`
+- [[youtubeOracle]] — `rpgace_core.js:5101-5223`
+- [[tiktokOracle]] — `rpgace_core.js:5225-5355`
+- [[scheduleOracle]] — `rpgace_core.js:9331-9592`
+- [[feynman]] — `rpgace_core.js:6672-7219`
 
 ## Flows into
 
 - → [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]] — **Page / UI routing** (a tapped insight badge)
 - → [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]] — **Page / UI routing** (special prefix diverts the message)
-- → [[05 — River V — Two Independent Streams.md|River V — Two Independent Streams]] — **Page / UI routing** (special prefix diverts the message)
+- → [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]] — **Page / UI routing** (special prefix diverts the message (scheduleOracle))
 - → [[12 — River XII — The API - Auth Layer.md|River XII — The API / Auth Layer]] — **Oracle / Claude judgment call** (dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call)
 
 ## Fed by
