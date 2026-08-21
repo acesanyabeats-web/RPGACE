@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Unified Gateway)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --purple:#9B59B6; --blue:#4A90E2; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 20%, #14101e 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:30px 24px 14px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:900px;margin:0 auto;line-height:1.6}
+  .legend-row{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;padding:10px 16px;font-size:10.5px;color:var(--dim)}
+  .legend-row .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .toggle-row{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}
+  .toggle-btn{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
+  .toggle-btn.active{background:var(--gold);color:#1a1608;border-color:var(--gold)}
+  .view{display:none}
+  .view.active{display:block}
+  .level-section{max-width:1000px;margin:18px auto;padding:0 24px}
+  .level-head{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;border-bottom:1px solid rgba(201,168,76,0.25);padding-bottom:4px}
+  .level-count{color:var(--dim);font-weight:400}
+  .level-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+  .pg-row{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+  .pg-row:hover{border-color:var(--gold)}
+  .pg-head{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+  .kind-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .pg-title{font-size:12px;font-weight:700}
+  .pg-badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px}
+  .pg-badge.entry{background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.4)}
+  .pg-badge.orphan{background:rgba(74,144,226,0.12);color:var(--blue);border:1px solid rgba(74,144,226,0.35)}
+  .pg-scope{font-size:10px;color:var(--dim);margin-bottom:6px}
+  .pg-desc{font-size:11px;line-height:1.5;color:#c8c8d4;margin-bottom:6px}
+  .pg-flow{font-size:10px;color:var(--dim)}
+  .flow-label{color:var(--gold);font-weight:700}
+  .none{color:#555}
+  #view-map{padding:10px 24px 30px;overflow-x:auto}
+  .col-label{fill:var(--dim);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+  .flow-edge{stroke:#8a8a9a55;stroke-width:1.4}
+  .map-node{cursor:pointer}
+  .map-node:hover rect{stroke-width:2}
+  .node-title{fill:#E2E2EC;font-size:9.5px;font-weight:700}
+  .node-kind{fill:#8a8a9a;font-size:8.5px}
+  #pane-wrap{max-width:1100px;margin:20px auto 40px;padding:0 24px}
+  #pane-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  #pane-title{font-size:13px;font-weight:700;color:var(--gold)}
+  #pane-open{font-size:10.5px;color:var(--dim);text-decoration:none}
+  #pane-open:hover{text-decoration:underline}
+  #content-frame{width:100%;height:0;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:#0a0a0f;transition:height .2s}
+  #content-frame.loaded{height:80vh}
+  #pane-placeholder{border:1px dashed rgba(255,255,255,0.15);border-radius:10px;padding:30px;text-align:center;color:var(--dim);font-size:12px}
+  .note{max-width:900px;margin:10px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Unified Gateway (G59)</div>
+  <h1>🌌 One Central Door, 23 Real Pages, 66 Real Gateways</h1>
+  <p>Every real Galaxy Map page, reachable from one shell — grouped by real Level and real river/dimension, annotated with the real "→ flows into" links each page already carries. The 21 existing pages are untouched; clicking a row or node loads that page's real content below, so this stays light on first paint (real evidence: the ~12,000ms boot-lag already logged this session made a single monolithic file a real regression risk, not a hypothetical one — see the spec).</p>
+</div>
+<div class="legend-row">
+  <span><span class="dot" style="background:#C9A84C"></span>🌌 core (spatial ladder)</span>
+  <span><span class="dot" style="background:#4A90E2"></span>🔗 inter (connection/flow — renders as an edge)</span>
+  <span><span class="dot" style="background:#9B59B6"></span>💉 infra (attached resource — renders as a node bubble)</span>
+  <span><span class="dot" style="background:#8a8a9a"></span>🧭 meta (cross-dimension analysis)</span>
+  <span>🚪 root · 🧭 hub-only (no other page links here yet)</span>
+</div>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="table">📊 Table view</div>
+  <div class="toggle-btn" data-view="map">🌌 Map view</div>
+</div>
+<div class="view active" id="view-table">
+  
+<div class="level-section">
+  <div class="level-head">L0 <span class="level-count">(2)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Level 0 — RPGACE Architecture (4 Galaxies)</span>
+    <span class="pg-badge entry" title="The one real root — every other page leads back here as home">🚪 root</span>
+  </div>
+  <div class="pg-scope">Total Systems: RPGACE / Orchestrator CC / OpenMontage CC / Graphify CC</div>
+  <div class="pg-desc">The original real Level 0 — Total Systems as 4 galaxies, Oracle + self-awareness as their own nodes, styled per the Assassin's Creed Valhalla reference.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> L0 — 7 Peer Units, Level 1 — Rivers</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_l0.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">L0 — 7 Peer Units</span>
+    
+  </div>
+  <div class="pg-scope">External AI / RPGACE Architecture / Skills / Orchestrator CC / Alex / Supabase / Oversight Docs</div>
+  <div class="pg-desc">G43 redefinition (Aug 18) — no privileged gateway unit. Real 🗺️/📊 toggle over the same 17 hand-curated dimension-edges.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Decisions — Website Perspective, Externals — UI + Backend Dimension, Orchestrator ↔ OpenMontage, Skills — AI/UI/Backend Dimension, Supabase</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L1 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_river.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Level 1 — Rivers</span>
+    
+  </div>
+  <div class="pg-scope">All 17 rivers</div>
+  <div class="pg-desc">G3 — RPGACE Architecture's own 17 rivers, radial, cross-linked by real RIVER_FLOWS data.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 2.5 — UI/Alex Accessibility, Level 2 — Modules, Flow, Externals & Skills</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L2 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_module.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Level 2 — Modules, Flow, Externals & Skills</span>
+    
+  </div>
+  <div class="pg-scope">All 17 rivers' real modules</div>
+  <div class="pg-desc">G4+G5 — real left-to-right module flow per river, terminal badges, dashboard/external/skill tributaries.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 2.5 — UI/Alex Accessibility, Level 1 — Rivers</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L2.5 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_level2_5.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Level 2.5 — UI/Alex Accessibility</span>
+    
+  </div>
+  <div class="pg-scope">10 rivers with a real dashboard card</div>
+  <div class="pg-desc">G38 — real successor to Meanders: river → dashboard card → primary module chain.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 3 — Function Chains (superseded), Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L1.5 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_meanders.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Level 1.5 — Meanders (superseded)</span>
+    <span class="pg-badge orphan" title="No other Galaxy Map page links here yet — reached only via this hub or the Oversight popup">🧭 hub-only</span>
+  </div>
+  <div class="pg-scope">River V only, pre-Aug-20 split</div>
+  <div class="pg-desc">Retired Aug 20 in favor of Level 2.5 — kept on disk for reference, no longer the live drill-down path.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">Current (L3) <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_current.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Current Series (replaces old Level 3)</span>
+    
+  </div>
+  <div class="pg-scope">All 45 modules, 436 functions</div>
+  <div class="pg-desc">G47 — real per-function input/handling/output/next detail, the live replacement for the old call-chain graph.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> L0 — 7 Peer Units, Level 3 — Function Chains (superseded), Level 2 — Modules, Flow, Externals & Skills</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L3 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_level3.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Level 3 — Function Chains (superseded)</span>
+    
+  </div>
+  <div class="pg-scope">All 45 modules</div>
+  <div class="pg-desc">Old call-chain graph — superseded by Current Series, kept as detailed secondary reference (rule 8).</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Decisions — Website Perspective, Level 2.5 — UI/Alex Accessibility, Level 4 — Frontend Flow (superseded), Level 5 — Logic, Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">Zoom (L4) <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_zoom.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#C9A84C" title="Core (spatial ladder)"></span>
+    <span class="pg-title">Zoomed Current Walkthrough (repurposed Level 4)</span>
+    
+  </div>
+  <div class="pg-scope">436 real zoomed cards</div>
+  <div class="pg-desc">G47 continuation — walks one Current at a time to its real next call, until a genuine terminal or module boundary.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Current Series (replaces old Level 3), L0 — 7 Peer Units</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L4 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_level4.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Level 4 — Frontend Flow (superseded)</span>
+    
+  </div>
+  <div class="pg-scope">12 real dashboard cards</div>
+  <div class="pg-desc">Old dashboard-card click-flow graph — role retired (G48), kept as detailed per-card reference.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> L0 — 7 Peer Units, Level 3 — Function Chains (superseded), Level 5 — Logic, Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers, Zoomed Current Walkthrough (repurposed Level 4)</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L5 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_level5.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Level 5 — Logic</span>
+    
+  </div>
+  <div class="pg-scope">7 curated decision points</div>
+  <div class="pg-desc">G17 — curated core-logic decision points, each with a verbatim rpgace_core.js excerpt checked at build time.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 3 — Function Chains (superseded), Level 4 — Frontend Flow (superseded), Level 6 — Detailed Decision, Logic Dimension, Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">L6 <span class="level-count">(1)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_level6.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Level 6 — Detailed Decision</span>
+    
+  </div>
+  <div class="pg-scope">1089 branch points, 45 modules</div>
+  <div class="pg-desc">G18 — exhaustive, mechanical if/else-if/else/switch branch extraction, listed not narrated.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 3 — Function Chains (superseded), Level 4 — Frontend Flow (superseded), Level 5 — Logic, Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers</div>
+</div></div>
+</div>
+<div class="level-section">
+  <div class="level-head">Dimension <span class="level-count">(11)</span></div>
+  <div class="level-rows">
+<div class="pg-row" data-file="galaxy_map_logic_dimension.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Logic Dimension</span>
+    
+  </div>
+  <div class="pg-scope">96 edges across 17 rivers</div>
+  <div class="pg-desc">Level 5's real companion — every river-to-river connection, external connector, and skill stream as a clickable passage.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Level 5 — Logic</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_decisions.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Decisions — Website Perspective</span>
+    
+  </div>
+  <div class="pg-scope">10 human-confirm gates, RPGACE app code only</div>
+  <div class="pg-desc">G26 Phase 1 — destructive-delete/taxonomy/pipeline confirm gates, grouped by decision type.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Externals — UI + Backend Dimension, Level 3 — Function Chains (superseded), Level 5 — Logic, Level 2 — Modules, Flow, Externals & Skills, Level 1 — Rivers, Skills — AI/UI/Backend Dimension</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_supabase.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Supabase</span>
+    
+  </div>
+  <div class="pg-scope">25 tables, 113 of 502 functions</div>
+  <div class="pg-desc">G45 — every real client-side Supabase table touch, by Level/River/Module.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> L0 — 7 Peer Units</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_externals.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Externals — UI + Backend Dimension</span>
+    
+  </div>
+  <div class="pg-scope">13 real external connectors</div>
+  <div class="pg-desc">G27 — whether each connector genuinely touches real UI AND real backend processing.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Decisions — Website Perspective, Level 2 — Modules, Flow, Externals & Skills</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_skills.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Skills — AI/UI/Backend Dimension</span>
+    
+  </div>
+  <div class="pg-scope">24 real RPGACE-authored skills</div>
+  <div class="pg-desc">G28 — whether each skill reaches external AI, touches real UI, or touches real backend.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Decisions — Website Perspective, Externals — UI + Backend Dimension, Skill Composition Network</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_skill_network.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Skill Composition Network</span>
+    
+  </div>
+  <div class="pg-scope">117 real skill-to-skill edges</div>
+  <div class="pg-desc">Real /skillName invocation edges between RPGACE-authored skills.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Skills — AI/UI/Backend Dimension</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_orchestrator_openmontage.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Orchestrator ↔ OpenMontage</span>
+    
+  </div>
+  <div class="pg-scope">8 real dispatch rows</div>
+  <div class="pg-desc">G29 — real async dispatch history between Orchestrator CC and OpenMontage CC via openmontage_jobs.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Externals — UI + Backend Dimension</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_oversight_sync.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Oversight Sync Dimension</span>
+    <span class="pg-badge orphan" title="No other Galaxy Map page links here yet — reached only via this hub or the Oversight popup">🧭 hub-only</span>
+  </div>
+  <div class="pg-scope">18 trigger rows, 4 ritual sequences</div>
+  <div class="pg-desc">G55 — real process-TIME oversight-doc sequencing: what gets touched, in what order, during a push/build/ritual.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Decisions — Website Perspective, Load Dimension</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_dimensions.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#8a8a9a" title="Meta (cross-dimension analysis)"></span>
+    <span class="pg-title">Dimensions Matrix</span>
+    
+  </div>
+  <div class="pg-scope">45 modules × 5 shipped dimensions</div>
+  <div class="pg-desc">G30 — real multi-home overlap analysis across every other dimension page shipped so far.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Load Dimension</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_alex_path.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#4A90E2" title="Inter (connection/flow)"></span>
+    <span class="pg-title">Alex's Decision Path</span>
+    <span class="pg-badge orphan" title="No other Galaxy Map page links here yet — reached only via this hub or the Oversight popup">🧭 hub-only</span>
+  </div>
+  <div class="pg-scope">12 real dashboard cards</div>
+  <div class="pg-desc">G37 — real Level-4 flow to target module(s), then the real Y/N fork Alex actually hits, if any.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Dimensions Matrix</div>
+</div>
+<div class="pg-row" data-file="galaxy_map_load.html">
+  <div class="pg-head">
+    <span class="kind-dot" style="background:#9B59B6" title="Infra (attached resource)"></span>
+    <span class="pg-title">Load Dimension</span>
+    
+  </div>
+  <div class="pg-scope">27 boot tasks, 29 nav triggers, 5 click triggers</div>
+  <div class="pg-desc">G39 — 3 real, separately-tracked load-trigger categories: boot sequence, page-nav, on-demand click.</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Decisions — Website Perspective, Externals — UI + Backend Dimension, Skills — AI/UI/Backend Dimension</div>
+</div></div>
+</div>
+</div>
+<div class="view" id="view-map">
+  <svg viewBox="0 0 3200 914" width="100%" style="min-width:3200px">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8a8a9a"/></marker>
+  </defs>
+  <text x="170.0" y="20" class="col-label" text-anchor="middle">L0</text><text x="430.0" y="20" class="col-label" text-anchor="middle">L1</text><text x="690.0" y="20" class="col-label" text-anchor="middle">L2</text><text x="950.0" y="20" class="col-label" text-anchor="middle">L2.5</text><text x="1210.0" y="20" class="col-label" text-anchor="middle">L1.5</text><text x="1470.0" y="20" class="col-label" text-anchor="middle">Current (L3)</text><text x="1730.0" y="20" class="col-label" text-anchor="middle">L3</text><text x="1990.0" y="20" class="col-label" text-anchor="middle">Zoom (L4)</text><text x="2250.0" y="20" class="col-label" text-anchor="middle">L4</text><text x="2510.0" y="20" class="col-label" text-anchor="middle">L5</text><text x="2770.0" y="20" class="col-label" text-anchor="middle">L6</text><text x="3030.0" y="20" class="col-label" text-anchor="middle">Dimension</text>
+  <line x1="170.0" y1="70" x2="170.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="736" x2="3030.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="170.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="1730.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="144" x2="3030.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="144" x2="1730.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="144" x2="2510.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="144" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="144" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="144" x2="3030.0" y2="366" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="662" x2="3030.0" y2="810" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="292" x2="3030.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="292" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="144" x2="3030.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="144" x2="3030.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="144" x2="3030.0" y2="514" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="144" x2="3030.0" y2="366" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="144" x2="3030.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="1730.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1730.0" y1="70" x2="3030.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1730.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1730.0" y1="70" x2="2250.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1730.0" y1="70" x2="2510.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1730.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1730.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2250.0" y1="70" x2="170.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="2250.0" y1="70" x2="1730.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2250.0" y1="70" x2="2510.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2250.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2250.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2250.0" y1="70" x2="1990.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2510.0" y1="70" x2="1730.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2510.0" y1="70" x2="2250.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2510.0" y1="70" x2="2770.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2510.0" y1="70" x2="3030.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2510.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2510.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2770.0" y1="70" x2="1730.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2770.0" y1="70" x2="2250.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2770.0" y1="70" x2="2510.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2770.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="2770.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="810" x2="3030.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="810" x2="3030.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="810" x2="3030.0" y2="366" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="70" x2="2510.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1210.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1210.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="514" x2="3030.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="588" x2="3030.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="588" x2="3030.0" y2="810" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="440" x2="3030.0" y2="366" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="366" x2="3030.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="366" x2="3030.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="366" x2="3030.0" y2="440" class="flow-edge" marker-end="url(#arrow)"/><line x1="3030.0" y1="218" x2="170.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1990.0" y1="70" x2="1470.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1990.0" y1="70" x2="170.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/>
+  
+<g class="map-node" data-file="galaxy_map.html" transform="translate(170.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle">🚪 Level 0 — RPGACE Architect</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_l0.html" transform="translate(170.0,144)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> L0 — 7 Peer Units</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_river.html" transform="translate(430.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 1 — Rivers</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_module.html" transform="translate(690.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 2 — Modules, Flow, E</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_level2_5.html" transform="translate(950.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 2.5 — UI/Alex Access</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_meanders.html" transform="translate(1210.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle">🧭 Level 1.5 — Meanders (supe</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_current.html" transform="translate(1470.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Current Series (replaces o</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_level3.html" transform="translate(1730.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 3 — Function Chains </text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_zoom.html" transform="translate(1990.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Zoomed Current Walkthrough</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🌌 core</text>
+</g>
+<g class="map-node" data-file="galaxy_map_level4.html" transform="translate(2250.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 4 — Frontend Flow (s</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_level5.html" transform="translate(2510.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 5 — Logic</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+<g class="map-node" data-file="galaxy_map_level6.html" transform="translate(2770.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Level 6 — Detailed Decisio</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+<g class="map-node" data-file="galaxy_map_logic_dimension.html" transform="translate(3030.0,70)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Logic Dimension</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_decisions.html" transform="translate(3030.0,144)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Decisions — Website Perspe</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+<g class="map-node" data-file="galaxy_map_supabase.html" transform="translate(3030.0,218)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Supabase</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+<g class="map-node" data-file="galaxy_map_externals.html" transform="translate(3030.0,292)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Externals — UI + Backend D</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+<g class="map-node" data-file="galaxy_map_skills.html" transform="translate(3030.0,366)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Skills — AI/UI/Backend Dim</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+<g class="map-node" data-file="galaxy_map_skill_network.html" transform="translate(3030.0,440)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Skill Composition Network</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_orchestrator_openmontage.html" transform="translate(3030.0,514)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Orchestrator ↔ OpenMontage</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_oversight_sync.html" transform="translate(3030.0,588)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle">🧭 Oversight Sync Dimension</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_dimensions.html" transform="translate(3030.0,662)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Dimensions Matrix</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🧭 meta</text>
+</g>
+<g class="map-node" data-file="galaxy_map_alex_path.html" transform="translate(3030.0,736)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#4A90E222;stroke:#4A90E2" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle">🧭 Alex's Decision Path</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">🔗 inter</text>
+</g>
+<g class="map-node" data-file="galaxy_map_load.html" transform="translate(3030.0,810)">
+  <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#9B59B622;stroke:#9B59B6" />
+  <text x="0" y="-4" class="node-title" text-anchor="middle"> Load Dimension</text>
+  <text x="0" y="14" class="node-kind" text-anchor="middle">💉 infra</text>
+</g>
+</svg>
+</div>
+<div id="pane-wrap">
+  <div id="pane-head">
+    <div id="pane-title">Click a page above to load it here</div>
+    <a id="pane-open" href="#" target="_blank" style="display:none">Open in new tab ↗</a>
+  </div>
+  <div id="pane-placeholder">Nothing loaded yet — the shell keeps first paint light by only fetching a page's real content once you actually ask for it.</div>
+  <iframe id="content-frame"></iframe>
+</div>
+<div class="note">
+  Generated by <code>scripts/galaxy_map_hub.py</code> (G59, real /interrogation Aug 21 2026 — 4 forks, all recommended options confirmed, full record in <code>records/2026-08/galaxy_map_unified_gateway_spec_2026-08-21.txt</code>). 66 real edges computed fresh at build time from every page's own actual cross-references (galaxy_map.html excluded as a target — it's a universal home breadcrumb, not a real flow relationship). Honest limitation: a page-grain 🏁 terminal badge is NOT shown here — real out-degree never hits zero across this 23-page set (pages cross-link for reference as well as drill-down), so a terminal claim would be false; the 🚪/🏁 convention stays accurate at the function grain (Level 3/6/Decisions/Zoom) where it was built. The deeper infra/inter retrofit — converting a genuinely-shared infra bubble into a real per-edge selector INSIDE each of these 21 pages' own rendering — is G60, logged and deliberately not built this pass (phased build, per Alex's own confirmed choice).
+</div>
+<script>
+(function() {
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  toggles.forEach(function(t) {
+    t.addEventListener('click', function() {
+      toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+      views.forEach(function(v) { v.classList.toggle('active', v.id === 'view-' + t.dataset.view); });
+    });
+  });
+  var frame = document.getElementById('content-frame');
+  var title = document.getElementById('pane-title');
+  var openLink = document.getElementById('pane-open');
+  var placeholder = document.getElementById('pane-placeholder');
+  function load(file, label) {
+    frame.src = file;
+    frame.classList.add('loaded');
+    placeholder.style.display = 'none';
+    title.textContent = label;
+    openLink.href = file;
+    openLink.style.display = '';
+    document.querySelectorAll('.pg-row').forEach(function(r) { r.style.outline = (r.dataset.file === file) ? '1px solid #C9A84C' : ''; });
+    document.getElementById('pane-wrap').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  document.querySelectorAll('.pg-row').forEach(function(row) {
+    row.addEventListener('click', function() { load(row.dataset.file, row.querySelector('.pg-title').textContent); });
+  });
+  document.querySelectorAll('.map-node').forEach(function(node) {
+    node.addEventListener('click', function() { load(node.dataset.file, node.querySelector('.node-title').textContent); });
+  });
+})();
+</script>
+</body>
+</html>

@@ -74,6 +74,25 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🚪🌌 Aug 21 — G59 shipped: Galaxy Map Unified Gateway, one central shell for all 23 real Galaxy Map pages</div>
+    <div class="card-body">
+      Alex: "now I want all galaxy html maps to be all combined into one central html with all needed files having gateways to each other, and the top list to be restructured to show how one flows into another... map/table view being toggleable... sort by level objects shown and rivers/dimensions they belong to. some dimensions are inter or infra."
+      <br><br>
+      <b>Real /interrogation first</b> (4 forks, all recommended options confirmed via AskUserQuestion, verbatim record: <code>records/2026-08/galaxy_map_unified_gateway_spec_2026-08-21.txt</code>): (1) combine mechanism — a single shell with lazy-loaded content, not a monolithic multi-megabyte concatenation, specifically to avoid repeating the ~12,000ms boot-lag regression already logged to <code>error_log</code> this same session; (2) top-nav shape — a grouped list + real flow-arrow annotations, not a full graph-canvas landing page (mobile small-target risk); (3) the inter/infra rule — "inter" dimensions (river-flow, hook signals, cross-module calls) render as edges; "infra" dimensions (Supabase touch, Oracle call, external-connector touch) render as a bubble on the ONE node that needs them, unless shared across 2+ inter-edges, in which case they become a selectable option on the edge instead; (4) build scope — a new phased <code>/CEO</code>-tracked plan (G58 umbrella, G59 shell, G60 deeper retrofit), not one giant blind pass.
+      <br><br>
+      <b>G59 built and shipped</b>: <code>graphify-out/galaxy_map_hub.html</code> — a real, hand-curated inventory of all 23 actual <code>galaxy_map_*.html</code> files (verified against the live directory at build time; the build fails loud if the list and reality ever disagree), each classified by real Level (L0-L6 plus cross-cutting "Dimension" pages) and real kind (🌌 core / 🔗 inter / 💉 infra / 🧭 meta). Real edges are computed FRESH at build time from every page's own actual <code>&lt;a href&gt;</code> cross-references (never hand-typed) — 66 real edges found, <code>galaxy_map.html</code> excluded as a target since it's a universal "home" breadcrumb, not a real flow relationship. Table view groups pages by Level with a real "→ flows into" line per row; map view renders the same data as a column-by-level node-graph with real SVG edges. Both toggle over the identical dataset (rule 8). Clicking any row/node loads that page's real content into a shared iframe pane on demand — the 21 existing pages stay completely untouched on disk, so first paint stays light.
+      <br><br>
+      <b>Honest limitation stated plainly, not force-fit</b>: a page-grain 🏁 terminal badge is NOT shown — real out-degree never hits zero across the 23-page set (pages cross-link for reference as well as drill-down), so a terminal claim would be false. The 🚪/🏁 convention stays accurate at the function grain (Level 3/6/Decisions/Zoom) where it was originally built; at the page grain this ships only a real 🚪 root badge (galaxy_map.html) and a real 🧭 "hub-only" badge on 3 genuine orphans (pages with zero real inbound links from any other page in the set, found by direct computation, not guessed).
+      <br><br>
+      <b>Real bug caught and fixed before shipping</b>: the build's own self-check (a real fail-loud guard comparing the hand-curated <code>PAGES</code> list against the live directory) initially flagged its own freshly-written output file as an uncatalogued real file on a second run — the directory glob needed to exclude the hub's own filename. Fixed; re-verified idempotent across 2 fresh runs (identical md5).
+      <br><br>
+      Wired into the Oversight popup as the new primary Galaxy Map entry point (the existing 5 sub-groups of individual links stay exactly as they were — a real secondary/direct-access path, never removed). Verified via headless Chromium: table/map toggle both work, 23 nodes/23 rows, click-to-load into the shared pane confirmed, zero console errors. div/svg/g/a-balanced. <code>ceo_plan_items</code> G59 marked green, G58 (umbrella) yellow pending G60. <code>node --check</code> clean, re-minified, cache-bust bumped 20260821b→20260821c. <code>oracleAppGrounding.SELF_KNOWLEDGE</code> updated per rule 6.
+      <br><br>
+      <b>G60 (the deeper infra/inter edge-selector retrofit inside the 21 existing pages' own rendering) is logged, not built this pass</b> — per Alex's own confirmed phased-build choice, a real, separate future pass.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">📚🔀 Aug 20/21 (7th pass) — G55 (Oversight Sync Dimension) and G56 (real pipeline-logic docs) shipped, closing out this session's G54-G57 batch</div>
     <div class="card-body">
       Alex: "build g55 and g56 straight after" — the last 2 of the 4 items opened by the same-session <code>/interrogation</code> pass (G54-G57), following directly from G54 (Achiever/brown) and G57 (Obsidian module notes).
