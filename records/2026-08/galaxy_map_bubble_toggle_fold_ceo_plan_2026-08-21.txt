@@ -1,0 +1,127 @@
+GALAXY MAP: bubble/map+table toggle generalization, fold-not-supersede,
+Oversight consolidation, recursive interaction-matrix idea — real
+/paranoia+/interrogation+/CEO plan, 2026-08-21
+
+ALEX'S VERBATIM ASK:
+"okay so when i say bubble system, or bubble map, i mean the structure
+rpgace total systems or river view at l1 has, please make [skill
+network link] and g28 its table view, to make the map/table view
+toggle, this should exist for everywhere that has 2 views (eg.
+dimension matrix should be overarching content for l2 modules if it
+makes sense, just loggs what how l0 items interact with modules, then
+this will give insight on how l3 should connect to l0 later on) i want
+this kind of thinking. also i want nothing to be superseded, as it
+will exist in one html right now, i want those links to be reduced to
+a minimal number in oversight for conciseness. /paranoia and
+/interrogation me on where these changes can occur elsewhere, then
+/ceo and /godmode and /restructure and /commit-archaeologist on
+/drift, then council of 5 everything at the end for me to understand."
+
+TERMINOLOGY CLARIFIED: "bubble system"/"bubble map" = the real radial
+node-and-edge visual structure galaxy_map.html (L0) and
+galaxy_map_river.html (L1) already use — not a generic term, a specific
+existing visual convention to reuse, not reinvent.
+
+REAL EVIDENCE GATHERED (GODMODE, before any question was asked):
+- galaxy_map_skill_network.html: 24 real skill tabs, each a plain
+  text-based <details class="passage"> list of invocation edges — ZERO
+  bubble/graph visualization exists yet.
+- galaxy_map_skills.html (G28): plain <table class="sktable"> grouped
+  sections only — ZERO bubble/graph visualization exists yet.
+- 3 more real pairs found that already split the SAME real data into a
+  graph-shaped page and a list-shaped page, just never merged with a
+  toggle: galaxy_map_level3.html (45 real per-module SVG call-chain
+  diagrams) vs galaxy_map_current.html (per-function rows, the same
+  45 modules); galaxy_map_level4.html (dashboard-click graphs) vs
+  galaxy_map_zoom.html (walkthrough list); galaxy_map_l0.html (7-unit
+  matrix table) vs galaxy_map.html (the new real bubble diagram, same
+  9-unit superset).
+- galaxy_map_hub.html already has its own real map/table toggle over
+  the 23/24-page catalog.
+- Oversight popup currently lists 23 individual Galaxy Map hrefs across
+  5 sub-groups.
+- Real, honest "why" for the fragmentation (/commit-archaeologist-
+  style): the whole 25-file Galaxy Map suite was built G-item by
+  G-item across many sessions (Aug 13-21) — each new level/dimension
+  idea got its OWN new generator script for fast, independently-
+  verifiable shipping, a deliberate original tradeoff for velocity,
+  not an oversight. The fragmentation is real accumulated debt from
+  that tradeoff, not a mistake to relitigate — paying it down now is a
+  real, legitimate maturation of the same plan, not a new direction.
+- /drift check: this ask does NOT contradict the ratified "RPGACE
+  Total Systems Galaxy Map" /CEO plan — it directly serves that plan's
+  own stated goal ("make everything cohesive"). Basis: ratified,
+  extending, not provisional.
+- /restructure check: reusing the ALREADY-PROVEN toggle/fold mechanics
+  from this same session (galaxy_map_l0.html's original map/table
+  toggle; the galaxy_map_l0_fusion.py -> galaxy_map.py fold earlier
+  today) is the right call over inventing a new pattern — shorter
+  code, already-verified interaction model, zero new UI language for
+  Alex to learn.
+
+REAL FORKS RESOLVED VIA AskUserQuestion (all recorded verbatim):
+1. Toggle-build scope: JUST Skill Network + Skills this pass. The other
+   3 real fold candidates (Level3/Current, Level4/Zoom, l0.html/
+   galaxy_map.html) are logged as a scoped NEXT phase, not built now —
+   Alex's own reasoning available in this file: verified one at a
+   time so a fold doesn't quietly break a real cross-link (Level3 alone
+   has 45 real incoming citations from Current Series).
+2. Fold aggressiveness (applies to the DEFERRED next-phase folds):
+   DELETE the old file outright once its content is verified absorbed
+   into the other view — matches this session's own real precedent
+   (galaxy_map_l0_fusion.py/.html deleted outright earlier today once
+   folded into galaxy_map.html). Git history is the safety net, not a
+   second on-disk copy.
+3. galaxy_map_hub.html's fate: KEEP as a real, standalone index — it is
+   structurally different from the other folds (an index OF pages, not
+   two views of one dataset). Its own "superseded" language is wrong
+   and gets corrected this pass (real, distinct utility, not a
+   downgraded reference).
+4. Dimensions Matrix reframing (L0-items-interact-with-L2-modules, a
+   recursive interaction-matrix principle): LOG NOW as a scoped future
+   phase, do not build this pass. Alex's own follow-up, verbatim: "1
+   and the same should be for l1 rivers and l0, it should all map out
+   in this principle to connect rpgace app to all other candidates" —
+   generalizes the idea past just L0<->L2: the SAME real
+   evidence-grounded overlap-matrix method should eventually connect
+   L0<->L1 too, and later L0<->L3, all following one consistent
+   recursive principle (a given level's own real interaction with the
+   level below, computed from already-shipped detection data, never
+   guessed) — not three unrelated one-off pages.
+
+REAL PLAN, THIS PASS (built, not just logged):
+- G61: real bubble/network view ADDED to galaxy_map_skill_network.html
+  (a real node-graph of the 24 skills + 117 real invocation edges),
+  toggled against its existing 24-tab passage view (kept as "table").
+- G62: real bubble/axis view ADDED to galaxy_map_skills.html (a real
+  node cluster by axis-classification), toggled against its existing
+  grouped <table> view (kept as "table").
+- G63: galaxy_map_hub.html's own "superseded" self-description
+  corrected — it is a real, distinct, kept utility (the page index),
+  never framed as a downgraded reference.
+- G64: Oversight popup Galaxy Map section reduced from 23 individual
+  page links down to 2 real entries — galaxy_map.html (start here,
+  L0) and galaxy_map_hub.html (browse every other page, the real
+  index) — since every other page is already reachable FROM the hub's
+  own real catalog, listing them a second time in the popup is the
+  real redundancy Alex asked to reduce.
+
+REAL PLAN, LOGGED AS A FUTURE PHASE, NOT BUILT THIS PASS:
+- G65: fold Level3's 45 real SVG call-chain diagrams into Current
+  Series as its "map" view (Current's existing per-function rows
+  become "table"); delete galaxy_map_level3.html/py once verified.
+- G66: fold Level4's dashboard-click graphs into Zoom as its "map"
+  view (Zoom's existing walkthrough list becomes "table"); delete
+  galaxy_map_level4.html/py once verified.
+- G67: fold galaxy_map_l0.html's 7-unit matrix into galaxy_map.html as
+  its real "table" view (galaxy_map.html's existing SVG+bubbles+choice
+  panel becomes "map"); delete galaxy_map_l0.html/py once verified.
+- G68 (umbrella): the recursive interaction-matrix principle — a real,
+  evidence-grounded overlap matrix between L0 units and L1 rivers
+  (which of the 9 units touches which of the 17 rivers), then between
+  L0 units and L2 modules (which of the 9 touches which of the 45
+  modules, reframing/replacing the current Dimensions Matrix's
+  "5-shipped-dimensions" framing where it makes sense), with L0<->L3
+  named as the eventual next step in the SAME recursive pattern —
+  never three unrelated one-off pages. Explicitly NOT built this pass;
+  needs its own real evidence-gathering pass per level-pair.

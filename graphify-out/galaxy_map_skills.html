@@ -40,6 +40,16 @@
   .lvl-na{font-size:8.5px;color:var(--dim);margin-top:3px}
   a{color:var(--orange)}
   .note{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  .toggle-row{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}
+  .toggle-btn{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
+  .toggle-btn.active{background:var(--orange);color:#1a0f04;border-color:var(--orange)}
+  .view{display:none}
+  .view.active{display:block}
+  #view-map{padding:10px 24px 30px;overflow-x:auto}
+  .col-label{fill:var(--dim);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+  .sk-node{cursor:pointer}
+  .sk-node:hover rect{stroke-width:2}
+  .sk-label{fill:#E2E2EC;font-size:10.5px;font-weight:700;font-family:'Cascadia Code','Fira Mono',monospace}
 </style>
 </head>
 <body>
@@ -53,10 +63,21 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skills (G28)</div>
   <h1>🧩 Claude Code Skills — The AI/UI/Backend Dimension</h1>
-  <p>24 real RPGACE-authored skills, classified on 3 real axes: does the skill's own procedure reach a DIFFERENT external AI (Oracle, or a Total-system member like OpenMontage CC/Graphify CC — not just "Claude Code runs this skill," which would trivially include everything), does it touch real app UI, does it touch real backend (code/Supabase/docs). A real judgment call per skill, not a mechanical detector — skills are prose, not code.</p>
+  <p>24 real RPGACE-authored skills, classified on 3 real axes: does the skill's own procedure reach a DIFFERENT external AI (Oracle, or a Total-system member like OpenMontage CC/Graphify CC — not just "Claude Code runs this skill," which would trivially include everything), does it touch real app UI, does it touch real backend (code/Supabase/docs). A real judgment call per skill, not a mechanical detector — skills are prose, not code. Same real data, two views.</p>
 </div>
-<div class="tabs"><div class="tab" data-target="grp-all3">🔮🖥️🗄️ All Three Axes</div><div class="tab" data-target="grp-ai">🔮 Touches External AI</div><div class="tab" data-target="grp-ui_backend">🖥️🗄️ UI + Backend (no external AI)</div><div class="tab" data-target="grp-backend_only">🗄️ Backend Only</div><div class="tab" data-target="grp-none">💭 Pure Deliberation (no direct system touch)</div></div>
-<section class="gsection" id="grp-all3" style="display:none">
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="map">🧩 Map view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view</div>
+</div>
+<div class="view active" id="view-map">
+  <svg viewBox="0 0 1240 614" width="100%" style="min-width:1240px">
+    <text x="160.0" y="24" class="col-label" text-anchor="middle">🔮🖥️🗄️ All Three Axes</text><text x="400.0" y="24" class="col-label" text-anchor="middle">🔮 Touches External AI</text><text x="640.0" y="24" class="col-label" text-anchor="middle">🖥️🗄️ UI + Backend (no external AI)</text><text x="880.0" y="24" class="col-label" text-anchor="middle">🗄️ Backend Only</text><text x="1120.0" y="24" class="col-label" text-anchor="middle">💭 Pure Deliberation (no direct system touch)</text>
+    <g class="sk-node" data-skill="CEO" transform="translate(160.0,90)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#E2A83D22;stroke:#E2A83D"/><text x="0" y="5" class="sk-label" text-anchor="middle">/CEO</text></g><g class="sk-node" data-skill="paranoia" transform="translate(400.0,90)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#9B59B622;stroke:#9B59B6"/><text x="0" y="5" class="sk-label" text-anchor="middle">/paranoia</text></g><g class="sk-node" data-skill="CEO" transform="translate(400.0,146)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#9B59B622;stroke:#9B59B6"/><text x="0" y="5" class="sk-label" text-anchor="middle">/CEO</text></g><g class="sk-node" data-skill="cartographer" transform="translate(400.0,202)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#9B59B622;stroke:#9B59B6"/><text x="0" y="5" class="sk-label" text-anchor="middle">/cartographer</text></g><g class="sk-node" data-skill="Engineer" transform="translate(640.0,90)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#4A90E222;stroke:#4A90E2"/><text x="0" y="5" class="sk-label" text-anchor="middle">/Engineer</text></g><g class="sk-node" data-skill="colourgradient" transform="translate(640.0,146)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#4A90E222;stroke:#4A90E2"/><text x="0" y="5" class="sk-label" text-anchor="middle">/colourgradient</text></g><g class="sk-node" data-skill="decompress" transform="translate(640.0,202)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#4A90E222;stroke:#4A90E2"/><text x="0" y="5" class="sk-label" text-anchor="middle">/decompress</text></g><g class="sk-node" data-skill="omnitrix" transform="translate(640.0,258)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#4A90E222;stroke:#4A90E2"/><text x="0" y="5" class="sk-label" text-anchor="middle">/omnitrix</text></g><g class="sk-node" data-skill="Regeneration" transform="translate(880.0,90)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/Regeneration</text></g><g class="sk-node" data-skill="restructure" transform="translate(880.0,146)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/restructure</text></g><g class="sk-node" data-skill="loggingregen" transform="translate(880.0,202)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/loggingregen</text></g><g class="sk-node" data-skill="scope" transform="translate(880.0,258)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/scope</text></g><g class="sk-node" data-skill="5thDimension" transform="translate(880.0,314)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/5thDimension</text></g><g class="sk-node" data-skill="Routine" transform="translate(880.0,370)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/Routine</text></g><g class="sk-node" data-skill="Bedtime" transform="translate(880.0,426)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/Bedtime</text></g><g class="sk-node" data-skill="update-logging-system" transform="translate(880.0,482)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/update-logging-system</text></g><g class="sk-node" data-skill="perspective" transform="translate(880.0,538)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#2ABFB022;stroke:#2ABFB0"/><text x="0" y="5" class="sk-label" text-anchor="middle">/perspective</text></g><g class="sk-node" data-skill="free-for-all-debate" transform="translate(1120.0,90)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/free-for-all-debate</text></g><g class="sk-node" data-skill="debate" transform="translate(1120.0,146)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/debate</text></g><g class="sk-node" data-skill="Summary" transform="translate(1120.0,202)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/Summary</text></g><g class="sk-node" data-skill="interrogation" transform="translate(1120.0,258)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/interrogation</text></g><g class="sk-node" data-skill="investor" transform="translate(1120.0,314)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/investor</text></g><g class="sk-node" data-skill="drift" transform="translate(1120.0,370)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/drift</text></g><g class="sk-node" data-skill="misunderstanding" transform="translate(1120.0,426)"><rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:#8a8a9a22;stroke:#8a8a9a"/><text x="0" y="5" class="sk-label" text-anchor="middle">/misunderstanding</text></g>
+  </svg>
+</div>
+<div class="view" id="view-table">
+  <div class="tabs"><div class="tab" data-target="grp-all3">🔮🖥️🗄️ All Three Axes</div><div class="tab" data-target="grp-ai">🔮 Touches External AI</div><div class="tab" data-target="grp-ui_backend">🖥️🗄️ UI + Backend (no external AI)</div><div class="tab" data-target="grp-backend_only">🗄️ Backend Only</div><div class="tab" data-target="grp-none">💭 Pure Deliberation (no direct system touch)</div></div>
+  <section class="gsection" id="grp-all3" style="display:none">
   <div class="ghead"><h2>🔮🖥️🗄️ All Three Axes</h2><span class="gcount">1 real skill(s)</span></div>
   <table class="sktable"><thead><tr><th>Skill (axis bubbles + network link)</th><th>Real justification</th><th>Real Level/River usage</th></tr></thead>
   <tbody><tr><td class="skname">/CEO <span class="axbubble ax-ai" title="Touches external AI">🔮</span><span class="axbubble ax-ui" title="Touches real app UI">🖥️</span><span class="axbubble ax-be" title="Touches real backend">🗄️</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-CEO" title="Skill Composition Network">🕸️</a></td><td class="sknote">The whole meta-framework governing this multi-day build — real Total-system dispatch (Engineer CC/Graphify CC = external AI), real shipped UI (every Galaxy Map page), real Supabase datasheet (ceo_plans/ceo_plan_items/ceo_reports). The one skill that genuinely touches all 3 axes at once.</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr></tbody></table>
@@ -77,14 +98,25 @@
   <table class="sktable"><thead><tr><th>Skill (axis bubbles + network link)</th><th>Real justification</th><th>Real Level/River usage</th></tr></thead>
   <tbody><tr><td class="skname">/free-for-all-debate <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-free-for-all-debate" title="Skill Composition Network">🕸️</a></td><td class="sknote">Pure deliberation procedure — individual competitors argue real problems, no direct system touch of its own.</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr><tr><td class="skname">/debate <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-debate" title="Skill Composition Network">🕸️</a></td><td class="sknote">Structured adversarial case-building — a real deliberation output, not a system touch.</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr><tr><td class="skname">/Summary <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-Summary" title="Skill Composition Network">🕸️</a></td><td class="sknote">A verified recap of recent work — real evidence-checked, but produces a report, not a system change.</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr><tr><td class="skname">/interrogation <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-interrogation" title="Skill Composition Network">🕸️</a></td><td class="sknote">Real questions-before-building discipline — a procedure, not a system touch (this exact skill built G26/G27/G28).</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr><tr><td class="skname">/investor <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-investor" title="Skill Composition Network">🕸️</a></td><td class="sknote">A commercial-readiness judgment lens/persona — a real report, not a system touch.</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr><tr><td class="skname">/drift <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-drift" title="Skill Composition Network">🕸️</a></td><td class="sknote">Checks real work against a real stated plan — VERDICT+BASIS output, a real evidence check, not a direct write.</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr><tr><td class="skname">/misunderstanding <span class="axbubble ax-none" title="No real axis touched">💭</span> <a class="netlink" href="galaxy_map_skill_network.html#skillnet-misunderstanding" title="Skill Composition Network">🕸️</a></td><td class="sknote">A real 3-step disconnect-repair procedure between Alex and an AI — pure deliberation, portable as prose to other Total-system AIs (a real design property, not a system touch by itself).</td><td class="skriver"><span class="river-chip">🌊 River XIII</span><div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr></tbody></table>
 </section>
+</div>
 <div class="note">
   Generated by <code>scripts/galaxy_map_skills.py</code> — real, curated classification reusing
   <code>ai_tooling_and_rules_map.md</code>'s own already-sourced skill catalog (Tier 1c) as the source list,
   never re-derived. G28 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
-  Mapping rules: <code>system_map_spec.md</code>.
+  Mapping rules: <code>system_map_spec.md</code>. Real Aug 21 2026 addition: a real column-clustered bubble map
+  (hand-computed positions, one column per real axis group) toggles against the original grouped-table view —
+  per Alex's own "this should exist for everywhere that has 2 views" ask.
 </div>
 <script>
 (function() {
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  toggles.forEach(function(t) {
+    t.addEventListener('click', function() {
+      toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+      views.forEach(function(v) { v.classList.toggle('active', v.id === 'view-' + t.dataset.view); });
+    });
+  });
   var tabs = document.querySelectorAll('.tab');
   var sections = document.querySelectorAll('.gsection');
   function show(id) {
@@ -98,6 +130,16 @@
   });
   var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
   show(id0);
+  document.querySelectorAll('.sk-node').forEach(function(node) {
+    node.addEventListener('click', function() {
+      toggles.forEach(function(x) { x.classList.toggle('active', x.dataset.view === 'table'); });
+      views.forEach(function(v) { v.classList.toggle('active', v.id === 'view-table'); });
+      var name = node.dataset.skill;
+      var grp = null;
+      sections.forEach(function(s) { if (s.innerHTML.indexOf('/' + name + ' ') !== -1) grp = s.id; });
+      if (grp) location.hash = grp;
+    });
+  });
 })();
 </script>
 </body>
