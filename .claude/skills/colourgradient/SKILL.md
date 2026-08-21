@@ -113,13 +113,29 @@ status readout):**
   diverged (a specific commit/change, not "probably drifted"). **Real
   archive step, mandatory, not optional**: a brown finding gets a real row
   in `achiever.html`'s Supabase table (`achiever_archive` — `claim_text`,
-  `source_doc`/`source_location`, `became_false_reason`,
-  `current_true_value`), the real 12th oversight artifact and layer (e)'s
-  past-tense Archive half (see CLAUDE.md's own layer-(e) note) — same
-  "surface it, don't just quietly fix it" discipline purple's `error_log`
-  step already established. The live doc's own claim gets corrected in
-  the SAME pass (same as any other stale-fact fix, rule 6) — brown is the
-  permanent RECORD that it was once true, not a replacement for fixing it.
+  `source_doc`/`source_location`, `current_true_value`, plus a real
+  error-log-depth breakdown added retroactively per Alex's own direct
+  ask, matching `error_log`'s own richness rather than a thin one-liner:
+  `rationale` — why the claim went stale, citing the specific real event;
+  `backtrack_note` — how/why it went unnoticed until now, same "what
+  should have caught this" framing `error_log.backtrack_note` already
+  uses; `first_stated_at`/`became_false_at` — real dated timestamps, not
+  guessed), the real 12th oversight artifact and layer (e)'s past-tense
+  Archive half (see CLAUDE.md's own layer-(e) note) — same "surface it,
+  don't just quietly fix it" discipline purple's `error_log` step already
+  established. The live doc's own claim gets corrected in the SAME pass
+  (same as any other stale-fact fix, rule 6) — brown is the permanent
+  RECORD that it was once true, not a replacement for fixing it. **Real
+  retroactive batch, Aug 20/21 2026 (Alex's own direct ask, "build
+  retroactive entries for achiever... i want them to have the same level
+  of breakdown and detail as [error_log's own example]")**: 8 more real,
+  already-evidenced stale claims mined from CLAUDE.md's/system_flow_map.md's/
+  oracleAppGrounding.SELF_KNOWLEDGE's own real history (the Aug 11 phylum
+  renumber, the Aug 13 "Engineer CC"→"OpenMontage CC" rename,
+  `style_profiles`'/`taxonomy_proposals`' stale row counts, 3 separate
+  stale function/module counts, and the "12 of 21 phyla" progression) —
+  never fabricated, each citing the real source doc, the real dated
+  window it was true, and the real event that made it false.
   **Real, mandatory removal step (Alex's own direct correction, same
   session): "what gets brown is removed from smoke test, along with all
   other oversight docs that are reporting truth" — not just corrected in

@@ -32,6 +32,11 @@
   .card-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px;text-decoration:line-through;text-decoration-color:rgba(139,94,60,0.5)}
   .card-body{font-size:12px;color:var(--dim);line-height:1.7}
   .card.brown{border-color:rgba(139,94,60,0.35);background:rgba(139,94,60,0.06)}
+  .item-meta{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;color:var(--dim);margin-top:6px;opacity:.7}
+  .rationale{font-size:12px;color:var(--text);margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid var(--blue)}
+  .rationale b{color:var(--blue)}
+  .backtrack{font-size:12px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:2px solid var(--purple)}
+  .backtrack b{color:var(--purple)}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
   .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
   .badge.brown{background:rgba(139,94,60,0.2);color:#C08A5C;border:1px solid rgba(139,94,60,0.4)}
@@ -104,11 +109,20 @@
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
     });
   }
+  function fmtDate(s) { return s ? new Date(s).toLocaleDateString() : null; }
   function cardHTML(a) {
+    var span = (a.first_stated_at || a.became_false_at) ?
+      '<div class="item-meta">' +
+        (a.first_stated_at ? 'True from ' + fmtDate(a.first_stated_at) : '') +
+        (a.became_false_at ? ' · went stale ' + fmtDate(a.became_false_at) : '') +
+        ' · archived ' + fmtDate(a.archived_at) + ' by ' + esc(a.archived_by) +
+      '</div>' : '';
     return '<div class="card brown"><div class="card-title">' + esc(a.claim_text) +
       '<span class="badge brown">ARCHIVED</span></div>' +
       '<div class="card-body">' + esc(a.source_doc) + (a.source_location ? ' — <code>' + esc(a.source_location) + '</code>' : '') +
-      '<br>' + esc(a.became_false_reason) +
+      span +
+      (a.rationale ? '<div class="rationale"><b>Rationale (why it went stale):</b> ' + esc(a.rationale) + '</div>' : (a.became_false_reason ? '<br>' + esc(a.became_false_reason) : '')) +
+      (a.backtrack_note ? '<div class="backtrack"><b>Backtrack (how it went unnoticed):</b> ' + esc(a.backtrack_note) + '</div>' : '') +
       '<div class="now-true"><b>Real, current truth:</b> ' + esc(a.current_true_value) + '</div></div></div>';
   }
   fetch(SB_URL + '/rest/v1/achiever_archive?select=*&order=archived_at.desc', { headers: HEADERS })
