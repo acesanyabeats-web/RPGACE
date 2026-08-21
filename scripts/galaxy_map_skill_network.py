@@ -239,10 +239,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <span class="bc-here">🕸️ Skills — Composition Network (map) + AI/UI/Backend Dimension (table)</span>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skills (G28 + G36, merged)</div>
   <h1>🕸️ Skills — One Page, Two Real Views</h1>

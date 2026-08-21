@@ -168,7 +168,6 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_load.html">⏳ Load</a><span class="bc-sep">→</span>
   <span class="bc-here">🧭 Dimensions Matrix</span>
 </div>

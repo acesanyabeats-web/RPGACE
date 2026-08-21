@@ -192,9 +192,12 @@ def build_svg():
         # placed just outside it.
         if rnum in rivers_needing_meanders():
             mx, my = polar(rx, ry, 34, 45)
+            # Real Aug 21 2026 fold — Level 2.5 no longer has its own
+            # page; its real card-split content is now Level 2's own
+            # table view for this river.
             nodes_svg.append(
-                f'<a href="galaxy_map_level2_5.html#river-{rnum}">'
-                f'<text x="{mx}" y="{my}" text-anchor="middle" font-size="15" title="Has a real Level-2.5 card-split">🚪</text></a>'
+                f'<a href="galaxy_map_module.html#river-{rnum}">'
+                f'<text x="{mx}" y="{my}" text-anchor="middle" font-size="15" title="Has a real card-split — see Level 2\'s Table view">🚪</text></a>'
             )
         mods = RIVER_MODULES.get(rnum, [])
         # G23c (Aug 14, /misunderstanding-diagnosed) — a real, visible
@@ -367,12 +370,6 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <span class="bc-here">🏛️ Level 1</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level2_5.html">🚪 Level 2.5</a>
-</div>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>

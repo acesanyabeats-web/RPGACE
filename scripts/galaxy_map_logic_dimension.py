@@ -172,11 +172,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level5.html">🧠 Level 5 — Core Logic</a><span class="bc-sep">→</span>
-  <span class="bc-here">📖 Logic Dimension</span>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Logic Dimension (Level 5 extension)</div>
   <h1>📖 Logic Dimension — Every Real Edge, Grouped By River, Click To Read</h1>

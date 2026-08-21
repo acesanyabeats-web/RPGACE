@@ -168,12 +168,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
-  <span class="bc-here">🌾 Level 1.5</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_module.html">🌊 Level 2</a>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1.5 — Meanders</div>
   <h1>🌾 Meanders — Rivers Split By Real Dashboard Card</h1>

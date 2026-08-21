@@ -96,6 +96,13 @@ from graphify_river_group import (  # noqa: E402
     rivers_needing_meanders, compute_module_supabase_touch_count,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
+# Real Aug 21 2026 fold (Alex's own direct ask: "2.5 is a table view of
+# 2, so fix that too please") — reused directly, not re-derived (rule
+# 8): galaxy_map_level2_5.py is now a pure data/render module, its own
+# build_river_section() becomes THIS page's real table view.
+from galaxy_map_level2_5 import (  # noqa: E402
+    build_river_section as l25_build_river_section, RIVER_NUMS as L25_RIVER_NUMS,
+)
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
 # "Human Gate — Alex" node (rule 8, one consistent identity, not a
@@ -773,15 +780,17 @@ def build_river_section(rnum):
         # meet"). Level 1.5 is retired as a standalone level; its real
         # River-V-declutter role now lives inside the expanded Level 2.5,
         # which shows the exact same real per-card split plus real
-        # externals/UI evidence Level 1.5 never had. Link updated, old
-        # page kept on disk (not deleted) so nothing 404s, just no
-        # longer a first-class level.
+        # externals/UI evidence Level 1.5 never had.
+        # Real Aug 21 2026 update (G-fold, Alex: "2.5 is a table view of
+        # 2, so fix that too please") — Level 2.5 is no longer a
+        # separate page to link OUT to; its content now lives inline as
+        # THIS section's own Table view, so the notice points there
+        # instead of off-page.
         canvas_html = (
             f'<div class="meander-notice">'
             f'<p>This river has {len(mods)} real modules across {len(cards)} real dashboard cards — genuinely too many to '
             f'usefully fan out on one canvas without the crossing Alex/Oracle bubble mess this used to show. '
-            f'It has been split by real dashboard card instead — see Level 2.5.</p>'
-            f'<a class="meander-link" href="galaxy_map_level2_5.html#river-{rnum}">🚪 View {river_label.split("—")[0].strip()}\'s real card-split (Level 2.5) →</a>'
+            f'It has been split by real dashboard card instead — switch to the Table view above.</p>'
             f'</div>'
         )
     else:
@@ -791,9 +800,7 @@ def build_river_section(rnum):
             f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
             f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
         )
-    body = (
-        f'<section class="river-section" id="river-{rnum}" style="display:none">'
-        f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
+    map_inner = (
         f'{legend}'
         f'{canvas_html}'
         f'<div class="legend"><h3>Real modules</h3><p class="modlist">{mod_list}</p>'
@@ -801,6 +808,25 @@ def build_river_section(rnum):
         f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
         f'<div class="legend"><h3>External connectors (G0) that contribute here</h3>{link_list}</div>'
         f'<div class="legend"><h3>Skill streams that join this river</h3>{skill_list}</div>'
+    )
+    # Real Aug 21 2026 fold — table view reuses galaxy_map_level2_5.py's
+    # own build_river_section() directly (rule 8), not re-derived. Only
+    # rivers with a real dashboard card get real Level-2.5 content
+    # (matching that module's own honest scope) — the rest say so
+    # plainly rather than showing an empty section.
+    if rnum in L25_RIVER_NUMS:
+        table_inner = l25_build_river_section(rnum)
+    else:
+        table_inner = '<div class="legend"><p class="modlist">No real dashboard card routes into this river — Level 2.5\'s own scope (river → card → module) genuinely does not apply here.</p></div>'
+    body = (
+        f'<section class="river-section" id="river-{rnum}" style="display:none">'
+        f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
+        f'<div class="cur-toggle-row">'
+        f'<div class="cur-toggle-btn active" data-view="map">🌊 Map view</div>'
+        f'<div class="cur-toggle-btn" data-view="table">📊 Table view (Level 2.5)</div>'
+        f'</div>'
+        f'<div class="cur-view active" data-modview="map-{rnum}">{map_inner}</div>'
+        f'<div class="cur-view" data-modview="table-{rnum}">{table_inner}</div>'
         f'</section>'
     )
     return body
@@ -854,16 +880,39 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
   .note{{max-width:820px;margin:0 auto 50px;padding:0 24px;font-size:10.5px;color:#6a6a78;line-height:1.7;text-align:center}}
+  /* Real Aug 21 2026 fold (Level 2.5 -> Level 2's own table view) —
+     reused verbatim from galaxy_map_level2_5.py's own CSS. */
+  .cur-toggle-row{{display:flex;justify-content:center;gap:8px;padding:10px 0 4px}}
+  .cur-toggle-btn{{padding:6px 16px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .cur-toggle-btn.active{{background:var(--gold);color:#1a1608;border-color:var(--gold)}}
+  .cur-view{{display:none}}
+  .cur-view.active{{display:block}}
+  .l25-rhead{{display:flex;align-items:center;gap:10px;border-left:3px solid;padding-left:12px;margin-bottom:16px;flex-wrap:wrap}}
+  .l25-rhead h2{{font-family:Georgia,serif;font-size:19px}}
+  .rcount{{font-size:10px;color:var(--dim);font-weight:700}}
+  .cgrid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}}
+  .ccard{{background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:14px 16px}}
+  .chead{{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}}
+  .cicon{{font-size:12.5px;font-weight:700;color:#fff}}
+  .uibadge{{font-size:9px;color:var(--gold)}}
+  .cvia{{font-size:10px;color:var(--dim);line-height:1.5;margin-bottom:8px;font-family:'Cascadia Code','Fira Mono',monospace}}
+  .partial{{color:#E0A040}}
+  .modlink{{font-size:10.5px;font-weight:700;color:#E25454;text-decoration:none}}
+  .clinks{{margin-bottom:6px}}
+  .modlink.r2{{color:#5FB3D9;font-size:10px}}
+  .nomod{{font-size:10px;color:var(--dim)}}
+  .convrow{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}}
+  .convblock{{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px}}
+  .convlabel{{font-size:9.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}}
+  .extgrid{{display:flex;flex-direction:column;gap:6px}}
+  .extchip{{font-size:10.5px;display:flex;flex-direction:column;gap:2px}}
+  .extchip b{{color:#fff}}
+  .extchip span{{color:var(--dim);font-size:9.5px}}
+  .extnone,.dimstub{{font-size:10.5px;color:var(--dim);font-style:italic}}
 </style>
 </head>
 <body>
 
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
-  <span class="bc-here">🌊 Level 2</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_level2_5.html">🚪 Level 2.5</a>
-</div>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
@@ -905,6 +954,19 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   }}
   window.addEventListener('hashchange', fromHash);
   fromHash();
+
+  // Real Aug 21 2026 fold — per-river map/table toggle (Level 2.5 is
+  // now this page's own table view), same reused pattern as Current
+  // Series' per-module toggle.
+  document.querySelectorAll('.cur-toggle-btn').forEach(function(btn) {{
+    btn.addEventListener('click', function() {{
+      var sec = btn.closest('.river-section');
+      sec.querySelectorAll('.cur-toggle-btn').forEach(function(b) {{ b.classList.toggle('active', b === btn); }});
+      sec.querySelectorAll('.cur-view').forEach(function(v) {{
+        v.classList.toggle('active', v.dataset.modview.indexOf(btn.dataset.view + '-') === 0);
+      }});
+    }});
+  }});
 }})();
 </script>
 

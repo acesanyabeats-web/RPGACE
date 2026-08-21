@@ -193,8 +193,6 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
   <a href="galaxy_map_decisions.html">🚦 Decisions</a><span class="bc-sep">→</span>
   <span class="bc-here">🔀 Externals</span>
 </div>

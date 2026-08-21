@@ -699,11 +699,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 L0</a>
-  <a href="galaxy_map_module.html">🌊 Level 2</a>
-  <span class="bc-here">🧬 Current Series (replaces Level 3)</span>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Current Series</div>
   <h1>🧬 Every Module, as a Series of Currents</h1>

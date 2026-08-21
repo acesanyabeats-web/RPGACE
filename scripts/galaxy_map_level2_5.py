@@ -31,6 +31,24 @@ Real externals-attachment layer (his own ask, "they could feature where
 externals attach too") reuses EXTERNAL_RIVER_LINKS (rule 8, the same
 real per-river connector citations Level 2's own 4th ring already
 shows) — never re-derived.
+
+**Real Aug 21 2026 fold — this file no longer generates its own
+standalone page.** Alex's own direct words: "2.5 is a table view of 2,
+so fix that too please." galaxy_map_module.py (Level 2) now has a real
+map/table toggle per river — map is its existing SVG flow diagram
+(unchanged), table is THIS file's own build_river_section() output,
+imported directly (rule 8, same discipline as galaxy_map_skills.py's
+relationship to galaxy_map_skill_network.py, and galaxy_map_l0.py's
+relationship to galaxy_map.html). This file is now a pure DATA + RENDER
+module (RIVER_NUMS/build_river_section/build_card_block/
+build_externals_block) — graphify-out/galaxy_map_level2_5.html no
+longer exists. build_river_section() itself no longer wraps a
+<section id="river-N"> (that would collide with Level 2's own outer
+section id) and drops its old "zoom out: Level 2" link (a same-page
+no-op now that this content lives directly inside Level 2's own table
+view). Its own former .rhead CSS class is renamed .l25-rhead in the
+reused CSS to avoid colliding with Level 2's own, differently-styled
+.rhead.
 """
 from pathlib import Path
 import sys
@@ -41,9 +59,6 @@ from graphify_river_group import (  # noqa: E402
     dashboard_card_primary_module, compute_module_ui_signal,
     LEVEL3_MODULES, EXTERNAL_RIVER_LINKS,
 )
-from graphify_river_group import inject_level_rail  # noqa: E402
-
-OUT = Path('graphify-out/galaxy_map_level2_5.html')
 
 RIVER_NUMS = sorted(r for r in range(1, 17) if CARDS_BY_RIVER.get(r))
 
@@ -103,6 +118,13 @@ def build_externals_block(rnum):
 
 
 def build_river_section(rnum):
+    """Real Aug 21 2026 fold (Alex: "2.5 is a table view of 2, so fix
+    that too please") — this no longer wraps its own <section id="river-
+    N"> (that would collide with galaxy_map_module.py's own outer
+    section id once this content lives INSIDE its table view); returns
+    the real inner content only. The old "zoom out: Level 2" link is
+    dropped too — it's a same-page no-op now that this content lives
+    directly inside Level 2's own table view, not a separate page."""
     _full_name = RIVER_NAME.get(rnum, f'River {rnum} — Untitled')
     name = _full_name.split('—', 1)[1].strip() if '—' in _full_name else _full_name
     color = RIVER_COLOR.get(rnum, '#888')
@@ -115,15 +137,12 @@ def build_river_section(rnum):
             unique_cards.append(c)
     cards_html = ''.join(build_card_block(c) for c in unique_cards)
     externals_html = build_externals_block(rnum)
-    return f'''<section class="rsection" id="river-{rnum}" style="display:none">
-  <div class="rhead" style="border-color:{color}"><h2 style="color:{color}">River {_roman(rnum)} — {esc(name)}</h2><span class="rcount">{len(unique_cards)} real dashboard card(s)</span></div>
+    return f'''<div class="l25-rhead" style="border-color:{color}"><h2 style="color:{color}">River {_roman(rnum)} — {esc(name)}</h2><span class="rcount">{len(unique_cards)} real dashboard card(s)</span></div>
   <div class="cgrid">{cards_html}</div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div>{externals_html}</div>
     <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
-  </div>
-  <div class="rback"><a href="galaxy_map_module.html#river-{rnum}">🔭 zoom out: Level 2 (this river's own modules)</a></div>
-</section>'''
+  </div>'''
 
 
 def _roman(n):
@@ -134,112 +153,3 @@ def _roman(n):
             out += s
             n -= v
     return out
-
-
-TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Level 2.5 — UI/Alex Accessibility)</title>
-<style>
-  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --red:#E25454; }}
-  *{{box-sizing:border-box;margin:0;padding:0}}
-  body{{background:radial-gradient(ellipse at 50% 30%, #10141a 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}}
-  .hero{{padding:36px 24px 16px;text-align:center}}
-  .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}}
-  .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
-  .hero p{{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}}
-  .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}}
-  .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
-  .breadcrumb a:hover{{color:var(--gold);border-color:var(--gold)}}
-  .breadcrumb .bc-here{{color:#0a0a0f;background:var(--gold);padding:4px 9px;border-radius:12px}}
-  .breadcrumb .bc-sep{{color:#4a4a58}}
-  .tabs{{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}}
-  .tab{{padding:5px 11px;border-radius:14px;font-size:10.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
-  .tab.active{{background:var(--gold);color:#1a1608;font-weight:700}}
-  .rsection{{max-width:1000px;margin:0 auto;padding:24px}}
-  .rhead{{display:flex;align-items:center;gap:10px;border-left:3px solid;padding-left:12px;margin-bottom:16px;flex-wrap:wrap}}
-  .rhead h2{{font-family:Georgia,serif;font-size:19px}}
-  .rcount{{font-size:10px;color:var(--dim);font-weight:700}}
-  .cgrid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}}
-  .ccard{{background:rgba(255,255,255,0.03);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:14px 16px}}
-  .chead{{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}}
-  .cicon{{font-size:12.5px;font-weight:700;color:#fff}}
-  .uibadge{{font-size:9px;color:var(--gold)}}
-  .cvia{{font-size:10px;color:var(--dim);line-height:1.5;margin-bottom:8px;font-family:'Cascadia Code','Fira Mono',monospace}}
-  .partial{{color:#E0A040}}
-  .modlink{{font-size:10.5px;font-weight:700;color:var(--red);text-decoration:none}}
-  .clinks{{margin-bottom:6px}}
-  .modlink.r2{{color:#5FB3D9;font-size:10px}}
-  .nomod{{font-size:10px;color:var(--dim)}}
-  .nocard{{font-size:11.5px;color:var(--dim);font-style:italic;padding:10px 0}}
-  .convrow{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}}
-  .convblock{{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px}}
-  .convlabel{{font-size:9.5px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--gold);margin-bottom:8px}}
-  .extgrid{{display:flex;flex-direction:column;gap:6px}}
-  .extchip{{font-size:10.5px;display:flex;flex-direction:column;gap:2px}}
-  .extchip b{{color:#fff}}
-  .extchip span{{color:var(--dim);font-size:9.5px}}
-  .extnone,.dimstub{{font-size:10.5px;color:var(--dim);font-style:italic}}
-  .rback{{margin-top:14px}}
-  .rback a{{font-size:10.5px;color:#5FB3D9;text-decoration:none}}
-  a{{color:var(--gold)}}
-  .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
-</style>
-</head>
-<body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <span class="bc-here">🚪 Level 2.5</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_current.html">🧬 Current Series</a>
-</div>
-<div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2.5 (G38)</div>
-  <h1>🚪 Rivers Regrouped by UI/Alex Accessibility</h1>
-  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the {n_rivers} of 16 real rivers with an actual dashboard card get a section — each card points forward into Current Series (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
-</div>
-<div class="tabs">{tabs}</div>
-{sections}
-<div class="note">
-  Generated by <code>scripts/galaxy_map_level2_5.py</code> — real data reused from
-  <code>CARDS_BY_RIVER</code>/<code>dashboard_card_primary_module()</code>/<code>compute_module_ui_signal()</code>
-  (rule 8, never re-derived). G38 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
-</div>
-<script>
-(function() {{
-  var tabs = document.querySelectorAll('.tab');
-  var sections = document.querySelectorAll('.rsection');
-  function show(id) {{
-    sections.forEach(function(s) {{ s.style.display = (s.id === id) ? '' : 'none'; }});
-    tabs.forEach(function(t) {{ t.classList.toggle('active', t.dataset.target === id); }});
-  }}
-  tabs.forEach(function(t) {{ t.addEventListener('click', function() {{ location.hash = t.dataset.target; }}); }});
-  window.addEventListener('hashchange', function() {{
-    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-    show(id);
-  }});
-  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-  show(id0);
-}})();
-</script>
-</body>
-</html>
-"""
-
-
-def main():
-    tabs = ''.join(f'<div class="tab" data-target="river-{r}">{_roman(r)}</div>' for r in RIVER_NUMS)
-    sections = ''.join(build_river_section(r) for r in RIVER_NUMS)
-    html = TEMPLATE.format(tabs=tabs, sections=sections, n_rivers=len(RIVER_NUMS))
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    html = inject_level_rail(html, OUT.name)
-    OUT.write_text(html, encoding='utf-8')
-    total_cards = sum(len({c['key'] for c in CARDS_BY_RIVER.get(r, [])}) for r in RIVER_NUMS)
-    print(f"Wrote {OUT} — {len(RIVER_NUMS)} real card-having rivers (of 16 total), {total_cards} real river-card placements.")
-
-
-if __name__ == '__main__':
-    main()

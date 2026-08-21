@@ -2881,7 +2881,12 @@ LEVEL_RAIL = [
     ('galaxy_map.html', '🌌', 'L0'),
     ('galaxy_map_river.html', '🏛️', 'L1'),
     ('galaxy_map_module.html', '🌊', 'L2'),
-    ('galaxy_map_level2_5.html', '🖇️', 'L2.5'),
+    # Real Aug 21 2026 fold — L2.5 no longer has its own page; its real
+    # content is now Level 2's own table view (galaxy_map_module.py).
+    # Kept as its own real rail stop per Alex's own explicit ask ("i
+    # want only this present... L2.5"), pointing at the same file L2
+    # does — both stops correctly highlight together on that page.
+    ('galaxy_map_module.html', '🖇️', 'L2.5'),
     ('galaxy_map_current.html', '🔽', 'Current (L3)'),
     ('galaxy_map_zoom.html', '🖱️', 'Zoom (L4)'),
     ('galaxy_map_level5.html', '🧠', 'L5'),

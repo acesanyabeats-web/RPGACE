@@ -116,15 +116,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_current.html">🧬 Current Series</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_zoom.html">🖱️ Zoom (L4)</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level5.html">🧠 Level 5</a><span class="bc-sep">→</span>
-  <span class="bc-here">🔢 Level 6</span>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 6</div>
   <h1>🔢 Detailed Decision — Every Real Yes/No</h1>

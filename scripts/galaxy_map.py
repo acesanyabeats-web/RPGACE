@@ -77,6 +77,18 @@ from galaxy_map_l0 import (  # noqa: E402
     build_matrix as l0_build_matrix, build_table_details as l0_build_table_details,
 )
 from galaxy_map_decisions import CATEGORIES as DEC_CATEGORIES, DECISION_POINTS  # noqa: E402
+# Real Aug 21 2026 fix (Alex's own direct ask: "decisions should also
+# be on whole, with information on... choices... too many docs that
+# could be merged for alex infra"). Real evidence: of Level 5's 7 core-
+# logic decision points, exactly ONE (oracle-mode) is genuinely Alex's
+# OWN choice (decider: "Alex (manual toggle)") — the other 6 are code-
+# logic/Oracle-judgment decisions, not something Alex directly picks.
+# Cross-referenced here (rule 8, not re-derived) rather than literally
+# merging galaxy_map_decisions.py and galaxy_map_level5.py into one
+# file — they cover genuinely different real things (human-confirm
+# GATES vs. curated core LOGIC), same as the earlier Level3/Current
+# fold only merged pages that were two views of the SAME dataset.
+from galaxy_map_level5 import DECISION_POINTS as L5_DECISION_POINTS  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map.html')
 
@@ -263,6 +275,21 @@ def build_facets():
                 'kind': 'infra', 'dim': 'External AI', 'label': f"Uses: {esc(p['name'])} ({status})",
                 'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_externals.html',
             })
+        # Real Aug 21 2026 fix (Alex's own direct catch — "break up
+        # Externals into its AI components... this is too ambiguous"):
+        # this same per-provider data was already attached to
+        # rpgace_architecture/alex (the units that USE it) but never
+        # reciprocally to external_ai itself (the unit that IS it) — so
+        # clicking the External AI bubble's own Inter facets showed only
+        # 3 vague partner-edges, never its own real live/dormant
+        # component breakdown, even though that breakdown already
+        # existed (galaxy_map_externals.html, G27). Same share_key as
+        # the rpgace_architecture/alex rows above, so cross-highlight
+        # works automatically, zero new mechanism needed.
+        facets['external_ai'].append({
+            'kind': 'infra', 'dim': 'External AI', 'label': f"Component: {esc(p['name'])} ({status})",
+            'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_externals.html',
+        })
 
     sa = next((n for n in HARNESS_NODES if n['id'] == 'self_awareness'), None)
     if sa:
@@ -283,6 +310,18 @@ def build_facets():
             'detail': detail, 'share_key': 'decisions', 'link': 'galaxy_map_decisions.html',
         })
 
+    # The one real Level-5 point that's genuinely Alex's OWN choice
+    # (not code logic or an Oracle judgment call) — surfaced under the
+    # same "Decisions" dimension so his own facet is the real whole
+    # picture (gates + choices), not just the confirm-gate subset.
+    oracle_mode_pt = next((p for p in L5_DECISION_POINTS if p['id'] == 'oracle-mode'), None)
+    if oracle_mode_pt:
+        facets['alex'].append({
+            'kind': 'infra', 'dim': 'Decisions (what Alex can decide)', 'label': f"🎛️ Real Choices (1) — {esc(oracle_mode_pt['title'])}",
+            'detail': f"{esc(oracle_mode_pt['changes'])} <span class=\"ev\">Real evidence: {esc(oracle_mode_pt['result'])}</span>",
+            'share_key': 'decisions', 'link': 'galaxy_map_level5.html',
+        })
+
     facets['alex'].append({
         'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real dashboard-card → module → decision-fork path',
         'detail': 'G37/G38 — the real Level-4 flow to whichever module a dashboard card opens, then the real Y/N fork (Decisions) Alex actually hits on that path, if any.',
@@ -290,8 +329,8 @@ def build_facets():
     })
     facets['rpgace_architecture'].append({
         'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real river → dashboard card → primary module chain',
-        'detail': 'G38 — all 10 rivers with a real dashboard card, each resolved to its real primary module.',
-        'share_key': 'alex_ui_path', 'link': 'galaxy_map_level2_5.html',
+        'detail': 'G38 — all 10 rivers with a real dashboard card, each resolved to its real primary module. Real Aug 21 2026 fold: this content is now Level 2\'s own table view, not a separate page.',
+        'share_key': 'alex_ui_path', 'link': 'galaxy_map_module.html',
     })
 
     for uid in ('rpgace_architecture', 'orchestrator_cc', 'skills', 'oversight_docs'):

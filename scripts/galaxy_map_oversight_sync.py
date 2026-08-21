@@ -195,7 +195,6 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map.html">\U0001F30C Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_decisions.html">\U0001F6A6 Decisions</a><span class="bc-sep">→</span>
   <a href="galaxy_map_load.html">⏳ Load</a><span class="bc-sep">→</span>
   <span class="bc-here">\U0001F4DA Oversight Sync</span>

@@ -173,7 +173,6 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_decisions.html">🚦 Decisions</a><span class="bc-sep">→</span>
   <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
   <a href="galaxy_map_skill_network.html">🧩 Skills</a><span class="bc-sep">→</span>

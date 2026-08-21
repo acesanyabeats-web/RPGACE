@@ -99,11 +99,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 L0 — 7 Units</a>
-  <span style="color:#4a4a58"> → </span>
-  <span class="bc-here">🗄️ Supabase</span>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Supabase</div>
   <h1>🗄️ Every Real Table, Where It's Used</h1>
