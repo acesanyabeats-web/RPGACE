@@ -131,7 +131,7 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map_l0.html">🌌 L0</a>
+  <a href="galaxy_map.html">🌌 L0</a>
   <a href="galaxy_map_current.html">🧬 Current Series</a>
   <span class="bc-here">🔎 Zoomed Walkthrough</span>
 </div>

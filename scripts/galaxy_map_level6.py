@@ -121,7 +121,7 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
   <a href="galaxy_map_current.html">🧬 Current Series</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level4.html">🖱️ Level 4</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_zoom.html">🖱️ Zoom (L4)</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level5.html">🧠 Level 5</a><span class="bc-sep">→</span>
   <span class="bc-here">🔢 Level 6</span>
 </div>

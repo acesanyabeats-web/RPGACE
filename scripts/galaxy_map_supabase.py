@@ -100,7 +100,7 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="breadcrumb">
-  <a href="galaxy_map_l0.html">🌌 L0 — 7 Units</a>
+  <a href="galaxy_map.html">🌌 L0 — 7 Units</a>
   <span style="color:#4a4a58"> → </span>
   <span class="bc-here">🗄️ Supabase</span>
 </div>
@@ -115,7 +115,7 @@ TEMPLATE = """<!DOCTYPE html>
   <code>graphify_river_group.py</code>'s <code>compute_all_supabase_table_touches()</code>
   (a real per-function regex match on <code>RPGACE.sb.select/insert/update/del/secureWrite</code>),
   never hand-guessed. This is the real Supabase L0 unit's own content, per Part 3.3/F3 of the
-  ratified redefinition — reached from the <a href="galaxy_map_l0.html">L0 map</a>'s own
+  ratified redefinition — reached from the <a href="galaxy_map.html">L0 map</a>'s own
   Supabase unit.
 </div>
 </body>

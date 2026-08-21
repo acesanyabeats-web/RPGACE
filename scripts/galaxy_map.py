@@ -72,7 +72,10 @@ from graphify_river_group import inject_level_rail  # noqa: E402
 # Supabase/Oversight Docs) share ONE real Infra/Inter facet mechanic —
 # no separate file, no circular import (neither source module imports
 # from this one).
-from galaxy_map_l0 import UNITS as SRC_UNITS, EDGES as SRC_EDGES, INJECTION, ACTOR  # noqa: E402
+from galaxy_map_l0 import (  # noqa: E402
+    UNITS as SRC_UNITS, EDGES as SRC_EDGES, INJECTION, ACTOR,
+    build_matrix as l0_build_matrix, build_table_details as l0_build_table_details,
+)
 from galaxy_map_decisions import CATEGORIES as DEC_CATEGORIES, DECISION_POINTS  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map.html')
@@ -789,6 +792,33 @@ TEMPLATE = """<!DOCTYPE html>
   .dec-list li{{margin-bottom:6px}}
   .facet-link{{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:700;color:var(--gold);text-decoration:none}}
   .facet-link:hover{{text-decoration:underline}}
+  /* Real Aug 21 2026 (G67) — reused verbatim from galaxy_map_l0.py's own
+     toggle/matrix CSS, "use what we have, dont make new shit." */
+  .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
+  .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--gold);color:#1a1608;border-color:var(--gold)}}
+  .view{{display:none}}
+  .view.active{{display:block}}
+  .matrix-wrap{{max-width:640px;margin:24px auto;padding:0 24px;overflow-x:auto}}
+  #matrix{{border-collapse:collapse;margin:0 auto;font-size:16px}}
+  #matrix th,#matrix td{{border:1px solid rgba(255,255,255,0.08);width:40px;height:40px;text-align:center}}
+  #matrix th{{font-size:16px}}
+  #matrix th.rowhead{{font-size:10px;text-align:left;padding:0 8px;white-space:nowrap;width:auto}}
+  #matrix td.diag{{background:rgba(255,255,255,0.02);color:#333}}
+  #matrix td.none{{color:#333}}
+  #matrix td.hit{{cursor:pointer}}
+  #matrix td.hit.inject{{background:rgba(155,89,182,0.1)}}
+  #matrix td.hit.actor{{background:rgba(226,84,84,0.08)}}
+  #matrix td.hit:hover{{outline:1px solid var(--gold)}}
+  .matrix-legend{{display:flex;gap:16px;justify-content:center;font-size:10.5px;margin:14px 0;color:var(--dim)}}
+  .table-details{{max-width:700px;margin:0 auto 40px;padding:0 24px}}
+  .detail-row{{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:14px 18px;margin-bottom:12px}}
+  .detail-row .dhead{{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;font-weight:700;margin-bottom:12px;flex-wrap:wrap}}
+  .detail-row .bubble{{background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25);border-radius:20px;padding:12px 16px;font-size:12px;line-height:1.6;margin-bottom:12px}}
+  .detail-row .evidence{{font-size:10.5px;color:var(--dim);line-height:1.6}}
+  .k-badge{{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;white-space:nowrap}}
+  .k-inject{{background:rgba(155,89,182,0.15);color:#9B59B6;border:1px solid rgba(155,89,182,0.35)}}
+  .k-actor{{background:rgba(226,84,84,0.12);color:#E25454;border:1px solid rgba(226,84,84,0.3)}}
 </style>
 </head>
 <body>
@@ -802,6 +832,12 @@ TEMPLATE = """<!DOCTYPE html>
   <p>The real top-level view of RPGACE Total Systems — all 9 real merged L0 units in one place (4 galaxies rendered in the diagram below, 5 more as real bubbles beside it): RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs. Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate are their own nodes, every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram or the bubble row below — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
 </div>
 
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view</div>
+</div>
+
+<div class="view active" id="view-map">
 <div class="canvas-wrap">
 <svg viewBox="0 0 {W} {H}" width="100%" style="max-width:1400px;display:block;margin:0 auto">
   <defs>
@@ -840,6 +876,19 @@ TEMPLATE = """<!DOCTYPE html>
   <h2>Galaxies &amp; nodes</h2>
   {legend}
 </div>
+</div>
+
+<div class="view" id="view-table">
+  <div style="text-align:center;font-size:11px;color:var(--dim);max-width:820px;margin:24px auto 0;padding:0 24px">
+    Real G67 fold (Aug 21 2026) — the same 17 hand-curated edges galaxy_map_l0.py always held, now this page's own real table view (reused directly, not re-derived). The 9-unit facet model above and this 7-unit table describe the SAME real relationships from two angles: click a cell for the real evidence behind that edge.
+  </div>
+  <div class="matrix-wrap"><table id="matrix">{matrix_rows}</table></div>
+  <div class="matrix-legend"><span>💉 injection tool</span><span>🧑 actor</span><span>· no direct real edge (mediated)</span></div>
+  <div class="table-details">{table_details}</div>
+  <div style="text-align:center;font-size:10.5px;color:#6a6a78;max-width:820px;margin:20px auto 0;padding:0 24px 20px">
+    G68 (the recursive L0↔river/module/function interaction-matrix idea): this IS the L0 layer's own real matrix. The next matrix layer down is <a href="galaxy_map_dimensions.html">the Dimensions Matrix</a> (44 real L2 modules × 5 real dimensions) — genuinely the same recurring shape at a finer grain, not a new page built for this. No new data was invented to answer G68; the matrices already existed, this just names and links the real chain.
+  </div>
+</div>
 
 <div class="note">
   Generated by <code>scripts/galaxy_map.py</code> — real data reused from
@@ -850,19 +899,21 @@ TEMPLATE = """<!DOCTYPE html>
   and G4 (<a href="galaxy_map_module.html">module drill-down</a>) are both real and live.
   Real Aug 21 2026 fusion (Alex's own direct ask — "the l0 7 units should exist
   in the bubbles in on rpgace total systems own architecture map"): the 7-unit
-  model from <a href="galaxy_map_l0.html">galaxy_map_l0.html</a> is merged in
-  here directly — 4 units render in the diagram above (now real, clickable
-  triggers, not just decoration), 5 more render as the bubble row below it.
-  All 9 share one real Infra/Inter facet mechanic. <code>galaxy_map_l0.html</code>
-  stays live as reference for the original 17-edge table/map toggle view.
+  model from galaxy_map_l0.py is merged in here directly — 4 units render in
+  the diagram above (now real, clickable triggers, not just decoration), 5
+  more render as the bubble row below it. All 9 share one real Infra/Inter
+  facet mechanic. Real G67 fold, same day: galaxy_map_l0.py's own leftover
+  17-edge table is now this page's real Table view (imported directly, not
+  rebuilt) — graphify-out/galaxy_map_l0.html no longer exists as its own page.
 </div>
 
 <script>
 (function() {{
   // Real Alex correction: Infra/Inter is a CHOICE presented fresh each
   // time a unit is selected (neither pre-picked), not a toggle you
-  // flip back and forth — that metaphor stays reserved for the
-  // map/table view control on galaxy_map_l0.html/galaxy_map_hub.html.
+  // flip back and forth — that metaphor stays reserved for the real
+  // map/table view control (this page's own toggle-row, plus
+  // galaxy_map_hub.html) which is a genuinely separate mechanic.
   var DATA = {data_json};
   var cards = document.querySelectorAll('.unit-card, .unit-node, .unit-node-label');
   var panel = document.getElementById('panel');
@@ -949,6 +1000,25 @@ TEMPLATE = """<!DOCTYPE html>
       renderDims();
     }});
   }});
+
+  // Real G67 fold (Aug 21 2026) — map/table toggle, reused verbatim from
+  // galaxy_map_l0.py's own toggle mechanic ("use what we have").
+  var mtToggles = document.querySelectorAll('.toggle-btn');
+  var mtViews = document.querySelectorAll('.view');
+  mtToggles.forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      mtToggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+      mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+    }});
+  }});
+  document.querySelectorAll('td.hit').forEach(function(td) {{
+    td.addEventListener('click', function() {{
+      var id = td.dataset.edge;
+      document.querySelectorAll('#view-table .detail-row').forEach(function(d) {{ d.style.display = 'none'; }});
+      var el = document.getElementById('tdrop-' + id);
+      if (el) {{ el.style.display = ''; el.scrollIntoView({{behavior:'smooth', block:'nearest'}}); }}
+    }});
+  }});
 }})();
 </script>
 </body>
@@ -970,8 +1040,11 @@ def main():
             for uid in UNIT_ORDER
         }
     }
+    matrix_rows = l0_build_matrix()
+    table_details = l0_build_table_details()
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H,
-                           markers=markers, unit_cards=unit_cards, data_json=json.dumps(data))
+                           markers=markers, unit_cards=unit_cards, data_json=json.dumps(data),
+                           matrix_rows=matrix_rows, table_details=table_details)
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

@@ -581,17 +581,17 @@ def build_river_section(rnum):
                 icon = c['label'].split(' ')[0]
                 label = ' '.join(c['label'].split(' ')[1:])
                 badge = ' <tspan fill="#E0A040">(partial)</tspan>' if c.get('partial') else ''
-                # Real Level-4 drill-down link (Aug 14, G15 — Alex's own
-                # direct rule: "all level n components must attach to
-                # n-1 where possible"). Every real dashboard card now
-                # has a built Level-4 section (galaxy_map_level4.html),
-                # so this is never a guessed/empty destination, same
-                # discipline as the module→Level-3 🔽 links above.
+                # Real Aug 21 2026 fix (G66 — Level4 retired outright, per
+                # Alex's own direct call: "retire it, no merge"). The old
+                # Level-4 deep-link is gone; this dashboard-card diamond is
+                # now a plain visual node, not a dead link — its own real
+                # via/flow detail is already shown inline on THIS page's
+                # legend row below (see the matching _card_row fix), so
+                # there's nothing real to click through to elsewhere.
                 nodes_svg.append(
-                    f'<a href="galaxy_map_level4.html#card-{c["key"]}" class="drill-link">'
                     f'<g class="node"><rect x="{px-16}" y="{py-16}" width="32" height="32" rx="7" '
                     f'fill="#0f0f1a" stroke="#C9A84C" stroke-width="2"{dash} transform="rotate(45 {px} {py})" filter="url(#glow)"/>'
-                    f'<text x="{px}" y="{py+5}" text-anchor="middle" font-size="13">{icon}</text></g></a>'
+                    f'<text x="{px}" y="{py+5}" text-anchor="middle" font-size="13">{icon}</text></g>'
                     f'<text x="{px}" y="{py+26}" text-anchor="middle" font-size="8.5" fill="#C9A84C">{label}{badge}</text>'
                 )
 
@@ -722,16 +722,12 @@ def build_river_section(rnum):
     mod_list = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '<i>no single-module home — see role note</i>'
     def _card_row(c):
         partial_badge = ' <span class="warn">partial</span>' if c.get('partial') else ''
-        # Real Level-4 link on every card's own legend row too (Aug 14,
-        # G15), not just the SVG diamond glyph above — the diamond only
-        # gets drawn inside the `if mods:` flow-layout branch, so a
-        # card whose ONLY river is module-less (the real, confirmed
-        # case: 'oversight' -> River XIV, zero real modules) would
-        # otherwise have no real Level-4 link anywhere on this page at
-        # all, breaking Alex's own "every level n attaches to n-1"
-        # rule for that one real case.
+        # Real Aug 21 2026 fix (G66 — Level4 retired outright). This
+        # legend row is itself the real per-card flow detail (label +
+        # via text) — no outbound link needed to a page that no longer
+        # exists; the card's own name/via is shown plainly instead.
         return (f'<div class="legend-row small"><span class="dot" style="background:#C9A84C"></span>'
-                f'<b><a href="galaxy_map_level4.html#card-{c["key"]}">{c["label"]}</a></b>{partial_badge} '
+                f'<b>{c["label"]}</b>{partial_badge} '
                 f'<span class="meta">{c["via"]}</span></div>')
     card_list = ''.join(_card_row(c) for c in cards) or \
         '<div class="legend-row small"><span class="meta">No dashboard card routes directly into this river.</span></div>'
