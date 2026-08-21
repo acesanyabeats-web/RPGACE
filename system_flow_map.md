@@ -399,7 +399,7 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
   - **XSS fix in `main.js`'s `renderMarkdown()` (July 28)** — raw response text went into `innerHTML` unescaped; `_escChatHtml()` now escapes before the markdown regex chain. FROZEN-file exception logged.
   - **160 undersized-text fixes in `rpgace_core.js` + 21 in `index.html`/`style.css` (July 28)** — the static `/impeccable` scanner only reads `index.html`/`style.css`, so the dynamically-generated UI's own 9-10px text was invisible to it. 3 monospace exemptions excluded. 16 wide-tracking + 15 tiny-text + 4 one-off findings remain a real, smaller backlog.
   - **`videoPipeline` + `morningBrief` migrated into real dashDeck cards (July 28)** — both had been injecting loose onto `#page-dashboard`; both now inject into `#dd-stash-holder`. Morning Brief had been two competing implementations (a hollow static prefill card vs. the real live-data module).
-  - **Content Pipeline overseer (July 28)** — 3 migrations: `video_jobs.content_production_id` FK, `content_productions.creative_docs` jsonb, and the new `style_profiles` table. `beatLog._submit()` creates the linked `content_productions` row. `visualOracle._captureNextResponse()` (one-shot, on the existing `oracle:response-scanned` hook, zero extra API calls) parses two structured trailers — `DIRECTOR_CHOSEN:` → a real `style_profiles` row, `EDL_JSON:` → a real `video_jobs.edl`. Both previously-dead columns are live design intent again. **`style_profiles` still has 0 rows** — the Director Match save path has never fired successfully in production.
+  - **Content Pipeline overseer (July 28)** — 3 migrations: `video_jobs.content_production_id` FK, `content_productions.creative_docs` jsonb, and the new `style_profiles` table. `beatLog._submit()` creates the linked `content_productions` row. `visualOracle._captureNextResponse()` (one-shot, on the existing `oracle:response-scanned` hook, zero extra API calls) parses two structured trailers — `DIRECTOR_CHOSEN:` → a real `style_profiles` row, `EDL_JSON:` → a real `video_jobs.edl`. Both previously-dead columns are live design intent again. **`style_profiles` holds 3 real rows as of Aug 11 (corrected — this line was itself a stale claim, archived: `achiever.html`)** — the Director Match save path has fired successfully: 1 genuine Oracle save (Aug 5, Kubrick) + 2 Mock-Oracle wiring-test saves (Aug 6, Nolan).
   - **Beat-matching root cause fixed (July 28)** — `reference_tracks.scale`/`genre` existed and were scored but were null on all 32 corpus rows, so every beat tied in the same bucket. Genre added to the Beat Log form, Scale/Genre/`url` to the corpus add-track UI, genre added to `findMatches()`. **Still 0/32 populated** — the backfill popup exists but has not been run.
   - **Local librosa audio analysis (July 29)** — `beat_audio_jobs` table + `beat-audio` Storage bucket + an async queue hook in `beatLog._tryRealAudioAnalysis`. BPM + Major/Minor key only. Needs Alex to add the Python snippet and keep `local_server.py` running.
   - **Voice input (July 29, real accessibility need — one-handed)** — `voiceInput` module: Oracle-chat 🎤 plus a persistent global floating 🎤 targeting the last-focused field. A transcript-duplication bug survived one fix and got a second, more fundamental rewrite (position-tracked idempotency, fresh recognition object per restart). **Genuinely UNVERIFIED** — per the per-defect cap, the next step is real console evidence, not a third guess.
@@ -581,8 +581,112 @@ flowchart TD
     AUTOMATE[/"Real browser automation autoport (Option 2).<br/>NOT BUILT — deliberately deferred,<br/>Alex named cr4wl.ai or another repo"/] -.->|would drive BeatStars' UI with| DELIVBUNDLE
 ```
 
+## 12. Oracle Mode — Real / Dummy / Fallback Scout (`mockOracle`) — added Aug 20/21 2026 (G56)
+
+Real, hand-written pipeline doc — G56 of the ratified "RPGACE Total Systems Galaxy Map" `/CEO` plan, Alex's own ask: "using md files to explain logic of many pipeline will also benefit galaxy map." Cross-linked from `graphify-out/galaxy_map_oversight_sync.html` and `galaxy_map_l0.html`'s External AI unit.
+
+```mermaid
+flowchart TD
+    CLICK([Alex clicks the pinned top-right<br/>Oracle Mode switch]) --> CYCLE{Cycle to next mode}
+    CYCLE -->|Real| REALM[✅ Oracle API — every send is a live call]
+    CYCLE -->|Dummy| DUMMYM[🧪 Dummy Oracle — synthetic labeled reply]
+    CYCLE -->|Fallback Scout| SCOUTM[📥 Fallback Scout — queues instead of calling]
+
+    SEND([Any real send-to-Oracle call site]) --> CHECK{callOracle checks<br/>mockOracle.getMode}
+    CHECK -->|real| LIVEAPI[Real POST /api/oracle → callClaude]
+    CHECK -->|dummy| FAKE["🧪 [MOCK ORACLE...] synthetic reply<br/>zero API cost, real DOM/hook/Supabase<br/>wiring still exercises downstream"]
+    CHECK -->|fallback| QUEUE[_queueFallback:<br/>RPGACE.sb.secureWrite to oracle_fallback_queue<br/>context.type='scout_item']
+    QUEUE --> DEDUP{Exact prompt-text already<br/>pending in scout_item rows?}
+    DEDUP -->|yes| ACK1[Honest "already scouted" ack<br/>— no duplicate row]
+    DEDUP -->|no| ROW[(oracle_fallback_queue<br/>status: pending)]
+    ROW --> ACK2["Honest ack + real live queue depth<br/>e.g. '10 items waiting'"]
+
+    DRAIN([Daily 'RPGACE Fallback Drain' Routine<br/>Claude Code Remote trigger, hourly-min]) --> ANSWER[Answers each pending row<br/>with the plain anon key]
+    ANSWER --> ROW2[(oracle_fallback_queue<br/>status: answered)]
+    ROW2 --> SWEEP{_checkFallbackAnswers<br/>sweep, every 5 min}
+    SWEEP --> PARSE{resumeFallbackPlacement<br/>parses the answer}
+    PARSE -->|success| RESUME[Real taxonomy placement<br/>resumed from where it stalled]
+    PARSE -->|malformed JSON| STUCK[/"Row stays answered,<br/>resumed_at IS NULL forever —<br/>only a console.warn, no toast.<br/>NOT fixed, a known landmine"/]
+
+    POPUP([📥 'Scouted, Now Answered' popup<br/>dashDeck._popup]) --> ROW3[(browses every scout_item row,<br/>pending AND answered)]
+```
+
+**Real, honest limits already known and tracked elsewhere** (not restated in full, rule 8): the whole Fallback lane has never been exercised against a real credit-exhaustion event; a malformed fallback answer leaves a row silently stuck (see CLAUDE.md's own landmines section for both).
+
+---
+
+## 13. Achiever / Brown — Stale-Claim Detection, Archival & Removal (G54) — added Aug 20/21 2026 (G56)
+
+Real, hand-written pipeline doc, written the same multi-day pass Achiever itself shipped (G54) — the freshest possible account of its own logic. Cross-linked from `achiever.html` and `future_integrations.html` (its mirror doc) directly.
+
+```mermaid
+flowchart TD
+    FIND([A /colourgradient, /paranoia, or /drift pass<br/>— or a plain file-count/evidence check —<br/>finds a real stale CLAIM]) --> DISTINGUISH{Is the underlying<br/>CODE/FEATURE broken,<br/>or just the STATED FACT?}
+    DISTINGUISH -->|code/feature broken| PURPLE[🟣 Purple — error_log.html's job,<br/>NOT this pipeline]
+    DISTINGUISH -->|stated fact only| BROWN[🟤 Brown]
+
+    BROWN --> EVIDENCE{Real evidence gathered:<br/>OLD value, NEW value,<br/>the specific event that<br/>made them diverge?}
+    EVIDENCE -->|no, just a guess| REJECT([Not archived —<br/>same evidence bar as every<br/>other /colourgradient color])
+    EVIDENCE -->|yes| ARCHIVE[INSERT into achiever_archive:<br/>claim_text, source_doc/location,<br/>rationale, backtrack_note,<br/>first_stated_at, became_false_at]
+
+    ARCHIVE --> FIX[Correct the live doc's own claim<br/>in the SAME pass — rule 6]
+    FIX --> SWEEP{Grep every Tier a-d doc<br/>+ smoke_test_items for the<br/>same stale assertion}
+    SWEEP -->|found in prose| REWRITE[Rewrite just that fact,<br/>keep the rest of the entry]
+    SWEEP -->|found as a smoke_test_items row<br/>testing SOLELY this claim| DELETE[DELETE the row outright<br/>— nothing real left to verify,<br/>NOT a re-flag like purple's]
+    SWEEP -->|not found elsewhere| DONE1([done])
+
+    REWRITE --> RENDER
+    DELETE --> RENDER
+    DONE1 --> RENDER
+    RENDER([achiever.html live-renders<br/>the fresh Supabase row on load]) --> GROUP[Grouped by real category,<br/>same convention as<br/>future_integrations.html]
+```
+
+**Real, load-bearing distinction, worth restating even though it's the whole point of the pipeline**: brown is the PAST-tense mirror of `future_integrations.html`'s FUTURE-tense blue/red/yellow — opposite directions in time, never merged into one destination. A claim can be true-then-false without the feature it describes ever breaking (a river count going stale when a new river is added is not a regression in any functional sense) — that gap is exactly what this pipeline exists to catch, since nothing else in the project re-derives a summary fact from its own source data automatically.
+
+---
+
+## 14. Total-Systems Dispatch — `openmontage_jobs` / `graphify_jobs` Queues — added Aug 20/21 2026 (G56)
+
+Real, hand-written pipeline doc — the real, asynchronous cross-repo/cross-session handoff mechanism named "Total" (Aug 4). Cross-linked from `graphify-out/galaxy_map_orchestrator_openmontage.html` (G29) and the L0 map's Orchestrator CC / External AI units.
+
+```mermaid
+flowchart TD
+    subgraph RPGACECC["Orchestrator CC (this session)"]
+        PLAN([A real video/render job,<br/>or a real graphify/mapping task,<br/>needs an external repo's own work]) --> WRITE
+    end
+
+    WRITE[INSERT a real, queued row —<br/>never a live call, no session-to-session<br/>link exists between separate<br/>Claude Code repos] --> OMQ[(openmontage_jobs<br/>status: queued)]
+    WRITE --> GJQ[(graphify_jobs<br/>a separate dispatch channel,<br/>Graphify CC's own)]
+
+    subgraph OMCC["OpenMontage CC (separate repo/session)"]
+        OMQ --> PICKUP1{Picks up the row<br/>on its own schedule<br/>— no push, polled}
+        PICKUP1 --> WORK1[Real setup, pipeline choice,<br/>real render attempt OR a real,<br/>honest loud failure]
+        WORK1 --> RESULT1[UPDATE the SAME row:<br/>status, output_note,<br/>real findings]
+    end
+
+    subgraph GCC["Graphify CC (separate repo/session)"]
+        GJQ --> PICKUP2{Picks up the row<br/>on its own schedule}
+        PICKUP2 --> WORK2[Real graphify/Obsidian analysis<br/>— e.g. global cross-repo graph,<br/>GRAPH_TREE.html]
+        WORK2 --> RESULT2{output_note flagged<br/>'FOR RPGACE CC: please log'?}
+        RESULT2 -->|yes| LOGME[A real, explicit read-and-log<br/>request for this session]
+        RESULT2 -->|no| HISTORY[Plain job history —<br/>read for context, not<br/>necessarily logged]
+    end
+
+    RESULT1 --> STARTCHECK
+    LOGME --> STARTCHECK
+    HISTORY --> STARTCHECK
+    STARTCHECK([Session-start check, every session:<br/>query both tables for undrained rows<br/>— CLAUDE.md's own standing rule]) --> REPORT[G7/A13's own real reporting shape:<br/>a) output report, b) infrastructure<br/>knowledge, then /drift+/paranoia<br/>against the original real goal]
+    REPORT --> ITERATE{Combined a+b picture<br/>shows the real goal<br/>fully met?}
+    ITERATE -->|no, real gap| NEXTDISPATCH[Feed the gap into<br/>the next real dispatch]
+    ITERATE -->|yes| CLOSED([Goal genuinely closed])
+```
+
+**Real, confirmed constraint stated plainly because it's the whole reason this pipeline exists**: no live session-to-session link exists between separate Claude Code sessions in separate repos — this Supabase-queue-and-poll shape is the ONLY real channel, proven three times independently before being named "Total" (`oracle_fallback_queue`, then `openmontage_jobs`, then this same pattern again for `graphify_jobs`).
+
+---
+
 **The real retroactive loop, spelled out** (the 3 dashed "↩" edges above are the actual "on loop until final product" mechanism, not decoration): Phase 1's button reopens Beat Log pre-filled and routes `beatLog._submit()` through a real UPDATE branch (`_retroTarget`) instead of a fresh INSERT — editing the SAME `content_productions`/`video_jobs` rows. Phase 2's button reopens the director picker pre-selected from the structured `creative_docs.director_blend` field (not a fragile parse of rendered prose). Phase 3's button resends whatever is CURRENTLY saved in `creative_docs.script` — including manual edits made right there in Phase 3 — straight back to Oracle, skipping the picker entirely. All three genuinely mutate the existing ConID in place; none ever branches into a second ConID. This is the real mechanism behind Alex's stated purpose: reuse a beat's existing creative record to regenerate new visuals for content repurposing, without starting from zero.
 
-**Live state, queried July 31, schema-only facts re-confirmed Aug 5:** `content_productions` 7 rows (4 `tutorial`, 3 `music_video`); `video_jobs` 3 rows, all three still at stage 1/5 `beat_logged`; `style_profiles` 0 rows; `openmontage_jobs` schema now includes `title`/`brief`/`beat_meta`/`status`/`output_note`/`requested_by` (confirmed via a live Aug 5 schema read, ahead of Phase F's first real use); `reference_tracks` 32 rows with scale/genre still 0/32. `creative_docs.script`/`.director_blend` are brand-new Aug 5 fields — zero rows have ever been through the new 4-phase flow yet, so these are structurally ready but empty in practice. `content_productions.deliverable_files`/`.deliverable_bundles` and the `beat-deliverables` bucket are equally brand-new (Phase H) — zero files uploaded, zero bundles generated anywhere yet.
+**Live state, queried July 31, schema-only facts re-confirmed Aug 5:** `content_productions` 7 rows (4 `tutorial`, 3 `music_video`); `video_jobs` 3 rows, all three still at stage 1/5 `beat_logged`; `style_profiles` 3 rows (corrected — see the archived stale claim above); `openmontage_jobs` schema now includes `title`/`brief`/`beat_meta`/`status`/`output_note`/`requested_by` (confirmed via a live Aug 5 schema read, ahead of Phase F's first real use); `reference_tracks` 32 rows with scale/genre still 0/32. `creative_docs.script`/`.director_blend` are brand-new Aug 5 fields — zero rows have ever been through the new 4-phase flow yet, so these are structurally ready but empty in practice. `content_productions.deliverable_files`/`.deliverable_bundles` and the `beat-deliverables` bucket are equally brand-new (Phase H) — zero files uploaded, zero bundles generated anywhere yet.
 
 **Honest limit, restated because it is the single most misreadable claim in this pipeline:** RPGACE does not generate video. It tracks, briefs, and hands off. OpenMontage stays an externally-operated tool per the July 24 verdict; Phase F's "Generate Video" builds and can send a real job payload, but the freeze flag defaults OFF pending Alex's own Tier-3 paid-provider decision, and the handoff view surfaces real data — it never simulates a real render as if it were genuine (the Simulate Response tool exists specifically so a fake result is always labeled `[SIMULATED]`, never silently indistinguishable from a real one).

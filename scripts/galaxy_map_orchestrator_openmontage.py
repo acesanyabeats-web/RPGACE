@@ -127,6 +127,7 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Orchestrator ↔ OpenMontage (G29)</div>
   <h1>🤝 Orchestrator CC ↔ OpenMontage CC</h1>
   <p>The real dispatch history between the two Total-system Claude Code sessions — {n_jobs} real openmontage_jobs rows, summarized honestly (never a fabricated live connection).</p>
+  <p>Full real pipeline logic (queue → poll → real work → update → session-start check → report, as a Mermaid diagram): <a href="../system_flow_map.md">system_flow_map.md §14</a>, added Aug 20/21 2026 (G56).</p>
 </div>
 <div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
 <div class="msection">
