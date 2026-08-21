@@ -268,6 +268,25 @@ a genuine cost/benefit call per rule 11), so an empty result means
     BEFORE the other blocks, never synthesized afterward from the
     solution (which would launder away exactly the "scope narrowed once
     real evidence came in" signal this field exists to preserve).
+18. **A `/colourgradient` pass finds a real stale CLAIM (not a code
+    regression) — a fact/count/rule that was true and a later real
+    change made false** (added Aug 20/21, G54, real Alex ask — "brown," a
+    new `/colourgradient` color, distinct from purple which tracks broken
+    code) → a real row in `achiever_archive` (`achiever.html`, the 12th
+    oversight doc, layer (e)'s past-tense half), citing the real old
+    value, the real new value, and the real reason they diverged. The
+    live doc's own claim gets corrected in the same pass (artifact 13's
+    own discipline, extended). **Real, mandatory removal step, Alex's
+    own direct correction**: "what gets brown is removed from smoke test,
+    along with all other oversight docs that are reporting truth" — grep
+    every Tier (a)-(d) doc for the exact stale claim; a `smoke_test_items`
+    row that exists solely to hand-test a now-false claim gets DELETED
+    outright (nothing real left to verify), never just re-flagged — a
+    genuinely different treatment than purple's `needs_confirm_highlight`
+    (which re-flags because the underlying feature might still be
+    fixable). See `.claude/skills/colourgradient/SKILL.md`'s own brown
+    entry for the full worked example (`TOTAL_ZONES`) and the complete
+    procedure — not restated here (rule 8).
 
 ## How to actually run this (the enforceable part)
 

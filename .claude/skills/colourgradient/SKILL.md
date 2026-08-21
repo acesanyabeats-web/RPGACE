@@ -93,6 +93,53 @@ status readout):**
   holds (the same `last_checked_at` evidence this bullet already used before
   `/perspective` existed) — don't block a real purple finding on a baseline
   that hasn't been written yet, just note the gap honestly.
+- 🟤 **BROWN** — added Aug 20/21 2026, real Alex ask ("establish what in a
+  planned or built update will turn a green into a new colour brown... which
+  will archive anything that used to be true that is no longer true").
+  A real STALE CLAIM, genuinely different from purple: purple means the
+  underlying CODE/FUNCTIONALITY broke; brown means a specific stated
+  fact/count/rule in a live oversight doc — a river count, a module total,
+  an architecture description — WAS true, and a LATER real change made it
+  no longer true, while the feature it describes may still work perfectly
+  fine. Confirmed via AskUserQuestion (Alex's own recommended answer):
+  "stale claim, not broken code." **Real, worked example this color was
+  built from**: `TOTAL_ZONES = 16` in `graphify_river_group.py` was
+  correct when written; Aug 18's G49 River-v2 split grew `RIVER_NAME` to
+  17 real entries, but nothing forced `TOTAL_ZONES` to move with it —
+  found stale 2 days later by a plain file-count check, not a deliberate
+  audit. Never assign brown from a guess — same evidence bar as every
+  other color: a real OLD value (what the doc said), a real NEW value
+  (what's actually true now), and a real, checkable reason the two
+  diverged (a specific commit/change, not "probably drifted"). **Real
+  archive step, mandatory, not optional**: a brown finding gets a real row
+  in `achiever.html`'s Supabase table (`achiever_archive` — `claim_text`,
+  `source_doc`/`source_location`, `became_false_reason`,
+  `current_true_value`), the real 12th oversight artifact and layer (e)'s
+  past-tense Archive half (see CLAUDE.md's own layer-(e) note) — same
+  "surface it, don't just quietly fix it" discipline purple's `error_log`
+  step already established. The live doc's own claim gets corrected in
+  the SAME pass (same as any other stale-fact fix, rule 6) — brown is the
+  permanent RECORD that it was once true, not a replacement for fixing it.
+  **Real, mandatory removal step (Alex's own direct correction, same
+  session): "what gets brown is removed from smoke test, along with all
+  other oversight docs that are reporting truth" — not just corrected in
+  place, actively REMOVED from every Tier (a)-(d) doc asserting it.**
+  Concretely: (1) grep every Tier (a)-(d) doc (`patch_notes.html`,
+  `manual.html`, `minotaur_map.html`, `interconnection_map.md`,
+  `system_flow_map.md`, `ai_tooling_and_rules_map.md`,
+  `oracleAppGrounding.SELF_KNOWLEDGE`, `smoke_test.html`) for the exact
+  stale claim; (2) for a doc where the claim is one fact inside a larger
+  bullet/entry, rewrite just that fact to the new true value (can't
+  delete the whole entry if it holds other still-true content); (3) for
+  a `smoke_test_items` row that exists SOLELY to hand-test a now-false
+  claim (nothing real left to verify — the fact itself no longer exists),
+  DELETE the row outright, not just re-flag it — this is genuinely
+  different from purple's `needs_confirm_highlight` treatment, which
+  re-flags a row for re-testing because the underlying FEATURE might
+  still be fixable; a brown claim has no feature to re-test, only a
+  fact that stopped being true. Never delete a `smoke_test_items` row for
+  any other reason (a real regression stays purple/re-flagged, never
+  silently removed) — this deletion path is brown-specific.
 
 **Step 4 — Route by color (Aug 11 2026, Alex's own explicit rule).** This
 is the real, load-bearing addition that makes `/colourgradient` interact
@@ -128,6 +175,17 @@ with the rest of the oversight system, not just report to chat:
   too — which axis regressed (a connector that lost its UI trigger, a
   skill that stopped touching backend) is often the sharpest real diagnosis
   available, cheaper to state than re-deriving one from scratch.
+- **🟤 Brown items route to `achiever.html` instead — NOT
+  `future_integrations.html`** (added Aug 20/21 2026, G54). This is
+  deliberately different from purple's own routing: `future_integrations.html`
+  is the FUTURE-tense mirror (blue/red/yellow — not yet real), but brown is
+  the PAST-tense counterpart (a claim that WAS real and no longer is) —
+  the two are opposite directions in time, so they get separate real
+  destinations rather than sharing one. A brown item's real archive row
+  (`achiever_archive` — `claim_text`/`source_doc`/`became_false_reason`/
+  `current_true_value`) is written in the SAME pass the stale claim is
+  caught, then the live doc's own claim is corrected — brown is the
+  permanent record, not a substitute for the fix.
 - `ceo_plan_items.status` is the single shared source of truth both this
   routing step and `future_integrations.html`'s own snapshot render read
   from — never derive the two independently (rule 8).

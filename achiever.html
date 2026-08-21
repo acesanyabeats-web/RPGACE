@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Achiever (Archive)</title>
+<style>
+  :root {
+    --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0;
+    --brown:#8B5E3C;
+    --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
+    --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
+    --dim:rgba(226,226,236,0.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;line-height:1.7}
+  .sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;overflow-y:auto;z-index:100}
+  .sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--border);margin-bottom:16px}
+  .sidebar-logo .name{font-family:Georgia,serif;font-size:16px;color:var(--gold);letter-spacing:2px}
+  .sidebar-logo .version{font-size:10px;color:var(--dim);letter-spacing:1px;margin-top:2px}
+  .nav-group{padding:8px 0}
+  .nav-label{padding:4px 20px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  .nav-item{display:block;padding:6px 20px;font-size:12px;color:var(--dim);text-decoration:none;cursor:pointer}
+  .nav-item:hover{color:var(--gold)}
+  .content{margin-left:220px;padding:48px 56px;max-width:1000px}
+  .section{margin-bottom:56px}
+  .section-eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--brown);margin-bottom:8px}
+  .section-title{font-family:Georgia,serif;font-size:26px;color:#E2E2EC;margin-bottom:6px}
+  .section-sub{color:var(--dim);font-size:13px;margin-bottom:28px;max-width:700px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin-bottom:12px}
+  .card-title{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px;text-decoration:line-through;text-decoration-color:rgba(139,94,60,0.5)}
+  .card-body{font-size:12px;color:var(--dim);line-height:1.7}
+  .card.brown{border-color:rgba(139,94,60,0.35);background:rgba(139,94,60,0.06)}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
+  .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
+  .badge.brown{background:rgba(139,94,60,0.2);color:#C08A5C;border:1px solid rgba(139,94,60,0.4)}
+  h3{font-size:13px;font-weight:700;color:#E2E2EC;margin:20px 0 8px}
+  p{color:var(--dim);font-size:13px;margin-bottom:8px}
+  strong{color:#E2E2EC;font-weight:600}
+  .date-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;margin-bottom:16px}
+  hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+  .group{margin-bottom:28px}
+  .group-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .group-label .n{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0}
+  .now-true{font-size:12px;color:var(--green);margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.08)}
+  .now-true b{color:var(--green)}
+  .empty{color:var(--dim);font-size:12px;font-style:italic}
+  @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">ACHIEVER — ARCHIVE</div></div>
+  <div class="nav-group"><div class="nav-label">Past State</div>
+    <a class="nav-item" href="#brown">🟤 Brown — Archived Claims</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Format</div>
+    <a class="nav-item" href="#format">How This Doc Works</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Mirror Doc</div>
+    <a class="nav-item" href="future_integrations.html">→ Future Integrations (future tense)</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Real State</div>
+    <a class="nav-item" href="patch_notes.html">→ Patch Notes (green only)</a>
+    <a class="nav-item" href="error_log.html">→ Error Log (broken code)</a>
+  </div>
+</nav>
+
+<div class="content">
+
+<div class="section">
+  <div class="section-eyebrow">Aug 20/21 2026 · New Oversight Artifact — Layer (e), Past-Tense Half</div>
+  <div class="section-title">Achiever</div>
+  <p class="section-sub">A live, constantly-updating log of every real fact/count/rule in RPGACE Total systems that WAS true and a later real change made no longer true. The deliberate MIRROR IMAGE of <a href="future_integrations.html">future_integrations.html</a> — that doc is the FUTURE-tense half of layer (e) (not yet real); this is the PAST-tense half (no longer real). Both sit at the same real oversight-doc level, opposite directions in time, so neither Tier (a)-(d) doc ever has to blur "actually true right now" with "used to be true" any more than it already has to blur with "not yet true."</p>
+  <div class="date-tag">Seeded Aug 20/21 2026 · /colourgradient's own 🟤 brown color (G54)</div>
+</div>
+
+<div class="section" id="format">
+  <h3>How this doc works</h3>
+  <p><strong>Brown is genuinely different from purple.</strong> <a href="error_log.html">error_log.html</a>'s purple tracks real CODE/FUNCTIONALITY regressions — something that worked, and real evidence now shows it broken. Brown tracks a real CLAIM going stale — a stated count, rule, or description in a live oversight doc was true, and a later real change (unrelated to whether the feature still works) made the STATEMENT false. The worked example this color was built from: <code>TOTAL_ZONES = 16</code> in <code>graphify_river_group.py</code> was correct when written; adding River XVII (Aug 18, G49) made it 17, but nothing forced the constant to move with it — found stale 2 days later by a plain file-count check.</p>
+  <p><strong>Never a guess</strong> — same evidence bar as every other <code>/colourgradient</code> color: a real OLD value (what the doc said), a real NEW value (what's actually true now), and a real, checkable reason the two diverged. When a brown finding lands, the live doc's own claim is corrected in the SAME pass (rule 6) — this page is the permanent record that it was once true, never a substitute for fixing the doc.</p>
+  <p>Backed by the real Supabase table <code>achiever_archive</code> — this HTML page is a snapshot rendering of that live data, refreshed whenever a <code>/colourgradient</code>, <code>/paranoia</code>, or <code>/drift</code> pass catches a real stale claim and pushes.</p>
+  <p><strong>Grouping convention, matching <code>future_integrations.html</code>'s own real Aug 13 pattern</strong>: archived claims are grouped by real category (a count constant, an architecture description, a rule) rather than a flat list — when a new claim is archived, find its real category home first.</p>
+</div>
+
+<div class="section" id="brown">
+  <div class="section-eyebrow">🟤 Brown — Archived Claims</div>
+  <div class="section-title" style="font-size:20px">Once true, now real evidence says otherwise</div>
+  <div id="achiever-live"><p class="empty">Loading real state from Supabase…</p></div>
+</div>
+
+<hr>
+<p style="font-size:11px;color:var(--dim)">Live-rendered from <code>achiever_archive</code> on every page load, same discipline as <code>future_integrations.html</code>'s own real Aug 13 fix for a repeated staleness bug (a hand-typed snapshot can always be forgotten to re-sync; a live fetch against the same table cannot go stale this way). Cross-reference <code>achiever_archive</code> in Supabase for the real, queryable version of the same data. First built Aug 20/21 2026 as G54 of the Galaxy Development Framework.</p>
+
+<script>
+(function(){
+  var SB_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
+  var SB_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+  var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+  }
+  function cardHTML(a) {
+    return '<div class="card brown"><div class="card-title">' + esc(a.claim_text) +
+      '<span class="badge brown">ARCHIVED</span></div>' +
+      '<div class="card-body">' + esc(a.source_doc) + (a.source_location ? ' — <code>' + esc(a.source_location) + '</code>' : '') +
+      '<br>' + esc(a.became_false_reason) +
+      '<div class="now-true"><b>Real, current truth:</b> ' + esc(a.current_true_value) + '</div></div></div>';
+  }
+  fetch(SB_URL + '/rest/v1/achiever_archive?select=*&order=archived_at.desc', { headers: HEADERS })
+    .then(function(r) { return r.json(); })
+    .then(function(items) {
+      items = items || [];
+      var el = document.getElementById('achiever-live');
+      if (!items.length) {
+        el.innerHTML = '<p class="empty">No real archived claims yet — this page grows only when a real once-true fact is caught going stale, never pre-built.</p>';
+        return;
+      }
+      var byCat = {};
+      items.forEach(function(a) { (byCat[a.category] = byCat[a.category] || []).push(a); });
+      var html = '';
+      Object.keys(byCat).sort().forEach(function(cat) {
+        html += '<div class="group"><div class="group-label">' + esc(cat) + ' <span class="n">' + byCat[cat].length + ' archived</span></div>' +
+          byCat[cat].map(cardHTML).join('') + '</div>';
+      });
+      el.innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('achiever-live').innerHTML = '<p class="empty">Could not load real state from Supabase: ' + esc(e.message) + '</p>';
+    });
+})();
+</script>
+
+</div>
+</body>
+</html>
