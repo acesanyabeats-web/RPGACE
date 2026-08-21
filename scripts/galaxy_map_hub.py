@@ -91,10 +91,13 @@ def esc(s):
 #   dimension — renders as a node bubble) / meta (an analysis page
 #   synthesizing several other dimensions at once, neither itself).
 PAGES = [
-    {'file': 'galaxy_map.html', 'label': 'Level 0 — RPGACE Architecture (4 Galaxies)',
+    {'file': 'galaxy_map_l0_fusion.html', 'label': 'Level 0 — Real Fusion (current, start here)',
+     'level': 'L0', 'kind': 'core', 'scope': 'All 9 real merged units: RPGACE Architecture / Orchestrator CC / OpenMontage CC / Graphify CC / External AI / Skills / Alex / Supabase / Oversight Docs',
+     'desc': 'Real Aug 21 2026 correction of this shell\'s own first attempt — Alex\'s direct ask: everything starts at L0, with a real per-unit Infra/Inter facet picker and cross-highlight, folded into ONE page rather than a directory. THE current real Level 0.'},
+    {'file': 'galaxy_map.html', 'label': 'Level 0 — RPGACE Architecture (4 Galaxies, reference)',
      'level': 'L0', 'kind': 'core', 'scope': 'Total Systems: RPGACE / Orchestrator CC / OpenMontage CC / Graphify CC',
-     'desc': 'The original real Level 0 — Total Systems as 4 galaxies, Oracle + self-awareness as their own nodes, styled per the Assassin\'s Creed Valhalla reference.'},
-    {'file': 'galaxy_map_l0.html', 'label': 'L0 — 7 Peer Units', 'level': 'L0', 'kind': 'core',
+     'desc': 'The original real Level 0 — Total Systems as 4 galaxies, Oracle + self-awareness as their own nodes, styled per the Assassin\'s Creed Valhalla reference. Superseded as the entry point by the Real Fusion page above; kept live as reference detail.'},
+    {'file': 'galaxy_map_l0.html', 'label': 'L0 — 7 Peer Units (reference)', 'level': 'L0', 'kind': 'core',
      'scope': 'External AI / RPGACE Architecture / Skills / Orchestrator CC / Alex / Supabase / Oversight Docs',
      'desc': 'G43 redefinition (Aug 18) — no privileged gateway unit. Real 🗺️/📊 toggle over the same 17 hand-curated dimension-edges.'},
     {'file': 'galaxy_map_river.html', 'label': 'Level 1 — Rivers', 'level': 'L1', 'kind': 'core',
@@ -319,8 +322,11 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
+<div style="max-width:900px;margin:10px auto 0;padding:10px 24px;text-align:center;font-size:11px;color:#E25454;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.3);border-radius:8px">
+  ⚠️ Superseded same day (Aug 21 2026) — Alex's own direct correction: this directory-of-23-files shell is NOT the primary Galaxy Map entry point. Its toggle/badge UI patterns were reused correctly in the real <a href="galaxy_map_l0_fusion.html">Level 0 (Real Fusion)</a> page, which folds the actual content into one interactive page starting at L0, per his own worked example. Kept here as reference only.
+</div>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Unified Gateway (G59)</div>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Unified Gateway (G59, superseded — reference only)</div>
   <h1>🌌 One Central Door, {n_pages} Real Pages, {n_edges} Real Gateways</h1>
   <p>Every real Galaxy Map page, reachable from one shell — grouped by real Level and real river/dimension, annotated with the real "→ flows into" links each page already carries. The 21 existing pages are untouched; clicking a row or node loads that page's real content below, so this stays light on first paint (real evidence: the ~12,000ms boot-lag already logged this session made a single monolithic file a real regression risk, not a hypothetical one — see the spec).</p>
 </div>

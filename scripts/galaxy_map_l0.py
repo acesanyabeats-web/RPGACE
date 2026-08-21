@@ -300,6 +300,9 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="breadcrumb" style="text-align:center;padding:12px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px">
   <span style="color:#0a0a0f;background:#C9A84C;padding:4px 9px;border-radius:12px">🌌 L0</span>
 </div>
+<div style="max-width:820px;margin:12px auto 0;padding:9px 20px;text-align:center;font-size:11px;color:#8a8a9a">
+  Real Aug 21 2026 update: this page's 7 units are now merged with <a href="galaxy_map.html">galaxy_map.html</a>'s 4 galaxies into one real, current Level 0 with a working infra/inter facet picker — <a href="galaxy_map_l0_fusion.html">galaxy_map_l0_fusion.html</a>. This page stays live as real reference for the original 17 hand-curated edges, but the fusion page is the correct place to start.
+</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · L0</div>
   <h1>🌌 Seven Peer Units</h1>
