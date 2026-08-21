@@ -231,7 +231,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
   <h1>🚦 Real Decisions &amp; Human Gates — Website Perspective</h1>
-  <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Level 3 function (and Level 5, where the same decision already has a curated write-up there). Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope.</p>
+  <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Level 3 function (and Level 5, where the same decision already has a curated write-up there). Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}

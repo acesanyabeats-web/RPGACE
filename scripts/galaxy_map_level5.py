@@ -162,7 +162,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 5</div>
   <h1>🧠 Logic — Real, Named Decision Points</h1>
-  <p>A real, curated set of {n} core decision points — where Alex, Oracle, or the code itself decides something that changes what happens next. NOT exhaustive (that's Level 6) — this is the hand-picked "core logic" Alex asked for. Every code excerpt below is read live from rpgace_core.js at build time, cited by real line number. Real, additive companion (Aug 15): <a href="galaxy_map_logic_dimension.html">📖 the Logic Dimension</a> — every river-to-river connection, external connector, and skill stream as its own clickable passage, river-grouped.</p>
+  <p>A real, curated set of {n} core decision points — where Alex, Oracle, or the code itself decides something that changes what happens next. NOT exhaustive (that's Level 6) — this is the hand-picked "core logic" Alex asked for. Every code excerpt below is read live from rpgace_core.js at build time, cited by real line number. Real, additive companion (Aug 15): <a href="galaxy_map_logic_dimension.html">📖 the Logic Dimension</a> — every river-to-river connection, external connector, and skill stream as its own clickable passage, river-grouped. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — these 7 points unified with the real Decisions gates and a new curated text-input set, split by river and documentation depth.</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}

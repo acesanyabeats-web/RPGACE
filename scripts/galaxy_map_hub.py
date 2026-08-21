@@ -116,6 +116,8 @@ PAGES = [
      'scope': '96 edges across 17 rivers', 'desc': 'Level 5\'s real companion — every river-to-river connection, external connector, and skill stream as a clickable passage.'},
     {'file': 'galaxy_map_decisions.html', 'label': 'Decisions — Website Perspective', 'level': 'Dimension', 'kind': 'infra',
      'scope': '10 human-confirm gates, RPGACE app code only', 'desc': 'G26 Phase 1 — destructive-delete/taxonomy/pipeline confirm gates, grouped by decision type.'},
+    {'file': 'galaxy_map_decision_matrix.html', 'label': 'Decision Matrix — Unified Table + Bubble System', 'level': 'Dimension', 'kind': 'meta',
+     'scope': '21 real decisions (10 gates + 7 logic + 4 text-input), 6 rivers', 'desc': 'Real Aug 21 2026 unification (Alex\'s own direct ask) of Decisions (G26) + Level 5\'s logic points + a new curated text-input set, split by river and documentation depth. The real source-of-truth table; its bubble view is a pure rendering layer over the same data (CEO SKILL.md R22\'s own new standing rule).'},
     {'file': 'galaxy_map_supabase.html', 'label': 'Supabase', 'level': 'Dimension', 'kind': 'infra',
      'scope': '25 tables, 113 of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
     {'file': 'galaxy_map_externals.html', 'label': 'Externals — UI + Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
