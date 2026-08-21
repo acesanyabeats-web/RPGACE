@@ -66,6 +66,10 @@ NOT built this pass (phased build, fork 4).
 import re
 import sys
 from pathlib import Path
+import sys as _sys_rail
+from pathlib import Path as _Path_rail
+_sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -105,10 +109,8 @@ PAGES = [
      'scope': '10 rivers with a real dashboard card', 'desc': 'G38 — real successor to Meanders: river → dashboard card → primary module chain.'},
     {'file': 'galaxy_map_meanders.html', 'label': 'Level 1.5 — Meanders (superseded)', 'level': 'L1.5', 'kind': 'core',
      'scope': 'River V only, pre-Aug-20 split', 'desc': 'Retired Aug 20 in favor of Level 2.5 — kept on disk for reference, no longer the live drill-down path.'},
-    {'file': 'galaxy_map_current.html', 'label': 'Current Series (replaces old Level 3)', 'level': 'Current (L3)', 'kind': 'core',
-     'scope': 'All 45 modules, 436 functions', 'desc': 'G47 — real per-function input/handling/output/next detail, the live replacement for the old call-chain graph.'},
-    {'file': 'galaxy_map_level3.html', 'label': 'Level 3 — Function Chains (superseded)', 'level': 'L3', 'kind': 'core',
-     'scope': 'All 45 modules', 'desc': 'Old call-chain graph — superseded by Current Series, kept as detailed secondary reference (rule 8).'},
+    {'file': 'galaxy_map_current.html', 'label': 'Current Series (map+table, function-level)', 'level': 'Current (L3)', 'kind': 'core',
+     'scope': 'All 45 modules, 436 functions', 'desc': 'G47, folded with the old Level 3 Aug 21 2026 (G65) — real per-function input/handling/output/next detail (table view) AND the real per-module call-chain diagram (map view), same real data, one page. galaxy_map_level3.html is gone, not superseded — its content lives here now.'},
     {'file': 'galaxy_map_zoom.html', 'label': 'Zoomed Current Walkthrough (repurposed Level 4)', 'level': 'Zoom (L4)', 'kind': 'core',
      'scope': '436 real zoomed cards', 'desc': 'G47 continuation — walks one Current at a time to its real next call, until a genuine terminal or module boundary.'},
     {'file': 'galaxy_map_level4.html', 'label': 'Level 4 — Frontend Flow (superseded)', 'level': 'L4', 'kind': 'inter',
@@ -125,10 +127,8 @@ PAGES = [
      'scope': '25 tables, 113 of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
     {'file': 'galaxy_map_externals.html', 'label': 'Externals — UI + Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
      'scope': '13 real external connectors', 'desc': 'G27 — whether each connector genuinely touches real UI AND real backend processing.'},
-    {'file': 'galaxy_map_skills.html', 'label': 'Skills — AI/UI/Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
-     'scope': '24 real RPGACE-authored skills', 'desc': 'G28 — whether each skill reaches external AI, touches real UI, or touches real backend.'},
-    {'file': 'galaxy_map_skill_network.html', 'label': 'Skill Composition Network', 'level': 'Dimension', 'kind': 'inter',
-     'scope': '117 real skill-to-skill edges', 'desc': 'Real /skillName invocation edges between RPGACE-authored skills.'},
+    {'file': 'galaxy_map_skill_network.html', 'label': 'Skills — Composition Network + AI/UI/Backend Dimension', 'level': 'Dimension', 'kind': 'inter',
+     'scope': '24 skills, 117 real skill-to-skill edges', 'desc': 'G28+G36 merged (Aug 21 2026, /misunderstanding correction) — map view: real /skillName invocation edges + click-to-reveal detail; table view: whether each skill reaches external AI, touches real UI, or touches real backend. One real page, not two.'},
     {'file': 'galaxy_map_orchestrator_openmontage.html', 'label': 'Orchestrator ↔ OpenMontage', 'level': 'Dimension', 'kind': 'inter',
      'scope': '8 real dispatch rows', 'desc': 'G29 — real async dispatch history between Orchestrator CC and OpenMontage CC via openmontage_jobs.'},
     {'file': 'galaxy_map_oversight_sync.html', 'label': 'Oversight Sync Dimension', 'level': 'Dimension', 'kind': 'inter',
@@ -154,7 +154,14 @@ KIND_META = {
 def compute_real_edges(out_dir):
     """Reads every real page's own actual href targets — never hand-typed.
     Excludes galaxy_map.html as a TARGET only (universal home breadcrumb,
-    not a real flow relationship — see module docstring)."""
+    not a real flow relationship — see module docstring). Real Aug 21 2026
+    fix, same session, found while regenerating for the new shared level
+    rail (inject_level_rail): the rail's own <nav class="level-rail"> block
+    puts a real href to all 8 ladder pages on EVERY page, which is the
+    exact same "chrome, not a real flow relationship" class already
+    carved out for galaxy_map.html above — so its own hrefs are stripped
+    from the source before scanning, not counted as a second, redundant
+    exclusion list."""
     files = [p['file'] for p in PAGES]
     fileset = set(files)
     edges = []
@@ -163,6 +170,7 @@ def compute_real_edges(out_dir):
         if not path.exists():
             continue
         s = path.read_text(encoding='utf-8', errors='ignore')
+        s = re.sub(r'<nav class="level-rail">.*?</nav>', '', s, flags=re.S)
         targets = set(re.findall(r'href=["\']([a-zA-Z0-9_]+\.html)["\']', s))
         for t in sorted(targets):
             if t in fileset and t != f and t != 'galaxy_map.html':
@@ -424,6 +432,7 @@ def main():
         table_html=table_html, map_html=map_html,
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(PAGES)} real pages catalogued, {len(edges)} real edges computed, "
           f"{sum(1 for p in PAGES if indeg.get(p['file'], 0) == 0 and p['file'] != 'galaxy_map.html')} hub-only orphans found.")

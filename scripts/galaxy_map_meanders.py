@@ -43,6 +43,7 @@ from graphify_river_group import (  # noqa: E402
     compute_oracle_call_counts, compute_external_call_sites,
     LEVEL3_MODULES,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_meanders.html')
 
@@ -84,7 +85,7 @@ def build_module_row(mod):
         for a in actions:
             ext_rows.append(f'<div class="ext-row"><span class="ext-icon">🔗</span><code>{esc(f)}()</code> — Composio <code>{esc(a)}</code></div>')
     ext_html = ''.join(ext_rows) or '<div class="ext-row ext-none">No real Oracle/Composio call detected in this module.</div>'
-    link = (f'<a class="mod-chip" href="galaxy_map_level3.html#mod-{mod}">🔽 {mod} — Level 3</a>'
+    link = (f'<a class="mod-chip" href="galaxy_map_current.html#mod-{mod}">🔽 {mod} — Current Series</a>'
             if mod in LEVEL3_MODULES else f'<span class="mod-chip mod-chip-none">{mod} (no Level-3 page)</span>')
     return f'''<div class="modcard">
     <div class="modname">{mod}</div>
@@ -195,6 +196,7 @@ def main():
     sections = ''.join(build_river_section(r) for r in rivers)
     html = TEMPLATE.format(sections=sections, n_rivers=len(rivers))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(rivers)} river(s) qualify for a real meanders split.")
 

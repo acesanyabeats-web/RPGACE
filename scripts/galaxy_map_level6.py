@@ -28,6 +28,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     LEVEL3_MODULES, RIVER_NAME, RIVER_MODULES, compute_function_branches,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_level6.html')
 
@@ -65,11 +66,11 @@ def build_module_section(mod, branches):
         func_blocks.append(
             f'<div class="fblock"><div class="fname">{esc(f)}() '
             f'<span class="fcount">{len(branches[f])} real branch point(s)</span>'
-            f'<a class="n1-link" href="galaxy_map_level3.html#mod-{mod}" title="Real n-1 — this function\'s own module page (Level 3 has no per-function anchor, so this lands on the module, not a scrolled-to node)">🔭 n-1: {mod}.{esc(f)}()</a></div>{rows}</div>'
+            f'<a class="n1-link" href="galaxy_map_current.html#mod-{mod}" title="Real n-1 — this function\'s own module page (Current Series lands on the module, not a scrolled-to function)">🔭 n-1: {mod}.{esc(f)}()</a></div>{rows}</div>'
         )
     return f'''<section class="msection" id="m-{mod}" style="display:none">
   <div class="mhead"><h2>{mod}</h2><span class="river-chip">{river_label}</span><span class="mtotal">{total} real branch point(s) across {len(branches)} function(s)</span></div>
-  <a class="mod-chip" href="galaxy_map_level3.html#mod-{mod}">🔽 {mod} — Level 3 (function-chain view)</a>
+  <a class="mod-chip" href="galaxy_map_current.html#mod-{mod}">🔽 {mod} — Current Series (function-chain view)</a>
   <div class="funcs">{''.join(func_blocks)}</div>
 </section>'''
 
@@ -119,7 +120,7 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level3.html">🔽 Level 3</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_current.html">🧬 Current Series</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level4.html">🖱️ Level 4</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level5.html">🧠 Level 5</a><span class="bc-sep">→</span>
   <span class="bc-here">🔢 Level 6</span>
@@ -173,6 +174,7 @@ def main():
     sections = ''.join(build_module_section(m, b) for m, b in mods_with_branches.items())
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_total=n_total, n_mods=len(mods_with_branches))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {n_total} real branch points across {len(mods_with_branches)} modules.")
 

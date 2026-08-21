@@ -26,14 +26,26 @@ Sourced from each skill's own real, already-documented behavior
 (ai_tooling_and_rules_map.md / CLAUDE.md's own "Invokable frameworks"
 section) — a real judgment call per skill, same curation discipline as
 Level 5's decision points, not mechanically derived.
+
+**Real Aug 21 2026 correction (via /misunderstanding, same day) — this
+file no longer generates its own standalone page.** Alex's own direct
+words: "the skills composition network is the map view, whilst g28 is
+the table view... again you are duplicating and not integrating
+everything exactly as i said." A first attempt gave THIS file its own
+independent map+table toggle (a column-clustered bubble view) — wrong;
+that duplicated galaxy_map_skill_network.py's own real bubble map
+instead of the two becoming ONE real page. This file now stays a pure
+DATA + RENDER module (SKILLS/GROUPS/build_group_section — the real
+table-view content) imported directly by galaxy_map_skill_network.py,
+which is the one real merged page (map = skill composition network,
+table = this file's own grouped classification). graphify-out/
+galaxy_map_skills.html no longer exists.
 """
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import SKILL_SECONDARY_RIVER, RIVER_NAME  # noqa: E402
-
-OUT = Path('graphify-out/galaxy_map_skills.html')
 
 # G46 (Aug 18 2026, real Part 4F/10 ask — "skills should be treated same
 # as supabase," i.e. its own documented Level/River usage). Real reuse,
@@ -111,40 +123,6 @@ def esc(s):
     return (s or '').replace('<', '&lt;').replace('>', '&gt;')
 
 
-def build_bubble_map():
-    """Real MAP view, Aug 21 2026 — Alex's own direct ask: "this should
-    exist for everywhere that has 2 views." Column-per-axis-group
-    layout (same real, hand-computed-position convention this session
-    already used for galaxy_map_hub.py's own map view, rule 8) — one
-    column per real GROUPS entry, skill nodes stacked within their
-    column, colored by axis combination. No force-directed library."""
-    col_w, row_h, pad_top = 240, 56, 50
-    col_x = {g['id']: 40 + i * col_w for i, g in enumerate(GROUPS)}
-    width = 40 + len(GROUPS) * col_w
-    members_by_group = {g['id']: [n for n, s in SKILLS.items() if g['test'](s)] for g in GROUPS}
-    max_rows = max((len(v) for v in members_by_group.values()), default=1)
-    height = pad_top + max_rows * row_h + 60
-
-    col_labels = ''.join(
-        f'<text x="{col_x[g["id"]] + col_w/2}" y="24" class="col-label" text-anchor="middle">{esc(g["label"])}</text>'
-        for g in GROUPS
-    )
-    col_colors = {'all3': '#E2A83D', 'ai': '#9B59B6', 'ui_backend': '#4A90E2', 'backend_only': '#2ABFB0', 'none': '#8a8a9a'}
-    nodes = []
-    for g in GROUPS:
-        color = col_colors.get(g['id'], '#8a8a9a')
-        for i, name in enumerate(members_by_group[g['id']]):
-            cx = col_x[g['id']] + col_w / 2
-            cy = pad_top + i * row_h + 40
-            nodes.append(
-                f'<g class="sk-node" data-skill="{esc(name)}" transform="translate({cx},{cy})">'
-                f'<rect x="-100" y="-20" width="200" height="40" rx="10" style="fill:{color}22;stroke:{color}"/>'
-                f'<text x="0" y="5" class="sk-label" text-anchor="middle">/{esc(name)}</text>'
-                f'</g>'
-            )
-    return col_labels, ''.join(nodes), width, height
-
-
 def build_group_section(grp):
     members = [(name, s) for name, s in SKILLS.items() if grp['test'](s)]
     # Aug 15 (G35, real Alex ask: "i want these skills to show adjacent
@@ -155,9 +133,8 @@ def build_group_section(grp):
     # language (small rounded pill, colored border) already established
     # at Level 3 for the Oracle/Composio actor bubbles — never a new
     # visual vocabulary invented for this one page. Each row also gets a
-    # real cross-link into the new Skill Composition Network (G36) —
-    # ties the two "skill dimensions" together the way Alex asked for
-    # this whole session ("tie everything together").
+    # real cross-link into the map view's own detail panel (G36) — ties
+    # the two "skill dimensions" together, now literally one page.
     def _bubbles(s):
         b = []
         if s['ai']: b.append('<span class="axbubble ax-ai" title="Touches external AI">🔮</span>')
@@ -175,158 +152,13 @@ def build_group_section(grp):
 
     rows = ''.join(
         f'<tr><td class="skname">/{esc(name)} {_bubbles(s)} '
-        f'<a class="netlink" href="galaxy_map_skill_network.html#skillnet-{esc(name)}" title="Skill Composition Network">🕸️</a></td>'
+        f'<a class="netlink" href="#" data-jump-skill="{esc(name)}" title="Jump to this skill on the Map view">🕸️</a></td>'
         f'<td class="sknote">{esc(s["note"])}</td>'
         f'<td class="skriver">{_river_usage(name)}<div class="lvl-na">Level: N/A — dev-process, not app-runtime</div></td></tr>'
         for name, s in members
     )
     return f'''<section class="gsection" id="grp-{grp['id']}" style="display:none">
   <div class="ghead"><h2>{grp['label']}</h2><span class="gcount">{len(members)} real skill(s)</span></div>
-  <table class="sktable"><thead><tr><th>Skill (axis bubbles + network link)</th><th>Real justification</th><th>Real Level/River usage</th></tr></thead>
+  <table class="sktable"><thead><tr><th>Skill (axis bubbles + map link)</th><th>Real justification</th><th>Real Level/River usage</th></tr></thead>
   <tbody>{rows}</tbody></table>
 </section>'''
-
-
-TEMPLATE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Skills — AI/UI/Backend Dimension)</title>
-<style>
-  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --orange:#E2A83D; }}
-  *{{box-sizing:border-box;margin:0;padding:0}}
-  body{{background:radial-gradient(ellipse at 50% 30%, #1a1610 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}}
-  .hero{{padding:36px 24px 16px;text-align:center}}
-  .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:8px}}
-  .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
-  .hero p{{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}}
-  .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}}
-  .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
-  .breadcrumb a:hover{{color:var(--orange);border-color:var(--orange)}}
-  .breadcrumb .bc-here{{color:#0a0a0f;background:var(--orange);padding:4px 9px;border-radius:12px}}
-  .breadcrumb .bc-sep{{color:#4a4a58}}
-  .tabs{{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}}
-  .tab{{padding:6px 14px;border-radius:16px;font-size:11px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
-  .tab.active{{background:var(--orange);color:#1a1a12;font-weight:700}}
-  .gsection{{max-width:1100px;margin:0 auto;padding:24px;overflow-x:auto}}
-  .ghead{{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}}
-  .ghead h2{{font-family:Georgia,serif;font-size:19px;color:#fff}}
-  .gcount{{font-size:10px;color:var(--orange);font-weight:700}}
-  .sktable{{width:100%;border-collapse:collapse;font-size:11px}}
-  .sktable th{{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--orange);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1)}}
-  .sktable td{{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top}}
-  .skname{{font-family:'Cascadia Code','Fira Mono',monospace;font-weight:700;color:var(--gold);white-space:nowrap}}
-  .skicon{{text-align:center;font-size:13px}}
-  .axbubble{{display:inline-block;font-size:11px;padding:1px 5px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);margin-left:3px}}
-  .axbubble.ax-none{{opacity:0.5}}
-  .netlink{{margin-left:6px;text-decoration:none;font-size:11px;opacity:0.7}}
-  .netlink:hover{{opacity:1}}
-  .sknote{{color:#c8c8d8;line-height:1.5}}
-  .skriver{{white-space:nowrap}}
-  .river-chip{{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(42,191,176,0.12);color:#2ABFB0;margin:0 4px 4px 0}}
-  .river-sec{{background:rgba(201,168,76,0.12);color:var(--gold)}}
-  .lvl-na{{font-size:8.5px;color:var(--dim);margin-top:3px}}
-  a{{color:var(--orange)}}
-  .note{{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
-  .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
-  .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
-  .toggle-btn.active{{background:var(--orange);color:#1a0f04;border-color:var(--orange)}}
-  .view{{display:none}}
-  .view.active{{display:block}}
-  #view-map{{padding:10px 24px 30px;overflow-x:auto}}
-  .col-label{{fill:var(--dim);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}}
-  .sk-node{{cursor:pointer}}
-  .sk-node:hover rect{{stroke-width:2}}
-  .sk-label{{fill:#E2E2EC;font-size:10.5px;font-weight:700;font-family:'Cascadia Code','Fira Mono',monospace}}
-</style>
-</head>
-<body>
-<div class="breadcrumb">
-  <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_decisions.html">🚦 Decisions</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
-  <span class="bc-here">🧩 Skills</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_skill_network.html">🕸️ Skill Composition Network</a>
-</div>
-<div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skills (G28)</div>
-  <h1>🧩 Claude Code Skills — The AI/UI/Backend Dimension</h1>
-  <p>{n_skills} real RPGACE-authored skills, classified on 3 real axes: does the skill's own procedure reach a DIFFERENT external AI (Oracle, or a Total-system member like OpenMontage CC/Graphify CC — not just "Claude Code runs this skill," which would trivially include everything), does it touch real app UI, does it touch real backend (code/Supabase/docs). A real judgment call per skill, not a mechanical detector — skills are prose, not code. Same real data, two views.</p>
-</div>
-<div class="toggle-row">
-  <div class="toggle-btn active" data-view="map">🧩 Map view</div>
-  <div class="toggle-btn" data-view="table">📊 Table view</div>
-</div>
-<div class="view active" id="view-map">
-  <svg viewBox="0 0 {map_w} {map_h}" width="100%" style="min-width:{map_w}px">
-    {map_labels}
-    {map_nodes}
-  </svg>
-</div>
-<div class="view" id="view-table">
-  <div class="tabs">{tabs}</div>
-  {sections}
-</div>
-<div class="note">
-  Generated by <code>scripts/galaxy_map_skills.py</code> — real, curated classification reusing
-  <code>ai_tooling_and_rules_map.md</code>'s own already-sourced skill catalog (Tier 1c) as the source list,
-  never re-derived. G28 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
-  Mapping rules: <code>system_map_spec.md</code>. Real Aug 21 2026 addition: a real column-clustered bubble map
-  (hand-computed positions, one column per real axis group) toggles against the original grouped-table view —
-  per Alex's own "this should exist for everywhere that has 2 views" ask.
-</div>
-<script>
-(function() {{
-  var toggles = document.querySelectorAll('.toggle-btn');
-  var views = document.querySelectorAll('.view');
-  toggles.forEach(function(t) {{
-    t.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
-    }});
-  }});
-  var tabs = document.querySelectorAll('.tab');
-  var sections = document.querySelectorAll('.gsection');
-  function show(id) {{
-    sections.forEach(function(s) {{ s.style.display = (s.id === id) ? '' : 'none'; }});
-    tabs.forEach(function(t) {{ t.classList.toggle('active', t.dataset.target === id); }});
-  }}
-  tabs.forEach(function(t) {{ t.addEventListener('click', function() {{ location.hash = t.dataset.target; }}); }});
-  window.addEventListener('hashchange', function() {{
-    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-    show(id);
-  }});
-  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-  show(id0);
-  document.querySelectorAll('.sk-node').forEach(function(node) {{
-    node.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'table'); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-table'); }});
-      var name = node.dataset.skill;
-      var grp = null;
-      sections.forEach(function(s) {{ if (s.innerHTML.indexOf('/' + name + ' ') !== -1) grp = s.id; }});
-      if (grp) location.hash = grp;
-    }});
-  }});
-}})();
-</script>
-</body>
-</html>
-"""
-
-
-def main():
-    tabs = ''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)
-    sections = ''.join(build_group_section(g) for g in GROUPS)
-    map_labels, map_nodes, map_w, map_h = build_bubble_map()
-    html = TEMPLATE.format(tabs=tabs, sections=sections, n_skills=len(SKILLS),
-                           map_labels=map_labels, map_nodes=map_nodes, map_w=map_w, map_h=map_h)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(html, encoding='utf-8')
-    all3 = sum(1 for s in SKILLS.values() if s['ai'] and s['ui'] and s['backend'])
-    print(f"Wrote {OUT} — {len(SKILLS)} real skills classified, {all3} touch all 3 axes, real map+table toggle.")
-
-
-if __name__ == '__main__':
-    main()

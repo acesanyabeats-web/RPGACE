@@ -42,6 +42,7 @@ from graphify_river_group import (  # noqa: E402
     compute_river_flow_cycles, describe_river_cycle,
     compute_module_oracle_call_count,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 
 def _crossing_reduced_ring_order(river_nums, cx, cy, radius):
@@ -428,6 +429,7 @@ def main():
     nodes, edges, legend, itype_legend, W, H, markers, crossings_before, crossings_after, cycles_html = build_svg()
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers, cycles_html=cycles_html)
     OUT.parent.mkdir(exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn. "
           f"Real crossing-reduced ring order (greedy 2-opt local search): {crossings_before} crossings "

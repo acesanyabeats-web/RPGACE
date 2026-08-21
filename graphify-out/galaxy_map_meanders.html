@@ -40,9 +40,16 @@
   .uncovered{font-size:10.5px;color:#E2A83D;margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   a{color:#5FB3D9}
   .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+
+.level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
+.level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
+.level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
+.level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
+.level-rail .rail-sep{color:#55555f}
 </style>
 </head>
 <body>
+<nav class="level-rail"><a href="galaxy_map.html">🌌 L0</a><span class="rail-sep">→</span><a href="galaxy_map_river.html">🏛️ L1</a><span class="rail-sep">→</span><a href="galaxy_map_module.html">🌊 L2</a><span class="rail-sep">→</span><a href="galaxy_map_level2_5.html">🖇️ L2.5</a><span class="rail-sep">→</span><a href="galaxy_map_current.html">🔽 Current (L3)</a><span class="rail-sep">→</span><a href="galaxy_map_zoom.html">🖱️ Zoom (L4)</a><span class="rail-sep">→</span><a href="galaxy_map_level5.html">🧠 L5</a><span class="rail-sep">→</span><a href="galaxy_map_level6.html">🔬 L6</a></nav>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
@@ -62,29 +69,29 @@
       <div class="modgrid"><div class="modcard">
     <div class="modname">agendaReminder</div>
     <div class="extlist"><div class="ext-row ext-none">No real Oracle/Composio call detected in this module.</div></div>
-    <a class="mod-chip" href="galaxy_map_level3.html#mod-agendaReminder">🔽 agendaReminder — Level 3</a>
+    <a class="mod-chip" href="galaxy_map_current.html#mod-agendaReminder">🔽 agendaReminder — Current Series</a>
   </div><div class="modcard">
     <div class="modname">scheduleFixes</div>
     <div class="extlist"><div class="ext-row ext-none">No real Oracle/Composio call detected in this module.</div></div>
-    <a class="mod-chip" href="galaxy_map_level3.html#mod-scheduleFixes">🔽 scheduleFixes — Level 3</a>
+    <a class="mod-chip" href="galaxy_map_current.html#mod-scheduleFixes">🔽 scheduleFixes — Current Series</a>
   </div><div class="modcard">
     <div class="modname">shiftSync</div>
     <div class="extlist"><div class="ext-row ext-none">No real Oracle/Composio call detected in this module.</div></div>
-    <a class="mod-chip" href="galaxy_map_level3.html#mod-shiftSync">🔽 shiftSync — Level 3</a>
+    <a class="mod-chip" href="galaxy_map_current.html#mod-shiftSync">🔽 shiftSync — Current Series</a>
   </div></div>
     </div><div class="meander">
       <div class="mhead"><span class="mdot" style="background:#4caf82"></span><h3>🌅 Morning Brief</h3><span class="mcount">1 module(s)</span></div>
       <div class="modgrid"><div class="modcard">
     <div class="modname">morningBrief</div>
     <div class="extlist"><div class="ext-row"><span class="ext-icon">🔮</span><code>_generate()</code> — 1 real Oracle call(s)</div><div class="ext-row"><span class="ext-icon">🔗</span><code>_getGmail()</code> — Composio <code>GMAIL_FETCH_EMAILS</code></div><div class="ext-row"><span class="ext-icon">🔗</span><code>_getYouTube()</code> — Composio <code>SUPADATA_GET_YOUTUBE_CHANNEL</code></div></div>
-    <a class="mod-chip" href="galaxy_map_level3.html#mod-morningBrief">🔽 morningBrief — Level 3</a>
+    <a class="mod-chip" href="galaxy_map_current.html#mod-morningBrief">🔽 morningBrief — Current Series</a>
   </div></div>
     </div><div class="meander">
       <div class="mhead"><span class="mdot" style="background:#4caf82"></span><h3>📓 Journal</h3><span class="mcount">1 module(s)</span></div>
       <div class="modgrid"><div class="modcard">
     <div class="modname">journalQoL</div>
     <div class="extlist"><div class="ext-row ext-none">No real Oracle/Composio call detected in this module.</div></div>
-    <a class="mod-chip" href="galaxy_map_level3.html#mod-journalQoL">🔽 journalQoL — Level 3</a>
+    <a class="mod-chip" href="galaxy_map_current.html#mod-journalQoL">🔽 journalQoL — Current Series</a>
   </div></div>
     </div>
     

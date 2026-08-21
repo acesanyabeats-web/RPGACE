@@ -18,6 +18,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import DASHBOARD_CARDS, compute_dashboard_card_flow
+from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_decisions import DECISION_POINTS
 
 OUT = Path('graphify-out/galaxy_map_alex_path.html')
@@ -55,7 +56,7 @@ def build_card_block(card, flow):
             f'<div class="fork-title">🚦 {esc(dp["title"])}</div>'
             f'<div class="fork-branch fork-y"><b>Y (trigger)</b> {esc(dp["trigger"])}</div>'
             f'<div class="fork-branch fork-n"><b>Real logic</b> {esc(dp["logic"])}</div>'
-            f'<a class="fork-link" href="galaxy_map_level3.html#mod-{esc(dp["module"])}">🔽 {esc(dp["module"])}.{esc(dp["func"])}() — Level 3</a>'
+            f'<a class="fork-link" href="galaxy_map_current.html#mod-{esc(dp["module"])}">🔽 {esc(dp["module"])}.{esc(dp["func"])}() — Current Series</a>'
             f'</div>'
             for dp in gates
         )
@@ -139,6 +140,7 @@ def main():
     cards_html = ''.join(build_card_block(c, flow) for c in DASHBOARD_CARDS)
     html = TEMPLATE.format(cards=cards_html)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     n_with_gates = sum(1 for c in DASHBOARD_CARDS if any(DP_BY_MODULE.get(m) for m in _flow_modules(c, flow)))
     print(f"Wrote {OUT} — {len(DASHBOARD_CARDS)} cards, {n_with_gates} with a real decision gate on their path.")

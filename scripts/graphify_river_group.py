@@ -2867,6 +2867,67 @@ def river_group(html_path: Path, graph_json_path: Path):
     return river_counts, len(module_ranges), patched
 
 
+# Aug 21 2026, real Alex ask (mid-session, verbatim): "i want every
+# possible version of these [🌌L0 -> 🏛️L1 -> 🌊L2 -> 🔽L3 -> 🖱️L4 -> 🧠L5]
+# to all be present in each file so i can see it better too." One real,
+# shared "level rail" component (rule 8 — every one of the 22 real
+# galaxy_map_*.py generator scripts shares the exact same
+# `OUT.write_text(html, encoding='utf-8')` convention, so this is a single
+# mechanical post-process, not 22 hand-copied nav blocks). Deliberately
+# includes L2.5 and L6 too, alongside the 6 Alex named — they are real,
+# already-shipped rungs of the same ladder, and "every possible version"
+# reads as the full real ladder, not a literal 6-item cap.
+LEVEL_RAIL = [
+    ('galaxy_map.html', '🌌', 'L0'),
+    ('galaxy_map_river.html', '🏛️', 'L1'),
+    ('galaxy_map_module.html', '🌊', 'L2'),
+    ('galaxy_map_level2_5.html', '🖇️', 'L2.5'),
+    ('galaxy_map_current.html', '🔽', 'Current (L3)'),
+    ('galaxy_map_zoom.html', '🖱️', 'Zoom (L4)'),
+    ('galaxy_map_level5.html', '🧠', 'L5'),
+    ('galaxy_map_level6.html', '🔬', 'L6'),
+]
+
+LEVEL_RAIL_CSS = '''
+.level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
+.level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
+.level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
+.level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
+.level-rail .rail-sep{color:#55555f}
+'''
+
+
+def level_rail_html(current_file):
+    """Renders the shared 8-stop level ladder, current stop highlighted."""
+    chips = []
+    for i, (fname, icon, label) in enumerate(LEVEL_RAIL):
+        cls = ' class="active"' if fname == current_file else ''
+        chips.append(f'<a href="{fname}"{cls}>{icon} {label}</a>')
+        if i < len(LEVEL_RAIL) - 1:
+            chips.append('<span class="rail-sep">→</span>')
+    return '<nav class="level-rail">' + ''.join(chips) + '</nav>'
+
+
+def inject_level_rail(html, current_file):
+    """Mechanical post-process applied to an already-rendered page, right
+    before it's written to disk — injects the shared CSS (once) and the
+    rail nav (right after <body...>). Never touches an existing TEMPLATE
+    string or an existing breadcrumb — purely additive, same "nothing
+    superseded" discipline as everywhere else this session."""
+    if '.level-rail{' not in html:
+        if '</style>' in html:
+            html = html.replace('</style>', LEVEL_RAIL_CSS + '</style>', 1)
+        else:
+            html = html.replace('</head>', f'<style>{LEVEL_RAIL_CSS}</style></head>', 1)
+    rail = level_rail_html(current_file)
+    m = re.search(r'(<body[^>]*>)', html)
+    if m:
+        after = html[m.end():m.end() + 2000]
+        if 'class="level-rail"' not in after:
+            html = html[:m.end()] + '\n' + rail + html[m.end():]
+    return html
+
+
 if __name__ == '__main__':
     target = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('graphify-out/graph.html')
     graph_json = Path(sys.argv[2]) if len(sys.argv) > 2 else Path('graphify-out/graph.json')

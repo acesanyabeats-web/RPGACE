@@ -37,6 +37,10 @@ own procedure changes, this page needs a real re-transcription (same
 maintenance discipline as any other hand-mirrored data in this project).
 """
 from pathlib import Path
+import sys as _sys_rail
+from pathlib import Path as _Path_rail
+_sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_oversight_sync.html')
 
@@ -248,6 +252,7 @@ def main():
     sections = build_pushbuild_section() + ''.join(build_ritual_section(r) for r in RITUALS)
     html = TEMPLATE.format(tabs=tabs, sections=sections)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(PUSH_BUILD_TRIGGERS)} push/build triggers, "
           f"{len(RITUALS)} real ritual sequences ({sum(len(r['steps']) for r in RITUALS)} total steps).")

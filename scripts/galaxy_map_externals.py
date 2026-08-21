@@ -34,6 +34,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import EXTERNAL_CONNECTORS  # noqa: E402
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_externals.html')
 
@@ -237,6 +238,7 @@ def main():
     sections = ''.join(build_group_section(g) for g in GROUPS)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_conns=len(EXTERNAL_CONNECTORS))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     both_n = sum(1 for c in EXTERNAL_CONNECTORS if classify_group(c['name']) == 'both')
     print(f"Wrote {OUT} — {len(EXTERNAL_CONNECTORS)} real connectors, {both_n} genuinely touch both UI and backend.")

@@ -32,6 +32,10 @@ whole file for arm/confirm patterns, _confirm-shaped function names,
 and bare confirm() calls, not assumed or guessed at.
 """
 from pathlib import Path
+import sys as _sys_rail
+from pathlib import Path as _Path_rail
+_sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 CORE_JS = Path('rpgace_core.js')
 OUT = Path('graphify-out/galaxy_map_decisions.html')
@@ -74,7 +78,7 @@ DECISION_POINTS = [
     {
         'id': 'video-summary-delete', 'category': 'destructive',
         'title': 'Delete a video summary report (legacy fallback path)',
-        'module': 'videoSummary', 'func': '_delete', 'lines': (11621, 11629),
+        'module': 'videoSummary', 'func': '_delete', 'lines': (11611, 11619),
         'anchor': "window.confirm('Delete \"' + title + '\"?')",
         'trigger': 'Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn\'t available, using a bare browser `confirm()` instead of the richer popup.',
         'logic': 'A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.',
@@ -82,7 +86,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (22008, 22013),
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (21991, 21996),
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -90,7 +94,7 @@ DECISION_POINTS = [
     {
         'id': 'bookworm-delete', 'category': 'destructive',
         'title': 'Delete a Bookworm book (2-click arm/confirm)',
-        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (15032, 15050),
+        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (15014, 15032),
         'anchor': 'var armed = false;',
         'trigger': 'A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.',
         'logic': 'No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.',
@@ -98,7 +102,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (13698, 13698),
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (13680, 13680),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (Level 5\'s own real decision point — see there for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -107,7 +111,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (14166, 14166),
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (14148, 14148),
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (Level 5\'s own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -140,7 +144,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (19447, 19454),
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (19435, 19436),
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',
@@ -170,7 +174,7 @@ def build_category_section(cat):
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>{dp['logic']}</p></div>
   {l5_html}
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines {a}-{b})</div><pre>{code_esc}</pre></div>
-  <a class="mod-chip" href="galaxy_map_level3.html#mod-{dp['module']}">🔽 {dp['module']}.{esc(dp['func'])}() — Level 3</a>
+  <a class="mod-chip" href="galaxy_map_current.html#mod-{dp['module']}">🔽 {dp['module']}.{esc(dp['func'])}() — Current Series</a>
 </div>''')
     return f'''<section class="csection" id="cat-{cat['id']}" style="display:none">
   <div class="chead"><h2>{cat['label']}</h2><span class="ccount">{len(points)} real decision point(s)</span></div>
@@ -223,11 +227,11 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level3.html">🔽 Level 3</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_current.html">🧬 Current Series</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level5.html">🧠 Level 5</a><span class="bc-sep">→</span>
   <span class="bc-here">🚦 Decisions</span><span class="bc-sep">→</span>
   <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_skills.html">🧩 Skills</a>
+  <a href="galaxy_map_skill_network.html">🧩 Skills</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
@@ -270,6 +274,7 @@ def main():
     sections = ''.join(build_category_section(c) for c in CATEGORIES)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_points=len(DECISION_POINTS), n_cats=len(CATEGORIES))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(DECISION_POINTS)} real decision points across {len(CATEGORIES)} categories, all anchors verified live.")
 

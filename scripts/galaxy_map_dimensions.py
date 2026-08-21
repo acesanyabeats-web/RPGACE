@@ -34,6 +34,7 @@ from graphify_river_group import (
     compute_page_nav_triggers, compute_click_load_triggers,
     dashboard_card_primary_module,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_decisions import DECISION_POINTS
 
 OUT = Path('graphify-out/galaxy_map_dimensions.html')
@@ -122,7 +123,7 @@ def build_rows(tags):
         )
         rows.append(
             f'<tr class="{"hub" if n >= 3 else ""}"><td class="modname">'
-            f'<a href="galaxy_map_level3.html#mod-{esc(m)}">{esc(m)}</a></td>'
+            f'<a href="galaxy_map_current.html#mod-{esc(m)}">{esc(m)}</a></td>'
             f'<td class="rivercell">{"River " + str(r) if r else "—"}</td>'
             f'{cells}<td class="tagcount">{n}</td></tr>'
         )
@@ -199,6 +200,7 @@ def main():
     rows = build_rows(tags)
     html = TEMPLATE.format(dim_headers=dim_headers, rows=rows, n_hubs=n_hubs, n_mods=len(tags))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(tags)} modules, {n_hubs} real hub(s) (3+ dimension tags).")
 

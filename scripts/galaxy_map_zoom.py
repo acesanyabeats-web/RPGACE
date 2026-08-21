@@ -19,6 +19,7 @@ from graphify_river_group import (  # noqa: E402
     _function_bodies, compute_function_branches, compute_function_ui_signals,
     compute_oracle_call_counts, compute_supabase_table_touches,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_zoom.html')
 
@@ -181,6 +182,7 @@ def main():
     zoom_cards = ''.join(zoom_cards_parts)
     html = TEMPLATE.format(zoom_cards=zoom_cards)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(all_pairs)} real zoomed Current cards.")
 

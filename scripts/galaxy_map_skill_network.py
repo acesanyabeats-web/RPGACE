@@ -20,17 +20,25 @@ Rendered the same way the Logic Dimension renders river edges (rule 8,
 not reinvented): a clickable <details> passage per real outgoing
 invocation, grouped by the calling skill.
 
-**Real Aug 21 2026 addition — Alex's own direct ask: "please make [this
-page] its table view, to make the map/table view toggle, this should
-exist for everywhere that has 2 views."** The tab/passage view above
-becomes the real TABLE view; a real MAP (bubble) view is added
-alongside it — a circular node-link layout (24 real skill nodes on a
-ring, 117 real curved edges), reusing this session's own hand-rolled
-polar-coordinate SVG convention (galaxy_map.py/galaxy_map_river.py),
-never a force-directed physics library. The original docstring's "no
-library to lay out well by hand" reasoning is now stale (that same
-session already proved a real hand-computed layout works fine for
-this project's zero-npm-runtime rule) — corrected here, not repeated.
+**Real Aug 21 2026 fold, corrected via /misunderstanding same day —
+Alex's own direct words: "the skills composition network is the map
+view, whilst g28 is the table view... again you are duplicating and
+not integrating everything exactly as i said."** The first attempt at
+this ask wrongly gave BOTH this page and G28 (galaxy_map_skills.py)
+their own independent map+table toggle — two files, each duplicated,
+instead of ONE file. Corrected: this IS now the one real merged page.
+MAP view = a real circular node-link layout (24 real skill nodes on a
+ring, 118 real curved invocation edges), reusing this session's own
+hand-rolled polar-coordinate SVG convention (galaxy_map.py/galaxy_map_
+river.py), never a force-directed physics library — clicking a bubble
+expands its own real caller/callee detail inline (the exact content
+the old tab/passage view used to show, preserved here rather than
+lost, since the map is now the one place that information lives).
+TABLE view = G28's own real grouped-axis classification
+(build_group_section(), imported directly from galaxy_map_skills.py,
+never re-derived — rule 8). galaxy_map_skills.py/.html are deleted
+outright; every real cross-reference elsewhere in the pipeline that
+used to point at galaxy_map_skills.html now points here instead.
 """
 import math
 import re
@@ -38,8 +46,9 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
-from galaxy_map_skills import SKILLS
+from galaxy_map_skills import SKILLS, GROUPS, build_group_section  # noqa: E402
 from graphify_river_group import SKILL_SECONDARY_RIVER, RIVER_NAME  # noqa: E402
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_skill_network.html')
 SKILLS_DIR = Path('.claude/skills')
@@ -140,12 +149,19 @@ def build_skill_section(name, callees, callers):
     if sec:
         river_bits.append(RIVER_NAME.get(sec[0], f'River {sec[0]}').split('—')[0].strip())
     river_line = f'<p class="modline">Real River usage: {" + ".join(river_bits)} · Level: N/A (dev-process, not app-runtime)</p>'
-    return f'''<section class="ssection" id="skillnet-{esc(name)}" style="display:none">
+    # Real Aug 21 2026 fold (/misunderstanding correction) — this used to
+    # be its own tab-switched <section> (the page's real TABLE view,
+    # before the merge). Now it's a hidden detail panel INSIDE the Map
+    # view, revealed by clicking that skill's own bubble — the exact
+    # same real caller/callee content, preserved rather than dropped,
+    # since G28's own table (the new real table view) doesn't carry
+    # this invocation-edge detail at all.
+    return f'''<div class="net-detail" id="net-detail-{esc(name)}" style="display:none">
   <div class="shead"><h2>/{esc(name)}</h2><span class="pcount">{len(callees)} real outgoing invocation(s)</span></div>
   <p class="modline">Invoked BY: {in_html}</p>
   {river_line}
   {out_html}
-</section>'''
+</div>'''
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -199,18 +215,38 @@ TEMPLATE = """<!DOCTYPE html>
   .net-edge{{fill:none;stroke:#E2A83D55;stroke-width:1.1}}
   .net-edge.dim{{opacity:0.06}}
   .net-edge.hi{{stroke:var(--gold);stroke-width:2;opacity:1}}
+  .net-detail{{max-width:640px;margin:16px auto 0;padding:16px 20px;background:rgba(255,255,255,0.04);border:1px solid rgba(226,168,61,0.3);border-radius:12px;text-align:left}}
+  /* Real G28 table-view classes, moved from galaxy_map_skills.py's own
+     former standalone page (that file no longer generates its own
+     page — this IS its page now, per Alex's own direct correction). */
+  .gsection{{max-width:1100px;margin:0 auto;padding:24px;overflow-x:auto}}
+  .ghead{{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}}
+  .ghead h2{{font-family:Georgia,serif;font-size:19px;color:#fff}}
+  .gcount{{font-size:10px;color:var(--orange);font-weight:700}}
+  .sktable{{width:100%;border-collapse:collapse;font-size:11px}}
+  .sktable th{{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--orange);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1)}}
+  .sktable td{{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top}}
+  .skname{{font-family:'Cascadia Code','Fira Mono',monospace;font-weight:700;color:var(--gold);white-space:nowrap}}
+  .axbubble{{display:inline-block;font-size:11px;padding:1px 5px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);margin-left:3px}}
+  .axbubble.ax-none{{opacity:0.5}}
+  .netlink{{margin-left:6px;text-decoration:none;font-size:11px;opacity:0.7}}
+  .netlink:hover{{opacity:1}}
+  .sknote{{color:#c8c8d8;line-height:1.5}}
+  .skriver{{white-space:nowrap}}
+  .river-chip{{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(42,191,176,0.12);color:#2ABFB0;margin:0 4px 4px 0}}
+  .river-sec{{background:rgba(201,168,76,0.12);color:var(--gold)}}
+  .lvl-na{{font-size:8.5px;color:var(--dim);margin-top:3px}}
 </style>
 </head>
 <body>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_skills.html">🧩 Skills (G28)</a><span class="bc-sep">→</span>
-  <span class="bc-here">🕸️ Skill Composition Network</span>
+  <span class="bc-here">🕸️ Skills — Composition Network (map) + AI/UI/Backend Dimension (table)</span>
 </div>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skill Composition Network (G36)</div>
-  <h1>🕸️ Skill Composition Network — Which Skills Build Other Skills</h1>
-  <p>Real, distinct from the AI/UI/Backend dimension (G28/Skills page) — this is skill-CALLS-skill composition: {n_edges} real invocations across {n_skills} skills, mechanically detected from each skill's own SKILL.md prose (a real `/otherSkillName` mention), never invented. Click any invocation to see it named — same real data, two views.</p>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Skills (G28 + G36, merged)</div>
+  <h1>🕸️ Skills — One Page, Two Real Views</h1>
+  <p>Map view = skill-CALLS-skill composition (G36): {n_edges} real invocations across {n_skills} skills, mechanically detected from each skill's own SKILL.md prose (a real `/otherSkillName` mention). Table view = the AI/UI/Backend dimension (G28): a real, curated judgment call per skill on whether it reaches external AI, touches app UI, or touches backend. Same 24 real skills, two genuinely different real lenses on them — not two files.</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="map">🕸️ Map view</div>
@@ -222,18 +258,19 @@ TEMPLATE = """<!DOCTYPE html>
     {map_edges}
     {map_nodes}
   </svg>
+  <div id="net-detail-wrap">{detail_panels}</div>
 </div>
 <div class="view" id="view-table">
   <div class="tabs">{tabs}</div>
-  <div class="wrap">{sections}</div>
+  {sections}
 </div>
 <div class="note">
-  Generated by <code>scripts/galaxy_map_skill_network.py</code>, reusing <code>galaxy_map_skills.py</code>'s own real 24-skill
-  <code>SKILLS</code> dict as the canonical name list (rule 8). G36 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
-  Honest scope limit: only a real `/name` slash-mention counts — a skill referenced only by prose description is invisible to
-  this detector. Mapping rules: <code>system_map_spec.md</code>. Real Aug 21 2026 addition: a real circular bubble map (hand-
-  computed polar layout, no force-directed library) toggles against the original tab/passage table view — same data, two views,
-  per Alex's own "this should exist for everywhere that has 2 views" ask.
+  Generated by <code>scripts/galaxy_map_skill_network.py</code> (map) + <code>scripts/galaxy_map_skills.py</code> (table,
+  imported directly — <code>build_group_section()</code>, never re-derived, rule 8). G28+G36 of the ratified "RPGACE Total
+  Systems Galaxy Map" /CEO plan, merged into one real page Aug 21 2026 after a real /misunderstanding correction — Alex's own
+  direct words: "the skills composition network is the map view, whilst g28 is the table view." Honest scope limit on the
+  map: only a real `/name` slash-mention counts as an invocation — a skill referenced only by prose description is invisible
+  to this detector. Mapping rules: <code>system_map_spec.md</code>.
 </div>
 <script>
 (function() {{
@@ -246,7 +283,7 @@ TEMPLATE = """<!DOCTYPE html>
     }});
   }});
   var tabs = document.querySelectorAll('.tab');
-  var sections = document.querySelectorAll('.ssection');
+  var sections = document.querySelectorAll('.gsection');
   function show(id) {{
     sections.forEach(function(s) {{ s.style.display = (s.id === id) ? '' : 'none'; }});
     tabs.forEach(function(t) {{ t.classList.toggle('active', t.dataset.target === id); }});
@@ -258,13 +295,17 @@ TEMPLATE = """<!DOCTYPE html>
   }});
   var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
   show(id0);
-  // Real map<->table cross-link: clicking a bubble jumps to its table row too
-  document.querySelectorAll('.net-node').forEach(function(node) {{
-    node.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'table'); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-table'); }});
-      location.hash = 'skillnet-' + node.dataset.skill;
+  // Real per-node detail panel — clicking a bubble reveals its own real
+  // caller/callee text INSIDE the map view (no separate view needed —
+  // this is real map content, the same info the old standalone tab/
+  // passage page used to show before this file existed).
+  function showDetail(name) {{
+    document.querySelectorAll('.net-detail').forEach(function(d) {{
+      d.style.display = (d.id === 'net-detail-' + name) ? '' : 'none';
     }});
+  }}
+  document.querySelectorAll('.net-node').forEach(function(node) {{
+    node.addEventListener('click', function() {{ showDetail(node.dataset.skill); }});
     node.addEventListener('mouseenter', function() {{
       var name = node.dataset.skill;
       document.querySelectorAll('.net-node').forEach(function(n) {{ n.classList.toggle('dim', n.dataset.skill !== name); }});
@@ -276,6 +317,19 @@ TEMPLATE = """<!DOCTYPE html>
     node.addEventListener('mouseleave', function() {{
       document.querySelectorAll('.net-node').forEach(function(n) {{ n.classList.remove('dim'); }});
       document.querySelectorAll('.net-edge').forEach(function(e) {{ e.classList.remove('hi', 'dim'); }});
+    }});
+  }});
+  // Real table->map cross-link — a G28 row's 🕸️ icon jumps to that
+  // skill's own bubble + detail panel on the Map view, same real page.
+  document.querySelectorAll('.netlink').forEach(function(link) {{
+    link.addEventListener('click', function(ev) {{
+      ev.preventDefault();
+      var name = link.dataset.jumpSkill;
+      toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'map'); }});
+      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-map'); }});
+      showDetail(name);
+      var node = document.querySelector('.net-node[data-skill="' + name + '"]');
+      if (node) node.scrollIntoView({{behavior:'smooth', block:'center'}});
     }});
   }});
 }})();
@@ -292,15 +346,23 @@ def main():
     for caller, callees in invocations.items():
         for c in callees:
             callers_of.setdefault(c, []).append(caller)
-    tabs = ''.join(f'<div class="tab" data-target="skillnet-{esc(n)}">/{esc(n)}</div>' for n in names)
-    sections = ''.join(build_skill_section(n, invocations.get(n, []), callers_of.get(n, [])) for n in names)
+    # Real detail panels (map-view click targets) — same content the
+    # old standalone table page used to render as tab-switched sections.
+    detail_panels = ''.join(build_skill_section(n, invocations.get(n, []), callers_of.get(n, [])) for n in names)
     n_edges = sum(len(v) for v in invocations.values())
     map_edges, map_nodes, map_w, map_h = build_bubble_map(names, invocations)
+    # Real table view — G28's own grouped-axis classification, imported
+    # directly from galaxy_map_skills.py (rule 8, never re-derived).
+    tabs = ''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)
+    sections = ''.join(build_group_section(g) for g in GROUPS)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_edges=n_edges, n_skills=len(names),
-                           map_edges=map_edges, map_nodes=map_nodes, map_w=map_w, map_h=map_h)
+                           map_edges=map_edges, map_nodes=map_nodes, map_w=map_w, map_h=map_h,
+                           detail_panels=detail_panels)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(names)} skills, {n_edges} real invocation edges, real map+table toggle.")
+    print(f"Wrote {OUT} — {len(names)} skills, {n_edges} real invocation edges (map) + "
+          f"{len(GROUPS)} real axis groups (table), one real merged page.")
 
 
 if __name__ == '__main__':

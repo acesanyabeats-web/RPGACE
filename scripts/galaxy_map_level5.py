@@ -19,6 +19,10 @@ logic" worth naming), Level 6 is the mechanical, exhaustive counterpart.
 """
 import re
 from pathlib import Path
+import sys as _sys_rail
+from pathlib import Path as _Path_rail
+_sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 CORE_JS = Path('rpgace_core.js')
 OUT = Path('graphify-out/galaxy_map_level5.html')
@@ -42,7 +46,7 @@ DECISION_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (24122, 24163), 'anchor': "MODES: ['real', 'dummy', 'fallback']",
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (24104, 24132), 'anchor': "MODES: ['real', 'dummy', 'fallback']",
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -63,7 +67,7 @@ DECISION_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (13547, 13586),
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (13529, 13560),
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -74,7 +78,7 @@ DECISION_POINTS = [
         'id': 'dedup-extend',
         'title': 'Taxonomy dedup: extend existing leaf vs. reject',
         'decider': 'Code logic (real empty-newSteps + existing-leaf check)',
-        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (13815, 13830),
+        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (13797, 13809),
         'anchor': '_insertNewSteps: function',
         'decides': 'What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).',
         'changes': "attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.",
@@ -96,7 +100,7 @@ DECISION_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (19374, 19393),
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (19356, 19362),
         'anchor': 'MUSIC_VIDEO_PRIMARY_ACTION',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",
@@ -107,7 +111,7 @@ DECISION_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (18612, 18623),
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (18585, 18600),
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -159,7 +163,7 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level3.html">🔽 Level 3</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_current.html">🧬 Current Series</a><span class="bc-sep">→</span>
   <a href="galaxy_map_level4.html">🖱️ Level 4</a><span class="bc-sep">→</span>
   <span class="bc-here">🧠 Level 5</span>
 </div>
@@ -212,7 +216,7 @@ def build_section(dp):
   <div class="dblock"><div class="dlabel">Real result</div><p>{dp['result']}</p></div>
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines {a}-{b})</div><pre>{code_esc}</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, not silently shown stale.</div>
-    <a class="mod-chip" href="galaxy_map_level3.html#mod-{dp['level3']}">🔽 {dp['level3']} — Level 3</a>
+    <a class="mod-chip" href="galaxy_map_current.html#mod-{dp['level3']}">🔽 {dp['level3']} — Current Series</a>
   </div>
 </section>'''
 
@@ -222,6 +226,7 @@ def main():
     sections = ''.join(build_section(dp) for dp in DECISION_POINTS)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n=len(DECISION_POINTS))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(DECISION_POINTS)} real, curated decision points, all anchors verified live.")
 

@@ -48,20 +48,27 @@
   .rback a{font-size:10.5px;color:#5FB3D9;text-decoration:none}
   a{color:var(--gold)}
   .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+
+.level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
+.level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
+.level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
+.level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
+.level-rail .rail-sep{color:#55555f}
 </style>
 </head>
 <body>
+<nav class="level-rail"><a href="galaxy_map.html">🌌 L0</a><span class="rail-sep">→</span><a href="galaxy_map_river.html">🏛️ L1</a><span class="rail-sep">→</span><a href="galaxy_map_module.html">🌊 L2</a><span class="rail-sep">→</span><a href="galaxy_map_level2_5.html" class="active">🖇️ L2.5</a><span class="rail-sep">→</span><a href="galaxy_map_current.html">🔽 Current (L3)</a><span class="rail-sep">→</span><a href="galaxy_map_zoom.html">🖱️ Zoom (L4)</a><span class="rail-sep">→</span><a href="galaxy_map_level5.html">🧠 L5</a><span class="rail-sep">→</span><a href="galaxy_map_level6.html">🔬 L6</a></nav>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
   <span class="bc-here">🚪 Level 2.5</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_level3.html">🔽 Level 3</a>
+  <a href="galaxy_map_current.html">🧬 Current Series</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2.5 (G38)</div>
   <h1>🚪 Rivers Regrouped by UI/Alex Accessibility</h1>
-  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the 10 of 16 real rivers with an actual dashboard card get a section — each card points forward into Level 3 (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
+  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the 10 of 16 real rivers with an actual dashboard card get a section — each card points forward into Current Series (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
 </div>
 <div class="tabs"><div class="tab" data-target="river-3">III</div><div class="tab" data-target="river-4">IV</div><div class="tab" data-target="river-5">V</div><div class="tab" data-target="river-6">VI</div><div class="tab" data-target="river-7">VII</div><div class="tab" data-target="river-8">VIII</div><div class="tab" data-target="river-9">IX</div><div class="tab" data-target="river-10">X</div><div class="tab" data-target="river-11">XI</div><div class="tab" data-target="river-14">XIV</div></div>
 <section class="rsection" id="river-3" style="display:none">
@@ -83,7 +90,7 @@
   <div class="chead"><span class="cicon">📖 Bookworm</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">dashDeck._openBookworm() -&gt; bookworm module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-4">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-bookworm">🔽 bookworm — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-bookworm">🔽 bookworm — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Jina AI</b><span>Load-bearing for Bookworm URL ingestion (River IV), Schedule Oracle + chat-pasted-URL handling (River III)</span></div></div></div>
@@ -101,12 +108,12 @@
   <div class="chead"><span class="cicon">🌅 Morning Brief</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">dashDeck._openMorningBrief() -&gt; morningBrief module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-morningBrief">🔽 morningBrief — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-morningBrief">🔽 morningBrief — its own functions on Current Series</a></div>
 </div><div class="ccard">
   <div class="chead"><span class="cicon">📓 Journal</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">showPage(pages.journal) -&gt; journalQoL module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-5">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-journalQoL">🔽 journalQoL — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-journalQoL">🔽 journalQoL — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Composio</b><span>River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion + YouTube via Supadata)</span></div></div></div>
@@ -119,7 +126,7 @@
   <div class="chead"><span class="cicon">🌳 Taxonomy & Review</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-8">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extnone">No real external connector cited for this river.</div></div>
@@ -132,7 +139,7 @@
   <div class="chead"><span class="cicon">📖 Encyclopedia</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">showPage(pages.encyclopedia) -&gt; jargonEncyclopedia module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-7">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-jargonEncyclopedia">🔽 jargonEncyclopedia — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-jargonEncyclopedia">🔽 jargonEncyclopedia — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Last.fm</b><span>refCorpus.findMatches()'s real fallback (River VII), grows the corpus from its own results</span></div></div></div>
@@ -145,7 +152,7 @@
   <div class="chead"><span class="cicon">🌳 Taxonomy & Review</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-8">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-phylumPath">🔽 phylumPath — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extnone">No real external connector cited for this river.</div></div>
@@ -158,7 +165,7 @@
   <div class="chead"><span class="cicon">🕳️ Knowledge Gaps</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">dashDeck._openGaps() -&gt; knowledgeGap module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-9">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-knowledgeGap">🔽 knowledgeGap — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-knowledgeGap">🔽 knowledgeGap — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>Graphify CC</b><span>Dispatched from River IX's own session-start check, deposits real findings into River XIV via graphify_jobs</span></div></div></div>
@@ -171,7 +178,7 @@
   <div class="chead"><span class="cicon">📜 The Chronicles</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">chroniclesLog._openCard() -&gt; chroniclesLog module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-10">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-chroniclesLog">🔽 chroniclesLog — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-chroniclesLog">🔽 chroniclesLog — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extnone">No real external connector cited for this river.</div></div>
@@ -184,7 +191,7 @@
   <div class="chead"><span class="cicon">🎬 Content Pipeline</span><span class="uibadge">🧑 real UI/input evidence</span></div>
   <div class="cvia">dashDeck._openPipeline() -&gt; contentProductionLive module</div>
   <div class="clinks"><a class="modlink r2" href="galaxy_map_module.html#river-11">🌊 Level 2 (backend home)</a></div>
-  <div class="cmod"><a class="modlink" href="galaxy_map_level3.html#mod-contentProductionLive">🔽 contentProductionLive — its own functions on Level 3</a></div>
+  <div class="cmod"><a class="modlink" href="galaxy_map_current.html#mod-contentProductionLive">🔽 contentProductionLive — its own functions on Current Series</a></div>
 </div></div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div><div class="extgrid"><div class="extchip"><b>OpenMontage</b><span>Real spring AND mouth both sit in River XI: opens at "Generate Video," closes at "Mark ConID as Filmed"</span></div><div class="extchip"><b>Composio</b><span>River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion + YouTube via Supadata)</span></div><div class="extchip"><b>librosa</b><span>Triggered by River XI's Beat Log, nowhere else</span></div><div class="extchip"><b>FFmpeg</b><span>Reached only via River XI's OpenMontage handoff, never called directly by any RPGACE river</span></div></div></div>

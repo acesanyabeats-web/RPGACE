@@ -41,6 +41,7 @@ from graphify_river_group import (  # noqa: E402
     dashboard_card_primary_module, compute_module_ui_signal,
     LEVEL3_MODULES, EXTERNAL_RIVER_LINKS,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_level2_5.html')
 
@@ -74,7 +75,7 @@ def build_card_block(card):
         has_ui = any(sig.values()) if isinstance(sig, dict) else bool(sig)
         if has_ui:
             ui_badge = '<span class="uibadge">🧑 real UI/input evidence</span>'
-        mod_link = f'<a class="modlink" href="galaxy_map_level3.html#mod-{esc(primary)}">🔽 {esc(primary)} — its own functions on Level 3</a>'
+        mod_link = f'<a class="modlink" href="galaxy_map_current.html#mod-{esc(primary)}">🔽 {esc(primary)} — its own functions on Current Series</a>'
     else:
         mod_link = '<span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span>'
     partial = ' <span class="partial">(partial — via text names a QoL-layer-only module)</span>' if card.get('partial') else ''
@@ -193,12 +194,12 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
   <span class="bc-here">🚪 Level 2.5</span><span class="bc-sep">→</span>
-  <a href="galaxy_map_level3.html">🔽 Level 3</a>
+  <a href="galaxy_map_current.html">🧬 Current Series</a>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2.5 (G38)</div>
   <h1>🚪 Rivers Regrouped by UI/Alex Accessibility</h1>
-  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the {n_rivers} of 16 real rivers with an actual dashboard card get a section — each card points forward into Level 3 (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
+  <p>The real central convergence point where UI, Alex, backend, and externals meet — Level 1.5 (Meanders) is retired, its own River-V role folded in here. Only the {n_rivers} of 16 real rivers with an actual dashboard card get a section — each card points forward into Current Series (its functions), back into Level 2 (its backend home), out to any real externals attached, and (once G30 ships) into its own dimension. Alex's own framing: "the central point where all ui/alex/backend/externals all eventually meet."</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}
@@ -234,6 +235,7 @@ def main():
     sections = ''.join(build_river_section(r) for r in RIVER_NUMS)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_rivers=len(RIVER_NUMS))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     total_cards = sum(len({c['key'] for c in CARDS_BY_RIVER.get(r, [])}) for r in RIVER_NUMS)
     print(f"Wrote {OUT} — {len(RIVER_NUMS)} real card-having rivers (of 16 total), {total_cards} real river-card placements.")

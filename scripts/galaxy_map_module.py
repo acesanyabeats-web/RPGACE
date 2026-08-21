@@ -95,6 +95,7 @@ from graphify_river_group import (  # noqa: E402
     attribute_river_connection_function, compute_module_oracle_call_count,
     rivers_needing_meanders, compute_module_supabase_touch_count,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
 # "Human Gate — Alex" node (rule 8, one consistent identity, not a
@@ -928,6 +929,7 @@ def main():
         sections.append(build_river_section(rnum))
     html = TABS_TEMPLATE.format(tabs='\n'.join(tabs), sections='\n'.join(sections))
     OUT.parent.mkdir(exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(RIVER_NAME)} river sections, "
           f"{sum(len(m) for m in RIVER_MODULES.values())} real modules, "

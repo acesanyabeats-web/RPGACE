@@ -33,7 +33,7 @@ Real /interrogation resolved the shape (2 rounds, AskUserQuestion):
    fork) equally.
 
 Real cross-link discipline (rule 8, reused not reinvented): Level 2 via
-galaxy_map_module.html#river-{N}, Level 3 via galaxy_map_level3.html#mod-{module}
+galaxy_map_module.html#river-{N}, Current Series via galaxy_map_current.html#mod-{module}
 (module-granular, same honest scope limit G21's own n-1 links already
 state). A real, evidence-gated "⏳ Load" HUB bubble at Level 2 (mirroring
 the existing Oracle/Composio hub-bubble pattern exactly) is a real,
@@ -49,6 +49,7 @@ from graphify_river_group import (
     compute_boot_task_registrations, compute_page_nav_triggers,
     compute_click_load_triggers,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_load.html')
 
@@ -67,7 +68,7 @@ def _river_of(module):
 def _mod_links(module):
     r = _river_of(module)
     l2 = f'<a href="galaxy_map_module.html#river-{r}">River {r} · Level 2</a>' if r else '<span class="dim">no river</span>'
-    l3 = f'<a href="galaxy_map_level3.html#mod-{esc(module)}">Level 3</a>'
+    l3 = f'<a href="galaxy_map_current.html#mod-{esc(module)}">Current Series</a>'
     return f'{l2} · {l3}'
 
 
@@ -175,7 +176,7 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_decisions.html">🚦 Decisions</a><span class="bc-sep">→</span>
   <a href="galaxy_map_externals.html">🔀 Externals</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_skills.html">🧩 Skills</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_skill_network.html">🧩 Skills</a><span class="bc-sep">→</span>
   <span class="bc-here">⏳ Load</span>
 </div>
 <div class="hero">
@@ -232,6 +233,7 @@ def main():
     )
     html = TEMPLATE.format(tabs=tabs, sections=sections)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(boot_regs)} boot-task registrations, "
           f"{sum(len(compute_page_nav_triggers(m)) for m in LEVEL3_MODULES)} page-nav modules with triggers, "

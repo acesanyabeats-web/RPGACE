@@ -18,6 +18,7 @@ from graphify_river_group import (  # noqa: E402
     compute_all_supabase_table_touches, RIVER_MODULES, RIVER_NAME,
     LEVEL3_MODULES,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_supabase.html')
 
@@ -35,7 +36,7 @@ def esc(s):
 
 def _mod_link(mod):
     if mod in LEVEL3_MODULES:
-        return f'<a class="mod-chip" href="galaxy_map_level3.html#mod-{mod}">🔽 {mod}</a>'
+        return f'<a class="mod-chip" href="galaxy_map_current.html#mod-{mod}">🔽 {mod}</a>'
     return f'<span class="mod-chip mod-chip-none">{mod}</span>'
 
 
@@ -127,6 +128,7 @@ def main():
         build_table_row(t, touches) for t, touches in sorted(TABLES.items(), key=lambda kv: -len(kv[1])))
     html = TEMPLATE.format(n_tables=len(TABLES), table_sections=table_sections)
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(TABLES)} real tables, "
           f"{sum(len(v) for v in TABLES.values())} real total touches.")

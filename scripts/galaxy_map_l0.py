@@ -24,6 +24,10 @@ Architecture's own code), Alex<->Supabase (mediated via Orchestrator CC).
 """
 import sys
 from pathlib import Path
+import sys as _sys_rail
+from pathlib import Path as _Path_rail
+_sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -71,7 +75,7 @@ EDGES = [
     {'id': 'alex-skills', 'a': 'alex', 'b': 'skills', 'kind': ACTOR,
      'evidence': 'Alex directly invokes skills by name in chat ("/CEO", "/paranoia", "/interrogation", etc.) — the literal trigger mechanism named in every skill\'s own frontmatter.',
      'desc': 'Alex names a skill; Orchestrator CC runs its real, defined procedure. A skill\'s own output (a report, a plan, a built artifact) becomes real input Alex reacts to.',
-     'link': 'galaxy_map_skills.html'},
+     'link': 'galaxy_map_skill_network.html'},
     {'id': 'alex-external', 'a': 'alex', 'b': 'external_ai', 'kind': ACTOR,
      'evidence': "Alex uses RPGACE's own Oracle chat directly as a real app user — RPGACE Architecture's own deployed feature, not mediated through Orchestrator CC.",
      'desc': 'Alex types a prompt into Oracle chat; External AI (via RPGACE Architecture\'s Oracle harness) returns a real reply rendered in the app UI.',
@@ -83,7 +87,7 @@ EDGES = [
     {'id': 'orch-skills', 'a': 'orchestrator_cc', 'b': 'skills', 'kind': ACTOR,
      'evidence': 'Every real skill invocation this session and every prior session — the whole Judgment Funnel/Galaxy Development Framework.',
      'desc': 'Orchestrator CC invokes skills as its own standing development discipline — multi-angle deliberation before big builds, never agreement-then-build.',
-     'link': 'galaxy_map_skills.html'},
+     'link': 'galaxy_map_skill_network.html'},
     {'id': 'orch-supabase', 'a': 'orchestrator_cc', 'b': 'supabase', 'kind': INJECTION,
      'evidence': 'Direct MCP tool queries/migrations — the exact mechanism used to build this very page\'s own tracked ceo_plan_items rows.',
      'desc': 'Orchestrator CC reads/writes Supabase directly via MCP tools for evidence-gathering, plan tracking, and real schema work — a real injection tool for getting dev-process work done.',
@@ -102,7 +106,7 @@ EDGES = [
     {'id': 'rpgace-skills', 'a': 'rpgace_architecture', 'b': 'skills', 'kind': INJECTION,
      'evidence': 'SKILL_SECONDARY_RIVER (already built, 7 of 25 skills cite a real secondary river beyond River XIII\'s own full catalog).',
      'desc': 'A skill is a real "built in framework" — reused, defined procedure a river/module\'s own development draws on, injected as dev-process citation, not a runtime call.',
-     'link': 'galaxy_map_skills.html'},
+     'link': 'galaxy_map_skill_network.html'},
     {'id': 'rpgace-oversight', 'a': 'rpgace_architecture', 'b': 'oversight_docs', 'kind': ACTOR,
      'evidence': 'The whole Tier (a)-(f) oversight system, all 11 real artifacts.',
      'desc': 'Oversight Docs document RPGACE Architecture\'s own real state — "external change documentation in respect to RPGACE Architecture," Alex\'s own redefinition.'},
@@ -395,6 +399,7 @@ def main():
         drop_panels_map=drop_panels_map, matrix_rows=matrix_rows, drop_panels_table=drop_panels_table,
         n_edges=len(EDGES))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — 7 real L0 units, {len(EDGES)} real edges, 2 toggleable views (map/table).")
 

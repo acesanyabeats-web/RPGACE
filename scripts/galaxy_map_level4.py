@@ -39,6 +39,7 @@ from graphify_river_group import (  # noqa: E402
     CARDS_BY_RIVER, RIVER_MODULES, RIVER_NAME, RIVER_COLOR,
     compute_card_oracle_call_count,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_level4.html')
 
@@ -52,7 +53,7 @@ def _mod_link(mod, label=None):
     real, confirmed absence from RIVER_MODULES)."""
     label = label or mod
     if mod in LEVEL3_MODULES:
-        return f'<a href="galaxy_map_level3.html#mod-{mod}" class="mod-chip">🔽 {label}</a>'
+        return f'<a href="galaxy_map_current.html#mod-{mod}" class="mod-chip">🔽 {label}</a>'
     return f'<span class="mod-chip mod-chip-none" title="dashDeck is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules — a real, pre-existing structural fact, not a gap this page invents a fix for">{label} <span class="meta">(no Level-3 page)</span></span>'
 
 
@@ -206,7 +207,7 @@ TEMPLATE = """<!DOCTYPE html>
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_river.html">🏛️ Level 1</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>
-  <a href="galaxy_map_level3.html">🔽 Level 3</a><span class="bc-sep">→</span>
+  <a href="galaxy_map_current.html">🧬 Current Series</a><span class="bc-sep">→</span>
   <span class="bc-here">🖱️ Level 4</span><span class="bc-sep">→</span>
   <a href="galaxy_map_level5.html">🧠 Level 5</a>
 </div>
@@ -252,6 +253,7 @@ def main():
     sections = ''.join(build_card_section(c) for c in DASHBOARD_CARDS)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_cards=len(DASHBOARD_CARDS))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     linked = sum(1 for c in DASHBOARD_CARDS for t in FLOW.get(c['key'], {}).get('targets', [])
                  if t['kind'] == 'popup' and (

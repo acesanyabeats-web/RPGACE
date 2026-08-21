@@ -36,9 +36,16 @@
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
   a{color:var(--blue)}
   .note{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+
+.level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
+.level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
+.level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
+.level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
+.level-rail .rail-sep{color:#55555f}
 </style>
 </head>
 <body>
+<nav class="level-rail"><a href="galaxy_map.html">🌌 L0</a><span class="rail-sep">→</span><a href="galaxy_map_river.html">🏛️ L1</a><span class="rail-sep">→</span><a href="galaxy_map_module.html">🌊 L2</a><span class="rail-sep">→</span><a href="galaxy_map_level2_5.html">🖇️ L2.5</a><span class="rail-sep">→</span><a href="galaxy_map_current.html">🔽 Current (L3)</a><span class="rail-sep">→</span><a href="galaxy_map_zoom.html">🖱️ Zoom (L4)</a><span class="rail-sep">→</span><a href="galaxy_map_level5.html">🧠 L5</a><span class="rail-sep">→</span><a href="galaxy_map_level6.html">🔬 L6</a></nav>
 <div class="breadcrumb">
   <a href="galaxy_map.html">🌌 Level 0</a><span class="bc-sep">→</span>
   <a href="galaxy_map_module.html">🌊 Level 2</a><span class="bc-sep">→</span>

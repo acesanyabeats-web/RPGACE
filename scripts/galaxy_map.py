@@ -63,6 +63,7 @@ from graphify_river_group import (  # noqa: E402
     EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
 )
+from graphify_river_group import inject_level_rail  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
 # should exist in the bubbles in on rpgace total systems own
 # architecture map." Pulls in the real 7-unit EDGES model (galaxy_map_
@@ -214,7 +215,7 @@ def build_facets():
         dim_label = {
             'galaxy_map_decisions.html': 'Decisions (human-confirm gates)',
             'galaxy_map_externals.html': 'Externals',
-            'galaxy_map_skills.html': 'Skills',
+            'galaxy_map_skill_network.html': 'Skills',
             'galaxy_map_supabase.html': 'Supabase',
             'galaxy_map.html': 'RPGACE Architecture (core chain)',
         }.get(e.get('link'), 'Direct relationship')
@@ -972,6 +973,7 @@ def main():
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H,
                            markers=markers, unit_cards=unit_cards, data_json=json.dumps(data))
     OUT.parent.mkdir(exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     skipped = len(ORACLE_PROVIDER_NAMES) + 3  # +3 = Graphify CC (dup of the real galaxy) + FFmpeg + OpenMontage (both moved to OpenMontage CC's own local cluster)
     n_facets = sum(len(v) for v in facets.values())

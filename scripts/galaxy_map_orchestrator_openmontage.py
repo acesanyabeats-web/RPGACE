@@ -22,6 +22,10 @@ an async Supabase queue, never a synchronous call. This page shows WHAT
 was exchanged, not a live connection.
 """
 from pathlib import Path
+import sys as _sys_rail
+from pathlib import Path as _Path_rail
+_sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import inject_level_rail  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
 
@@ -152,6 +156,7 @@ def main():
     jobs_html = ''.join(build_job_card(j) for j in JOBS)
     html = TEMPLATE.format(members=members_html, jobs=jobs_html, n_jobs=len(JOBS))
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(MEMBERS)} real members, {len(JOBS)} real dispatch rows.")
 
