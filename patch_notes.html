@@ -74,6 +74,25 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🌌🎯 Aug 21 (2nd real correction, same day) — the fused L0 now lives directly INSIDE galaxy_map.html, RPGACE Total Systems' own architecture map — no 3rd file</div>
+    <div class="card-body">
+      Alex, more precisely, right after the first correction shipped: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map." Then, while this was in progress: "name l0 rpgace total systems too so it has a right reference."
+      <br><br>
+      <b>Real diagnosis</b>: the first correction (galaxy_map_l0_fusion.html) fixed the interaction MODEL correctly but still put it on a brand-new THIRD file — still fragmentation, just one file smaller than the rejected hub. Alex's real ask was for the 9 real merged units to live as bubbles directly ON <code>galaxy_map.html</code> — the page already branded "RPGACE Total Systems · Galaxy Map" — not a separate page at all.
+      <br><br>
+      <b>Fixed</b>: moved the real <code>build_facets()</code>/unit-choice/cross-highlight logic out of the now-deleted <code>galaxy_map_l0_fusion.py</code> directly into <code>scripts/galaxy_map.py</code> (no circular import — neither source module it draws from imports back). The existing hand-tuned SVG diagram (crossing-reduction, curved edges, real Aug 13 crowding fixes) is untouched — its 4 relevant nodes (RPGACE Architecture's 3 satellites + the Human Gate-Alex harness node) simply gained a real <code>data-unit</code> trigger into the shared Infra/Inter panel. 5 more real units (External AI, Skills, Alex, Supabase, Oversight Docs) render as a new bubble row directly below the SVG, sharing the exact same mechanic. The central RPGACE Architecture node keeps its own separate, pre-existing real drill-down link into Level 1 rivers — untouched, since diverting its primary click would have broken real, already-working navigation.
+      <br><br>
+      <b>Naming</b>: title/eyebrow/h1 now explicitly say "RPGACE Total Systems" (was previously only in the eyebrow, not the page title), per Alex's own direct ask for a correct reference.
+      <br><br>
+      <b>Real cleanup</b>: <code>galaxy_map_l0_fusion.py</code>/<code>.html</code> deleted outright (content moved, not duplicated — rule 8; git history preserves them if ever needed). <code>galaxy_map_l0.html</code>'s and <code>galaxy_map_hub.html</code>'s own banners updated to point at <code>galaxy_map.html</code> directly. <code>galaxy_map_hub.py</code>'s PAGES catalogue corrected back to 23 entries (24 real files total now, was 25). A real, pre-existing stale claim found in passing and fixed: <code>galaxy_map.html</code>'s own closing note still said "G4 (function drill-down)... not yet built" — G4 (<code>galaxy_map_module.html</code>) has been live since Aug 13.
+      <br><br>
+      <b>Re-verified against Alex's own worked examples, not assumed still-correct after the move</b>: headless Chromium confirmed OpenMontage CC (clicked via its real SVG node) → Infra → Externals (OpenMontage/FFmpeg); Alex (clicked via the new bubble row) → Infra → the real Decisions list; the central RPGACE Architecture node's own river-drill-down link still works, unaffected. Zero console errors, div/svg/g/a-balanced (67/67, 1/1, 20/20, 5/5), idempotent across 2 fresh runs on all 3 touched pages.
+      <br><br>
+      <code>ceo_plan_items</code> G59 updated in place a 2nd time. The 4 <code>perspective_reports</code> rows from the /perspective pass earlier this session had their own evidence citation corrected to point at the new file location. <code>node --check</code> clean, re-minified, cache-bust bumped 20260821d→20260821e. <code>oracleAppGrounding.SELF_KNOWLEDGE</code> and CLAUDE.md updated per rule 6.
+    </div>
+</div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🌌🔁 Aug 21 (real correction, same day) — Alex rejected the Unified Gateway shell; the REAL Level 0 Fusion page shipped instead</div>
     <div class="card-body">
       Alex, directly, after seeing the Unified Gateway shell rendered live: "no claude ... everything should fold into one galaxy html. not unified gateway, that should be used as reference of how to structure the map ... everything should start at l0. put all infra into its bubble at level 0 (i press openmontage, it will give me a choice of infra for externals... or i can choose inter where i can choose a dimension open montage is present. or press alex and it will take me to a choice of inter dimension, or can choose infra to see what decisions alex can make etc.)" He was right, and said plainly he'd explained this before and it kept getting built wrong.

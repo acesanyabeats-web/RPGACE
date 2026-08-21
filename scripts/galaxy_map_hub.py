@@ -91,12 +91,9 @@ def esc(s):
 #   dimension — renders as a node bubble) / meta (an analysis page
 #   synthesizing several other dimensions at once, neither itself).
 PAGES = [
-    {'file': 'galaxy_map_l0_fusion.html', 'label': 'Level 0 — Real Fusion (current, start here)',
+    {'file': 'galaxy_map.html', 'label': 'Level 0 — RPGACE Total Systems (current, start here)',
      'level': 'L0', 'kind': 'core', 'scope': 'All 9 real merged units: RPGACE Architecture / Orchestrator CC / OpenMontage CC / Graphify CC / External AI / Skills / Alex / Supabase / Oversight Docs',
-     'desc': 'Real Aug 21 2026 correction of this shell\'s own first attempt — Alex\'s direct ask: everything starts at L0, with a real per-unit Infra/Inter facet picker and cross-highlight, folded into ONE page rather than a directory. THE current real Level 0.'},
-    {'file': 'galaxy_map.html', 'label': 'Level 0 — RPGACE Architecture (4 Galaxies, reference)',
-     'level': 'L0', 'kind': 'core', 'scope': 'Total Systems: RPGACE / Orchestrator CC / OpenMontage CC / Graphify CC',
-     'desc': 'The original real Level 0 — Total Systems as 4 galaxies, Oracle + self-awareness as their own nodes, styled per the Assassin\'s Creed Valhalla reference. Superseded as the entry point by the Real Fusion page above; kept live as reference detail.'},
+     'desc': 'Real Aug 21 2026 fusion, second correction same day — Alex\'s own direct ask: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map." The 7-unit model is now merged directly into THIS page (not a separate file) — 4 units render in the real SVG diagram, 5 more as a real bubble row beside it, all 9 sharing one Infra/Inter facet picker. THE current real Level 0, and RPGACE Total Systems\' own canonical architecture map.'},
     {'file': 'galaxy_map_l0.html', 'label': 'L0 — 7 Peer Units (reference)', 'level': 'L0', 'kind': 'core',
      'scope': 'External AI / RPGACE Architecture / Skills / Orchestrator CC / Alex / Supabase / Oversight Docs',
      'desc': 'G43 redefinition (Aug 18) — no privileged gateway unit. Real 🗺️/📊 toggle over the same 17 hand-curated dimension-edges.'},
@@ -323,7 +320,7 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div style="max-width:900px;margin:10px auto 0;padding:10px 24px;text-align:center;font-size:11px;color:#E25454;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.3);border-radius:8px">
-  ⚠️ Superseded same day (Aug 21 2026) — Alex's own direct correction: this directory-of-23-files shell is NOT the primary Galaxy Map entry point. Its toggle/badge UI patterns were reused correctly in the real <a href="galaxy_map_l0_fusion.html">Level 0 (Real Fusion)</a> page, which folds the actual content into one interactive page starting at L0, per his own worked example. Kept here as reference only.
+  ⚠️ Superseded same day (Aug 21 2026) — Alex's own direct correction: this directory-of-23-files shell is NOT the primary Galaxy Map entry point. Its toggle/badge UI patterns were reused correctly, and its L0 fusion content now lives directly inside <a href="galaxy_map.html">galaxy_map.html</a> — RPGACE Total Systems' own real architecture map — per his own further direct ask ("the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map"). Kept here as reference only.
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Unified Gateway (G59, superseded — reference only)</div>

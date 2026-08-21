@@ -63,8 +63,22 @@ from graphify_river_group import (  # noqa: E402
     EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
 )
+# Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
+# should exist in the bubbles in on rpgace total systems own
+# architecture map." Pulls in the real 7-unit EDGES model (galaxy_map_
+# l0.py) and the real Decisions list (galaxy_map_decisions.py) so this
+# page's own 4 galaxies + 5 more real units (External AI/Skills/Alex/
+# Supabase/Oversight Docs) share ONE real Infra/Inter facet mechanic —
+# no separate file, no circular import (neither source module imports
+# from this one).
+from galaxy_map_l0 import UNITS as SRC_UNITS, EDGES as SRC_EDGES, INJECTION, ACTOR  # noqa: E402
+from galaxy_map_decisions import CATEGORIES as DEC_CATEGORIES, DECISION_POINTS  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map.html')
+
+
+def esc(s):
+    return (s or '').replace('<', '&lt;').replace('>', '&gt;')
 
 GALAXIES = [
     {
@@ -142,6 +156,148 @@ CONNECTOR_ITYPE = {
     'n8n': 'dispatch_trigger',
     'Whisper (OpenAI, local)': 'external_extract_call',
 }
+
+GALAXY_BY_ID = {g['id']: g for g in GALAXIES}
+
+# ── Real, deduplicated 9-unit L0 (rule 8: rpgace_architecture and
+# orchestrator_cc exist in BOTH this file's own GALAXIES and galaxy_
+# map_l0.py's UNITS — merged here, not duplicated). 4 of the 9 already
+# render as real SVG bubbles above (the 3 satellites + the human_gate_
+# alex harness node, now wired with a real unit_id); the other 5 get a
+# real, additional bubble row below the SVG, per Alex's own direct ask.
+UNIT_ORDER = [
+    'rpgace_architecture', 'orchestrator_cc', 'openmontage_cc', 'graphify_cc',
+    'external_ai', 'skills', 'alex', 'supabase', 'oversight_docs',
+]
+UNIT_META = {
+    'rpgace_architecture': {'label': 'RPGACE Architecture', 'icon': '🏛️', 'color': '#C9A84C'},
+    'orchestrator_cc': {'label': 'Orchestrator CC', 'icon': '🧭', 'color': '#4A90E2'},
+    'openmontage_cc': {'label': 'OpenMontage CC', 'icon': '🎬', 'color': '#E25454'},
+    'graphify_cc': {'label': 'Graphify CC', 'icon': '🌐', 'color': '#3DAA6E'},
+    'external_ai': {'label': 'External AI', 'icon': '🔮', 'color': '#9B59B6'},
+    'skills': {'label': 'Skills', 'icon': '🧩', 'color': '#3DAA6E'},
+    'alex': {'label': 'Alex', 'icon': '🧑', 'color': '#E25454'},
+    'supabase': {'label': 'Supabase', 'icon': '🗄️', 'color': '#2ABFB0'},
+    'oversight_docs': {'label': 'Oversight Docs', 'icon': '📚', 'color': '#C9A84C'},
+}
+# The 5 units that need a NEW bubble on this page (the other 4 already
+# render via the SVG satellites/harness node above).
+NEW_BUBBLE_UNITS = ['external_ai', 'skills', 'alex', 'supabase', 'oversight_docs']
+
+# Real, explicit override #1 — anything touching External AI is INFRA
+# regardless of its stored EDGES 'kind' tag (Alex's own confirmed
+# example this session: infra = "Supabase touch, Oracle call,
+# external-connector touch").
+FORCE_INFRA_UNITS = {'external_ai'}
+# Real, explicit override #2 — the alex<->rpgace_architecture edge is
+# INFRA (Alex's own literal "infra = what decisions I can make"
+# example), expanded below to the full real DECISION_POINTS list.
+FORCE_INFRA_EDGE_IDS = {'alex-rpgace'}
+
+
+def build_facets():
+    """Returns {unit_id: [facet, ...]} for all 9 real merged units.
+    Each facet: {kind: 'infra'|'inter', dim, label, detail, share_key,
+    link (optional)}. Real data reused, never re-derived (rule 8)."""
+    facets = {uid: [] for uid in UNIT_ORDER}
+
+    for e in SRC_EDGES:
+        a, b = e['a'], e['b']
+        if a not in facets or b not in facets:
+            continue
+        kind = 'infra' if e['kind'] == INJECTION else 'inter'
+        if a in FORCE_INFRA_UNITS or b in FORCE_INFRA_UNITS:
+            kind = 'infra'
+        if e['id'] in FORCE_INFRA_EDGE_IDS:
+            kind = 'infra'
+        share_key = e.get('link') or f"edge:{e['id']}"
+        dim_label = {
+            'galaxy_map_decisions.html': 'Decisions (human-confirm gates)',
+            'galaxy_map_externals.html': 'Externals',
+            'galaxy_map_skills.html': 'Skills',
+            'galaxy_map_supabase.html': 'Supabase',
+            'galaxy_map.html': 'RPGACE Architecture (core chain)',
+        }.get(e.get('link'), 'Direct relationship')
+        for me, other in ((a, b), (b, a)):
+            other_label = UNIT_META[other]['label']
+            facets[me].append({
+                'kind': kind, 'dim': dim_label,
+                'label': f"↔ {other_label}",
+                'detail': e['desc'] + ' <span class="ev">Evidence: ' + esc(e['evidence']) + '</span>',
+                'share_key': share_key, 'link': e.get('link'),
+            })
+
+    for gid in ('orchestrator_cc', 'openmontage_cc', 'graphify_cc'):
+        g = GALAXY_BY_ID.get(gid)
+        if not g:
+            continue
+        channel = g.get('channel')
+        link = 'galaxy_map_orchestrator_openmontage.html' if gid == 'openmontage_cc' else None
+        detail = f"{esc(g['role'])} <span class=\"ev\">Bridges to: {esc(g.get('bridges_to') or 'n/a')}" + (f", channel: {esc(channel)}" if channel else '') + '</span>'
+        facets['rpgace_architecture'].append({
+            'kind': 'inter', 'dim': 'Total Systems dispatch', 'label': f"↔ {g['label']}",
+            'detail': detail, 'share_key': channel or f"galaxy:{gid}", 'link': link,
+        })
+        facets[gid].append({
+            'kind': 'inter', 'dim': 'Total Systems dispatch', 'label': '↔ RPGACE Architecture',
+            'detail': detail, 'share_key': channel or f"galaxy:{gid}", 'link': link,
+        })
+
+    connector_owner = {'OpenMontage': 'openmontage_cc', 'FFmpeg': 'openmontage_cc', 'Graphify CC': 'graphify_cc'}
+    for name, itype in CONNECTOR_ITYPE.items():
+        owner = connector_owner.get(name, 'rpgace_architecture')
+        facets[owner].append({
+            'kind': 'infra', 'dim': 'Externals', 'label': f"Uses: {esc(name)}",
+            'detail': f"Real external connector, interaction type <code>{esc(itype)}</code>.",
+            'share_key': f"connector:{name}", 'link': 'galaxy_map_externals.html',
+        })
+
+    for p in ORACLE_PROVIDERS:
+        status = 'live' if p['tested'] else 'dormant scaffold'
+        for uid in ('rpgace_architecture', 'alex'):
+            facets[uid].append({
+                'kind': 'infra', 'dim': 'External AI', 'label': f"Uses: {esc(p['name'])} ({status})",
+                'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_externals.html',
+            })
+
+    sa = next((n for n in HARNESS_NODES if n['id'] == 'self_awareness'), None)
+    if sa:
+        facets['rpgace_architecture'].append({
+            'kind': 'infra', 'dim': 'External AI', 'label': f"{sa['icon']} {sa['label']}",
+            'detail': esc(sa['note']), 'share_key': 'self_awareness', 'link': None,
+        })
+
+    for cat in DEC_CATEGORIES:
+        pts = [p for p in DECISION_POINTS if p['category'] == cat['id']]
+        if not pts:
+            continue
+        detail = '<ul class="dec-list">' + ''.join(
+            f"<li><b>{esc(p['title'])}</b> — <code>{esc(p['module'])}.{esc(p['func'])}</code>: {esc(p['logic'])}</li>"
+            for p in pts) + '</ul>'
+        facets['alex'].append({
+            'kind': 'infra', 'dim': 'Decisions (what Alex can decide)', 'label': f"{esc(cat['label'])} ({len(pts)})",
+            'detail': detail, 'share_key': 'decisions', 'link': 'galaxy_map_decisions.html',
+        })
+
+    facets['alex'].append({
+        'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real dashboard-card → module → decision-fork path',
+        'detail': 'G37/G38 — the real Level-4 flow to whichever module a dashboard card opens, then the real Y/N fork (Decisions) Alex actually hits on that path, if any.',
+        'share_key': 'alex_ui_path', 'link': 'galaxy_map_alex_path.html',
+    })
+    facets['rpgace_architecture'].append({
+        'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real river → dashboard card → primary module chain',
+        'detail': 'G38 — all 10 rivers with a real dashboard card, each resolved to its real primary module.',
+        'share_key': 'alex_ui_path', 'link': 'galaxy_map_level2_5.html',
+    })
+
+    for uid in ('rpgace_architecture', 'orchestrator_cc', 'skills', 'oversight_docs'):
+        facets[uid].append({
+            'kind': 'inter', 'dim': 'Oversight Sync (process-time)', 'label': 'Real push/build/ritual sequencing',
+            'detail': 'G55 — which oversight doc/artifact gets touched, in what order, during a push/build or a ritual (Bedtime/Routine/Summary/CEO Loop 2).',
+            'share_key': 'oversight_sync', 'link': 'galaxy_map_oversight_sync.html',
+        })
+
+    return facets
 
 
 def polar(cx, cy, r, angle_deg):
@@ -226,17 +382,24 @@ def build_svg():
     itype_used = set()
     edge_colors_used = set()
 
-    def node_circle(x, y, r, color, icon, label_below=None, tested=True, glow=True, label_color=None):
+    def node_circle(x, y, r, color, icon, label_below=None, tested=True, glow=True, label_color=None, unit_id=None):
         dash = 'stroke-dasharray="4,3"' if not tested else ''
         opacity = '0.55' if not tested else '1'
         filt = ' filter="url(#glow)"' if glow else ''
-        s = (f'<g class="node" opacity="{opacity}">'
+        # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7
+        # units should exist in the bubbles in on rpgace total systems
+        # own architecture map." Any node passed a real unit_id becomes
+        # a clickable trigger into the shared Infra/Inter facet panel
+        # below (same real data/mechanic as every other unit).
+        cls = 'node unit-node' if unit_id else 'node'
+        data_attr = f' data-unit="{unit_id}"' if unit_id else ''
+        s = (f'<g class="{cls}" opacity="{opacity}"{data_attr}>'
              f'<circle cx="{x}" cy="{y}" r="{r}" fill="#0f0f1a" stroke="{color}" stroke-width="2" {dash}{filt}/>'
              f'<text x="{x}" y="{y+5}" text-anchor="middle" font-size="{r*0.75}">{icon}</text>'
              f'</g>')
         if label_below:
             lc = label_color or '#cfd6e0'
-            s += f'<text x="{x}" y="{y+r+16}" text-anchor="middle" font-size="9" fill="{lc}">{label_below}</text>'
+            s += f'<text x="{x}" y="{y+r+16}" text-anchor="middle" font-size="9" fill="{lc}"{data_attr} class="{"unit-node-label" if unit_id else ""}">{label_below}</text>'
         return s
 
     def edge(x1, y1, x2, y2, itype, tested=True, offset_mult=1, r1=0, r2=0):
@@ -270,7 +433,7 @@ def build_svg():
         galaxy_pos[gal['id']] = (sx, sy)
         edges_svg.append(_curved_edge(cx, cy, sx, sy, gal['color'], real=True, r1=46, r2=34))
         edge_colors_used.add(gal['color'])
-        nodes_svg.append(node_circle(sx, sy, 34, gal['color'], gal['icon'], gal['label'], glow=True, label_color=gal['color']))
+        nodes_svg.append(node_circle(sx, sy, 34, gal['color'], gal['icon'], gal['label'], glow=True, label_color=gal['color'], unit_id=gal['id']))
         legend_rows.append(
             f'<div class="legend-row"><span class="dot" style="background:{gal["color"]}"></span>'
             f'<b>{gal["label"]}</b> — {gal["role"]} '
@@ -296,7 +459,8 @@ def build_svg():
         itype = 'ai_judgment_call' if hn['id'] == 'oracle_api' else ('read_query' if hn['id'] == 'self_awareness' else 'human_confirm_gate')
         edges_svg.append(edge(cx, cy, hx, hy, itype, r1=46, r2=22))
         col = '#9B59B6' if hn['id'] != 'human_gate_alex' else '#E25454'
-        nodes_svg.append(node_circle(hx, hy, 22, col, hn['icon'], hn['label'], glow=False, label_color=col))
+        node_unit_id = 'alex' if hn['id'] == 'human_gate_alex' else None
+        nodes_svg.append(node_circle(hx, hy, 22, col, hn['icon'], hn['label'], glow=False, label_color=col, unit_id=node_unit_id))
         legend_rows.append(f'<div class="legend-row"><span class="dot" style="background:{col}"></span><b>{hn["label"]}</b> — {hn["note"]}</div>')
 
     # --- Oracle mediates all 3 real AI providers — the real topology fix ---
@@ -563,7 +727,7 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Level 0)</title>
+<title>RPGACE Total Systems — Galaxy Map (Level 0)</title>
 <style>
   :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
@@ -589,22 +753,52 @@ TEMPLATE = """<!DOCTYPE html>
   .itype-grid{{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}}
   .note{{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
+  .unit-node{{cursor:pointer}}
+  .unit-node-label{{cursor:pointer}}
+  .unit-node:hover circle{{filter:url(#glow) brightness(1.3)}}
+  .units-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:900px;margin:24px auto 0;padding:0 24px}}
+  .unit-card{{background:rgba(255,255,255,0.03);border:2px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}}
+  .unit-card:hover{{transform:translateY(-3px)}}
+  .unit-card.active{{border-color:var(--gold);background:rgba(201,168,76,0.08)}}
+  .unit-card.glow{{box-shadow:0 0 0 2px var(--gold), 0 0 14px rgba(201,168,76,0.55)}}
+  .unit-node.glow circle{{stroke:var(--gold) !important;stroke-width:4 !important}}
+  .unit-icon{{font-size:26px;margin-bottom:6px}}
+  .unit-name{{font-size:11.5px;font-weight:700}}
+  #panel{{max-width:920px;margin:20px auto 40px;padding:0 24px;display:none}}
+  #panel.active{{display:block}}
+  .panel-head{{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:14px}}
+  .panel-head h2{{font-family:Georgia,serif;font-size:20px;color:#fff}}
+  .kind-choice{{display:flex;justify-content:center;gap:16px;margin-bottom:20px}}
+  .kind-btn{{flex:1;max-width:320px;padding:18px 20px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);text-align:center;transition:border-color .15s,transform .1s}}
+  .kind-btn:hover{{transform:translateY(-2px)}}
+  .kind-btn .kb-sub{{display:block;font-size:10.5px;font-weight:400;color:var(--dim);margin-top:6px}}
+  .kind-btn.infra.chosen{{background:rgba(155,89,182,0.18);color:#9B59B6;border-color:#9B59B6}}
+  .kind-btn.inter.chosen{{background:rgba(74,144,226,0.18);color:#4A90E2;border-color:#4A90E2}}
+  .dim-groups{{display:flex;flex-direction:column;gap:10px}}
+  .dim-group{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;overflow:hidden}}
+  .dim-head{{padding:11px 16px;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;justify-content:space-between}}
+  .dim-head:hover{{background:rgba(255,255,255,0.04)}}
+  .dim-body{{display:none;padding:0 16px 14px}}
+  .dim-body.open{{display:block}}
+  .facet-row{{padding:10px 12px;margin-top:8px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:11.5px;line-height:1.6;cursor:pointer;border:1px solid transparent}}
+  .facet-row:hover{{border-color:rgba(201,168,76,0.4)}}
+  .facet-row .flabel{{font-weight:700;margin-bottom:4px}}
+  .ev{{color:var(--dim);display:block;margin-top:4px;font-size:10.5px}}
+  .dec-list{{margin:8px 0 0 18px}}
+  .dec-list li{{margin-bottom:6px}}
+  .facet-link{{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:700;color:var(--gold);text-decoration:none}}
+  .facet-link:hover{{text-decoration:underline}}
 </style>
 </head>
 <body>
 
 <div class="breadcrumb" style="text-align:center;padding:12px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px">
-  <a href="galaxy_map_l0.html" style="color:#8a8a9a;text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)">🌌 L0 — 7 Units</a>
-  <span style="color:#4a4a58"> → </span>
-  <span style="color:#0a0a0f;background:#C9A84C;padding:4px 9px;border-radius:12px">🏛️ RPGACE Architecture's own content</span>
-</div>
-<div style="max-width:820px;margin:12px auto 0;padding:9px 20px;text-align:center;font-size:11px;color:#8a8a9a">
-  Real Aug 21 2026 update: this page's own 4-galaxy set is now merged with <a href="galaxy_map_l0.html">galaxy_map_l0.html</a>'s 7 units into one real, current Level 0 — <a href="galaxy_map_l0_fusion.html">galaxy_map_l0_fusion.html</a>. This page stays live as real reference content for RPGACE Architecture's own galaxy, but the fusion page is the correct place to start.
+  <span style="color:#0a0a0f;background:#C9A84C;padding:4px 9px;border-radius:12px">🌌 RPGACE Total Systems — Level 0</span>
 </div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
-  <h1>🌌 The Galaxy Map</h1>
-  <p>The real top-level view — 4 galaxies, Oracle as the real mediating harness for all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate as their own nodes, and every real external connector — each edge colored by its own real interaction TYPE (what it actually does), not just which galaxy it belongs to. Supabase gets two distinct real edges: communication (reads) vs. execution/change (writes). Untested connectors keep a dashed ring + reduced opacity, never hidden. <b>Every edge now carries a real ✕ mark at its start and a real arrowhead at its end</b> — the ✕ marks WHERE a relationship begins, the arrowhead shows WHAT it points to, so direction is legible even without color. <b>Click the RPGACE Architecture node to drill into its own 16 rivers (Level 1), then click a river to reach its own modules + dashboard cards (Level 2).</b></p>
+  <h1>🌌 RPGACE Total Systems — The Galaxy Map</h1>
+  <p>The real top-level view of RPGACE Total Systems — all 9 real merged L0 units in one place (4 galaxies rendered in the diagram below, 5 more as real bubbles beside it): RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs. Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate are their own nodes, every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram or the bubble row below — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
 </div>
 
 <div class="canvas-wrap">
@@ -625,6 +819,17 @@ TEMPLATE = """<!DOCTYPE html>
 </svg>
 </div>
 
+<div style="text-align:center;font-size:11px;color:var(--dim);max-width:820px;margin:6px auto 0;padding:0 24px">5 more real L0 units — click any for the same real Infra/Inter choice:</div>
+<div class="units-grid">{unit_cards}</div>
+<div id="panel">
+  <div class="panel-head"><span id="panel-icon" style="font-size:24px"></span><h2 id="panel-title"></h2></div>
+  <div class="kind-choice" id="kind-choice">
+    <div class="kind-btn infra" data-kind="infra">💉 Infra<span class="kb-sub" id="infra-count"></span></div>
+    <div class="kind-btn inter" data-kind="inter">🔗 Inter<span class="kb-sub" id="inter-count"></span></div>
+  </div>
+  <div class="dim-groups" id="dim-groups"></div>
+</div>
+
 <div class="legend">
   <h2>Edge legend — what each line actually means</h2>
   <div class="itype-grid">{itype_legend}</div>
@@ -641,23 +846,139 @@ TEMPLATE = """<!DOCTYPE html>
   <code>INTERACTION_TYPE_COLOR</code> (never re-derived). Mapping rules: <code>system_map_spec.md</code>.
   G2 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — G3
   (<a href="galaxy_map_river.html">river drill-down, click the central node above</a>)
-  is now real and live. G4 (function drill-down) is real, separate, not yet built.
+  and G4 (<a href="galaxy_map_module.html">module drill-down</a>) are both real and live.
+  Real Aug 21 2026 fusion (Alex's own direct ask — "the l0 7 units should exist
+  in the bubbles in on rpgace total systems own architecture map"): the 7-unit
+  model from <a href="galaxy_map_l0.html">galaxy_map_l0.html</a> is merged in
+  here directly — 4 units render in the diagram above (now real, clickable
+  triggers, not just decoration), 5 more render as the bubble row below it.
+  All 9 share one real Infra/Inter facet mechanic. <code>galaxy_map_l0.html</code>
+  stays live as reference for the original 17-edge table/map toggle view.
 </div>
 
+<script>
+(function() {{
+  // Real Alex correction: Infra/Inter is a CHOICE presented fresh each
+  // time a unit is selected (neither pre-picked), not a toggle you
+  // flip back and forth — that metaphor stays reserved for the
+  // map/table view control on galaxy_map_l0.html/galaxy_map_hub.html.
+  var DATA = {data_json};
+  var cards = document.querySelectorAll('.unit-card, .unit-node, .unit-node-label');
+  var panel = document.getElementById('panel');
+  var panelTitle = document.getElementById('panel-title');
+  var panelIcon = document.getElementById('panel-icon');
+  var kindBtns = document.querySelectorAll('.kind-btn');
+  var infraCount = document.getElementById('infra-count');
+  var interCount = document.getElementById('inter-count');
+  var dimGroups = document.getElementById('dim-groups');
+  var currentUnit = null, currentKind = null;
+
+  function clearGlow() {{
+    document.querySelectorAll('.unit-card, .unit-node').forEach(function(c) {{ c.classList.remove('glow'); }});
+  }}
+  function setGlow(uid) {{
+    document.querySelectorAll('[data-unit="' + uid + '"]').forEach(function(el) {{
+      var target = el.classList.contains('unit-node-label') ? el.previousElementSibling : el;
+      (target || el).classList.add('glow');
+    }});
+  }}
+
+  function renderDims() {{
+    if (!currentKind) {{ dimGroups.innerHTML = ''; return; }}
+    var unit = DATA.units[currentUnit];
+    var facets = unit.facets.filter(function(f) {{ return f.kind === currentKind; }});
+    var byDim = {{}};
+    facets.forEach(function(f) {{ (byDim[f.dim] = byDim[f.dim] || []).push(f); }});
+    var html = '';
+    Object.keys(byDim).forEach(function(dim, i) {{
+      html += '<div class="dim-group"><div class="dim-head" data-idx="' + i + '">' + dim + ' <span>(' + byDim[dim].length + ')</span></div><div class="dim-body" id="dimbody-' + i + '">';
+      byDim[dim].forEach(function(f) {{
+        html += '<div class="facet-row" data-share="' + f.share_key + '"><div class="flabel">' + f.label + '</div><div>' + f.detail + '</div>' + (f.link ? '<a class="facet-link" href="' + f.link + '" target="_blank">Open full page ↗</a>' : '') + '</div>';
+      }});
+      html += '</div></div>';
+    }});
+    if (!html) html = '<div style="color:var(--dim);font-size:11.5px;padding:10px">No real ' + currentKind + ' facets attached to this unit yet.</div>';
+    dimGroups.innerHTML = html;
+    dimGroups.querySelectorAll('.dim-head').forEach(function(h) {{
+      h.addEventListener('click', function() {{
+        document.getElementById('dimbody-' + h.dataset.idx).classList.toggle('open');
+      }});
+    }});
+    dimGroups.querySelectorAll('.facet-row').forEach(function(row) {{
+      row.addEventListener('click', function(ev) {{
+        ev.stopPropagation();
+        clearGlow();
+        var key = row.dataset.share;
+        setGlow(currentUnit);
+        Object.keys(DATA.units).forEach(function(uid) {{
+          if (uid === currentUnit) return;
+          var has = DATA.units[uid].facets.some(function(f) {{ return f.share_key === key; }});
+          if (has) setGlow(uid);
+        }});
+      }});
+    }});
+  }}
+
+  cards.forEach(function(c) {{
+    c.addEventListener('click', function() {{
+      var uid = c.dataset.unit;
+      if (!uid || !DATA.units[uid]) return;
+      currentUnit = uid;
+      currentKind = null;
+      kindBtns.forEach(function(x) {{ x.classList.remove('chosen'); }});
+      document.querySelectorAll('.unit-card').forEach(function(x) {{ x.classList.toggle('active', x.dataset.unit === uid); }});
+      var unit = DATA.units[currentUnit];
+      var nInfra = unit.facets.filter(function(f) {{ return f.kind === 'infra'; }}).length;
+      var nInter = unit.facets.filter(function(f) {{ return f.kind === 'inter'; }}).length;
+      infraCount.textContent = ' (' + nInfra + ')';
+      interCount.textContent = ' (' + nInter + ')';
+      panel.classList.add('active');
+      panelTitle.textContent = unit.label;
+      panelIcon.textContent = unit.icon;
+      clearGlow();
+      renderDims();
+      panel.scrollIntoView({{behavior:'smooth', block:'start'}});
+    }});
+  }});
+  kindBtns.forEach(function(b) {{
+    b.addEventListener('click', function() {{
+      currentKind = b.dataset.kind;
+      kindBtns.forEach(function(x) {{ x.classList.toggle('chosen', x === b); }});
+      clearGlow();
+      renderDims();
+    }});
+  }});
+}})();
+</script>
 </body>
 </html>
 """
 
 
 def main():
+    import json
     nodes, edges, legend, itype_legend, W, H, markers = build_svg()
-    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H, markers=markers)
+    facets = build_facets()
+    unit_cards = ''.join(
+        f'<div class="unit-card" data-unit="{uid}"><div class="unit-icon">{UNIT_META[uid]["icon"]}</div><div class="unit-name">{esc(UNIT_META[uid]["label"])}</div></div>'
+        for uid in NEW_BUBBLE_UNITS
+    )
+    data = {
+        'units': {
+            uid: {'label': UNIT_META[uid]['label'], 'icon': UNIT_META[uid]['icon'], 'facets': facets[uid]}
+            for uid in UNIT_ORDER
+        }
+    }
+    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H,
+                           markers=markers, unit_cards=unit_cards, data_json=json.dumps(data))
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html, encoding='utf-8')
     skipped = len(ORACLE_PROVIDER_NAMES) + 3  # +3 = Graphify CC (dup of the real galaxy) + FFmpeg + OpenMontage (both moved to OpenMontage CC's own local cluster)
+    n_facets = sum(len(v) for v in facets.values())
     print(f"Wrote {OUT} — {len(GALAXIES)} galaxies, {len(HARNESS_NODES)} harness nodes, "
           f"{len(ORACLE_PROVIDERS)} AI providers under Oracle, "
-          f"{len(EXTERNAL_CONNECTORS) - skipped} flat connectors + OpenMontage+FFmpeg (under OpenMontage CC) + Supabase.")
+          f"{len(EXTERNAL_CONNECTORS) - skipped} flat connectors + OpenMontage+FFmpeg (under OpenMontage CC) + Supabase, "
+          f"{len(UNIT_ORDER)} real merged L0 units ({n_facets} real facets, infra+inter).")
 
 
 if __name__ == '__main__':
