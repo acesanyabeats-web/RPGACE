@@ -110,6 +110,32 @@
 
   <div class="card">
     <div class="card-top">
+      <div class="card-title">Real /misunderstanding, invoked explicitly: Skill Network/Skills merged twice into independent toggles instead of becoming ONE page</div>
+      <div class="card-date">Aug 21 2026</div>
+    </div>
+    <span class="trigger correction">Alex correction, explicit /misunderstanding</span>
+    <div class="block scope"><b>Prompt scope</b>Active task: G61/G62, adding a map/table toggle "everywhere that has 2 views." Alex, mid-build: "okay so the skills composition network is the map view, whilst g28 is the table view, again you are duplicating and not integrating everything exactly as i said. why are you doing this? /misunderstanding"</div>
+    <div class="block obstacle"><b>Obstacle</b>A first pass gave <code>galaxy_map_skill_network.html</code> its own NEW circular bubble map (keeping its old tab/passage view as "table") AND gave <code>galaxy_map_skills.html</code>/G28 its own NEW column-clustered bubble map (keeping its old table as "table") — two independently-toggled files, not the one real merged page Alex asked for. This was a direct repeat of the EXACT same duplicate-instead-of-merge mistake the L0-fusion pass (below) had already been corrected for once earlier the same session.</div>
+    <div class="block reasoning"><b>Reasoning</b>Ran the real 3-step /misunderstanding repair: quoted what Alex actually said, stated the misread plainly (pattern-matched his instruction "please make [skill network] and g28 its table view" against the wrong precedent — independent per-file toggles, like L0/hub each got their own — rather than reading it literally as "merge these two into one page where G28 becomes that page's table view"), then re-executed correctly.</div>
+    <div class="block solution"><b>Solution</b><code>galaxy_map_skill_network.html</code> became the ONE real page: map view is its real circular skill-composition-network diagram, table view is G28's own classification grid imported directly (<code>from galaxy_map_skills import SKILLS, GROUPS, build_group_section</code>). The old per-skill passage content was preserved via a new click-to-reveal detail panel inside the map view, not silently dropped. <code>galaxy_map_skills.py</code> became a pure data/render module; <code>graphify-out/galaxy_map_skills.html</code> deleted outright.</div>
+    <div class="block rule"><b>Resulting rule</b>Reinforces the exact same lesson the L0-fusion episode already produced (see the card below) — worth logging as its OWN card rather than folded in, since a real mistake recurring within the same session is itself the loggable event (Bedtime's own guardrail: "two disproven hypotheses on the same real example is a real, loggable event, not just a discarded draft"). The generalized takeaway: when Alex gives a real worked example of what he wants (his own literal words for a specific case), implement it literally on the FIRST pass — do not abstract it into a generic pattern class ("this is like the other toggle-page cases") before checking whether the literal reading already answers the question.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <div class="card-title">Real correction (not yet named /misunderstanding by Alex, but the same shape): L0 fusion built on a 3rd file instead of inside galaxy_map.html itself</div>
+      <div class="card-date">Aug 21 2026</div>
+    </div>
+    <span class="trigger correction">Alex correction, real re-planning</span>
+    <div class="block scope"><b>Prompt scope</b>Active task: Alex had just rejected the "Unified Gateway" shell (galaxy_map_hub.html as an iframe directory) outright: "everything should fold into one galaxy html... everything should start at l0." A first fix built <code>galaxy_map_l0_fusion.html</code> — a real, correctly-interactive 9-unit fused L0 page — but on a brand-new THIRD file. Alex, immediately after: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map."</div>
+    <div class="block obstacle"><b>Obstacle</b>The fusion's real interaction MODEL (click a unit, choose Infra/Inter, cross-highlight) was correct — but it still lived on a separate page from <code>galaxy_map.html</code>, which is the page already branded "RPGACE Total Systems · Galaxy Map." Still real fragmentation, just one file smaller than the rejected Unified Gateway.</div>
+    <div class="block reasoning"><b>Reasoning</b>Direct re-read of Alex's own words: the 9 units should exist AS BUBBLES ON <code>galaxy_map.html</code> itself, not as their own destination page. Moved <code>build_facets()</code> and the unit-choice/cross-highlight mechanic out of the now-deleted <code>galaxy_map_l0_fusion.py</code> directly into <code>scripts/galaxy_map.py</code> (verified no circular import first).</div>
+    <div class="block solution"><b>Solution</b>4 of galaxy_map.py's existing SVG nodes (the 3 satellite galaxies + the Human Gate-Alex harness node) gained a real <code>data-unit</code> trigger into the shared facet panel; 5 more units render as a new bubble row directly below the SVG. The central RPGACE Architecture node's own pre-existing river drill-down link was left untouched. <code>galaxy_map_l0_fusion.py</code>/<code>.html</code> deleted outright — content moved, not duplicated.</div>
+    <div class="block rule"><b>Resulting rule</b>The real, honest lesson, stated plainly rather than smoothed over: the first build technically matched a literal reading of "unified gateway"/"fold into one file" but missed the actual architectural shift Alex wanted — his own worked example should have been implemented literally from the very first pass, not abstracted into a "put it on its own new page" pattern. This exact lesson was NOT internalized in time to prevent the Skill Network episode above from repeating it the same session — logging both, not just the first, is itself the honest record.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
       <div class="card-title">A5 follow-up: Research Lab fully retired, File Analyzer + Video Finder move to Bookworm — and a real, larger "worm family" vision surfaces</div>
       <div class="card-date">Aug 15 2026</div>
     </div>
