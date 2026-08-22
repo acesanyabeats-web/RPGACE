@@ -4971,27 +4971,18 @@ document.addEventListener('keydown', e=>{
     Promise.all(R._bootTasks.map(function(p) {
       return Promise.resolve(p).catch(function(e) { console.warn('[RPGACE] a boot task failed:', e && e.message); });
     })).then(_hideBootOnce).catch(_hideBootOnce);
-  /* ── YouTube Oracle button injection (direct, no module dependency) ── */
-  setTimeout(function() {
-    var _ytBtnInject = function() {
-      if (document.getElementById('yt-ob')) return;
-      var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
-      if (!anchor) return;
-      var b = document.createElement('button');
-      b.id = 'yt-ob';
-      b.className = anchor.className;
-      b.textContent = '\uD83C\uDFAC YouTube Oracle';
-      b.style.marginLeft = '4px';
-      b.onclick = function() {
-        if (R.modules && R.modules.youtubeOracle) R.modules.youtubeOracle.open();
-      };
-      anchor.parentElement.insertBefore(b, anchor.nextSibling);
-      console.log('[RPGACE:youtubeOracle] Button injected');
-    };
-    _ytBtnInject();
-    setTimeout(_ytBtnInject, 800);
-    setTimeout(_ytBtnInject, 2000);
-  }, 400);
+    // Aug 22 (real /Routine finding, rule 8) - a 2nd, independent "YouTube
+    // Oracle button" injector used to live here ("direct, no module
+    // dependency"), duplicating youtubeOracle._btn() (registered below via
+    // registerBootTask) almost line for line: same #yt-ob id/guard, same
+    // toggleProdOraclePanel anchor lookup, same insertBefore placement -
+    // just a worse retry shape (3 fixed setTimeout delays vs. _btn()'s
+    // real capped 20-try poll). Both always checked "if (document.
+    // getElementById('yt-ob')) return" first, so this was never a visible
+    // double-button bug - just real, harmless-but-confusing duplicate
+    // code sitting in the boot sequence, found while investigating an
+    // unrelated boot-task console warning. Removed; youtubeOracle._btn()
+    // is the one real implementation now.
   });
 
   /* ══════════════════════════════════════════════════════════
@@ -16882,6 +16873,69 @@ RPGACE.register('config', {
       }
     };
 
+    // Aug 22 (real Alex ask, screenshot evidence) — the Oracle Mode
+    // switch/badge/Scouted button/oracleProviderMode switch were all
+    // rendering on the LOGIN GATE screen itself, before any real
+    // authentication, since they're all registerBootTask injections
+    // (fire at module-init time regardless of login state) - nothing
+    // ever gated their visibility on real login. Real, shared fix (rule
+    // 8 - 4 real creation sites, one helper, not 4 copies): hide an
+    // element until 'rpgace:login' actually fires (which it always
+    // does exactly once on a genuine successful login - confirmed via
+    // direct read of authGate/checkPassword, no session-persistence
+    // path skips it, so this can never get stuck hidden). A no-op if
+    // login has already happened by the time this runs (a mode badge
+    // created after the fact, e.g. toggling modes mid-session).
+    RPGACE.utils.hideUntilLogin = function(el) {
+      if (!el) return;
+      var gate = document.getElementById('gate');
+      var stillGated = gate && gate.style.display !== 'none';
+      if (!stillGated) return;
+      el.style.visibility = 'hidden';
+      var off = RPGACE.hooks.on('rpgace:login', function() {
+        el.style.visibility = '';
+        off();
+      });
+    };
+
+    // Aug 22 (real Alex ask, screenshot evidence: "too clunky... needs an
+    // impeccable and emil kowalski ui redesign to make it not stand out
+    // in an awful manner") — mockOracle's Oracle Mode switch, its own
+    // Scouted button, and oracleProviderMode's separate switch were 3
+    // independently-styled floating pills stacked at magic-number top
+    // offsets (10px/44px/78px), each with its own box-shadow/border/
+    // radius — literally 3 different debug widgets bolted onto the same
+    // corner across 3 separate builds, exactly as clunky as it looked.
+    // Real, consistency-driven fix, cross-module (mockOracle +
+    // oracleProviderMode are separate modules; a shared container in
+    // RPGACE.utils, created idempotently by whichever module runs
+    // first, is the correct shape - rule 8, one container not two
+    // copies): one calm dark panel (matching RPGACE.utils.toast's own
+    // established #0f0f18/thin-border/colored-text treatment, NOT a
+    // separately-invented style), rows separated by a hairline divider
+    // instead of separate boxes/shadows.
+    RPGACE.utils.getDevStatusCluster = function() {
+      var el = document.getElementById('rpg-dev-cluster');
+      if (el) return el;
+      el = document.createElement('div');
+      el.id = 'rpg-dev-cluster';
+      el.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;flex-direction:column;background:#0f0f18;border:1px solid rgba(255,255,255,0.1);border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.4);overflow:hidden;font-family:Rajdhani,sans-serif;user-select:none;';
+      document.body.appendChild(el);
+      RPGACE.utils.hideUntilLogin(el);
+      return el;
+    };
+    RPGACE.utils.addClusterRow = function(rowEl) {
+      var cluster = RPGACE.utils.getDevStatusCluster();
+      if (cluster.children.length) {
+        var divider = document.createElement('div');
+        divider.style.cssText = 'height:1px;background:rgba(255,255,255,0.08);flex-shrink:0;';
+        cluster.appendChild(divider);
+      }
+      rowEl.style.padding = '6px 12px';
+      cluster.appendChild(rowEl);
+      return cluster;
+    };
+
     // ── Shared phylum display helpers — single source of truth for how a  ──
     // ── phylum's name is shown, everywhere it's shown: short UI labels    ──
     // ── use phylumLabel() (Latin + English in brackets), anything sent to ──
@@ -22248,8 +22302,28 @@ RPGACE.register('morningBrief', {
     }
     // Auto-run if it's before noon (morning session)
     var hour = new Date().getHours();
-    if (hour < 13) {
+    if (hour >= 13) return;
+    // Aug 22 (real /Routine finding — console evidence: 2x real
+    // "/api/composio: 401" on first login of the day). Root cause: this
+    // runs from registerBootTask, which fires at MODULE-INIT time -
+    // before any real login, since #gate's own hide only happens inside
+    // checkPassword()'s success branch. The old bare setTimeout(fn,2000)
+    // fired _generate()'s real Gmail/YouTube Composio calls 2s after
+    // BOOT, not 2s after LOGIN - almost always still on the password
+    // screen, guaranteed to 401 (authGate._apiSecret is null pre-login,
+    // so the auth header never gets attached). Real fix: if login
+    // hasn't happened yet, wait for the real 'rpgace:login' signal
+    // (fires exactly once on a genuine successful login) instead of a
+    // blind timer: same real signal authGate/pathRouter already key
+    // off, no new mechanism invented (rule 8).
+    var apiSecretReady = RPGACE.modules.authGate && RPGACE.modules.authGate._apiSecret;
+    if (apiSecretReady) {
       setTimeout(function() { self._generate(); }, 2000);
+    } else {
+      var off = RPGACE.hooks.on('rpgace:login', function() {
+        off();
+        setTimeout(function() { self._generate(); }, 2000);
+      });
     }
   },
 
@@ -24270,28 +24344,34 @@ RPGACE.register('mockOracle', {
     if (document.getElementById('mock-oracle-switch')) return;
     var self = this;
 
+    // Aug 22 real redesign — this used to be its own separately-styled
+    // floating pill (own background/border/radius/shadow at top:10px).
+    // Now a plain row inside the shared RPGACE.utils dev-status cluster
+    // (getDevStatusCluster/addClusterRow) alongside the Scouted button
+    // and oracleProviderMode's switch, so all 3 read as one cohesive
+    // control instead of 3 separately-bolted-on widgets.
     var wrap = document.createElement('div');
     wrap.id = 'mock-oracle-switch';
     wrap.title = 'Click to cycle Oracle Mode: Real API → Dummy (wiring tests, zero cost) → Fallback Scout (queue for free later answers)';
-    wrap.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;align-items:center;gap:8px;background:#0c0c16;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px 5px 5px;box-shadow:0 4px 16px rgba(0,0,0,.5);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;';
+    wrap.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;';
 
     var track = document.createElement('div');
     track.id = 'mock-oracle-track';
-    track.style.cssText = 'position:relative;width:64px;height:24px;border-radius:12px;flex-shrink:0;transition:background .2s ease;';
+    track.style.cssText = 'position:relative;width:56px;height:22px;border-radius:11px;flex-shrink:0;transition:background .2s ease;';
 
     var knob = document.createElement('div');
     knob.id = 'mock-oracle-knob';
-    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
+    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
     track.appendChild(knob);
 
     var label = document.createElement('span');
     label.id = 'mock-oracle-label';
-    label.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:.5px;white-space:nowrap;';
+    label.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.4px;white-space:nowrap;';
 
     wrap.appendChild(track);
     wrap.appendChild(label);
     wrap.onclick = function () { self.toggle(); };
-    document.body.appendChild(wrap);
+    RPGACE.utils.addClusterRow(wrap);
     self._renderState();
   },
 
@@ -24305,10 +24385,13 @@ RPGACE.register('mockOracle', {
     var btn = document.createElement('div');
     btn.id = 'mock-oracle-scout-btn';
     btn.title = 'Browse scouted questions and their free fallback answers';
-    btn.style.cssText = 'position:fixed;top:44px;right:10px;z-index:999999;background:#0c0c16;border:1px solid rgba(201,168,76,0.35);border-radius:14px;padding:4px 11px;font-size:11px;font-weight:700;letter-spacing:.3px;color:rgba(201,168,76,0.9);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;box-shadow:0 3px 10px rgba(0,0,0,.4);';
+    // Aug 22 real redesign — now a plain row in the shared dev-status
+    // cluster (see _injectToggleButton's own note), not its own floating
+    // pill at a hardcoded top:44px offset.
+    btn.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.3px;color:rgba(201,168,76,0.85);cursor:pointer;';
     btn.textContent = '📥 Scouted';
     btn.onclick = function () { self._openScoutedList(); };
-    document.body.appendChild(btn);
+    RPGACE.utils.addClusterRow(btn);
   },
 
   _renderState: function () {
@@ -24328,29 +24411,35 @@ RPGACE.register('mockOracle', {
       label.style.color = '#CC4A4A';
       // Still keep a real full-width warning strip while active (rule 7 —
       // a corner switch alone is easy to miss mid-scroll on a long chat
-      // reply). Sits just under the switch, same z-tier convention.
+      // reply). Aug 22 real redesign: matches RPGACE.utils.toast's own
+      // established treatment (dark #0f0f18 panel, colored border+text)
+      // instead of a solid saturated red fill that read as an alarm/
+      // error rather than an intentional test-mode indicator — same
+      // real color, calmer application of it.
       var badge = document.createElement('div');
       badge.id = 'mock-oracle-badge';
       badge.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
-      badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#CC4A4A;color:#1a0808;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
+      badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0f0f18;border-bottom:1px solid rgba(204,74,74,0.4);color:#CC4A4A;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
       document.body.appendChild(badge);
+      RPGACE.utils.hideUntilLogin(badge);
       this._pushBodyBelow(badge);
     } else if (mode === 'fallback') {
       // Fallback Scout mode active — amber/gold, knob center.
       track.style.background = 'rgba(201,168,76,0.85)';
-      knob.style.left = '22px';
+      knob.style.left = '19px';
       label.textContent = '📥 Fallback Scout';
       label.style.color = '#C9A84C';
       var badge2 = document.createElement('div');
       badge2.id = 'mock-oracle-badge';
       badge2.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
-      badge2.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(201,168,76,0.9);color:#1a1508;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
+      badge2.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0f0f18;border-bottom:1px solid rgba(201,168,76,0.4);color:#C9A84C;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
       document.body.appendChild(badge2);
+      RPGACE.utils.hideUntilLogin(badge2);
       this._pushBodyBelow(badge2);
     } else {
       // Real Oracle API — green, knob right.
       track.style.background = '#4CAF82';
-      knob.style.left = '42px';
+      knob.style.left = '36px';
       label.textContent = '✅ Oracle API';
       label.style.color = '#4CAF82';
       this._pushBodyBelow(null);
@@ -24638,33 +24727,36 @@ RPGACE.register('oracleProviderMode', {
   _injectToggleButton: function() {
     if (document.getElementById('oracle-provider-switch')) return;
     var self = this;
-    // Real, deliberate stacking: mock-oracle-switch (top:10px), mock-
-    // oracle-scout-btn (top:44px), this one (top:78px) — same pinned
-    // top-right column, same visual language (pill/track/knob), never
-    // merged into the existing switch since this is a genuinely
-    // different real axis (WHICH provider, not WHETHER a call happens).
+    // Aug 22 real redesign — this used to be its own separately-styled
+    // floating pill, hand-stacked below mockOracle's switch+Scouted
+    // button via a hardcoded top:78px offset (3 real widgets bolted onto
+    // the same corner across 3 separate builds). Now a plain row in the
+    // shared RPGACE.utils dev-status cluster (getDevStatusCluster/
+    // addClusterRow) — same real axis distinction as before (WHICH
+    // provider, not WHETHER a call happens), just one cohesive panel
+    // instead of a 3rd stacked pill.
     var wrap = document.createElement('div');
     wrap.id = 'oracle-provider-switch';
     wrap.title = 'Click: toggle Local Claude ↔ External provider (dormant). Right-click: cycle target provider (kimi/luna).';
-    wrap.style.cssText = 'position:fixed;top:78px;right:10px;z-index:999999;display:flex;align-items:center;gap:8px;background:#0c0c16;border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px 5px 5px;box-shadow:0 4px 16px rgba(0,0,0,.5);cursor:pointer;font-family:Rajdhani,sans-serif;user-select:none;';
+    wrap.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;';
 
     var track = document.createElement('div');
     track.id = 'oracle-provider-track';
-    track.style.cssText = 'position:relative;width:44px;height:24px;border-radius:12px;flex-shrink:0;transition:background .2s ease;';
+    track.style.cssText = 'position:relative;width:44px;height:22px;border-radius:11px;flex-shrink:0;transition:background .2s ease;';
     var knob = document.createElement('div');
     knob.id = 'oracle-provider-knob';
-    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
+    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
     track.appendChild(knob);
 
     var label = document.createElement('span');
     label.id = 'oracle-provider-label';
-    label.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:.5px;white-space:nowrap;';
+    label.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.4px;white-space:nowrap;';
 
     wrap.appendChild(track);
     wrap.appendChild(label);
     wrap.onclick = function() { self.toggle(); };
     wrap.oncontextmenu = function(e) { e.preventDefault(); self.cycleProvider(); };
-    document.body.appendChild(wrap);
+    RPGACE.utils.addClusterRow(wrap);
     self._renderState();
   },
 
@@ -24675,7 +24767,7 @@ RPGACE.register('oracleProviderMode', {
     if (!track || !knob || !label) return;
     if (this.isExternal()) {
       track.style.background = '#4A90E2';
-      knob.style.left = '22px';
+      knob.style.left = '24px';
       label.textContent = '🌐 ' + this.getProviderName();
       label.style.color = '#4A90E2';
     } else {

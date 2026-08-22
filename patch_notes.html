@@ -74,6 +74,25 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🎨🐛 Aug 22 — real hand-test follow-up: login-gate chrome hidden, Oracle Mode switches redesigned, duplicate button removed, morningBrief pre-login 401 fixed</div>
+    <div class="card-body">
+      Alex hand-tested A2 live and sent 2 real screenshots + a full DevTools console dump. 4 real fixes came out of it.
+      <br><br>
+      <b>(1) Login-gate dev chrome hidden</b>: the Oracle Mode switch/badge/Scouted button/oracleProviderMode switch were all rendering on the login gate screen itself, before real authentication. New shared <code>RPGACE.utils.hideUntilLogin(el)</code> hides an element until the real <code>rpgace:login</code> hook fires (confirmed this always fires exactly once on a genuine login, no session-persistence path can skip it).
+      <br><br>
+      <b>(2) Visual redesign</b> ("too clunky... needs an impeccable and emil kowalski ui redesign"): real finding — 3 separate floating pills at magic-number offsets (10px/44px/78px), 3 widgets bolted onto the same corner across 3 separate builds. Consolidated into one shared <code>RPGACE.utils.getDevStatusCluster()</code>/<code>addClusterRow()</code> panel with hairline dividers; the full-width Dummy/Fallback badge now matches <code>RPGACE.utils.toast</code>'s own calm, already-established treatment (dark panel + colored border/text) instead of a solid alarm-red fill. Headless-Chromium-verified: no row overlap, hide/reveal-on-login still correct.
+      <br><br>
+      <b>(3) Real rule-8 fix</b>: a 2nd, independent "YouTube Oracle button" injector was found duplicating <code>youtubeOracle._btn()</code> almost line for line — removed.
+      <br><br>
+      <b>(4) Real bug from console evidence</b>: <code>morningBrief._autoRun()</code> fired real Gmail/YouTube Composio calls 2s after BOOT (not after login) — <code>authGate._apiSecret</code> is null pre-login, so the auth header never attached, producing the 2 real <code>/api/composio: 401</code>s in Alex's console. Fixed to wait for the real <code>rpgace:login</code> hook when needed.
+      <br><br>
+      <b>2 real findings stay honestly open, logged to error_log</b>: a still-unidentified boot task throwing "Cannot read properties of undefined (reading 'select')" (traced the real boot-init execution model, ruled out <code>dashDeck._refreshGlance</code> directly, didn't find the exact culprit among ~28 remaining candidates); and a real <code>PerformanceLongTaskTiming</code> entry (12265ms main-thread block) still showing in Alex's console despite "the lag seems to have gone" — the earlier careerStatCard fix is real but not confirmed as the true root cause.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped to <code>20260822d</code>.
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎚️ Aug 22 (A2) — Dummy/Fallback Oracle banner no longer covers real page content</div>
     <div class="card-body">
       Item 5 of the day's <code>/Routine</code>-locked Top 10. Alex's own verbatim ask: "dummy oracle blocks off the top of the html, I want the feature to make the html slide down to make space for the oracle status mode, so both don't obstruct each other."
