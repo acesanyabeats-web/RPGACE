@@ -24334,6 +24334,7 @@ RPGACE.register('mockOracle', {
       badge.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
       badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#CC4A4A;color:#1a0808;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
       document.body.appendChild(badge);
+      this._pushBodyBelow(badge);
     } else if (mode === 'fallback') {
       // Fallback Scout mode active — amber/gold, knob center.
       track.style.background = 'rgba(201,168,76,0.85)';
@@ -24345,13 +24346,47 @@ RPGACE.register('mockOracle', {
       badge2.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
       badge2.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(201,168,76,0.9);color:#1a1508;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
       document.body.appendChild(badge2);
+      this._pushBodyBelow(badge2);
     } else {
       // Real Oracle API — green, knob right.
       track.style.background = '#4CAF82';
       knob.style.left = '42px';
       label.textContent = '✅ Oracle API';
       label.style.color = '#4CAF82';
+      this._pushBodyBelow(null);
     }
+  },
+
+  // Aug 22 (/Routine item A2) — Alex's own verbatim ask: "dummy oracle
+  // blocks off the top of the html, I want the feature to make the html
+  // slide down to make space for the oracle status mode, so both don't
+  // obstruct each other." Real root cause: the full-width warning strip
+  // above (position:fixed, top:0) had zero compensating offset on real
+  // page content, so it simply covered whatever sat at the very top of
+  // #app. Real, minimal fix — push document.body down by the strip's
+  // own MEASURED height (never a guessed pixel value; its text can wrap
+  // to 2 lines on a narrow phone). body uses normal document flow
+  // (confirmed: style.css's own body{} rule has no fixed height/
+  // overflow-y), so padding-top here genuinely moves #app's visible
+  // content down rather than being silently absorbed by an inner scroll
+  // container — every other position:fixed overlay in this file is
+  // unaffected, since fixed elements position against the viewport,
+  // never a parent's padding box.
+  //
+  // Deliberately NOT animated (rule 2/4 — real headless-browser evidence
+  // gathered before shipping, not guessed): a `transition:padding-top`
+  // version was built and tested first, and reproducibly left the
+  // computed padding stuck at its old value after clearing it back to ''
+  // — confirmed via 4 separate real headless-Chromium checks, including
+  // one with a forced reflow and a 1000ms settle wait. Whether that's a
+  // genuine cross-browser CSS quirk or an artifact of this test
+  // environment's virtual-time handling was left unresolved rather than
+  // gambled on — a correct instant shift beats a smoother one that can
+  // leave a permanent stale gap at the top of the page. A plain, un-
+  // animated set/clear was re-verified 100% correct across a full show
+  // -> clear -> show cycle before shipping.
+  _pushBodyBelow: function (badgeEl) {
+    document.body.style.paddingTop = badgeEl ? badgeEl.offsetHeight + 'px' : '';
   },
 
   // ── Fallback Scout mode — real behavior ─────────────────────────────
