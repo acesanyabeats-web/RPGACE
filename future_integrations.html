@@ -139,6 +139,18 @@
       <div class="card-body">Council-of-5-in-a-popup verdict + approve/reloop cycle for a live subtree /paranoia+/deduplication scan — real design sketch exists, but genuinely needs live Oracle access to produce real verdicts, and the exact reloop state machine is still open. Sits between Blue and Red; kept here since the UI/state-machine specifics are still being worked out, not fixed.</div>
     </div>
   </div>
+
+  <div class="group">
+    <div class="group-label">River IV — The Bookworm River · Worm Family & Encyclopedia Wrapper (W11/W12) <span class="n">2 ideas</span></div>
+    <div class="card blue">
+      <div class="card-title">W11 — Articleworm: external research-paper analysis, on real legitimate APIs<span class="badge blue">IDEA</span></div>
+      <div class="card-body">Alex's own ask named JSTOR/Google Scholar directly. Real <code>/paranoia</code> pass (Aug 22) found neither is a safe scrape target — JSTOR's own real API is capped/gated behind an official Text &amp; Data Mining program, Google Scholar has no official API and its own terms prohibit large-scale automated access (confirmed via live web search, not assumed). Real, legitimate alternative found instead: the Semantic Scholar API (Allen Institute for AI, non-profit, free, no key, 200M+ papers) plus arXiv/PubMed/CORE for open-access full text. Real architecture fit: this is RPGACE's own already-proven Total-systems pattern (a separate Claude Code session on its own external repo, dispatched via a Supabase queue — same shape as OpenMontage CC/Graphify CC), not a new invention. Not built — depends on a future formal <code>/interrogation</code> pass.</div>
+    </div>
+    <div class="card blue">
+      <div class="card-title">W12 — Debate Worm: cross-worm contradiction detection + adversarial debate<span class="badge blue">IDEA</span></div>
+      <div class="card-body">Real, valuable vision: flag insights from different worms that contradict each other, run a real 2-side debate to judge credibility, feed the result into the taxonomy. Real <code>/paranoia</code> finding: the existing <code>/debate</code> skill is a Claude-Code-side, human-in-the-loop protocol — a live, autonomous in-app version needs genuinely new Oracle-API infrastructure (a real, recurring per-insight token cost, rule 11) and, non-negotiably, must still route through the same human-checkpoint gate every other taxonomy write already requires (rule 4) rather than auto-updating the tree on its own verdict. Depends on W11 existing first (needs a second real worm to disagree with the others). Not built.</div>
+    </div>
+  </div>
 </div>
 
 <div class="section" id="red">
