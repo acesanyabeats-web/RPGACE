@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">💡🔀 Aug 22 (A5 Phase 2, slice 1+2) — Idea Bank gets a real Oracle-guided "create new" flow, repurpose-merge saves tokens</div>
+    <div class="card-body">
+      Item 3 of the day's <code>/Routine</code>-locked Top 10. Real evidence-gathering first (not guessed): <code>contentRepurpose.openPopup</code> already built almost all of Alex's Aug 10 "1 video into 4" ask — the two genuinely missing pieces from his own verbatim spec were the real gap.
+      <br><br>
+      <b>Built (1)</b>: Idea Bank's "💬 Create new via Oracle" button (<code>conidPot._createNewIdea</code>) — navigates to the Oracle page, sends a brainstorming prompt grounded in real Insta/YouTube/TikTok Oracle hook-command text (<code>contentProductionLive._findOracleCmdText</code>, reused not re-derived, rule 8), asks Oracle to keep chatting until one idea lands then restate it as "Content Idea: &lt;title&gt;" — the existing <code>_injectSaveBtn</code> detection already picks that up, zero new save mechanism needed.
+      <br><br>
+      <b>Built (2)</b>: repurpose-merge logic. <code>contentRepurpose.openPopup</code>'s existing single Oracle call now asks Oracle to judge, per idea, whether Instagram Reels/YouTube Shorts/TikTok would be genuinely identical short-form content and merge them into one section if so — Alex's own words: "if short form content works for all 3 short content platforms, merge the idea into one to also save tokens." A real prompt-text change to an already-existing call, never a 2nd premium-model call (rule 11).
+      <br><br>
+      <b>Honestly unbuilt, not silently dropped</b>: Corpus's dashboard-card description claims it "feeds the taxonomy tree" — confirmed by direct grep that zero <code>reference_tracks</code>→<code>taxonomy_tree</code> write path exists anywhere (a real stale/aspirational claim, flagged not fixed this pass); Upload Workshop's real upload-strategy-generation button (3 platform Oracles individually + a compiled accept/regenerate review popup) is not built.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped to <code>20260822a</code>. CLAUDE.md/<code>oracleAppGrounding.SELF_KNOWLEDGE</code> updated per rule 6. <b>Untested by hand.</b>
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🏁 Aug 22 — SESSION CLOSED via /Bedtime (G72 → Decision Matrix shipped, then a full real oversight close-out sweep)</div>
     <div class="card-body">
