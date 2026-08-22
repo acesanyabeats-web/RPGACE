@@ -1,0 +1,227 @@
+RPGACE — Worm Family & Encyclopedia Wrapper
+A real /CEO Loop 1 compiled spec (Step 1: Compile / Step 2: Interrogation / Step 3: paranoia-advised draft / Step 4: drift-check)
+Date: 2026-08-22
+
+=====================================================================
+PART A — WHAT ALEX ACTUALLY ASKED, VERBATIM
+=====================================================================
+
+Trigger (chat, same session): "also i want to next work on bookworm and
+encyclopedia, i think that whole system needs a revamp."
+
+/interrogation round 1 — 4 real forks, all answered:
+
+Q1 (scope shape — one unified system vs. two separate revamps):
+Alex's real answer (free text, not one of the 3 offered options):
+"2 separate ones, i want music corpus inside of bookworm, then rename
+all sources of information - music reference, videos books etc to be
+renamed to scoped worm names, then all that gets unified into a
+wrapper that put entries for encyclopedia - so all sources get entries
+of quotes and context that explain a chosen insight. this would help
+reduce code and improve performance and output quality and volume"
+
+Q2 (complaint type — UI/UX vs. organization vs. both):
+Answer: "Both, roughly equally"
+
+Q3 (connect to the already-logged A8 vision?):
+Answer: "Yes — this IS (or extends) A8"
+
+Q4 (should this become its own tracked /CEO plan?):
+Answer: "Yes — make it a real /CEO plan (Recommended if it's genuinely
+multi-session)"
+
+=====================================================================
+PART B — REAL EVIDENCE GATHERED (code/Supabase, not assumed)
+=====================================================================
+
+1. The already-logged A8 vision this extends (rpgace_core.js, the
+   researchTabs.TABS module comment, Aug 15 2026, kept verbatim there):
+   rename File Analyzer -> "Videoworm"/"Articleworm", route its real
+   insights through Bookworm's own placement logic; give Corpus a
+   "MusicWorm" identity with real audio-listening capability, "just a
+   bare idea right now, but migration would be awesome"; a real "which
+   worm?" picker landing on Bookworm's card; each worm feeding context
+   into Oracle chat. Alex's new answer sharpens 2 things this vision
+   left open: Corpus/MusicWorm physically moves INSIDE Bookworm (not
+   just adjacent), and a NEW shared wrapper writes real Encyclopedia
+   entries (quotes/context explaining a chosen insight) for every worm.
+
+2. Bookworm's real current pipeline (rpgace_core.js:14817-16616):
+   _analyzeChapter -> _placeInsightCascade -> decidePlacementScored ->
+   a real human-checkpoint confirm -> taxonomy_tree write. Direct grep
+   of the whole module for 'encyclopedia'/'encyclopedia_insights' found
+   ZERO matches - Bookworm's insights land ONLY in the taxonomy tree
+   today. No Encyclopedia companion entry exists for a book insight,
+   ever.
+
+3. Content Intelligence's ciAutoPropose module (rpgace_core.js:7364-
+   7450) ALREADY does part of what Alex is asking, since July 19: each
+   video's key_learnings/production_techniques gets proposed through
+   "the same unified scored engine book insights use" - i.e. it
+   already reuses Bookworm's own placement engine (decidePlacementScored),
+   real evidence this dedup direction has real precedent working
+   already. But its own comment states a real, deliberate cap: "still
+   max 5 new videos per scan, max 3 insights per video, max 9 total
+   proposals per scan" - this is almost certainly the same real gap
+   already sitting in ceo_plan_items as A4 ("Content Intelligence real-
+   insight extraction volume... the real gap is extraction VOLUME per
+   video, still unaddressed"). ciAutoPropose ALSO writes only to
+   taxonomy_proposals, never to Encyclopedia.
+
+4. api/analyst.js (server-side Content Intelligence analysis engine)
+   is a completely SEPARATE implementation from Bookworm's - its own
+   7 type-specific prompt templates (music/food/tech/fitness/social/
+   article/general), one flat single-shot callClaude() producing a
+   markdown report (saved to intel_reports), zero taxonomy-aware
+   placement logic of its own (ciAutoPropose does that afterward, on
+   the SAVED report's key_learnings). Real, concrete evidence backing
+   Alex's own "reduce code" framing - this and Bookworm's pipeline are
+   two genuinely separate code paths for a related job (turn raw
+   content into structured insight), not yet dedup'd.
+
+5. F7 (rpgace_core.js:12817-12824) is a real, EXISTING but differently-
+   directioned Encyclopedia<->taxonomy link: an Encyclopedia entry can
+   be manually proposed FOR taxonomy placement, and once accepted, the
+   ORIGINATING encyclopedia row gets a back-reference written onto its
+   own `taxonomy_node_id` column. This is Encyclopedia -> Taxonomy.
+   Alex's new ask is the reverse and is NOT built: Taxonomy/worm-
+   insight -> a NEW Encyclopedia entry. The `taxonomy_node_id` column
+   already exists on `encyclopedia` and can likely be reused for the
+   new direction too (rule 8 - don't add a second column for the same
+   real relationship) - confirm at build time.
+
+6. Corpus/reference_tracks (refCorpus module, rpgace_core.js:19050-
+   19448) has ZERO insight-extraction pipeline of any kind today -
+   CLAUDE.md's own standing fact: `reference_tracks.scale`/`genre`
+   still 0/32 populated. "MusicWorm" is a real rename target but has
+   no real audio-listening capability to route through a wrapper yet -
+   confirmed matches Alex's own "just a bare idea right now" framing
+   from the original A8 text.
+
+7. Real, already-logged, never-executed backlog items directly
+   relevant to Alex's "Both" (UI/UX + organization) answer:
+   - Website/HTML optimization backlog item 1 (CLAUDE.md, from the
+     July 17 audit): "Replace modal-chain UX with card lists wherever
+     a process has listable state: Bookworm chapters should render as
+     ConID-style cards... purely a render-layer change calling the
+     same _openBook/_renderInsightReview logic." Never built.
+   - EPUB support for Bookworm - named once as a real planned/dry-
+     riverbed feature (River IV), never built.
+   - Encyclopedia's category auto-detection (ENC_CATEGORY_MAP) is
+     simple keyword matching (rpgace_core.js:3061-3078) - real,
+     working, but crude; worth a real look once Encyclopedia's real
+     volume/importance grows via the new worm-wrapper entries.
+
+=====================================================================
+PART C — PARANOIA-ADVISED DRAFT (paranoia lens: real risk, scope/
+cost, why-not-to-build; /Engineer lens: what a real implementation
+sketch looks like; /aintergration: n/a, no third-party tool involved;
+/restructure: this DOES touch RPGACE-Claude Code's own skeleton - the
+shared insight-to-Encyclopedia wrapper is a real, new cross-cutting
+architecture piece, not just a feature bolt-on, so it earns the CEO-
+plan treatment Alex already asked for)
+=====================================================================
+
+Real work items (W-numbered - a new series, kept separate from the
+Massive Expansion plan's A-items and the Galaxy Map's G-items, since
+Alex asked for a genuinely separate tracked plan):
+
+W1 (rename + relocate) — Corpus physically becomes part of Bookworm's
+   own card/page (not just a conceptual rename) - "music corpus inside
+   of bookworm." Real, low-risk UI/entry-point move, same shape as the
+   Aug 15 A5 Phase 1 pattern (dashDeck._openBookworm gains a Corpus
+   section/jump button; refCorpus's own module/data untouched).
+
+W2 (rename) — File Analyzer -> "Videoworm", the article-analysis path
+   -> "Articleworm" (matches A8's original text exactly). UI labels/
+   card titles only at this stage - zero pipeline change.
+
+W3 (rename, honestly scoped) — Corpus -> "MusicWorm" identity in the
+   UI. Real audio-listening capability stays explicitly OUT of scope
+   for this plan's first pass (confirmed still "a bare idea," zero
+   pipeline exists per Part B.6) - a real, separate future phase, not
+   silently implied as done by the rename. Any MusicWorm-labeled UI
+   this plan builds must say plainly "insight extraction not yet
+   built" rather than imply parity with Bookworm/Videoworm.
+
+W4 (picker) — A real "which worm?" picker landing on Bookworm's own
+   card, toggling between worms on one page (per A8's exact vision,
+   now that W1 puts Corpus/MusicWorm there too).
+
+W5 (the real new architecture piece) — A shared, additive
+   insight-to-Encyclopedia wrapper function. Whenever ANY worm places
+   a real insight (Bookworm's _placeInsightCascade, ciAutoPropose's
+   _scan, and MusicWorm's own pipeline once W3's later phase builds
+   one), the SAME wrapper also writes one real `encyclopedia` row -
+   the quote/excerpt plus context explaining that specific insight -
+   cross-linked via the EXISTING `taxonomy_node_id` column (reuse, not
+   a new column - confirm the reverse-direction write is safe at build
+   time). Critically additive: never replaces or gates the existing
+   taxonomy_tree/taxonomy_proposals write, which stays the real
+   structural-knowledge decision mechanism - Encyclopedia becomes a
+   parallel, browsable "evidence" layer, not a second placement
+   engine. (This reading comes directly from Alex's own words - "entries
+   ... that explain A CHOSEN insight" - an insight that's already been
+   decided, not a new decision path - not re-asked as a separate
+   interrogation question since his own phrasing already resolves it.)
+
+W6 (real code reduction) — Once W5's wrapper exists, check whether
+   Bookworm's and ciAutoPropose's own placement-call boilerplate can
+   route through ONE shared function instead of two independently-
+   maintained call sites (rule 8). This is the concrete, checkable
+   version of Alex's own "reduce code" goal - not assumed, verified
+   against the real diff once W5 is built.
+
+W7 (connects to, does not replace, the existing A4 backlog item) —
+   Revisit A4 ("Content Intelligence real-insight extraction volume")
+   in light of W5: does giving Content Intelligence insights a second,
+   cheaper output channel (an Encyclopedia entry, no taxonomy-tree
+   structural decision required) change how urgent raising the 5-
+   video/9-proposal cap is? A real, connected question - not assumed
+   answered by W5 alone. A4 stays its own tracked item; W7 is the
+   cross-reference check, not a merge (the two are related but
+   distinct real problems - taxonomy volume vs. Encyclopedia coverage).
+
+W8 (Bookworm UX) — Real, already-logged, never-built: replace the
+   modal-chain chapter review with a card-list view (CLAUDE.md's own
+   July 17 backlog item 1). Matches Alex's "Both" answer on complaint
+   type.
+
+W9 (Bookworm feature) — Real EPUB support (the already-named dry-
+   riverbed item).
+
+W10 (Encyclopedia's own revamp, now genuinely warranted) — Once W5
+   ships, Encyclopedia's real row count and importance grow
+   materially beyond today's 70 rows (sourced from Oracle-chat saves
+   only). Real candidates: a "source worm" badge/filter per entry (so
+   Alex can browse "show me only Videoworm-sourced entries"); revisit
+   ENC_CATEGORY_MAP's keyword-matching quality at higher real volume.
+
+Real, honest sequencing note: W5/W6/W7 are the real architectural core
+(and the highest-risk, since they touch Bookworm's already-working,
+carefully-tuned placement pipeline - built strictly additive to keep
+regression risk low). W1/W2/W3/W4 are real but lower-risk UI/identity
+moves. W8/W9/W10 are real, independent quality-of-life items that can
+happen in any order relative to the others - flagged as such so a
+future session doesn't assume they must wait for W5.
+
+=====================================================================
+PART D — REAL /drift CHECK: does this draft still cover everything
+Part A/B raised, or has anything been silently dropped/reworded?
+=====================================================================
+
+Baseline: Part A's verbatim answers + Part B's real evidence.
+Work map: FULL - every real element of Alex's answer (Corpus-into-
+  Bookworm, worm renames, the unified wrapper, Encyclopedia entries,
+  reduce-code goal, A8 connection) maps onto W1-W10 above; nothing
+  silently dropped or narrowed.
+Verdict: ON TRACK - the draft is a direct, evidenced expansion of what
+  was actually asked, not a reinterpretation.
+Grade: n/a (nothing to grade - Step 4 confirms coverage, no gap found).
+
+=====================================================================
+STATUS: Loop 1 Step 5 (this + the chat report) is the real deliverable.
+NOTHING in W1-W10 is built yet. Step 6 (Alex reads, pushes back,
+approves/changes) is the next real step - only after that does a real
+ceo_plans/ceo_plan_items row get created and Loop 2 execution begin.
+=====================================================================
