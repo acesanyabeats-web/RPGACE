@@ -110,6 +110,32 @@
 
   <div class="card">
     <div class="card-top">
+      <div class="card-title">Real /paranoia catch: "root cause confirmed" was ahead of the evidence — a live row-count check reopened a claim that had just been marked resolved</div>
+      <div class="card-date">Aug 22 2026</div>
+    </div>
+    <span class="trigger correction">Real evidence contradicting a just-made claim</span>
+    <div class="block scope"><b>Prompt scope</b>Alex: "/paranoia this to determine what leaving it/change it would benefit/detriment the system... /interrogation me, then /drift and /CEO the outcomes after" — referring to 2 items flagged in a sortEntries perf fix shipped moments earlier in the same session, which had been reported (and logged to <code>error_log</code> as <code>resolved</code>) as having found the real root cause of a 12+ second freeze.</div>
+    <div class="block obstacle"><b>Obstacle</b>Before touching either flagged item, a real <code>/paranoia</code> evidence pass re-checked the "confirmed root cause" claim against live data instead of assuming it still held. A direct Supabase query found only 70 real <code>encyclopedia</code> rows exist (median content 2435 chars) — re-benchmarking the OLD pre-fix algorithm at that real scale predicted only ~470ms of blocking, not 12+ seconds. The earlier report had been quantified (a real benchmark), but the benchmark's synthetic entry COUNT was never cross-checked against the real live table size before being presented as confirmation.</div>
+    <div class="block reasoning"><b>Reasoning</b>Rather than let the mismatch sit quietly or double down on the earlier framing, the <code>error_log</code> row was reopened (<code>status='active'</code>) with the honest correction written into its own <code>attempts</code> array, and Alex was asked directly (via <code>AskUserQuestion</code>) whether he'd reload the live app and report back — the single piece of evidence that could actually settle whether sortEntries was the real cause or just a real, smaller contributor.</div>
+    <div class="block solution"><b>Solution</b>Alex reloaded and captured a fresh Performance recording: the freeze dropped from ~12-13s to a single 1,404ms longtask — ~89% reduction, real confirmation the fix was the dominant real cause after all (the gap between the isolated benchmark and the real browser figure being explained by real DOM/network work riding along in the same measured Task, not by the fix being wrong). <code>error_log</code> marked resolved again, this time backed by a live before/after measurement rather than a benchmark alone.</div>
+    <div class="block rule"><b>Resulting rule</b>A benchmark quantifies AN algorithm; it doesn't by itself confirm that algorithm was the real cause of a specific reported symptom at the REAL data scale involved. Before marking a diagnosis "confirmed" via a synthetic benchmark, cross-check the benchmark's own input assumptions (row count, content length) against a real, current query of the live data — and where a live before/after re-test from the user is available, treat that as the real confirming evidence, not the benchmark itself.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <div class="card-title">Real /CEO drift check found a shipped fix whose own <code>ceo_plan_items</code> tracking row never flipped from red to green</div>
+      <div class="card-date">Aug 22 2026</div>
+    </div>
+    <span class="trigger correction">Doc-vs-code drift, caught not assumed</span>
+    <div class="block scope"><b>Prompt scope</b>Alex: "/summary all done, make sure all docs did not /drift from final outcomes of changes now since last /Routine. /Paranoia and /CEO obviously" — a session-spanning drift check against the day's own <code>/Routine</code>-ratified Top 10, not a single-item check.</div>
+    <div class="block obstacle"><b>Obstacle</b>Item 5 of the day's Top 10 ("A2 — Dummy Oracle banner slide-down UI fix") had genuinely shipped (2 real commits, plus Alex directly hand-testing and requesting 2 further redesign passes on the exact same element) — but its <code>ceo_plan_items</code> row still read <code>status='red'</code>, evidence still citing an Aug 11 "grep returns zero matches" finding that predated the fix entirely. The oversight-doc logging (CLAUDE.md, patch_notes.html, Chronicles) had been done correctly each time the feature shipped — the ONE place that silently never got touched was its own tracking row in the Supabase datasheet, since flipping that row isn't part of the normal "log the fix" muscle memory the way the file-based docs are.</div>
+    <div class="block reasoning"><b>Reasoning</b>A direct query against <code>ceo_plan_items</code> for every A-numbered/G-numbered item named in the day's real Top 10 (not just the items this session happened to touch) surfaced the mismatch — the same "verify the record against live evidence, don't trust the doc" discipline this whole project already runs on, just pointed at a Supabase status column instead of a markdown claim.</div>
+    <div class="block solution"><b>Solution</b>Row flipped red→green with fresh evidence citing the real shipping commits and Alex's own hand-testing. <code>future_integrations.html</code>'s matching stale red card (which only mirrors red/yellow/blue items per this doc's own design) removed in the same pass, per the standing rule that a green item never sits duplicated in both places.</div>
+    <div class="block rule"><b>Resulting rule</b>A shipped fix's oversight-doc logging (CLAUDE.md/patch_notes.html/Chronicles) and its <code>ceo_plan_items</code>/<code>future_integrations.html</code> status-tracking are two genuinely separate updates, not one — a session that only does the former can still leave a real, findable drift behind. Folded into <code>update-logging-system</code>'s own dependency map (see its own file) as a standing check, not left as a one-off catch.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
       <div class="card-title">Real /misunderstanding, invoked explicitly: Skill Network/Skills merged twice into independent toggles instead of becoming ONE page</div>
       <div class="card-date">Aug 21 2026</div>
     </div>

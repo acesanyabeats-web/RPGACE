@@ -288,6 +288,28 @@ a genuine cost/benefit call per rule 11), so an empty result means
     entry for the full worked example (`TOTAL_ZONES`) and the complete
     procedure — not restated here (rule 8).
 
+19. **A real fix/feature ships that corresponds to an EXISTING red/yellow
+    `ceo_plan_items` row** (added Aug 22, real Alex ask after a `/paranoia`
+    +`/CEO` drift check found "A2 — Dummy Oracle banner slide-down UI fix"
+    shipped and hand-tested working while its own tracking row still read
+    `red`, citing evidence from 11 days before the fix) → check whether
+    the shipped work matches an existing plan-item title/description in
+    `ceo_plan_items` (a quick `ilike` search on the feature's own name is
+    usually enough) and flip its `status` + refresh its `evidence` field
+    in the SAME pass the file-based docs (artifacts 1-18) get updated —
+    never assume logging CLAUDE.md/patch_notes.html/Chronicles also
+    covers this, since it doesn't. If the item was carrying a red/yellow
+    card in `future_integrations.html`, remove it there too (same
+    artifact-15 discipline, just triggered by a shipped fix instead of a
+    fresh `/colourgradient` run finding it). **The real, concrete gap this
+    closes**: a shipped fix's oversight-doc logging and its own Supabase
+    plan-tracking status are two genuinely separate updates that don't
+    share muscle memory — a session can do the first perfectly and still
+    leave the second stale for days. This is exactly a `/colourgradient`-
+    shaped check (does this item's real color match its real state) run
+    proactively at ship time, not just when someone runs `/colourgradient`
+    explicitly.
+
 ## How to actually run this (the enforceable part)
 
 Not a paragraph of prose per artifact — a fast declarative pass, same
@@ -307,6 +329,7 @@ Change: <one line, what actually happened>
 [ ] Archive fully-resolved entries — skipped, nothing resolved this pass
 [x] Live-fact staleness check on evidence touched this session
 [ ] Supabase dedup scan — skipped, no table meaningfully changed
+[x] ceo_plan_items/future_integrations.html status check for anything shipped this pass
 ```
 
 Every row gets a mark, every skip gets a real reason (not blank). This

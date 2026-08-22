@@ -70,7 +70,7 @@ DECISION_POINTS = [
     {
         'id': 'intel-delete-confirm', 'category': 'destructive',
         'title': 'Delete a Content Intelligence report / bibliography entry',
-        'module': 'intelDelete', 'func': '_confirm', 'lines': (10118, 10136),
+        'module': 'intelDelete', 'func': '_confirm', 'lines': (10164, 10182),
         'anchor': '_confirm: function(title, url, card, onDecide)',
         'trigger': 'A real 🗑 button on a Content Intelligence report card — routes through the shared `_deleteUnified()` path.',
         'logic': 'Shows a real popup ("Delete Report" + "Save URL to bibliography?") with 2 real choices — the onDecide callback branches on which button was pressed, never a bare JS `confirm()`.',
@@ -78,7 +78,7 @@ DECISION_POINTS = [
     {
         'id': 'video-summary-delete', 'category': 'destructive',
         'title': 'Delete a video summary report (legacy fallback path)',
-        'module': 'videoSummary', 'func': '_delete', 'lines': (11611, 11619),
+        'module': 'videoSummary', 'func': '_delete', 'lines': (11657, 11665),
         'anchor': "window.confirm('Delete \"' + title + '\"?')",
         'trigger': 'Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn\'t available, using a bare browser `confirm()` instead of the richer popup.',
         'logic': 'A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.',
@@ -86,7 +86,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (21991, 21996),
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (22188, 22193),
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -94,7 +94,7 @@ DECISION_POINTS = [
     {
         'id': 'bookworm-delete', 'category': 'destructive',
         'title': 'Delete a Bookworm book (2-click arm/confirm)',
-        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (15014, 15032),
+        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (15099, 15117),
         'anchor': 'var armed = false;',
         'trigger': 'A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.',
         'logic': 'No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.',
@@ -102,7 +102,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (13680, 13680),
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (13750, 13750),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (Level 5\'s own real decision point — see there for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -111,7 +111,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (14148, 14148),
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (14218, 14218),
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (Level 5\'s own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -120,7 +120,7 @@ DECISION_POINTS = [
     {
         'id': 'accept-phylumpath-proposal', 'category': 'taxonomy',
         'title': 'Review Queue: accept a pending taxonomy_proposals row',
-        'module': 'taxonomyReviewQueue', 'func': '_acceptPhylumPathProposal', 'lines': (9041, 9041),
+        'module': 'taxonomyReviewQueue', 'func': '_acceptPhylumPathProposal', 'lines': (9087, 9087),
         'anchor': '_acceptPhylumPathProposal: function(p)',
         'trigger': 'The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card\'s popup.',
         'logic': 'A real, separate SECOND checkpoint from `_showPlacementConfirm` above — this one clears a `taxonomy_proposals` row that was already staged (not a live in-the-moment placement), matching rule 4\'s "or staging through taxonomy_proposals → review queue" alternate path.',
@@ -128,7 +128,7 @@ DECISION_POINTS = [
     {
         'id': 'accept-concept-fusion', 'category': 'taxonomy',
         'title': 'Review Queue: accept a proposed fusion-link bridge',
-        'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (9066, 9066),
+        'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (9112, 9112),
         'anchor': '_acceptConceptFusion: function(p)',
         'trigger': 'The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII\'s own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.',
         'logic': 'Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.',
@@ -136,7 +136,7 @@ DECISION_POINTS = [
     {
         'id': 'edit-phylumpath-proposal', 'category': 'taxonomy',
         'title': 'Review Queue: edit a pending proposal before accepting it',
-        'module': 'taxonomyReviewQueue', 'func': '_editPhylumPathProposal', 'lines': (9104, 9104),
+        'module': 'taxonomyReviewQueue', 'func': '_editPhylumPathProposal', 'lines': (9150, 9150),
         'anchor': '_editPhylumPathProposal: function(p)',
         'trigger': 'A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.',
         'logic': 'Real, distinct from a bare accept/reject — lets Alex correct Oracle\'s own proposed placement before it commits, rather than only a binary yes/no.',
@@ -144,7 +144,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (19435, 19436),
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (19590, 19591),
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',

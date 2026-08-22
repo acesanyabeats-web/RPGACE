@@ -153,10 +153,17 @@
   </div>
 
   <div class="group">
-    <div class="group-label">River III — The Oracle Current <span class="n">2 items</span></div>
-    <div class="card red"><div class="card-title">A2 — Dummy Oracle banner slide-down UI fix<span class="badge red">PLANNED</span></div><div class="card-body">"I want the html to slide down to make space for the oracle status mode, so both don't obstruct each other." Confirmed unbuilt via direct grep.</div></div>
+    <div class="group-label">River III — The Oracle Current <span class="n">1 item</span></div>
     <div class="card red"><div class="card-title">A3 — Fallback Scout per-item delete buttons<span class="badge red">PLANNED</span></div><div class="card-body">Remove a queued scout item before it's ever processed. Confirmed unbuilt.</div></div>
   </div>
+  <!-- A2 (Dummy Oracle banner slide-down UI fix) removed 2026-08-22: real /paranoia+/CEO drift check found it shipped (commit 02b4b31, redesigned further in 476ddb5) and Alex-hand-tested live, ceo_plan_items flipped red->green same pass. Per this doc's own rule, a green item is removed from here, never left duplicated alongside its tier-doc entry (CLAUDE.md/patch_notes.html already carry the real account). -->
+  <!--
+    Note found in the same pass, not acted on: unlike the Galaxy Map plan above (line ~150),
+    this Massive Expansion section's cards are hand-typed static HTML, not live-fetched from
+    ceo_plan_items the way the Galaxy Map group is - meaning a future status flip here needs
+    the same manual sync this file's own Galaxy Map note warns about. Flagged as a real,
+    future improvement (give Massive Expansion the same live-fetch treatment), not fixed here.
+  -->
 
   <div class="group">
     <div class="group-label">River V — Two Independent Streams (Content Intel / Schedule) <span class="n">2 items</span></div>

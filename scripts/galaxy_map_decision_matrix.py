@@ -76,7 +76,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (18227, 18247),
+        'module': 'beatLog', 'func': '_getForm', 'lines': (18387, 18407),
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,
@@ -84,7 +84,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'director-blend-inspiration',
         'title': "Director Blend inspiration notes — Alex's own free-text creative direction",
-        'module': 'visualOracle', 'lines': (5995, 6012),
+        'module': 'visualOracle', 'lines': (6038, 6055),
         'anchor': "var insp = insBox.value.trim()",
         'decides': "Alex's own typed creative notes, kept in a real, separately-labeled group (never conflated with the director-blend keywords) so the outbound Visual Treatment prompt can't confuse his own words with Oracle-generated style language.",
         'link': None,
@@ -92,7 +92,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'taxonomy-placement-editor',
         'title': 'Taxonomy Placement Editor — editing a proposed step name/explainer before it writes to taxonomy_tree',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (13680, 13680),
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (13750, 13750),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
         'link': 'galaxy_map_decisions.html#d-placement-confirm',
