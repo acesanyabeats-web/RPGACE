@@ -1,0 +1,178 @@
+RPGACE /Routine — daily priorities debate
+Date: 2026-08-22
+Session context: opens directly after a full /Bedtime close-out (commit 6971bce) covering
+the Aug 15→21 Galaxy Development Framework arc (G42-G72, main.js merge, Achiever/brown,
+Oversight restructure). This is the first /Routine run since that close-out.
+
+=====================================================================
+STEP 1 — TEAM 1's GODMODE + Council-of-5 evidence pass
+=====================================================================
+
+Evidence gathered (live, this session, not inherited from memory):
+- git log: last 15 commits reviewed, most recent 6971bce (/Bedtime close-out).
+- ceo_plan_items: 89 total rows — 60 green, 15 yellow, 8 red, 6 blue.
+- error_log: 1 active row — `boot_load_lag_client_interactive_12000ms` (created
+  2026-08-20), linked to G39/Load Dimension. Alex hand-tested the app post-main.js-merge
+  and hit a real ~12,000ms load lag. rationale/backtrack_note already on file, naming 2
+  real un-actioned levers: (a) minification's real remaining contribution was never
+  re-measured after rpgace_core.min.js shipped Aug 11; (b) the 1300-1700ms boot-stagger
+  pattern (~27-28 registerBootTask registrations) was flagged Aug 11 as worth revisiting,
+  never revisited.
+- graphify_jobs: 1 undrained row (2026-08-06, status=queued, output_note NULL — old,
+  no explicit "please log" flag, read for context only, not a fresh ask).
+- system_map_flags: 0 flagged rows.
+- taxonomy_proposals: 51 pending (matches CLAUDE.md's existing Aug 11 figure — no drift).
+- taxonomy_links: REAL DRIFT CAUGHT — live query returns 97 total (72 confirmed, 25
+  pending), not the "66 total, 0 pending" CLAUDE.md has claimed since Aug 11. The 25
+  pending rows are dated July 31, meaning the Aug 11 claim was already wrong the day it
+  was written, not a claim that decayed afterward. Fixed in CLAUDE.md same pass.
+- video_jobs: REAL DRIFT CAUGHT — live query returns 9 total (5 beat_logged, 3 rendered,
+  1 exported), not "3, all at stage 1/5." Real progress has happened (4 jobs moved past
+  initial logging) that CLAUDE.md never reflected. Fixed in CLAUDE.md same pass.
+- style_profiles: 3 rows — matches CLAUDE.md's existing corrected figure. No drift.
+- reference_tracks scale/genre: still 0 populated — matches CLAUDE.md's known standing gap.
+- journal / chronicles_finance / content_productions.updated_at: zero rows in the last
+  7/30 days — Alex has not done real hands-on in-app activity recently; all recent
+  motion has been Claude-Code-side Galaxy Map development.
+- ceo_plan_items reds (8): A2 (Dummy Oracle banner UI fix), A3 (Fallback Scout delete
+  buttons), A4 (Content Intelligence insight-volume increase), A6 (Bibliography as its
+  own phylum), A7 (OBS Raw workflow + YouTube Meme Director), A9 (Agenda overhaul +
+  time-tracking formula), A8 (Bookworm absorbs Content Intelligence — worm-family vision,
+  explicitly "just a bare idea" per Alex), G60 (Infra/inter edge-selector retrofit).
+- ceo_plan_items yellows relevant here: A5 (Research Lab dismantling, Phase 2 —
+  Oracle-driven idea-bank chat flow, repurpose-merge logic, upload-strategy button — Alex
+  asked directly, twice, tied to real River V crowding evidence); A10 (Oracle-orchestrator
+  via Kimi/Luna — scaffold real, zero call sites use it, blocked on Alex providing a real
+  key); G34 Level 2 (Fable/Opus dev-role indicator — Alex said he's writing his own spec,
+  nothing to build until then); G43-G50 (the whole Aug 18 L0/Dimension/River redefinition
+  batch — real, shipped, genuinely untested by Alex's own hand — this is exactly what the
+  Aug 20 G51 smoke_test.html confirm-loop was built to close).
+
+Team 1's proposed Top 10 (ranked, evidence-based):
+ 1. Diagnose/fix the real ~12,000ms boot-load lag (error_log row, G39-linked).
+ 2. taxonomy_links review — 25 pending rows stale since July 31 (3+ weeks unreviewed).
+ 3. Correct CLAUDE.md's 2 stale live-numbers (taxonomy_links, video_jobs) — done inline.
+ 4. Alex's own hand-confirm pass on the G43-G50 batch via smoke_test.html.
+ 5. A5 Phase 2 (Research Lab dismantling continuation).
+ 6. F16/F17/F18 hand-test sweep (zero code, pure execution debt).
+ 7. G60 (Infra/inter edge-selector retrofit).
+ 8. Ask Alex for real console evidence on the still-open voice-input duplication bug.
+ 9. Re-run the graphify regeneration pipeline (stale since Aug 13).
+10. Alex's own re-prioritization call on the remaining red A-items (A2/A3/A6/A7/A9).
+
+=====================================================================
+STEP 2 — TEAM 2's counter-case (real pushback, not manufactured)
+=====================================================================
+
+- Team 2 argues item 9 (graphify regen) is ranked too low: it's been stale since Aug 13,
+  predates even the Aug 20 main.js merge, and CLAUDE.md's own (f) layer section states a
+  stale auto-generated map is now WORSE than no link at all, since Alex can click through
+  to it live from inside the app. Cheap, no blocking dependency. Should outrank several
+  dev-tooling-only items.
+- Team 2 argues A2 (Dummy Oracle banner fix) deserves a top-half slot, not bucket #10's
+  vague "re-prioritize the reds" bundle: it's a real, tiny, CSS-only fix, sitting red
+  since Aug 11 with zero real reason for the delay, and it directly affects Alex's own
+  daily "which mode am I in" clarity while doing wiring work.
+- Team 2 pushes back on ranking item 4 (smoke_test hand-confirm) at #4: this needs
+  ALEX's hands, not Claude Code's build time — ranking it like a build task misframes
+  what kind of action it actually is. Should be reframed explicitly as a request to Alex,
+  per rule 10 (any instruction handed to him needs a concrete, checkable verification
+  attached), not treated as equivalent to items 1/2/5/6 which Claude Code can execute
+  directly today.
+- Team 2 raises a real item Team 1 left out entirely: the 2 still-open Aug 6 bugs
+  (Oracle "Unauthorized" error's `_apiSecret` persistence gap; the Morning Brief Routine's
+  Supabase 403) — both flagged in CLAUDE.md as genuinely open and unconfirmed for over 2
+  weeks, never resurfaced since. Real correctness bugs, not dev-tooling nice-to-haves —
+  deserve at least an explicit "still needs your real evidence" nod, not silent omission.
+
+=====================================================================
+STEP 3 — /Debate (attack/defend, Omnitrix without Fable, /scope for evidence)
+=====================================================================
+
+Team 1 concedes:
+- graphify regen moves up — staleness is real and worsening, cheap, unblocked. Still
+  stays behind the boot-lag fix and taxonomy_links review, since those touch Alex's own
+  daily experience and a live production correctness gap respectively, while graphify
+  regen is dev-tooling hygiene with no direct user-facing consequence today.
+- A2 moves up — genuinely cheap relative to its cost, real, overdue.
+- Item 4 gets reframed, not dropped: presented explicitly as a request TO Alex (with a
+  concrete "click X in smoke_test.html, it should do Y" verification attached per rule
+  10), not counted as a Claude-Code-executable build task the way items 1/2/5/6 are.
+- The 2 stale Aug 6 bugs get folded in as an explicit "still needs your evidence" callout
+  rather than left buried in CLAUDE.md's own Open Forks section unmentioned this session.
+
+=====================================================================
+STEP 4 — /5thDimension reconciliation (without Fable)
+=====================================================================
+
+Checked against real built-vs-reported state: no further drift found beyond what's
+already named above (taxonomy_links/video_jobs, now fixed).
+
+Checked against Alex's actual stated goals — the governing rule ("does this result in a
+beat made or video posted within 48 hours? RPGACE infrastructure itself is exempt"):
+most of today's list is legitimately infra-exempt (doc hygiene, dev-tooling, oversight
+logging) — that's fine, it's the standing exception, not a violation. But the two items
+most DIRECTLY tied to the governing rule — A5 Phase 2 (finishing the real content-
+pipeline dismantling Alex uses to actually ship a beat/video) and the F16/F17/F18
+hand-test sweep (walking a real beat through real Beatstars/video-stage mechanics) —
+were sitting at #5/#6 by raw urgency alone. Council of 5 holds them in the top half of
+the final list rather than letting infra hygiene crowd them out, since they're the two
+items on the list a fresh session's evidence pass would most directly connect to "a beat
+made or video posted."
+
+=====================================================================
+STEP 5 — FINAL COUNCIL OF 5 LOCK-IN — Today's real Top 10
+=====================================================================
+
+ 1. Diagnose/fix the real ~12,000ms boot-load lag (error_log row, G39-linked). Alex hit
+    this directly; 2 real un-actioned levers already on file (re-measure minification's
+    real contribution now that rpgace_core.min.js exists; revisit the boot-stagger
+    pattern). Cheapest high-value start given the diagnosis is already half-written.
+ 2. Real taxonomy_links review sweep — 25 pending rows, unreviewed since July 31 (3+
+    weeks). Flag directly to Alex for his own review-queue pass (rule 4: taxonomy writes
+    always need a human checkpoint — this isn't Claude Code's call to clear alone).
+ 3. A5 Phase 2 — Research Lab dismantling continuation (Oracle-driven idea-bank chat
+    flow, repurpose-merge logic, upload-strategy-generation button). Alex's own direct,
+    repeated ask; governing-rule-relevant (real content-pipeline production use).
+ 4. F16/F17/F18 hand-test sweep. Zero code required — log a beat with F18's Visual
+    Treatment flow, walk a real video_jobs row through all 5 F17 stages, set a licence
+    type and click the F16 Beatstars button. Governing-rule-relevant, pure execution debt.
+ 5. A2 — Dummy Oracle banner slide-down UI fix. Cheap, real, overdue since Aug 11 with
+    zero real blocker; directly affects Alex's own daily dev-mode clarity.
+ 6. CLAUDE.md's 2 stale live-numbers corrected (taxonomy_links, video_jobs) — DONE this
+    pass, inline, same session. Zero further action needed on this item.
+ 7. Request to Alex (not a Claude Code build task — see rule 10 verification below):
+    hand-confirm the G43-G50 Galaxy Map batch via smoke_test.html. Verification: open
+    smoke_test.html, confirm each of the 9 G43-G50 rows; a correct confirm PATCHes the
+    linked ceo_plan_items row to green automatically (G51's own confirm-loop) — if a row
+    doesn't flip green after confirming, that's itself a real bug to report back.
+ 8. Re-run the graphify regeneration pipeline (graphify update --code-only → export html
+    → recolor → river-group) — stale since Aug 13, predates the Aug 20 main.js merge and
+    everything since. Cheap, unblocked dev-tooling hygiene.
+ 9. Still-open, needs-Alex's-evidence callout (no new build possible without it): the
+    Aug 6 Oracle "Unauthorized"/`_apiSecret` persistence bug (needs a DevTools Network-tab
+    screenshot of the failing request), and the Morning Brief Routine's Supabase 403
+    (a diagnostic re-fire was already sent — check its result).
+10. Alex's own re-prioritization call on the remaining red items: A3 (Fallback Scout
+    delete buttons), A6 (Bibliography as its own phylum), A7 (OBS Raw workflow + YouTube
+    Meme Director), A9 (Agenda overhaul + time-tracking formula), A4 (Content Intelligence
+    insight-volume increase), G60 (Infra/inter edge-selector retrofit) — present the list,
+    ask which (if any) he wants picked up next rather than Claude Code guessing.
+
+Honest drop-list — real items considered, left off today's actionable list, named
+plainly rather than silently dropped:
+ - A10 (Oracle-orchestrator via Kimi/Luna) — blocked purely on Alex providing a real API
+   key; nothing to build until then.
+ - G34 Level 2 (Fable/Opus dev-role indicator) — Alex is writing his own spec for this;
+   nothing to build until it lands.
+ - Phylum XP Ledger, the swipe-gesture freeze, Composio key rotation, "which paid video
+   provider" — all real, all still open, all still correctly blocked on an architecture/
+   spend/access decision only Alex can make. No new evidence surfaced this pass to change
+   those standing calls, so they stay off today's actionable list.
+ - Voice-input transcript-duplication's "ask for console evidence" — folded into item 9's
+   callout rather than a separate slot, since it's the same class of ask (Alex needs to
+   hand over real evidence before any further work is possible, per rule 9's no-third-
+   blind-attempt cap).
+
+This is a planning pass, not a build pass — execution starts immediately on item 1 once
+this record is committed, per /Routine's own guardrail against stalling on ceremony.
