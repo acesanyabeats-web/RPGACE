@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔧✅ Aug 22 — collapsible Oracle Mode panel + the boot-task "select" bug genuinely fixed with a real stack trace</div>
+    <div class="card-body">
+      Alex: "hide the scouted button and dummy/fallback/api pill and local pill behind a pressable button on the dummy oracle banner that will reveal those three options... do this that you sent me" (the 2 still-open findings from the prior report).
+      <br><br>
+      <b>UI redesign</b>: the top strip is now a real permanent bar across all 3 Oracle modes (not just dummy/fallback), showing the current mode's label with one small "⚙" reveal button. The 3-row cluster (switch/Scouted/Local) starts collapsed and only opens when pressed, right below the bar. Headless-Chromium-verified: bar always visible post-login, cluster stays collapsed by default, opens flush against the bar, closes on a 2nd press.
+      <br><br>
+      <b>Real, definitive fix for the "select of undefined" boot-task bug</b>: built a genuinely new diagnostic technique — copied the real app files into an isolated local test harness, patched a console-capture shim + a temporary stack logger onto the boot-task failure handler, and loaded it in real headless Chromium offline. Reproduced Alex's exact 2 warnings on the first try, with real stack traces: <code>taxonomySync.getTopGaps()</code> and <code>bookworm._refreshWidget()</code> both call <code>RPGACE.sb.select</code> unconditionally, both reached via a boot-task chain that fires before <code>config.init()</code> sets <code>RPGACE.sb</code> — the same root-cause class as the already-known <code>dashDeck._refreshGlance</code> race. Fixed with the same real guard, plus a self-healing retry so real data still lands instead of a stuck empty state. Re-ran the reproduction post-fix: zero "boot task failed" warnings.
+      <br><br>
+      <b>The 12,265ms longtask, honestly not fully closed</b>: reused the same offline reproduction — zero longtask warnings fired even with every fetch failing instantly, ruling OUT a pure code-only bottleneck, but this can't confirm or rule in the real remaining hypothesis (real data volume once actual Supabase responses land) since there's no real data to process offline. Still needs a real DevTools trace from Alex.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped to <code>20260822e</code>.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🌌🔍 Aug 22 — real /paranoia+/drift+/free-for-all-debate: architecture vs Galaxy Map, one confirmed material drift found and explained</div>
     <div class="card-body">
       Alex's own direct ask: "how has the decompress affected the layout of architecture against whats documented in galaxy map, use /paranoia and /drift and /free-for-all-debate to get this done."

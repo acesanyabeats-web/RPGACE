@@ -11870,6 +11870,17 @@ RPGACE.register('taxonomySync', {
   // Get top N nodes by gap score — used by agenda generator and Morning Brief
   getTopGaps: function(limit) {
     limit = limit || 5;
+    // Aug 22 (real /Routine follow-up — headless-Chromium-reproduced the
+    // exact "boot task failed: Cannot read properties of undefined
+    // (reading 'select')" warning from Alex's own console, with a real
+    // stack trace pinning it here): knowledgeGap._inject()'s boot task
+    // calls this synchronously via _load(), and this module (taxonomySync)
+    // registers before config in file order — config.init() is what sets
+    // RPGACE.sb, so on every real boot this ran before RPGACE.sb existed
+    // yet. Same real guard dashDeck._refreshGlance already uses for the
+    // identical race, applied here once so every caller (not just the
+    // boot-time one) is protected, per rule 8.
+    if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve([]);
     return RPGACE.sb.select('taxonomy_nodes',
       'order=gap_score.desc&limit=' + limit + '&applied_in_beat=eq.false'
     );
@@ -11963,6 +11974,19 @@ RPGACE.register('knowledgeGap', {
     var self = this;
     if (!RPGACE.modules.taxonomySync) return;
 
+    // Aug 22 (real /Routine follow-up, same root cause as
+    // taxonomySync.getTopGaps' own new guard): this runs from a boot
+    // task that fires before config.init() has set RPGACE.sb, so the
+    // very first real call here always landed before RPGACE.sb existed.
+    // getTopGaps' own guard stops the throw, but an empty result on
+    // that first call would otherwise render "0 gaps" and never
+    // self-correct (_inject's own existing-DOM check means _load never
+    // gets called again on its own) — retry once, shortly after, so the
+    // real gap count actually lands once RPGACE.sb is ready.
+    if (!RPGACE.sb || !RPGACE.sb.select) {
+      setTimeout(function() { self._load(); }, 400);
+      return;
+    }
     RPGACE.modules.taxonomySync.getTopGaps(6)
       .then(function(nodes) {
         self._render(nodes || []);
@@ -14979,6 +15003,21 @@ RPGACE.register('bookworm', {
     if (!list) return;
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
 
+    // Aug 22 (real /Routine follow-up — headless-Chromium-reproduced the
+    // exact "boot task failed: Cannot read properties of undefined
+    // (reading 'select')" warning from Alex's own console, with a real
+    // stack trace pinning it here): this module registers before config
+    // in file order, and config.init() is what sets RPGACE.sb — on
+    // every real boot, _injectDashboardWidget's boot task called this
+    // before RPGACE.sb existed yet, leaving the widget stuck on
+    // "Loading..." forever (the throw aborted before the real fetch's
+    // own .then/.catch could ever run). Same real guard dashDeck.
+    // _refreshGlance already uses for the identical race.
+    if (!RPGACE.sb || !RPGACE.sb.select) {
+      list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+      setTimeout(function() { self._refreshWidget(); }, 400);
+      return;
+    }
     RPGACE.sb.select('bookworm_books', 'status=eq.in_progress&order=created_at.desc')
       .then(function(books) {
         books = books || [];
@@ -16914,12 +16953,19 @@ RPGACE.register('config', {
     // established #0f0f18/thin-border/colored-text treatment, NOT a
     // separately-invented style), rows separated by a hairline divider
     // instead of separate boxes/shadows.
+    // Aug 22 (2nd redesign pass, real Alex ask: "hide the scouted button
+    // and dummy/fallback/api pill and local pill to be hidden behind a
+    // pressable button on the dummy oracle banner") — starts hidden by
+    // default now (was always `display:flex`); mockOracle's own bar
+    // toggle button reveals it and sets a real `top` matching the bar's
+    // own measured height at reveal time, since it no longer has a
+    // fixed top:10px of its own (the permanent bar now owns that space).
     RPGACE.utils.getDevStatusCluster = function() {
       var el = document.getElementById('rpg-dev-cluster');
       if (el) return el;
       el = document.createElement('div');
       el.id = 'rpg-dev-cluster';
-      el.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;flex-direction:column;background:#0f0f18;border:1px solid rgba(255,255,255,0.1);border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.4);overflow:hidden;font-family:Rajdhani,sans-serif;user-select:none;';
+      el.style.cssText = 'position:fixed;right:10px;z-index:999999;display:none;flex-direction:column;background:#0f0f18;border:1px solid rgba(255,255,255,0.1);border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.4);overflow:hidden;font-family:Rajdhani,sans-serif;user-select:none;';
       document.body.appendChild(el);
       RPGACE.utils.hideUntilLogin(el);
       return el;
@@ -24340,16 +24386,65 @@ RPGACE.register('mockOracle', {
   // Widened to a 3-position track same day (2nd pass) for the Fallback
   // mode: Real -> Dummy -> Fallback -> Real, cycling on click, per Alex's
   // own spec ("in the toggle in top right as a third mode").
+  // Aug 22 (real Alex follow-up ask, 2nd redesign pass): "hide the
+  // scouted button and dummy/fallback/api pill and local pill behind a
+  // pressable button on the dummy oracle banner that will reveal those
+  // three options." Real, structural change: the top strip is now a
+  // PERMANENT bar (all 3 modes, not just dummy/fallback) carrying the
+  // current mode label plus one reveal button (⚙) — the cluster (switch/
+  // Scouted/Local, still built via the same shared getDevStatusCluster/
+  // addClusterRow from the 1st redesign pass) now starts hidden and only
+  // shows when that one button is pressed. Bar + switch are created
+  // together in this one function (not split across 2 boot tasks) so
+  // _renderState's very first call always finds every element it needs
+  // — a real, deliberate ordering fix, not an accident: registerBootTask
+  // runs each registration's fn() synchronously and in file order, so
+  // splitting bar-creation into its own separate boot task risked
+  // _renderState running before the bar existed on whichever pass ran
+  // first.
   _injectToggleButton: function () {
     if (document.getElementById('mock-oracle-switch')) return;
     var self = this;
+
+    // The permanent status bar — always shown once logged in, in all 3
+    // modes. Real content/color per mode set in _renderState; only the
+    // reveal button's own behavior lives here.
+    var bar = document.createElement('div');
+    bar.id = 'mock-oracle-bar';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999998;display:flex;align-items:center;justify-content:center;background:#0f0f18;border-bottom:1px solid rgba(255,255,255,0.1);padding:6px 40px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:12px;text-align:center;letter-spacing:0.5px;';
+
+    var barLabel = document.createElement('span');
+    barLabel.id = 'mock-oracle-bar-label';
+    bar.appendChild(barLabel);
+
+    var revealBtn = document.createElement('button');
+    revealBtn.id = 'mock-oracle-bar-toggle';
+    revealBtn.title = 'Show/hide Oracle mode controls (mode switch, Scouted, provider)';
+    revealBtn.textContent = '⚙';
+    revealBtn.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(226,226,236,0.5);font-size:14px;line-height:1;cursor:pointer;padding:2px 6px;';
+    revealBtn.onclick = function (e) {
+      e.stopPropagation();
+      var cluster = RPGACE.utils.getDevStatusCluster();
+      var showing = cluster.style.display !== 'none';
+      if (showing) {
+        cluster.style.display = 'none';
+      } else {
+        cluster.style.top = bar.offsetHeight + 'px';
+        cluster.style.display = 'flex';
+      }
+    };
+    bar.appendChild(revealBtn);
+    document.body.appendChild(bar);
+    RPGACE.utils.hideUntilLogin(bar);
 
     // Aug 22 real redesign — this used to be its own separately-styled
     // floating pill (own background/border/radius/shadow at top:10px).
     // Now a plain row inside the shared RPGACE.utils dev-status cluster
     // (getDevStatusCluster/addClusterRow) alongside the Scouted button
     // and oracleProviderMode's switch, so all 3 read as one cohesive
-    // control instead of 3 separately-bolted-on widgets.
+    // control instead of 3 separately-bolted-on widgets — and, per this
+    // same-day follow-up, hidden by default behind the bar's own ⚙
+    // button rather than always visible.
     var wrap = document.createElement('div');
     wrap.id = 'mock-oracle-switch';
     wrap.title = 'Click to cycle Oracle Mode: Real API → Dummy (wiring tests, zero cost) → Fallback Scout (queue for free later answers)';
@@ -24398,9 +24493,8 @@ RPGACE.register('mockOracle', {
     var track = document.getElementById('mock-oracle-track');
     var knob = document.getElementById('mock-oracle-knob');
     var label = document.getElementById('mock-oracle-label');
-    var existingBadge = document.getElementById('mock-oracle-badge');
-    if (existingBadge) existingBadge.remove();
-    if (!track || !knob || !label) return;
+    var barLabel = document.getElementById('mock-oracle-bar-label');
+    if (!track || !knob || !label || !barLabel) return;
 
     var mode = this.getMode();
     if (mode === 'dummy') {
@@ -24409,41 +24503,26 @@ RPGACE.register('mockOracle', {
       knob.style.left = '2px';
       label.textContent = '🧪 Dummy Oracle';
       label.style.color = '#CC4A4A';
-      // Still keep a real full-width warning strip while active (rule 7 —
-      // a corner switch alone is easy to miss mid-scroll on a long chat
-      // reply). Aug 22 real redesign: matches RPGACE.utils.toast's own
-      // established treatment (dark #0f0f18 panel, colored border+text)
-      // instead of a solid saturated red fill that read as an alarm/
-      // error rather than an intentional test-mode indicator — same
-      // real color, calmer application of it.
-      var badge = document.createElement('div');
-      badge.id = 'mock-oracle-badge';
-      badge.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
-      badge.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0f0f18;border-bottom:1px solid rgba(204,74,74,0.4);color:#CC4A4A;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
-      document.body.appendChild(badge);
-      RPGACE.utils.hideUntilLogin(badge);
-      this._pushBodyBelow(badge);
+      barLabel.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
+      barLabel.style.color = '#CC4A4A';
     } else if (mode === 'fallback') {
       // Fallback Scout mode active — amber/gold, knob center.
       track.style.background = 'rgba(201,168,76,0.85)';
       knob.style.left = '19px';
       label.textContent = '📥 Fallback Scout';
       label.style.color = '#C9A84C';
-      var badge2 = document.createElement('div');
-      badge2.id = 'mock-oracle-badge';
-      badge2.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
-      badge2.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0f0f18;border-bottom:1px solid rgba(201,168,76,0.4);color:#C9A84C;font-weight:700;font-size:12px;text-align:center;padding:6px 10px;z-index:999998;font-family:Rajdhani,sans-serif;letter-spacing:0.5px;';
-      document.body.appendChild(badge2);
-      RPGACE.utils.hideUntilLogin(badge2);
-      this._pushBodyBelow(badge2);
+      barLabel.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
+      barLabel.style.color = '#C9A84C';
     } else {
       // Real Oracle API — green, knob right.
       track.style.background = '#4CAF82';
       knob.style.left = '36px';
       label.textContent = '✅ Oracle API';
       label.style.color = '#4CAF82';
-      this._pushBodyBelow(null);
+      barLabel.textContent = '✅ Oracle API — live calls active';
+      barLabel.style.color = '#4CAF82';
     }
+    this._pushBodyBelow();
   },
 
   // Aug 22 (/Routine item A2) — Alex's own verbatim ask: "dummy oracle
@@ -24474,8 +24553,16 @@ RPGACE.register('mockOracle', {
   // leave a permanent stale gap at the top of the page. A plain, un-
   // animated set/clear was re-verified 100% correct across a full show
   // -> clear -> show cycle before shipping.
-  _pushBodyBelow: function (badgeEl) {
-    document.body.style.paddingTop = badgeEl ? badgeEl.offsetHeight + 'px' : '';
+  //
+  // Aug 22 (2nd redesign pass) — the bar is now permanent across all 3
+  // modes (not just dummy/fallback), so this always applies now instead
+  // of being cleared to '' in Real mode. Reads the live #mock-oracle-bar
+  // element directly rather than taking a param, since _renderState no
+  // longer creates/destroys a separate badge per mode — one persistent
+  // bar, content updated in place.
+  _pushBodyBelow: function () {
+    var bar = document.getElementById('mock-oracle-bar');
+    document.body.style.paddingTop = bar ? bar.offsetHeight + 'px' : '';
   },
 
   // ── Fallback Scout mode — real behavior ─────────────────────────────
