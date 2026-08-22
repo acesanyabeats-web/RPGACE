@@ -327,10 +327,16 @@ RIVER_ROLE_NOTE = {
 # Production Pipeline / Schedule System / the Unified placement engine /
 # Chronicles / API auth / Claude Code fallback lane / OpenMontage handoff
 # lane) cross-referenced against minotaur_map.html's own 11 river titles
-# and rpgace_core.js's real 54 registered module names (grepped, not
-# invented). Modules that are genuinely cross-cutting UI/infra
+# and rpgace_core.js's real registered module names (grepped, not
+# invented; re-verified Aug 22 2026 via a real /paranoia+/drift pass -
+# live count is 55, not the "54" this comment used to claim, a real
+# minor stale-count drift caught the same way this whole check exists
+# to catch). Modules that are genuinely cross-cutting UI/infra
 # (leftNav, popup scaffolding, voiceInput, perfWatch, pwaInstall,
-# quickActions, docsLinks [dead], suppressQuestPopup, myFeature, config)
+# quickActions, docsLinks [dead], suppressQuestPopup, myFeature, config,
+# errorLog [added Aug 12, never reconciled into this list until the Aug
+# 22 pass above found it - a real, minor, standalone gap, not connected
+# to that day's own actual code changes])
 # are deliberately left OUT - they don't belong to one river, and
 # force-fitting them would be dishonest, not "making mapping easier."
 RIVER_MODULES = {
