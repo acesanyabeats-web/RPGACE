@@ -220,8 +220,67 @@ Verdict: ON TRACK - the draft is a direct, evidenced expansion of what
 Grade: n/a (nothing to grade - Step 4 confirms coverage, no gap found).
 
 =====================================================================
-STATUS: Loop 1 Step 5 (this + the chat report) is the real deliverable.
-NOTHING in W1-W10 is built yet. Step 6 (Alex reads, pushes back,
-approves/changes) is the next real step - only after that does a real
-ceo_plans/ceo_plan_items row get created and Loop 2 execution begin.
+PART E — /interrogation round 2 (Alex: "let's work through what else
+needs my input with /interrogation") - 4 more real forks, all answered
+=====================================================================
+
+Q5 (auto-write vs. review gate on the new Encyclopedia companion
+entries): "Automatic, no gate (Recommended — matches existing
+convention)". The underlying taxonomy_tree write stays exactly as
+human-gated as it already is (rule 4, untouched) - this only concerns
+the NEW, non-destructive, always-deletable Encyclopedia record.
+
+Q6 (rename depth - UI labels only, or real code/module identifiers
+too): "UI labels/copy only (Recommended)". refCorpus, intelBatchList,
+and every other real module name stay exactly as they are. Zero
+reference-breaking risk.
+
+Q7 ("music corpus inside of bookworm" - UI-entry-point move only, or a
+real physical code/data relocation): "UI-entry-point move only
+(Recommended — matches existing precedent)". Same shape as the
+existing, proven Aug 15 A5 Phase 1 pattern (Idea Bank/Beat Log/File
+Analyzer/Video Finder) - refCorpus stays its own module; Bookworm's
+card gains a real jump/section to reach it.
+
+Q8 (the real complaint with Encyclopedia itself, beyond receiving new
+entries): confirmed my own evidence-based guess - "a source-worm
+filter/badge + revisit category auto-detection".
+
+=====================================================================
+PART F — /interrogation round 3 (phasing + 2 more W5 design forks) -
+3 more real forks, all answered
+=====================================================================
+
+Q9 (phasing - one batch vs. split): "Phase it: W1-W5 first, W6-W10 as
+Phase 2 (Recommended)". PHASE 1 = W1 (Corpus UI-entry-point move into
+Bookworm) + W2/W3 (worm renames, UI labels only) + W4 (which-worm
+picker) + W5 (the Encyclopedia wrapper, automatic no-gate write, real
+source-excerpt content per Q10). PHASE 2 (explicitly deferred, not
+built now, picked up once Phase 1 has real usage to check against) =
+W6 (code-reduction check) + W7 (A4 revisit) + W8 (Bookworm card-list
+UX) + W9 (EPUB support) + W10 (Encyclopedia source-worm filter/badge +
+category-detection revisit).
+
+Q10 (W5's companion-entry content - direct source excerpt vs. an
+Oracle-written summary): "A direct excerpt from the source content
+(Recommended — free, zero extra API cost)". The real passage/quote
+that produced the insight, pulled straight from the chapter/video
+content already being processed at placement time - no new Oracle call
+per insight, no added token cost (rule 11) as volume ramps up.
+
+Q11 (W6/W7 timing - same Phase 1 pass, or a real follow-up check after
+Phase 1 ships): "Follow-up check after Phase 1 ships (Recommended)".
+Real code-reduction opportunities and whether A4's cap still matters
+are both questions best answered once the wrapper is live with real
+usage data, not guessed at build time. Both stay real Phase 2 items,
+explicitly gated on Phase 1 actually being live first.
+
+=====================================================================
+STATUS: Loop 1 Steps 1-4 complete (compile, 3 real interrogation
+rounds/11 questions, paranoia-advised draft, drift-check - full
+coverage, on track, no gap). Step 5 (this file + the final chat
+report) is the real deliverable. NOTHING is built yet. Step 6 (Alex's
+final read/approve) is the next real step - only after that does a
+real ceo_plans/ceo_plan_items row get created and Loop 2 execution
+(Phase 1: W1-W5) begin.
 =====================================================================
