@@ -74,6 +74,27 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🕵️✅ Aug 22 (immediate follow-up) — real /paranoia+Council-of-5+/interrogation on the sortEntries loose ends, plus real-world confirmation: freeze down 89%, 12-13s → 1.4s</div>
+    <div class="card-body">
+      Alex: paranoia the 2 flagged loose ends from the fix below (the case-sensitivity bug, whether to move <code>ENC_SORT</code>'s default off <code>'unique'</code>), Council of 5 the options, interrogate me, then <code>/drift</code>+<code>/CEO</code> the outcome.
+      <br><br>
+      <b>Real, honest finding surfaced mid-pass</b>: a fresh direct Supabase query found the live <code>encyclopedia</code> table holds only <b>70 real rows</b> (median content 2435 chars, no outlier hiding a bigger real workload) — re-benchmarking the OLD algorithm at that real scale predicted only ~470ms of blocking, not 12+ seconds. The earlier "confirmed root cause" framing was ahead of the evidence. <code>error_log</code> was reopened rather than left standing as prematurely resolved.
+      <br><br>
+      <b>Council of 5</b> laid out real options for both items (fix-now vs. leave-as-documented; keep-default vs. safety-valve vs. change-default vs. full algorithm rewrite) — a full rewrite was rejected as disproportionate to RPGACE's real single-user scale.
+      <br><br>
+      <b>Alex's real answers</b>: fix the case-sensitivity bug now; change the default to <code>'recent'</code> now; yes, re-test live and report back.
+      <br><br>
+      <b>Built</b>: <code>sortEntries()</code>'s <code>'unique'</code> branch now lowercases <code>allText</code> too (previously only the per-entry comparison text was) and excludes self by real array index instead of a string-equality check that only worked by case-matching coincidence — fixes both symptoms of the one root cause (self-inflation, missed cross-entry matches on capitalized words) in one real, Alex-approved change to the actual ranking output. <code>ENC_SORT</code>'s default changed <code>'unique'</code>→<code>'recent'</code>; <code>index.html</code>'s sort buttons swapped which one carries <code>active</code> to match — <code>'unique'</code> stays one click away.
+      <br><br>
+      <b>Real-world confirmation, not just a benchmark</b>: Alex reloaded the live deployed fix and captured a fresh Performance recording — the freeze dropped from ~12,150-13,329ms down to a single real <code>perfWatch</code> warning of <b>1,404ms</b> (~89% reduction, a full order-of-magnitude change), confirming <code>sortEntries</code> really was the dominant cause. The gap between the ~235ms isolated benchmark prediction and the ~1.4s real browser figure is explained by real DOM rendering + network round trips riding along in the same measured Task — not by the fix being wrong. <code>error_log</code> marked resolved for real this time, backed by a live before/after measurement. A small residual ~1.4s block + 5 collapsed "setTimeout" console violations were flagged, not investigated — a separate, much smaller, lower-priority item.
+      <br><br>
+      <b>/drift</b>: Baseline RATIFIED (Alex's own 3 answers, same turn) — Work map FULL (3 items) — Verdict ON TRACK, zero gap. <b>/CEO</b>: deliberately did NOT get its own <code>ceo_plans</code> row — a small, single-session fix doesn't warrant the same ceremony as the Galaxy Map/Massive Expansion frameworks; this card + the <code>/drift</code> check are the right-sized record instead.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260822f</code>→<code>20260822g</code>.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🐌✅ Aug 22 — the real 12+ second freeze root cause found via Alex's own DevTools flame chart: <code>sortEntries()</code>'s pathological default sort, 2x speedup shipped</div>
     <div class="card-body">
       Closes the "do this that you sent me" ask on the still-open longtask finding, for real this time. Alex hand-captured a full-duration Performance recording (after DevTools' "Record and reload" kept auto-stopping at 5-6 seconds, well before the delayed freeze — worked around with a plain Record button + manual reload + login + manual stop). His flame chart showed the real 12-13s red "Task" block under <code>refreshEncyclopediaDisplay → renderEncEntries → sortEntries</code> — a different root cause than either hypothesis chased earlier the same day (network volume, boot staggering), both honestly ruled out by then.

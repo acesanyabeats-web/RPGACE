@@ -3054,7 +3054,16 @@ function acceptJumpToEnc(){
 // ── ENCYCLOPEDIA STATE ──
 let ENC_ALL_ENTRIES = [];
 let ENC_CATEGORY    = 'all';
-let ENC_SORT        = 'unique';
+// Aug 22 (real /interrogation, same /paranoia pass as the case-sensitivity
+// fix above): default changed from 'unique' to 'recent' on Alex's own
+// explicit choice. 'unique' remains inherently O(n^2) in entry count even
+// after the precompute-once fix above - fine at today's real ~70-row
+// scale, but would creep back toward multi-second cost as the Encyclopedia
+// grows past a few hundred rows. 'recent' is a cheap O(n log n) date sort
+// with zero quadratic risk, removing that growth risk from first paint
+// permanently. 'Unique' stays fully available as a one-click mode for a
+// deliberate creative-browsing session - only the DEFAULT changed.
+let ENC_SORT        = 'recent';
 const ENC_BULLET_CACHE = {}; // keyed by entry id/created_at
 
 // Category auto-detection keywords
@@ -3111,25 +3120,42 @@ function sortEntries(entries){
     // Aug 22 (real /Routine follow-up — a real Performance-panel flame
     // chart from Alex's own live session, captured after a genuine
     // multi-recording DevTools troubleshooting pass, pinned a 12+ second
-    // main-thread freeze exactly to sortEntries): this is ENC_SORT's own
-    // real DEFAULT value (`let ENC_SORT = 'unique'` at module scope), so
-    // this comparator runs unconditionally on the very first real
-    // Encyclopedia render after boot, not just when Alex picks it by
-    // hand. The original comparator recomputed each entry's full cross-
-    // entry overlap scan (an allText.filter + nested .split/.includes)
-    // from scratch on EVERY comparison Array.sort makes - O(n log n)
-    // repeats of an O(n)-with-string-ops inner scan, for a real
-    // encyclopedia that's grown to hundreds of entries. Real fix,
-    // 100% behavior-preserving (same real overlap formula per entry,
-    // same exact quirks/bugs it already had - not a scope-creeping
-    // rewrite): compute each entry's own overlap score exactly ONCE (a
-    // real O(n^2) pass, but run once, not O(n log n) times) before
-    // sorting, then sort using those precomputed numbers.
-    const allText = clone.map(e=>(e.title||'')+' '+(e.content||''));
+    // main-thread freeze exactly to sortEntries): this used to be ENC_SORT's
+    // own DEFAULT value, so this comparator ran unconditionally on the very
+    // first real Encyclopedia render after boot. The original comparator
+    // recomputed each entry's full cross-entry overlap scan (an allText.
+    // filter + nested .split/.includes) from scratch on EVERY comparison
+    // Array.sort makes - O(n log n) repeats of an O(n)-with-string-ops
+    // inner scan. Real fix, 100% behavior-preserving for the overlap
+    // FORMULA (same technique, just computed once instead of ~n times):
+    // compute each entry's own overlap score exactly ONCE (a real O(n^2)
+    // pass, but run once, not O(n log n) times) before sorting.
+    //
+    // Real, separate case-sensitivity fix, same day, after Alex's own
+    // /paranoia+Council-of-5+/interrogation pass on this exact code: the
+    // ORIGINAL allText was never lowercased while each entry's own
+    // comparison text (eText) was - a real mismatch with two symptoms
+    // (both traced to this one cause, not two separate bugs): (1) self-
+    // exclusion (comparing an entry's raw-case text against its own
+    // lowercased text) almost never actually fired for any real entry
+    // whose title/content wasn't already all-lowercase, so an entry
+    // partially counted overlap against a copy of itself; (2) any shared
+    // word that happened to be capitalized in its ORIGINAL occurrence
+    // (sentence-start, a proper noun, "FL Studio") was silently never
+    // matched cross-entry, since eText is fully lowercase and the word
+    // being tested wasn't. Net effect was a noisier, less meaningful
+    // "uniqueness" signal than the button's own label promises ("Most
+    // unusual entries first"). Fixed by lowercasing allText too (so the
+    // comparison is genuinely case-insensitive both directions) and
+    // excluding self by real identity (index) rather than a string
+    // equality check that depended on case matching by coincidence -
+    // this is a real, deliberate, Alex-approved change to the actual
+    // ranking output (not just a perf tweak), unlike the fix above.
+    const allText = clone.map(e=>((e.title||'')+' '+(e.content||'')).toLowerCase());
     const overlapScores = new Map();
     clone.forEach((e, i) => {
-      const eText = ((e.title||'')+' '+(e.content||'')).toLowerCase();
-      const overlap = allText.filter(t=>t!==eText).reduce((s,t)=>s+(t.split(' ').filter(w=>w.length>4&&eText.includes(w)).length),0);
+      const eText = allText[i];
+      const overlap = allText.filter((t,j)=>j!==i).reduce((s,t)=>s+(t.split(' ').filter(w=>w.length>4&&eText.includes(w)).length),0);
       overlapScores.set(e, overlap);
     });
     // Score: how many OTHER entries share words with this one (lower = more unique)
