@@ -9084,11 +9084,26 @@ RPGACE.register('taxonomyReviewQueue', {
   // ── queued row itself already IS the confirmed decision (this batch     ──
   // ── review is the deferred confirm/deny/modify step for silent          ──
   // ── triggers), so there's no second popup on plain Accept.              ──
+  // Aug 22 2026 — W5: map a queued proposal's own real source_type onto
+  // the worm identity the new Encyclopedia companion entry is labelled
+  // with. Confirmed live values: 'content_intelligence' (the real
+  // Videoworm path) and 'encyclopedia'. An 'encyclopedia'-sourced
+  // proposal deliberately gets NO companion entry — it originated FROM
+  // an existing Encyclopedia row, and F7 already writes that row's own
+  // taxonomy_node_id back-reference on accept, so minting a second entry
+  // here would be a real duplicate (rule 8). Anything unrecognized also
+  // returns null: fail safe, never guess a label onto a real row.
+  _sourceMetaForProposal: function(p) {
+    if (!p || p.source_type !== 'content_intelligence') return null;
+    return { source: 'videoworm', title: p.source_id || 'Content Intelligence insight' };
+  },
+
   _acceptPhylumPathProposal: function(p) {
     var ps = p.proposed_steps || {};
     var pp = RPGACE.modules.phylumPath;
+    var meta = this._sourceMetaForProposal(p);
     var finish = function(attachNode) {
-      pp._insertNewSteps(p.phylum_number, attachNode, ps.newSteps || [], ps.explainers || [], ps.insightText || '')
+      pp._insertNewSteps(p.phylum_number, attachNode, ps.newSteps || [], ps.explainers || [], ps.insightText || '', meta)
         .then(function() {
           RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
         });
@@ -9150,10 +9165,13 @@ RPGACE.register('taxonomyReviewQueue', {
   _editPhylumPathProposal: function(p) {
     var ps = p.proposed_steps || {};
     var pp = RPGACE.modules.phylumPath;
+    // W5: same source_type -> worm-identity mapping as the plain Accept
+    // path above (shared helper, not a second copy — rule 8).
+    var meta = this._sourceMetaForProposal(p);
     var openEditor = function(attachNode) {
       pp._showPlacementConfirm(p.phylum_number, attachNode, (ps.newSteps || []).slice(), (ps.explainers || []).slice(), ps.insightText || '',
         function(finalSteps, finalExplainers) {
-          pp._insertNewSteps(p.phylum_number, attachNode, finalSteps, finalExplainers, ps.insightText || '').then(function() {
+          pp._insertNewSteps(p.phylum_number, attachNode, finalSteps, finalExplainers, ps.insightText || '', meta).then(function() {
             RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
           });
         }
@@ -10790,20 +10808,63 @@ RPGACE.register('dashDeck', {
     // own comment for the full logged idea). File Analyzer/Video Finder
     // are static index.html markup (no lazy-inject to call), same shape
     // as Upload Workshop.
+    // Aug 22 2026 — W1/W2/W3/W4 of the "Worm Family & Encyclopedia
+    // Wrapper" /CEO plan (Phase 1). Alex's own answers scope this tightly:
+    // renames are UI LABELS/COPY ONLY (Q6 — refCorpus/intelBatchList and
+    // every other real module identifier stays exactly as-is, zero
+    // reference-breaking risk), and "music corpus inside of bookworm" is a
+    // UI-ENTRY-POINT MOVE ONLY (Q7 — same proven shape as the Aug 15 A5
+    // Phase 1 pattern; refCorpus keeps its own module, data, and its own
+    // standalone dashboard card, which is NOT removed).
+    //   W2: "File Analyzer" -> Videoworm. Real evidence for the identity,
+    //   not a guess: that panel's own on-page copy analyses VIDEO content
+    //   only ("Paste YouTube, TikTok or Instagram URL"). "Video Finder" is
+    //   a YouTube search helper that feeds URLs INTO that same panel, so
+    //   it reads as a sub-action of the one Videoworm identity rather than
+    //   a separate worm of its own.
+    //   W3: Corpus -> MusicWorm, honestly labelled — real audio-listening
+    //   / insight extraction is explicitly NOT built (reference_tracks has
+    //   no extraction pipeline at all today), so the note below says so
+    //   plainly instead of implying parity with Bookworm/Videoworm.
+    //   W4: this list IS the "which worm?" picker A8 asked for, now that
+    //   all three worm identities land on Bookworm's own card — a separate
+    //   picker UI would just duplicate it (rule 8). Bibliography is not a
+    //   worm and sits under its own heading rather than being mislabelled.
+    // Articleworm is deliberately absent: no real existing Bookworm-
+    // reachable panel maps to it, and inventing a button pointing at
+    // nothing would be worse than the honest gap.
     var bookwormJumpBtns = [
-      { label: '📚 Open Bibliography',    panelId: 'bookworm-bibliography', ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectBibliographySection) m._injectBibliographySection(); } },
-      { label: '📁 Open File Analyzer',   panelId: 'file-analyzer-panel',   ensure: null },
-      { label: '🎬 Open Video Finder',    panelId: 'video-finder-panel',    ensure: null }
+      { heading: 'Choose a worm:', label: '🐛 Open Videoworm',          panelId: 'file-analyzer-panel',   ensure: null },
+      {                            label: '🐛 Videoworm: Find Videos',  panelId: 'video-finder-panel',    ensure: null },
+      {                            label: '🎼 Open MusicWorm (Corpus)', open: function() { self._openCorpus(); },
+                                   note: 'Reference-track library. Insight extraction not yet built.' },
+      { heading: 'Reference shelf:', label: '📚 Open Bibliography',     panelId: 'bookworm-bibliography', ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectBibliographySection) m._injectBibliographySection(); } }
     ];
-    bookwormJumpBtns.forEach(function(jb, i) {
+    bookwormJumpBtns.forEach(function(jb) {
+      if (jb.heading) {
+        var hd = document.createElement('div');
+        hd.textContent = jb.heading;
+        hd.style.cssText = 'margin-top:14px;margin-bottom:2px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:Rajdhani,sans-serif;';
+        pop.box.appendChild(hd);
+      }
       var btn = document.createElement('button');
       btn.textContent = jb.label;
-      btn.style.cssText = 'display:block;width:100%;margin-top:' + (i === 0 ? '14px' : '8px') + ';padding:11px;min-height:44px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);border-radius:8px;color:var(--purple);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:11px;min-height:44px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);border-radius:8px;color:var(--purple);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       btn.onclick = function() {
         pop.close();
-        self._jumpToResearchPanel(jb.panelId, jb.ensure);
+        // W1: Corpus/MusicWorm is already its own full dashDeck popup, NOT
+        // a raw static research panel — it must not go through
+        // _jumpToResearchPanel, which only shows/hides in-page panel ids.
+        if (jb.open) jb.open();
+        else self._jumpToResearchPanel(jb.panelId, jb.ensure);
       };
       pop.box.appendChild(btn);
+      if (jb.note) {
+        var nt = document.createElement('div');
+        nt.textContent = jb.note;
+        nt.style.cssText = 'margin-top:4px;font-size:11px;color:var(--muted);line-height:1.5;font-family:Rajdhani,sans-serif;';
+        pop.box.appendChild(nt);
+      }
     });
   },
 
@@ -12473,7 +12534,13 @@ RPGACE.register('taxonomyTree', {
     return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
       pp._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, topicText,
         function(finalSteps, finalExplainers) {
-          pp._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, topicText);
+          // W5: this entry point already receives its own real sourceType/
+          // sourceId as parameters ('manual'|'oracle'|'content_intelligence'
+          // |'encyclopedia', per this function's own doc comment above), so
+          // label the companion entry with the real value rather than a
+          // guess; 'oracle' only as the fallback when a caller passed none.
+          pp._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, topicText,
+            { source: sourceType || 'oracle', title: sourceId || (topicText || '').slice(0, 80) });
         }
       );
     }).catch(function(err) {
@@ -13833,7 +13900,12 @@ RPGACE.register('phylumPath', {
       return new Promise(function(resolve, reject) {
         self._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, insightText,
           function(finalSteps, finalExplainers) {
-            self._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, insightText)
+            // W5: the manual Phylum Path panel has no explicit source label
+            // in its own scope — 'oracle' is the honest identity here (the
+            // placement decision came from an Oracle-scored engine run this
+            // panel triggered), not a guessed worm name.
+            self._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, insightText,
+              { source: 'oracle', title: (insightText || '').slice(0, 80) })
               .then(function() { resolve({ inserted: true }); })
               .catch(reject);
           },
@@ -13864,7 +13936,18 @@ RPGACE.register('phylumPath', {
   // still sprouts its own new leaf exactly as before — this only
   // closes the real duplicate-prevention path the prompt already
   // promised but the code never delivered.
-  _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText) {
+  // Aug 22 2026 — W5 of the "Worm Family & Encyclopedia Wrapper" /CEO
+  // plan (Phase 1). New OPTIONAL 6th parameter `sourceMeta`, default
+  // null: {source:'bookworm'|'videoworm'|'oracle'|<string>, title:'...'}.
+  // This function is the ONE real choke point every "insight accepted
+  // into the taxonomy tree" moment converges on, from every source
+  // (Bookworm, Content Intelligence via the review queue, Oracle chat,
+  // the Phylum Path panel) — confirmed by direct grep, 6 real call
+  // sites — so it is the single correct place to hang the new
+  // Encyclopedia companion-entry write, exactly like the July 22
+  // taxonomy_decision_log audit row already hanging here. Every caller
+  // that does NOT pass sourceMeta behaves byte-identically to before.
+  _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) {
     var self = this;
     if (!newSteps.length) {
       if (attachNode && attachNode.node_type === 'leaf') {
@@ -13949,6 +14032,29 @@ RPGACE.register('phylumPath', {
           insight_text: (insightText || '').slice(0, 2000),
           source: 'phylum_path',
         }).catch(function() {});
+        // Aug 22 2026 — W5: the Encyclopedia companion entry. Alex's own
+        // words: "all sources get entries of quotes and context that
+        // explain a chosen insight" — a CHOSEN insight, i.e. one the
+        // real human-gated taxonomy decision above has already committed,
+        // never a second placement decision of its own. Content is a
+        // DIRECT EXCERPT of insightText (his own confirmed answer, Q10) —
+        // no new Oracle call, zero added token cost as volume ramps
+        // (rule 11). Reuses the EXISTING encyclopedia.source and
+        // encyclopedia.taxonomy_node_id columns (rule 8 — F7's own
+        // Encyclopedia->Taxonomy back-reference already uses the latter;
+        // this is the same real relationship in the other direction, not
+        // a second column). Fire-and-forget with the same idiom as the
+        // audit row above: this is a parallel, always-deletable browsing
+        // layer, so a failed write must never block or fail the real
+        // taxonomy_tree commit that has already succeeded.
+        if (sourceMeta && sourceMeta.source) {
+          RPGACE.sb.secureWrite('encyclopedia', 'insert', {
+            title: sourceMeta.title || (insightText || '').slice(0, 80),
+            content: insightText || '',
+            source: sourceMeta.source,
+            taxonomy_node_id: finalRow.id || null,
+          }).catch(function() {});
+        }
         // Fire-and-forget - a missed fusion-link pass shouldn't block the
         // insight's own content generation, same pattern as F18's auto
         // Visual Treatment Doc trigger elsewhere in this file.
@@ -15576,7 +15682,7 @@ RPGACE.register('bookworm', {
         retryBtn.onclick = function() {
           retryBtn.disabled = true; retryBtn.textContent = '⏳ Retrying...';
           self._patchChapterInsightAt(chapter.id, i, function(current) { return Object.assign({}, current, { leafStatus: 'pending' }); })
-            .then(function() { return self._queueLeafCreation(chapter.id, i, insight); })
+            .then(function() { return self._queueLeafCreation(chapter.id, i, insight, book && book.title); })
             .then(function() {
               retryBtn.textContent = '✓ Retried - reopen to confirm';
             }).catch(function(e) {
@@ -16303,11 +16409,18 @@ RPGACE.register('bookworm', {
   // _patchChapterInsightAt above, which is itself globally serialized -
   // together these guarantee the eventual "created"/"failed" write can
   // never race or clobber the "approved" decision advance() already set.
-  _queueLeafCreation: function(chapterId, idx, insight) {
+  // Aug 22 2026 — W5: new OPTIONAL 4th parameter `bookTitle`. This is a
+  // module-level function, so the enclosing book object is NOT in its
+  // scope (unlike the Edit path in _renderInsightReview below) — both of
+  // its real callers DO have `book` in scope and pass book.title down.
+  // Omitting it stays valid: the companion entry falls back to a generic
+  // Bookworm title rather than skipping the entry entirely.
+  _queueLeafCreation: function(chapterId, idx, insight, bookTitle) {
     var self = this;
     var pp = RPGACE.modules.phylumPath;
     self._leafQueue = (self._leafQueue || Promise.resolve()).then(function() {
-      return pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, insight.newSteps, insight.explainers, insight.text)
+      return pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, insight.newSteps, insight.explainers, insight.text,
+        { source: 'bookworm', title: bookTitle || 'Bookworm insight' })
         .then(function() {
           return self._patchChapterInsightAt(chapterId, idx, function(current) {
             return Object.assign({}, current, { leafStatus: 'created' });
@@ -16426,7 +16539,7 @@ RPGACE.register('bookworm', {
       // approvals in a row never run _insertNewSteps concurrently with
       // itself (it does a chained parent_id insert - unsafe to overlap).
       advance('approved', { leafStatus: 'pending' });
-      self._queueLeafCreation(chapter.id, idx, insight);
+      self._queueLeafCreation(chapter.id, idx, insight, book && book.title);
     };
     var rejectBtn = document.createElement('button');
     rejectBtn.textContent = '✗ Reject';
@@ -16441,7 +16554,10 @@ RPGACE.register('bookworm', {
       if (!steps.length) { RPGACE.utils.toast('Enter at least one path step', '#CC4A4A', 2000); return; }
       editSubmit.disabled = true; editSubmit.textContent = 'Creating...';
       var pp = RPGACE.modules.phylumPath;
-      pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, steps, steps.map(function() { return ''; }), insight.text)
+      // W5: `book` IS in this closure's scope (unlike _queueLeafCreation),
+      // so the companion entry gets the real book title directly.
+      pp._insertNewSteps(insight.phylumNumber, insight.attachNode || null, steps, steps.map(function() { return ''; }), insight.text,
+        { source: 'bookworm', title: (book && book.title) || 'Bookworm insight' })
         .then(function() { advance('edited', { newSteps: steps }); })
         .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500); editSubmit.disabled = false; editSubmit.textContent = 'Use this path'; });
     };

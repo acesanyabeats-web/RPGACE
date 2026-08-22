@@ -248,16 +248,20 @@
 
   <div class="learn-layout">
 
-    <!-- PANEL 1: File Analyzer (was Content Intelligence, renamed July 23).
+    <!-- PANEL 1: Videoworm (was Content Intelligence -> File Analyzer,
+         renamed July 23, then -> Videoworm Aug 22 2026 per W2 of the "Worm
+         Family & Encyclopedia Wrapper" /CEO plan - a UI LABEL/COPY change
+         only, the panel id stays #file-analyzer-panel so every real
+         selector/reference keeps working).
          Aug 15 2026 (A5/A8, real Alex ask: "i want these in bookworm under
          the bookworm update i wanted too") - Research Lab's dashboard card
          is retired; this panel is now reached via dashDeck._openBookworm()'s
-         own "📁 Open File Analyzer" jump button. Starts display:none, same
+         own "🐛 Open Videoworm" jump button. Starts display:none, same
          reasoning as #video-workshop-panel above (static markup, no lazy-
          inject to gate it) - dashDeck._jumpToResearchPanel clears it back
          to the CSS default on real demand. -->
     <div class="learn-panel learn-full" id="file-analyzer-panel" style="display:none">
-      <h3>📁 1 — FILE ANALYZER</h3>
+      <h3>🐛 1 — VIDEOWORM</h3>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
         <div id="intel-server-status" style="display:flex;align-items:center;gap:6px;font-size:12px">
           <div id="intel-server-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted)"></div>
@@ -337,12 +341,15 @@
       </div>
     </div>
 
-    <!-- PANEL 2: Video Finder. Aug 15 2026 (A5/A8) - reached via
-         dashDeck._openBookworm()'s own "🎬 Open Video Finder" jump button
-         now, not Research Lab. Starts display:none, same reasoning as
-         #file-analyzer-panel above. -->
+    <!-- PANEL 2: Videoworm's video finder (was "Video Finder", relabelled
+         Aug 22 2026 per W2 - it feeds URLs INTO panel 1 above, so it reads
+         as a sub-action of the one Videoworm identity rather than a worm of
+         its own; label/copy only, the panel id is unchanged).
+         Aug 15 2026 (A5/A8) - reached via dashDeck._openBookworm()'s own
+         "🐛 Videoworm: Find Videos" jump button now, not Research Lab.
+         Starts display:none, same reasoning as #file-analyzer-panel above. -->
     <div class="learn-panel" id="video-finder-panel" style="display:none">
-      <h3>🎬 2 — VIDEO FINDER AI</h3>
+      <h3>🐛 2 — VIDEOWORM: FIND VIDEOS</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Search YouTube without an API key — powered by Supadata.</p>
       <div class="learn-input-row">
         <input class="learn-input" id="video-search-input" placeholder="e.g. UK drill beat tutorial, FL Studio mixing..." onkeydown="if(event.key==='Enter')searchVideos()"/>
@@ -490,7 +497,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20260822g"></script>
+<script src="rpgace_core.min.js?v=20260822h"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

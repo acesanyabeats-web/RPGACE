@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🐛📖 Aug 22 — "Worm Family & Encyclopedia Wrapper" Phase 1 shipped: Bookworm's card gains a worm picker, every real insight now gets an Encyclopedia companion entry</div>
+    <div class="card-body">
+      Real 3rd <code>/CEO</code> plan, alongside Galaxy Map and Massive Expansion. Alex: "i want to next work on bookworm and encyclopedia, i think that whole system needs a revamp." A real 3-round <code>/interrogation</code> (11 questions, every one landing on the recommended option) resolved the full shape before anything was built — full spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>. Built via Omnitrix (Opus 4.8 as builder, Sonnet review, no Fable).
+      <br><br>
+      <b>W1-W4 (renames + relocation, UI-only)</b>: Bookworm's card popup gained a "🎼 Open MusicWorm (Corpus)" button (Corpus stays its own module/data/dashboard card — just reachable from here too, same proven pattern as the Aug 15 A5 move). File Analyzer → "Videoworm", Video Finder → "Videoworm: Find Videos" (a sub-action, not its own worm), Corpus → "MusicWorm" with an honest note that its real insight-extraction pipeline doesn't exist yet. The existing jump-button list, now grouped under a real "Choose a worm:" heading, <i>is</i> the "which worm?" picker A8 already envisioned — no duplicate UI built. Articleworm was explicitly NOT built (no real panel maps to it) — said plainly rather than faked.
+      <br><br>
+      <b>W5 — the real new piece</b>: <code>phylumPath._insertNewSteps()</code> is the one real choke point every "insight accepted into the taxonomy tree" moment converges on, from every source (confirmed by grep — 6 real call sites). It gained an optional <code>sourceMeta</code> parameter; when present, ONE new, purely additive, fire-and-forget write lands a real Encyclopedia companion entry — a direct excerpt of the insight text (zero new Oracle call, zero added cost), reusing the encyclopedia table's own already-existing <code>source</code>/<code>taxonomy_node_id</code> columns. All 6 call sites wired with real source attribution, plus a 3rd caller the original research had missed, found and fixed during the build itself.
+      <br><br>
+      <b>Honestly flagged, not hidden</b>: the dedup-extend path (re-using an existing leaf) doesn't get a companion entry yet — a real, small, disclosed gap for later, not a violation of what shipped.
+      <br><br>
+      <b>Real <code>/drift</code> + Council of 5</b>: Verdict ON TRACK, one MINOR finding (the gap above). Technical risk low (additive-only, no schema change, the real taxonomy write stays exactly as human-gated as before). Phase 2 (code-reduction check, the A4 revisit, Bookworm's long-overdue card-list UX, EPUB, Encyclopedia's own filter/category revisit) is ratified but deliberately not built yet.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260822g</code>→<code>20260822h</code>. <b>Untested by hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🕵️✅ Aug 22 (immediate follow-up) — real /paranoia+Council-of-5+/interrogation on the sortEntries loose ends, plus real-world confirmation: freeze down 89%, 12-13s → 1.4s</div>
     <div class="card-body">
       Alex: paranoia the 2 flagged loose ends from the fix below (the case-sensitivity bug, whether to move <code>ENC_SORT</code>'s default off <code>'unique'</code>), Council of 5 the options, interrogate me, then <code>/drift</code>+<code>/CEO</code> the outcome.
