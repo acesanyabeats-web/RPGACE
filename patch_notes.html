@@ -74,6 +74,23 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🐌✅ Aug 22 — the real 12+ second freeze root cause found via Alex's own DevTools flame chart: <code>sortEntries()</code>'s pathological default sort, 2x speedup shipped</div>
+    <div class="card-body">
+      Closes the "do this that you sent me" ask on the still-open longtask finding, for real this time. Alex hand-captured a full-duration Performance recording (after DevTools' "Record and reload" kept auto-stopping at 5-6 seconds, well before the delayed freeze — worked around with a plain Record button + manual reload + login + manual stop). His flame chart showed the real 12-13s red "Task" block under <code>refreshEncyclopediaDisplay → renderEncEntries → sortEntries</code> — a different root cause than either hypothesis chased earlier the same day (network volume, boot staggering), both honestly ruled out by then.
+      <br><br>
+      <b>Real root cause</b>: <code>sortEntries()</code>'s <code>'unique'</code> mode recomputed a full cross-entry text-overlap score from scratch <i>inside the sort comparator</i> — the same expensive O(n) scan rerunning on every comparison instead of once. <code>ENC_SORT</code>'s actual default value is <code>'unique'</code>, so this ran unconditionally on the Encyclopedia's very first render, not some rare opt-in mode.
+      <br><br>
+      <b>Fixed, 100% behavior-preserving</b>: each entry's overlap score now precomputes once into a <code>Map</code> before the sort runs; the comparator just reads it. Same ordering, same output, computed once instead of ~n times. A separate, pre-existing correctness bug in the same original code (a case-sensitivity inconsistency breaking self-exclusion/substring matching) was found in passing and <b>deliberately left unfixed</b> to keep this a pure perf fix — flagged for Alex's own future call, not silently bundled in.
+      <br><br>
+      <b>Quantified before shipping, not just asserted</b>: a standalone Node benchmark (old vs. new, both algorithms extracted verbatim) confirmed a consistent real <b>2.0x speedup</b> at every size tested. At content length matching the real ~3000-char Oracle-prompt slice, the OLD algorithm's true severity showed: n=300 → 9.5s, n=500 → 27s, n=800 → <b>68.8s</b> (clean O(n²) scaling — squaring the size ratio predicts the measured time almost exactly) — confirming this wasn't just "slow," it could genuinely freeze the tab for over a minute at a large enough real Encyclopedia.
+      <br><br>
+      <b>Honest caveats</b>: the benchmark uses synthetic entries — Alex's own real-world re-test is the true confirmation of how much better it feels. The <code>'unique'</code> mode is still inherently O(n²)-in-entry-count even after this fix, just with the constant factor halved — whether its default should change is a real open question, not decided here.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260822e</code>→<code>20260822f</code>. <code>error_log</code> row for the boot-lag finding updated with this final root cause.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔧✅ Aug 22 — collapsible Oracle Mode panel + the boot-task "select" bug genuinely fixed with a real stack trace</div>
     <div class="card-body">
       Alex: "hide the scouted button and dummy/fallback/api pill and local pill behind a pressable button on the dummy oracle banner that will reveal those three options... do this that you sent me" (the 2 still-open findings from the prior report).

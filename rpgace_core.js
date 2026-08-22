@@ -3107,15 +3107,33 @@ function sortEntries(entries){
   }
   if(ENC_SORT === 'unique'){
     // Prioritise entries with unusual combos — cross-entry uniqueness via title/content diversity
+    //
+    // Aug 22 (real /Routine follow-up — a real Performance-panel flame
+    // chart from Alex's own live session, captured after a genuine
+    // multi-recording DevTools troubleshooting pass, pinned a 12+ second
+    // main-thread freeze exactly to sortEntries): this is ENC_SORT's own
+    // real DEFAULT value (`let ENC_SORT = 'unique'` at module scope), so
+    // this comparator runs unconditionally on the very first real
+    // Encyclopedia render after boot, not just when Alex picks it by
+    // hand. The original comparator recomputed each entry's full cross-
+    // entry overlap scan (an allText.filter + nested .split/.includes)
+    // from scratch on EVERY comparison Array.sort makes - O(n log n)
+    // repeats of an O(n)-with-string-ops inner scan, for a real
+    // encyclopedia that's grown to hundreds of entries. Real fix,
+    // 100% behavior-preserving (same real overlap formula per entry,
+    // same exact quirks/bugs it already had - not a scope-creeping
+    // rewrite): compute each entry's own overlap score exactly ONCE (a
+    // real O(n^2) pass, but run once, not O(n log n) times) before
+    // sorting, then sort using those precomputed numbers.
     const allText = clone.map(e=>(e.title||'')+' '+(e.content||''));
-    return clone.sort((a,b) => {
-      const aText = ((a.title||'')+' '+(a.content||'')).toLowerCase();
-      const bText = ((b.title||'')+' '+(b.content||'')).toLowerCase();
-      // Score: how many OTHER entries share words with this one (lower = more unique)
-      const aOverlap = allText.filter(t=>t!==aText).reduce((s,t)=>s+(t.split(' ').filter(w=>w.length>4&&aText.includes(w)).length),0);
-      const bOverlap = allText.filter(t=>t!==bText).reduce((s,t)=>s+(t.split(' ').filter(w=>w.length>4&&bText.includes(w)).length),0);
-      return aOverlap - bOverlap; // lowest overlap = most unique = first
+    const overlapScores = new Map();
+    clone.forEach((e, i) => {
+      const eText = ((e.title||'')+' '+(e.content||'')).toLowerCase();
+      const overlap = allText.filter(t=>t!==eText).reduce((s,t)=>s+(t.split(' ').filter(w=>w.length>4&&eText.includes(w)).length),0);
+      overlapScores.set(e, overlap);
     });
+    // Score: how many OTHER entries share words with this one (lower = more unique)
+    return clone.sort((a,b) => overlapScores.get(a) - overlapScores.get(b));
   }
   if(ENC_SORT === 'steal'){
     // Entries with most specific techniques first — detect technique density
