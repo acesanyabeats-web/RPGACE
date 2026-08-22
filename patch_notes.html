@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🐢 Aug 22 (boot-load lag diagnosis) — 2 hypotheses ruled out, 1 real fix shipped, real root cause still needs your DevTools evidence</div>
+    <div class="card-body">
+      Item 1 of the day's <code>/Routine</code>-locked Top 10, following up on the ~12,000ms boot-load lag Alex reported after the Aug 20 main.js merge (<code>error_log</code>).
+      <br><br>
+      <b>Ruled out</b>: (1) raw JS payload size — measured directly, <code>rpgace_core.min.js</code> is 245KB gzipped, not the ~1.38MB the original Aug 11 estimate assumed (that estimate predates minification going live); (2) the suspected "1300-1700ms boot-stagger" pattern — re-read all 33 real <code>registerBootTask</code> call sites; that delay pattern turned out to be almost entirely <code>page:show</code>-triggered re-injection, not boot-blocking.
+      <br><br>
+      <b>Fixed</b>: <code>careerStatCard.init()</code> was calling <code>self._render()</code> twice on every boot (once directly, once via <code>registerBootTask</code>) — the July 23 in-flight-fetch guard already deduped the network cost, but the redundant 2nd render pass was real dead weight. Removed.
+      <br><br>
+      <b>Real, honest, un-fixed remainder</b>: root cause not confirmed. Leading hypothesis is real network round-trip volume across ~33 concurrent boot-time Supabase requests (browsers cap ~6 concurrent connections per origin — the same queuing mechanism the July 23 careerStatCard fix addressed for one module, potentially recurring project-wide) — but this session cannot reach a live DevTools trace to confirm it (confirmed blocked, per this project's own landmines). <code>error_log</code>'s row gained a real new attempt entry with the full diagnostic trail plus a concrete ask: open the live app in Chrome DevTools' Network tab, hard-reload, and report the real request count/timing before the boot overlay hides.
+      <br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped to <code>20260822b</code>.
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">💡🔀 Aug 22 (A5 Phase 2, slice 1+2) — Idea Bank gets a real Oracle-guided "create new" flow, repurpose-merge saves tokens</div>
     <div class="card-body">
       Item 3 of the day's <code>/Routine</code>-locked Top 10. Real evidence-gathering first (not guessed): <code>contentRepurpose.openPopup</code> already built almost all of Alex's Aug 10 "1 video into 4" ask — the two genuinely missing pieces from his own verbatim spec were the real gap.

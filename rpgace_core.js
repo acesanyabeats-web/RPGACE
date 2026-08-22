@@ -23121,7 +23121,15 @@ RPGACE.register('careerStatCard', {
 
   init: function() {
     var self = this;
-    self._render();
+    // Aug 22 (/Routine item 1, boot-lag diagnosis) — this used to call
+    // self._render() directly AND register it as a boot task, running the
+    // same real render pass twice on every login. Real network cost is
+    // already shared (the July 23 _inflightFetch guard collapses the 2nd
+    // call's _fetchAll() onto the first's still-pending promise), but the
+    // 2nd render pass and its own bookkeeping were genuinely redundant -
+    // removed. registerBootTask alone is the correct real gate per this
+    // file's own BOOT TASK GATE design 3 modules up (July 24): it already
+    // guarantees this runs before the boot overlay hides.
     RPGACE.registerBootTask(function() { return self._render(); });
     RPGACE.hooks.on('xp:awarded', function() { self._render(); });
     RPGACE.hooks.on('page:show', function() { self._render(); });
