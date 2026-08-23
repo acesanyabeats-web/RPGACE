@@ -5968,15 +5968,34 @@ RPGACE.register('visualOracle', {
   // picker pre-selected with a previously-saved director blend, per
   // /interrogation's confirmed "edit in place" answer. Purely additive -
   // every existing caller that passes nothing behaves exactly as before.
-  _showDirectorPicker: function(callback, prefill) {
+  // Aug 23 2026 (A7 — OBS-raw pipeline) — third OPTIONAL param `opts`,
+  // default undefined so every existing caller behaves byte-identically:
+  //   { only: ['Concept Name', ...]  — restrict the selectable library to
+  //                                    exactly these f14 concepts
+  //     rows: 1                      — render ONLY the primary row (no
+  //                                    secondary/tertiary blend slots)
+  //     title / intro                — override the popup title/intro copy }
+  // Why this shape rather than a second picker function: A7's own spec says
+  // the OBS-raw scripting phase should NOT use the cinematic Director blend
+  // at all — it uses one real "YouTube Meme Director" instead. Rendering 3
+  // blend slots that can each only hold the same single option would be
+  // genuine UI noise, so `rows:1` collapses to the one row that has a real
+  // choice in it while the free-text inspiration box (the part that IS still
+  // meaningfully variable for an OBS video) stays exactly as it is. One
+  // picker, one blend/callback contract, no second hand-rolled copy (rule 8).
+  _showDirectorPicker: function(callback, prefill, opts) {
     var self = this;
+    opts = opts || {};
     RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
       .catch(function() { return []; })
       .then(function(rows) {
         rows = rows || [];
+        if (opts.only && opts.only.length) {
+          rows = rows.filter(function(r) { return opts.only.indexOf(r.concept) !== -1; });
+        }
         var pop = RPGACE.modules.dashDeck._popup({
           dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
-          title: 'Choose a Director Blend', noDefaultClose: true,
+          title: opts.title || 'Choose a Director Blend', noDefaultClose: true,
         });
         var overlay = pop.overlay, box = pop.box;
 
@@ -5986,7 +6005,7 @@ RPGACE.register('visualOracle', {
         // secondary/tertiary), not one multi-select. Real single-fetch
         // above (rows) is shared by all 3 rows below - no re-query.
         var introNote = document.createElement('div');
-        introNote.textContent = 'Pick up to 3 directors to blend their styles. Their Phylum 13 keywords/phrases/insight get conjoined into one grounded reference for Oracle.';
+        introNote.textContent = opts.intro || 'Pick up to 3 directors to blend their styles. Their Phylum 13 keywords/phrases/insight get conjoined into one grounded reference for Oracle.';
         introNote.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);line-height:1.5;margin-bottom:14px;';
         box.appendChild(introNote);
 
@@ -6065,18 +6084,27 @@ RPGACE.register('visualOracle', {
           return { wrap: wrap, sel: sel };
         }
 
-        var primaryRow = buildDirectorRow('Primary Director');
-        var secondaryRow = buildDirectorRow('Secondary Director (optional blend)');
-        var tertiaryRow = buildDirectorRow('Tertiary Director (optional blend)');
+        // A7 (Aug 23 2026): opts.rows === 1 collapses this to the single
+        // primary row. `blendRows` is the one real list every downstream
+        // step (pre-fill, Continue) iterates, so nothing below has to know
+        // whether 1 or 3 rows exist.
+        var singleRow = opts.rows === 1;
+        var primaryRow = buildDirectorRow(singleRow ? 'Direction' : 'Primary Director');
+        var blendRows = [primaryRow];
         box.appendChild(primaryRow.wrap);
-        box.appendChild(secondaryRow.wrap);
-        box.appendChild(tertiaryRow.wrap);
+        if (!singleRow) {
+          var secondaryRow = buildDirectorRow('Secondary Director (optional blend)');
+          var tertiaryRow = buildDirectorRow('Tertiary Director (optional blend)');
+          box.appendChild(secondaryRow.wrap);
+          box.appendChild(tertiaryRow.wrap);
+          blendRows.push(secondaryRow, tertiaryRow);
+        }
 
-        // Real edit-in-place pre-fill (Phase E) - apply AFTER all 3 rows
+        // Real edit-in-place pre-fill (Phase E) - apply AFTER all rows
         // exist so dispatching 'change' correctly refreshes each row's own
         // phrase-preview strip too, not just the selected value.
         if (prefill && prefill.names && prefill.names.length) {
-          var rowsInOrder = [primaryRow, secondaryRow, tertiaryRow];
+          var rowsInOrder = blendRows;
           prefill.names.slice(0, 3).forEach(function(name, i) {
             var match = rows.filter(function(r) { return r.concept === name; })[0];
             if (match && rowsInOrder[i]) {
@@ -6109,7 +6137,7 @@ RPGACE.register('visualOracle', {
           // own free-text creative inspiration, each clearly labeled so
           // the scriptwriter prompt can't conflate them the way the old
           // single "director — additional inspiration: X" string did.
-          var chosenNames = [primaryRow.sel.value, secondaryRow.sel.value, tertiaryRow.sel.value].filter(Boolean);
+          var chosenNames = blendRows.map(function(r) { return r.sel.value; }).filter(Boolean);
           var insp = insBox.value.trim();
           overlay.remove();
           // Aug 5 (Engineer pass, Phase E) - second callback arg carries
@@ -6127,9 +6155,13 @@ RPGACE.register('visualOracle', {
               return d ? ('- ' + d.concept + ': ' + d.definition + ' Palette: ' + d.colour_palette) : ('- ' + name);
             }).join('\n');
           }
-          var out = 'DIRECTOR-BLEND STYLE (Phylum 13 keyword/phrase/insight blend' +
-            (chosenNames.length > 1 ? ', ' + chosenNames.length + ' directors conjoined' : '') + '):\n' + blendText;
-          if (insp) out += '\n\nCREATIVE INSPIRATION (Alex\'s own free-text, for this specific beat):\n' + insp;
+          // A7 (Aug 23 2026) — opts.styleLabel/opts.inspLabel let a caller
+          // whose content is NOT a beat (the OBS-raw path) label these two
+          // groups honestly, without forking the rendering itself. Both
+          // default to the original wording, so music_video is unchanged.
+          var out = (opts.styleLabel || ('DIRECTOR-BLEND STYLE (Phylum 13 keyword/phrase/insight blend' +
+            (chosenNames.length > 1 ? ', ' + chosenNames.length + ' directors conjoined' : '') + ')')) + ':\n' + blendText;
+          if (insp) out += '\n\n' + (opts.inspLabel || 'CREATIVE INSPIRATION (Alex\'s own free-text, for this specific beat)') + ':\n' + insp;
           callback(out, { names: chosenNames, inspiration: insp });
         };
         var cancelBtn = document.createElement('button');
@@ -6194,6 +6226,18 @@ RPGACE.register('visualOracle', {
         // Only auto-advance forward (Idea -> Scripted), never backward
         // over a later real stage the ConID has already reached.
         if (docSlug === 'visual_treatment' && currentStatus === 'Idea') {
+          updates.status = 'Scripted';
+        }
+        // A7 (Aug 23 2026) — the OBS-raw path's own equivalent of the line
+        // above: 'obs_script' is Oracle's returned meme script + ffmpeg cut
+        // list, and its arrival is what really moves an obs_raw ConID from
+        // "1. Footage Logged" to "2. Meme Script Ready". Same forward-only
+        // guard, same shape, deliberately a SEPARATE slug from
+        // 'visual_treatment' so it never trips the DIRECTOR_CHOSEN /
+        // style_profiles trailer parsing below (an OBS script has no
+        // cinematic director pick to save, and firing that path would
+        // produce a false "no director found" warning every time).
+        if (docSlug === 'obs_script' && currentStatus === 'Idea') {
           updates.status = 'Scripted';
         }
         // Aug 5 (Engineer pass, Phase G) - same forward-only pattern for
@@ -6374,6 +6418,23 @@ RPGACE.register('contentRepurpose', {
     RPGACE.hooks.on('research:tab-active', function(key) {
       if (key === 'workshop') setTimeout(function() { self._injectVideoWorkshopBtn(); }, 400);
     });
+  },
+
+  // ── Shared platform-output instruction block (Aug 23 2026, A7) ───────
+  // This exact text used to live inline inside openPopup's own generate
+  // handler and nowhere else. A7's OBS-raw scripting phase genuinely needs
+  // the SAME repurposing instructions folded into its own script prompt
+  // ("the scripting will also include all social media oracles and
+  // repurpose to make one script", Alex's own words) — so it is extracted
+  // here and called from both places rather than pasted a second time
+  // (rule 8: same real work, one pipeline). Behaviour for openPopup is
+  // byte-identical — this is the same string it always sent.
+  platformOutputInstructions: function() {
+    return 'First, decide: would the Instagram Reels caption, YouTube Shorts hook, and TikTok caption end up being essentially the same short-form message for THIS specific idea? If yes, save tokens — write ONE merged "📱 SHORT-FORM CAPTION (Instagram/YouTube Shorts/TikTok)" section instead of three, and say plainly at the top of that section that you merged them and why. If the platforms genuinely need different angles (usually true — different opening lines, hook style, audience expectation per platform), keep them as 3 separate sections instead, each with a different opening line — no copy-paste between platforms.\n\n' +
+      'Generate the following:\n\n' +
+      '1. SHORT-FORM CAPTION(S) — either the one merged section above, or 3 separate sections: 📸 INSTAGRAM REELS CAPTION (hook that stops scroll in 2 seconds + value + CTA, under 150 words, line breaks, 3-5 hashtags), 🎬 YOUTUBE SHORTS HOOK (8-word text overlay + spoken hook line + one-line video description, question or bold claim), 🎵 TIKTOK CAPTION (different angle to Instagram, casual, direct, under 100 words, 1-2 trending hooks, hashtags).\n\n' +
+      '2. 📧 EMAIL BLURB\nExactly 60 words. Subject line included. Producer newsletter tone. Personal but professional. CTA at end.\n\n' +
+      'After that, add:\n3. 🎬 YOUTUBE SCRIPT OUTLINE — intro hook, 3-5 teaching sections with key points, outro CTA\n4. 🎛 PRODUCTION TEACHING ANGLE — what to demonstrate in FL Studio, which concepts to explain, difficulty level\n\n';
   },
 
   // ── Get last N Oracle messages for dropdown ──────────────────
@@ -6659,11 +6720,7 @@ RPGACE.register('contentRepurpose', {
             (yourTxt ? 'MY ADDITIONAL CONTEXT:\n' + yourTxt + '\n\n' : '') +
             (taxonomyContext ? 'TAXONOMY KNOWLEDGE CONTEXT (use this to add depth and teaching credibility):\n' + taxonomyContext + '\n\n' : '') +
             'CONFIRMED PHYLA: ' + checkedPhyla.map(function(p){return p.name;}).join(', ') + '\n\n' +
-            'First, decide: would the Instagram Reels caption, YouTube Shorts hook, and TikTok caption end up being essentially the same short-form message for THIS specific idea? If yes, save tokens — write ONE merged "📱 SHORT-FORM CAPTION (Instagram/YouTube Shorts/TikTok)" section instead of three, and say plainly at the top of that section that you merged them and why. If the platforms genuinely need different angles (usually true — different opening lines, hook style, audience expectation per platform), keep them as 3 separate sections instead, each with a different opening line — no copy-paste between platforms.\n\n' +
-            'Generate the following:\n\n' +
-            '1. SHORT-FORM CAPTION(S) — either the one merged section above, or 3 separate sections: 📸 INSTAGRAM REELS CAPTION (hook that stops scroll in 2 seconds + value + CTA, under 150 words, line breaks, 3-5 hashtags), 🎬 YOUTUBE SHORTS HOOK (8-word text overlay + spoken hook line + one-line video description, question or bold claim), 🎵 TIKTOK CAPTION (different angle to Instagram, casual, direct, under 100 words, 1-2 trending hooks, hashtags).\n\n' +
-            '2. 📧 EMAIL BLURB\nExactly 60 words. Subject line included. Producer newsletter tone. Personal but professional. CTA at end.\n\n' +
-            'After that, add:\n3. 🎬 YOUTUBE SCRIPT OUTLINE — intro hook, 3-5 teaching sections with key points, outro CTA\n4. 🎛 PRODUCTION TEACHING ANGLE — what to demonstrate in FL Studio, which concepts to explain, difficulty level\n\n' +
+            self.platformOutputInstructions() +
             'Be specific to FL Studio and UK hip hop throughout.';
 
           overlay.remove();
@@ -11643,6 +11700,23 @@ RPGACE.register('dashDeck', {
       };
       body.appendChild(btn);
     });
+
+    // A7 (Aug 23 2026) — Alex's second real OBS-raw entry point, verbatim:
+    // footage made solo or via Oracle goes either "to Idea Bank (save for
+    // later)" — the gated "🎥 Activate as OBS Raw" connector on an Idea Bank
+    // row — "or straight to Content Pipeline (footage already done)", which
+    // is this button. Same single gated creation path either way
+    // (_openObsRawIntake, potRow null here), never a second copy.
+    var obsBtn = document.createElement('button');
+    obsBtn.textContent = '🎥 New OBS Raw ConID (footage already recorded)';
+    obsBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:11px;min-height:44px;background:rgba(226,168,61,.12);border:1px solid rgba(226,168,61,.45);border-radius:8px;color:#E2A83D;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    obsBtn.onclick = function() {
+      pop.close();
+      var cpl = RPGACE.modules.contentProductionLive;
+      if (!cpl || !cpl._openObsRawIntake) { RPGACE.utils.toast('Content Pipeline module not available', '#CC4A4A', 2500); return; }
+      cpl._openObsRawIntake(null, null);
+    };
+    body.appendChild(obsBtn);
     var foot = document.createElement('div');
     foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
     // Aug 6 (Engineer pass, real Video Pipeline absorption) — the separate
@@ -20415,12 +20489,100 @@ RPGACE.register('contentProductionLive', {
     'Filmed':   ['captions'],
   },
 
+  // ══════════════════════════════════════════════════════════════════
+  // A7 (Aug 23 2026) — OBS-raw workflow, the third real content_type.
+  // ══════════════════════════════════════════════════════════════════
+  // Alex's own spec: "the obs raw to video pipeline workflow should
+  // include all the components from beat to music video workflow, with
+  // tweaks that make sense." So this deliberately MIRRORS the
+  // MUSIC_VIDEO_* tables above stage-for-stage (4 real display stages on
+  // the same shared `status` enum, display-label override only, zero
+  // schema change) rather than inventing a different shape — the real
+  // differences are only where the work genuinely differs:
+  //
+  //   music_video:  1. Beat Logged    2. Visual Treatment  3. Video Generation  4. Captions
+  //   obs_raw:      1. Footage Logged 2. Meme Script       3. Cut & Assembled   4. Captions
+  //
+  // Stage 2 uses the YouTube Meme Director (one real f14_filmmaker_library
+  // row, NOT the cinematic 3-director blend — see _generateObsScript).
+  // Stage 3 is an honest MANUAL acknowledgment that Alex has actually run
+  // the ffmpeg cuts himself — RPGACE does not run ffmpeg, and faking a
+  // render step here would be exactly the kind of hollow progress rule 7
+  // forbids. Same precedent as _viewOpenMontageJob's own real "Mark ConID
+  // as Filmed" button. Stage 4 reuses _generateCaptions/_viewCaptions
+  // unchanged (rule 8) — captions for a finished OBS video are the same
+  // real job as captions for a finished music video.
+  OBS_RAW_STATUS_LABELS: {
+    'Idea': '1. Footage Logged', 'Scripted': '2. Meme Script Ready',
+    'Filmed': '3. Cut & Assembled', 'Edited': '3. Cut & Assembled',
+    'Posted': '4. Captions Ready', 'Analysed': '4. Captions Ready',
+  },
+  OBS_RAW_BADGE_LABELS: {
+    'Idea': 'Footage Logged: tick', 'Scripted': 'Meme Script: tick',
+    'Filmed': 'Cut & Assembled: tick', 'Edited': 'Cut & Assembled: tick',
+    'Posted': 'Captions: tick', 'Analysed': 'Captions: tick',
+  },
+  OBS_RAW_PRIMARY_ACTION: {
+    'Idea':     { label: '🎞 Build Meme Script',            fn: '_generateObsScript' },
+    'Scripted': { label: '✂️ Mark Cut Done (ffmpeg)',        fn: '_markObsCutDone' },
+    'Filmed':   { label: '📝 Generate Captions',            fn: '_generateCaptions' },
+    'Edited':   { label: '📝 Generate Captions',            fn: '_generateCaptions' },
+    // 'Posted'/'Analysed': no further primary action — last real stage.
+  },
+  OBS_RAW_REDO_ACTION: {
+    'Scripted': { label: '↩ Redo Meme Script',   fn: '_generateObsScript', revertTo: 'Idea' },
+    'Filmed':   { label: '↩ Redo Cut Confirm',   fn: '_markObsCutDone',    revertTo: 'Scripted' },
+    'Edited':   { label: '↩ Redo Cut Confirm',   fn: '_markObsCutDone',    revertTo: 'Scripted' },
+    'Posted':   { label: '↩ Redo Captions',      fn: '_generateCaptions',  revertTo: 'Filmed' },
+    'Analysed': { label: '↩ Redo Captions',      fn: '_generateCaptions',  revertTo: 'Filmed' },
+  },
+  OBS_RAW_PREV_STAGE: {
+    'Scripted': 'Idea', 'Filmed': 'Scripted', 'Edited': 'Scripted',
+    'Posted': 'Filmed', 'Analysed': 'Filmed',
+  },
+  // Same deliberate scope as STAGE_DOC_KEYS above: creative_docs keys only,
+  // never a cross-table cascade (no Supabase backup exists). Deliberately
+  // does NOT clear raw_footage_path on a revert to 'Idea' — the real OBS
+  // footage submission is the gate that let this ConID exist at all (see
+  // _openObsRawIntake), so wiping it would strand the row in a state it
+  // could never legitimately have been created in.
+  OBS_RAW_STAGE_DOC_KEYS: {
+    'Idea':     ['obs_script_prompt', 'obs_script', 'director_blend', 'obs_cut_note', 'captions'],
+    'Scripted': ['obs_cut_note', 'captions'],
+    'Filmed':   ['captions'],
+  },
+
+  // One accessor instead of a three-way `if` repeated at every one of the
+  // real call sites below (rule 8). Returns null for 'tutorial', which is
+  // exactly what the existing code already means by "not the stage-aware
+  // path" — so tutorial's own generic advance button keeps working
+  // byte-identically, and a future 4th content_type only has to add a
+  // table set plus one line here.
+  _flowFor: function(contentType) {
+    if (contentType === 'music_video') {
+      return { labels: this.MUSIC_VIDEO_STATUS_LABELS, badges: this.MUSIC_VIDEO_BADGE_LABELS,
+               primary: this.MUSIC_VIDEO_PRIMARY_ACTION, redo: this.MUSIC_VIDEO_REDO_ACTION,
+               prev: this.MUSIC_VIDEO_PREV_STAGE, docKeys: this.STAGE_DOC_KEYS };
+    }
+    if (contentType === 'obs_raw') {
+      return { labels: this.OBS_RAW_STATUS_LABELS, badges: this.OBS_RAW_BADGE_LABELS,
+               primary: this.OBS_RAW_PRIMARY_ACTION, redo: this.OBS_RAW_REDO_ACTION,
+               prev: this.OBS_RAW_PREV_STAGE, docKeys: this.OBS_RAW_STAGE_DOC_KEYS };
+    }
+    return null;
+  },
+
   // Shared revert helper — used by both the redo-checkbox path (edit vs.
   // revert-and-redo) and the standalone Undo button (item 3 + item 12,
   // one real function instead of two, rule 8).
-  _revertToStage: function(row, targetStatus, callback) {
+  // A7: `flow` param added so an obs_raw revert clears ITS own real
+  // creative_docs keys, not music_video's. Defaults to the music_video
+  // set, so both pre-existing call sites are unchanged if they pass
+  // nothing — but both now pass the real flow explicitly.
+  _revertToStage: function(row, targetStatus, callback, flow) {
     var self = this;
-    var clearKeys = self.STAGE_DOC_KEYS[targetStatus] || [];
+    var keyTable = (flow && flow.docKeys) || self.STAGE_DOC_KEYS;
+    var clearKeys = keyTable[targetStatus] || [];
     RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
       .then(function(rows) {
         var docs = (rows && rows[0] && rows[0].creative_docs) || {};
@@ -20445,25 +20607,45 @@ RPGACE.register('contentProductionLive', {
   // that stage's outputs, without re-launching any action (unlike the
   // redo-checkbox path, which reverts THEN re-runs). Reuses
   // MUSIC_VIDEO_PREV_STAGE + _revertToStage — no separate logic.
+  // A7: reads the real flow for THIS row's own content_type rather than
+  // music_video's table unconditionally — an obs_raw Undo used to be
+  // impossible to reach at all (obs_raw never took this branch), and
+  // hardcoding the music_video table here would have cleared the wrong
+  // creative_docs keys the moment it did.
   _undoLastStage: function(row) {
-    var target = this.MUSIC_VIDEO_PREV_STAGE[row.status];
+    var flow = this._flowFor(row.content_type);
+    if (!flow) return;
+    var target = flow.prev[row.status];
     if (!target) {
       RPGACE.utils.toast('Nothing to undo — ConID #' + row.con_id + ' is already at its first stage', 'rgba(226,226,236,0.4)', 2500);
       return;
     }
     if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
-    this._revertToStage(row, target);
+    this._revertToStage(row, target, null, flow);
   },
 
+  // A7 (Aug 23 2026) — three OPTIONAL pass-through fields added
+  // (content_type / raw_footage_path / creative_docs). Every pre-existing
+  // caller (contentRepurpose's generate handler, conidPot's "⚡ Activate
+  // ConID") passes none of them and is byte-identical: content_type falls
+  // through to the column's own 'tutorial' DEFAULT exactly as before, and
+  // the other two stay unset. Returns the promise so a caller that needs
+  // to know the insert really landed (the OBS-raw intake gate) can chain
+  // off it instead of guessing — previously the promise was swallowed
+  // here and nothing downstream could tell success from failure.
   createEntry: function(data) {
     var self = this;
-    RPGACE.sb.secureWrite('content_productions', 'insert', {
+    var payload = {
       title:          data.title || 'Untitled Content Idea',
       idea:           data.idea || '',
       taxonomy_nodes: data.taxonomy_nodes || [],
       platform_outputs: data.platform_outputs || {},
       status:         data.status || 'Idea',
-    }).then(function(result) {
+    };
+    if (data.content_type) payload.content_type = data.content_type;
+    if (data.raw_footage_path) payload.raw_footage_path = data.raw_footage_path;
+    if (data.creative_docs) payload.creative_docs = data.creative_docs;
+    return RPGACE.sb.secureWrite('content_productions', 'insert', payload).then(function(result) {
       var entry = Array.isArray(result) ? result[0] : result;
       if (entry && entry.con_id) {
         self._activeConID = entry.con_id;
@@ -20472,9 +20654,143 @@ RPGACE.register('contentProductionLive', {
         self._refreshWidget();
         self._injectOracleBar();
       }
+      return entry;
     }).catch(function(e) {
+      // Deliberately RESOLVES to null rather than re-throwing: the two
+      // pre-existing callers don't attach a .catch, so re-throwing here
+      // would turn every real insert failure into an unhandled rejection
+      // (which errorLog's own window.onunhandledrejection hook would then
+      // log as a crash). A caller that cares checks the resolved value.
+      // The toast is new and deliberate — this path used to console.warn
+      // only, so a genuinely failed ConID creation was invisible to Alex
+      // (rule 7, fail loud).
       console.warn('[contentProductionLive] createEntry error:', e.message);
+      RPGACE.utils.toast('⚠️ Could not create ConID: ' + e.message, '#CC4A4A', 4500);
+      return null;
     });
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  // A7 — the OBS-raw intake gate (Aug 23 2026)
+  // ══════════════════════════════════════════════════════════════════
+  // Alex's own hard requirement, verbatim: "if saved for later, the saved
+  // idea can only convert if I actually submit raw obs footage (this is a
+  // must requirement to convert potconid to conid if it is going down the
+  // obs raw workflow)."
+  //
+  // The real pre-existing potConID→conID conversion is conidPot's own
+  // "⚡ Activate ConID" connector button (_refreshIdeaBank), which calls
+  // contentProductionLive.createEntry() and then flips the conid_pot row
+  // to status='activated'. There was no gate of any kind on it — one
+  // click, always converts. This function is that gate, and it is the ONE
+  // real creation path for an obs_raw ConID (rule 8): the same function
+  // serves BOTH of Alex's stated entry points —
+  //   (a) "saved for later" — called from an Idea Bank row, `potRow` set,
+  //       so the conid_pot row is marked activated only AFTER the footage
+  //       has genuinely been submitted and the ConID really inserted;
+  //   (b) "straight to Content Pipeline (footage already done)" — called
+  //       from the Content Pipeline popup with potRow null, no Idea Bank
+  //       row involved at all.
+  //
+  // The gate is enforced structurally, not by a warning: the Create button
+  // is disabled until the path field holds real non-whitespace text, and
+  // the handler re-checks before writing. Reuses the existing
+  // content_productions.raw_footage_path column (already real, already
+  // written by the tutorial Production Panel's Phase 2 input and by
+  // _showPostDetails) rather than inventing a second footage field.
+  _openObsRawIntake: function(potRow, onCreated) {
+    var self = this;
+    var pop = RPGACE.modules.dashDeck._popup({
+      dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
+      eyebrow: 'OBS Raw → Content Pipeline', title: 'Submit raw OBS footage', noDefaultClose: true,
+    });
+    var overlay = pop.overlay, box = pop.box;
+
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:14px;';
+    note.textContent = potRow
+      ? 'This idea can only become a real ConID on the OBS-raw path once the raw footage actually exists. Paste the real path to the recording — the ConID is not created until you do.'
+      : 'Footage already recorded? Paste its real path and this creates the ConID directly, skipping the Idea Bank.';
+    box.appendChild(note);
+
+    function field(labelText, placeholder, value, multiline) {
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+      lbl.textContent = labelText;
+      var inp = document.createElement(multiline ? 'textarea' : 'input');
+      if (!multiline) inp.type = 'text';
+      inp.placeholder = placeholder;
+      inp.value = value || '';
+      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;' +
+        (multiline ? 'resize:vertical;min-height:70px;' : '');
+      box.appendChild(lbl); box.appendChild(inp);
+      return inp;
+    }
+
+    var titleInp = field('Video title', 'e.g. I remade a UK drill beat in 10 minutes', potRow ? potRow.title : '');
+    var pathInp  = field('Raw OBS footage path (required)', 'E:\\OBS\\raw_2026-08-23.mkv', '');
+    var ideaInp  = field('What the video is about', 'Angle, sections, what actually happens in the footage...', potRow ? (potRow.idea_text || '') : '', true);
+
+    var gateMsg = document.createElement('div');
+    gateMsg.style.cssText = 'font-size:11px;color:rgba(226,84,84,0.75);line-height:1.5;margin-bottom:12px;';
+    gateMsg.textContent = '⚠️ No footage path yet — an OBS-raw ConID cannot be created without one.';
+    box.appendChild(gateMsg);
+
+    var btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;';
+    var createBtn = document.createElement('button');
+    createBtn.textContent = '🎥 Create OBS Raw ConID';
+    createBtn.disabled = true;
+    var cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    cancelBtn.onclick = function() { overlay.remove(); };
+
+    function paint() {
+      var ok = !!pathInp.value.trim();
+      createBtn.disabled = !ok;
+      createBtn.style.cssText = 'flex:1;padding:10px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;' + (ok
+        ? 'background:rgba(226,168,61,0.14);border:1px solid rgba(226,168,61,0.4);color:#E2A83D;cursor:pointer;'
+        : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);color:rgba(226,226,236,0.2);cursor:not-allowed;');
+      gateMsg.style.display = ok ? 'none' : 'block';
+    }
+    pathInp.addEventListener('input', paint);
+    paint();
+
+    createBtn.onclick = function() {
+      var path = pathInp.value.trim();
+      // Re-checked here, not only via the disabled attribute — the gate is
+      // Alex's own stated hard requirement, so it does not rely on the
+      // button state alone being trustworthy.
+      if (!path) { RPGACE.utils.toast('⚠️ Raw OBS footage path is required', '#CC4A4A', 3000); return; }
+      var title = titleInp.value.trim() || (potRow && potRow.title) || 'Untitled OBS Video';
+      createBtn.disabled = true;
+      createBtn.textContent = '⏳ Creating...';
+      self.createEntry({
+        title: title,
+        idea: ideaInp.value.trim(),
+        taxonomy_nodes: (potRow && potRow.phyla_detected) || [],
+        status: 'Idea',
+        content_type: 'obs_raw',
+        raw_footage_path: path,
+      }).then(function(entry) {
+        if (!entry) { createBtn.disabled = false; createBtn.textContent = '🎥 Create OBS Raw ConID'; return; }
+        overlay.remove();
+        RPGACE.utils.toast('🎥 OBS-raw ConID #' + entry.con_id + ' created — footage logged', '#E2A83D', 4000);
+        // Only NOW is the potConID genuinely converted. If the insert had
+        // failed, the Idea Bank row is deliberately left untouched so the
+        // idea isn't silently lost (the old ungated path flipped it to
+        // 'activated' without ever checking the insert succeeded).
+        if (potRow && potRow.id) {
+          RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated', con_id: entry.con_id }, 'id=eq.' + potRow.id)
+            .catch(function(e) { console.warn('[contentProductionLive] conid_pot activate:', e.message); });
+        }
+        if (onCreated) onCreated(entry);
+      });
+    };
+
+    btnRow.appendChild(createBtn); btnRow.appendChild(cancelBtn);
+    box.appendChild(btnRow);
   },
 
   // ── Update an existing entry ──────────────────────────────────
@@ -20926,6 +21242,182 @@ RPGACE.register('contentProductionLive', {
   // /interrogation's confirmed "edit in place" answer. Gracefully
   // degrades to a fresh, unprefilled flow for any ConID logged before
   // this field existed.
+  // ══════════════════════════════════════════════════════════════════
+  // A7 — the OBS-raw scripting phase (Aug 23 2026)
+  // ══════════════════════════════════════════════════════════════════
+  // The one place the OBS-raw workflow genuinely DIVERGES from the beat→
+  // music-video workflow, per Alex's own spec: "the scripting phase for
+  // this path should NOT include the Director phylum. Instead: a real
+  // YouTube Meme Director... classic youtube meme additions in unexpected
+  // places, or effects for comic effect or attention retention."
+  //
+  // Structurally this is _generateVisualTreatment's exact shape (picker →
+  // save the structured choice → build prompt → _prepOracleBarFor →
+  // _sendFilledPromptToOracle), reusing every one of those real helpers
+  // rather than a second hand-rolled copy (rule 8). Three real
+  // differences, each traceable to something Alex actually asked for:
+  //
+  //  1. The picker is opened with opts {only:['YouTube Meme Director'],
+  //     rows:1} — one real f14_filmmaker_library row, not the cinematic
+  //     3-director blend. The free-text inspiration box stays, because
+  //     that IS still genuinely variable per video.
+  //  2. The prompt folds in ALL THREE social-media Oracles' own real
+  //     command text (via _findOracleCmdText, the same mechanism
+  //     _generateCaptions already uses) AND contentRepurpose's own real
+  //     platform-output instructions (via its newly-shared
+  //     platformOutputInstructions()) — "the scripting will also include
+  //     all social media oracles and repurpose to make one script."
+  //  3. One explicit, prominent editing constraint — Alex's own "one
+  //     vital rule": the long-form video must be assemblable with ffmpeg
+  //     cuts alone, minimal OpenMontage/OpenArt stitching.
+  //
+  // ONE Oracle call, deliberately — the cut list is part of the same
+  // script ("make ONE script"), not a second premium round-trip (rule 11).
+  _generateObsScript: function(row, prefill) {
+    var self = this;
+    var vo = RPGACE.modules.visualOracle;
+    if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+
+    vo._showDirectorPicker(function(styleText, styleMeta) {
+      if (styleMeta) vo._saveDocToProduction('director_blend', styleMeta, row.id);
+      RPGACE.utils.toast('🎞 Building the meme script + ffmpeg cut plan...', '#E2A83D', 3000);
+
+      // Real full-record read, same discipline as _generateCaptions: the
+      // script has to describe THIS footage, so the real footage path and
+      // the real idea text ride along, never a generic placeholder.
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=title,idea,raw_footage_path,creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var full = (rows && rows[0]) || row;
+          var cr = RPGACE.modules.contentRepurpose;
+
+          var instaMind  = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
+          var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
+          var ytMind     = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
+          var ytHooks    = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
+          var ttMind     = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
+          var ttHooks    = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
+          var expertise = [];
+          if (instaMind || instaHooks) expertise.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [instaMind, instaHooks].filter(Boolean).join('\n\n'));
+          if (ytMind || ytHooks)       expertise.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ytMind, ytHooks].filter(Boolean).join('\n\n'));
+          if (ttMind || ttHooks)       expertise.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ttMind, ttHooks].filter(Boolean).join('\n\n'));
+
+          var prompt =
+            'Write ONE long-form YouTube video script for @AceSanyaBeats (FL Studio, UK hip hop, aspiring producers 18-35), built directly on top of raw OBS screen-recording footage that ALREADY EXISTS. You are not planning a shoot — the footage is recorded; you are planning how it gets cut and what gets layered on top of it.\n\n' +
+            'VIDEO: ' + (full.title || row.title || 'Untitled') + '\n' +
+            'RAW OBS FOOTAGE: ' + (full.raw_footage_path || '(path not recorded)') + '\n' +
+            (full.idea ? 'WHAT THE FOOTAGE COVERS:\n' + full.idea + '\n' : '') + '\n' +
+            styleText + '\n\n' +
+            (expertise.length ? expertise.join('\n\n') + '\n\n' : '') +
+            '════ THE ONE VITAL EDITING RULE — THIS OVERRIDES EVERYTHING BELOW ════\n' +
+            'The finished long-form video must be assemblable using ffmpeg CUTS ONLY. That means:\n' +
+            '• Every edit you specify is a straight cut at a timestamp in the raw footage — never a crossfade, speed ramp, motion track, or any transition needing a real NLE.\n' +
+            '• Give the cut plan as an ordered list of KEEP segments with approximate in/out timecodes and the reason each one earns its place, so it maps 1:1 onto ffmpeg trim + concat.\n' +
+            '• Anything that is NOT already in the raw footage (a meme cutaway, a reaction insert, a generated shot) must be listed SEPARATELY as a discrete standalone clip with its own duration and the exact cut point it drops into — so it is a single extra input file to concat, never a composited layer.\n' +
+            '• Keep those external inserts to the MINIMUM that still lands the joke or holds attention. Every insert is real manual work in OpenMontage/OpenArt, so justify each one.\n' +
+            '• Text overlays and captions are fine to specify as burn-in instructions, but list them separately from the cut plan so they can be skipped without breaking the edit.\n\n' +
+            'Produce, in this order:\n\n' +
+            '1. 🎬 LONG-FORM SCRIPT — the hook (first 10 seconds), then the real sections in order, with what is said/shown in each. Written against the actual footage, not a generic outline.\n\n' +
+            '2. ✂️ FFMPEG CUT PLAN — the ordered KEEP-segment list described in the vital rule above, with approximate timecodes.\n\n' +
+            '3. 😂 MEME / COMIC INSERT LIST — each insert: what it is, where it drops in (cut point), how long, and whether it is stock/meme footage, a still, or something that genuinely needs OpenMontage/OpenArt generation. Put them in unexpected places, per the direction above — not one predictable insert per section.\n\n' +
+            '4. 📌 BURN-IN TEXT / CAPTION OVERLAYS — separate list, timecoded.\n\n' +
+            'Then, repurpose the SAME video into platform outputs:\n\n' +
+            (cr && cr.platformOutputInstructions ? cr.platformOutputInstructions() : '') +
+            'Be specific to FL Studio and UK hip hop throughout, and stay anchored to what is genuinely in this footage — no invented moments the recording does not contain.';
+
+          self._prepOracleBarFor(row, function() {
+            // The outbound prompt is saved verbatim under its own slug so
+            // Phase 3's editor can show and re-send it, exactly like
+            // music_video's creative_docs.script — a SEPARATE key, since
+            // an OBS meme script and a beat's Visual Treatment Doc are
+            // genuinely different documents that can both exist on one
+            // ConID's history if its type is ever changed.
+            vo._saveDocToProduction('obs_script_prompt', prompt, row.id);
+            self._sendFilledPromptToOracle(row, null, prompt, 'obs_script');
+          });
+        });
+    }, prefill, {
+      only: ['YouTube Meme Director'],
+      rows: 1,
+      title: 'YouTube Meme Direction',
+      intro: 'This is the OBS-raw path — it uses the YouTube Meme Director instead of the cinematic director blend. Add your own angle for THIS video below; it rides alongside the meme direction, not instead of it.',
+      styleLabel: 'MEME DIRECTION (YouTube Meme Director, Phylum 13 filmmaker library)',
+      inspLabel: 'CREATIVE INSPIRATION (Alex\'s own free-text, for this specific video)',
+    });
+  },
+
+  // A7 — reopen the meme-direction picker pre-filled with what was saved
+  // last time. Exact mirror of _retroVisualTreatment (rule 8, same shape,
+  // same creative_docs.director_blend field) for the OBS-raw path.
+  _retroObsScript: function(row) {
+    var self = this;
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
+        var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
+        self._generateObsScript(row, prefill);
+      });
+  },
+
+  // A7 — Stage 3. An honest MANUAL acknowledgment, not a fake render:
+  // RPGACE does not run ffmpeg, and the cut plan Oracle produced is
+  // something Alex executes on his own machine. Same real precedent as
+  // _viewOpenMontageJob's own "✅ Mark ConID as Filmed" button (Aug 6),
+  // which exists for exactly this reason — an external, un-pollable step
+  // that only the human can truthfully confirm happened.
+  _markObsCutDone: function(row) {
+    var self = this;
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs,status&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var cur = (rows && rows[0]) || {};
+        var docs = cur.creative_docs || {};
+        if (!docs.obs_script) {
+          RPGACE.utils.toast('⚠️ No meme script yet — build the script first, there is no cut plan to have followed', '#E2A83D', 4000);
+          return;
+        }
+        var note = prompt('Mark ConID #' + row.con_id + ' as cut and assembled?\n\nOptional note — the edited file path, or anything you changed from the cut plan:', docs.obs_cut_note || '');
+        if (note === null) return;
+        docs.obs_cut_note = note;
+        var updates = { creative_docs: docs, updated_at: new Date().toISOString() };
+        // Forward-only, same guard shape as _saveDocToProduction's own
+        // auto-advances — never drags an already-Posted ConID backwards.
+        if (['Idea', 'Scripted'].indexOf(cur.status) !== -1) updates.status = 'Filmed';
+        RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id)
+          .then(function() {
+            RPGACE.utils.toast('✂️ ConID #' + row.con_id + ' marked cut & assembled', '#4CAF82', 3000);
+            self._refreshWidget();
+          })
+          .catch(function(e) { RPGACE.utils.toast('⚠️ Could not save: ' + e.message, '#CC4A4A', 4000); });
+      });
+  },
+
+  // A7 — read-only view of the saved meme script + cut plan, mirroring
+  // _viewCaptions' own honest "none yet" behaviour rather than fabricating
+  // placeholder content.
+  _viewObsScript: function(row) {
+    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+      .catch(function() { return []; })
+      .then(function(rows) {
+        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
+          title: 'Meme Script + FFmpeg Cut Plan',
+        });
+        var body = document.createElement('div');
+        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
+        body.textContent = docs.obs_script || 'No meme script generated yet for this ConID — use Build Meme Script first.';
+        pop.box.appendChild(body);
+        if (docs.obs_cut_note) {
+          var n = document.createElement('div');
+          n.style.cssText = 'margin-top:14px;padding:10px;background:rgba(76,175,130,0.05);border:1px solid rgba(76,175,130,0.2);border-radius:6px;font-size:11px;color:rgba(226,226,236,0.7);line-height:1.5;white-space:pre-wrap;';
+          n.textContent = '✂️ Your cut note: ' + docs.obs_cut_note;
+          pop.box.appendChild(n);
+        }
+      });
+  },
+
   _retroVisualTreatment: function(row) {
     var self = this;
     RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
@@ -21082,11 +21574,19 @@ RPGACE.register('contentProductionLive', {
           titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
           titleSpan.textContent = row.title;
 
-          var isMusicVideo = row.content_type === 'music_video';
+          // A7 (Aug 23 2026) — this used to be a bare
+          // `row.content_type === 'music_video'` boolean, so a third
+          // content_type would have silently fallen into the tutorial
+          // branch below (generic "→ Mark [next]" chip, no stage-aware
+          // action, no redo, no undo). `flow` is now the real per-type
+          // table set (null for tutorial, which is exactly what the old
+          // `false` meant), so obs_raw gets its own real stage-aware
+          // buttons and CANNOT inherit tutorial's or music_video's.
+          var flow = self._flowFor(row.content_type);
 
           var statusBadge = document.createElement('span');
           statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
-          statusBadge.textContent = isMusicVideo ? (self.MUSIC_VIDEO_BADGE_LABELS[row.status] || row.status) : row.status;
+          statusBadge.textContent = flow ? (flow.badges[row.status] || row.status) : row.status;
 
           topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
           item.appendChild(topRow);
@@ -21154,8 +21654,8 @@ RPGACE.register('contentProductionLive', {
           // Tutorial ConIDs keep the original generic advance button
           // unchanged (their workflow was never the one Alex complained
           // about).
-          if (isMusicVideo) {
-            var primary = self.MUSIC_VIDEO_PRIMARY_ACTION[row.status];
+          if (flow) {
+            var primary = flow.primary[row.status];
             if (primary) {
               var primaryBtn = document.createElement('button');
               primaryBtn.textContent = primary.label;
@@ -21171,7 +21671,7 @@ RPGACE.register('contentProductionLive', {
             // ("everything stays as is with how conid 11 changes worked
             // just now"). Checked = _revertToStage runs first, clearing
             // that stage's real outputs, THEN the action re-runs.
-            var redo = self.MUSIC_VIDEO_REDO_ACTION[row.status];
+            var redo = flow.redo[row.status];
             if (redo) {
               var redoWrap = document.createElement('span');
               redoWrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
@@ -21190,7 +21690,7 @@ RPGACE.register('contentProductionLive', {
               revertLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);cursor:pointer;';
               redoBtn.onclick = function() {
                 if (revertCb.checked) {
-                  self._revertToStage(row, redo.revertTo, function() { self[redo.fn](row); });
+                  self._revertToStage(row, redo.revertTo, function() { self[redo.fn](row); }, flow);
                 } else {
                   self[redo.fn](row);
                 }
@@ -21201,7 +21701,7 @@ RPGACE.register('contentProductionLive', {
 
             // Item 12 — standalone Undo (reverts without re-running the
             // action; see _undoLastStage above for the real scope).
-            if (self.MUSIC_VIDEO_PREV_STAGE[row.status]) {
+            if (flow.prev[row.status]) {
               var undoBtn = document.createElement('button');
               undoBtn.textContent = '🔙 Undo';
               undoBtn.title = 'Revert to the previous stage and delete the output it produced.';
@@ -21593,16 +22093,34 @@ RPGACE.register('contentProductionLive', {
         // Oracle prompt and Oracle's returned Visual Treatment Doc get
         // saved separately (creative_docs.script / .visual_treatment) and
         // are each independently editable here.
-        var phases = contentType === 'music_video' ? [
-          { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 12 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
-          { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 13) and generate a real Visual Treatment Doc for this beat.' },
-          { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
-          { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
-        ] : [
-          { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
-          { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
-          { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
-        ];
+        // A7 (Aug 23 2026) — this was a two-way ternary whose `else` was
+        // the tutorial branch, so a third content_type would have silently
+        // rendered tutorial's 3 phases (including its "film your video
+        // section by section" copy and its raw-footage-path input) for an
+        // OBS-raw ConID whose footage is by definition already recorded.
+        // Now an explicit three-way lookup keyed on the real content_type,
+        // with tutorial as the honest default for anything unrecognised —
+        // the same default the column itself carries.
+        var PHASES_BY_TYPE = {
+          music_video: [
+            { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 12 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
+            { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 13) and generate a real Visual Treatment Doc for this beat.' },
+            { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
+            { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
+          ],
+          obs_raw: [
+            { icon: '🎞', title: 'Phase 1 — Raw OBS Footage', desc: 'The recording this ConID is built on. It already existed before the ConID did — submitting it is what allowed this ConID to be created at all.' },
+            { icon: '😂', title: 'Phase 2 — Meme Direction + Script', desc: 'One Oracle pass builds the long-form script, the ffmpeg cut plan, the meme/comic insert list, and the platform repurposing — grounded in the YouTube Meme Director plus Insta/YouTube/TikTok Oracle expertise.' },
+            { icon: '✂️', title: 'Phase 3 — Cut + Assemble', desc: 'Edit the script and cut plan here, run the cuts yourself in ffmpeg, then mark it done. RPGACE does not run ffmpeg — this stage records what you actually did.' },
+            { icon: '📣', title: 'Phase 4 — Captions + Publish', desc: 'Generate the three platform captions from the finished video record, then paste URLs once posted.' },
+          ],
+          tutorial: [
+            { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
+            { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
+            { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
+          ],
+        };
+        var phases = PHASES_BY_TYPE[contentType] || PHASES_BY_TYPE.tutorial;
 
         phases.forEach(function(ph, i) {
           var phaseCard = document.createElement('div');
@@ -21634,6 +22152,97 @@ RPGACE.register('contentProductionLive', {
               }
             };
             phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
+          } else if (contentType === 'obs_raw' && row) {
+            // ── A7 (Aug 23 2026) — the OBS-raw Production Panel ────────
+            // Deliberately the SAME four-phase shape as music_video below
+            // (Alex: "should include all the components from beat to music
+            // video workflow, with tweaks that make sense"), reusing
+            // _buildRetroActionButton / _buildScriptEditor /
+            // _generateCaptions / _viewCaptions unchanged. The real
+            // divergences: Phase 1 is footage rather than beat metadata,
+            // Phase 2 is the meme script rather than a Visual Treatment,
+            // and there is NO video-generation phase at all — the footage
+            // already exists, so an OpenMontage/Kling handoff would be
+            // meaningless here (any generated meme insert the script calls
+            // for is listed as a discrete manual clip, see the prompt).
+            if (i === 0) {
+              var obsPathWrap = document.createElement('div');
+              var obsPathInp = document.createElement('input');
+              obsPathInp.type = 'text';
+              obsPathInp.placeholder = 'E:\\OBS\\raw_2026-08-23.mkv';
+              obsPathInp.value = '';
+              obsPathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+              // Real current value, read live rather than assumed — the
+              // panel's own select is deliberately narrow (id/con_id/
+              // title/content_type), so this fetches the one extra column
+              // it actually needs instead of widening that shared query.
+              RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=raw_footage_path&limit=1')
+                .then(function(r) { if (r && r[0] && r[0].raw_footage_path) obsPathInp.value = r[0].raw_footage_path; })
+                .catch(function() {});
+              var obsSaveBtn = document.createElement('button');
+              obsSaveBtn.textContent = 'Update footage path';
+              obsSaveBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              obsSaveBtn.onclick = function() {
+                var v = obsPathInp.value.trim();
+                // The footage gate applies for the life of the ConID, not
+                // only at creation: clearing this field would leave an
+                // obs_raw ConID that could never legitimately have been
+                // created (see _openObsRawIntake).
+                if (!v) { RPGACE.utils.toast('⚠️ An OBS-raw ConID must keep a real footage path', '#CC4A4A', 3500); return; }
+                self.updateEntry(row.id, { raw_footage_path: v })
+                  .then(function() { RPGACE.utils.toast('📁 Footage path updated', '#4CAF82', 2000); })
+                  .catch(function(e) { RPGACE.utils.toast('⚠️ Save failed: ' + e.message, '#CC4A4A', 3500); });
+              };
+              obsPathWrap.appendChild(obsPathInp); obsPathWrap.appendChild(obsSaveBtn);
+              phaseCard.appendChild(obsPathWrap);
+            } else if (i === 1) {
+              var obsGenBtn = document.createElement('button');
+              obsGenBtn.textContent = '🎞 Build Meme Script (fresh direction)';
+              obsGenBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+              obsGenBtn.onclick = function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._generateObsScript(row);
+              };
+              phaseCard.appendChild(obsGenBtn);
+              phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Direction (pre-filled)', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._retroObsScript(row);
+              }));
+            } else if (i === 2) {
+              // Same real editor as music_video's Phase 3, pointed at the
+              // OBS-raw path's own creative_docs keys via its new optional
+              // `fields` param (rule 8 — one editor, not a second copy).
+              self._buildScriptEditor(phaseCard, row.id, [
+                { label: 'Outbound Prompt (sent to Oracle)', slug: 'obs_script_prompt', placeholder: 'Not generated yet — use Phase 2\'s Build Meme Script first.' },
+                { label: 'Meme Script + FFmpeg Cut Plan (Oracle\'s reply)', slug: 'obs_script', placeholder: 'Not generated yet.' },
+                { label: 'Your Edit Note (what you actually cut)', slug: 'obs_cut_note', placeholder: 'Filled in when you mark the cut done — editable here too.' },
+              ]);
+              var cutBtn = document.createElement('button');
+              cutBtn.textContent = '✂️ Mark Cut Done (ffmpeg)';
+              cutBtn.style.cssText = 'padding:5px 12px;background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.3);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+              cutBtn.onclick = function() { self._markObsCutDone(row); };
+              phaseCard.appendChild(cutBtn);
+              phaseCard.appendChild(self._buildRetroActionButton('👁 View Script + Cut Plan', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
+                self._viewObsScript(row);
+              }));
+            } else if (i === 3) {
+              var obsCapBtn = document.createElement('button');
+              obsCapBtn.textContent = '📝 Generate Captions';
+              obsCapBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+              obsCapBtn.onclick = function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._generateCaptions(row);
+              };
+              phaseCard.appendChild(obsCapBtn);
+              phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
+                self._viewCaptions(row);
+              }));
+              phaseCard.appendChild(document.createElement('br'));
+              phaseCard.appendChild(self._buildRetroActionButton('📋 Add post details / URLs', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
+                RPGACE.ui.slideOutPanel(panel, 'right');
+                self._showPostDetails(row);
+              }));
+            }
           } else if (contentType === 'music_video' && row) {
             if (i === 0) {
               // Phase 1 — Reference + Style: content unchanged. Real
@@ -21803,7 +22412,14 @@ RPGACE.register('contentProductionLive', {
   // reuse visualOracle._saveDocToProduction directly rather than a new
   // hand-rolled merge-write (rule 8 dedup) - it already does the real
   // read-merge-write-into-creative_docs shape this needs.
-  _buildScriptEditor: function(container, productionId) {
+  // A7 (Aug 23 2026) — OPTIONAL third param `fields`:
+  // [{label, slug, placeholder}, ...]. Omitted (every pre-existing
+  // caller) = the original two music_video fields, byte-identical. The
+  // OBS-raw Production Panel passes its own three creative_docs keys so
+  // it reuses this exact editor — including its real save path through
+  // visualOracle._saveDocToProduction — instead of a second hand-rolled
+  // copy of the same load/edit/save markup (rule 8).
+  _buildScriptEditor: function(container, productionId, fields) {
     var loading = document.createElement('div');
     loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
     loading.textContent = 'Loading saved script + doc...';
@@ -21854,8 +22470,11 @@ RPGACE.register('contentProductionLive', {
           container.appendChild(blLbl); container.appendChild(blBox);
         }
 
-        buildField('Outbound Prompt (sent to Oracle)', 'script', 'Not generated yet — use Phase 2\'s Start Visual Treatment first.');
-        buildField('Visual Treatment Doc (Oracle\'s reply)', 'visual_treatment', 'Not generated yet.');
+        var specs = (fields && fields.length) ? fields : [
+          { label: 'Outbound Prompt (sent to Oracle)', slug: 'script', placeholder: 'Not generated yet — use Phase 2\'s Start Visual Treatment first.' },
+          { label: 'Visual Treatment Doc (Oracle\'s reply)', slug: 'visual_treatment', placeholder: 'Not generated yet.' },
+        ];
+        specs.forEach(function(f) { buildField(f.label, f.slug, f.placeholder || ''); });
       })
       .catch(function() {
         loading.textContent = 'Could not load saved script/doc.';
@@ -22164,8 +22783,18 @@ RPGACE.register('contentProductionLive', {
   // Reader / viral-hook-generator command TEXT rides alongside the beat
   // record as real grounding, not a fresh generic instruction imitating
   // what those panels already say better.
+  // A7 (Aug 23 2026) — genuinely reused by the OBS-raw path (rule 8:
+  // captions for a finished OBS video are the same real job as captions
+  // for a finished music video, so this is one function, not two). Two
+  // real, minimal branches added so the prompt describes what the video
+  // actually IS: an obs_raw ConID has no beat metadata and no
+  // visual_treatment doc, it has a meme script and a real OBS recording.
+  // Everything else — the 3-Oracle expertise grounding, the 3-platform
+  // output shape, _prepOracleBarFor/_sendFilledPromptToOracle, the
+  // 'captions' auto-advance — is byte-identical for both types.
   _generateCaptions: function(row) {
     var self = this;
+    var isObs = row.content_type === 'obs_raw';
     RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
       .catch(function() { return []; })
       .then(function(rows) {
@@ -22180,11 +22809,17 @@ RPGACE.register('contentProductionLive', {
             if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
 
             var contextParts = [];
-            contextParts.push('BEAT: ' + (row.title || 'Untitled') +
-              (beatMeta ? ' (' + [beatMeta.genre, beatMeta.mood, beatMeta.key ? (beatMeta.key + ' ' + (beatMeta.scale || '')) : null, beatMeta.bpm ? (beatMeta.bpm + ' BPM') : null].filter(Boolean).join(', ') + ')' : ''));
-            if (docs.visual_treatment) contextParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
-            if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
-            if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
+            if (isObs) {
+              contextParts.push('VIDEO: ' + (row.title || 'Untitled') + ' — a long-form YouTube video cut from raw OBS screen-recording footage.');
+              if (docs.obs_script) contextParts.push('MEME SCRIPT + CUT PLAN (what the finished video actually is):\n' + docs.obs_script);
+              if (docs.obs_cut_note) contextParts.push('EDIT NOTE: ' + docs.obs_cut_note);
+            } else {
+              contextParts.push('BEAT: ' + (row.title || 'Untitled') +
+                (beatMeta ? ' (' + [beatMeta.genre, beatMeta.mood, beatMeta.key ? (beatMeta.key + ' ' + (beatMeta.scale || '')) : null, beatMeta.bpm ? (beatMeta.bpm + ' BPM') : null].filter(Boolean).join(', ') + ')' : ''));
+              if (docs.visual_treatment) contextParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
+              if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
+              if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
+            }
 
             var instaMind = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
             var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
@@ -22211,14 +22846,18 @@ RPGACE.register('contentProductionLive', {
                 [ttMind, ttHooks].filter(Boolean).join('\n\n'));
             }
 
-            var prompt = 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n' +
+            var prompt = (isObs
+                ? 'Generate short-form captions for @AceSanyaBeats\' long-form YouTube video, using the FULL real record below — stay specific to what actually happens in this video, no generic filler.\n\n'
+                : 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n') +
               contextParts.join('\n\n') +
               (expertiseParts.length ? '\n\n' + expertiseParts.join('\n\n') : '') + '\n\n' +
               'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
               '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags. Draw on the INSTAGRAM EXPERTISE above.\n\n' +
               '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags. Draw on the YOUTUBE EXPERTISE above.\n\n' +
               '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram — completion-rate and rewatch-driven, not follower-driven. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags. Draw on the TIKTOK EXPERTISE above.\n\n' +
-              'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.';
+              (isObs
+                ? 'Be specific to FL Studio and UK hip hop production throughout — reference the actual moments, jokes, or teaching beats from the script above, not a generic "new video out" caption. Each caption should also work as a standalone clip pulled straight out of this long-form video.'
+                : 'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.');
 
             self._prepOracleBarFor(row, function() {
               self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
@@ -23046,6 +23685,23 @@ RPGACE.register('conidPot', {
                 RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated' }, 'id=eq.' + row.id)
                   .then(function() { self._refreshIdeaBank(filter || 'All'); });
               }
+            }},
+            // A7 (Aug 23 2026) — the OBS-raw conversion, deliberately a
+            // SEPARATE button rather than a change to "⚡ Activate ConID"
+            // above (which stays byte-identical: same ungated one-click
+            // conversion it has always been, producing the same default
+            // 'tutorial' content_type). Alex's own hard requirement is
+            // specific to this path: "the saved idea can only convert if I
+            // actually submit raw obs footage (this is a must requirement
+            // to convert potconid to conid if it is going down the obs raw
+            // workflow)" — so the gate lives on the OBS button only, and
+            // is enforced inside _openObsRawIntake, which is also the one
+            // real creation path the Content Pipeline's own direct-entry
+            // button uses (rule 8, one gate, two entry points).
+            { label: '🎥 Activate as OBS Raw', color: '#E2A83D', action: function() {
+              var cpl = RPGACE.modules.contentProductionLive;
+              if (!cpl || !cpl._openObsRawIntake) { RPGACE.utils.toast('Content Pipeline module not available', '#CC4A4A', 2500); return; }
+              cpl._openObsRawIntake(row, function() { self._refreshIdeaBank(filter || 'All'); });
             }},
             { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
               if (confirm('Delete "' + row.title + '"?')) {
