@@ -59,6 +59,10 @@
   .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   button{font-family:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s var(--ease-out)}
   button:hover{border-color:var(--gold);color:var(--gold)}
+  /* Galaxy Map short-identifier badge — same class name and visual treatment
+     smoke_test.html already established (rule 8: one convention, not a second). */
+  .galaxy-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .galaxy-tag{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
   .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
 </style>
@@ -68,7 +72,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Oversight · Layer (d), 2nd doc</div>
   <h1>🩹 Error Log</h1>
-  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Where a real <code>/perspective</code> self-report exists for the affected element, its <code>expected_behavior</code> baseline renders inline (teal) — the real "what correct looked like" a row is judged against, added Aug 13 2026. Each row can also carry a stable <code>error_code</code> (Aug 13, same day 2nd pass) so even the smallest function/step in Total Systems has a real, trackable identifier once it's ever misbehaved. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
+  <p>Every real error any AI or code in RPGACE Total systems reports, deduplicated by real signature (repeats increment a counter, never mint a new row). Backtracks what likely broke upstream, tracks every real fix attempt until one actually works, and keeps the resolved history — genuinely vital for future development, per Alex's own words. Where a real <code>/perspective</code> self-report exists for the affected element, its <code>expected_behavior</code> baseline renders inline (teal) — the real "what correct looked like" a row is judged against, added Aug 13 2026. Each row can also carry a stable <code>error_code</code> (Aug 13, same day 2nd pass) so even the smallest function/step in Total Systems has a real, trackable identifier once it's ever misbehaved. Each row also carries a short <code>🌊 galaxy_river</code> tag (DD8, Aug 23 2026) naming the real river the error belongs to — the same <code>galaxy_river</code> vocabulary <code>ceo_plan_items</code> and <code>smoke_test_items</code> already use (<code>RIVER_NAME</code> in <code>scripts/graphify_river_group.py</code>), so an error is cross-referenceable against the Galaxy Map without a second identifier scheme. A blank tag is honest, not missing: an error whose real stack traces span two rivers with no single owner is left untagged rather than force-classified. Paired with <a href="smoke_test.html">smoke_test.html</a> — that page shows current confirmed/working state; this one shows what's currently broken and the real story of how it got fixed.</p>
 </div>
 
 <div class="wrap">
@@ -121,6 +125,9 @@ function render(items) {
         '<div class="item-name">' + (e.error_code ? '<code>' + esc(e.error_code) + '</code> ' : '') + esc(e.error_type) + (e.source ? ' — ' + esc(e.source) : '') + '</div>' +
         '<div class="item-desc">' + esc(e.message) + '</div>' +
         '<div class="item-meta">Seen ' + e.occurrence_count + '× · first ' + new Date(e.first_seen_at).toLocaleString() + ' · last ' + new Date(e.last_seen_at).toLocaleString() + (e.attempt_count ? ' · ' + e.attempt_count + ' fix attempt(s)' : '') + '</div>' +
+        // Galaxy Map short identifier (DD8). Absent is an honest state — an error
+        // whose real evidence spans two rivers with no single owner stays untagged.
+        (e.galaxy_river ? '<div class="galaxy-tags"><span class="galaxy-tag">🌊 ' + esc(e.galaxy_river) + '</span></div>' : '') +
       '</div><span class="badge ' + e.status + '">' + e.status.replace('_', ' ') + '</span></div>' +
       (e.expected_baseline ? '<div class="baseline"><b>Expected baseline (/perspective):</b> ' + esc(e.expected_baseline) + '</div>' : '') +
       (e.rationale ? '<div class="rationale"><b>Rationale:</b> ' + esc(e.rationale) + '</div>' : '') +

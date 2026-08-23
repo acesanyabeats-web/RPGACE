@@ -50,6 +50,10 @@
   .group-label .n{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0}
   .now-true{font-size:12px;color:var(--green);margin-top:8px;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.08)}
   .now-true b{color:var(--green)}
+  /* Galaxy Map short-identifier badge — same class name and visual treatment
+     smoke_test.html already established (rule 8: one convention, not a second). */
+  .galaxy-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .galaxy-tag{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
   .empty{color:var(--dim);font-size:12px;font-style:italic}
   @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
 </style>
@@ -88,7 +92,8 @@
   <p><strong>Never a guess</strong> — same evidence bar as every other <code>/colourgradient</code> color: a real OLD value (what the doc said), a real NEW value (what's actually true now), and a real, checkable reason the two diverged. When a brown finding lands, the live doc's own claim is corrected in the SAME pass (rule 6) — this page is the permanent record that it was once true, never a substitute for fixing the doc.</p>
   <p>Backed by the real Supabase table <code>achiever_archive</code> — this HTML page is a snapshot rendering of that live data, refreshed whenever a <code>/colourgradient</code>, <code>/paranoia</code>, or <code>/drift</code> pass catches a real stale claim and pushes.</p>
   <p>Full real pipeline logic (the detect → distinguish-from-purple → archive → fix → sweep-and-remove flow, as a Mermaid diagram): <a href="system_flow_map.md">system_flow_map.md §13</a>, added the same pass as G56 (Alex's own ask: "using md files to explain logic of many pipeline will also benefit galaxy map").</p>
-  <p><strong>Grouping convention, matching <code>future_integrations.html</code>'s own real Aug 13 pattern</strong>: archived claims are grouped by real category (a count constant, an architecture description, a rule) rather than a flat list — when a new claim is archived, find its real category home first.</p>
+  <p><strong>Grouping convention</strong>: archived claims are grouped by real category (a count constant, an architecture description, a rule) rather than a flat list — when a new claim is archived, find its real category home first. This deliberately does <em>not</em> follow <code>future_integrations.html</code>'s Plan-first grouping (DD2, Aug 23) — the two docs sit at the same tier but answer different questions, and most archived claims have no <code>ceo_plans</code> row of their own to group under; a stale count in CLAUDE.md is not a plan item.</p>
+  <p><strong>🌊 Galaxy Map river tag</strong> (DD8, Aug 23 2026): every archived claim carries the short river identifier for <em>the claim's own subject</em> — not the doc it happened to be written in — so a stale claim is cross-referenceable against the Galaxy Map, <code>smoke_test.html</code> and <code>ceo_plan_items</code>, all of which use the same <code>galaxy_river</code> vocabulary (<code>RIVER_NAME</code> in <code>scripts/graphify_river_group.py</code>). A blank tag is an honest value, not a missing one: a claim whose subject spans several rivers with no single owner is left untagged rather than force-classified.</p>
 </div>
 
 <div class="section" id="brown">
@@ -122,6 +127,9 @@
       '<span class="badge brown">ARCHIVED</span></div>' +
       '<div class="card-body">' + esc(a.source_doc) + (a.source_location ? ' — <code>' + esc(a.source_location) + '</code>' : '') +
       span +
+      // Galaxy Map short identifier (DD8) — tagged by the archived CLAIM's own
+      // subject, not by the doc it happened to be written in.
+      (a.galaxy_river ? '<div class="galaxy-tags"><span class="galaxy-tag">🌊 ' + esc(a.galaxy_river) + '</span></div>' : '') +
       (a.rationale ? '<div class="rationale"><b>Rationale (why it went stale):</b> ' + esc(a.rationale) + '</div>' : (a.became_false_reason ? '<br>' + esc(a.became_false_reason) : '')) +
       (a.backtrack_note ? '<div class="backtrack"><b>Backtrack (how it went unnoticed):</b> ' + esc(a.backtrack_note) + '</div>' : '') +
       '<div class="now-true"><b>Real, current truth:</b> ' + esc(a.current_true_value) + '</div></div></div>';

@@ -7,23 +7,23 @@ Companion to CLAUDE.md (the operational guide). Update BOTH when architecture ch
 
 ## 0. Verified Component Inventory
 
-**Module inventory re-grepped Aug 5** (`grep -oP "RPGACE\.register\('\K[^']+"` against `rpgace_core.js`, deduplicated): **53 real registered modules**, listed by name below, not just counted. The count moved 52 → 53 because `tiktokOracle` was added Aug 5 (Phase G curveball 2 — a real TikTok-specific Oracle panel, mirroring `youtubeOracle`'s architecture) and never entered this table. `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover.
+**Module inventory re-grepped Aug 23 2026** (`grep -oP "RPGACE\.register\(\s*'\K[a-zA-Z0-9_]+"` against `rpgace_core.js`, deduplicated): **56 real registered modules**, listed by name below, not just counted. The count moved 53 → 56 as three real modules shipped after the Aug 5 grep and never entered this table: `mockOracle` (Aug 6, the 3-mode Oracle Mode switch), `errorLog` (Aug 12, the client-side `window.onerror`/`unhandledrejection` capture behind `error_log.html`) and `oracleProviderMode` (Aug 15, G34's Local-Claude-vs-external-provider toggle). `myFeature` (SCHEDULE) is a real, oddly-named module — confirmed by reading its source, not a stray/test leftover. **This count is a live fact, not a durable one** — re-grep it rather than trusting this line; it has now gone stale twice (52 → 53 → 56), both times caught only by a later audit.
 
-### Domains and modules (from `rpgace_core.js` markers, re-grepped July 31)
+### Domains and modules (from `rpgace_core.js` markers, module list re-grepped Aug 23)
 
 | Domain | Modules |
 |---|---|
-| ORACLE | youtubeOracle, tiktokOracle, prodOraclePanel, instaOraclePanel, quickActions, visualOracle, contentRepurpose, oracleAppGrounding, oracleDevBridge, oracleFetchGuard, oracleTreeGrounding, agentsIntoOracle |
+| ORACLE | youtubeOracle, tiktokOracle, prodOraclePanel, instaOraclePanel, quickActions, visualOracle, contentRepurpose, oracleAppGrounding, oracleDevBridge, oracleFetchGuard, oracleTreeGrounding, agentsIntoOracle, mockOracle, oracleProviderMode |
 | LEARNING | feynman, encSync, ciAutoPropose, taxonomyReviewQueue, encTaxonomyLink, agendaReminder, scheduleOracle, intelDelete, taxonomySync, knowledgeGap, taxonomyTree, phylumPath, bookworm, encyclopediaQoL, intelBatchList, intelDedup, jargonEncyclopedia, researchTabs |
 | CONFIG | config (defines `RPGACE.sb`, `RPGACE.cache`, `RPGACE.hooks`, CONFIG constants) |
 | CONTENT | beatLog, refCorpus, contentProductionLive, videoPipeline, conidPot, videoSummary |
 | JOURNAL | morningBrief, journalQoL |
 | DASHBOARD / NAV | dashDeck, leftNav, pathRouter, chroniclesLog, careerStatCard, docsLinks, pwaInstall |
-| SYSTEM | suppressQuestPopup, authGate, perfWatch, voiceInput |
+| SYSTEM | suppressQuestPopup, authGate, perfWatch, voiceInput, errorLog |
 | SCHEDULE | shiftSync, myFeature, scheduleFixes |
 
 ### Serverless API (`api/`)
-`oracle.js` (Claude proxy, accepts optional `model`), `scout.js` (URL detect + Jina fetch, 8000-char cap), `analyst.js`, `bookworm-fetch.js` (uncapped fetch OR provided fullText → Oracle chapter detection), `composio.js`, `executor.js`, `orchestrate.js`, `noter.js`, `search.js`, `lastfm.js`, `auth.js` (**NEW July 23** — server-side password check + shared-secret issuance, see §10's API-auth entry), `_context.js` (shared: `callClaude`, `MODEL='claude-sonnet-4-6'`, `MODEL_EXTRACTOR='claude-fable-5'`, `fetchURL`, `setCORS`, **`requireAuth` NEW July 23**, Composio `ACCOUNTS`/`TOOL_ALIASES` — single source of truth as of July 23's deduplication fix).
+`oracle.js` (Claude proxy, accepts optional `model`, plus the dormant Kimi/Luna provider branch), `scout.js` (URL detect + Jina fetch, 8000-char cap), `analyst.js`, `bookworm-fetch.js` (uncapped fetch OR provided fullText → Oracle chapter detection), `composio.js`, `executor.js`, `orchestrate.js`, `data-write.js` (service-role write proxy + the `bundle-deliverables` action), `search.js`, `lastfm.js`, `auth.js` (**NEW July 23** — server-side password check + shared-secret issuance, see §10's API-auth entry), `_context.js` (shared: `callClaude`, `MODEL='claude-sonnet-4-6'`, `MODEL_EXTRACTOR='claude-fable-5'`, `fetchURL`, `setCORS`, **`requireAuth` NEW July 23**, Composio `ACCOUNTS`/`TOOL_ALIASES` — single source of truth as of July 23's deduplication fix).
 
 ### Supabase tables
 **Rebuilt July 31 from a direct `pg_policies` query — 28 real tables, grouped by RLS posture, because the posture is load-bearing.**
@@ -583,7 +583,7 @@ flowchart TD
 
 ## 12. Oracle Mode — Real / Dummy / Fallback Scout (`mockOracle`) — added Aug 20/21 2026 (G56)
 
-Real, hand-written pipeline doc — G56 of the ratified "RPGACE Total Systems Galaxy Map" `/CEO` plan, Alex's own ask: "using md files to explain logic of many pipeline will also benefit galaxy map." Cross-linked from `graphify-out/galaxy_map_oversight_sync.html` and `galaxy_map_l0.html`'s External AI unit.
+Real, hand-written pipeline doc — G56 of the ratified "RPGACE Total Systems Galaxy Map" `/CEO` plan, Alex's own ask: "using md files to explain logic of many pipeline will also benefit galaxy map." Cross-linked from `graphify-out/galaxy_map_oversight_sync.html` and `galaxy_map.html`'s own External AI unit (the L0 unit panel lived on `galaxy_map_l0.html` when this was written; G67 folded that page into `galaxy_map.html` on Aug 21 and deleted it).
 
 ```mermaid
 flowchart TD
