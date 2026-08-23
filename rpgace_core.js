@@ -14379,6 +14379,25 @@ RPGACE.register('phylumPath', {
   // Encyclopedia companion-entry write, exactly like the July 22
   // taxonomy_decision_log audit row already hanging here. Every caller
   // that does NOT pass sourceMeta behaves byte-identically to before.
+  //
+  // Aug 23 2026 — A6 (Massive Expansion): `sourceMeta` gained an OPTIONAL
+  // `bibliographyId` field — the real UUID of a `bibliography` row (either
+  // a saved link or a completed book, per Alex's own confirmed "both"
+  // answer) this specific insight was analysed FROM. When present, this
+  // reuses the bibliography table's own already-existing
+  // `phyla_touched`/`total_insights_placed` columns (the same ones
+  // bookworm._markBookComplete already populates in bulk at book-completion
+  // time) to record the real, incremental bidirectional link A6 asks for
+  // ("each insight... is tied back to its source bibliography link") —
+  // no new schema, no new table. Genuinely dormant today: no current real
+  // caller has a bibliography.id to pass (A7's OBS-raw scripting phase is
+  // the confirmed real future trigger; built now per Alex's own "build the
+  // structure now, dormant" answer, same pattern as A10's Kimi/Luna
+  // routing). Deliberately NOT wired into the dedup-extend early-return
+  // branch above this function's own newSteps.length guard — that branch
+  // already has a real, separately-flagged companion-entry gap (see the
+  // Worm Family Aug 22 record), left alone here rather than folded into
+  // an unrelated fix.
   _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) {
     var self = this;
     if (!newSteps.length) {
@@ -14486,6 +14505,32 @@ RPGACE.register('phylumPath', {
             source: sourceMeta.source,
             taxonomy_node_id: finalRow.id || null,
           }).catch(function() {});
+        }
+        // A6 (Massive Expansion), Aug 23 2026 — the real bibliography
+        // back-link. Read-then-write, not an atomic increment: secureWrite's
+        // 'update' does a plain PATCH with whatever payload it's given, and
+        // there's no server-side RPC for "append to this jsonb array /
+        // increment this int" here. Accepted as a real, proportionate risk —
+        // this fires for a single user's own reference tracking, dormant
+        // until a real caller exists, not a high-concurrency path. A failed
+        // read or write here must never affect the real taxonomy commit
+        // above, which has already succeeded — fire-and-forget, same as the
+        // Encyclopedia companion write and the fusion-link pass below.
+        if (sourceMeta && sourceMeta.bibliographyId) {
+          RPGACE.sb.select('bibliography', 'id=eq.' + sourceMeta.bibliographyId + '&select=phyla_touched,total_insights_placed')
+            .then(function(rows) {
+              var row = (rows && rows[0]) || null;
+              if (!row) return;
+              var touched = row.phyla_touched;
+              if (typeof touched === 'string') { try { touched = JSON.parse(touched); } catch (e) { touched = null; } }
+              if (!Array.isArray(touched)) touched = [];
+              if (touched.indexOf(phylumNumber) === -1) touched = touched.concat([phylumNumber]);
+              var placed = (typeof row.total_insights_placed === 'number' ? row.total_insights_placed : 0) + 1;
+              return RPGACE.sb.secureWrite('bibliography', 'update',
+                { phyla_touched: touched, total_insights_placed: placed },
+                'id=eq.' + sourceMeta.bibliographyId);
+            })
+            .catch(function(e) { console.warn('[phylumPath] bibliography back-link update failed:', e.message); });
         }
         // Fire-and-forget - a missed fusion-link pass shouldn't block the
         // insight's own content generation, same pattern as F18's auto
