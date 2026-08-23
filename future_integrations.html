@@ -33,30 +33,45 @@
   .card.blue{border-color:rgba(74,144,226,0.28);background:rgba(74,144,226,0.05)}
   .card.red{border-color:rgba(226,84,84,0.25);background:rgba(226,84,84,0.05)}
   .card.yellow{border-color:rgba(224,196,80,0.3);background:rgba(224,196,80,0.06)}
-  .card.purple{border-color:rgba(155,89,182,0.35);background:rgba(155,89,182,0.06)}
+  .card.purple{border-color:rgba(155,89,182,0.55);background:rgba(155,89,182,0.10);box-shadow:0 0 0 1px rgba(155,89,182,0.18)}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
   .badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:10px;margin-left:6px}
   .badge.blue{background:rgba(74,144,226,0.15);color:var(--blue);border:1px solid rgba(74,144,226,0.3)}
   .badge.red{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
   .badge.yellow{background:rgba(224,196,80,0.18);color:#E0C450;border:1px solid rgba(224,196,80,0.35)}
-  .badge.purple{background:rgba(155,89,182,0.18);color:var(--purple);border:1px solid rgba(155,89,182,0.35)}
+  .badge.purple{background:rgba(155,89,182,0.25);color:#D8A6EC;border:1px solid rgba(155,89,182,0.5)}
   h3{font-size:13px;font-weight:700;color:#E2E2EC;margin:20px 0 8px}
   p{color:var(--dim);font-size:13px;margin-bottom:8px}
   strong{color:#E2E2EC;font-weight:600}
   .date-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;margin-bottom:16px}
   hr{border:none;border-top:1px solid var(--border);margin:32px 0}
-  /* Aug 13, real Alex ask: group items by what they actually change
-     (a river, a dashboard card, an external connector) instead of a
-     flat list under each color — and let a multi-step CEO plan render
-     as one labeled group with each step as an explained subgroup card,
-     rather than scattered loose cards. */
+  /* Aug 23 2026 (DD2) — PLAN-FIRST restructure, Alex's own direct ask:
+     "i want plans to be first category - main one, then it breaks down
+     by what river and modules are touched based on galaxy map." The
+     top-level axis is now the real ceo_plans row; the river sub-group
+     is second; colour is a per-item badge, no longer the organizing
+     axis. Replaces the Aug 13 colour-first convention outright — see
+     the "How this doc works" section for the full reasoning. */
+  .plan-group{border:1px solid rgba(155,89,182,0.3);background:rgba(155,89,182,0.04);border-radius:12px;padding:18px 20px;margin-bottom:28px}
+  .plan-group .plan-label{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--purple);margin-bottom:4px}
+  .plan-group .plan-sub{font-size:11.5px;color:var(--dim);margin-bottom:14px}
+  .plan-group .card{margin-bottom:8px}
+  .plan-meta{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim);border:1px solid var(--border);border-radius:10px;padding:2px 8px}
+  .river-group{margin:0 0 18px}
+  .river-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+  .river-label .n{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0}
+  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+  .tag{font-size:9.5px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:9px;border:1px solid var(--border);color:var(--dim);white-space:nowrap}
+  .tag.lvl{color:var(--gold);border-color:rgba(201,168,76,0.3);background:rgba(201,168,76,0.07)}
+  .tag.dim{color:var(--teal);border-color:rgba(42,191,176,0.3);background:rgba(42,191,176,0.07)}
+  .tag.facet.infra,.tag.facet.both{color:var(--purple);border-color:rgba(155,89,182,0.4);background:rgba(155,89,182,0.09)}
+  .tag.facet.inter{color:var(--blue);border-color:rgba(74,144,226,0.4);background:rgba(74,144,226,0.09)}
+  .mods{font-size:10.5px;color:var(--dim);margin-top:6px}
+  .mods code{font-size:10px;padding:1px 5px}
+  .card-plan-tag{display:inline-block;font-size:9.5px;color:var(--dim);border:1px solid var(--border);border-radius:9px;padding:1px 7px;margin-left:6px;text-transform:none;letter-spacing:0;font-weight:400}
   .group{margin-bottom:28px}
   .group-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
   .group-label .n{color:var(--dim);font-weight:400;text-transform:none;letter-spacing:0}
-  .plan-group{border:1px solid rgba(155,89,182,0.3);background:rgba(155,89,182,0.04);border-radius:12px;padding:18px 20px;margin-bottom:28px}
-  .plan-group .plan-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--purple);margin-bottom:4px}
-  .plan-group .plan-sub{font-size:11.5px;color:var(--dim);margin-bottom:14px}
-  .plan-group .card{margin-bottom:8px}
   @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
 </style>
 </head>
@@ -64,17 +79,23 @@
 
 <nav class="sidebar">
   <div class="sidebar-logo"><div class="name">RPGACE</div><div class="version">FUTURE INTEGRATIONS</div></div>
-  <div class="nav-group"><div class="nav-label">Non-Green State</div>
-    <a class="nav-item" href="#blue">🔵 Blue — Ideas</a>
-    <a class="nav-item" href="#red">🔴 Red — Planned</a>
-    <a class="nav-item" href="#yellow">🟡 Yellow — Mid-Build</a>
-    <a class="nav-item" href="#purple">🟣 Purple — Regressed</a>
+  <div class="nav-group"><div class="nav-label">Regressions</div>
+    <a class="nav-item" href="#purple">🟣 Purple — all plans</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">CEO Plans</div>
+    <div id="plan-nav"><a class="nav-item" href="#plans">Loading…</a></div>
+  </div>
+  <div class="nav-group"><div class="nav-label">Unplanned</div>
+    <a class="nav-item" href="#loose">🔵 Loose ideas (no plan)</a>
   </div>
   <div class="nav-group"><div class="nav-label">Format</div>
     <a class="nav-item" href="#format">How This Doc Works</a>
   </div>
   <div class="nav-group"><div class="nav-label">Mirror Doc</div>
     <a class="nav-item" href="achiever.html">→ Achiever (past tense)</a>
+  </div>
+  <div class="nav-group"><div class="nav-label">Companion</div>
+    <a class="nav-item" href="smoke_test.html">→ Smoke Test (does it work)</a>
   </div>
   <div class="nav-group"><div class="nav-label">Real State</div>
     <a class="nav-item" href="patch_notes.html">→ Patch Notes (green only)</a>
@@ -84,208 +105,251 @@
 <div class="content">
 
 <div class="section">
-  <div class="section-eyebrow">Aug 11 2026 · New Oversight Artifact</div>
+  <div class="section-eyebrow">Aug 11 2026 · New Oversight Artifact · Plan-first since Aug 23 2026</div>
   <div class="section-title">Future Integrations</div>
-  <p class="section-sub">A live, constantly-updating log of everything in RPGACE Total systems that is NOT yet real — an idea, a planned-but-unbuilt spec, or a mid-build feature. This doc is deliberately the mirror image of the Tier (a)/(b)/(c)/(d) oversight docs: those describe what IS true right now; this describes what ISN'T yet, so the two never blur into each other. Added Aug 20/21 2026: a real PAST-tense counterpart now exists too — <a href="achiever.html">achiever.html</a> — for content that WAS true and a later real change made no longer true (🟤 brown, distinct from this doc's own 🟣 purple, which tracks broken code, not stale claims).</p>
-  <div class="date-tag">Seeded Aug 11 2026 · /colourgradient's own 4-color system</div>
-</div>
-
-<div class="section" id="format">
-  <h3>How this doc works</h3>
-  <p><strong>Only GREEN (verified built and live) items appear in the real oversight docs</strong> — patch_notes.html, manual.html, minotaur_map.html, interconnection_map.md, system_flow_map.md, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, smoke_test.html. Per Alex's own direct ask: those docs describe what's ACTUALLY TRUE, and a non-built idea sitting alongside real, shipped features made it harder to tell the two apart at a glance.</p>
-  <p><strong>Everything else lives here, grouped by real commitment level:</strong> 🔵 <strong>Blue</strong> — an idea quickly written down, not yet a formal plan. 🔴 <strong>Red</strong> — a real, specified plan, not built yet. 🟡 <strong>Yellow</strong> — genuinely mid-build, real code exists but incomplete. 🟣 <strong>Purple</strong> (added Aug 13) — a real REGRESSION: this was genuinely Green at some earlier real check, and current evidence shows it's now broken. Purple is not the same as Red — Red never worked yet, Purple worked and stopped; a Purple item also gets a real row in <code>error_log.html</code>, since a regression is a real error to track, not just an unbuilt idea. When something reaches Green, it graduates OUT of this doc and INTO the real oversight docs — this doc should never describe something that's actually true right now.</p>
-  <p>Backed by the real Supabase datasheet <code>ceo_plans</code>/<code>ceo_plan_items</code> (part of `/CEO`'s Grounded Mode) — this HTML page is a snapshot rendering of that live data, refreshed whenever `/colourgradient`, `/paranoia`, or `/drift` runs and pushes a real finding, per Alex's own explicit ask ("future integrations on /paranoia and /drift against any file and push just generated").</p>
-  <p><strong>Real Aug 13 grouping convention, standing going forward</strong>: a multi-step CEO plan (2+ `ceo_plan_items` sharing one `ceo_plans` row) renders as ONE labeled plan-group, each step its own explained subgroup card — never scattered loose cards mixed with unrelated items. Every other item is grouped by what it actually changes — a named river (matching `minotaur_map.html`/graphify's own real river names), a dashboard card, or an external connector — instead of a flat list under each color. When a new item is added, find its real river/card/connector home first; only create a new group label if it genuinely doesn't fit an existing one.</p>
-</div>
-
-<div class="section" id="blue">
-  <div class="section-eyebrow">🔵 Blue — Ideas, Not Yet Formal Plans</div>
-  <div class="section-title" style="font-size:20px">Quickly written down, real commitment TBD</div>
-  <p class="section-sub" style="margin-bottom:16px"><strong>Real Aug 13 restructure</strong> — grouped by what each idea actually touches (a river, a dashboard card, an external connector), not a flat list, per Alex's own direct ask.</p>
-
-  <div class="group">
-    <div class="group-label">River X — The Confluence of Chronicles <span class="n">1 idea</span></div>
-    <div class="card blue">
-      <div class="card-title">A15 — Chronicles gains more hooks<span class="badge blue">IDEA</span></div>
-      <div class="card-body">Alex's own words: "I think chronicles should register more things, lets come up with ideas of where it could be hooked... more ideas on that to come." Explicitly open-ended — reclassified from Red to Blue this pass (was mis-scoped as a planned item on the first colourgradient benchmark; a spec that's explicitly "more ideas to come" isn't a plan yet).</div>
-    </div>
-  </div>
-
-  <div class="group" id="cpi-live-blue-wrap" style="display:none">
-    <div class="group-label">🌌 RPGACE Total Systems Galaxy Map <span class="n">live from ceo_plan_items</span></div>
-    <div id="cpi-live-blue"></div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River V — Two Independent Streams (Agenda dashboard card) <span class="n">1 idea</span></div>
-    <div class="card blue">
-      <div class="card-title">Real nuance on the "Agenda" card's <code>partial</code> flag — worth a future look, not a bug<span class="badge blue">IDEA</span></div>
-      <div class="card-body">Logged per Alex's own explicit ask (Aug 13, G4 build): "leave as is for now by your judgement, log your nuance for thought." <code>DASHBOARD_CARDS</code>'s 'agenda' entry is flagged <code>partial: True</code> because its real target module (<code>agendaReminder</code>, River V) only covers the QoL layer — the page's actual Quest Board core (<code>addXP()</code>/<code>completeQuest()</code>) lives in untagged <code>main.js</code> code with no river of its own. Real thought worth keeping: the Aug 11 <code>classify_mainjs_by_keyword()</code> pass (built for graphify's own component-zone-map, not for this) already resolved 228 of 240 real main.js function names to a river/zone via per-function keyword matching — it's a genuine open question, not yet checked, whether the Quest Board functions specifically already landed somewhere real in that classification. If they did, the honest fix isn't a permanent "partial" flag — it's pulling that existing classification in as a real second river edge for this card, the same way <code>agendaReminder</code> already is one. If they didn't (main.js's own docstring already names 12 functions, including cross-cutting ones, as genuinely unclassified — Quest Board could be among them), <code>partial</code> stays the honest answer indefinitely. Not investigated this pass — a real, bounded future check, not a guess either way.</div>
-    </div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">Dev process — <code>/CEO</code> framework itself <span class="n">1 idea</span></div>
-    <div class="card blue">
-      <div class="card-title">Multi-plan support for /stopCEO / /ResumeCEO<span class="badge blue">IDEA</span></div>
-      <div class="card-body">The current implementation handles more-than-one-active-plan as a real code path, but with only ONE real /CEO-tracked plan existing today, this is genuine speculative generality — flagged honestly as a premature-generalization risk, not yet justified by a second real use case.</div>
-    </div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River VI/VIII — Judgment Chamber / Confluence Pool (Taxonomy) <span class="n">1 idea</span></div>
-    <div class="card blue">
-      <div class="card-title">A "🔄 Rejuvenate" per-node taxonomy button, richer version<span class="badge blue">IDEA</span></div>
-      <div class="card-body">Council-of-5-in-a-popup verdict + approve/reloop cycle for a live subtree /paranoia+/deduplication scan — real design sketch exists, but genuinely needs live Oracle access to produce real verdicts, and the exact reloop state machine is still open. Sits between Blue and Red; kept here since the UI/state-machine specifics are still being worked out, not fixed.</div>
-    </div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River IV — The Bookworm River · Worm Family & Encyclopedia Wrapper (W11/W12) <span class="n">2 ideas</span></div>
-    <div class="card blue">
-      <div class="card-title">W11 — Articleworm: external research-paper analysis, on real legitimate APIs<span class="badge blue">IDEA</span></div>
-      <div class="card-body">Alex's own ask named JSTOR/Google Scholar directly. Real <code>/paranoia</code> pass (Aug 22) found neither is a safe scrape target — JSTOR's own real API is capped/gated behind an official Text &amp; Data Mining program, Google Scholar has no official API and its own terms prohibit large-scale automated access (confirmed via live web search, not assumed). Real, legitimate alternative found instead: the Semantic Scholar API (Allen Institute for AI, non-profit, free, no key, 200M+ papers) plus arXiv/PubMed/CORE for open-access full text. Real architecture fit: this is RPGACE's own already-proven Total-systems pattern (a separate Claude Code session on its own external repo, dispatched via a Supabase queue — same shape as OpenMontage CC/Graphify CC), not a new invention. Not built — depends on a future formal <code>/interrogation</code> pass.</div>
-    </div>
-    <div class="card blue">
-      <div class="card-title">W12 — Debate Worm: cross-worm contradiction detection + adversarial debate<span class="badge blue">IDEA</span></div>
-      <div class="card-body">Real, valuable vision: flag insights from different worms that contradict each other, run a real 2-side debate to judge credibility, feed the result into the taxonomy. Real <code>/paranoia</code> finding: the existing <code>/debate</code> skill is a Claude-Code-side, human-in-the-loop protocol — a live, autonomous in-app version needs genuinely new Oracle-API infrastructure (a real, recurring per-insight token cost, rule 11) and, non-negotiably, must still route through the same human-checkpoint gate every other taxonomy write already requires (rule 4) rather than auto-updating the tree on its own verdict. Depends on W11 existing first (needs a second real worm to disagree with the others). Not built.</div>
-    </div>
-  </div>
-</div>
-
-<div class="section" id="red">
-  <div class="section-eyebrow">🔴 Red — Real, Specified Plans, Not Built</div>
-  <div class="section-title" style="font-size:20px">Ratified CEO plans + the Massive Expansion backlog</div>
-  <p class="section-sub" style="margin-bottom:16px"><strong>Real Aug 13 restructure</strong> — a whole ratified plan now renders as ONE labeled group with each step as its own explained subgroup card, instead of scattering unlabeled cards mixed with unrelated backlog items. The Massive Expansion items below are grouped by what they actually touch.</p>
-
-  <div class="plan-group">
-    <div class="plan-label">🌌 RPGACE Total Systems Galaxy Map — ratified /CEO plan</div>
-    <div class="plan-sub">Ratified Aug 13 (<code>ceo_plans.basis='ratified'</code>). A drill-down, Assassin's Creed-Valhalla-styled graphify/Obsidian visualization of RPGACE Total Systems, promoted to a real second truth source alongside Tier (b), feeding a planned trickle-down/up integration-suggestion system into <code>/CEO</code> Loop 2. <strong>Real Aug 13 fix (3rd pass) — the cards below are now LIVE-rendered from <code>ceo_plan_items</code> on every page load, never hand-typed status</strong>: this section used to show G2 as "PLANNED" for hours after it had actually gone green in the database — a real, repeated staleness bug Alex caught directly ("why is it that every update and push, not all oversight contents and docs update to have true information"). A hand-authored snapshot can always be forgotten to re-sync; a live fetch against the same table `/colourgradient` itself reads from cannot go stale this way again. Full record: <code>records/2026-08/galaxy_map_ceo_loop1_spec_paranoia_2026-08-13.txt</code>.</div>
-    <div id="cpi-live-red-galaxy_map">Loading live plan status from Supabase…</div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River III — The Oracle Current <span class="n">1 item</span></div>
-    <div class="card red"><div class="card-title">A3 — Fallback Scout per-item delete buttons<span class="badge red">PLANNED</span></div><div class="card-body">Remove a queued scout item before it's ever processed. Confirmed unbuilt.</div></div>
-  </div>
-  <!-- A2 (Dummy Oracle banner slide-down UI fix) removed 2026-08-22: real /paranoia+/CEO drift check found it shipped (commit 02b4b31, redesigned further in 476ddb5) and Alex-hand-tested live, ceo_plan_items flipped red->green same pass. Per this doc's own rule, a green item is removed from here, never left duplicated alongside its tier-doc entry (CLAUDE.md/patch_notes.html already carry the real account). -->
-  <!--
-    Note found in the same pass, not acted on: unlike the Galaxy Map plan above (line ~150),
-    this Massive Expansion section's cards are hand-typed static HTML, not live-fetched from
-    ceo_plan_items the way the Galaxy Map group is - meaning a future status flip here needs
-    the same manual sync this file's own Galaxy Map note warns about. Flagged as a real,
-    future improvement (give Massive Expansion the same live-fetch treatment), not fixed here.
-  -->
-
-  <div class="group">
-    <div class="group-label">River V — Two Independent Streams (Content Intel / Schedule) <span class="n">2 items</span></div>
-    <div class="card red"><div class="card-title">A4 — Content Intelligence real-insight extraction volume<span class="badge red">PLANNED</span></div><div class="card-body">Placement logic confirmed already working as intended (Alex's own re-check) — the real gap is extraction VOLUME per video, still unaddressed.</div></div>
-    <div class="card red"><div class="card-title">A9 — Agenda overhaul + real time-tracking formula<span class="badge red">PLANNED</span></div><div class="card-body">Real per-execution duration averaging, feeding Schedule Oracle's own timetabling. Confirmed unbuilt — directly overlaps the pre-existing Phylum XP Ledger persistence gap.</div></div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River XI — Content Production Live · External: OpenMontage <span class="n">2 items</span></div>
-    <div class="card red"><div class="card-title">A5 — Research Lab dismantling into Content Pipeline<span class="badge red">PLANNED</span></div><div class="card-body">Idea Bank / Corpus / Beat Log absorbed into Content Pipeline. Research Lab page confirmed fully intact, untouched.</div></div>
-    <div class="card red"><div class="card-title">A7 — OBS Raw → Video Pipeline workflow + YouTube Meme Director<span class="badge red">PLANNED</span></div><div class="card-body">Unified with the beat→music-video workflow, comic-effect script insertion. Confirmed unbuilt.</div></div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River VI/VII — Judgment Chamber / Library Current (Taxonomy) <span class="n">1 item</span></div>
-    <div class="card red"><div class="card-title">A6 — Bibliography as its own taxonomy phylum<span class="badge red">PLANNED</span></div><div class="card-body">Each analysed link gets a bidirectionally-traced phylum path. Confirmed unbuilt.</div></div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River IV — The Bookworm River · Worm Family &amp; Encyclopedia Wrapper, Phase 2 <span class="n">2 items</span></div>
-    <div class="card red"><div class="card-title">W7 — revisit A4's Content Intelligence extraction-volume cap in light of the wrapper<span class="badge red">PLANNED</span></div><div class="card-body">Real /interrogation (Aug 23) reconfirmed the original gating: genuinely waiting on real Phase 1 usage data, no separate urgency. Real spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>.</div></div>
-    <div class="card red"><div class="card-title">W10 — Encyclopedia source-worm filter/badge + category-detection revisit<span class="badge red">PLANNED</span></div><div class="card-body">Real /interrogation (Aug 23) confirmed: the 70 existing entries are all pre-wrapper (Oracle-chat-sourced) — a filter has nothing real to filter yet. Waiting on real worm-sourced entries to exist. W6 (code-reduction check) moved to Green — the real duplication found got fixed in passing during W5's own build.</div></div>
-  </div>
-</div>
-
-<div class="section" id="yellow">
-  <div class="section-eyebrow">🟡 Yellow — Genuinely Mid-Build</div>
-  <div class="section-title" style="font-size:20px">Real code exists, incomplete or unwired</div>
-
-  <div class="group" id="cpi-live-yellow-wrap" style="display:none">
-    <div class="group-label">🌌 RPGACE Total Systems Galaxy Map <span class="n">live from ceo_plan_items</span></div>
-    <div id="cpi-live-yellow"></div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River III — The Oracle Current · External: Moonshot AI / OpenAI <span class="n">1 item</span></div>
-    <div class="card yellow"><div class="card-title">A10 — Oracle-as-orchestrator via Kimi/Luna<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real server-side scaffold live in <code>api/oracle.js</code> (<code>provider:'kimi'|'luna'</code>) — dormant by design, zero client call sites wired, no live key configured, no benchmark run against Claude yet. The single clearest Yellow example in the project right now.</div></div>
-  </div>
-
-  <div class="group">
-    <div class="group-label">River IV — The Bookworm River · Worm Family &amp; Encyclopedia Wrapper (A8 Phase 1 + Phase 2 so far) <span class="n">7 items</span></div>
-    <div class="card yellow"><div class="card-title">W1-W5 — Corpus/MusicWorm reachable from Bookworm, Videoworm renames, the worm picker, the shared Encyclopedia-companion-entry wrapper<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real code shipped Aug 22 2026 (Opus builder + Sonnet review, real <code>/drift</code> check: on track). <code>phylumPath._insertNewSteps</code> now writes a real, additive Encyclopedia companion entry (a direct insight excerpt, zero new Oracle cost) for every real taxonomy commit, across all 6 real call sites in the app. Bookworm's card gained a "which worm?" picker; Corpus/MusicWorm honestly labelled as not having a real extraction pipeline yet. One MINOR gap flagged: the dedup-extend path doesn't get a companion entry yet. Genuinely untested by hand — this is what keeps it Yellow, not Green. Full spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>.</div></div>
-    <div class="card yellow"><div class="card-title">W8 — Bookworm's real "Back to chapter list" navigation gap, fixed<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real evidence (Aug 23) found the actual gap was narrower than the original backlog text implied: the top-level book list was already a clean card list — 4 of 5 chapter-level deep views just had no way back to the chapter list except a full exit to the dashboard. All 4 now have the same "← Back to chapter list" button <code>_renderChapterSummary</code> already had. A real opportunistic fix landed alongside it: the PDF/EPUB upload labels lost their nested file input on reset, making them one-shot controls. Verified via a headless-Chromium harness against the real shipped code — not hand-tested by Alex.</div></div>
-    <div class="card yellow"><div class="card-title">W9 — EPUB upload support for Bookworm<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Mirrors the existing PDF-upload pattern exactly (client-side extraction via a runtime-loaded library, never a static script tag) — JSZip unzips the EPUB, the real OPF manifest/spine give reading order, DOMParser extracts real text per content file. Verified via a headless-Chromium harness against a realistic fixture (prefixed namespaces, relative paths, a missing spine file). Honest caveat stated in the code: EPUB structure varies by producer, DRM-protected files have no readable text. Not hand-tested by Alex with a real EPUB.</div></div>
-  </div>
+  <p class="section-sub">A live, constantly-updating log of everything in RPGACE Total systems that is NOT yet real — an idea, a planned-but-unbuilt spec, or a mid-build feature. This doc is deliberately the mirror image of the Tier (a)/(b)/(c)/(d) oversight docs: those describe what IS true right now; this describes what ISN'T yet, so the two never blur into each other. A real PAST-tense counterpart exists too — <a href="achiever.html">achiever.html</a> — for content that WAS true and a later real change made no longer true (🟤 brown, distinct from this doc's own 🟣 purple, which tracks broken code, not stale claims).</p>
+  <div class="date-tag">Every card below is live-fetched from ceo_plans / ceo_plan_items — nothing on this page is hand-typed status</div>
 </div>
 
 <div class="section" id="purple">
   <div class="section-eyebrow">🟣 Purple — Regressed</div>
   <div class="section-title" style="font-size:20px">Used to work, real evidence now shows it broken</div>
-  <p class="section-sub" style="margin-bottom:16px">Added Aug 13 2026, real Alex ask. Empty by design until a real <code>/colourgradient</code>, <code>/perspective</code>, or <code>/paranoia</code> pass finds an actual regression against a real prior baseline — never pre-populated with a guess. Each real purple finding also gets a row in <code>error_log.html</code> (with an <code>error_code</code>, Aug 13 3rd pass) explaining what broke and how to possibly fix it; check there too for the full fix-attempt history once one exists.</p>
-  <div id="cpi-live-purple-wrap" style="display:none">
-    <div class="group-label">🌌 RPGACE Total Systems Galaxy Map <span class="n">live from ceo_plan_items</span></div>
-    <div id="cpi-live-purple"></div>
-  </div>
+  <p class="section-sub" style="margin-bottom:16px">Deliberately kept as ONE cross-plan section at the top rather than buried inside each plan's own group — a regression is the one status worth seeing without hunting through five plans first. Each card carries its own plan name, so no plan context is lost and no item is rendered twice. Empty by design until a real <code>/colourgradient</code>, <code>/perspective</code>, or <code>/paranoia</code> pass finds an actual regression against a real prior baseline — never pre-populated with a guess. Each real purple finding also gets a row in <code>error_log.html</code> (with an <code>error_code</code>) explaining what broke and how to possibly fix it.</p>
+  <div id="purple-live"></div>
   <p id="purple-empty-note" style="color:var(--dim);font-size:12px;font-style:italic">No real regressions found yet.</p>
 </div>
 
+<div class="section" id="plans">
+  <div class="section-eyebrow">📋 CEO Plans — the primary category</div>
+  <div class="section-title" style="font-size:20px">Every real plan, broken down by river and modules touched</div>
+  <p class="section-sub" style="margin-bottom:24px">One group per real <code>ceo_plans</code> row, showing all of that plan's non-green items. Inside each plan, items are sub-grouped by the real Galaxy Map river their work actually touches (<code>ceo_plan_items.galaxy_river</code>), with the specific real modules named underneath (<code>ceo_plan_items.galaxy_modules</code>). Colour is now a per-item badge, not the organizing axis.</p>
+  <div id="plans-live"><p style="color:var(--dim);font-size:12px;font-style:italic">Loading live plan status from Supabase…</p></div>
+</div>
+
+<div class="section" id="loose">
+  <div class="section-eyebrow">🔵 Loose ideas — not attached to any CEO plan</div>
+  <div class="section-title" style="font-size:20px">Real thoughts logged in this doc only</div>
+  <p class="section-sub" style="margin-bottom:16px">These have no <code>ceo_plan_items</code> row of their own — they are real nuances/ideas logged directly here, deliberately not promoted into a plan yet. This is the one part of the page that is hand-authored; everything above it is live-fetched. If one of these ever becomes a real plan item, it moves up into its plan's group and is deleted from here — never both.</p>
+
+  <div class="group">
+    <div class="group-label">River V — Daily Ops: Agenda, Schedule &amp; Journal <span class="n">1 idea</span></div>
+    <div class="card blue">
+      <div class="card-title">Real nuance on the "Agenda" card's <code>partial</code> flag — worth a future look, not a bug<span class="badge blue">IDEA</span></div>
+      <div class="card-body">Logged per Alex's own explicit ask (Aug 13, G4 build): "leave as is for now by your judgement, log your nuance for thought." <code>DASHBOARD_CARDS</code>'s 'agenda' entry is flagged <code>partial: True</code> because its real target module (<code>agendaReminder</code>, River V) only covers the QoL layer — the page's actual Quest Board core (<code>addXP()</code>/<code>completeQuest()</code>) lives in untagged legacy <code>main.js</code> code with no river of its own. Real thought worth keeping: the Aug 11 <code>classify_mainjs_by_keyword()</code> pass (built for graphify's own component-zone-map, not for this) already resolved 228 of 240 real main.js function names to a river/zone via per-function keyword matching — it's a genuine open question, not yet checked, whether the Quest Board functions specifically already landed somewhere real in that classification. If they did, the honest fix isn't a permanent "partial" flag — it's pulling that existing classification in as a real second river edge for this card, the same way <code>agendaReminder</code> already is one. If they didn't, <code>partial</code> stays the honest answer indefinitely. Not investigated — a real, bounded future check, not a guess either way.</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">Cross-cutting / Dev Process — <code>/CEO</code> framework itself <span class="n">1 idea</span></div>
+    <div class="card blue">
+      <div class="card-title">Multi-plan support for /stopCEO / /ResumeCEO<span class="badge blue">IDEA</span></div>
+      <div class="card-body">The current implementation handles more-than-one-active-plan as a real code path. Originally flagged as speculative generality when only ONE real /CEO-tracked plan existed — <strong>that framing is now out of date and honestly corrected here</strong>: there are five real ratified plans as of Aug 23 2026, so the multi-plan code path is genuinely exercised. What stays open is narrower: whether <code>/stopCEO</code>/<code>/ResumeCEO</code> should pause one named plan or all active plans at once, which has never been decided or hand-tested.</div>
+    </div>
+  </div>
+
+  <div class="group">
+    <div class="group-label">River VI — The Judgment Chamber (Taxonomy) <span class="n">1 idea</span></div>
+    <div class="card blue">
+      <div class="card-title">A "🔄 Rejuvenate" per-node taxonomy button, richer version<span class="badge blue">IDEA</span></div>
+      <div class="card-body">Council-of-5-in-a-popup verdict + approve/reloop cycle for a live subtree /paranoia+/deduplication scan — real design sketch exists, but genuinely needs live Oracle access to produce real verdicts, and the exact reloop state machine is still open. Sits between Blue and Red; kept here since the UI/state-machine specifics are still being worked out, not fixed.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="format">
+  <h3>How this doc works</h3>
+  <p><strong>Only GREEN (verified built and live) items appear in the real oversight docs</strong> — patch_notes.html, manual.html, minotaur_map.html, interconnection_map.md, system_flow_map.md, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, smoke_test.html. Per Alex's own direct ask: those docs describe what's ACTUALLY TRUE, and a non-built idea sitting alongside real, shipped features made it harder to tell the two apart at a glance.</p>
+
+  <p><strong>Structure — PLAN FIRST (Aug 23 2026, DD2).</strong> Alex's own words: "i want plans to be first category - main one, then it breaks down by what river and modules are touched based on galaxy map." So the page's top-level axis is the real <code>ceo_plans</code> row; the second axis is the real Galaxy Map river the item's work actually touches (<code>ceo_plan_items.galaxy_river</code>, backfilled with real evidence for every non-green item in DD1); the specific real modules are named on each card (<code>ceo_plan_items.galaxy_modules</code>). Colour is now just a per-item badge.</p>
+
+  <p><strong>Each card also carries short Galaxy Map identifiers</strong>, so an item can be cross-referenced straight against the real map page and the app UI without reading any prose: a gold <strong>level</strong> tag (<code>L0</code>/<code>L1</code>/<code>L2</code>/<code>L2.5</code>/<code>Current</code>/<code>Zoom</code>/<code>L5</code>/<code>L6</code> — the same 8 stops as the Galaxy Map's own level rail), teal <strong>dimension</strong> tags (the real Dimensions Matrix names — Externals, UI/Alex-Accessibility, Load, Decision/Human-Gate, Orchestrator↔OpenMontage — plus Logic, Supabase, Skills and Oversight Sync where those genuinely apply), and a <strong>facet</strong> tag (💉 <code>infra</code> = attaches a real resource; 🔗 <code>inter</code> = changes a real cross-unit relationship, matching <code>galaxy_map.html</code>'s own L0 Infra/Inter choice). A tag is absent when the real evidence doesn't support one — an honest blank beats an invented classification, so most pure module-level UI work carries no facet tag at all.</p>
+
+  <p><strong>This replaced a colour-first layout that had a real, confirmed bug.</strong> The old page fetched every ratified plan's items together and dumped them into ONE hardcoded group labelled "🌌 RPGACE Total Systems Galaxy Map" — which was correct when the Galaxy Map was the only live-fetched plan, and silently wrong the moment a second ratified plan existed. By Aug 23 2026 there were five, so real items from four other plans were being displayed under the wrong plan's name. Plan-first grouping makes that class of mislabeling structurally impossible: a card can only ever render inside the group built from its own <code>plan_id</code>.</p>
+
+  <p><strong>Everything on this page above the "Loose ideas" section is live-fetched — nothing is hand-typed.</strong> The old page live-fetched only the Galaxy Map plan and hand-typed the Massive Expansion plan's cards as static HTML, so that plan's real Supabase status could silently diverge from what this page claimed. It did: A5 was flipped to green in Supabase while its static card here still read "Research Lab page confirmed fully intact, untouched," which was flatly false. A hand-authored snapshot can always be forgotten to re-sync; a live fetch against the same table <code>/colourgradient</code> itself reads from cannot go stale that way.</p>
+
+  <p><strong>The colour vocabulary is unchanged</strong> (it moved from being the layout to being the badge): 🔵 <strong>Blue</strong> — an idea quickly written down, not yet a formal plan. 🔴 <strong>Red</strong> — a real, specified plan, not built yet. 🟡 <strong>Yellow</strong> — genuinely mid-build, real code exists but incomplete or unverified. 🟣 <strong>Purple</strong> — a real REGRESSION: this was genuinely Green at some earlier real check, and current evidence shows it's now broken. Purple is not the same as Red — Red never worked yet, Purple worked and stopped; a Purple item also gets a real row in <code>error_log.html</code>. When something reaches Green it graduates OUT of this doc (the query filters on <code>status=neq.green</code>, so this happens automatically the moment the Supabase row flips) and its real state lands in the appropriate tier doc instead.</p>
+
+  <p><strong>Purple is the one deliberate exception to plan-first grouping</strong> — it renders as a single cross-plan section at the top, with each card carrying its own plan name. A regression is worth seeing immediately without opening five plan groups; carrying the plan name on the card means no context is lost, and rendering it only there means no item ever appears twice on the page.</p>
+
+  <p><strong>The fetch deliberately does NOT filter on <code>basis='ratified'</code></strong> (the old one did). Every plan is ratified today, so the filter changed nothing visible — but a future provisional/draft plan would have been silently invisible here, which is exactly the "the doc doesn't show the real state" failure this restructure exists to fix. Each plan group shows its own real <code>basis</code> and <code>status</code> instead, so a non-ratified plan is visible AND clearly labelled rather than hidden.</p>
+
+  <p>Backed by the real Supabase datasheet <code>ceo_plans</code>/<code>ceo_plan_items</code> (part of <code>/CEO</code>'s Grounded Mode). Its companion is <a href="smoke_test.html">smoke_test.html</a>, which uses the same plan-first grouping for the opposite question — this doc tracks what isn't real yet, smoke_test.html tracks whether what IS real actually works when Alex clicks it.</p>
+</div>
+
 <hr>
-<p style="font-size:11px;color:var(--dim)">The 🌌 Galaxy Map plan's own cards on this page are live-rendered from <code>ceo_plan_items</code> on every load (Aug 13, 3rd pass — real fix for a repeated staleness bug) — everything else is a snapshot, regenerated by hand whenever a real /colourgradient, /paranoia, or /drift pass finds a status change. Cross-reference <code>ceo_plan_items</code> in Supabase for the real, queryable version of the same data. First built Aug 11 2026 as part of the /CEO framework's Grounded Mode + Supabase datasheet extension.</p>
+<p style="font-size:11px;color:var(--dim)">Live-rendered from <code>ceo_plans</code>/<code>ceo_plan_items</code> on every page load — the only hand-authored content is the "Loose ideas" section, which by definition has no Supabase row to render from. First built Aug 11 2026 as part of the /CEO framework's Grounded Mode + Supabase datasheet extension; restructured Plan-first Aug 23 2026 (DD2).</p>
 
 <script>
 (function(){
   var SB_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
   var SB_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
   var HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
       return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
     });
   }
-  var BADGE_LABEL = { blue: 'IDEA', red: 'PLANNED', yellow: 'MID-BUILD', purple: 'REGRESSED' };
-  function cardHTML(it) {
-    var body = (it.last_verdict || it.title || '').slice(0, 420);
-    if ((it.last_verdict || '').length > 420) body += '…';
-    return '<div class="card ' + it.status + '"><div class="card-title">' + esc(it.item_code) + ' — ' + esc(it.title) +
-      '<span class="badge ' + it.status + '">' + (BADGE_LABEL[it.status] || it.status.toUpperCase()) + '</span></div>' +
-      '<div class="card-body">' + esc(body) + '</div></div>';
+  function slug(s) {
+    return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   }
-  fetch(SB_URL + '/rest/v1/ceo_plans?basis=eq.ratified&select=id,name', { headers: HEADERS })
+
+  var BADGE_LABEL = { blue: 'IDEA', red: 'PLANNED', yellow: 'MID-BUILD', purple: 'REGRESSED' };
+  // Most-progressed first inside a river group, so what is nearly real
+  // reads before what is only an idea.
+  var STATUS_ORDER = { purple: 0, yellow: 1, red: 2, blue: 3 };
+
+  // Real river ordering — Roman numerals sort wrong as plain strings
+  // ("River XVI" < "River XVII" < "River XVI..."), so order off the
+  // numeral itself. Names are the authoritative ones from
+  // scripts/graphify_river_group.py's RIVER_NAME table.
+  var ROMAN = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7, VIII:8, IX:9, X:10,
+                XI:11, XII:12, XIII:13, XIV:14, XV:15, XVI:16, XVII:17 };
+  function riverRank(name) {
+    var m = /^River\s+([IVX]+)\b/.exec(String(name || ''));
+    if (m && ROMAN[m[1]]) return ROMAN[m[1]];
+    return 900; // cross-cutting / unclassified labels sort last
+  }
+
+  function arr(v) {
+    if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+    return (v && v.length) ? v : [];
+  }
+  // Short, referenceable Galaxy Map identifiers — the same names the
+  // Galaxy Map's own pages use (level rail labels, Dimensions Matrix
+  // labels, the L0 infra/inter facet choice). Deliberately terse
+  // badges, not prose: they exist so Alex can cross-reference a plan
+  // item straight against the real map page and the app UI.
+  function tagsHTML(it) {
+    var out = [];
+    var lv = arr(it.galaxy_level);
+    if (lv.length) out.push('<span class="tag lvl">' + lv.map(esc).join(' · ') + '</span>');
+    arr(it.galaxy_dimensions).forEach(function(d) {
+      out.push('<span class="tag dim">' + esc(d) + '</span>');
+    });
+    if (it.galaxy_facet_kind) {
+      var icon = it.galaxy_facet_kind === 'inter' ? '🔗' : '💉';
+      out.push('<span class="tag facet ' + esc(it.galaxy_facet_kind) + '">' + icon + ' ' + esc(it.galaxy_facet_kind) + '</span>');
+    }
+    var mods = arr(it.galaxy_modules);
+    var modLine = mods.length
+      ? '<div class="mods">Modules: ' + mods.map(function(m) { return '<code>' + esc(m) + '</code>'; }).join(' ') + '</div>'
+      : '<div class="mods">Modules: <em>none — no single named module</em></div>';
+    return (out.length ? '<div class="tags">' + out.join('') + '</div>' : '') + modLine;
+  }
+
+  // planName is passed only for the cross-plan purple section, where a
+  // card sits outside its own plan group and would otherwise lose that
+  // context.
+  function cardHTML(it, planName) {
+    var body = it.evidence || it.last_verdict || it.title || '';
+    var truncated = body.length > 420;
+    body = body.slice(0, 420) + (truncated ? '…' : '');
+    var planTag = planName ? '<span class="card-plan-tag">' + esc(planName) + '</span>' : '';
+    var riverTag = planName && it.galaxy_river
+      ? '<span class="card-plan-tag">' + esc(it.galaxy_river) + '</span>' : '';
+    return '<div class="card ' + esc(it.status) + '">' +
+      '<div class="card-title">' + esc(it.item_code) + ' — ' + esc(it.title) +
+      '<span class="badge ' + esc(it.status) + '">' + (BADGE_LABEL[it.status] || String(it.status).toUpperCase()) + '</span>' +
+      planTag + riverTag + '</div>' +
+      '<div class="card-body">' + esc(body) + '</div>' +
+      tagsHTML(it) + '</div>';
+  }
+
+  function riverGroupHTML(river, items) {
+    return '<div class="river-group">' +
+      '<div class="river-label">' + esc(river) +
+      '<span class="n">' + items.length + (items.length === 1 ? ' item' : ' items') + '</span></div>' +
+      items.map(function(i) { return cardHTML(i, null); }).join('') +
+      '</div>';
+  }
+
+  function planGroupHTML(plan, items) {
+    var byRiver = {};
+    items.forEach(function(i) {
+      var r = i.galaxy_river || 'Unclassified — no galaxy_river set';
+      (byRiver[r] = byRiver[r] || []).push(i);
+    });
+    var rivers = Object.keys(byRiver).sort(function(a, b) {
+      var d = riverRank(a) - riverRank(b);
+      return d !== 0 ? d : a.localeCompare(b);
+    });
+    rivers.forEach(function(r) {
+      byRiver[r].sort(function(a, b) {
+        var d = (STATUS_ORDER[a.status] == null ? 9 : STATUS_ORDER[a.status]) -
+                (STATUS_ORDER[b.status] == null ? 9 : STATUS_ORDER[b.status]);
+        return d !== 0 ? d : String(a.item_code).localeCompare(String(b.item_code));
+      });
+    });
+    var counts = {};
+    items.forEach(function(i) { counts[i.status] = (counts[i.status] || 0) + 1; });
+    var countLine = ['yellow', 'red', 'blue', 'purple'].filter(function(s) { return counts[s]; })
+      .map(function(s) { return counts[s] + ' ' + BADGE_LABEL[s].toLowerCase(); }).join(' · ');
+
+    return '<div class="plan-group" id="plan-' + slug(plan.name) + '">' +
+      '<div class="plan-label">' + esc(plan.name) +
+      '<span class="plan-meta">basis: ' + esc(plan.basis || 'unset') + '</span>' +
+      '<span class="plan-meta">plan: ' + esc(plan.status || 'unset') + '</span></div>' +
+      '<div class="plan-sub">' + items.length + ' non-green item' + (items.length === 1 ? '' : 's') +
+      (countLine ? ' — ' + esc(countLine) : '') +
+      ' · grouped by the real Galaxy Map river each item touches. Purple regressions for this plan render in the cross-plan section at the top of this page.</div>' +
+      rivers.map(function(r) { return riverGroupHTML(r, byRiver[r]); }).join('') +
+      '</div>';
+  }
+
+  function render(plans, items) {
+    var byPlan = {};
+    items.forEach(function(i) { (byPlan[i.plan_id] = byPlan[i.plan_id] || []).push(i); });
+
+    // Purple: one cross-plan section, removed from the per-plan groups
+    // so nothing is rendered twice.
+    var planName = {};
+    plans.forEach(function(p) { planName[p.id] = p.name; });
+    var purple = items.filter(function(i) { return i.status === 'purple'; });
+    var purpleEl = document.getElementById('purple-live');
+    var purpleNote = document.getElementById('purple-empty-note');
+    if (purple.length && purpleEl) {
+      purple.sort(function(a, b) { return String(a.item_code).localeCompare(String(b.item_code)); });
+      purpleEl.innerHTML = purple.map(function(i) { return cardHTML(i, planName[i.plan_id] || 'unknown plan'); }).join('');
+      if (purpleNote) purpleNote.style.display = 'none';
+    }
+
+    var target = document.getElementById('plans-live');
+    var nav = document.getElementById('plan-nav');
+    var shown = plans.filter(function(p) {
+      return (byPlan[p.id] || []).some(function(i) { return i.status !== 'purple'; });
+    });
+    if (!shown.length) {
+      target.innerHTML = '<p style="color:var(--dim);font-size:12px;font-style:italic">No plan currently has a non-green, non-regressed item. Everything real is green.</p>';
+      if (nav) nav.innerHTML = '<a class="nav-item" href="#plans">(no active plans)</a>';
+      return;
+    }
+    target.innerHTML = shown.map(function(p) {
+      return planGroupHTML(p, (byPlan[p.id] || []).filter(function(i) { return i.status !== 'purple'; }));
+    }).join('');
+    if (nav) {
+      nav.innerHTML = shown.map(function(p) {
+        return '<a class="nav-item" href="#plan-' + slug(p.name) + '">' + esc(p.name) + '</a>';
+      }).join('');
+    }
+  }
+
+  // No basis=eq.ratified filter, deliberately — see "How this doc
+  // works". A provisional plan must be VISIBLE and labelled, never
+  // silently dropped.
+  fetch(SB_URL + '/rest/v1/ceo_plans?select=id,name,basis,status&order=created_at.asc', { headers: HEADERS })
     .then(function(r) { return r.json(); })
     .then(function(plans) {
-      if (!plans || !plans.length) throw new Error('no ratified plans');
+      if (!plans || !plans.length) throw new Error('no plans returned');
       var ids = plans.map(function(p) { return p.id; }).join(',');
       return fetch(SB_URL + '/rest/v1/ceo_plan_items?plan_id=in.(' + ids + ')&status=neq.green&select=*&order=item_code.asc', { headers: HEADERS })
-        .then(function(r) { return r.json(); });
-    })
-    .then(function(items) {
-      items = items || [];
-      var redEl = document.getElementById('cpi-live-red-galaxy_map');
-      var redItems = items.filter(function(i) { return i.status === 'red'; });
-      if (redEl) redEl.innerHTML = redItems.length ? redItems.map(cardHTML).join('') : '<p style="color:var(--dim);font-size:12px;font-style:italic">No real ratified-plan items are currently Red.</p>';
-
-      ['blue', 'yellow', 'purple'].forEach(function(status) {
-        var group = items.filter(function(i) { return i.status === status; });
-        var wrap = document.getElementById('cpi-live-' + status + '-wrap');
-        var target = document.getElementById('cpi-live-' + status);
-        if (group.length && wrap && target) {
-          target.innerHTML = group.map(cardHTML).join('');
-          wrap.style.display = '';
-          if (status === 'purple') {
-            var note = document.getElementById('purple-empty-note');
-            if (note) note.style.display = 'none';
-          }
-        }
-      });
+        .then(function(r) { return r.json(); })
+        .then(function(items) { render(plans, items || []); });
     })
     .catch(function(e) {
-      var redEl = document.getElementById('cpi-live-red-galaxy_map');
-      if (redEl) redEl.innerHTML = '<p style="color:var(--dim);font-size:12px;font-style:italic">Could not load live plan status from Supabase: ' + esc(e.message) + '</p>';
+      var target = document.getElementById('plans-live');
+      if (target) target.innerHTML = '<p style="color:var(--dim);font-size:12px;font-style:italic">Could not load live plan status from Supabase: ' + esc(e.message) + '</p>';
     });
 })();
 </script>

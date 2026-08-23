@@ -1,6 +1,6 @@
 ---
 name: update-logging-system
-description: A shared change-type → required-artifact checklist (CLAUDE.md Current State, patch_notes.html, Chronicles, interconnection_map.md, system_flow_map.md, minotaur_map.html, manual.html, taxonomy_map.html, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, session_lessons.html, and the specific skill .md file whose behavior evolved) that closes the gap where a real fix updates SOME oversight docs but not all the ones it should. Use this skill at the same point CLAUDE.md rule 6 already requires doc updates (any Tier 2+ real change, and always as part of Bedtime's Step 1) — run through the dependency map, mark each artifact touched/skipped-with-reason, explicitly. Do NOT use this for Tier 0/1 mechanical edits (same threshold as Council of 5/GODMODE) — it is a completeness gate for real changes, not a per-commit ritual.
+description: A shared change-type → required-artifact checklist (CLAUDE.md Current State, patch_notes.html, Chronicles, interconnection_map.md, system_flow_map.md, minotaur_map.html, manual.html, taxonomy_map.html, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, session_lessons.html, and the specific skill .md file whose behavior evolved) that closes the gap where a real fix updates SOME oversight docs but not all the ones it should. Also owns the Cross-Doc Drift Check (Aug 23 2026, DD6) — the targeted doc-to-doc pass asking whether any OTHER oversight doc still asserts something about the same subject that just changed, referenced by name from /scope, GODMODE and /commit-archaeologist. Use this skill at the same point CLAUDE.md rule 6 already requires doc updates (any Tier 2+ real change, and always as part of Bedtime's Step 1) — run through the dependency map, mark each artifact touched/skipped-with-reason, explicitly. Do NOT use this for Tier 0/1 mechanical edits (same threshold as Council of 5/GODMODE) — it is a completeness gate for real changes, not a per-commit ritual.
 ---
 
 # /update-logging-system — one shared map, so nothing goes stale by accident
@@ -27,7 +27,11 @@ five feed evidence INTO a decision; `Bedtime` (or a direct mid-session
 "update oversight" moment) is the actual write-out point, so that's
 where the checklist runs. Don't add this map to those five skills' own
 files — that would be the exact rule-8 duplication this skill exists to
-prevent.
+prevent. **One narrow, Alex-answered exception as of Aug 23 2026 (DD6)**:
+`/scope`, GODMODE (`omnitrix`) and `/commit-archaeologist` now each carry
+a real obligation to run the single **Cross-Doc Drift Check** step below
+— by a one-line pointer to this file, never a copy of the map. See the
+Guardrails section for why that distinction is load-bearing.
 
 ## The dependency map — change type → required artifact(s)
 
@@ -310,6 +314,90 @@ a genuine cost/benefit call per rule 11), so an empty result means
     proactively at ship time, not just when someone runs `/colourgradient`
     explicitly.
 
+20. **Anything on artifacts 1-19 actually changed a specific SUBJECT that
+    more than one oversight doc makes a claim about** (added Aug 23 2026,
+    DD6 of the ratified "Oversight Doc Drift Discipline & Plan-First
+    Restructure" `/CEO` plan; Alex's own confirmed direction was
+    "Strengthen + wire existing mechanisms," so this invents no new
+    mechanism — it names a step the existing ones each half-did) → run
+    the **Cross-Doc Drift Check** below.
+
+## The Cross-Doc Drift Check
+
+**The real gap this closes, stated precisely.** Three existing
+mechanisms already sit next to this and none of them actually do it:
+
+- `/cartographer` runs the trickle-down/up procedure — but its axis is
+  the **Galaxy→River→Module→Connector hierarchy**, i.e. does a real
+  change create integration friction upstream or downstream in the MAP.
+  It is not a doc-to-doc claim comparison.
+- The **Achiever/brown** mechanism (`/colourgradient`, artifact 18)
+  correctly removes a stale claim from every doc asserting it — but it
+  fires only once someone has ALREADY identified the claim as stale. It
+  is the cleanup, not the detector.
+- This skill's own artifacts 1-19 answer "which docs must I WRITE to
+  after this change." They never ask "which docs already SAID something
+  about this subject, and does that still hold."
+
+So a real change could update every artifact its row demanded, and leave
+a second doc quietly asserting the old thing — which is exactly what
+happened to `future_integrations.html`'s A5 card ("Research Lab page
+confirmed fully intact, untouched") while CLAUDE.md's own Current State
+described the same feature accurately as retired.
+
+**Step 1 — name the subject, not the change.** Write one line: what
+specific, checkable THING is now different? A river's module list. A
+plan item's status. A feature's built/not-built state. A count (docs,
+modules, rows, phyla). A file's existence or location. A rule's wording.
+This is deliberately narrower than "what did I do" — a subject is the
+thing another doc could have an opinion about.
+
+**Step 2 — targeted lookup, never exhaustive.** The search space is
+**this skill's own artifact list above** — do not build a second doc
+inventory (rule 8). Walk artifacts 1-19, and for each one ask only: does
+this artifact plausibly carry a claim about THIS subject? Usually 2-4
+qualify, not 19. Then grep those specific docs for the subject itself
+(the module name, the file name, the count, the plan item code) — not
+for the change. A count is worth grepping as a bare number; a file name
+is worth grepping in tooling config and Supabase rows too, not just
+tracked files (CLAUDE.md's own `vercel.json` / `graphify_river_group.py`
+/ `.claude/settings.json` landmine is three instances of exactly that).
+
+**Step 3 — grade any real inconsistency with `/drift`'s vocabulary,
+don't invent a second grading scale** (rule 8): VERDICT (on track /
+drifted / inconclusive / blocked), BASIS (ratified / provisional /
+none), and grade the gap MINOR / MATERIAL / CAPTURED.
+
+**Step 4 — route to the mechanism that already owns that outcome.** No
+new handling is defined here:
+- A stale **CLAIM** (was true, a real change made it false, the feature
+  itself may work fine) → the Achiever/brown procedure, artifact 18.
+  That includes brown's own mandatory removal step: delete a
+  `smoke_test_items` row that exists solely to test a now-dead claim,
+  never re-flag it.
+- **Broken CODE** (a real regression, not just stale prose) → the
+  `error_log.html` purple procedure, artifact 15 + the `error_log`
+  session-start check.
+- **Neither** (a doc is simply out of date, nothing was ever true-then-
+  false and nothing is broken) → just fix it in place, in that doc's own
+  format, same pass. No ceremony.
+
+**Token-cost guardrail (rule 11), stated explicitly because this is the
+step most likely to bloat.** This is a TARGETED check scoped to the
+subject that actually changed. A full pairwise sweep across all 12
+oversight docs on every push is **explicitly rejected as a design** —
+it would cost more than the drift it catches, and it is the same
+disproportion this skill's own Tier 2+ guardrail already refuses
+everywhere else. If a change has no single nameable subject, that is a
+real signal the check doesn't apply, not a reason to sweep everything.
+
+**Where this runs.** `/CEO`, `/Summary` and `/Bedtime` already carry
+partial coverage of this and now point here by name. `/scope`, GODMODE
+(`omnitrix`) and `commit-archaeologist` did NOT require it at all before
+DD6 and now each carry a real, explicit obligation, scaled to what that
+skill already does — see their own files. Those three carry a one-line
+pointer to this section, never a copy of it.
+
 ## How to actually run this (the enforceable part)
 
 Not a paragraph of prose per artifact — a fast declarative pass, same
@@ -330,6 +418,7 @@ Change: <one line, what actually happened>
 [x] Live-fact staleness check on evidence touched this session
 [ ] Supabase dedup scan — skipped, no table meaningfully changed
 [x] ceo_plan_items/future_integrations.html status check for anything shipped this pass
+[x] Cross-Doc Drift Check — subject: <the one thing that changed>; docs checked: <2-4>; findings: <none / graded>
 ```
 
 Every row gets a mark, every skip gets a real reason (not blank). This
@@ -372,6 +461,16 @@ touched, never a blind full re-query).
 - **Don't duplicate this map into other skill files.** `Routine`,
   `scope`, `Summary`, `commit-archaeologist`, and GODMODE stay evidence-
   gatherers; only `Bedtime`'s Step 1 (and any direct "update oversight"
-  moment) actually runs the checklist. If a future session finds real
-  value in also running it from one of those five, that's a genuine
-  scope question for Alex, not a default to assume.
+  moment) actually runs the full 20-artifact checklist.
+- **The open scope question this guardrail used to name is now
+  ANSWERED, and only for one step** (Aug 23 2026, DD6). This guardrail
+  previously ended "if a future session finds real value in also running
+  it from one of those five, that's a genuine scope question for Alex,
+  not a default to assume." Alex answered it directly, in the DD6 plan
+  item: `/scope`, GODMODE (`omnitrix`) and `commit-archaeologist` now
+  each carry a real, explicit obligation to run the **Cross-Doc Drift
+  Check** — that ONE named step, not the artifact map. The distinction
+  is the whole point and must not erode: those three files carry a
+  one-line pointer to this file's own section. If a future session finds
+  itself pasting artifact rows into any of them, that is the rule-8
+  duplication this guardrail still forbids.

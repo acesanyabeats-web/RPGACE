@@ -55,7 +55,15 @@
   .verified-at{font-size:10px;color:var(--dim);margin-top:6px;opacity:.6}
   .galaxy-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
   .galaxy-tag{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
-  .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
+.plan-cat .cat-title{color:var(--purple);display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .plan-count{font-family:'Segoe UI',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--dim)}
+  .unplanned-head .cat-title{color:var(--teal);display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .sub-note{font-size:11.5px;color:var(--dim);margin-top:8px;line-height:1.6}
+  .river-sub{margin:14px 0 4px}
+  .river-sub-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+  .galaxy-tag.dim{background:rgba(42,191,176,0.1);color:var(--teal);border-color:rgba(42,191,176,0.25)}
+  .galaxy-tag.facet{background:rgba(155,89,182,0.1);color:var(--purple);border-color:rgba(155,89,182,0.3)}
+    .loading, .empty{text-align:center;color:var(--dim);padding:60px 20px;font-size:13px}
   .note{max-width:640px;margin:24px auto 0;font-size:12px;color:var(--dim);text-align:center;line-height:1.7}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:2px 6px;border-radius:4px;color:#B8C4D4}
 </style>
@@ -66,6 +74,7 @@
   <div class="eyebrow">RPGACE Oversight · Layer (d)</div>
   <h1>🧪 Smoke Test</h1>
   <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work (Aug 11 2026) — never pre-built empty. Paired with <a href="error_log.html" style="color:var(--blue)">error_log.html</a> (Aug 12 2026) — the (d)-layer's other doc: it logs what's currently BROKEN and why; this page logs the CURRENT confirmed/unconfirmed state of every real function. The "🔴 Just Failed" group at the top mirrors error_log's own active errors live. Each item's real 🌊 river / 🔽 level tags (Aug 14, G14) are sourced directly from the <a href="/graphify-out/galaxy_map.html" style="color:var(--gold)">Galaxy Map</a>'s own real hierarchy — where an item doesn't map to a specific RPGACE app river/module (most of this page today — dev-process/skills/oversight artifacts), it's honestly tagged to the real dev-process river (XIII-XVI) that actually owns it, never guessed onto an app river it doesn't belong to.</p>
+  <p style="margin-top:14px"><strong style="color:#E2E2EC">Grouped Plan-first since Aug 23 2026 (DD3)</strong> — matching <a href="future_integrations.html" style="color:var(--blue)">future_integrations.html</a>'s own restructure the same day, so the two (d)-layer docs read the same way round: every row that links to a real <code>ceo_plan_items</code> row sits under its own plan, sub-grouped by the real river it touches; rows with no plan link (core app modules, dashboard cards, onclick features — all of which predate the /CEO framework) keep their original category grouping in their own "🧩 Not plan-linked" section. The two docs are deliberately NOT redundant: future_integrations describes <em>what a plan item is and what was built</em>; a row here describes <em>how to actually test it</em>. Where a card carries teal dimension / 💉 infra / 🔗 inter tags, those ride along from its linked plan item so one item can be cross-referenced across both docs without either repeating the other.</p>
 </div>
 
 <div class="wrap">
@@ -101,6 +110,31 @@ function fetchActiveErrors() {
     .then(function(r) { return r.json(); });
 }
 
+// Real, new Aug 23 (DD3) — the plan index behind this page's Plan-first
+// grouping. Same shape as future_integrations.html's own fetch (rule 8:
+// one shared convention, two docs, never two different idioms), just
+// resolved into a lookup keyed by ceo_plan_items.id since that is what
+// smoke_test_items.linked_plan_item_id actually points at. Deliberately
+// NOT filtered on status — a smoke_test row stays linked to its plan
+// item after that item goes green, which is exactly when Alex is most
+// likely to be hand-testing it.
+function fetchPlanIndex() {
+  return fetch(SUPABASE_URL + '/rest/v1/ceo_plans?select=id,name,basis&order=created_at.asc', { headers: HEADERS })
+    .then(function(r) { return r.json(); })
+    .then(function(plans) {
+      var planById = {};
+      (plans || []).forEach(function(p) { planById[p.id] = p; });
+      return fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?select=id,plan_id,item_code,status,galaxy_river,galaxy_level,galaxy_dimensions,galaxy_facet_kind', { headers: HEADERS })
+        .then(function(r) { return r.json(); })
+        .then(function(rows) {
+          var idx = { byItemId: {}, planOrder: (plans || []).map(function(p) { return p.id; }), planById: planById };
+          (rows || []).forEach(function(ci) { idx.byItemId[ci.id] = ci; });
+          return idx;
+        });
+    })
+    .catch(function() { return { byItemId: {}, planOrder: [], planById: {} }; });
+}
+
 function updateItem(id, patch) {
   patch.updated_at = new Date().toISOString();
   return fetch(SUPABASE_URL + '/rest/v1/smoke_test_items?id=eq.' + id, {
@@ -108,7 +142,56 @@ function updateItem(id, patch) {
   });
 }
 
-function render(items, activeErrors) {
+// Real Aug 23 (DD3) — factored out of render()'s old inline template so
+// the plan-linked and not-plan-linked sections render the exact same
+// card (rule 8), instead of two copies drifting apart. Byte-identical
+// output to the previous inline version, plus the optional short
+// Galaxy Map identifier tags the plan item itself now carries (DD1).
+function itemHTML(it, ci) {
+  var cls = it.status === 'confirmed_working' ? 'confirmed' : (it.status === 'broken' ? 'broken' : '');
+  // Real Aug 12 addition: a fix that just landed (green) but hasn't
+  // been hand-tested yet gets a real, distinct visual — separate
+  // from the plain "unverified" look every never-yet-tested item
+  // already has, since this one has a real, specific reason to
+  // check it (a real fix, not just an unreviewed backlog item).
+  if (it.needs_confirm_highlight) cls += ' needs-confirm';
+  // Short, referenceable Galaxy Map identifiers. The row's own
+  // galaxy_river/galaxy_level stay authoritative for this page (they
+  // describe the thing being TESTED); the plan item's dimension/facet
+  // tags ride along only where a real link exists, so a card can be
+  // cross-referenced straight against future_integrations.html.
+  var tags = '';
+  if (it.galaxy_river) tags += '<span class="galaxy-tag">🌊 ' + esc(it.galaxy_river) + '</span>';
+  if (it.galaxy_level) tags += '<span class="galaxy-tag">🔽 ' + esc(it.galaxy_level) + '</span>';
+  if (ci) {
+    var dims = ci.galaxy_dimensions;
+    if (typeof dims === 'string') { try { dims = JSON.parse(dims); } catch (e) { dims = null; } }
+    (dims || []).forEach(function(d) { tags += '<span class="galaxy-tag dim">' + esc(d) + '</span>'; });
+    if (ci.galaxy_facet_kind) {
+      tags += '<span class="galaxy-tag facet">' + (ci.galaxy_facet_kind === 'inter' ? '🔗 ' : '💉 ') + esc(ci.galaxy_facet_kind) + '</span>';
+    }
+  }
+  return '<div class="item ' + cls + '" data-id="' + it.id + '"' + (it.linked_error_id ? ' data-linked-error="' + it.linked_error_id + '"' : '') + (it.linked_plan_item_id ? ' data-linked-plan="' + it.linked_plan_item_id + '"' : '') + '>' +
+    '<div class="item-top">' +
+      '<div><div class="item-name">' + esc(it.item_name) + '</div>' +
+      '<div class="item-desc">' + esc(it.description) + '</div>' +
+      (it.source_ref ? '<div class="item-ref">' + esc(it.source_ref) + '</div>' : '') +
+      (tags ? '<div class="galaxy-tags">' + tags + '</div>' : '') +
+      '</div>' +
+      '<span class="badge ' + it.status + '">' + (it.needs_confirm_highlight ? 'fix not confirmed' : it.status.replace('_', ' ')) + '</span>' +
+    '</div>' +
+    (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
+    (it.cross_ref_note ? '<div class="crossref-note">🗺️ <b>Cross-reference finding:</b> ' + esc(it.cross_ref_note) + '</div>' : '') +
+    (it.verified_at ? '<div class="verified-at">Last confirmed: ' + new Date(it.verified_at).toLocaleString() + '</div>' : '') +
+    '<div class="actions">' +
+      (it.status !== 'confirmed_working' ? '<button class="ok" data-act="confirm">✅ Confirm Working</button>' : '<button data-act="unconfirm">↩ Un-confirm</button>') +
+      (it.status !== 'broken' ? '<button class="bad" data-act="break">❌ Mark Broken</button>' : '<button class="ok" data-act="fixed">✅ Fixed, Re-confirm</button>') +
+    '</div>' +
+    (it.needs_confirm_highlight ? '<span class="bulb">💡</span>' : '') +
+  '</div>';
+}
+
+function render(items, activeErrors, planIdx) {
   var confirmed = items.filter(function(i) { return i.status === 'confirmed_working'; }).length;
   var broken = items.filter(function(i) { return i.status === 'broken'; }).length;
   var unverified = items.length - confirmed - broken;
@@ -143,45 +226,73 @@ function render(items, activeErrors) {
     return;
   }
 
-  var byCat = {};
-  items.forEach(function(i) { (byCat[i.category] = byCat[i.category] || []).push(i); });
+  // ---- Real Aug 23 (DD3): PLAN-FIRST grouping ----------------------
+  // Primary axis is the real ceo_plans row a row is linked to, matching
+  // future_integrations.html's own Plan-first restructure the same day.
+  // A smoke_test row with NO linked_plan_item_id is real and expected
+  // (core app modules/cards predate the CEO framework entirely) — those
+  // keep their original category grouping in their own clearly-labelled
+  // section, unchanged in spirit from how this page always worked.
+  planIdx = planIdx || { byItemId: {}, planOrder: [], planById: {} };
+
+  var byPlan = {}, unplanned = [];
+  items.forEach(function(i) {
+    var ci = i.linked_plan_item_id ? planIdx.byItemId[i.linked_plan_item_id] : null;
+    if (ci && ci.plan_id) { (byPlan[ci.plan_id] = byPlan[ci.plan_id] || []).push(i); }
+    else { unplanned.push(i); }
+  });
+
+  // Rivers sort by their real Roman numeral, not as plain strings.
+  var ROMAN = { I:1, II:2, III:3, IV:4, V:5, VI:6, VII:7, VIII:8, IX:9, X:10,
+                XI:11, XII:12, XIII:13, XIV:14, XV:15, XVI:16, XVII:17 };
+  function riverRank(name) {
+    var m = /River\s+([IVX]+)\b/.exec(String(name || ''));
+    return (m && ROMAN[m[1]]) ? ROMAN[m[1]] : 900;
+  }
 
   var html = failedHtml;
-  Object.keys(byCat).sort().forEach(function(cat) {
-    html += '<div class="cat"><div class="cat-title">' + esc(cat) + '</div>';
-    byCat[cat].forEach(function(it) {
-      var cls = it.status === 'confirmed_working' ? 'confirmed' : (it.status === 'broken' ? 'broken' : '');
-      // Real Aug 12 addition: a fix that just landed (green) but hasn't
-      // been hand-tested yet gets a real, distinct visual — separate
-      // from the plain "unverified" look every never-yet-tested item
-      // already has, since this one has a real, specific reason to
-      // check it (a real fix, not just an unreviewed backlog item).
-      if (it.needs_confirm_highlight) cls += ' needs-confirm';
-      html += '<div class="item ' + cls + '" data-id="' + it.id + '"' + (it.linked_error_id ? ' data-linked-error="' + it.linked_error_id + '"' : '') + (it.linked_plan_item_id ? ' data-linked-plan="' + it.linked_plan_item_id + '"' : '') + '>' +
-        '<div class="item-top">' +
-          '<div><div class="item-name">' + esc(it.item_name) + '</div>' +
-          '<div class="item-desc">' + esc(it.description) + '</div>' +
-          (it.source_ref ? '<div class="item-ref">' + esc(it.source_ref) + '</div>' : '') +
-          (it.galaxy_river || it.galaxy_level ?
-            '<div class="galaxy-tags">' +
-              (it.galaxy_river ? '<span class="galaxy-tag">🌊 ' + esc(it.galaxy_river) + '</span>' : '') +
-              (it.galaxy_level ? '<span class="galaxy-tag">🔽 ' + esc(it.galaxy_level) + '</span>' : '') +
-            '</div>' : '') +
-          '</div>' +
-          '<span class="badge ' + it.status + '">' + (it.needs_confirm_highlight ? 'fix not confirmed' : it.status.replace('_', ' ')) + '</span>' +
-        '</div>' +
-        (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
-        (it.cross_ref_note ? '<div class="crossref-note">🗺️ <b>Cross-reference finding:</b> ' + esc(it.cross_ref_note) + '</div>' : '') +
-        (it.verified_at ? '<div class="verified-at">Last confirmed: ' + new Date(it.verified_at).toLocaleString() + '</div>' : '') +
-        '<div class="actions">' +
-          (it.status !== 'confirmed_working' ? '<button class="ok" data-act="confirm">✅ Confirm Working</button>' : '<button data-act="unconfirm">↩ Un-confirm</button>') +
-          (it.status !== 'broken' ? '<button class="bad" data-act="break">❌ Mark Broken</button>' : '<button class="ok" data-act="fixed">✅ Fixed, Re-confirm</button>') +
-        '</div>' +
-        (it.needs_confirm_highlight ? '<span class="bulb">💡</span>' : '') +
-      '</div>';
+
+  planIdx.planOrder.forEach(function(pid) {
+    var rows = byPlan[pid];
+    if (!rows || !rows.length) return;
+    var plan = planIdx.planById[pid] || { name: 'Unknown plan' };
+    var done = rows.filter(function(r) { return r.status === 'confirmed_working'; }).length;
+    html += '<div class="cat plan-cat"><div class="cat-title">📋 ' + esc(plan.name) +
+      ' <span class="plan-count">' + done + ' of ' + rows.length + ' confirmed</span></div>';
+
+    var byRiver = {};
+    rows.forEach(function(r) {
+      var k = r.galaxy_river || 'Unclassified';
+      (byRiver[k] = byRiver[k] || []).push(r);
+    });
+    Object.keys(byRiver).sort(function(a, b) {
+      var d = riverRank(a) - riverRank(b);
+      return d !== 0 ? d : a.localeCompare(b);
+    }).forEach(function(riv) {
+      html += '<div class="river-sub"><div class="river-sub-title">🌊 ' + esc(riv) + '</div>';
+      byRiver[riv].sort(function(a, b) { return String(a.item_name).localeCompare(String(b.item_name)); })
+        .forEach(function(it) {
+          html += itemHTML(it, planIdx.byItemId[it.linked_plan_item_id]);
+        });
+      html += '</div>';
     });
     html += '</div>';
   });
+
+  if (unplanned.length) {
+    var unDone = unplanned.filter(function(r) { return r.status === 'confirmed_working'; }).length;
+    html += '<div class="cat unplanned-head"><div class="cat-title">🧩 Not plan-linked ' +
+      '<span class="plan-count">' + unDone + ' of ' + unplanned.length + ' confirmed</span></div>' +
+      '<p class="sub-note">Real standalone smoke-test items with no <code>linked_plan_item_id</code> — core app modules, dashboard cards and onclick features that predate the /CEO framework. Grouped by their own category, exactly as this page has always grouped them.</p></div>';
+    var byCat = {};
+    unplanned.forEach(function(i) { (byCat[i.category] = byCat[i.category] || []).push(i); });
+    Object.keys(byCat).sort().forEach(function(cat) {
+      html += '<div class="cat"><div class="cat-title">' + esc(cat) + '</div>';
+      byCat[cat].forEach(function(it) { html += itemHTML(it, null); });
+      html += '</div>';
+    });
+  }
+
   document.getElementById('items').innerHTML = html;
 
   document.querySelectorAll('.item').forEach(function(el) {
@@ -271,8 +382,8 @@ function checkUmbrellaAutoFlip() {
 }
 
 function load() {
-  Promise.all([fetchItems(), fetchActiveErrors()])
-    .then(function(results) { render(results[0], results[1]); })
+  Promise.all([fetchItems(), fetchActiveErrors(), fetchPlanIndex()])
+    .then(function(results) { render(results[0], results[1], results[2]); })
     .catch(function(e) {
       document.getElementById('items').innerHTML = '<div class="empty">Could not load real state: ' + esc(e.message) + '</div>';
     });

@@ -34,7 +34,7 @@ from graphify_river_group import (
     compute_page_nav_triggers, compute_click_load_triggers,
     dashboard_card_primary_module,
 )
-from graphify_river_group import inject_level_rail  # noqa: E402
+from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from galaxy_map_decisions import DECISION_POINTS
 
 OUT = Path('graphify-out/galaxy_map_dimensions.html')
@@ -200,6 +200,10 @@ def main():
     html = TEMPLATE.format(dim_headers=dim_headers, rows=rows, n_hubs=n_hubs, n_mods=len(tags))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
+    # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,
+    # injected at the same post-process point as the level rail so a
+    # regeneration can never wipe it. See inject_plan_overlay().
+    html = inject_plan_overlay(html, 'dimensions')
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(tags)} modules, {n_hubs} real hub(s) (3+ dimension tags).")
 

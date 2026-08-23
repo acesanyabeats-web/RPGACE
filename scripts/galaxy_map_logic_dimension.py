@@ -37,7 +37,7 @@ from graphify_river_group import (
     attribute_river_connection_function, _river_num_from_label,
     compute_cross_module_function_calls,
 )
-from graphify_river_group import inject_level_rail  # noqa: E402
+from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_logic_dimension.html')
 SKILL_RIVER = 13  # River XIII — same real constant galaxy_map_module.py defines (rule 8, not re-derived, just mirrored — a plain int, no import cost worth a cross-file dependency)
@@ -214,6 +214,10 @@ def main():
     html = TEMPLATE.format(tabs=tabs, sections=sections)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
+    # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,
+    # injected at the same post-process point as the level rail so a
+    # regeneration can never wipe it. See inject_plan_overlay().
+    html = inject_plan_overlay(html, 'logic')
     OUT.write_text(html, encoding='utf-8')
     total = sum(len(build_river_passages(r)) for r in rivers)
     print(f"Wrote {OUT} — {len(rivers)} rivers, {total} real clickable edge passages.")

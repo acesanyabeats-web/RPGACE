@@ -97,6 +97,23 @@
 .level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
 .level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
 .level-rail .rail-sep{color:#55555f}
+
+.plan-fab{position:fixed;right:14px;bottom:14px;z-index:9999;font-family:inherit}
+.plan-fab-btn{background:#14141f;border:1px solid rgba(201,168,76,0.45);color:#C9A84C;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.45)}
+.plan-fab-btn[hidden]{display:none}
+.plan-fab-panel{display:none;margin-top:8px;width:330px;max-height:60vh;overflow-y:auto;background:#0f0f1a;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px 14px;box-shadow:0 8px 28px rgba(0,0,0,0.6)}
+.plan-fab-panel.open{display:block}
+.plan-fab-panel h4{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C9A84C;margin:0 0 4px}
+.plan-fab-scope{font-size:10.5px;color:#9a9aa8;margin-bottom:10px;line-height:1.5}
+.plan-fab-plan{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:10px 0 5px}
+.plan-fab-item{font-size:11.5px;line-height:1.5;color:#e2e2ec;padding:6px 8px;margin-bottom:5px;border-radius:7px;background:rgba(255,255,255,0.03);border-left:3px solid #6b7280}
+.plan-fab-item.red{border-left-color:#E25454}
+.plan-fab-item.yellow{border-left-color:#E0C450}
+.plan-fab-item.blue{border-left-color:#4A90E2}
+.plan-fab-item.purple{border-left-color:#9B59B6}
+.plan-fab-item .code{font-weight:700;color:#C9A84C}
+.plan-fab-item .meta{display:block;font-size:9.5px;color:#8a8a98;margin-top:3px}
+.plan-badge{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:9px;font-size:9px;font-weight:700;background:rgba(201,168,76,0.16);color:#C9A84C;border:1px solid rgba(201,168,76,0.4);cursor:help;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -361,6 +378,130 @@
       if (el) { el.style.display = ''; el.scrollIntoView({behavior:'smooth', block:'nearest'}); }
     });
   });
+})();
+</script>
+
+<div class="plan-fab">
+  <button class="plan-fab-btn" id="plan-fab-btn" hidden></button>
+  <div class="plan-fab-panel" id="plan-fab-panel"></div>
+</div>
+<script>
+(function(){
+  /* Same fetch shape as future_integrations.html / smoke_test.html
+     (rule 8) - one idiom for reading ceo_plan_items, not three. */
+  var SB_URL='https://gripopghczmrbrhqtqbm.supabase.co';
+  var SB_KEY='sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+  var HEADERS={apikey:SB_KEY,Authorization:'Bearer '+SB_KEY};
+  var SCOPE='l0';
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+  function arr(v){if(typeof v==='string'){try{v=JSON.parse(v);}catch(e){v=null;}}return (v&&v.length)?v:[];}
+
+  /* Real L0 unit id -> the DD1 dimension name that genuinely represents
+     that unit. Not invented: these are the exact dimension strings DD1
+     writes, and the exact unit ids galaxy_map.py's own UNIT_ORDER uses. */
+  var UNIT_DIM={supabase:['Supabase'],skills:['Skills'],external_ai:['Externals'],
+    oversight_docs:['Oversight Sync'],alex:['UI/Alex-Accessibility','Decision/Human-Gate'],
+    openmontage_cc:['Orchestrator↔OpenMontage']};
+
+  function itemsForUnit(items,unit){
+    if(unit==='rpgace_architecture'){
+      return items.filter(function(i){return /^River /.test(i.galaxy_river||'');});
+    }
+    var dims=UNIT_DIM[unit]; if(!dims) return [];
+    return items.filter(function(i){
+      var d=arr(i.galaxy_dimensions);
+      return dims.some(function(x){return d.indexOf(x)>-1;});
+    });
+  }
+
+  function badge(n,title){
+    var b=document.createElement('span');
+    b.className='plan-badge'; b.textContent='\u{1F527} '+n;
+    b.title=title||(n+' in-flight plan item'+(n===1?'':'s')+' touching this');
+    return b;
+  }
+
+  function decorate(items){
+    var touched=0;
+    if(SCOPE==='l0'){
+      Array.prototype.forEach.call(document.querySelectorAll('[data-unit]'),function(el){
+        if(el.querySelector&&el.querySelector('.plan-badge')) return;
+        var n=itemsForUnit(items,el.getAttribute('data-unit')).length;
+        if(!n) return;
+        var host=(el.querySelector&&(el.querySelector('.unit-card')||el.querySelector('.unit-node-label')))||el;
+        if(host.ownerSVGElement||(window.SVGElement&&host instanceof SVGElement)) return;
+        host.appendChild(badge(n)); touched++;
+      });
+    } else if(SCOPE==='dimensions'){
+      Array.prototype.forEach.call(document.querySelectorAll('.modname'),function(el){
+        if(el.querySelector&&el.querySelector('.plan-badge')) return;
+        var name=(el.textContent||'').trim();
+        if(!name) return;
+        var n=items.filter(function(i){return arr(i.galaxy_modules).indexOf(name)>-1;}).length;
+        if(!n) return;
+        el.appendChild(badge(n,n+' in-flight plan item'+(n===1?'':'s')+' naming module '+name));
+        touched++;
+      });
+    }
+    return touched;
+  }
+
+  function relevant(items){
+    /* river/logic pages have no per-node handle, so the panel covers
+       every item that names a real river - honestly stated in the panel. */
+    if(SCOPE==='river'||SCOPE==='logic')
+      return items.filter(function(i){return /^River /.test(i.galaxy_river||'');});
+    if(SCOPE==='dimensions')
+      return items.filter(function(i){return arr(i.galaxy_dimensions).length||arr(i.galaxy_modules).length;});
+    return items;
+  }
+
+  var SCOPE_NOTE={
+    l0:'Badges sit on each L0 unit whose real dimension a plan item touches.',
+    dimensions:'Badges sit on each module named in a plan item’s galaxy_modules.',
+    river:'This view has no per-river node to badge (its rivers are SVG text), so this panel lists every in-flight item that names a real river.',
+    logic:'This view has no per-river node to badge (its rivers are prose headings), so this panel lists every in-flight item that names a real river.'
+  };
+
+  function render(plans,items){
+    var rel=relevant(items);
+    var btn=document.getElementById('plan-fab-btn');
+    var panel=document.getElementById('plan-fab-panel');
+    if(!btn||!panel) return;
+    var nBadged=decorate(items);
+    if(!rel.length){ btn.hidden=true; return; }
+    btn.hidden=false;
+    btn.textContent='\u{1F527} '+rel.length+' in-flight';
+    var byPlan={}; rel.forEach(function(i){(byPlan[i.plan_id]=byPlan[i.plan_id]||[]).push(i);});
+    var html='<h4>In-flight plan work</h4><div class="plan-fab-scope">Live from <code>ceo_plan_items</code> (non-green). '+
+      esc(SCOPE_NOTE[SCOPE]||'')+(nBadged?' '+nBadged+' node'+(nBadged===1?'':'s')+' badged on this page.':'')+'</div>';
+    (plans||[]).forEach(function(p){
+      var rows=byPlan[p.id]; if(!rows||!rows.length) return;
+      html+='<div class="plan-fab-plan">'+esc(p.name)+'</div>';
+      rows.sort(function(a,b){return String(a.item_code).localeCompare(String(b.item_code));})
+        .forEach(function(i){
+          var meta=[i.galaxy_river,arr(i.galaxy_level).join('·'),arr(i.galaxy_dimensions).join(', '),i.galaxy_facet_kind]
+            .filter(Boolean).join(' — ');
+          html+='<div class="plan-fab-item '+esc(i.status)+'"><span class="code">'+esc(i.item_code)+
+            '</span> '+esc(i.title)+(meta?'<span class="meta">'+esc(meta)+'</span>':'')+'</div>';
+        });
+    });
+    html+='<div class="plan-fab-scope" style="margin-top:10px">Full detail: <a href="../future_integrations.html" style="color:#4A90E2">future_integrations.html</a></div>';
+    panel.innerHTML=html;
+    btn.addEventListener('click',function(){panel.classList.toggle('open');});
+  }
+
+  fetch(SB_URL+'/rest/v1/ceo_plans?select=id,name&order=created_at.asc',{headers:HEADERS})
+    .then(function(r){return r.json();})
+    .then(function(plans){
+      if(!plans||!plans.length) throw new Error('no plans');
+      var ids=plans.map(function(p){return p.id;}).join(',');
+      return fetch(SB_URL+'/rest/v1/ceo_plan_items?plan_id=in.('+ids+')&status=neq.green&select=*&order=item_code.asc',{headers:HEADERS})
+        .then(function(r){return r.json();})
+        .then(function(items){render(plans,items||[]);});
+    })
+    .catch(function(){ /* offline / blocked: overlay stays hidden, page unaffected */ });
 })();
 </script>
 </body>

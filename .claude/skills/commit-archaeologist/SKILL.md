@@ -143,3 +143,25 @@ whose real behavior diverged from its introducing commit's stated goal is
 exactly a MATERIAL or CAPTURED finding in that vocabulary. Optional, not a
 required step for every dig; use it when the divergence is real and worth
 a graded finding, not for routine historical narration.
+
+## Cross-Doc Drift Check — required when a dig contradicts a doc (Aug 23 2026, DD6)
+
+A dig routinely surfaces a real oversight doc describing code differently
+from what the archaeology actually found — that is this skill's most
+common incidental finding, and until now it had nowhere to go but prose
+in the report. When it happens, run the **Cross-Doc Drift Check** defined
+in `.claude/skills/update-logging-system/SKILL.md` (pointer only, never a
+copy of its map — rule 8): name the subject the dig just settled, check
+which OTHER oversight docs still assert something about that same
+subject, grade any real inconsistency with the `/drift` vocabulary the
+note above already uses, and route it to the mechanism that owns the
+outcome (brown/achiever for a stale claim, purple/`error_log` for broken
+code, fix-in-place otherwise).
+
+Scoped narrowly on purpose: this fires only when a dig has ALREADY found
+a real contradiction, never as a routine step on every dig. Note this is
+a genuinely different check from the `/cartographer` trickle-down/up
+trigger that `/scope` and GODMODE carry and `commit-archaeologist`
+deliberately does not — that one is about map-hierarchy integration
+friction; this one is about two docs disagreeing on one fact, which is
+exactly what a dig is good at exposing.

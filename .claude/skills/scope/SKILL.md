@@ -44,6 +44,26 @@ Once grouped, route into each doc per its own stated purpose (CLAUDE.md's summar
 - `minotaur_map.html` — only if a new wing (entrance/hub/exit) was added; internal patches don't belong here.
 - `ai_tooling_and_rules_map.md` — only if a new global/native Claude Code skill got used against RPGACE for the first time, a new RPGACE-authored skill shipped, or a new rule-bearing `.md`/`.txt` file was added anywhere in the repo.
 
+## Cross-Doc Drift Check — required (Aug 23 2026, DD6)
+
+`/scope` already reads across every oversight doc in one pass, which
+makes it the single cheapest place in the project to notice that two
+docs disagree — so this is now a real obligation here, not optional.
+Before handing off to the docs above, run the **Cross-Doc Drift Check**
+defined in `.claude/skills/update-logging-system/SKILL.md` (its own
+named section — read it there, it is deliberately not copied here,
+rule 8). Because `/scope` is by nature the "everything, all at once"
+sweep, it is the one caller expected to run the check for EVERY subject
+its grouped findings surfaced, not just one — that is still targeted
+(each subject gets its own 2-4 relevant docs looked at), never a
+pairwise sweep of all 12 docs against each other.
+
+A finding is graded with `/drift`'s own VERDICT/BASIS/MINOR-MATERIAL-
+CAPTURED vocabulary and routed to whichever mechanism already owns that
+outcome (brown/achiever for a stale claim, purple/error_log for broken
+code, fix-in-place otherwise). `/scope` reports the finding — it does
+not silently fix a MATERIAL or CAPTURED one without surfacing it.
+
 ## What this skill does NOT do
 
 It doesn't write the docs itself in one pass without judgment — Council of 5 still applies to how much detail survives into each doc (a full diagnostic arc might be one line in `patch_notes.html` but deserves more in `CLAUDE.md` if it's now a standing lesson). It doesn't replace `node --check` / real hand-testing. And it doesn't invent a "done" status for anything that hasn't actually been verified — every claim this skill produces must trace back to a real commit, a real Supabase query, or a real test run, per CLAUDE.md's own non-negotiable rule 1.
