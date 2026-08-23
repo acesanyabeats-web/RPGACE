@@ -7,7 +7,7 @@
 <style>
   :root {
     --gold:#C9A84C; --blue:#4A90E2; --green:#3DAA6E;
-    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0; --amber:#E2A83D;
+    --red:#E25454; --purple:#9B59B6; --teal:#2ABFB0; --amber:#E2A83D; --yellow:#E0C450;
     --bg:#080810; --surface:#0f0f1a; --surface2:#14141f;
     --border:rgba(255,255,255,0.07); --text:rgba(226,226,236,0.88);
     --dim:rgba(226,226,236,0.45);
@@ -44,6 +44,8 @@
   .badge.unverified{background:rgba(226,226,236,0.08);color:var(--dim);border:1px solid var(--border)}
   .badge.confirmed_working{background:rgba(61,170,110,0.15);color:var(--green);border:1px solid rgba(61,170,110,0.3)}
   .badge.broken{background:rgba(226,84,84,0.15);color:var(--red);border:1px solid rgba(226,84,84,0.3)}
+  .badge.yellow{background:rgba(224,196,80,0.18);color:var(--yellow);border:1px solid rgba(224,196,80,0.35)}
+  .badge.purple{background:rgba(155,89,182,0.2);color:var(--purple);border:1px solid rgba(155,89,182,0.4)}
   .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   button{font-family:inherit;font-size:11px;font-weight:600;padding:6px 12px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s var(--ease-out)}
   button:hover{border-color:var(--gold);color:var(--gold)}
@@ -52,6 +54,8 @@
   .broken-note{font-size:11px;color:var(--red);margin-top:8px;padding:8px 10px;background:rgba(226,84,84,0.06);border-radius:6px;border-left:2px solid var(--red)}
   .crossref-note{font-size:11px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(42,191,176,0.06);border-radius:6px;border-left:2px solid var(--teal)}
   .crossref-note b{color:var(--teal)}
+  .item.plan-untested{border:1px dashed rgba(224,196,80,0.4);background:rgba(224,196,80,0.05)}
+  .untested-note{font-size:11px;color:var(--yellow);margin-top:8px;padding:8px 10px;background:rgba(224,196,80,0.06);border-radius:6px;border-left:2px solid var(--yellow)}
   .verified-at{font-size:10px;color:var(--dim);margin-top:6px;opacity:.6}
   .galaxy-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
   .galaxy-tag{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);border:1px solid rgba(201,168,76,0.25)}
@@ -75,6 +79,7 @@
   <h1>🧪 Smoke Test</h1>
   <p>Real, hand-verified confirmation — what's actually working right now, not what shipped. Nothing here auto-ticks. Click a real one after you've actually checked it live; mark broken with a real note if it isn't. Grown from real completed work (Aug 11 2026) — never pre-built empty. Paired with <a href="error_log.html" style="color:var(--blue)">error_log.html</a> (Aug 12 2026) — the (d)-layer's other doc: it logs what's currently BROKEN and why; this page logs the CURRENT confirmed/unconfirmed state of every real function. The "🔴 Just Failed" group at the top mirrors error_log's own active errors live. Each item's real 🌊 river / 🔽 level tags (Aug 14, G14) are sourced directly from the <a href="/graphify-out/galaxy_map.html" style="color:var(--gold)">Galaxy Map</a>'s own real hierarchy — where an item doesn't map to a specific RPGACE app river/module (most of this page today — dev-process/skills/oversight artifacts), it's honestly tagged to the real dev-process river (XIII-XVI) that actually owns it, never guessed onto an app river it doesn't belong to.</p>
   <p style="margin-top:14px"><strong style="color:#E2E2EC">Grouped Plan-first since Aug 23 2026 (DD3)</strong> — matching <a href="future_integrations.html" style="color:var(--blue)">future_integrations.html</a>'s own restructure the same day, so the two (d)-layer docs read the same way round: every row that links to a real <code>ceo_plan_items</code> row sits under its own plan, sub-grouped by the real river it touches; rows with no plan link (core app modules, dashboard cards, onclick features — all of which predate the /CEO framework) keep their original category grouping in their own "🧩 Not plan-linked" section. The two docs are deliberately NOT redundant: future_integrations describes <em>what a plan item is and what was built</em>; a row here describes <em>how to actually test it</em>. Where a card carries teal dimension / 💉 infra / 🔗 inter tags, those ride along from its linked plan item so one item can be cross-referenced across both docs without either repeating the other.</p>
+  <p style="margin-top:14px"><strong style="color:#E2E2EC">Yellow/purple items get a live card even with no dedicated row (Aug 23 2026, same day, 2nd extension)</strong> — Alex's own direct ask: "i want smoke test to include if yellow, so i know what needs to be handtested against what plan etc using future integrations... to verify yellow into greens, and obviously it will translate purple into green too." Real evidence found 15 of 24 yellow <code>ceo_plan_items</code> had no <code>smoke_test_items</code> row at all — structurally invisible on this page. Fixed structurally rather than with a one-time backfill that would just go stale again the moment the next plan item ships yellow without someone remembering to add a row (exactly what happened here): every yellow/purple item with no dedicated row now renders a real, live "🟡 Needs hand-test" card sourced straight from its own <code>evidence</code>/<code>last_verdict</code> — the same fields <a href="future_integrations.html" style="color:var(--blue)">future_integrations.html</a> already shows — with its own "✅ Confirm Working" button. Confirming flips the <code>ceo_plan_items</code> row to green (the same mechanic G51 already built for dedicated rows), resolves any linked active <code>error_log</code> row, and — this is also how a real purple regression graduates back to green — the card just disappears from this page on the next load, since the underlying query only ever asks for yellow/purple.</p>
 </div>
 
 <div class="wrap">
@@ -124,7 +129,7 @@ function fetchPlanIndex() {
     .then(function(plans) {
       var planById = {};
       (plans || []).forEach(function(p) { planById[p.id] = p; });
-      return fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?select=id,plan_id,item_code,status,galaxy_river,galaxy_level,galaxy_dimensions,galaxy_facet_kind', { headers: HEADERS })
+      return fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?select=id,plan_id,item_code,title,status,evidence,last_verdict,galaxy_river,galaxy_level,galaxy_dimensions,galaxy_facet_kind', { headers: HEADERS })
         .then(function(r) { return r.json(); })
         .then(function(rows) {
           var idx = { byItemId: {}, planOrder: (plans || []).map(function(p) { return p.id; }), planById: planById };
@@ -191,15 +196,71 @@ function itemHTML(it, ci) {
   '</div>';
 }
 
+// Real Aug 23 (2nd DD3 extension) — a lightweight card for a real
+// yellow/purple ceo_plan_item that has NO smoke_test_items row of its
+// own yet. Deliberately reuses the same evidence/last_verdict fields
+// future_integrations.html's own cardHTML already renders (rule 8) —
+// nothing new is written to Supabase to produce this, it's a live read.
+// Scope, stated plainly: only a "✅ Confirm Working" action ships here.
+// A still-failing yellow item needs no action at all (it just stays
+// yellow until it's actually fixed); a real "still broken, log a note"
+// flow for a synthetic card was considered and left out — it would mean
+// writing over real build evidence/last_verdict text with no dedicated
+// notes field to hold it separately, a real risk not worth taking for
+// something not explicitly asked for.
+function planItemCardHTML(ci) {
+  var evid = String(ci.evidence || '').trim();
+  var verdict = String(ci.last_verdict || '').trim();
+  var body = evid + (verdict ? (evid ? ' — Verdict: ' : 'Verdict: ') + verdict : '');
+  var truncated = body.length > 400;
+  body = body.slice(0, 400) + (truncated ? '…' : '');
+  var tags = '';
+  if (ci.galaxy_river) tags += '<span class="galaxy-tag">🌊 ' + esc(ci.galaxy_river) + '</span>';
+  var dims = ci.galaxy_dimensions;
+  if (typeof dims === 'string') { try { dims = JSON.parse(dims); } catch (e) { dims = null; } }
+  (dims || []).forEach(function(d) { tags += '<span class="galaxy-tag dim">' + esc(d) + '</span>'; });
+  if (ci.galaxy_facet_kind) tags += '<span class="galaxy-tag facet">' + (ci.galaxy_facet_kind === 'inter' ? '🔗 ' : '💉 ') + esc(ci.galaxy_facet_kind) + '</span>';
+  return '<div class="item plan-untested" data-plan-item-id="' + ci.id + '">' +
+    '<div class="item-top">' +
+      '<div><div class="item-name">' + esc(ci.item_code) + ' — ' + esc(ci.title) + '</div>' +
+      '<div class="item-desc">' + (body ? esc(body) : '<em>No build evidence recorded yet.</em>') + '</div>' +
+      (tags ? '<div class="galaxy-tags">' + tags + '</div>' : '') +
+      '</div>' +
+      '<span class="badge ' + esc(ci.status) + '">' + (ci.status === 'purple' ? 'regressed' : 'mid-build') + '</span>' +
+    '</div>' +
+    '<div class="untested-note">🧪 No dedicated smoke-test row yet — hand-test using the real build evidence above (same record <a href="future_integrations.html" style="color:inherit">future_integrations.html</a> shows for this item), then confirm here.</div>' +
+    '<div class="actions"><button class="ok" data-act="confirm-plan-item">✅ Confirm Working</button></div>' +
+  '</div>';
+}
+
 function render(items, activeErrors, planIdx) {
   var confirmed = items.filter(function(i) { return i.status === 'confirmed_working'; }).length;
   var broken = items.filter(function(i) { return i.status === 'broken'; }).length;
   var unverified = items.length - confirmed - broken;
 
+  // Real Aug 23 (2nd DD3 extension, Alex's own direct ask): "i want
+  // smoke test to include if yellow... give me an easier way to check
+  // all things properly against future integrations to verify yellow
+  // into greens, and obviously it will translate purple into green
+  // too." A dedicated smoke_test_items row (with a real hand-written
+  // HOW TO TEST) is the richer case, but a live Supabase count showed
+  // 15 of 24 yellow ceo_plan_items had NO linked row at all — a real,
+  // silent gap, not hypothetical. Per CLAUDE.md rule 16 ("where a doc
+  // can be RENDERED from real data instead of asserted by hand, do
+  // that"), this is closed structurally rather than with a one-time
+  // manual backfill that would just go stale again the next time a plan
+  // item ships yellow without someone remembering to add a row —
+  // exactly what happened here.
+  var linkedPlanIds = {};
+  items.forEach(function(i) { if (i.linked_plan_item_id) linkedPlanIds[i.linked_plan_item_id] = true; });
+  var untestedCIs = Object.keys(planIdx.byItemId).map(function(id) { return planIdx.byItemId[id]; })
+    .filter(function(ci) { return (ci.status === 'yellow' || ci.status === 'purple') && !linkedPlanIds[ci.id]; });
+
   document.getElementById('summary').innerHTML =
     '<div class="stat green"><div class="n">' + confirmed + '</div><div class="l">Confirmed</div></div>' +
     '<div class="stat"><div class="n">' + unverified + '</div><div class="l">Unverified</div></div>' +
     '<div class="stat red"><div class="n">' + broken + '</div><div class="l">Broken</div></div>' +
+    (untestedCIs.length ? '<div class="stat" style="border-color:rgba(224,196,80,0.35)"><div class="n" style="color:var(--yellow)">' + untestedCIs.length + '</div><div class="l">Needs hand-test</div></div>' : '') +
     '<div class="stat"><div class="n">' + items.length + '</div><div class="l">Total</div></div>';
 
   // Real, new Aug 12 — "Just Failed" top group, always rendered first,
@@ -238,8 +299,16 @@ function render(items, activeErrors, planIdx) {
   var byPlan = {}, unplanned = [];
   items.forEach(function(i) {
     var ci = i.linked_plan_item_id ? planIdx.byItemId[i.linked_plan_item_id] : null;
-    if (ci && ci.plan_id) { (byPlan[ci.plan_id] = byPlan[ci.plan_id] || []).push(i); }
+    if (ci && ci.plan_id) { (byPlan[ci.plan_id] = byPlan[ci.plan_id] || []).push({ kind: 'smoke', it: i, ci: ci }); }
     else { unplanned.push(i); }
+  });
+  // Fold the live synthetic untested-plan-item cards into the exact
+  // same plan/river grouping real smoke_test_items rows already use —
+  // one structure, two real sources per entry, never two rendering
+  // paths drifting apart (rule 8).
+  untestedCIs.forEach(function(ci) {
+    if (!ci.plan_id) return;
+    (byPlan[ci.plan_id] = byPlan[ci.plan_id] || []).push({ kind: 'plan', ci: ci });
   });
 
   // Rivers sort by their real Roman numeral, not as plain strings.
@@ -256,24 +325,27 @@ function render(items, activeErrors, planIdx) {
     var rows = byPlan[pid];
     if (!rows || !rows.length) return;
     var plan = planIdx.planById[pid] || { name: 'Unknown plan' };
-    var done = rows.filter(function(r) { return r.status === 'confirmed_working'; }).length;
+    var done = rows.filter(function(r) { return r.kind === 'smoke' && r.it.status === 'confirmed_working'; }).length;
     html += '<div class="cat plan-cat"><div class="cat-title">📋 ' + esc(plan.name) +
       ' <span class="plan-count">' + done + ' of ' + rows.length + ' confirmed</span></div>';
 
     var byRiver = {};
-    rows.forEach(function(r) {
-      var k = r.galaxy_river || 'Unclassified';
-      (byRiver[k] = byRiver[k] || []).push(r);
+    rows.forEach(function(entry) {
+      var k = (entry.kind === 'smoke' ? (entry.it.galaxy_river || (entry.ci && entry.ci.galaxy_river)) : entry.ci.galaxy_river) || 'Unclassified';
+      (byRiver[k] = byRiver[k] || []).push(entry);
     });
     Object.keys(byRiver).sort(function(a, b) {
       var d = riverRank(a) - riverRank(b);
       return d !== 0 ? d : a.localeCompare(b);
     }).forEach(function(riv) {
       html += '<div class="river-sub"><div class="river-sub-title">🌊 ' + esc(riv) + '</div>';
-      byRiver[riv].sort(function(a, b) { return String(a.item_name).localeCompare(String(b.item_name)); })
-        .forEach(function(it) {
-          html += itemHTML(it, planIdx.byItemId[it.linked_plan_item_id]);
-        });
+      byRiver[riv].sort(function(a, b) {
+        var an = a.kind === 'smoke' ? a.it.item_name : (a.ci.item_code + ' — ' + a.ci.title);
+        var bn = b.kind === 'smoke' ? b.it.item_name : (b.ci.item_code + ' — ' + b.ci.title);
+        return String(an).localeCompare(String(bn));
+      }).forEach(function(entry) {
+        html += entry.kind === 'smoke' ? itemHTML(entry.it, entry.ci) : planItemCardHTML(entry.ci);
+      });
       html += '</div>';
     });
     html += '</div>';
@@ -297,9 +369,32 @@ function render(items, activeErrors, planIdx) {
 
   document.querySelectorAll('.item').forEach(function(el) {
     var id = el.getAttribute('data-id');
+    var planItemId = el.getAttribute('data-plan-item-id');
     el.querySelectorAll('button').forEach(function(btn) {
       btn.addEventListener('click', function() {
         var act = btn.getAttribute('data-act');
+        // Real Aug 23 addition: a synthetic untested-plan-item card has
+        // no smoke_test_items row behind it at all — confirming it
+        // writes straight to ceo_plan_items instead of going through
+        // updateItem()/the smoke-row patch shape below, since there's
+        // genuinely no smoke_test_items id to patch.
+        if (act === 'confirm-plan-item') {
+          fetch(SUPABASE_URL + '/rest/v1/ceo_plan_items?id=eq.' + planItemId, {
+            method: 'PATCH', headers: HEADERS,
+            body: JSON.stringify({ status: 'green', last_checked_at: new Date().toISOString() })
+          }).then(function() {
+            // Same real symmetry as the smoke-row confirm path below: a
+            // purple item usually has its own active error_log row (per
+            // future_integrations.html's own documented purple
+            // convention) — confirming it working again resolves that
+            // row too, one real action, two real state changes.
+            return fetch(SUPABASE_URL + '/rest/v1/error_log?linked_plan_item_id=eq.' + planItemId + '&status=eq.active', {
+              method: 'PATCH', headers: HEADERS,
+              body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString() })
+            }).catch(function() {});
+          }).then(function() { return checkUmbrellaAutoFlip(); }).then(load).catch(function() {});
+          return;
+        }
         var patch = {};
         if (act === 'confirm' || act === 'fixed') {
           patch = { status: 'confirmed_working', verified_at: new Date().toISOString(), broken_note: null, needs_confirm_highlight: false };
