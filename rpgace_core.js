@@ -25345,52 +25345,136 @@ RPGACE.register('mockOracle', {
       dim: '0.92', scroll: true, width: '640px', borderColor: 'rgba(201,168,76,0.35)',
       eyebrow: 'Fallback Scout Mode', title: '📥 Scouted, Now Answered', accent: 'rgba(201,168,76,0.9)',
     });
+    // pop.box is _popup's inner body div - a sibling of the eyebrow/title
+    // and the default Close button, never their parent - so clearing it
+    // to re-render the list can't wipe the popup's own chrome.
     var body = pop.box;
-    var loading = document.createElement('div');
-    loading.style.cssText = 'color:var(--muted);font-size:12px;padding:10px 0;';
-    loading.textContent = 'Loading scouted items…';
-    body.appendChild(loading);
 
-    RPGACE.sb.select('oracle_fallback_queue', "context->>type=eq.scout_item&order=created_at.desc&limit=50")
-      .then(function (rows) {
-        loading.remove();
-        if (!rows || !rows.length) {
-          var empty = document.createElement('div');
-          empty.style.cssText = 'color:var(--muted);font-size:12px;padding:10px 0;';
-          empty.textContent = 'Nothing scouted yet. Switch the top-right toggle to 📥 Fallback Scout and send an Oracle message to queue your first item.';
-          body.appendChild(empty);
-          return;
-        }
-        rows.forEach(function (row) {
-          var card = document.createElement('div');
-          card.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;';
-          var answered = row.status === 'answered';
-          var statusChip = document.createElement('span');
-          statusChip.style.cssText = 'display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:10px;margin-bottom:8px;' + (answered ? 'background:rgba(76,175,130,0.15);color:#4CAF82;' : 'background:rgba(201,168,76,0.15);color:#C9A84C;');
-          statusChip.textContent = answered ? '✅ Answered' : '⏳ Pending';
-          card.appendChild(statusChip);
+    var renderList = function () {
+      body.innerHTML = '';
+      var loading = document.createElement('div');
+      loading.style.cssText = 'color:var(--muted);font-size:12px;padding:10px 0;';
+      loading.textContent = 'Loading scouted items…';
+      body.appendChild(loading);
 
-          var promptEl = document.createElement('div');
-          promptEl.style.cssText = 'font-size:12px;color:var(--text);white-space:pre-wrap;margin-bottom:' + (answered ? '8px' : '0') + ';';
-          promptEl.textContent = row.prompt || '(no prompt text)';
-          card.appendChild(promptEl);
-
-          if (answered && row.answer) {
-            var ansLbl = document.createElement('div');
-            ansLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(76,175,130,0.7);margin:8px 0 4px;';
-            ansLbl.textContent = 'Real answer';
-            card.appendChild(ansLbl);
-            var ansEl = document.createElement('div');
-            ansEl.style.cssText = 'font-size:12px;color:var(--muted);white-space:pre-wrap;';
-            ansEl.textContent = row.answer;
-            card.appendChild(ansEl);
+      RPGACE.sb.select('oracle_fallback_queue', "context->>type=eq.scout_item&order=created_at.desc&limit=50")
+        .then(function (rows) {
+          loading.remove();
+          if (!rows || !rows.length) {
+            var empty = document.createElement('div');
+            empty.style.cssText = 'color:var(--muted);font-size:12px;padding:10px 0;';
+            empty.textContent = 'Nothing scouted yet. Switch the top-right toggle to 📥 Fallback Scout and send an Oracle message to queue your first item.';
+            body.appendChild(empty);
+            return;
           }
-          body.appendChild(card);
+          rows.forEach(function (row) {
+            var card = document.createElement('div');
+            card.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;';
+            var answered = row.status === 'answered';
+
+            // Status chip + delete button share one flex row so the bin
+            // sits at the card's top-right instead of pushing the prompt
+            // text around. The chip's own margin-bottom moves onto this
+            // row so the spacing below is unchanged from before.
+            var headRow = document.createElement('div');
+            headRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;';
+
+            var statusChip = document.createElement('span');
+            statusChip.style.cssText = 'display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:2px 8px;border-radius:10px;' + (answered ? 'background:rgba(76,175,130,0.15);color:#4CAF82;' : 'background:rgba(201,168,76,0.15);color:#C9A84C;');
+            statusChip.textContent = answered ? '✅ Answered' : '⏳ Pending';
+            headRow.appendChild(statusChip);
+
+            // Per-item delete (A3). Alex's own reason: strip a queued
+            // analysis he doesn't want BEFORE the daily Fallback Drain
+            // spends real effort answering it, so junk never gets stored
+            // or processed. Works on answered rows too, so a kept answer
+            // he doesn't want can be cleared out the same way.
+            //
+            // Two clicks (arms, then confirms, 3s auto-disarm) - the
+            // exact same idiom bookworm's own book-delete button uses,
+            // deliberately reused rather than inventing a second delete
+            // interaction (rule 8). No modal: low-risk, but permanent.
+            //
+            // Writes via the PLAIN anon-key RPGACE.sb.del, never
+            // api/data-write.js's service-role proxy: oracle_fallback_queue
+            // is deliberately anon-writable (verified live - its only RLS
+            // policy is anon_all, USING(true), FOR ALL, granted to anon +
+            // authenticated) because the external "RPGACE Fallback Drain"
+            // Claude Code Routine writes back to it holding nothing but
+            // the anon key. That's a standing landmine in CLAUDE.md, not
+            // an oversight - do not "upgrade" this to secureWrite.
+            // RPGACE.sb.del is already cache-bust-wrapped, so the
+            // re-render below reads fresh rows rather than a stale
+            // cached list.
+            var delBtn = document.createElement('button');
+            delBtn.textContent = '🗑';
+            delBtn.title = 'Delete this scouted item';
+            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';
+            var armed = false, busy = false;
+            delBtn.onclick = function (e) {
+              e.stopPropagation();
+              if (busy) return;
+              if (!armed) {
+                armed = true;
+                delBtn.textContent = '❌ Confirm';
+                delBtn.style.color = '#CC4A4A';
+                setTimeout(function () {
+                  if (busy) return;
+                  armed = false; delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)';
+                }, 3000);
+                return;
+              }
+              busy = true;
+              delBtn.textContent = '…';
+              // RPGACE.sb.del resolves with the raw fetch Response and
+              // does NOT reject on an HTTP error status, so .ok is
+              // checked explicitly - otherwise a 401/403/404 would fall
+              // straight into the success branch and claim a delete that
+              // never happened (rule 7, fail loud).
+              RPGACE.sb.del('oracle_fallback_queue', 'id=eq.' + row.id)
+                .then(function (res) {
+                  if (!res || !res.ok) {
+                    busy = false; armed = false;
+                    delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)';
+                    RPGACE.utils.toast('Delete failed (' + (res ? res.status + ' ' + res.statusText : 'no response') + ') — nothing was removed', '#CC4A4A', 4000);
+                    return;
+                  }
+                  RPGACE.utils.toast('🗑 Deleted scouted item', 'rgba(226,226,236,0.5)', 2500);
+                  renderList();
+                })
+                .catch(function (err) {
+                  busy = false; armed = false;
+                  delBtn.textContent = '🗑'; delBtn.style.color = 'rgba(226,84,84,0.4)';
+                  RPGACE.utils.toast('Delete failed: ' + err.message, '#CC4A4A', 4000);
+                });
+            };
+            headRow.appendChild(delBtn);
+            card.appendChild(headRow);
+
+            var promptEl = document.createElement('div');
+            promptEl.style.cssText = 'font-size:12px;color:var(--text);white-space:pre-wrap;margin-bottom:' + (answered ? '8px' : '0') + ';';
+            promptEl.textContent = row.prompt || '(no prompt text)';
+            card.appendChild(promptEl);
+
+            if (answered && row.answer) {
+              var ansLbl = document.createElement('div');
+              ansLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(76,175,130,0.7);margin:8px 0 4px;';
+              ansLbl.textContent = 'Real answer';
+              card.appendChild(ansLbl);
+              var ansEl = document.createElement('div');
+              ansEl.style.cssText = 'font-size:12px;color:var(--muted);white-space:pre-wrap;';
+              ansEl.textContent = row.answer;
+              card.appendChild(ansEl);
+            }
+            body.appendChild(card);
+          });
+        })
+        .catch(function (e) {
+          loading.textContent = 'Could not load scouted items: ' + e.message;
         });
-      })
-      .catch(function (e) {
-        loading.textContent = 'Could not load scouted items: ' + e.message;
-      });
+    };
+
+    renderList();
   },
 
 });
