@@ -9803,7 +9803,12 @@ RPGACE.register('scheduleOracle', {
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
 
-  BIB:    'rpgace_intel_bibliography',
+  // Aug 23 2026 - the old BIB localStorage key ('rpgace_intel_bibliography')
+  // is gone. A saved reference is now a real row in the shared `bibliography`
+  // table (book_id IS NULL = a saved link; book_id IS NOT NULL = a completed
+  // book, written by bookworm._markBookComplete). One table, one
+  // discriminator, zero new schema - and the Supabase row is the single
+  // source of truth, so there is no local mirror left to drift from it.
 
   // July 24 audit fix: the entire body below (the 500/1200/3000ms inject
   // passes, the bib-section timeout, AND the MutationObserver that
@@ -9870,6 +9875,12 @@ RPGACE.register('intelDelete', {
     return RPGACE.sb.secureWrite(table, 'delete', null, filter);
   },
 
+  // Aug 23 2026 - HONEST NOTE: this helper currently has ZERO callers. Its one
+  // real caller was _deleteUnified's intel_bibliography insert, now routed
+  // through _saveBib instead. Left in place (rather than deleted) because it
+  // is a 3-line generic sibling of the still-live _sbDel above and any future
+  // intelDelete write would want it - but do not assume it is exercised by
+  // anything today. Delete it if nothing has picked it up.
   _sbInsert: function(table, row) {
     return RPGACE.sb.secureWrite(table, 'insert', row);
   },
@@ -9919,10 +9930,15 @@ RPGACE.register('intelDelete', {
       }
       // 2. Delete from localStorage intel_insights
       self._rmLocal('rpgace_intel_insights', title);
-      // 3. Save to bibliography if requested
+      // 3. Save to bibliography if requested.
+      // Aug 23 2026 - this used to hand-roll its own
+      // _sbInsert('intel_bibliography', ...) with a silent .catch(), a real
+      // second copy of _saveBib's job that would have kept writing to the
+      // retired table after _saveBib moved off it. Routed through the one
+      // shared implementation instead (rule 8) - which also means this path
+      // now fails loud like the other two.
       if (saveBib && entry && entry.url) {
-        var row = { title: title, url: entry.url };
-        self._sbInsert('intel_bibliography', row).catch(function(){});
+        self._saveBib(title, entry.url);
       }
       // 4. Remove from collapsed list
       var collRow = document.querySelector('[data-intel-title="' + CSS.escape(title) + '"]');
@@ -10277,7 +10293,11 @@ RPGACE.register('intelDelete', {
     self._hideCard(card);
     /* Save to bibliography if requested */
     if (saveBib && entry) self._saveBib(title, entry.url||'');
-    RPGACE.utils.toast(saveBib ? 'Deleted + saved to bibliography' : 'Deleted', saveBib ? 'rgba(61,170,110,0.9)' : 'rgba(226,84,84,0.9)', 2000);
+    // Aug 23 2026 - this used to claim 'Deleted + saved to bibliography'
+    // synchronously, before _saveBib's real async write had resolved. The save
+    // now reports its own real outcome (success OR failure) in its own toast,
+    // so this one only claims the part that actually happened here (rule 7).
+    RPGACE.utils.toast('Deleted', 'rgba(226,84,84,0.9)', 2000);
   },
 
   _deleteWatchlist: function(url, title, card, saveBib) {
@@ -10296,7 +10316,11 @@ RPGACE.register('intelDelete', {
     self._rmLocal('rpgace_intel_watchlist', title);
     self._hideCard(card);
     if (saveBib) self._saveBib(title, url);
-    RPGACE.utils.toast(saveBib ? 'Deleted + saved to bibliography' : 'Deleted', saveBib ? 'rgba(61,170,110,0.9)' : 'rgba(226,84,84,0.9)', 2000);
+    // Aug 23 2026 - this used to claim 'Deleted + saved to bibliography'
+    // synchronously, before _saveBib's real async write had resolved. The save
+    // now reports its own real outcome (success OR failure) in its own toast,
+    // so this one only claims the part that actually happened here (rule 7).
+    RPGACE.utils.toast('Deleted', 'rgba(226,84,84,0.9)', 2000);
   },
 
   _rmLocal: function(key, title) {
@@ -10315,19 +10339,35 @@ RPGACE.register('intelDelete', {
   },
 
   /* ── Bibliography ───────────────────────────────── */
+  // Aug 23 2026 - writes a LINK row into the shared `bibliography` table
+  // (book_id left null = the discriminator), replacing the old dual write to
+  // localStorage + intel_bibliography. intel_bibliography itself is
+  // deliberately untouched: its 15 real June rows stay exactly where they
+  // are, this is a "new saves go to the new place" change, not a migration.
+  //
+  // MUST be secureWrite - `bibliography` runs anon_read_only + authenticated_all
+  // RLS, so a plain anon insert would 401. The old silent .catch() is gone
+  // (rule 7): the Supabase row is now the only record of a save, so a failed
+  // write has to say so rather than being swallowed into a local cache
+  // nothing else reads.
+  //
+  // completed_at (NOT NULL DEFAULT now()) is reused loosely here as "when
+  // this reference was saved" - Alex's own accepted reuse of the column, not
+  // drift. total_chapters / total_insights_placed / phyla_touched stay null,
+  // which is exactly what the null-book_id readers below key off.
   _saveBib: function(title, url) {
     var self = this;
-    try {
-      var bib = JSON.parse(localStorage.getItem(self.BIB)||'[]');
-      if (!bib.some(function(b){ return b.url===url; })) {
-        var row = { title: title, url: url, saved: new Date().toISOString() };
-        bib.push(row);
-        localStorage.setItem(self.BIB, JSON.stringify(bib));
-        /* Also try to insert into Supabase intel_bibliography table */
-        self._sbInsert('intel_bibliography', row)
-          .catch(function() {}); /* silent fail if table doesn't exist */
-      }
-    } catch(e) {}
+    return RPGACE.sb.secureWrite('bibliography', 'insert', {
+      title: title,
+      source_url: url || null
+    }).then(function() {
+      RPGACE.utils.toast('🔗 Saved to bibliography', 'rgba(61,170,110,0.9)', 2500);
+      // Refresh the Encyclopedia panel in place if it is currently rendered,
+      // so the new row shows without a page revisit.
+      if (document.getElementById('rpgace-bib-section')) self._injectBibSection(true);
+    }).catch(function(e) {
+      RPGACE.utils.toast('Bibliography save FAILED: ' + ((e && e.message) || 'unknown error') + ' — the reference was NOT kept', '#CC4A4A', 5000);
+    });
   },
 
   /* ── Confirmation popup ─────────────────────────── */
@@ -10358,38 +10398,141 @@ RPGACE.register('intelDelete', {
   },
 
   /* ── Bibliography section in Encyclopedia tab ── */
-  _injectBibSection: function() {
-    if (document.getElementById('rpgace-bib-section')) return;
+  // Aug 23 2026 - repointed off localStorage onto a real live Supabase read
+  // of the shared `bibliography` table, filtered to LINK rows only
+  // (book_id=is.null). Completed books (book_id NOT NULL) are deliberately
+  // excluded here: they already have their own real coverage in Chronicles
+  // (careerStatCard) and in Bookworm's own Bibliography panel, so listing
+  // them a third time would just duplicate that.
+  //
+  // Same visual shape as before (header + count, one row per source, a Clear
+  // affordance) - the only structural change is that it is now async, so it
+  // renders a Loading state first, matching bookworm._injectBibliographySection's
+  // own already-established fetch-then-fill pattern rather than inventing a
+  // second one.
+  //
+  // force=true rebuilds an already-present section in place (used after a
+  // real save/delete) instead of the old bare "already exists, bail" guard.
+  _injectBibSection: function(force) {
+    var self = this;
+    var existing = document.getElementById('rpgace-bib-section');
+    if (existing && !force) return;
     var enc = document.getElementById('page-encyclopedia');
     if (!enc) return;
-    var bib = JSON.parse(localStorage.getItem(this.BIB)||'[]');
-    var s = document.createElement('div');
+    if (existing) existing.remove();
+
+    function el(tag, css, txt) { var e = document.createElement(tag); e.style.cssText = css || ''; if (txt !== undefined) e.textContent = txt; return e; }
+
+    var s = el('div', 'margin-top:32px;border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;padding-bottom:32px;');
     s.id = 'rpgace-bib-section';
-    s.style.cssText = 'margin-top:32px;border-top:1px solid rgba(255,255,255,0.07);padding-top:20px;padding-bottom:32px;';
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;';
-    var htxt = el('div','font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.7);text-transform:uppercase;','BIBLIOGRAPHY · ' + bib.length + ' SOURCES');
-    var clr = el('button','background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:4px;padding:3px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;','Clear');
-    clr.onclick = function() { localStorage.removeItem('rpgace_intel_bibliography'); s.remove(); };
+    var hdr = el('div', 'display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;');
+    var htxt = el('div', 'font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.7);text-transform:uppercase;', 'BIBLIOGRAPHY · LOADING…');
+    var clr = el('button', 'background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:4px;padding:3px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;display:none;', 'Clear');
     hdr.appendChild(htxt); hdr.appendChild(clr); s.appendChild(hdr);
-    function el(tag,css,txt){var e=document.createElement(tag);e.style.cssText=css||'';if(txt!==undefined)e.textContent=txt;return e;}
-    if (!bib.length) {
-      s.appendChild(el('div','font-size:12px;color:rgba(226,226,236,0.3);font-style:italic;','No entries yet. Delete cards and choose "Yes, save it" to build this list.'));
-    } else {
-      bib.forEach(function(b) {
-        var row = el('div','display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:flex-start;');
-        var dot = el('span','color:rgba(201,168,76,0.5);flex-shrink:0;','•');
-        var info = el('div','');
-        var t = el('div','font-size:12px;font-weight:600;color:rgba(226,226,236,0.75);margin-bottom:2px;font-family:Rajdhani,sans-serif;', b.title||'Untitled');
-        var lnk = document.createElement('a');
-        lnk.href=b.url||'#'; lnk.target='_blank';
-        lnk.textContent=b.url?(b.url.length>65?b.url.substring(0,65)+'...':b.url):'No URL';
-        lnk.style.cssText='font-size:10px;color:rgba(201,168,76,0.55);text-decoration:none;font-family:monospace;';
-        info.appendChild(t); info.appendChild(lnk);
-        row.appendChild(dot); row.appendChild(info); s.appendChild(row);
-      });
-    }
+    var list = el('div', '');
+    list.appendChild(el('div', 'font-size:12px;color:rgba(226,226,236,0.25);font-style:italic;', 'Loading…'));
+    s.appendChild(list);
     enc.appendChild(s);
+
+    RPGACE.sb.select('bibliography', 'select=id,title,source_url,completed_at&book_id=is.null&order=completed_at.desc&limit=100')
+      .then(function(rows) {
+        rows = Array.isArray(rows) ? rows : [];
+        htxt.textContent = 'BIBLIOGRAPHY · ' + rows.length + ' SOURCE' + (rows.length === 1 ? '' : 'S');
+        list.innerHTML = '';
+        if (!rows.length) {
+          list.appendChild(el('div', 'font-size:12px;color:rgba(226,226,236,0.3);font-style:italic;', 'No saved references yet. Delete a Videoworm card and choose "Yes, save it" to build this list.'));
+          return;
+        }
+        clr.style.display = '';
+        // Clear is a real Supabase delete now, not a one-click
+        // localStorage.removeItem - so it gets the same 2-click arm/confirm
+        // treatment every other destructive action in this project uses
+        // (Bookworm's 🗑, mockOracle's scouted-item delete). It deletes by
+        // the explicit ids currently on screen (id=in.(...)), never a blanket
+        // book_id=is.null filter, so a row saved after this fetch resolved
+        // can't be destroyed by a click aimed at rows the user could see.
+        // There is no Supabase backup or PITR (standing landmine), which is
+        // exactly why this is scoped to the visible set.
+        var ids = rows.map(function(r) { return r.id; });
+        var clrArmed = false, clrBusy = false;
+        clr.onclick = function() {
+          if (clrBusy) return;
+          if (!clrArmed) {
+            clrArmed = true;
+            clr.textContent = '❌ Delete all ' + ids.length + '?';
+            clr.style.color = '#CC4A4A';
+            setTimeout(function() {
+              if (clrBusy) return;
+              clrArmed = false; clr.textContent = 'Clear'; clr.style.color = 'rgba(226,226,236,0.3)';
+            }, 3000);
+            return;
+          }
+          clrBusy = true;
+          clr.textContent = '…';
+          RPGACE.sb.secureWrite('bibliography', 'delete', null, 'id=in.(' + ids.join(',') + ')')
+            .then(function() {
+              RPGACE.utils.toast('🗑 Cleared ' + ids.length + ' saved reference' + (ids.length === 1 ? '' : 's'), 'rgba(226,226,236,0.5)', 2500);
+              self._injectBibSection(true);
+            })
+            .catch(function(e) {
+              clrBusy = false; clrArmed = false;
+              clr.textContent = 'Clear'; clr.style.color = 'rgba(226,226,236,0.3)';
+              RPGACE.utils.toast('Clear FAILED: ' + ((e && e.message) || 'unknown error') + ' — nothing was removed', '#CC4A4A', 5000);
+            });
+        };
+
+        rows.forEach(function(b) {
+          var row = el('div', 'display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);align-items:flex-start;');
+          var dot = el('span', 'color:rgba(201,168,76,0.5);flex-shrink:0;', '•');
+          var info = el('div', 'flex:1;min-width:0;');
+          var t = el('div', 'font-size:12px;font-weight:600;color:rgba(226,226,236,0.75);margin-bottom:2px;font-family:Rajdhani,sans-serif;', b.title || 'Untitled');
+          var lnk = document.createElement('a');
+          lnk.href = b.source_url || '#';
+          lnk.target = '_blank';
+          lnk.rel = 'noopener';
+          lnk.textContent = b.source_url ? (b.source_url.length > 65 ? b.source_url.substring(0, 65) + '...' : b.source_url) : 'No URL';
+          lnk.style.cssText = 'font-size:10px;color:rgba(201,168,76,0.55);text-decoration:none;font-family:monospace;word-break:break-all;';
+          info.appendChild(t); info.appendChild(lnk);
+          // Per-row 2-click arm/confirm delete, same shape as mockOracle's
+          // scouted-item 🗑 - granular removal without reaching for Clear.
+          var del = el('button', 'background:none;border:none;color:rgba(226,84,84,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;font-family:Rajdhani,sans-serif;', '🗑');
+          del.title = 'Delete this saved reference';
+          var armed = false, busy = false;
+          del.onclick = function(e) {
+            e.stopPropagation();
+            if (busy) return;
+            if (!armed) {
+              armed = true;
+              del.textContent = '❌ Confirm';
+              del.style.color = '#CC4A4A';
+              setTimeout(function() {
+                if (busy) return;
+                armed = false; del.textContent = '🗑'; del.style.color = 'rgba(226,84,84,0.4)';
+              }, 3000);
+              return;
+            }
+            busy = true;
+            del.textContent = '…';
+            RPGACE.sb.secureWrite('bibliography', 'delete', null, 'id=eq.' + b.id)
+              .then(function() {
+                RPGACE.utils.toast('🗑 Deleted saved reference', 'rgba(226,226,236,0.5)', 2500);
+                self._injectBibSection(true);
+              })
+              .catch(function(err) {
+                busy = false; armed = false;
+                del.textContent = '🗑'; del.style.color = 'rgba(226,84,84,0.4)';
+                RPGACE.utils.toast('Delete FAILED: ' + ((err && err.message) || 'unknown error') + ' — nothing was removed', '#CC4A4A', 5000);
+              });
+          };
+          row.appendChild(dot); row.appendChild(info); row.appendChild(del);
+          list.appendChild(row);
+        });
+      })
+      .catch(function(e) {
+        htxt.textContent = 'BIBLIOGRAPHY';
+        list.innerHTML = '';
+        list.appendChild(el('div', 'font-size:12px;color:#CC4A4A;', 'Load error: ' + ((e && e.message) || 'unknown error')));
+      });
   },
 
 });
@@ -24189,8 +24332,22 @@ RPGACE.register('careerStatCard', {
     // Bibliography (A15) — a completed book is a real timeline event. Note
     // the timestamp column here is completed_at, not created_at like every
     // other row type, because that IS the moment the real event happened.
+    // Aug 23 2026 — `bibliography` now holds two genuinely different kinds of
+    // row, told apart by one discriminator: book_id IS NULL is a saved LINK
+    // (a reference kept for later, from intelDelete's save-before-delete
+    // flow); book_id IS NOT NULL is a COMPLETED BOOK (bookworm._markBookComplete).
+    // They get different icons so the feed itself distinguishes them at a
+    // glance, not only once the detail popup is open. For a link row,
+    // completed_at is reused as "when it was saved".
     (data.bibliography || []).forEach(function(r) {
-      items.push({ t: r.completed_at, icon: '📚', label: 'Bibliography: ' + (r.title || 'book'), type: 'bibliography', row: r });
+      var isLink = (r.book_id == null);
+      items.push({
+        t: r.completed_at,
+        icon: isLink ? '🔗' : '📚',
+        label: 'Bibliography: ' + (r.title || (isLink ? 'reference' : 'book')),
+        type: 'bibliography',
+        row: r
+      });
     });
     items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
     return items;
@@ -24315,6 +24472,31 @@ RPGACE.register('careerStatCard', {
     // genuine bibliography → taxonomy_tree link with zero new writes and
     // zero extra queries: which real phyla this book's insights landed in.
     if (it.type === 'bibliography') {
+      // Aug 23 2026 — a LINK row (book_id IS NULL) is a reference Alex chose
+      // to keep when deleting a Videoworm card. It was never analysed, so
+      // total_chapters / total_insights_placed / phyla_touched are all null
+      // and the book-completion copy below would be actively misleading about
+      // it ("chapters read end to end", "insights placed"). It gets its own
+      // deliberately lighter framing instead — what it actually is, and the
+      // link itself.
+      if (r.book_id == null) {
+        var linkStored = 'bibliography table • saved reference (no book attached)';
+        if (r.source_url && /^https?:\/\//.test(r.source_url)) {
+          linkStored = 'bibliography table • <a href="' + esc(r.source_url) + '" target="_blank" rel="noopener" style="color:var(--gold)">' + esc(r.source_url) + '</a>';
+        } else if (r.source_url) {
+          linkStored = 'bibliography table • source: ' + esc(r.source_url);
+        }
+        return {
+          eyebrow: '🔗 Bibliography — Reference saved',
+          title: esc(r.title || 'reference'),
+          rows: [
+            ['What was done', 'A source was kept for later when its Videoworm card was deleted. Nothing was read, analysed, or placed — this is a bookmark, not a finished book.'],
+            ['Outcome', 'The link survives; the full report it came from does not.'],
+            ['Where stored', linkStored],
+            ['Why significant', 'Saved references and completed books now live in the same bibliography table, told apart by whether a book is attached — so one shelf holds everything you decided was worth keeping.']
+          ]
+        };
+      }
       // phyla_touched is jsonb. Supabase normally hands it back already
       // parsed (an array), but a string can come through depending on the
       // client/column path - same defensive shape smoke_test.html uses for
