@@ -110,6 +110,20 @@
 
   <div class="card">
     <div class="card-top">
+      <div class="card-title">A plan built to catch doc-to-doc drift produced doc-INTERNAL drift in its own first extension pass — and the orchestrating session's own thorough review still missed it</div>
+      <div class="card-date">Aug 23 2026</div>
+    </div>
+    <span class="trigger correction">Self-consistency, not just cross-doc consistency — found while shipping DD8</span>
+    <div class="block scope"><b>Prompt scope</b>Alex, after DD8 shipped: "now make sure this all logged to avoid in future and make an automatic function during /CEO."</div>
+    <div class="block obstacle"><b>Obstacle</b>Reviewing DD8's diff before shipping (the standing Omnitrix discipline — Opus builds, Sonnet reviews), I independently re-verified a module count (56, direct grep), the real `api/*.js` file list, and both Supabase tables' row/tag counts against live queries — a genuinely careful pass. It still missed a real, self-contradicting number the build had written into its own new `patch_notes.html` card: one sentence said "Seven <code>achiever_archive</code> rows logged," a later sentence in the SAME card said "21 of 21 rows backfilled... with one honest blank" — which is self-contradicting on its own terms (21/21 implies zero blanks). The true number, found only by directly re-querying Supabase, was 9. I caught it, but only because I happened to grep for the exact phrase — not because any structured step required checking it.</div>
+    <div class="block reasoning"><b>Reasoning</b>Tracing why this slipped past a careful review: `/CEO` Loop 2 Step 1 already says every item should run through `/Engineer`'s own 5-stage loop, whose Stage 5 Truth Check is built exactly for "a report about what was built is a claim, not evidence." DD8 was dispatched as a custom Omnitrix build instead of literally invoking `/Engineer` — a real, unnamed deviation from the standing rule, not a deliberate choice. Free-form structural review (does the diff do what the report claims) is a genuinely different check from Stage 5's own discipline (re-derive every hard number from scratch, don't trust the report's memory) — and neither one, as previously written, specifically asked "does this build's own NEW prose agree with itself across two places in the same commit." That question fell into the gap between them.</div>
+    <div class="block solution"><b>Solution</b>Logged the real deviation and fixed the actual patch_notes.html numbers to the Supabase-verified 9 before shipping. Then closed the structural gap rather than treating this as a one-off catch: `/Engineer` gained a new, explicit Stage 5c — the <b>Self-Consistency Sweep</b> — grep every hard number a pass's own new doc/commit-message content asserts, confirm it agrees with every other place in the same commit that states the same fact, and confirm it's independently re-derivable from live evidence, not just internally plausible. `/CEO` Loop 2 Step 1 now states plainly that a custom dispatch does not satisfy the step and must be named as a deviation, not silently treated as equivalent.</div>
+    <div class="block rule"><b>Resulting rule</b>CLAUDE.md rule 17 and CEO SKILL.md R25, both new. The generalizable lesson: reviewing a diff for correctness and fact-checking its own asserted numbers are two different disciplines — a build can pass the first cleanly and still fail the second, and only a named, mandatory step catches the second reliably. "The orchestrator reviewed it carefully" is not itself evidence that every hard number in a new doc is real; only re-deriving each one is.</div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-top">
       <div class="card-title">A doc can be made false by a change made somewhere else entirely — and the writer&#39;s attention follows the file being edited, not the files that merely describe it</div>
       <div class="card-date">Aug 23 2026</div>
     </div>
