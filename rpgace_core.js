@@ -7479,35 +7479,81 @@ RPGACE.register('ciAutoPropose', {
   // production_techniques arrays from the analysis. Now each stored
   // insight is proposed individually through the same unified scored
   // engine book insights use - same rules, same justification, same
-  // confidence. Caps keep sync cost bounded: still max 5 new videos per
-  // scan, max 3 insights per video, max 9 total proposals per scan.
+  // confidence.
+  //
+  // A4/A8 VOLUME FIX (Aug 23 2026) - Alex's own ask: "no way a 20 minute
+  // video only has 3 insights; I want them all." Two real, separate
+  // causes were found behind that, both fixed here:
+  //
+  //   1. WRONG READ PATH (the dominant one). This loop read
+  //      `r.insights.key_learnings`, but the producer nests that array
+  //      inside `encyclopedia_entry` - `production_techniques` is the
+  //      only top-level one. Verified against the live table: 0 of 37
+  //      rows have a top-level `key_learnings`, 37 of 37 have it nested.
+  //      So every key learning ever extracted (a flat 5.00 per video)
+  //      was silently discarded before proposal, and only production
+  //      techniques (~3.16/video) ever reached the tree - ~61% of the
+  //      real analysed content dropped on the floor. Both shapes are now
+  //      read, deduplicated by normalized text so a row carrying both
+  //      can't spend two Oracle calls on one identical insight.
+  //   2. ARBITRARY TRUNCATION. `MAX_PER_VIDEO = 3` then sliced whatever
+  //      survived down to 3. Live data averages 8.16 substantial items
+  //      per video (max 12), so this clipped most of what was left.
+  //
+  // Caps still keep one sync bounded - each proposal is one real scored
+  // ground-worker call (decidePlacementScored), so this is genuinely
+  // premium spend, not free (rule 11). Retuned rather than removed:
+  // MAX_PER_VIDEO 15 sits above the observed max of 12, so it is
+  // effectively "all of them" for real data while still capping a
+  // runaway if the upstream extraction prompt is ever deepened.
+  // MAX_VIDEOS drops 5 -> 4 to trade videos-per-scan for per-video
+  // completeness (which is what was actually asked for) - nothing is
+  // lost, since the dedup guard means an unscanned video is simply
+  // picked up by the next sync. MAX_TOTAL 45 covers 4 full videos at
+  // the realistic worst case. Dispatch is throttled to CONCURRENCY at a
+  // time instead of firing the whole batch at once, so a bigger cap
+  // can't turn into a 45-wide simultaneous burst against the API.
   _scan: function(all) {
     if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) return;
+    var self = this;
     var guard = localStorage.getItem('rpgace_ci_proposed') || '';
-    var queued = 0, checked = 0;
-    var MAX_VIDEOS = 5, MAX_PER_VIDEO = 3, MAX_TOTAL = 9;
+    var checked = 0;
+    var MAX_VIDEOS = 4, MAX_PER_VIDEO = 15, MAX_TOTAL = 45, CONCURRENCY = 3;
+    var jobs = [];
+
     all.forEach(function(r) {
-      if (checked >= MAX_VIDEOS || queued >= MAX_TOTAL) return;
+      if (checked >= MAX_VIDEOS || jobs.length >= MAX_TOTAL) return;
       var key = r.url || r.title;
       if (!key || guard.indexOf('|' + key + '|') !== -1) return;
       checked++;
       guard += '|' + key + '|';
 
+      var enc = (r.insights && r.insights.encyclopedia_entry) || null;
+
       // Per-insight loop: the real analysed content, never the title.
+      // Both the nested (real, live) and top-level (defensive, in case a
+      // future/other producer writes that shape) key_learnings paths are
+      // read, then deduplicated so one insight never costs two calls.
+      var seen = {};
       var insightTexts = []
+        .concat((enc && enc.key_learnings) || [])
         .concat((r.insights && r.insights.key_learnings) || [])
         .concat((r.insights && r.insights.production_techniques) || [])
         .map(function(t) { return String(t || '').trim(); })
-        .filter(function(t) { return t.length >= 40; }); // substantial only
+        .filter(function(t) {
+          if (t.length < 40) return false; // substantial only
+          var k = t.toLowerCase();
+          if (seen[k]) return false;
+          seen[k] = 1;
+          return true;
+        });
 
       if (insightTexts.length) {
         insightTexts.slice(0, MAX_PER_VIDEO).forEach(function(insightText) {
-          if (queued >= MAX_TOTAL) return;
+          if (jobs.length >= MAX_TOTAL) return;
           var m = RPGACE.utils._quickPhylaScan(insightText);
           if (!m.length) return;
-          RPGACE.modules.taxonomyTree.silentPropose(insightText.slice(0, 400), m[0].num, 'content_intelligence', r.url || null)
-            .catch(function(err) { console.warn('[ciAutoPropose] silentPropose failed:', err.message); });
-          queued++;
+          jobs.push({ text: insightText.slice(0, 400), phylum: m[0].num, url: r.url || null });
         });
         return;
       }
@@ -7515,19 +7561,34 @@ RPGACE.register('ciAutoPropose', {
       // Fallback for older reports with no stored insight arrays: the
       // old blob behavior, minus the title/creator (the audit-confirmed
       // source of title-shaped placements) - summary text only.
-      var enc = r.insights && r.insights.encyclopedia_entry;
       var blob = [enc && enc.summary].filter(Boolean).join(' ');
       if (blob.length < 60) return;
       var matches = RPGACE.utils._quickPhylaScan(blob);
       if (matches.length === 0) return;
-      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 400), matches[0].num, 'content_intelligence', r.url || null)
-        .catch(function(err) { console.warn('[ciAutoPropose] silentPropose failed:', err.message); });
-      queued++;
+      jobs.push({ text: blob.slice(0, 400), phylum: matches[0].num, url: r.url || null });
     });
+
     localStorage.setItem('rpgace_ci_proposed', guard);
-    if (queued > 0) {
-      RPGACE.utils.toast('🌳 ' + queued + ' taxonomy proposal' + (queued > 1 ? 's' : '') + ' queued for review', 'rgba(155,89,182,0.85)', 3000);
+    if (!jobs.length) return;
+    self._dispatch(jobs, CONCURRENCY);
+    RPGACE.utils.toast('🌳 ' + jobs.length + ' taxonomy proposal' + (jobs.length > 1 ? 's' : '') + ' queued for review', 'rgba(155,89,182,0.85)', 3000);
+  },
+
+  // Throttled dispatch - CONCURRENCY workers pulling from one shared
+  // list, each awaiting its own call before taking the next. Same
+  // fire-and-forget/never-block contract and same per-item .catch() as
+  // before; only the arrival rate changed.
+  _dispatch: function(jobs, concurrency) {
+    var i = 0;
+    function next() {
+      if (i >= jobs.length) return Promise.resolve();
+      var job = jobs[i++];
+      return RPGACE.modules.taxonomyTree
+        .silentPropose(job.text, job.phylum, 'content_intelligence', job.url)
+        .catch(function(err) { console.warn('[ciAutoPropose] silentPropose failed:', err.message); })
+        .then(next);
     }
+    for (var w = 0; w < Math.min(concurrency, jobs.length); w++) next();
   },
 
 });
