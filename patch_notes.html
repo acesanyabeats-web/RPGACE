@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🎨🚫 Aug 23 — DESIGN.md gains a real refuse list + audit, after /Aintergration on a third-party scroll-page skill</div>
+    <div class="card-body">
+      Alex brought <code>scrollcraft</code>, a Claude Code skill for building cinematic, scroll-driven marketing pages, and asked about using it to redesign RPGACE's UI. Real Aintergration verdict: <b>Reference only</b> — its core mechanism (video-scrubbing, pinned sections, parallax) directly conflicts with DESIGN.md's own already-standing rule ("no GSAP/Lenis/scroll-jacking — this is a working tool, not a landing page"), and it needs a real local build toolchain against RPGACE's zero-build-step architecture. Same conflict class as the July 20 Framer Motion rejection.
+      <br><br>
+      What was genuinely worth taking: its own named "refuse list" concept (identical card grids, gradient text, fake stats, AI-purple gradients) — RPGACE didn't have one. Added as 6 new Don'ts in DESIGN.md §8, adapted for RPGACE's real context, not copied verbatim.
+      <br><br>
+      Then a real audit against it: the live app came back clean on gradient text, decorative counters, scroll cues, and invented stats. One real near-miss caught before it became a false finding — the dashboard's <code>.dd-card</code> grid's uniform gold "Enter →" styling first read as "identical undifferentiated cards," but re-checking against DESIGN.md's own existing rule ("one accent color, gold for every go action") confirmed it's the correct, deliberate execution of an already-standing rule, not a gap. The one real, surfaced gap is pre-existing, already-tracked debt (the ~72 unreconciled hardcoded hex colors), not new.
+      <br><br>
+      Doc-only change, no application code touched.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">📖🐛 Aug 23 — Worm Family Phase 2 continued: W6 resolved green, W8/W9 shipped (Bookworm navigation + EPUB upload)</div>
     <div class="card-body">
       New day, continuing from yesterday's Phase 1 close-out. Alex: "build the phase 2 you can, then we /interrogation the rest." A real <code>/interrogation</code> on W6/W7/W10 (all landing on the recommended option) found W6 already effectively done — the code-reduction goal it was meant to check for got satisfied in passing during W5's own build (a shared <code>_sourceMetaForProposal</code> helper). W7/W10 stay correctly gated on real Phase 1 usage data, which Alex plans to generate soon by hand-testing it himself.

@@ -183,6 +183,14 @@ Flat-first (existing app has no shadow system — keep it that way):
 7. Don't add a static `<script>` tag to index.html (two-script rule) — all wiring stays in rpgace_core.js modules.
 8. Don't use emoji as icons in NEW glance-box checklists (existing emoji module titles stay — identity).
 
+**Refuse list (added Aug 23 2026)** — real, named anti-patterns to actively refuse, not just avoid by accident. Adapted from a real Aintergration pass on `scrollcraft` (a third-party Claude Code skill for cinematic scroll-driven marketing pages — real verdict: Reference only, its engine/build tooling/scroll-jacking directly conflicts with L1 §7 and the zero-build-step rule, but its own named "refuse list" concept was genuinely useful and RPGACE didn't have an explicit one). Translated to RPGACE's real context, not copied verbatim — several of scrollcraft's own items (a cream-and-brass "artisan" palette, decorative scroll-progress cues) don't apply to a gold-on-dark working tool with no scroll-story pages, so they're left out rather than padded in for completeness.
+9. Don't use gradient text (`background-clip:text`) anywhere — headings and labels stay flat, solid token colors per §3.
+10. Don't wash a panel/hero in a generic unbranded purple/violet gradient just because it reads as "AI tool" — RPGACE's own `--purple`/`--blue` gradients (Prod Oracle/Insta-Oracle panels) are fine because they're a real, sparing, semantic use of the app's own token, not a decorative identity-less wash.
+11. Don't show an invented or placeholder number in a card/stat/glance-box — real Supabase data, or an honest "Loading…"/"No data yet" state per the existing convention. (Already this project's own rule 1/4 discipline in code terms; restated here as the UI-facing version of it.)
+12. Don't add decorative numbered counters (01/02/03-style) with no real meaning behind the numbers — this project has none today; keep it that way.
+13. Don't add a generic "scroll to explore" cue or bounce arrow — RPGACE's navigation is explicit (the left drawer, section tabs), never scroll-discovery.
+14. Don't let short user-facing copy (toasts, empty states, button labels) drift into overwrought or "AI-generated"-sounding prose — keep it plain, direct, and functional, matching the app's existing voice.
+
 ## 9. Responsive Behavior
 
 - **Breakpoint**: 600px (existing app convention).
@@ -222,3 +230,15 @@ Alex asked for the Dashboard's structural-restructure discipline (§1-9 above) a
 **Also found, not fixed (out of scope, flagged for a future pass):** index.html has a single pre-existing unclosed `<div>` somewhere in the file (227 open / 226 close in the commit before this pass) — confirmed NOT introduced by this edit (this pass's own addition was a clean +2/+2). Browsers tolerate it silently; worth a dedicated hunt-and-fix session since it's the kind of thing that can compound with future edits.
 
 **Honest flag: not yet hand-tested.** Alex to verify: Oracle page renders with no visual regression, Prod Oracle panel opens in a clean 2-column grid (1-column on mobile) in blue, Insta-Oracle panel opens in purple, both panels' buttons still fire their real commands, the YouTube Oracle and Visual Oracle buttons still auto-inject into the quick-row (confirms the 3 hidden anchors survived), and no horizontal overflow at 390px.
+
+## 11. Refuse-List Audit — Aug 23 2026
+
+Real, direct check of the live app against the new §8 refuse-list items above (not a re-run of §10's own broader restructure audit) — grep evidence, not assumed.
+
+**Clean, no violations found**: zero `background-clip:text` anywhere (no gradient text); zero decorative numbered counters; zero "scroll to explore" cues (RPGACE has no scroll-story pages for one to exist on); zero invented/placeholder stat numbers in `index.html`'s static markup.
+
+**Checked and confirmed NOT a violation** (a real near-miss in this pass's own first read, corrected before reporting): the dashboard's real `.dd-card` grid (`#dd-grid`, `rpgace_core.js`) gives every module card a per-module accent ONLY on its eyebrow text (`eb.style.color = m.color`) — border, hover-border, and the "Enter →" link stay a uniform `var(--gold)` across every card. This first read as "identical, undifferentiated cards" (a real refuse-list shape) — but re-checking against this file's own existing §8 Do #2 ("Give every module exactly ONE accent color and use gold for every 'go' action") confirmed this is the CORRECT, deliberate execution of an already-standing rule, not a gap. The Quest Board's own `.quest-card` (`style.css`) uses the same real restraint via a colored top-border accent bar (career=blue, health=green, lifestyle=purple) — a second, independently-built example of the same correct pattern, not a competing one.
+
+**The one real, pre-existing gap this audit surfaces, not new but worth cross-referencing here**: CLAUDE.md's own live count — ~72 of 433 hardcoded hex colors still have no matching token (21 distinct values). This isn't a fresh refuse-list violation (it predates §8 Don't #1, "don't introduce any new hex color," which stops the gap from growing, not retroactively) — it's real, already-tracked debt, not re-audited in depth this pass. `--purple`/`--blue` gradients on the Prod-Oracle/Insta-Oracle panels (§10's own shipped work) were checked separately and are NOT part of this gap — both already use real tokens (`var(--purple)`/`var(--blue)`), confirmed via direct grep, not assumed.
+
+**Verdict**: RPGACE's live UI is already substantially clean against this refuse list — the value of this pass was confirming that with real evidence (and catching one near-miss before it became a false finding), not uncovering a pile of new problems.
