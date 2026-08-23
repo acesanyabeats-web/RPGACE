@@ -1671,7 +1671,10 @@ let _globalSelectTimeout = null;
 let _globalSelectedText = '';
 let _globalSelectedContext = '';
 
-const SELECTABLE_PAGES = ['page-advisor','page-encyclopedia','page-journal','page-learning','focus-overlay'];
+// Aug 23 2026 (UI2) - 'page-learning' dropped: the Research Lab page is
+// retired, so this text-selection-to-quest feature has no live page to
+// apply to there any more. The other 4 entries are unchanged and real.
+const SELECTABLE_PAGES = ['page-advisor','page-encyclopedia','page-journal','focus-overlay'];
 
 function initGlobalTextSelect(){
   document.addEventListener('mouseup', function(e){
@@ -2823,8 +2826,14 @@ async function learnVideo(id, title, thumb, channel){
 }
 
 function switchToCI(){
-  const researchTab = document.querySelector('[onclick*="learning"]');
-  if(researchTab) showPage('learning', researchTab);
+  // Aug 23 2026 (UI2) - removed:
+  //     const researchTab = document.querySelector('[onclick*="learning"]');
+  //     if(researchTab) showPage('learning', researchTab);
+  // Provably inert on two independent counts, not a judgement call: the
+  // .nav-tab bar those [onclick*="learning"] handlers lived on was removed
+  // July 20 2026 (so the guard has always been null since), and the
+  // 'learning' page itself is retired as of this pass. Kept the real
+  // behaviour (jump the intel view to its insights tab) unchanged.
   setTimeout(()=>showIntelTab('insights'), 100);
 }
 
@@ -3429,7 +3438,7 @@ async function refreshEncyclopediaDisplay(){
       <div style="font-size:48px;margin-bottom:16px">📖</div>
       <div style="font-size:15px;color:var(--text);margin-bottom:12px;font-family:'Cinzel',serif">Your Encyclopedia is Empty</div>
       <div style="font-size:13px;color:var(--muted);line-height:2.2">
-        Entries appear when you analyse videos, save Oracle chats, or use the Video Workshop.<br><br>
+        Entries appear when you analyse videos, save Oracle chats, or use the Upload Workshop.<br><br>
         <button onclick="syncAndPush()" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">⚡ Sync &amp; Push All Reports</button>
       </div>
     </div>`;
@@ -3926,8 +3935,8 @@ function copyDescription(){
 function saveWorkshopToEncyclopedia(){
   if(!VW_LAST_RESULT) return;
   const { result, type, date } = VW_LAST_RESULT;
-  const content = `## Video Workshop Strategy\nType: ${type} | Date: ${date}\n\n### Titles\n${(result.titles||[]).map(t=>'- '+t).join('\n')}\n\n### Thumbnail Concepts\n${(result.thumbnail_concepts||[]).join('\n\n')}\n\n### Short Clips\n${(result.short_clips||[]).map(c=>`- **${c.moment}** (${c.platform})\n  ${c.hook}`).join('\n\n')}\n\n### YouTube Description\n${result.description||''}\n\n### Tags\n${(result.tags||[]).join(', ')}\n\n### Chapters\n${(result.chapters||[]).join('\n')}`;
-  saveOracleToEncyclopedia('Video Workshop — '+date, content);
+  const content = `## Upload Workshop Strategy\nType: ${type} | Date: ${date}\n\n### Titles\n${(result.titles||[]).map(t=>'- '+t).join('\n')}\n\n### Thumbnail Concepts\n${(result.thumbnail_concepts||[]).join('\n\n')}\n\n### Short Clips\n${(result.short_clips||[]).map(c=>`- **${c.moment}** (${c.platform})\n  ${c.hook}`).join('\n\n')}\n\n### YouTube Description\n${result.description||''}\n\n### Tags\n${(result.tags||[]).join(', ')}\n\n### Chapters\n${(result.chapters||[]).join('\n')}`;
+  saveOracleToEncyclopedia('Upload Workshop — '+date, content);
   setLearnStatus('vw-status','✓ Saved to Encyclopedia','ok');
 }
 
@@ -3936,13 +3945,13 @@ async function saveWorkshopToNotion(){
   const { result, type, date } = VW_LAST_RESULT;
   setLearnStatus('vw-status','Saving to Notion...','loading');
   try {
-    const markdown = `# Video Workshop Strategy\n\n**Type:** ${type}  \n**Date:** ${date}\n\n## Titles\n${(result.titles||[]).map(t=>'- '+t).join('\n')}\n\n## Thumbnail Concepts\n${(result.thumbnail_concepts||[]).map((t,i)=>`**Option ${i+1}:** ${t}`).join('\n\n')}\n\n## Short Clips for TikTok/Reels/Shorts\n${(result.short_clips||[]).map(c=>`- **${c.moment}**\n  - Platform: ${c.platform}\n  - Why it works: ${c.hook}`).join('\n\n')}\n\n## YouTube Description\n\n${result.description||''}\n\n## Tags\n${(result.tags||[]).join(', ')}\n\n## Chapters\n${(result.chapters||[]).join('\n')}`;
+    const markdown = `# Upload Workshop Strategy\n\n**Type:** ${type}  \n**Date:** ${date}\n\n## Titles\n${(result.titles||[]).map(t=>'- '+t).join('\n')}\n\n## Thumbnail Concepts\n${(result.thumbnail_concepts||[]).map((t,i)=>`**Option ${i+1}:** ${t}`).join('\n\n')}\n\n## Short Clips for TikTok/Reels/Shorts\n${(result.short_clips||[]).map(c=>`- **${c.moment}**\n  - Platform: ${c.platform}\n  - Why it works: ${c.hook}`).join('\n\n')}\n\n## YouTube Description\n\n${result.description||''}\n\n## Tags\n${(result.tags||[]).join(', ')}\n\n## Chapters\n${(result.chapters||[]).join('\n')}`;
 
     const res = await fetch('/api/executor',{
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ tool:'NOTION_CREATE_NOTION_PAGE', input:{
         parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
-        title: `Video Workshop — ${type} — ${date}`,
+        title: `Upload Workshop — ${type} — ${date}`,
         markdown
       }})
     });
@@ -4389,17 +4398,43 @@ function renderDB(filter=''){
   });
 }
 
+// Aug 23 2026 (UI2) - two real fixes in one, both evidence-backed:
+//
+// 1. NAVIGATION. The last real step used to be
+//    `showPage('learning', document.querySelector('.nav-tab:nth-child(7)'))`
+//    - an UNCONDITIONAL jump to the Research Lab page, which is now retired.
+//    showPage() has no null guard on its own getElementById('page-'+name), so
+//    this would have thrown outright. It now opens the Videoworm panel as its
+//    own popup (the real new home of this notes sub-view's content), via the
+//    same shared helper every other worm button uses. The second argument was
+//    already dead on its own terms: the .nav-tab bar it queried was removed
+//    July 20 2026, so it has been passing null for a long time.
+//
+// 2. DEFENSIVE ELEMENT LOOKUPS. Direct grep evidence (not assumed): NONE of
+//    #notes-output / #save-notes-btn / #db-list / #notes-selected-info /
+//    #notes-video-url / #notes-status exist anywhere in index.html any more -
+//    the notes sub-view's markup was removed at some earlier point without
+//    this handler being cleaned up. That means renderDB() already returns
+//    early (no #db-list), so the "Load" button this function backs is never
+//    actually rendered today; and if it somehow were, the two UNGUARDED
+//    lookups below would have thrown before ever reaching the navigation bug
+//    above. Both are now guarded in exactly the style the other two lookups
+//    in this same function already used, so the function degrades honestly
+//    instead of throwing - and still works correctly if that markup returns.
 function loadNote(id){
   const entry = LEARN.db.find(n=>n.id===id);
   if(!entry) return;
   LEARN.selectedVideo = {id:entry.videoId, title:entry.videoTitle, thumb:entry.thumb, channel:entry.channel, url:entry.url};
-  document.getElementById('notes-output').value = entry.notes;
+  const out = document.getElementById('notes-output');
+  if(out) out.value = entry.notes;
   const info = document.getElementById('notes-selected-info');
   if(info){ info.textContent = '✓ '+entry.videoTitle; info.style.display='block'; }
   const urlEl = document.getElementById('notes-video-url');
   if(urlEl) urlEl.value = entry.url||'';
-  document.getElementById('save-notes-btn').disabled = false;
-  showPage('learning', document.querySelector('.nav-tab:nth-child(7)'));
+  const saveBtn = document.getElementById('save-notes-btn');
+  if(saveBtn) saveBtn.disabled = false;
+  const dd = window.RPGACE && RPGACE.modules && RPGACE.modules.dashDeck;
+  if(dd && dd._openPanelById) dd._openPanelById('file-analyzer-panel');
   setLearnStatus('notes-status',`✓ Loaded notes for "${entry.videoTitle}"`,'ok');
 }
 
@@ -4787,6 +4822,46 @@ document.addEventListener('keydown', e=>{
      Shared helpers used across all modules.
      ══════════════════════════════════════════════════════════ */
   R.utils = {
+
+    // ── panelHome() — Aug 23 2026 (UI2/UI3 of the "UI Consistency & Worm
+    // Family Cohesion" batch). ONE shared answer to "where does a relocatable
+    // panel physically live while its popup is closed?", replacing 5 separate
+    // hand-rolled copies of the same fallback chain that all resolved the
+    // (now-retired) Research Lab page:
+    //     document.getElementById('page-research')            <- ALWAYS null,
+    //         confirmed dead: no element with that id has ever existed in
+    //         index.html; it named an even older page id (UI3 removed it)
+    //  || document.getElementById('page-learning')            <- retired UI2
+    //  || document.querySelector('[id*="research"]') || ...'[id*="learning"]'
+    //
+    // The real destination is the same hidden holder #kg-panel / #cpl-widget /
+    // #mb-wrap already use (dashDeck._ensureStash), so every relocatable panel
+    // now shares ONE staging convention instead of two. Falls back to
+    // #legacy-worm-panels (index.html's own hidden staging div, which hosts
+    // the 3 static worm panels) and finally to a self-created holder, so an
+    // injector that runs before dashDeck's own init still finds a real parent
+    // rather than silently returning early and never building its panel.
+    panelHome: function () {
+      var holder = document.getElementById('dd-stash-holder');
+      if (holder) return holder;
+      var dd = R.modules && R.modules.dashDeck;
+      if (dd && dd._ensureStash) {
+        try { holder = dd._ensureStash(); } catch (e) { holder = null; }
+        if (holder) return holder;
+      }
+      holder = document.getElementById('legacy-worm-panels');
+      if (holder) return holder;
+      // Last resort: build the shared holder ourselves, same id/shape
+      // _ensureStash would have used, so a later _ensureStash() call finds
+      // this one instead of making a second, competing holder.
+      var host = document.getElementById('page-dashboard') || document.body;
+      if (!host) return null;
+      holder = document.createElement('div');
+      holder.id = 'dd-stash-holder';
+      holder.style.display = 'none';
+      host.appendChild(holder);
+      return holder;
+    },
 
     // July 24 audit fix (rule 8, dedup): two independent _esc() helpers
     // existed (videoSummary, careerStatCard) - the second escaped only
@@ -6753,11 +6828,20 @@ RPGACE.register('feynman', {
     /* Trigger 2: Agenda Do Now — intercept learning category */
     self._wrapStartDoNow();
 
-    /* Trigger 3: Encyclopedia / Learning page — add session buttons */
+    /* Trigger 3: Encyclopedia page — add session buttons */
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'encyclopedia' || name === 'learning') {
+      if (name === 'encyclopedia') {
         setTimeout(function() { self._wireEncyclopediaButtons(); }, 400);
       }
+    });
+    /* Trigger 3b: Aug 23 2026 (UI2) - the '|| name === "learning"' half of the
+       listener above covered the retired Research Lab page, whose enc-styled
+       cards now render inside a dashDeck popup instead. _wireEncyclopediaButtons
+       scans the whole document for .enc-entry/.enc-card/[class*="enc-"] and
+       self-skips anything already wired, so re-running it on a worm-panel open
+       is both correct and cheap. */
+    RPGACE.hooks.on('worm-panel:open', function() {
+      setTimeout(function() { self._wireEncyclopediaButtons(); }, 400);
     });
 
     /* Trigger 4: Agendas rendered — add Feynman button to learning cards */
@@ -7692,7 +7776,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): ARCHITECTURE (Aug 20 2026): the client ships as exactly ONE script now, rpgace_core.js (index.html loads only rpgace_core.min.js) - the old separate main.js was mechanically merged into it (Alex\'s own direct ask, zero logic rewrite), living on as rpgace_core.js\'s own LEGACY SECTION near the top of the file (bootstrap, password gate, page routing, career score, Quest Board). Older bullets below this one that say "main.js" as if it were still a separate file are historical narrative describing what was true when they were written - this note is the current, correct fact. OVERSIGHT ARCHIVE (Aug 20/21 2026): a new achiever.html oversight doc now exists (layer (e)\'s past-tense half, the mirror image of future_integrations.html) - it holds real facts/counts/rules that WERE true and a later real change made false (a real new /colourgradient color, brown), genuinely different from error_log.html\'s purple which tracks BROKEN CODE, not stale claims. All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 12/13 went through the full 7-step framework including hand-test; the 9 newer phyla (11,14,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest(), in rpgace_core.js\'s legacy section as of Aug 20 2026 - main.js was mechanically merged in, same code, one file now) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); a real multi-session /CEO plan (Aug 11) is restructuring the flat jargon-bucket phyla into real deep Phylum->Order->Class->Family->Genus->Species hierarchies matching phyla 1-10s own shape - Phylum 11 (Fons Educationis) is the first one done as the proof-of-concept (6 real Orders, 16 Classes, 16 leaves), phyla 14,15-21 are still flat single-level buckets awaiting the same treatment, and 12/13 also still need it despite predating this pass. Separately, the placement engine (phylumPath._insertNewSteps) was fixed the same day: when a new insight genuinely duplicates an EXISTING leaf, it now extends that leaf\'s own article instead of either rejecting or creating a near-duplicate sibling - a new leaf only ever sprouts for a genuinely new concept. Fusion-link pass and hand-test are both still real, tracked gaps across every phylum built or restructured since July 30. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 4-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / a new Future Integrations + planned Archive layer / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. Layer (d) has 2 real docs as of Aug 12: smoke_test.html (current confirmed/unconfirmed function state) and error_log.html (every real error Total systems has seen, deduplicated by signature, with fix-attempt history and resolved lessons kept permanently) - they mirror each other live (an active error shows at the top of smoke_test.html too). Only green (verified built) content lives in the explaining/truth/self-awareness/smoke-test docs; blue (idea)/red (planned)/yellow (mid-build) content lives in future_integrations.html instead, per /colourgradient\'s own 4-color system - never claim something not-yet-built is a shipped feature just because it appears in a report. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key. Aug 11 (later same day): phylum numbers were renumbered to match the app\'s own display grouping order - Fons Educationis is now Phylum 11, Lingua Musicae is now Phylum 12, Visio Cinematica is now Phylum 13, Contentum is now Phylum 14 (previously 12/11/14/13 respectively) - always use the current numbers above, never the old ones from an earlier memory. Aug 13: a new Galaxy Map (graphify-out/galaxy_map.html, reachable from the Oversight popup) shows RPGACE Total Systems as a real radial map - 4 galaxies (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC), Oracle and self-awareness as their own nodes, every real external connector flagged tested/untested - this is Level 0 only, river-level and function-level drill-down are real, planned, NOT built yet, never claim the map goes deeper than the top level. A new system_map_spec.md states the real mapping rules; the /cartographer skill runs a trickle-down/up check when a real change creates integration friction elsewhere, surfacing findings to Alex directly and logging them to system_map_flags - never claim this runs automatically on every change, it only fires when a plan item actually touches the mapping hierarchy. Same day, a real bottom-up cross-check (writing evidence-grounded first-person self-reports per galaxy, then per node, never live AI-to-AI dialogue - two Claude Code sessions cannot reach each other directly, confirmed via ListAgents) found and fixed 3 real topology bugs the top-down Galaxy Map missed: a missing Graphify CC -> OpenMontage CC repo-read edge, a duplicate Graphify CC node, and FFmpeg wrongly drawn with a direct RPGACE Architecture edge instead of attached to OpenMontage CC - all fixed in graphify-out/galaxy_map.html. This became a real skill, /perspective (.claude/skills/perspective/SKILL.md) - it writes a real expected_behavior baseline per Total-system element into the perspective_reports table (21 real rows so far: 4 galaxies + 17 nodes/connectors), which error_log.html now displays inline when a logged error is linked to one, and which /colourgradient reads as the real prior-working baseline for its new 5th color. /colourgradient now has a 5th color, purple - a real REGRESSION (was genuinely green before, evidence now shows it broken), distinct from red (never worked) - purple items route to future_integrations.html AND get a real error_log.html row; as of this pass zero real regressions have been found, the purple section is honestly empty. A full /perspective sweep of every individual RPGACE feature/button (not just the 4 galaxies/17 nodes) is real, planned, explicitly NOT built yet (ceo_plan_items G11, blue) - never claim every feature has a documented baseline. Same day, later pass: /cartographer gained a real "Baseline Reconciliation" step - cross-references minotaur_map.html, the Tier (b) docs, graphify+Obsidian, self-awareness, and the Galaxy Map per real Total-system scope, writing findings into smoke_test.html as a real cross_ref_note - this NEVER auto-ticks a function confirmed_working, that stays exclusively Alex\'s own hand-tested authority; it only surfaces a real, evidence-grounded suggestion for him to check. A real pilot run against the Galaxy Map found it genuinely under-documented in minotaur_map.html/interconnection_map.md/system_flow_map.md (zero mentions - a real gap, not a contradiction) even though self-awareness (this text) describes it correctly - never assume every real artifact is cross-referenced everywhere it logically should be. Same day, later pass: G3 (Level 1 - the 16 rivers, drilled into from the Galaxy Map\'s central RPGACE Architecture node) is now real and live - scripts/galaxy_map_river.py, real RIVER_FLOWS data reused from graphify_river_group.py, verified via headless Chromium with zero console errors. interconnection_map.md and system_flow_map.md were both updated to describe it, closing part of the cross-reference gap the Baseline Reconciliation pilot found - the minotaur_map.html "new wing" question stays open and flagged, not silently resolved. A new ceo_plan_items G13 (blue, real future scope) logs the plan to grow smoke_test.html into a full connections+functions report once G11\'s full /perspective sweep exists to feed it - not built yet, deliberately, to avoid rushing multi-session Total-systems work in one pass. Same day, later pass: G4 (Level 2 - each river\'s own real modules PLUS the real dashboard cards that route into it, per Alex\'s own explicit ask to include dashboard cards as reference points) is now real and live too - scripts/galaxy_map_module.py, a new sourced DASHBOARD_CARDS table mirroring dashDeck.MODULES, verified via headless Chromium across the full drill chain with zero errors. Same day, later pass still: every edge across all 3 levels now carries a real X mark at its start and a real arrowhead at its end (a new shared _build_markers() helper, node radii trimmed so markers land at the visible boundary, not buried inside a node) - direction is now legible even without reading colors. Same day, later pass: G5 (Oversight-connection representation) is now real too - a 📚 badge marks River XIV and any river with a real direct RIVER_FLOWS connection into it, on both Level 1 and Level 2. Level 2 also gained a real 3rd ring of clickable bubbles per river, jumping straight to every other river it actually connects to (real RIVER_FLOWS/FLOWS_IN data, direction-labeled) - verified on River XII, the real 7-connection stress case. Same day, later pass: Level 2 gained a real 4th, outermost ring too - real G0 external connectors (Anthropic/Kimi/Luna, OpenMontage, Composio, librosa, FFmpeg, Graphify CC, Jina AI, Last.fm, Whisper) that have a real, cited relationship to that specific river, sourced directly from each connector\'s own note text (a new EXTERNAL_RIVER_LINKS table) - OpenArt and n8n honestly excluded since neither has a real per-river citation. Same day, later pass still: modules within a river now show real code-derived flow arrows to each other (compute_intra_river_flow(), grepped from real RPGACE.modules.X calls) and a computed 👁️/🤖 terminal badge marking where that flow actually converges - a real visible app output, an external AI connection, or both. River XI\'s own real terminal is contentProductionLive, matching the Content Pipeline dashboard card exactly. A real 5th ring shows Claude Code skills as "streams" joining each river - River XIII gets its full real 25-skill catalog, a few other rivers get one real cited skill each. Same day, later pass: Level 2\'s layout is now genuinely LEFT-TO-RIGHT for any river with real modules (input on the left, modules ordered by real evidence, output on the right) - a real Alex correction on the original radial layout, now a standing principle in system_map_spec.md section 9. Module-less rivers (River XIII\'s own real skill web included) correctly keep the radial layout, since there\'s no real module flow there to reorient. Same day, real /misunderstanding-diagnosed fix: the old single-terminal computation silently picked whichever module happened to sit first in an unrelated table\'s definition order when two were equally real terminals (River V\'s morningBrief vs journalQoL) - compute_river_terminals() now returns every real co-terminal, so a river genuinely converging on more than one output shows all of them, never an arbitrary pick. The same pass also fixed incoming river-connection bubbles rendering visually on top of a river\'s own hub node - they now draw first (behind, in real SVG paint order) and sit genuinely left of the hub on-canvas, matching the left(input)-to-right(output) principle instead of crossing over it. Same day, later pass: a real Level 3 now exists (graphify-out/galaxy_map_level3.html, ceo_plan_items G14) - a module with a 🔽 badge on Level 2 is a real clickable gateway into that module\'s own function-level call chain (real functions, real direct-call edges grepped from code, left-to-right by computed depth). Started as a proof-of-concept on ONE module (beatLog), then rolled out to ALL 44 real Level-2 modules same day after 2 real bugs found stress-testing the pattern were fixed (an infinite-loop risk on a genuine function-call cycle, and a canvas-sizing formula that crowded wide columns) - 44 of 44 modules now have a built Level-3 page, real function/edge counts, verified via headless Chromium with zero console errors. smoke_test.html gaining real category/group/level columns sourced from the galaxy map hierarchy, and manual.html\'s Button/Chain data fusing with the galaxy map for purple-regression diagnosis are real, ratified, explicitly NOT built yet - flag them as planned, not shipped, if asked. G6-G9 status: G1-G5/G10/G12 are real and shipped; G6 (truth-source promotion) and G7 (trickle-down/up system) are real and being worked; G8 (CEO Loop 2 wiring) is real but needs a live hand-test before it can be called done; G9 (Consumer/Developer visibility tiering) stays deliberately deferred per Alex\'s own explicit call - "way further down the line," not near-term. Aug 14: a real main.js/RPGACE.hooks-aware detection extension closed a confirmed gap where the whole Galaxy Map pipeline only ever read rpgace_core.js - it now also traces real index.html onclick buttons through main.js and real RPGACE.hooks.fire/listen pairing (including rpgace_core.js\'s own "FUNCTION WRAPPERS" section, which bridges 6 real main.js UI functions like checkPassword/showPage to named hooks); a real, honest finding from this pass is that RPGACE.hooks is a purely CROSS-river mechanism - zero same-river hook pairs exist anywhere in the 44-module codebase (rivers are a Claude Code mapping label for this map/minotaur_map.html, not a construct that exists in the code itself). Same day: G15 (Level 4) is now real and live too - graphify-out/galaxy_map_level4.html, reached by clicking any dashboard-card diamond on Level 2. It traces dashDeck.MODULES\' own real go: trigger for every one of the 12 real dashboard cards into what actually opens (a real popup, or a real page navigation), including the established real pattern where dashDeck\'s own _openX() hands off to a target module\'s own _inject*() function (e.g. bookworm._injectDashboardWidget) - that target module is the real destination, not dashDeck itself, which is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules. All 4 Galaxy Map levels (0-4) are now built and live. Same day, later pass: 3 more real things shipped. First, the first official smoke test - smoke_test.html gained 56 real new rows (44 modules + 12 dashboard cards), all status unverified, ready for Alex to hand-confirm once Oracle access is back - never claim any of these 56 are confirmed working yet. Second, a real evidence-driven Oracle bubble (purple, same icon/color as the Level 0 harness node) now shows at Level 2 and Level 3, with real per-edge action-count numbers - it deliberately is NOT forced onto every module, only the 12 of 44 that genuinely call sendToOracle/callOracle/fillGaps in their own code (26 real call sites total); Level 0/1/4 and every other external connector do not have this bubble yet. Third, Level 5 (Logic - 7 real, curated named decision points like the Oracle Mode toggle and the taxonomy placement scoring) and Level 6 (Detailed Decision - 1088 real, mechanically-extracted if/else/switch branch points across all 44 modules, exhaustive not narrated) both now exist and are live, plus a real "zoom out to Level 2" link on every Level-3 entry-point function and a real "into the logic: Level 5" forward link on the few Level-3 terminal functions that have a matching Level-5 write-up - all 7 Galaxy Map levels (0-6) are now built and live. Same day, later pass: a real Level 1.5 (Meanders) now exists too, in response to Alex flagging River V\'s Level-2 rendering as genuinely too messy (10 modules, all fanned out with crossing bubble edges). A river only gets a meanders split where it genuinely has 2+ real dashboard cards to divide by - currently exactly River V qualifies (split into 4 real meanders matching its own research/agenda/morningBrief/journal dashboard cards), every other river stays exactly as it was. The meanders page also shows real per-function Oracle/Composio integration detail. River V\'s own Level-2 canvas was simplified to a real notice + link instead of the old crowded fan-out - every other river\'s Level-2 rendering is completely untouched. Never claim any river besides River V has a meanders page. Same day, real /misunderstanding-diagnosed fixes: (1) unattributed river-to-river connections now show an explicit "no known function" marker instead of rendering identically to a real, function-attributed one, and real attribution coverage rose from 5/25 to 11/25 by generalizing an existing signal (nav_route connections now correctly attribute to main.js\'s own showPage()). (2) Rivers XII-XVI now carry an explicit on-map "0 modules, by design" badge. (3) Real cycles in the river-to-river graph are now explained on the map itself, grounded in real interaction-type evidence - most form a real hub (River II\'s taxonomy tree, written to and read from by many rivers), one (River XI/XII) is a real two-way round trip with OpenMontage, not a hub. (4) River V\'s isolated-module count dropped from 10/10 to 7/10, River VII from 5/5 to 4/5, by generalizing the existing window.X wrap-chain detector past its original 2 hardcoded Oracle-specific function names - still honestly partial, most River V modules remain genuinely undetected as connected. Same day, later pass: G26 Phase 1 (the Decision/Human-Gate grouping) is now real and live - graphify-out/galaxy_map_decisions.html, 10 real decision/human-confirmation-gate points found in RPGACE app code (destructive deletes, taxonomy placement/review confirms, content pipeline reverts), grouped by decision type and cross-linked into Level 3 and Level 5. Scope is RPGACE app code only - never claim this covers OpenMontage/Graphify CC/Composio confirmations or /CEO plan approvals, those are real, explicitly deferred future phases (G27/G28), not built. Same day, later pass: G16 (the evidence-driven Oracle bubble) is now fully closed - Level 0 was already correctly covered by its own permanent Oracle harness node, and Level 1/Level 4/Composio (the other externals piece) all now have real, evidence-gated bubbles too, same discipline as Level 2/3 already had. Never claim every river or every dashboard card has an Oracle badge - only the ones with a real, detected Oracle or Composio call do. Same day, later pass: G29 (Orchestrator CC <-> OpenMontage CC dispatch history), G31 (a 2nd real externals bubble, Last.fm), and G38 (Level 2.5 - all 16 rivers regrouped by their own real dashboard cards, replacing the River-V-only Meanders) are all real and live - graphify-out/galaxy_map_orchestrator_openmontage.html, and galaxy_map_level2_5.html. G38 has 2 of 3 real "logic bubble" links Alex asked for (forward to Level 3, back to Level 2) - the 3rd (a UI/Alex bubble into a future "alex/ui conjoined dimension") is honestly NOT built, it depends on G30 (Level 0 becomes dimensions) and G37 (a real Alex decision-tree bubble system) landing first - both still blue, awaiting Alex\'s own answers, never guessed at. Same day, later pass: G27 and G28 are now real and live too. G27 (graphify-out/galaxy_map_externals.html) classifies all 13 real external connectors by whether each genuinely touches a real UI trigger/output AND real backend processing - only 5 (Anthropic, OpenMontage, Composio, Jina AI, Last.fm) genuinely touch both, the rest are honestly one-sided or dormant. G28 (graphify-out/galaxy_map_skills.html) classifies 24 real RPGACE-authored skills by whether each reaches an external AI (Oracle or a Total-system member like OpenMontage CC/Graphify CC), touches real UI, or touches real backend - this is a real, curated judgment call, not a mechanical detector, since skills are prose not code. Never claim a skill "uses external AI" just because Claude Code itself is running it - that would trivially include everything and mean nothing. TOTAL-SYSTEMS INFLUENCE BOUNDARY (Aug 14, real Alex ask - "safeguard everything"): Alex has real influence over RPGACE app/Supabase, this session (Orchestrator CC), and OpenMontage CC/Graphify CC (he set them up, gives them kickoff prompts, can redirect them - though they run somewhat autonomously in their own repos). He has NO influence over the externals G27 catalogs (Anthropic/Composio/Jina AI/Last.fm/Moonshot/Luna/etc) - real providers/APIs he consumes, never controls. G27 IS the real, evidenced boundary where the influence-domain touches the no-influence domain - never suggest "fixing" an external provider as an RPGACE task, that boundary is real and permanent. G26-G28 (Decisions/Externals/Skills classification pages) plus a real Orchestrator-CC/OpenMontage-CC interaction dimension and a skill-builds-skill composition network are real, blue-logged ideas (ceo_plan_items G29-G36, Aug 14) proposing Level 0 itself become "dimensions" replacing the 4 galaxies - NOT built, Alex has not yet approved the CEO Loop 1 report (Step 6). Honest, separate finding from this same pass: this whole SELF_KNOWLEDGE string has grown past 22,000 characters with no pruning of fully-resolved entries, the same bloat pattern CLAUDE.md itself was fixed for July 31 - a real, flagged future cleanup, not addressed this pass (would risk losing real detail mid-close-out; needs its own dedicated pass). Same day, later pass: real Level 1/1.5/2/2.5/3 restructure (Alex: "i dont want 1.5 it doesnt make sense... meanders should become the central point where all ui/alex/backend/externals all eventually meet"). Level 1.5 (Meanders) is retired - its real River-V role folded into Level 2.5, which now ONLY covers the 10 of 16 rivers with a real dashboard card (never a placeholder for card-less rivers), each showing real externals-attachment plus an honest "pending G30" dimension stub. Never claim Level 2.5 covers all 16 rivers or that dimension links are real yet. G30 (dimensions) and G37 (Alex decision-tree bubbles) both remain blue, unbuilt, awaiting Alex. Aug 15 2026 (A5 Phase 1, real Galaxy-Map-evidenced Research Lab dismantling): Idea Bank, Beat Log, and Upload Workshop (renamed from Video Workshop) now open directly from the Content Pipeline card, Corpus got its own stand-alone dashboard card, and Bibliography now opens from the Bookworm card — Research Lab shrank to just File Analyzer + Video Finder. Nothing moved at the module/river level (conidPot/beatLog/videoPipeline were already River XI, refCorpus was already River VII); this was a real UI-routing fix only. New standing rule (CLAUDE.md 15, CEO SKILL.md R15): for module-ownership/river questions, query the Galaxy Map data first, grep only for details it does not compute. A new oversight doc, session_lessons.html (11th artifact), now tracks real /misunderstanding, /drift, and obstacle-to-solution episodes per session, each opening with the real prompt scope that produced it (CEO SKILL.md Loop 1 Step 6). Same day, real follow-up: Research Lab is now fully retired as a dashboard card and leftNav entry — File Analyzer and Video Finder (its last 2 tabs) moved to the Bookworm card too, alongside Bibliography. Research Lab exists only as an internal page these panels still live in; there is no user-facing Research Lab destination left. A real Phase 2 (File Analyzer/Corpus renamed Videoworm/Articleworm/MusicWorm, a worm-switcher page, Oracle-context wiring) is a real, logged idea, not built. Same day, later pass: a new Galaxy Map "Load Dimension" (G39) shipped — 3 real, separately-tracked categories (boot-time registerBootTask sequence, page:show navigation triggers, dashDeck on-demand click-inject triggers), for diagnosing what actually loads what. A Level 2/3 hub bubble for it is a real, explicitly deferred follow-on, not built. session_lessons.html also gained 39 real retroactive entries (blue, title/date only) mechanically pulled from patch_notes.html, flagged for a full write-up later. Same day, later pass (G30/G37, real multi-home confirmed): a real Dimensions Matrix (44 modules x 5 dimensions, real overlap, 8 real hubs with 3+ tags) and a real Alex Decision Path synthesis (12 dashboard cards, real Y/N forks where a real Decisions-page gate exists on that path) both shipped — real analysis views, not a Level-0 skeleton replacement. Same session, final pass: real /deduplication+/paranoia on Level 4 vs Level 2.5 found they are NOT duplicates (different real granularity — Level 4 is per-card DOM/button flow detail, 2.5 is per-river card-to-module summary), fixed with a real cross-link (Level 4 now links to both L2 and L2.5). A new Logic Dimension page (Level 5 companion) shipped: every river-to-river connection/external connector/skill stream as a clickable passage, river-grouped, 96 real edges. 9 stale anchor-verified code citations across Level 5/Decisions were found and fixed (real line-drift from this session own edits) before shipping. Same day, later pass: G32 (conditional /cartographer in scope+GODMODE), G33 (colourgradient 3-axis grounding), G35 (Skills page bubble badges), G36 (Skill Composition Network, 117 real skill-to-skill invocation edges) all shipped. G34 Level 1 (Local Claude vs external provider toggle) shipped as a new oracleProviderMode module, pinned top-right, dormant until a real Kimi/Luna key exists. G34 Level 2 (Fable/Opus dev-role indicator) stays open, Alex is writing his own real spec for it. Alex also shared a real future vision: Oracle eventually controlling pipelines via its own self-awareness layer to fulfill typed/planned steps, plus a possible Fish Audio integration for voice — logged, not built. Aug 18: a real L0/Dimension/River/Module/Current redefinition was ratified (ceo_plan_items G42 umbrella + G43-G50, all specified via a real /CEO Loop 1 pass) and Loop 2 execution has begun with G43 — a new Galaxy Map L0 page (graphify-out/galaxy_map_l0.html, merged with the L0 Dimension Matrix Aug 20 into one real toggleable map/table page) with 7 real peer units (External AI, RPGACE Architecture, Skills, Orchestrator CC, Alex, Supabase, Oversight Docs), no privileged gateway unit (a real bug Alex caught in the first draft, now standing rule R16). Skills and Supabase render as a real injection-tool bubble kind. Verified via headless Chromium: 17 real dimension-edges, all clickable from both endpoints, zero console errors, idempotent, div/svg/a-balanced. Untested by Alex\'s own hand. G44-G50 all shipped same day: the Dimension Matrix (L0-unit grain, now the toggle-table view inside galaxy_map_l0.html itself), a new Supabase table page (25 tables, 195 real touches), a Skills page River-usage extension, Level 3 replaced by a 436-Current ordered list (Level 5/6 folded in), Level 4 repurposed as a zoomed Current walkthrough, a real River-v2 split (River V -> renamed \"Daily Ops\" + new River XVII \"Research & Intel Stream\"), and the Oversight Docs bubble trio (already delivered by G43, not rebuilt). All 22 real Galaxy Map pages verified idempotent and balanced, zero console errors. All 9 items (G42-G50) sit at yellow (built, real, untested by Alex\'s own hand) in ceo_plan_items — G51 (a real smoke_test.html<->yellow<->green confirm-loop idea, Alex\'s own words: "i think this is a banging idea you started off") logged blue, not built. Aug 20/21 2026, later same day: G55 (Oversight Sync Dimension, graphify-out/galaxy_map_oversight_sync.html) is a real, separate page from the rest of the Galaxy Map - it sequences oversight-doc updates by real process TIME (what gets touched during a push/build/plan phase, and in what order during /Bedtime, /Routine, /Summary, /CEO) rather than by space (river/module/function) - never confuse it with the Level 0-6 spatial hierarchy. G56 added real hand-written pipeline-logic Mermaid flowcharts to system_flow_map.md itself (§12 Oracle Mode, §13 Achiever/brown, §14 Total-Systems Dispatch) rather than new standalone files, per rule 8. Both G55 and G56 are real, shipped, green in ceo_plan_items, and still untested by Alex\'s own hand. Aug 21 2026: G59 shipped - a new graphify-out/galaxy_map_hub.html is the real Unified Gateway all 23 Galaxy Map pages are reachable from (real table view grouped by Level with "-> flows into" links, real map view as a node-graph, both sourced from the same computed-at-build-time edge data, never hand-typed) - the 21 existing pages themselves are untouched, each loads into a shared pane on click so first paint stays light. Every page also carries a real core/inter/infra/meta classification (inter = connection/flow, renders as an edge; infra = an attached resource like Supabase/Oracle/external-connector touch, renders as a node bubble) - Alex REJECTED this hub shell as the deliverable same day, direct correction: "that should be used as reference of how to structure the map... everything should start at l0." The REAL, corrected Level 0 is graphify-out/galaxy_map.html itself - RPGACE Total Systems\' own canonical architecture map. Alex corrected this a SECOND time same day, more precisely: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map" - meaning the merged 9-unit model should live INSIDE galaxy_map.html directly, not on a separate third file (the first correction had created graphify-out/galaxy_map_l0_fusion.html, which is now deleted - its content was moved, not duplicated, rule 8). galaxy_map.html now renders all 9 real deduplicated units (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs) as real bubbles - 4 of them (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, plus the Human Gate-Alex harness node) inside the existing SVG diagram, now real clickable triggers, and 5 more (External AI, Skills, Alex, Supabase, Oversight Docs) as a real bubble row directly below it. Clicking any unit presents a real CHOICE (not a toggle switch - that stays reserved for map/table view elsewhere, per Alex\'s own direct correction) between Infra (a real attached resource - for Alex specifically this is the real Decisions list, his own literal example) and Inter (a real dimension it participates in) - picking one expands real detail inline and cross-highlights every other unit sharing that same real resource/dimension. The central RPGACE Architecture node keeps its own separate, pre-existing real drill-down link into Level 1 rivers, untouched by this. galaxy_map_l0.html and galaxy_map_hub.html both stay on disk purely as reference (the original 17-edge table/map toggle, and the UI-pattern reference respectively) - neither is the entry point. Total real Galaxy Map page count is 24 now (23 in the hub\'s own catalogue plus the hub itself) - if asked for the full list, describe it as one hierarchy: L0 (the 9 units, now all real bubbles on RPGACE Total Systems\' own architecture map) -> L1 rivers (the big components RPGACE breaks into) -> L2 modules (each river\'s own sub-components) -> L2.5/Current(L3)/Zoom(L4) (individual functions, smaller still) -> L5/L6 (the actual decision logic inside those functions, the finest real grain) -> Dimension pages (cross-cutting real facts like Supabase/Skills/Externals/Decisions, attached at whichever level actually touches them, and the same real data the L0 page\'s own facets are sourced from) - never describe these as unrelated separate tools, they are one real decomposition/composition chain. Aug 21 2026, later same session (real /paranoia+/interrogation+/CEO pass, Alex\'s own ask): galaxy_map_hub.html is no longer described as "superseded" - it is a real, distinct, KEPT utility (the one page indexing every other Galaxy Map page), per Alex\'s own direct call. The Oversight popup\'s Galaxy Map section is now just 2 real entries (galaxy_map.html to start, galaxy_map_hub.html to browse everything else) - down from 23, since every other page is already reachable from the hub\'s own index. A real /misunderstanding was caught and fixed the SAME pass: a first attempt gave galaxy_map_skill_network.html and galaxy_map_skills.html (G28) each their OWN independent bubble/table toggle - Alex caught this directly ("again you are duplicating and not integrating exactly as i said") since it repeated the exact duplicate-instead-of-merge mistake the earlier L0-fusion correction had already fixed once this same session. Corrected: galaxy_map_skill_network.html is now the ONE real merged page - map view is its own real circular skill-composition-network bubble diagram (118 real invocation edges) with click-to-reveal per-skill detail panels, table view is G28\'s own real AI/UI/backend classification grid (imported directly, not re-derived) - graphify-out/galaxy_map_skills.html no longer exists as a standalone file, galaxy_map_skills.py is now a pure data/render module imported by skill_network. G65 (fold Level3 into Current Series) is now real and shipped too - galaxy_map_current.html\'s own per-module section gained a real map/table toggle (map = the real function call-chain/band diagram Level3 used to render, table = the existing per-function input/handling/output/next detail), galaxy_map_level3.html is deleted, ~22 real cross-references across the other pages were repointed at galaxy_map_current.html#mod-X. G66 (retire Level4), G67 (fold galaxy_map_l0.html\'s 7-unit matrix into galaxy_map.html\'s own table view), and G68 (a real recursive L0<->river/module/function interaction-matrix idea) are all now real and shipped too, same day (real /interrogation resolved 3 forks before building). galaxy_map_level4.py/.html and galaxy_map_l0.html are DELETED, not kept as reference - their real content lives inline on galaxy_map_module.html (Level4\'s per-card evidence) and galaxy_map.html\'s new real table view (L0\'s own 17-edge matrix, imported directly via build_matrix()/build_table_details(), not rebuilt) respectively. G68 needed no new page - galaxy_map_dimensions.html (44 L2 modules x 5 dimensions) already was the next real matrix layer down, only a real cross-link was added naming the chain. 20 real Galaxy Map pages exist now (was 22). Same pass, a real, separate Alex ask ("i want every possible version of these [levels] to all be present in each file so i can see it better too"): every one of the 20 real Galaxy Map pages carries one shared "level rail" nav strip (🌌L0 -> 🏛L1 -> 🌊L2 -> 🪂L2.5 -> 🔽Current(L3) -> 🖱Zoom(L4) -> 🧠L5 -> 🔬L6, current page highlighted) via one shared inject_level_rail() helper in graphify_river_group.py, called by every page script right before it writes its own HTML - a single mechanical post-process, not 22 hand-copied nav blocks. galaxy_map_hub.html\'s own real edge computation was fixed in the same pass to strip the rail\'s own hrefs before counting real page-to-page flow edges (the rail is navigation chrome, same class as the pre-existing galaxy_map.html-as-home exclusion, not a real content relationship) - never count a level-rail link as a real "flows into" relationship. hub.py now catalogues 19 pages (itself excluded), 42 real edges (down from 56/66 across this session\'s various states, since 2 real files\' worth of links are gone). Same session, later pass, 4 more real Alex asks: (1) External AI\'s own facet panel now shows its own real live/dormant components (Anthropic/Kimi/Luna) directly, not just vague partner edges - this data already existed (attached to rpgace_architecture/alex) but was never reciprocally attached to external_ai itself, a real asymmetry fixed with 3 reciprocal facet rows sharing the same share_key. (2) The old, redundant per-page breadcrumb chains (duplicating the level rail) were removed from 11 pages entirely and stripped down to just their real non-ladder cross-links on 7 Dimension pages - never both a breadcrumb AND the rail saying the same thing. (3) Level 2.5 is folded into Level 2\'s own real map/table toggle (map = the existing SVG flow diagram, table = galaxy_map_level2_5.py\'s own build_river_section(), imported directly) - graphify-out/galaxy_map_level2_5.html no longer exists, the rail\'s own L2.5 stop now points at galaxy_map_module.html. 19 real Galaxy Map pages now (was 22 at session peak). (4) Alex\'s own Decisions facet gained the one real Level-5 point that\'s genuinely his own CHOICE (Oracle Mode toggle, decider=\'Alex\'), cross-linked rather than merging galaxy_map_decisions.py/galaxy_map_level5.py into one file (they cover genuinely different things - human-confirm gates vs curated core logic). Same session, immediate follow-up (real /interrogation, 2 forks resolved): a new Decision Matrix (graphify-out/galaxy_map_decision_matrix.html) unifies ALL 3 real decision kinds - the 10 gates, the 7 Level-5 logic points, and 4 new curated text-input points (Oracle chat prompt, Beat Log form, Director Blend inspiration, Taxonomy Placement Editor, all anchor-verified live) - split by river (21 real decisions across 6 rivers) and by documentation depth (every decision reaches Current(L3)+L6; +L5 only if it\'s one of Level 5\'s own curated points). Real table view built FIRST, bubble/map view is a pure rendering layer over the identical data - this is now a permanent standing rule (CEO SKILL.md R22, Alex\'s own words: \'bubble systems always follow and showcase what on table\'), not just a one-off pattern. Never claim decisions are split across literal L0-L6 pages - \'level\' here means documentation depth, confirmed via /interrogation, not a spatial L0-L6 spread. Real Aug 22 2026 update, A5 Phase 2 (Research Lab dismantling), slice 1+2 shipped via /Routine: the Idea Bank gained a real \'💬 Create new via Oracle\' button (conidPot._createNewIdea) - navigates to the Oracle page and sends a real brainstorming prompt grounded in Insta/YouTube/TikTok Oracle\'s own real hook-generation commands (contentProductionLive._findOracleCmdText, the same real-command-borrowing pattern Phase G\'s caption generation already established, rule 8), asking Oracle to keep chatting until one idea lands, then restate it as \'Content Idea: <title>\' so the existing _injectSaveBtn detection picks it up - no new save mechanism needed. Separately, contentRepurpose.openPopup\'s existing single Oracle call now asks Oracle to judge, per-idea, whether Instagram Reels/YouTube Shorts/TikTok would be genuinely identical short-form content and merge them into one section if so (Alex\'s own words: \'if short form content works for all 3 short content platforms, merge the idea into one to also save tokens\') - a real prompt-text change to an already-existing call, never a second premium-model call (rule 11). Two real A5 Phase 2 pieces stay honestly unbuilt, not silently dropped: Corpus\'s dashboard-card description claims it \'feeds the taxonomy tree\' but no reference_tracks-to-taxonomy_tree write path exists anywhere (confirmed by direct grep - zero matches); Upload Workshop\'s real upload-strategy-generation button (3 platform Oracles consulted individually, compiled into one review popup with accept/regenerate) has not been built.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested): ARCHITECTURE (Aug 20 2026): the client ships as exactly ONE script now, rpgace_core.js (index.html loads only rpgace_core.min.js) - the old separate main.js was mechanically merged into it (Alex\'s own direct ask, zero logic rewrite), living on as rpgace_core.js\'s own LEGACY SECTION near the top of the file (bootstrap, password gate, page routing, career score, Quest Board). Older bullets below this one that say "main.js" as if it were still a separate file are historical narrative describing what was true when they were written - this note is the current, correct fact. OVERSIGHT ARCHIVE (Aug 20/21 2026): a new achiever.html oversight doc now exists (layer (e)\'s past-tense half, the mirror image of future_integrations.html) - it holds real facts/counts/rules that WERE true and a later real change made false (a real new /colourgradient color, brown), genuinely different from error_log.html\'s purple which tracks BROKEN CODE, not stale claims. All 21 knowledge Phyla are now enabled in Phylum Path (Aug 11 2026 Engineer pass, real jargon-bucket leaves built for the 9 phyla that were previously placeholder-only). But "enabled" is not the same as "fully built": phyla 1-10 and 12/13 went through the full 7-step framework including hand-test; the 9 newer phyla (11,14,15-21) have real jargon-bucket content and routing keywords, but the fusion-link pass and hand-test steps are still open, real, tracked gaps - never claim any phylum is "fully verified" without checking which of those two steps have actually been cleared. Features F0 through F18 have shipped except F12 (deliberately deferred) - but F16 (Beatstars listing), F17 (video pipeline stages) and F18 (auto visual treatment) have never actually been hand-tested by Alex. RPGACE is now a real installable PWA (Android/desktop Add-to-Home-Screen). The Chronicles (renamed from a plain dashboard feed) is now a full searchable log page with click-through detail on every real entry, plus a personal-visibility-only finance ledger for sale/expense tracking (not bookkeeping-grade - real receipts still needed for actual tax filing). The profile stat card runs on real Supabase-derived data now (Output = real shipped content, Growth = learning/tree activity, kept as separate lanes on purpose) - but the separate Quest Board (addXP()/completeQuest(), in rpgace_core.js\'s legacy section as of Aug 20 2026 - main.js was mechanically merged in, same code, one file now) has ZERO persistence at all, pure in-memory, resets every reload - it is NOT connected to the real career score, so never assume quest completions are being tracked anywhere durable. Oracle chat streaming shipped July 28 (real server-backed SSE, replacing a broken client-only stub) - not yet hand-tested live by Alex. SECURITY: the app password and every /api/*.js endpoint go through real server-side checks (fixed and independently verified live July 24); the XSS/innerHTML audit is DONE (fixed July 28 - renderMarkdown() now escapes HTML before rendering); no Supabase backup/PITR exists at all. All Supabase tables have RLS enabled; most real tables were flipped from permissive USING(true) to real anon-read-only policies July 24 (verified via pg_policy) - a handful of tables with confirmed external anon-key writers are a deliberate, named exception, not a gap. Biggest built-but-rough areas: Bookworm still uses one modal at a time instead of a proper card list; there is no Taxonomy Sorting Agent as a separate thing (book and non-book insights already share one placement engine); a real multi-session /CEO plan (Aug 11) is restructuring the flat jargon-bucket phyla into real deep Phylum->Order->Class->Family->Genus->Species hierarchies matching phyla 1-10s own shape - Phylum 11 (Fons Educationis) is the first one done as the proof-of-concept (6 real Orders, 16 Classes, 16 leaves), phyla 14,15-21 are still flat single-level buckets awaiting the same treatment, and 12/13 also still need it despite predating this pass. Separately, the placement engine (phylumPath._insertNewSteps) was fixed the same day: when a new insight genuinely duplicates an EXISTING leaf, it now extends that leaf\'s own article instead of either rejecting or creating a near-duplicate sibling - a new leaf only ever sprouts for a genuinely new concept. Fusion-link pass and hand-test are both still real, tracked gaps across every phylum built or restructured since July 30. A real Oracle Mode 3-way toggle exists now (Aug 6), pinned to the top of every page: Real API (live), 🧪 Dummy (unmistakably-labeled fake replies for wiring tests, zero API cost), and 📥 Fallback Scout (queues the real question into a free daily-answered queue instead of calling the live API right away - not instant, answered later, browsable via the "Scouted" list). Encyclopedia preview bullets are now deduplicated against each entry\'s own saved preview_bullets, so an already-processed entry does not get silently reprocessed on every page reload. Aug 11: real Anthropic prompt caching is live on every Oracle call (transparent, no visible behavior change, purely a cost optimization - never claim this changes what Oracle can say or do). A Kimi/Luna free-tier-model routing option exists in the server code (api/oracle.js) but is dormant - no real API key is configured yet, so Oracle is still exclusively running on Claude; never claim RPGACE is "using Kimi" or "using multiple AI models" until this is explicitly confirmed active. Oversight docs were restructured (Aug 11) into a real 2-tier + 4-layer system (explaining docs / truth docs / self-awareness / a new smoke-test doc / a new Future Integrations + planned Archive layer / graphify-Obsidian as the truth source) - if asked what oversight looks like, describe it as this structure, not the old flat seven-doc list. Layer (d) has 2 real docs as of Aug 12: smoke_test.html (current confirmed/unconfirmed function state) and error_log.html (every real error Total systems has seen, deduplicated by signature, with fix-attempt history and resolved lessons kept permanently) - they mirror each other live (an active error shows at the top of smoke_test.html too). Only green (verified built) content lives in the explaining/truth/self-awareness/smoke-test docs; blue (idea)/red (planned)/yellow (mid-build) content lives in future_integrations.html instead, per /colourgradient\'s own 4-color system - never claim something not-yet-built is a shipped feature just because it appears in a report. The Obsidian vault (obsidian-vault/) is real river/zone knowledge notes, but its raw [[wikilink]] markdown only renders as clickable navigation inside the actual Obsidian app - the real way to browse it from RPGACE itself is graphify-out/obsidian_vault.html, a static export with working links, reachable from the in-app Oversight popup\'s "Auto-generated" group (same place Graphify Map/Tree already live) - never tell Alex to just open the raw obsidian-vault/ folder without mentioning this. Bookworm chapter analysis now condenses long chapter text before analysis instead of silently truncating it at 12000 raw characters - if asked about Bookworm quality on long chapters, say this was fixed Aug 11, not confirmed by a real hand-test yet. Oversight now covers the WHOLE Total system (RPGACE app + this Claude Code session + external connectors), not just RPGACE-internal architecture - graphify uses 16 unified rivers (never say "11 rivers and 5 zones"): Rivers I-XI carry in-app narrative information flow, Rivers XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth gateway to OpenMontage/Kimi/Luna/librosa/Composio/Graphify CC; XIII-XVI are the dev-process/knowledge layer those Claude Code members coordinate through). ai_tooling_and_rules_map.md\'s "External AI/tool providers" table is the real source of truth for which connectors are actually live vs dormant vs deferred - never claim Kimi or Luna are active, they are real scaffolds waiting on an API key. Aug 11 (later same day): phylum numbers were renumbered to match the app\'s own display grouping order - Fons Educationis is now Phylum 11, Lingua Musicae is now Phylum 12, Visio Cinematica is now Phylum 13, Contentum is now Phylum 14 (previously 12/11/14/13 respectively) - always use the current numbers above, never the old ones from an earlier memory. Aug 13: a new Galaxy Map (graphify-out/galaxy_map.html, reachable from the Oversight popup) shows RPGACE Total Systems as a real radial map - 4 galaxies (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC), Oracle and self-awareness as their own nodes, every real external connector flagged tested/untested - this is Level 0 only, river-level and function-level drill-down are real, planned, NOT built yet, never claim the map goes deeper than the top level. A new system_map_spec.md states the real mapping rules; the /cartographer skill runs a trickle-down/up check when a real change creates integration friction elsewhere, surfacing findings to Alex directly and logging them to system_map_flags - never claim this runs automatically on every change, it only fires when a plan item actually touches the mapping hierarchy. Same day, a real bottom-up cross-check (writing evidence-grounded first-person self-reports per galaxy, then per node, never live AI-to-AI dialogue - two Claude Code sessions cannot reach each other directly, confirmed via ListAgents) found and fixed 3 real topology bugs the top-down Galaxy Map missed: a missing Graphify CC -> OpenMontage CC repo-read edge, a duplicate Graphify CC node, and FFmpeg wrongly drawn with a direct RPGACE Architecture edge instead of attached to OpenMontage CC - all fixed in graphify-out/galaxy_map.html. This became a real skill, /perspective (.claude/skills/perspective/SKILL.md) - it writes a real expected_behavior baseline per Total-system element into the perspective_reports table (21 real rows so far: 4 galaxies + 17 nodes/connectors), which error_log.html now displays inline when a logged error is linked to one, and which /colourgradient reads as the real prior-working baseline for its new 5th color. /colourgradient now has a 5th color, purple - a real REGRESSION (was genuinely green before, evidence now shows it broken), distinct from red (never worked) - purple items route to future_integrations.html AND get a real error_log.html row; as of this pass zero real regressions have been found, the purple section is honestly empty. A full /perspective sweep of every individual RPGACE feature/button (not just the 4 galaxies/17 nodes) is real, planned, explicitly NOT built yet (ceo_plan_items G11, blue) - never claim every feature has a documented baseline. Same day, later pass: /cartographer gained a real "Baseline Reconciliation" step - cross-references minotaur_map.html, the Tier (b) docs, graphify+Obsidian, self-awareness, and the Galaxy Map per real Total-system scope, writing findings into smoke_test.html as a real cross_ref_note - this NEVER auto-ticks a function confirmed_working, that stays exclusively Alex\'s own hand-tested authority; it only surfaces a real, evidence-grounded suggestion for him to check. A real pilot run against the Galaxy Map found it genuinely under-documented in minotaur_map.html/interconnection_map.md/system_flow_map.md (zero mentions - a real gap, not a contradiction) even though self-awareness (this text) describes it correctly - never assume every real artifact is cross-referenced everywhere it logically should be. Same day, later pass: G3 (Level 1 - the 16 rivers, drilled into from the Galaxy Map\'s central RPGACE Architecture node) is now real and live - scripts/galaxy_map_river.py, real RIVER_FLOWS data reused from graphify_river_group.py, verified via headless Chromium with zero console errors. interconnection_map.md and system_flow_map.md were both updated to describe it, closing part of the cross-reference gap the Baseline Reconciliation pilot found - the minotaur_map.html "new wing" question stays open and flagged, not silently resolved. A new ceo_plan_items G13 (blue, real future scope) logs the plan to grow smoke_test.html into a full connections+functions report once G11\'s full /perspective sweep exists to feed it - not built yet, deliberately, to avoid rushing multi-session Total-systems work in one pass. Same day, later pass: G4 (Level 2 - each river\'s own real modules PLUS the real dashboard cards that route into it, per Alex\'s own explicit ask to include dashboard cards as reference points) is now real and live too - scripts/galaxy_map_module.py, a new sourced DASHBOARD_CARDS table mirroring dashDeck.MODULES, verified via headless Chromium across the full drill chain with zero errors. Same day, later pass still: every edge across all 3 levels now carries a real X mark at its start and a real arrowhead at its end (a new shared _build_markers() helper, node radii trimmed so markers land at the visible boundary, not buried inside a node) - direction is now legible even without reading colors. Same day, later pass: G5 (Oversight-connection representation) is now real too - a 📚 badge marks River XIV and any river with a real direct RIVER_FLOWS connection into it, on both Level 1 and Level 2. Level 2 also gained a real 3rd ring of clickable bubbles per river, jumping straight to every other river it actually connects to (real RIVER_FLOWS/FLOWS_IN data, direction-labeled) - verified on River XII, the real 7-connection stress case. Same day, later pass: Level 2 gained a real 4th, outermost ring too - real G0 external connectors (Anthropic/Kimi/Luna, OpenMontage, Composio, librosa, FFmpeg, Graphify CC, Jina AI, Last.fm, Whisper) that have a real, cited relationship to that specific river, sourced directly from each connector\'s own note text (a new EXTERNAL_RIVER_LINKS table) - OpenArt and n8n honestly excluded since neither has a real per-river citation. Same day, later pass still: modules within a river now show real code-derived flow arrows to each other (compute_intra_river_flow(), grepped from real RPGACE.modules.X calls) and a computed 👁️/🤖 terminal badge marking where that flow actually converges - a real visible app output, an external AI connection, or both. River XI\'s own real terminal is contentProductionLive, matching the Content Pipeline dashboard card exactly. A real 5th ring shows Claude Code skills as "streams" joining each river - River XIII gets its full real 25-skill catalog, a few other rivers get one real cited skill each. Same day, later pass: Level 2\'s layout is now genuinely LEFT-TO-RIGHT for any river with real modules (input on the left, modules ordered by real evidence, output on the right) - a real Alex correction on the original radial layout, now a standing principle in system_map_spec.md section 9. Module-less rivers (River XIII\'s own real skill web included) correctly keep the radial layout, since there\'s no real module flow there to reorient. Same day, real /misunderstanding-diagnosed fix: the old single-terminal computation silently picked whichever module happened to sit first in an unrelated table\'s definition order when two were equally real terminals (River V\'s morningBrief vs journalQoL) - compute_river_terminals() now returns every real co-terminal, so a river genuinely converging on more than one output shows all of them, never an arbitrary pick. The same pass also fixed incoming river-connection bubbles rendering visually on top of a river\'s own hub node - they now draw first (behind, in real SVG paint order) and sit genuinely left of the hub on-canvas, matching the left(input)-to-right(output) principle instead of crossing over it. Same day, later pass: a real Level 3 now exists (graphify-out/galaxy_map_level3.html, ceo_plan_items G14) - a module with a 🔽 badge on Level 2 is a real clickable gateway into that module\'s own function-level call chain (real functions, real direct-call edges grepped from code, left-to-right by computed depth). Started as a proof-of-concept on ONE module (beatLog), then rolled out to ALL 44 real Level-2 modules same day after 2 real bugs found stress-testing the pattern were fixed (an infinite-loop risk on a genuine function-call cycle, and a canvas-sizing formula that crowded wide columns) - 44 of 44 modules now have a built Level-3 page, real function/edge counts, verified via headless Chromium with zero console errors. smoke_test.html gaining real category/group/level columns sourced from the galaxy map hierarchy, and manual.html\'s Button/Chain data fusing with the galaxy map for purple-regression diagnosis are real, ratified, explicitly NOT built yet - flag them as planned, not shipped, if asked. G6-G9 status: G1-G5/G10/G12 are real and shipped; G6 (truth-source promotion) and G7 (trickle-down/up system) are real and being worked; G8 (CEO Loop 2 wiring) is real but needs a live hand-test before it can be called done; G9 (Consumer/Developer visibility tiering) stays deliberately deferred per Alex\'s own explicit call - "way further down the line," not near-term. Aug 14: a real main.js/RPGACE.hooks-aware detection extension closed a confirmed gap where the whole Galaxy Map pipeline only ever read rpgace_core.js - it now also traces real index.html onclick buttons through main.js and real RPGACE.hooks.fire/listen pairing (including rpgace_core.js\'s own "FUNCTION WRAPPERS" section, which bridges 6 real main.js UI functions like checkPassword/showPage to named hooks); a real, honest finding from this pass is that RPGACE.hooks is a purely CROSS-river mechanism - zero same-river hook pairs exist anywhere in the 44-module codebase (rivers are a Claude Code mapping label for this map/minotaur_map.html, not a construct that exists in the code itself). Same day: G15 (Level 4) is now real and live too - graphify-out/galaxy_map_level4.html, reached by clicking any dashboard-card diamond on Level 2. It traces dashDeck.MODULES\' own real go: trigger for every one of the 12 real dashboard cards into what actually opens (a real popup, or a real page navigation), including the established real pattern where dashDeck\'s own _openX() hands off to a target module\'s own _inject*() function (e.g. bookworm._injectDashboardWidget) - that target module is the real destination, not dashDeck itself, which is confirmed NOT one of the 44 real RIVER_MODULES-tracked modules. All 4 Galaxy Map levels (0-4) are now built and live. Same day, later pass: 3 more real things shipped. First, the first official smoke test - smoke_test.html gained 56 real new rows (44 modules + 12 dashboard cards), all status unverified, ready for Alex to hand-confirm once Oracle access is back - never claim any of these 56 are confirmed working yet. Second, a real evidence-driven Oracle bubble (purple, same icon/color as the Level 0 harness node) now shows at Level 2 and Level 3, with real per-edge action-count numbers - it deliberately is NOT forced onto every module, only the 12 of 44 that genuinely call sendToOracle/callOracle/fillGaps in their own code (26 real call sites total); Level 0/1/4 and every other external connector do not have this bubble yet. Third, Level 5 (Logic - 7 real, curated named decision points like the Oracle Mode toggle and the taxonomy placement scoring) and Level 6 (Detailed Decision - 1088 real, mechanically-extracted if/else/switch branch points across all 44 modules, exhaustive not narrated) both now exist and are live, plus a real "zoom out to Level 2" link on every Level-3 entry-point function and a real "into the logic: Level 5" forward link on the few Level-3 terminal functions that have a matching Level-5 write-up - all 7 Galaxy Map levels (0-6) are now built and live. Same day, later pass: a real Level 1.5 (Meanders) now exists too, in response to Alex flagging River V\'s Level-2 rendering as genuinely too messy (10 modules, all fanned out with crossing bubble edges). A river only gets a meanders split where it genuinely has 2+ real dashboard cards to divide by - currently exactly River V qualifies (split into 4 real meanders matching its own research/agenda/morningBrief/journal dashboard cards), every other river stays exactly as it was. The meanders page also shows real per-function Oracle/Composio integration detail. River V\'s own Level-2 canvas was simplified to a real notice + link instead of the old crowded fan-out - every other river\'s Level-2 rendering is completely untouched. Never claim any river besides River V has a meanders page. Same day, real /misunderstanding-diagnosed fixes: (1) unattributed river-to-river connections now show an explicit "no known function" marker instead of rendering identically to a real, function-attributed one, and real attribution coverage rose from 5/25 to 11/25 by generalizing an existing signal (nav_route connections now correctly attribute to main.js\'s own showPage()). (2) Rivers XII-XVI now carry an explicit on-map "0 modules, by design" badge. (3) Real cycles in the river-to-river graph are now explained on the map itself, grounded in real interaction-type evidence - most form a real hub (River II\'s taxonomy tree, written to and read from by many rivers), one (River XI/XII) is a real two-way round trip with OpenMontage, not a hub. (4) River V\'s isolated-module count dropped from 10/10 to 7/10, River VII from 5/5 to 4/5, by generalizing the existing window.X wrap-chain detector past its original 2 hardcoded Oracle-specific function names - still honestly partial, most River V modules remain genuinely undetected as connected. Same day, later pass: G26 Phase 1 (the Decision/Human-Gate grouping) is now real and live - graphify-out/galaxy_map_decisions.html, 10 real decision/human-confirmation-gate points found in RPGACE app code (destructive deletes, taxonomy placement/review confirms, content pipeline reverts), grouped by decision type and cross-linked into Level 3 and Level 5. Scope is RPGACE app code only - never claim this covers OpenMontage/Graphify CC/Composio confirmations or /CEO plan approvals, those are real, explicitly deferred future phases (G27/G28), not built. Same day, later pass: G16 (the evidence-driven Oracle bubble) is now fully closed - Level 0 was already correctly covered by its own permanent Oracle harness node, and Level 1/Level 4/Composio (the other externals piece) all now have real, evidence-gated bubbles too, same discipline as Level 2/3 already had. Never claim every river or every dashboard card has an Oracle badge - only the ones with a real, detected Oracle or Composio call do. Same day, later pass: G29 (Orchestrator CC <-> OpenMontage CC dispatch history), G31 (a 2nd real externals bubble, Last.fm), and G38 (Level 2.5 - all 16 rivers regrouped by their own real dashboard cards, replacing the River-V-only Meanders) are all real and live - graphify-out/galaxy_map_orchestrator_openmontage.html, and galaxy_map_level2_5.html. G38 has 2 of 3 real "logic bubble" links Alex asked for (forward to Level 3, back to Level 2) - the 3rd (a UI/Alex bubble into a future "alex/ui conjoined dimension") is honestly NOT built, it depends on G30 (Level 0 becomes dimensions) and G37 (a real Alex decision-tree bubble system) landing first - both still blue, awaiting Alex\'s own answers, never guessed at. Same day, later pass: G27 and G28 are now real and live too. G27 (graphify-out/galaxy_map_externals.html) classifies all 13 real external connectors by whether each genuinely touches a real UI trigger/output AND real backend processing - only 5 (Anthropic, OpenMontage, Composio, Jina AI, Last.fm) genuinely touch both, the rest are honestly one-sided or dormant. G28 (graphify-out/galaxy_map_skills.html) classifies 24 real RPGACE-authored skills by whether each reaches an external AI (Oracle or a Total-system member like OpenMontage CC/Graphify CC), touches real UI, or touches real backend - this is a real, curated judgment call, not a mechanical detector, since skills are prose not code. Never claim a skill "uses external AI" just because Claude Code itself is running it - that would trivially include everything and mean nothing. TOTAL-SYSTEMS INFLUENCE BOUNDARY (Aug 14, real Alex ask - "safeguard everything"): Alex has real influence over RPGACE app/Supabase, this session (Orchestrator CC), and OpenMontage CC/Graphify CC (he set them up, gives them kickoff prompts, can redirect them - though they run somewhat autonomously in their own repos). He has NO influence over the externals G27 catalogs (Anthropic/Composio/Jina AI/Last.fm/Moonshot/Luna/etc) - real providers/APIs he consumes, never controls. G27 IS the real, evidenced boundary where the influence-domain touches the no-influence domain - never suggest "fixing" an external provider as an RPGACE task, that boundary is real and permanent. G26-G28 (Decisions/Externals/Skills classification pages) plus a real Orchestrator-CC/OpenMontage-CC interaction dimension and a skill-builds-skill composition network are real, blue-logged ideas (ceo_plan_items G29-G36, Aug 14) proposing Level 0 itself become "dimensions" replacing the 4 galaxies - NOT built, Alex has not yet approved the CEO Loop 1 report (Step 6). Honest, separate finding from this same pass: this whole SELF_KNOWLEDGE string has grown past 22,000 characters with no pruning of fully-resolved entries, the same bloat pattern CLAUDE.md itself was fixed for July 31 - a real, flagged future cleanup, not addressed this pass (would risk losing real detail mid-close-out; needs its own dedicated pass). Same day, later pass: real Level 1/1.5/2/2.5/3 restructure (Alex: "i dont want 1.5 it doesnt make sense... meanders should become the central point where all ui/alex/backend/externals all eventually meet"). Level 1.5 (Meanders) is retired - its real River-V role folded into Level 2.5, which now ONLY covers the 10 of 16 rivers with a real dashboard card (never a placeholder for card-less rivers), each showing real externals-attachment plus an honest "pending G30" dimension stub. Never claim Level 2.5 covers all 16 rivers or that dimension links are real yet. G30 (dimensions) and G37 (Alex decision-tree bubbles) both remain blue, unbuilt, awaiting Alex. Aug 15 2026 (A5 Phase 1, real Galaxy-Map-evidenced Research Lab dismantling): Idea Bank, Beat Log, and Upload Workshop (renamed from Video Workshop) now open directly from the Content Pipeline card, Corpus got its own stand-alone dashboard card, and Bibliography now opens from the Bookworm card — Research Lab shrank to just File Analyzer + Video Finder. Nothing moved at the module/river level (conidPot/beatLog/videoPipeline were already River XI, refCorpus was already River VII); this was a real UI-routing fix only. New standing rule (CLAUDE.md 15, CEO SKILL.md R15): for module-ownership/river questions, query the Galaxy Map data first, grep only for details it does not compute. A new oversight doc, session_lessons.html (11th artifact), now tracks real /misunderstanding, /drift, and obstacle-to-solution episodes per session, each opening with the real prompt scope that produced it (CEO SKILL.md Loop 1 Step 6). Same day, real follow-up: Research Lab is now fully retired as a dashboard card and leftNav entry — File Analyzer and Video Finder (its last 2 tabs) moved to the Bookworm card too, alongside Bibliography. Research Lab exists only as an internal page these panels still live in; there is no user-facing Research Lab destination left. A real Phase 2 (File Analyzer/Corpus renamed Videoworm/Articleworm/MusicWorm, a worm-switcher page, Oracle-context wiring) is a real, logged idea, not built. Same day, later pass: a new Galaxy Map "Load Dimension" (G39) shipped — 3 real, separately-tracked categories (boot-time registerBootTask sequence, page:show navigation triggers, dashDeck on-demand click-inject triggers), for diagnosing what actually loads what. A Level 2/3 hub bubble for it is a real, explicitly deferred follow-on, not built. session_lessons.html also gained 39 real retroactive entries (blue, title/date only) mechanically pulled from patch_notes.html, flagged for a full write-up later. Same day, later pass (G30/G37, real multi-home confirmed): a real Dimensions Matrix (44 modules x 5 dimensions, real overlap, 8 real hubs with 3+ tags) and a real Alex Decision Path synthesis (12 dashboard cards, real Y/N forks where a real Decisions-page gate exists on that path) both shipped — real analysis views, not a Level-0 skeleton replacement. Same session, final pass: real /deduplication+/paranoia on Level 4 vs Level 2.5 found they are NOT duplicates (different real granularity — Level 4 is per-card DOM/button flow detail, 2.5 is per-river card-to-module summary), fixed with a real cross-link (Level 4 now links to both L2 and L2.5). A new Logic Dimension page (Level 5 companion) shipped: every river-to-river connection/external connector/skill stream as a clickable passage, river-grouped, 96 real edges. 9 stale anchor-verified code citations across Level 5/Decisions were found and fixed (real line-drift from this session own edits) before shipping. Same day, later pass: G32 (conditional /cartographer in scope+GODMODE), G33 (colourgradient 3-axis grounding), G35 (Skills page bubble badges), G36 (Skill Composition Network, 117 real skill-to-skill invocation edges) all shipped. G34 Level 1 (Local Claude vs external provider toggle) shipped as a new oracleProviderMode module, pinned top-right, dormant until a real Kimi/Luna key exists. G34 Level 2 (Fable/Opus dev-role indicator) stays open, Alex is writing his own real spec for it. Alex also shared a real future vision: Oracle eventually controlling pipelines via its own self-awareness layer to fulfill typed/planned steps, plus a possible Fish Audio integration for voice — logged, not built. Aug 18: a real L0/Dimension/River/Module/Current redefinition was ratified (ceo_plan_items G42 umbrella + G43-G50, all specified via a real /CEO Loop 1 pass) and Loop 2 execution has begun with G43 — a new Galaxy Map L0 page (graphify-out/galaxy_map_l0.html, merged with the L0 Dimension Matrix Aug 20 into one real toggleable map/table page) with 7 real peer units (External AI, RPGACE Architecture, Skills, Orchestrator CC, Alex, Supabase, Oversight Docs), no privileged gateway unit (a real bug Alex caught in the first draft, now standing rule R16). Skills and Supabase render as a real injection-tool bubble kind. Verified via headless Chromium: 17 real dimension-edges, all clickable from both endpoints, zero console errors, idempotent, div/svg/a-balanced. Untested by Alex\'s own hand. G44-G50 all shipped same day: the Dimension Matrix (L0-unit grain, now the toggle-table view inside galaxy_map_l0.html itself), a new Supabase table page (25 tables, 195 real touches), a Skills page River-usage extension, Level 3 replaced by a 436-Current ordered list (Level 5/6 folded in), Level 4 repurposed as a zoomed Current walkthrough, a real River-v2 split (River V -> renamed \"Daily Ops\" + new River XVII \"Research & Intel Stream\"), and the Oversight Docs bubble trio (already delivered by G43, not rebuilt). All 22 real Galaxy Map pages verified idempotent and balanced, zero console errors. All 9 items (G42-G50) sit at yellow (built, real, untested by Alex\'s own hand) in ceo_plan_items — G51 (a real smoke_test.html<->yellow<->green confirm-loop idea, Alex\'s own words: "i think this is a banging idea you started off") logged blue, not built. Aug 20/21 2026, later same day: G55 (Oversight Sync Dimension, graphify-out/galaxy_map_oversight_sync.html) is a real, separate page from the rest of the Galaxy Map - it sequences oversight-doc updates by real process TIME (what gets touched during a push/build/plan phase, and in what order during /Bedtime, /Routine, /Summary, /CEO) rather than by space (river/module/function) - never confuse it with the Level 0-6 spatial hierarchy. G56 added real hand-written pipeline-logic Mermaid flowcharts to system_flow_map.md itself (§12 Oracle Mode, §13 Achiever/brown, §14 Total-Systems Dispatch) rather than new standalone files, per rule 8. Both G55 and G56 are real, shipped, green in ceo_plan_items, and still untested by Alex\'s own hand. Aug 21 2026: G59 shipped - a new graphify-out/galaxy_map_hub.html is the real Unified Gateway all 23 Galaxy Map pages are reachable from (real table view grouped by Level with "-> flows into" links, real map view as a node-graph, both sourced from the same computed-at-build-time edge data, never hand-typed) - the 21 existing pages themselves are untouched, each loads into a shared pane on click so first paint stays light. Every page also carries a real core/inter/infra/meta classification (inter = connection/flow, renders as an edge; infra = an attached resource like Supabase/Oracle/external-connector touch, renders as a node bubble) - Alex REJECTED this hub shell as the deliverable same day, direct correction: "that should be used as reference of how to structure the map... everything should start at l0." The REAL, corrected Level 0 is graphify-out/galaxy_map.html itself - RPGACE Total Systems\' own canonical architecture map. Alex corrected this a SECOND time same day, more precisely: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map" - meaning the merged 9-unit model should live INSIDE galaxy_map.html directly, not on a separate third file (the first correction had created graphify-out/galaxy_map_l0_fusion.html, which is now deleted - its content was moved, not duplicated, rule 8). galaxy_map.html now renders all 9 real deduplicated units (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs) as real bubbles - 4 of them (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, plus the Human Gate-Alex harness node) inside the existing SVG diagram, now real clickable triggers, and 5 more (External AI, Skills, Alex, Supabase, Oversight Docs) as a real bubble row directly below it. Clicking any unit presents a real CHOICE (not a toggle switch - that stays reserved for map/table view elsewhere, per Alex\'s own direct correction) between Infra (a real attached resource - for Alex specifically this is the real Decisions list, his own literal example) and Inter (a real dimension it participates in) - picking one expands real detail inline and cross-highlights every other unit sharing that same real resource/dimension. The central RPGACE Architecture node keeps its own separate, pre-existing real drill-down link into Level 1 rivers, untouched by this. galaxy_map_l0.html and galaxy_map_hub.html both stay on disk purely as reference (the original 17-edge table/map toggle, and the UI-pattern reference respectively) - neither is the entry point. Total real Galaxy Map page count is 24 now (23 in the hub\'s own catalogue plus the hub itself) - if asked for the full list, describe it as one hierarchy: L0 (the 9 units, now all real bubbles on RPGACE Total Systems\' own architecture map) -> L1 rivers (the big components RPGACE breaks into) -> L2 modules (each river\'s own sub-components) -> L2.5/Current(L3)/Zoom(L4) (individual functions, smaller still) -> L5/L6 (the actual decision logic inside those functions, the finest real grain) -> Dimension pages (cross-cutting real facts like Supabase/Skills/Externals/Decisions, attached at whichever level actually touches them, and the same real data the L0 page\'s own facets are sourced from) - never describe these as unrelated separate tools, they are one real decomposition/composition chain. Aug 21 2026, later same session (real /paranoia+/interrogation+/CEO pass, Alex\'s own ask): galaxy_map_hub.html is no longer described as "superseded" - it is a real, distinct, KEPT utility (the one page indexing every other Galaxy Map page), per Alex\'s own direct call. The Oversight popup\'s Galaxy Map section is now just 2 real entries (galaxy_map.html to start, galaxy_map_hub.html to browse everything else) - down from 23, since every other page is already reachable from the hub\'s own index. A real /misunderstanding was caught and fixed the SAME pass: a first attempt gave galaxy_map_skill_network.html and galaxy_map_skills.html (G28) each their OWN independent bubble/table toggle - Alex caught this directly ("again you are duplicating and not integrating exactly as i said") since it repeated the exact duplicate-instead-of-merge mistake the earlier L0-fusion correction had already fixed once this same session. Corrected: galaxy_map_skill_network.html is now the ONE real merged page - map view is its own real circular skill-composition-network bubble diagram (118 real invocation edges) with click-to-reveal per-skill detail panels, table view is G28\'s own real AI/UI/backend classification grid (imported directly, not re-derived) - graphify-out/galaxy_map_skills.html no longer exists as a standalone file, galaxy_map_skills.py is now a pure data/render module imported by skill_network. G65 (fold Level3 into Current Series) is now real and shipped too - galaxy_map_current.html\'s own per-module section gained a real map/table toggle (map = the real function call-chain/band diagram Level3 used to render, table = the existing per-function input/handling/output/next detail), galaxy_map_level3.html is deleted, ~22 real cross-references across the other pages were repointed at galaxy_map_current.html#mod-X. G66 (retire Level4), G67 (fold galaxy_map_l0.html\'s 7-unit matrix into galaxy_map.html\'s own table view), and G68 (a real recursive L0<->river/module/function interaction-matrix idea) are all now real and shipped too, same day (real /interrogation resolved 3 forks before building). galaxy_map_level4.py/.html and galaxy_map_l0.html are DELETED, not kept as reference - their real content lives inline on galaxy_map_module.html (Level4\'s per-card evidence) and galaxy_map.html\'s new real table view (L0\'s own 17-edge matrix, imported directly via build_matrix()/build_table_details(), not rebuilt) respectively. G68 needed no new page - galaxy_map_dimensions.html (44 L2 modules x 5 dimensions) already was the next real matrix layer down, only a real cross-link was added naming the chain. 20 real Galaxy Map pages exist now (was 22). Same pass, a real, separate Alex ask ("i want every possible version of these [levels] to all be present in each file so i can see it better too"): every one of the 20 real Galaxy Map pages carries one shared "level rail" nav strip (🌌L0 -> 🏛L1 -> 🌊L2 -> 🪂L2.5 -> 🔽Current(L3) -> 🖱Zoom(L4) -> 🧠L5 -> 🔬L6, current page highlighted) via one shared inject_level_rail() helper in graphify_river_group.py, called by every page script right before it writes its own HTML - a single mechanical post-process, not 22 hand-copied nav blocks. galaxy_map_hub.html\'s own real edge computation was fixed in the same pass to strip the rail\'s own hrefs before counting real page-to-page flow edges (the rail is navigation chrome, same class as the pre-existing galaxy_map.html-as-home exclusion, not a real content relationship) - never count a level-rail link as a real "flows into" relationship. hub.py now catalogues 19 pages (itself excluded), 42 real edges (down from 56/66 across this session\'s various states, since 2 real files\' worth of links are gone). Same session, later pass, 4 more real Alex asks: (1) External AI\'s own facet panel now shows its own real live/dormant components (Anthropic/Kimi/Luna) directly, not just vague partner edges - this data already existed (attached to rpgace_architecture/alex) but was never reciprocally attached to external_ai itself, a real asymmetry fixed with 3 reciprocal facet rows sharing the same share_key. (2) The old, redundant per-page breadcrumb chains (duplicating the level rail) were removed from 11 pages entirely and stripped down to just their real non-ladder cross-links on 7 Dimension pages - never both a breadcrumb AND the rail saying the same thing. (3) Level 2.5 is folded into Level 2\'s own real map/table toggle (map = the existing SVG flow diagram, table = galaxy_map_level2_5.py\'s own build_river_section(), imported directly) - graphify-out/galaxy_map_level2_5.html no longer exists, the rail\'s own L2.5 stop now points at galaxy_map_module.html. 19 real Galaxy Map pages now (was 22 at session peak). (4) Alex\'s own Decisions facet gained the one real Level-5 point that\'s genuinely his own CHOICE (Oracle Mode toggle, decider=\'Alex\'), cross-linked rather than merging galaxy_map_decisions.py/galaxy_map_level5.py into one file (they cover genuinely different things - human-confirm gates vs curated core logic). Same session, immediate follow-up (real /interrogation, 2 forks resolved): a new Decision Matrix (graphify-out/galaxy_map_decision_matrix.html) unifies ALL 3 real decision kinds - the 10 gates, the 7 Level-5 logic points, and 4 new curated text-input points (Oracle chat prompt, Beat Log form, Director Blend inspiration, Taxonomy Placement Editor, all anchor-verified live) - split by river (21 real decisions across 6 rivers) and by documentation depth (every decision reaches Current(L3)+L6; +L5 only if it\'s one of Level 5\'s own curated points). Real table view built FIRST, bubble/map view is a pure rendering layer over the identical data - this is now a permanent standing rule (CEO SKILL.md R22, Alex\'s own words: \'bubble systems always follow and showcase what on table\'), not just a one-off pattern. Never claim decisions are split across literal L0-L6 pages - \'level\' here means documentation depth, confirmed via /interrogation, not a spatial L0-L6 spread. Real Aug 22 2026 update, A5 Phase 2 (Research Lab dismantling), slice 1+2 shipped via /Routine: the Idea Bank gained a real \'💬 Create new via Oracle\' button (conidPot._createNewIdea) - navigates to the Oracle page and sends a real brainstorming prompt grounded in Insta/YouTube/TikTok Oracle\'s own real hook-generation commands (contentProductionLive._findOracleCmdText, the same real-command-borrowing pattern Phase G\'s caption generation already established, rule 8), asking Oracle to keep chatting until one idea lands, then restate it as \'Content Idea: <title>\' so the existing _injectSaveBtn detection picks it up - no new save mechanism needed. Separately, contentRepurpose.openPopup\'s existing single Oracle call now asks Oracle to judge, per-idea, whether Instagram Reels/YouTube Shorts/TikTok would be genuinely identical short-form content and merge them into one section if so (Alex\'s own words: \'if short form content works for all 3 short content platforms, merge the idea into one to also save tokens\') - a real prompt-text change to an already-existing call, never a second premium-model call (rule 11). Two real A5 Phase 2 pieces stay honestly unbuilt, not silently dropped: no reference_tracks-to-taxonomy_tree write path exists anywhere (confirmed by direct grep - zero matches; Aug 23 2026 the two UI copy strings that used to claim otherwise - Corpus\'s dashboard-card description and its popup footer - were corrected to say so honestly, but the real write path itself is still unbuilt); Upload Workshop\'s real upload-strategy-generation button (3 platform Oracles consulted individually, compiled into one review popup with accept/regenerate) has not been built.',
 
   init: function() {
     var self = this;
@@ -9674,12 +9758,17 @@ RPGACE.register('intelDelete', {
   init: function() {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.research) {
-        setTimeout(function() { self._injectAll(); }, 400);
-      }
       if (name === 'encyclopedia') {
         setTimeout(function() { self._injectBibSection(); }, 500);
       }
+    });
+    // Aug 23 2026 (UI2) - the research-page branch removed above fired
+    // _injectAll() (delete + watchlist buttons on intel insight/watchlist
+    // cards). Those cards live inside #file-analyzer-panel, which now opens as
+    // its own dashDeck popup rather than on the retired Research Lab page.
+    RPGACE.hooks.on('worm-panel:open', function(panelId) {
+      if (panelId !== 'file-analyzer-panel') return;
+      setTimeout(function() { self._injectAll(); }, 400);
     });
     // July 24 - the [500,1200,3000] retry staggering existed to catch
     // cards that populate asynchronously after render; the MutationObserver
@@ -9702,11 +9791,13 @@ RPGACE.register('intelDelete', {
       if (_obsTimer) clearTimeout(_obsTimer);
       _obsTimer = setTimeout(function() { self._injectAll(); }, 300);
     });
-    // Only watch the research page container, not entire body
-    var researchPage = document.getElementById('page-research') ||
-                       document.getElementById('page-learning') ||
-                       document.body;
-    obs.observe(researchPage, { childList: true, subtree: true });
+    // Aug 23 2026 (UI2/UI3) — the old "only watch the research page
+    // container, not entire body" narrowing is gone with the page itself:
+    // 'page-research' was confirmed-dead and 'page-learning' is retired, and
+    // the intel cards this observer watches for now render inside a dashDeck
+    // popup appended to document.body. document.body IS the correct root now
+    // (it was already this chain's own final fallback), not a widened scope.
+    obs.observe(document.body, { childList: true, subtree: true });
   },
 
   /* ── Supabase helpers ─────────────────────────── */
@@ -10378,7 +10469,7 @@ RPGACE.register('dashDeck', {
     // card in dashboard"). refCorpus stays a River VII module (already
     // correctly adjacent to encTaxonomyLink, real Galaxy Map evidence,
     // CLAUDE.md rule 15) — this only changes how Alex REACHES it.
-    { key: 'corpus', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '🎼', name: 'Corpus', desc: 'Reference tracks your beats get matched against — feeds the taxonomy tree.', go: function() { RPGACE.modules.dashDeck._openCorpus(); } },
+    { key: 'corpus', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '🎼', name: 'Corpus', desc: 'Reference tracks your beats get matched against.', go: function() { RPGACE.modules.dashDeck._openCorpus(); } },
     { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
     // July 24 round 3 (Alex: the two tiles read as duplicates). Merged back
     // into ONE card. Round 2's separate 'reviewQueue' tile had the right
@@ -10852,11 +10943,15 @@ RPGACE.register('dashDeck', {
       btn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:11px;min-height:44px;background:rgba(155,89,182,0.15);border:1px solid var(--purple);border-radius:8px;color:var(--purple);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       btn.onclick = function() {
         pop.close();
-        // W1: Corpus/MusicWorm is already its own full dashDeck popup, NOT
-        // a raw static research panel — it must not go through
-        // _jumpToResearchPanel, which only shows/hides in-page panel ids.
+        // W1: Corpus/MusicWorm is already its own full dashDeck popup, so it
+        // opens directly rather than going through the shared panel-popup
+        // helper (which relocates a raw panel node).
+        // Aug 23 2026 (UI2): the other 3 no longer navigate away to the
+        // retired Research Lab page — each now opens as its OWN popup, with
+        // its real panel node MOVED in and back out again. Same buttons,
+        // same list, real destination.
         if (jb.open) jb.open();
-        else self._jumpToResearchPanel(jb.panelId, jb.ensure);
+        else self._openPanelById(jb.panelId, jb.ensure);
       };
       pop.box.appendChild(btn);
       if (jb.note) {
@@ -11035,7 +11130,15 @@ RPGACE.register('dashDeck', {
       { icon: '🌌', title: 'Galaxy Map — RPGACE Total Systems (Level 0, start here)', desc: 'G59, corrected TWICE same day, real Aug 21 2026 build — Alex\'s own direct correction: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map." All 9 real Level-0 units (RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs — merged from the 2 previously-separate L0 datasets, rule 8) live as real bubbles directly ON galaxy_map.html itself — 4 in the real SVG diagram, 5 more in a bubble row beside it. Click any unit, choose 💉 Infra (a real attached resource — Supabase, Oracle, an external connector, or for Alex specifically, real Decisions he can make) or 🔗 Inter (a real dimension/connection it participates in) — picking a facet expands its real detail inline and lights up every OTHER unit sharing that same real resource or dimension. No separate file, no directory.', href: '/graphify-out/galaxy_map.html' },
       { icon: '📇', title: 'Galaxy Map — Page Index (browse everything else)', desc: 'A real, distinct utility (Alex\'s own direct call, Aug 21: "keep as a real, standalone index") — the one page that catalogues every other real Galaxy Map page (Rivers, Modules, Current Series, Logic/Decisions, Supabase/Externals/Skills dimensions, Oversight Sync, and more), grouped by real Level with real "→ flows into" links, toggleable between a table and a node-graph view. Reachable from here so the rest of this popup can stay short.', href: '/graphify-out/galaxy_map_hub.html' }
     ];
-    addGroup('Primary — 6 file-based docs + the live taxonomy map + Smoke Test', primary, false, true);
+    // Aug 23 2026 (UI8) — was the hardcoded literal
+    // 'Primary — 6 file-based docs + the live taxonomy map + Smoke Test',
+    // i.e. a claim of 8 items while the `primary` array above had grown to 12
+    // (Error Log, Future Integrations, Achiever and Session Lessons were all
+    // added Aug 12-21 without this label ever being revisited — a real,
+    // user-visible undercount, and a textbook /colourgradient brown finding).
+    // Counted from primary.length now, so it can never go stale the same way
+    // again the next time a real doc is added to that list.
+    addGroup('Primary — ' + primary.length + ' living docs (Tier a/b + layers d/e), incl. the live taxonomy map', primary, false, true);
     addGroup('Auto-generated', null, true, false, [
       { title: '🌌 Galaxy Map', items: galaxyHubGroup },
       { title: '🕸️ Graphify / Obsidian', items: graphifyGroup }
@@ -11084,40 +11187,140 @@ RPGACE.register('dashDeck', {
     }
   },
 
-  // Aug 15 2026 (A5 Phase 1) — shared jump helper for the 4 research-page
-  // panels (Idea Bank, Beat Log, Upload Workshop, Bibliography) that were
-  // deliberately NOT relocated into a popup like #kg-panel/#cpl-widget/
-  // #bookworm-widget are (see researchTabs.TABS' own comment: relocating
-  // #cp-idea-bank/#beat-log-panel specifically would have stranded
-  // phylumPath's real taxtree-manual-btn, which inserts itself as a DOM
-  // SIBLING immediately before whichever of those two exists first —
-  // rule 1/3 evidence found this before shipping, not after). Instead:
-  // ensure the panel exists (calling its owning module's real lazy-inject
-  // function directly, since that inject used to be gated behind a
-  // researchTabs tab-key that no longer exists), force it visible (it may
-  // be mid-`display:none` from researchTabs' old tab-switching state),
-  // navigate to the Research page, and scroll it into view — same real
-  // navigate+scroll shape researchTabs.show() already used, just without
-  // the tab-bar bookkeeping these panels no longer participate in.
-  _jumpToResearchPanel: function(panelId, ensureFn) {
+  // ── _openPanelPopup — Aug 23 2026 (UI2), the real replacement for
+  // _jumpToResearchPanel (deleted in the same pass, zero remaining callers).
+  //
+  // WHY IT CHANGED: the old helper's last two real steps were
+  // `showPage(RPGACE.CONFIG.pages.research)` + scrollIntoView — i.e. navigate
+  // AWAY to the Research Lab page and scroll down to the panel. That page is
+  // retired (Alex: "research tab should be completely gone, with needed part
+  // going to either the worms or content pipeline"), and showPage() has NO
+  // null guard on its own `document.getElementById('page-'+name)` lookup, so
+  // every one of these 6 buttons would have thrown the moment the div went.
+  //
+  // WHAT IT DOES NOW: the same relocate-into-popup pattern _openGaps /
+  // _openCorpus / _openPipeline already prove — the panel's real DOM node is
+  // MOVED into a fresh popup (never cloned, never rebuilt, so every listener
+  // and inline onclick keeps working) and MOVED BACK to the shared staging
+  // holder on close. This is deliberately the SAME visual entry point as
+  // before (the same buttons in the same lists); only the destination
+  // mechanism changed — the worm-picker layout itself is separately-scoped
+  // work and is untouched here.
+  //
+  // TAXTREE-MANUAL-BTN SIBLING SAFETY: phylumPath's #taxtree-manual-btn
+  // inserts itself as a DOM sibling immediately BEFORE whichever of
+  // #cp-idea-bank / #beat-log-panel exists first — the exact reason those two
+  // were never relocated before this pass (they'd have stranded it in a
+  // hidden container). Fixed properly rather than worked around: if that
+  // button is the panel's immediate previousElementSibling, it travels WITH
+  // the panel into the popup and back out again, preserving the real
+  // relationship instead of breaking it.
+  //
+  // PAGE:SHOW REPLACEMENT: 4 real page:show listeners keyed on the retired
+  // page name ('learning'/'research'/RPGACE.CONFIG.pages.research) used to
+  // re-run this content's own UI polish — config's applyIntelUI (Videoworm's
+  // collapsed insight list), feynman._wireEncyclopediaButtons, intelDelete
+  // ._injectAll, taxTreeManual._injectManualButton. page:show can never fire
+  // with that name again, so this helper fires a real, honestly-named
+  // 'worm-panel:open' hook instead, which all 4 now also listen on. Fired
+  // AFTER the node is in the popup and visible, so anything measuring or
+  // injecting into it sees the real, live layout.
+  _openPanelPopup: function(opts) {
+    var self = this;
+    opts = opts || {};
+    var panelId = opts.panelId;
     var panel = document.getElementById(panelId);
-    if (!panel && typeof ensureFn === 'function') { try { ensureFn(); } catch (e) {} panel = document.getElementById(panelId); }
-    if (panel) panel.style.display = '';
-    if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
-    setTimeout(function() {
-      var p = document.getElementById(panelId);
-      if (p) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 250);
+    if (!panel && typeof opts.ensure === 'function') {
+      try { opts.ensure(); } catch (e) {}
+      panel = document.getElementById(panelId);
+    }
+    // Remember where it came from + how it was hidden, so close() puts it
+    // back exactly as found rather than guessing at a default.
+    var prevDisplay = panel ? panel.style.display : '';
+    // phylumPath's #taxtree-manual-btn anchors itself immediately BEFORE
+    // whichever of #cp-idea-bank / #beat-log-panel exists first. Deliberately
+    // matched by ID + panel identity rather than by previousElementSibling:
+    // _injectManualButton runs from a BOOT TASK, while both anchor panels are
+    // lazily injected on first real demand, so at boot the button is inserted
+    // at the top of the staging holder and the panel is appended to the end of
+    // it later - adjacent in intent, not in the DOM. Matching on adjacency
+    // alone would silently strand the button in the hidden holder (the exact
+    // regression this carry exists to prevent). The .dd-overlay guard mirrors
+    // _stashWidget's own: never rip the button out of a popup that still has
+    // it on screen.
+    var sib = null;
+    if (panel && (panelId === 'cp-idea-bank' || panelId === 'beat-log-panel')) {
+      var tb = document.getElementById('taxtree-manual-btn');
+      if (tb && !(tb.closest && tb.closest('.dd-overlay'))) sib = tb;
+    }
+    var pop = self._popup({
+      eyebrow: opts.eyebrow || '',
+      title: opts.title || '',
+      accent: opts.accent || 'var(--gold)',
+      width: opts.width || '720px',
+      closeLabel: 'Close',
+      onClose: function() {
+        var home = RPGACE.utils.panelHome();
+        var p = document.getElementById(panelId);
+        if (p && home) {
+          // Order matters: the button must land immediately BEFORE the panel
+          // again, so append it first, then the panel.
+          if (sib) home.appendChild(sib);
+          p.style.display = prevDisplay;
+          home.appendChild(p);
+        }
+        delete self._widgetPopups[panelId];
+      }
+    });
+    self._widgetPopups[panelId] = pop.close;
+    if (panel) {
+      if (sib) { sib.style.display = ''; pop.box.appendChild(sib); }
+      panel.style.marginBottom = '0';
+      panel.style.display = '';   // clear the staged display:none
+      pop.box.appendChild(panel);
+      RPGACE.hooks.fire('worm-panel:open', panelId);
+    } else {
+      var msg = document.createElement('div');
+      msg.style.cssText = 'color:var(--muted);font-size:13px;padding:16px 0;text-align:center;line-height:1.6';
+      msg.textContent = (opts.title || 'This panel') + ' is still loading — close this and try again in a moment.';
+      pop.box.appendChild(msg);
+    }
+    return pop;
+  },
+
+  // Metadata for every relocatable panel, in ONE place (rule 8) so
+  // _openBookworm's worm picker, _openPipeline's sub-step buttons, and any
+  // other caller (e.g. loadNote's "Load" handler) all open the exact same
+  // popup for a given panel instead of each re-declaring its identity.
+  PANEL_POPUPS: {
+    'file-analyzer-panel':   { eyebrow: '🐛 Videoworm',                title: 'Analyse a video into real insights',        accent: 'var(--purple)', width: '760px' },
+    'video-finder-panel':    { eyebrow: '🐛 Videoworm: Find Videos',   title: 'Search YouTube and feed URLs into Videoworm', accent: 'var(--purple)', width: '720px' },
+    'bookworm-bibliography': { eyebrow: '📚 Bibliography',             title: 'Books you have finished',                    accent: 'var(--purple)', width: '640px' },
+    'cp-idea-bank':          { eyebrow: '💡 Idea Bank',                title: 'Every saved content idea',                   accent: 'var(--gold)',   width: '720px' },
+    'beat-log-panel':        { eyebrow: '🥁 Beat Log',                 title: 'Log a beat into the Content Pipeline',       accent: 'var(--gold)',   width: '720px' },
+    'video-workshop-panel':  { eyebrow: '🔀 Upload Workshop',          title: 'Turn a finished video into an upload strategy', accent: 'var(--gold)', width: '760px' }
+  },
+
+  // Convenience wrapper: open a relocatable panel by id using its own
+  // registered identity above, with an optional lazy-inject function.
+  _openPanelById: function(panelId, ensureFn) {
+    var meta = this.PANEL_POPUPS[panelId] || {};
+    return this._openPanelPopup({
+      panelId: panelId, ensure: ensureFn,
+      eyebrow: meta.eyebrow, title: meta.title, accent: meta.accent, width: meta.width
+    });
   },
 
   // ── P4b Corpus popup (Aug 15 2026, A5 Phase 1) — Corpus's own real
-  // stand-alone dashboard card, per Alex's own literal ask. Unlike the
-  // Idea Bank/Beat Log/Upload Workshop jump-buttons below (which stay
-  // in-page for the taxtree-manual-btn sibling-safety reason above), this
-  // one uses the established relocate-into-popup pattern (same as
-  // _openGaps) — #ref-corpus-panel has no known sibling-insertion
-  // dependency, confirmed by the same grep sweep, so the safer-feeling
-  // popup shape (matching "stand-alone card") is genuinely safe here.
+  // stand-alone dashboard card, per Alex's own literal ask. Uses the
+  // established relocate-into-popup pattern (same as _openGaps).
+  // Aug 23 2026 (UI2): this is no longer the exception it used to be —
+  // Idea Bank / Beat Log / Upload Workshop / Videoworm / Videoworm-Find /
+  // Bibliography ALL relocate into popups now too, via the shared
+  // _openPanelPopup helper (which also solves the taxtree-manual-btn
+  // sibling problem that kept 2 of them in-page until now). This function
+  // keeps its own bespoke shape because it is a real top-level dashboard
+  // card with its own identity, not a sub-panel opened from another popup.
   // refCorpus._inject() called directly on demand, preserving the exact
   // same lazy-load-on-first-real-use behavior the July 23 performance fix
   // relied on (previously gated behind research:tab-active==='corpus').
@@ -11153,7 +11356,14 @@ RPGACE.register('dashDeck', {
     }
     var foot = document.createElement('div');
     foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-    foot.textContent = 'Feeds the taxonomy tree for genre/scale phyla as it grows — Last.fm is a real fallback source (River VII).';
+    // Aug 23 2026 (UI9) — this string, and the Corpus dashboard card's own
+    // `desc` above, both claimed Corpus "feeds the taxonomy tree". Direct grep
+    // evidence (CLAUDE.md's own Aug 22 A5 Phase 2 entry, re-confirmed this
+    // pass) says otherwise: zero reference_tracks -> taxonomy_tree write path
+    // exists anywhere in the codebase. Corrected to what is actually true
+    // today rather than swapped for a different aspirational claim; the real
+    // feed is a genuine future build, named honestly as unbuilt.
+    foot.textContent = 'Beat-matching reference library — Beat Log scores your beat against these tracks. Last.fm is a real fallback source (River VII). A real feed into the taxonomy tree is a planned future build, not live yet.';
     pop.box.appendChild(foot);
   },
 
@@ -11164,7 +11374,8 @@ RPGACE.register('dashDeck', {
   // ── session, Beatstars listing, platform links) keeps its real handler.
   // ── Parked in #dd-stash-holder while closed. Aug 15 2026 (A5 Phase 1):
   // ── the footer chrome below the relocated widget now opens Idea Bank,
-  // ── Beat Log, and Upload Workshop directly (via _jumpToResearchPanel)
+  // ── Beat Log, and Upload Workshop directly (Aug 23 2026, UI2: each as its
+  // ── own relocate-into-popup via _openPanelById, previously a page nav)
   // ── instead of the old single "💡 Open Idea Bank" button that detoured
   // ── through Research Lab's own tab bar — those 3 panels' real owning
   // ── modules (conidPot/beatLog/videoPipeline) are all already River XI,
@@ -11219,7 +11430,12 @@ RPGACE.register('dashDeck', {
       btn.style.cssText = 'display:block;width:100%;margin-top:' + (i === 0 ? '14px' : '8px') + ';padding:11px;min-height:44px;background:rgba(var(--dd-gold-rgb),.15);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       btn.onclick = function() {
         pop.close();
-        self._jumpToResearchPanel(jb.panelId, jb.ensure);
+        // Aug 23 2026 (UI2) — was _jumpToResearchPanel (navigate to the now-
+        // retired Research Lab page + scroll). Each of these 3 sub-steps now
+        // opens as its own popup with the real panel node relocated into it;
+        // #cp-idea-bank/#beat-log-panel carry phylumPath's #taxtree-manual-btn
+        // sibling along with them (see _openPanelPopup's own comment).
+        self._openPanelById(jb.panelId, jb.ensure);
       };
       body.appendChild(btn);
     });
@@ -12292,10 +12508,13 @@ RPGACE.register('taxonomyTree', {
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._injectManualButton(); });
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.research) {
-        setTimeout(function() { self._injectManualButton(); }, 500);
-      }
+    // Aug 23 2026 (UI2) - was a page:show listener on the retired Research Lab
+    // page. This button anchors itself as a DOM sibling before #cp-idea-bank /
+    // #beat-log-panel, so its real re-injection moment is now those two panels
+    // being opened (the boot task above still covers the first build).
+    RPGACE.hooks.on('worm-panel:open', function(panelId) {
+      if (panelId !== 'cp-idea-bank' && panelId !== 'beat-log-panel') return;
+      setTimeout(function() { self._injectManualButton(); }, 500);
     });
   },
 
@@ -12303,7 +12522,16 @@ RPGACE.register('taxonomyTree', {
   _injectManualButton: function() {
     if (document.getElementById('taxtree-manual-btn')) return;
     var self = this;
-    var page = document.getElementById('page-research') || document.getElementById('page-learning');
+    // Aug 23 2026 (UI2/UI3) — was 'page-research' (confirmed dead) ||
+    // 'page-learning' (the retired Research Lab page). This button is NOT one
+    // of the relocated panels; it inserts itself as a DOM SIBLING immediately
+    // before whichever of #cp-idea-bank / #beat-log-panel exists first, so it
+    // simply needs to be built into the same container those two now live in
+    // — the shared staging holder. dashDeck._openPanelPopup carries this
+    // button along with its anchor panel when it relocates it into a popup,
+    // so the sibling relationship survives the move (that stranding risk is
+    // exactly why those two panels were never relocated before this pass).
+    var page = RPGACE.utils.panelHome();
     if (!page) return;
 
     var btn = document.createElement('button');
@@ -16923,11 +17151,20 @@ RPGACE.register('bookworm', {
       }).catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500); });
   },
 
-  // ── Bibliography section on the Research page ─────────────────────
+  // ── Bibliography section ──────────────────────────────────────────
+  // Aug 23 2026 (UI2/UI3) — was "on the Research page", built straight into
+  // #page-learning via a fallback chain whose leading 'page-research' clause
+  // was confirmed dead. That page is retired; this now builds into the same
+  // shared staging holder every other relocatable panel uses
+  // (RPGACE.utils.panelHome), and dashDeck._openBookworm's own
+  // "📚 Open Bibliography" button MOVES the node into its own popup.
   _injectBibliographySection: function() {
     var self = this;
     var existing = document.getElementById('bookworm-bibliography');
-    var page = document.getElementById('page-research') || document.getElementById('page-learning');
+    // If the panel currently lives inside an open popup, rebuilding it here
+    // would tear the live node out from under that popup. Rebuild it in
+    // place instead: remember the real parent and re-append there.
+    var page = (existing && existing.parentNode) || RPGACE.utils.panelHome();
     if (!page) return;
     if (existing) existing.remove();
 
@@ -16943,9 +17180,10 @@ RPGACE.register('bookworm', {
     var list = document.createElement('div');
     list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
     wrap.appendChild(list);
-    // Append at end of the Research page as a direct child sibling of the
-    // other panels - NOT page.firstChild, which put it above the page title
-    // and the tab bar on every visit (Bug B).
+    // Append at the end of whichever container currently hosts it (the
+    // shared staging holder, or the open popup it was already inside) - NOT
+    // page.firstChild, which used to put it above the page title and the tab
+    // bar on every visit (Bug B).
     page.appendChild(wrap);
     RPGACE.hooks.fire('research:panel-injected');
 
@@ -17218,14 +17456,16 @@ RPGACE.register('config', {
       setTimeout(function() { id._injectAll(); }, 100);
     }
 
-    // Hook into page:show for the research/learning tab
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === 'learning' || name === 'research') {
-        // Run at multiple intervals to catch main.js finishing its render
-        [300, 800, 1500, 3000].forEach(function(d) {
-          setTimeout(applyIntelUI, d);
-        });
-      }
+    // Aug 23 2026 (UI2) - was a page:show listener on 'learning'/'research'.
+    // That page is retired; #intel-insights-content (the element applyIntelUI
+    // actually operates on) lives inside #file-analyzer-panel, which now opens
+    // as its own dashDeck popup. Same staggered retries, real new trigger.
+    RPGACE.hooks.on('worm-panel:open', function(panelId) {
+      if (panelId !== 'file-analyzer-panel') return;
+      // Staggered to catch the panel's own list finishing its render.
+      [300, 800, 1500, 3000].forEach(function(d) {
+        setTimeout(applyIntelUI, d);
+      });
     });
 
     // Block agenda auto-generation on load — user must click Generate
@@ -18311,11 +18551,12 @@ RPGACE.register('beatLog', {
     if (document.getElementById('beat-log-panel')) return;
     var self = this;
 
-    // Find the research page container
-    var page = document.getElementById('page-research') ||
-               document.getElementById('page-learning') ||
-               document.querySelector('[id*="research"]') ||
-               document.querySelector('[id*="learning"]');
+    // Aug 23 2026 (UI2/UI3) — was a 4-clause fallback chain resolving the
+    // retired Research Lab page (its leading 'page-research' clause was
+    // confirmed-dead). Now the ONE shared staging holder every relocatable
+    // panel uses; dashDeck._openPanelPopup MOVES this node into a popup on
+    // demand and back here on close.
+    var page = RPGACE.utils.panelHome();
     if (!page) return;
 
     var panel = document.createElement('div');
@@ -18799,7 +19040,23 @@ RPGACE.register('beatLog', {
           RPGACE.utils.toast('⚠️ Saved beat data could not be read — nothing to pre-fill', '#E2A83D', 3500);
           return;
         }
-        if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+        // Aug 23 2026 (UI2) — was:
+        //     if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+        //     ... then scrollIntoView on #beat-log-panel.
+        // A real, LIVE call site the UI-consistency audit had NOT catalogued
+        // (found by a fresh grep during the same pass): this is the "Return to
+        // Beat Log" retroactive-edit path off a ConID card (Phase E, Aug 5).
+        // showPage() has no null guard on getElementById('page-'+name), so
+        // once the Research Lab page was retired this would have thrown here.
+        // Now opens Beat Log as its own popup via the same shared helper every
+        // other Beat Log entry point uses — _openPanelById already calls the
+        // ensure function, so the explicit self._inject() below is redundant
+        // but kept as a harmless no-op guard (it self-returns when the panel
+        // exists) in case the popup helper is ever unavailable.
+        var dd = RPGACE.modules.dashDeck;
+        if (dd && dd._openPanelById) {
+          dd._openPanelById('beat-log-panel', function() { self._inject(); });
+        }
         setTimeout(function() {
           self._inject();
           self._prefillForm(form);
@@ -19424,10 +19681,10 @@ RPGACE.register('refCorpus', {
   _inject: function() {
     if (document.getElementById('ref-corpus-panel')) return;
     var self = this;
-    var page = document.getElementById('page-research') ||
-               document.getElementById('page-learning') ||
-               document.querySelector('[id*="research"]') ||
-               document.querySelector('[id*="learning"]');
+    // Aug 23 2026 (UI2/UI3) — see RPGACE.utils.panelHome()'s own comment:
+    // one shared staging holder, replacing 5 copies of a fallback chain that
+    // pointed at the now-retired Research Lab page.
+    var page = RPGACE.utils.panelHome();
     if (!page) return;
 
     var panel = document.createElement('div');
@@ -22384,9 +22641,8 @@ RPGACE.register('conidPot', {
   _injectIdeaBank: function() {
     if (document.getElementById('cp-idea-bank')) return;
     var self = this;
-    var page = document.getElementById('page-research') ||
-               document.getElementById('page-learning') ||
-               document.querySelector('[id*="research"]') || document.querySelector('[id*="learning"]');
+    // Aug 23 2026 (UI2/UI3) — see RPGACE.utils.panelHome()'s own comment.
+    var page = RPGACE.utils.panelHome();
     if (!page) return;
 
     var panel = document.createElement('div');

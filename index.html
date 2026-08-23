@@ -239,9 +239,23 @@
   <div class="agent-log" id="agent-log"><span class="log-info">[SYSTEM] Agent log initialised. Execute an action above to see results here.</span></div>
 </div>
 
-<!-- LEARNING -->
-<div class="page" id="page-learning">
-  <div class="section-title">📚 Research Lab ✦</div>
+<!-- LEGACY WORM PANEL STAGING AREA (was the .page element id="page-learning",
+     the "Research Lab" page, retired Aug 23 2026 — UI2 of the "UI Consistency
+     & Worm Family Cohesion" batch, Alex's own ask: "research tab should be
+     completely gone, with needed part going to either the worms or content
+     pipeline, i did ask for that exactly to keep its module parts in tact").
+
+     This is DELIBERATELY not a .page any more: it never appears in
+     SELECTABLE_PAGES, is never routable, and showPage() can never target it.
+     It is now purely a hidden staging parent for the 3 static panels below
+     (Videoworm / Videoworm-Find-Videos / Upload Workshop), exactly the same
+     role #dd-stash-holder already plays for #kg-panel/#cpl-widget/#mb-wrap:
+     each panel's real DOM node is MOVED into a dashDeck popup on demand
+     (dashDeck._openPanelPopup) and moved back here on close — never cloned,
+     never rebuilt, so every listener and inline onclick keeps working.
+     The panels' own markup/ids/classes/onclicks below are byte-identical to
+     what they were inside #page-learning; only this wrapper changed. -->
+<div id="legacy-worm-panels" style="display:none">
 
   <input type="hidden" id="yt-api-key"/>
 
@@ -257,9 +271,10 @@
          the bookworm update i wanted too") - Research Lab's dashboard card
          is retired; this panel is now reached via dashDeck._openBookworm()'s
          own "🐛 Open Videoworm" jump button. Starts display:none, same
-         reasoning as #video-workshop-panel above (static markup, no lazy-
-         inject to gate it) - dashDeck._jumpToResearchPanel clears it back
-         to the CSS default on real demand. -->
+         reasoning as #video-workshop-panel below (static markup, no lazy-
+         inject to gate it) - Aug 23 2026 (UI2) dashDeck._openPanelPopup
+         clears it back to the CSS default when it MOVES this node into its
+         own popup, and restores display:none when it moves it back here. -->
     <div class="learn-panel learn-full" id="file-analyzer-panel" style="display:none">
       <h3>🐛 1 — VIDEOWORM</h3>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
@@ -346,7 +361,8 @@
          as a sub-action of the one Videoworm identity rather than a worm of
          its own; label/copy only, the panel id is unchanged).
          Aug 15 2026 (A5/A8) - reached via dashDeck._openBookworm()'s own
-         "🐛 Videoworm: Find Videos" jump button now, not Research Lab.
+         "🐛 Videoworm: Find Videos" jump button now, which (Aug 23 2026,
+         UI2) opens it as its own popup instead of navigating to a page.
          Starts display:none, same reasoning as #file-analyzer-panel above. -->
     <div class="learn-panel" id="video-finder-panel" style="display:none">
       <h3>🐛 2 — VIDEOWORM: FIND VIDEOS</h3>
@@ -360,16 +376,16 @@
       <div class="video-results" id="video-results"></div>
     </div>
 
-    <!-- PANEL 2: Upload Workshop (renamed from "Video Workshop" Aug 15 2026,
+    <!-- PANEL 3: Upload Workshop (renamed from "Video Workshop" Aug 15 2026,
          A5 Phase 1 — Alex's own exact wording; "3 —" step-numbering dropped
          since this panel moved into Content Pipeline, no longer a Research
          Lab tab position. Reached via dashDeck._openPipeline()'s own
          "🔀 Open Upload Workshop" button now, not researchTabs. Starts
          display:none — this is static markup (never JS-injected), so
-         unlike the other 3 relocated panels (which simply don't exist
-         until asked for) this one needs an explicit default-hidden state
-         so Research Lab reads clean; dashDeck._jumpToResearchPanel clears
-         it back to the CSS default (display:flex) on real demand. -->
+         unlike the panels that simply don't exist until asked for, this one
+         needs an explicit default-hidden state; Aug 23 2026 (UI2)
+         dashDeck._openPanelPopup clears it back to the CSS default
+         (display:flex) when it MOVES this node into its own popup. -->
     <div class="learn-panel learn-full" id="video-workshop-panel" style="display:none">
       <h3>🎬 UPLOAD WORKSHOP</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Paste the transcript of your final video. AI builds a complete upload strategy — titles, thumbnails, short clips, description, tags and chapters — ready to publish.</p>
@@ -497,7 +513,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20260823a"></script>
+<script src="rpgace_core.min.js?v=20260823b"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
@@ -543,7 +559,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
       <div style="font-size:48px;margin-bottom:16px">📖</div>
       <div style="font-size:15px;color:var(--text);margin-bottom:12px;font-family:'Cinzel',serif">Your Encyclopedia is Empty</div>
       <div style="font-size:13px;color:var(--muted);line-height:2.2">
-        Entries appear automatically when you analyse videos,<br>save Oracle chats, or use the Video Workshop.<br><br>
+        Entries appear automatically when you analyse videos,<br>save Oracle chats, or use the Upload Workshop.<br><br>
         <button onclick="syncAndPush()" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">⚡ Sync &amp; Push All Reports</button>
       </div>
     </div>
