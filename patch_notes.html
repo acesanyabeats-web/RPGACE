@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ Aug 23 — Massive Expansion A15 shipped: Bibliography becomes a real Chronicles row type</div>
+    <div class="card-body">
+      Alex invoked <code>/interrogation</code> on A15 directly. Real evidence found two genuine forks before any build started: Chronicles had zero visibility into Bibliography/Bookworm activity at all (only 8 other row types existed), and "bibliography" was ambiguous between two real tables — <code>bibliography</code> (book-linked, tracks per-book completion) and the unrelated <code>intel_bibliography</code> (a flat saved-URL list). Alex confirmed: the book-linked table, add it as a real new row type now, and defer A15's original 2nd piece (a conID linking to its bibliography/bookworm source) into A7 — no data path exists yet connecting <code>content_productions</code> to anything analysed, and A7's OBS-raw scripting phase is the real place that link would first get populated.
+      <br><br>
+      Built: <code>careerStatCard._fetchAll</code> gained a 9th real table fetch; <code>_buildItems</code> now pushes a 📚 item per completed book, timestamped on <code>completed_at</code> (the real event moment, unlike every other type's <code>created_at</code> — <code>bibliography</code> has no <code>created_at</code> column at all); <code>_detailFor</code> gained a new branch in the same 4-row shape every other type already uses, surfacing the row's own already-stored <code>total_insights_placed</code> and <code>phyla_touched</code> — a real bibliography→taxonomy_tree cross-reference with zero new writes and zero extra queries, which is the actual "links between supatables" piece Alex's original text asked for. <code>chroniclesLog</code>'s filter chips extended to match.
+      <br><br>
+      Verified end to end in headless Chromium against the real shipped source: 3 fixtures (array <code>phyla_touched</code>, JSON-string <code>phyla_touched</code>, an all-null row) all rendered correctly, all 8 pre-existing row types unaffected, zero console errors. Independently re-checked before shipping: schema confirmed live (<code>completed_at NOT NULL DEFAULT now()</code>), the real <code>bookworm._markBookComplete</code> insert path confirmed, <code>node --check</code> clean, div-balance unchanged, cache-bust bumped, minified output verified to carry the real new code.
+      <br><br>
+      Honest note: the live <code>bibliography</code> table currently holds 0 rows — no book has been marked complete yet, so this renders nothing in production until one is. Correct-by-construction and fixture-verified, but has never shown a real row. Deployed and confirmed <code>READY</code> (commit <code>4476e96</code>). <code>ceo_plan_items</code> A15 updated to green.
+    </div>
+  </div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ Aug 23 — Massive Expansion A4+A8 shipped: Content Intelligence was silently discarding ~61% of every video's real extracted insights</div>
     <div class="card-body">
       Alex's A4 ask: "no way a 20 minute video only has 3 insights; I want them all." The build's own briefing (mine) assumed the extraction pipeline lived entirely outside this repo — wrong, and the dispatched builder caught it: a real repo-wide grep found <code>scripts/rpgace_intel.py</code> genuinely tracked here, and it's the actual writer of <code>intel_reports.insights</code> (a separate script from <code>local_server.py</code>, which is real and does live outside this repo, for the beat-audio/librosa analysis — the two got conflated in my own initial framing).
