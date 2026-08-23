@@ -554,3 +554,42 @@ items 1/2/3/8/9 from Part G/I), item 2 rewritten to the full "Research Lab
 page genuinely removed" scope above. Execution dispatched via Omnitrix
 (Opus 4.8 builds, Sonnet reviews) per the established pattern for this
 project's real multi-file builds.
+
+═══════════════════════════════════════════════════════════════════════════
+PART K — Shipped, reviewed, deployed, verified
+═══════════════════════════════════════════════════════════════════════════
+
+Built via Omnitrix (Opus 4.8, background dispatch), reviewed line-by-line
+against the actual git diff before shipping (not taken on the build
+report's word alone) — every real claim in the build report cross-checked:
+node --check output, div-balance recount against a fresh `git show
+HEAD:index.html` baseline (232/231 -> 231/230, same +1 delta, confirmed not
+a new imbalance), min.js grepped for the new real identifiers, both
+remaining "Video Workshop" string matches read directly and confirmed to
+be intentional historical comments. Diff read in full: panelHome(), the
+_openPanelPopup/_openPanelById/PANEL_POPUPS plumbing, all 5 page:show
+rewires, the beatLog retro-path fix (a real live call site the original
+audit missed, found by the builder's own fresh grep), and both UI8/UI9
+string corrections.
+
+Committed c7e4887, pushed to main. Vercel deployment confirmed READY with
+matching githubCommitSha before this was called "live" (rule: never say
+live from a successful push alone).
+
+Supabase updated: ceo_plan_items UI1/UI2/UI3/UI8/UI9 all red->yellow, a
+drift_check ceo_reports row logged (VERDICT on track, no MINOR/MATERIAL/
+CAPTURED gap), a system_updates row logged.
+
+Oversight docs updated in the same pass: CLAUDE.md (new dated bullet),
+patch_notes.html (new dated card, div-balance re-verified 887/887),
+oracleAppGrounding.SELF_KNOWLEDGE (corrected by the build itself, verified
+directly in the shipped source).
+
+Real, honest residual, not silently dropped: researchTabs (already-empty
+TABS) still has 3 page-learning lookups (2 guard cleanly, the 3rd -
+show() - has zero reachable callers, a latent but currently-unreachable
+throw) - explicitly out of scope per Alex's own "leave researchTabs/
+_openResearch untouched" instruction, not missed.
+
+Untested by Alex's own hand - same standing flag as every UI change this
+project ships.
