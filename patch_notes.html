@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">✅ Aug 23 — Massive Expansion A3 shipped: Fallback Scout gets real per-item delete buttons</div>
+    <div class="card-body">
+      Alex: "let's move on with massive expansion, build all things planned out." Real evidence check against the ratified Massive Expansion plan first: 9 of 17 items already green, 1 yellow (A10, real Kimi/Luna scaffold but no key), 1 blue (A15, genuinely open-ended), 6 red — real remaining work. A real overlap found before building anything: A8 ("Bookworm absorbs Content Intelligence... coherent through bookworm logic") is already substantially true — <code>ciAutoPropose</code> has reused Bookworm's <code>phylumPath</code> placement engine since July 19 — so A4's own extraction-volume fix is the one real piece still needed for both. Alex confirmed the execution order and 4 real forks (A15 scoped to its 2 concrete pieces only; A7's Meme Director reuses the existing 50-director system; A7 gets its own <code>content_type='obs_raw'</code>; A9 splits into a scoped Phase 1 now / Phase 2 later) via AskUserQuestion before any build started.
+      <br><br>
+      <b>A3 shipped first</b> (smallest, most contained). Alex's own ask: "I want the scouted to have delete buttons too... remove any pipeline analysis I don't want before it hits it." <code>mockOracle._openScoutedList</code> now renders a real 🗑 button on every Fallback Scout card, pending and answered alike — the same 2-click arm/confirm/3s-auto-disarm idiom Bookworm's own delete button already uses (rule 8), writing through the plain anon-key <code>RPGACE.sb.del</code> (never the service-role proxy — <code>oracle_fallback_queue</code> is deliberately anon-writable so the external Fallback Drain Routine can keep writing to it). Fails loud on a non-2xx response rather than claiming success.
+      <br><br>
+      Dispatched via Omnitrix (Opus builder), then independently Truth-Checked per the standing discipline written earlier this session (rule 17/R25) — not skipped this time: the real diff was read line-by-line against the report, <code>node --check</code> re-run directly, div-balance re-confirmed against the prior commit (231/230, genuinely unchanged), the RLS claim re-verified live against <code>pg_policy</code> rather than trusted on the builder's word, and one honest discrepancy the builder itself flagged (<code>oracle_fallback_queue</code> already sitting in <code>api/data-write.js</code>'s <code>ALLOWED_TABLES</code>, contrary to the task brief's assumption) was independently confirmed real and harmless (RLS stays open, so it's dead code, not an active restriction).
+      <br><br>
+      Deployed and confirmed <code>READY</code> (commit <code>51a8166</code>). <code>ceo_plan_items</code> A3 updated to green with the real evidence trail. Untested by hand in a real browser — headless-Chromium-verified only. 6 more Massive Expansion items queued, sequenced one at a time (all touch <code>rpgace_core.js</code>, never run concurrently).
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧪 Aug 23 — smoke_test.html now surfaces every yellow/purple ceo_plan_item live, even with no dedicated row — closes a real 15-of-24 coverage gap</div>
     <div class="card-body">
