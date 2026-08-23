@@ -328,3 +328,99 @@ not yet a build order — that's his call.
 Nothing above has been built. Awaiting Alex's read/approve pass (CEO Loop 1
 Step 6) before any `ceo_plans`/`ceo_plan_items` rows get created or any code
 changes ship.
+
+═══════════════════════════════════════════════════════════════════════════
+PART H — /misunderstanding correction, same day: scope was wrongly narrowed
+to Bookworm alone on the first pass. Real whole-app sweep, Part H below.
+═══════════════════════════════════════════════════════════════════════════
+
+Alex's own correction: the 3 bracketed items in his original message were
+named EXAMPLES of a pattern ("examples that resemble my one"), not the
+boundary of where to look — "so many pages look messy" and "go through all
+buttons possible" were explicit whole-app instructions the first pass
+under-scoped. Real /misunderstanding run (3-step repair) delivered in chat;
+this Part H is the actual corrective sweep across every real navigable
+destination, not just Bookworm's popup.
+
+Surfaces checked this pass, beyond Part B (all read directly from source,
+not guessed): Oversight popup, Knowledge Gaps popup, Content Pipeline
+popup, Morning Brief popup, Taxonomy & Review card, Chronicles card, the
+Production Panel's "Video Pipeline" phase label, plus a broader project-wide
+grep for other post-rename stale-name leaks (Video Pipeline → Content
+Pipeline, Aug 6 absorption).
+
+── NEW FINDING — Oversight popup's own group label is stale (same species
+   of bug as Complaint 2, different location) ──
+`dashDeck._openOversight()` (rpgace_core.js:10910) renders a group titled
+"Primary — 6 file-based docs + the live taxonomy map + Smoke Test" (implying
+8 items) — but the real `primary` array it renders now holds **12** items
+(Patch Notes, Manual, Minotaur Map, Interconnection Map, System Flow Map,
+AI Tooling & Rules Map, Taxonomy Map, Smoke Test, Error Log, Future
+Integrations, Achiever, Session Lessons). The label was never updated as
+Error Log/Future Integrations/Achiever/Session Lessons were added over
+time (all real, dated Aug 12-15 additions per CLAUDE.md). This is a live,
+user-visible undercount — a real, concrete `/colourgradient` brown/
+achiever.html candidate that was never caught. Directly relevant to "so
+many pages look messy" — a miscounted section header is exactly the kind
+of small drift that adds up.
+
+── NEW FINDING — Corpus's popup makes a claim CLAUDE.md itself has already
+   flagged as false, and it's duplicated in TWO places ──
+`dashDeck._openCorpus()`'s own popup footer text reads: "Feeds the
+taxonomy tree for genre/scale phyla as it grows..." CLAUDE.md's own Aug 22
+entry (A5 Phase 2) already states directly: "Corpus's dashboard-card `desc`
+claims it 'feeds the taxonomy tree' but zero `reference_tracks`→
+`taxonomy_tree` write path exists anywhere (confirmed by direct grep — a
+real stale/aspirational claim, not yet fixed this pass)." That prior finding
+only named the dashboard CARD's `desc` string — this pass confirms the
+SAME false claim is ALSO duplicated inside the popup's own footer text
+(a second copy, rule 8 violation on top of the correctness issue), and is
+therefore more user-visible than previously logged, not less. This connects
+directly to Complaint 3 ("not fully absorbed") — Corpus's own UI overstates
+its integration into the taxonomy system, which is a sharper, more concrete
+version of "feels bolted on" than a style/color mismatch alone.
+
+── Checked and confirmed CLEAN (real, worth stating — not everything is a
+   finding) ──
+  - Knowledge Gaps popup: clean relocate-pattern, no stale text, no
+    asymmetry.
+  - Taxonomy & Review card (`taxonomyReviewQueue._openCard`): clean,
+    correctly-scoped top-5 view with a working "review all N" escape hatch.
+  - Chronicles card (`chroniclesLog._openCard`): clean, same pattern,
+    no issues.
+  - Morning Brief popup: clean.
+  - Content Pipeline popup: structurally resembles Bookworm's "list-first,
+    buttons-below" layout (the ConID list renders before the 3 jump
+    buttons: Idea Bank / Beat Log / Upload Workshop) — but this is a
+    genuinely different relationship than Bookworm's worm-picker: Idea
+    Bank/Beat Log/Upload Workshop are real SEQUENTIAL SUB-STEPS feeding
+    into a ConID, not peer/equal alternatives to Content Pipeline the way
+    Videoworm/MusicWorm are meant to be peers of Bookworm. Checked and
+    ruled a non-instance of Complaint 1's pattern, not silently assumed.
+  - "Video Pipeline" naming (post Aug 6 absorption into Content Pipeline):
+    9 live references checked project-wide — all correctly refer to the
+    real, still-existing F17 video-job stage-tracking feature (now inline
+    in a ConID's own Production Panel, Phase 4), never implying the old,
+    deleted standalone dashboard card still exists. Confirmed NOT a stale
+    reference, unlike the Research Lab/Video Workshop cases in Part B.
+
+═══════════════════════════════════════════════════════════════════════════
+PART I — Revised Part G change list (supersedes the original 7-item list —
+items 1-7 stand, 8-9 are new from Part H)
+═══════════════════════════════════════════════════════════════════════════
+
+  8. Fix the Oversight popup's stale "6 file-based docs...Smoke Test" group
+     label (Part H) to reflect its real, current 12-item count — cheap,
+     same class of fix as item 1.
+  9. Fix Corpus's false "feeds the taxonomy tree" claim in BOTH the
+     dashboard-card `desc` (already flagged in CLAUDE.md, never fixed) and
+     the popup's own footer text (newly found, Part H) — either build the
+     real `reference_tracks`→`taxonomy_tree` write path, or correct the
+     claim to be honest about current scope (same real fork as item 5,
+     MusicWorm's honest-limitation question — these two items are related:
+     both are places where Corpus's own UI overstates what it currently
+     does).
+
+Everything in Part G's original list (items 1-7) stands unchanged. Nothing
+in this Part H addendum has been built either — still awaiting Alex's
+review pass.
