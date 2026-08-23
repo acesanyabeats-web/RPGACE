@@ -24013,7 +24013,17 @@ RPGACE.register('careerStatCard', {
       // on the app, per Alex's explicit "make these updates known in
       // chronicles from now on." See CLAUDE.md's "Chronicles system-update
       // logging" rule for the standing convention future sessions follow.
-      safe(sb.select('system_updates', 'select=*&order=created_at.desc&limit=200'))
+      safe(sb.select('system_updates', 'select=*&order=created_at.desc&limit=200')),
+      // Bibliography — completed books (A15, Aug 23 2026). A row only ever
+      // exists here because bookworm._markBookComplete() inserted it, and
+      // completed_at is NOT NULL DEFAULT now() (verified against the live
+      // schema) — so every row is genuinely a finished book and no
+      // completed_at=not.is.null filter is needed. This is the real
+      // "links between supatables" row type: the row already carries
+      // total_insights_placed + phyla_touched, so the detail popup can
+      // show which real taxonomy phyla a book's insights landed in
+      // without a single new write or a second query.
+      safe(sb.select('bibliography', 'select=id,book_id,title,source_url,total_chapters,total_insights_placed,phyla_touched,completed_at&order=completed_at.desc&limit=200'))
     ]).then(function(results) {
       return {
         content: Array.isArray(results[0]) ? results[0] : [],
@@ -24023,7 +24033,8 @@ RPGACE.register('careerStatCard', {
         chapters: Array.isArray(results[4]) ? results[4] : [],
         tracks: Array.isArray(results[5]) ? results[5] : [],
         finance: Array.isArray(results[6]) ? results[6] : [],
-        systemUpdates: Array.isArray(results[7]) ? results[7] : []
+        systemUpdates: Array.isArray(results[7]) ? results[7] : [],
+        bibliography: Array.isArray(results[8]) ? results[8] : []
       };
     });
     // Clear the in-flight lock once settled (success or failure) so a
@@ -24175,6 +24186,12 @@ RPGACE.register('careerStatCard', {
     (data.systemUpdates || []).forEach(function(r) {
       items.push({ t: r.created_at, icon: '🛠️', label: 'Claude Code: ' + (r.title || 'system update'), type: 'system_update', row: r });
     });
+    // Bibliography (A15) — a completed book is a real timeline event. Note
+    // the timestamp column here is completed_at, not created_at like every
+    // other row type, because that IS the moment the real event happened.
+    (data.bibliography || []).forEach(function(r) {
+      items.push({ t: r.completed_at, icon: '📚', label: 'Bibliography: ' + (r.title || 'book'), type: 'bibliography', row: r });
+    });
     items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
     return items;
   },
@@ -24292,6 +24309,45 @@ RPGACE.register('careerStatCard', {
         ]
       };
     }
+    // Bibliography (A15, Aug 23 2026) — the real cross-table row type.
+    // Every value here already lives on the bibliography row itself
+    // (written once by bookworm._markBookComplete), so this surfaces a
+    // genuine bibliography → taxonomy_tree link with zero new writes and
+    // zero extra queries: which real phyla this book's insights landed in.
+    if (it.type === 'bibliography') {
+      // phyla_touched is jsonb. Supabase normally hands it back already
+      // parsed (an array), but a string can come through depending on the
+      // client/column path - same defensive shape smoke_test.html uses for
+      // ceo_plan_items.galaxy_dimensions, kept identical rather than
+      // inventing a second convention.
+      var phyla = r.phyla_touched;
+      if (typeof phyla === 'string') { try { phyla = JSON.parse(phyla); } catch (e) { phyla = null; } }
+      if (!Array.isArray(phyla)) phyla = [];
+      var tt = RPGACE.modules.taxonomyTree;
+      var phylaNames = phyla.map(function(n) {
+        return (tt && tt.PHYLUM_NAMES && tt.PHYLUM_NAMES[n]) ? (tt.PHYLUM_NAMES[n] + ' (Phylum ' + n + ')') : ('Phylum ' + n);
+      });
+      var chapters = (r.total_chapters != null) ? r.total_chapters : '?';
+      var placed = (r.total_insights_placed != null) ? r.total_insights_placed : 0;
+      var whereStored = 'bibliography table';
+      if (r.source_url && /^https?:\/\//.test(r.source_url)) {
+        whereStored += ' • <a href="' + esc(r.source_url) + '" target="_blank" rel="noopener" style="color:var(--gold)">' + esc(r.source_url) + '</a>';
+      } else if (r.source_url) {
+        whereStored += ' • source: ' + esc(r.source_url);
+      }
+      return {
+        eyebrow: '📚 Bibliography — Book completed',
+        title: esc(r.title || 'book'),
+        rows: [
+          ['What was done', 'Fully analysed and processed — ' + esc(String(chapters)) + ' chapter' + (chapters === 1 ? '' : 's') + ' read end to end.'],
+          ['Outcome', esc(String(placed)) + ' insight' + (placed === 1 ? '' : 's') + ' placed into the taxonomy tree.'],
+          ['Where stored', whereStored],
+          ['Why significant', phylaNames.length
+            ? 'This book\'s insights reached ' + phylaNames.length + ' real ' + (phylaNames.length === 1 ? 'phylum' : 'phyla') + ' of your taxonomy tree: ' + esc(phylaNames.join(', ')) + '.'
+            : 'A whole book finished and logged — no taxonomy phyla recorded against it yet.']
+        ]
+      };
+    }
     return { eyebrow: it.icon + ' Activity', title: it.label, rows: [['What was done', esc(it.label)], ['Outcome', '—'], ['Where stored', '—'], ['Why significant', '—']] };
   },
 
@@ -24326,8 +24382,8 @@ RPGACE.register('careerStatCard', {
 // id and class="page" to exist by click time, it doesn't care when or how
 // it was created). No main.js edit.
 RPGACE.register('chroniclesLog', {
-  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense', 'system_update'],
-  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System' },
+  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense', 'system_update', 'bibliography'],
+  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System', bibliography: '📚 Bibliography' },
   CATEGORY_SUGGESTIONS: ['Equipment', 'Software & Plugins', 'Drum Kits & Samples', 'Studio & Rent', 'Marketing', 'Beat Sale', 'Sample Pack Sale', 'Mixing/Mastering Service', 'Travel', 'Other'],
 
   init: function() {
