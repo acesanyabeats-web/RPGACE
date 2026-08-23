@@ -1,0 +1,330 @@
+UI CONSISTENCY & WORM-FAMILY COHESION AUDIT — /CEO Loop 1 compiled report
+2026-08-23 · RPGACE (Orchestrator CC session)
+Status: DRAFT / NOT YET APPROVED — nothing in this file has been built. This is
+Loop 1's own compile-and-report step; Step 6 (Alex reads/approves, in whole or
+in part) has not happened yet. No `ceo_plans`/`ceo_plan_items` Supabase rows
+exist for this yet — those get created only once Alex tells us what to build.
+
+═══════════════════════════════════════════════════════════════════════════
+PART A — Alex's own request, verbatim
+═══════════════════════════════════════════════════════════════════════════
+
+"id love the audit to go through all buttons possible to see where ui changes
+are definitely needed (bookworm - no choice between bookworm and other worms
+- bookworm just appears while other hide behind buttons - research tab is not
+fully removed in those pages as references, music corpus was not fully
+absorbed - it looks messy) so many pages look messy, so get /impeccable and
+/paranoia and /drift to find all the examples that resemble my one, the
+/free-for-all-debate to find additional ones on top of it using the same
+skills and /godmode as tools, then it all compiles to a /CEO plan list of
+things to change that i can then review."
+
+Requested method: /impeccable + /paranoia + /drift find examples resembling
+the 3 named complaints → /free-for-all-debate (same skills + /GODMODE as
+tools) finds additional issues → compile to a /CEO plan for Alex's review.
+Explicitly NOT a build-now request.
+
+Honest scope note on "go through all buttons possible": a literal click-every-
+button pass needs a live browser and Alex's own hands (this project's
+standing "untested by hand" convention — no session this project has run has
+ever had live browser access to rpgace.vercel.app). What follows instead is a
+real, evidence-grounded CODE-LEVEL audit — every finding below is backed by
+an actual source read or an actual automated scan output, not a guess at what
+a screenshot might show. Where a finding needs Alex's own eyes to confirm the
+visual severity, that's said explicitly rather than assumed.
+
+═══════════════════════════════════════════════════════════════════════════
+PART B — Real evidence gathered against the 3 named complaints
+═══════════════════════════════════════════════════════════════════════════
+
+── COMPLAINT 1: "no choice between bookworm and other worms - bookworm just
+   appears while other hide behind buttons" ──────────────────────────────
+
+CONFIRMED, root cause found by direct read of `dashDeck._openBookworm()`
+(rpgace_core.js, currently line 10773):
+
+  1. The popup is built with Bookworm's own identity (eyebrow "📖 Bookworm",
+     accent var(--purple), title "Work through books, chapter by chapter").
+  2. The pre-existing `#bookworm-widget` (Bookworm's real book-list — the
+     actual card-per-book UI) is appended into the popup box FIRST, before
+     anything else — it renders immediately, full-width, at the top.
+  3. ONLY AFTER that does the "Choose a worm:" heading + 3 worm-picker
+     buttons (Videoworm / Videoworm-Find-Videos / MusicWorm) get appended,
+     BELOW the book list, needing a scroll past however many books exist.
+  4. There is no "Bookworm" entry in the picker list itself — Bookworm isn't
+     offered as a peer choice, because you're already standing inside it.
+     The other 3 items are secondary jump-buttons bolted onto a page whose
+     real identity and default rendering already belongs to one specific
+     worm (Bookworm), not to the family as a whole.
+
+This exactly matches Alex's framing — Bookworm functions as the container
+and default view; the other worms are demoted to buttons inside someone
+else's house rather than being presented as 3-4 equal peer choices.
+
+── COMPLAINT 2: "research tab is not fully removed in those pages as
+   references" ────────────────────────────────────────────────────────────
+
+CONFIRMED, several real, distinct instances (not one bug, a genuine pattern):
+
+  a) `index.html:244` — `<div class="section-title">📚 Research Lab ✦</div>`
+     is the literal, still-live section title for `#page-learning`. Every
+     real content panel under it (Videoworm/Video-Finder/Upload-Workshop)
+     has already been rebranded and relocated elsewhere (Bookworm/Content
+     Pipeline popups), but the page's own header text was never updated to
+     match — it still announces a feature that's been fully retired.
+
+  b) `#page-learning` is confirmed UNREACHABLE via any real navigation:
+     `leftNav._items()` dropped its "Research Lab" entry Aug 15 2026 (own
+     comment: "entry retired... Bookworm has no leftNav entry of its own
+     yet"), and no dashDeck card points at it either. Yet the page is still
+     load-bearing: 5+ separate injector functions
+     (`beatLog._inject`, `refCorpus._inject`, `conidPot._injectIdeaBank`,
+     `bookworm._injectBibliographySection`, `taxTreeManual._injectManualButton`)
+     all resolve their target container via
+     `document.getElementById('page-research') || document.getElementById('page-learning') || document.querySelector('[id*="research"]') || document.querySelector('[id*="learning"]')`
+     — meaning the orphaned, stale-labeled "Research Lab" page is still the
+     real DOM staging area these widgets get built into before dashDeck's
+     popups relocate them (the established "MOVE, never rebuild" pattern).
+     Functionally this still works — but the page itself, with its stale
+     title, remains structurally necessary rather than genuinely retired.
+
+  c) `document.getElementById('page-research')` — the FIRST clause in every
+     one of those 5 fallback chains — resolves to nothing: no element with
+     id `page-research` exists anywhere in `index.html`. It's a confirmed-
+     dead reference to an even older page id, predating the current
+     `page-learning` id, never cleaned up. Harmless (the `||` chain always
+     falls through), but a textbook "reference not fully removed."
+
+  d) `dashDeck._openResearch()` (rpgace_core.js:10882) is a second, wholly
+     separate function still carrying `eyebrow: '🧠 Research Lab'` — real,
+     but confirmed genuinely dead code (its own July-23-era comment,
+     restated Aug 15: "kept defined but unreferenced... in case a future
+     pass wants it back"). No live path calls it. Lower priority than (a)-
+     (c) since nothing user-visible can ever trigger it, but worth a
+     decision (delete vs. keep-as-is) rather than leaving it unexamined.
+
+  e) A related, DATA-correctness instance beyond page text: the renamed
+     "Upload Workshop" (was "Video Workshop", renamed Aug 15 2026) still
+     literally saves new Encyclopedia entries titled `'Video Workshop — ' +
+     date` (rpgace_core.js:3930/3939/3945) and its own empty-state copy
+     ("...or use the Video Workshop.") still says the old name in BOTH
+     `index.html:546` and a duplicate string in `rpgace_core.js:3432`. This
+     is more than cosmetic — every real Upload Workshop save from Aug 15
+     onward is being written into Encyclopedia under the WRONG, retired
+     name, permanently, going forward, not just a one-time historical
+     record.
+
+── COMPLAINT 3: "music corpus was not fully absorbed" ─────────────────────
+
+CONFIRMED, by direct comparison of `_openBookworm()` vs `_openCorpus()`
+(rpgace_core.js:11124) vs the Videoworm panel's own real rebrand:
+
+  - Corpus opens as its own COMPLETELY SEPARATE popup: different eyebrow
+    ("🎼 Corpus" vs Bookworm's "📖 Bookworm"), different accent color
+    (var(--blue) vs var(--purple)), different title copy, its own footer
+    note. Nothing in the popup itself carries the "MusicWorm" identity —
+    the jump-button that opens it says "🎼 Open MusicWorm (Corpus)", but
+    the destination never says "MusicWorm" again.
+  - Compare: Videoworm's rebrand DID carry all the way through — the real
+    panel itself has `<h3>🐛 1 — VIDEOWORM</h3>` as its own heading. Corpus's
+    equivalent heading (inside `refCorpus._inject()`) still reads "Reference
+    Corpus" internally, never "MusicWorm."
+  - Net effect: MusicWorm is a label that exists for exactly one click (the
+    jump-button), then vanishes — the actual destination reads as an
+    unrelated, pre-existing feature you were redirected to, not a "worm"
+    inside the same family as Bookworm/Videoworm. This is a precise,
+    concrete version of "not fully absorbed": the rename/absorption is
+    skin-deep at the picker level and doesn't extend into the real page.
+
+  Real, honest counter-point (see Part E) — Corpus's own jump-button note
+  ALREADY says plainly "Reference-track library. Insight extraction not yet
+  built." — i.e. this is a case where the visual distinctness may be
+  partially ACCURATE, not just inconsistent: MusicWorm genuinely doesn't
+  have the same taxonomy-insight-extraction pipeline Bookworm/Videoworm do
+  yet (W3 of the Worm Family plan flagged this explicitly). A full visual
+  merge that implied parity would arguably be MORE misleading, not less —
+  worth resolving as an honest design decision, not a blind "just restyle
+  it to match" fix.
+
+═══════════════════════════════════════════════════════════════════════════
+PART C — /impeccable automated scan (real, fresh run, not the July 25 baseline)
+═══════════════════════════════════════════════════════════════════════════
+
+`npx --yes impeccable detect index.html style.css` — 36 anti-patterns found
+(1 advisory). Cross-checked against CLAUDE.md's own standing note ("21
+undersized-text and 160 dynamic-UI text findings are fixed; 2 low-contrast
+findings deliberately left, scanner artifact") — most of today's findings are
+the SAME already-triaged categories recurring (wide-tracking ×15, tiny-text
+×17 — these were never fully eliminated project-wide, only a subset was
+fixed; low-contrast ×1, down from the noted 2). These are NOT new regressions
+— re-confirmed as the known, already-acknowledged backlog, not re-litigated
+here.
+
+Genuinely NEW findings, not in any prior /impeccable backlog note in
+CLAUDE.md — real, worth carrying into this plan:
+
+  - `[dark-glow]` ×2 — a zero-offset colored text-shadow glow on `#c9a84c`
+    (gold). Impeccable's own description: "the default 'cool' look of
+    AI-generated UIs." Directly on-theme with Alex's own scrollcraft
+    refuse-list ask from earlier this session (DESIGN.md §8's new Don'ts)
+    — this is the same aesthetic-tell category, just caught by the
+    automated scanner instead of manual review. Worth a real style.css
+    grep to find the exact rule and decide whether it's intentional glow
+    (RPGACE's Cinzel gold branding does lean on some real glow already,
+    per DESIGN.md) or an unreviewed leftover.
+  - `[skipped-heading]` — `<h1>"The Creator"` followed directly by
+    `<h4>"Your Composio Integrations"` with no `<h2>`/`<h3>` in between.
+    Real accessibility/structure issue, cheap to fix (bump the h4 down or
+    insert a real h2 level), unrelated to the 3 named complaints but a
+    legitimate "messy" contributor found by the requested tool.
+  - `[all-caps-body]` — 31 characters of uppercase body text (not a short
+    label). Worth finding the exact string and confirming it's not another
+    stale/orphaned string like the Video Workshop one above.
+  - `[side-tab]` (style.css:398) — `.agenda-card{border-left:3px solid
+    var(--gold)}`. Real automated finding, but this is a long-established,
+    consistently-applied pattern across Agenda (not a one-off "AI slop"
+    accident) — flagged for completeness, not recommended as urgent; a
+    genuine judgment call on whether the automated tool's general heuristic
+    applies to a deliberately-used RPGACE convention.
+
+═══════════════════════════════════════════════════════════════════════════
+PART D — /free-for-all-debate: additional issues beyond the 3 named ones
+═══════════════════════════════════════════════════════════════════════════
+
+Individual angles, each picking its own distinct real finding (not a
+manufactured pile-on — each grounded in a direct source read):
+
+── Angle: Navigation coherence (2 parallel, non-overlapping nav systems) ──
+`leftNav._items()` (the side drawer, reachable from every page) lists 8
+destinations: Dashboard, Agenda, Schedule, Oracle AI, Encyclopedia, Journal,
+Phylum Path, Chronicles. `dashDeck.MODULES` (the dashboard's own card grid,
+reachable ONLY from Dashboard itself) lists 12: Corpus, Bookworm, Taxonomy &
+Review, Oracle, Agenda, Morning Brief, Knowledge Gaps, Content Pipeline,
+Encyclopedia, Journal, Oversight, Chronicles. Overlap is partial (Oracle/
+Agenda/Encyclopedia/Journal/Chronicles appear in both); 7 real features
+(Corpus, Bookworm, Taxonomy & Review, Morning Brief, Knowledge Gaps, Content
+Pipeline, Oversight) exist ONLY as dashboard cards — if Alex navigates to
+Agenda or Oracle via the drawer, there is no direct path back into Bookworm
+or Content Pipeline except returning to Dashboard first. Schedule and Phylum
+Path are the reverse case — drawer-only, no dashboard card. This asymmetry
+is a real, structural contributor to "so many pages look messy" that's
+broader than the 3 named complaints — two different people (built at
+different times, per the file's own dated comments) built two different
+"how do I get around this app" systems that were never fully reconciled.
+
+── Angle: Naming drift beyond Research Lab/Video Workshop ──
+Checked "MusicWorm"/"Videoworm" for the OTHER direction of drift (a
+destination using the new name that its own entry point doesn't) — none
+found; MusicWorm/Videoworm are each named consistently at their own jump-
+button. The drift is specifically the Research Lab/Video Workshop case in
+Part B, not a wider naming epidemic — worth stating so this doesn't get
+overcorrected into a blanket "audit every string" task when the real gap is
+narrower and already fully located.
+
+── Angle (GODMODE evidence-discipline check on the audit itself) — what did
+   this pass NOT cover, honestly ──
+This was a code-level read, not a rendered-pixel review. Things a real
+screenshot/hand-test would catch that this pass cannot: actual visual
+crowding, color-contrast-in-context (impeccable's low-contrast finding is a
+computed value, not a "does this look bad" judgment), mobile layout at real
+viewport widths, and whether the worm-picker buttons visually compete with
+or complement the book-list cards above them (Part B's Complaint-1 finding
+is structurally confirmed, but its SEVERITY as experienced is Alex's own
+call, not something a source read can fully judge). Flagged honestly rather
+than oversold as an exhaustive design review.
+
+── Angle (real dissent — restraint, not more findings) — see Part E ──
+
+═══════════════════════════════════════════════════════════════════════════
+PART E — Honest counter-case: what NOT to change (the debate's dissenting side)
+═══════════════════════════════════════════════════════════════════════════
+
+Per this project's own standing discipline (Council of 5 / GODMODE:
+"an honest why-NOT-to-build-this case is mandatory, not optional"):
+
+  1. MusicWorm's visual distinctness may be partially TELLING THE TRUTH
+     (Part B, Complaint 3) — it doesn't have insight extraction yet, and
+     its own note already says so. Forcing full visual parity with
+     Bookworm/Videoworm before that gap closes would make the UI LIE about
+     capability, trading one kind of "messy" for a worse kind of
+     "misleading." The real fix here may be a lighter-touch shared-chrome
+     treatment (same popup shell, consistent color language) rather than
+     a full merge implying identical functionality.
+  2. `dashDeck._openResearch()` (Part B item d) is confirmed dead, unused
+     code — but CLAUDE.md's own standing "kept on disk, nothing 404s"
+     precedent exists precisely because several past retirements were kept
+     exactly this way on purpose, in case a future pass wants the shape
+     back. Deleting it is optional cleanup, not a fix for anything user-
+     visible — including it in this plan as a "must-change" item would
+     overstate its real impact.
+  3. The 2-nav-system asymmetry (Part D) is real, but reconciling it fully
+     (adding all 12 dashDeck cards to leftNav, or vice versa) is a much
+     larger structural change than anything else in this report — it risks
+     turning a "make 3 things less messy" request into an unscoped full
+     navigation redesign. Worth flagging, not worth silently folding into
+     the same build pass as the narrower, concretely-evidenced fixes above.
+  4. The `[wide-tracking]`/`[tiny-text]` impeccable findings are NOT new —
+     re-fixing all of them now would be redoing work already triaged and
+     partially closed in July. Re-litigating a settled backlog item isn't
+     what this audit was asked for.
+
+═══════════════════════════════════════════════════════════════════════════
+PART F — /drift check on this compile pass itself
+═══════════════════════════════════════════════════════════════════════════
+
+BASIS: provisional (Alex's own message this turn — no ratified plan exists
+yet; this file is the artifact that, once he responds, either gets promoted
+to a ratified `ceo_plans` row or revised).
+VERDICT: on track. Work map: find real examples of the 3 named complaints
+(done, Part B) + impeccable (done, Part C) + free-for-all-debate additional
+issues (done, Part D) + honest restraint case (done, Part E) + compile to a
+reviewable list (this file + the chat summary) — every requested step
+covered, nothing built, matching "that i can then review."
+No MINOR/MATERIAL/CAPTURED gap to report — the request was fully executed as
+asked, at the compile stage. The only real, load-bearing gap is the one
+already named honestly in Part D's GODMODE-discipline angle: this is a
+code-level audit, not a rendered/hand-tested one, and severity-in-practice
+still needs Alex's own eyes.
+
+═══════════════════════════════════════════════════════════════════════════
+PART G — Proposed change list, for Alex's review (nothing built yet)
+═══════════════════════════════════════════════════════════════════════════
+
+Ordered roughly by confidence + how directly each maps to what Alex named,
+not yet a build order — that's his call.
+
+  1. Fix the "Video Workshop" name leak (Part B.2.e) — rename the 3 saved-
+     Encyclopedia-title strings + the 2 duplicate empty-state copy strings
+     to "Upload Workshop." Smallest, most concrete, actively mislabels new
+     data going forward — arguably the single highest-value fix in this
+     whole list precisely because it's still accumulating.
+  2. Fix `#page-learning`'s stale "📚 Research Lab ✦" section title (Part
+     B.2.a) — either retitle it to something honest about its current real
+     role (a hidden staging area, if it must stay reachable in code) or
+     resolve why it's still structurally necessary and whether that can be
+     changed so the title genuinely doesn't matter.
+  3. Clean the dead `page-research ||` fallback clause across the 5 real
+     injector call sites (Part B.2.c) — harmless but a textbook leftover
+     reference, cheap to remove.
+  4. Rework Bookworm's worm-picker popup (Part B.1) — the real structural
+     fix Alex is naming: make the "choice between worms" genuinely a
+     choice, not a scroll-past. Needs a real design decision (a redesigned
+     top-of-popup picker row above the book list? a separate top-level
+     "Worm Family" entry point that opens Bookworm/Videoworm/MusicWorm as
+     3-4 visually equal cards, with Bookworm's book-list nested one level
+     in?) — flagged as needing Alex's own steer on shape, not guessed here.
+  5. Decide MusicWorm/Corpus's real relationship to the worm family (Part
+     B.3 + Part E.1) — a scoped decision between "give it consistent worm-
+     family chrome now" vs. "leave it visually distinct on purpose until
+     insight extraction actually exists," not a default apply-purple-theme
+     fix.
+  6. Impeccable's 3 newly-surfaced findings (Part C) — dark-glow ×2,
+     skipped-heading, all-caps-body — cheap, isolated, real; good
+     candidates for a quick pass regardless of the bigger items above.
+  7. Navigation coherence (Part D) — flagged as real and worth Alex's own
+     read, explicitly NOT recommended for this same pass (Part E.3) given
+     its size relative to everything else here.
+
+Nothing above has been built. Awaiting Alex's read/approve pass (CEO Loop 1
+Step 6) before any `ceo_plans`/`ceo_plan_items` rows get created or any code
+changes ship.
