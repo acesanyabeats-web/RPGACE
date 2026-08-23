@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">📖🐛 Aug 23 — Worm Family Phase 2 continued: W6 resolved green, W8/W9 shipped (Bookworm navigation + EPUB upload)</div>
+    <div class="card-body">
+      New day, continuing from yesterday's Phase 1 close-out. Alex: "build the phase 2 you can, then we /interrogation the rest." A real <code>/interrogation</code> on W6/W7/W10 (all landing on the recommended option) found W6 already effectively done — the code-reduction goal it was meant to check for got satisfied in passing during W5's own build (a shared <code>_sourceMetaForProposal</code> helper). W7/W10 stay correctly gated on real Phase 1 usage data, which Alex plans to generate soon by hand-testing it himself.
+      <br><br>
+      <b>W8</b>: real evidence found the actual navigation gap narrower than the original backlog text implied. Bookworm's book list was already a clean card list — the real problem was one level deeper: 4 of 5 chapter-level views had no way back to the chapter list except a full exit to the dashboard. All 4 now carry the same "← Back to chapter list" button the 5th already had.
+      <br><br>
+      <b>W9</b>: real EPUB upload support, mirroring the existing PDF pattern exactly — a runtime-loaded library (JSZip, never a static script tag) unzips the file, the real OPF manifest gives reading order, <code>DOMParser</code> extracts real text per chapter. A genuine text-quality bug in the first draft (headings and paragraphs running together) was caught by testing before shipping.
+      <br><br>
+      <b>A real bonus fix</b>: the PDF (and new EPUB) upload button silently broke after its first use — <code>.textContent</code> was wiping out its own nested file input. Fixed on both.
+      <br><br>
+      Both verified via a headless-Chromium harness against realistic fixtures — honestly, not yet Alex's own hand-test with a real file. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260822h</code>→<code>20260823a</code>.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🐛📖 Aug 22 — "Worm Family & Encyclopedia Wrapper" Phase 1 shipped: Bookworm's card gains a worm picker, every real insight now gets an Encyclopedia companion entry</div>
     <div class="card-body">
       Real 3rd <code>/CEO</code> plan, alongside Galaxy Map and Massive Expansion. Alex: "i want to next work on bookworm and encyclopedia, i think that whole system needs a revamp." A real 3-round <code>/interrogation</code> (11 questions, every one landing on the recommended option) resolved the full shape before anything was built — full spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>. Built via Omnitrix (Opus 4.8 as builder, Sonnet review, no Fable).

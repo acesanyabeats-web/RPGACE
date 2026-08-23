@@ -195,8 +195,9 @@
   </div>
 
   <div class="group">
-    <div class="group-label">River IV — The Bookworm River · Worm Family &amp; Encyclopedia Wrapper, Phase 2 <span class="n">5 items</span></div>
-    <div class="card red"><div class="card-title">W6-W10 — code-reduction check, the A4 revisit, Bookworm card-list UX, EPUB support, Encyclopedia source-worm filter/category revisit<span class="badge red">PLANNED</span></div><div class="card-body">A8's own real, ratified follow-on plan (see the Yellow section below for Phase 1, already shipped) — explicitly deferred per Alex's own confirmed phasing until Phase 1 has real usage to check against. Real spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>.</div></div>
+    <div class="group-label">River IV — The Bookworm River · Worm Family &amp; Encyclopedia Wrapper, Phase 2 <span class="n">2 items</span></div>
+    <div class="card red"><div class="card-title">W7 — revisit A4's Content Intelligence extraction-volume cap in light of the wrapper<span class="badge red">PLANNED</span></div><div class="card-body">Real /interrogation (Aug 23) reconfirmed the original gating: genuinely waiting on real Phase 1 usage data, no separate urgency. Real spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>.</div></div>
+    <div class="card red"><div class="card-title">W10 — Encyclopedia source-worm filter/badge + category-detection revisit<span class="badge red">PLANNED</span></div><div class="card-body">Real /interrogation (Aug 23) confirmed: the 70 existing entries are all pre-wrapper (Oracle-chat-sourced) — a filter has nothing real to filter yet. Waiting on real worm-sourced entries to exist. W6 (code-reduction check) moved to Green — the real duplication found got fixed in passing during W5's own build.</div></div>
   </div>
 </div>
 
@@ -215,8 +216,10 @@
   </div>
 
   <div class="group">
-    <div class="group-label">River IV — The Bookworm River · Worm Family &amp; Encyclopedia Wrapper (A8 Phase 1) <span class="n">5 items</span></div>
+    <div class="group-label">River IV — The Bookworm River · Worm Family &amp; Encyclopedia Wrapper (A8 Phase 1 + Phase 2 so far) <span class="n">7 items</span></div>
     <div class="card yellow"><div class="card-title">W1-W5 — Corpus/MusicWorm reachable from Bookworm, Videoworm renames, the worm picker, the shared Encyclopedia-companion-entry wrapper<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real code shipped Aug 22 2026 (Opus builder + Sonnet review, real <code>/drift</code> check: on track). <code>phylumPath._insertNewSteps</code> now writes a real, additive Encyclopedia companion entry (a direct insight excerpt, zero new Oracle cost) for every real taxonomy commit, across all 6 real call sites in the app. Bookworm's card gained a "which worm?" picker; Corpus/MusicWorm honestly labelled as not having a real extraction pipeline yet. One MINOR gap flagged: the dedup-extend path doesn't get a companion entry yet. Genuinely untested by hand — this is what keeps it Yellow, not Green. Full spec: <code>records/2026-08/worm_family_encyclopedia_wrapper_ceo_spec_2026-08-22.txt</code>.</div></div>
+    <div class="card yellow"><div class="card-title">W8 — Bookworm's real "Back to chapter list" navigation gap, fixed<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Real evidence (Aug 23) found the actual gap was narrower than the original backlog text implied: the top-level book list was already a clean card list — 4 of 5 chapter-level deep views just had no way back to the chapter list except a full exit to the dashboard. All 4 now have the same "← Back to chapter list" button <code>_renderChapterSummary</code> already had. A real opportunistic fix landed alongside it: the PDF/EPUB upload labels lost their nested file input on reset, making them one-shot controls. Verified via a headless-Chromium harness against the real shipped code — not hand-tested by Alex.</div></div>
+    <div class="card yellow"><div class="card-title">W9 — EPUB upload support for Bookworm<span class="badge yellow">MID-BUILD</span></div><div class="card-body">Mirrors the existing PDF-upload pattern exactly (client-side extraction via a runtime-loaded library, never a static script tag) — JSZip unzips the EPUB, the real OPF manifest/spine give reading order, DOMParser extracts real text per content file. Verified via a headless-Chromium harness against a realistic fixture (prefixed namespaces, relative paths, a missing spine file). Honest caveat stated in the code: EPUB structure varies by producer, DRM-protected files have no readable text. Not hand-tested by Alex with a real EPUB.</div></div>
   </div>
 </div>
 

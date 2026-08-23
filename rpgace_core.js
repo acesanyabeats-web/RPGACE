@@ -15123,17 +15123,61 @@ RPGACE.register('bookworm', {
       if (!file) return;
       var title = file.name.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ');
       uploadLabel.textContent = '⏳ Extracting text + detecting chapters...';
+      // Setting .textContent removes ALL of the label's children - which
+      // includes the file input nested inside it - so it has to be
+      // re-appended on every restore, or the label stops opening a file
+      // dialog after the first upload (verified in real headless Chromium:
+      // label.contains(input) goes true -> false on a textContent set, and
+      // never comes back on its own). Real pre-existing bug, found while
+      // mirroring this row for EPUB (W9).
       self._startBookFromPDF(title, file).then(function() {
         uploadLabel.textContent = '📎 Or upload your own purchased ebook PDF';
+        uploadLabel.appendChild(uploadInput);
         uploadInput.value = '';
       }).catch(function(e) {
         uploadLabel.textContent = '📎 Or upload your own purchased ebook PDF';
+        uploadLabel.appendChild(uploadInput);
+        uploadInput.value = '';
         RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 4500);
       });
     };
     uploadLabel.appendChild(uploadInput);
     uploadRow.appendChild(uploadLabel);
     widget.appendChild(uploadRow);
+
+    // W9: the exact EPUB sibling of the PDF upload row above - same
+    // structure, same styling, same client-side-only extraction (nothing
+    // but the extracted text ever leaves the browser), just a different
+    // parser (_startBookFromEPUB) for a different file format.
+    var epubRow = document.createElement('div');
+    epubRow.style.cssText = 'margin-bottom:14px;';
+    var epubLabel = document.createElement('label');
+    epubLabel.textContent = '📎 Or upload your own purchased ebook EPUB';
+    epubLabel.style.cssText = 'display:block;width:100%;padding:6px;background:none;border:1px dashed rgba(155,89,182,0.25);border-radius:6px;color:rgba(155,89,182,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;text-align:center;';
+    var epubInput = document.createElement('input');
+    epubInput.type = 'file';
+    epubInput.accept = '.epub,application/epub+zip';
+    epubInput.style.cssText = 'display:none;';
+    epubInput.onchange = function() {
+      var file = epubInput.files && epubInput.files[0];
+      if (!file) return;
+      var title = file.name.replace(/\.epub$/i, '').replace(/[-_]+/g, ' ');
+      epubLabel.textContent = '⏳ Extracting text + detecting chapters...';
+      // Re-append on restore - see the note on the PDF row above.
+      self._startBookFromEPUB(title, file).then(function() {
+        epubLabel.textContent = '📎 Or upload your own purchased ebook EPUB';
+        epubLabel.appendChild(epubInput);
+        epubInput.value = '';
+      }).catch(function(e) {
+        epubLabel.textContent = '📎 Or upload your own purchased ebook EPUB';
+        epubLabel.appendChild(epubInput);
+        epubInput.value = '';
+        RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 4500);
+      });
+    };
+    epubLabel.appendChild(epubInput);
+    epubRow.appendChild(epubLabel);
+    widget.appendChild(epubRow);
 
     var list = document.createElement('div');
     list.id = 'bookworm-list';
@@ -15319,6 +15363,163 @@ RPGACE.register('bookworm', {
       script.onerror = function() { reject(new Error('Could not load PDF.js from CDN')); };
       document.head.appendChild(script);
     });
+  },
+
+  // Dynamically loads JSZip at runtime, same pattern (and same reason) as
+  // _ensurePdfJs above - never a static <script> tag in index.html. An
+  // EPUB file is just a ZIP archive of XHTML content files, so JSZip is
+  // the only library needed; the XML/XHTML inside is parsed with the
+  // browser's own built-in DOMParser, no second dependency.
+  _ensureEpubJs: function() {
+    if (RPGACE._jsZipLib) return Promise.resolve(RPGACE._jsZipLib);
+    return new Promise(function(resolve, reject) {
+      var script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      script.onload = function() {
+        var lib = window.JSZip;
+        if (!lib) { reject(new Error('JSZip failed to load')); return; }
+        RPGACE._jsZipLib = lib;
+        resolve(lib);
+      };
+      script.onerror = function() { reject(new Error('Could not load JSZip from CDN')); };
+      document.head.appendChild(script);
+    });
+  },
+
+  // Resolves an EPUB manifest href (relative to the OPF file's own folder)
+  // into a real zip entry path: strips any #fragment, percent-decodes it
+  // (zip entry names are literal, hrefs are URI-escaped), and collapses
+  // ./ and ../ segments, which real EPUBs genuinely use (e.g. an OPF in
+  // OEBPS/ pointing at ../Text/ch1.xhtml).
+  _resolveEpubPath: function(baseDir, href) {
+    var clean = String(href || '').split('#')[0].split('?')[0];
+    try { clean = decodeURIComponent(clean); } catch (e) { /* keep as-is if not valid escaping */ }
+    if (!clean) return '';
+    if (clean.charAt(0) === '/') return clean.replace(/^\/+/, '');
+    var parts = (baseDir ? baseDir.split('/') : []).concat(clean.split('/'));
+    var out = [];
+    parts.forEach(function(seg) {
+      if (!seg || seg === '.') return;
+      if (seg === '..') { out.pop(); return; }
+      out.push(seg);
+    });
+    return out.join('/');
+  },
+
+  // Parses one XML/XHTML string with the browser's own DOMParser and fails
+  // loud on a real parse error rather than returning a document whose only
+  // content is the browser's error message.
+  _parseEpubXml: function(text, mime) {
+    var doc = new DOMParser().parseFromString(text, mime);
+    if (doc.getElementsByTagName('parsererror').length) throw new Error('Malformed XML inside this EPUB');
+    return doc;
+  },
+
+  // Uploaded-EPUB entry point - the exact sibling of _startBookFromPDF
+  // above, for a legitimately purchased ebook in EPUB form. An EPUB is a
+  // ZIP archive: META-INF/container.xml names the OPF manifest, the OPF's
+  // <manifest>/<spine> give the real reading order of its XHTML content
+  // files, and each of those is parsed to plain text with DOMParser
+  // (never a regex tag-strip). The concatenated text then runs through the
+  // exact same /api/bookworm-fetch detection pipeline as a URL fetch or a
+  // PDF upload. Real risk, not hidden - the same class of honest caveat
+  // _startBookFromPDF states for scanned PDFs: EPUB structure genuinely
+  // varies between producers (non-standard manifests/spine orderings can
+  // extract in an unexpected order), and a DRM-protected EPUB has no
+  // readable text to extract at all.
+  _startBookFromEPUB: function(title, file) {
+    var self = this;
+    return self._ensureEpubJs().then(function(JSZip) {
+      return file.arrayBuffer()
+        .then(function(buffer) { return JSZip.loadAsync(buffer); })
+        .then(function(zip) {
+          var containerEntry = zip.file('META-INF/container.xml');
+          if (!containerEntry) throw new Error('Not a valid EPUB - no META-INF/container.xml inside');
+          return containerEntry.async('string').then(function(containerXml) {
+            var containerDoc = self._parseEpubXml(containerXml, 'application/xml');
+            // getElementsByTagNameNS('*', ...) matches on local name in any
+            // namespace - real EPUBs vary between default namespaces and
+            // explicit prefixes (<opf:package>), and a plain tag-name
+            // lookup silently misses the prefixed ones.
+            var rootfile = containerDoc.getElementsByTagNameNS('*', 'rootfile')[0];
+            var opfPath = rootfile && rootfile.getAttribute('full-path');
+            if (!opfPath) throw new Error('Could not find this EPUB\'s content manifest (OPF)');
+            var opfEntry = zip.file(opfPath);
+            if (!opfEntry) throw new Error('This EPUB\'s manifest is missing: ' + opfPath);
+            var baseDir = opfPath.indexOf('/') === -1 ? '' : opfPath.slice(0, opfPath.lastIndexOf('/'));
+            return opfEntry.async('string').then(function(opfXml) {
+              var opfDoc = self._parseEpubXml(opfXml, 'application/xml');
+              var hrefById = {};
+              var items = opfDoc.getElementsByTagNameNS('*', 'item');
+              for (var i = 0; i < items.length; i++) {
+                var id = items[i].getAttribute('id');
+                var href = items[i].getAttribute('href');
+                if (id && href) hrefById[id] = href;
+              }
+              var order = [];
+              var refs = opfDoc.getElementsByTagNameNS('*', 'itemref');
+              for (var j = 0; j < refs.length; j++) {
+                var idref = refs[j].getAttribute('idref');
+                if (idref && hrefById[idref]) order.push(self._resolveEpubPath(baseDir, hrefById[idref]));
+              }
+              // Fallback for an EPUB with a broken/empty spine: fall back to
+              // every XHTML item in raw manifest order rather than giving up.
+              if (!order.length) {
+                Object.keys(hrefById).forEach(function(k) {
+                  if (/\.x?html?$/i.test(hrefById[k])) order.push(self._resolveEpubPath(baseDir, hrefById[k]));
+                });
+              }
+              if (!order.length) throw new Error('No readable content files found in this EPUB');
+              return order;
+            }).then(function(paths) {
+              // Sequential, not Promise.all - keeps reading order guaranteed
+              // and avoids holding every decompressed chapter in memory at
+              // once for a large book.
+              var texts = [];
+              var chain = Promise.resolve();
+              paths.forEach(function(p) {
+                chain = chain.then(function() {
+                  var entry = zip.file(p);
+                  if (!entry) return; // a spine entry pointing at a missing file - skip, don't abort the book
+                  return entry.async('string').then(function(html) {
+                    var doc = new DOMParser().parseFromString(html, 'text/html');
+                    var body = doc.body || doc.documentElement;
+                    if (!body) return;
+                    // .textContent alone runs block elements straight into each
+                    // other ("<h1>Chapter One</h1><p>Alpha..." comes out as
+                    // "Chapter OneAlpha...") - confirmed in real headless
+                    // Chromium, not assumed. That would corrupt exactly the
+                    // heading/paragraph boundaries the chapter-detection
+                    // pipeline downstream reads, so block ends and <br>s become
+                    // real newlines first. The parsed doc is detached from the
+                    // page, so mutating it costs nothing and affects nothing.
+                    Array.prototype.forEach.call(body.querySelectorAll('script,style'), function(el) { el.remove(); });
+                    Array.prototype.forEach.call(body.querySelectorAll('br'), function(el) {
+                      if (el.parentNode) el.parentNode.replaceChild(doc.createTextNode('\n'), el);
+                    });
+                    Array.prototype.forEach.call(body.querySelectorAll('p,div,h1,h2,h3,h4,h5,h6,li,tr,td,th,dd,dt,section,article,blockquote,pre,figcaption'), function(el) {
+                      el.appendChild(doc.createTextNode('\n'));
+                    });
+                    var text = body.textContent || '';
+                    text = text.replace(/[ \t ]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+                    if (text) texts.push(text);
+                  }).catch(function(e) {
+                    console.warn('[bookworm] EPUB content file failed, skipping: ' + p, e.message);
+                  });
+                });
+              });
+              return chain.then(function() { return texts; });
+            });
+          });
+        }).then(function(texts) {
+          var fullText = texts.join('\n\n');
+          if (!fullText || fullText.length < 200) throw new Error('Could not extract readable text from this EPUB - it may be DRM-protected or contain only images');
+          return fetch('/api/bookworm-fetch', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullText: fullText, title: title, phylumList: self._phylumListForPrompt() })
+          }).then(function(r) { return r.json(); });
+        });
+    }).then(function(result) { return self._createBookFromExtraction(result, 'uploaded-epub'); });
   },
 
   _phylumListForPrompt: function() {
@@ -15879,6 +16080,18 @@ RPGACE.register('bookworm', {
     };
     box.appendChild(readBtn);
 
+    // W8: jump straight back to this book's chapter list instead of having
+    // to fully exit to the dashboard and re-open the book from scratch.
+    // Same button/behaviour _renderChapterSummary has always had - the
+    // other chapter-level views were simply missing it. _openBook re-fetches
+    // (one cheap query) rather than threading the whole chapters array
+    // through every render function's signature.
+    var backBtn = document.createElement('button');
+    backBtn.textContent = '← Back to chapter list';
+    backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;margin-bottom:8px;';
+    backBtn.onclick = function() { overlay.remove(); self._openBook(book.id); };
+    box.appendChild(backBtn);
+
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Exit to Dashboard';
     closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
@@ -15946,6 +16159,14 @@ RPGACE.register('bookworm', {
       });
     };
     box.appendChild(addBtn);
+
+    // W8: same "← Back to chapter list" escape hatch _renderChapterSummary
+    // already had - see the note there.
+    var backBtn = document.createElement('button');
+    backBtn.textContent = '← Back to chapter list';
+    backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    backBtn.onclick = function() { overlay.remove(); self._openBook(book.id); };
+    box.appendChild(backBtn);
 
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Exit to Dashboard';
@@ -16565,6 +16786,14 @@ RPGACE.register('bookworm', {
     btnRow.appendChild(approveBtn); btnRow.appendChild(rejectBtn); btnRow.appendChild(editBtn);
     box.appendChild(btnRow);
 
+    // W8: same "← Back to chapter list" escape hatch _renderChapterSummary
+    // already had - see the note there.
+    var backBtn = document.createElement('button');
+    backBtn.textContent = '← Back to chapter list';
+    backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-bottom:8px;';
+    backBtn.onclick = function() { overlay.remove(); self._openBook(book.id); };
+    box.appendChild(backBtn);
+
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Exit to Dashboard';
     closeBtn.style.cssText = 'display:block;width:100%;margin-top:10px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
@@ -16602,10 +16831,23 @@ RPGACE.register('bookworm', {
     resumeBtn.style.cssText = 'display:none;width:100%;margin-bottom:10px;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     box.appendChild(resumeBtn);
 
+    var stopped = false;
+
+    // W8: same "← Back to chapter list" escape hatch _renderChapterSummary
+    // already had - see the note there. This view additionally has to set
+    // `stopped`, exactly like Exit to Dashboard below does: the poll loop
+    // is not tied to the overlay's lifetime, so leaving it running would
+    // pop a stale insight-review overlay on top of the chapter list the
+    // moment the next background insight landed.
+    var backBtn = document.createElement('button');
+    backBtn.textContent = '← Back to chapter list';
+    backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+    backBtn.onclick = function() { stopped = true; overlay.remove(); self._openBook(book.id); };
+    box.appendChild(backBtn);
+
     var closeBtn = document.createElement('button');
     closeBtn.textContent = 'Exit to Dashboard';
     closeBtn.style.cssText = 'padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    var stopped = false;
     closeBtn.onclick = function() { stopped = true; overlay.remove(); self._goToDashboard(); };
     box.appendChild(closeBtn);
 
