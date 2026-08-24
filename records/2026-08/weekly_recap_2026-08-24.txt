@@ -1,0 +1,206 @@
+WEEKLY RECAP — 2026-08-24
+Written by /Bedtime because Alex is running low on weekly Claude Code tokens
+and asked for the same "start off strong next time" treatment as
+weekly_recap_2026-07-25.txt. Covers everything since the last real SESSION
+CLOSED card (Aug 22, patch_notes.html) through this close-out — 41 real
+commits across the tail of Aug 22, all of Aug 23, and Aug 24. Read this
+before re-deriving the stretch from git log; it's a real, pre-verified
+compilation of the same evidence a fresh /Routine pass would gather anyway.
+
+═══════════════════════════════════════════════════════════════════════════
+THE REAL OPEN DECISION POINT — READ THIS FIRST
+═══════════════════════════════════════════════════════════════════════════
+
+A real /paranoia + /interrogation + /drift + /CEO Loop 1 pass just ran on
+Alex's own ask: "fully absorb Corpus into audio worm... make a Bookworm
+button when worm options are given... do the same with Content Pipeline...
+Resume Video Project button that leads to the interface through a button,
+not straight away... all I want popups to only have buttons to navigate
+through different steps of their module, but the module page interfaces
+should exist on a separate page, not in the popup itself, as it is too
+crammed."
+
+4 real forks were asked and answered via AskUserQuestion (verbatim intent,
+not paraphrased into a guess):
+  1. "Separate page" = a REAL routable page (#page-X via showPage()),
+     not just a bigger overlay.
+  2. Corpus's own standalone dashboard card is RETIRED entirely — MusicWorm
+     reachable only via Bookworm's worm-picker.
+  3. Scope: build the 3 named surfaces now (Bookworm worm-picker, Corpus/
+     MusicWorm, Content Pipeline); the other ~23 real dashDeck popup sites
+     get logged BLUE ("we need to think it through"), not touched.
+  4. BOTH button shapes wanted, for both worms and Content Pipeline: one
+     generic "Open [module]" button leading to the full interface, AND a
+     "Resume: <real most-recent item>" button where a genuine in-progress
+     row actually exists (never fabricated where it doesn't).
+
+Compiled into 5 real ceo_plan_items rows under the EXISTING "UI Consistency
+& Worm Family Cohesion — Batch 1" plan (rule 8 — this is a direct
+continuation of that plan's own UI2, not a new plan):
+  UI10 (red)  — retire Corpus's card + popup
+  UI11 (red)  — 8 new real routable pages (Bookworm, Videoworm [+ Find
+                Videos as a sub-section], MusicWorm, Bibliography, Content
+                Pipeline ConID list, Idea Bank, Beat Log, Upload Workshop).
+                One judgment call flagged, NOT yet confirmed with Alex: none
+                of these 8 get a leftNav tab (button-navigation only, same
+                as Research Lab's old sub-panels never had one either).
+  UI12 (red)  — Bookworm's worm-picker popup rebuilt as pure navigation
+                (Open+Resume for Bookworm, Open-only for Videoworm/
+                MusicWorm/Bibliography — none of those 3 have a real
+                "in progress" concept)
+  UI13 (red)  — Content Pipeline popup rebuilt as pure navigation
+                (Open+Resume for the ConID list AND Idea Bank, Open-only
+                for Beat Log/Upload Workshop)
+  UI14 (blue) — the other ~23 popups, deliberately unscoped
+
+STATUS: this is Loop 1 of /CEO. The plan is SAVED, NOT approved, NOT built.
+Real, honest, load-bearing context for whoever picks this up: it reverses
+part of THIS SAME STRETCH's own UI2 build (which moved content INTO popups
+after Research Lab's page was retired) — a genuinely large build (8 new
+page routes), not a small tweak. The very next real step is Alex reading
+the compiled report (already delivered in chat this session) and saying go
+— or correcting the leftNav judgment call, or narrowing scope further —
+before any Loop 2 execution starts. Do NOT start building this without that
+explicit go-ahead.
+
+═══════════════════════════════════════════════════════════════════════════
+DAY BY DAY — WHAT ACTUALLY SHIPPED (41 commits)
+═══════════════════════════════════════════════════════════════════════════
+
+AUG 22 (tail end, after the day's own earlier /Routine + hand-test passes)
+- A2 shipped for real: Dummy/Fallback Oracle mode banner no longer covers
+  real page content; a real boot-task "select of undefined" bug fixed with
+  an actual stack trace (a new local reproduction technique — copy the app
+  into an isolated headless-Chromium harness offline — built specifically
+  because this bug had resisted 2 prior blind passes).
+- A real ~12,000ms boot-load-lag investigation: 2 hypotheses ruled OUT with
+  real evidence (network-request volume, boot-task staggering), 1 real fix
+  shipped (a duplicate careerStatCard render removed), root cause still
+  honestly unconfirmed — logged as a real, concrete ask for Alex (open
+  DevTools Network tab, hard-reload, report request count/timing).
+- A5 Phase 2 slice 1+2: Idea Bank's Oracle-guided "create new idea" flow,
+  and Content Repurpose's real merge-duplicate-platforms logic.
+- The Encyclopedia's real freeze root cause found and fixed: sortEntries()'s
+  'unique' mode was an O(n²) full-recompute inside the sort comparator
+  itself — fixed to precompute once. A same-day follow-up (/paranoia +
+  Council of 5 + /interrogation) found the fix's own honest caveats
+  (a case-sensitivity bug, whether to change the default sort) were
+  UNDER-evidenced at first — a fresh Supabase query found the real table
+  only holds 70 rows, not enough to explain a 12s freeze at the measured
+  ~470ms predicted cost — reopened rather than left standing on stale
+  confidence, then Alex's own real DevTools capture confirmed an ~89%
+  real reduction (12s→1.4s) after both the case-sensitivity fix and a
+  default-sort change (now 'recent', not 'unique') shipped.
+- Worm Family & Encyclopedia Wrapper /CEO plan: fully compiled (2 more
+  /interrogation rounds), Phase 1 (W1-W5) shipped — Bookworm's worm-picker
+  built for the first time, Encyclopedia gets a shared companion-entry
+  write path off every real taxonomy-tree insight commit. W11 (Articleworm)
+  /W12 (Debate Worm) real /paranoia'd and logged blue, not built — real,
+  load-bearing pushback found neither JSTOR nor Google Scholar is a safe
+  scrape target; Semantic Scholar's real free API is the legitimate
+  alternative, not yet built.
+- A real /paranoia+/drift+/free-for-all-debate pass compared /decompress's
+  real effect against what the Galaxy Map's own hand-cited anchors claim —
+  found a real, MATERIAL anchor-drift gap (a `mockOracle.setMode` citation
+  ~135 lines stale from the day's own edits) — decision made NOT to
+  regenerate the Galaxy Map mid-session (more edits were still landing),
+  logged as a real /Bedtime task instead of guessed away.
+
+AUG 23
+- Worm Family Phase 2 continued: W6 (code-reduction check) resolved GREEN
+  with real evidence (the duplication it would have caught was already
+  fixed in passing during W5); W8 (Bookworm chapter-view back-navigation)
+  and W9 (real EPUB upload, mirroring the existing PDF pattern) shipped.
+- Real /Aintergration on a third-party "scrollcraft" skill Alex brought —
+  verdict Reference-only (its scroll-jacking mechanism directly conflicts
+  with DESIGN.md's own standing L1 cap), but its "refuse list" concept was
+  genuinely useful and added to DESIGN.md's own Don'ts.
+- UI Consistency & Worm Family Cohesion — Batch 1 /CEO plan: real
+  /misunderstanding caught mid-pass (Alex: "why are you disregarding some
+  asks I make?" — the first draft had scoped itself to Bookworm alone when
+  he'd asked for a whole-app sweep) — corrected, widened, then approved and
+  built: UI1 (stale "Video Workshop" name fixed), UI2 (Research Lab page
+  fully retired into a non-routable staging div, its panels relocated into
+  popups instead), UI3 (dead fallback clauses removed), UI8/UI9 (2 real
+  stale-doc-count and stale-claim fixes).
+- Real Oversight Doc Drift Discipline plan (DD1-DD9): ceo_plan_items gained
+  real short Galaxy Map tags; future_integrations.html restructured
+  plan-first (not color-first) and made fully live-fetched, closing the
+  exact class of bug that let it claim "Research Lab confirmed intact" for
+  over a week after that page was actually retired; a real Cross-Doc Drift
+  Check mechanism built and immediately proven — it caught a genuine
+  numeric self-contradiction (DD8, "seven vs nine achiever_archive rows"
+  in the same card) before it shipped, and a real automatic /CEO safeguard
+  (the Self-Consistency Sweep, now standing R25/rule 17) was built directly
+  from that catch.
+- smoke_test.html: now live-renders every yellow/purple ceo_plan_item that
+  has no dedicated row, closing a real structural gap (15 of 24 yellow
+  items were invisible on the page).
+- Massive Expansion build-out — 8 of the plan's remaining 9 items shipped
+  (see the full detailed account in patch_notes.html/CLAUDE.md, already
+  logged in prior sessions' /Bedtime passes and this session's own): A3
+  (Fallback Scout delete buttons), A4/A8 (Content Intelligence was silently
+  discarding ~61% of every video's extracted insights — fixed), A15
+  (Chronicles gets a real Bibliography row type), a real standalone
+  bibliography-consolidation ask (intel_bibliography folded into the
+  shared bibliography table), A6 (Bibliography gets a real dormant taxonomy
+  branch), A7 (OBS-raw becomes a real third Content Pipeline workflow,
+  gated on real footage submission, with a new YouTube Meme Director).
+
+AUG 24
+- A9 Phase 1 shipped: a new questEngine module gives the Quest Board real
+  Supabase persistence for the first time (closing the single most-
+  repeated finding in oracle_dev_suggestions, flagged 4x), Alex's own
+  cumulative running-average duration formula implemented and unit-tested
+  exact, 4 real quest-generation triggers off genuinely existing data.
+  Real, disclosed process gap: the dispatched builder hit its own session
+  limit mid-verification, so this shipped without the functional headless-
+  Chromium pass every other build got.
+- That exact gap CLOSED the same day: a real Playwright test built and
+  run (23/30 first pass, then 30/30 after 2 real bugs found — 5 of the 7
+  failures were the TEST's own fault, not shipped code, traced to a real
+  `window.QUESTS` vs. the lexically-scoped `const QUESTS` mismatch; 2 were
+  genuine shipped bugs — startQuest/completeQuest/dismissQuest never
+  returning their promise chains, and a needless stats row on an untimed
+  first completion — both fixed).
+- A10 (Oracle-as-orchestrator via Kimi/Luna) confirmed and left genuinely
+  BLOCKED, not built — no real API key exists, and which Oracle sub-tasks
+  should route there is still Alex's own open call, not a guessable
+  default.
+- Real oversight catch-up: CLAUDE.md's Current State section had gone
+  completely untouched across the whole 9-commit Massive Expansion push
+  (a real rule-6 gap) — fixed with durable-fact entries; oracleApp
+  Grounding.SELF_KNOWLEDGE updated to match. A real Self-Consistency Sweep
+  caught its OWN new write-up contradicting itself ("9 items shipped" while
+  also describing A10 as blocked/not built in the same breath) — caught
+  and fixed before it shipped, real proof the DD8-born safeguard works on
+  a second, independent instance.
+- The UI10-UI14 plan above: compiled via full /paranoia + /interrogation +
+  /drift + /CEO Loop 1, saved, awaiting Alex's approval.
+
+═══════════════════════════════════════════════════════════════════════════
+STANDING OPEN ITEMS — carried forward, not re-derived
+═══════════════════════════════════════════════════════════════════════════
+- UI10-UI14 (above) — the real next decision point, needs Alex's go/no-go.
+- UI14 itself (the other ~23 popups) — logged blue, deliberately unscoped.
+- W7 (A4 revisit)/W10 (Encyclopedia source-worm filter) — Worm Family Phase
+  2 items, still red, gated on Alex's own hand-test of Phase 1 per his
+  earlier confirmed answer.
+- W11 (Articleworm)/W12 (Debate Worm) — blue, idea-stage, W12 additionally
+  depends on W11 existing first.
+- The boot-load-lag root cause — 2 hypotheses ruled out Aug 22, the real
+  remaining one (network round-trip volume) needs a live DevTools capture
+  from Alex, not another blind guess.
+- A10's real API key + sub-task routing decision — Alex's own call.
+- The dead-code residual from UI2 (3 `researchTabs` lookups against the
+  now-empty `page-learning` fallback — 2 guard cleanly, 1 is latent/
+  unreachable) — flagged, explicitly out of scope for that batch.
+- Everything shipped this whole stretch remains UNTESTED BY HAND except
+  the specific items Alex's own screenshots/console dumps directly drove
+  (the sortEntries fix, the login-gate chrome redesign, the boot-task
+  "select" bug). That gap is the single largest standing item in the
+  project and no session can close it for him.
+
+Next session: open with /Routine. It should read this file plus the live
+ceo_plan_items table (UI10-UI14 is the real freshest unresolved item) rather
+than re-deriving the whole stretch above from git log again.
