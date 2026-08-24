@@ -106,6 +106,14 @@ const ALLOWED_TABLES = new Set([
   // content_pipeline_overseer_spec_backlog_2026-07-28.txt): new table,
   // same anon_read_only/authenticated_all posture as every table above.
   'style_profiles',
+  // 2026-08-23 - A9 Phase 1 (Massive Expansion plan). Both are brand-new
+  // tables created anon_read_only/authenticated_all FROM THE START, so
+  // this file's own "flip RLS first, then allowlist" rule above is
+  // satisfied by construction: there has never been an unmigrated
+  // direct-anon write call site to either of them, and there never will
+  // be - questEngine routes every write through this endpoint.
+  'quest_log',
+  'quest_duration_stats',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

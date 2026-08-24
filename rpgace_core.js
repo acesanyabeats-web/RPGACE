@@ -315,18 +315,68 @@ function agentLog(msg,type='info'){
 // ── QUESTS ──
 function makeCard(q){
   const d=document.createElement('div'); d.className=`quest-card ${q.cat} ${q.done?'done':''}`;
-  d.innerHTML=`<div class="quest-top"><div class="quest-name">${q.name}</div><div class="quest-xp">+${q.xp} XP</div></div><div class="quest-desc">${q.desc}</div><div class="quest-tags"><span class="tag ${q.cat}">${q.cat}</span><span class="tag ${q.type}">${q.type}</span></div><button class="complete-btn ${q.done?'done':''}" onclick="completeQuest('${q.id}',${q.xp},this)">${q.done?'✓ Completed':'◎ Mark Complete'}</button>`;
+  // A9 Phase 1: the ▶ button is what makes a REAL duration measurable for
+  // a board quest. Completing without starting is still fine and still
+  // saves - it just records actual_minutes as NULL and is deliberately
+  // left out of the running average rather than being given an invented
+  // duration (see questEngine's header).
+  const timing=(()=>{try{const qe=window.RPGACE&&RPGACE.modules&&RPGACE.modules.questEngine;return!!(qe&&qe._loadBoardStarts()[q.id]);}catch(e){return false;}})();
+  d.innerHTML=`<div class="quest-top"><div class="quest-name">${q.name}</div><div class="quest-xp">+${q.xp} XP</div></div><div class="quest-desc">${q.desc}</div><div class="quest-tags"><span class="tag ${q.cat}">${q.cat}</span><span class="tag ${q.type}">${q.type}</span></div><div style="display:flex;gap:6px"><button class="complete-btn" style="flex:0 0 auto;border-color:#2ABFB0;color:#2ABFB0" ${q.done||timing?'disabled':''} onclick="startBoardQuest('${q.id}',this)">${timing?'⏱ timing':'▶'}</button><button class="complete-btn ${q.done?'done':''}" style="flex:1" onclick="completeQuest('${q.id}',${q.xp},this)">${q.done?'✓ Completed':'◎ Mark Complete'}</button></div>`;
   return d;
 }
 function buildQS(id,arr){const el=document.getElementById(id);if(!el)return;el.innerHTML='';arr.forEach(q=>el.appendChild(makeCard(q)));}
 function buildAllQuests(){buildQS('daily-quests',QUESTS.daily);buildQS('weekly-quests',QUESTS.weekly);buildQS('career-quests',QUESTS.career);buildQS('health-quests',QUESTS.health);buildQS('lifestyle-quests',QUESTS.lifestyle);}
-function completeQuest(id,xp,btn){const all=[...QUESTS.daily,...QUESTS.weekly,...QUESTS.career,...QUESTS.health,...QUESTS.lifestyle];const q=all.find(x=>x.id===id);if(!q||q.done)return;q.done=true;btn.textContent='✓ Completed';btn.classList.add('done');btn.closest('.quest-card').classList.add('done');addXP(xp);}
+// A9 Phase 1 (Aug 23 2026): two real changes.
+// 1. The group list was hardcoded to the 5 original QUESTS keys, so any
+//    future group would have been silently uncompletable. It now walks
+//    whatever groups QUESTS actually has.
+// 2. This used to be the whole story - a done-flag on an in-memory
+//    object and an addXP() that mutated an in-memory STATE, with zero
+//    persistence anywhere, so every completion evaporated on the next
+//    page load. That gap was flagged 4 separate times in
+//    oracle_dev_suggestions and is recorded in careerStatCard's own
+//    header comment. questEngine.recordBoardCompletion writes the real
+//    row (and folds a real timed duration into the running average, when
+//    the quest was actually timed). It fails LOUD if the write fails -
+//    the tick has already happened on screen by then, so silence would
+//    leave Alex believing something saved that did not.
+function completeQuest(id,xp,btn){
+  const all=Object.keys(QUESTS).reduce((acc,k)=>acc.concat(QUESTS[k]||[]),[]);
+  const q=all.find(x=>x.id===id);if(!q||q.done)return;
+  q.done=true;btn.textContent='✓ Completed';btn.classList.add('done');btn.closest('.quest-card').classList.add('done');addXP(xp);
+  try{
+    const qe=window.RPGACE&&RPGACE.modules&&RPGACE.modules.questEngine;
+    if(qe&&qe.recordBoardCompletion)qe.recordBoardCompletion(q);
+  }catch(e){console.warn('[completeQuest] persistence:',e.message);}
+}
+// A9 Phase 1 - referenced by makeCard's inline onclick, so it has to be a
+// real global (minify runs mangle:false precisely because index.html and
+// these generated handlers reference globals by literal name).
+function startBoardQuest(id,btn){
+  try{
+    const qe=window.RPGACE&&RPGACE.modules&&RPGACE.modules.questEngine;
+    if(qe&&qe.startBoardQuest)qe.startBoardQuest(id,btn);
+  }catch(e){console.warn('[startBoardQuest]',e.message);}
+}
 
 // ── XP / LEVEL ──
+// A9 Phase 1: one shared painter instead of the same two-line snippet
+// pasted into addXP, levelUp and (new) questEngine's boot restore
+// (rule 8). It also fixes a real, pre-existing bug found while wiring
+// the restore: style.css animates .bar-fill with `transform:scaleX()`
+// (transform-origin:left), never `width` - so every existing call here
+// set a property the stylesheet does not read, and the XP bar has never
+// actually filled. Both are set now; width is kept for any older CSS
+// path, transform is what the live stylesheet genuinely uses.
+function paintXpBar(xp,req){
+  const el=document.getElementById('xp-bar');if(!el)return;
+  const pct=Math.max(0,Math.min(100,Math.round((xp/(req||1))*100)));
+  el.style.width=pct+'%';el.style.transform='scaleX('+(pct/100)+')';
+}
 function addXP(amount){
   STATE.xp+=amount;STATE.totalXP+=amount;STATE.tasksCompleted++;showXPToast(amount);
   const req=STATE.xpRequired[STATE.level-1]||9999;
-  document.getElementById('xp-bar').style.width=Math.min(100,Math.round(STATE.xp/req*100))+'%';
+  paintXpBar(STATE.xp,req);
   document.getElementById('xp-val').textContent=STATE.xp+' / '+req;
   document.getElementById('stat-tasks').textContent=STATE.tasksCompleted;
   document.getElementById('stat-xp').textContent=STATE.totalXP;
@@ -343,7 +393,7 @@ function levelUp(){
   document.getElementById('levelup').classList.add('show');
   updateSkillTree();
   const newReq=STATE.xpRequired[STATE.level-1]||9999;
-  document.getElementById('xp-bar').style.width=Math.min(100,Math.round(STATE.xp/newReq*100))+'%';
+  paintXpBar(STATE.xp,newReq);
   document.getElementById('xp-val').textContent=STATE.xp+' / '+newReq;
 }
 function showXPToast(a){const t=document.getElementById('xp-toast');t.textContent='+'+a+' XP';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
@@ -24197,6 +24247,807 @@ RPGACE.register('docsLinks', {
 
 });
 /* ===END:docsLinks=== */
+
+/* ===MODULE:questEngine=== */
+// A9 Phase 1 (Massive Expansion /CEO plan, Aug 23 2026). Two real jobs,
+// both long-standing, both independently evidenced before being built:
+//
+// (1) PERSISTENCE. The Quest Board's completeQuest()/addXP() lived
+//     ENTIRELY in memory - a plain `const QUESTS` object plus STATE
+//     mutations, with zero Supabase writes anywhere (re-confirmed by
+//     direct read this pass, not inherited from a doc). That is the same
+//     July 22 GODMODE finding recorded in careerStatCard's own header
+//     comment ("STATE lives only in memory with zero persistence
+//     anywhere ... it silently resets to zero on every single page
+//     load"), and the single most-repeated real item in
+//     oracle_dev_suggestions - flagged independently 4 separate times
+//     across 2026-07-28 and 2026-08-06, each time naming this same fix.
+//     Completions now land as real `quest_log` rows, and boot restores
+//     XP / level / per-quest done-state from them.
+//
+// (2) TIME TRACKING + GENUINELY APPLICABLE QUESTS. Alex's own verbatim
+//     ask: "agendas generated should take into account the new pipelines
+//     and capabilities of rpgace and schedule to make quests truly
+//     applicable to me, and how much time I have, and then suggest a
+//     block to fill out depending on how much time it takes to complete
+//     for me."
+//
+// THE AVERAGING FORMULA is Alex's own, implemented literally rather than
+// approximated: "when I executed task 0 times - estimate time for the
+// task, when I complete it - average estimated time and 1st time
+// execute, then when quest given again - average estimate and 1st and
+// 2nd time duration of execution." So the original estimate is
+// permanently sample 0, and every real completion joins the mean:
+//
+//     average = (estimate + SUM(every real actual)) / (1 + COUNT(actuals))
+//
+// 0 completions -> the bare estimate. 1 -> (estimate+a1)/2. 2 ->
+// (estimate+a1+a2)/3. N -> (estimate + Sa)/(N+1). That is a CUMULATIVE,
+// unbounded running mean, not a fixed two-sample blend -
+// `quest_duration_stats` stores the running SUM and COUNT (never the
+// individual samples), which is what keeps the update O(1) at any N.
+// The identical function runs at all three scopes, per Alex's own
+// closing line ("then average times for specific workflows are written
+// exactly same for steps"): 'quest', 'workflow', 'step'.
+//
+// A completion that was never actually timed records a real quest_log
+// row (the XP is real) but is deliberately EXCLUDED from the average -
+// inventing a duration for it would quietly corrupt every future
+// estimate, which is exactly the kind of fake progress rule 7 forbids.
+//
+// EXPLICITLY NOT BUILT HERE - A9 Phase 2, deliberately deferred, not
+// forgotten: Oracle-generated DYNAMIC workflow-step generation, and the
+// Schedule Oracle feedback loop. The WORKFLOWS table below is
+// hand-written and static on purpose; Phase 2 replaces it with real
+// generated steps once Phase 1's real duration data exists to ground
+// them. Nothing in this module calls Oracle at all.
+RPGACE.register('questEngine', {
+
+  // Real first-run estimates, in minutes. These are only ever sample 0 -
+  // the moment one real timed completion lands, the running average
+  // starts moving off them and never returns.
+  DEFAULT_ESTIMATES: {
+    obs_raw_edit:     45,
+    knowledge_gap:    25,
+    taxonomy_review:  20,
+    needs_input:      15,
+    board:            30,
+  },
+
+  // Hand-written step lists (Phase 1). A workflow's own estimate is the
+  // SUM of its steps' current averages - Alex's "workflow calculates
+  // what steps are needed to complete quest, calculate total of average
+  // time for step execution."
+  WORKFLOWS: {
+    obs_raw_edit: { label: 'OBS raw -> cut video', steps: [
+      { key: 'obs_review_footage', label: 'Review the raw footage',        estimate: 10 },
+      { key: 'obs_script_or_cut',  label: 'Run the ConID stage action',    estimate: 25 },
+      { key: 'obs_confirm_stage',  label: 'Confirm the stage in RPGACE',   estimate: 5 },
+    ] },
+    knowledge_gap: { label: 'Close a knowledge gap', steps: [
+      { key: 'gap_study',   label: 'Study the concept',                   estimate: 15 },
+      { key: 'gap_feynman', label: 'Feynman it back / log the insight',   estimate: 8 },
+      { key: 'gap_apply',   label: 'Apply it in a real beat',             estimate: 12 },
+    ] },
+    taxonomy_review: { label: 'Clear the taxonomy review queue', steps: [
+      { key: 'tax_open_queue', label: 'Open the review queue',            estimate: 2 },
+      { key: 'tax_judge',      label: 'Judge each pending item',          estimate: 15 },
+    ] },
+    needs_input: { label: 'Answer what is waiting on you', steps: [
+      { key: 'input_read',   label: 'Read what is waiting',               estimate: 5 },
+      { key: 'input_answer', label: 'Give the real answer / confirm',     estimate: 10 },
+    ] },
+  },
+
+  _stats: null,        // scope|stat_key -> row
+  _rows: [],           // live open/in-progress quest_log rows
+  _budget: null,       // "how much time have I got" filter, in minutes
+
+  init: function() {
+    var self = this;
+    RPGACE.registerBootTask(function() { return self._boot(); });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.agenda) { self._inject(); self.refresh(); }
+    });
+  },
+
+  _boot: function() {
+    var self = this;
+    if (!RPGACE.sb || !RPGACE.sb.select) {
+      // Same real boot-order race taxonomySync.getTopGaps and
+      // dashDeck._refreshGlance already guard against: this boot task can
+      // fire before config.init() has set RPGACE.sb. Retry once rather
+      // than resolving to a permanently empty board.
+      setTimeout(function() { self._boot(); }, 400);
+      return Promise.resolve();
+    }
+    self._inject();
+    return self._loadStats()
+      .then(function() { return self._restoreBoardState(); })
+      .then(function() { return self.refresh(); })
+      .catch(function(e) { console.warn('[questEngine] boot:', e.message); });
+  },
+
+  // ── the formula ────────────────────────────────────────────────────
+  // One implementation, three scopes (rule 8). See the header comment.
+  blend: function(estimate, completionCount, totalActual) {
+    var est = Number(estimate) || 0;
+    var n = Number(completionCount) || 0;
+    var tot = Number(totalActual) || 0;
+    return (est + tot) / (n + 1);
+  },
+
+  _statId: function(scope, key) { return scope + '|' + key; },
+
+  _loadStats: function() {
+    var self = this;
+    return RPGACE.sb.select('quest_duration_stats', 'select=*&limit=500')
+      .then(function(rows) {
+        self._stats = {};
+        (rows || []).forEach(function(r) { self._stats[self._statId(r.scope, r.stat_key)] = r; });
+        return self._stats;
+      })
+      .catch(function(e) {
+        console.warn('[questEngine] stats load failed:', e.message);
+        self._stats = self._stats || {};
+        return self._stats;
+      });
+  },
+
+  // Current best-known duration for a key: the real running average once
+  // any real data exists, otherwise the caller's first-run estimate.
+  estimateFor: function(scope, key, fallback) {
+    var row = this._stats && this._stats[this._statId(scope, key)];
+    if (row && row.average_minutes != null) return Number(row.average_minutes);
+    return Number(fallback) || 0;
+  },
+
+  // How much of that estimate is real, for honest labelling.
+  samplesFor: function(scope, key) {
+    var row = this._stats && this._stats[this._statId(scope, key)];
+    return row ? (Number(row.completion_count) || 0) : 0;
+  },
+
+  // A workflow's estimate = the sum of its steps' current averages.
+  workflowEstimate: function(workflowKey) {
+    var wf = this.WORKFLOWS[workflowKey];
+    if (!wf) return null;
+    var self = this;
+    var total = 0;
+    wf.steps.forEach(function(s) { total += self.estimateFor('step', s.key, s.estimate); });
+    return total;
+  },
+
+  // Records one real completion at one scope, per Alex's formula.
+  // actualMinutes === null means "completed but never timed" - the row is
+  // still real, but it is NOT folded into the average (see header).
+  recordDuration: function(scope, key, label, firstEstimate, actualMinutes) {
+    var self = this;
+    var id = self._statId(scope, key);
+    var existing = self._stats && self._stats[id];
+    var actual = (actualMinutes == null) ? null : Number(actualMinutes);
+    if (actual != null && (!isFinite(actual) || actual < 0)) actual = null;
+
+    if (!existing) {
+      var est = Number(firstEstimate) || 0;
+      var count = actual == null ? 0 : 1;
+      var total = actual == null ? 0 : actual;
+      var payload = {
+        scope: scope, stat_key: key, label: label || key,
+        estimate_minutes: est,
+        completion_count: count,
+        total_actual_minutes: total,
+        average_minutes: self.blend(est, count, total),
+        last_actual_minutes: actual,
+        updated_at: new Date().toISOString(),
+      };
+      return RPGACE.sb.secureWrite('quest_duration_stats', 'insert', payload)
+        .then(function(data) {
+          var row = (data && data[0]) || payload;
+          self._stats[id] = row;
+          return row;
+        });
+    }
+
+    if (actual == null) return Promise.resolve(existing);
+
+    var newCount = (Number(existing.completion_count) || 0) + 1;
+    var newTotal = (Number(existing.total_actual_minutes) || 0) + actual;
+    var upd = {
+      completion_count: newCount,
+      total_actual_minutes: newTotal,
+      // estimate_minutes is deliberately never rewritten - it is sample 0
+      // of the mean, forever.
+      average_minutes: self.blend(existing.estimate_minutes, newCount, newTotal),
+      last_actual_minutes: actual,
+      updated_at: new Date().toISOString(),
+    };
+    return RPGACE.sb.secureWrite('quest_duration_stats', 'update', upd, 'id=eq.' + existing.id)
+      .then(function() {
+        Object.keys(upd).forEach(function(k) { existing[k] = upd[k]; });
+        return existing;
+      });
+  },
+
+  // ── the 4 real triggers ────────────────────────────────────────────
+  // Every one of these queries a real table and only ever produces a
+  // quest from a real row that actually came back. Nothing here invents
+  // quest content; a trigger with no matching data produces no quests,
+  // and says so.
+
+  // (a) A beat with raw OBS footage finished and editable. Real basis:
+  //     A7's `content_productions.content_type='obs_raw'` flow, whose own
+  //     OBS_RAW_PRIMARY_ACTION lookup table (contentProductionLive) is
+  //     reused here rather than re-deriving what the next real action is
+  //     (rule 8). A row only exists at all because _openObsRawIntake
+  //     gated it behind a real footage submission.
+  _scanObsRaw: function() {
+    var self = this;
+    return RPGACE.sb.select('content_productions',
+      'select=id,con_id,title,status,raw_footage_path&content_type=eq.obs_raw' +
+      '&status=in.(Idea,Scripted,Filmed,Edited)&order=updated_at.desc&limit=20')
+      .then(function(rows) {
+        var cpl = RPGACE.modules.contentProductionLive;
+        var flow = (cpl && cpl._flowFor) ? cpl._flowFor('obs_raw') : null;
+        return (rows || []).map(function(r) {
+          var action = (flow && flow.primary && flow.primary[r.status]) || null;
+          if (!action) return null;   // last real stage - nothing left to do
+          return {
+            kind: 'obs_raw_edit',
+            workflow: 'obs_raw_edit',
+            key: 'obs_raw_edit:' + r.status,
+            name: action.label.replace(/^[^A-Za-z]+/, '') + ' — ConID #' + r.con_id,
+            description: '"' + (r.title || 'Untitled') + '" has real OBS footage logged and is sitting at "' +
+                         r.status + '". Next real stage action: ' + action.label + '.',
+            category: 'career', questType: 'generated', xp: 120,
+            sourceTable: 'content_productions', sourceRef: r.id,
+          };
+        }).filter(Boolean);
+      })
+      .catch(function(e) { console.warn('[questEngine] obs_raw scan:', e.message); return []; });
+  },
+
+  // (b) Closing knowledge gaps. Real basis: `taxonomy_nodes` rows with
+  //     applied_in_beat=false and gap_score>0 - the exact same definition
+  //     dashDeck._refreshGlance's own "gaps tracked" count uses. Reuses
+  //     taxonomySync.getTopGaps rather than a second hand-rolled query.
+  _scanKnowledgeGaps: function() {
+    var ts = RPGACE.modules.taxonomySync;
+    if (!ts || !ts.getTopGaps) return Promise.resolve([]);
+    return ts.getTopGaps(3)
+      .then(function(nodes) {
+        return (nodes || []).filter(function(n) { return Number(n.gap_score) > 0; }).map(function(n) {
+          return {
+            kind: 'knowledge_gap',
+            workflow: 'knowledge_gap',
+            key: 'knowledge_gap',
+            name: 'Close the gap: ' + n.concept,
+            description: 'Gap score ' + Number(n.gap_score).toFixed(1) + '/10, and it has never been applied in a real beat.',
+            category: 'career', questType: 'generated', xp: 90,
+            sourceTable: 'taxonomy_nodes', sourceRef: n.id,
+          };
+        });
+      })
+      .catch(function(e) { console.warn('[questEngine] gap scan:', e.message); return []; });
+  },
+
+  // (c) Taxonomy nodes to review. Real basis: pending `taxonomy_proposals`
+  //     + pending `taxonomy_links` - the same two queries the review
+  //     queue itself and dashDeck's "Needs you now" list already run.
+  //     Deliberately ONE quest for the whole queue rather than one per
+  //     row: at the real current backlog size that would mint dozens of
+  //     quests for what is genuinely one sitting of work.
+  _scanTaxonomyReview: function() {
+    return Promise.all([
+      RPGACE.sb.select('taxonomy_proposals', 'select=id&status=eq.pending'),
+      RPGACE.sb.select('taxonomy_links', 'select=id&status=eq.pending')
+    ]).then(function(res) {
+      var total = ((res[0] || []).length) + ((res[1] || []).length);
+      if (!total) return [];
+      return [{
+        kind: 'taxonomy_review',
+        workflow: 'taxonomy_review',
+        key: 'taxonomy_review',
+        name: 'Review ' + total + ' pending taxonomy item' + (total === 1 ? '' : 's'),
+        description: (res[0] || []).length + ' proposal' + ((res[0] || []).length === 1 ? '' : 's') + ' and ' +
+                     (res[1] || []).length + ' fusion link' + ((res[1] || []).length === 1 ? '' : 's') +
+                     ' are waiting on your judgement.',
+        category: 'career', questType: 'generated', xp: 80,
+        sourceTable: 'taxonomy_proposals,taxonomy_links', sourceRef: 'review_queue',
+      }];
+    }).catch(function(e) { console.warn('[questEngine] review scan:', e.message); return []; });
+  },
+
+  // (d) Anything that needs Alex's input. Real basis: four separate,
+  //     genuinely existing "waiting on a human" signals already used by
+  //     this project's own session-start checks and oversight docs.
+  //     Each is a real query against a real column - if a source is
+  //     empty it simply produces nothing, it is never padded out.
+  //     The taxonomy review queue is a fifth such signal but has its own
+  //     dedicated trigger above, so it is NOT double-counted here.
+  NEEDS_INPUT_SOURCES: [
+    { table: 'smoke_test_items', params: 'select=id,item_name&needs_confirm_highlight=is.true',
+      label: 'hand-test confirmation', ref: 'smoke_test_needs_confirm',
+      desc: 'shipped fix(es) waiting for you to confirm they actually work' },
+    { table: 'error_log', params: 'select=id,title&status=eq.active',
+      label: 'active error', ref: 'error_log_active',
+      desc: 'unresolved error(s) in the error log' },
+    { table: 'oracle_dev_suggestions', params: 'select=id&status=eq.new',
+      label: 'Oracle suggestion', ref: 'oracle_dev_new',
+      desc: 'suggestion(s) Oracle flagged to Orchestrator CC and nobody has reviewed' },
+    { table: 'system_map_flags', params: 'select=id&status=eq.flagged',
+      label: 'map integration flag', ref: 'system_map_flagged',
+      desc: 'trickle-down/up finding(s) flagged by /cartographer' },
+  ],
+
+  _scanNeedsInput: function() {
+    var self = this;
+    return Promise.all(self.NEEDS_INPUT_SOURCES.map(function(src) {
+      return RPGACE.sb.select(src.table, src.params)
+        .then(function(rows) { return { src: src, n: (rows || []).length }; })
+        .catch(function() { return { src: src, n: 0 }; });
+    })).then(function(results) {
+      return results.filter(function(r) { return r.n > 0; }).map(function(r) {
+        return {
+          kind: 'needs_input',
+          workflow: 'needs_input',
+          key: 'needs_input:' + r.src.ref,
+          name: r.n + ' ' + r.src.label + (r.n === 1 ? '' : 's') + ' need you',
+          description: r.n + ' ' + r.src.desc + ' (' + r.src.table + ').',
+          category: 'career', questType: 'generated', xp: 60,
+          sourceTable: r.src.table, sourceRef: r.src.ref,
+        };
+      });
+    });
+  },
+
+  TRIGGERS: ['_scanObsRaw', '_scanKnowledgeGaps', '_scanTaxonomyReview', '_scanNeedsInput'],
+
+  // ── generation ─────────────────────────────────────────────────────
+  refresh: function() {
+    var self = this;
+    if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve();
+    return RPGACE.sb.select('quest_log',
+      'select=*&status=eq.open&parent_quest_id=is.null&order=created_at.asc&limit=100')
+      .then(function(open) {
+        self._rows = open || [];
+        return Promise.all(self.TRIGGERS.map(function(fn) { return self[fn](); }));
+      })
+      .then(function(batches) {
+        var cands = [];
+        batches.forEach(function(b) { cands = cands.concat(b || []); });
+        var haveRef = {};
+        self._rows.forEach(function(r) { if (r.source_ref) haveRef[r.quest_kind + '|' + r.source_ref] = true; });
+        var fresh = cands.filter(function(c) { return !haveRef[c.kind + '|' + c.sourceRef]; });
+        if (!fresh.length) return null;
+        return self._createQuests(fresh);
+      })
+      .then(function(created) {
+        if (created && created.length) self._rows = self._rows.concat(created);
+        self._renderPanel();
+      })
+      .catch(function(e) {
+        console.warn('[questEngine] refresh:', e.message);
+        RPGACE.utils.toast('Quest scan failed: ' + e.message, '#CC4A4A', 4000);
+      });
+  },
+
+  _createQuests: function(cands) {
+    var self = this;
+    return Promise.all(cands.map(function(c) {
+      var est = self.workflowEstimate(c.workflow);
+      if (est == null) est = self.estimateFor('quest', c.key, self.DEFAULT_ESTIMATES[c.kind] || 30);
+      var payload = {
+        quest_key: c.key, quest_kind: c.kind, name: c.name, description: c.description,
+        category: c.category, quest_type: c.questType, xp: c.xp,
+        source_table: c.sourceTable, source_ref: String(c.sourceRef),
+        workflow_key: c.workflow || null,
+        estimated_minutes: Math.round(est * 10) / 10,
+        status: 'open',
+      };
+      return RPGACE.sb.secureWrite('quest_log', 'insert', payload)
+        .then(function(data) {
+          var row = (data && data[0]) || null;
+          if (!row || !row.id) return row;
+          var wf = self.WORKFLOWS[c.workflow];
+          if (!wf) return row;
+          // Real step rows - this is what makes "total of average time for
+          // step execution" a checkable number rather than a claim.
+          var steps = wf.steps.map(function(s, i) {
+            return {
+              quest_key: s.key, quest_kind: 'workflow_step', name: s.label,
+              category: c.category, quest_type: 'step', xp: 0,
+              workflow_key: c.workflow, parent_quest_id: row.id, step_index: i,
+              estimated_minutes: self.estimateFor('step', s.key, s.estimate),
+              status: 'open',
+            };
+          });
+          return RPGACE.sb.secureWrite('quest_log', 'insert', steps).then(function() { return row; });
+        })
+        .catch(function(e) {
+          // Rule 7 - never silently swallow a failed write. But the unique
+          // partial index on (quest_kind, source_ref) WHERE status='open'
+          // is a LEGITIMATE, expected rejection: it means this exact quest
+          // is already open, which is the index doing its job, not a
+          // failure worth alarming Alex about. secureWrite only surfaces
+          // the generic top-level error string (the PostgREST detail stays
+          // in the response body), so rather than string-matching a
+          // message this endpoint does not actually pass through, ask the
+          // real table directly whether that row now exists.
+          return RPGACE.sb.select('quest_log',
+            'select=id&status=eq.open&quest_kind=eq.' + encodeURIComponent(c.kind) +
+            '&source_ref=eq.' + encodeURIComponent(String(c.sourceRef)) + '&limit=1')
+            .then(function(hit) {
+              if (hit && hit.length) {
+                console.log('[questEngine] quest already open for ' + c.kind + '/' + c.sourceRef);
+                return null;
+              }
+              console.warn('[questEngine] create failed:', e.message);
+              RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
+              return null;
+            })
+            .catch(function() {
+              console.warn('[questEngine] create failed:', e.message);
+              RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
+              return null;
+            });
+        });
+    })).then(function(rows) { return rows.filter(Boolean); });
+  },
+
+  // ── start / complete for generated quests ──────────────────────────
+  startQuest: function(id) {
+    var self = this;
+    var row = self._rows.filter(function(r) { return r.id === id; })[0];
+    if (!row || row.started_at) return;
+    var now = new Date().toISOString();
+    RPGACE.sb.secureWrite('quest_log', 'update', { started_at: now }, 'id=eq.' + id)
+      .then(function() {
+        row.started_at = now;
+        RPGACE.utils.toast('⏱ Timing "' + row.name + '"', '#2ABFB0', 2500);
+        self._renderPanel();
+      })
+      .catch(function(e) {
+        RPGACE.utils.toast('Could not start timer: ' + e.message, '#CC4A4A', 4500);
+      });
+  },
+
+  completeQuest: function(id) {
+    var self = this;
+    var row = self._rows.filter(function(r) { return r.id === id; })[0];
+    if (!row || row.status !== 'open') return;
+    var now = new Date();
+    var actual = row.started_at ? ((now - new Date(row.started_at)) / 60000) : null;
+    if (actual != null) actual = Math.round(actual * 10) / 10;
+
+    RPGACE.sb.secureWrite('quest_log', 'update',
+      { status: 'completed', completed_at: now.toISOString(), actual_minutes: actual },
+      'id=eq.' + id)
+      .then(function() {
+        row.status = 'completed';
+        // Quest scope, then the workflow scope it belongs to - "exactly
+        // same for steps" per Alex, same function both times.
+        var chain = self.recordDuration('quest', row.quest_key, row.name,
+          row.estimated_minutes, actual);
+        if (row.workflow_key) {
+          chain = chain.then(function() {
+            return self.recordDuration('workflow', row.workflow_key,
+              (self.WORKFLOWS[row.workflow_key] || {}).label || row.workflow_key,
+              row.estimated_minutes, actual);
+          });
+        }
+        return chain;
+      })
+      .then(function() {
+        if (typeof addXP === 'function') addXP(row.xp || 0);
+        RPGACE.utils.toast('✓ ' + row.name + (actual != null ? ' — ' + actual + ' min logged' : ' — completed (untimed)'),
+          '#4AAE6E', 3500);
+        self._rows = self._rows.filter(function(r) { return r.id !== id; });
+        self._renderPanel();
+      })
+      .catch(function(e) {
+        RPGACE.utils.toast('Quest completion did NOT save: ' + e.message, '#CC4A4A', 6000);
+        console.warn('[questEngine] complete failed:', e.message);
+      });
+  },
+
+  dismissQuest: function(id) {
+    var self = this;
+    RPGACE.sb.secureWrite('quest_log', 'update', { status: 'dismissed' }, 'id=eq.' + id)
+      .then(function() {
+        self._rows = self._rows.filter(function(r) { return r.id !== id; });
+        self._renderPanel();
+      })
+      .catch(function(e) { RPGACE.utils.toast('Dismiss failed: ' + e.message, '#CC4A4A', 4500); });
+  },
+
+  // ── Quest Board persistence (the real fix for the 4x-flagged gap) ──
+  // Called directly from the legacy completeQuest(); `q` is the real
+  // QUESTS entry that was just ticked.
+  recordBoardCompletion: function(q) {
+    var self = this;
+    if (!q || !RPGACE.sb || !RPGACE.sb.secureWrite) return Promise.resolve();
+    var started = self._boardStarts && self._boardStarts[q.id];
+    var actual = started ? Math.round(((Date.now() - started) / 60000) * 10) / 10 : null;
+    if (self._boardStarts) delete self._boardStarts[q.id];
+    self._persistBoardStarts();
+
+    var est = self.estimateFor('quest', q.id, self.DEFAULT_ESTIMATES.board);
+    return RPGACE.sb.secureWrite('quest_log', 'insert', {
+      quest_key: q.id, quest_kind: 'board', name: q.name, description: q.desc,
+      category: q.cat, quest_type: q.type, xp: q.xp || 0,
+      estimated_minutes: est, actual_minutes: actual,
+      status: 'completed', completed_at: new Date().toISOString(),
+      started_at: started ? new Date(started).toISOString() : null,
+    }).then(function() {
+      return self.recordDuration('quest', q.id, q.name, est, actual);
+    }).then(function() {
+      if (actual != null) RPGACE.utils.toast('⏱ ' + actual + ' min logged for "' + q.name + '"', '#2ABFB0', 3000);
+    }).catch(function(e) {
+      // Rule 7. The in-memory tick already happened and the XP already
+      // showed - saying nothing here would leave Alex believing a
+      // completion was saved when it was not, which is the exact failure
+      // this whole module exists to end.
+      RPGACE.utils.toast('⚠ "' + q.name + '" was NOT saved: ' + e.message, '#CC4A4A', 6000);
+      console.warn('[questEngine] board completion failed:', e.message);
+    });
+  },
+
+  _boardStarts: null,
+  _persistBoardStarts: function() {
+    try { localStorage.setItem('rpgace_quest_starts', JSON.stringify(this._boardStarts || {})); } catch (e) {}
+  },
+  _loadBoardStarts: function() {
+    if (this._boardStarts) return this._boardStarts;
+    try { this._boardStarts = JSON.parse(localStorage.getItem('rpgace_quest_starts') || '{}'); }
+    catch (e) { this._boardStarts = {}; }
+    return this._boardStarts;
+  },
+
+  // Called from the board card's own ▶ button. A board quest is a
+  // small, same-session thing, so its in-flight start time is a genuine
+  // per-viewer convenience - localStorage, not a Supabase round trip.
+  startBoardQuest: function(id, btn) {
+    var starts = this._loadBoardStarts();
+    if (starts[id]) return;
+    starts[id] = Date.now();
+    this._persistBoardStarts();
+    if (btn) { btn.textContent = '⏱ timing'; btn.disabled = true; btn.style.opacity = '0.6'; }
+    RPGACE.utils.toast('⏱ Timer started', '#2ABFB0', 2000);
+  },
+
+  // ── restore what used to evaporate on every page load ──────────────
+  _restoreBoardState: function() {
+    var self = this;
+    return RPGACE.sb.select('quest_log',
+      'select=quest_key,quest_kind,xp,completed_at&status=eq.completed&order=completed_at.desc&limit=1000')
+      .then(function(rows) {
+        rows = rows || [];
+        if (typeof STATE === 'undefined' || !STATE) return;
+        var totalXP = 0;
+        rows.forEach(function(r) { totalXP += Number(r.xp) || 0; });
+        STATE.totalXP = totalXP;
+        STATE.tasksCompleted = rows.length;
+        // Walk the same real per-level bands addXP/levelUp use, so a
+        // restored level means exactly what an earned one means.
+        var lvl = 1, rem = totalXP;
+        while (lvl <= STATE.xpRequired.length && rem >= STATE.xpRequired[lvl - 1]) {
+          rem -= STATE.xpRequired[lvl - 1]; lvl++;
+        }
+        STATE.level = lvl; STATE.xp = rem;
+        self._paintRestoredState();
+
+        // Re-tick board quests already completed inside their own real
+        // recurrence window, so a daily quest done this morning still
+        // reads as done after a reload.
+        var now = Date.now();
+        var windowMs = { daily: 864e5, weekly: 6048e5, monthly: 2592e6 };
+        if (typeof QUESTS === 'undefined' || !QUESTS) return;
+        var doneKeys = {};
+        rows.forEach(function(r) {
+          if (r.quest_kind !== 'board' || !r.completed_at) return;
+          if (doneKeys[r.quest_key]) return;
+          doneKeys[r.quest_key] = new Date(r.completed_at).getTime();
+        });
+        Object.keys(QUESTS).forEach(function(group) {
+          (QUESTS[group] || []).forEach(function(q) {
+            var t = doneKeys[q.id];
+            if (!t) return;
+            var win = windowMs[q.type] || windowMs.daily;
+            if (now - t < win) q.done = true;
+          });
+        });
+        if (typeof buildAllQuests === 'function') buildAllQuests();
+      })
+      .catch(function(e) { console.warn('[questEngine] restore:', e.message); });
+  },
+
+  _paintRestoredState: function() {
+    var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+    var req = STATE.xpRequired[STATE.level - 1] || 9999;
+    if (typeof paintXpBar === 'function') paintXpBar(STATE.xp, req);
+    set('xp-val', STATE.xp + ' / ' + req);
+    set('stat-tasks', STATE.tasksCompleted);
+    set('stat-xp', STATE.totalXP);
+    set('stat-lvl', STATE.level);
+    set('lvl-display', STATE.level);
+    var title = (typeof LEVEL_TITLES !== 'undefined' && LEVEL_TITLES)
+      ? LEVEL_TITLES[Math.min(STATE.level - 1, LEVEL_TITLES.length - 1)] : null;
+    if (title) set('char-title', title + ' • Level ' + STATE.level);
+    if (typeof updateSkillTree === 'function') { try { updateSkillTree(); } catch (e) {} }
+  },
+
+  // ── UI ─────────────────────────────────────────────────────────────
+  _inject: function() {
+    if (document.getElementById('qe-panel')) return;
+    var page = document.getElementById('page-quests');
+    if (!page) return;
+    var self = this;
+
+    var panel = document.createElement('div');
+    panel.id = 'qe-panel';
+    panel.style.cssText = 'border-top:1px solid var(--border);padding-top:18px;margin-bottom:24px;';
+
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;';
+    var t = document.createElement('div');
+    t.className = 'section-title';
+    t.style.margin = '0';
+    t.textContent = '🎯 Generated From Your Real Data';
+    hdr.appendChild(t);
+
+    var controls = document.createElement('div');
+    controls.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+
+    // "how much time I have" - the real, data-backed half of Alex's ask.
+    var mins = document.createElement('input');
+    mins.id = 'qe-budget';
+    mins.type = 'number'; mins.min = '5'; mins.step = '5'; mins.placeholder = 'mins free';
+    mins.style.cssText = 'width:86px;background:var(--panel2,#12121c);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:12px;padding:4px 8px;';
+    mins.oninput = function() {
+      var v = parseFloat(mins.value);
+      self._budget = (isFinite(v) && v > 0) ? v : null;
+      self._renderPanel();
+    };
+    controls.appendChild(mins);
+
+    var rescan = document.createElement('button');
+    rescan.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.4);cursor:pointer;font-size:11px;padding:4px 10px;';
+    rescan.textContent = '↻ Rescan';
+    rescan.onclick = function() { self._loadStats().then(function() { return self.refresh(); }); };
+    controls.appendChild(rescan);
+
+    hdr.appendChild(controls);
+    panel.appendChild(hdr);
+
+    var note = document.createElement('div');
+    note.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;';
+    note.textContent = 'Every quest here comes from a real row in your own data — an OBS ConID, a tracked knowledge gap, the taxonomy review queue, or something genuinely waiting on you. Times are real running averages once you have actually timed a run.';
+    panel.appendChild(note);
+
+    var grid = document.createElement('div');
+    grid.id = 'qe-grid';
+    grid.className = 'quest-grid';
+    panel.appendChild(grid);
+
+    var first = page.querySelector('.section-title');
+    if (first && first.parentNode === page) page.insertBefore(panel, first.nextSibling);
+    else page.appendChild(panel);
+    this._renderPanel();
+  },
+
+  _fmtEstimate: function(row) {
+    var self = this;
+    var scope = 'quest', key = row.quest_key;
+    var mins = self.estimateFor(scope, key, row.estimated_minutes);
+    var n = self.samplesFor(scope, key);
+    var txt = '~' + (Math.round(mins * 10) / 10) + ' min';
+    if (n === 0) txt += ' · estimate only, never timed';
+    else txt += ' · averaged over ' + n + ' real run' + (n === 1 ? '' : 's') + ' + the original estimate';
+    return { mins: mins, text: txt };
+  },
+
+  _renderPanel: function() {
+    var grid = document.getElementById('qe-grid');
+    if (!grid) return;
+    var self = this;
+    grid.innerHTML = '';
+
+    var rows = self._rows.slice();
+    if (self._budget != null) {
+      rows = rows.filter(function(r) { return self._fmtEstimate(r).mins <= self._budget; });
+    }
+
+    if (!rows.length) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'font-size:12px;color:var(--muted);padding:14px;border:1px solid var(--border);border-radius:8px;';
+      empty.textContent = self._budget != null
+        ? 'Nothing currently fits in ' + self._budget + ' minutes.'
+        : 'No generated quests right now — none of the four triggers found real matching data.';
+      grid.appendChild(empty);
+      return;
+    }
+
+    rows.forEach(function(r) {
+      var est = self._fmtEstimate(r);
+      var card = document.createElement('div');
+      card.className = 'quest-card ' + (r.category || 'career');
+
+      var top = document.createElement('div');
+      top.className = 'quest-top';
+      var nm = document.createElement('div'); nm.className = 'quest-name'; nm.textContent = r.name;
+      var xp = document.createElement('div'); xp.className = 'quest-xp'; xp.textContent = '+' + (r.xp || 0) + ' XP';
+      top.appendChild(nm); top.appendChild(xp);
+      card.appendChild(top);
+
+      var desc = document.createElement('div');
+      desc.className = 'quest-desc'; desc.textContent = r.description || '';
+      card.appendChild(desc);
+
+      var time = document.createElement('div');
+      time.style.cssText = 'font-size:11px;color:#2ABFB0;margin:6px 0 2px;';
+      time.textContent = '⏱ ' + est.text;
+      card.appendChild(time);
+
+      if (r.workflow_key && self.WORKFLOWS[r.workflow_key]) {
+        var wf = self.WORKFLOWS[r.workflow_key];
+        var steps = document.createElement('div');
+        steps.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.6;';
+        steps.textContent = 'Workflow · ' + wf.steps.map(function(s) {
+          return s.label + ' (' + Math.round(self.estimateFor('step', s.key, s.estimate)) + 'm)';
+        }).join(' → ');
+        card.appendChild(steps);
+      }
+
+      var tags = document.createElement('div');
+      tags.className = 'quest-tags';
+      [r.quest_kind, r.source_table].forEach(function(x) {
+        if (!x) return;
+        var s = document.createElement('span'); s.className = 'tag'; s.textContent = x;
+        tags.appendChild(s);
+      });
+      card.appendChild(tags);
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+
+      if (!r.started_at) {
+        var startBtn = document.createElement('button');
+        startBtn.className = 'complete-btn';
+        startBtn.style.cssText = 'flex:1;border-color:#2ABFB0;color:#2ABFB0;';
+        startBtn.textContent = '▶ Start timer';
+        startBtn.onclick = function() { self.startQuest(r.id); };
+        btnRow.appendChild(startBtn);
+      } else {
+        var timing = document.createElement('div');
+        timing.style.cssText = 'flex:1;font-size:11px;color:#2ABFB0;align-self:center;';
+        timing.textContent = '⏱ running since ' + new Date(r.started_at).toLocaleTimeString();
+        btnRow.appendChild(timing);
+      }
+
+      var doneBtn = document.createElement('button');
+      doneBtn.className = 'complete-btn';
+      doneBtn.style.flex = '1';
+      doneBtn.textContent = '◎ Mark Complete';
+      doneBtn.onclick = function() { self.completeQuest(r.id); };
+      btnRow.appendChild(doneBtn);
+
+      var dis = document.createElement('button');
+      dis.className = 'complete-btn';
+      dis.style.cssText = 'flex:0 0 auto;border-color:var(--border);color:var(--muted);';
+      dis.textContent = '✕';
+      dis.title = 'Dismiss this quest';
+      dis.onclick = function() { self.dismissQuest(r.id); };
+      btnRow.appendChild(dis);
+
+      card.appendChild(btnRow);
+      grid.appendChild(card);
+    });
+  },
+
+});
+/* ===END:questEngine=== */
+
 /* ===END_DOMAIN:SYSTEM=== */
 
 /* ===DOMAIN:SCHEDULE=== */
