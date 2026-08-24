@@ -24428,6 +24428,15 @@ RPGACE.register('questEngine', {
     var actual = (actualMinutes == null) ? null : Number(actualMinutes);
     if (actual != null && (!isFinite(actual) || actual < 0)) actual = null;
 
+    // Real gap found + fixed during the A9 verification pass (Aug 24
+    // 2026): an untimed first-ever completion used to still write a
+    // completion_count:0 row here. Harmless in practice - estimateFor/
+    // samplesFor already fall back to the exact same estimate/0 with no
+    // row at all - but a needless write that reads as data when it is
+    // not, and doesn't match this function's own "must not touch the
+    // stats table" spirit for an untimed completion. Skip outright.
+    if (!existing && actual == null) return Promise.resolve(null);
+
     if (!existing) {
       var est = Number(firstEstimate) || 0;
       var count = actual == null ? 0 : 1;
@@ -24701,7 +24710,12 @@ RPGACE.register('questEngine', {
     var row = self._rows.filter(function(r) { return r.id === id; })[0];
     if (!row || row.started_at) return;
     var now = new Date().toISOString();
-    RPGACE.sb.secureWrite('quest_log', 'update', { started_at: now }, 'id=eq.' + id)
+    // Return the chain (real bug found + fixed during the A9 verification
+    // pass, Aug 24 2026: this used to be fire-and-forget with nothing
+    // returned, so a caller had no way to actually await the write - the
+    // in-page ▶ button never needed that, but startQuest is also called
+    // directly by module code, which does.
+    return RPGACE.sb.secureWrite('quest_log', 'update', { started_at: now }, 'id=eq.' + id)
       .then(function() {
         row.started_at = now;
         RPGACE.utils.toast('⏱ Timing "' + row.name + '"', '#2ABFB0', 2500);
@@ -24720,7 +24734,8 @@ RPGACE.register('questEngine', {
     var actual = row.started_at ? ((now - new Date(row.started_at)) / 60000) : null;
     if (actual != null) actual = Math.round(actual * 10) / 10;
 
-    RPGACE.sb.secureWrite('quest_log', 'update',
+    // Same real fix as startQuest above - return the chain.
+    return RPGACE.sb.secureWrite('quest_log', 'update',
       { status: 'completed', completed_at: now.toISOString(), actual_minutes: actual },
       'id=eq.' + id)
       .then(function() {
@@ -24753,7 +24768,8 @@ RPGACE.register('questEngine', {
 
   dismissQuest: function(id) {
     var self = this;
-    RPGACE.sb.secureWrite('quest_log', 'update', { status: 'dismissed' }, 'id=eq.' + id)
+    // Same real fix as startQuest/completeQuest above - return the chain.
+    return RPGACE.sb.secureWrite('quest_log', 'update', { status: 'dismissed' }, 'id=eq.' + id)
       .then(function() {
         self._rows = self._rows.filter(function(r) { return r.id !== id; });
         self._renderPanel();
