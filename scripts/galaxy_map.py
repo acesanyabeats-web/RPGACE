@@ -1720,6 +1720,19 @@ TEMPLATE = """<!DOCTYPE html>
     c.addEventListener('click', function() {{
       var uid = c.dataset.unit;
       if (!uid || !DATA.units[uid]) return;
+      // G83 (Aug 25 2026) — Alex's own direct correction: "all of these
+      // bubbles should lead somewhere lower in the map, so far they just
+      // navigate to list below... i click supabase and it takes me to
+      // supabase bubble system without going through the list below".
+      // Supabase is the one unit whose lower-level page now HAS a real
+      // bubble system of its own (galaxy_map_supabase.html's G83 map
+      // view), so it goes straight there. Deliberately scoped to this
+      // one unit — the other 8 keep the inline facet panel unchanged
+      // until each has a real destination of its own to jump to.
+      if (uid === 'supabase') {{
+        window.location.href = 'galaxy_map_supabase.html#view-map';
+        return;
+      }}
       currentUnit = uid;
       currentKind = null;
       kindBtns.forEach(function(x) {{ x.classList.remove('chosen'); }});

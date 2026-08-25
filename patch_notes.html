@@ -129,6 +129,21 @@
   </div>
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🔶 Aug 25 — Galaxy Map G83, real interim checkpoint: Supabase's L0 bubble now jumps straight to a real bubble system; the bubble system's own shape is mid-redesign, not final</div>
+    <div class="card-body">
+      Alex's own direct correction: L0 unit bubbles shouldn't stop at an inline facet list — clicking Supabase should take him straight into a real bubble system for it, since a facet list is redundant once that page shows the real flow itself. Dispatched, then correctly paused mid-build for a real reason: while it was in progress, Alex escalated the ask — Supabase's bubble system should have its own real L1 (rivers) → L2 (modules) → L3 (Current migration-bubbles) drill-down, meant to become the standard shape for every future L0 unit's infra bubble system. Rather than let the running build finish a flat design about to be redone, it was stopped mid-task and asked to report its real, already-verified state honestly rather than keep building or polish toward a shape being replaced.
+      <br><br>
+      <b>What's real and staying, independently verified</b>: the L0 click-behavior change. Clicking Supabase's bubble on <code>galaxy_map.html</code> now navigates directly to <code>galaxy_map_supabase.html#view-map</code> — confirmed with a real headless-Chromium click-through, not just read from the code. The other 8 L0 units are untouched, still open the inline facet panel exactly as before.
+      <br><br>
+      <b>What's real but temporary</b>: a flat bubble/map view was built on <code>galaxy_map_supabase.html</code> (32 real table-hub cards, 145 nodes, 113 edges) with a real self-check built into its own build output ("write+read counts verified identical to the table view for all 29 module-touched tables"). It's genuinely working — syntax-clean, idempotent across 2 fresh runs, balanced, zero real console errors — but it's the flat design from BEFORE the L1/L2/L3 escalation, not the nested drill-down Alex actually wants. Shipping it now as an honest interim state rather than leaving real, verified work sitting uncommitted while the redesign is planned.
+      <br><br>
+      A real `/interrogation` resolved the redesign's own shape before any further building: everything lives as progressive drill-down views inside <code>galaxy_map_supabase.html</code> itself — no new files, no duplicated L1/L3 rendering — L1 shows only the rivers that genuinely touch a Supabase table, L2 shows only the real modules in that river that touch it, L3 is a real migration-bubble jumping OUT to the actual, existing <code>galaxy_map_current.html#mod-X</code> anchor (never a duplicated copy of Current's own content). Scoped to Supabase only this pass, with the reusable parts factored out for other L0 units later — matching every PoC-then-generalize pattern used today.
+      <br><br>
+      <b>Next real step</b>: build the nested L1/L2/L3 drill-down against this confirmed scope, replacing the flat map view (the L0 click-jump stays exactly as it is). Untested by hand — headless-Chromium-verified only.
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">✅ Aug 25 — Galaxy Map G82 complete: the final 5 dimension pages audited, all 10 now real per-page fixes; a real pre-existing bug found (243 dead anchors on Current) and correctly NOT fixed blind</div>
     <div class="card-body">
       Closes the full 10-page audit started earlier today. All 5 remaining pages (Dimensions Matrix, Decisions — Human Gates, Detailed Decision, Load Dimension, Orchestrator ↔ OpenMontage) had a real, genuine gap — none was left untouched, and none was forced.
