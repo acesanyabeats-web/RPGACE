@@ -145,10 +145,16 @@ def build_skill_section(name, callees, callers):
     # own new column (rule 8, not re-derived): every skill lives in River
     # XIII by default; SKILL_SECONDARY_RIVER adds a real secondary
     # citation for the 7 that have one.
-    river_bits = ['River XIII']
+    # G82 (Aug 25 2026) — same real fix as the table view's own chips
+    # (galaxy_map_skills.py `_river_chip`): these named a real river and
+    # linked nowhere. Both views now reach the same real Level-2 anchor.
+    def _rlink(rnum):
+        label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        return f'<a href="galaxy_map_module.html#river-{rnum}">{esc(label)}</a>'
+    river_bits = [_rlink(13)]
     sec = SKILL_SECONDARY_RIVER.get(name)
     if sec:
-        river_bits.append(RIVER_NAME.get(sec[0], f'River {sec[0]}').split('—')[0].strip())
+        river_bits.append(_rlink(sec[0]))
     river_line = f'<p class="modline">Real River usage: {" + ".join(river_bits)} · Level: N/A (dev-process, not app-runtime)</p>'
     # Real Aug 21 2026 fold (/misunderstanding correction) — this used to
     # be its own tab-switched <section> (the page's real TABLE view,
@@ -234,8 +240,14 @@ TEMPLATE = """<!DOCTYPE html>
   .netlink:hover{{opacity:1}}
   .sknote{{color:#c8c8d8;line-height:1.5}}
   .skriver{{white-space:nowrap}}
-  .river-chip{{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(42,191,176,0.12);color:#2ABFB0;margin:0 4px 4px 0}}
+  /* G82 — the river chips are real links now (galaxy_map_module.html#river-N);
+     text-decoration:none keeps the chip reading as a chip, not a hyperlink. */
+  .river-chip{{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(42,191,176,0.12);color:#2ABFB0;margin:0 4px 4px 0;text-decoration:none}}
+  .river-chip:hover{{background:rgba(42,191,176,0.28)}}
   .river-sec{{background:rgba(201,168,76,0.12);color:var(--gold)}}
+  .river-sec:hover{{background:rgba(201,168,76,0.28)}}
+  .modline a{{color:var(--gold);text-decoration:none}}
+  .modline a:hover{{text-decoration:underline}}
   .lvl-na{{font-size:8.5px;color:var(--dim);margin-top:3px}}
 {dim_css}
 </style>
@@ -363,8 +375,13 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
+    n_sec = sum(1 for n in names if SKILL_SECONDARY_RIVER.get(n))
     print(f"Wrote {OUT} — {len(names)} skills, {n_edges} real invocation edges (map) + "
           f"{len(GROUPS)} real axis groups (table), one real merged page.")
+    # G82 — real, measured river-link coverage across BOTH views, so a
+    # regression back to dead chips shows up in the build output.
+    print(f"  G82 river links — every skill links River XIII at Level 2 in both views; "
+          f"{n_sec} of {len(names)} also link a real secondary river.")
 
 
 if __name__ == '__main__':

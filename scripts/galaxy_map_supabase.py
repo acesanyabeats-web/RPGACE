@@ -67,6 +67,42 @@ def _mod_link(mod):
     return f'<span class="mod-chip mod-chip-none">{mod}</span>'
 
 
+# ── G82 audit (Aug 25 2026) — two real, separately-evidenced dead ends
+# on this page, both found by checking what it NAMES against what it
+# links.
+#
+# 1. The river chips said "🌊 River XI" and went nowhere, even though
+#    the module chips beside them already link to Current Series. Fixed
+#    with the same `galaxy_map_module.html#river-N` Level-2 anchor
+#    galaxy_map_load.py already renders next to its own module links
+#    (rule 8 — an existing convention applied where an identical fact
+#    was rendered dead, not a new mechanic).
+#
+# 2. The oversight-doc evidence rows named a real FILE
+#    (`smoke_test.html`, `achiever.html`, …) as plain text. That name is
+#    unusually strong evidence to leave unlinked: it did not come from a
+#    hand-typed roster, it came from compute_oversight_doc_supabase_
+#    reads() literally opening that file at the repo root and finding
+#    the `fetch('/rest/v1/…')` call being reported. The link is
+#    therefore checked the same way it was sourced — `is_file()` at
+#    build time — and a file that stops existing simply stops being
+#    linked, rather than rotting into a dead href.
+_ROOT = Path('.')
+
+
+def _river_link(rnum):
+    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    return f'<a class="river-chip" href="galaxy_map_module.html#river-{rnum}">🌊 {esc(label)}</a>'
+
+
+def _doc_link(fname):
+    """Real link to the oversight doc this evidence was read out of —
+    only when that exact file genuinely exists right now."""
+    if (_ROOT / fname).is_file():
+        return f'<a class="doclink" href="../{esc(fname)}">{esc(fname)}</a>'
+    return esc(fname)
+
+
 def build_oversight_block(tbl):
     """Real, separately-labelled oversight-doc evidence for one table —
     or nothing at all if no oversight doc fetches it. Never merged into
@@ -77,7 +113,7 @@ def build_oversight_block(tbl):
         return ''
     rows = ''.join(
         f'<div class="touch-row"><code>{"+".join(r["methods"])}</code> '
-        f'{esc(r["file"])} — {r["n"]} real live call(s)</div>'
+        f'{_doc_link(r["file"])} — {r["n"]} real live call(s)</div>'
         for r in recs)
     return (f'<div class="ovs"><span class="ovs-tag">📚 also fetched live by the oversight docs</span>'
             f'{rows}</div>')
@@ -110,8 +146,8 @@ def build_table_row(tbl, touches):
     ops = sorted(set(op for _m, _f, op in touches))
     op_badges = ''.join(f'<span class="op-badge op-{op}">{op}</span>' for op in ops)
     river_chips = ''.join(
-        f'<span class="river-chip">🌊 {RIVER_NAME.get(r, "?").split("—")[0].strip()}</span>'
-        for r in rivers) or '<span class="meta">no river-tracked module touches this table</span>'
+        _river_link(r) for r in rivers
+    ) or '<span class="meta">no river-tracked module touches this table</span>'
     mod_chips = ''.join(_mod_link(m) for m in mods)
     detail_rows = ''.join(
         f'<div class="touch-row"><code>{op}</code> {esc(m)}.{esc(f)}()</div>'
@@ -151,7 +187,12 @@ TEMPLATE = """<!DOCTYPE html>
   .tcount{{font-size:9.5px;color:var(--dim);margin-left:auto}}
   .op-badge{{font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,0.06);color:var(--dim);text-transform:uppercase}}
   .rivers,.mods{{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}}
-  .river-chip{{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(42,191,176,0.1);color:var(--teal)}}
+  /* G82 — the river chips are real Level-2 links now, styled to still
+     read as chips rather than as underlined hyperlinks. */
+  .river-chip{{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(42,191,176,0.1);color:var(--teal);text-decoration:none}}
+  .river-chip:hover{{background:rgba(42,191,176,0.26)}}
+  .doclink{{color:var(--gold);text-decoration:none;border-bottom:1px dotted currentColor}}
+  .doclink:hover{{border-bottom-style:solid}}
   .mod-chip{{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);text-decoration:none}}
   .mod-chip-none{{background:rgba(255,255,255,0.04);color:var(--dim)}}
   .meta{{font-size:9.5px;color:var(--dim)}}
@@ -223,6 +264,15 @@ def main():
           f"{sum(len(v) for v in TABLES.values())} real total touches; "
           f"plus {len(OVERSIGHT)} real oversight-doc-fetched table(s) "
           f"({len(OVERSIGHT_ONLY)} of them module-untouched, {n_ovs_calls} real live calls).")
+    # G82 — real, measured destination coverage, printed so a build can
+    # never silently regress it.
+    docs = sorted({r['file'] for recs in OVERSIGHT.values() for r in recs})
+    linked_docs = [d for d in docs if (_ROOT / d).is_file()]
+    n_river_tables = sum(
+        1 for t, touches in TABLES.items()
+        if any(_river_of.get(m) for m, _f, _op in touches))
+    print(f"  G82 destinations — {n_river_tables}/{len(TABLES)} table(s) now link at least one real river at "
+          f"Level 2; {len(linked_docs)}/{len(docs)} named oversight doc(s) resolve to a real file and are linked.")
 
 
 if __name__ == '__main__':

@@ -37,6 +37,7 @@ own procedure changes, this page needs a real re-transcription (same
 maintenance discipline as any other hand-mirrored data in this project).
 """
 from pathlib import Path
+import re
 import sys as _sys_rail
 from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
@@ -44,6 +45,60 @@ from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_oversight_sync.html')
+
+# ── G82 audit (Aug 25 2026) — the real gap on THIS page, stated
+# precisely rather than assumed.
+#
+# This is the one page in the whole map whose entire subject is which
+# oversight DOC gets touched, and every row named those docs
+# (patch_notes.html, interconnection_map.md, minotaur_map.html,
+# achiever.html, session_lessons.html, …) as plain escaped text. Not one
+# was clickable — while this page's OWN footer already links
+# `../system_flow_map.md`, i.e. the working relative-path convention
+# was already established here and applied to exactly one mention out of
+# dozens.
+#
+# `_doclinks()` closes that, deliberately gated on real existence rather
+# than a hand-typed roster, so it can never emit a dead link:
+#   * a token must look like a bare `<name>.html`/`.md` filename (no
+#     directory part), which by construction excludes the ritual
+#     `source` paths (`.claude/skills/Bedtime/SKILL.md` — `SKILL.md`
+#     alone does not exist at the repo root, so it stays honest plain
+#     text, which is correct: `.claude/` is not served);
+#   * it must genuinely exist right now, checked at build time, at the
+#     repo root (linked `../name`) or in graphify-out/ (linked `name`);
+#   * anything else — a `.js` file, a `.txt` record pattern, a Supabase
+#     table name, `daily_priorities_debate_YYYY-MM-DD.txt` — is left
+#     exactly as it was. A file that gets renamed or archived stops
+#     being linked on the very next build instead of rotting.
+_LINKABLE = re.compile(r'\b([A-Za-z][A-Za-z0-9_]*\.(?:html|md))\b')
+_ROOT = Path('.')
+_OUTDIR = Path('graphify-out')
+# Real app source, not an oversight doc — never linked even though it
+# exists (artifact 7 names it as the home of SELF_KNOWLEDGE, which is a
+# code location, not a browsable document).
+_NEVER_LINK = {'index.html'}
+
+
+def _doc_href(name):
+    """Real, build-time-checked destination for a named doc, or None."""
+    if name in _NEVER_LINK:
+        return None
+    if (_ROOT / name).is_file():
+        return '../' + name
+    if (_OUTDIR / name).is_file():
+        return name
+    return None
+
+
+def _doclinks(text):
+    """Escape first, then linkify — filenames carry no HTML-special
+    characters, so this order is safe and never double-escapes a link
+    it just created."""
+    def sub(m):
+        href = _doc_href(m.group(1))
+        return f'<a class="doclink" href="{href}">{m.group(1)}</a>' if href else m.group(1)
+    return _LINKABLE.sub(sub, esc(text))
 
 # Real, hand-transcribed one-line summary of update-logging-system/SKILL.md's
 # own 18 artifact types — source of truth is that file; this is a mirror,
@@ -129,8 +184,8 @@ def esc(s):
 
 def build_pushbuild_section():
     rows = ''.join(
-        f'<tr><td class="seqnum">{n}</td><td class="trigcell">{esc(trigger)}</td>'
-        f'<td class="artcell">{esc(artifact)}</td></tr>'
+        f'<tr><td class="seqnum">{n}</td><td class="trigcell">{_doclinks(trigger)}</td>'
+        f'<td class="artcell">{_doclinks(artifact)}</td></tr>'
         for n, trigger, artifact in PUSH_BUILD_TRIGGERS
     )
     return f'''<section class="gsection" id="cat-pushbuild">
@@ -143,12 +198,13 @@ def build_pushbuild_section():
 
 def build_ritual_section(r):
     steps_html = ''.join(
-        f'<tr><td class="stepcell">{esc(step)}</td><td class="descell">{esc(desc)}</td><td class="artcell">{esc(art)}</td></tr>'
+        f'<tr><td class="stepcell">{esc(step)}</td><td class="descell">{_doclinks(desc)}</td>'
+        f'<td class="artcell">{_doclinks(art)}</td></tr>'
         for step, desc, art in r['steps']
     )
     return f'''<section class="gsection" id="cat-{r["id"]}" style="display:none">
   <div class="ghead"><h2>{r["icon"]} {esc(r["label"])}</h2><span class="gcount">source: <code>{esc(r["source"])}</code></span></div>
-  <p class="catnote">{esc(r["desc"])}</p>
+  <p class="catnote">{_doclinks(r["desc"])}</p>
   <table class="ltable"><thead><tr><th>Real step</th><th>What it does</th><th>Real oversight artifact touched</th></tr></thead>
   <tbody>{steps_html}</tbody></table>
 </section>'''
@@ -184,6 +240,12 @@ TEMPLATE = """<!DOCTYPE html>
   .stepcell{{font-family:'Cascadia Code','Fira Mono',monospace;color:var(--gold);font-weight:700;white-space:nowrap}}
   .descell{{color:#c8c8d8}}
   .artcell{{color:#8FBF8F}}
+  /* G82 — a real, build-time-verified link to the actual oversight doc
+     named in the cell. Deliberately subtle (a dotted underline, no
+     colour change) so a linked doc name still reads as part of the
+     sentence rather than turning every row into a wall of links. */
+  .doclink{{color:inherit;text-decoration:none;border-bottom:1px dotted currentColor}}
+  .doclink:hover{{color:var(--gold);border-bottom-style:solid}}
   .dim{{color:#6a6a78}}
   a{{color:var(--brown)}}
   .note{{max-width:1200px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
@@ -203,7 +265,8 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="note">
   Generated by <code>scripts/galaxy_map_oversight_sync.py</code>. Real, honest scope limit: this is a hand-curated snapshot of
   what each ritual’s own .md file currently states it does — it does not verify a given session actually followed the
-  sequence (smoke_test.html/error_log.html’s job, not this page’s). If a skill file’s procedure changes, this page needs a
+  sequence (<a class="doclink" href="../smoke_test.html">smoke_test.html</a>/<a class="doclink" href="../error_log.html">error_log.html</a>’s
+  job, not this page’s). If a skill file’s procedure changes, this page needs a
   real re-transcription. G55 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan. Mapping rules: <code>system_map_spec.md</code>.
   Real G56 pipeline-logic docs, written the same pass, going deeper on 3 of the mechanisms this page only summarizes:
   <a href="../system_flow_map.md">system_flow_map.md §12 (Oracle Mode/Fallback Scout)</a>,
@@ -249,8 +312,22 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
+    # G82 — real, measured doc-link coverage, printed so a build can
+    # never silently regress it (and so a renamed/archived doc shows up
+    # as a drop in the linked count instead of vanishing quietly).
+    named, linked = set(), set()
+    _texts = [t for _n, a, b in PUSH_BUILD_TRIGGERS for t in (a, b)]
+    _texts += [r['desc'] for r in RITUALS]
+    _texts += [t for r in RITUALS for _s, d, a in r['steps'] for t in (d, a)]
+    for _t in _texts:
+        for _m in _LINKABLE.findall(_t):
+            named.add(_m)
+            if _doc_href(_m):
+                linked.add(_m)
     print(f"Wrote {OUT} — {len(PUSH_BUILD_TRIGGERS)} push/build triggers, "
           f"{len(RITUALS)} real ritual sequences ({sum(len(r['steps']) for r in RITUALS)} total steps).")
+    print(f"  G82 doc links — {len(linked)}/{len(named)} distinct named doc file(s) resolve to a real file "
+          f"and are linked; unresolved: {', '.join(sorted(named - linked)) or 'none'}.")
 
 
 if __name__ == '__main__':

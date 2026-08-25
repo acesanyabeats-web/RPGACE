@@ -141,13 +141,29 @@ def build_group_section(grp):
         if s['ui']: b.append('<span class="axbubble ax-ui" title="Touches real app UI">🖥️</span>')
         if s['backend']: b.append('<span class="axbubble ax-be" title="Touches real backend">🗄️</span>')
         return ''.join(b) or '<span class="axbubble ax-none" title="No real axis touched">💭</span>'
+    # G82 (Aug 25 2026) — these chips name a REAL river and were dead
+    # text. The whole Skills page (map view and this table alike) had
+    # exactly one href in its entire body, and it was a JS `#` jump —
+    # so a reader could see "River XIV" and had no way to reach River
+    # XIV. Fixed with the same `galaxy_map_module.html#river-N` Level-2
+    # anchor every other page in this pipeline already uses (rule 8, not
+    # a new convention); the anchor is real for all 17 rivers, including
+    # the module-less XII-XVI, which render their own real Level-2
+    # section. Skill NAMES are deliberately still not linked: their real
+    # source is `.claude/skills/<name>/SKILL.md`, a dot-directory that
+    # is not served, so a link there would be dead by construction.
+    def _river_chip(rnum, extra_cls='', title=''):
+        rlabel = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        t = f' title="{esc(title)}"' if title else ''
+        return (f'<a class="river-chip{extra_cls}" href="galaxy_map_module.html#river-{rnum}"{t}>'
+                f'🌊 {esc(rlabel)}</a>')
+
     def _river_usage(name):
-        chips = ['<span class="river-chip">🌊 River XIII</span>']
+        chips = [_river_chip(13, title='Every skill lives in River XIII by default')]
         sec = SKILL_SECONDARY_RIVER.get(name)
         if sec:
             rnum, note = sec
-            rlabel = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
-            chips.append(f'<span class="river-chip river-sec" title="{esc(note)}">🌊 {rlabel}</span>')
+            chips.append(_river_chip(rnum, ' river-sec', note))
         return ''.join(chips)
 
     rows = ''.join(

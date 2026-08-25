@@ -129,6 +129,27 @@
   </div>
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">✅ Aug 25 — Galaxy Map G82 phase 2: 5 more real dead-link fixes (Supabase/Skills/Alex Path/Oversight Sync/Decision Matrix), one found and fixed in passing</div>
+    <div class="card-body">
+      Direct continuation of the per-page audit across the remaining 10 dimension pages. The dispatched builder hit a real session-limit failure mid-way through Decision Matrix — real, completed work for 4 pages existed on disk with zero verification report to trust, so every claim was independently re-derived before shipping, and the interrupted 5th page (a single dangling, unused import — <code>LEVEL3_MODULES</code>, added but never referenced) was finished by hand from the exact real gap the builder's own last message named: "text-input points falling back to a bare, anchorless page link."
+      <br><br>
+      <b>Supabase (G45)</b>: river chips named a real river and linked nowhere — now real Level-2 anchors, reusing the exact convention already established elsewhere (rule 8). Oversight-doc evidence rows named a real file as plain text — now a real, build-time-checked link (<code>is_file()</code> at build time, so a renamed/archived doc stops being linked instead of rotting dead).
+      <br><br>
+      <b>Skills / Skill Network</b>: every river-usage chip (both the table view and the map view) named a real river and had exactly one <code>href</code> in either page's entire body (a JS <code>#</code> jump) — now real Level-2 anchors on both views, for all 17 rivers including the module-less ones. Skill names themselves deliberately stay unlinked — their real source is a dot-directory (<code>.claude/skills/</code>) that isn't served, so a link there would be dead by construction.
+      <br><br>
+      <b>Alex's Decision Path</b>: two real, separately-evidenced fixes. Named modules were dead text for 9 of 12 cards — now link to their own Current Series section when the module is genuinely one of the 45 tracked ones (honestly unlinked otherwise, never a dead anchor). A real stale reference found and fixed: the no-module fallback text said "see Level 4" — <code>galaxy_map_level4.html</code> was retired by G66 and no longer exists, and its successor was itself folded into Current by G74/G76, so the text pointed at nothing on either hop. Now names the real page target the flow detector actually returns, or says plainly that nothing resolved.
+      <br><br>
+      <b>Oversight Sync</b>: every named oversight doc (<code>patch_notes.html</code>, <code>achiever.html</code>, <code>session_lessons.html</code>, …) was plain text across the whole page except one pre-existing footer link — now a real, build-time-checked linkifier, gated on the token looking like a bare filename (so a <code>.claude/skills/…/SKILL.md</code> source citation correctly stays unlinked) and genuinely existing right now.
+      <br><br>
+      <b>Decision Matrix</b>: the interrupted fix, completed — a text-input point with no explicit link fell back to a bare, anchorless page link even when its own module is real and tracked; now links <code>#mod-&lt;module&gt;</code> when it is (2 of 4 points), stays honestly bare for the one genuinely untracked case (<code>legacy (sendChat)</code>). <b>A second, unrelated dead link found and fixed in passing</b> while independently verifying every href on this page resolves: a curated logic point's "every branch in X — Detailed Decision" link used the wrong field (<code>module</code>, the file where the code physically lives — <code>dashDeck</code>, which isn't one of the 45 river-tracked modules Level 6 covers) instead of <code>level3</code> (the module the decision is actually attributed to for every OTHER purpose on the same page — <code>taxonomyReviewQueue</code>, already correctly used one line above for the Current Series link). Both links now agree; the other 6 curated points were unaffected (their <code>module</code>/<code>level3</code> fields already matched).
+      <br><br>
+      <b>Independently verified, not trusted from either the interrupted report or my own completion</b>: syntax-clean on all touched files; every real <code>href</code> on all 5 regenerated pages checked against the real file/anchor it targets — 0 missing files, 0 missing anchors (the dashDeck bug was found by this exact check); idempotent across 2 fresh runs; div/section/table/a/style/script/details/span/g/svg/ul/li/p/h2/tr/td/th/summary balance clean on all 5; headless-Chromium confirmed zero real console errors on all 5.
+      <br><br>
+      <b>Real remaining scope</b>: 5 of the original 10 pages (Dimensions Matrix, Decisions — Human Gates, Detailed Decision, Load Dimension, Orchestrator ↔ OpenMontage) not yet audited — a real, explicit follow-up, not silently dropped. Untested by hand — headless-Chromium-verified only.
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">✅ Aug 25 — Galaxy Map G82 phase 1: real destination links on the Externals page, Logic Dimension coverage 11/26 → 15/26</div>
     <div class="card-body">
       G82 was originally scoped as "port G81's migration-bubble pattern to the other ~14 dimension pages" — a real `/interrogation` first found that assumption wrong: most dimension pages already have real specific per-item links, not the generic-edge bug G81 fixed. Reframed to a real per-page audit; two genuine gaps confirmed and fixed this pass, the rest logged as a real follow-up using these two as worked examples.

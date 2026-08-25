@@ -52,7 +52,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
-    RIVER_NAME, RIVER_COLOR, RIVER_MODULES, inject_level_rail,
+    RIVER_NAME, RIVER_COLOR, RIVER_MODULES, LEVEL3_MODULES, inject_level_rail,
     core_js_lines, verify_core_js_anchor, dimension_index_html,
     DIMENSION_INDEX_CSS,
 )
@@ -270,12 +270,24 @@ def build_unified():
         })
     for p in TEXT_INPUT_POINTS:
         _verify_anchor(p)
+        # Aug 25 2026 — real dead-anchor fix (G82 audit, completed after
+        # a real dispatched builder hit a session-limit failure mid-fix):
+        # a text-input point with no explicit `link` fell back to a bare
+        # `galaxy_map_current.html` with no #mod- anchor at all, even
+        # when its own `module` field names a real, tracked LEVEL3_
+        # MODULES member (beatLog, visualOracle) whose Current Series
+        # section genuinely exists. Only a module that ISN'T real
+        # code — 'legacy (sendChat)', main.js's own pre-merge name for
+        # the still-untracked chat-input handler — correctly keeps the
+        # bare page link, since there is no real #mod- section for it.
+        default_link = (f'galaxy_map_current.html#mod-{p["module"]}'
+                         if p['module'] in LEVEL3_MODULES else 'galaxy_map_current.html')
         out.append({
             'id': p['id'], 'title': p['title'], 'kind': 'text_input',
             'kind_label': '⌨️ Text Input', 'module': p['module'], 'func': p.get('func', ''),
             'river': river_of(p),
             'depth': 'curated' if p['id'] in L5_IDS else 'standard',
-            'detail': p['decides'], 'link': p.get('link') or 'galaxy_map_current.html',
+            'detail': p['decides'], 'link': p.get('link') or default_link,
         })
     out.sort(key=lambda d: (d['river'] or 99, d['kind'], d['title']))
     return out
@@ -311,7 +323,16 @@ def build_logic_writeups():
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines {a}-{b})</div><pre>{code_esc}</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-{esc(dp['level3'])}">🔽 {esc(dp['level3'])} — Current Series</a>
-    <a class="mod-chip" href="galaxy_map_level6.html#m-{esc(dp["module"])}">🔬 every branch in {esc(dp['module'])} — Detailed Decision</a>
+    <a class="mod-chip" href="galaxy_map_level6.html#m-{esc(dp["level3"])}">🔬 every branch in {esc(dp['level3'])} — Detailed Decision</a>
+    <!-- Aug 25 2026 — real dead-anchor fix, found in passing while
+         verifying G82's own link integrity, unrelated to this pass's
+         other changes: this used to key off dp['module'] (dashDeck for
+         'taxonomy-card-branch'), but dashDeck is not one of the 45 real
+         LEVEL3_MODULES tracked by galaxy_map_level6.html at all — the
+         real code IS in dashDeck, but the DECISION is attributed to
+         taxonomyReviewQueue (dp['level3'], already used one line above
+         for the exact same reason) for every other purpose on this
+         page. Now both links agree. -->
   </div>
 </section>''')
     return ''.join(out)

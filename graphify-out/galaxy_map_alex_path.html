@@ -19,6 +19,13 @@
   .gatecount{font-size:9px;font-weight:700;color:var(--red);background:rgba(226,84,84,0.1);padding:2px 8px;border-radius:10px}
   .gatecount.none{color:var(--dim);background:rgba(255,255,255,0.05)}
   .pathstep{font-size:11px;color:#c8c8d8}
+  .pathstep a{color:var(--gold);text-decoration:none}
+  .pathstep a:hover{text-decoration:underline}
+  .mod-untracked{color:var(--dim)}
+  .alsopage{color:var(--dim);font-size:10px}
+  .pathriver{font-size:10px;color:var(--dim);margin-top:4px}
+  .pathriver a{color:var(--gold);text-decoration:none}
+  .pathriver a:hover{text-decoration:underline}
   .patharrow{text-align:center;color:var(--dim);font-size:11px;margin:2px 0}
   .fork{background:rgba(226,84,84,0.05);border-left:2px solid var(--red);border-radius:6px;padding:8px 10px;margin-top:8px}
   .fork-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:5px}
@@ -54,97 +61,109 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Alex's Decision Path (G37)</div>
   <h1>🧑 Alex's Real UI Navigation Path — Y/N At Every Real Fork</h1>
-  <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the 12 real dashboard cards, the real Level-4 frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such.</p>
+  <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the 12 real dashboard cards, the real dashboard-card frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such. Every named module links to its own Current Series section; a card that navigates to a page instead of opening a module says so, and links its own river at <a href="galaxy_map_module.html">Level 2</a>, where the dashboard-card-flow role itself retired (G48).</p>
 </div>
 <div class="wrap"><div class="pathcard">
   <div class="pathhead"><span class="cardicon">🧠 Research Lab</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: (page navigation — see Level 4)</div>
+  <div class="pathstep"><span class="nogate">No real target resolved for this card by the dashboard-card flow detector — neither a popup module nor a page navigation.</span></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-17">River XVII · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">📖 Bookworm</span><span class="gatecount">1 real gate(s)</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: dashDeck, bookworm</div>
+  <div class="pathstep">Opens: <span class="mod-untracked" title="Not one of the 45 river-tracked modules — no Current Series page of its own">dashDeck</span>, <a href="galaxy_map_current.html#mod-bookworm">bookworm</a></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-4">River IV · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="fork"><div class="fork-title">🚦 Delete a Bookworm book (2-click arm/confirm)</div><div class="fork-branch fork-y"><b>Y (trigger)</b> A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.</div><div class="fork-branch fork-n"><b>Real logic</b> No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.</div><a class="fork-link" href="galaxy_map_current.html#mod-bookworm">🔽 bookworm._refreshWidget() — Current Series</a></div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">🌳 Taxonomy & Review</span><span class="gatecount">3 real gate(s)</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: taxonomyReviewQueue</div>
+  <div class="pathstep">Opens: <a href="galaxy_map_current.html#mod-taxonomyReviewQueue">taxonomyReviewQueue</a> <span class="alsopage">· also navigates to the real <code>phylumPath</code> page</span></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-8">River VIII · Level 2</a> · <a href="galaxy_map_module.html#river-6">River VI · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="fork"><div class="fork-title">🚦 Review Queue: accept a pending taxonomy_proposals row</div><div class="fork-branch fork-y"><b>Y (trigger)</b> The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card's popup.</div><div class="fork-branch fork-n"><b>Real logic</b> A real, separate SECOND checkpoint from `_showPlacementConfirm` above — this one clears a `taxonomy_proposals` row that was already staged (not a live in-the-moment placement), matching rule 4's "or staging through taxonomy_proposals → review queue" alternate path.</div><a class="fork-link" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptPhylumPathProposal() — Current Series</a></div><div class="fork"><div class="fork-title">🚦 Review Queue: accept a proposed fusion-link bridge</div><div class="fork-branch fork-y"><b>Y (trigger)</b> The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII's own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.</div><div class="fork-branch fork-n"><b>Real logic</b> Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.</div><a class="fork-link" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptConceptFusion() — Current Series</a></div><div class="fork"><div class="fork-title">🚦 Review Queue: edit a pending proposal before accepting it</div><div class="fork-branch fork-y"><b>Y (trigger)</b> A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.</div><div class="fork-branch fork-n"><b>Real logic</b> Real, distinct from a bare accept/reject — lets Alex correct Oracle's own proposed placement before it commits, rather than only a binary yes/no.</div><a class="fork-link" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._editPhylumPathProposal() — Current Series</a></div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">⚡ Oracle</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: (page navigation — see Level 4)</div>
+  <div class="pathstep">Navigates to the real <code>oracle</code> page — no popup module of its own</div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-3">River III · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">📋 Agenda</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: (page navigation — see Level 4)</div>
+  <div class="pathstep">Navigates to the real <code>agenda</code> page — no popup module of its own</div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-5">River V · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">🌅 Morning Brief</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: dashDeck, morningBrief</div>
+  <div class="pathstep">Opens: <span class="mod-untracked" title="Not one of the 45 river-tracked modules — no Current Series page of its own">dashDeck</span>, <a href="galaxy_map_current.html#mod-morningBrief">morningBrief</a></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-5">River V · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">🕳️ Knowledge Gaps</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: dashDeck, knowledgeGap</div>
+  <div class="pathstep">Opens: <span class="mod-untracked" title="Not one of the 45 river-tracked modules — no Current Series page of its own">dashDeck</span>, <a href="galaxy_map_current.html#mod-knowledgeGap">knowledgeGap</a></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-9">River IX · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">🎬 Content Pipeline</span><span class="gatecount">1 real gate(s)</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: dashDeck, contentProductionLive</div>
+  <div class="pathstep">Opens: <span class="mod-untracked" title="Not one of the 45 river-tracked modules — no Current Series page of its own">dashDeck</span>, <a href="galaxy_map_current.html#mod-contentProductionLive">contentProductionLive</a></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-11">River XI · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="fork"><div class="fork-title">🚦 Undo a ConID's last completed production stage</div><div class="fork-branch fork-y"><b>Y (trigger)</b> The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).</div><div class="fork-branch fork-n"><b>Real logic</b> A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.</div><a class="fork-link" href="galaxy_map_current.html#mod-contentProductionLive">🔽 contentProductionLive._undoLastStage() — Current Series</a></div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">📖 Encyclopedia</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: (page navigation — see Level 4)</div>
+  <div class="pathstep">Navigates to the real <code>encyclopedia</code> page — no popup module of its own</div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-7">River VII · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">📓 Journal</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: (page navigation — see Level 4)</div>
+  <div class="pathstep">Navigates to the real <code>journal</code> page — no popup module of its own</div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-5">River V · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">📚 Oversight</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: dashDeck</div>
+  <div class="pathstep">Opens: <span class="mod-untracked" title="Not one of the 45 river-tracked modules — no Current Series page of its own">dashDeck</span></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-14">River XIV · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div><div class="pathcard">
   <div class="pathhead"><span class="cardicon">📜 The Chronicles</span><span class="gatecount none">no gates</span></div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
-  <div class="pathstep">Opens: chroniclesLog</div>
+  <div class="pathstep">Opens: <a href="galaxy_map_current.html#mod-chroniclesLog">chroniclesLog</a></div>
+  <div class="pathriver">🌊 Its own river: <a href="galaxy_map_module.html#river-10">River X · Level 2</a></div>
   <div class="patharrow">↓</div>
   <div class="nogate">No real decision gate on this path — a straight click-through, no Y/N fork.</div>
 </div></div>
 <div class="dim-index"><h2>🌌 Dimensions</h2><div class="dim-sub">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Equal standing with Rivers, different shape.</div><div class="dim-grid"><a class="dim-card" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><div class="dim-name">🚦 Decision Matrix</div><div class="dim-kind" style="color:#8a8a9a">🧭 meta</div><div class="dim-desc">Every real decision — gates, curated core logic, text inputs — by river.</div></a><a class="dim-card" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><div class="dim-name">🧭 Dimensions Matrix</div><div class="dim-kind" style="color:#8a8a9a">🧭 meta</div><div class="dim-desc">Which modules are multi-home across every other dimension.</div></a><a class="dim-card" href="galaxy_map_logic_dimension.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">📖 Logic Dimension</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Every river-to-river connection, connector and skill stream as a passage.</div></a><a class="dim-card" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🗑️ Decisions — Human Gates</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">The real human-confirm gates before a destructive or taxonomy write.</div></a><a class="dim-card" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🔬 Detailed Decision (branch detail)</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</div></a><a class="dim-card" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">💉 Supabase</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Every real client-side Supabase table touch, by level/river/module.</div></a><a class="dim-card" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🔌 Externals</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Whether each external connector genuinely touches real UI AND real backend.</div></a><a class="dim-card" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">⏳ Load Dimension</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">What actually triggers a load: boot task, page nav, or on-demand click.</div></a><a class="dim-card" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🕸️ Skills</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</div></a><a class="dim-card" href="galaxy_map_orchestrator_openmontage.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🛰️ Orchestrator ↔ OpenMontage</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Real async dispatch history between the two Claude Code sessions.</div></a><a class="dim-card" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">📚 Oversight Sync</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Which oversight doc gets touched, in what order, during a push or ritual.</div></a></div></div>
 
 <div class="note">
-  Generated by <code>scripts/galaxy_map_alex_path.py</code>, reusing <code>compute_dashboard_card_flow()</code> (Level 4) and
+  Generated by <code>scripts/galaxy_map_alex_path.py</code>, reusing <code>compute_dashboard_card_flow()</code> (the real dashboard-card flow, whose own page role retired into Level 2/Module per G48) and
   <code>DECISION_POINTS</code> (Decisions/G26) as-is — never re-derived. G37 of the ratified "RPGACE Total Systems Galaxy Map"
   /CEO plan. Mapping rules: <code>system_map_spec.md</code>.
 </div>
