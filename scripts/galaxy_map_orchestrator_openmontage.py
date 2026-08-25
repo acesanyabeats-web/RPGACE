@@ -30,6 +30,7 @@ from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # no
 from graphify_river_group import (  # noqa: E402
     SUPABASE_L0_UNIT_TOUCHES,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
+    _L0_ROLE_LABEL as _ROLE_LABEL,
 )
 
 OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
@@ -93,14 +94,6 @@ def build_l0_facet_block():
             f'<div class="mrole">{len(infra)} real 💉 Infra facet(s) · {len(inter)} real 🔗 Inter facet(s)</div>'
             f'<ul class="l0list">{tables}</ul></div>')
     return ''.join(rows)
-
-
-_ROLE_LABEL = {
-    'read': 'reads',
-    'write': 'writes',
-    'read_write': 'reads + writes',
-    'async_queue': 'async queue (reads + writes)',
-}
 
 
 def esc(s):

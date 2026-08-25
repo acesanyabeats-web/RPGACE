@@ -2106,8 +2106,16 @@ def compute_module_supabase_touch_count(module_name, core_js_path: Path = CORE_J
     real sum-of-real-function-counts pattern as
     compute_module_oracle_call_count() (rule 8), for the new Supabase
     injection-tool bubble at Level 2/Module grain. Returns
-    (n_functions_touching, n_total_touches, {table_name, ...})."""
-    touches = compute_supabase_table_touches(module_name, core_js_path)
+    (n_functions_touching, n_total_touches, {table_name, ...}).
+
+    Includes the dynamic-config idiom (compute_dynamic_table_config_
+    touches(), below) alongside the direct-literal one — same real
+    fact, two real call shapes, merged here so this aggregate can't
+    silently disagree with compute_all_supabase_table_touches()'s own
+    project-wide roll-up (Aug 25 2026 fix)."""
+    touches = dict(compute_supabase_table_touches(module_name, core_js_path))
+    for f, ops in compute_dynamic_table_config_touches(module_name, core_js_path).items():
+        touches[f] = touches.get(f, []) + ops
     tables = set()
     n_total = 0
     for ops in touches.values():
@@ -2117,17 +2125,90 @@ def compute_module_supabase_touch_count(module_name, core_js_path: Path = CORE_J
     return len(touches), n_total, tables
 
 
+# Real, second Supabase-touch idiom (Aug 25 2026 — found while
+# generalizing G80, Alex's own direct ask: "smoke_test_items still
+# doesn't appear in the rpgace_core.js scanner... make it appear").
+# _SUPABASE_TABLE_CALL above only matches a LITERAL string argument
+# (RPGACE.sb.select('tablename', ...)) — structurally blind to a real,
+# confirmed idiom this codebase also uses: a config array of
+# { table: 'name', ... } objects, iterated via .map()/.forEach() with
+# RPGACE.sb.<op>(loopVar.table, ...) inside the callback. Confirmed by
+# direct grep (Aug 25) to be exactly ONE real instance right now
+# (questEngine.NEEDS_INPUT_SOURCES / _scanNeedsInput, 4 real tables:
+# smoke_test_items, error_log, oracle_dev_suggestions,
+# system_map_flags) — built general, not name-specific, so a future
+# config array of the same real shape is picked up automatically
+# rather than needing its own hand-added special case each time.
+_DYNAMIC_TABLE_ARRAY = re.compile(r"(\w+)\s*:\s*\[((?:[^\[\]]|\[[^\[\]]*\])*)\]", re.DOTALL)
+_DYNAMIC_TABLE_ENTRY = re.compile(r"table\s*:\s*'([^']+)'")
+_DYNAMIC_TABLE_MAP_CALL = re.compile(
+    r"(?:self\.|this\.)?(\w+)\.(?:map|forEach)\(\s*function\s*\(\s*(\w+)\s*\)")
+_DYNAMIC_TABLE_SB_CALL = re.compile(
+    r"RPGACE\.sb\.(select|insert|update|del|secureWrite)\(\s*(\w+)\.table\b")
+
+
+def compute_dynamic_table_config_touches(module_name, core_js_path: Path = CORE_JS):
+    """Real, second real Supabase-touch idiom — see the module comment
+    above. Returns {func_name: [(op, table), ...]}, the SAME shape as
+    compute_supabase_table_touches(), so callers can merge the two
+    without a special case (rule 8).
+
+    Real matching discipline: the config array (e.g. NEEDS_INPUT_
+    SOURCES) is a sibling property on the module object, not nested
+    inside the consuming function's own body — so this scans the whole
+    real module text for `{ table: 'x', ... }` arrays FIRST, then
+    checks each function body separately for a real
+    `ARRAY.map(function(loopVar){ ... RPGACE.sb.OP(loopVar.table` chain,
+    only attributing a table when the loop variable genuinely matches
+    on both sides — never a guess."""
+    ranges = parse_module_ranges(core_js_path)
+    if module_name not in ranges:
+        return {}
+    start, end = ranges[module_name]
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    module_text = '\n'.join(lines[start - 1:end])
+
+    arrays = {}
+    for m in _DYNAMIC_TABLE_ARRAY.finditer(module_text):
+        name, body = m.group(1), m.group(2)
+        tables = _DYNAMIC_TABLE_ENTRY.findall(body)
+        if tables:
+            arrays[name] = tables
+
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        map_m = _DYNAMIC_TABLE_MAP_CALL.search(b)
+        sb_m = _DYNAMIC_TABLE_SB_CALL.search(b)
+        if not (map_m and sb_m):
+            continue
+        array_ref, loop_var = map_m.group(1), map_m.group(2)
+        op, sb_var = sb_m.group(1), sb_m.group(2)
+        if loop_var != sb_var or array_ref not in arrays:
+            continue
+        out[f] = [(op, tbl) for tbl in arrays[array_ref]]
+    return out
+
+
 def compute_all_supabase_table_touches(core_js_path: Path = CORE_JS):
     """Real, project-wide roll-up — {table_name: [(module, func, op), ...]}
     — every real function that touches each table, module-grouped
     upstream at parse_module_ranges() (rule 8, not re-parsed). Powers
     the real G45 Supabase page (which Level/River/Module touches which
-    table) and River-grain injection aggregation (G49)."""
+    table) and River-grain injection aggregation (G49).
+
+    Merges BOTH real touch idioms (direct-literal + dynamic-config,
+    Aug 25 2026) — one project-wide fact, not two separately-consumed
+    partial pictures."""
     ranges = parse_module_ranges(core_js_path)
     by_table = {}
     for m in ranges:
         touches = compute_supabase_table_touches(m, core_js_path)
+        dyn = compute_dynamic_table_config_touches(m, core_js_path)
         for f, ops in touches.items():
+            for op, tbl in ops:
+                by_table.setdefault(tbl, []).append((m, f, op))
+        for f, ops in dyn.items():
             for op, tbl in ops:
                 by_table.setdefault(tbl, []).append((m, f, op))
     return by_table
