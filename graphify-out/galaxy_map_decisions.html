@@ -27,7 +27,7 @@
   .dlabel{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--red);margin-bottom:4px}
   .dblock p{font-size:11.5px;line-height:1.6;color:#c8c8d8}
   pre{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;color:#c8c8d8;white-space:pre-wrap;line-height:1.6;overflow-x:auto;margin-top:6px}
-  .mod-chip{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(226,84,84,0.1);color:var(--red);text-decoration:none;border:1px solid rgba(226,84,84,0.3);display:inline-block;margin-top:12px}
+  .mod-chip{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(226,84,84,0.1);color:var(--red);text-decoration:none;border:1px solid rgba(226,84,84,0.3);display:inline-block;margin:12px 6px 0 0}
   a{color:var(--red)}
   .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
 
@@ -54,7 +54,7 @@
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
   <h1>🚦 Real Decisions &amp; Human Gates — Website Perspective</h1>
-  <p>10 real decision/human-confirmation points across 3 categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Level 3 function (and Level 5, where the same decision already has a curated write-up there). Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
+  <p>10 real decision/human-confirmation points across 3 categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Current Series (L3) function, to <a href="galaxy_map_level6.html">the exhaustive branch detail</a> for that module, and — where the same decision also has a curated core-logic write-up — straight to it on <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>. Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
 </div>
 <div class="tabs"><div class="tab" data-target="cat-destructive">🗑️ Destructive Delete Confirms</div><div class="tab" data-target="cat-taxonomy">🌳 Taxonomy Placement / Review Confirms</div><div class="tab" data-target="cat-pipeline">🎬 Content Pipeline Progress Confirms</div></div>
 <section class="csection" id="cat-destructive" style="display:none">
@@ -85,6 +85,7 @@
     row.appendChild(mkb('No, just delete','rgba(226,84,84,0.1)','rgba(226,84,84,0.3)','rgba(226,84,84,0.8)', false));
     var cancel = el('button','background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:6px;padding:9px 14px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;','Cancel');</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-intelDelete">🔽 intelDelete._confirm() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-intelDelete">🔬 every branch in intelDelete — Detailed Decision</a>
 </div><div class="dpcard" id="dp-video-summary-delete">
   <div class="dphead"><h3>Delete a video summary report (legacy fallback path)</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn't available, using a bare browser `confirm()` instead of the richer popup.</p></div>
@@ -100,6 +101,7 @@
 
   // On-demand retro-analysis for pre-per-insight-loop videos (confirmed</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-videoSummary">🔽 videoSummary._delete() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-videoSummary">🔬 every branch in videoSummary — Detailed Decision</a>
 </div><div class="dpcard" id="dp-conidpot-delete">
   <div class="dphead"><h3>Delete an idea from the Idea Bank (ConID Pot)</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button rendered per-row inside the Idea Bank list.</p></div>
@@ -112,6 +114,7 @@
             }},
           ];</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-conidPot">🔽 conidPot._refreshIdeaBank() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-conidPot">🔬 every branch in conidPot — Detailed Decision</a>
 </div><div class="dpcard" id="dp-bookworm-delete">
   <div class="dphead"><h3>Delete a Bookworm book (2-click arm/confirm)</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.</p></div>
@@ -137,24 +140,27 @@
               }).catch(function(err) { RPGACE.utils.toast('Error: ' + err.message, '#CC4A4A', 3500); });
             };</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-bookworm">🔽 bookworm._refreshWidget() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-bookworm">🔬 every branch in bookworm — Detailed Decision</a>
 </div></div>
 </section><section class="csection" id="cat-taxonomy" style="display:none">
   <div class="chead"><h2>🌳 Taxonomy Placement / Review Confirms</h2><span class="ccount">5 real decision point(s)</span></div>
   <p class="crole">CLAUDE.md rule 4 ("every taxonomy write gets a human checkpoint") in real, concrete code form — no taxonomy_tree write in this app ever bypasses one of these.</p>
   <div class="dpgrid"><div class="dpcard" id="dp-placement-confirm">
   <div class="dphead"><h3>New insight placement — accept/reject before a real taxonomy_tree write</h3></div>
-  <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown automatically after `decidePlacementScored()` (Level 5's own real decision point — see there for the full scoring logic) returns a real placement candidate.</p></div>
+  <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A real popup showing Oracle's own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.</p></div>
   <div class="dblock"><div class="dlabel">Also a curated core-logic decision point</div><p><a href="galaxy_map_decision_matrix.html#d-placement-scored">🧠 See the full real scoring/logic write-up on the Decision Matrix →</a></p></div>
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14373-14373)</div><pre>  _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath._showPlacementConfirm() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-phylumPath">🔬 every branch in phylumPath — Detailed Decision</a>
 </div><div class="dpcard" id="dp-article-confirm">
   <div class="dphead"><h3>Dedup-extend article regeneration — approve before overwriting an existing leaf</h3></div>
-  <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown when `_insertNewSteps()` (Level 5's own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf's own article instead of creating a new one.</p></div>
+  <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf's own article instead of creating a new one.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf's content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.</p></div>
   <div class="dblock"><div class="dlabel">Also a curated core-logic decision point</div><p><a href="galaxy_map_decision_matrix.html#d-dedup-extend">🧠 See the full real scoring/logic write-up on the Decision Matrix →</a></p></div>
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14925-14925)</div><pre>  _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath._showArticleConfirm() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-phylumPath">🔬 every branch in phylumPath — Detailed Decision</a>
 </div><div class="dpcard" id="dp-accept-phylumpath-proposal">
   <div class="dphead"><h3>Review Queue: accept a pending taxonomy_proposals row</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card's popup.</p></div>
@@ -162,6 +168,7 @@
   
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9353-9353)</div><pre>  _acceptPhylumPathProposal: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptPhylumPathProposal() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Detailed Decision</a>
 </div><div class="dpcard" id="dp-accept-concept-fusion">
   <div class="dphead"><h3>Review Queue: accept a proposed fusion-link bridge</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII's own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.</p></div>
@@ -169,6 +176,7 @@
   
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9379-9379)</div><pre>  _acceptConceptFusion: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptConceptFusion() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Detailed Decision</a>
 </div><div class="dpcard" id="dp-edit-phylumpath-proposal">
   <div class="dphead"><h3>Review Queue: edit a pending proposal before accepting it</h3></div>
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.</p></div>
@@ -176,6 +184,7 @@
   
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9417-9417)</div><pre>  _editPhylumPathProposal: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._editPhylumPathProposal() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Detailed Decision</a>
 </div></div>
 </section><section class="csection" id="cat-pipeline" style="display:none">
   <div class="chead"><h2>🎬 Content Pipeline Progress Confirms</h2><span class="ccount">1 real decision point(s)</span></div>
@@ -188,13 +197,16 @@
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20673-20674)</div><pre>    if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
     this._revertToStage(row, target, null, flow);</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-contentProductionLive">🔽 contentProductionLive._undoLastStage() — Current Series</a>
+  <a class="mod-chip" href="galaxy_map_level6.html#m-contentProductionLive">🔬 every branch in contentProductionLive — Detailed Decision</a>
 </div></div>
 </section>
 <div class="dim-index"><h2>🌌 Dimensions</h2><div class="dim-sub">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Equal standing with Rivers, different shape.</div><div class="dim-grid"><a class="dim-card" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><div class="dim-name">🚦 Decision Matrix</div><div class="dim-kind" style="color:#8a8a9a">🧭 meta</div><div class="dim-desc">Every real decision — gates, curated core logic, text inputs — by river.</div></a><a class="dim-card" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><div class="dim-name">🧭 Dimensions Matrix</div><div class="dim-kind" style="color:#8a8a9a">🧭 meta</div><div class="dim-desc">Which modules are multi-home across every other dimension.</div></a><a class="dim-card" href="galaxy_map_logic_dimension.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">📖 Logic Dimension</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Every river-to-river connection, connector and skill stream as a passage.</div></a><a class="dim-card" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🔬 Detailed Decision (branch detail)</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</div></a><a class="dim-card" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">💉 Supabase</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Every real client-side Supabase table touch, by level/river/module.</div></a><a class="dim-card" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🔌 Externals</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Whether each external connector genuinely touches real UI AND real backend.</div></a><a class="dim-card" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">⏳ Load Dimension</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">What actually triggers a load: boot task, page nav, or on-demand click.</div></a><a class="dim-card" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🕸️ Skills</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</div></a><a class="dim-card" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🧑 Alex’s Decision Path</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</div></a><a class="dim-card" href="galaxy_map_orchestrator_openmontage.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🛰️ Orchestrator ↔ OpenMontage</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Real async dispatch history between the two Claude Code sessions.</div></a><a class="dim-card" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">📚 Oversight Sync</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Which oversight doc gets touched, in what order, during a push or ritual.</div></a></div></div>
 
 <div class="note">
   Generated by <code>scripts/galaxy_map_decisions.py</code> — real, curated (not mechanically exhaustive)
-  decision points, each verbatim-cited against rpgace_core.js at build time, same discipline as Level 5.
+  decision points, each verbatim-cited against rpgace_core.js at build time — the same anchor-verified
+  discipline <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>'s own curated core-logic
+  write-ups use.
   G26 Phase 1 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — Phase 2 (smoke_test.html grouping,
   /colourgradient purple-integration, Total-systems-wide scope) is real, explicitly deferred future work.
   Mapping rules: <code>system_map_spec.md</code>.

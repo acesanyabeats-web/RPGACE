@@ -36,7 +36,7 @@ from graphify_river_group import (
 )
 from graphify_river_group import (  # noqa: E402
     inject_level_rail, inject_plan_overlay, RIVER_NAME, RIVER_COLOR,
-    dimension_index_html, DIMENSION_INDEX_CSS,
+    dimension_index_html, DIMENSION_INDEX_CSS, DIMENSION_PAGES,
 )
 from galaxy_map_decisions import DECISION_POINTS
 
@@ -62,6 +62,87 @@ DIMENSIONS = [
 
 def esc(s):
     return (s or '').replace('<', '&lt;').replace('>', '&gt;')
+
+
+# ── Aug 25 2026 audit — three real, separately-evidenced dead ends on
+# this page, all found by checking what it NAMES against what it links.
+# Going in, this whole file emitted exactly ONE href (the module name),
+# which is a striking thing for a page whose entire subject is which
+# module belongs to which OTHER dimension.
+#
+# 1. The "River N" cell sat immediately beside a module cell that was
+#    already linked, and went nowhere — the identical asymmetry G82
+#    fixed on galaxy_map_supabase.py's own river chips. Same real
+#    Level-2 anchor reused (rule 8), not a new mechanic.
+# 2. The bubble view listed the same module names as the module table,
+#    as plain text. Under Alex's own standing rule R22 the bubble system
+#    follows and showcases what's on the table — showing the same real
+#    modules with strictly less reach than the table does is exactly the
+#    drift that rule exists to prevent.
+# 3. The dimension COLUMN HEADERS name a real dimension page each and
+#    linked to none of them. Deliberately NOT hand-typed: a header only
+#    becomes a link when its target filename is genuinely registered in
+#    DIMENSION_PAGES (graphify_river_group.py — the same registry the
+#    Dimension index at the foot of every page is built from), so a
+#    retired or renamed page stops being linked instead of rotting into
+#    a dead href. 'ui' is honestly left unlinked: G38's own page
+#    (Level 2.5) was folded into galaxy_map_module.html by G71 and is
+#    not a registered Dimension page, so there is no one real
+#    destination to claim for it — said plainly rather than guessed.
+_DIM_PAGES = {fname for fname, *_ in DIMENSION_PAGES}
+
+DIMENSION_PAGE = {
+    'externals': 'galaxy_map_externals.html',
+    'load': 'galaxy_map_load.html',
+    'decision': 'galaxy_map_decisions.html',
+    'openmontage': 'galaxy_map_orchestrator_openmontage.html',
+    'supabase': 'galaxy_map_supabase.html',
+    # 'ui' — no registered Dimension page of its own, see note above.
+}
+
+
+def _dim_page(d):
+    """The real, currently-registered page for a dimension, or None."""
+    page = DIMENSION_PAGE.get(d['id'])
+    return page if page and page in _DIM_PAGES else None
+
+
+def _dim_header(d):
+    """One column header — linked only when its real dimension page is
+    genuinely registered right now."""
+    inner = f'{d["icon"]} {esc(d["label"])}'
+    page = _dim_page(d)
+    if page:
+        return (f'<th><a class="dimhead" href="{page}" '
+                f'title="This dimension\'s own page">{inner}</a></th>')
+    return f'<th>{inner}</th>'
+
+
+def _dim_label(d):
+    """The same dimension name in the bubble view — same gate, so the
+    bubble system can never reach further OR less far than the table
+    it follows (R22)."""
+    page = _dim_page(d)
+    inner = esc(d['label'])
+    return f'<a href="{page}">{inner}</a>' if page else inner
+
+
+def _mod_link(mod):
+    """Same real convention galaxy_map_supabase.py/galaxy_map_alex_path.py
+    already use — a real tracked module gets its Current Series anchor,
+    anything else stays honest plain text rather than a dead link."""
+    if mod in LEVEL3_MODULES:
+        return f'<a href="galaxy_map_current.html#mod-{esc(mod)}">{esc(mod)}</a>'
+    return esc(mod)
+
+
+def _river_cell(r):
+    """The real Level-2 link for a module's own river."""
+    if not r:
+        return '<td class="rivercell">—</td>'
+    label = RIVER_NAME.get(r, f'River {r}').split('—')[0].strip()
+    return (f'<td class="rivercell"><a href="galaxy_map_module.html#river-{r}" '
+            f'title="This module\'s own river at Level 2">{esc(label)}</a></td>')
 
 
 def _river_of(module):
@@ -148,7 +229,7 @@ def build_rows(tags):
         rows.append(
             f'<tr class="{"hub" if n >= 3 else ""}"><td class="modname">'
             f'<a href="galaxy_map_current.html#mod-{esc(m)}">{esc(m)}</a></td>'
-            f'<td class="rivercell">{"River " + str(r) if r else "—"}</td>'
+            f'{_river_cell(r)}'
             f'{cells}<td class="tagcount">{n}</td></tr>'
         )
     return ''.join(rows)
@@ -199,7 +280,7 @@ def build_river_matrix(tags):
             f'<td class="rivercell">{len(mods)}</td>{"".join(cells)}'
             f'<td class="tagcount">{n_dims}</td></tr>')
     header = ('<tr><th>River</th><th>Modules</th>'
-              + ''.join(f'<th>{d["icon"]} {esc(d["label"])}</th>' for d in DIMENSIONS)
+              + ''.join(_dim_header(d) for d in DIMENSIONS)
               + '<th>Dims</th></tr>')
     return '<table class="dtable">' + header + ''.join(rows) + '</table>'
 
@@ -229,8 +310,8 @@ def build_river_bubbles(tags):
             f'<text text-anchor="middle" dy="-3" font-size="12" fill="#fff" font-weight="700">{len(hit_dims)}</text>'
             f'<text text-anchor="middle" dy="12" font-size="8" fill="{color}">{esc(short[:16])}</text></g>')
         items = ''.join(
-            f'<li>{d["icon"]} <b>{esc(d["label"])}</b> — '
-            f'{esc(", ".join(sorted(m for m in mods if tags[m][d["id"]])))}</li>'
+            f'<li>{d["icon"]} <b>{_dim_label(d)}</b> — '
+            f'{", ".join(_mod_link(m) for m in sorted(m for m in mods if tags[m][d["id"]]))}</li>'
             for d in hit_dims) or '<li class="meta">No real dimension membership detected for this river.</li>'
         details.append(
             f'<div class="rdetail" id="rdetail-{r}" style="display:none">'
@@ -262,6 +343,12 @@ TEMPLATE = """<!DOCTYPE html>
   .modname a{{color:var(--gold);text-decoration:none}}
   .modname a:hover{{text-decoration:underline}}
   .rivercell{{color:var(--dim);text-align:left!important;font-size:10px}}
+  .rivercell a{{color:var(--dim);text-decoration:none}}
+  .rivercell a:hover{{color:var(--purple);text-decoration:underline}}
+  .dimhead{{color:inherit;text-decoration:none}}
+  .dimhead:hover{{text-decoration:underline}}
+  .rdetail a{{color:var(--gold);text-decoration:none}}
+  .rdetail a:hover{{text-decoration:underline}}
   .dcell{{font-size:13px;opacity:0.15}}
   .dcell.on{{opacity:1}}
   .tagcount{{font-weight:700;color:var(--purple)}}
@@ -362,7 +449,7 @@ TEMPLATE = """<!DOCTYPE html>
 def main():
     tags = compute_matrix()
     n_hubs = sum(1 for m, row in tags.items() if sum(row.values()) >= 3)
-    dim_headers = ''.join(f'<th>{d["icon"]} {esc(d["label"])}</th>' for d in DIMENSIONS)
+    dim_headers = ''.join(_dim_header(d) for d in DIMENSIONS)
     rows = build_rows(tags)
     html = TEMPLATE.format(dim_headers=dim_headers, rows=rows, n_hubs=n_hubs, n_mods=len(tags),
                            river_matrix=build_river_matrix(tags),
@@ -377,6 +464,15 @@ def main():
     html = inject_plan_overlay(html, 'dimensions')
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(tags)} modules, {n_hubs} real hub(s) (3+ dimension tags).")
+    # Aug 25 2026 — real, measured destination coverage, printed so a
+    # future build can never silently regress it.
+    linked_dims = [d['id'] for d in DIMENSIONS if _dim_page(d)]
+    n_riv = sum(1 for m in tags if _river_of(m))
+    unlinked = [d['id'] for d in DIMENSIONS if not _dim_page(d)]
+    print(f"  Link coverage — {len(linked_dims)}/{len(DIMENSIONS)} dimension header(s) link a registered "
+          f"Dimension page (honestly unlinked: {', '.join(unlinked) or 'none'}); "
+          f"{n_riv}/{len(tags)} module row(s) link a real river at Level 2; "
+          f"all {len(tags)} module names link a real Current Series section in both views.")
 
 
 if __name__ == '__main__':

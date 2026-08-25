@@ -31,6 +31,7 @@ from graphify_river_group import (  # noqa: E402
     SUPABASE_L0_UNIT_TOUCHES,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
     _L0_ROLE_LABEL as _ROLE_LABEL,
+    compute_all_supabase_table_touches, compute_oversight_doc_supabase_reads,
 )
 
 OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
@@ -87,7 +88,7 @@ def build_l0_facet_block():
         infra = compute_l0_unit_supabase_infra(uid)
         inter = compute_l0_unit_supabase_inter(uid)
         tables = ''.join(
-            f'<li><code>{esc(e["table"])}</code> — {esc(_ROLE_LABEL.get(e["role"], e["role"]))}</li>'
+            f'<li>{_tbl_link(e["table"])} — {esc(_ROLE_LABEL.get(e["role"], e["role"]))}</li>'
             for e in SUPABASE_L0_UNIT_TOUCHES.get(uid, ()))
         rows.append(
             f'<div class="mcard"><h3>{esc(label)}</h3>'
@@ -100,13 +101,48 @@ def esc(s):
     return (s or '').replace('<', '&lt;').replace('>', '&gt;')
 
 
+# ── Aug 25 2026 audit — one real, evidenced dead end on this page's own
+# remaining content (independent of the G80 L0 cross-link block above,
+# which was added earlier the same day and is deliberately not touched).
+#
+# Every one of the 8 job cards ends by telling the reader to "verify
+# directly in openmontage_jobs", and the L0 facet block lists each
+# unit's real tables — all as plain <code> text. `openmontage_jobs` is a
+# genuinely module-touched table, so galaxy_map_supabase.html really
+# does render a `#tbl-openmontage_jobs` section for it: an instruction
+# to go verify something, sitting one link away from the page that
+# shows where that table is actually used.
+#
+# Gated on the same real data galaxy_map_supabase.py builds its own
+# `#tbl-` sections from, never a hand-typed roster (rule 8), so the link
+# appears exactly when the target section does. Checked live: of the 3
+# tables this page names, only `openmontage_jobs` qualifies —
+# `total_system_members` and `graphify_jobs` have no client-side module
+# touch and no oversight-doc fetch, so the Supabase page has no section
+# for them and they correctly stay unlinked. That asymmetry is the point
+# of gating rather than assuming.
+_SB_TABLES = set(compute_all_supabase_table_touches()) | {
+    r['table'] for r in compute_oversight_doc_supabase_reads()}
+
+
+def _tbl_link(tbl):
+    """A real table name — linked to its own Supabase-page section only
+    when that section genuinely exists."""
+    if tbl in _SB_TABLES:
+        return (f'<a class="tbl-link" href="galaxy_map_supabase.html#tbl-{esc(tbl)}" '
+                f'title="Where this table is actually read and written">'
+                f'<code>{esc(tbl)}</code></a>')
+    return (f'<code class="tbl-none" title="No client-side module touch and no oversight-doc fetch — '
+            f'the Supabase page has no section for this table">{esc(tbl)}</code>')
+
+
 def build_job_card(j):
     status_color = '#4CAF82' if j['status'] == 'complete' else '#E25454'
     return f'''<div class="jcard">
   <div class="jhead"><h3>{esc(j['title'])}</h3><span class="jstatus" style="color:{status_color}">{esc(j['status'])}</span></div>
   <div class="jmeta"><span class="jkind">{esc(j['kind'])}</span><span class="jby">by {esc(j['by'])}</span><span class="jdate">{esc(j['date'])}</span></div>
   <p class="jsummary">{esc(j['summary'])}</p>
-  <div class="jid">Real row id: <code>{esc(j['id'])}...</code> — verify directly in <code>openmontage_jobs</code></div>
+  <div class="jid">Real row id: <code>{esc(j['id'])}...</code> — verify directly in {_tbl_link('openmontage_jobs')}</div>
 </div>'''
 
 
@@ -146,6 +182,10 @@ TEMPLATE = """<!DOCTYPE html>
   .l0list{{list-style:none;margin-top:6px}}
   .l0list li{{font-size:10.5px;line-height:1.7;color:#c8c8d8}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
+  .tbl-link{{text-decoration:none}}
+  .tbl-link code{{color:var(--purple);border-bottom:1px dotted currentColor}}
+  .tbl-link:hover code{{border-bottom-style:solid}}
+  .tbl-none{{color:var(--dim)}}
   a{{color:var(--purple)}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
 {dim_css}
@@ -194,6 +234,14 @@ def main():
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(MEMBERS)} real members, {len(JOBS)} real dispatch rows.")
+    # Aug 25 2026 — real, measured destination coverage, printed so a
+    # future build can never silently regress it.
+    named = sorted({'openmontage_jobs'}
+                   | {e['table'] for uid in ('orchestrator_cc', 'openmontage_cc')
+                      for e in SUPABASE_L0_UNIT_TOUCHES.get(uid, ())})
+    linked = [t for t in named if t in _SB_TABLES]
+    print(f"  Link coverage — {len(linked)}/{len(named)} named table(s) link a real Supabase-page section "
+          f"(honestly unlinked: {', '.join(t for t in named if t not in _SB_TABLES) or 'none'}).")
 
 
 if __name__ == '__main__':

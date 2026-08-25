@@ -26,10 +26,33 @@ Real, confirmed scope (4 AskUserQuestion answers, Aug 14):
 
 Real data source, never invented: every DECISION_POINTS entry below
 carries a verbatim code excerpt read directly from rpgace_core.js at
-build time (anchor-checked, same discipline as galaxy_map_level5.py —
-rule 8, not re-derived) — real evidence found by direct grep across the
-whole file for arm/confirm patterns, _confirm-shaped function names,
-and bare confirm() calls, not assumed or guessed at.
+build time (anchor-checked, the same discipline the curated core-logic
+points use — rule 8, not re-derived) — real evidence found by direct
+grep across the whole file for arm/confirm patterns, _confirm-shaped
+function names, and bare confirm() calls, not assumed or guessed at.
+
+**Aug 25 2026 audit — two real, separately-evidenced fixes:**
+
+1. *Stale destination in prose.* This page's own hero and two decision
+   points still told the reader to "see Level 5" for the full curated
+   write-up. `galaxy_map_level5.html` was merged into the Decision
+   Matrix by G75 and deleted — the page it named no longer exists at
+   all. The `l5_link` HREF was already correct (G75 repointed it at
+   `galaxy_map_decision_matrix.html#d-<id>`); only the prose around it
+   was left behind, which is exactly why a link check alone would never
+   have caught it. The internal `l5_link` KEY name is deliberately left
+   as-is — it is not user-facing, and renaming it would churn the one
+   file that reads it for zero real gain.
+2. *A named depth that had no way to reach it.* The Decision Matrix
+   grades every one of these 10 gates as "Current (L3) + branch detail"
+   — but the card the reader actually lands on offered only the Current
+   Series chip, never the branch detail it was being promised. Now both,
+   matching the exact pair of chips the Decision Matrix's own curated
+   write-ups already carry. Gated on the real condition
+   galaxy_map_level6.py itself uses to decide whether a module gets an
+   `m-<name>` section at all (a real LEVEL3_MODULES member that
+   genuinely has branch points), so the link can never outlive its
+   target — checked live: all 7 modules named here qualify.
 """
 from pathlib import Path
 import sys as _sys_rail
@@ -37,6 +60,7 @@ from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
 from graphify_river_group import inject_level_rail, core_js_lines  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import LEVEL3_MODULES, compute_function_branches  # noqa: E402
 
 CORE_JS = Path('rpgace_core.js')
 OUT = Path('graphify-out/galaxy_map_decisions.html')
@@ -105,7 +129,7 @@ DECISION_POINTS = [
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
         'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (14373, 14373),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
-        'trigger': 'Shown automatically after `decidePlacementScored()` (Level 5\'s own real decision point — see there for the full scoring logic) returns a real placement candidate.',
+        'trigger': 'Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
         'l5_link': 'placement-scored',
     },
@@ -114,7 +138,7 @@ DECISION_POINTS = [
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
         'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (14925, 14925),
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
-        'trigger': 'Shown when `_insertNewSteps()` (Level 5\'s own dedup-extend decision point) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
+        'trigger': 'Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
         'l5_link': 'dedup-extend',
     },
@@ -157,6 +181,22 @@ def esc(s):
     return (s or '').replace('<', '&lt;').replace('>', '&gt;')
 
 
+def _level6_chip(mod):
+    """The real 'every branch in this module' chip — the second half of
+    the depth the Decision Matrix already grades every one of these
+    gates as having ("Current (L3) + branch detail").
+
+    Gated on the exact condition galaxy_map_level6.py's own main() uses
+    to decide whether a module gets an `m-<name>` section at all, so
+    this link is checked the same way its target is generated rather
+    than assumed (rule 8 — the same real detector, not a second guess
+    at what it produces)."""
+    if mod in LEVEL3_MODULES and compute_function_branches(mod):
+        return (f'<a class="mod-chip" href="galaxy_map_level6.html#m-{mod}">'
+                f'🔬 every branch in {mod} — Detailed Decision</a>')
+    return ''
+
+
 def build_category_section(cat):
     points = [dp for dp in DECISION_POINTS if dp['category'] == cat['id']]
     cards = []
@@ -176,6 +216,7 @@ def build_category_section(cat):
   {l5_html}
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines {a}-{b})</div><pre>{code_esc}</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-{dp['module']}">🔽 {dp['module']}.{esc(dp['func'])}() — Current Series</a>
+  {_level6_chip(dp['module'])}
 </div>''')
     return f'''<section class="csection" id="cat-{cat['id']}" style="display:none">
   <div class="chead"><h2>{cat['label']}</h2><span class="ccount">{len(points)} real decision point(s)</span></div>
@@ -213,7 +254,7 @@ TEMPLATE = """<!DOCTYPE html>
   .dlabel{{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--red);margin-bottom:4px}}
   .dblock p{{font-size:11.5px;line-height:1.6;color:#c8c8d8}}
   pre{{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;color:#c8c8d8;white-space:pre-wrap;line-height:1.6;overflow-x:auto;margin-top:6px}}
-  .mod-chip{{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(226,84,84,0.1);color:var(--red);text-decoration:none;border:1px solid rgba(226,84,84,0.3);display:inline-block;margin-top:12px}}
+  .mod-chip{{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(226,84,84,0.1);color:var(--red);text-decoration:none;border:1px solid rgba(226,84,84,0.3);display:inline-block;margin:12px 6px 0 0}}
   a{{color:var(--red)}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
 {dim_css}
@@ -223,7 +264,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
   <h1>🚦 Real Decisions &amp; Human Gates — Website Perspective</h1>
-  <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Level 3 function (and Level 5, where the same decision already has a curated write-up there). Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
+  <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Current Series (L3) function, to <a href="galaxy_map_level6.html">the exhaustive branch detail</a> for that module, and — where the same decision also has a curated core-logic write-up — straight to it on <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>. Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}
@@ -231,7 +272,9 @@ TEMPLATE = """<!DOCTYPE html>
 
 <div class="note">
   Generated by <code>scripts/galaxy_map_decisions.py</code> — real, curated (not mechanically exhaustive)
-  decision points, each verbatim-cited against rpgace_core.js at build time, same discipline as Level 5.
+  decision points, each verbatim-cited against rpgace_core.js at build time — the same anchor-verified
+  discipline <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>'s own curated core-logic
+  write-ups use.
   G26 Phase 1 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — Phase 2 (smoke_test.html grouping,
   /colourgradient purple-integration, Total-systems-wide scope) is real, explicitly deferred future work.
   Mapping rules: <code>system_map_spec.md</code>.
@@ -268,6 +311,14 @@ def main():
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(DECISION_POINTS)} real decision points across {len(CATEGORIES)} categories, all anchors verified live.")
+    # Aug 25 2026 — real, measured destination coverage, printed so a
+    # future build can never silently regress it.
+    mods = sorted({dp['module'] for dp in DECISION_POINTS})
+    with_l6 = [m for m in mods if m in LEVEL3_MODULES and compute_function_branches(m)]
+    n_dm = sum(1 for dp in DECISION_POINTS if dp.get('l5_link'))
+    print(f"  Link coverage — {len(with_l6)}/{len(mods)} named module(s) link real branch detail at Level 6; "
+          f"all {len(mods)} link a real Current Series section; {n_dm} point(s) also link a curated "
+          f"core-logic write-up on the Decision Matrix.")
 
 
 if __name__ == '__main__':

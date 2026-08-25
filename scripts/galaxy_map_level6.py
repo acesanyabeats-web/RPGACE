@@ -45,10 +45,28 @@ def esc(s):
     return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
+def _river_chip(rnum):
+    """Aug 25 2026 — real dead-text fix. This chip has always NAMED the
+    module's real river ("River III") and gone nowhere, while the
+    `mod-chip` directly beneath it already linked Current Series. Every
+    other page in this pipeline that renders the same fact
+    (galaxy_map_supabase.py's own G82 river chips, galaxy_map_load.py's
+    `_mod_links`, galaxy_map_alex_path.py's `_river_links`) resolves it
+    to the same real Level-2 anchor, so this reuses that exact
+    convention rather than inventing a second one (rule 8). Checked
+    against the live data before changing anything: all 45 real modules
+    with branch points have a real river, so no module falls back —
+    the `else` branch is kept honest rather than assumed unreachable."""
+    if not rnum:
+        return '<span class="river-chip river-chip-none">no river</span>'
+    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    return (f'<a class="river-chip" href="galaxy_map_module.html#river-{rnum}" '
+            f'title="This module\'s own river at Level 2">🌊 {esc(label)}</a>')
+
+
 def build_module_section(mod, branches):
     total = sum(len(v) for v in branches.values())
     rnum = _river_of.get(mod)
-    river_label = RIVER_NAME.get(rnum, '').split('—')[0].strip() if rnum else ''
     func_blocks = []
     for f in sorted(branches.keys()):
         rows = ''.join(
@@ -70,7 +88,7 @@ def build_module_section(mod, branches):
             f'<a class="n1-link" href="galaxy_map_current.html#mod-{mod}" title="Real n-1 — this function\'s own module page (Current Series lands on the module, not a scrolled-to function)">🔭 n-1: {mod}.{esc(f)}()</a></div>{rows}</div>'
         )
     return f'''<section class="msection" id="m-{mod}" style="display:none">
-  <div class="mhead"><h2>{mod}</h2><span class="river-chip">{river_label}</span><span class="mtotal">{total} real branch point(s) across {len(branches)} function(s)</span></div>
+  <div class="mhead"><h2>{mod}</h2>{_river_chip(rnum)}<span class="mtotal">{total} real branch point(s) across {len(branches)} function(s)</span></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-{mod}">🔽 {mod} — Current Series (function-chain view)</a>
   <div class="funcs">{''.join(func_blocks)}</div>
 </section>'''
@@ -101,7 +119,9 @@ TEMPLATE = """<!DOCTYPE html>
   .msection{{max-width:900px;margin:24px auto;padding:0 24px}}
   .mhead{{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}}
   .mhead h2{{font-family:Georgia,serif;font-size:21px;color:#fff}}
-  .river-chip{{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid var(--dim);color:var(--dim)}}
+  .river-chip{{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;border:1px solid var(--dim);color:var(--dim);text-decoration:none}}
+  a.river-chip:hover{{color:var(--purple);border-color:var(--purple)}}
+  .river-chip-none{{opacity:.6}}
   .mtotal{{font-size:10.5px;color:var(--purple);font-weight:700}}
   .mod-chip{{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(155,89,182,0.12);color:var(--purple);text-decoration:none;border:1px solid rgba(155,89,182,0.3);display:inline-block;margin:8px 0 16px}}
   .fblock{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;margin-bottom:10px}}
@@ -174,6 +194,11 @@ def main():
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {n_total} real branch points across {len(mods_with_branches)} modules.")
+    # Aug 25 2026 — real, measured destination coverage, printed so a
+    # future build can never silently regress it.
+    n_riv = sum(1 for m in mods_with_branches if _river_of.get(m))
+    print(f"  Link coverage — {n_riv}/{len(mods_with_branches)} module(s) link a real river at Level 2; "
+          f"all {len(mods_with_branches)} link their own Current Series section.")
 
 
 if __name__ == '__main__':

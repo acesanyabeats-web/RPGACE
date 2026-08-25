@@ -67,9 +67,31 @@ def _river_of(module):
 
 
 def _mod_links(module):
+    """Real Level-2 + Current Series links for one module.
+
+    Aug 25 2026 — real dead-anchor fix, found by checking every href on
+    this page against the id it actually names rather than by reasoning
+    about any one fix. The Current Series half was emitted
+    UNCONDITIONALLY, but galaxy_map_current.html only renders a
+    `#mod-<name>` section for a real LEVEL3_MODULES member. Five real
+    boot-task registrations name a module that genuinely isn't one —
+    dashDeck, docsLinks, questEngine, quickActions, voiceInput (the same
+    9-module cross-cutting exclusion set RIVER_MODULES documents on
+    itself) — so those five links landed at the top of Current Series
+    instead of on the module they named. The river half was already
+    honest about exactly the same modules ("no river"), which is what
+    made the asymmetry checkable at all. Now both halves are gated by
+    real membership, matching galaxy_map_supabase.py/galaxy_map_alex_
+    path.py's own `_mod_link()` convention (rule 8 — the established
+    pattern applied where an identical fact was rendered dead, not a new
+    mechanic invented)."""
     r = _river_of(module)
     l2 = f'<a href="galaxy_map_module.html#river-{r}">River {r} · Level 2</a>' if r else '<span class="dim">no river</span>'
-    l3 = f'<a href="galaxy_map_current.html#mod-{esc(module)}">Current Series</a>'
+    if module in LEVEL3_MODULES:
+        l3 = f'<a href="galaxy_map_current.html#mod-{esc(module)}">Current Series</a>'
+    else:
+        l3 = ('<span class="dim" title="Not one of the 45 river-tracked modules — '
+              'no Current Series section of its own">not river-tracked</span>')
     return f'{l2} · {l3}'
 
 
@@ -232,6 +254,16 @@ def main():
     print(f"Wrote {OUT} — {len(boot_regs)} boot-task registrations, "
           f"{sum(len(compute_page_nav_triggers(m)) for m in LEVEL3_MODULES)} page-nav modules with triggers, "
           f"{sum(len(v) for v in click_triggers.values())} click-load triggers.")
+    # Aug 25 2026 — real, measured destination coverage, printed so a
+    # future build can never silently regress it (same fail-visible
+    # discipline galaxy_map_supabase.py/galaxy_map_alex_path.py print).
+    named = sorted({b['module'] for b in boot_regs}
+                   | {m for m in LEVEL3_MODULES if compute_page_nav_triggers(m)}
+                   | {t for pairs in click_triggers.values() for t, _ in pairs})
+    tracked = [m for m in named if m in LEVEL3_MODULES]
+    print(f"  Link coverage — {len(tracked)}/{len(named)} named module(s) link a real Current Series "
+          f"section; {len(named) - len(tracked)} correctly render unlinked (not river-tracked): "
+          f"{', '.join(m for m in named if m not in LEVEL3_MODULES) or 'none'}.")
 
 
 if __name__ == '__main__':
