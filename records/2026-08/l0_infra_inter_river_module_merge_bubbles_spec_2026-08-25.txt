@@ -1,0 +1,236 @@
+L0 INFRA/INTER MERGE-BUBBLE REDESIGN — CEO PLAN COMPILATION
+Date: 2026-08-25 (same day as G80-G91)
+Trigger: Alex's own real bug report ("i cant click supabase on galaxy
+map level 0 to get lower... same with orchestrator CC") escalated,
+mid-conversation, into a real architectural redesign ask spanning the
+whole Galaxy Map L0/L1/L2 relationship model. Compiled per Alex's own
+explicit instruction: "/paranoia and /CEO this at the max with /drift
+/interrogation and /misunderstanding all working together... use
+/restructure and /Engineer and /free-for-all-debate at any stages you
+need."
+
+Real, load-bearing note on the immediate bug report BEFORE any of the
+architecture below: two real, separately-confirmed root causes were
+found and fixed same day, distinct from this redesign:
+1. A genuine crash bug in the table/matrix-view redirect path
+   (th.unit-rowhead / #unit-facets tr.uf-row calling card.click() then
+   unconditionally continuing into kind-button/dim-header clicks,
+   throwing "Cannot read properties of undefined (reading 'facets')"
+   for any of the 3 units already wired to redirect). Fixed by hoisting
+   UNIT_BUBBLE_SYSTEM to outer scope and short-circuiting both handlers.
+   Commit b65dcb7.
+2. The REAL root cause of "supabase still not clickable": a decorative
+   duplicate SVG node in the main L0 diagram (rendered via
+   node_circle() WITHOUT unit_id) sitting right where a reader would
+   naturally click, with zero data-unit attribute — structurally
+   identical to a connector hexagon, not the real clickable unit at
+   all. Fixed by passing unit_id='supabase'. Commit 09def33. Both
+   independently re-verified via headless Chromium, both deployed and
+   confirmed READY on rpgace.vercel.app.
+
+Everything below is the SEPARATE, larger architectural ask that
+followed — real chat exchange, verbatim intent preserved.
+
+=== VERBATIM Q&A, IN ORDER ===
+
+Alex's opening ask (the escalation):
+"5 more real L0 units — click any for the same real Infra/Inter
+choice: [list of units + 🔧 counts, then] 🧭 Orchestrator CC 💉 Infra
+(4) 🔗 Inter (9) - this is still there, it is supposed to be level 0 of
+orchestrator cc bubble system with route to levels and rivers." Then,
+after the crash-fix + Orchestrator CC drilldown shipped, a screenshot
+and: "supabase still not clickable - all these l0 bubble should have
+their own perspective bubble systems with entry points for migration
+bubbles at all levels rivers and modules where it makes sense using
+the facet below. the facet below should be integrated into the bubble
+system showing bubble migrations into the infra dimensions or
+river/module migration bubble at level 2 and 3, this will connect the
+entire system properly from specific perspective angle of all lvl 0 to
+reach all other levels, whilst also tying infra dimensions that will
+decongest alex and supabase and oracle arrows. we also need to add
+oracle into the mix as a separate lvl 0 too, that will then tying
+taxonomy and phylum into one lvl 0 unit too. this will open so many
+doors to the truth behind RPGACE total systems. /paranoia and /CEO
+this at the max with /drift /interrogation and /misunderstanding all
+working together to make this plan as best as possible. use
+/restructure and /Engineer and /free-for-all-debate at any stages you
+need."
+
+Claude's real diagnosis (before any architecture discussion): direct
+code read confirmed the prominent "Supabase" node in the screenshot was
+a plain decorative label (node_circle() call with no unit_id param) —
+a real, separate bug from the redesign ask, fixed same session (see
+above).
+
+Claude's first restatement attempt (offered via AskUserQuestion, 4
+multiple-choice questions on: uniform vs evidence-gated depth; retire
+vs coexist with the inline facet panel; Oracle's own evidence shape;
+CEO-tracked vs single-session build) — Alex dismissed all 4
+("[User dismissed — do not proceed, wait for next instruction]") and
+instead answered directly in his own words:
+
+"i think infra can be a level 1 parallel and inter is a level 2
+parallel where those dimensions merge in smaller bubbles to show how
+l0 units interact with rivers and modules respectively. each page of
+each river and module should have an input from an infra or inter
+alongside flows from previous river/module respectively to make the
+level 2 and 3 bubble systems a lot more visually digestable."
+
+Claude's restatement of that (a real /misunderstanding-style
+quote-then-understanding-then-plan check) confirmed the shape but
+flagged an assumption: evidence-gated only, never fabricated. Alex's
+real, more precise correction (the actual locked semantic rule):
+
+"infra is just the one l0 unit bubble system, inter is when one or
+multiple infra interact to form one output. river could only get
+inters, but modules could get both infra and inter if it makes sense"
+
+Claude restated this precisely and proposed compiling to a CEO plan.
+Alex then reconsidered his own river rule directly:
+
+"no rivers only infra - wouldnt that make more sense?"
+
+Claude's real, reasoned answer (not just agreement) — three concrete
+arguments, not manufactured balance:
+1. THE DEAD-END PROBLEM: an Inter-only river rule means any river
+   touched by exactly ONE unit's Infra shows ZERO bubbles (Inter needs
+   2+), a real information loss. Confirmed NOT a hypothetical — real
+   computed data (below) shows 5 of 10 currently-evidenced rivers are
+   single-unit.
+2. LINK-DIRECTION CLARITY: each unit's own Infra system already
+   organizes itself BY RIVER as its own Level 1 (Supabase's page already
+   says "here are the rivers that touch me"). A river page showing a
+   fan of per-unit Infra bubbles is the exact mirror — each bubble has
+   one unambiguous destination (that unit's own drilldown, filtered to
+   this river). An Inter bubble at river grain has no single clean
+   destination.
+3. INTER'S REAL PRECISION LIVES AT MODULE GRAIN: "two units both touch
+   this whole river" is a weak, near-guaranteed-true claim once a river
+   has several modules; "two units both touch this EXACT module" is a
+   genuinely sharp, checkable fact — matching Alex's own module rule
+   ("if it makes sense," i.e. conditional, not forced).
+
+Alex's final confirmation: "yes" (to the rivers-only-Infra correction)
+then "yes" (to compiling this into the CEO plan).
+
+=== LOCKED ARCHITECTURE (verbatim rule, now confirmed) ===
+
+- INFRA = one L0 unit's own bubble system (its own real
+  river -> module -> [function] migration drill-down over ITS OWN
+  evidence). Not a new rendering concept — this already exists for 4
+  units (Supabase/External AI/Oversight Docs/Orchestrator CC), and real
+  candidate data already exists, unwired, for 3 more (see below).
+
+- INTER = a real composition: when 2+ units' own Infra systems both
+  land on the SAME river or SAME module, producing one combined,
+  evidence-backed relationship (never invented for symmetry).
+
+- RIVER pages get INFRA ONLY: one bubble per real unit whose Infra
+  system touches that river, each linking straight into that unit's own
+  drilldown filtered to this river. No Inter bubble at river grain,
+  ever.
+
+- MODULE pages get INFRA and/or INTER, whichever real evidence
+  supports: a direct single-unit Infra bubble where exactly one unit's
+  evidence lands on that specific module; an Inter bubble where 2+
+  units' evidence converges on that same specific module; both,
+  neither, or one, strictly following the real data.
+
+- Every river/module page shows this alongside its EXISTING flow
+  arrows (river-to-river RIVER_FLOWS, module-to-module cross-calls) —
+  additive, never replacing the existing structural-flow rendering.
+
+- Real, standing assumption (stated, not yet re-confirmed a second
+  time — Alex did not object when this was restated): all of this is
+  evidence-gated. A unit with no real river/module-shaped evidence
+  produces zero Infra/Inter bubbles anywhere, rather than something
+  being fabricated to make every unit/river/module look symmetric.
+
+=== REAL EVIDENCE GATHERED THIS PASS (not guessed, computed live) ===
+
+Per-unit river coverage, from the 4 units with an ALREADY-BUILT real
+Infra system:
+  supabase        -> 9 rivers  (3,4,5,6,7,8,10,11,17), 26 modules
+  external_ai     -> 4 rivers  (3,5,9,11),              13 modules
+  oversight_docs  -> 3 rivers  (3,6,8),                  6 modules
+  orchestrator_cc -> 1 river   (11),                     1 module
+
+River-grain Inter candidates (2+ of the above 4 units converging),
+computed directly, not estimated:
+  River III  (3)  -> external_ai, oversight_docs, supabase
+  River V    (5)  -> external_ai, supabase
+  River VI   (6)  -> oversight_docs, supabase
+  River VIII (8)  -> oversight_docs, supabase
+  River XI   (11) -> external_ai, orchestrator_cc, supabase
+  (5 of 10 touched rivers qualify)
+
+River-grain single-unit rivers (real Infra-only bubbles, the exact
+case that motivated the rivers-only-Infra correction):
+  Rivers 4, 7, 9, 10, 17 -> exactly one touching unit each.
+
+Module-grain Inter candidates (13 modules with 2+ units converging):
+  beatLog, config, conidPot, contentProductionLive (3-way:
+  external_ai+orchestrator_cc+supabase), contentRepurpose, errorLog,
+  mockOracle, oracleTreeGrounding, phylumPath, questEngine,
+  taxonomyReviewQueue, taxonomyTree, visualOracle.
+Module-grain single-unit modules (Infra-only): 19 modules.
+
+Real EXISTING candidate Infra systems, unwired, found for units beyond
+the 4 already built:
+  - rpgace_architecture: its "Infra system" IS the existing 17-river/
+    45-module/526-current hierarchy itself (galaxy_map_river/module/
+    current.html) — no new build, only conceptual recognition +
+    cross-linking.
+  - alex: the real 21-item Decision Matrix (galaxy_map_decision_
+    matrix.py's build_unified()) is ALREADY grouped by river — 6
+    rivers represented (3,4,6,8,11,17; 1 item has no river). A real,
+    ready-made Infra-system candidate, needing wiring not invention.
+  - skills: SKILL_SECONDARY_RIVER already maps 7 of ~24 real skills to
+    3 rivers (6, 14, 16) — real but sparse; a real candidate, thinner
+    evidence than the other units.
+  - openmontage_cc, graphify_cc: CONFIRMED zero real river/module-
+    shaped evidence exists for either (both are curated Total-system
+    dispatch actors with no rpgace_core.js footprint of their own).
+    Per the evidence-gating rule, these stay on the existing inline
+    Infra/Inter facet panel, unchanged — no fabricated drilldown.
+
+=== REAL, GENUINELY OPEN FORK — NOT GUESSED, FLAGGED FOR ALEX ===
+
+Promoting Oracle to a real 10th L0 unit ("tying taxonomy and phylum
+into one lvl 0 unit too") collides with existing structure: Oracle-call
+evidence (compute_all_oracle_call_counts(), 4 rivers/12 modules/20
+pairs) is CURRENTLY rendered as part of External AI's own Infra system
+(its drilldown tab). Splitting Oracle out as its own unit raises a real
+rule-8 question with two straightforward paths and no obviously-correct
+default:
+  (a) MOVE the Oracle-call evidence out of External AI's drilldown into
+      a new, dedicated Oracle unit's own Infra system (recommended —
+      avoids the same evidence rendering under two different L0 units
+      at once); External AI's own scope narrows to its remaining real
+      connectors (Composio, Jina AI, Last.fm, librosa, Whisper, n8n,
+      the 3 CC units).
+  (b) KEEP Oracle-call evidence on External AI's page too, and give the
+      new Oracle unit a SEPARATE facet (e.g. its own taxonomy/phylum-
+      module citation) — real duplication risk, not recommended without
+      Alex's explicit sign-off given rule 8's own standing discipline.
+Not decided here. Real answer needed before Loop 2 execution touches
+this specific piece.
+
+=== NOT YET DECIDED / DEFERRED, STATED PLAINLY ===
+
+- Whether Alex's own Infra system (wiring the existing Decision Matrix
+  data as his river-grouped bubbles) and Skills' (wiring the sparser
+  SKILL_SECONDARY_RIVER data) ship in the SAME pass as the 4-unit river/
+  module merge-bubble build, or as a later follow-on — a real scope/
+  sequencing question, not an architecture question, left for Alex's
+  own prioritization once he reads the compiled ceo_plan_items list.
+- The L0 map's own main-diagram decongestion (retiring/simplifying the
+  long tangled arrows once their detail lives on river/module pages
+  instead) — real, intended, but not scoped down to an exact rendering
+  change yet; flagged as its own G-item rather than folded silently
+  into the merge-bubble build.
+
+Full real ceo_plan_items rows: plan_id 6f8536fd-7d98-4565-9369-c75a149fce8f,
+item_codes G92 (umbrella) through G98, all status='red' (planned, not
+built) as of this compilation. See Supabase directly for the live,
+authoritative list.
