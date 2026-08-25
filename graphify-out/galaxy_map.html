@@ -330,6 +330,18 @@
   var interCount = document.getElementById('inter-count');
   var dimGroups = document.getElementById('dim-groups');
   var currentUnit = null, currentKind = null;
+  // G83/G91 (Aug 25 2026) — the real L0-unit -> bubble-system redirect
+  // map, hoisted to this outer scope (was declared per-click inside the
+  // card handler below) so the table-view row handlers further down
+  // (th.unit-rowhead, #unit-facets tr.uf-row) can check it too, rather
+  // than blindly assuming every unit still opens the inline Infra/Inter
+  // panel. See the card click handler below for the full history.
+  var UNIT_BUBBLE_SYSTEM = {
+    supabase: 'galaxy_map_supabase.html#view-map',
+    external_ai: 'galaxy_map_externals.html#grp-drilldown',
+    oversight_docs: 'galaxy_map_oversight_sync.html#cat-sharedinfra',
+    orchestrator_cc: 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra',
+  };
 
   function clearGlow() {
     document.querySelectorAll('.unit-card, .unit-node, .unit-rowhead').forEach(function(c) { c.classList.remove('glow'); });
@@ -390,24 +402,19 @@
       // supabase bubble system without going through the list below".
       // Supabase was the first unit whose lower-level page got a real
       // bubble system of its own (galaxy_map_supabase.html's G83 map
-      // view). G91 continuation (same day) generalizes this to the
-      // 2 more units Alex confirmed have real river/module-shaped
+      // view). G91 continuation (same day) generalizes this to 3 more
+      // units Alex confirmed/asked have real river/module-shaped
       // evidence to build the same shape for: External AI (Oracle-call
-      // evidence) and Oversight Docs (table-touch evidence, scoped to
-      // what oversight docs themselves touch) — each destination page
-      // was independently checked to genuinely supersede its own L0
-      // inline facet list (galaxy_map_externals.html already carries
-      // every External-AI actor's role/status/destination via its
-      // existing 3 tabs; galaxy_map_oversight_sync.html's new Shared
-      // Infrastructure tab now restates the real per-{doc,table} rows
-      // too, not just the river/module drill-down) before being wired
-      // in here. The other 6 units keep the inline facet panel
-      // unchanged until each has a real destination of its own.
-      var UNIT_BUBBLE_SYSTEM = {
-        supabase: 'galaxy_map_supabase.html#view-map',
-        external_ai: 'galaxy_map_externals.html#grp-drilldown',
-        oversight_docs: 'galaxy_map_oversight_sync.html#cat-sharedinfra',
-      };
+      // evidence), Oversight Docs (table-touch evidence, scoped to what
+      // oversight docs themselves touch), and Orchestrator CC (its own
+      // 3 registered tables, same evidence shape) — each destination
+      // page was independently checked to genuinely supersede its own
+      // L0 inline facet list before being wired in here (see
+      // UNIT_BUBBLE_SYSTEM above). The remaining units (OpenMontage CC/
+      // Graphify CC/Skills/Alex/RPGACE Architecture) keep the inline
+      // facet panel unchanged until each has a real destination of its
+      // own — OpenMontage CC in particular has no rpgace_core.js
+      // footprint of its own to drill into (a separate repo/session).
       if (UNIT_BUBBLE_SYSTEM[uid]) {
         window.location.href = UNIT_BUBBLE_SYSTEM[uid];
         return;
@@ -455,6 +462,20 @@
   document.querySelectorAll('th.unit-rowhead').forEach(function(th) {
     th.addEventListener('click', function() {
       var uid = th.dataset.unit;
+      // G91 continuation (Aug 25 2026) — a real bug found this same
+      // day: for a unit wired into UNIT_BUBBLE_SYSTEM, card.click()
+      // below already navigates the page away — clicking through the
+      // map view's own toggle/panel machinery on the way out is not
+      // just wasted work, it threw "Cannot read properties of
+      // undefined (reading 'facets')" (renderDims() reading
+      // DATA.units[currentUnit] when currentUnit was never set, since
+      // the redirect returns before setting it). Fixed by short-
+      // circuiting straight to navigation for a redirect unit, the
+      // same real jump the card's own handler would produce.
+      if (UNIT_BUBBLE_SYSTEM[uid]) {
+        window.location.href = UNIT_BUBBLE_SYSTEM[uid];
+        return;
+      }
       var card = document.querySelector('.unit-card[data-unit="' + uid + '"]')
               || document.querySelector('.unit-node[data-unit="' + uid + '"]');
       if (!card) return;
@@ -471,6 +492,14 @@
   document.querySelectorAll('#unit-facets tr.uf-row[data-unit]').forEach(function(tr) {
     tr.addEventListener('click', function() {
       var uid = tr.dataset.unit, kind = tr.dataset.kind, dim = tr.dataset.dim;
+      // G91 continuation (Aug 25 2026) — same real fix as the matrix
+      // row-header handler above: a redirect unit's facet-table row
+      // must navigate straight away too, never fall through to
+      // kind/dim-click logic that assumes the inline panel opened.
+      if (UNIT_BUBBLE_SYSTEM[uid]) {
+        window.location.href = UNIT_BUBBLE_SYSTEM[uid];
+        return;
+      }
       var card = document.querySelector('.unit-card[data-unit="' + uid + '"]')
               || document.querySelector('.unit-node[data-unit="' + uid + '"]');
       if (!card) return;

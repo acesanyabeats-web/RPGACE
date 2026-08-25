@@ -33,6 +33,16 @@ from graphify_river_group import (  # noqa: E402
     _L0_ROLE_LABEL as _ROLE_LABEL,
     compute_all_supabase_table_touches, compute_oversight_doc_supabase_reads,
 )
+# G91 continuation, real Alex ask (Aug 25 2026, same day): "this is
+# still there, it is supposed to be level 0 of orchestrator cc bubble
+# system with route to levels and rivers" — the same shared river ->
+# module -> function drill-down mechanism G83/G91 built for Supabase/
+# External AI/Oversight Docs, reused here (rule 8) scoped to
+# Orchestrator CC's own 3 curated tables.
+from graphify_river_group import (  # noqa: E402
+    build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
+    INFRA_DRILLDOWN_CSS, LEVEL3_MODULES,
+)
 
 OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
 
@@ -136,6 +146,38 @@ def _tbl_link(tbl):
             f'the Supabase page has no section for this table">{esc(tbl)}</code>')
 
 
+# G91 continuation (Aug 25 2026) — Orchestrator CC's own infra bubble
+# system, the real destination its L0 click now jumps to. Scoped to the
+# 3 real tables SUPABASE_L0_UNIT_TOUCHES already names for this unit
+# (openmontage_jobs/total_system_members/graphify_jobs), cross-
+# referenced against every rpgace_core.js module/function that touches
+# the SAME tables — same shape as Oversight Docs' own Shared
+# Infrastructure tab, reused not re-derived.
+def build_shared_infra_section():
+    orch_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get('orchestrator_cc', ()))
+    all_touches = compute_all_supabase_table_touches()
+    evidence = {tbl: all_touches[tbl] for tbl in orch_tables if tbl in all_touches}
+    drill, orphans = build_infra_drilldown(evidence)
+    inner = render_infra_drilldown(
+        drill, orphans, unit_icon='🧭', unit_label='Orchestrator CC',
+        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
+        resource_emoji='🗄️',
+        orphan_note='Real cross-cutting (no-river) modules that touch a real table Orchestrator CC also reads/writes.')
+    no_code = sorted(set(orch_tables) - set(evidence))
+    no_code_note = (
+        f'<p class="l0intro">{len(no_code)} of {len(orch_tables)} real Orchestrator-CC table(s) have NO '
+        f'rpgace_core.js touch at all — {"they are" if len(no_code) != 1 else "it is"} reached only by real '
+        f'non-code Total-system actors (a separate Claude Code session, a curated write), never client-side app '
+        f'code: ' + ', '.join(f'<code>{esc(t)}</code>' for t in no_code) + '.</p>'
+        if no_code else '')
+    return (f'<div class="l0block" id="cat-sharedinfra">'
+            f'<h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2>'
+            f'<p class="l0intro">Every real table Orchestrator CC genuinely touches (same source as its own L0 Infra '
+            f'facets above), cross-referenced against every rpgace_core.js river/module/function that touches that '
+            f'SAME table — real, live-code infrastructure sharing, not the dispatch-history narrative above.</p>'
+            f'{no_code_note}{inner}</div>')
+
+
 def build_job_card(j):
     status_color = '#4CAF82' if j['status'] == 'complete' else '#E25454'
     return f'''<div class="jcard">
@@ -188,6 +230,7 @@ TEMPLATE = """<!DOCTYPE html>
   .tbl-none{{color:var(--dim)}}
   a{{color:var(--purple)}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+{infra_dd_css}
 {dim_css}
 </style>
 </head>
@@ -203,10 +246,11 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="mgrid">{members}</div>
   <div class="l0block">
     <h2>🫧 The same relationship, at Level 0</h2>
-    <p class="l0intro">The dispatch history below is this page's own job — narrated, per-row, with real ids. What it could never show is that relationship as a <b>structured</b> fact the L0 map can render. It now can: both units carry real 💉 Infra facets (one per real Supabase table they genuinely touch) and a real 🔗 Inter facet (the tables they share) on the <a href="galaxy_map.html">RPGACE Total Systems L0 map</a> — click either unit's bubble there, then Infra or Inter. Sourced from a real curated registry (<code>SUPABASE_L0_UNIT_TOUCHES</code>), every entry citing the CLAUDE.md section its fact came from, because this is documented evidence rather than the build-time anchor-verified code evidence other facets carry. Real, honest limit: the client-side detector behind <a href="galaxy_map_supabase.html">the Supabase page</a> cannot see a non-code actor touch a table at all — that gap is exactly what this registry closes.</p>
+    <p class="l0intro">The dispatch history below is this page's own job — narrated, per-row, with real ids. What it could never show is that relationship as a <b>structured</b> fact the L0 map can render. It now can: both units carry real 💉 Infra facets (one per real Supabase table they genuinely touch) and a real 🔗 Inter facet (the tables they share) on the <a href="galaxy_map.html">RPGACE Total Systems L0 map</a>. <b>Orchestrator CC's own bubble there now jumps straight to this page's real Shared Infrastructure drill-down below</b> (G91 continuation) rather than stopping at the inline Infra/Inter choice; OpenMontage CC (a separate Claude Code session with no rpgace_core.js footprint of its own to drill into) still opens that inline choice. Sourced from a real curated registry (<code>SUPABASE_L0_UNIT_TOUCHES</code>), every entry citing the CLAUDE.md section its fact came from, because this is documented evidence rather than the build-time anchor-verified code evidence other facets carry. Real, honest limit: the client-side detector behind <a href="galaxy_map_supabase.html">the Supabase page</a> cannot see a non-code actor touch a table at all — that gap is exactly what this registry closes.</p>
     <div class="mgrid">{l0_facets}</div>
   </div>
   <div class="jgrid">{jobs}</div>
+  {shared_infra}
 </div>
 {dim_index}
 
@@ -228,8 +272,9 @@ def main():
     jobs_html = ''.join(build_job_card(j) for j in JOBS)
     html = TEMPLATE.format(members=members_html, jobs=jobs_html, n_jobs=len(JOBS),
                            l0_facets=build_l0_facet_block(),
+                           shared_infra=build_shared_infra_section(),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
@@ -242,6 +287,14 @@ def main():
     linked = [t for t in named if t in _SB_TABLES]
     print(f"  Link coverage — {len(linked)}/{len(named)} named table(s) link a real Supabase-page section "
           f"(honestly unlinked: {', '.join(t for t in named if t not in _SB_TABLES) or 'none'}).")
+    _orch_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get('orchestrator_cc', ()))
+    _all_touches = compute_all_supabase_table_touches()
+    _ev = {t: _all_touches[t] for t in _orch_tables if t in _all_touches}
+    _drill, _orph = build_infra_drilldown(_ev)
+    _c = infra_drilldown_counts(_drill, _orph)
+    print(f"  G91 continuation — Shared Infrastructure: {len(_orch_tables)} real Orchestrator-CC table(s), "
+          f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
+          f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")
 
 
 if __name__ == '__main__':
