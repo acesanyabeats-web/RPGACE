@@ -34,7 +34,10 @@ from graphify_river_group import (
     compute_page_nav_triggers, compute_click_load_triggers,
     dashboard_card_primary_module,
 )
-from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
+from graphify_river_group import (  # noqa: E402
+    inject_level_rail, inject_plan_overlay, RIVER_NAME, RIVER_COLOR,
+    dimension_index_html, DIMENSION_INDEX_CSS,
+)
 from galaxy_map_decisions import DECISION_POINTS
 
 OUT = Path('graphify-out/galaxy_map_dimensions.html')
@@ -130,6 +133,91 @@ def build_rows(tags):
     return ''.join(rows)
 
 
+def build_river_matrix(tags):
+    """G74 (Aug 25 2026) — the real River x Dimension cross-tab.
+
+    Alex's own confirmed ask. A pure ROLL-UP of the module-grain
+    `tags` this file already computes (rule 8 — dimension membership is
+    never re-derived here) onto each module's own river via
+    RIVER_MODULES. A river counts as participating in a dimension when
+    at least one of its own real modules genuinely does.
+
+    Deliberately NOT a replacement for the module-grain table above,
+    and the existing narrower matrices are NOT retired against it:
+      * the module table answers "which module is a cross-dimension
+        hub" — a genuinely finer grain this roll-up destroys by
+        construction;
+      * galaxy_map.html's own L0 matrix is a different grain again
+        (9 L0 units, not rivers).
+    Neither is redundant, so neither is folded in — said plainly rather
+    than deleting a page that still answers its own question. This is a
+    second real VIEW on the same page, which is the same shape every
+    other map/table pair in this pipeline already uses.
+    """
+    rivers = sorted({r for m in tags if (r := _river_of(m)) is not None})
+    rows = []
+    for r in rivers:
+        mods = [m for m in tags if _river_of(m) == r]
+        cells = []
+        for d in DIMENSIONS:
+            hits = [m for m in mods if tags[m][d['id']]]
+            if not hits:
+                cells.append('<td class="dcell">·</td>')
+                continue
+            cells.append(
+                f'<td class="dcell on rcell" data-river="{r}" data-dim="{d["id"]}" '
+                f'title="{esc(", ".join(sorted(hits)))}">{d["icon"]} <b>{len(hits)}</b></td>')
+        full = RIVER_NAME.get(r, f'River {r}')
+        name = full.split('—', 1)[1].strip() if '—' in full else full
+        n_dims = sum(1 for d in DIMENSIONS if any(tags[m][d['id']] for m in mods))
+        rows.append(
+            f'<tr><th class="rowhead rowjump" data-river="{r}" '
+            f'title="Jump to this river\'s own bubble detail" '
+            f'style="border-left:3px solid {RIVER_COLOR.get(r, "#888")}">{esc(name)} '
+            f'<span class="rowjump-cue">🫧</span></th>'
+            f'<td class="rivercell">{len(mods)}</td>{"".join(cells)}'
+            f'<td class="tagcount">{n_dims}</td></tr>')
+    header = ('<tr><th>River</th><th>Modules</th>'
+              + ''.join(f'<th>{d["icon"]} {esc(d["label"])}</th>' for d in DIMENSIONS)
+              + '<th>Dims</th></tr>')
+    return '<table class="dtable">' + header + ''.join(rows) + '</table>'
+
+
+def build_river_bubbles(tags):
+    """Bubble view over the EXACT data build_river_matrix() renders —
+    R22's own standing rule (the table is the source of truth, the
+    bubble system follows it and never invents its own dataset)."""
+    import math
+    rivers = sorted({r for m in tags if (r := _river_of(m)) is not None})
+    n = len(rivers) or 1
+    cx, cy, radius = 420, 420, 300
+    nodes, details = [], []
+    for i, r in enumerate(rivers):
+        angle = (360 / n) * i - 90
+        x = cx + radius * math.cos(math.radians(angle))
+        y = cy + radius * math.sin(math.radians(angle))
+        mods = [m for m in tags if _river_of(m) == r]
+        hit_dims = [d for d in DIMENSIONS if any(tags[m][d['id']] for m in mods)]
+        color = RIVER_COLOR.get(r, '#888')
+        full = RIVER_NAME.get(r, f'River {r}')
+        short = full.split('—', 1)[1].strip() if '—' in full else full
+        rsize = 24 + len(hit_dims) * 4
+        nodes.append(
+            f'<g class="dbubble" data-river="{r}" transform="translate({x:.0f},{y:.0f})">'
+            f'<circle r="{rsize}" fill="{color}" fill-opacity="0.18" stroke="{color}" stroke-width="2"/>'
+            f'<text text-anchor="middle" dy="-3" font-size="12" fill="#fff" font-weight="700">{len(hit_dims)}</text>'
+            f'<text text-anchor="middle" dy="12" font-size="8" fill="{color}">{esc(short[:16])}</text></g>')
+        items = ''.join(
+            f'<li>{d["icon"]} <b>{esc(d["label"])}</b> — '
+            f'{esc(", ".join(sorted(m for m in mods if tags[m][d["id"]])))}</li>'
+            for d in hit_dims) or '<li class="meta">No real dimension membership detected for this river.</li>'
+        details.append(
+            f'<div class="rdetail" id="rdetail-{r}" style="display:none">'
+            f'<h3>{esc(full)}</h3><ul>{items}</ul></div>')
+    svg = ('<svg viewBox="0 0 840 840" width="100%" style="max-width:760px;display:block;margin:0 auto">'
+           + ''.join(nodes) + '</svg>')
+    return svg + '<div id="bubble-details">' + ''.join(details) + '</div>'
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -164,6 +252,27 @@ TEMPLATE = """<!DOCTYPE html>
   tr.hub{{background:rgba(155,89,182,0.06)}}
   .note{{max-width:1100px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--purple)}}
+  .toggle-row{{display:flex;justify-content:center;gap:8px;padding:14px 24px 0}}
+  .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--purple);color:#12040f;border-color:var(--purple)}}
+  .view{{display:none}}
+  .view.active{{display:block}}
+  th.rowhead{{text-align:left!important;white-space:nowrap;padding-left:10px;font-size:10.5px;color:var(--text)}}
+  th.rowjump{{cursor:pointer}}
+  th.rowjump:hover{{background:rgba(155,89,182,0.12)}}
+  .rowjump-cue{{opacity:.45;font-size:10px}}
+  td.rcell{{cursor:pointer}}
+  td.rcell:hover{{background:rgba(155,89,182,0.12)}}
+  .dbubble{{cursor:pointer}}
+  .dbubble:hover circle{{filter:brightness(1.4)}}
+  .bubblewrap{{max-width:900px;margin:20px auto;padding:0 24px;text-align:center}}
+  #bubble-details{{max-width:760px;margin:18px auto 0;padding:0 24px;text-align:left}}
+  .rdetail{{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:16px 20px;margin-bottom:14px}}
+  .rdetail h3{{font-family:Georgia,serif;font-size:15px;margin-bottom:10px;color:#fff}}
+  .rdetail ul{{list-style:none}}
+  .rdetail li{{margin-bottom:8px;font-size:11.5px;line-height:1.6;color:#c8c8d4}}
+  .vhint{{max-width:1100px;margin:14px auto 0;padding:0 24px;font-size:11px;color:var(--dim);line-height:1.6;text-align:center}}
+{dim_css}
 </style>
 </head>
 <body>
@@ -176,17 +285,63 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>🧭 Dimensions Matrix — Real Multi-Home Overlap</h1>
   <p>Alex's own real ask, resolved via /interrogation: a real river/module can belong to MORE THAN ONE dimension at once (multi-home, not a strict partition) — this is the real cross-dimension ANALYSIS view, not a Level-0 replacement (the 4 galaxies stay exactly as they are). {n_hubs} of {n_mods} real modules are genuine "hubs" (3+ real dimension tags, highlighted) — these are the modules doing the most real, load-bearing cross-dimension work in RPGACE Total Systems, regardless of which river they're nominally grouped under.</p>
 </div>
-<div class="wrap">
-  <table class="dtable">
-    <thead><tr><th>Module</th><th>River</th>{dim_headers}<th>Tags</th></tr></thead>
-    <tbody>{rows}</tbody>
-  </table>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="rivers">🌊 River × Dimension (table)</div>
+  <div class="toggle-btn" data-view="bubbles">🫧 River × Dimension (bubbles)</div>
+  <div class="toggle-btn" data-view="modules">🧩 Module × Dimension (table)</div>
 </div>
+
+<div class="view active" id="view-rivers">
+  <div class="vhint">Every real river cross-referenced against every dimension it genuinely participates in — a roll-up of the module-grain data below, never re-derived. A cell shows how many of that river's own modules carry that dimension; hover it for their names, click it (or the river name) for the full breakdown.</div>
+  <div class="wrap">{river_matrix}</div>
+</div>
+
+<div class="view" id="view-bubbles">
+  <div class="vhint">The same data as the River × Dimension table, rendered as bubbles — sized by how many dimensions that river actually participates in. Per the standing rule, this view has no data of its own.</div>
+  <div class="bubblewrap">{river_bubbles}</div>
+</div>
+
+<div class="view" id="view-modules">
+  <div class="vhint">The finer grain the roll-up above deliberately loses: which individual module is a real cross-dimension hub, regardless of which river it is grouped under.</div>
+  <div class="wrap">
+    <table class="dtable">
+      <thead><tr><th>Module</th><th>River</th>{dim_headers}<th>Tags</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </div>
+</div>
+
+{dim_index}
 <div class="note">
   Generated by <code>scripts/galaxy_map_dimensions.py</code>, real detection functions in <code>graphify_river_group.py</code> —
   never re-derived (rule 8), each dimension's own already-shipped detector reused as-is. G30 of the ratified
   "RPGACE Total Systems Galaxy Map" /CEO plan. Mapping rules: <code>system_map_spec.md</code>.
 </div>
+<script>
+(function() {{
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  function showView(name) {{
+    toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === name); }});
+    views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + name); }});
+  }}
+  toggles.forEach(function(t) {{ t.addEventListener('click', function() {{ showView(t.dataset.view); }}); }});
+  function reveal(r) {{
+    showView('bubbles');
+    document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'rdetail-' + r) ? '' : 'none'; }});
+    var el = document.getElementById('rdetail-' + r);
+    if (el) el.scrollIntoView({{behavior:'smooth', block:'nearest'}});
+  }}
+  // Table rows AND cells both reach the same real bubble detail the
+  // bubble view's own click already goes to — never a second target.
+  document.querySelectorAll('th.rowjump, td.rcell').forEach(function(el) {{
+    el.addEventListener('click', function() {{ reveal(el.dataset.river); }});
+  }});
+  document.querySelectorAll('.dbubble').forEach(function(b) {{
+    b.addEventListener('click', function() {{ reveal(b.dataset.river); }});
+  }});
+}})();
+</script>
 </body>
 </html>
 """
@@ -197,7 +352,11 @@ def main():
     n_hubs = sum(1 for m, row in tags.items() if sum(row.values()) >= 3)
     dim_headers = ''.join(f'<th>{d["icon"]} {esc(d["label"])}</th>' for d in DIMENSIONS)
     rows = build_rows(tags)
-    html = TEMPLATE.format(dim_headers=dim_headers, rows=rows, n_hubs=n_hubs, n_mods=len(tags))
+    html = TEMPLATE.format(dim_headers=dim_headers, rows=rows, n_hubs=n_hubs, n_mods=len(tags),
+                           river_matrix=build_river_matrix(tags),
+                           river_bubbles=build_river_bubbles(tags),
+                           dim_index=dimension_index_html(OUT.name),
+                           dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,

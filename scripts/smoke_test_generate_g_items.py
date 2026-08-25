@@ -148,13 +148,16 @@ ITEMS = [
     {
         'code': 'G48',
         'category': 'Galaxy Development Framework — Yellow Confirm Queue',
-        'item_name': 'G48 — Level 4 repurposed: zoomed per-Current walkthrough',
-        'description': ('HOW TO TEST: open graphify-out/galaxy_map_zoom.html. Pick any Current, '
-            'confirm its zoomed card renders and "Continue →" correctly walks to whatever it calls '
-            'next, stopping cleanly at a genuine terminal or module boundary.'),
-        'source_ref': 'scripts/galaxy_map_zoom.py',
+        'item_name': 'G48 — zoomed per-Current walkthrough (folded into Current, G75)',
+        'description': ('HOW TO TEST: open graphify-out/galaxy_map_current.html. Pick a module, '
+            'switch to Table view, pick any Current and click "🔎 Expand walkthrough detail". '
+            'Confirm the expanded block renders and its "Continue →" link correctly walks to '
+            'whatever that function calls next, stopping cleanly at a genuine terminal or a '
+            'module boundary. (G75, Aug 25 2026: this used to be its own galaxy_map_zoom.html '
+            'page — retired as a ladder level, folded in here as an inline toggle.)'),
+        'source_ref': 'scripts/galaxy_map_current.py (build_walkthrough_details)',
         'galaxy_river': 'multiple',
-        'galaxy_level': 'Level 4 (zoomed walkthrough)',
+        'galaxy_level': 'Current (L3) — expand-for-detail',
     },
     {
         'code': 'G49',

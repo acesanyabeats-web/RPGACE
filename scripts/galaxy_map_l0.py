@@ -163,7 +163,14 @@ def build_matrix():
     header = '<tr><th></th>' + ''.join(f'<th title="{esc(u["label"])}">{u["icon"]}</th>' for u in UNITS) + '</tr>'
     rows = [header]
     for ru in UNITS:
-        cells = [f'<th class="rowhead">{ru["icon"]} {ru["label"]}</th>']
+        # G74 (Aug 25 2026) — the row HEADER is a real click-through into
+        # that unit's own Infra/Inter facet panel, i.e. the exact same
+        # destination the map view's own unit bubble already opens. Wired
+        # by galaxy_map.py (the only page that renders this table), which
+        # owns that panel; carries no behaviour of its own here.
+        cells = [f'<th class="rowhead unit-rowhead" data-unit="{ru["id"]}" '
+                 f'title="Open this unit\'s own Infra/Inter facets">{ru["icon"]} {ru["label"]} '
+                 f'<span class="rowjump-cue">🫧</span></th>']
         for cu in UNITS:
             if ru['id'] == cu['id']:
                 cells.append('<td class="diag">—</td>')

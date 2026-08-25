@@ -55,9 +55,10 @@ from graphify_river_group import (  # noqa: E402
     parse_module_functions, compute_module_function_flow,
     compute_external_call_sites, compute_lastfm_call_sites,
     FLOWS_IN, attribute_river_connection_function, LEVEL3_MODULES,
+    render_evidence_bubble, dimension_index_html, DIMENSION_INDEX_CSS,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
-from galaxy_map_level5 import DECISION_POINTS  # noqa: E402
+from galaxy_map_decision_matrix import LOGIC_POINTS as DECISION_POINTS  # noqa: E402
 from galaxy_map_decisions import DECISION_POINTS as _DECISION_POINTS  # noqa: E402
 from galaxy_map import _curved_edge, _build_markers, barycenter_order  # noqa: E402
 
@@ -259,20 +260,28 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             # NOTABLE (module-scope above) is the exact same real
             # {(module,func): decision_point} shape galaxy_map_level3.py
             # used to keep as its own separate LEVEL5_BY_FUNC — same
-            # source (galaxy_map_level5.DECISION_POINTS), same filter,
+            # source (the curated LOGIC_POINTS, now in
+            # galaxy_map_decision_matrix.py), same filter,
             # reused directly rather than rebuilt a 2nd time (rule 8).
             dp = NOTABLE[(module_name, f)]
-            nav_badge = (f'<a href="galaxy_map_level5.html#d-{dp["id"]}">'
-                         f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" text-decoration="underline">🧠 into the logic: Level 5</text></a>')
+            nav_badge = (f'<a href="galaxy_map_decision_matrix.html#d-{dp["id"]}">'
+                         f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" text-decoration="underline">🧠 into the logic: Decision Matrix</text></a>')
         decision_badge = ''
         if (module_name, f) in DECISIONS_BY_FUNC:
             ddp = DECISIONS_BY_FUNC[(module_name, f)]
             decision_badge = (f'<a href="galaxy_map_decisions.html#dp-{ddp["id"]}">'
                                f'<text x="{x}" y="{y+64}" text-anchor="middle" font-size="7.5" fill="#E25454" text-decoration="underline">🚦 decision gate</text></a>')
+        # G74 (Aug 25 2026) — the map node now links into its own Table
+        # row (#cur-mod-func). Previously the cross-link only ran the
+        # other way (a table hop-chip could jump to another function's
+        # row) and the map's own nodes were inert; the existing
+        # hashchange handler already switches that module to Table view
+        # for any #cur- anchor, so this needed no new JS.
         nodes_svg.append(
-            f'{incoming_badge}<g class="node"><circle cx="{x}" cy="{y}" r="26" fill="#0f0f1a" stroke="{color}" stroke-width="{ring}" filter="url(#glow)"/>'
+            f'{incoming_badge}<a href="#cur-{module_name}-{f}" class="drill-link">'
+            f'<g class="node"><circle cx="{x}" cy="{y}" r="26" fill="#0f0f1a" stroke="{color}" stroke-width="{ring}" filter="url(#glow)"/>'
             f'<text x="{x}" y="{y+6}" text-anchor="middle" font-size="15">{icon}</text></g>'
-            f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text>{nav_badge}{decision_badge}'
+            f'<text x="{x}" y="{y+40}" text-anchor="middle" font-size="9.5" fill="{color}">{f}</text></a>{nav_badge}{decision_badge}'
         )
 
     if cross_out:
@@ -324,71 +333,38 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     )
     edge_colors_used.add(ALEX_COLOR)
 
-    oracle_counts = oracle_counts or {}
-    band_oracle = [(f, oracle_counts.get(f, 0)) for f in band_funcs if oracle_counts.get(f, 0) > 0 and f in pos]
-    if band_oracle:
-        oracle_x, oracle_y = W / 2, alex_y_const + 90
-        n_calls = 0
-        for f, cnt in band_oracle:
-            n_calls += 1
-            fx, fy = pos[f]
-            ox = oracle_x + (n_calls * 13 if n_calls % 2 == 0 else -n_calls * 13)
-            edges_svg.append(_curved_edge(fx, fy, ox, oracle_y, ORACLE_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
-            mx, my = (fx + ox) / 2, (fy + oracle_y) / 2
-            nodes_svg.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="1"/>'
-                              f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" font-weight="700">{cnt}</text>')
-        total_calls = sum(c for _f, c in band_oracle)
-        nodes_svg.append(
-            f'<g class="node"><circle cx="{oracle_x}" cy="{oracle_y}" r="26" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="2.5" filter="url(#glow)"/>'
-            f'<text x="{oracle_x}" y="{oracle_y+6}" text-anchor="middle" font-size="16">🔮</text>'
-            f'<text x="{oracle_x}" y="{oracle_y+42}" text-anchor="middle" font-size="9.5" fill="{ORACLE_COLOR}" font-weight="700">Oracle</text>'
-            f'<text x="{oracle_x}" y="{oracle_y+55}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" opacity="0.85">{len(band_oracle)} function(s) · {total_calls} real call(s)</text></g>'
-        )
-        edge_colors_used.add(ORACLE_COLOR)
-
-    composio_counts = composio_counts or {}
-    band_composio = [(f, composio_counts.get(f, 0)) for f in band_funcs if composio_counts.get(f, 0) > 0 and f in pos]
-    if band_composio:
-        cx_, cy_ = W / 2, alex_y_const + 180
-        n_calls = 0
-        for f, cnt in band_composio:
-            n_calls += 1
-            fx, fy = pos[f]
-            ox = cx_ + (n_calls * 13 if n_calls % 2 == 0 else -n_calls * 13)
-            edges_svg.append(_curved_edge(fx, fy, ox, cy_, COMPOSIO_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
-            mx, my = (fx + ox) / 2, (fy + cy_) / 2
-            nodes_svg.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{COMPOSIO_COLOR}" stroke-width="1"/>'
-                              f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{COMPOSIO_COLOR}" font-weight="700">{cnt}</text>')
-        total_calls = sum(c for _f, c in band_composio)
-        nodes_svg.append(
-            f'<g class="node"><circle cx="{cx_}" cy="{cy_}" r="26" fill="#0f0f1a" stroke="{COMPOSIO_COLOR}" stroke-width="2.5" filter="url(#glow)"/>'
-            f'<text x="{cx_}" y="{cy_+6}" text-anchor="middle" font-size="16">🔗</text>'
-            f'<text x="{cx_}" y="{cy_+42}" text-anchor="middle" font-size="9.5" fill="{COMPOSIO_COLOR}" font-weight="700">Composio</text>'
-            f'<text x="{cx_}" y="{cy_+55}" text-anchor="middle" font-size="8" fill="{COMPOSIO_COLOR}" opacity="0.85">{len(band_composio)} function(s) · {total_calls} real call(s)</text></g>'
-        )
-        edge_colors_used.add(COMPOSIO_COLOR)
-
-    lastfm_counts = lastfm_counts or {}
-    band_lastfm = [(f, lastfm_counts.get(f, 0)) for f in band_funcs if lastfm_counts.get(f, 0) > 0 and f in pos]
-    if band_lastfm:
-        lx_, ly_ = W / 2, alex_y_const + 270
-        n_calls = 0
-        for f, cnt in band_lastfm:
-            n_calls += 1
-            fx, fy = pos[f]
-            ox = lx_ + (n_calls * 13 if n_calls % 2 == 0 else -n_calls * 13)
-            edges_svg.append(_curved_edge(fx, fy, ox, ly_, LASTFM_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
-            mx, my = (fx + ox) / 2, (fy + ly_) / 2
-            nodes_svg.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{LASTFM_COLOR}" stroke-width="1"/>'
-                              f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{LASTFM_COLOR}" font-weight="700">{cnt}</text>')
-        total_calls = sum(c for _f, c in band_lastfm)
-        nodes_svg.append(
-            f'<g class="node"><circle cx="{lx_}" cy="{ly_}" r="26" fill="#0f0f1a" stroke="{LASTFM_COLOR}" stroke-width="2.5" filter="url(#glow)"/>'
-            f'<text x="{lx_}" y="{ly_+6}" text-anchor="middle" font-size="16">🎵</text>'
-            f'<text x="{lx_}" y="{ly_+42}" text-anchor="middle" font-size="9.5" fill="{LASTFM_COLOR}" font-weight="700">Last.fm</text>'
-            f'<text x="{lx_}" y="{ly_+55}" text-anchor="middle" font-size="8" fill="{LASTFM_COLOR}" opacity="0.85">{len(band_lastfm)} function(s) · {total_calls} real call(s)</text></g>'
-        )
-        edge_colors_used.add(LASTFM_COLOR)
+    # G74 (Aug 25 2026) — these three bubbles used to be three
+    # near-verbatim hand-written copies of the same ~20-line shape.
+    # Real, checked generalization into the one shared
+    # render_evidence_bubble() (graphify_river_group.py) — output is
+    # byte-identical to the copies it replaced, verified by diff. The
+    # Alex bubble above is deliberately NOT routed through it: it is a
+    # genuinely different shape (bidirectional, uncounted, permanent),
+    # see that function's own comment.
+    # NOTE: every loop variable here is deliberately `bub_`-prefixed.
+    # A first version of this refactor used bare `color`/`label`, which
+    # silently SHADOWED this function's own outer `color` (the module's
+    # real river colour, still read further down when the intra-edge
+    # legend is built) — the legend dots came out Last.fm red instead of
+    # the river colour. Caught by the byte-identity diff against the
+    # pre-refactor output, not by inspection; kept prefixed so the same
+    # shadowing can't quietly return.
+    for bub_counts, bub_y, bub_color, bub_emoji, bub_label in (
+        (oracle_counts, alex_y_const + 90, ORACLE_COLOR, '🔮', 'Oracle'),
+        (composio_counts, alex_y_const + 180, COMPOSIO_COLOR, '🔗', 'Composio'),
+        (lastfm_counts, alex_y_const + 270, LASTFM_COLOR, '🎵', 'Last.fm'),
+    ):
+        bub_counts = bub_counts or {}
+        band_items = [(f, bub_counts.get(f, 0)) for f in band_funcs
+                      if bub_counts.get(f, 0) > 0 and f in pos]
+        if not band_items:
+            continue
+        b_edges, b_nodes = render_evidence_bubble(
+            band_items, pos, (W / 2, bub_y), bub_color, bub_emoji, bub_label,
+            'function', 'call', _curved_edge, style='function')
+        edges_svg.extend(b_edges)
+        nodes_svg.extend(b_nodes)
+        edge_colors_used.add(bub_color)
 
     backdoor_legend = []
     if my_backdoors:
@@ -587,7 +563,72 @@ def build_current_block(mod, func, branches, ui, oracle_n, sb_touches, notable):
     <div class="io-col"><div class="io-label">Output → Next ➡</div>{next_chips}</div>
   </div>
   {notable_html}
+  {build_walkthrough_details(mod, func, badges, branches, notable)}
 </div>'''
+
+
+def build_walkthrough_details(mod, func, badges, branches, notable):
+    """G75 (Aug 25 2026) — the real per-Current zoomed walkthrough,
+    folded IN from the now-deleted galaxy_map_zoom.py as an inline
+    expand-for-detail block instead of a separate 451-card page.
+
+    Real reason for the fold: galaxy_map_zoom.py already imported
+    EVERY one of its data structures from this file (MODULES, NEXT_HOPS,
+    PREV_HOPS, NOTABLE, KIND_ICON, esc) and computed nothing of its own
+    — it was a second rendering of this page's data at the same grain,
+    which is a view, not a level.
+
+    What it genuinely carried that the compact row above does NOT, all
+    preserved here rather than quietly dropped in the merge:
+      * spelled-out badge wording instead of the compact chips;
+      * an explicit real-entry-point / real-terminal statement, rather
+        than the row's terser "not tracked at this grain";
+      * the ⚡ module-boundary note when the next hop leaves this module;
+      * the notable point's own `changes` field, which the compact
+        row never rendered at all.
+    """
+    prev_hops = PREV_HOPS.get((mod, func), [])
+    next_hops = NEXT_HOPS.get((mod, func), [])
+
+    long_badges = []
+    if any('🧑 in' in b for b in badges):
+        long_badges.append('<span class="ubub ub-alex">🧑 real input evidence</span>')
+    if any('🧑 out' in b for b in badges):
+        long_badges.append('<span class="ubub ub-alex">🧑 real output/render evidence</span>')
+    for b in badges:
+        if '🔮' in b or '💉' in b:
+            long_badges.append(b)
+    badges_html = ''.join(long_badges) or \
+        '<span class="meta">No real Alex/Oracle/Supabase signal detected on this specific function.</span>'
+
+    prev_html = ''.join(
+        f'<a class="hop-btn" href="#cur-{fm}-{ff}">← {esc(fm)}.{esc(ff)}()</a>' for fm, ff in prev_hops) or \
+        '<span class="meta">No real cross-module caller detected — a genuine real entry point, or same-module (not tracked at this grain).</span>'
+    next_html = ''.join(
+        f'<a class="hop-btn hop-next" href="#cur-{tm}-{tf}">Continue → {esc(tm)}.{esc(tf)}() →</a>' for tm, tf in next_hops) or \
+        '<span class="meta terminal">🏁 Real terminal — no further cross-module hop detected. The chain ends here, or continues within the same module (not tracked at this grain).</span>'
+
+    boundary_note = ''
+    if next_hops and any(tm != mod for tm, _tf in next_hops):
+        boundary_note = '<div class="boundary">⚡ Crossing into a new module here — the natural real stopping point.</div>'
+
+    changes_html = ''
+    if notable and notable.get('changes'):
+        changes_html = (f'<div class="zsection"><div class="zlabel">⭐ What changes (real input to the decision)</div>'
+                        f'<p class="zprose">{esc(notable["changes"])}</p></div>')
+
+    return f'''<details class="cur-zoom">
+  <summary>🔎 Expand walkthrough detail</summary>
+  <div class="zoom-body">
+    <div class="badges">{badges_html}</div>
+    <div class="zsection"><div class="zlabel">⬅ Input — what fed this Current</div>{prev_html}</div>
+    <div class="zsection"><div class="zlabel">Handling — {len(branches)} real branch point(s)</div>
+      <span class="meta">Listed in full in the Handling column above.</span></div>
+    {changes_html}
+    <div class="zsection"><div class="zlabel">Output → Next Current ➡</div>{next_html}</div>
+    {boundary_note}
+  </div>
+</details>'''
 
 
 def build_module_section(mod):
@@ -668,6 +709,22 @@ TEMPLATE = """<!DOCTYPE html>
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:9.5px;background:rgba(255,255,255,0.05);padding:1px 4px;border-radius:3px}}
   .notable-box{{margin-top:10px;padding:10px 12px;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.25);border-radius:8px;font-size:10.5px;line-height:1.6}}
   .nb-title{{font-weight:700;color:var(--gold);margin-bottom:4px}}
+  /* G75 — the folded-in per-Current zoomed walkthrough (was its own page). */
+  .cur-zoom{{margin-top:10px;border-top:1px dashed rgba(255,255,255,0.1);padding-top:8px}}
+  .cur-zoom summary{{cursor:pointer;font-size:10px;color:var(--dim);list-style:none}}
+  .cur-zoom summary::-webkit-details-marker{{display:none}}
+  .cur-zoom summary:hover{{color:var(--gold)}}
+  .cur-zoom[open] summary{{color:var(--gold);margin-bottom:8px}}
+  .zoom-body{{padding:4px 2px 2px}}
+  .zoom-body .badges{{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}}
+  .zsection{{margin-bottom:12px}}
+  .zlabel{{font-size:9.5px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:6px}}
+  .zprose{{font-size:10.5px;line-height:1.6;color:#c8c8d8}}
+  .hop-btn{{display:inline-block;color:var(--gold);text-decoration:none;font-size:10.5px;padding:5px 10px;border:1px solid rgba(201,168,76,0.3);border-radius:8px;margin:0 6px 6px 0}}
+  .hop-next{{background:rgba(201,168,76,0.1);font-weight:700}}
+  .terminal{{color:var(--gold)}}
+  .boundary{{font-size:10px;color:var(--gold);margin-top:6px}}
+{dim_css}
   a{{color:var(--gold)}}
   .note{{max-width:900px;margin:20px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   /* Real Aug 21 2026 fold (G65) — Level 3's own real CSS, moved verbatim
@@ -702,14 +759,16 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Current Series</div>
   <h1>🧬 Every Module, as a Series of Currents</h1>
-  <p>{n_funcs} real Currents (functions) across {n_mods} modules. ⭐ = Level 5's own curated "core logic" write-up, folded in rather than lost. 🧑 = real Alex/UI input-output evidence. 🔮 = real Oracle call count. 💉 = a real Supabase injection-tool touch. Pick a module below, then choose 🔽 Map (the real function-call-chain diagram) or 📊 Table (per-function input/handling/output rows) — same real data, two views.</p>
+  <p>{n_funcs} real Currents (functions) across {n_mods} modules. This is the deepest real <b>containment</b> step of the map: L0 galaxies contain L1 rivers, which contain L2 modules, which contain these. ⭐ = a curated "core logic" write-up (full text on the <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>). 🧑 = real Alex/UI input-output evidence. 🔮 = real Oracle call count. 💉 = a real Supabase injection-tool touch. Pick a module below, then choose 🔽 Map (the real function-call-chain diagram — every node links into its own Table row) or 📊 Table (per-function input/handling/output rows, each with a real <b>🔎 Expand walkthrough detail</b> toggle, folded in from the retired Zoom/L4 page) — same real data, three depths.</p>
 </div>
 <div class="modpicker">{mod_tabs}</div>
 {mod_sections}
+{dim_index}
 <div class="note">
   Generated by <code>scripts/galaxy_map_current.py</code> — real data from
   <code>compute_function_branches()</code> (Level 6's own exhaustive detector, reused not re-derived),
-  Level 5's own curated <code>DECISION_POINTS</code>, and the real per-function Alex/Oracle/Supabase
+  the curated core-logic points (<code>LOGIC_POINTS</code>, now in <code>galaxy_map_decision_matrix.py</code>),
+  and the real per-function Alex/Oracle/Supabase
   signals already proven elsewhere in this pipeline. Real Aug 21 2026 fold (G65): the old standalone
   Level 3 page's own real per-module SVG call-chain diagram (<code>compute_function_rank</code>/
   <code>_split_into_bands</code>/<code>_render_band</code>, moved verbatim, not retyped) is now this
@@ -787,12 +846,14 @@ def main():
     mod_sections = ''.join(build_module_section(m) for m in MODULES)
     total_funcs = sum(len(_function_bodies(m).keys()) for m in MODULES)
     html = TEMPLATE.format(mod_tabs=mod_tabs, mod_sections=mod_sections,
-                            n_funcs=total_funcs, n_mods=len(MODULES))
+                            n_funcs=total_funcs, n_mods=len(MODULES),
+                            dim_index=dimension_index_html(OUT.name),
+                            dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(MODULES)} modules, {total_funcs} real Currents, "
-          f"{len(NOTABLE)} notable (Level-5-linked).")
+          f"{len(NOTABLE)} with a curated core-logic write-up.")
 
 
 if __name__ == '__main__':

@@ -94,6 +94,7 @@ from graphify_river_group import (  # noqa: E402
     LEVEL3_MODULES, compute_module_ui_signal, compute_cross_module_function_calls,
     attribute_river_connection_function, compute_module_oracle_call_count,
     rivers_needing_meanders, compute_module_supabase_touch_count,
+    render_evidence_bubble,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 # Real Aug 21 2026 fold (Alex's own direct ask: "2.5 is a table view of
@@ -319,23 +320,16 @@ def build_river_section(rnum):
         # existed with no Oracle touch alongside it.
         ORACLE_X, ORACLE_Y = W / 2, ALEX_Y + 85
         if oracle_mods:
-            n_calls = 0
-            for m, cnt in oracle_mods:
-                n_calls += 1
-                mx, my = mod_pos[m]
-                ox = ORACLE_X + (n_calls * 15 if n_calls % 2 == 0 else -n_calls * 15)
-                edges_svg.append(_curved_edge(mx, my, ox, ORACLE_Y, ORACLE_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5))
-                lx, ly = (mx + ox) / 2, (my + ORACLE_Y) / 2
-                nodes_svg.append(f'<circle cx="{lx}" cy="{ly}" r="8" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="1"/>'
-                                  f'<text x="{lx}" y="{ly+3}" text-anchor="middle" font-size="8" fill="{ORACLE_COLOR}" font-weight="700">{cnt}</text>')
+            # G74 (Aug 25 2026) — routed through the one shared
+            # render_evidence_bubble() (graphify_river_group.py), same
+            # real shape this and the Supabase bubble below had each
+            # hand-written separately. Byte-identical output, verified.
+            b_edges, b_nodes = render_evidence_bubble(
+                oracle_mods, mod_pos, (ORACLE_X, ORACLE_Y), ORACLE_COLOR,
+                '🔮', 'Oracle', 'module', 'call', _curved_edge, style='module')
+            edges_svg.extend(b_edges)
             edge_colors_used.add(ORACLE_COLOR)
-            total_calls = sum(c for _m, c in oracle_mods)
-            nodes_svg.append(
-                f'<g class="node"><circle cx="{ORACLE_X}" cy="{ORACLE_Y}" r="24" fill="#0f0f1a" stroke="{ORACLE_COLOR}" stroke-width="3" filter="url(#glow)"/>'
-                f'<text x="{ORACLE_X}" y="{ORACLE_Y+5}" text-anchor="middle" font-size="15">🔮</text>'
-                f'<text x="{ORACLE_X}" y="{ORACLE_Y+38}" text-anchor="middle" font-size="9.5" fill="{ORACLE_COLOR}" font-weight="700">Oracle</text>'
-                f'<text x="{ORACLE_X}" y="{ORACLE_Y+50}" text-anchor="middle" font-size="7.5" fill="{ORACLE_COLOR}" opacity="0.85">{len(oracle_mods)} module(s) · {total_calls} real call(s)</text></g>'
-            )
+            nodes_svg.extend(b_nodes)
 
         # Real, evidence-driven "Supabase" injection-tool bubble (G48,
         # Aug 18 2026 — Part 10's "Skills and Supabase should always be
@@ -348,23 +342,18 @@ def build_river_section(rnum):
         sb_mods = [(m, cnt, n_tot, tabs) for m, (cnt, n_tot, tabs) in sb_mods if n_tot > 0]
         if sb_mods:
             SB_X, SB_Y = W / 2, ORACLE_Y + 85
-            n_sb = 0
-            for m, _fcnt, n_tot, _tabs in sb_mods:
-                n_sb += 1
-                mx, my = mod_pos[m]
-                sx = SB_X + (n_sb * 15 if n_sb % 2 == 0 else -n_sb * 15)
-                edges_svg.append(_curved_edge(mx, my, sx, SB_Y, SUPABASE_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5))
-                lx, ly = (mx + sx) / 2, (my + SB_Y) / 2
-                nodes_svg.append(f'<circle cx="{lx}" cy="{ly}" r="8" fill="#0f0f1a" stroke="{SUPABASE_COLOR}" stroke-width="1"/>'
-                                  f'<text x="{lx}" y="{ly+3}" text-anchor="middle" font-size="8" fill="{SUPABASE_COLOR}" font-weight="700">{n_tot}</text>')
+            # G74 — same shared renderer as the Oracle bubble above.
+            # The real per-module touch count (n_tot) is the count that
+            # matters here; the other two fields of sb_mods' own 4-tuple
+            # (function count, table-name set) aren't drawn, so they're
+            # dropped at the call site rather than passed through.
+            b_edges, b_nodes = render_evidence_bubble(
+                [(m, n_tot) for m, _fcnt, n_tot, _tabs in sb_mods], mod_pos,
+                (SB_X, SB_Y), SUPABASE_COLOR, '💉', 'Supabase',
+                'module', 'injection', _curved_edge, style='module')
+            edges_svg.extend(b_edges)
             edge_colors_used.add(SUPABASE_COLOR)
-            total_sb = sum(n_tot for _m, _fcnt, n_tot, _tabs in sb_mods)
-            nodes_svg.append(
-                f'<g class="node"><circle cx="{SB_X}" cy="{SB_Y}" r="24" fill="#0f0f1a" stroke="{SUPABASE_COLOR}" stroke-width="3" filter="url(#glow)"/>'
-                f'<text x="{SB_X}" y="{SB_Y+5}" text-anchor="middle" font-size="15">💉</text>'
-                f'<text x="{SB_X}" y="{SB_Y+38}" text-anchor="middle" font-size="9.5" fill="{SUPABASE_COLOR}" font-weight="700">Supabase</text>'
-                f'<text x="{SB_X}" y="{SB_Y+50}" text-anchor="middle" font-size="7.5" fill="{SUPABASE_COLOR}" opacity="0.85">{len(sb_mods)} module(s) · {total_sb} real injection(s)</text></g>'
-            )
+            nodes_svg.extend(b_nodes)
 
         # Real z-order + spacing fix (Alex's own direct ask): "the
         # rivers connecting to river at beginning should be behind the

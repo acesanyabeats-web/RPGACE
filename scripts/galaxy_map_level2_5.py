@@ -55,7 +55,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
-    RIVER_NAME, RIVER_COLOR, CARDS_BY_RIVER, DASHBOARD_CARDS,
+    RIVER_NAME, RIVER_COLOR, CARDS_BY_RIVER, DASHBOARD_CARDS, DIMENSION_PAGES,
     dashboard_card_primary_module, compute_module_ui_signal,
     LEVEL3_MODULES, EXTERNAL_RIVER_LINKS,
 )
@@ -92,7 +92,7 @@ def build_card_block(card):
             ui_badge = '<span class="uibadge">🧑 real UI/input evidence</span>'
         mod_link = f'<a class="modlink" href="galaxy_map_current.html#mod-{esc(primary)}">🔽 {esc(primary)} — its own functions on Current Series</a>'
     else:
-        mod_link = '<span class="nomod">No single primary module — real shared/sibling ownership (see Level 4 for the full real target list)</span>'
+        mod_link = '<span class="nomod">No single primary module — real shared/sibling ownership (this card\'s own real per-target flow is shown inline on Level 2\'s map view)</span>'
     partial = ' <span class="partial">(partial — via text names a QoL-layer-only module)</span>' if card.get('partial') else ''
     return f'''<div class="ccard">
   <div class="chead"><span class="cicon">{esc(label)}</span>{ui_badge}</div>
@@ -137,11 +137,20 @@ def build_river_section(rnum):
             unique_cards.append(c)
     cards_html = ''.join(build_card_block(c) for c in unique_cards)
     externals_html = build_externals_block(rnum)
+    # G74 (Aug 25 2026) — this used to be a hardcoded "pending G30, not
+    # built" stub. G30 shipped Aug 15 and the stub was never revisited;
+    # these are the real dimension pages a reader can actually open for
+    # this river now, sourced from the shared DIMENSION_PAGES list so
+    # they cannot drift from the canonical index.
+    dim_links = (
+        f'<a class="modlink" href="galaxy_map_dimensions.html">🧭 River {_roman(rnum)} × every dimension</a> '
+        + ' '.join(f'<a class="modlink" href="{f}">{i} {lbl}</a>'
+                   for f, i, lbl, _k, _d in DIMENSION_PAGES[:4]))
     return f'''<div class="l25-rhead" style="border-color:{color}"><h2 style="color:{color}">River {_roman(rnum)} — {esc(name)}</h2><span class="rcount">{len(unique_cards)} real dashboard card(s)</span></div>
   <div class="cgrid">{cards_html}</div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div>{externals_html}</div>
-    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">⏳ Real links pending G30 (Level 0 → dimensions) — not built, not faked ahead of it.</div></div>
+    <div class="convblock"><div class="convlabel">🌌 Dimensions</div><div class="dimstub">{dim_links}</div></div>
   </div>'''
 
 

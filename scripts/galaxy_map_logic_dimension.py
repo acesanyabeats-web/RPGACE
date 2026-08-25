@@ -8,7 +8,9 @@ levels (grouped by same logic as modules), just make each edge
 clickable to see explanation, a line with more than 2 lines merge with
 explanation if at higher level."
 
-Real, additive companion to galaxy_map_level5.py (NOT a replacement —
+Real, additive companion to the curated core-logic write-ups (which
+lived in galaxy_map_level5.py until G75 merged them into
+galaxy_map_decision_matrix.py). NOT a replacement for them —
 the 7 existing curated core-logic decision points stay exactly as they
 are, anchor-verified, cross-linked from Level 3/Decisions/here). Given
 a real session token/time constraint, built as a real SYNTHESIS over

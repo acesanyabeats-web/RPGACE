@@ -2879,25 +2879,233 @@ def river_group(html_path: Path, graph_json_path: Path):
 # shared "level rail" component (rule 8 — every one of the 22 real
 # galaxy_map_*.py generator scripts shares the exact same
 # `OUT.write_text(html, encoding='utf-8')` convention, so this is a single
-# mechanical post-process, not 22 hand-copied nav blocks). Deliberately
-# includes L2.5 and L6 too, alongside the 6 Alex named — they are real,
-# already-shipped rungs of the same ladder, and "every possible version"
-# reads as the full real ladder, not a literal 6-item cap.
+# mechanical post-process, not 22 hand-copied nav blocks).
+#
+# **Real Aug 25 2026 shrink (G75) — the ladder is now 4 real stops, not
+# 8.** Alex's own ratified scope: a "Level" means a real CONTAINMENT
+# step (L0 galaxies -> L1 rivers -> L2 modules -> L3 the module's own
+# Currents), and only those four genuinely nest. The four stops removed
+# were never containment steps:
+#   * L2.5 — real content, but it is Level 2's own TABLE VIEW of the
+#     same modules (galaxy_map_module.py), not a step below Level 2.
+#     Removed as a rail chip only; the table view itself is untouched.
+#   * Zoom (L4) — a per-Current detail walkthrough, i.e. a LENS over
+#     L3's own content. Folded into Current as a real inline
+#     expand-for-detail toggle; galaxy_map_zoom.py/.html deleted.
+#   * L5 — 7 curated core-logic decision points, another lens over the
+#     same functions. Merged into the Decision Matrix (which already
+#     imported all 7 by reference); galaxy_map_level5.py/.html deleted.
+#   * L6 — 1180 mechanical branch points. Keeps its own page (the data
+#     genuinely needs somewhere to live) but is link-out-only detail,
+#     reached from the Decision Matrix / Current entries that cite it,
+#     never a rung of the ladder.
+# Everything a "level" used to mean that these four actually were is
+# now called a Dimension — see DIMENSION_PAGES below.
 LEVEL_RAIL = [
     ('galaxy_map.html', '🌌', 'L0'),
     ('galaxy_map_river.html', '🏛️', 'L1'),
     ('galaxy_map_module.html', '🌊', 'L2'),
-    # Real Aug 21 2026 fold — L2.5 no longer has its own page; its real
-    # content is now Level 2's own table view (galaxy_map_module.py).
-    # Kept as its own real rail stop per Alex's own explicit ask ("i
-    # want only this present... L2.5"), pointing at the same file L2
-    # does — both stops correctly highlight together on that page.
-    ('galaxy_map_module.html', '🖇️', 'L2.5'),
     ('galaxy_map_current.html', '🔽', 'Current (L3)'),
-    ('galaxy_map_zoom.html', '🖱️', 'Zoom (L4)'),
-    ('galaxy_map_level5.html', '🧠', 'L5'),
-    ('galaxy_map_level6.html', '🔬', 'L6'),
 ]
+
+# ---------------------------------------------------------------------
+# G74 (Aug 25 2026) — the real, canonical Dimension index.
+#
+# Alex's own ratified scope: Dimensions get equal visual/structural
+# status with Rivers, WITHOUT becoming numbered list items (no "River
+# XVIII" — a River is a strict one-module-one-home partition of the
+# code, a Dimension is deliberately multi-membership, and collapsing
+# the two would destroy that property). This list is the ONE place that
+# fact is written down; every page that shows a Dimension index imports
+# it rather than hand-typing its own copy (rule 8).
+#
+# `kind` reuses galaxy_map_hub.py's own already-established vocabulary,
+# verified against its PAGES catalogue rather than reinvented:
+#   inter = a connection/flow dimension (renders as edges)
+#   infra = an attached-resource dimension (renders as a node bubble)
+#   meta  = a cross-dimension synthesis page (neither, by itself)
+DIMENSION_PAGES = [
+    ('galaxy_map_decision_matrix.html', '🚦', 'Decision Matrix', 'meta',
+     'Every real decision — gates, curated core logic, text inputs — by river.'),
+    ('galaxy_map_dimensions.html', '🧭', 'Dimensions Matrix', 'meta',
+     'Which modules are multi-home across every other dimension.'),
+    ('galaxy_map_logic_dimension.html', '📖', 'Logic Dimension', 'inter',
+     'Every river-to-river connection, connector and skill stream as a passage.'),
+    ('galaxy_map_decisions.html', '🗑️', 'Decisions — Human Gates', 'infra',
+     'The real human-confirm gates before a destructive or taxonomy write.'),
+    ('galaxy_map_level6.html', '🔬', 'Detailed Decision (branch detail)', 'infra',
+     'Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.'),
+    ('galaxy_map_supabase.html', '💉', 'Supabase', 'infra',
+     'Every real client-side Supabase table touch, by level/river/module.'),
+    ('galaxy_map_externals.html', '🔌', 'Externals', 'infra',
+     'Whether each external connector genuinely touches real UI AND real backend.'),
+    ('galaxy_map_load.html', '⏳', 'Load Dimension', 'infra',
+     'What actually triggers a load: boot task, page nav, or on-demand click.'),
+    ('galaxy_map_skill_network.html', '🕸️', 'Skills', 'inter',
+     'Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.'),
+    ('galaxy_map_alex_path.html', '🧑', 'Alex’s Decision Path', 'inter',
+     'Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.'),
+    ('galaxy_map_orchestrator_openmontage.html', '🛰️', 'Orchestrator ↔ OpenMontage', 'inter',
+     'Real async dispatch history between the two Claude Code sessions.'),
+    ('galaxy_map_oversight_sync.html', '📚', 'Oversight Sync', 'inter',
+     'Which oversight doc gets touched, in what order, during a push or ritual.'),
+]
+
+DIMENSION_KIND_META = {
+    'inter': ('🔗', 'Inter — a connection/flow between things', '#4A90E2'),
+    'infra': ('💉', 'Infra — a resource attached to things', '#9B59B6'),
+    'meta': ('🧭', 'Meta — synthesis across several dimensions', '#8a8a9a'),
+}
+
+DIMENSION_INDEX_CSS = '''
+.dim-index{max-width:1180px;margin:18px auto 26px;padding:0 24px}
+.dim-index h2{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:4px;text-align:center}
+.dim-index .dim-sub{font-size:11px;color:#8a8a9a;text-align:center;margin-bottom:14px;line-height:1.6}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.dim-card{display:block;text-decoration:none;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.1);border-left-width:3px;border-radius:10px;padding:11px 13px;transition:background .15s,border-color .15s}
+.dim-card:hover{background:rgba(255,255,255,0.07)}
+.dim-card .dim-name{font-size:12.5px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+.dim-card .dim-desc{font-size:10px;color:#8a8a9a;line-height:1.55}
+.dim-card .dim-kind{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.9}
+'''
+
+
+def dimension_index_html(current_file=None, heading='🌌 Dimensions'):
+    """Renders the real, shared Dimension index — the same card treatment
+    Rivers get, which is the whole point of G74 (equal visual weight,
+    not a numbered rung). Skips `current_file` so a page never links to
+    itself. Data comes from DIMENSION_PAGES only — never hand-typed."""
+    cards = []
+    for fname, icon, label, kind, desc in DIMENSION_PAGES:
+        if fname == current_file:
+            continue
+        kicon, klabel, kcolor = DIMENSION_KIND_META[kind]
+        cards.append(
+            f'<a class="dim-card" href="{fname}" style="border-left-color:{kcolor}" title="{klabel}">'
+            f'<div class="dim-name">{icon} {label}</div>'
+            f'<div class="dim-kind" style="color:{kcolor}">{kicon} {kind}</div>'
+            f'<div class="dim-desc">{desc}</div></a>'
+        )
+    return (f'<div class="dim-index"><h2>{heading}</h2>'
+            '<div class="dim-sub">A Dimension is a real cross-cutting facet — the same modules and functions, '
+            'seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, '
+            'which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home '
+            'partition). Equal standing with Rivers, different shape.</div>'
+            f'<div class="dim-grid">{"".join(cards)}</div></div>')
+
+
+# ---------------------------------------------------------------------
+# G74 (Aug 25 2026) — one shared renderer for the real, evidence-gated
+# connector bubbles (Oracle / Composio / Last.fm / Supabase).
+#
+# Real finding this was extracted from, not a speculative abstraction:
+# the exact same ~20-line shape had been hand-written FIVE times across
+# two files, each added in a different session — galaxy_map_current.py's
+# Oracle/Composio/Last.fm bubbles and galaxy_map_module.py's
+# Oracle/Supabase bubbles. Every real difference between the five was a
+# number or a word (fan step, hub radius, font sizes, y-offsets, the
+# unit noun), never behaviour, so this collapses to one function plus
+# two size presets taken VERBATIM from the two call-site families —
+# output is byte-identical to the copies it replaced (verified by diff).
+#
+# Deliberately NOT generalized into this: the Alex bubble. It is a
+# genuinely different shape — bidirectional (separate in/out edge
+# passes), no per-edge count label, its own subtitle wording ("N shown
+# to me · M buttons I press"), and it is drawn permanently rather than
+# gated on an evidence count. Forcing it through this signature would
+# need three mutually-exclusive flags and would make both call sites
+# harder to read, not easier — said plainly rather than papered over.
+BUBBLE_STYLE = {
+    # galaxy_map_current.py's own established per-FUNCTION sizing.
+    'function': dict(fan=13, hub_r=26, hub_sw='2.5', emoji_dy=6, emoji_fs='16',
+                     label_dy=42, sub_dy=55, sub_fs='8',
+                     edge_r1=26, edge_r2=20, offset_mult=0.6),
+    # galaxy_map_module.py's own established per-MODULE sizing.
+    'module': dict(fan=15, hub_r=24, hub_sw='3', emoji_dy=5, emoji_fs='15',
+                   label_dy=38, sub_dy=50, sub_fs='7.5',
+                   edge_r1=22, edge_r2=20, offset_mult=0.5),
+}
+
+
+def core_js_lines(a, b, core_js_path: Path = CORE_JS):
+    """Real verbatim excerpt, rpgace_core.js lines a..b inclusive
+    (1-indexed).
+
+    G74/G75 (Aug 25 2026) — this was two byte-identical hand-written
+    copies, one in galaxy_map_level5.py and one in
+    galaxy_map_decisions.py, the second of which even said so in its own
+    docstring ("same helper as galaxy_map_level5.py (rule 8)") while
+    still being a second copy. Now one shared implementation both real
+    call sites import.
+
+    Deliberately does NOT verify the anchor itself — that stays with
+    verify_core_js_anchor() below, so a caller can read an excerpt and
+    assert on it as two separate, explicit steps.
+    """
+    return '\n'.join(core_js_path.read_text(encoding='utf-8').splitlines()[a - 1:b])
+
+
+def verify_core_js_anchor(point_id, anchor, a, b, core_js_path: Path = CORE_JS):
+    """Fails loud (not silently) if a hand-cited line range no longer
+    contains its own anchor text — a mismatched anchor means the page is
+    now citing the WRONG code, and a build-time crash is strictly better
+    than shipping a confidently-stale excerpt.
+
+    This project has already been saved by exactly this behaviour twice
+    (the Aug 20 main.js merge's +4451-line shift, and the Aug 22 drift
+    caught by a /paranoia pass). Shared here so the discipline survives
+    the L5 -> Decision Matrix merge instead of being re-implemented,
+    slightly differently, in each consumer."""
+    if anchor not in core_js_lines(a, b, core_js_path):
+        raise SystemExit(
+            f"STALE ANCHOR: {point_id} — {anchor!r} not found in rpgace_core.js lines {a}-{b}. "
+            f"The real source has moved — re-verify and update this decision point's line numbers before shipping.")
+
+
+def render_evidence_bubble(items, pos, hub_xy, color, emoji, label,
+                           unit_noun, count_noun, edge_fn, style='function'):
+    """One real evidence-gated connector bubble.
+
+    items      — [(key, count), ...], already filtered to count > 0 and
+                 to keys that genuinely have a position. The CALLER does
+                 that filtering, because "which items count" is real
+                 per-page evidence, not layout.
+    pos        — {key: (x, y)} for the already-laid-out nodes.
+    hub_xy     — (x, y) for the bubble itself.
+    edge_fn    — the page's own _curved_edge; passed in rather than
+                 imported so this module keeps no dependency on the
+                 render scripts that import it.
+
+    Returns (edges, nodes) — two lists of SVG string fragments, appended
+    by the caller in that order, exactly as the five hand-written copies
+    did. Returns ([], []) for empty `items`, so "no real evidence, no
+    bubble" stays the caller's own one-line guard.
+    """
+    if not items:
+        return [], []
+    st = BUBBLE_STYLE[style]
+    hx, hy = hub_xy
+    edges, nodes = [], []
+    n = 0
+    for key, cnt in items:
+        n += 1
+        fx, fy = pos[key]
+        ox = hx + (n * st['fan'] if n % 2 == 0 else -n * st['fan'])
+        edges.append(edge_fn(fx, fy, ox, hy, color, real=True, dashed=True,
+                             r1=st['edge_r1'], r2=st['edge_r2'],
+                             offset_mult=st['offset_mult']))
+        mx, my = (fx + ox) / 2, (fy + hy) / 2
+        nodes.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{color}" stroke-width="1"/>'
+                     f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{color}" font-weight="700">{cnt}</text>')
+    total = sum(c for _k, c in items)
+    nodes.append(
+        f'<g class="node"><circle cx="{hx}" cy="{hy}" r="{st["hub_r"]}" fill="#0f0f1a" stroke="{color}" stroke-width="{st["hub_sw"]}" filter="url(#glow)"/>'
+        f'<text x="{hx}" y="{hy+st["emoji_dy"]}" text-anchor="middle" font-size="{st["emoji_fs"]}">{emoji}</text>'
+        f'<text x="{hx}" y="{hy+st["label_dy"]}" text-anchor="middle" font-size="9.5" fill="{color}" font-weight="700">{label}</text>'
+        f'<text x="{hx}" y="{hy+st["sub_dy"]}" text-anchor="middle" font-size="{st["sub_fs"]}" fill="{color}" opacity="0.85">{len(items)} {unit_noun}(s) · {total} real {count_noun}(s)</text></g>'
+    )
+    return edges, nodes
+
 
 LEVEL_RAIL_CSS = '''
 .level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
@@ -2909,7 +3117,10 @@ LEVEL_RAIL_CSS = '''
 
 
 def level_rail_html(current_file):
-    """Renders the shared 8-stop level ladder, current stop highlighted."""
+    """Renders the shared 4-stop containment ladder (L0 -> L1 -> L2 ->
+    Current/L3), current stop highlighted. Length is read from
+    LEVEL_RAIL itself, never hardcoded — see that list's own comment for
+    why the old L2.5/L4/L5/L6 stops are gone."""
     chips = []
     for i, (fname, icon, label) in enumerate(LEVEL_RAIL):
         cls = ' class="active"' if fname == current_file else ''

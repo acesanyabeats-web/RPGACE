@@ -88,7 +88,7 @@ from galaxy_map_decisions import CATEGORIES as DEC_CATEGORIES, DECISION_POINTS  
 # file — they cover genuinely different real things (human-confirm
 # GATES vs. curated core LOGIC), same as the earlier Level3/Current
 # fold only merged pages that were two views of the SAME dataset.
-from galaxy_map_level5 import DECISION_POINTS as L5_DECISION_POINTS  # noqa: E402
+from galaxy_map_decision_matrix import LOGIC_POINTS as L5_DECISION_POINTS  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map.html')
 
@@ -319,7 +319,7 @@ def build_facets():
         facets['alex'].append({
             'kind': 'infra', 'dim': 'Decisions (what Alex can decide)', 'label': f"🎛️ Real Choices (1) — {esc(oracle_mode_pt['title'])}",
             'detail': f"{esc(oracle_mode_pt['changes'])} <span class=\"ev\">Real evidence: {esc(oracle_mode_pt['result'])}</span>",
-            'share_key': 'decisions', 'link': 'galaxy_map_level5.html',
+            'share_key': 'decisions', 'link': 'galaxy_map_decision_matrix.html',
         })
 
     facets['alex'].append({
@@ -804,6 +804,10 @@ TEMPLATE = """<!DOCTYPE html>
   .unit-card:hover{{transform:translateY(-3px)}}
   .unit-card.active{{border-color:var(--gold);background:rgba(201,168,76,0.08)}}
   .unit-card.glow{{box-shadow:0 0 0 2px var(--gold), 0 0 14px rgba(201,168,76,0.55)}}
+  th.unit-rowhead{{cursor:pointer}}
+  th.unit-rowhead:hover{{background:rgba(201,168,76,0.12)}}
+  th.unit-rowhead.glow{{box-shadow:inset 0 0 0 2px var(--gold)}}
+  .rowjump-cue{{opacity:.45;font-size:10px}}
   .unit-node.glow circle{{stroke:var(--gold) !important;stroke-width:4 !important}}
   .unit-icon{{font-size:26px;margin-bottom:6px}}
   .unit-name{{font-size:11.5px;font-weight:700}}
@@ -925,7 +929,7 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="matrix-legend"><span>💉 injection tool</span><span>🧑 actor</span><span>· no direct real edge (mediated)</span></div>
   <div class="table-details">{table_details}</div>
   <div style="text-align:center;font-size:10.5px;color:#6a6a78;max-width:820px;margin:20px auto 0;padding:0 24px 20px">
-    G68 (the recursive L0↔river/module/function interaction-matrix idea): this IS the L0 layer's own real matrix. The next matrix layer down is <a href="galaxy_map_dimensions.html">the Dimensions Matrix</a> (44 real L2 modules × 5 real dimensions) — genuinely the same recurring shape at a finer grain, not a new page built for this. No new data was invented to answer G68; the matrices already existed, this just names and links the real chain.
+    G68 (the recursive L0↔river/module/function interaction-matrix idea): this IS the L0 layer's own real matrix. The next matrix layer down is <a href="galaxy_map_dimensions.html">the Dimensions Matrix</a> (now two real grains on one page: every river × every dimension it participates in, and the finer 45 real L2 modules × 5 real dimensions) — genuinely the same recurring shape at a finer grain, not a new page built for this. No new data was invented to answer G68; the matrices already existed, this just names and links the real chain.
   </div>
 </div>
 
@@ -965,7 +969,7 @@ TEMPLATE = """<!DOCTYPE html>
   var currentUnit = null, currentKind = null;
 
   function clearGlow() {{
-    document.querySelectorAll('.unit-card, .unit-node').forEach(function(c) {{ c.classList.remove('glow'); }});
+    document.querySelectorAll('.unit-card, .unit-node, .unit-rowhead').forEach(function(c) {{ c.classList.remove('glow'); }});
   }}
   function setGlow(uid) {{
     document.querySelectorAll('[data-unit="' + uid + '"]').forEach(function(el) {{
@@ -1048,6 +1052,21 @@ TEMPLATE = """<!DOCTYPE html>
     t.addEventListener('click', function() {{
       mtToggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
       mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+    }});
+  }});
+  // G74 — a matrix ROW header opens that unit's own facet panel: the
+  // exact same destination the map view's own unit bubble already goes
+  // to, reached by triggering that bubble's own click rather than
+  // duplicating any of its logic.
+  document.querySelectorAll('th.unit-rowhead').forEach(function(th) {{
+    th.addEventListener('click', function() {{
+      var uid = th.dataset.unit;
+      var card = document.querySelector('.unit-card[data-unit="' + uid + '"]')
+              || document.querySelector('.unit-node[data-unit="' + uid + '"]');
+      if (!card) return;
+      mtToggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'map'); }});
+      mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-map'); }});
+      card.click();
     }});
   }});
   document.querySelectorAll('td.hit').forEach(function(td) {{

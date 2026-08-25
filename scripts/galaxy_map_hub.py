@@ -69,7 +69,9 @@ from pathlib import Path
 import sys as _sys_rail
 from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
-from graphify_river_group import inject_level_rail  # noqa: E402
+from graphify_river_group import (  # noqa: E402
+    inject_level_rail, LEVEL_RAIL, DIMENSION_PAGES, RIVER_NAME,
+)
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -106,10 +108,6 @@ PAGES = [
      'scope': 'River V only, pre-Aug-20 split', 'desc': 'Retired Aug 20 in favor of Level 2.5\'s own river→card→module view (Aug 21: now itself folded into Level 2\'s table view) — kept on disk for reference, no longer the live drill-down path.'},
     {'file': 'galaxy_map_current.html', 'label': 'Current Series (map+table, function-level)', 'level': 'Current (L3)', 'kind': 'core',
      'scope': 'All 45 modules, 436 functions', 'desc': 'G47, folded with the old Level 3 Aug 21 2026 (G65) — real per-function input/handling/output/next detail (table view) AND the real per-module call-chain diagram (map view), same real data, one page. galaxy_map_level3.html is gone, not superseded — its content lives here now.'},
-    {'file': 'galaxy_map_zoom.html', 'label': 'Zoomed Current Walkthrough (repurposed Level 4)', 'level': 'Zoom (L4)', 'kind': 'core',
-     'scope': '436 real zoomed cards', 'desc': 'G47 continuation — walks one Current at a time to its real next call, until a genuine terminal or module boundary. G66 fold (Aug 21 2026): the old Level4 dashboard-card click-flow page is retired outright (no merge) — its real per-card evidence already lived inline on galaxy_map_module.html, so no new destination was invented. galaxy_map_level4.html no longer exists.'},
-    {'file': 'galaxy_map_level5.html', 'label': 'Level 5 — Logic', 'level': 'L5', 'kind': 'infra',
-     'scope': '7 curated decision points', 'desc': 'G17 — curated core-logic decision points, each with a verbatim rpgace_core.js excerpt checked at build time.'},
     {'file': 'galaxy_map_level6.html', 'label': 'Level 6 — Detailed Decision', 'level': 'L6', 'kind': 'infra',
      'scope': '1089 branch points, 45 modules', 'desc': 'G18 — exhaustive, mechanical if/else-if/else/switch branch extraction, listed not narrated.'},
     {'file': 'galaxy_map_logic_dimension.html', 'label': 'Logic Dimension', 'level': 'Dimension', 'kind': 'inter',
@@ -264,6 +262,44 @@ def build_map_view(edges, indeg):
 </svg>'''
 
 
+def build_primer():
+    """G76 (Aug 25 2026) — the real "How to read this map" primer.
+
+    Every number in it is COMPUTED from the same real data the rest of
+    the build already uses (LEVEL_RAIL, DIMENSION_PAGES, RIVER_NAME,
+    PAGES) — never hand-typed, so it cannot drift the way an
+    aspirational hand-written paragraph would. Placed on this page
+    specifically because this is the one page whose entire job is
+    orienting someone who does not already know the vocabulary: the L0
+    map assumes you came to look at the architecture, the hub assumes
+    you came to find your way around.
+    """
+    n_levels = len(LEVEL_RAIL)
+    ladder = ' → '.join(f'{icon} {label}' for _f, icon, label in LEVEL_RAIL)
+    n_dims = len(DIMENSION_PAGES)
+    n_rivers = len(RIVER_NAME)
+    n_pages = len(PAGES)
+    dim_names = ', '.join(label for _f, _i, label, _k, _d in DIMENSION_PAGES)
+    return f'''<div class="primer">
+  <h2>🧭 How to read this map</h2>
+  <p>Three words do most of the work here, and they are <b>not</b> interchangeable. {n_pages} real pages, all of them one of the three.</p>
+  <div class="primer-grid">
+    <div class="primer-card" style="border-left-color:#C9A84C">
+      <div class="pc-title">📐 Level — a containment step</div>
+      <div class="pc-body">One thing physically <b>inside</b> the next. There are exactly <b>{n_levels}</b>:<br><span class="pc-ladder">{ladder}</span><br>A galaxy contains rivers; a river contains modules; a module contains its own functions. That nesting is the whole test — if X does not literally sit inside the level above it, it is not a Level.</div>
+    </div>
+    <div class="primer-card" style="border-left-color:#4A90E2">
+      <div class="pc-title">🌊 River — a one-home grouping</div>
+      <div class="pc-body">A real grouping of the codebase where <b>every module belongs to exactly one</b>. There are <b>{n_rivers}</b>. That strict one-module-one-home property is what lets a River be a real containment step (L1) — and it is exactly why a Dimension can never be renumbered into one.</div>
+    </div>
+    <div class="primer-card" style="border-left-color:#9B59B6">
+      <div class="pc-title">🌌 Dimension — a cross-cutting lens</div>
+      <div class="pc-body">The same modules and functions, viewed through one facet. Deliberately <b>multi-membership</b>: one module can appear in several at once. There are <b>{n_dims}</b>: {dim_names}. Equal standing with Rivers, different shape — a Dimension answers "what does this touch", a River answers "where does this live".</div>
+    </div>
+  </div>
+  <p class="primer-foot">Real Aug 25 2026 correction (G75): the map used to show eight ladder stops. Four of them — L2.5, Zoom/L4, L5, L6 — failed the containment test above; they were lenses wearing a level's name. L2.5 is Level 2\'s own table view, Zoom is now an inline toggle on each Current, L5\'s write-ups are on the Decision Matrix, and L6 keeps its page as link-out-only branch detail. Nothing was deleted without its content landing somewhere real first.</p>
+</div>'''
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -319,12 +355,22 @@ TEMPLATE = """<!DOCTYPE html>
   #pane-placeholder{{border:1px dashed rgba(255,255,255,0.15);border-radius:10px;padding:30px;text-align:center;color:var(--dim);font-size:12px}}
   .note{{max-width:900px;margin:10px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--gold)}}
+  .primer{{max-width:1100px;margin:20px auto 6px;padding:0 24px}}
+  .primer h2{{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:6px;text-align:center}}
+  .primer > p{{font-size:11.5px;color:var(--dim);text-align:center;margin-bottom:14px;line-height:1.6}}
+  .primer-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}}
+  .primer-card{{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.1);border-left-width:3px;border-radius:10px;padding:14px 16px}}
+  .pc-title{{font-size:12.5px;font-weight:700;color:#E2E2EC;margin-bottom:6px}}
+  .pc-body{{font-size:11px;color:#c8c8d4;line-height:1.65}}
+  .pc-ladder{{display:inline-block;margin:5px 0;font-size:10.5px;color:var(--gold);font-weight:700}}
+  .primer-foot{{font-size:10.5px;color:#6a6a78;line-height:1.7;margin-top:12px}}
 </style>
 </head>
 <body>
 <div style="max-width:900px;margin:10px auto 0;padding:10px 24px;text-align:center;font-size:11px;color:var(--dim)">
   A real, distinct utility (Aug 21 2026, Alex's own direct call: "keep as a real, standalone index") — this is the one page that catalogues every other Galaxy Map page, not itself a level or dimension. Start exploring L0 at <a href="galaxy_map.html">galaxy_map.html</a> — RPGACE Total Systems' own real architecture map — then come back here whenever you need to find something specific.
 </div>
+{primer}
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Page Index (G59)</div>
   <h1>🌌 The Page Index — {n_pages} Real Pages, {n_edges} Real Cross-References</h1>
@@ -424,7 +470,7 @@ def main():
         n_pages=len(PAGES), n_edges=len(edges),
         c_core=KIND_META['core']['color'], c_inter=KIND_META['inter']['color'],
         c_infra=KIND_META['infra']['color'], c_meta=KIND_META['meta']['color'],
-        table_html=table_html, map_html=map_html,
+        table_html=table_html, map_html=map_html, primer=build_primer(),
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
