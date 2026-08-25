@@ -208,7 +208,10 @@ TEXT_INPUT_POINTS = [
         'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (14373, 14373),
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
-        'link': 'galaxy_map_decisions.html#d-placement-confirm',
+        # Aug 25 2026 — real dead-anchor fix (see the note on the gate
+        # links in build_unified() below): galaxy_map_decisions.html's
+        # own real per-point ids are `dp-<id>`, never `d-<id>`.
+        'link': 'galaxy_map_decisions.html#dp-placement-confirm',
     },
 ]
 
@@ -241,7 +244,16 @@ def build_unified():
             'kind_label': '🗑️ Gate', 'module': p['module'], 'func': p.get('func', ''),
             'river': MODULE_TO_RIVER.get(p['module']),
             'depth': 'curated' if p['id'] in L5_IDS else 'standard',
-            'detail': p['logic'], 'link': 'galaxy_map_decisions.html#d-' + p['id'],
+            # Aug 25 2026 — real dead-anchor fix, found by a direct
+            # href-vs-id check while G77 wired this same unified dataset
+            # into galaxy_map.html's own Alex Infra tab. This link had
+            # always emitted `#d-<id>`, but galaxy_map_decisions.py
+            # renders its real per-point sections with `id="dp-<id>"`,
+            # so all 10 gate links landed at the top of that page
+            # instead of on the decision they name. Pre-existing (it was
+            # already live on this page's own matrix), fixed at the one
+            # shared source rather than patched per-consumer (rule 8).
+            'detail': p['logic'], 'link': 'galaxy_map_decisions.html#dp-' + p['id'],
         })
     for p in LOGIC_POINTS:
         # G75 — anchor-verified HERE now that the write-ups live on this

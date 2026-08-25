@@ -62,6 +62,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
+    RIVER_NAME, RIVER_FLOWS, compute_river_flow_cycles, _river_num_from_label,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
@@ -76,19 +77,27 @@ from galaxy_map_l0 import (  # noqa: E402
     UNITS as SRC_UNITS, EDGES as SRC_EDGES, INJECTION, ACTOR,
     build_matrix as l0_build_matrix, build_table_details as l0_build_table_details,
 )
-from galaxy_map_decisions import CATEGORIES as DEC_CATEGORIES, DECISION_POINTS  # noqa: E402
-# Real Aug 21 2026 fix (Alex's own direct ask: "decisions should also
-# be on whole, with information on... choices... too many docs that
-# could be merged for alex infra"). Real evidence: of Level 5's 7 core-
-# logic decision points, exactly ONE (oracle-mode) is genuinely Alex's
-# OWN choice (decider: "Alex (manual toggle)") — the other 6 are code-
-# logic/Oracle-judgment decisions, not something Alex directly picks.
-# Cross-referenced here (rule 8, not re-derived) rather than literally
-# merging galaxy_map_decisions.py and galaxy_map_level5.py into one
-# file — they cover genuinely different real things (human-confirm
-# GATES vs. curated core LOGIC), same as the earlier Level3/Current
-# fold only merged pages that were two views of the SAME dataset.
-from galaxy_map_decision_matrix import LOGIC_POINTS as L5_DECISION_POINTS  # noqa: E402
+# ── G77 (Aug 25 2026) — Alex's own Infra tab is now PURELY the
+# Decisions bubble system, and it covers ALL 21 real decisions, not the
+# 11 it used to.
+#
+# What it used to import, and why that was the wrong source: this file
+# pulled galaxy_map_decisions.py's 10 human-confirm GATES (grouped by
+# its own CATEGORIES) plus exactly ONE hand-picked LOGIC_POINTS entry
+# (oracle-mode) — 11 of the real 21. The real unified dataset already
+# existed one file over: galaxy_map_decision_matrix.build_unified()
+# merges all 3 real kinds (10 gates + 7 curated logic choices + 4
+# curated text-input points = 21) and tags each with its own real
+# river, resolved from RIVER_MODULES. Re-deriving any of that here
+# would have been a second, drifting copy (rule 8), so this now imports
+# the one real unified builder directly.
+#
+# Load-bearing side effect, deliberately kept: build_unified() runs
+# verify_core_js_anchor() over every logic/text-input point, so a moved
+# or changed rpgace_core.js anchor now fails THIS page's build loudly
+# too, exactly as it already failed the Decision Matrix's. That is a
+# strengthening of the existing anchor discipline, never a bypass.
+from galaxy_map_decision_matrix import build_unified as dm_build_unified  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map.html')
 
@@ -205,10 +214,339 @@ NEW_BUBBLE_UNITS = ['external_ai', 'skills', 'alex', 'supabase', 'oversight_docs
 # example this session: infra = "Supabase touch, Oracle call,
 # external-connector touch").
 FORCE_INFRA_UNITS = {'external_ai'}
-# Real, explicit override #2 — the alex<->rpgace_architecture edge is
-# INFRA (Alex's own literal "infra = what decisions I can make"
-# example), expanded below to the full real DECISION_POINTS list.
-FORCE_INFRA_EDGE_IDS = {'alex-rpgace'}
+# Real, explicit override #2 — RETIRED by G77 (Aug 25 2026). The
+# alex<->rpgace_architecture edge used to be force-flipped to INFRA so
+# it would sit next to the decision list. Alex's own direct critique
+# this session: his Infra tab was mixing that generic relationship edge
+# in with the decisions themselves. The edge is REAL and is not deleted
+# — it is re-routed to his INTER list (see EDGE_DIM_OVERRIDE below),
+# where its own stored kind (ACTOR) already put it naturally, so both
+# sides of the edge (alex and rpgace_architecture) now agree instead of
+# one side being force-flipped.
+FORCE_INFRA_EDGE_IDS = set()
+
+# G77 — the one real dimension name Alex's Infra tab is allowed to
+# contain. Anything else that lands on `alex` (the alex<->external_ai
+# edge, the 3 "Uses: <provider>" rows) is a real relationship and is
+# PRESERVED VERBATIM — it is just re-kinded to 'inter' at the end of
+# build_facets(), never dropped. Deliberately scoped to `alex` alone:
+# FORCE_INFRA_UNITS' own "anything touching External AI is Infra" rule
+# still holds for every other unit, external_ai included.
+DECISIONS_DIM = 'Decisions (what Alex can decide)'
+INFRA_DECISIONS_ONLY_UNITS = {'alex'}
+
+# G77 — a real per-edge dimension override. The alex<->rpgace edge's
+# own desc is literally about the UI element Alex touches ("Input = the
+# real UI element (a confirm popup, an arm/confirm button). Output =
+# the write/action taken"), which is the same real relationship the
+# existing 'UI / Dashboard Path' Inter dimension already describes on
+# both units — so it joins that group rather than opening a new
+# near-duplicate one (rule 8). Its share_key is untouched, so the
+# existing cross-highlight between alex and rpgace_architecture still
+# fires exactly as before.
+EDGE_DIM_OVERRIDE = {'alex-rpgace': 'UI / Dashboard Path'}
+
+# ── G78 (Aug 25 2026) — External AI's own Infra tab, rebuilt.
+#
+# Alex's own direct critique of what this tab used to show: 3 generic
+# "↔ <other unit>" partner edges plus 3 provider rows — a vague
+# aggregate that named almost none of the real external AI actors
+# RPGACE Total Systems actually talks to. This is the real, named
+# 12-actor roster he asked for, in his own listed order, resolved
+# against 3 real already-existing sources and never re-typed:
+#   'unit'      -> this file's own GALAXY_BY_ID/UNIT_META (a real L0
+#                  unit that is ALSO an external AI actor — a
+#                  deliberate overlap, not a duplication bug: those 3
+#                  stay independently selectable units of their own,
+#                  and each row here carries the same share_key their
+#                  own dispatch facet uses, so clicking it glows that
+#                  unit's real bubble).
+#   'provider'  -> ORACLE_PROVIDERS (role/tested) + EXTERNAL_CONNECTORS
+#                  (real status string).
+#   'connector' -> EXTERNAL_CONNECTORS (status/via/note), verbatim.
+# Deliberately NOT done: promoting these 12 to their own L0 units. That
+# would break the uniform 9-unit L0 grain (the ratified "no privileged
+# or special-cased unit" rule, R16) and duplicate galaxy_map_externals.
+# html's (G27) already-built per-connector breakdown.
+EXTERNAL_AI_ACTORS = [
+    ('unit', 'orchestrator_cc'),
+    ('unit', 'openmontage_cc'),
+    ('unit', 'graphify_cc'),
+    ('connector', 'Composio'),
+    ('connector', 'librosa'),
+    ('connector', 'Jina AI'),
+    ('connector', 'Last.fm'),
+    ('connector', 'Whisper (OpenAI, local)'),
+    ('connector', 'n8n'),
+    ('provider', 'OpenAI (Luna)'),
+    ('provider', 'Moonshot AI (Kimi)'),
+    ('provider', 'Anthropic (Claude API)'),
+]
+# Real connector row backing a CC unit, where one genuinely exists.
+# orchestrator_cc deliberately has NO entry — it is this session
+# itself, not an external hosted service, so it has no
+# EXTERNAL_CONNECTORS row to read a status from and says so plainly
+# rather than borrowing one.
+CC_UNIT_CONNECTOR = {'openmontage_cc': 'OpenMontage', 'graphify_cc': 'Graphify CC'}
+CC_UNIT_LINK = {
+    'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html',
+    'openmontage_cc': 'galaxy_map_orchestrator_openmontage.html',
+    'graphify_cc': 'galaxy_map_externals.html',
+}
+
+
+def _status_rank(status):
+    """Real, evidence-derived display rank from a connector's own status
+    string — never a hand-assigned per-actor number. live first, then
+    genuinely-built-but-unconfirmed/local, then dormant scaffolds, then
+    deferred."""
+    s = (status or '').lower()
+    if s.startswith('live'):
+        return 0
+    if s.startswith('dormant'):
+        return 2
+    if s.startswith('deferred'):
+        return 3
+    return 1
+
+
+_CONNECTOR_BY_NAME = {c['name']: c for c in EXTERNAL_CONNECTORS}
+
+
+def river_flow_rank():
+    """G77 — a real, deterministic 'chronological' rank per river,
+    derived entirely from RIVER_FLOWS. Alex's own stated reasoning for
+    wanting this axis: "the rivers are in many ways the chronological
+    order from logging to getting to last action that hasn't been
+    touched."
+
+    Method, in 3 real steps, every one of them reusing evidence that
+    already exists rather than inventing an ordering:
+
+      1. Condense the real cycles. RIVER_FLOWS genuinely contains
+         cycles (compute_river_flow_cycles() — the already-built
+         Tarjan SCC detector, reused not re-derived: 2 real groups,
+         {11,12} and {2,3,4,6,7,8,17}). A digraph's condensation is
+         always a DAG, so a genuine topological order exists on it
+         even though one does NOT exist on the raw river graph.
+      2. Longest-path layering over that DAG (Kahn's algorithm,
+         layer = 1 + max(layer of predecessors)). A river no other
+         river flows into lands at layer 0 — the real "logging"
+         end; a terminal sink lands at the highest layer — the real
+         "last action" end.
+      3. Tie-break INSIDE a cycle group by that group's own real
+         intra-group in-degree, ascending. Within {2,3,4,6,7,8,17}
+         nothing else separates the members (they all share one
+         layer by definition), but their internal edges do: River
+         III is fed by one river, River VIII is fed by three, so
+         III sorts toward the start and VIII toward the estuary end,
+         which is exactly what those two rivers really are. Final
+         tie-break is river number, so the result is fully
+         deterministic.
+
+    Real, honest limits: this is NOT a true topological sort of the
+    rivers themselves (impossible — real cycles exist), and every
+    member of a cycle group necessarily shares one layer, so the
+    in-degree tie-break is the only real separation available inside a
+    group. Returns {river_number: (layer, intra_group_indegree)}.
+    """
+    adj, nodes = {}, set()
+    for src, targets in RIVER_FLOWS.items():
+        nodes.add(src)
+        for t in targets:
+            dst = _river_num_from_label(t[0])
+            if dst is not None:
+                adj.setdefault(src, set()).add(dst)
+                nodes.add(dst)
+
+    cycles = compute_river_flow_cycles()
+    comp = {}
+    for i, group in enumerate(cycles):
+        for r in group:
+            comp[r] = ('scc', i)
+    for n in sorted(nodes):
+        comp.setdefault(n, ('river', n))
+
+    cnodes = sorted(set(comp.values()))
+    cadj = {c: set() for c in cnodes}
+    for src, dsts in adj.items():
+        for dst in sorted(dsts):
+            if comp[src] != comp[dst]:
+                cadj[comp[src]].add(comp[dst])
+
+    indeg = {c: 0 for c in cnodes}
+    for c in cnodes:
+        for d in sorted(cadj[c]):
+            indeg[d] += 1
+    layer = {c: 0 for c in cnodes}
+    remaining = dict(indeg)
+    queue = sorted([c for c in cnodes if remaining[c] == 0])
+    while queue:
+        c = queue.pop(0)
+        for d in sorted(cadj[c]):
+            layer[d] = max(layer[d], layer[c] + 1)
+            remaining[d] -= 1
+            if remaining[d] == 0:
+                queue.append(d)
+                queue.sort()
+
+    # Real intra-cycle-group in-degree (0 for any river that isn't in a
+    # cycle group — it has no group-internal edges by definition).
+    intra = {n: 0 for n in nodes}
+    for group in cycles:
+        members = set(group)
+        for src in sorted(members):
+            for dst in sorted(adj.get(src, ())):
+                if dst in members:
+                    intra[dst] += 1
+    return {n: (layer[comp[n]], intra[n]) for n in sorted(nodes)}
+
+
+def build_alex_decision_facets():
+    """G77 — Alex's Infra tab, built as one facet per real RIVER, each
+    holding that river's own real decisions from the unified Decision
+    Matrix dataset (all 21, all 3 kinds). River groups are ordered by
+    river_flow_rank() above; a river with no RIVER_FLOWS presence at
+    all, and the real un-rivered group (dashDeck is a documented
+    cross-cutting module with no river of its own), sort last."""
+    decisions = dm_build_unified()
+    rank = river_flow_rank()
+
+    by_river = {}
+    for d in decisions:
+        by_river.setdefault(d['river'], []).append(d)
+
+    def river_sort_key(r):
+        if r is None:
+            return (2, 99, 99, 99)
+        if r not in rank:
+            return (1, 99, 99, r)
+        layer, intra = rank[r]
+        return (0, layer, intra, r)
+
+    # Real "flows toward" evidence, river-level by construction: a real
+    # RIVER_FLOWS edge from this river into another river that ALSO
+    # holds one of the 21 decisions. Deliberately NOT an invented
+    # per-decision dependency graph — the evidence that exists is river
+    # topology, so the note says so and names the real decisions the
+    # target river actually holds.
+    flows_toward = {}
+    for r in by_river:
+        if r is None:
+            continue
+        hits = []
+        for label, condition, itype in RIVER_FLOWS.get(r, ()):
+            tgt = _river_num_from_label(label)
+            if tgt is None or tgt == r or tgt not in by_river:
+                continue
+            hits.append((tgt, condition, itype, by_river[tgt]))
+        if hits:
+            flows_toward[r] = hits
+
+    def resolve_link(link):
+        """build_unified()'s own links are written for the Decision
+        Matrix page, so a curated logic point's link is a BARE same-page
+        anchor ('#d-oracle-mode'). Rendered here that would be a real
+        dead in-page anchor — galaxy_map.html has no such id. Qualify it
+        onto the page that actually owns those anchors. Caught by a
+        direct dead-link check before shipping, not assumed away."""
+        if link and link.startswith('#'):
+            return 'galaxy_map_decision_matrix.html' + link
+        return link
+
+    facets = []
+    for r in sorted(by_river, key=river_sort_key):
+        pts = sorted(by_river[r], key=lambda d: (d['kind'], d['title']))
+        items = ''.join(
+            f'<li><span class="dkind">{esc(d["kind_label"])}</span> '
+            f'<a href="{esc(resolve_link(d["link"]))}" target="_blank"><b>{esc(d["title"])}</b></a> — '
+            f'<code>{esc(d["module"])}{("." + d["func"]) if d.get("func") else ""}</code>: '
+            f'{esc(d["detail"])}</li>'
+            for d in pts
+        )
+        detail = f'<ul class="dec-list">{items}</ul>'
+        for tgt, condition, itype, tgt_pts in flows_toward.get(r, ()):
+            titles = ', '.join(esc(d['title']) for d in sorted(tgt_pts, key=lambda d: d['title']))
+            detail += (
+                f'<div class="flows-toward">→ flows toward <b>{esc(RIVER_NAME.get(tgt, "River " + str(tgt)))}</b> '
+                f'<span class="ft-cond">({esc(condition)} · <code>{esc(itype)}</code>)</span>, '
+                f'whose own real decisions are: {titles}.'
+                f'<span class="ev">Real evidence grain: this is a RIVER_FLOWS edge between the two rivers, '
+                f'not a per-decision dependency — no such per-decision graph exists in this project, and one '
+                f'was deliberately not invented for this note.</span></div>'
+            )
+        if r is None:
+            label = f'⚪ No river (cross-cutting module) ({len(pts)})'
+        else:
+            layer, intra = rank.get(r, (99, 99))
+            label = (f'{esc(RIVER_NAME.get(r, "River " + str(r)))} ({len(pts)}) '
+                     f'<span class="rrank">flow rank {layer}.{intra}</span>')
+        facets.append({
+            'kind': 'infra', 'dim': DECISIONS_DIM, 'label': label,
+            'detail': detail, 'share_key': 'decisions',
+            'link': 'galaxy_map_decision_matrix.html',
+        })
+    return facets, len(decisions)
+
+
+def build_external_ai_actor_facets():
+    """G78 — one real facet per named external AI actor, from
+    EXTERNAL_AI_ACTORS. Every status string is read from a real source
+    (EXTERNAL_CONNECTORS, or a CC unit's own GALAXIES entry), never
+    invented; fails loud if a named source row has gone missing."""
+    rows = []
+    for kind, key in EXTERNAL_AI_ACTORS:
+        if kind == 'unit':
+            g = GALAXY_BY_ID.get(key)
+            if not g:
+                raise SystemExit(f'G78: no GALAXIES entry for L0 unit {key!r} — roster is stale.')
+            conn_name = CC_UNIT_CONNECTOR.get(key)
+            conn = _CONNECTOR_BY_NAME.get(conn_name) if conn_name else None
+            if conn_name and not conn:
+                raise SystemExit(f'G78: no EXTERNAL_CONNECTORS row named {conn_name!r} — roster is stale.')
+            status = conn['status'] if conn else 'live (this session)'
+            source = (f'EXTERNAL_CONNECTORS[{esc(conn_name)}].status'
+                      if conn else 'its own GALAXIES entry (tested=True) — it has no EXTERNAL_CONNECTORS row, '
+                                   'because it is this Claude Code session itself, not an external hosted service')
+            via = conn.get('via') if conn else 'runs inside RPGACE\'s own repo — no bridge channel of its own'
+            share = g.get('channel') or f"galaxy:{key}"
+            detail = (f"{esc(g['role'])} <span class=\"ev\">Real status source: {source} · via: {esc(via)} · "
+                      f"bridges to: {esc(g.get('bridges_to') or 'n/a')}. Also a full L0 unit in its own right — "
+                      f"clicking this row glows its own bubble; click that bubble for its complete detail.</span>")
+            rows.append((_status_rank(status), {
+                'kind': 'infra', 'dim': 'External AI', 'icon': g['icon'],
+                'label': f"{g['icon']} Actor: {esc(g['label'])} ({esc(status)})",
+                'detail': detail, 'share_key': share, 'link': CC_UNIT_LINK.get(key),
+            }))
+        else:
+            conn = _CONNECTOR_BY_NAME.get(key)
+            if not conn:
+                raise SystemExit(f'G78: no EXTERNAL_CONNECTORS row named {key!r} — roster is stale.')
+            status = conn['status']
+            if kind == 'provider':
+                prov = next((p for p in ORACLE_PROVIDERS if p['name'] == key), None)
+                if not prov:
+                    raise SystemExit(f'G78: no ORACLE_PROVIDERS row named {key!r} — roster is stale.')
+                icon = prov['icon']
+                role = prov['role']
+                share = f"provider:{key}"
+            else:
+                icon = _connector_icon(key)
+                role = conn.get('note', '')
+                share = f"connector:{key}"
+            detail = (f"{esc(role)} <span class=\"ev\">Real status source: EXTERNAL_CONNECTORS[{esc(key)}].status "
+                      f"= <code>{esc(status)}</code> · via: {esc(conn.get('via') or 'n/a')} · "
+                      f"bridges to: {esc(conn.get('bridges_to') or 'n/a')}</span>")
+            rows.append((_status_rank(status), {
+                'kind': 'infra', 'dim': 'External AI', 'icon': icon,
+                'label': f"{icon} Actor: {esc(key)} ({esc(status)})",
+                'detail': detail, 'share_key': share, 'link': 'galaxy_map_externals.html',
+            }))
+    # Deterministic ordering: real status rank first (live -> local/
+    # unconfirmed -> dormant -> deferred), then EXTERNAL_AI_ACTORS' own
+    # roster position as a stable tie-break.
+    ordered = sorted(enumerate(rows), key=lambda pair: (pair[1][0], pair[0]))
+    return [facet for _, (_rank, facet) in ordered]
 
 
 def build_facets():
@@ -227,7 +565,7 @@ def build_facets():
         if e['id'] in FORCE_INFRA_EDGE_IDS:
             kind = 'infra'
         share_key = e.get('link') or f"edge:{e['id']}"
-        dim_label = {
+        dim_label = EDGE_DIM_OVERRIDE.get(e['id']) or {
             'galaxy_map_decisions.html': 'Decisions (human-confirm gates)',
             'galaxy_map_externals.html': 'Externals',
             'galaxy_map_skill_network.html': 'Skills',
@@ -275,21 +613,16 @@ def build_facets():
                 'kind': 'infra', 'dim': 'External AI', 'label': f"Uses: {esc(p['name'])} ({status})",
                 'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_externals.html',
             })
-        # Real Aug 21 2026 fix (Alex's own direct catch — "break up
-        # Externals into its AI components... this is too ambiguous"):
-        # this same per-provider data was already attached to
-        # rpgace_architecture/alex (the units that USE it) but never
-        # reciprocally to external_ai itself (the unit that IS it) — so
-        # clicking the External AI bubble's own Inter facets showed only
-        # 3 vague partner-edges, never its own real live/dormant
-        # component breakdown, even though that breakdown already
-        # existed (galaxy_map_externals.html, G27). Same share_key as
-        # the rpgace_architecture/alex rows above, so cross-highlight
-        # works automatically, zero new mechanism needed.
-        facets['external_ai'].append({
-            'kind': 'infra', 'dim': 'External AI', 'label': f"Component: {esc(p['name'])} ({status})",
-            'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_externals.html',
-        })
+    # G78 (Aug 25 2026) — External AI's own real, named 12-actor
+    # breakdown. This SUPERSEDES the Aug 21 (G70) 3-row "Component:
+    # <provider>" list that used to be appended inside the loop above:
+    # that fix was real but only covered the 3 Oracle providers, which
+    # is exactly the aggregate vagueness Alex called out again this
+    # session. All 3 providers are still here — they are 3 of the 12 —
+    # carrying the identical `provider:<name>` share_key, so the
+    # cross-highlight into rpgace_architecture/alex that G70 built still
+    # fires unchanged.
+    facets['external_ai'].extend(build_external_ai_actor_facets())
 
     sa = next((n for n in HARNESS_NODES if n['id'] == 'self_awareness'), None)
     if sa:
@@ -298,29 +631,16 @@ def build_facets():
             'detail': esc(sa['note']), 'share_key': 'self_awareness', 'link': None,
         })
 
-    for cat in DEC_CATEGORIES:
-        pts = [p for p in DECISION_POINTS if p['category'] == cat['id']]
-        if not pts:
-            continue
-        detail = '<ul class="dec-list">' + ''.join(
-            f"<li><b>{esc(p['title'])}</b> — <code>{esc(p['module'])}.{esc(p['func'])}</code>: {esc(p['logic'])}</li>"
-            for p in pts) + '</ul>'
-        facets['alex'].append({
-            'kind': 'infra', 'dim': 'Decisions (what Alex can decide)', 'label': f"{esc(cat['label'])} ({len(pts)})",
-            'detail': detail, 'share_key': 'decisions', 'link': 'galaxy_map_decisions.html',
-        })
-
-    # The one real Level-5 point that's genuinely Alex's OWN choice
-    # (not code logic or an Oracle judgment call) — surfaced under the
-    # same "Decisions" dimension so his own facet is the real whole
-    # picture (gates + choices), not just the confirm-gate subset.
-    oracle_mode_pt = next((p for p in L5_DECISION_POINTS if p['id'] == 'oracle-mode'), None)
-    if oracle_mode_pt:
-        facets['alex'].append({
-            'kind': 'infra', 'dim': 'Decisions (what Alex can decide)', 'label': f"🎛️ Real Choices (1) — {esc(oracle_mode_pt['title'])}",
-            'detail': f"{esc(oracle_mode_pt['changes'])} <span class=\"ev\">Real evidence: {esc(oracle_mode_pt['result'])}</span>",
-            'share_key': 'decisions', 'link': 'galaxy_map_decision_matrix.html',
-        })
+    # G77 (Aug 25 2026) — Alex's Infra tab is now the whole Decisions
+    # bubble system, grouped by real river in real flow order. This
+    # replaces two separate, narrower blocks that used to live here: the
+    # 3 category-grouped facets built from galaxy_map_decisions.py's own
+    # 10 gates, and a single extra "Real Choices (1)" bullet naming the
+    # one LOGIC_POINTS entry that is genuinely Alex's own toggle. Between
+    # them they covered 11 of the real 21 decisions; build_alex_decision_
+    # facets() covers all 21 from the one unified source (rule 8).
+    alex_decision_facets, _n_decisions = build_alex_decision_facets()
+    facets['alex'].extend(alex_decision_facets)
 
     facets['alex'].append({
         'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real dashboard-card → module → decision-fork path',
@@ -340,7 +660,83 @@ def build_facets():
             'share_key': 'oversight_sync', 'link': 'galaxy_map_oversight_sync.html',
         })
 
+    # ── G77 final normalization: Alex's Infra tab holds decisions and
+    # nothing else. Real, honest note on what this actually moved, since
+    # it is more than the one edge the ask named: going into this pass
+    # `alex` really had NINE infra facets, not the five a category-level
+    # read suggests — the alex<->rpgace edge, the alex<->external_ai
+    # edge, THREE "Uses: <provider>" rows, and four decision facets.
+    # Only the decision facets belong on a tab whose whole job is "what
+    # can Alex decide". The other four are real relationships and are
+    # kept in full, verbatim, with their share_keys intact — they are
+    # re-kinded to 'inter' (a real dimension Alex participates in),
+    # never deleted, so nothing is lost and every cross-highlight still
+    # fires. Scoped to `alex` alone by INFRA_DECISIONS_ONLY_UNITS: the
+    # standing "anything touching External AI is Infra" rule is
+    # untouched for every other unit.
+    for uid in INFRA_DECISIONS_ONLY_UNITS:
+        for f in facets.get(uid, ()):
+            if f['kind'] == 'infra' and f['dim'] != DECISIONS_DIM:
+                f['kind'] = 'inter'
+
     return facets
+
+
+def build_unit_facet_table(facets):
+    """G79 (Aug 25 2026) — the 5 bubble-row units' own real facet
+    content, as a real table. Alex's own direct ask, pointing at the
+    bubble row: "this... i think it should be in table view too."
+
+    Real gap this closes, stated precisely: those 5 units were ALREADY
+    rows in the existing 7x7 matrix, and their row headers already
+    clicked through into the facet panel (G74). What the table view had
+    NO representation of at all was the facet CONTENT itself — the
+    matrix only ever shows the 17 hand-curated pairwise EDGES between
+    units, never the Infra/Inter dimensions hanging off them. So this is
+    a real SECOND table beside the matrix, not an extension of it: the
+    two answer genuinely different questions (which units are wired to
+    each other vs. what each unit actually carries), and merging them
+    would force one grid to mean two things at once.
+
+    Built from the SAME build_facets() data the map/bubble view renders
+    (rule 8 — never a second, separately-maintained dataset), one row
+    per real unit+kind+dimension. Per R22 ("bubble systems always follow
+    and showcase what's on table"), every row links down into the exact
+    same bubble destination the map view opens — reusing the existing
+    unit-card click path rather than inventing a second one, the same
+    mechanism galaxy_map_dimensions.html/galaxy_map_current.html already
+    use for their own table-row-to-bubble links."""
+    rows = []
+    for uid in NEW_BUBBLE_UNITS:
+        meta = UNIT_META[uid]
+        unit_facets = facets.get(uid, [])
+        first = True
+        for kind, kind_label in (('infra', '💉 Infra'), ('inter', '🔗 Inter')):
+            by_dim = {}
+            for f in unit_facets:
+                if f['kind'] == kind:
+                    by_dim.setdefault(f['dim'], []).append(f)
+            if not by_dim:
+                rows.append(
+                    f'<tr class="uf-row uf-empty"><td class="uf-unit">'
+                    + (f'{meta["icon"]} {esc(meta["label"])}' if first else '')
+                    + f'</td><td class="uf-kind">{kind_label}</td>'
+                    f'<td colspan="2" class="uf-none">no real {kind} facets attached to this unit</td></tr>'
+                )
+                first = False
+                continue
+            for dim, fs in by_dim.items():
+                rows.append(
+                    f'<tr class="uf-row" data-unit="{uid}" data-kind="{kind}" data-dim="{esc(dim)}">'
+                    f'<td class="uf-unit">' + (f'{meta["icon"]} {esc(meta["label"])}' if first else '') + '</td>'
+                    f'<td class="uf-kind">{kind_label}</td>'
+                    f'<td class="uf-dim">{esc(dim)}</td>'
+                    f'<td class="uf-n"><b>{len(fs)}</b> <span class="rowjump-cue">🫧</span></td></tr>'
+                )
+                first = False
+    header = ('<tr><th class="uf-h">L0 unit</th><th class="uf-h">Kind</th>'
+              '<th class="uf-h">Real dimension</th><th class="uf-h">Facets</th></tr>')
+    return header + ''.join(rows)
 
 
 def polar(cx, cy, r, angle_deg):
@@ -833,6 +1229,24 @@ TEMPLATE = """<!DOCTYPE html>
   .ev{{color:var(--dim);display:block;margin-top:4px;font-size:10.5px}}
   .dec-list{{margin:8px 0 0 18px}}
   .dec-list li{{margin-bottom:6px}}
+  /* G77 (Aug 25 2026) — Alex's Decisions bubble system, grouped by real river */
+  .dec-list .dkind{{font-size:9.5px;font-weight:700;color:var(--dim);white-space:nowrap}}
+  .dec-list a{{color:#E2E2EC;text-decoration:none;border-bottom:1px dotted rgba(201,168,76,0.5)}}
+  .dec-list a:hover{{color:var(--gold)}}
+  .rrank{{font-size:9.5px;font-weight:400;color:#6a6a78}}
+  .flows-toward{{margin-top:10px;padding:8px 11px;border-left:2px solid rgba(74,144,226,0.5);background:rgba(74,144,226,0.06);border-radius:0 6px 6px 0;font-size:11px;line-height:1.6}}
+  .flows-toward .ft-cond{{color:var(--dim);font-size:10.5px}}
+  /* G79 (Aug 25 2026) — the 5 bubble-row units' own real facet table */
+  .uf-wrap{{max-width:820px;margin:28px auto 0;padding:0 24px;overflow-x:auto}}
+  #unit-facets{{border-collapse:collapse;width:100%;font-size:11.5px}}
+  #unit-facets th,#unit-facets td{{border:1px solid rgba(255,255,255,0.08);padding:7px 10px;text-align:left;vertical-align:top}}
+  #unit-facets th.uf-h{{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);font-weight:700}}
+  #unit-facets td.uf-unit{{font-weight:700;white-space:nowrap}}
+  #unit-facets td.uf-kind{{white-space:nowrap;color:var(--dim)}}
+  #unit-facets td.uf-n{{text-align:center;white-space:nowrap}}
+  #unit-facets td.uf-none{{color:#6a6a78;font-style:italic}}
+  #unit-facets tr.uf-row[data-unit]{{cursor:pointer}}
+  #unit-facets tr.uf-row[data-unit]:hover td{{background:rgba(201,168,76,0.09)}}
   .facet-link{{display:inline-block;margin-top:6px;font-size:10.5px;font-weight:700;color:var(--gold);text-decoration:none}}
   .facet-link:hover{{text-decoration:underline}}
   /* Real Aug 21 2026 (G67) — reused verbatim from galaxy_map_l0.py's own
@@ -873,6 +1287,7 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 RPGACE Total Systems — The Galaxy Map</h1>
   <p>The real top-level view of RPGACE Total Systems — all 9 real merged L0 units in one place (4 galaxies rendered in the diagram below, 5 more as real bubbles beside it): RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs. Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate are their own nodes, every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram or the bubble row below — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
+  <p style="margin-top:10px"><b>New Aug 25 2026:</b> 🧑 <b>Alex</b>'s Infra tab is now purely the Decisions bubble system — all 21 real decisions (10 human-confirm gates, 7 curated logic choices, 4 curated text-input points), grouped by the real river each one lives in and ordered by real river flow, from the logging end toward the last untouched action. 🔮 <b>External AI</b>'s Infra tab names all 12 real external AI actors individually — Orchestrator CC, OpenMontage CC, Graphify CC, Composio, librosa, Jina AI, Last.fm, Whisper, n8n, Luna, Moonshot, Anthropic — each with its own real live/dormant/unconfirmed status read straight from source, instead of the vague aggregate it used to show. The <b>Table view</b> now carries the 5 bubble-row units' own facet content too, not just the 7×7 edge matrix.</p>
 </div>
 
 <div class="toggle-row">
@@ -928,6 +1343,11 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="matrix-wrap"><table id="matrix">{matrix_rows}</table></div>
   <div class="matrix-legend"><span>💉 injection tool</span><span>🧑 actor</span><span>· no direct real edge (mediated)</span></div>
   <div class="table-details">{table_details}</div>
+
+  <div style="text-align:center;font-size:11px;color:var(--dim);max-width:820px;margin:34px auto 0;padding:0 24px">
+    <b>G79 (Aug 25 2026)</b> — the 5 bubble-row units' own real facet content, in table form (Alex's own direct ask about the bubble row: "this... i think it should be in table view too"). Those units were already <i>rows</i> in the matrix above, but the matrix only ever shows the 17 hand-curated pairwise <i>edges</i> between units — never what each unit actually carries. This second table is that missing half, built from exactly the same <code>build_facets()</code> data the map view renders, never a second copy. Per R22, the bubble view follows the table: <b>click any row to land on that unit's own bubble, with that exact Infra/Inter choice already made and that dimension already open.</b>
+  </div>
+  <div class="uf-wrap"><table id="unit-facets">{unit_facet_table}</table></div>
   <div style="text-align:center;font-size:10.5px;color:#6a6a78;max-width:820px;margin:20px auto 0;padding:0 24px 20px">
     G68 (the recursive L0↔river/module/function interaction-matrix idea): this IS the L0 layer's own real matrix. The next matrix layer down is <a href="galaxy_map_dimensions.html">the Dimensions Matrix</a> (now two real grains on one page: every river × every dimension it participates in, and the finer 45 real L2 modules × 5 real dimensions) — genuinely the same recurring shape at a finer grain, not a new page built for this. No new data was invented to answer G68; the matrices already existed, this just names and links the real chain.
   </div>
@@ -948,6 +1368,16 @@ TEMPLATE = """<!DOCTYPE html>
   facet mechanic. Real G67 fold, same day: galaxy_map_l0.py's own leftover
   17-edge table is now this page's real Table view (imported directly, not
   rebuilt) — graphify-out/galaxy_map_l0.html no longer exists as its own page.
+  Real Aug 25 2026 pass (G77/G78/G79), all three from Alex's own direct
+  critique of what these two tabs actually showed: Alex's Infra tab is now
+  purely the Decisions bubble system and covers all 21 real decisions from
+  <code>galaxy_map_decision_matrix.build_unified()</code> (was 11, assembled
+  from two narrower sources), river-grouped and ordered by a real
+  <code>RIVER_FLOWS</code>-derived rank; External AI's Infra tab names all 12
+  real external AI actors with real per-actor status (was 3 provider rows plus
+  3 generic partner edges); and the Table view gained the 5 bubble-row units'
+  own real facet content beside the edge matrix. Every facet displaced from
+  Alex's Infra tab was re-kinded to his Inter tab, not deleted.
 </div>
 
 <script>
@@ -986,7 +1416,10 @@ TEMPLATE = """<!DOCTYPE html>
     facets.forEach(function(f) {{ (byDim[f.dim] = byDim[f.dim] || []).push(f); }});
     var html = '';
     Object.keys(byDim).forEach(function(dim, i) {{
-      html += '<div class="dim-group"><div class="dim-head" data-idx="' + i + '">' + dim + ' <span>(' + byDim[dim].length + ')</span></div><div class="dim-body" id="dimbody-' + i + '">';
+      // G79 — data-dimname lets the table view land on this exact
+      // group. Purely additive; the existing data-idx open/close
+      // mechanic is untouched.
+      html += '<div class="dim-group"><div class="dim-head" data-idx="' + i + '" data-dimname="' + dim + '">' + dim + ' <span>(' + byDim[dim].length + ')</span></div><div class="dim-body" id="dimbody-' + i + '">';
       byDim[dim].forEach(function(f) {{
         html += '<div class="facet-row" data-share="' + f.share_key + '"><div class="flabel">' + f.label + '</div><div>' + f.detail + '</div>' + (f.link ? '<a class="facet-link" href="' + f.link + '" target="_blank">Open full page ↗</a>' : '') + '</div>';
       }});
@@ -1069,6 +1502,32 @@ TEMPLATE = """<!DOCTYPE html>
       card.click();
     }});
   }});
+  // G79 — a facet-table row opens that unit's own bubble with the row's
+  // exact Infra/Inter choice already made and its dimension already
+  // open. Reuses the map view's own card/kind/dim handlers by
+  // triggering them, never a second copy of their logic (rule 8) —
+  // same real mechanic as the matrix row headers above.
+  document.querySelectorAll('#unit-facets tr.uf-row[data-unit]').forEach(function(tr) {{
+    tr.addEventListener('click', function() {{
+      var uid = tr.dataset.unit, kind = tr.dataset.kind, dim = tr.dataset.dim;
+      var card = document.querySelector('.unit-card[data-unit="' + uid + '"]')
+              || document.querySelector('.unit-node[data-unit="' + uid + '"]');
+      if (!card) return;
+      mtToggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'map'); }});
+      mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-map'); }});
+      card.click();
+      var kb = document.querySelector('.kind-btn[data-kind="' + kind + '"]');
+      if (kb) kb.click();
+      var heads = dimGroups.querySelectorAll('.dim-head');
+      for (var i = 0; i < heads.length; i++) {{
+        if (heads[i].dataset.dimname === dim) {{
+          heads[i].click();
+          heads[i].scrollIntoView({{behavior:'smooth', block:'center'}});
+          break;
+        }}
+      }}
+    }});
+  }});
   document.querySelectorAll('td.hit').forEach(function(td) {{
     td.addEventListener('click', function() {{
       var id = td.dataset.edge;
@@ -1100,9 +1559,11 @@ def main():
     }
     matrix_rows = l0_build_matrix()
     table_details = l0_build_table_details()
+    unit_facet_table = build_unit_facet_table(facets)
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H,
                            markers=markers, unit_cards=unit_cards, data_json=json.dumps(data),
-                           matrix_rows=matrix_rows, table_details=table_details)
+                           matrix_rows=matrix_rows, table_details=table_details,
+                           unit_facet_table=unit_facet_table)
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,
@@ -1112,10 +1573,17 @@ def main():
     OUT.write_text(html, encoding='utf-8')
     skipped = len(ORACLE_PROVIDER_NAMES) + 3  # +3 = Graphify CC (dup of the real galaxy) + FFmpeg + OpenMontage (both moved to OpenMontage CC's own local cluster)
     n_facets = sum(len(v) for v in facets.values())
+    n_alex_infra = len([f for f in facets['alex'] if f['kind'] == 'infra'])
+    n_decisions = len(dm_build_unified())
+    n_uf_rows = build_unit_facet_table(facets).count('<tr class="uf-row')
     print(f"Wrote {OUT} — {len(GALAXIES)} galaxies, {len(HARNESS_NODES)} harness nodes, "
           f"{len(ORACLE_PROVIDERS)} AI providers under Oracle, "
           f"{len(EXTERNAL_CONNECTORS) - skipped} flat connectors + OpenMontage+FFmpeg (under OpenMontage CC) + Supabase, "
           f"{len(UNIT_ORDER)} real merged L0 units ({n_facets} real facets, infra+inter).")
+    print(f"  G77 — Alex Infra: {n_alex_infra} river groups holding all {n_decisions} real unified decisions "
+          f"(decisions-only, every other real facet re-kinded to Inter, none dropped).")
+    print(f"  G78 — External AI Infra: {len(EXTERNAL_AI_ACTORS)} real named external AI actors.")
+    print(f"  G79 — table view: {n_uf_rows} real facet rows across {len(NEW_BUBBLE_UNITS)} bubble-row units.")
 
 
 if __name__ == '__main__':
