@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🐛✅ Aug 25 — real root cause found for "Supabase still not clickable": a decorative duplicate node, not a caching mystery</div>
+    <div class="card-body">
+      Alex's screenshot showed a prominent "Supabase" node sitting in the main L0 diagram with real read/write edges — exactly where a reader would naturally click. Direct code read confirmed it: that node was rendered via <code>node_circle()</code> WITHOUT its optional <code>unit_id</code> parameter, so it carried no <code>data-unit</code> attribute at all — a plain decorative label, structurally identical to a connector hexagon, sitting right next to the real (much smaller, easy-to-miss) clickable Supabase bubble-row card below the diagram. Not a bug in the redirect logic itself (already independently re-verified correct in the prior pass) — a real, confirmed duplicate-representation problem: the same label rendered twice, only one of which was ever wired to anything.
+      <br><br>
+      Fixed with the one parameter <code>node_circle()</code> already supported: passing <code>unit_id='supabase'</code> makes this prominent SVG node itself a real entry point, carrying the same <code>data-unit="supabase"</code> the bubble-row card already has — <code>cards.forEach()</code> picks it up automatically, so it jumps straight to the Supabase bubble system exactly like the card does, no new click-handling code needed.
+      <br><br>
+      <b>Independent Truth Check</b>: real headless-Chromium click on <code>g.unit-node[data-unit="supabase"]</code> (the exact node from the screenshot) confirmed navigation to <code>galaxy_map_supabase.html#view-map</code>, 0 page errors. Full pipeline link-integrity re-scan: 0 missing across 2,817 real hrefs. Idempotent. div/section/a/g/svg balance clean.
+    </div>
+  </div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🐛✅ Aug 25 (real bug report, same day) — a genuine crash bug found and fixed in the table/matrix view's redirect path; Orchestrator CC gets its own real Shared Infrastructure drill-down</div>
     <div class="card-body">
       Alex's own direct bug report: "i cant click supabase on galaxy map level 0 to get lower, it didnt do what i wanted, same with orchestrator CC" — plus a real new ask, Orchestrator CC's bubble should also route to a real Level 0 of its own bubble system, "with route to levels and rivers."

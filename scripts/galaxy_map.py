@@ -1280,7 +1280,19 @@ def build_svg():
     # caught during the Aug 13 screenshot review (2nd pass).
     edges_svg.append(edge(cx, cy, sup_x, sup_y, 'read_query', offset_mult=2.2, r1=46, r2=18))
     edges_svg.append(edge(cx, cy, sup_x, sup_y, 'write_commit', offset_mult=-2.2, r1=46, r2=18))
-    nodes_svg.append(node_circle(sup_x, sup_y, 18, '#5FB3D9', sup['icon'], sup['name'], glow=True, label_color='#5FB3D9'))
+    # G91 real bug fix (Aug 25 2026, Alex's own direct report — "supabase
+    # still not clickable"): this node was rendered WITHOUT unit_id, so
+    # it had no data-unit attribute at all — a plain decorative label,
+    # not the real clickable L0 unit, sitting right in the middle of
+    # the diagram where a reader would naturally expect to click it.
+    # The REAL clickable Supabase unit only existed as the small bubble-
+    # row card below, with nothing visually marking this prominent node
+    # as a non-interactive duplicate. Passing unit_id='supabase' makes
+    # THIS node itself the real entry point too — same data-unit the
+    # bubble-row card already carries, so cards.forEach() below picks
+    # it up automatically and it jumps straight to the Supabase bubble
+    # system exactly like clicking the card would.
+    nodes_svg.append(node_circle(sup_x, sup_y, 18, '#5FB3D9', sup['icon'], sup['name'], glow=True, label_color='#5FB3D9', unit_id='supabase'))
     legend_rows.append(
         f'<div class="legend-row"><span class="dot" style="background:#5FB3D9"></span>'
         f'<b>{sup["name"]}</b> — {sup["note"]} '
