@@ -64,8 +64,9 @@ from graphify_river_group import (  # noqa: E402
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
     RIVER_NAME, RIVER_FLOWS, compute_river_flow_cycles, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, RIVER_MODULES,
-    SUPABASE_L0_UNIT_TOUCHES,
+    L0_SUPABASE_UNITS, L0_UNIT_LABEL,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
+    compute_rpgace_architecture_supabase_infra, compute_oversight_docs_supabase_infra,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
@@ -208,6 +209,16 @@ UNIT_META = {
     'supabase': {'label': 'Supabase', 'icon': '🗄️', 'color': '#2ABFB0'},
     'oversight_docs': {'label': 'Oversight Docs', 'icon': '📚', 'color': '#C9A84C'},
 }
+# G82 — graphify_river_group.py needs these same labels for its own
+# Supabase facet text, but cannot import them (galaxy_map.py imports IT,
+# so the reverse would be circular), so it mirrors them. A mirror that
+# nothing checks is a stale claim waiting to happen — rule 8's whole
+# point — so this fails the build loudly the moment the two disagree,
+# rather than silently rendering an outdated unit name.
+assert L0_UNIT_LABEL == {uid: UNIT_META[uid]['label'] for uid in UNIT_ORDER}, (
+    'L0_UNIT_LABEL (graphify_river_group.py) has drifted from UNIT_META here — '
+    'update the mirror in the same commit.')
+
 # The 5 units that need a NEW bubble on this page (the other 4 already
 # render via the SVG satellites/harness node above).
 NEW_BUBBLE_UNITS = ['external_ai', 'skills', 'alex', 'supabase', 'oversight_docs']
@@ -795,13 +806,38 @@ def build_facets():
     # already had (orchestrator_cc 1 infra / 6 inter, openmontage_cc
     # 2 infra / 1 inter going into this pass).
     #
-    # Scope, honestly: a real 2-unit proof of concept. The mechanism is
-    # unit-agnostic — the other 7 L0 units join by adding registry
-    # entries, with zero change to this code.
-    for uid in sorted(SUPABASE_L0_UNIT_TOUCHES):
+    # ── G82 (Aug 25 2026) — the PoC above is now the whole L0.
+    #
+    # What changed, and what deliberately did NOT: G80 shipped this for
+    # 2 units and said the other 7 would join "by adding registry
+    # entries, with zero change to this code." That turned out to be
+    # true for 3 of them (graphify_cc, skills, alex — pure registry
+    # additions, this loop untouched) and honestly wrong for 2, which
+    # needed a real second and third DETECTOR rather than curation:
+    #   rpgace_architecture — it IS the scanned client-side code, so
+    #     curating it by hand would be a drifting copy of machine-
+    #     readable truth (rule 8). Mechanical, re-derived every build.
+    #   oversight_docs — several oversight HTML docs fetch Supabase
+    #     directly from their own inline scripts, in files the
+    #     rpgace_core.js scanner structurally cannot see.
+    # The remaining 2 (external_ai, supabase) correctly get NOTHING —
+    # see L0_SUPABASE_NO_TOUCH_UNITS in graphify_river_group.py for the
+    # real reason each is an honest zero rather than a missing entry. No
+    # synthetic "no touches" placeholder row is invented for them: a
+    # fabricated facet asserting an absence would be a claim this page
+    # would then have to keep true, for no reader benefit.
+    #
+    # APPENDED in every case, never overwriting — every unit keeps the
+    # facets it already had.
+    for uid in L0_SUPABASE_UNITS:
         if uid not in facets:
             continue
-        facets[uid].extend(compute_l0_unit_supabase_infra(uid))
+        if uid == 'rpgace_architecture':
+            facets[uid].extend(compute_rpgace_architecture_supabase_infra())
+        elif uid == 'oversight_docs':
+            facets[uid].extend(compute_oversight_docs_supabase_infra())
+        else:
+            facets[uid].extend(compute_l0_unit_supabase_infra(uid))
         facets[uid].extend(compute_l0_unit_supabase_inter(uid))
 
     connector_owner = {'OpenMontage': 'openmontage_cc', 'FFmpeg': 'openmontage_cc', 'Graphify CC': 'graphify_cc'}
@@ -888,6 +924,16 @@ def build_facets():
     # fires. Scoped to `alex` alone by INFRA_DECISIONS_ONLY_UNITS: the
     # standing "anything touching External AI is Infra" rule is
     # untouched for every other unit.
+    #
+    # G82 note, so this is a deliberate outcome rather than a surprise:
+    # Alex's 3 new Supabase table rows land as 'infra' when built and
+    # are re-kinded to 'inter' right here, exactly like the provider
+    # rows above them. That is correct and intended — "which tables my
+    # confirm click moves" is a real relationship Alex participates in,
+    # not one of the 21 things he DECIDES, and his Infra tab is
+    # deliberately the decision list and nothing else (his own critique).
+    # Nothing is dropped; the rows keep their text, share_keys and
+    # cross-highlighting in full on his Inter tab.
     for uid in INFRA_DECISIONS_ONLY_UNITS:
         for f in facets.get(uid, ()):
             if f['kind'] == 'infra' and f['dim'] != DECISIONS_DIM:

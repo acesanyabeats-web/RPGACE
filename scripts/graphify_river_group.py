@@ -503,11 +503,40 @@ for _l in EXTERNAL_RIVER_LINKS:
 # is always told where the claim came from and can re-check it. Never
 # invent an entry — if CLAUDE.md doesn't say it, it doesn't go here.
 #
-# Scope this pass, honestly stated: a real 2-UNIT proof of concept
-# (orchestrator_cc + openmontage_cc) covering only the tables those two
-# genuinely, citably touch. The MECHANISM below is unit-agnostic — a
-# future pass extends it to the other 7 L0 units by adding registry
-# entries, with zero code change.
+# Scope, updated Aug 25 2026 (G82) — the original G80 pass shipped this
+# as a real 2-UNIT proof of concept (orchestrator_cc + openmontage_cc)
+# and stated plainly that "the other 7 L0 units join by adding registry
+# entries, with zero change to the consuming code." That extension is
+# this pass. It is NOT a uniform sweep, because the 7 units genuinely
+# do not all have the same KIND of evidence behind them — forcing one
+# mechanism onto all of them would have manufactured symmetry that the
+# real evidence does not support. The real split, per unit:
+#
+#   rpgace_architecture  → MECHANICAL. It is the client-side code the
+#                          existing detector already scans, so curating
+#                          it by hand would be a second, drifting copy
+#                          of machine-readable truth (rule 8). Built as
+#                          compute_rpgace_architecture_supabase_infra().
+#   oversight_docs       → MECHANICAL, via a real NEW detector
+#                          (compute_oversight_doc_supabase_reads) — the
+#                          oversight HTML docs make their own live
+#                          fetch('/rest/v1/...') calls, which the
+#                          rpgace_core.js scanner is structurally blind
+#                          to because those calls are in different files.
+#   graphify_cc          → CURATED (below) — a real Total-system session,
+#   skills / alex           a real Claude Code skill, and a real human.
+#                          None of the three is code this repo can scan.
+#   external_ai          → HONESTLY EMPTY. Neither has a real, citable
+#   supabase                direct Supabase touch of its own; see the
+#                          "deliberately absent" note under this dict.
+#
+# `indirect` (optional): present ONLY where the unit is the real CAUSAL
+# TRIGGER of a write rather than its literal executor — a skill's write
+# happens through whichever Claude Code session runs that skill; Alex's
+# write happens through a UI click that runs someone else's JS. The
+# value is the real executor, named. Rendered as a visibly weaker
+# evidence tier by compute_l0_unit_supabase_infra() — never presented
+# level with a direct, self-executed touch.
 #
 # Keys are L0 unit ids as used by galaxy_map.py's UNIT_ORDER/UNIT_META.
 # role: 'read' | 'write' | 'read_write' | 'async_queue'
@@ -519,6 +548,17 @@ SUPABASE_L0_UNIT_TOUCHES = {
         {'table': 'total_system_members', 'role': 'read_write',
          'source_note': "CLAUDE.md, Aug 6 \"Graphify CC is now real\" entry — \"`total_system_members` (a real role/repo/channel registry — 4 active members)\"; plus the Aug 14 `/Routine` entry's own G29 record — \"real drive-by fix, `total_system_members` still said 'RPGACE CC,' never updated to match the Aug 13 rename.\"",
          'detail': "Reads the registry for real Total-system role/channel facts, and has genuinely written to it: the Aug 14 \"RPGACE CC\" → \"Orchestrator CC\" rename was a real Orchestrator CC UPDATE against this exact table, not a doc-only edit."},
+        # Added Aug 25 2026 (G82). Real, deliberate addition BEYOND the
+        # graphify_cc task that prompted it, and worth stating why: this
+        # queue is the ONLY real channel between Orchestrator CC and
+        # Graphify CC, so leaving it off Orchestrator CC's own side would
+        # have made the new graphify_cc Inter facet actively misleading
+        # (it would claim the two units share only total_system_members,
+        # a registry neither of them demonstrably writes). Cited, not
+        # inferred — CLAUDE.md has a whole standing section on it.
+        {'table': 'graphify_jobs', 'role': 'read',
+         'source_note': "CLAUDE.md, \"Session-start check — graphify_jobs (Alex-confirmed Aug 6)\" — \"At the start of any session working on RPGACE, query `graphify_jobs` ... for undrained rows ... A row explicitly asking to be logged carries `-- FOR RPGACE CC: please log to Chronicles/system_updates` in its `output_note`.\"",
+         'detail': "Drains Graphify CC's real session output at session start — the standing passive-pull check. Stated honestly: this is a READ relationship. CLAUDE.md documents Graphify CC as the writer here and Orchestrator CC as the reader that acts on what it finds; no Orchestrator CC write to this table is claimed, because none is evidenced."},
     ],
     'openmontage_cc': [
         {'table': 'openmontage_jobs', 'role': 'async_queue',
@@ -528,7 +568,69 @@ SUPABASE_L0_UNIT_TOUCHES = {
          'source_note': "CLAUDE.md, Aug 6 \"Graphify CC is now real\" entry — the registry's own \"4 active members: RPGACE app, RPGACE CC, Engineer CC/OpenMontage, Graphify CC.\"",
          'detail': "OpenMontage CC's own identity is a ROW IN this registry. Stated honestly: that is evidence it is read ABOUT, not evidence it writes here itself — every documented write to this table is Orchestrator CC's (the Aug 14 rename). No self-write is claimed, because none is evidenced."},
     ],
+    'graphify_cc': [
+        {'table': 'graphify_jobs', 'role': 'async_queue',
+         'source_note': "CLAUDE.md, Aug 6 \"Graphify CC is now real\" entry — \"`graphify_jobs` (Graphify CC's own dedicated dispatch channel, deliberately separate from `openmontage_jobs`)\"; plus its own \"New standing convention, Alex-confirmed\": \"Graphify CC does not write to `system_updates`/Chronicles directly (no visibility into RPGACE's own category taxonomy) — every real piece of its output lands as a standalone `graphify_jobs` row, `output_note` explicitly flagged `-- FOR RPGACE CC: please log to Chronicles/system_updates` when it's a real read-and-log request.\"",
+         'detail': "Graphify CC's own dedicated dispatch channel — deliberately its OWN table, not shared with OpenMontage CC's. This is the one table it demonstrably WRITES: the standing convention exists precisely because it is barred from writing to `system_updates` directly, so every real output it produces lands here instead, for Orchestrator CC to drain at session start."},
+        {'table': 'total_system_members', 'role': 'read',
+         'source_note': "CLAUDE.md, Aug 6 \"Graphify CC is now real\" entry — \"`total_system_members` (a real role/repo/channel registry — 4 active members: RPGACE app, RPGACE CC, Engineer CC/OpenMontage, Graphify CC).\"",
+         'detail': "Graphify CC is one of the 4 listed members — i.e. a ROW IN this registry. Same honesty as OpenMontage CC's entry above, and for the same reason: being listed is evidence it is read ABOUT, not evidence it writes here itself. Every documented write to this table is Orchestrator CC's. No self-write is claimed."},
+    ],
+    'skills': [
+        {'table': 'system_map_flags', 'role': 'write',
+         'indirect': 'whichever Claude Code session actually runs /cartographer (Orchestrator CC today)',
+         'source_note': "CLAUDE.md, \"Session-start check — system_map_flags (Alex-confirmed Aug 13)\" — \"query `system_map_flags` ... for `status='flagged'` rows — real trickle-down/up integration-friction findings from `.claude/skills/cartographer/SKILL.md`'s own cross-reference.\"",
+         'detail': "/cartographer's real output destination. A flagged row exists because that skill's own procedure produced a real integration-friction finding — the skill is why the row exists, which is exactly what makes this a Skills-unit fact rather than a session fact."},
+        {'table': 'perspective_reports', 'role': 'write',
+         'indirect': 'whichever Claude Code session actually runs /perspective',
+         'source_note': "`.claude/skills/perspective/SKILL.md`, Step 4 — \"Persist to `perspective_reports`. One row per report\"; cross-checked against CLAUDE.md's Aug 14 G11 entry, \"`perspective_reports`: 65 rows total (4 galaxy + 17 node + 44 module).\"",
+         'detail': "/perspective's own persistence step. The `expected_behavior` baseline it writes is then read back by two other real consumers — `error_log`'s `linked_perspective_id` and /colourgradient's purple-regression check — so this one write is deliberately the single place \"what correct looks like\" is asserted (rule 8)."},
+        {'table': 'taxonomy_proposals', 'role': 'write',
+         'indirect': 'whichever Claude Code session actually runs /Regeneration — and never without Alex\'s own review-queue confirm downstream',
+         'source_note': "`.claude/skills/Regeneration/SKILL.md` — \"**Not a writer.** Regeneration never writes to `taxonomy_tree`. Its output is a report plus, optionally, `taxonomy_proposals` rows — which land in the existing review queue Alex already uses\"; and step 6, \"**Propose, never apply.** INSERT-shaped recommendations may go into `taxonomy_proposals`.\"",
+         'detail': "/Regeneration's only sanctioned write, and deliberately a STAGING one: a proposal row is not a tree change, it is a queued suggestion that still needs Alex's own accept click. The skill file names this boundary in its own landmine section rather than leaving it implied."},
+        {'table': 'taxonomy_tree', 'role': 'read',
+         'indirect': 'whichever Claude Code session actually runs /Regeneration',
+         'source_note': "`.claude/skills/Regeneration/SKILL.md`, Tier 0 — \"Deterministic structural audit. Zero model calls, zero cost, 100% repeatable. Pure SQL against `taxonomy_tree`\"; plus its own landmine, \"**Never write to `taxonomy_tree` from this skill.** Not even a 'trivially safe' one-row fix.\"",
+         'detail': "A real READ, explicitly never a write — the skill's Tier 0 audit is pure SQL over the live tree, and its own landmine section forbids writing back even when its analysis is confident. Included precisely because a read-only relationship is a real relationship, and omitting it would leave the tree looking untouched by any skill."},
+        {'table': 'ceo_plan_items', 'role': 'read',
+         'indirect': 'whichever Claude Code session actually runs /colourgradient',
+         'source_note': "CLAUDE.md, `future_integrations.html`'s own entry — \"Backed by the real `ceo_plan_items.status` column (shared source of truth with `/colourgradient` itself — never derived twice, rule 8)\"; and the `/colourgradient` skill's own description, \"now backed by the `/CEO` datasheet above rather than re-deriving from scratch each run.\"",
+         'detail': "/colourgradient reads the real stored status rather than recomputing a colour per run — the deliberate rule-8 choice that keeps the skill and `future_integrations.html` from ever disagreeing. A read, not a write: the status column itself is written by /CEO Loop 2 and by Alex's own smoke-test confirm, not by the colour renderer."},
+    ],
+    'alex': [
+        {'table': 'smoke_test_items', 'role': 'write',
+         'indirect': "smoke_test.html's own inline confirm-click handler",
+         'source_note': "CLAUDE.md, layer (d) — \"a `smoke_test_items` row can carry `needs_confirm_highlight=true` ... once a fix lands and awaits Alex's hand-test, clearing automatically (and resolving the linked error) the moment he confirms it\"; and `smoke_test.html`'s own real handler, which PATCHes `{status:'confirmed_working', verified_at, broken_note:null, needs_confirm_highlight:false}`.",
+         'detail': "Alex's own hand-tick is a literal database write — the one row-state change in Total Systems that no AI is allowed to make on his behalf (\"ticked by Alex's own hand ... never auto-ticked\"). Named here at TABLE grain deliberately: his existing Infra tab already lists the 21 decisions he can make, but never said which tables those decisions actually move."},
+        {'table': 'error_log', 'role': 'write',
+         'indirect': "smoke_test.html's own inline confirm-click handler (a PATCH to `status='resolved'`)",
+         'source_note': "CLAUDE.md, `error_log.html`'s own entry — \"the mechanical parts (dedup-on-insert, the smoke_test.html 'Just Failed' mirror, clearing `needs_confirm_highlight` + auto-resolving the linked error on Alex's real confirm click) are real and live\"; and the session-start check, \"On his real confirm, the `error_log` row moves to `status='resolved'`.\"",
+         'detail': "The same single click also resolves the linked error row. Worth stating plainly: an error in RPGACE is never closed by the session that fixed it — it is closed by Alex confirming the fix actually works, which is why this write belongs to him and not to Orchestrator CC."},
+        {'table': 'ceo_plan_items', 'role': 'write',
+         'indirect': "smoke_test.html's own inline confirm-click handler (a PATCH to `status='green'`)",
+         'source_note': "CLAUDE.md, Aug 20 G51 entry — \"`smoke_test_items` gained a `linked_plan_item_id` column; `smoke_test.html`'s existing confirm-click handler extended to PATCH the linked `ceo_plan_items` row to green on confirm ... plus a new `checkUmbrellaAutoFlip()` for G42.\"",
+         'detail': "The third table the same click moves — a yellow plan item only ever turns green on Alex's own confirmation, which is what makes /colourgradient's green tier mean \"Alex verified it\" rather than \"a session claimed it.\" The umbrella auto-flip (G42) rides on this same write."},
+    ],
 }
+
+# Deliberately absent, and stated rather than left as a silent hole:
+#   'external_ai' — every real Supabase write in an Oracle round trip is
+#       made by rpgace_core.js AFTER the provider's answer comes back
+#       (`_captureNextResponse` → `creative_docs`, the `style_profiles`
+#       save, `oracle_fallback_queue`). The provider itself is called BY
+#       RPGACE Architecture and hands text back; it holds no credentials
+#       for this project and reaches no table. Its real, evidenced
+#       Supabase relationship is therefore rpgace_architecture's, and it
+#       is already rendered there — inventing a facet here would double-
+#       count one touch as two actors' (rule 8).
+#   'supabase' — the Supabase unit IS the tables. A "Supabase touches
+#       table X" facet is a tautology, not a relationship, and its real
+#       content (every table, who touches it) is already the whole of
+#       galaxy_map_supabase.html, which its own unit links to.
+# Both are honest zero results, deliberately NOT papered over with a
+# synthetic placeholder row.
+L0_SUPABASE_NO_TOUCH_UNITS = ('external_ai', 'supabase')
 
 # Real, single shared link target for a registry table, resolved against
 # the same client-side detector G45's page is built from — so a deep
@@ -553,13 +655,141 @@ def _l0_client_side_touches():
 
 
 def _l0_table_link(table):
-    """Deep-link into G45's own per-table section (`id="tbl-{table}"`,
-    build_table_row() in galaxy_map_supabase.py) — but ONLY when that
-    table genuinely has a client-side touch and therefore a real section
-    on that page. A registry table with no client-side toucher at all
-    (e.g. total_system_members) has no section to anchor to, so it links
-    to the page plainly rather than to a dead anchor."""
-    return f'{_SB_PAGE}#tbl-{table}' if table in _l0_client_side_touches() else _SB_PAGE
+    """Deep-link into G45's own per-table section (`id="tbl-{table}"`) —
+    but ONLY when that table genuinely HAS a section on that page, so a
+    facet can never point at a dead anchor.
+
+    G82: G45 now renders two real kinds of section — build_table_row()
+    for a table some rpgace_core.js module touches, and
+    build_oversight_only_row() for one only an oversight doc fetches.
+    Both use the same `#tbl-<table>` id, so both are valid targets. A
+    table in neither set (e.g. `total_system_members`, `graphify_jobs`,
+    `system_map_flags` — real tables no client-side code touches at all)
+    still correctly links to the page plainly."""
+    if table in _l0_client_side_touches():
+        return f'{_SB_PAGE}#tbl-{table}'
+    if any(r['table'] == table for r in _oversight_doc_touches()):
+        return f'{_SB_PAGE}#tbl-{table}'
+    return _SB_PAGE
+
+
+# ── compute_oversight_doc_supabase_reads (G82, Aug 25 2026) — a real,
+# NEW detector, and a genuinely different one from the rpgace_core.js
+# scanner above.
+#
+# The real gap it closes: several oversight docs are not static prose at
+# all — they render themselves live, each making its own
+# `fetch(SB_URL + '/rest/v1/<table>...')` call from its own inline
+# script. compute_all_supabase_table_touches() cannot see any of that,
+# for a structural reason rather than a tuning one: it scans exactly one
+# file (rpgace_core.js) for exactly one idiom (RPGACE.sb.*). A separate
+# HTML file calling `fetch` directly matches neither.
+#
+# Scope decided by evidence, not by an assumed list: every root-level
+# `.html` is scanned EXCEPT index.html (that is the app shell itself —
+# its Supabase behaviour is rpgace_architecture's, already covered by
+# the rpgace_core.js scanner, and counting it here would double-count
+# one actor as two). So a future oversight doc that starts fetching a
+# table is picked up automatically, with no list to remember to edit.
+#
+# Only `<script>` content is scanned. That matters for a real reason,
+# not tidiness: patch_notes.html contains the literal text
+# "/rest/v1/..." inside a prose <code> block describing a historical
+# migration bug. It is documentation ABOUT a fetch, not a fetch — a
+# whole-file grep reports it as a real touch, and would be wrong.
+_OVERSIGHT_SB_FETCH = re.compile(
+    r"fetch\(\s*[A-Za-z_$][\w$]*\s*\+\s*'/rest/v1/([a-z_]+)")
+_SCRIPT_BLOCK = re.compile(r'<script\b[^>]*>([\s\S]*?)</script>', re.I)
+_FETCH_METHOD = re.compile(r"method:\s*'(\w+)'")
+_OVERSIGHT_HTML_DIR = Path('.')
+_OVERSIGHT_HTML_SKIP = {'index.html'}
+
+
+def _fetch_http_method(text, pos):
+    """Real HTTP method of the fetch(...) call whose '/rest/v1/<table>'
+    match ENDS at `pos` — read out of that call's own options object,
+    never a fixed-width text window (which could pick up a LATER fetch's
+    method and silently mislabel a read as a write).
+
+    Rule, stated because it is an assumption about real code shape and
+    not a general JS parse: the options object is the first `{` after
+    the URL expression. Verified true for all real call sites in this
+    repo's oversight docs — a `/rest/v1/` URL is built purely from
+    string literals and `+` concatenation, so no `{` can appear inside
+    it. If no `{` is found before the next `fetch(` (or within a
+    generous 400 chars), the call has no options object at all, which
+    means GET."""
+    window = text[pos:pos + 400]
+    brace = window.find('{')
+    nxt = window.find('fetch(')
+    if brace < 0 or (0 <= nxt < brace):
+        return 'GET'
+    # Balanced-brace extract of the real options object.
+    i = pos + brace
+    depth = 0
+    for j in range(i, min(len(text), i + 2000)):
+        if text[j] == '{':
+            depth += 1
+        elif text[j] == '}':
+            depth -= 1
+            if depth == 0:
+                m = _FETCH_METHOD.search(text[i:j + 1])
+                return (m.group(1) if m else 'GET').upper()
+    return 'GET'
+
+
+def compute_oversight_doc_supabase_reads(root: Path = _OVERSIGHT_HTML_DIR):
+    """Real, per-{file, table} list of live Supabase calls made by the
+    oversight HTML docs themselves.
+
+    Returns a list of {'file', 'table', 'methods': [...], 'n': int},
+    sorted by (file, table) so a fresh process re-run always produces
+    byte-identical output (R5)."""
+    found = {}
+    for path in sorted(root.glob('*.html')):
+        if path.name in _OVERSIGHT_HTML_SKIP:
+            continue
+        try:
+            text = path.read_text(encoding='utf-8')
+        except OSError:
+            continue
+        for block in _SCRIPT_BLOCK.finditer(text):
+            body = block.group(1)
+            for m in _OVERSIGHT_SB_FETCH.finditer(body):
+                key = (path.name, m.group(1))
+                rec = found.setdefault(key, {'methods': set(), 'n': 0})
+                rec['methods'].add(_fetch_http_method(body, m.end()))
+                rec['n'] += 1
+    return [
+        {'file': f, 'table': t, 'methods': sorted(v['methods']), 'n': v['n']}
+        for (f, t), v in sorted(found.items())
+    ]
+
+
+_OVERSIGHT_DOC_CACHE = {}
+
+
+def _oversight_doc_touches():
+    if 'v' not in _OVERSIGHT_DOC_CACHE:
+        _OVERSIGHT_DOC_CACHE['v'] = compute_oversight_doc_supabase_reads()
+    return _OVERSIGHT_DOC_CACHE['v']
+
+
+def _role_from_ops(ops):
+    """Real read/write/read_write role from a set of real operation
+    names — shared by both mechanical detectors so the two can never
+    classify the same evidence differently (rule 8). Understands both
+    the rpgace_core.js op vocabulary (select/insert/update/del/
+    secureWrite) and HTTP methods (GET/POST/PATCH/DELETE)."""
+    reads = {'select', 'GET'}
+    ops = set(ops)
+    if not ops:
+        return 'read'
+    if ops <= reads:
+        return 'read'
+    if not (ops & reads):
+        return 'write'
+    return 'read_write'
 
 
 _L0_ROLE_LABEL = {
@@ -568,6 +798,123 @@ _L0_ROLE_LABEL = {
     'read_write': 'reads + writes',
     'async_queue': 'async queue (reads + writes)',
 }
+
+
+def _l0_unit_table_map(unit_id):
+    """{table: entry} for ONE L0 unit, from whichever real evidence
+    source that unit's touches genuinely come from — the curated
+    registry, the rpgace_core.js scanner, or the oversight-doc scanner.
+
+    This exists so the shared-table INTERSECTION logic below has exactly
+    one place to ask "which tables does unit X touch," regardless of how
+    that was established (rule 8). Without it, adding the two
+    mechanically-detected units would have meant a second copy of the
+    intersection loop — one for curated units, one for detected ones —
+    which is precisely the drift-between-two-copies failure rule 8
+    exists to prevent."""
+    if unit_id == 'rpgace_architecture':
+        out = {}
+        for tbl, touches in _l0_client_side_touches().items():
+            ops = {op for _m, _f, op in touches}
+            out[tbl] = {'table': tbl, 'role': _role_from_ops(ops), 'mechanical': True}
+        return out
+    if unit_id == 'oversight_docs':
+        out = {}
+        for rec in _oversight_doc_touches():
+            prev = out.get(rec['table'])
+            methods = set(rec['methods']) | set(prev.get('methods', ()) if prev else ())
+            out[rec['table']] = {'table': rec['table'], 'role': _role_from_ops(methods),
+                                 'methods': sorted(methods), 'mechanical': True}
+        return out
+    return {e['table']: e for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ())}
+
+
+# Every L0 unit with a real, evidenced Supabase relationship of any
+# kind. Sorted at use-site, never iterated as a set — R5.
+L0_SUPABASE_UNITS = sorted(
+    set(SUPABASE_L0_UNIT_TOUCHES) | {'rpgace_architecture', 'oversight_docs'})
+
+
+def compute_rpgace_architecture_supabase_infra():
+    """Real Infra facets for the rpgace_architecture L0 unit — one per
+    real table its own client-side code genuinely touches.
+
+    Deliberately MECHANICAL, not curated: this unit IS the code the
+    existing detector already scans, so every fact here is re-derived
+    from live rpgace_core.js on every build. Hand-curating it would have
+    produced a second copy of machine-readable truth, free to drift the
+    moment a module gains or loses a table (rule 8) — the exact failure
+    mode `vercel.json`, `graphify_river_group.py`'s own old `main.js`
+    path, and `.claude/settings.json` each demonstrated once already.
+
+    Evidence tier is stated per facet and is genuinely STRONGER than the
+    curated registry's: these counts come from parsing the real file
+    this build runs against, not from a doc quoting a past session."""
+    out = []
+    for tbl, touches in sorted(_l0_client_side_touches().items()):
+        ops = sorted({op for _m, _f, op in touches})
+        mods = sorted({m for m, _f, _op in touches})
+        role = _role_from_ops(ops)
+        mod_note = ', '.join(f'<code>{m}</code>' for m in mods[:6])
+        if len(mods) > 6:
+            mod_note += f' +{len(mods) - 6} more'
+        out.append({
+            'kind': 'infra', 'dim': 'Supabase (client-side code)',
+            'label': f"🗄️ {tbl} — {_L0_ROLE_LABEL.get(role, role)}",
+            'detail': (
+                f"{len(touches)} real function touch(es) across {len(mods)} real module(s): {mod_note}. "
+                f"Real operations: {', '.join('<code>' + o + '</code>' for o in ops)}."
+                f"<span class=\"ev\">Code-derived, re-parsed from live <code>rpgace_core.js</code> on every "
+                f"build by <code>compute_all_supabase_table_touches()</code> — a stronger evidence tier than "
+                f"the curated Total-system-actor rows on other units, which quote a doc rather than the file. "
+                f"Honest scope limit, same as G45's own page: server-side <code>api/*.js</code> touches are "
+                f"not reachable by this client-side detector.</span>"),
+            'share_key': f"sb-{tbl}", 'link': _l0_table_link(tbl),
+        })
+    return out
+
+
+def compute_oversight_docs_supabase_infra():
+    """Real Infra facets for the oversight_docs L0 unit — one per real
+    {oversight HTML file, table} pair that file genuinely fetches live.
+
+    Also mechanical, via compute_oversight_doc_supabase_reads(). One
+    facet PER PAIR rather than per table, deliberately: "smoke_test.html
+    writes ceo_plan_items" and "future_integrations.html reads
+    ceo_plan_items" are two genuinely different relationships, and
+    collapsing them to one `ceo_plan_items` row would hide which doc is
+    the writer — which is the whole reason this unit's own facets are
+    worth having."""
+    out = []
+    client_side = _l0_client_side_touches()
+    for rec in _oversight_doc_touches():
+        tbl, doc = rec['table'], rec['file']
+        role = _role_from_ops(rec['methods'])
+        n_client = len(client_side.get(tbl, ()))
+        client_note = (
+            f" RPGACE Architecture also touches this table client-side "
+            f"({n_client} real rpgace_core.js function touch(es), G45) — so this doc and the app "
+            f"share it."
+            if n_client else
+            " No rpgace_core.js touch exists for this table at all — this oversight doc is the only "
+            "real client-side reader/writer of it, which is exactly why the rpgace_core.js scanner "
+            "alone left this unit looking empty.")
+        out.append({
+            'kind': 'infra', 'dim': 'Supabase (oversight docs, live-rendered)',
+            'label': f"🗄️ {tbl} — {_L0_ROLE_LABEL.get(role, role)} · {doc}",
+            'detail': (
+                f"<code>{doc}</code> makes {rec['n']} real live call(s) to this table from its own inline "
+                f"script (HTTP {', '.join(rec['methods'])}). This is what makes the doc render itself from "
+                f"real data rather than asserting a hand-typed claim — the structural half of rule 16."
+                f"{client_note}"
+                f"<span class=\"ev\">Code-derived, re-scanned on every build by "
+                f"<code>compute_oversight_doc_supabase_reads()</code> — a real <code>fetch(... "
+                f"'/rest/v1/&lt;table&gt;')</code> match inside that file's own <code>&lt;script&gt;</code> "
+                f"blocks, with the HTTP method read from the call's own options object. Prose mentioning a "
+                f"table is deliberately not counted.</span>"),
+            'share_key': f"sb-{tbl}", 'link': _l0_table_link(tbl),
+        })
+    return out
 
 
 def compute_l0_unit_supabase_infra(unit_id):
@@ -584,7 +931,15 @@ def compute_l0_unit_supabase_infra(unit_id):
     Honest evidence tier, stated in every facet's own detail text: this
     is CURATED-FROM-DOCS data with a cited source, not the build-time
     anchor-verified code evidence the rpgace_core.js-derived facets
-    carry. Never silently presented as the same tier."""
+    carry. Never silently presented as the same tier.
+
+    A THIRD, still weaker tier exists for entries carrying `indirect`
+    (G82): the unit is the real causal TRIGGER of the touch, not its
+    literal executor — a Skill's write happens through whichever Claude
+    Code session runs it; Alex's write happens through a UI click that
+    runs someone else's JS. Those rows are labelled and worded to say so
+    outright, so a reader never reads "Alex writes error_log" as Alex
+    holding a database connection."""
     out = []
     client_side = _l0_client_side_touches()
     for entry in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ()):
@@ -597,34 +952,73 @@ def compute_l0_unit_supabase_infra(unit_id):
             "No client-side rpgace_core.js touch exists for this table — "
             "it is reached only by non-code Total-system actors, which is "
             "exactly the gap this registry closes.")
+        indirect = entry.get('indirect')
+        tier_note = (
+            f"Curated fact, sourced not code-derived — {entry['source_note']}"
+            if not indirect else
+            f"<b>Indirect (causal trigger), the weakest of the three evidence tiers on this page.</b> "
+            f"{UNIT_LABEL_FOR_INDIRECT.get(unit_id, unit_id)} does not execute this write itself — it is "
+            f"carried out by {indirect}. The relationship is real and the trigger is real; the executor is "
+            f"someone else, and this row says so rather than flattening the two together. "
+            f"Curated fact, sourced not code-derived — {entry['source_note']}")
         out.append({
             'kind': 'infra', 'dim': 'Supabase (Total-system actors)',
-            'label': f"🗄️ {tbl} — {_L0_ROLE_LABEL.get(entry['role'], entry['role'])}",
+            'label': (f"🗄️ {tbl} — {_L0_ROLE_LABEL.get(entry['role'], entry['role'])}"
+                      + (' · indirect' if indirect else '')),
             'detail': (
                 f"{entry['detail']} {client_note}"
-                f"<span class=\"ev\">Curated fact, sourced not code-derived — {entry['source_note']}</span>"),
+                f"<span class=\"ev\">{tier_note}</span>"),
             'share_key': f"sb-{tbl}", 'link': _l0_table_link(tbl),
         })
     return out
 
 
+# Human-readable L0 unit labels, so no facet text ever shows a raw
+# snake_case unit id to a reader. Mirrors galaxy_map.py's own UNIT_META
+# labels; kept here (rather than imported) because that module imports
+# THIS one — a reverse import would be circular. Small, stable, and
+# checked against UNIT_META by galaxy_map.py's own build (see the
+# assertion there), so the mirror cannot silently drift.
+L0_UNIT_LABEL = {
+    'rpgace_architecture': 'RPGACE Architecture',
+    'orchestrator_cc': 'Orchestrator CC',
+    'openmontage_cc': 'OpenMontage CC',
+    'graphify_cc': 'Graphify CC',
+    'external_ai': 'External AI',
+    'skills': 'Skills',
+    'alex': 'Alex',
+    'supabase': 'Supabase',
+    'oversight_docs': 'Oversight Docs',
+}
+
+# Plain-language SUBJECT for an indirect row's own sentence — differs
+# from L0_UNIT_LABEL only where the grammatical subject reads wrong
+# ("Skills does not execute this write itself" → "A Skill ...").
+UNIT_LABEL_FOR_INDIRECT = dict(L0_UNIT_LABEL, skills='A Skill')
+
+
 def compute_l0_unit_supabase_inter(unit_id):
-    """Real Inter facets for one L0 unit — every OTHER unit in
-    SUPABASE_L0_UNIT_TOUCHES that genuinely shares at least one table
+    """Real Inter facets for one L0 unit — every OTHER L0 unit with a
+    real Supabase relationship that genuinely shares at least one table
     with it, and which tables those are.
 
     This is the real "how does this unit interact with another unit
     through shared infrastructure" half. Deterministic by construction
     (both the unit loop and the shared-table list are sorted), so a
-    fresh process re-run always produces byte-identical output — R5."""
-    mine = {e['table']: e for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ())}
+    fresh process re-run always produces byte-identical output — R5.
+
+    G82: both sides now come from _l0_unit_table_map(), so a curated
+    unit and a mechanically-detected one intersect through the SAME
+    code path — the intersection logic exists exactly once, whatever
+    kind of evidence either side happens to be backed by (rule 8)."""
+    mine = _l0_unit_table_map(unit_id)
     if not mine:
         return []
     out = []
-    for other in sorted(SUPABASE_L0_UNIT_TOUCHES):
+    for other in L0_SUPABASE_UNITS:
         if other == unit_id:
             continue
-        theirs = {e['table']: e for e in SUPABASE_L0_UNIT_TOUCHES[other]}
+        theirs = _l0_unit_table_map(other)
         shared = sorted(set(mine) & set(theirs))
         if not shared:
             continue
@@ -632,13 +1026,30 @@ def compute_l0_unit_supabase_inter(unit_id):
             f"<div><code>{t}</code> — {_L0_ROLE_LABEL.get(mine[t]['role'], mine[t]['role'])} here, "
             f"{_L0_ROLE_LABEL.get(theirs[t]['role'], theirs[t]['role'])} there.</div>"
             for t in shared)
+        # Honest, pair-specific framing (G82). The original wording —
+        # "the only channel between these two units" — was true of the
+        # 2-unit PoC it was written for (two Claude Code sessions that
+        # genuinely cannot reach each other any other way) and would be
+        # simply false if reused for, say, rpgace_architecture and
+        # oversight_docs, which share a table without a shared table
+        # being their only relationship.
+        both_sessions = {unit_id, other} <= {'orchestrator_cc', 'openmontage_cc', 'graphify_cc'}
+        framing = (
+            "Real shared Supabase infrastructure — the only channel between these two units "
+            "(no live session-to-session link exists anywhere in Total Systems)."
+            if both_sessions else
+            "Real shared Supabase infrastructure — one genuine, checkable overlap between these two "
+            "units. Not necessarily their only relationship: unlike two Claude Code sessions, these "
+            "two can also meet through the other dimensions on this page.")
+        tiers = sorted({('code-derived' if t in ('rpgace_architecture', 'oversight_docs')
+                         else 'curated-from-docs') for t in (unit_id, other)})
         out.append({
             'kind': 'inter', 'dim': 'Supabase (shared tables)',
-            'label': f"↔ shares {len(shared)} real table(s) with {other}",
+            'label': f"↔ shares {len(shared)} real table(s) with {L0_UNIT_LABEL.get(other, other)}",
             'detail': (
-                f"Real shared Supabase infrastructure — the only channel between these two units "
-                f"(no live session-to-session link exists anywhere in Total Systems).{lines}"
-                f"<span class=\"ev\">Curated facts, each table's own source cited on this unit's Infra tab.</span>"),
+                f"{framing}{lines}"
+                f"<span class=\"ev\">Evidence tier(s) behind this overlap: {' + '.join(tiers)} — each "
+                f"table's own source is cited on the respective unit's Infra tab.</span>"),
             # Shared with the FIRST shared table's own infra facet, so
             # clicking here glows both units' matching table rows.
             'share_key': f"sb-{shared[0]}",
