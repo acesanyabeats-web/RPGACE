@@ -2214,6 +2214,37 @@ def compute_all_supabase_table_touches(core_js_path: Path = CORE_JS):
     return by_table
 
 
+# G82 (Aug 25 2026) — the real, GENERIC outbound-call-site pattern.
+# _COMPOSIO_CALL above only sees `RPGACE.api('ACTION')` and
+# _LASTFM_CALL only sees one hardcoded endpoint; neither can answer the
+# real question "which function in this river actually makes the call
+# that routes out through River XII (api/*.js)". Both real client-side
+# shapes are covered here: a literal `fetch('/api/<name>'` and a
+# `RPGACE.api(` Composio dispatch (which itself lands in
+# api/composio.js). Same honest scope limit as every detector in this
+# file — a call built dynamically or reached through a stored reference
+# is invisible to it.
+_OUTBOUND_API_FETCH = re.compile(r"fetch\(\s*['\"](/api/[A-Za-z0-9_-]+)['\"]")
+_OUTBOUND_API_DISPATCH = re.compile(r"RPGACE\.api\(")
+
+
+def compute_outbound_api_call_sites(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-FUNCTION list of outbound `api/*.js` call sites —
+    {func_name: [endpoint_label, ...]}. Reuses _function_bodies()
+    (rule 8). Empty for a function that never calls out; most of them,
+    honestly — only 14 real call-site functions exist across all 45
+    real modules (measured, Aug 25 2026)."""
+    bodies = _function_bodies(module_name, core_js_path)
+    out = {}
+    for f, b in bodies.items():
+        eps = list(dict.fromkeys(_OUTBOUND_API_FETCH.findall(b)))
+        if _OUTBOUND_API_DISPATCH.search(b):
+            eps.append('/api/composio (RPGACE.api)')
+        if eps:
+            out[f] = eps
+    return out
+
+
 def compute_lastfm_call_sites(module_name, core_js_path: Path = CORE_JS):
     """Real, per-FUNCTION flag for a real fetch('/api/lastfm') call site.
     {func_name: True} — same shape discipline as compute_external_call_sites,
@@ -2618,6 +2649,45 @@ def find_wrap_installer_function(module_name, core_js_path: Path = CORE_JS):
 
 _WRAP_NOTE_KEYWORDS = ('prefix', 'message', 'chat', 'divert', 'trigger')
 
+# G82 (Aug 25 2026) — support data for signals 4 and 5 below.
+_ATTR_NORM_CACHE = {}
+
+
+def _attr_norm(s):
+    """Lowercase, alphanumerics only — lets a RIVER_FLOWS note's own
+    prose ("contentRepurpose's real Composio calls", "morningBrief's
+    real Composio Gmail-fetch call") be matched against a real module
+    name without either side being re-typed. Same helper shape as
+    galaxy_map.py's `_mig_norm` / galaxy_map_externals.py's `_norm`."""
+    if s not in _ATTR_NORM_CACHE:
+        _ATTR_NORM_CACHE[s] = ''.join(ch for ch in (s or '').lower() if ch.isalnum())
+    return _ATTR_NORM_CACHE[s]
+
+
+def _endpoint_token(endpoint_label):
+    """'/api/composio (RPGACE.api)' -> 'composio'; '/api/lastfm' ->
+    'lastfm'. The real, comparable name of the endpoint a call site
+    actually hits, for matching against a connection's own note."""
+    return (endpoint_label or '').split(' ')[0].rstrip('/').rsplit('/', 1)[-1].lower()
+
+
+def _camel_tokens(name):
+    """['get', 'gmail'] from '_getGmail' — real camelCase split, used
+    ONLY to disambiguate between two real call-site functions inside
+    the same already-note-named module. Tokens shorter than 4 chars are
+    dropped: they are too generic to be real evidence ('get', 'you'),
+    and a wrong pick here would be exactly the over-attribution class
+    signal 2's own gating exists to prevent."""
+    parts = re.findall(r'[A-Za-z][a-z0-9]*', name or '')
+    return [p.lower() for p in parts if len(p) >= 4]
+
+
+# Real, snake_case table token inside an EXTERNAL_CONNECTORS `via`
+# string (e.g. 'openmontage_jobs Supabase queue' -> 'openmontage_jobs').
+# Requires an underscore, so a bare word in prose can never be mistaken
+# for a table name.
+_VIA_TABLE_TOKEN = re.compile(r'\b([a-z][a-z0-9]*(?:_[a-z0-9]+)+)\b')
+
 
 def attribute_river_connection_function(from_river, to_river, note='', core_js_path: Path = CORE_JS, cross_calls=None, itype=None):
     """Real, evidence-gated attribution of WHICH function a river-to-
@@ -2661,6 +2731,29 @@ def attribute_river_connection_function(from_river, to_river, note='', core_js_p
          to this. `to_mod` returns as the literal string `'main.js'`
          (not a RPGACE.register module — correctly renders with no
          Level-3 link, since main.js has no Level-3 page).
+      4. (Aug 25, G82.) `to_river` genuinely has NO modules of its own
+         (River XII, the api/*.js layer, is the real case) — so signals
+         1-2 are structurally incapable of ever firing for it. Real
+         evidence lives on the SOURCE side instead: the function in
+         `from_river` that actually makes the outbound call
+         (compute_outbound_api_call_sites()). Gated on the note NAMING
+         the module, for the same rule-4 reason signal 2 is gated; see
+         the inline comment for the real over-attribution this prevents
+         (River III's dormant Kimi/Luna note would otherwise have
+         wrongly grabbed `scheduleOracle._ingest`).
+      5. (Aug 25, G82.) The mirror image — `from_river` has no modules,
+         `to_river` does, and the note names a real EXTERNAL_CONNECTORS
+         entry whose own `via` names a real Supabase reservoir table
+         (`openmontage_jobs`, `graphify_jobs`). Attributes to the one
+         real function in `to_river` that SELECTs that table — the
+         genuine landing point, since these reservoirs are polled, not
+         pushed. Only fires when exactly one real reader exists.
+    Signals 4 and 5 are deliberately ordered BEFORE signal 3: signal 3
+    is a generic same-answer-for-everything fallback, so a more
+    specific real attribution must get first refusal. Verified this
+    changes nothing for the connections signal 3 already resolved (no
+    nav_route connection targets a module-less river).
+
     Returns (from_module_or_None, to_module, to_func, real_reason) or
     None if no signal finds anything — an honest gap, never fabricated
     to fill the space.
@@ -2683,6 +2776,96 @@ def attribute_river_connection_function(from_river, to_river, note='', core_js_p
             wrap_fn = find_wrap_installer_function(to_mod, core_js_path)
             if wrap_fn:
                 return (None, to_mod, wrap_fn, 'a real callOracle/sendChat wrap installer')
+
+    # Signal 4 — the real OUTBOUND call site, for a connection whose
+    # target river genuinely has no modules of its own. River XII (the
+    # api/*.js layer) is the real case: it is deliberately module-less
+    # by design, so signals 1-2 can NEVER fire for anything pointing at
+    # it — every `-> River XII` connection was structurally guaranteed
+    # to show "❓ no known function" no matter how much real evidence
+    # existed. The real evidence that does exist is on the SOURCE side:
+    # which function in `from_river` actually makes the call that
+    # routes out through there (compute_outbound_api_call_sites()).
+    #
+    # Gated exactly as hard as signal 2, for the same rule-4 reason: the
+    # note must NAME the module. Fired ungated, this would have wrongly
+    # attributed River III -> River XII (a dormant Kimi/Luna PROVIDER
+    # call, per its own note) to `scheduleOracle._ingest`'s unrelated
+    # /api/analyst call, purely because that happens to be River III's
+    # only outbound call site — a real, checked over-attribution, not a
+    # hypothetical one. Where a named module has two real call-site
+    # functions, a camelCase token from the function name must also
+    # appear in the note (this is what picks `_getGmail` over
+    # `_getYouTube` for River V's own "Gmail-fetch" note); if that still
+    # leaves it ambiguous, no attribution is made rather than an
+    # arbitrary pick.
+    #
+    # `to_mod` here is the module HOSTING the attributed function, which
+    # is what every consumer actually uses it for (the Level-3 link and
+    # the label) — the same latitude signal 3 already takes when it
+    # returns 'main.js'.
+    if not to_mods and note_lower:
+        note_norm = _attr_norm(note)
+        named = []
+        for m in from_mods:
+            if _attr_norm(m) in note_norm:
+                sites = compute_outbound_api_call_sites(m, core_js_path)
+                for fn, eps in sites.items():
+                    named.append((m, fn, eps))
+        if len(named) > 1:
+            # Real refinement tier 1 — the ENDPOINT the call actually
+            # hits, when the note names it. This is what separates
+            # River XI's own two real call sites: its note names
+            # "contentRepurpose's real Composio calls", and only
+            # contentRepurpose's site is a Composio dispatch (beatLog's
+            # is /api/lastfm, which the note never mentions).
+            refined = [t for t in named
+                       if any(_endpoint_token(ep) in note_lower for ep in t[2])]
+            if refined:
+                named = refined
+        if len(named) > 1:
+            # Real refinement tier 2 — a camelCase token of the function
+            # name itself, for two real sites inside the SAME named
+            # module hitting the SAME endpoint (River V's own
+            # `_getGmail` vs `_getYouTube`, both /api/composio, with a
+            # note that says "Gmail-fetch").
+            refined = [t for t in named if any(tok in note_lower for tok in _camel_tokens(t[1]))]
+            if refined:
+                named = refined
+        if len(named) == 1:
+            m, fn, eps = named[0]
+            return (None, m, fn,
+                    f'a real outbound call site ({", ".join(eps)}) in this river, named in the connection\'s own note')
+
+    # Signal 5 — the real RESERVOIR READER, the mirror image of signal
+    # 4: a connection FROM a module-less infrastructure river INTO a
+    # river that does have modules. The real mechanism for these is an
+    # external connector's own Supabase queue (openmontage_jobs,
+    # graphify_jobs — both named literally in EXTERNAL_CONNECTORS' own
+    # `via` field), which is polled, not pushed, so the real landing
+    # function is whichever function in `to_river` actually SELECTs that
+    # table. Gated on the note naming the connector, and on exactly one
+    # real reader existing — River XII -> River XIV ("Graphify CC
+    # deposits real findings here via graphify_jobs") correctly stays
+    # unattributed under this signal, because River XIV has no modules
+    # and therefore no real reader to name.
+    if not from_mods and to_mods and note_lower:
+        note_norm = _attr_norm(note)
+        readers = []
+        for conn in EXTERNAL_CONNECTORS:
+            if _attr_norm(conn['name']) not in note_norm:
+                continue
+            for tbl in _VIA_TABLE_TOKEN.findall(conn.get('via') or ''):
+                for m in to_mods:
+                    for fn, ops in compute_supabase_table_touches(m, core_js_path).items():
+                        if any(op == 'select' and t == tbl for op, t in ops):
+                            readers.append((m, fn, tbl, conn['name']))
+        readers = sorted(set(readers))
+        if len(readers) == 1:
+            m, fn, tbl, cname = readers[0]
+            return (None, m, fn,
+                    f"the real function that reads {cname}'s own `{tbl}` reservoir (polled, not pushed)")
+
     if itype == 'nav_route':
         return (None, 'main.js', 'showPage', "the real, generic page-switch function every nav_route connection goes through (bridges to the real 'page:show' hook)")
     return None
@@ -2708,12 +2891,24 @@ def compute_cross_module_function_calls(core_js_path: Path = CORE_JS):
     Returns [(from_module, from_func, to_module, to_func), ...] — every
     real cross-module function call found anywhere in rpgace_core.js,
     not scoped to one river (a real backdoor can and does cross rivers,
-    e.g. taxonomyTree calling into dashDeck)."""
+    e.g. taxonomyTree calling into dashDeck).
+
+    G82 (Aug 25 2026) — real, measured detector fix. The original
+    pattern was `RPGACE\\.modules\\.(\\w+)\\.(\\w+)\\s*\\(`, which
+    requires the `.` between module and method to sit IMMEDIATELY after
+    the module name. That made it structurally blind to a real,
+    line-wrapped call — and exactly one such call exists in the whole
+    file (confirmed by diffing old vs. new matches across all 45 real
+    modules before shipping, not assumed): ciAutoPropose._dispatch's
+    `RPGACE.modules.taxonomyTree\\n        .silentPropose(...)`, the
+    real Content-Intelligence -> taxonomy-proposal write path. Now
+    whitespace-tolerant on both sides of that dot. Real, measured blast
+    radius: +1 edge project-wide, no existing edge changed."""
     ranges = parse_module_ranges(core_js_path)
     result = []
     for m in ranges:
         for fname, body in _function_bodies(m, core_js_path).items():
-            for call_mod, call_fn in re.findall(r'RPGACE\.modules\.(\w+)\.(\w+)\s*\(', body):
+            for call_mod, call_fn in re.findall(r'RPGACE\.modules\.(\w+)\s*\.\s*(\w+)\s*\(', body):
                 if call_mod != m and call_mod in ranges:
                     result.append((m, fname, call_mod, call_fn))
     return result

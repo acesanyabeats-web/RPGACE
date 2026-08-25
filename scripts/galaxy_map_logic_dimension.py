@@ -37,7 +37,7 @@ from graphify_river_group import (
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_FLOWS, FLOWS_IN,
     LINKS_BY_RIVER, ALL_SKILLS, SKILL_SECONDARY_RIVER,
     attribute_river_connection_function, _river_num_from_label,
-    compute_cross_module_function_calls,
+    compute_cross_module_function_calls, LEVEL3_MODULES,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
@@ -55,17 +55,39 @@ def esc(s):
     return (s or '').replace('<', '&lt;').replace('>', '&gt;')
 
 
-def _attr_text(attr):
+def _attr_html(attr):
     """attribute_river_connection_function() returns a real
     (from_mod, to_mod, to_func, description) tuple, or None — never a
     bare string. Real, honest rendering of whichever fields are real
-    (from_mod is legitimately None for a wrap-installer/page-switch
-    attribution, per that function's own documented signal 2/3)."""
+    (from_mod is legitimately None for a wrap-installer/page-switch/
+    outbound-call attribution, per that function's own documented
+    signals 2-5).
+
+    G82 (Aug 25 2026) — two real fixes here, both verified against the
+    live file before changing anything:
+      * These attributions were rendered as PLAIN TEXT. Every other
+        consumer of the same tuple (galaxy_map_module.py's own Level-2
+        preview stub, galaxy_map_current.py) already links the
+        attributed module to `galaxy_map_current.html#mod-<name>` when
+        it is a real LEVEL3_MODULES member. This page did not, so a
+        reader could see the exact function and had no way to reach it.
+        Same convention reused, not a second one invented; a non-module
+        holder (signal 3's `'main.js'`) correctly gets no link, exactly
+        as it does everywhere else.
+      * `from_mod` was rendered as `bookworm()` — parentheses on a
+        MODULE name, reading as if it were a function. It is a module
+        (signal 1 returns the calling module, not the calling
+        function); the parentheses are dropped."""
     if not attr:
         return None
     from_mod, to_mod, to_func, desc = attr
-    where = f'{from_mod}() → {to_mod}.{to_func}()' if from_mod else f'{to_mod}.{to_func}()'
-    return f'{where} — {desc}'
+    target = f'{esc(to_mod)}.{esc(to_func)}()'
+    if to_mod in LEVEL3_MODULES:
+        target = f'<a href="galaxy_map_current.html#mod-{esc(to_mod)}"><code>{target}</code></a>'
+    else:
+        target = f'<code>{target}</code>'
+    where = f'<code>{esc(from_mod)}</code> → {target}' if from_mod else target
+    return f'{where} — {esc(desc)}'
 
 
 def build_river_passages(rnum):
@@ -78,16 +100,18 @@ def build_river_passages(rnum):
         other = _river_num_from_label(target_label)
         if not other:
             continue
-        attr_text = _attr_text(attribute_river_connection_function(rnum, other, note, cross_calls=CROSS_CALLS, itype=itype))
-        deep = f'<div class="passage-deep">🔽 {esc(attr_text)}</div>' if attr_text else ''
+        attr_html = _attr_html(attribute_river_connection_function(rnum, other, note, cross_calls=CROSS_CALLS, itype=itype))
+        deep = (f'<div class="passage-deep">🔽 {attr_html}</div>' if attr_html
+                else '<div class="passage-deep passage-nofn">❓ no known function — this connection is real at river grain, but no real code evidence names the specific function it lands on.</div>')
         passages.append({
             'line': f'{river_label.split("—")[0].strip()} → {RIVER_NAME[other].split("—")[0].strip()}',
             'kind': 'river-out',
             'body': f'<p>{esc(note)}</p>{deep}',
         })
     for other, note, itype in FLOWS_IN.get(rnum, []):
-        attr_text = _attr_text(attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_CALLS, itype=itype))
-        deep = f'<div class="passage-deep">🔽 {esc(attr_text)}</div>' if attr_text else ''
+        attr_html = _attr_html(attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_CALLS, itype=itype))
+        deep = (f'<div class="passage-deep">🔽 {attr_html}</div>' if attr_html
+                else '<div class="passage-deep passage-nofn">❓ no known function — this connection is real at river grain, but no real code evidence names the specific function it lands on.</div>')
         passages.append({
             'line': f'{RIVER_NAME[other].split("—")[0].strip()} → {river_label.split("—")[0].strip()}',
             'kind': 'river-in',
@@ -169,6 +193,12 @@ TEMPLATE = """<!DOCTYPE html>
   .passage p{{font-size:11px;color:#b8b8c8;line-height:1.6;margin-top:8px}}
   .passage-deep{{font-size:10.5px;color:var(--gold);margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.06)}}
   .passage-deep code{{background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:4px}}
+  .passage-deep a{{color:var(--gold);text-decoration:none;border-bottom:1px dotted var(--gold)}}
+  .passage-deep a:hover{{color:#fff;border-bottom-color:#fff}}
+  /* G82 — an unattributed connection is stated plainly rather than
+     rendering identically to an attributed one (the same honesty fix
+     G23a already made on galaxy_map_module.py's own Level-2 stubs). */
+  .passage-nofn{{color:var(--dim)}}
   .empty-note{{font-size:11px;color:var(--dim);font-style:italic}}
   .note{{max-width:900px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--purple)}}
@@ -228,7 +258,25 @@ def main():
     html = inject_plan_overlay(html, 'logic')
     OUT.write_text(html, encoding='utf-8')
     total = sum(len(build_river_passages(r)) for r in rivers)
+    # G82 — real, measured river-connection attribution coverage,
+    # printed so a future regeneration can't silently regress it. Counts
+    # the real RIVER_FLOWS entries (each is rendered twice, once on each
+    # river's own tab, so this counts the connections, not the passages).
+    attributed = unattributed = no_target = 0
+    for src, targets in RIVER_FLOWS.items():
+        for label, note, itype in targets:
+            tgt = _river_num_from_label(label)
+            if not tgt:
+                no_target += 1
+                continue
+            if attribute_river_connection_function(src, tgt, note, cross_calls=CROSS_CALLS, itype=itype):
+                attributed += 1
+            else:
+                unattributed += 1
     print(f"Wrote {OUT} — {len(rivers)} rivers, {total} real clickable edge passages.")
+    print(f"  G82 attribution — {attributed}/{attributed + unattributed} real river-to-river connections "
+          f"resolve to a specific function ({unattributed} honestly unattributed; "
+          f"{no_target} more have no target river at all and are not rendered).")
 
 
 if __name__ == '__main__':

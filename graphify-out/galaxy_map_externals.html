@@ -28,6 +28,9 @@
   .dblock{margin-top:8px}
   .dlabel{font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--blue);margin-bottom:3px}
   .dblock p{font-size:10.5px;line-height:1.55;color:#c8c8d8}
+  /* G82 — the same real evidence-caption treatment galaxy_map.py's own
+     facet rows already use (rule 8: same convention, not a new one). */
+  .ev{color:var(--dim);display:block;margin-top:4px;font-size:9.5px;line-height:1.5}
   code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
   a{color:var(--blue)}
   .note{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
@@ -65,30 +68,35 @@
   <div class="chead2"><h3>Anthropic (Claude API)</h3><span class="cstatus cstatus-live">live</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>api/oracle.js callClaude()</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Anthropic's own hosted API — no separate repo/galaxy to bridge to, the real default provider</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_module.html#river-3">River III</a> <span class="ev">Resolved at river grain — its own prose names no module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI trigger (input side)</div><p>Every real "Send" action in Oracle chat (main.js sendChat/callOracle) is a direct real trigger.</p></div><div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Oracle's own reply renders directly in the chat UI — the single most-used real output path in the app.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>the real default Oracle provider — every ungrounded Oracle call routes here unless a dormant provider (Kimi/Luna) is live. River III's Oracle Current is the harness; this IS the real external call, not RPGACE code.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>OpenMontage</h3><span class="cstatus cstatus-live">live</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>openmontage_jobs Supabase queue</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>calesthio/OpenMontage repo, operated by a separate Claude Code session ("OpenMontage CC")</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_current.html#mod-contentProductionLive">River XI’s <code>contentProductionLive</code></a> <span class="ev">Resolved at module grain — its own prose names a real module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div><div class="dblock"><div class="dlabel">Its own galaxy</div><p>🌌 <a href="galaxy_map_orchestrator_openmontage.html">galaxy_map_orchestrator_openmontage.html</a> <span class="ev">Real source: this connector's own <code>bridges_to</code> names a separately-operated galaxy that genuinely has its own page in this map.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI trigger (input side)</div><p>A real "Generate Video" button (contentProductionLive._generateVideo) queues a real openmontage_jobs row.</p></div><div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Real job status shown via "View Kling Project" / the honest manual "Mark ConID as Filmed" acknowledgment (openmontage_jobs is polled, not pushed).</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>agent-operated video pipeline, driven by a separate Claude Code session ("OpenMontage CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live's "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>Composio</h3><span class="cstatus cstatus-live">live</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>api/composio.js / api/executor.js / api/orchestrate.js</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Gmail / Instagram / YouTube / Notion / GitHub connected accounts</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_current.html#mod-morningBrief">River V’s <code>morningBrief</code></a> + <a href="galaxy_map_current.html#mod-contentRepurpose">River XI’s <code>contentRepurpose</code></a> <span class="ev">Resolved at module grain — its own prose names a real module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI trigger (input side)</div><p>Real, grep-confirmed trigger: opening the "🌅 Morning Brief" dashboard card runs morningBrief._generate() → _getGmail()/_getYouTube() (real RPGACE.api() calls); contentRepurpose._injectAgentButtons() wires a second real trigger.</p></div><div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Real Gmail/YouTube data rendered directly inside the Morning Brief popup's own output.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion page + YouTube channel data via Supadata).</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>Jina AI</h3><span class="cstatus cstatus-live">live</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>r.jina.ai, 4 real call sites (scout.js/bookworm-fetch.js/main.js/_context.js)</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Jina AI's own hosted read/fetch API</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_current.html#mod-scheduleOracle">River III’s <code>scheduleOracle</code></a> + <a href="galaxy_map_current.html#mod-bookworm">River IV’s <code>bookworm</code></a> <span class="ev">Resolved at module grain — its own prose names a real module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI trigger (input side)</div><p>Real, grep-confirmed call sites: scout.js/bookworm-fetch.js/main.js/_context.js — fired by real UI actions (adding a research reference, a Bookworm PDF/URL import).</p></div><div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>The fetched page content is processed directly into a real Content Intelligence report / Bookworm chapter shown in-app.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>real, live URL-to-text fetch — load-bearing for Bookworm URL ingestion, Schedule Oracle, and chat-pasted-URL handling. Confirmed by direct grep, not assumed.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>Last.fm</h3><span class="cstatus cstatus-live">live</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>api/lastfm.js, LASTFM_API_KEY</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Last.fm's own hosted API</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_current.html#mod-refCorpus">River VII’s <code>refCorpus</code></a> <span class="ev">Resolved at module grain — its own prose names a real module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI trigger (input side)</div><p>Real: refCorpus.findMatches()'s own fallback, triggered by Beat Log's real "Find Artists" flow.</p></div><div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Matched artists render directly inside Beat Log's own real output.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>real artist/tag discovery — refCorpus.findMatches()'s real fallback when no reference-corpus match exists; grows the corpus from its own results.</p></div>
 </div></div>
@@ -99,24 +107,28 @@
   <div class="chead2"><h3>librosa</h3><span class="cstatus cstatus-optional-local">optional/local</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>beat_audio_jobs + beat-audio bucket, local_server.py</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Alex's own local machine, via local_server.py (not a hosted service)</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_current.html#mod-beatLog">River XI’s <code>beatLog</code></a> <span class="ev">Resolved at module grain — its own prose names a real module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI trigger (input side)</div><p>Optional/local — real beat_audio_jobs queueing exists, but the actual analysis runs on Alex's own machine via local_server.py, not inside the deployed webapp.</p></div><div class="dblock"><div class="dlabel">Honest note</div><p>Real, but genuinely partial — the trigger is real app code, the actual processing step is honestly outside RPGACE's own UI entirely.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI's Beat Log, nowhere else.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>Graphify CC</h3><span class="cstatus cstatus-live">live</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>graphify_jobs Supabase queue</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>graphifyy (PyPI), operated by a separate Claude Code session ("Graphify CC")</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_module.html#river-9">River IX</a> + <a href="galaxy_map_module.html#river-14">River XIV</a> <span class="ev">Resolved at river grain — its own prose names no module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Real: galaxy_map*.html/graph.html/GRAPH_TREE.html/obsidian_vault.html — all real Graphify CC output — render directly inside the live Oversight popup.</p></div><div class="dblock"><div class="dlabel">Honest note</div><p>No real RPGACE webapp UI trigger — it's driven by a separate Claude Code session writing to graphify_jobs, never a button Alex clicks inside the app itself. Real output-only.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from River IX's own session-start check, deposits real findings back into River XIV via graphify_jobs.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>n8n</h3><span class="cstatus cstatus-built,-unconfirmed">built, unconfirmed</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>n8n/rota_sync_workflow.json (Cron -&gt; scripts/fourth_rota.py)</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>a self-hosted/cloud n8n instance Alex imports the workflow into</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>⚪ No known in-app destination. <span class="ev">No EXTERNAL_RIVER_LINKS row exists for this connector. Its own real trigger path is <code>n8n/rota_sync_workflow.json (Cron -&gt; scripts/fourth_rota.py)</code> and its own status is <code>built, unconfirmed</code> — no river number is claimed here rather than one being guessed in.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Indirect — the real rota sync (Cron → scripts/fourth_rota.py) updates data that then appears in the Schedule page, but n8n itself has no direct button trigger.</p></div><div class="dblock"><div class="dlabel">Honest note</div><p>Built but unconfirmed against a real live run — real, honest limitation, not hidden.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>real, importable workflow for F10's rota-sync automation — never test-run against a live unattended execution (2 manual login-confirmation gates deliberately untouched).</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>Whisper (OpenAI, local)</h3><span class="cstatus cstatus-built,-unconfirmed-this-session">built, unconfirmed this session</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>local_server.py / Python scripts on Alex's own machine</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Alex's own local machine — not in this repo</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_module.html#river-17">River XVII</a> <span class="ev">Resolved at river grain — its own prose names no module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Real UI output (display side)</div><p>Indirect — real transcripts feed into a Content Intelligence report shown in-app, but Whisper itself runs via a manual local Python script outside RPGACE's own UI entirely.</p></div><div class="dblock"><div class="dlabel">Honest note</div><p>Real and historically confirmed working (patch_notes.html, July 7), but current live status is genuinely unconfirmed this session.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata-&gt;download-&gt;Whisper-&gt;frame extraction-&gt;Claude Vision-&gt;Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py's other integrations — do not claim active without asking Alex.</p></div>
 </div></div>
@@ -127,24 +139,28 @@
   <div class="chead2"><h3>Moonshot AI (Kimi)</h3><span class="cstatus cstatus-dormant">dormant</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>api/oracle.js provider:'kimi'</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>Moonshot AI's own hosted API (api.moonshot.ai/v1)</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_module.html#river-3">River III</a> <span class="ev">Resolved at river grain — its own prose names no module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Honest note</div><p>Dormant — a real OpenAI-compatible scaffold exists in api/oracle.js, but no MOONSHOT_API_KEY is configured, so no real call has ever fired. Honestly placed in neither category.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from River III's Oracle Current in place of the default Anthropic call once live.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>OpenAI (Luna)</h3><span class="cstatus cstatus-dormant">dormant</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>api/oracle.js provider:'luna'</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>OpenAI's own hosted API</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_module.html#river-3">River III</a> <span class="ev">Resolved at river grain — its own prose names no module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div>
   <div class="dblock"><div class="dlabel">Honest note</div><p>Dormant — same real scaffold shape as Kimi, same honest absence of a live key.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same River III relationship once live.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>FFmpeg</h3><span class="cstatus cstatus-live-(external-repo)">live (external repo)</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>OpenMontage's own pipeline, confirmed working July 31</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>runs inside the OpenMontage galaxy itself, not a separate bridge</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>🔽 Lands on <a href="galaxy_map_module.html#river-11">River XI</a> <span class="ev">Resolved at river grain — its own prose names no module in that river, from <code>EXTERNAL_RIVER_LINKS</code> + this connector's own <code>note</code>/<code>via</code>.</span></p></div><div class="dblock"><div class="dlabel">Its own galaxy</div><p>🌌 <a href="galaxy_map_orchestrator_openmontage.html">galaxy_map_orchestrator_openmontage.html</a> <span class="ev">Real source: this connector's own <code>bridges_to</code> names a separately-operated galaxy that genuinely has its own page in this map.</span></p></div>
   <div class="dblock"><div class="dlabel">Honest note</div><p>No direct RPGACE UI trigger of its own — it's invoked BY OpenMontage's own external pipeline, not by a button in this app. Real, but indirect (reached through OpenMontage, not directly).</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river.</p></div>
 </div><div class="ccard">
   <div class="chead2"><h3>OpenArt</h3><span class="cstatus cstatus-deferred">deferred</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>none yet</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>not wired — a named future companion galaxy to OpenMontage</p></div>
+  <div class="dblock"><div class="dlabel">Real destination</div><p>⚪ No known in-app destination. <span class="ev">No EXTERNAL_RIVER_LINKS row exists for this connector. Its own real trigger path is <code>none yet</code> and its own status is <code>deferred</code> — no river number is claimed here rather than one being guessed in.</span></p></div>
   <div class="dblock"><div class="dlabel">Honest note</div><p>Deferred — no real integration exists yet at all.</p></div>
   <div class="dblock"><div class="dlabel">Full real note</div><p>"connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet</p></div>
 </div></div>
