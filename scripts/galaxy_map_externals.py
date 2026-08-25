@@ -37,6 +37,15 @@ from graphify_river_group import EXTERNAL_CONNECTORS  # noqa: E402
 from graphify_river_group import EXTERNAL_RIVER_LINKS, RIVER_MODULES, RIVER_NAME  # noqa: E402
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+# G91 continuation (Aug 25 2026) — the same shared river -> module ->
+# function drill-down mechanism G83 built for Supabase, reused here
+# (rule 8) fed with real Oracle-call evidence instead. See that
+# function's own docstring for the full "why generalize here, not a
+# per-page copy" reasoning.
+from graphify_river_group import (  # noqa: E402
+    build_infra_drilldown, render_infra_drilldown, INFRA_DRILLDOWN_CSS,
+    compute_all_oracle_call_counts, LEVEL3_MODULES, infra_drilldown_counts,
+)
 # Rule 8 — the real connector -> own-galaxy-page mapping already exists
 # in galaxy_map.py (G78/G81's roster). Imported, never re-typed here, so
 # a future change to a CC unit's own page lands in one place.
@@ -304,6 +313,42 @@ def build_group_section(grp):
 </section>'''
 
 
+# G91 continuation (Aug 25 2026) — External AI's own infra bubble
+# system: a real river(L1) -> module(L2) -> function(L3) drill-down
+# over every real Oracle-call site anywhere in rpgace_core.js, the
+# generalized form of what G83 built specifically for Supabase.
+#
+# This is deliberately ADDITIVE alongside the 3 existing connector-
+# classification tabs above (never a replacement — R22, table-first,
+# bubble-follows: the per-connector cards ARE this page's real table,
+# already covering the 12-actor roster at CONNECTOR grain; this new
+# tab answers a genuinely different, finer question — every real
+# FUNCTION anywhere that calls Oracle, not just the named actors). A
+# connector card's own "Real destination" block (G82) already resolves
+# ONE best-match module per connector; this drill-down instead shows
+# ALL of them, river by river, with zero per-connector curation.
+def build_drilldown_section():
+    evidence = {}
+    for mod, counts in compute_all_oracle_call_counts().items():
+        for func, n in counts.items():
+            evidence.setdefault('Oracle API', []).append(
+                (mod, func, f'{n} real call(s)'))
+    drill, orphans = build_infra_drilldown(evidence)
+    inner = render_infra_drilldown(
+        drill, orphans, unit_icon='🔮', unit_label='External AI',
+        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
+        resource_emoji='🔮',
+        orphan_note='Real cross-cutting (no-river) modules that genuinely call Oracle — '
+                    'config/dashDeck/errorLog/questEngine/leftNav, same honest set G90 gave a real Current Series to.')
+    return (f'<section class="gsection" id="grp-drilldown" style="display:none">'
+            f'<div class="ghead"><h2>🌊 Where Oracle Is Actually Called — River / Module / Function Drill-down</h2></div>'
+            f'<p class="grole">Every real function anywhere in <code>rpgace_core.js</code> that calls Oracle — '
+            f'not just the 12 named connectors above, the full real river/module/function breakdown. '
+            f'Same real shape as the Supabase bubble system (G83); reused, not rebuilt, per '
+            f'<code>build_infra_drilldown()</code>/<code>render_infra_drilldown()</code>.</p>'
+            f'{inner}</section>')
+
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -340,6 +385,7 @@ TEMPLATE = """<!DOCTYPE html>
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
   a{{color:var(--blue)}}
   .note{{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+{infra_dd_css}
 {dim_css}
 </style>
 </head>
@@ -382,11 +428,12 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    tabs = ''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)
-    sections = ''.join(build_group_section(g) for g in GROUPS)
+    tabs = (''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)
+            + '<div class="tab" data-target="grp-drilldown">🌊 River/Module/Function Drill-down</div>')
+    sections = ''.join(build_group_section(g) for g in GROUPS) + build_drilldown_section()
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_conns=len(EXTERNAL_CONNECTORS),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
@@ -408,6 +455,13 @@ def main():
     print(f"Wrote {OUT} — {len(EXTERNAL_CONNECTORS)} real connectors, {both_n} genuinely touch both UI and backend.")
     print(f"  G82 destinations — {mod_n} module-grain, {riv_n} river-grain, {none_n} honestly none; "
           f"{gal_n} also link to their own galaxy page.")
+    _oc = compute_all_oracle_call_counts()
+    _drill, _orph = build_infra_drilldown({
+        'Oracle API': [(m, f, f'{n} real call(s)') for m, counts in _oc.items() for f, n in counts.items()]})
+    _c = infra_drilldown_counts(_drill, _orph)
+    print(f"  G91 continuation — Oracle drill-down: {_c['rivers']} real river(s) qualify, "
+          f"{_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
+          f"{_c['functions'] + _c['orphan_functions']} real (module,function) Oracle-calling pair(s).")
 
 
 if __name__ == '__main__':

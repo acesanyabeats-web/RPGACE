@@ -43,6 +43,15 @@ from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+# G91 continuation (Aug 25 2026) — the same shared river -> module ->
+# function drill-down mechanism G83 built for Supabase, reused here
+# (rule 8) fed with the real subset of tables THIS unit (Oversight
+# Docs) genuinely touches — see build_shared_infra_section() below.
+from graphify_river_group import (  # noqa: E402
+    build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
+    INFRA_DRILLDOWN_CSS, compute_all_supabase_table_touches,
+    compute_oversight_doc_supabase_reads, LEVEL3_MODULES,
+)
 
 OUT = Path('graphify-out/galaxy_map_oversight_sync.html')
 
@@ -210,6 +219,59 @@ def build_ritual_section(r):
 </section>'''
 
 
+# G91 continuation (Aug 25 2026) — Oversight Docs' own infra bubble
+# system: a real river(L1) -> module(L2) -> function(L3) drill-down,
+# generalized from G83's Supabase build. The evidence set here is
+# deliberately narrower than the full Supabase page's own: only the
+# real tables THIS unit's own oversight docs genuinely fetch (per
+# compute_oversight_doc_supabase_reads(), already the source
+# compute_l0_unit_supabase_infra() uses on the L0 map itself) — cross-
+# referenced against every rpgace_core.js module/function that touches
+# those SAME tables (compute_all_supabase_table_touches(), rule 8, not
+# re-parsed). This answers a real, different question than the full
+# Supabase page does: "which live code genuinely shares infrastructure
+# with an oversight doc," not "every table, full stop."
+def build_shared_infra_section():
+    # Real, per-{doc, table} rows — the exact same source
+    # compute_oversight_docs_supabase_infra() uses for the L0 map's own
+    # inline Infra facets. Rendered here too (G91 continuation) so this
+    # page genuinely supersedes that inline list, per Alex's own bar for
+    # the L0 click-jump: "that list is redundant IF the [destination]
+    # page show[s] bubble system and where they lead to and where
+    # inputs come from for each table."
+    doc_rows = sorted(compute_oversight_doc_supabase_reads(), key=lambda r: (r['table'], r['file']))
+    doctable_rows = ''.join(
+        f'<tr><td><code>{esc(r["table"])}</code></td><td><code>{esc(r["file"])}</code></td>'
+        f'<td>{", ".join(esc(m) for m in r["methods"])}</td><td class="seqnum">{r["n"]}</td></tr>'
+        for r in doc_rows)
+    doctable = (f'<table class="ltable"><thead><tr><th>Table</th><th>Oversight doc</th>'
+                f'<th>Real HTTP method(s)</th><th># calls</th></tr></thead><tbody>{doctable_rows}</tbody></table>')
+
+    oversight_tables = sorted({rec['table'] for rec in compute_oversight_doc_supabase_reads()})
+    all_touches = compute_all_supabase_table_touches()
+    evidence = {tbl: all_touches[tbl] for tbl in oversight_tables if tbl in all_touches}
+    drill, orphans = build_infra_drilldown(evidence)
+    inner = render_infra_drilldown(
+        drill, orphans, unit_icon='📚', unit_label='Oversight Docs',
+        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
+        resource_emoji='🗄️',
+        orphan_note='Real cross-cutting (no-river) modules that touch a real table an oversight doc also reads/writes.')
+    no_code = sorted(set(oversight_tables) - set(evidence))
+    no_code_note = (
+        f'<p class="catnote">{len(no_code)} of {len(oversight_tables)} real oversight-doc table(s) have NO '
+        f'rpgace_core.js touch at all — the oversight doc is the only real client-side reader/writer: '
+        + ', '.join(f'<code>{esc(t)}</code>' for t in no_code) + '.</p>'
+        if no_code else '')
+    return (f'<section class="gsection" id="cat-sharedinfra" style="display:none">'
+            f'<div class="ghead"><h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2></div>'
+            f'<p class="catnote">Every real table an oversight doc genuinely fetches live (same source as the L0 map\'s '
+            f'own Infra tab for this unit), cross-referenced against every rpgace_core.js river/module/function that '
+            f'touches that SAME table — real, live-code infrastructure sharing, not the doc-to-doc sequencing the '
+            f'other tabs on this page cover.</p>'
+            f'<p class="catnote"><b>Which doc touches which table</b> (the real per-{{doc,table}} facts the L0 map\'s '
+            f'own inline Infra list used to be the only place to see):</p>{doctable}{no_code_note}{inner}</section>')
+
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -249,6 +311,7 @@ TEMPLATE = """<!DOCTYPE html>
   .dim{{color:#6a6a78}}
   a{{color:var(--brown)}}
   .note{{max-width:1200px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+{infra_dd_css}
 {dim_css}
 </style>
 </head>
@@ -300,15 +363,17 @@ TABS = [
     {'id': 'cat-routine', 'label': '☀️ Routine'},
     {'id': 'cat-summary', 'label': '\U0001F4CB Summary'},
     {'id': 'cat-ceo', 'label': '\U0001F30C CEO Loop 2'},
+    {'id': 'cat-sharedinfra', 'label': '🗄️ Shared Infrastructure'},
 ]
 
 
 def main():
     tabs = ''.join(f'<div class="tab" data-target="{t["id"]}">{t["label"]}</div>' for t in TABS)
-    sections = build_pushbuild_section() + ''.join(build_ritual_section(r) for r in RITUALS)
+    sections = (build_pushbuild_section() + ''.join(build_ritual_section(r) for r in RITUALS)
+                + build_shared_infra_section())
     html = TEMPLATE.format(tabs=tabs, sections=sections,
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
@@ -328,6 +393,14 @@ def main():
           f"{len(RITUALS)} real ritual sequences ({sum(len(r['steps']) for r in RITUALS)} total steps).")
     print(f"  G82 doc links — {len(linked)}/{len(named)} distinct named doc file(s) resolve to a real file "
           f"and are linked; unresolved: {', '.join(sorted(named - linked)) or 'none'}.")
+    _ov_tables = sorted({rec['table'] for rec in compute_oversight_doc_supabase_reads()})
+    _all_touches = compute_all_supabase_table_touches()
+    _ev = {t: _all_touches[t] for t in _ov_tables if t in _all_touches}
+    _drill, _orph = build_infra_drilldown(_ev)
+    _c = infra_drilldown_counts(_drill, _orph)
+    print(f"  G91 continuation — Shared Infrastructure: {len(_ov_tables)} real oversight-doc table(s), "
+          f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
+          f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")
 
 
 if __name__ == '__main__':

@@ -1984,6 +1984,31 @@ def compute_module_oracle_call_count(module_name, core_js_path: Path = CORE_JS):
     return sum(counts.values())
 
 
+def compute_all_oracle_call_counts(core_js_path: Path = CORE_JS):
+    """Real, project-wide roll-up — {module: {func: count}}, every real
+    function ANYWHERE that calls Oracle (count > 0 only), module-grouped
+    upstream at parse_module_ranges() (rule 8, not re-parsed) — same
+    real shape as compute_all_supabase_table_touches() one screen up.
+
+    G91 continuation (Aug 25 2026) — powers External AI's own infra
+    drill-down (galaxy_map_externals.html), the generalized river ->
+    module -> function shape build_infra_drilldown()/
+    render_infra_drilldown() were factored for, fed with real Oracle-
+    call evidence instead of Supabase-table evidence this time. Not
+    scoped to LEVEL3_MODULES on purpose — a cross-cutting (no-river)
+    module that calls Oracle is a real fact too, and build_infra_
+    drilldown()'s own river_of.get(module) lookup already returns None
+    for those, routing them into the orphans bucket exactly the way the
+    Supabase page's config/dashDeck/etc. rows already do."""
+    ranges = parse_module_ranges(core_js_path)
+    out = {}
+    for m in ranges:
+        counts = {f: n for f, n in compute_oracle_call_counts(m, core_js_path).items() if n > 0}
+        if counts:
+            out[m] = counts
+    return out
+
+
 def compute_card_oracle_call_count(card, card_flow, core_js_path: Path = CORE_JS):
     """Real, DASHBOARD-CARD-granularity aggregate (Aug 14, G16
     continuation — Alex: "move on with next phase or step of g-series

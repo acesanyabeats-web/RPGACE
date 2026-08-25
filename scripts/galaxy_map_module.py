@@ -498,13 +498,13 @@ def build_river_section(rnum):
             )
             if has_l3:
                 nodes_svg.append(
-                    f'{term_badge}<a href="galaxy_map_current.html#mod-{m}" class="drill-link"><g class="node">{node_inner}</g></a>{l3_badge}'
-                    f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
+                    f'<g id="mod-{m}">{term_badge}<a href="galaxy_map_current.html#mod-{m}" class="drill-link"><g class="node">{node_inner}</g></a>{l3_badge}'
+                    f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text></g>'
                 )
             else:
                 nodes_svg.append(
-                    f'{term_badge}<g class="node">{node_inner}</g>'
-                    f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text>'
+                    f'<g id="mod-{m}">{term_badge}<g class="node">{node_inner}</g>'
+                    f'<text x="{mx}" y="{my+34}" text-anchor="middle" font-size="9.5" fill="{color}"{weight_attr}>{m}</text></g>'
                 )
         # Real, honest distinction (Aug 13, /misunderstanding fix — see
         # compute_intra_river_flow()'s own docstring): a 'direct' edge
@@ -775,8 +775,19 @@ def build_river_section(rnum):
         # separate page to link OUT to; its content now lives inline as
         # THIS section's own Table view, so the notice points there
         # instead of off-page.
+        # G90 fix (Aug 25 2026) — real, evidenced gap this meander branch
+        # itself created: the per-module `id="mod-{m}"` anchor added
+        # above (G90) lives inside `nodes_svg`, which this branch
+        # discards outright — so every "zoom out: Level 2" link from
+        # Current pointing at one of THIS river's modules still landed
+        # on a dead anchor, unrelated to the SVG-crowding problem this
+        # branch already solves. Fixed honestly, not by resurrecting the
+        # crowded canvas: a real, invisible per-module anchor lands right
+        # on this notice (the true Level-2 destination for a meander
+        # river), rather than faking a position these modules never had.
+        mod_anchors = ''.join(f'<span id="mod-{m}" style="position:absolute"></span>' for m in mods if m in mod_pos)
         canvas_html = (
-            f'<div class="meander-notice">'
+            f'<div class="meander-notice">{mod_anchors}'
             f'<p>This river has {len(mods)} real modules across {len(cards)} real dashboard cards — genuinely too many to '
             f'usefully fan out on one canvas without the crossing Alex/Oracle bubble mess this used to show. '
             f'It has been split by real dashboard card instead — switch to the Table view above.</p>'

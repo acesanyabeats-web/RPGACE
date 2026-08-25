@@ -105,6 +105,30 @@ for fm, ff, tm, tf in CROSS_CALLS:
 MODULES = sorted(m for mods in RIVER_MODULES.values() for m in mods)
 KIND_ICON = {'if': '🔀', 'else if': '🔁', 'else': '↩️', 'switch': '🔢'}
 
+# G90 fix (Aug 25 2026) — real, evidenced dead-link bug found during the
+# G82 exhaustive link-integrity sweep: 96 same-page cross-references on
+# THIS page (from tracked modules' own "next hop" citations) point at
+# `#mod-dashDeck` / `#mod-config` / `#mod-leftNav` — real functions
+# genuinely called (dashDeck._popup/_closeWidgetPopup/_ensureStash/
+# _injectStyles, config.clear, leftNav._renderItem) that Current has
+# never rendered a section for, because these 5 modules are the same
+# real "cross-cutting, no river" set RIVER_MODULES' own exclusion
+# comment already names (config/dashDeck/errorLog/questEngine) plus
+# leftNav (a genuine 6th real case this sweep surfaced, not previously
+# named anywhere).
+#
+# Real /interrogation confirmed the fix as a full generalization, not a
+# 6-link patch: build_module_section()/build_module_map_inner() never
+# actually depended on river membership — _function_bodies() and every
+# detector it calls (compute_function_branches/_ui_signals/
+# _oracle_call_counts/_supabase_table_touches) parse rpgace_core.js's
+# own `/* ===MODULE:x=== */` markers directly via parse_module_ranges(),
+# which RIVER_MODULES never gates. So these 5 modules get the exact
+# same real Current coverage every river-having module already does —
+# a genuinely different, larger, more honest fix than a stub, and the
+# one Alex actually confirmed.
+CROSS_CUTTING_MODULES = sorted(['config', 'dashDeck', 'errorLog', 'questEngine', 'leftNav'])
+
 
 def _incoming_attribution_for_module(module_name):
     """Real pairing (moved verbatim from galaxy_map_level3.py, Aug 21
@@ -253,9 +277,20 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             from_river_name = RIVER_NAME.get(incoming_attr[0], '').split('—')[0].strip()
             incoming_badge = f'<text x="{x}" y="{y-32}" text-anchor="middle" font-size="8" fill="{color}" opacity="0.9">⬅ from River {incoming_attr[0]} ({from_river_name})</text>'
         nav_badge = ''
-        if is_entry:
+        if is_entry and module_name in LEVEL3_MODULES:
             nav_badge = (f'<a href="galaxy_map_module.html#mod-{module_name}">'
                          f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="#5FB3D9" text-decoration="underline">🔭 zoom out: Level 2</text></a>')
+        elif is_entry:
+            # G90 fix (Aug 25 2026) — module_name is a real cross-cutting
+            # (no-river) module; galaxy_map_module.py is organized
+            # strictly by river and has no section for it at all, so a
+            # "zoom out: Level 2" link here would be honestly dead no
+            # matter what anchor scheme Level 2 used. Same honest-text
+            # discipline render_infra_drilldown() already uses for this
+            # exact case — say so plainly, never link to a page that
+            # structurally cannot represent this module.
+            nav_badge = (f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="#5a5a68">'
+                         f'⚙️ cross-cutting — no Level 2 (no river)</text>')
         elif is_leaf and (module_name, f) in NOTABLE:
             # NOTABLE (module-scope above) is the exact same real
             # {(module,func): decision_point} shape galaxy_map_level3.py
@@ -685,6 +720,7 @@ TEMPLATE = """<!DOCTYPE html>
   .modpicker{{max-width:1100px;margin:16px auto;padding:0 24px;display:flex;gap:5px;flex-wrap:wrap;justify-content:center}}
   .mod-tab{{padding:4px 10px;border-radius:14px;font-size:9.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
   .mod-tab.active{{background:var(--gold);color:#1a1608;font-weight:700}}
+  .mod-tab-sep{{width:100%;text-align:center;font-size:9px;font-weight:700;letter-spacing:1px;color:#5a5a68;margin:6px 0 2px}}
   .mhead{{display:flex;align-items:center;gap:10px;padding:20px 24px 6px;max-width:900px;margin:0 auto;flex-wrap:wrap}}
   .mhead h2{{font-family:Georgia,serif;font-size:18px;color:#fff}}
   .river-chip{{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--dim)}}
@@ -842,17 +878,23 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    mod_tabs = ''.join(f'<div class="mod-tab" data-target="mod-{m}">{m}</div>' for m in MODULES)
-    mod_sections = ''.join(build_module_section(m) for m in MODULES)
-    total_funcs = sum(len(_function_bodies(m).keys()) for m in MODULES)
+    all_mods = MODULES + CROSS_CUTTING_MODULES
+    mod_tabs = (
+        ''.join(f'<div class="mod-tab" data-target="mod-{m}">{m}</div>' for m in MODULES)
+        + '<div class="mod-tab-sep">⚙️ Cross-cutting (no river)</div>'
+        + ''.join(f'<div class="mod-tab" data-target="mod-{m}">{m}</div>' for m in CROSS_CUTTING_MODULES)
+    )
+    mod_sections = ''.join(build_module_section(m) for m in all_mods)
+    total_funcs = sum(len(_function_bodies(m).keys()) for m in all_mods)
     html = TEMPLATE.format(mod_tabs=mod_tabs, mod_sections=mod_sections,
-                            n_funcs=total_funcs, n_mods=len(MODULES),
+                            n_funcs=total_funcs, n_mods=len(all_mods),
                             dim_index=dimension_index_html(OUT.name),
                             dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(MODULES)} modules, {total_funcs} real Currents, "
+    print(f"Wrote {OUT} — {len(MODULES)} river modules + {len(CROSS_CUTTING_MODULES)} "
+          f"cross-cutting (no river) = {len(all_mods)} total, {total_funcs} real Currents, "
           f"{len(NOTABLE)} with a curated core-logic write-up.")
 
 

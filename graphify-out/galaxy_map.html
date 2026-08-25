@@ -388,13 +388,28 @@
       // bubbles should lead somewhere lower in the map, so far they just
       // navigate to list below... i click supabase and it takes me to
       // supabase bubble system without going through the list below".
-      // Supabase is the one unit whose lower-level page now HAS a real
+      // Supabase was the first unit whose lower-level page got a real
       // bubble system of its own (galaxy_map_supabase.html's G83 map
-      // view), so it goes straight there. Deliberately scoped to this
-      // one unit — the other 8 keep the inline facet panel unchanged
-      // until each has a real destination of its own to jump to.
-      if (uid === 'supabase') {
-        window.location.href = 'galaxy_map_supabase.html#view-map';
+      // view). G91 continuation (same day) generalizes this to the
+      // 2 more units Alex confirmed have real river/module-shaped
+      // evidence to build the same shape for: External AI (Oracle-call
+      // evidence) and Oversight Docs (table-touch evidence, scoped to
+      // what oversight docs themselves touch) — each destination page
+      // was independently checked to genuinely supersede its own L0
+      // inline facet list (galaxy_map_externals.html already carries
+      // every External-AI actor's role/status/destination via its
+      // existing 3 tabs; galaxy_map_oversight_sync.html's new Shared
+      // Infrastructure tab now restates the real per-{doc,table} rows
+      // too, not just the river/module drill-down) before being wired
+      // in here. The other 6 units keep the inline facet panel
+      // unchanged until each has a real destination of its own.
+      var UNIT_BUBBLE_SYSTEM = {
+        supabase: 'galaxy_map_supabase.html#view-map',
+        external_ai: 'galaxy_map_externals.html#grp-drilldown',
+        oversight_docs: 'galaxy_map_oversight_sync.html#cat-sharedinfra',
+      };
+      if (UNIT_BUBBLE_SYSTEM[uid]) {
+        window.location.href = UNIT_BUBBLE_SYSTEM[uid];
         return;
       }
       currentUnit = uid;
