@@ -323,7 +323,7 @@ def build_logic_writeups():
   <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines {a}-{b})</div><pre>{code_esc}</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-{esc(dp['level3'])}">🔽 {esc(dp['level3'])} — Current Series</a>
-    <a class="mod-chip" href="galaxy_map_level6.html#m-{esc(dp["level3"])}">🔬 every branch in {esc(dp['level3'])} — Detailed Decision</a>
+    <a class="mod-chip" href="galaxy_map_level6.html#m-{esc(dp["level3"])}">🔬 every branch in {esc(dp['level3'])} — Branch Ledger</a>
     <!-- Aug 25 2026 — real dead-anchor fix, found in passing while
          verifying G82's own link integrity, unrelated to this pass's
          other changes: this used to key off dp['module'] (dashDeck for
@@ -476,7 +476,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Matrix</div>
   <h1>🚦🧭 The Decision Matrix — Every Real Decision, By River</h1>
-  <p>Real unification of all 3 real decision kinds this project tracks: 🗑️ Gates (<a href="galaxy_map_decisions.html">10 human-confirm points</a>), 🧠 Logic Choices ({n_logic} curated core-logic points, <a href="#d-oracle-mode">written up in full further down this page</a>), and ⌨️ Text Inputs ({n_text} real, curated free-text entry points that drive an actual decision) — {n_total} real decisions total, grouped by which of the 17 real rivers they belong to. "Depth" shows how far down the existing Galaxy Map hierarchy each one is documented: every real decision reaches Current (L3) + Level 6 (exhaustive branch detail); a real 🟣 purple depth tag means it's ALSO one of Level 5's own curated "core logic" points. <b>This table is the real source of truth — the bubble view below is a rendering layer over the exact same data, never a second, independently-imagined picture (Alex's own standing rule).</b></p>
+  <p>Real unification of all 3 real decision kinds this project tracks: 🗑️ Gates (<a href="galaxy_map_decisions.html">10 human-confirm points</a>), 🧠 Logic Choices ({n_logic} curated core-logic points, <a href="#d-oracle-mode">written up in full further down this page</a>), and ⌨️ Text Inputs ({n_text} real, curated free-text entry points that drive an actual decision) — {n_total} real decisions total, grouped by which of the 17 real rivers they belong to. "Depth" shows how far down the existing Galaxy Map hierarchy each one is documented: every real decision reaches Current (L3) + the Branch Ledger (exhaustive branch detail); a real 🟣 purple depth tag means it's ALSO one of Level 5's own curated "core logic" points. <b>This table is the real source of truth — the bubble view below is a rendering layer over the exact same data, never a second, independently-imagined picture (Alex's own standing rule).</b></p>
 </div>
 
 <div class="toggle-row">

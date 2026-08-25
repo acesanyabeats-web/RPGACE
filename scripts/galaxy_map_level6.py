@@ -99,7 +99,7 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Level 6)</title>
+<title>RPGACE — Galaxy Map (Branch Ledger)</title>
 <style>
   :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --purple:#9B59B6; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
@@ -139,8 +139,8 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 6</div>
-  <h1>🔢 Detailed Decision — Every Real Yes/No</h1>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Branch Ledger</div>
+  <h1>🔢 Branch Ledger — Every Real Yes/No</h1>
   <p>The exhaustive, mechanical counterpart to <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>'s curated core logic — {n_total} real if/else-if/else/switch branch points across {n_mods} modules, extracted by real balanced-paren parsing, never hand-picked. Pick a module below.</p>
 </div>
 <div class="modpicker">{tabs}</div>

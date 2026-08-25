@@ -193,7 +193,7 @@ def _level6_chip(mod):
     at what it produces)."""
     if mod in LEVEL3_MODULES and compute_function_branches(mod):
         return (f'<a class="mod-chip" href="galaxy_map_level6.html#m-{mod}">'
-                f'🔬 every branch in {mod} — Detailed Decision</a>')
+                f'🔬 every branch in {mod} — Branch Ledger</a>')
     return ''
 
 

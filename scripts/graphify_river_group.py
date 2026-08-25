@@ -3810,7 +3810,7 @@ DIMENSION_PAGES = [
      'Every river-to-river connection, connector and skill stream as a passage.'),
     ('galaxy_map_decisions.html', '🗑️', 'Decisions — Human Gates', 'infra',
      'The real human-confirm gates before a destructive or taxonomy write.'),
-    ('galaxy_map_level6.html', '🔬', 'Detailed Decision (branch detail)', 'infra',
+    ('galaxy_map_level6.html', '🔬', 'Branch Ledger', 'infra',
      'Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.'),
     ('galaxy_map_supabase.html', '💉', 'Supabase', 'infra',
      'Every real client-side Supabase table touch, by level/river/module.'),

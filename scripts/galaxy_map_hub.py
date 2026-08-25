@@ -104,11 +104,9 @@ PAGES = [
      'scope': 'All 17 rivers', 'desc': 'G3 — RPGACE Architecture\'s own 17 rivers, radial, cross-linked by real RIVER_FLOWS data.'},
     {'file': 'galaxy_map_module.html', 'label': 'Level 2 — Modules, Flow, Externals & Skills (+ Level 2.5 table view)', 'level': 'L2', 'kind': 'core',
      'scope': 'All 17 rivers\' real modules', 'desc': 'G4+G5 — real left-to-right module flow per river, terminal badges, dashboard/external/skill tributaries. G-fold (Aug 21 2026, Alex: "2.5 is a table view of 2"): each river section gained a real map/table toggle — table view is galaxy_map_level2_5.py\'s own river→card→module content, imported directly. galaxy_map_level2_5.html no longer exists as its own page.'},
-    {'file': 'galaxy_map_meanders.html', 'label': 'Level 1.5 — Meanders (superseded)', 'level': 'L1.5', 'kind': 'core',
-     'scope': 'River V only, pre-Aug-20 split', 'desc': 'Retired Aug 20 in favor of Level 2.5\'s own river→card→module view (Aug 21: now itself folded into Level 2\'s table view) — kept on disk for reference, no longer the live drill-down path.'},
     {'file': 'galaxy_map_current.html', 'label': 'Current Series (map+table, function-level)', 'level': 'Current (L3)', 'kind': 'core',
      'scope': 'All 45 modules, 436 functions', 'desc': 'G47, folded with the old Level 3 Aug 21 2026 (G65) — real per-function input/handling/output/next detail (table view) AND the real per-module call-chain diagram (map view), same real data, one page. galaxy_map_level3.html is gone, not superseded — its content lives here now.'},
-    {'file': 'galaxy_map_level6.html', 'label': 'Level 6 — Detailed Decision', 'level': 'L6', 'kind': 'infra',
+    {'file': 'galaxy_map_level6.html', 'label': 'Branch Ledger', 'level': 'L6', 'kind': 'infra',
      'scope': '1089 branch points, 45 modules', 'desc': 'G18 — exhaustive, mechanical if/else-if/else/switch branch extraction, listed not narrated.'},
     {'file': 'galaxy_map_logic_dimension.html', 'label': 'Logic Dimension', 'level': 'Dimension', 'kind': 'inter',
      'scope': '96 edges across 17 rivers', 'desc': 'Level 5\'s real companion — every river-to-river connection, external connector, and skill stream as a clickable passage.'},
@@ -134,7 +132,7 @@ PAGES = [
      'scope': '27 boot tasks, 29 nav triggers, 5 click triggers', 'desc': 'G39 — 3 real, separately-tracked load-trigger categories: boot sequence, page-nav, on-demand click.'},
 ]
 
-LEVEL_ORDER = ['L0', 'L1', 'L2', 'L2.5', 'L1.5', 'Current (L3)', 'L3', 'Zoom (L4)', 'L4', 'L5', 'L6', 'Dimension']
+LEVEL_ORDER = ['L0', 'L1', 'L2', 'L2.5', 'Current (L3)', 'L3', 'Zoom (L4)', 'L4', 'L5', 'L6', 'Dimension']
 
 KIND_META = {
     'core': {'icon': '🌌', 'label': 'Core (spatial ladder)', 'color': '#C9A84C'},
