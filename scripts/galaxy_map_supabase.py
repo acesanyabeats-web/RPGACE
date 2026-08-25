@@ -44,19 +44,15 @@ on a plain load — the map is a second rendering of the exact same
 unit now navigates here with `#view-map`, which is the one entry point
 that lands directly on the bubble system.
 
-LAYOUT CHOICE, and why (the real question this build had to answer):
-there are 29 real module-touched tables plus 3 oversight-only ones, and
-a single shared canvas holding every table hub plus every writer/reader
-satellite would be ~32 hubs and ~200 satellites. The decisive fact is
-that this dataset contains **zero table-to-table edges** — every real
-edge is table↔module or table↔oversight-doc. A shared canvas therefore
-buys no relationship visibility it would otherwise reveal; it only buys
-edge crossings. So each table gets its own small self-contained
-mini-diagram in a responsive card grid: writers fan in from the left
-(arrow pointing INTO the table), readers fan out to the right (arrow
-pointing OUT to the reader). That also keeps a real per-table anchor
-(`#tmap-<table>`) beside the table view's existing `#tbl-<table>`
-contract, instead of a single canvas with no addressable parts.
+SHAPE, and the correction that produced it: the first cut of the map
+view was a flat grid of 32 table-hub mini-diagrams. Alex rejected the
+shape, not the data — "supabase should have a level 1 showing which
+rivers, then level 2 for which modules, then level 3 for currents, so
+migration bubbles can be established in one supabase bubble system...
+this should be standard for all infra bubble systems for l0 items." The
+map view is now that progressive drill-down, and its structure/render
+mechanism lives in `graphify_river_group.py` so the next L0 unit's own
+infra bubble system reuses it rather than re-deriving it.
 """
 import sys
 from pathlib import Path
@@ -64,14 +60,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     compute_all_supabase_table_touches, RIVER_MODULES, RIVER_NAME,
-    LEVEL3_MODULES, compute_oversight_doc_supabase_reads, _role_from_ops,
+    LEVEL3_MODULES, compute_oversight_doc_supabase_reads, TOTAL_ZONES,
+    build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
+    INFRA_DRILLDOWN_CSS,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
-# G83 — the real shared edge/marker renderers, imported rather than
-# re-implemented (rule 8), exactly as galaxy_map_current.py and
-# galaxy_map_module.py already import them.
-from galaxy_map import _curved_edge, _build_markers  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_supabase.html')
 
@@ -195,214 +189,79 @@ def build_table_row(tbl, touches):
 </section>'''
 
 
-# ── G83 — the real map view ──────────────────────────────────────────
-# Colours are this page's own two existing palette tokens, reused so
-# nothing is invented: --gold for writes (the direction that changes the
-# table), --teal for reads. Colour encodes DIRECTION, not source type —
-# an oversight-doc satellite is told apart by its 📚 prefix, not by a
-# third colour, so the two fans stay readable as two fans.
-WRITE_COLOUR = '#C9A84C'
-READ_COLOUR = '#2ABFB0'
-OVS_HUB_COLOUR = '#C9A84C'
-MOD_HUB_COLOUR = '#2ABFB0'
-
-CARD_W = 560
-HUB_X = 280
-LEFT_X = 120
-RIGHT_X = 440
-ROW_GAP = 36
-HUB_R = 34
-
-
-def _is_read(op):
-    """Single-op read/write classification routed through the SAME
-    shared classifier the L0 facet builders use (rule 8) — the two can
-    never disagree about what `secureWrite` or `GET` means."""
-    return _role_from_ops([op]) == 'read'
-
-
-def split_touches(touches):
-    """Real per-module write/read split of one table's rpgace_core.js
-    touches. Every touch carries exactly one op, so the two returned
-    dicts partition `touches` exactly — which is what makes the map
-    hub's own counts provably equal the table view's
-    `{len(touches)} real function touch(es)`."""
-    writers, readers = {}, {}
-    for m, _f, op in touches:
-        d = readers if _is_read(op) else writers
-        d[m] = d.get(m, 0) + 1
-    return writers, readers
+# -- G83 -- the real map view: a progressive L1 -> L2 -> L3 drill-down.
+#
+# The first cut of this was a flat grid of 32 table-hub mini-diagrams
+# (one card per table, writers fanning in, readers fanning out). It was
+# real and it worked, but Alex rejected the SHAPE, not the data: "supabase
+# should have a level 1 showing which rivers, then level 2 for which
+# modules, then level 3 for currents, so migration bubbles can be
+# established in one supabase bubble system, while also tying all levels
+# and rivers for the supabase infra bubble system. this should be standard
+# for all infra bubble systems for l0 items."
+#
+# So the flat cards are gone and the structure/render mechanism lives in
+# graphify_river_group.py (build_infra_drilldown / render_infra_drilldown)
+# rather than here -- the next L0 unit to get an infra bubble system has a
+# different evidence source but the identical river->module->function
+# question, and re-deriving that per page is exactly the rule-8
+# duplication this project keeps paying for.
+#
+# What stays Supabase-specific and therefore stays in this file: the
+# evidence source (TABLES), the leaf destination (Current Series'
+# `#mod-<module>` anchor), and the real oversight-doc evidence that has
+# no module and therefore cannot appear in a module-grained drill-down
+# at all -- surfaced as its own honest block rather than silently
+# dropped.
+DRILL, ORPHANS = build_infra_drilldown(TABLES)
+DRILL_COUNTS = infra_drilldown_counts(DRILL, ORPHANS)
 
 
-def split_oversight(tbl):
-    """Real oversight-doc satellites for one table, by direction.
-
-    Honest note, stated rather than smoothed over: the detector reports
-    one `n` (real live call count) per {file, table} plus the SET of
-    HTTP methods it saw — it does not attribute individual calls to
-    individual methods. So a doc that genuinely both GETs and PATCHes
-    the same table appears on BOTH fans, each carrying that same real
-    `n`. That is why the hub's oversight total is printed as its own
-    separate line and never summed into the write/read touch counts."""
-    w, r = [], []
-    for rec in OVERSIGHT.get(tbl, []):
-        role = _role_from_ops(rec['methods'])
-        if role in ('read', 'read_write'):
-            r.append(rec)
-        if role in ('write', 'read_write'):
-            w.append(rec)
-    return w, r
+def _leaf_link(mod):
+    """Real Current Series destination for a module, or None when there
+    honestly isn't one. Same rule `_mod_link()` above already applies to
+    the table view's own chips (rule 8): LEVEL3_MODULES is exactly the
+    set of modules Current Series renders a section for, so a module
+    outside it has no `#mod-<name>` anchor to jump to."""
+    return f'galaxy_map_current.html#mod-{mod}' if mod in LEVEL3_MODULES else None
 
 
-def _sat_label_link(kind, key):
-    """Real destination for one satellite, or None when there honestly
-    isn't one. Reuses the exact same two link conventions the table view
-    above already uses (`_mod_link`'s Current-Series target and
-    `_doc_link`'s existence-checked file target) — same facts, same
-    destinations, rendered as SVG instead of chips."""
-    if kind == 'mod':
-        return f'galaxy_map_current.html#mod-{key}' if key in LEVEL3_MODULES else None
-    return f'../{key}' if (_ROOT / key).is_file() else None
-
-
-def _satellite(x, y, colour, kind, key, label, anchor):
-    """One real fanned satellite node — marker dot plus its label,
-    wrapped in a real link when one genuinely exists."""
-    tx = x - 12 if anchor == 'end' else x + 12
-    body = (f'<circle cx="{x}" cy="{y}" r="6" fill="#0f0f1a" stroke="{colour}" stroke-width="2"/>'
-            f'<text x="{tx}" y="{y + 3.5}" text-anchor="{anchor}" font-size="9" '
-            f'fill="{colour}">{esc(label)}</text>')
-    href = _sat_label_link(kind, key)
-    if href:
-        return f'<a href="{href}" class="sat">{body}</a>'
-    return f'<g class="sat sat-dead">{body}</g>'
-
-
-def _fan(items, side, hub_cy, colour):
-    """Real fan of satellites down one side of a table hub, plus their
-    edges and per-edge count circles.
-
-    Visual grammar taken directly from render_evidence_bubble()
-    (graphify_river_group.py): a curved dashed edge per item, a small
-    numbered circle at its midpoint carrying the real count. Not that
-    function itself — its geometry is the inverse of this one (there,
-    many already-laid-out nodes fan INTO a new hub bubble; here, one
-    already-fixed hub fans OUT to satellites this function positions),
-    and forcing it would need the caller to pre-compute the very
-    positions this is for. Said plainly rather than claiming reuse that
-    isn't real."""
-    edges, nodes = [], []
-    n = len(items)
-    if not n:
-        return edges, nodes
-    x = LEFT_X if side == 'write' else RIGHT_X
-    anchor = 'end' if side == 'write' else 'start'
-    start_y = hub_cy - (n - 1) * ROW_GAP / 2
-    for i, (kind, key, label, cnt) in enumerate(items):
-        y = start_y + i * ROW_GAP
-        if side == 'write':
-            # Arrow points INTO the table — this is an input.
-            edges.append(_curved_edge(x, y, HUB_X, hub_cy, colour, real=True,
-                                      dashed=True, r1=6, r2=HUB_R + 4,
-                                      offset_mult=0.35))
-        else:
-            # Arrow points OUT to the reader — this is an output.
-            edges.append(_curved_edge(HUB_X, hub_cy, x, y, colour, real=True,
-                                      dashed=True, r1=HUB_R + 4, r2=6,
-                                      offset_mult=0.35))
-        nodes.append(_satellite(x, y, colour, kind, key, label, anchor))
-        mx, my = (x + HUB_X) / 2, (y + hub_cy) / 2
-        nodes.append(
-            f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{colour}" stroke-width="1"/>'
-            f'<text x="{mx}" y="{my + 3}" text-anchor="middle" font-size="8" '
-            f'fill="{colour}" font-weight="700">{cnt}</text>')
-    return edges, nodes
-
-
-def build_map_card(tbl, touches):
-    """One real table's mini-diagram — hub, both fans, real footer links.
-
-    `touches` is [] for an oversight-only table; the hub then honestly
-    shows 0 write / 0 read module touches and carries only its real
-    oversight-doc satellites."""
-    writers, readers = split_touches(touches)
-    ovs_w, ovs_r = split_oversight(tbl)
-    n_write = sum(writers.values())
-    n_read = sum(readers.values())
-    n_ovs = sum(r['n'] for r in OVERSIGHT.get(tbl, []))
-
-    left = [('mod', m, m, writers[m]) for m in sorted(writers)]
-    left += [('doc', r['file'], '📚 ' + r['file'], r['n']) for r in sorted(ovs_w, key=lambda r: r['file'])]
-    right = [('mod', m, m, readers[m]) for m in sorted(readers)]
-    right += [('doc', r['file'], '📚 ' + r['file'], r['n']) for r in sorted(ovs_r, key=lambda r: r['file'])]
-
-    span = max(len(left), len(right), 1)
-    half = (span - 1) * ROW_GAP / 2
-    top = max(half + 18, HUB_R + 10)
-    bottom = max(half + 18, HUB_R + 46)
-    hub_cy = top + 12
-    height = top + bottom + 26
-
-    edges, nodes = [], []
-    e, n = _fan(left, 'write', hub_cy, WRITE_COLOUR)
-    edges += e
-    nodes += n
-    e, n = _fan(right, 'read', hub_cy, READ_COLOUR)
-    edges += e
-    nodes += n
-
-    hub_colour = MOD_HUB_COLOUR if touches else OVS_HUB_COLOUR
-    sub = f'{n_write} write · {n_read} read real touch(es)'
-    ovs_line = (f'<text x="{HUB_X}" y="{hub_cy + HUB_R + 40}" text-anchor="middle" font-size="8" '
-                f'fill="{WRITE_COLOUR}" opacity="0.9">+ {n_ovs} real oversight-doc call(s)</text>'
-                if n_ovs else '')
-    nodes.append(
-        f'<g class="hub" data-tbl="{tbl}">'
-        f'<circle cx="{HUB_X}" cy="{hub_cy}" r="{HUB_R}" fill="#0f0f1a" stroke="{hub_colour}" '
-        f'stroke-width="2.5" filter="url(#glow)"/>'
-        f'<text x="{HUB_X}" y="{hub_cy + 8}" text-anchor="middle" font-size="22">🗄️</text>'
-        f'<text x="{HUB_X}" y="{hub_cy + HUB_R + 15}" text-anchor="middle" font-size="10.5" '
-        f'fill="#fff" font-weight="700">{esc(tbl)}</text>'
-        f'<text x="{HUB_X}" y="{hub_cy + HUB_R + 28}" text-anchor="middle" font-size="8.5" '
-        f'fill="{hub_colour}" opacity="0.9">{sub}</text>'
-        f'{ovs_line}</g>')
-
-    rivers = sorted(set(_river_of.get(m) for m, _f, _op in touches if _river_of.get(m)))
-    chips = ''.join(_river_link(r) for r in rivers)
-    foot = (f'<div class="tmap-foot">{chips}'
-            f'<span class="tmap-detail" data-tbl="{tbl}">📊 table detail ↓</span></div>')
-    return (f'<div class="tmap-card" id="tmap-{tbl}">'
-            f'<svg viewBox="0 0 {CARD_W} {height:.0f}" width="100%" '
-            f'style="display:block" role="img" aria-label="{esc(tbl)} writers and readers">'
-            f'{"".join(edges)}{"".join(nodes)}</svg>{foot}</div>')
+def build_oversight_note():
+    """Real oversight-doc evidence, stated plainly instead of forced into
+    the drill-down. These are live `fetch('/rest/v1/...')` calls from the
+    oversight HTML docs themselves -- genuinely real, and genuinely
+    module-less, so a river->module->function tree has nowhere to put
+    them without inventing a module that does not exist."""
+    if not OVERSIGHT:
+        return ''
+    rows = []
+    for tbl in sorted(OVERSIGHT):
+        docs = ', '.join(_doc_link(r['file']) for r in sorted(OVERSIGHT[tbl], key=lambda r: r['file']))
+        n = sum(r['n'] for r in OVERSIGHT[tbl])
+        mark = ' <span class="ovs-tag" style="display:inline;margin:0">module-untouched</span>' if tbl in OVERSIGHT_ONLY else ''
+        rows.append(f'<div class="touch-row">🗄️ <a href="#tbl-{tbl}">{esc(tbl)}</a>{mark} — '
+                    f'{n} real live call(s) from {docs}</div>')
+    return ('<div class="idd"><div class="idd-lvl"><div class="idd-lbl">Outside the river chain, '
+            'by construction</div><div class="ovs">'
+            '<span class="ovs-tag">📚 real oversight-doc live fetches</span>'
+            '<div class="touch-row" style="padding-left:0">These are real Supabase calls with no module '
+            'behind them at all — they come from the oversight HTML docs\' own inline scripts, so they '
+            'have no river, no module and no Current, and cannot appear anywhere in the drill-down above '
+            'without inventing a module that does not exist. Listed here so the evidence is not silently '
+            'dropped.</div>'
+            + ''.join(rows) + '</div></div></div>')
 
 
 def build_map_view():
-    """Real map view — every table in TABLES plus every oversight-only
-    table, one card each, ordered exactly as the table view orders its
-    own sections so the two views never disagree about sequence."""
-    cards = [build_map_card(t, touches)
-             for t, touches in sorted(TABLES.items(), key=lambda kv: (-len(kv[1]), kv[0]))]
-    cards += [build_map_card(t, []) for t in OVERSIGHT_ONLY]
-    defs = (f'<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>'
-            f'<filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
-            f'<feGaussianBlur stdDeviation="4" result="blur"/>'
-            f'<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
-            f'<filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%">'
-            f'<feGaussianBlur stdDeviation="1.4" result="blur"/>'
-            f'<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
-            f'{_build_markers([WRITE_COLOUR, READ_COLOUR])}</defs></svg>')
-    return (defs + '<div class="tmap-legend">'
-            f'<span><b style="color:{WRITE_COLOUR}">━━▶</b> writes in — '
-            '<code>insert</code>/<code>update</code>/<code>del</code>/<code>secureWrite</code>, '
-            'or a real oversight-doc <code>POST</code>/<code>PATCH</code></span>'
-            f'<span><b style="color:{READ_COLOUR}">━━▶</b> reads out — '
-            '<code>select</code>, or a real oversight-doc <code>GET</code></span>'
-            '<span>🔢 the number on each edge is that satellite\'s real touch/call count</span>'
-            '<span>📚 an oversight doc, not a module — a doc that genuinely both reads and writes '
-            'appears on both fans carrying the same real call count, which is why oversight totals '
-            'are printed on their own hub line instead of being folded into the write/read numbers</span>'
-            '</div><div class="tmap-grid">' + ''.join(cards) + '</div>')
+    """The real map view — one bubble system, three levels, plus the
+    honest module-less block. Same TABLES data the table view above
+    renders, never a second source (R22)."""
+    return render_infra_drilldown(
+        DRILL, ORPHANS, unit_icon='🗄️', unit_label='Supabase',
+        leaf_link_fn=_leaf_link, resource_emoji='🗄️',
+        orphan_label='Cross-cutting (no river)',
+        orphan_note="RIVER_MODULES' own documented exclusions",
+        esc=esc) + build_oversight_note()
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -460,18 +319,7 @@ TEMPLATE = """<!DOCTYPE html>
   .toggle-btn.active{{background:var(--gold);color:#1a1608;border-color:var(--gold)}}
   .view{{display:none}}
   .view.active{{display:block}}
-  .tmap-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:14px;max-width:1400px;margin:16px auto 0;padding:0 24px}}
-  .tmap-card{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px 8px 8px}}
-  .tmap-card .sat text{{text-decoration:none}}
-  .tmap-card a.sat{{cursor:pointer}}
-  .tmap-card a.sat:hover circle{{stroke-width:3}}
-  .tmap-card a.sat:hover text{{fill:#fff}}
-  .tmap-card .sat-dead{{opacity:0.72}}
-  .tmap-card .hub{{cursor:default}}
-  .tmap-foot{{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 8px 0;border-top:1px solid rgba(255,255,255,0.06);margin-top:4px}}
-  .tmap-detail{{margin-left:auto;font-size:9.5px;font-weight:700;color:var(--teal);cursor:pointer;padding:2px 8px;border-radius:8px;background:rgba(42,191,176,0.1)}}
-  .tmap-detail:hover{{background:rgba(42,191,176,0.26)}}
-  .tmap-legend{{display:flex;flex-direction:column;gap:5px;max-width:1400px;margin:16px auto 0;padding:10px 24px;font-size:10.5px;color:var(--dim);line-height:1.6}}
+{idd_css}
 {dim_css}
 </style>
 </head>
@@ -481,7 +329,7 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>🗄️ Every Real Table, Where It's Used</h1>
   <p>{n_tables} real Supabase tables with a genuine, checkable client-side touch in rpgace_core.js (113 of 502 real functions, 22%) — which Level/River/Module reads or writes each. Server-side (api/*.js) touches aren't reachable by this client-side detector — a real, honest scope limit, same class every other Galaxy Map page states.</p>
   <p style="margin-top:8px">Plus {n_ovs_only} more real table(s) below that <b>no</b> module touches at all, reached only by the oversight docs' own live <code>fetch('/rest/v1/…')</code> calls — a second, genuinely different evidence type, kept visibly separate rather than merged in.</p>
-  <p style="margin-top:8px"><b>Map view</b> renders the same data as one bubble system per table — what writes <i>in</i> on the left, what reads <i>out</i> on the right. Per R22 the table is the source and the bubbles follow it; the counts on both views are the same real numbers, verified equal at build time.</p>
+  <p style="margin-top:8px"><b>Map view</b> renders the same data as one real bubble system, drilled progressively: <b>Level 1</b> the rivers that genuinely touch Supabase → <b>Level 2</b> the modules in that river that genuinely touch a table → <b>Level 3</b> the real Currents (functions) that touch, each a migration bubble jumping out to that module's own Current Series section. Per R22 the table is the source and the bubbles follow it — same <code>TABLES</code> data, never a second source.</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="table">📊 Table view</div>
@@ -518,24 +366,21 @@ TEMPLATE = """<!DOCTYPE html>
   // without going through the list below").
   function applyHash() {{
     var h = (location.hash || '').replace('#', '');
-    if (h === 'view-map' || h.indexOf('tmap-') === 0) {{
+    if (h === 'view-map') {{
       showView('map');
-      var el = h.indexOf('tmap-') === 0 ? document.getElementById(h) : null;
-      if (el) el.scrollIntoView({{behavior:'smooth', block:'start'}});
     }} else if (h.indexOf('tbl-') === 0) {{
       showView('table');
     }}
   }}
   applyHash();
   window.addEventListener('hashchange', applyHash);
-  // R22 in the other direction — a hub's own card links back to the
-  // exact table-view section it was rendered from, switching views the
-  // same way the toggle does rather than jumping to a hidden anchor.
-  document.querySelectorAll('.tmap-detail').forEach(function(el) {{
+  // R22 in the other direction — the drill-down's own "outside the river
+  // chain" block links back into the table view by real `#tbl-` anchor,
+  // so those links switch views the same way the toggle does rather than
+  // jumping to a section that is currently hidden.
+  document.querySelectorAll('#view-map a[href^="#tbl-"]').forEach(function(el) {{
     el.addEventListener('click', function() {{
       showView('table');
-      var sec = document.getElementById('tbl-' + el.dataset.tbl);
-      if (sec) sec.scrollIntoView({{behavior:'smooth', block:'start'}});
     }});
   }});
 }})();
@@ -573,7 +418,8 @@ def main():
                            n_ovs_only=len(OVERSIGHT_ONLY), ovs_group=ovs_group,
                            map_view=build_map_view(),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css=DIMENSION_INDEX_CSS,
+                           idd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
@@ -591,28 +437,31 @@ def main():
         if any(_river_of.get(m) for m, _f, _op in touches))
     print(f"  G82 destinations — {n_river_tables}/{len(TABLES)} table(s) now link at least one real river at "
           f"Level 2; {len(linked_docs)}/{len(docs)} named oversight doc(s) resolve to a real file and are linked.")
-    # G83 — real, build-time self-consistency gate between the two views.
-    # The map hub's own write/read numbers are derived independently of
-    # the table view's `len(touches)` label; if they ever disagree the
-    # page would be showing two different "truths" for the same table, so
-    # this fails the build loudly rather than shipping it.
-    n_nodes = n_edges = 0
-    for t, touches in TABLES.items():
-        w, r = split_touches(touches)
-        if sum(w.values()) + sum(r.values()) != len(touches):
-            raise SystemExit(
-                f"SELF-CONSISTENCY FAIL: {t} — map view shows {sum(w.values())} write + "
-                f"{sum(r.values())} read, table view shows {len(touches)} real touch(es).")
-        ow, orr = split_oversight(t)
-        n_nodes += 1 + len(w) + len(r) + len(ow) + len(orr)
-        n_edges += len(w) + len(r) + len(ow) + len(orr)
-    for t in OVERSIGHT_ONLY:
-        ow, orr = split_oversight(t)
-        n_nodes += 1 + len(ow) + len(orr)
-        n_edges += len(ow) + len(orr)
-    print(f"  G83 map view — {len(TABLES) + len(OVERSIGHT_ONLY)} real table hub card(s), "
-          f"{n_nodes} node(s), {n_edges} edge(s); write+read counts verified identical to the "
-          f"table view for all {len(TABLES)} module-touched table(s).")
+    # G83 — real, build-time self-consistency gate. The drill-down is
+    # built by filtering the SAME `TABLES` detector output the table view
+    # renders, so the total number of (module, function) leaves it draws
+    # must equal the number of distinct (module, function) pairs that
+    # detector actually found. If it ever doesn't, the page is telling
+    # two different truths from one dataset — fail loudly instead.
+    real_pairs = {(m, f) for touches in TABLES.values() for m, f, _op in touches}
+    drawn = sum(len(fs) for mods in DRILL.values() for fs in mods.values())
+    drawn += sum(len(fs) for fs in ORPHANS.values())
+    if drawn != len(real_pairs):
+        raise SystemExit(
+            f"SELF-CONSISTENCY FAIL: drill-down draws {drawn} function leaf/leaves, "
+            f"the detector found {len(real_pairs)} real (module, function) pair(s).")
+    # Every migration bubble that CLAIMS a destination must have one.
+    linked = sorted(m for mods in DRILL.values() for m in mods if _leaf_link(m))
+    unlinked = sorted([m for mods in DRILL.values() for m in mods if not _leaf_link(m)]
+                      + list(ORPHANS))
+    c = DRILL_COUNTS
+    print(f"  G83 map view — L1 {c['rivers']} of {TOTAL_ZONES} real river(s) qualify · "
+          f"L2 {c['modules']} module(s) + {c['orphan_modules']} river-less · "
+          f"L3 {c['functions'] + c['orphan_functions']} real migration bubble(s) "
+          f"({drawn} leaves == {len(real_pairs)} real detector pair(s)).")
+    print(f"  G83 destinations — {len(linked)} module(s) link to a real "
+          f"galaxy_map_current.html#mod-<name> anchor; {len(unlinked)} honestly unlinked "
+          f"(no river, so Current Series has no section): {', '.join(unlinked) or 'none'}.")
 
 
 if __name__ == '__main__':

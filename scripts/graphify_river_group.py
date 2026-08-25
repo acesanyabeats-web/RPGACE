@@ -3959,6 +3959,242 @@ def render_evidence_bubble(items, pos, hub_xy, color, emoji, label,
     return edges, nodes
 
 
+# ---------------------------------------------------------------------
+# G83 (Aug 25 2026) — the shared INFRA BUBBLE SYSTEM mechanism.
+#
+# Alex's own words, after clicking the Supabase L0 unit and being handed
+# a flat facet list: "supabase should have a level 1 showing which
+# rivers, then level 2 for which modules, then level 3 for currents, so
+# migration bubbles can be established in one supabase bubble system,
+# while also tying all levels and rivers for the supabase infra bubble
+# system. this should be standard for all infra bubble systems for l0
+# items."
+#
+# So the STRUCTURE lives here, not in galaxy_map_supabase.py: the next
+# L0 unit that gets its own infra bubble system (Skills, Oversight Docs,
+# External AI, …) has a different EVIDENCE source but the identical
+# river -> module -> function question to answer, and re-deriving that
+# filtering per page is exactly the rule-8 duplication this project
+# keeps paying for. Only the evidence set and the leaf's own destination
+# are per-unit; everything between them is shared.
+#
+# Honest scope limit, stated rather than papered over: a real module can
+# genuinely have no river. RIVER_MODULES' own documented cross-cutting
+# exclusions (config/dashDeck/errorLog/questEngine and friends) are real
+# modules with real evidence and no river home by design, so they are
+# returned SEPARATELY instead of being dropped (which would understate
+# the evidence) or force-fitted into some river (which would be a lie).
+
+
+def build_infra_drilldown(evidence_by_resource):
+    """Real river -> module -> function drill-down over any per-function
+    evidence set shaped like compute_all_supabase_table_touches().
+
+    evidence_by_resource — {resource: [(module, func, detail), ...]}
+        e.g. {'taxonomy_tree': [('phylumPath', '_insertNewSteps',
+        'secureWrite'), ...]}. `resource` and `detail` are opaque here;
+        only `module`/`func` are interpreted.
+
+    Returns (drill, orphans):
+        drill   = {river_num: {module: {func: [(resource, detail), ...]}}}
+        orphans = {module: {func: [(resource, detail), ...]}}
+
+    Every level is filtered to genuinely-present evidence — a river with
+    no touching module never appears, a module with no touching function
+    never appears. Everything is sorted so a fresh process re-run is
+    byte-identical (R5)."""
+    river_of = {}
+    for r, mods in RIVER_MODULES.items():
+        for m in mods:
+            river_of[m] = r
+    drill, orphans = {}, {}
+    for resource in sorted(evidence_by_resource):
+        for module, func, detail in sorted(evidence_by_resource[resource]):
+            r = river_of.get(module)
+            bucket = orphans if r is None else drill.setdefault(r, {})
+            bucket.setdefault(module, {}).setdefault(func, []).append((resource, detail))
+    return drill, orphans
+
+
+def infra_drilldown_counts(drill, orphans=None):
+    """Real, flat counts for one drill-down — used both to label the
+    levels and to gate a build against its own rendering (a page that
+    renders a different number of leaves than the detector actually
+    found is a page telling two different truths)."""
+    orphans = orphans or {}
+    def _walk(mods):
+        f = sum(len(fs) for fs in mods.values())
+        res = {r for fs in mods.values() for pairs in fs.values() for r, _d in pairs}
+        return len(mods), f, res
+    n_mod = n_fn = 0
+    res = set()
+    for mods in drill.values():
+        a, b, c = _walk(mods)
+        n_mod += a
+        n_fn += b
+        res |= c
+    a, b, c = _walk(orphans)
+    return {
+        'rivers': len(drill), 'modules': n_mod, 'functions': n_fn,
+        'resources': len(res | c),
+        'orphan_modules': a, 'orphan_functions': b,
+    }
+
+
+INFRA_DRILLDOWN_CSS = '''
+.idd{max-width:1400px;margin:12px auto 0;padding:0 24px}
+.idd-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;font-weight:700;padding:8px 10px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px}
+.idd-crumb span{padding:3px 9px;border-radius:10px;background:rgba(255,255,255,0.05);color:#8a8a9a}
+.idd-crumb span.on{color:#0a0a0f;background:#C9A84C}
+.idd-crumb .idd-sep{background:none;padding:0;color:#55555f}
+.idd-lvl{margin-bottom:16px}
+.idd-lbl{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin-bottom:8px}
+.idd-row{display:flex;flex-wrap:wrap;gap:10px}
+.idd-bub{--c:#8a8a9a;min-width:190px;flex:0 1 230px;background:rgba(255,255,255,0.03);border:2px solid var(--c);border-radius:16px;padding:11px 13px;cursor:pointer;transition:transform .15s,background .15s}
+.idd-bub:hover{transform:translateY(-2px);background:rgba(255,255,255,0.07)}
+.idd-bub.on{background:color-mix(in srgb, var(--c) 18%, transparent);box-shadow:0 0 0 2px var(--c)}
+.idd-bub b{display:block;font-size:12px;color:var(--c)}
+.idd-bub span{display:block;font-size:10.5px;color:#E2E2EC;margin-top:2px}
+.idd-bub em{display:block;font-style:normal;font-size:9px;color:#8a8a9a;margin-top:5px}
+.idd-pane{display:none}
+.idd-pane.on{display:block}
+.idd-hint{font-size:10.5px;color:#8a8a9a;padding:6px 2px}
+.idd-mig{display:block;text-decoration:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-left:3px solid var(--c,#C9A84C);border-radius:10px;padding:9px 12px;min-width:230px;flex:0 1 300px;transition:background .15s}
+.idd-mig:hover{background:rgba(201,168,76,0.1)}
+.idd-mig b{display:block;font-size:11px;color:#fff;font-family:'Cascadia Code','Fira Mono',monospace}
+.idd-mig .idd-res{display:block;font-size:9.5px;color:#8a8a9a;margin-top:4px;line-height:1.5}
+.idd-mig .idd-jump{display:block;font-size:9px;font-weight:700;color:#C9A84C;margin-top:6px}
+.idd-mig.idd-dead{cursor:default;opacity:0.8}
+.idd-mig.idd-dead .idd-jump{color:#8a8a9a}
+'''
+
+INFRA_DRILLDOWN_JS = '''
+(function() {
+  var root = document.querySelector('.idd');
+  if (!root) return;
+  var c1 = document.getElementById('idd-c1'), c2 = document.getElementById('idd-c2');
+  function panes(sel) { return root.querySelectorAll(sel); }
+  function closeAll(sel) { panes(sel).forEach(function(p) { p.classList.remove('on'); }); }
+  root.querySelectorAll('.idd-river').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-river').forEach(function(x) { x.classList.toggle('on', x === b); });
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.remove('on'); });
+      closeAll('#idd-l2 .idd-pane');
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
+      if (p) p.classList.add('on');
+      c1.textContent = b.dataset.crumb; c1.className = 'on';
+      c2.textContent = ''; c2.className = '';
+      document.getElementById('idd-l2').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  root.querySelectorAll('.idd-mod').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.toggle('on', x === b); });
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
+      if (p) p.classList.add('on');
+      c2.textContent = b.dataset.crumb; c2.className = 'on';
+      document.getElementById('idd-l3').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+})();
+'''
+
+
+def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
+                           leaf_link_fn, resource_emoji='🗄️',
+                           orphan_label='Cross-cutting (no river)',
+                           orphan_note='', esc=None):
+    """Renders one real infra bubble system: Level 1 rivers -> Level 2
+    modules -> Level 3 migration bubbles.
+
+    leaf_link_fn(module) -> href, or None when that module genuinely has
+    no destination page (returned as an honestly-dead bubble that says
+    so, never a link that 404s). Every pane is pre-rendered into the
+    static HTML rather than built by JS on click, deliberately: it keeps
+    every real destination href greppable by this project's own
+    link-integrity check, which is what has repeatedly caught dead
+    `#mod-…` anchors."""
+    e = esc or (lambda s: (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+
+    def _res_line(pairs):
+        seen = []
+        for r, d in pairs:
+            lab = f'{resource_emoji} {r} · {d}'
+            if lab not in seen:
+                seen.append(lab)
+        return ' &nbsp;·&nbsp; '.join(e(s) for s in sorted(seen))
+
+    def _mod_bubble(mod, fns, colour):
+        n_res = len({r for pairs in fns.values() for r, _d in pairs})
+        return (f'<div class="idd-bub idd-mod" data-mod="{mod}" data-crumb="{e(mod)}" '
+                f'style="--c:{colour}"><b>🔽 {e(mod)}</b>'
+                f'<em>{len(fns)} real function(s) · {n_res} {"table" if resource_emoji == "🗄️" else "resource"}(s)</em></div>')
+
+    def _leaf_pane(mod, fns, colour):
+        href = leaf_link_fn(mod)
+        rows = []
+        for fn in sorted(fns):
+            body = (f'<b>{e(mod)}.{e(fn)}()</b>'
+                    f'<span class="idd-res">{_res_line(fns[fn])}</span>')
+            if href:
+                rows.append(f'<a class="idd-mig" style="--c:{colour}" href="{href}">{body}'
+                            f'<span class="idd-jump">🔽 jump to this module\'s Current Series ↗</span></a>')
+            else:
+                rows.append(f'<div class="idd-mig idd-dead" style="--c:{colour}">{body}'
+                            f'<span class="idd-jump">no Current Series page — this module has no river, '
+                            f'so Current Series has no section for it</span></div>')
+        return (f'<div class="idd-pane" data-mod="{mod}"><div class="idd-row">'
+                + ''.join(rows) + '</div></div>')
+
+    l1, l2, l3 = [], [], []
+    for r in sorted(drill):
+        mods = drill[r]
+        colour = RIVER_COLOR.get(r, '#8a8a9a')
+        name = RIVER_NAME.get(r, f'River {r}')
+        short = name.split('—')[-1].strip() if '—' in name else name
+        head = name.split('—')[0].strip() if '—' in name else name
+        n_fn = sum(len(f) for f in mods.values())
+        n_res = len({res for fs in mods.values() for pairs in fs.values() for res, _d in pairs})
+        l1.append(f'<div class="idd-bub idd-river" data-river="{r}" data-crumb="{e(head)}" '
+                  f'style="--c:{colour}"><b>🌊 {e(head)}</b><span>{e(short)}</span>'
+                  f'<em>{len(mods)} module(s) · {n_fn} function(s) · {n_res} table(s)</em></div>')
+        l2.append(f'<div class="idd-pane" data-river="{r}"><div class="idd-row">'
+                  + ''.join(_mod_bubble(m, mods[m], colour) for m in sorted(mods))
+                  + '</div></div>')
+        for m in sorted(mods):
+            l3.append(_leaf_pane(m, mods[m], colour))
+    if orphans:
+        colour = '#8a8a9a'
+        n_fn = sum(len(f) for f in orphans.values())
+        n_res = len({res for fs in orphans.values() for pairs in fs.values() for res, _d in pairs})
+        l1.append(f'<div class="idd-bub idd-river" data-river="orphan" data-crumb="{e(orphan_label)}" '
+                  f'style="--c:{colour}"><b>⚙️ {e(orphan_label)}</b><span>{e(orphan_note)}</span>'
+                  f'<em>{len(orphans)} module(s) · {n_fn} function(s) · {n_res} table(s)</em></div>')
+        l2.append('<div class="idd-pane" data-river="orphan"><div class="idd-row">'
+                  + ''.join(_mod_bubble(m, orphans[m], colour) for m in sorted(orphans))
+                  + '</div></div>')
+        for m in sorted(orphans):
+            l3.append(_leaf_pane(m, orphans[m], colour))
+
+    c = infra_drilldown_counts(drill, orphans)
+    return (
+        f'<div class="idd">'
+        f'<div class="idd-crumb"><span class="on">{unit_icon} {e(unit_label)}</span>'
+        f'<span class="idd-sep">→</span><span id="idd-c1">pick a river</span>'
+        f'<span class="idd-sep">→</span><span id="idd-c2"></span></div>'
+        f'<div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch {e(unit_label)} — '
+        f'{c["rivers"]} of {TOTAL_ZONES} real rivers qualify</div>'
+        f'<div class="idd-row">{"".join(l1)}</div></div>'
+        f'<div class="idd-lvl" id="idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div>'
+        f'<div class="idd-hint">Pick a river above.</div>{"".join(l2)}</div>'
+        f'<div class="idd-lvl" id="idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — '
+        f'each is a migration bubble out to that module\'s own Current Series section</div>'
+        f'<div class="idd-hint">Pick a module above.</div>{"".join(l3)}</div>'
+        f'</div><script>{INFRA_DRILLDOWN_JS}</script>')
+
+
 LEVEL_RAIL_CSS = '''
 .level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
 .level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
