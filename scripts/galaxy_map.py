@@ -63,6 +63,7 @@ from graphify_river_group import (  # noqa: E402
     EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
     RIVER_NAME, RIVER_FLOWS, compute_river_flow_cycles, _river_num_from_label,
+    EXTERNAL_RIVER_LINKS, RIVER_MODULES,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
@@ -549,6 +550,178 @@ def build_external_ai_actor_facets():
     return [facet for _, (_rank, facet) in ordered]
 
 
+# ── G81 (Aug 25 2026) — External AI's own Inter tab, rebuilt as a real
+# per-actor "migration" click-through.
+#
+# What this replaces, stated precisely rather than from memory: going
+# into this pass, `external_ai` had exactly THREE facets sourced from
+# the SRC_EDGES loop below (↔ Alex, ↔ RPGACE Architecture, ↔ Oversight
+# Docs) and they did NOT render on its Inter tab — FORCE_INFRA_UNITS
+# force-flips every edge touching external_ai to 'infra', so all three
+# sat in the Infra list next to G78's 12 actor rows, and its Inter tab
+# was genuinely EMPTY (0 facets). Only one of the three ("↔ Oversight
+# Docs") actually fell through to the 'Direct relationship' dim label;
+# the other two carried real dim labels from their own link. All three
+# are removed from `external_ai`'s own list (EDGE_FACET_SUPPRESSED_
+# UNITS) and REPLACED by the 12 rows below. The reciprocal copy on
+# `alex`/`rpgace_architecture`/`oversight_docs` is deliberately
+# untouched — those units keep their own ↔ External AI edge exactly as
+# before, so nothing about the other side of any edge changes.
+#
+# Real destination resolution, from EXTERNAL_RIVER_LINKS only — never
+# invented. For each of the actor's own real rivers, the deepest
+# resolvable destination wins:
+#   module grain -> galaxy_map_current.html#mod-<name>, but ONLY when
+#                   that river's own RIVER_MODULES list contains a
+#                   module whose name genuinely appears in the link
+#                   row's own `via` prose (normalized comparison, so
+#                   "Beat Log" resolves to `beatLog`). Candidates are
+#                   restricted to that river's own modules, which is
+#                   what keeps a stray substring in one river's prose
+#                   from resolving to another river's module.
+#   river grain  -> galaxy_map_module.html#river-<n> when no module is
+#                   named. Real, checked reason this is Level 2 and not
+#                   galaxy_map_river.html: Level 1 is a single SVG ring
+#                   with NO per-river anchor of any kind (verified by
+#                   direct id scan of the rendered page), and
+#                   galaxy_map_river.py's own river drill-down link is
+#                   already `galaxy_map_module.html#river-{n}`. Reusing
+#                   that existing convention, not inventing a second.
+# 2 of the 12 actors have NO EXTERNAL_RIVER_LINKS row at all and get an
+# honest "no known river destination" row with a real, sourced reason
+# instead of a fabricated river number.
+EDGE_FACET_SUPPRESSED_UNITS = {'external_ai'}
+_RIVER_LINK_BY_NAME = {l['name']: l for l in EXTERNAL_RIVER_LINKS}
+# Real, sourced reasons for the 2 actors with no river-link evidence.
+# Neither is a placeholder: orchestrator_cc's is this file's own
+# already-stated fact (it is this session, with no EXTERNAL_CONNECTORS
+# row of its own — see CC_UNIT_CONNECTOR's comment); n8n's is read off
+# its real EXTERNAL_CONNECTORS row at build time, never re-typed.
+MIGRATION_NO_DESTINATION = {
+    'orchestrator_cc': (
+        'It dispatches across the whole of RPGACE Total Systems — planning, evidence-gathering, '
+        'schema/UI/doc work, and every outbound dispatch to the other Total members — so it has no '
+        'single river to migrate into, and no EXTERNAL_RIVER_LINKS row was invented to give it one.'
+    ),
+    'n8n': None,  # built at render time from its own connector row
+}
+
+
+def _mig_norm(s):
+    """Lowercase, alphanumerics only — so a river-link row's own prose
+    ("River XI's Beat Log") can be matched against a real module name
+    (`beatLog`) without either side being re-typed."""
+    return ''.join(ch for ch in (s or '').lower() if ch.isalnum())
+
+
+def _resolve_migration_targets(link_row):
+    """[(river_number, module_name_or_None), ...] for one real
+    EXTERNAL_RIVER_LINKS row, in that row's own river order."""
+    via_norm = _mig_norm(link_row.get('via'))
+    out = []
+    for r in link_row['rivers']:
+        best = None
+        for m in RIVER_MODULES.get(r, ()):
+            if _mig_norm(m) in via_norm and (best is None or len(m) > len(best)):
+                best = m
+        out.append((r, best))
+    return out
+
+
+def _river_short(r):
+    """'River XI — Content Production Live' -> 'River XI'."""
+    full = RIVER_NAME.get(r, f'River {r}')
+    return full.split('—')[0].strip()
+
+
+def build_external_ai_migration_facets():
+    """G81 — one real Inter facet per named external AI actor, each
+    resolved to its own deepest real destination down the river/module
+    hierarchy. Same 12-actor roster as G78's Infra tab (EXTERNAL_AI_
+    ACTORS, reused not re-typed), same per-actor share_key, so clicking
+    a migration row cross-highlights exactly the units that actor's own
+    Infra row already highlights.
+
+    Real share_key note: this file has no river- or module-derived
+    share_key convention to match (checked — the only facets here that
+    link to a river/module page, the two `alex_ui_path` rows, key on the
+    shared THING both units participate in, not on the link target). The
+    shared thing for a migration row is the ACTOR, so each row reuses
+    that actor's own existing key: a CC unit's real dispatch channel
+    (`openmontage_jobs`/`graphify_jobs`) or `galaxy:<gid>` where it has
+    none, `connector:<name>`, or `provider:<name>`."""
+    rows = []
+    for kind, key in EXTERNAL_AI_ACTORS:
+        if kind == 'unit':
+            g = GALAXY_BY_ID.get(key)
+            if not g:
+                raise SystemExit(f'G81: no GALAXIES entry for L0 unit {key!r} — roster is stale.')
+            icon, label = g['icon'], g['label']
+            share = g.get('channel') or f'galaxy:{key}'
+            link_name = CC_UNIT_CONNECTOR.get(key)
+            fallback_link = CC_UNIT_LINK.get(key)
+        else:
+            conn = _CONNECTOR_BY_NAME.get(key)
+            if not conn:
+                raise SystemExit(f'G81: no EXTERNAL_CONNECTORS row named {key!r} — roster is stale.')
+            if kind == 'provider':
+                prov = next((p for p in ORACLE_PROVIDERS if p['name'] == key), None)
+                if not prov:
+                    raise SystemExit(f'G81: no ORACLE_PROVIDERS row named {key!r} — roster is stale.')
+                icon, share = prov['icon'], f'provider:{key}'
+            else:
+                icon, share = _connector_icon(key), f'connector:{key}'
+            label, link_name = key, key
+            fallback_link = 'galaxy_map_externals.html'
+
+        link_row = _RIVER_LINK_BY_NAME.get(link_name) if link_name else None
+        if not link_row:
+            if key == 'n8n':
+                conn = _CONNECTOR_BY_NAME['n8n']
+                reason = (f"It has no EXTERNAL_RIVER_LINKS row: its real trigger path is "
+                          f"<code>{esc(conn['via'])}</code> — a dev-tooling script, not a river module — and its own "
+                          f"status is <code>{esc(conn['status'])}</code> ({esc(conn['note'])})")
+            else:
+                reason = esc(MIGRATION_NO_DESTINATION.get(key) or 'No EXTERNAL_RIVER_LINKS row exists for this actor.')
+            rows.append({
+                'kind': 'inter', 'dim': 'Migration (where this actor lands)', 'icon': icon,
+                'label': f'{icon} {esc(label)} — ⚪ no known river destination',
+                'detail': (f'{reason} <span class="ev">Real evidence grain: EXTERNAL_RIVER_LINKS is the one real '
+                           f'source for an external actor\'s river destination, and it holds no row for this actor — '
+                           f'so no river number is claimed here rather than one being guessed in.</span>'),
+                'share_key': share, 'link': fallback_link,
+            })
+            continue
+
+        targets = _resolve_migration_targets(link_row)
+        parts, links, grains = [], [], []
+        for r, mod in targets:
+            if mod:
+                href = f'galaxy_map_current.html#mod-{mod}'
+                parts.append(f'<a href="{href}" target="_blank">{esc(_river_short(r))}’s <code>{esc(mod)}</code></a>')
+                grains.append('module')
+            else:
+                href = f'galaxy_map_module.html#river-{r}'
+                parts.append(f'<a href="{href}" target="_blank">{esc(_river_short(r))}</a>')
+                grains.append('river')
+            links.append(href)
+        grain_note = ('module grain — its own via text names a real module in that river'
+                      if all(g == 'module' for g in grains) else
+                      'river grain — its own via text names no module in that river'
+                      if all(g == 'river' for g in grains) else
+                      'mixed grain — module where its via text names one, river where it does not')
+        rows.append({
+            'kind': 'inter', 'dim': 'Migration (where this actor lands)', 'icon': icon,
+            'label': f'{icon} {esc(label)} — 🚀 migrates to {" + ".join(parts)}',
+            'detail': (f'{esc(link_row["via"])} <span class="ev">Real source: EXTERNAL_RIVER_LINKS[{esc(link_name)}]'
+                       f'.rivers = {link_row["rivers"]}, resolved at {grain_note}. '
+                       f'Clicking a destination above jumps straight to it; the row itself cross-highlights every '
+                       f'other L0 unit this same actor is attached to.</span>'),
+            'share_key': share, 'link': links[0],
+        })
+    return rows
+
+
 def build_facets():
     """Returns {unit_id: [facet, ...]} for all 9 real merged units.
     Each facet: {kind: 'infra'|'inter', dim, label, detail, share_key,
@@ -573,6 +746,13 @@ def build_facets():
             'galaxy_map.html': 'RPGACE Architecture (core chain)',
         }.get(e.get('link'), 'Direct relationship')
         for me, other in ((a, b), (b, a)):
+            # G81 — external_ai's own generic "↔ <other unit>" partner
+            # rows are replaced by the real 12-actor migration list
+            # below. Only MY copy is suppressed: `other`'s reciprocal
+            # ↔ External AI row is still appended on its own pass
+            # through this loop, exactly as before.
+            if me in EDGE_FACET_SUPPRESSED_UNITS:
+                continue
             other_label = UNIT_META[other]['label']
             facets[me].append({
                 'kind': kind, 'dim': dim_label,
@@ -623,6 +803,13 @@ def build_facets():
     # cross-highlight into rpgace_architecture/alex that G70 built still
     # fires unchanged.
     facets['external_ai'].extend(build_external_ai_actor_facets())
+    # G81 (Aug 25 2026) — External AI's Inter tab: the same 12 actors,
+    # each as a real click-through into wherever it genuinely lands in
+    # the river/module hierarchy. Replaces the 3 suppressed generic
+    # partner rows above; scoped to External AI only (a deliberate
+    # proof of concept — no other L0 unit or dimension page gets this
+    # pattern in this pass).
+    facets['external_ai'].extend(build_external_ai_migration_facets())
 
     sa = next((n for n in HARNESS_NODES if n['id'] == 'self_awareness'), None)
     if sa:
@@ -1226,6 +1413,15 @@ TEMPLATE = """<!DOCTYPE html>
   .facet-row{{padding:10px 12px;margin-top:8px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:11.5px;line-height:1.6;cursor:pointer;border:1px solid transparent}}
   .facet-row:hover{{border-color:rgba(201,168,76,0.4)}}
   .facet-row .flabel{{font-weight:700;margin-bottom:4px}}
+  /* G81 — a facet's own inline links (a migration row's real river/
+     module destinations, and the Decisions rows' existing per-decision
+     links) had no rule of their own, so they fell through to the
+     browser default #0000EE, which is genuinely unreadable on this
+     page's near-black background. Matches .facet-link's own already-
+     established treatment below rather than inventing a second one. */
+  .facet-row a{{color:var(--gold);text-decoration:none}}
+  .facet-row a:hover{{text-decoration:underline}}
+  .facet-row a code{{color:inherit}}
   .ev{{color:var(--dim);display:block;margin-top:4px;font-size:10.5px}}
   .dec-list{{margin:8px 0 0 18px}}
   .dec-list li{{margin-bottom:6px}}
@@ -1583,6 +1779,11 @@ def main():
     print(f"  G77 — Alex Infra: {n_alex_infra} river groups holding all {n_decisions} real unified decisions "
           f"(decisions-only, every other real facet re-kinded to Inter, none dropped).")
     print(f"  G78 — External AI Infra: {len(EXTERNAL_AI_ACTORS)} real named external AI actors.")
+    ext_inter = [f for f in facets['external_ai'] if f['kind'] == 'inter']
+    n_no_dest = len([f for f in ext_inter if 'no known river destination' in f['label']])
+    print(f"  G81 — External AI Inter: {len(ext_inter)} real per-actor migration rows "
+          f"({len(ext_inter) - n_no_dest} with a real river/module destination, {n_no_dest} honestly with none); "
+          f"{len(EDGE_FACET_SUPPRESSED_UNITS)} unit's generic partner rows suppressed in favour of them.")
     print(f"  G79 — table view: {n_uf_rows} real facet rows across {len(NEW_BUBBLE_UNITS)} bubble-row units.")
 
 

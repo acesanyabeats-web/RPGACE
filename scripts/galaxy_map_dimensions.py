@@ -232,11 +232,6 @@ TEMPLATE = """<!DOCTYPE html>
   .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--purple);margin-bottom:8px}}
   .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12px;max-width:900px;margin:0 auto}}
-  .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}}
-  .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
-  .breadcrumb a:hover{{color:var(--purple);border-color:var(--purple)}}
-  .breadcrumb .bc-here{{color:#12040f;background:var(--purple);padding:4px 9px;border-radius:12px}}
-  .breadcrumb .bc-sep{{color:#4a4a58}}
   .wrap{{max-width:1100px;margin:0 auto;padding:24px;overflow-x:auto}}
   .dtable{{width:100%;border-collapse:collapse;font-size:11px}}
   .dtable th{{text-align:center;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:var(--purple);padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.1);white-space:nowrap}}
@@ -276,10 +271,6 @@ TEMPLATE = """<!DOCTYPE html>
 </style>
 </head>
 <body>
-<div class="breadcrumb">
-  <a href="galaxy_map_load.html">⏳ Load</a><span class="bc-sep">→</span>
-  <span class="bc-here">🧭 Dimensions Matrix</span>
-</div>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Dimensions Matrix (G30)</div>
   <h1>🧭 Dimensions Matrix — Real Multi-Home Overlap</h1>
