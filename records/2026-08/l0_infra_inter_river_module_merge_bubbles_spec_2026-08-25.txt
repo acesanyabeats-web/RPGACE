@@ -234,3 +234,54 @@ Full real ceo_plan_items rows: plan_id 6f8536fd-7d98-4565-9369-c75a149fce8f,
 item_codes G92 (umbrella) through G98, all status='red' (planned, not
 built) as of this compilation. See Supabase directly for the live,
 authoritative list.
+
+=== REAL EXTENSION, SAME DAY, IMMEDIATE FOLLOW-UP — G95 RESOLVED,
+    G99/G100 ADDED ===
+
+Alex's own direct answer, resolving G95 and going further than the
+original fork: "i want to retire external ai as a grouping in l0 and
+make all its components their own l0 unit (keep external ai dimension
+matrix because it is still useful as a page consolidation) so this
+will free oracle and others to have their own facet. i also want
+facets to not be in l0 map, it should be accessed through a separate
+page from the perspective of object inside bubble, showing infra, with
+stoop down to inter, with both infra and inter paralells reaching river
+or module where needed"
+
+Real, resolved decisions:
+1. "External AI" retires as an L0 unit/grouping entirely. Of its 12
+   real constituent actors (EXTERNAL_AI_ACTORS), 3 already have their
+   own L0 unit (orchestrator_cc/openmontage_cc/graphify_cc, unaffected)
+   — the remaining 9 become 7 real new L0 units: Oracle (the existing
+   harness node, mediating Anthropic-live + Kimi/Luna-dormant as ONE
+   real unit — Claude's recommended reading, stated as an assumption,
+   not yet independently re-confirmed) plus 6 individual connector
+   units (Composio, librosa, Jina AI, Last.fm, Whisper, n8n). Net L0
+   count: 9 -> 15.
+2. galaxy_map_externals.html (G27) is explicitly KEPT — "still useful
+   as a page consolidation" — decoupled from L0-unit status, becomes a
+   real cross-reference page each new connector unit's own perspective
+   page can link to, not itself an L0 destination anymore.
+3. The inline Infra/Inter facet panel on galaxy_map.html (the
+   panel/kindBtns/dimGroups/facet-table mechanism) is RETIRED
+   UNIVERSALLY, not just for the 4 units that already redirect. Every
+   one of the 15 L0 units gets its own real dedicated "perspective"
+   page, reached by clicking its L0 bubble — no exceptions, no unit
+   left on the old inline mechanism.
+4. Each per-unit perspective page shows that unit's own Infra (its own
+   bubble system — a full river/module/function drill-down where real
+   evidence supports it, an honest thinner facet list where it does
+   not) with a real drill-down INTO Inter (this unit's own real
+   compositions with 1+ other units) — both eventually reaching
+   river/module bubbles per the already-locked G93/G94 rule (rivers
+   Infra-only, modules Infra and/or Inter).
+5. Real, explicitly NOT decided by this extension: whether the
+   existing 7x7/9x9 cross-unit relationship MATRIX (a genuinely
+   different, coarser pairwise-existence view, separate from the
+   per-unit facet detail being retired) stays as-is or also changes
+   shape. Deferred.
+
+New ceo_plan_items: G99 (retire External AI, add 7 new units), G100
+(retire the inline panel universally, every unit gets its own
+perspective page). G95 marked resolved/superseded, kept for its own
+record rather than deleted.
