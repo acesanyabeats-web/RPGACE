@@ -28,6 +28,11 @@
   .jkind{color:var(--purple);font-weight:700}
   .jsummary{font-size:11px;line-height:1.6;color:#c8c8d8}
   .jid{font-size:9px;color:#5a5a68;margin-top:8px}
+  .l0block{max-width:1000px;margin:0 auto 26px}
+  .l0block h2{font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:6px}
+  .l0block .l0intro{font-size:11px;line-height:1.6;color:#c8c8d8;margin-bottom:12px}
+  .l0list{list-style:none;margin-top:6px}
+  .l0list li{font-size:10.5px;line-height:1.7;color:#c8c8d8}
   code{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
   a{color:var(--purple)}
   .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
@@ -61,6 +66,11 @@
 <div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
 <div class="msection">
   <div class="mgrid"><div class="mcard"><h3>Orchestrator CC</h3><div class="mrole">planner / orchestrator</div><p>This session. Decides what to build and directs work across the system. Renamed from "RPGACE CC" this same pass (Aug 14) — total_system_members had never been updated to match the name every current-state doc has used since Aug 13.</p></div><div class="mcard"><h3>OpenMontage CC</h3><div class="mrole">engineer / execution (OpenMontage)</div><p>Hands-on technical execution inside calesthio/OpenMontage — environment setup, pipeline runs, code fixes, cloud GPU wiring, real verification before reporting. Renamed from "Engineer CC" Aug 13 (a real naming collision with the /Engineer skill living inside Orchestrator CC itself).</p></div></div>
+  <div class="l0block">
+    <h2>🫧 The same relationship, at Level 0</h2>
+    <p class="l0intro">The dispatch history below is this page's own job — narrated, per-row, with real ids. What it could never show is that relationship as a <b>structured</b> fact the L0 map can render. It now can: both units carry real 💉 Infra facets (one per real Supabase table they genuinely touch) and a real 🔗 Inter facet (the tables they share) on the <a href="galaxy_map.html">RPGACE Total Systems L0 map</a> — click either unit's bubble there, then Infra or Inter. Sourced from a real curated registry (<code>SUPABASE_L0_UNIT_TOUCHES</code>), every entry citing the CLAUDE.md section its fact came from, because this is documented evidence rather than the build-time anchor-verified code evidence other facets carry. Real, honest limit: the client-side detector behind <a href="galaxy_map_supabase.html">the Supabase page</a> cannot see a non-code actor touch a table at all — that gap is exactly what this registry closes.</p>
+    <div class="mgrid"><div class="mcard"><h3>Orchestrator CC</h3><div class="mrole">2 real 💉 Infra facet(s) · 1 real 🔗 Inter facet(s)</div><ul class="l0list"><li><code>openmontage_jobs</code> — async queue (reads + writes)</li><li><code>total_system_members</code> — reads + writes</li></ul></div><div class="mcard"><h3>OpenMontage CC</h3><div class="mrole">2 real 💉 Infra facet(s) · 1 real 🔗 Inter facet(s)</div><ul class="l0list"><li><code>openmontage_jobs</code> — async queue (reads + writes)</li><li><code>total_system_members</code> — reads</li></ul></div></div>
+  </div>
   <div class="jgrid"><div class="jcard">
   <div class="jhead"><h3>Calibri</h3><span class="jstatus" style="color:#E25454">failed</span></div>
   <div class="jmeta"><span class="jkind">Video job</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-07-31</span></div>

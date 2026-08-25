@@ -64,6 +64,8 @@ from graphify_river_group import (  # noqa: E402
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
     RIVER_NAME, RIVER_FLOWS, compute_river_flow_cycles, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, RIVER_MODULES,
+    SUPABASE_L0_UNIT_TOUCHES,
+    compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
@@ -776,6 +778,31 @@ def build_facets():
             'kind': 'inter', 'dim': 'Total Systems dispatch', 'label': '↔ RPGACE Architecture',
             'detail': detail, 'share_key': channel or f"galaxy:{gid}", 'link': link,
         })
+
+    # ── G80 PoC (Aug 25 2026) — real, curated Supabase facets for the
+    # NON-CODE L0 units. Sourced from SUPABASE_L0_UNIT_TOUCHES
+    # (graphify_river_group.py), a real registry whose every entry cites
+    # the CLAUDE.md section its fact came from — the same "doc first,
+    # mirror second" discipline EXTERNAL_RIVER_LINKS' own `via` strings
+    # already follow, and stated as a weaker evidence tier than the
+    # anchor-verified rpgace_core.js citations elsewhere on this page.
+    #
+    # Real gap this closes: compute_all_supabase_table_touches() is a
+    # client-side rpgace_core.js scan, so it is structurally unable to
+    # see that Orchestrator CC / OpenMontage CC touch a table at all —
+    # yet openmontage_jobs is literally the ONLY channel between them.
+    # APPENDED, never overwriting: both units keep every facet they
+    # already had (orchestrator_cc 1 infra / 6 inter, openmontage_cc
+    # 2 infra / 1 inter going into this pass).
+    #
+    # Scope, honestly: a real 2-unit proof of concept. The mechanism is
+    # unit-agnostic — the other 7 L0 units join by adding registry
+    # entries, with zero change to this code.
+    for uid in sorted(SUPABASE_L0_UNIT_TOUCHES):
+        if uid not in facets:
+            continue
+        facets[uid].extend(compute_l0_unit_supabase_infra(uid))
+        facets[uid].extend(compute_l0_unit_supabase_inter(uid))
 
     connector_owner = {'OpenMontage': 'openmontage_cc', 'FFmpeg': 'openmontage_cc', 'Graphify CC': 'graphify_cc'}
     for name, itype in CONNECTOR_ITYPE.items():

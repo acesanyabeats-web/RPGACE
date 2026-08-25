@@ -27,6 +27,10 @@ from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import (  # noqa: E402
+    SUPABASE_L0_UNIT_TOUCHES,
+    compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
+)
 
 OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
 
@@ -66,6 +70,37 @@ MEMBERS = [
     {'name': 'OpenMontage CC', 'role': 'engineer / execution (OpenMontage)',
      'note': 'Hands-on technical execution inside calesthio/OpenMontage — environment setup, pipeline runs, code fixes, cloud GPU wiring, real verification before reporting. Renamed from "Engineer CC" Aug 13 (a real naming collision with the /Engineer skill living inside Orchestrator CC itself).'},
 ]
+
+
+# ── G80 PoC cross-reference (Aug 25 2026). NOT a duplication of
+# anything on this page: the job cards below stay exactly as they are.
+# What's new is that the same real relationship these cards narrate is
+# now also machine-readable at Level 0 — SUPABASE_L0_UNIT_TOUCHES
+# (graphify_river_group.py) gives both units real Infra/Inter facets on
+# galaxy_map.html, sourced from CLAUDE.md's own already-written facts.
+# Every row is generated from that one registry, never re-typed here
+# (rule 8), so this block can't drift from what L0 actually renders.
+def build_l0_facet_block():
+    rows = []
+    for uid, label in (('orchestrator_cc', 'Orchestrator CC'), ('openmontage_cc', 'OpenMontage CC')):
+        infra = compute_l0_unit_supabase_infra(uid)
+        inter = compute_l0_unit_supabase_inter(uid)
+        tables = ''.join(
+            f'<li><code>{esc(e["table"])}</code> — {esc(_ROLE_LABEL.get(e["role"], e["role"]))}</li>'
+            for e in SUPABASE_L0_UNIT_TOUCHES.get(uid, ()))
+        rows.append(
+            f'<div class="mcard"><h3>{esc(label)}</h3>'
+            f'<div class="mrole">{len(infra)} real 💉 Infra facet(s) · {len(inter)} real 🔗 Inter facet(s)</div>'
+            f'<ul class="l0list">{tables}</ul></div>')
+    return ''.join(rows)
+
+
+_ROLE_LABEL = {
+    'read': 'reads',
+    'write': 'writes',
+    'read_write': 'reads + writes',
+    'async_queue': 'async queue (reads + writes)',
+}
 
 
 def esc(s):
@@ -112,6 +147,11 @@ TEMPLATE = """<!DOCTYPE html>
   .jkind{{color:var(--purple);font-weight:700}}
   .jsummary{{font-size:11px;line-height:1.6;color:#c8c8d8}}
   .jid{{font-size:9px;color:#5a5a68;margin-top:8px}}
+  .l0block{{max-width:1000px;margin:0 auto 26px}}
+  .l0block h2{{font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:6px}}
+  .l0block .l0intro{{font-size:11px;line-height:1.6;color:#c8c8d8;margin-bottom:12px}}
+  .l0list{{list-style:none;margin-top:6px}}
+  .l0list li{{font-size:10.5px;line-height:1.7;color:#c8c8d8}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
   a{{color:var(--purple)}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
@@ -128,6 +168,11 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
 <div class="msection">
   <div class="mgrid">{members}</div>
+  <div class="l0block">
+    <h2>🫧 The same relationship, at Level 0</h2>
+    <p class="l0intro">The dispatch history below is this page's own job — narrated, per-row, with real ids. What it could never show is that relationship as a <b>structured</b> fact the L0 map can render. It now can: both units carry real 💉 Infra facets (one per real Supabase table they genuinely touch) and a real 🔗 Inter facet (the tables they share) on the <a href="galaxy_map.html">RPGACE Total Systems L0 map</a> — click either unit's bubble there, then Infra or Inter. Sourced from a real curated registry (<code>SUPABASE_L0_UNIT_TOUCHES</code>), every entry citing the CLAUDE.md section its fact came from, because this is documented evidence rather than the build-time anchor-verified code evidence other facets carry. Real, honest limit: the client-side detector behind <a href="galaxy_map_supabase.html">the Supabase page</a> cannot see a non-code actor touch a table at all — that gap is exactly what this registry closes.</p>
+    <div class="mgrid">{l0_facets}</div>
+  </div>
   <div class="jgrid">{jobs}</div>
 </div>
 {dim_index}
@@ -149,6 +194,7 @@ def main():
     )
     jobs_html = ''.join(build_job_card(j) for j in JOBS)
     html = TEMPLATE.format(members=members_html, jobs=jobs_html, n_jobs=len(JOBS),
+                           l0_facets=build_l0_facet_block(),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)

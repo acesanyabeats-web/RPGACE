@@ -483,6 +483,171 @@ for _l in EXTERNAL_RIVER_LINKS:
     for _r in _l['rivers']:
         LINKS_BY_RIVER.setdefault(_r, []).append(_l)
 
+# ── SUPABASE_L0_UNIT_TOUCHES (Aug 25 2026) — the real, curated registry
+# of which Supabase table each NON-CODE L0 unit actually touches.
+#
+# Why this exists at all — a real, structural detection gap, not a
+# convenience table: compute_all_supabase_table_touches() below is a
+# per-function regex scan of rpgace_core.js, so it can only ever see
+# CLIENT-SIDE touches made by RPGACE Architecture's own code. It is
+# structurally blind to the fact that a non-code actor — Orchestrator
+# CC (this session), OpenMontage CC (a separate Claude Code session in
+# calesthio/OpenMontage), Alex, a Skill, an External AI provider —
+# genuinely reads or writes a table too. Those touches are real and
+# already documented in prose; they were simply never machine-readable.
+#
+# Discipline, deliberately the SAME as EXTERNAL_RIVER_LINKS' own `via`
+# strings directly above: every entry cites the real CLAUDE.md section
+# its fact came from. This data is NOT build-time anchor-verified
+# against live code the way an rpgace_core.js citation is, so a reader
+# is always told where the claim came from and can re-check it. Never
+# invent an entry — if CLAUDE.md doesn't say it, it doesn't go here.
+#
+# Scope this pass, honestly stated: a real 2-UNIT proof of concept
+# (orchestrator_cc + openmontage_cc) covering only the tables those two
+# genuinely, citably touch. The MECHANISM below is unit-agnostic — a
+# future pass extends it to the other 7 L0 units by adding registry
+# entries, with zero code change.
+#
+# Keys are L0 unit ids as used by galaxy_map.py's UNIT_ORDER/UNIT_META.
+# role: 'read' | 'write' | 'read_write' | 'async_queue'
+SUPABASE_L0_UNIT_TOUCHES = {
+    'orchestrator_cc': [
+        {'table': 'openmontage_jobs', 'role': 'async_queue',
+         'source_note': "CLAUDE.md, \"External handoff lanes\" — \"`openmontage_jobs` — async queue between RPGACE, this session, and a separate OpenMontage Claude Code session in a different repo\"; and the \"Total\" section's own \"Channel: `openmontage_jobs`, queued rows for real jobs, standalone rows ... for cross-cutting state/decisions that aren't a single video job.\"",
+         'detail': "Writes real dispatch rows and reads status back. Orchestrator CC is named the orchestrator/planner whose job includes \"dispatch-writing\" — the 8 real rows catalogued on the G29 page are this unit's own dispatch history (4 of them written by `rpgace_claude_code`, the real `requested_by` value)."},
+        {'table': 'total_system_members', 'role': 'read_write',
+         'source_note': "CLAUDE.md, Aug 6 \"Graphify CC is now real\" entry — \"`total_system_members` (a real role/repo/channel registry — 4 active members)\"; plus the Aug 14 `/Routine` entry's own G29 record — \"real drive-by fix, `total_system_members` still said 'RPGACE CC,' never updated to match the Aug 13 rename.\"",
+         'detail': "Reads the registry for real Total-system role/channel facts, and has genuinely written to it: the Aug 14 \"RPGACE CC\" → \"Orchestrator CC\" rename was a real Orchestrator CC UPDATE against this exact table, not a doc-only edit."},
+    ],
+    'openmontage_cc': [
+        {'table': 'openmontage_jobs', 'role': 'async_queue',
+         'source_note': "CLAUDE.md, Known landmines — \"`openmontage_jobs` (July 31) must NEVER be added to a future Approach B RLS-restriction batch without giving the separate OpenMontage Claude Code session another way to write to it ... that external session writes back with the plain anon key.\"",
+         'detail': "Reads queued rows and writes real results back using the plain anon key (no service-role key, no RPGACE_API_SECRET — both private to this codebase). The real July 31 round trip is the evidence: it picked up the Calibri job and wrote back `status='failed'` with an honest `output_note` rather than faking a render."},
+        {'table': 'total_system_members', 'role': 'read',
+         'source_note': "CLAUDE.md, Aug 6 \"Graphify CC is now real\" entry — the registry's own \"4 active members: RPGACE app, RPGACE CC, Engineer CC/OpenMontage, Graphify CC.\"",
+         'detail': "OpenMontage CC's own identity is a ROW IN this registry. Stated honestly: that is evidence it is read ABOUT, not evidence it writes here itself — every documented write to this table is Orchestrator CC's (the Aug 14 rename). No self-write is claimed, because none is evidenced."},
+    ],
+}
+
+# Real, single shared link target for a registry table, resolved against
+# the same client-side detector G45's page is built from — so a deep
+# link only ever points at a section that genuinely exists there.
+_SB_PAGE = 'galaxy_map_supabase.html'
+
+# Real, measured perf guard, same shape as _MAINJS_BRIDGE_CACHE /
+# _WRAP_INSTALLER_CACHE below: compute_all_supabase_table_touches()
+# re-parses the whole of rpgace_core.js on every call (measured at
+# ~6s per call in this repo's current file size, timed directly, not
+# assumed). The functions here would otherwise call it once per
+# registry entry per unit. Cached for the life of one script run only —
+# every generator script re-runs from a fresh process, so this can
+# never serve a stale parse across builds.
+_L0_SB_TOUCH_CACHE = {}
+
+
+def _l0_client_side_touches():
+    if 'v' not in _L0_SB_TOUCH_CACHE:
+        _L0_SB_TOUCH_CACHE['v'] = compute_all_supabase_table_touches()
+    return _L0_SB_TOUCH_CACHE['v']
+
+
+def _l0_table_link(table):
+    """Deep-link into G45's own per-table section (`id="tbl-{table}"`,
+    build_table_row() in galaxy_map_supabase.py) — but ONLY when that
+    table genuinely has a client-side touch and therefore a real section
+    on that page. A registry table with no client-side toucher at all
+    (e.g. total_system_members) has no section to anchor to, so it links
+    to the page plainly rather than to a dead anchor."""
+    return f'{_SB_PAGE}#tbl-{table}' if table in _l0_client_side_touches() else _SB_PAGE
+
+
+_L0_ROLE_LABEL = {
+    'read': 'reads',
+    'write': 'writes',
+    'read_write': 'reads + writes',
+    'async_queue': 'async queue (reads + writes)',
+}
+
+
+def compute_l0_unit_supabase_infra(unit_id):
+    """Real Infra facets for one L0 unit, straight from
+    SUPABASE_L0_UNIT_TOUCHES — one facet per real table that unit
+    genuinely touches.
+
+    Returns galaxy_map.py's own standard facet shape
+    ({kind, dim, label, detail, share_key, link}) so build_facets() can
+    append them with zero adaptation. `share_key` is `sb-<table>`, so
+    two units touching the SAME table cross-highlight each other
+    through the existing share_key mechanism — no new JS.
+
+    Honest evidence tier, stated in every facet's own detail text: this
+    is CURATED-FROM-DOCS data with a cited source, not the build-time
+    anchor-verified code evidence the rpgace_core.js-derived facets
+    carry. Never silently presented as the same tier."""
+    out = []
+    client_side = _l0_client_side_touches()
+    for entry in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ()):
+        tbl = entry['table']
+        n_client = len(client_side.get(tbl, ()))
+        client_note = (
+            f"RPGACE Architecture also touches this table client-side "
+            f"({n_client} real rpgace_core.js function touch(es), G45)."
+            if n_client else
+            "No client-side rpgace_core.js touch exists for this table — "
+            "it is reached only by non-code Total-system actors, which is "
+            "exactly the gap this registry closes.")
+        out.append({
+            'kind': 'infra', 'dim': 'Supabase (Total-system actors)',
+            'label': f"🗄️ {tbl} — {_L0_ROLE_LABEL.get(entry['role'], entry['role'])}",
+            'detail': (
+                f"{entry['detail']} {client_note}"
+                f"<span class=\"ev\">Curated fact, sourced not code-derived — {entry['source_note']}</span>"),
+            'share_key': f"sb-{tbl}", 'link': _l0_table_link(tbl),
+        })
+    return out
+
+
+def compute_l0_unit_supabase_inter(unit_id):
+    """Real Inter facets for one L0 unit — every OTHER unit in
+    SUPABASE_L0_UNIT_TOUCHES that genuinely shares at least one table
+    with it, and which tables those are.
+
+    This is the real "how does this unit interact with another unit
+    through shared infrastructure" half. Deterministic by construction
+    (both the unit loop and the shared-table list are sorted), so a
+    fresh process re-run always produces byte-identical output — R5."""
+    mine = {e['table']: e for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ())}
+    if not mine:
+        return []
+    out = []
+    for other in sorted(SUPABASE_L0_UNIT_TOUCHES):
+        if other == unit_id:
+            continue
+        theirs = {e['table']: e for e in SUPABASE_L0_UNIT_TOUCHES[other]}
+        shared = sorted(set(mine) & set(theirs))
+        if not shared:
+            continue
+        lines = ''.join(
+            f"<div><code>{t}</code> — {_L0_ROLE_LABEL.get(mine[t]['role'], mine[t]['role'])} here, "
+            f"{_L0_ROLE_LABEL.get(theirs[t]['role'], theirs[t]['role'])} there.</div>"
+            for t in shared)
+        out.append({
+            'kind': 'inter', 'dim': 'Supabase (shared tables)',
+            'label': f"↔ shares {len(shared)} real table(s) with {other}",
+            'detail': (
+                f"Real shared Supabase infrastructure — the only channel between these two units "
+                f"(no live session-to-session link exists anywhere in Total Systems).{lines}"
+                f"<span class=\"ev\">Curated facts, each table's own source cited on this unit's Infra tab.</span>"),
+            # Shared with the FIRST shared table's own infra facet, so
+            # clicking here glows both units' matching table rows.
+            'share_key': f"sb-{shared[0]}",
+            'link': 'galaxy_map_orchestrator_openmontage.html'
+                    if {unit_id, other} == {'orchestrator_cc', 'openmontage_cc'} else _SB_PAGE,
+        })
+    return out
+
+
 # Real, sourced skill catalog — Aug 13, real Alex ask: "adding skills
 # as a bubble category at all levels would show what skills play into
 # which actions and relationships," followed by his own real framing:

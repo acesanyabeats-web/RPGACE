@@ -32,7 +32,7 @@ from graphify_river_group import (
     compute_module_oracle_call_count, compute_external_call_sites,
     compute_lastfm_call_sites, compute_boot_task_registrations,
     compute_page_nav_triggers, compute_click_load_triggers,
-    dashboard_card_primary_module,
+    dashboard_card_primary_module, compute_all_supabase_table_touches,
 )
 from graphify_river_group import (  # noqa: E402
     inject_level_rail, inject_plan_overlay, RIVER_NAME, RIVER_COLOR,
@@ -48,6 +48,15 @@ DIMENSIONS = [
     {'id': 'load', 'icon': '⏳', 'label': 'Load (G39)', 'color': '#2ABFB0'},
     {'id': 'decision', 'icon': '🚦', 'label': 'Decision/Human-Gate (G26)', 'color': '#E25454'},
     {'id': 'openmontage', 'icon': '🤝', 'label': 'Orchestrator↔OpenMontage (G29)', 'color': '#3DAA6E'},
+    # G80 PoC (Aug 25 2026) — Supabase as a real 6th tracked dimension.
+    # The evidence has existed since G45 (compute_all_supabase_table_
+    # touches()) and was simply never wired in here; consumed as-is,
+    # zero new detection code (rule 8). Colour is G45's own real teal
+    # (galaxy_map_supabase.py's `--teal`), not a new invented value.
+    # Honest note: 'load' already carries the same hex — harmless, since
+    # this file never renders a dimension's `color` (only icon + label,
+    # and 🗄️ vs ⏳ are distinct); flagged rather than silently changed.
+    {'id': 'supabase', 'icon': '🗄️', 'label': 'Supabase', 'color': '#2ABFB0'},
 ]
 
 
@@ -98,6 +107,17 @@ def compute_matrix():
     # Orchestrator<->OpenMontage — River XI only, real dispatch channel.
     openmontage_mods = set(RIVER_MODULES.get(11, []))
 
+    # Supabase (G80 PoC) — a module counts if it genuinely touches ANY
+    # real table, straight from G45's own already-shipped detector. No
+    # new detection logic: compute_all_supabase_table_touches() returns
+    # {table: [(module, func, op), ...]}, so the real module set is just
+    # its own values. Client-side (rpgace_core.js) evidence only — the
+    # same honest scope limit G45's page states on itself.
+    supabase_mods = set()
+    for _tbl, _touches in compute_all_supabase_table_touches().items():
+        for _m, _f, _op in _touches:
+            supabase_mods.add(_m)
+
     tags = {}
     # sorted() — LEVEL3_MODULES is a set(), hash-randomized iteration
     # order per process; real idempotency (R5) needs deterministic
@@ -109,6 +129,7 @@ def compute_matrix():
             'load': m in load_mods,
             'decision': m in decision_mods,
             'openmontage': m in openmontage_mods,
+            'supabase': m in supabase_mods,
         }
         tags[m] = row
     return tags
