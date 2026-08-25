@@ -1,0 +1,150 @@
+DAILY PRIORITIES DEBATE — 2026-08-25
+/Routine run, 1-day gap since last session (Aug 24 SESSION CLOSED via
+/Bedtime) — routine daily-depth evidence pass, not the deeper multi-day
+version.
+
+═══════════════════════════════════════════════════════════════════════════
+EVIDENCE GATHERED (Step 1)
+═══════════════════════════════════════════════════════════════════════════
+- git log: 0 commits since the Aug 24 /Bedtime close-out (c15b754) — clean,
+  expected.
+- ceo_plan_items: 6 active plans queried directly. Real, current counts —
+  Massive Expansion (A10 yellow/blocked, A18 blue); RPGACE Total Systems
+  Galaxy Map (G43-G50 all yellow/on_track/untested-by-hand, G58 umbrella
+  yellow pending G60, G60/G73 red, G9/G11/G13/G41/G53 blue); RPGACE Total
+  Systems Logic Plan — a real NEW item, LP1, blue, not previously surfaced
+  in this session's own conversation history (came from elsewhere — real
+  evidence /Routine's evidence pass exists to catch); UI Consistency &
+  Worm Family Cohesion Batch 1 (UI1/2/3/8/9 yellow-untested, UI10-13 red
+  from yesterday's /paranoia+/interrogation pass — SAVED NOT APPROVED,
+  UI14 blue); Worm Family & Encyclopedia Wrapper (W1-5/W8/W9 yellow-
+  untested, W7/W10 red-blocked-on-Alex's-hand-test, W11/W12 blue).
+- Session-start checks: oracle_dev_suggestions — 1 new row, but it's a
+  Mock-Oracle wiring-test flag from Aug 24 evening (dummy-mode noise, not
+  a real content suggestion) — no action needed. error_log — 0 active.
+  system_map_flags — 0 flagged. graphify_jobs — 1 still queued (Aug 6,
+  stale, no output_note — Graphify CC's own call, not this session's).
+  smoke_test needs_confirm_highlight — 0.
+- Real Alex-direct activity since last session: 1 real journal entry
+  (Aug 24 17:36, an Insta-Oracle Command 1 content-strategy session —
+  real evidence Alex is actively using the app's Instagram-growth
+  features for real planning, a genuine positive signal, not an action
+  item). Zero chronicles_finance/content_productions/taxonomy-review
+  activity in the window.
+- Alex's own message triggering this run: "/Routine" — plain, no
+  attached task, but the PRIOR message (last session close) stated
+  "running out of weekly tokens" — real, load-bearing context for
+  today's shape, not to be silently ignored.
+
+═══════════════════════════════════════════════════════════════════════════
+TEAM 1 — evidence-based Top 10
+═══════════════════════════════════════════════════════════════════════════
+1. Surface UI10-14 (the Corpus/worm-picker/Content-Pipeline restructure)
+   for Alex's actual go/no-go — cheapest possible action (his read, not
+   Claude Code's build time), unblocks a real, large body of planned work.
+2. Surface the ~15 real yellow items across UI Consistency/Worm Family/
+   Galaxy Map G43-G50 as one batch hand-test ask — the single largest real
+   lever to move backlog yellow→green today, and it's entirely Alex's
+   action, zero token cost to Claude Code.
+3. G73 (GitHub repos as real Galaxy Map nodes) — real, ratified, small,
+   self-contained; a legitimate candidate for actual build time today.
+4. Re-surface A10's real blocker (needs a Kimi/Luna key + Alex's routing
+   decision) — cheap re-ask, not new work.
+5. Re-surface the boot-load-lag root cause's real blocker (needs a live
+   DevTools capture from Alex) — cheap re-ask, not new work.
+6. LP1 (whole-corpus .md/.txt dedup+contradiction review) — real,
+   evidence-backed reasoning (targets the actual recurring failure class
+   this project has hit twice this week — DD8's self-contradiction, the
+   window.QUESTS test bug), but genuinely large — scope before building.
+7. G53 (UI-rendering vs logic/data split, 60 modules) — Alex's own
+   confirmed ask but not yet planned; needs its own /interrogation, not a
+   blind build.
+8. W7/W10 — blocked on Alex's own hand-test of Worm Family Phase 1; no
+   real action for Claude Code today.
+9. G60 — real, ratified, but explicitly deferred by Alex's own phased-
+   build choice; correctly stays low priority.
+10. G9 (Consumer/Developer visibility tiering) — real, ratified-basis
+    blue idea, deliberately deferred per Alex's own explicit earlier call;
+    no reason to revisit today.
+
+═══════════════════════════════════════════════════════════════════════════
+TEAM 2 — the honest counter-case
+═══════════════════════════════════════════════════════════════════════════
+Real, not manufactured: Alex stated directly, unprompted, at the close of
+the last session that he is running low on weekly tokens. That is not
+background noise — it is the single most load-bearing piece of evidence
+for what today should look like, and Team 1's list as drafted still leans
+toward "here's a build queue" when the honest read of that one sentence is
+"minimize spend, maximize what only I can unblock."
+
+The specific risk Team 2 names: A9 Phase 1, two days ago, was interrupted
+mid-build by a dispatched agent hitting its own session limit — a real,
+already-hit failure mode, not a hypothetical. Starting G73 (or worse, LP1)
+today without knowing Alex's actual remaining budget risks the exact same
+outcome a second time, this time self-inflicted with the constraint
+already known in advance rather than discovered mid-build.
+
+Team 2's real counter-ranking: items 4 and 5 above (the two blocked-on-
+Alex re-asks) and item 1 (UI10-14 approval) and item 2 (the hand-test
+batch) should be presented FIRST and be the entire actionable list today,
+with build items (G73, LP1, G53) offered as ready-but-optional rather than
+defaulted into. This isn't "do nothing" — surfacing a tight, well-organized
+batch of real decisions Alex can clear in minutes is genuinely the most
+token-efficient high-value thing available today, and it's honest about
+why: not because the backlog lacks real work, but because the loudest real
+signal in the room is his own stated constraint.
+
+═══════════════════════════════════════════════════════════════════════════
+/DEBATE — reconciliation
+═══════════════════════════════════════════════════════════════════════════
+Team 2's case is not manufactured balance — it's correct, and Team 1's
+own draft already half-agreed by ranking the re-asks/approvals at 1/2/4/5.
+No real attack survives on Team 2's core claim (token scarcity should
+shape today's shape); the only real defense Team 1 has is that G73 is
+small/bounded enough to not meaningfully risk the A9-repeat scenario Team
+2 named — genuine, but weaker than "just ask first."
+
+═══════════════════════════════════════════════════════════════════════════
+/5thDimension reconciliation — built vs. reported, and Alex's real goals
+═══════════════════════════════════════════════════════════════════════════
+What's ACTUALLY built matches what's REPORTED here — no drift found in
+this evidence pass itself (ceo_plan_items' own statuses/verdicts were
+read directly, not inferred). Against Alex's real stated goal for TODAY
+specifically (not the 48-hour governing rule, which doesn't sharply
+distinguish these items — his own explicit token-scarcity statement is
+the sharper, more recent signal): Team 2's framing wins. The governing
+48-hour rule doesn't get overridden — it's just that "does this result in
+a beat made or video posted within 48 hours" is served BETTER today by
+clearing his own decision backlog cheaply than by spending tokens on a
+build he may not be present to review for a while.
+
+═══════════════════════════════════════════════════════════════════════════
+FINAL COUNCIL OF 5 — locked-in Top 10 for today
+═══════════════════════════════════════════════════════════════════════════
+ 1. UI10-14 go/no-go — Alex's read, presented in chat.
+ 2. Hand-test batch — the ~15 real yellow items, presented as one list.
+ 3. A10 — re-surfaced blocker (key + routing decision).
+ 4. Boot-load-lag — re-surfaced blocker (DevTools capture).
+ 5. G73 — real, ready-to-build, offered but NOT auto-started given the
+    token-scarcity signal; Alex's call whether to spend tokens on it today.
+ 6. LP1 — real, evidence-backed, but needs real scoping (/interrogation)
+    before any build — not started today regardless of token budget.
+ 7. G53 — same: needs /interrogation first, not started today.
+ 8. W7/W10 — genuinely no action available until Alex hand-tests Phase 1.
+ 9. G60 — stays deferred, Alex's own earlier call, not revisited.
+10. G9 — stays deferred, Alex's own earlier call, not revisited.
+
+REAL, HONEST DROP LIST (named, not silently cut):
+- W11/W12 (Articleworm/Debate Worm) — real ideas, correctly still blue,
+  no new evidence today changes their idea-stage status.
+- G41 (Oracle as pipeline orchestrator + Fish Audio) — same, blue,
+  nothing new.
+- G59/other Galaxy Map green items — already shipped, nothing to add.
+- The Aug 6 stale graphify_jobs row — not this session's to resolve
+  (Graphify CC's own dispatch, no evidence either way whether it's dead).
+- The Aug 24 Mock-Oracle wiring-test flag in oracle_dev_suggestions —
+  reviewed, genuinely not a content suggestion, no action, not re-flagged.
+
+Verdict, stated plainly: today's real Top 10 is dominated by cheap,
+high-leverage asks FOR Alex, not a build queue — a direct, evidence-backed
+consequence of his own stated token constraint, not a default or a dodge.
