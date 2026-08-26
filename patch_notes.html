@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🗺️ Aug 25 — G101: a real persistent left-nav sidebar on all 19 Galaxy Map pages, tying Levels and Dimensions into one hierarchy</div>
+    <div class="card-body">
+      Alex's own direct ask, a full verbatim spec: icons, kind badges, and one-line descriptions for all 12 real Dimension pages, plus a per-level annotation of what shows there — "infra and rivers in level 1, modules and inter and infra in level 2, inter infra and currents in level 3."
+      <br><br>
+      <b>Built as one shared injection, not 19 separate edits</b>: new <code>inject_left_nav()</code>/<code>left_nav_html()</code> in <code>graphify_river_group.py</code>, folded directly into the already-existing <code>inject_level_rail()</code> — since all 19 pages already call that one function, every one of them gained the sidebar with zero changes to any individual page script (rule 8). The sidebar reuses <code>LEVEL_RAIL</code> (the existing top rail's own 4-stop data) for the Levels section, and the already-real <code>DIMENSION_PAGES</code>/<code>DIMENSION_KIND_META</code> (the same 12-entry list every page's own bottom-of-page Dimension index already draws from) for the Dimensions section — the exact same data, never a second hand-typed copy. Alex's own pasted 11-item list matched <code>DIMENSION_PAGES</code> exactly, missing only Supabase — explained by the existing index's own established "never link to yourself" rule, since his list reads like a view from <code>galaxy_map_supabase.html</code> itself.
+      <br><br>
+      <b>Collapsed-by-default, overlay-on-expand</b> — deliberately not a body-margin push. 19 already-shipped pages each have their own independent layout (some centered <code>max-width</code> content, some fixed-pixel SVG canvases) with no live browser available in this environment to visually confirm a push-content approach wouldn't collide with one of them. A small edge tab opens the sidebar as a fixed overlay with a dimmed backdrop instead — the same safe, already-proven pattern this project's own CLAUDE.md documents elsewhere (a dev-status cluster that starts collapsed and only opens on a press).
+      <br><br>
+      <b>Independently verified</b>: all 19 pages regenerated; representative pages re-confirmed idempotent (2 fresh runs, byte-identical); a full link-integrity + tag-balance sweep across all 19 pages came back clean; headless-Chromium confirmed the sidebar is closed by default, opens correctly on toggle showing all 4 real levels (with the correct per-level annotation) and all 12 real dimensions (correct icons/kind-badges/descriptions), correctly highlights the current page, and closes on a backdrop click — zero real console errors throughout.
+      <br><br>
+      <b>Explicitly honest, not built this pass</b>: no real Alex hand-test yet. Purely a Python/static-HTML change — <code>rpgace_core.js</code> untouched, no re-minify/cache-bust needed.
+    </div>
+  </div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">✅ Aug 25 — G93-G100 all shipped: the whole Infra/Inter redesign complete, all 15 real L0 units redirect to their own dedicated pages, real river/module bubbles live</div>
     <div class="card-body">
       Direct continuation of the partial G99 ship below — Alex: "do the g93-g100." Completed all 7 remaining plan items in one verified pass.

@@ -4295,7 +4295,13 @@ def inject_level_rail(html, current_file):
     before it's written to disk — injects the shared CSS (once) and the
     rail nav (right after <body...>). Never touches an existing TEMPLATE
     string or an existing breadcrumb — purely additive, same "nothing
-    superseded" discipline as everywhere else this session."""
+    superseded" discipline as everywhere else this session.
+
+    G101 (Aug 25 2026, Alex's own direct ask: "lets make a left nav side
+    panel for each of these") — also injects the real left-nav sidebar
+    (see inject_left_nav() below) at the SAME point, for every one of
+    the 19 pages that already call this one function (rule 8/11: zero
+    other page script needed to change to gain the new sidebar)."""
     if '.level-rail{' not in html:
         if '</style>' in html:
             html = html.replace('</style>', LEVEL_RAIL_CSS + '</style>', 1)
@@ -4307,6 +4313,137 @@ def inject_level_rail(html, current_file):
         after = html[m.end():m.end() + 2000]
         if 'class="level-rail"' not in after:
             html = html[:m.end()] + '\n' + rail + html[m.end():]
+    html = inject_left_nav(html, current_file)
+    return html
+
+
+# ---------------------------------------------------------------------
+# G101 (Aug 25 2026) — the real left-nav sidebar tying Levels and
+# Dimensions into one persistent hierarchy, per Alex's own direct ask
+# and his own literal per-level annotation ("infra and rivers in level
+# 1, modules and inter and infra in level 2, inter infra and currents
+# in level 3"). Built entirely from data this project already computed
+# for other real purposes — LEVEL_RAIL (the top rail), DIMENSION_PAGES/
+# DIMENSION_KIND_META (the in-page Dimension index) — never a second,
+# hand-typed copy (rule 8). Two real, separate categories of equal
+# visual standing, per Alex's own confirmed architecture: "Levels" (the
+# strict L0->L1->L2->Current containment chain) and "Dimensions" (real
+# cross-cutting, multi-membership facets — deliberately NOT numbered
+# rungs of the same ladder).
+#
+# Collapsed-by-default, overlay-on-expand (never a body margin-shift) —
+# the same safe, already-proven RPGACE UI pattern this session's own
+# CLAUDE.md documents elsewhere (a dev-status cluster that "starts
+# collapsed... only opens when that button is pressed"), chosen
+# specifically because this sidebar is being retrofitted onto 19
+# already-shipped, independently-laid-out pages with no live browser
+# available in this environment to visually confirm a pushed-content
+# layout doesn't collide with any one of their own existing max-width/
+# centered/fixed-canvas designs.
+LEFT_NAV_LEVEL_ANNOTATION = {
+    'galaxy_map.html': None,
+    'galaxy_map_river.html': 'Infra + Rivers',
+    'galaxy_map_module.html': 'Modules + Inter + Infra',
+    'galaxy_map_current.html': 'Inter + Infra + Currents',
+}
+
+LEFT_NAV_CSS = '''
+.gside-toggle{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:10001;background:#C9A84C;color:#1a1a1f;border:none;border-radius:0 8px 8px 0;padding:16px 6px;font-size:13px;cursor:pointer;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;font-weight:700;box-shadow:2px 0 10px rgba(0,0,0,0.4)}
+.gside-toggle:hover{background:#ddbb5c}
+.gside-nav{position:fixed;top:0;left:-300px;width:280px;height:100vh;overflow-y:auto;background:#0a0a0f;border-right:1px solid rgba(255,255,255,0.12);z-index:10000;transition:left .2s ease;padding:18px 16px 40px;box-shadow:4px 0 28px rgba(0,0,0,0.55)}
+.gside-nav.open{left:0}
+.gside-nav h3{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin:20px 0 8px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)}
+.gside-nav h3:first-child{margin-top:0;padding-top:0;border-top:none}
+.gside-def{font-size:10px;color:#7a7a88;line-height:1.6;margin-bottom:10px}
+.gside-level{display:block;text-decoration:none;padding:7px 9px;border-radius:7px;margin-bottom:2px}
+.gside-level:hover{background:rgba(255,255,255,0.05)}
+.gside-level.active{background:rgba(201,168,76,0.16)}
+.gside-level b{display:block;font-size:12.5px;color:#E2E2EC}
+.gside-level span{display:block;font-size:9px;color:#6a6a78;margin-top:2px}
+.gside-dim{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;margin-bottom:2px;border-left:2px solid transparent}
+.gside-dim:hover{background:rgba(255,255,255,0.05)}
+.gside-dim.active{background:rgba(201,168,76,0.16)}
+.gside-dim b{display:block;font-size:11.5px;color:#E2E2EC}
+.gside-dim .gside-kind{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.gside-dim .gside-desc{display:block;font-size:9px;color:#6a6a78;line-height:1.5;margin-top:1px}
+.gside-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9999;display:none}
+.gside-backdrop.open{display:block}
+'''
+
+LEFT_NAV_JS = '''
+(function() {
+  var toggle = document.querySelector('.gside-toggle');
+  var nav = document.querySelector('.gside-nav');
+  var backdrop = document.querySelector('.gside-backdrop');
+  if (!toggle || !nav) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    if (backdrop) backdrop.classList.toggle('open', open);
+  }
+  toggle.addEventListener('click', function() { setOpen(!nav.classList.contains('open')); });
+  if (backdrop) backdrop.addEventListener('click', function() { setOpen(false); });
+})();
+'''
+
+
+def left_nav_html(current_file):
+    """Renders the real left-nav sidebar — Levels (the strict L0-L3
+    containment chain, LEVEL_RAIL's own data, each annotated per Alex's
+    own literal per-level kind breakdown) + Dimensions (DIMENSION_PAGES'
+    own real 12 entries, same icon/kind/description every in-page
+    Dimension index already shows — never a second copy, rule 8)."""
+    level_rows = []
+    for fname, icon, label in LEVEL_RAIL:
+        cls = ' active' if fname == current_file else ''
+        annot = LEFT_NAV_LEVEL_ANNOTATION.get(fname)
+        sub = f'<span>{annot}</span>' if annot else ''
+        level_rows.append(f'<a class="gside-level{cls}" href="{fname}"><b>{icon} {label}</b>{sub}</a>')
+
+    dim_rows = []
+    for fname, icon, label, kind, desc in DIMENSION_PAGES:
+        cls = ' active' if fname == current_file else ''
+        kicon, klabel, kcolor = DIMENSION_KIND_META[kind]
+        dim_rows.append(
+            f'<a class="gside-dim{cls}" href="{fname}" style="border-left-color:{kcolor}" title="{klabel}">'
+            f'<b>{icon} {label}</b> <span class="gside-kind" style="color:{kcolor}">{kicon} {kind}</span>'
+            f'<span class="gside-desc">{desc}</span></a>'
+        )
+
+    return (
+        '<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button>'
+        '<div class="gside-backdrop"></div>'
+        '<nav class="gside-nav">'
+        '<h3>🌌 Levels</h3>' + ''.join(level_rows) +
+        '<h3>🌌 Dimensions</h3>'
+        '<div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, '
+        'seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, '
+        'which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home '
+        'partition). Equal standing with Rivers, different shape.</div>' +
+        ''.join(dim_rows) +
+        '</nav>'
+    )
+
+
+def inject_left_nav(html, current_file):
+    """Mechanical post-process — same discipline as inject_level_rail()
+    itself (which calls this), purely additive, injected once per
+    build. Called automatically by inject_level_rail() for all 19
+    existing call sites; not meant to be called standalone."""
+    if '.gside-nav{' not in html:
+        if '</style>' in html:
+            html = html.replace('</style>', LEFT_NAV_CSS + '</style>', 1)
+        else:
+            html = html.replace('</head>', f'<style>{LEFT_NAV_CSS}</style></head>', 1)
+    nav = left_nav_html(current_file)
+    m = re.search(r'(<body[^>]*>)', html)
+    if m:
+        after = html[m.end():m.end() + 4000]
+        if 'class="gside-nav"' not in after:
+            html = html[:m.end()] + '\n' + nav + html[m.end():]
+    if '</body>' in html:
+        marker = '<script>' + LEFT_NAV_JS + '</script></body>'
+        if marker not in html:
+            html = html.replace('</body>', marker, 1)
     return html
 
 
