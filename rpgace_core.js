@@ -7991,7 +7991,31 @@ RPGACE.register('oracleAppGrounding', {
         var actionHit = !!(oc && oc.matchesAnyTrigger && oc.matchesAnyTrigger(lower));
         if (!matched && !anatomyHit && !actionHit) return orig.apply(this, arguments);
         var block = matched ? self._buildBlock() : '';
-        if (actionHit && oc.buildActionsBlock) block += oc.buildActionsBlock();
+        // Registered-actions list is shown whenever EITHER gate fires -
+        // actionHit (the message matches one already) or matched (the
+        // broader self-audit gate, which also covers "what should I work
+        // on"-shaped requests) - Oracle needs to see the CURRENT list in
+        // both cases: to recognize a real match, and (Aug 26 2026, G41
+        // Phase 2) to know what's genuinely NOT yet registered before it
+        // can suggest adding something new.
+        if ((actionHit || matched) && oc && oc.buildActionsBlock) block += oc.buildActionsBlock();
+        // Aug 26 2026 (G41 Phase 2, "self-aware vocabulary growth" -
+        // Alex's own confirmed choice via /paranoia+/CEO-Drift, records/
+        // 2026-08/g41_oracle_control_ceo_spec_2026-08-26.txt section 9).
+        // Deliberately gated on the SAME `matched` (TRIGGER_KEYWORDS) gate
+        // rather than a brand-new heuristic keyword list - reuses an
+        // already-tuned, already-live gate (rule 8) whose existing phrases
+        // ("what should i work on", "suggest a fix", "suggest an
+        // improvement") already sit in the right semantic territory,
+        // rather than risk a fresh, unproven "does this sound like an
+        // action request" heuristic. A real gap is honestly accepted here
+        // for v1 (some genuine "do X" phrasings won't hit this gate) -
+        // acceptable because a wrongly-fired OR wrongly-missed suggestion
+        // has zero real effect: it only ever proposes a row Alex must
+        // separately approve, which then still needs a real coded
+        // _execute() branch before it can do anything at all (see
+        // oracleControl._execute's own comment) - three real gates, not one.
+        if (matched && oc && oc.buildSuggestBlock) block += oc.buildSuggestBlock();
         // July 28: was orig.call(this, messages, system+block, maxTokens) -
         // a fixed 3-arg forward that silently dropped any 4th+ argument
         // (main.js's callOracle gained an optional onChunk callback the
@@ -26939,6 +26963,21 @@ RPGACE.register('oracleControl', {
     return '\n\nRECOGNIZED ACTIONS: if the user\'s message clearly, confidently matches one of the phrasings below, end your ENTIRE reply with exactly one trailer line, on its own line, nothing after it:\nORACLE_ACTION: <action_id>\n' + lines.join('\n') + '\nOnly emit this trailer when you are genuinely confident the user wants that specific action performed right now — never guess, and never emit more than one trailer in a single reply.';
   },
 
+  // ── Aug 26 2026, G41 Phase 2 ("self-aware vocabulary growth") ────────────
+  // Real Alex-confirmed choice, via /paranoia + /CEO-Drift (records/2026-08/
+  // g41_oracle_control_ceo_spec_2026-08-26.txt section 9). Deliberately
+  // keeps every existing safety property Phase 1 already established:
+  // Oracle only ever DRAFTS a suggestion here, it never writes anything or
+  // executes anything itself. A suggestion becomes a real, live oracle_
+  // actions row only once Alex explicitly approves it (_approveSuggestedAction
+  // below) - and EVEN THEN it still needs a real, human-coded _execute()
+  // branch (same as log_beat has) before Accept on the per-use confirm can
+  // ever do anything beyond an honest "not wired up yet" toast. Three real
+  // gates, not one - see this module's own header comment.
+  buildSuggestBlock: function() {
+    return '\n\nSUGGESTING A NEW ACTION: if the user is asking you to DO something real in RPGACE (not just asking a question) that genuinely is NOT one of the recognized actions above, and you can confidently name a SPECIFIC real module/function from your own self-awareness knowledge (oracle_module_anatomy) that would handle it, you MAY end your reply with a suggestion trailer instead of an ORACLE_ACTION one - never both in the same reply. The trailer must be exactly this shape, on its own line, valid JSON, nothing after it:\nORACLE_SUGGEST_ACTION: {"target":"module.method","trigger_phrase":"a short phrase that would trigger this next time","description":"one plain sentence describing what this would do"}\nOnly do this when you are genuinely confident the module/function you are naming actually exists - never invent one. If you are not sure, say so in your reply instead and do not emit this trailer at all. This never executes anything by itself - it only ever proposes Alex add it to the recognized list.';
+  },
+
   // ── 2. Trailer-scan consumer — same shared oracle:response-scanned hook  ──
   // ── DIRECTOR_CHOSEN/EDL_JSON already use (rule 8), fires regardless of   ──
   // ── which page/panel the reply actually rendered on (the observer      ──
@@ -26959,7 +26998,87 @@ RPGACE.register('oracleControl', {
           self._showActionConfirm(row);
         });
       }
+      // Aug 26 2026, G41 Phase 2 — real, defensive JSON parse (rule 5: never
+      // trust model JSON blindly). A malformed/incomplete trailer (a real
+      // possibility — markdown rendering, a truncated reply) is silently
+      // ignored, same fails-open discipline as everywhere else in this
+      // project, never a thrown error surfaced to Alex.
+      var sm = /ORACLE_SUGGEST_ACTION:\s*(\{[\s\S]*\})\s*$/i.exec(text);
+      if (sm) {
+        try {
+          var suggestion = JSON.parse(sm[1]);
+          if (suggestion && suggestion.target && suggestion.trigger_phrase && suggestion.description) {
+            self._showSuggestConfirm(suggestion);
+          }
+        } catch (e) { console.warn('[oracleControl] malformed ORACLE_SUGGEST_ACTION JSON, ignored:', e.message); }
+      }
       self._mirrorReplyToOverlay(text);
+    });
+  },
+
+  // ── Real, DISTINCT confirm — deliberately NOT the same popup as          ──
+  // ── _showActionConfirm: this one only asks "should this be ADDED to the  ──
+  // ── recognized list," never "should this run right now." Accepting here  ──
+  // ── writes a real oracle_actions row (via the server-side write proxy,   ──
+  // ── same pattern as every other RLS-restricted table) but does NOT      ──
+  // ── execute anything - a brand-new action_id still hits _execute()'s own ──
+  // ── honest "not wired up yet" toast until a human actually codes a real  ──
+  // ── dispatch branch for it, exactly like log_beat's own branch was.
+  _showSuggestConfirm: function(suggestion) {
+    var dd = RPGACE.modules.dashDeck;
+    if (!dd || !dd._popup) { console.warn('[oracleControl] dashDeck._popup unavailable, cannot show suggest confirm'); return; }
+    var pop = dd._popup({
+      eyebrow: '💡 Oracle has a suggestion',
+      title: 'Add this as a new Oracle action?',
+      accent: '#4CAF82',
+      borderColor: '#4CAF82',
+      width: '440px',
+      noDefaultClose: true,
+    });
+    var esc = function(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; };
+    pop.box.innerHTML =
+      '<div style="font-size:13px;color:rgba(226,226,236,0.85);margin-bottom:10px;">' + esc(suggestion.description) + '</div>' +
+      '<div style="font-size:12px;color:rgba(226,226,236,0.55);margin-bottom:6px;"><b>Would call:</b> ' + esc(suggestion.target) + '</div>' +
+      '<div style="font-size:12px;color:rgba(226,226,236,0.55);margin-bottom:14px;"><b>Trigger phrase:</b> "' + esc(suggestion.trigger_phrase) + '"</div>' +
+      '<div style="font-size:11.5px;color:rgba(226,226,236,0.4);margin-bottom:14px;">This only adds it to Oracle\'s recognized list — it still needs a real, coded execution path before it can actually run anything, exactly like every other action here.</div>' +
+      '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+        '<button id="oc-suggest-deny" style="padding:8px 16px;border-radius:8px;border:1px solid rgba(226,226,236,0.2);background:none;color:rgba(226,226,236,0.7);font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;">No thanks</button>' +
+        '<button id="oc-suggest-accept" style="padding:8px 16px;border-radius:8px;border:none;background:#4CAF82;color:#fff;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;">Add as new action</button>' +
+      '</div>';
+    pop.box.querySelector('#oc-suggest-deny').onclick = function() { pop.close(); };
+    pop.box.querySelector('#oc-suggest-accept').onclick = function() {
+      pop.close();
+      RPGACE.modules.oracleControl._approveSuggestedAction(suggestion);
+    };
+  },
+
+  // Writes a real, new oracle_actions row via the server-side write proxy
+  // (this table is anon_read_only, matching oracle_module_anatomy's own
+  // RLS posture — the plain anon key cannot insert into it directly).
+  // action_id is derived defensively from the trigger phrase, never taken
+  // as free text from the model (rule 5's own "sanitize structure-affecting
+  // output in code" discipline).
+  _approveSuggestedAction: function(suggestion) {
+    var self = this;
+    var slug = String(suggestion.trigger_phrase || 'oracle_action')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60) || ('oracle_action_' + Date.now());
+    var today = new Date().toISOString().slice(0, 10);
+    RPGACE.sb.secureWrite('oracle_actions', 'insert', {
+      action_id: slug,
+      trigger_phrases: [suggestion.trigger_phrase],
+      target: suggestion.target,
+      data_touched: [],
+      explanation_significance: suggestion.description,
+      explanation_path_reasoning: 'Suggested by Oracle from its own module self-awareness; approved by Alex on ' + today + '. Not yet wired to a real execution path unless a future session has coded one.',
+      explanation_benefit: suggestion.description,
+      confirm_required: true,
+      active: true,
+    }).then(function() {
+      RPGACE.utils.toast('✅ Added "' + suggestion.trigger_phrase + '" to Oracle\'s recognized actions', '#4CAF82', 3000);
+      self._fetchActions(true);
+    }).catch(function(e) {
+      console.warn('[oracleControl] failed to save suggested action:', e.message);
+      RPGACE.utils.toast('⚠️ Could not save that suggestion: ' + e.message, '#E2A83D', 3500);
     });
   },
 

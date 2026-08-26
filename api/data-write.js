@@ -114,6 +114,14 @@ const ALLOWED_TABLES = new Set([
   // be - questEngine routes every write through this endpoint.
   'quest_log',
   'quest_duration_stats',
+  // 2026-08-26 - G41 Phase 2 (self-aware vocabulary growth). Created
+  // anon_read_only/authenticated_all FROM THE START (same as
+  // oracle_module_anatomy's own precedent) - satisfies "flip RLS first,
+  // then allowlist" by construction, same as quest_log/quest_duration_stats
+  // above. oracleControl._approveSuggestedAction() is the one real write
+  // path (a new row Alex explicitly approved from an Oracle-drafted
+  // suggestion) - never a live, unapproved insert.
+  'oracle_actions',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {
