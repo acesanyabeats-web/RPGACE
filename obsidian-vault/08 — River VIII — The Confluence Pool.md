@@ -22,7 +22,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Fed by
 
-- ← [[17 — River XVII — The Research & Intel Stream.md|River XVII — The Research & Intel Stream]] — **Real persisted write** (Content Intelligence real write path — the pending-proposal/review-queue flow)
+- ← [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]] — **Real persisted write** (Content Intelligence real write path — the pending-proposal/review-queue flow)
 - ← [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]] — **Needs Alex's explicit confirm** (any confirmable fusion-link bridge)
 - ← [[07 — River VII — The Library Current.md|River VII — The Library Current]] — **Needs Alex's explicit confirm** (a proposed merge)
 

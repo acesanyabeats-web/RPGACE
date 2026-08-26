@@ -380,7 +380,7 @@ def main():
           f"{len(GROUPS)} real axis groups (table), one real merged page.")
     # G82 — real, measured river-link coverage across BOTH views, so a
     # regression back to dead chips shows up in the build output.
-    print(f"  G82 river links — every skill links River XIII at Level 2 in both views; "
+    print(f"  G82 river links — every skill links River XIV at Level 2 in both views; "
           f"{n_sec} of {len(names)} also link a real secondary river.")
 
 

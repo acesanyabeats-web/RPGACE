@@ -285,7 +285,7 @@ re-deriving it from scratch.
 
 Per Alex's own explicit rule (Aug 13, Fork 5): every level of this
 hierarchy that has a real, standing connection into Oversight (a real
-caller inside one river whose output lands in River XIV, a galaxy's
+caller inside one river whose output lands in River XV, a galaxy's
 own real doc trail) represents that connection explicitly — reusing
 `minotaur_map.html`'s existing `.river-flow-next` connector data
 (`RIVER_FLOWS` in the same Python script — a real aggregate view per
@@ -348,12 +348,13 @@ required layout for any river with real modules, not a one-off fix:
   never scattered in a separate ring disconnected from the flow itself.
 
 **Real, stated exception**: a river with NO real registered modules
-(Rivers XII-XVI) has no module flow to reorient — these keep the
-original radial layout, since forcing a left-right shape onto a river
-that structurally has nothing to flow through would be decorative, not
-evidence-based. This also preserves River XIII's own real skill "web"
-(25 nodes), which Alex explicitly wanted kept radial ("itll look like a
-slow trickle or spider web... but will explain rivers so much better").
+(Rivers XIII-XVII, renumbered from XII-XVI by G103, Aug 26 2026) has no
+module flow to reorient — these keep the original radial layout, since
+forcing a left-right shape onto a river that structurally has nothing
+to flow through would be decorative, not evidence-based. This also
+preserves River XIV's own real skill "web" (25 nodes), which Alex
+explicitly wanted kept radial ("itll look like a slow trickle or spider
+web... but will explain rivers so much better").
 
 ---
 

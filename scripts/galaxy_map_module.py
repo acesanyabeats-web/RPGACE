@@ -2,7 +2,7 @@
 """
 galaxy_map_module.py — G4 of the ratified "RPGACE Total Systems Galaxy
 Map" /CEO plan (Aug 13 2026). Builds the real Level-2 drill-down: for
-each of the 16 rivers, its own real registered modules (RIVER_MODULES)
+each of the 17 rivers, its own real registered modules (RIVER_MODULES)
 PLUS — Alex's own direct Aug 13 ask, "we should also include dashboard
 cards as reference points too" — the real dashboard cards (dashDeck.
 MODULES, mirrored as DASHBOARD_CARDS) that actually route a user into
@@ -15,7 +15,7 @@ forced merge of two different kinds of thing into one.
 Real data reused, never re-derived (rule 8): RIVER_NAME/RIVER_COLOR/
 RIVER_MODULES/RIVER_ROLE_NOTE/DASHBOARD_CARDS/CARDS_BY_RIVER all
 imported from graphify_river_group.py; polar()/_curved_edge() imported
-from galaxy_map.py. All 16 rivers render into ONE file (16 <section>
+from galaxy_map.py. All 17 rivers render into ONE file (17 <section>
 blocks, JS-toggled by location.hash) rather than 16 separate files —
 matches the existing "one file per level" convention set by G2/G3,
 avoids a 16-file sprawl for what is genuinely one drill-down level.
@@ -35,7 +35,7 @@ same real data Level 1 already draws, never re-derived — each a real
 in-page `<a href="#river-N">` jump to that other river's own section
 (the existing hashchange listener already handles it, zero new JS).
 Also carries G5's real Oversight-connection note down from Level 1
-(§6) — River XIV itself and any river with a real direct edge into it
+(§6) — River XV itself and any river with a real direct edge into it
 get a 📚 legend line, using the same computation, not a new one.
 
 **Aug 13, later pass still — real G0-to-river ring, per Alex's direct
@@ -72,12 +72,12 @@ own AST extractor already has for `RPGACE.register()`).
 
 Then Alex's own framing for skills: "skills are like streams that join
 the river flow, along with other modules, rivers etc." A real 5th
-ring — River XIII gets its own full real catalog (25 skills, its
+ring — River XIV gets its own full real catalog (25 skills, its
 genuine structural content); a handful of other rivers get one real,
 CITED skill each (`SKILL_SECONDARY_RIVER`, sourced from that skill's
 own already-written description, never guessed) — the rest are real,
 genuinely cross-cutting Claude-Code dev-process protocols that stay
-honestly scoped to River XIII alone.
+honestly scoped to River XIV alone.
 """
 import math
 import sys
@@ -133,13 +133,13 @@ CROSS_CALLS = compute_cross_module_function_calls()
 # that has a real, standing connection into Oversight represents that
 # connection explicitly." Same real computation galaxy_map_river.py's
 # own G5 badge uses (rule 8 — not re-derived, just reused at this
-# level too) — River XIV itself, plus any river with a real RIVER_FLOWS
+# level too) — River XV itself, plus any river with a real RIVER_FLOWS
 # edge targeting it. At module granularity there's no real per-module
 # oversight-connection data (RIVER_FLOWS is a river-level aggregate,
 # per §1a) — this carries the real river-level fact down into the
 # section's own legend text honestly, rather than fabricating a
 # module-level edge no evidence supports.
-OVERSIGHT_RIVER = 14
+OVERSIGHT_RIVER = 15  # G103 (Aug 26 2026): 14->15, see graphify_river_group.py RIVER_COLOR header
 OVERSIGHT_FEEDERS = {
     src for src, flows in RIVER_FLOWS.items()
     for target_label, _note, _itype in flows
@@ -154,7 +154,7 @@ CARD_ICON_FALLBACK = '🎯'
 
 
 EXTERNAL_COLOR = '#5FB3D9'  # same family as Supabase's Level-0 accent — "external infra," not a river's own color
-SKILL_RIVER = 13  # River XIII — Skills' own real home; every real skill is a stream feeding it
+SKILL_RIVER = 14  # River XIV — Skills' own real home; every real skill is a stream feeding it (G103, Aug 26 2026: was River XIII)
 
 # G93 (Aug 25 2026) — real, project-wide "which L0 unit's Infra touches
 # which river" aggregate (galaxy_map.py), computed once here rather than
@@ -164,7 +164,7 @@ RIVER_UNIT_TOUCHES = compute_unit_river_touches()
 
 def build_river_section(rnum):
     # Real, sourced skill "streams" — Alex's own framing: "skills are
-    # like streams that join the river flow." River XIII genuinely
+    # like streams that join the river flow." River XIV genuinely
     # contains ALL of them (no citation needed — that's its real
     # structural role); a few others get one real, CITED secondary
     # skill each (SKILL_SECONDARY_RIVER, sourced not guessed).
@@ -175,7 +175,7 @@ def build_river_section(rnum):
     mods = RIVER_MODULES.get(rnum, [])
     cards = CARDS_BY_RIVER.get(rnum, [])
     # Real canvas sizing: rivers with modules use the new WIDE left-to-
-    # right flow layout; River XIII's own real 25-skill radial catalog
+    # right flow layout; River XIV's own real 25-skill radial catalog
     # needs real extra room; every other module-less river stays the
     # standard radial size.
     if mods:
@@ -632,7 +632,7 @@ def build_river_section(rnum):
         # =========================================================
         # ORIGINAL RADIAL LAYOUT — module-less rivers only (XII/XIII/
         # XIV/XV/XVI). There's no real module flow here to reorient
-        # left-to-right; River XIII's own real skill catalog is also
+        # left-to-right; River XIV's own real skill catalog is also
         # the one case Alex explicitly wanted to KEEP as a radial "web."
         # =========================================================
         nodes_svg.append(
@@ -704,7 +704,7 @@ def build_river_section(rnum):
     if rnum == OVERSIGHT_RIVER:
         legend += '<p class="rlegend-role">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI.</p>'
     elif rnum in OVERSIGHT_FEEDERS:
-        legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into River XIV (Oversight Docs).</p>'
+        legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into River XV (Oversight Docs).</p>'
     if terminal_mods:
         reason_map = {'ui': 'a real, visible output you\'d actually see in the app',
                       'ai': 'a real, direct connection to an external AI provider',
@@ -752,7 +752,7 @@ def build_river_section(rnum):
 
     def _skill_row(skill, note):
         label = f'/{skill}'
-        meta = note or ("River XIII's own real skill catalog — no per-river citation needed, this IS its structural content." )
+        meta = note or ("River XIV's own real skill catalog — no per-river citation needed, this IS its structural content." )
         return (f'<div class="legend-row small"><span class="dot" style="background:{skill_color}"></span>'
                 f'<b>{label}</b> <span class="meta">{meta}</span></div>')
     skill_list = ''.join(_skill_row(s, n) for s, n in skills_here) or \
@@ -949,7 +949,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
   <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 16 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIII's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XIV (Oversight Docs). <b>🧑 Alex</b> (top, permanent on every river-with-modules section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means at least one real function has DOM/popup-rendering evidence AND the module is a real dashboard card's own PRIMARY destination (Alex-confirmed precision fix — a module named only as one of several siblings sharing a card, or a card's own via text explicitly demoting it, correctly does NOT connect); a dashed line OUT of Alex means at least one real function has button/input-wiring evidence (input stays gated on the raw signal alone — real click evidence is unambiguous without needing a card tie). A small dashed "🔽 module.function" tag next to a river connection bubble is a real preview of the specific Level-3 function that connection actually lands on (real evidence-gated — only shown when a traced function call or a real message-wrap installer was actually found; most connections honestly show none).</p>
+  <p>Drilled down from <a href="galaxy_map_river.html">the 17 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIV's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XV (Oversight Docs). <b>🧑 Alex</b> (top, permanent on every river-with-modules section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means at least one real function has DOM/popup-rendering evidence AND the module is a real dashboard card's own PRIMARY destination (Alex-confirmed precision fix — a module named only as one of several siblings sharing a card, or a card's own via text explicitly demoting it, correctly does NOT connect); a dashed line OUT of Alex means at least one real function has button/input-wiring evidence (input stays gated on the raw signal alone — real click evidence is unambiguous without needing a card tie). A small dashed "🔽 module.function" tag next to a river connection bubble is a real preview of the specific Level-3 function that connection actually lands on (real evidence-gated — only shown when a traced function call or a real message-wrap installer was actually found; most connections honestly show none).</p>
 </div>
 
 <div class="tabs">{tabs}</div>

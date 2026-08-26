@@ -49,9 +49,9 @@ from graphify_river_group import SKILL_SECONDARY_RIVER, RIVER_NAME  # noqa: E402
 
 # G46 (Aug 18 2026, real Part 4F/10 ask — "skills should be treated same
 # as supabase," i.e. its own documented Level/River usage). Real reuse,
-# not re-derived (rule 8): every real skill lives in River XIII by
+# not re-derived (rule 8): every real skill lives in River XIV by
 # default (its own full 25-skill catalog, already built at
-# galaxy_map_module.py's River XIII section); SKILL_SECONDARY_RIVER adds
+# galaxy_map_module.py's River XIV section); SKILL_SECONDARY_RIVER adds
 # a real citation for the 7 skills whose own description names a
 # SPECIFIC other river. "Level" is honestly N/A for a skill — skills
 # document Orchestrator CC's own dev process, not runtime app code, so
@@ -144,11 +144,11 @@ def build_group_section(grp):
     # G82 (Aug 25 2026) — these chips name a REAL river and were dead
     # text. The whole Skills page (map view and this table alike) had
     # exactly one href in its entire body, and it was a JS `#` jump —
-    # so a reader could see "River XIV" and had no way to reach River
-    # XIV. Fixed with the same `galaxy_map_module.html#river-N` Level-2
+    # so a reader could see "River XV" and had no way to reach River
+    # XV. Fixed with the same `galaxy_map_module.html#river-N` Level-2
     # anchor every other page in this pipeline already uses (rule 8, not
     # a new convention); the anchor is real for all 17 rivers, including
-    # the module-less XII-XVI, which render their own real Level-2
+    # the module-less XIII-XVII, which render their own real Level-2
     # section. Skill NAMES are deliberately still not linked: their real
     # source is `.claude/skills/<name>/SKILL.md`, a dot-directory that
     # is not served, so a link there would be dead by construction.
@@ -159,7 +159,7 @@ def build_group_section(grp):
                 f'🌊 {esc(rlabel)}</a>')
 
     def _river_usage(name):
-        chips = [_river_chip(13, title='Every skill lives in River XIII by default')]
+        chips = [_river_chip(14, title='Every skill lives in River XIV by default')]
         sec = SKILL_SECONDARY_RIVER.get(name)
         if sec:
             rnum, note = sec

@@ -24,12 +24,12 @@ Aug 11, real Alex ask: 16 unified rivers now, not "11 rivers + 5 zones" — rive
 
 ## Rivers XII-XVI (Total-systems / dev-process, file-path-evidenced)
 
-- [[12 — River XII — The API - Auth Layer.md|River XII — The API / Auth Layer]]
-- [[13 — River XIII — Skills.md|River XIII — Skills]]
-- [[14 — River XIV — Oversight Docs.md|River XIV — Oversight Docs]]
-- [[15 — River XV — Session Records - Backlog.md|River XV — Session Records / Backlog]]
-- [[16 — River XVI — Dev Tooling.md|River XVI — Dev Tooling]]
-- [[17 — River XVII — The Research & Intel Stream.md|River XVII — The Research & Intel Stream]]
+- [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]]
+- [[13 — River XIII — The API - Auth Layer.md|River XIII — The API / Auth Layer]]
+- [[14 — River XIV — Skills.md|River XIV — Skills]]
+- [[15 — River XV — Oversight Docs.md|River XV — Oversight Docs]]
+- [[16 — River XVI — Session Records - Backlog.md|River XVI — Session Records / Backlog]]
+- [[17 — River XVII — Dev Tooling.md|River XVII — Dev Tooling]]
 
 ---
 *Source of truth for the underlying data: `scripts/graphify_river_group.py` (river/zone membership) and `minotaur_map.html` (flow connectors). If this vault and either of those ever disagree, they win — re-run `graphify_to_obsidian.py`.*

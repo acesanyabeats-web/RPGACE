@@ -1,8 +1,8 @@
 ---
 module_name: "intelBatchList"
 kind: module
-river_number: 17
-river_name: "River XVII — The Research & Intel Stream"
+river_number: 12
+river_name: "River XII — The Research & Intel Stream"
 source_lines: "8938-8968"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,7 +11,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 `rpgace_core.js:8938-8968`
 
-Member of [[17 — River XVII — The Research & Intel Stream.md|River XVII — The Research & Intel Stream]].
+Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
 
 ## Real touch evidence
 

@@ -19,7 +19,7 @@ source: "graphify_river_group.py — real, not guessed"
 - → [[03 — River III — The Oracle Current.md|River III — The Oracle Current]] — **Page / UI routing** (Oracle page selected)
 - → [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]] — **Page / UI routing** (Bookworm page selected)
 - → [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]] — **Page / UI routing** (Schedule page selected)
-- → [[17 — River XVII — The Research & Intel Stream.md|River XVII — The Research & Intel Stream]] — **Page / UI routing** (Content Intel page selected)
+- → [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]] — **Page / UI routing** (Content Intel page selected)
 
 ## Fed by
 

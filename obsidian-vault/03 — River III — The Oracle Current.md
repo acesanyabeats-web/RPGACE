@@ -31,7 +31,7 @@ source: "graphify_river_group.py — real, not guessed"
 - → [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]] — **Page / UI routing** (a tapped insight badge)
 - → [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]] — **Page / UI routing** (special prefix diverts the message)
 - → [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]] — **Page / UI routing** (special prefix diverts the message (scheduleOracle))
-- → [[12 — River XII — The API - Auth Layer.md|River XII — The API / Auth Layer]] — **Oracle / Claude judgment call** (dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call)
+- → [[13 — River XIII — The API - Auth Layer.md|River XIII — The API / Auth Layer]] — **Oracle / Claude judgment call** (dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call)
 
 ## Fed by
 

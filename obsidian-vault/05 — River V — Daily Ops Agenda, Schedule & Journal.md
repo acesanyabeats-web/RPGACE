@@ -20,7 +20,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Flows into
 
-- → [[12 — River XII — The API - Auth Layer.md|River XII — The API / Auth Layer]] — **Extracts data from outside RPGACE** (morningBrief's real Composio Gmail-fetch call routes out through here)
+- → [[13 — River XIII — The API - Auth Layer.md|River XIII — The API / Auth Layer]] — **Extracts data from outside RPGACE** (morningBrief's real Composio Gmail-fetch call routes out through here)
 
 ## Fed by
 

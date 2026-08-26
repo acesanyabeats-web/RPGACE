@@ -113,7 +113,7 @@ EDGES = [
      'desc': 'RPGACE Architecture\'s own functions pull/push real data as part of forming their output — "data pulling based on prompts," Alex\'s own words.',
      'link': 'galaxy_map_supabase.html'},
     {'id': 'rpgace-skills', 'a': 'rpgace_architecture', 'b': 'skills', 'kind': INJECTION,
-     'evidence': 'SKILL_SECONDARY_RIVER (already built, 7 of 25 skills cite a real secondary river beyond River XIII\'s own full catalog).',
+     'evidence': 'SKILL_SECONDARY_RIVER (already built, 7 of 25 skills cite a real secondary river beyond River XIV\'s own full catalog).',
      'desc': 'A skill is a real "built in framework" — reused, defined procedure a river/module\'s own development draws on, injected as dev-process citation, not a runtime call.',
      'link': 'galaxy_map_skill_network.html'},
     {'id': 'rpgace-oversight', 'a': 'rpgace_architecture', 'b': 'oversight_docs', 'kind': ACTOR,
