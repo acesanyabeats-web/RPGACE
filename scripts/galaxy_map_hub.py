@@ -116,6 +116,8 @@ PAGES = [
      'scope': '21 real decisions (10 gates + 7 logic + 4 text-input), 6 rivers', 'desc': 'Real Aug 21 2026 unification (Alex\'s own direct ask) of Decisions (G26) + Level 5\'s logic points + a new curated text-input set, split by river and documentation depth. The real source-of-truth table; its bubble view is a pure rendering layer over the same data (CEO SKILL.md R22\'s own new standing rule).'},
     {'file': 'galaxy_map_supabase.html', 'label': 'Supabase', 'level': 'Dimension', 'kind': 'infra',
      'scope': '25 tables, 113 of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
+    {'file': 'galaxy_map_oracle.html', 'label': 'Oracle', 'level': 'Dimension', 'kind': 'infra',
+     'scope': '13 modules, 28 real (module,function) call pairs', 'desc': 'G99 — Oracle\'s own real Infra bubble system (promoted from the retired "External AI" L0 grouping): every real function anywhere that calls Oracle, by river/module.'},
     {'file': 'galaxy_map_externals.html', 'label': 'Externals — UI + Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
      'scope': '13 real external connectors', 'desc': 'G27 — whether each connector genuinely touches real UI AND real backend processing.'},
     {'file': 'galaxy_map_skill_network.html', 'label': 'Skills — Composition Network + AI/UI/Backend Dimension', 'level': 'Dimension', 'kind': 'inter',

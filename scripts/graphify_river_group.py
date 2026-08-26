@@ -615,7 +615,7 @@ SUPABASE_L0_UNIT_TOUCHES = {
 }
 
 # Deliberately absent, and stated rather than left as a silent hole:
-#   'external_ai' — every real Supabase write in an Oracle round trip is
+#   'oracle' — every real Supabase write in an Oracle round trip is
 #       made by rpgace_core.js AFTER the provider's answer comes back
 #       (`_captureNextResponse` → `creative_docs`, the `style_profiles`
 #       save, `oracle_fallback_queue`). The provider itself is called BY
@@ -630,7 +630,7 @@ SUPABASE_L0_UNIT_TOUCHES = {
 #       galaxy_map_supabase.html, which its own unit links to.
 # Both are honest zero results, deliberately NOT papered over with a
 # synthetic placeholder row.
-L0_SUPABASE_NO_TOUCH_UNITS = ('external_ai', 'supabase')
+L0_SUPABASE_NO_TOUCH_UNITS = ('oracle', 'supabase')
 
 # Real, single shared link target for a registry table, resolved against
 # the same client-side detector G45's page is built from — so a deep
@@ -984,7 +984,7 @@ L0_UNIT_LABEL = {
     'orchestrator_cc': 'Orchestrator CC',
     'openmontage_cc': 'OpenMontage CC',
     'graphify_cc': 'Graphify CC',
-    'external_ai': 'External AI',
+    'oracle': 'Oracle',
     'skills': 'Skills',
     'alex': 'Alex',
     'supabase': 'Supabase',
@@ -4338,9 +4338,16 @@ PLAN_OVERLAY_TEMPLATE = r"""
   /* Real L0 unit id -> the DD1 dimension name that genuinely represents
      that unit. Not invented: these are the exact dimension strings DD1
      writes, and the exact unit ids galaxy_map.py's own UNIT_ORDER uses. */
-  var UNIT_DIM={supabase:['Supabase'],skills:['Skills'],external_ai:['Externals'],
+  var UNIT_DIM={supabase:['Supabase'],skills:['Skills'],
     oversight_docs:['Oversight Sync'],alex:['UI/Alex-Accessibility','Decision/Human-Gate'],
     openmontage_cc:['Orchestrator↔OpenMontage']};
+  /* 'external_ai' retired as a unit id (Aug 25 2026, G99) -- its
+     smoke_test dimension tag ("Externals") is about the connector-
+     classification PAGE, which stays live, not about the new "oracle"
+     unit specifically. No real "Oracle" dimension tag exists in
+     smoke_test_items yet, so no fabricated mapping is added here — a
+     real future smoke_test row tagged that way would need this map
+     extended then, not guessed now. */
 
   function itemsForUnit(items,unit){
     if(unit==='rpgace_architecture'){

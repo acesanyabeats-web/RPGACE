@@ -755,8 +755,10 @@ def build_river_section(rnum):
     # G20 (Aug 14, Alex's own direct ask, real evidence: this river's own
     # crowded fan-out of mostly-isolated modules crossed by Alex/Oracle
     # bubble edges was the exact screenshot he flagged as "very messy").
-    # rivers_needing_meanders() is the same real, mechanical rule
-    # galaxy_map_meanders.py uses (rule 8, never re-derived) — a river
+    # rivers_needing_meanders() is the same real, mechanical rule the
+    # now-retired galaxy_map_meanders.py used to use (Aug 25 2026: that
+    # standalone page is gone, per Alex's own direct ask, but the real
+    # rule survives here — rule 8, never re-derived) — a river
     # only gets this simplified swap where it genuinely has 2+ real
     # dashboard cards to split by. Every other river's canvas is fully
     # untouched (nodes_svg/edges_svg are still computed exactly as

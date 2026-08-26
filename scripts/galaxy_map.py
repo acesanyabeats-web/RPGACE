@@ -196,14 +196,14 @@ GALAXY_BY_ID = {g['id']: g for g in GALAXIES}
 # real, additional bubble row below the SVG, per Alex's own direct ask.
 UNIT_ORDER = [
     'rpgace_architecture', 'orchestrator_cc', 'openmontage_cc', 'graphify_cc',
-    'external_ai', 'skills', 'alex', 'supabase', 'oversight_docs',
+    'oracle', 'skills', 'alex', 'supabase', 'oversight_docs',
 ]
 UNIT_META = {
     'rpgace_architecture': {'label': 'RPGACE Architecture', 'icon': '🏛️', 'color': '#C9A84C'},
     'orchestrator_cc': {'label': 'Orchestrator CC', 'icon': '🧭', 'color': '#4A90E2'},
     'openmontage_cc': {'label': 'OpenMontage CC', 'icon': '🎬', 'color': '#E25454'},
     'graphify_cc': {'label': 'Graphify CC', 'icon': '🌐', 'color': '#3DAA6E'},
-    'external_ai': {'label': 'External AI', 'icon': '🔮', 'color': '#9B59B6'},
+    'oracle': {'label': 'Oracle', 'icon': '🔮', 'color': '#9B59B6'},
     'skills': {'label': 'Skills', 'icon': '🧩', 'color': '#3DAA6E'},
     'alex': {'label': 'Alex', 'icon': '🧑', 'color': '#E25454'},
     'supabase': {'label': 'Supabase', 'icon': '🗄️', 'color': '#2ABFB0'},
@@ -221,13 +221,15 @@ assert L0_UNIT_LABEL == {uid: UNIT_META[uid]['label'] for uid in UNIT_ORDER}, (
 
 # The 5 units that need a NEW bubble on this page (the other 4 already
 # render via the SVG satellites/harness node above).
-NEW_BUBBLE_UNITS = ['external_ai', 'skills', 'alex', 'supabase', 'oversight_docs']
+NEW_BUBBLE_UNITS = ['oracle', 'skills', 'alex', 'supabase', 'oversight_docs']
 
-# Real, explicit override #1 — anything touching External AI is INFRA
+# Real, explicit override #1 — anything touching Oracle is INFRA
 # regardless of its stored EDGES 'kind' tag (Alex's own confirmed
 # example this session: infra = "Supabase touch, Oracle call,
-# external-connector touch").
-FORCE_INFRA_UNITS = {'external_ai'}
+# external-connector touch"). Renamed from FORCE_INFRA_UNITS'
+# old 'external_ai' member (Aug 25 2026, G99 — External AI retired as
+# an L0 unit, Oracle inherits its own real edges/rule).
+FORCE_INFRA_UNITS = {'oracle'}
 # Real, explicit override #2 — RETIRED by G77 (Aug 25 2026). The
 # alex<->rpgace_architecture edge used to be force-flipped to INFRA so
 # it would sit next to the decision list. Alex's own direct critique
@@ -603,7 +605,15 @@ def build_external_ai_actor_facets():
 # 2 of the 12 actors have NO EXTERNAL_RIVER_LINKS row at all and get an
 # honest "no known river destination" row with a real, sourced reason
 # instead of a fabricated river number.
-EDGE_FACET_SUPPRESSED_UNITS = {'external_ai'}
+#
+# G99 (Aug 25 2026) — real, empty now. This used to suppress
+# 'external_ai's own generic "↔ <other unit>" rows in favour of its
+# richer 12-actor migration-facet list (build_external_ai_migration_
+# facets()). External AI is retired as an L0 unit; Oracle (its
+# replacement for this specific relationship) is a full REDIRECT unit
+# now (UNIT_BUBBLE_SYSTEM) — its own facets list is never rendered
+# inline at all, so there is nothing left to protect by suppressing.
+EDGE_FACET_SUPPRESSED_UNITS = set()
 _RIVER_LINK_BY_NAME = {l['name']: l for l in EXTERNAL_RIVER_LINKS}
 # Real, sourced reasons for the 2 actors with no river-link evidence.
 # Neither is a placeholder: orchestrator_cc's is this file's own
@@ -853,26 +863,18 @@ def build_facets():
         status = 'live' if p['tested'] else 'dormant scaffold'
         for uid in ('rpgace_architecture', 'alex'):
             facets[uid].append({
-                'kind': 'infra', 'dim': 'External AI', 'label': f"Uses: {esc(p['name'])} ({status})",
-                'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_externals.html',
+                'kind': 'infra', 'dim': 'Oracle', 'label': f"Uses: {esc(p['name'])} ({status})",
+                'detail': f"{esc(p['role'])}", 'share_key': f"provider:{p['name']}", 'link': 'galaxy_map_oracle.html',
             })
-    # G78 (Aug 25 2026) — External AI's own real, named 12-actor
-    # breakdown. This SUPERSEDES the Aug 21 (G70) 3-row "Component:
-    # <provider>" list that used to be appended inside the loop above:
-    # that fix was real but only covered the 3 Oracle providers, which
-    # is exactly the aggregate vagueness Alex called out again this
-    # session. All 3 providers are still here — they are 3 of the 12 —
-    # carrying the identical `provider:<name>` share_key, so the
-    # cross-highlight into rpgace_architecture/alex that G70 built still
-    # fires unchanged.
-    facets['external_ai'].extend(build_external_ai_actor_facets())
-    # G81 (Aug 25 2026) — External AI's Inter tab: the same 12 actors,
-    # each as a real click-through into wherever it genuinely lands in
-    # the river/module hierarchy. Replaces the 3 suppressed generic
-    # partner rows above; scoped to External AI only (a deliberate
-    # proof of concept — no other L0 unit or dimension page gets this
-    # pattern in this pass).
-    facets['external_ai'].extend(build_external_ai_migration_facets())
+    # G99 (Aug 25 2026) — External AI retired as an L0 unit/grouping;
+    # Oracle (its own real 10th unit now) is a full REDIRECT unit
+    # (UNIT_BUBBLE_SYSTEM) — it jumps straight to its own dedicated
+    # river->module->function drill-down page and never renders an
+    # inline facets list at all, so build_external_ai_actor_facets()/
+    # build_external_ai_migration_facets() (still defined below, for
+    # the real per-actor migration-link discipline they document) are
+    # no longer called here. facets['oracle'] simply stays whatever the
+    # generic edge loop above populated it with (harmless, unrendered).
 
     sa = next((n for n in HARNESS_NODES if n['id'] == 'self_awareness'), None)
     if sa:
@@ -1158,7 +1160,14 @@ def build_svg():
         itype = 'ai_judgment_call' if hn['id'] == 'oracle_api' else ('read_query' if hn['id'] == 'self_awareness' else 'human_confirm_gate')
         edges_svg.append(edge(cx, cy, hx, hy, itype, r1=46, r2=22))
         col = '#9B59B6' if hn['id'] != 'human_gate_alex' else '#E25454'
-        node_unit_id = 'alex' if hn['id'] == 'human_gate_alex' else None
+        # G99 real bug fix (Aug 25 2026, same class as the Supabase node
+        # bug found this same day): oracle_api used to have no unit_id
+        # at all — a prominent, real-looking decorative node with zero
+        # click behaviour, sitting right where a reader would expect the
+        # real Oracle L0 unit to be, now that Oracle is one. Wired in.
+        # self_awareness stays None — it genuinely has no L0 unit of its
+        # own (a real, separate harness concept, not a unit).
+        node_unit_id = {'human_gate_alex': 'alex', 'oracle_api': 'oracle'}.get(hn['id'])
         nodes_svg.append(node_circle(hx, hy, 22, col, hn['icon'], hn['label'], glow=False, label_color=col, unit_id=node_unit_id))
         legend_rows.append(f'<div class="legend-row"><span class="dot" style="background:{col}"></span><b>{hn["label"]}</b> — {hn["note"]}</div>')
 
@@ -1686,7 +1695,7 @@ TEMPLATE = """<!DOCTYPE html>
   // panel. See the card click handler below for the full history.
   var UNIT_BUBBLE_SYSTEM = {{
     supabase: 'galaxy_map_supabase.html#view-map',
-    external_ai: 'galaxy_map_externals.html#grp-drilldown',
+    oracle: 'galaxy_map_oracle.html#view-map',
     oversight_docs: 'galaxy_map_oversight_sync.html#cat-sharedinfra',
     orchestrator_cc: 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra',
   }};
@@ -1920,12 +1929,12 @@ def main():
           f"{len(UNIT_ORDER)} real merged L0 units ({n_facets} real facets, infra+inter).")
     print(f"  G77 — Alex Infra: {n_alex_infra} river groups holding all {n_decisions} real unified decisions "
           f"(decisions-only, every other real facet re-kinded to Inter, none dropped).")
-    print(f"  G78 — External AI Infra: {len(EXTERNAL_AI_ACTORS)} real named external AI actors.")
-    ext_inter = [f for f in facets['external_ai'] if f['kind'] == 'inter']
-    n_no_dest = len([f for f in ext_inter if 'no known river destination' in f['label']])
-    print(f"  G81 — External AI Inter: {len(ext_inter)} real per-actor migration rows "
-          f"({len(ext_inter) - n_no_dest} with a real river/module destination, {n_no_dest} honestly with none); "
-          f"{len(EDGE_FACET_SUPPRESSED_UNITS)} unit's generic partner rows suppressed in favour of them.")
+    # G99 (Aug 25 2026) — 'External AI' is retired as an L0 grouping;
+    # its own G78/G81 print stats (facets['external_ai']) no longer
+    # apply — build_external_ai_actor_facets()/build_external_ai_
+    # migration_facets() stay defined but uncalled (their real
+    # EXTERNAL_AI_ACTORS data now lives on Oracle's own dedicated page,
+    # galaxy_map_oracle.py, not duplicated here — rule 8).
     print(f"  G79 — table view: {n_uf_rows} real facet rows across {len(NEW_BUBBLE_UNITS)} bubble-row units.")
 
 
