@@ -332,7 +332,8 @@ def build_river_section(rnum):
             # hand-written separately. Byte-identical output, verified.
             b_edges, b_nodes = render_evidence_bubble(
                 oracle_mods, mod_pos, (ORACLE_X, ORACLE_Y), ORACLE_COLOR,
-                '🔮', 'Oracle', 'module', 'call', _curved_edge, style='module')
+                '🔮', 'Oracle', 'module', 'call', _curved_edge, style='module',
+                link_href=UNIT_BUBBLE_SYSTEM.get('oracle'))
             edges_svg.extend(b_edges)
             edge_colors_used.add(ORACLE_COLOR)
             nodes_svg.extend(b_nodes)
@@ -356,7 +357,8 @@ def build_river_section(rnum):
             b_edges, b_nodes = render_evidence_bubble(
                 [(m, n_tot) for m, _fcnt, n_tot, _tabs in sb_mods], mod_pos,
                 (SB_X, SB_Y), SUPABASE_COLOR, '💉', 'Supabase',
-                'module', 'injection', _curved_edge, style='module')
+                'module', 'injection', _curved_edge, style='module',
+                link_href=UNIT_BUBBLE_SYSTEM.get('supabase'))
             edges_svg.extend(b_edges)
             edge_colors_used.add(SUPABASE_COLOR)
             nodes_svg.extend(b_nodes)

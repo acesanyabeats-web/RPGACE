@@ -4091,7 +4091,8 @@ def verify_core_js_anchor(point_id, anchor, a, b, core_js_path: Path = CORE_JS):
 
 
 def render_evidence_bubble(items, pos, hub_xy, color, emoji, label,
-                           unit_noun, count_noun, edge_fn, style='function'):
+                           unit_noun, count_noun, edge_fn, style='function',
+                           link_href=None):
     """One real evidence-gated connector bubble.
 
     items      — [(key, count), ...], already filtered to count > 0 and
@@ -4103,6 +4104,17 @@ def render_evidence_bubble(items, pos, hub_xy, color, emoji, label,
     edge_fn    — the page's own _curved_edge; passed in rather than
                  imported so this module keeps no dependency on the
                  render scripts that import it.
+    link_href  — G105 (Aug 26 2026), Alex's own direct complaint on a
+                 screenshot ("clickable bubbles to dimensions for all
+                 modules as i asked"): every one of these evidence
+                 bubbles rendered as inert decoration, with the ONLY
+                 real click-through into a unit's own bubble system
+                 living in a separate, disconnected static box
+                 (build_module_infra_inter_row's `.idd-mig` cards) that
+                 duplicated the exact same real relationship. Optional
+                 so a caller with no real destination (none currently)
+                 still gets the exact old inert output — but every real
+                 caller now passes `UNIT_BUBBLE_SYSTEM[unit_id]`.
 
     Returns (edges, nodes) — two lists of SVG string fragments, appended
     by the caller in that order, exactly as the five hand-written copies
@@ -4126,12 +4138,22 @@ def render_evidence_bubble(items, pos, hub_xy, color, emoji, label,
         nodes.append(f'<circle cx="{mx}" cy="{my}" r="8" fill="#0f0f1a" stroke="{color}" stroke-width="1"/>'
                      f'<text x="{mx}" y="{my+3}" text-anchor="middle" font-size="8" fill="{color}" font-weight="700">{cnt}</text>')
     total = sum(c for _k, c in items)
-    nodes.append(
-        f'<g class="node"><circle cx="{hx}" cy="{hy}" r="{st["hub_r"]}" fill="#0f0f1a" stroke="{color}" stroke-width="{st["hub_sw"]}" filter="url(#glow)"/>'
+    hub = (
+        f'<circle cx="{hx}" cy="{hy}" r="{st["hub_r"]}" fill="#0f0f1a" stroke="{color}" stroke-width="{st["hub_sw"]}" filter="url(#glow)"/>'
         f'<text x="{hx}" y="{hy+st["emoji_dy"]}" text-anchor="middle" font-size="{st["emoji_fs"]}">{emoji}</text>'
         f'<text x="{hx}" y="{hy+st["label_dy"]}" text-anchor="middle" font-size="9.5" fill="{color}" font-weight="700">{label}</text>'
-        f'<text x="{hx}" y="{hy+st["sub_dy"]}" text-anchor="middle" font-size="{st["sub_fs"]}" fill="{color}" opacity="0.85">{len(items)} {unit_noun}(s) · {total} real {count_noun}(s)</text></g>'
+        f'<text x="{hx}" y="{hy+st["sub_dy"]}" text-anchor="middle" font-size="{st["sub_fs"]}" fill="{color}" opacity="0.85">{len(items)} {unit_noun}(s) · {total} real {count_noun}(s)</text>'
+        f'<text x="{hx}" y="{hy+st["sub_dy"]+11}" text-anchor="middle" font-size="8" fill="{color}" opacity="0.65">🔽 jump to this unit\'s own Infra bubble system ↗</text>'
+    ) if link_href else (
+        f'<circle cx="{hx}" cy="{hy}" r="{st["hub_r"]}" fill="#0f0f1a" stroke="{color}" stroke-width="{st["hub_sw"]}" filter="url(#glow)"/>'
+        f'<text x="{hx}" y="{hy+st["emoji_dy"]}" text-anchor="middle" font-size="{st["emoji_fs"]}">{emoji}</text>'
+        f'<text x="{hx}" y="{hy+st["label_dy"]}" text-anchor="middle" font-size="9.5" fill="{color}" font-weight="700">{label}</text>'
+        f'<text x="{hx}" y="{hy+st["sub_dy"]}" text-anchor="middle" font-size="{st["sub_fs"]}" fill="{color}" opacity="0.85">{len(items)} {unit_noun}(s) · {total} real {count_noun}(s)</text>'
     )
+    if link_href:
+        nodes.append(f'<a href="{link_href}" class="drill-link"><g class="node">{hub}</g></a>')
+    else:
+        nodes.append(f'<g class="node">{hub}</g>')
     return edges, nodes
 
 

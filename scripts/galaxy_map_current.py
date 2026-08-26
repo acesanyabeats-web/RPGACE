@@ -54,6 +54,7 @@ from graphify_river_group import (  # noqa: E402
     RIVER_MODULES, RIVER_NAME, RIVER_COLOR, CORE_JS,
     parse_module_functions, compute_module_function_flow,
     compute_external_call_sites, compute_lastfm_call_sites,
+    compute_outbound_api_call_sites,
     FLOWS_IN, attribute_river_connection_function, LEVEL3_MODULES,
     render_evidence_bubble, dimension_index_html, DIMENSION_INDEX_CSS,
     INFRA_DRILLDOWN_CSS,
@@ -90,6 +91,12 @@ ALEX_COLOR = '#E25454'
 ORACLE_COLOR = '#9B59B6'
 COMPOSIO_COLOR = '#4CAF82'
 LASTFM_COLOR = '#D9534F'
+# G105 (Aug 26 2026) — Supabase/Jina AI colors reused verbatim from
+# UNIT_META (galaxy_map.py), the one real canonical source every other
+# consumer (the L0 map, the connectors page, the .idd-mig cards) already
+# reads — never a fresh color invented for a 3rd time (rule 8).
+SUPABASE_COLOR = '#2ABFB0'
+JINA_COLOR = '#4A90E2'
 BAND_LABELS = ['🚪 Entry & Early Logic', '⚙️ Core Logic', '🏁 Output & Terminal']
 BAND_THRESHOLD = 15
 
@@ -229,7 +236,8 @@ def _split_into_bands(funcs, depth):
 
 def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges, ui_sigs,
                   incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module,
-                  oracle_counts=None, composio_counts=None, lastfm_counts=None):
+                  oracle_counts=None, composio_counts=None, lastfm_counts=None,
+                  supabase_counts=None, jina_counts=None):
     """Real, per-band canvas builder (moved verbatim from galaxy_map_
     level3.py, G65 fold — see that file's own git history for the full
     real design rationale: rank-band split, evidence-gated Alex/Oracle/
@@ -245,7 +253,13 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     buckets = barycenter_order(buckets, intra_edges, rank_order)
     max_col = max((len(v) for v in buckets.values()), default=1)
     W = max(1400, 260 + (max_d - min_d) * 260)
-    ALEX_MARGIN = 420
+    # G105 (Aug 26 2026): margin widened 420->660 — Supabase (+360) and
+    # Jina AI (+450) bubbles were added below the pre-existing Oracle/
+    # Composio/Last.fm row (max +270); the old margin only cleared the
+    # 3 original bubbles, and the 2 new ones (plus the new clickable
+    # "jump to..." link text sub_dy+11 adds under each) would have sat
+    # inside the real function-node grid instead of above it.
+    ALEX_MARGIN = 660
     H = max(700, 90 * (max_col + 1)) + ALEX_MARGIN
     grid_cy = ALEX_MARGIN + (H - ALEX_MARGIN) / 2
     my_backdoors = [(f, tm, tf) for f, tm, tf in backdoors if f in band_funcs_set]
@@ -393,10 +407,18 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     # the river colour. Caught by the byte-identity diff against the
     # pre-refactor output, not by inspection; kept prefixed so the same
     # shadowing can't quietly return.
-    for bub_counts, bub_y, bub_color, bub_emoji, bub_label in (
-        (oracle_counts, alex_y_const + 90, ORACLE_COLOR, '🔮', 'Oracle'),
-        (composio_counts, alex_y_const + 180, COMPOSIO_COLOR, '🔗', 'Composio'),
-        (lastfm_counts, alex_y_const + 270, LASTFM_COLOR, '🎵', 'Last.fm'),
+    # G105 (Aug 26 2026) — Supabase + Jina AI added (Alex's own direct
+    # complaint: these 2 real units touching this exact module were
+    # missing from this diagram entirely, only ever shown in the
+    # separate static box below). Every bubble now also passes
+    # link_href — real click-through into that unit's own Infra bubble
+    # system, not inert decoration.
+    for bub_counts, bub_y, bub_color, bub_emoji, bub_label, bub_unit in (
+        (oracle_counts, alex_y_const + 90, ORACLE_COLOR, '🔮', 'Oracle', 'oracle'),
+        (composio_counts, alex_y_const + 180, COMPOSIO_COLOR, '🔗', 'Composio', 'composio'),
+        (lastfm_counts, alex_y_const + 270, LASTFM_COLOR, '🎵', 'Last.fm', 'lastfm'),
+        (supabase_counts, alex_y_const + 360, SUPABASE_COLOR, '🗄️', 'Supabase', 'supabase'),
+        (jina_counts, alex_y_const + 450, JINA_COLOR, '🕷️', 'Jina AI', 'jina'),
     ):
         bub_counts = bub_counts or {}
         band_items = [(f, bub_counts.get(f, 0)) for f in band_funcs
@@ -405,7 +427,8 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             continue
         b_edges, b_nodes = render_evidence_bubble(
             band_items, pos, (W / 2, bub_y), bub_color, bub_emoji, bub_label,
-            'function', 'call', _curved_edge, style='function')
+            'function', 'call', _curved_edge, style='function',
+            link_href=UNIT_BUBBLE_SYSTEM.get(bub_unit))
         edges_svg.extend(b_edges)
         nodes_svg.extend(b_nodes)
         edge_colors_used.add(bub_color)
@@ -481,6 +504,25 @@ def build_module_map_inner(module_name):
     composio_counts = {f: len(a) for f, a in composio_sites.items()}
     lastfm_sites = compute_lastfm_call_sites(module_name)
     lastfm_counts = {f: 1 for f in lastfm_sites}
+    # G105 (Aug 26 2026) — real fix for Alex's own direct complaint (a
+    # screenshot of visualOracle): this diagram drew Oracle/Composio/
+    # Last.fm as real evidence-gated bubbles but silently left Supabase
+    # and Jina AI off the exact same treatment, so both instead only
+    # ever showed up in a separate, disconnected static box
+    # (build_module_infra_inter_row) — the real bug he was pointing at.
+    # Both reuse already-computed per-function data (rule 8): Supabase
+    # via compute_supabase_table_touches() (same function the table view
+    # already calls), Jina AI via compute_outbound_api_call_sites()
+    # filtered to its own 2 real endpoint labels (the same filter
+    # _unit_module_evidence() uses at module grain, applied here at
+    # function grain instead).
+    supabase_touches = compute_supabase_table_touches(module_name)
+    supabase_counts = {f: len(ops) for f, ops in supabase_touches.items() if ops}
+    outbound_sites = compute_outbound_api_call_sites(module_name)
+    jina_counts = {f: n for f, n in (
+        (f, len([lbl for lbl in labels if lbl in ('/api/scout', '/api/bookworm-fetch')]))
+        for f, labels in outbound_sites.items()
+    ) if n > 0}
     if has_init and ui_sigs.get('init') and (ui_sigs['init']['output'] or ui_sigs['init']['input']):
         init_sig = ui_sigs['init']
         anchor = incoming_attr[1] if incoming_attr and incoming_attr[1] in ui_sigs else next(
@@ -504,7 +546,8 @@ def build_module_map_inner(module_name):
         band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
         w, h, svg_inner, legend_rows_b, edge_colors_b = _render_band(
             module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
-            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts, lastfm_counts)
+            backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts, lastfm_counts,
+            supabase_counts, jina_counts)
         if multi_band:
             active = ' active' if bi == 0 else ''
             band_tabs.append(
@@ -682,8 +725,25 @@ def build_module_infra_inter_row(mod):
     Inter (a genuine composition, e.g. beatLog: lastfm+oracle+supabase
     all really do land on the same module). Honestly empty for the 12
     of 45 modules no real evidence touches at all — no placeholder
-    row invented for those."""
-    units = sorted(MODULE_UNIT_TOUCHES.get(mod, ()))
+    row invented for those.
+
+    G105 (Aug 26 2026), real correction — Alex's own direct complaint,
+    a screenshot of visualOracle: this static box and the real MAP-view
+    evidence bubbles (Oracle/Composio/Last.fm, now also Supabase/Jina
+    AI) were both showing the SAME real relationship, disconnected from
+    each other — this box floating above the diagram, the bubbles
+    living inside it. Now that all 5 real module-grain units
+    (_BUBBLE_COVERED_UNITS, MODULE_UNIT_TOUCHES's own full real key set)
+    get a genuine positioned, clickable bubble directly in the diagram,
+    this box is filtered down to a real SAFETY NET only — a unit that
+    genuinely touches this module (MODULE_UNIT_TOUCHES) but isn't one
+    of the 5 the diagram already draws. Currently always empty (every
+    real unit IS one of the 5), by construction, not luck — kept rather
+    than deleted so a future 6th unit added to _unit_module_evidence()
+    without a matching diagram bubble doesn't silently vanish from both
+    places at once, the exact failure class this fix exists to close."""
+    _BUBBLE_COVERED_UNITS = {'oracle', 'composio', 'jina', 'lastfm', 'supabase'}
+    units = sorted(u for u in MODULE_UNIT_TOUCHES.get(mod, ()) if u not in _BUBBLE_COVERED_UNITS)
     if not units:
         return ''
     kind = 'infra' if len(units) == 1 else 'inter'
