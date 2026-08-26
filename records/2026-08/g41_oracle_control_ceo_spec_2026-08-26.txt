@@ -348,13 +348,100 @@ future session.
     Control's Phase 1 does.
 
 =========================================================================
-7. STATUS
+7. THE OVERLAY + VOICE-CONDENSE FLOW — real correction, same day, immediate
+   continuation. Alex's own direct words: "lets make oracle be able to
+   control anything in the ui, i can talk to it outside of oracle
+   dashboard while it is [surfing/moving] through the RPGACE app
+   executing tasks. make oracle as an overlay... it should input what i
+   say into a text field, then that text field gets condensed from my
+   mess into a precise text rephrase or plan rephrase that i can then
+   accept/deny... i want to be able to talk to oracle the same way i can
+   type to him." A follow-up /interrogation confirmed this IS "Oracle
+   Control" as originally meant — not a separate feature layered on top,
+   the real ENTRY POINT the whole §1-6 mechanism was always meant to have.
+=========================================================================
+
+7a. Real evidence found (rule 8 — this already has a proven precedent, not a
+    new UI pattern): `voiceInput._injectFloatingButton()` already ships a real,
+    persistent, fixed-position mic button (`position:fixed;z-index:999999`) on
+    EVERY page, body-level, built specifically because Alex was working
+    one-handed and needed to reach voice input without hunting for a per-page
+    button. The exact same "one shared fixed overlay, reachable from anywhere"
+    convention this ask needs already exists and already works — this is an
+    EXTENSION of it, not an invention.
+
+7b. Real, resolved scope (per the 2nd interrogation this pass):
+    - "Control anything in the UI" is the real, named DIRECTION `oracle_actions`
+      grows toward over time (Content Pipeline first, per §4b — Alex's own
+      confirmed answer: "start with Content Pipeline's own stages, expand
+      later"). This plan does NOT propose an open-ended "improvise any action"
+      system in Phase 1 — that stays the same real, deliberate limit §4d
+      already states, just now named as a real future direction instead of a
+      closed door.
+    - The overlay + voice-condense flow IS Oracle Control's real front door —
+      confirmed directly ("they're the same ask — I meant this from the
+      start"). §1-6's trailer-marker/`oracle_actions`/confirm-popup mechanism
+      is the real ACTION-EXECUTION engine underneath; this section is the real
+      UI/input layer that reaches it, usable from anywhere in the app, by
+      voice or by typing.
+
+7c. THE REAL, UNIFIED FLOW (Phase 1 scope — text path is simplest, ships
+    first; voice path reuses Fish Audio's real ASR from §6):
+    1. Alex reaches Oracle from ANY page via a real persistent overlay —
+       extends the existing floating mic button (7a) rather than a 2nd
+       competing floating element; tapping it opens a compact chat surface
+       (text input + reply area), reusing the SAME real `sendChat`/
+       `callOracle` pipeline the main Oracle dashboard chat already uses
+       (rule 8 — never a 2nd, parallel chat mechanism).
+    2. Text path: Alex types directly into the overlay's own input — no
+       different from typing on the dashboard, just reachable from anywhere.
+    3. Voice path (needs Fish Audio ASR from §6, or the existing free
+       `SpeechRecognition` fallback pre-activation): Alex speaks; the raw
+       transcript lands in the SAME text field, visibly, before anything is
+       sent — Alex sees exactly what was heard, not a black box.
+    4. Real, zero-extra-cost condense step (rule 11 — matching §3's own
+       cost discipline): rather than a SEPARATE Oracle API call just to
+       "clean up" the transcript, the reply-generating call itself is told
+       (via a real, small addition to Oracle's prompt, gated on
+       "this message came from voice input") to open its OWN reply by
+       restating the request back as one precise, clean sentence BEFORE
+       doing anything else — the exact same real call that would happen
+       anyway, not a second premium-model round trip.
+    5. Real reiteration confirm: the client shows that opening restatement
+       as its own real, distinct confirm step — Alex taps Accept ("yes,
+       that's what I meant — continue") or Deny (discard, try again/edit
+       manually) — BEFORE the rest of Oracle's reply (or any
+       `ORACLE_ACTION:` trailer) is acted on. A real, new, small piece of
+       client logic (not yet built) — parses the confirmed restatement out
+       of the reply the same way DIRECTOR_CHOSEN/ORACLE_ACTION trailers
+       already get parsed (rule 8, one shared trailer-scanning mechanism).
+    6. Only past THAT confirm does §1-6's own real action-confirm flow apply,
+       if the (now-confirmed) request matches a registered `oracle_actions`
+       row — two real, separate confirms for two real, separate questions
+       ("did I understand you right" vs. "should I actually do this"),
+       never collapsed into one.
+
+7d. Explicitly NOT built in Phase 1 (real, honest scope limit):
+    - The overlay's own real UI (exact size/position/open-close animation) is
+      genuine Phase-1 BUILD work, not finished by this planning pass — a
+      small, separate design pass at build time, not guessed here.
+    - No voice path ships live until Fish Audio's real ASR is actually
+      activated (§6e) — the overlay's TEXT path can ship and prove the
+      condense-confirm/action-confirm flow end-to-end first, using typed
+      input, before voice is layered on top of the exact same mechanism.
+
+=========================================================================
+8. STATUS
 =========================================================================
 G41, BOTH halves, move from BLUE → RED as of this pass: real, specified,
 Alex-confirmed plans, neither yet built.
-  - Oracle Control (§1-5): ready for /Engineer to execute Phase 1 (4b/4c) whenever
-    Alex says go — no remaining blocking forks, per §5.
-  - Fish Audio (§6): ready for /Engineer to execute Phase 1 (6d) whenever Alex says
-    go for the BUILD — the real API-key ACTIVATION stays a separate, later decision
-    entirely in Alex's own hands (6b Q1/Q5), independent of when the code itself
-    ships.
+  - Oracle Control (§1-5, unified with the overlay/voice-condense flow per
+    §7): ready for /Engineer to execute Phase 1 whenever Alex says go — text
+    path first (7c steps 1-2, 5-6, using typed input), voice path (7c steps
+    3-4) layered on once Fish Audio ASR is activated. No remaining blocking
+    forks — the overlay's own exact UI design is real build-time work, not a
+    planning gap (7d).
+  - Fish Audio (§6): ready for /Engineer to execute Phase 1 (6d) whenever Alex
+    says go for the BUILD — the real API-key ACTIVATION stays a separate,
+    later decision entirely in Alex's own hands (6b Q1/Q5), independent of
+    when the code itself ships.
