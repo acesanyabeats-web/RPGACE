@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🗺️✅ Aug 25 — G101 corrected twice more (real hierarchy, not 2 sibling categories) + a real stale "Research Lab" dashboard-card entry found and fixed</div>
+    <div class="card-body">
+      Direct continuation of G101 below — Alex caught the first build getting his own spec wrong, twice, in rapid direct correction (his own established pattern this session: fast iterate, not a stop-and-ask cycle).
+      <br><br>
+      <b>Correction 1</b>: "the main category is levels, then those level groups are split further within the level grouping, not separated like this" — the first build had Levels and Dimensions as 2 separate sibling top-level sections. Rebuilt so Dimensions nest INSIDE each relevant Level instead, per real `kind` — Infra-kind dimensions repeat under L1/L2/L3 (the exact same "rivers are Infra-only" rule G93 already locked this session), Inter-kind repeat under L2/L3 only (never L1, same rule), meta-kind (whole-system synthesis, Decision Matrix/Dimensions Matrix) sits under L0.
+      <br><br>
+      <b>Correction 2</b>: "not just dimensions - a hierarchy, also include rivers as another division for needed level" — Rivers are the OTHER real division of the system (the strict partition Dimensions' own definition text explicitly contrasts itself against), so they needed their own nested list too. Real evidence checked before wiring: <code>galaxy_map_river.html</code> (L1) itself has zero per-river anchors — one whole-system ring diagram, nothing to jump to internally — while <code>galaxy_map_module.html</code> (L2) genuinely has all 17 real <code>id="river-N"</code> sections. All 17 real rivers now nest under both L1 and L2, each linking to its own real L2 anchor.
+      <br><br>
+      <b>A real, separate bug caught in passing</b>: Alex pasted <code>galaxy_map_alex_path.html</code>'s own rendered "🧠 Research Lab, no gates" card and flagged it directly ("this shouldn't be there too"). Direct code read confirmed it: the Aug 23 2026 UI Consistency batch retired the Research Lab dashboard card in <code>rpgace_core.js</code> (<code>dashDeck._openResearch()</code> kept defined but genuinely unreferenced), but the Galaxy Map's own hand-curated <code>DASHBOARD_CARDS</code> mirror was never updated to match — a real, textbook cross-doc drift (rule 16), now logged as a real <code>achiever_archive</code> brown row. Fixed with real replacement evidence, not a silent deletion: Bookworm's own popup genuinely reaches River XVII content via 2 real jump buttons (Videoworm/Video Finder = <code>researchTabs</code>/<code>intelBatchList</code>), so <code>bookworm</code>'s own river list gained 17 alongside its existing 4. Content Pipeline's "Upload Workshop" jump button was checked too and found NOT to map to any River-XVII-tracked module (static markup, no owning module inject) — correctly left unchanged rather than guessed into the fix. Two hardcoded "12 real dashboard cards" prose mentions (one user-visible, one in the hub catalogue) fixed to derive from live <code>len(DASHBOARD_CARDS)</code> instead of a 2nd literal that could go stale the same way again.
+      <br><br>
+      <b>Independently verified after each round</b>: headless Chromium confirmed the final structure (L0 = 2 meta dimensions; L1 = 17 rivers + 5 infra dimensions; L2 = 17 rivers + 10 infra/inter dimensions; L3 = 10 infra/inter dimensions; zero console errors); "Research Lab" confirmed fully absent from <code>galaxy_map_alex_path.html</code>'s rendered output (was 1 match, now 0); river sidebar links resolve to real, existing anchors. All 19 pages regenerated, representative pages re-confirmed idempotent, full link-integrity + tag-balance sweep clean across all 19.
+    </div>
+  </div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🗺️ Aug 25 — G101: a real persistent left-nav sidebar on all 19 Galaxy Map pages, tying Levels and Dimensions into one hierarchy</div>
     <div class="card-body">
       Alex's own direct ask, a full verbatim spec: icons, kind badges, and one-line descriptions for all 12 real Dimension pages, plus a per-level annotation of what shows there — "infra and rivers in level 1, modules and inter and infra in level 2, inter infra and currents in level 3."

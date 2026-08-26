@@ -131,7 +131,7 @@ PAGES = [
     {'file': 'galaxy_map_dimensions.html', 'label': 'Dimensions Matrix', 'level': 'Dimension', 'kind': 'meta',
      'scope': '45 modules × 5 shipped dimensions', 'desc': 'G30 — real multi-home overlap analysis across every other dimension page shipped so far.'},
     {'file': 'galaxy_map_alex_path.html', 'label': "Alex's Decision Path", 'level': 'Dimension', 'kind': 'inter',
-     'scope': '12 real dashboard cards', 'desc': 'G37 — real Level-4 flow to target module(s), then the real Y/N fork Alex actually hits, if any.'},
+     'scope': '11 real dashboard cards', 'desc': 'G37 — real Level-4 flow to target module(s), then the real Y/N fork Alex actually hits, if any.'},
     {'file': 'galaxy_map_load.html', 'label': 'Load Dimension', 'level': 'Dimension', 'kind': 'infra',
      'scope': '27 boot tasks, 29 nav triggers, 5 click triggers', 'desc': 'G39 — 3 real, separately-tracked load-trigger categories: boot sequence, page-nav, on-demand click.'},
 ]

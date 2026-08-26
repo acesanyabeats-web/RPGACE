@@ -406,10 +406,26 @@ MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 # river is real (agendaReminder, a genuine QoL layer on the same page)
 # but is honestly flagged as partial, not the page's whole story.
 DASHBOARD_CARDS = [
-    {'key': 'research', 'label': '🧠 Research Lab', 'rivers': [17],  # G49 (Aug 18): moved 5->17, its own target modules moved with the real split
-     'via': "dashDeck._openResearch() -> researchTabs/intelBatchList etc"},
-    {'key': 'bookworm', 'label': '📖 Bookworm', 'rivers': [4],
-     'via': "dashDeck._openBookworm() -> bookworm module"},
+    # G102 (Aug 25 2026) — the real "🧠 Research Lab" card is GONE, not
+    # just stale data: Alex flagged its own galaxy_map_alex_path.html
+    # entry directly ("this shouldn't be there too"), and direct code
+    # read confirms dashDeck._openResearch() is real but genuinely
+    # unreferenced (rpgace_core.js's own comment: "kept defined but
+    # unreferenced... in case a future pass wants it back") — the Aug 23
+    # 2026 UI Consistency batch retired the card outright, per CLAUDE.md's
+    # own "Research Lab" entries. Removed here rather than left as stale
+    # DASHBOARD_CARDS data (rule 16 cross-doc drift) — River XVII's real
+    # modules did NOT lose their dashboard-reachable status, they moved
+    # under Bookworm's own card instead (see its real 'rivers' update
+    # below, evidenced by the real file-analyzer-panel/video-finder-panel
+    # jump buttons Bookworm's popup now carries — both are researchTabs/
+    # intelBatchList content, River XVII). Content Pipeline's own
+    # "Upload Workshop" jump button was checked too and found NOT to map
+    # to any real River-XVII-tracked module (video-workshop-panel is
+    # static markup with no owning module inject — confirmed by direct
+    # grep), so 'pipeline' below is correctly left unchanged.
+    {'key': 'bookworm', 'label': '📖 Bookworm', 'rivers': [4, 17],
+     'via': "dashDeck._openBookworm() -> bookworm module, + real jump buttons into researchTabs/intelBatchList (Videoworm/Video Finder, River XVII)"},
     {'key': 'taxonomy', 'label': '🌳 Taxonomy & Review', 'rivers': [8, 6],
      'via': "taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse",
      'partial': False},
@@ -4340,11 +4356,52 @@ def inject_level_rail(html, current_file):
 # available in this environment to visually confirm a pushed-content
 # layout doesn't collide with any one of their own existing max-width/
 # centered/fixed-canvas designs.
+# G101 real correction (Aug 25 2026, Alex's own direct fix on the first
+# build): "the main category is levels, then those level groups are
+# split further within the level grouping, not separated like this" —
+# Dimensions is NOT a 2nd sibling top-level category; each real
+# Dimension page nests as a child of whichever Level(s) its own `kind`
+# is genuinely relevant to. This is the literal, evidence-grounded
+# reading of his own per-level breakdown ("infra and rivers in level 1,
+# modules and inter and infra in level 2, inter infra and currents in
+# level 3") cross-checked against the already-locked G93/G94
+# architecture this same session built: Rivers are Infra-only (G93's
+# own confirmed rule — a River never gets Inter), Modules/Currents get
+# both Infra and Inter (G94). So Infra-kind dimensions repeat under
+# L1/L2/L3 (genuinely relevant at every one of those 3 granularities);
+# Inter-kind dimensions repeat under L2/L3 only (never L1, matching
+# G93's rule exactly). Meta-kind pages (whole-system synthesis) sit
+# under L0, the one level with no river/module/current grain of its
+# own to attach to.
 LEFT_NAV_LEVEL_ANNOTATION = {
     'galaxy_map.html': None,
-    'galaxy_map_river.html': 'Infra + Rivers',
+    'galaxy_map_river.html': 'Infra',
     'galaxy_map_module.html': 'Modules + Inter + Infra',
     'galaxy_map_current.html': 'Inter + Infra + Currents',
+}
+LEFT_NAV_LEVEL_KINDS = {
+    'galaxy_map.html': ('meta',),
+    'galaxy_map_river.html': ('infra',),
+    'galaxy_map_module.html': ('infra', 'inter'),
+    'galaxy_map_current.html': ('infra', 'inter'),
+}
+
+# G101, 3rd real correction, same day (Alex: "not just dimensions - a
+# hierarchy, also include rivers as another division for needed level")
+# — Rivers are the OTHER real division of the system (a strict one-
+# module-one-home partition, per Dimensions' own definition text
+# contrasting itself against exactly this), so they get their own
+# nested list too, not just Dimension pages. Real anchor evidence
+# checked before wiring, not assumed: galaxy_map_river.html (L1) itself
+# has NO per-river id="river-N" anchors — it is one whole-system ring
+# diagram with no deep-linkable sub-parts — while galaxy_map_module.html
+# (L2) genuinely has all 17 real id="river-N" sections. So every river
+# link here points at L2's own real anchor regardless of which level
+# it's nested under; L1 gets the list because L1 itself has nothing to
+# jump to internally, L2 gets it for same-page river-to-river jumping.
+LEFT_NAV_LEVEL_RIVERS = {
+    'galaxy_map_river.html': True,
+    'galaxy_map_module.html': True,
 }
 
 LEFT_NAV_CSS = '''
@@ -4368,6 +4425,16 @@ LEFT_NAV_CSS = '''
 .gside-dim .gside-desc{display:block;font-size:9px;color:#6a6a78;line-height:1.5;margin-top:1px}
 .gside-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9999;display:none}
 .gside-backdrop.open{display:block}
+/* G101 real correction — Levels is the one main category; each level's
+   own genuinely-relevant Dimension pages nest directly beneath it. */
+.gside-levelgroup{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.gside-levelgroup:last-child{border-bottom:none}
+.gside-nested{margin:2px 0 2px 14px;padding-left:8px;border-left:1px solid rgba(255,255,255,0.08)}
+.gside-subhead{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#55555f;margin:6px 0 2px 14px}
+.gside-river{display:block;text-decoration:none;padding:4px 9px;border-radius:6px;margin-bottom:1px;border-left:2px solid transparent;font-size:10.5px}
+.gside-river:hover{background:rgba(255,255,255,0.05)}
+.gside-river b{font-weight:400;color:#b8b8c4}
+.gside-rivers{max-height:180px;overflow-y:auto}
 '''
 
 LEFT_NAV_JS = '''
@@ -4386,40 +4453,80 @@ LEFT_NAV_JS = '''
 '''
 
 
+def _left_nav_dim_row(entry, current_file):
+    fname, icon, label, kind, desc = entry
+    cls = ' active' if fname == current_file else ''
+    kicon, klabel, kcolor = DIMENSION_KIND_META[kind]
+    return (
+        f'<a class="gside-dim{cls}" href="{fname}" style="border-left-color:{kcolor}" title="{klabel}">'
+        f'<b>{icon} {label}</b> <span class="gside-kind" style="color:{kcolor}">{kicon} {kind}</span>'
+        f'<span class="gside-desc">{desc}</span></a>'
+    )
+
+
 def left_nav_html(current_file):
-    """Renders the real left-nav sidebar — Levels (the strict L0-L3
-    containment chain, LEVEL_RAIL's own data, each annotated per Alex's
-    own literal per-level kind breakdown) + Dimensions (DIMENSION_PAGES'
-    own real 12 entries, same icon/kind/description every in-page
-    Dimension index already shows — never a second copy, rule 8)."""
-    level_rows = []
+    """Renders the real left-nav sidebar — ONE main category, Levels
+    (the strict L0-L3 containment chain, LEVEL_RAIL's own data), each
+    level split further to nest its own genuinely-relevant real
+    Dimension pages directly beneath it (LEFT_NAV_LEVEL_KINDS — see
+    that dict's own comment for the real G93/G94-grounded reasoning).
+    Dimensions is NOT a second sibling category — Alex's own direct
+    correction on the first build. Same real DIMENSION_PAGES/
+    DIMENSION_KIND_META data every in-page Dimension index already
+    uses — never a second copy (rule 8); a dimension whose kind is
+    relevant at 2-3 levels genuinely appears that many times, which is
+    the honest shape of "Infra is relevant at every granularity,
+    Inter only where Rivers' own Infra-only rule allows it" — not
+    duplication for its own sake."""
+    dims_by_kind = {}
+    for entry in DIMENSION_PAGES:
+        dims_by_kind.setdefault(entry[3], []).append(entry)
+
+    def _river_rows():
+        rows = []
+        for r in sorted(RIVER_NAME):
+            name = RIVER_NAME[r].split('—')[0].strip()
+            color = RIVER_COLOR.get(r, '#8a8a9a')
+            rows.append(
+                f'<a class="gside-river" href="galaxy_map_module.html#river-{r}" '
+                f'style="border-left-color:{color}"><b>🌊 {name}</b></a>'
+            )
+        return ''.join(rows)
+
+    level_blocks = []
     for fname, icon, label in LEVEL_RAIL:
         cls = ' active' if fname == current_file else ''
         annot = LEFT_NAV_LEVEL_ANNOTATION.get(fname)
         sub = f'<span>{annot}</span>' if annot else ''
-        level_rows.append(f'<a class="gside-level{cls}" href="{fname}"><b>{icon} {label}</b>{sub}</a>')
-
-    dim_rows = []
-    for fname, icon, label, kind, desc in DIMENSION_PAGES:
-        cls = ' active' if fname == current_file else ''
-        kicon, klabel, kcolor = DIMENSION_KIND_META[kind]
-        dim_rows.append(
-            f'<a class="gside-dim{cls}" href="{fname}" style="border-left-color:{kcolor}" title="{klabel}">'
-            f'<b>{icon} {label}</b> <span class="gside-kind" style="color:{kcolor}">{kicon} {kind}</span>'
-            f'<span class="gside-desc">{desc}</span></a>'
+        head = f'<a class="gside-level{cls}" href="{fname}"><b>{icon} {label}</b>{sub}</a>'
+        nested = ''
+        if LEFT_NAV_LEVEL_RIVERS.get(fname):
+            nested += (
+                '<div class="gside-subhead">🌊 Rivers</div>'
+                f'<div class="gside-nested gside-rivers">{_river_rows()}</div>'
+            )
+        dim_nested = ''.join(
+            _left_nav_dim_row(entry, current_file)
+            for kind in LEFT_NAV_LEVEL_KINDS.get(fname, ())
+            for entry in dims_by_kind.get(kind, ())
         )
+        if dim_nested:
+            nested += (
+                '<div class="gside-subhead">🌌 Dimensions</div>'
+                f'<div class="gside-nested">{dim_nested}</div>'
+            )
+        level_blocks.append(f'<div class="gside-levelgroup">{head}{nested}</div>')
 
     return (
         '<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button>'
         '<div class="gside-backdrop"></div>'
         '<nav class="gside-nav">'
-        '<h3>🌌 Levels</h3>' + ''.join(level_rows) +
-        '<h3>🌌 Dimensions</h3>'
+        '<h3>🌌 Levels</h3>'
         '<div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, '
         'seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, '
         'which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home '
-        'partition). Equal standing with Rivers, different shape.</div>' +
-        ''.join(dim_rows) +
+        'partition). Nested under whichever Level(s) it\'s genuinely relevant to, not a separate category.</div>'
+        + ''.join(level_blocks) +
         '</nav>'
     )
 

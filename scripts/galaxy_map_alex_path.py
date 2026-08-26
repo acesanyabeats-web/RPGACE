@@ -7,7 +7,7 @@ fork." Given the session's own token/time constraint (Alex is running
 low, heading to /Bedtime soon), this is a real SYNTHESIS of already-
 computed real data (rule 8 — same precedent as /perspective's river-
 level synthesis reports) rather than new detection work: for each of
-the 12 real dashboard cards, trace the real dashboard-card frontend
+the real dashboard cards, trace the real dashboard-card frontend
 flow to its real target module(s), then check whether that module owns
 one of the 10 real Decisions-page (G26) gates — if so, the real Y/N
 fork (trigger + logic) IS the decision point Alex actually hits walking
@@ -193,7 +193,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Alex's Decision Path (G37)</div>
   <h1>🧑 Alex's Real UI Navigation Path — Y/N At Every Real Fork</h1>
-  <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the 12 real dashboard cards, the real dashboard-card frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such. Every named module links to its own Current Series section; a card that navigates to a page instead of opening a module says so, and links its own river at <a href="galaxy_map_module.html">Level 2</a>, where the dashboard-card-flow role itself retired (G48).</p>
+  <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the {n_cards} real dashboard cards, the real dashboard-card frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such. Every named module links to its own Current Series section; a card that navigates to a page instead of opening a module says so, and links its own river at <a href="galaxy_map_module.html">Level 2</a>, where the dashboard-card-flow role itself retired (G48).</p>
 </div>
 <div class="wrap">{cards}</div>
 {dim_index}
@@ -211,7 +211,7 @@ TEMPLATE = """<!DOCTYPE html>
 def main():
     flow = compute_dashboard_card_flow()
     cards_html = ''.join(build_card_block(c, flow) for c in DASHBOARD_CARDS)
-    html = TEMPLATE.format(cards=cards_html,
+    html = TEMPLATE.format(cards=cards_html, n_cards=len(DASHBOARD_CARDS),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
