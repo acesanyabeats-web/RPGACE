@@ -59,6 +59,7 @@ from graphify_river_group import (  # noqa: E402
     render_evidence_bubble, render_bubble_row, dimension_index_html, DIMENSION_INDEX_CSS,
     INFRA_DRILLDOWN_CSS,
     compute_load_signal, compute_decision_targets, compute_logic_attribution_targets,
+    render_fc_bar,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_decision_matrix import LOGIC_POINTS as DECISION_POINTS  # noqa: E402
@@ -468,6 +469,16 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     )
     edge_colors_used.add(ALEX_COLOR)
 
+    # G108 (Aug 26 2026) — real evidence types actually present on THIS
+    # band's own canvas (Tier 1 + Tier 2 both feed into it below); feeds
+    # the Full/Choice picker at the call site (render_fc_bar) — a
+    # picker button for a type with zero real bubbles here is never
+    # built (evidence-gated, same discipline as the bubbles themselves).
+    # Alex is deliberately excluded — he's the fixed anchor every other
+    # bubble connects FROM, always visible in both modes, never a
+    # pickable/hideable option himself.
+    band_ev_present = []
+
     # G74 (Aug 25 2026) — these three bubbles used to be three
     # near-verbatim hand-written copies of the same ~20-line shape.
     # Real, checked generalization into the one shared
@@ -506,9 +517,10 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             band_items, pos, (W / 2, bub_y), bub_color, bub_emoji, bub_label,
             'function', 'call', _curved_edge, style='function',
             link_href=UNIT_BUBBLE_SYSTEM.get(bub_unit))
-        edges_svg.extend(b_edges)
-        nodes_svg.extend(b_nodes)
+        edges_svg.append(f'<g class="ev-group" data-unit="{bub_unit}">{"".join(b_edges)}</g>')
+        nodes_svg.append(f'<g class="ev-group" data-unit="{bub_unit}">{"".join(b_nodes)}</g>')
         edge_colors_used.add(bub_color)
+        band_ev_present.append((bub_unit, bub_emoji, bub_label, bub_color))
 
     backdoor_legend = []
     if my_backdoors:
@@ -549,15 +561,23 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
 
     # G87/G88 — Tier 2 (Decision/Load/Logic): up to 3 real, SEPARATE
     # render_bubble_row() panels, one per type, each showing only this
-    # band's own real functions with that specific evidence. Collapsed
-    # by default by the CALLER (a native <details>), never inline on the
-    # main canvas — see this function's own docstring for the real
-    # crowding reasoning.
+    # band's own real functions with that specific evidence.
+    #
+    # G108 (Aug 26 2026) — real correction, Alex's own direct ask ("full
+    # open at default when navigated to"): these used to be collapsed
+    # behind a native <details> (real crowding-avoidance reasoning that
+    # predated the Full/Choice system). Now folded into the SAME
+    # `.ev-group`/picker mechanism Tier 1 just gained above — Full mode
+    # shows every real evidence type (Tier 1 AND Tier 2) at once, which
+    # is now the honest, Alex-requested meaning of "full"; Choice mode's
+    # picker includes these 3 alongside Tier 1's 5, one flat list, one
+    # mechanism, not two (rule 8 — the old <details> collapse and the
+    # new picker were both solving "too much at once," no need for both).
     tier2_panels = []
-    for t_targets, t_color, t_emoji, t_label, t_link_href in (
-        (decision_targets_mod, DECISION_COLOR, '🗑️', 'Decision', 'galaxy_map_decision_matrix.html'),
-        (load_signal_mod, LOAD_COLOR, '⏳', 'Load', 'galaxy_map_load.html'),
-        (logic_targets_mod, LOGIC_COLOR, '🧠', 'Logic', 'galaxy_map_logic_dimension.html'),
+    for t_targets, t_color, t_emoji, t_label, t_link_href, t_unit in (
+        (decision_targets_mod, DECISION_COLOR, '🗑️', 'Decision', 'galaxy_map_decision_matrix.html', 'decision'),
+        (load_signal_mod, LOAD_COLOR, '⏳', 'Load', 'galaxy_map_load.html', 'load'),
+        (logic_targets_mod, LOGIC_COLOR, '🧠', 'Logic', 'galaxy_map_logic_dimension.html', 'logic'),
     ):
         t_targets = t_targets or {}
         leaves = [
@@ -570,20 +590,15 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         hub = dict(icon=t_emoji, label=t_label, color=t_color)
         panel_svg = render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=22, width=900)
         tier2_panels.append(
-            f'<div class="tier2-panel"><div class="tier2-head" style="color:{t_color}">'
+            f'<div class="tier2-panel ev-group" data-unit="{t_unit}"><div class="tier2-head" style="color:{t_color}">'
             f'{t_emoji} {t_label} — {len(leaves)} real function(s) in this band '
             f'<a href="{t_link_href}" class="drill-link" style="font-size:9px;margin-left:8px">🔽 open {t_label} Dimension ↗</a>'
             f'</div>{panel_svg}</div>'
         )
-    tier2_html = ''
-    if tier2_panels:
-        tier2_html = (
-            '<details class="tier2-details"><summary>📎 '
-            + f'{len(tier2_panels)} more signal type(s) available (Decision/Load/Logic) — click to expand'
-            + '</summary><div class="tier2-body">' + ''.join(tier2_panels) + '</div></details>'
-        )
+        band_ev_present.append((t_unit, t_emoji, t_label, t_color))
+    tier2_html = ('<div class="tier2-body">' + ''.join(tier2_panels) + '</div>') if tier2_panels else ''
 
-    return W, H, ''.join(edges_svg) + ''.join(nodes_svg), legend_rows, edge_colors_used, tier2_html
+    return W, H, ''.join(edges_svg) + ''.join(nodes_svg), legend_rows, edge_colors_used, tier2_html, band_ev_present
 
 
 def build_module_map_inner(module_name):
@@ -664,7 +679,7 @@ def build_module_map_inner(module_name):
     for bi, band in enumerate(bands):
         band_funcs = band['funcs']
         band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
-        w, h, svg_inner, legend_rows_b, edge_colors_b, tier2_html = _render_band(
+        w, h, svg_inner, legend_rows_b, edge_colors_b, tier2_html, band_ev_present = _render_band(
             module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
             backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts, lastfm_counts,
             supabase_counts, jina_counts, decision_targets_mod, load_signal_mod, logic_targets_mod)
@@ -674,14 +689,22 @@ def build_module_map_inner(module_name):
                 f'<div class="band-tab{active}" data-band-target="{band_id}">'
                 f'{band["label"]} <span class="meta">({len(band_funcs)})</span></div>')
         display = '' if bi == 0 else 'display:none'
+        # G108 (Aug 26 2026) — Alex's own direct ask: "level 2 and 3 [get
+        # a] choice map view... full open at default." Full (default) =
+        # every real evidence bubble (Tier 1 + Tier 2) visible at once,
+        # exactly today's rendering. Choice = a picker naming only the
+        # real evidence types actually present on THIS band's own canvas.
+        fc_bar_html = render_fc_bar(band_ev_present) if band_ev_present else ''
         band_canvases.append(
             f'<div class="band-canvas" id="{band_id}" style="{display}">'
+            f'<div class="fc-scope mode-full">{fc_bar_html}'
             f'<div class="canvas-wrap"><svg viewBox="0 0 {w} {h}" width="100%" style="max-width:{w}px;display:block;margin:0 auto">'
             f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
             f'<filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
             f'{_build_markers(edge_colors_b)}</defs>{svg_inner}</svg></div>'
-            f'<div class="legend"><h3>Real function-call edges{" — " + band["label"] if band["label"] else ""}</h3>{legend_rows_b}</div>'
             f'{tier2_html}'
+            f'</div>'
+            f'<div class="legend"><h3>Real function-call edges{" — " + band["label"] if band["label"] else ""}</h3>{legend_rows_b}</div>'
             f'</div>'
         )
 
@@ -1043,15 +1066,14 @@ TEMPLATE = """<!DOCTYPE html>
   .legend h3{{font-family:Georgia,serif;font-size:14px;color:var(--gold);margin:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}}
   .legend-row{{font-size:11.5px;color:var(--dim);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}}
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
-  /* G87/G88 (Aug 26 2026) — Tier 2 (Decision/Load/Logic): collapsed by
-     default, same real reasoning as .cur-zoom's own toggle above,
-     reused rather than a 2nd bespoke details style (rule 8). */
-  .tier2-details{{max-width:900px;margin:8px auto 0;padding:0 24px}}
-  .tier2-details summary{{cursor:pointer;font-size:11px;color:var(--dim);list-style:none;padding:8px 0;border-top:1px dashed rgba(255,255,255,0.1)}}
-  .tier2-details summary::-webkit-details-marker{{display:none}}
-  .tier2-details summary:hover{{color:var(--gold)}}
-  .tier2-details[open] summary{{color:var(--gold)}}
-  .tier2-body{{display:flex;flex-direction:column;gap:14px;padding:6px 0 10px}}
+  /* G87/G88 (Aug 26 2026) — Tier 2 (Decision/Load/Logic) panels.
+     G108 (same day) — the old collapsed-by-default <details> wrapper
+     is gone (superseded by the Full/Choice `.ev-group` picker above
+     each band-canvas, which now governs Tier 1 AND Tier 2 together as
+     one mechanism, not two — rule 8); this is now plain always-there
+     markup, gated only by that shared mechanism's CSS. */
+  .tier2-body{{max-width:900px;margin:8px auto 0;padding:0 24px;display:flex;flex-direction:column;gap:14px}}
+  .tier2-panel{{padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1)}}
   .tier2-head{{font-size:10.5px;font-weight:700;margin-bottom:2px}}
 </style>
 </head>

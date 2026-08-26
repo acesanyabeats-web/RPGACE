@@ -96,6 +96,7 @@ from graphify_river_group import (  # noqa: E402
     attribute_river_connection_function, compute_module_oracle_call_count,
     rivers_needing_meanders, compute_module_supabase_touch_count,
     render_evidence_bubble, RIVER_RETIRED, river_retirement_note_html,
+    render_fc_bar,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 # Real Aug 21 2026 fold (Alex's own direct ask: "2.5 is a table view of
@@ -174,6 +175,15 @@ def build_river_section(rnum):
         skills_here = [(s, note) for s, (r, note) in SKILL_SECONDARY_RIVER.items() if r == rnum]
     mods = RIVER_MODULES.get(rnum, [])
     cards = CARDS_BY_RIVER.get(rnum, [])
+    # G108 (Aug 26 2026) — real evidence types actually present on THIS
+    # river's own canvas (Oracle/Supabase bubbles, appended below only
+    # when `mods` is truthy). Initialized here, unconditionally, since
+    # canvas_html's own Full/Choice picker is built later regardless of
+    # which branch (mods vs. no-mods) ran — a real UnboundLocalError
+    # caught by the standing regenerate-and-check discipline, not
+    # shipped blind: the first draft only initialized this inside the
+    # `if mods:` block below, which a module-less river never enters.
+    river_ev_present = []
     # Real canvas sizing: rivers with modules use the new WIDE left-to-
     # right flow layout; River XIV's own real 25-skill radial catalog
     # needs real extra room; every other module-less river stays the
@@ -343,9 +353,15 @@ def build_river_section(rnum):
                 oracle_mods, mod_pos, (ORACLE_X, ORACLE_Y), ORACLE_COLOR,
                 '🔮', 'Oracle', 'module', 'call', _curved_edge, style='module',
                 link_href=UNIT_BUBBLE_SYSTEM.get('oracle'))
-            edges_svg.extend(b_edges)
+            # G108 (Aug 26 2026) — wrapped in a real `.ev-group` so the
+            # new Full/Choice picker (river-level fc-scope below) can
+            # show/hide this specific evidence type independently of
+            # Supabase's own group. Full mode (CSS default) shows both
+            # unconditionally, exactly as before this change.
+            edges_svg.append(f'<g class="ev-group" data-unit="oracle">{"".join(b_edges)}</g>')
             edge_colors_used.add(ORACLE_COLOR)
-            nodes_svg.extend(b_nodes)
+            nodes_svg.append(f'<g class="ev-group" data-unit="oracle">{"".join(b_nodes)}</g>')
+            river_ev_present.append(('oracle', '🔮', 'Oracle', ORACLE_COLOR))
 
         # Real, evidence-driven "Supabase" injection-tool bubble (G48,
         # Aug 18 2026 — Part 10's "Skills and Supabase should always be
@@ -368,9 +384,10 @@ def build_river_section(rnum):
                 (SB_X, SB_Y), SUPABASE_COLOR, '💉', 'Supabase',
                 'module', 'injection', _curved_edge, style='module',
                 link_href=UNIT_BUBBLE_SYSTEM.get('supabase'))
-            edges_svg.extend(b_edges)
+            edges_svg.append(f'<g class="ev-group" data-unit="supabase">{"".join(b_edges)}</g>')
             edge_colors_used.add(SUPABASE_COLOR)
-            nodes_svg.extend(b_nodes)
+            nodes_svg.append(f'<g class="ev-group" data-unit="supabase">{"".join(b_nodes)}</g>')
+            river_ev_present.append(('supabase', '💉', 'Supabase', SUPABASE_COLOR))
 
         # Real z-order + spacing fix (Alex's own direct ask): "the
         # rivers connecting to river at beginning should be behind the
@@ -830,11 +847,23 @@ def build_river_section(rnum):
             f'</div>'
         )
     else:
+        # G108 (Aug 26 2026) — Alex's own direct ask: "level 2 and 3 [get
+        # a] choice map view... full open at default." Full (default) =
+        # today's exact rendering, unchanged. Choice = a picker naming
+        # only the real evidence types actually present on THIS river's
+        # own canvas (never a dead button for a type with zero bubbles
+        # here).
+        fc_bar_html = (
+            render_fc_bar([(key, icon, label, color) for key, icon, label, color in river_ev_present])
+            if river_ev_present else ''
+        )
         canvas_html = (
+            f'<div class="fc-scope mode-full">{fc_bar_html}'
             f'<div class="canvas-wrap"><svg viewBox="0 0 {W} {H}" width="100%" style="max-width:{W}px;display:block;margin:0 auto">'
             f'<defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
             f'<feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>'
             f'</filter>{_build_markers(edge_colors_used)}</defs>{"".join(edges_svg)}{"".join(nodes_svg)}</svg></div>'
+            f'</div>'
         )
     map_inner = (
         f'{legend}'

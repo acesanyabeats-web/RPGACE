@@ -50,6 +50,33 @@
 .dim-card .dim-kind{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.9}
 
 
+.fc-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.fc-btn{padding:5px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:#8a8a9a;border:1px solid rgba(255,255,255,0.12);user-select:none}
+.fc-btn:hover{background:rgba(255,255,255,0.09)}
+.fc-btn.active{background:#C9A84C;color:#1a1608;border-color:#C9A84C}
+.fc-pick{display:none;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.fc-pick-btn{padding:4px 11px;border-radius:10px;font-size:9.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid var(--c,#8a8a9a);color:var(--c,#8a8a9a);user-select:none}
+.fc-pick-btn:hover{background:color-mix(in srgb, var(--c,#8a8a9a) 14%, transparent)}
+.fc-pick-btn.on{background:var(--c,#8a8a9a);color:#0a0a0f}
+.fc-pick-hint{font-size:10px;color:#6a6a78;padding:2px 0 8px;width:100%}
+/* (a) Infra-drilldown pages: Choice is the existing pane click-through
+   (zero change); Full force-opens every real pane at once. */
+.fc-scope.mode-full .idd-pane{display:block !important}
+.fc-scope.mode-full .idd-hint{display:none}
+/* (b) Level 2/3 evidence-bubble picker: Full shows every real
+   `.ev-group` at once (today's existing behaviour, unchanged); Choice
+   shows only the one currently picked. */
+.fc-scope.mode-choice .fc-pick{display:flex}
+.fc-scope.mode-choice .ev-group{display:none}
+.fc-scope.mode-choice .ev-group.picked{display:inline}
+/* An .ev-group wrapping a plain HTML block (Level 3's Tier 2 panels)
+   needs block, not inline, or its own padding/border render squeezed
+   to content width — a real HTML div and an SVG <g> both match
+   `.ev-group.picked` above, so this more-specific override (2 classes
+   + a tag qualifier beats 2 classes alone) fixes the div case only,
+   leaving the SVG <g> case governed by the rule above unchanged. */
+.fc-scope.mode-choice div.ev-group.picked{display:block}
+
 .gside-toggle{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:10001;background:#C9A84C;color:#1a1a1f;border:none;border-radius:0 8px 8px 0;padding:16px 6px;font-size:13px;cursor:pointer;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;font-weight:700;box-shadow:2px 0 10px rgba(0,0,0,0.4)}
 .gside-toggle:hover{background:#ddbb5c}
 .gside-nav{position:fixed;top:0;left:-300px;width:280px;height:100vh;overflow-y:auto;background:#0a0a0f;border-right:1px solid rgba(255,255,255,0.12);z-index:10000;transition:left .2s ease;padding:18px 16px 40px;box-shadow:4px 0 28px rgba(0,0,0,0.55)}
@@ -296,6 +323,32 @@
 })();
 </script>
 <script>
+(function() {
+  // Event delegation on document, not a per-instance script tag —
+  // many real .fc-scope regions can share one page (every band-canvas
+  // on Current, every connector tab on Connectors), and this handles
+  // all of them with zero per-instance wiring.
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.fc-btn');
+    if (btn) {
+      var scope = btn.closest('.fc-scope');
+      if (!scope) return;
+      scope.classList.remove('mode-full', 'mode-choice');
+      scope.classList.add('mode-' + btn.dataset.mode);
+      scope.querySelectorAll('.fc-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
+      return;
+    }
+    var pick = e.target.closest('.fc-pick-btn');
+    if (pick) {
+      var scope2 = pick.closest('.fc-scope');
+      if (!scope2) return;
+      var key = pick.dataset.key;
+      scope2.querySelectorAll('.fc-pick-btn').forEach(function(x) { x.classList.toggle('on', x === pick); });
+      scope2.querySelectorAll('.ev-group').forEach(function(g) { g.classList.toggle('picked', g.dataset.unit === key); });
+    }
+  });
+})();
+</script><script>
 (function() {
   var toggle = document.querySelector('.gside-toggle');
   var nav = document.querySelector('.gside-nav');

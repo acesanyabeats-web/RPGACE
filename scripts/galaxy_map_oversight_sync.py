@@ -51,6 +51,7 @@ from graphify_river_group import (  # noqa: E402
     build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
     INFRA_DRILLDOWN_CSS, compute_all_supabase_table_touches,
     compute_oversight_doc_supabase_reads, LEVEL3_MODULES,
+    RIVER_MODULES, RIVER_NAME,
 )
 
 OUT = Path('graphify-out/galaxy_map_oversight_sync.html')
@@ -231,6 +232,19 @@ def build_ritual_section(r):
 # re-parsed). This answers a real, different question than the full
 # Supabase page does: "which live code genuinely shares infrastructure
 # with an oversight doc," not "every table, full stop."
+_river_of_ovs = {}
+for _r, _mods in RIVER_MODULES.items():
+    for _m in _mods:
+        _river_of_ovs[_m] = _r
+
+
+def _ovs_river_chip(rnum):
+    if rnum is None:
+        return '<span class="seqnum">cross-cutting, no river</span>'
+    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    return f'<a href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
+
+
 def build_shared_infra_section():
     # Real, per-{doc, table} rows — the exact same source
     # compute_oversight_docs_supabase_infra() uses for the L0 map's own
@@ -251,7 +265,7 @@ def build_shared_infra_section():
     all_touches = compute_all_supabase_table_touches()
     evidence = {tbl: all_touches[tbl] for tbl in oversight_tables if tbl in all_touches}
     drill, orphans = build_infra_drilldown(evidence)
-    inner = render_infra_drilldown(
+    map_view = render_infra_drilldown(
         drill, orphans, unit_icon='📚', unit_label='Oversight Docs',
         leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
         resource_emoji='🗄️',
@@ -262,6 +276,40 @@ def build_shared_infra_section():
         f'rpgace_core.js touch at all — the oversight doc is the only real client-side reader/writer: '
         + ', '.join(f'<code>{esc(t)}</code>' for t in no_code) + '.</p>'
         if no_code else '')
+
+    # G108 (Aug 26 2026) — Alex's own direct ask: "all infra inter
+    # should have map view with full/choice... and the table toggle
+    # able too." A real Table view, matching Supabase/Oracle/
+    # Orchestrator CC's own per-table row shape — Table is the default
+    # landing view (R22 precedent), Map is the drill-down above.
+    table_rows = []
+    for tbl in oversight_tables:
+        touches = evidence.get(tbl, [])
+        mods = sorted({m for m, _f, _d in touches})
+        seen_r = set()
+        river_chips = []
+        for m in mods:
+            r = _river_of_ovs.get(m)
+            if r not in seen_r:
+                seen_r.add(r)
+                river_chips.append(_ovs_river_chip(r))
+        mod_links = ''.join(
+            f'<a href="galaxy_map_current.html#mod-{m}"><code>🔽 {esc(m)}</code></a>'
+            if m in LEVEL3_MODULES else f'<code class="seqnum">{esc(m)}</code>'
+            for m in mods
+        ) if mods else '<span class="seqnum">no rpgace_core.js module touches this table</span>'
+        detail_rows = ''.join(
+            f'<div class="catnote" style="margin:2px 0">{esc(m)}.{esc(f)}() — <code>{esc(d)}</code></div>'
+            for m, f, d in sorted(touches)
+        )
+        table_rows.append(f'''<div class="table-section" id="tbl-{tbl}">
+  <div class="thead"><h2>🗄️ {tbl}</h2><span class="tcount">{len(touches)} real function touch(es)</span></div>
+  <div class="rivers">{''.join(river_chips)}</div>
+  <div class="mods">{mod_links}</div>
+  {f'<details><summary class="catnote" style="cursor:pointer">Every real touch (module.function → detail)</summary>{detail_rows}</details>' if touches else ''}
+</div>''')
+    table_view = f'<div class="tables">{"".join(table_rows)}</div>'
+
     return (f'<section class="gsection" id="cat-sharedinfra" style="display:none">'
             f'<div class="ghead"><h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2></div>'
             f'<p class="catnote">Every real table an oversight doc genuinely fetches live (same source as the L0 map\'s '
@@ -269,7 +317,14 @@ def build_shared_infra_section():
             f'touches that SAME table — real, live-code infrastructure sharing, not the doc-to-doc sequencing the '
             f'other tabs on this page cover.</p>'
             f'<p class="catnote"><b>Which doc touches which table</b> (the real per-{{doc,table}} facts the L0 map\'s '
-            f'own inline Infra list used to be the only place to see):</p>{doctable}{no_code_note}{inner}</section>')
+            f'own inline Infra list used to be the only place to see):</p>{doctable}{no_code_note}'
+            f'<div class="toggle-row">'
+            f'<div class="toggle-btn active" data-view="ovstable">📊 Table view</div>'
+            f'<div class="toggle-btn" data-view="ovsmap">🌌 Map view</div>'
+            f'</div>'
+            f'<div class="view active" id="view-ovstable">{table_view}</div>'
+            f'<div class="view" id="view-ovsmap">{map_view}</div>'
+            f'</section>')
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -311,6 +366,16 @@ TEMPLATE = """<!DOCTYPE html>
   .dim{{color:#6a6a78}}
   a{{color:var(--brown)}}
   .note{{max-width:1200px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+  .toggle-row{{display:flex;gap:8px;margin:6px 0 14px}}
+  .toggle-btn{{padding:6px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--brown);color:#1a1410;border-color:var(--brown)}}
+  .view{{display:none}} .view.active{{display:block}}
+  .tables{{display:flex;flex-direction:column;gap:12px}}
+  .table-section{{background:rgba(255,255,255,0.03);border:1px solid rgba(168,115,74,0.2);border-radius:12px;padding:14px 16px}}
+  .table-section .thead{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}}
+  .table-section h2{{font-family:Georgia,serif;font-size:14px;color:#fff}}
+  .table-section .tcount{{font-size:9.5px;color:var(--dim);margin-left:auto}}
+  .table-section .rivers,.table-section .mods{{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}}
 {infra_dd_css}
 {dim_css}
 </style>
@@ -351,6 +416,19 @@ TEMPLATE = """<!DOCTYPE html>
   }});
   var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
   show(id0);
+}})();
+(function() {{
+  // Real G108 toggle — same exact map/table mechanic Supabase/Oracle/
+  // Orchestrator CC already use (rule 8), scoped to this one section's
+  // own toggle-row so it never collides with the outer tab switcher.
+  var toggles = document.querySelectorAll('#cat-sharedinfra .toggle-btn');
+  var views = document.querySelectorAll('#cat-sharedinfra .view');
+  toggles.forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+    }});
+  }});
 }})();
 </script>
 </body>

@@ -13,18 +13,36 @@ Level 0's 4 galaxies (which stay exactly as they are — a full Level-0
 skeleton replacement is real, separate, larger work not attempted this
 pass given the session's own token/time constraint).
 
-Real, honest scope: this is the real cross-dimension ANALYSIS view
-Alex asked for — for each of the 44 real RIVER_MODULES-tracked modules,
-which of the 5 real, already-shipped dimensions does it genuinely touch
-(Externals G27, UI/Alex-Accessibility G38, Load G39, Decision/Human-
-Gate G26, Orchestrator<->OpenMontage G29) — sourced from each
-dimension's own already-computed real detection data, never re-derived
-(rule 8). A module with 3+ tags is a real, load-bearing hub the map
-should treat as more central than a 0-tag module, however many rivers
-it's nominally grouped under.
+**G108 continuation (Aug 26 2026) — real, structural rework, Alex's own
+direct ask.** His own words, verbatim: "I also think dimension matrix
+bubble map should be reworked and the 2 tables are actually 2 different
+levels of the same thing. and the l0 objects should be there, I don't
+want the vertical row currently there (retire that categorization)."
+Confirmed via a follow-up AskUserQuestion (he pasted the exact River x
+Dimension table's own header row back as his answer): "the vertical
+row" = the OLD flat 3-button toggle ("River table" / "River bubbles" /
+"Module table") that treated River-grain and Module-grain as 3
+unrelated flat options rather than what they actually are — 2 real
+LEVELS of the same recurring L0->L1->L2 containment chain this whole
+Galaxy Map already uses everywhere else.
+
+Real fix: retired the flat 3-button toggle outright. Replaced with 3
+real LEVEL TABS (🌌 L0 units / 🏛️ L1 rivers / 🌊 L2 modules), matching
+this project's own already-established level vocabulary and iconography
+(LEVEL_RAIL in graphify_river_group.py) rather than inventing new
+labels. Each level tab shows that grain's own Table (default, per R22)
++ Map sub-toggle — the SAME real pattern every other Infra/Inter page
+in this pipeline already uses, now applied consistently across all 3
+grains instead of 2 tables + 1 orphaned bubble view. L0 is a real new
+addition: `compute_l0_dim_tags()` reuses `build_facets()`'s own
+already-computed real per-unit facet data (rule 8, never a new
+detector) — a unit "touches" a dimension when at least one of its real
+facets links to that dimension's own registered page, the exact same
+real evidence every Infra/Inter page already shows for that unit.
 """
 from pathlib import Path
 import sys
+import math
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (
@@ -39,6 +57,7 @@ from graphify_river_group import (  # noqa: E402
     dimension_index_html, DIMENSION_INDEX_CSS, DIMENSION_PAGES,
 )
 from galaxy_map_decisions import DECISION_POINTS
+from galaxy_map import build_facets, UNIT_ORDER, UNIT_META  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_dimensions.html')
 
@@ -118,13 +137,27 @@ def _dim_header(d):
     return f'<th>{inner}</th>'
 
 
+def _dim_headers_row():
+    return ''.join(_dim_header(d) for d in DIMENSIONS)
+
+
 def _dim_label(d):
-    """The same dimension name in the bubble view — same gate, so the
+    """The same dimension name in a bubble view — same gate, so the
     bubble system can never reach further OR less far than the table
     it follows (R22)."""
     page = _dim_page(d)
     inner = esc(d['label'])
     return f'<a href="{page}">{inner}</a>' if page else inner
+
+
+def _dim_cells(row):
+    """Shared cell-rendering for one X x Dimension row — every level's
+    own table calls this (rule 8), only the LEADING columns differ per
+    grain (unit name vs. river name+count vs. module name+river)."""
+    return ''.join(
+        f'<td class="dcell{" on" if row.get(d["id"]) else ""}">{d["icon"] if row.get(d["id"]) else ""}</td>'
+        for d in DIMENSIONS
+    )
 
 
 def _mod_link(mod):
@@ -216,46 +249,46 @@ def compute_matrix():
     return tags
 
 
+# G108 (Aug 26 2026) — real L0-unit x Dimension membership, Alex's own
+# direct ask ("the l0 objects should be there"). Reuses build_facets()'s
+# own already-computed real per-unit facet data (rule 8) — never a new
+# detector: a unit "touches" a dimension when at least one of its real
+# facets links to that dimension's own registered page (stripped of any
+# `#fragment` — e.g. `galaxy_map_supabase.html#tbl-X` still counts as a
+# real Supabase touch). This is the exact same real evidence every
+# Infra/Inter page already shows for that unit, just re-asked as a
+# yes/no per dimension rather than left as a raw facet list.
+def compute_l0_dim_tags():
+    facets = build_facets()
+    tags = {}
+    for uid in UNIT_ORDER:
+        linked_pages = {f['link'].split('#')[0] for f in facets.get(uid, []) if f.get('link')}
+        row = {d['id']: (_dim_page(d) in linked_pages) if _dim_page(d) else False for d in DIMENSIONS}
+        tags[uid] = row
+    return tags
+
+
 def build_rows(tags):
     rows = []
     for m in sorted(tags, key=lambda x: -sum(tags[x].values())):
         row = tags[m]
         n = sum(row.values())
         r = _river_of(m)
-        cells = ''.join(
-            f'<td class="dcell{" on" if row[d["id"]] else ""}">{d["icon"] if row[d["id"]] else ""}</td>'
-            for d in DIMENSIONS
-        )
         rows.append(
             f'<tr class="{"hub" if n >= 3 else ""}"><td class="modname">'
             f'<a href="galaxy_map_current.html#mod-{esc(m)}">{esc(m)}</a></td>'
             f'{_river_cell(r)}'
-            f'{cells}<td class="tagcount">{n}</td></tr>'
+            f'{_dim_cells(row)}<td class="tagcount">{n}</td></tr>'
         )
     return ''.join(rows)
 
 
 def build_river_matrix(tags):
-    """G74 (Aug 25 2026) — the real River x Dimension cross-tab.
-
-    Alex's own confirmed ask. A pure ROLL-UP of the module-grain
-    `tags` this file already computes (rule 8 — dimension membership is
-    never re-derived here) onto each module's own river via
-    RIVER_MODULES. A river counts as participating in a dimension when
-    at least one of its own real modules genuinely does.
-
-    Deliberately NOT a replacement for the module-grain table above,
-    and the existing narrower matrices are NOT retired against it:
-      * the module table answers "which module is a cross-dimension
-        hub" — a genuinely finer grain this roll-up destroys by
-        construction;
-      * galaxy_map.html's own L0 matrix is a different grain again
-        (9 L0 units, not rivers).
-    Neither is redundant, so neither is folded in — said plainly rather
-    than deleting a page that still answers its own question. This is a
-    second real VIEW on the same page, which is the same shape every
-    other map/table pair in this pipeline already uses.
-    """
+    """The real River x Dimension cross-tab — a pure ROLL-UP of the
+    module-grain `tags` this file already computes (rule 8 — dimension
+    membership is never re-derived here) onto each module's own river
+    via RIVER_MODULES. A river counts as participating in a dimension
+    when at least one of its own real modules genuinely does."""
     rivers = sorted({r for m in tags if (r := _river_of(m)) is not None})
     rows = []
     for r in rivers:
@@ -279,46 +312,120 @@ def build_river_matrix(tags):
             f'<span class="rowjump-cue">🫧</span></th>'
             f'<td class="rivercell">{len(mods)}</td>{"".join(cells)}'
             f'<td class="tagcount">{n_dims}</td></tr>')
-    header = ('<tr><th>River</th><th>Modules</th>'
-              + ''.join(_dim_header(d) for d in DIMENSIONS)
-              + '<th>Dims</th></tr>')
+    header = ('<tr><th>River</th><th>Modules</th>' + _dim_headers_row() + '<th>Dims</th></tr>')
     return '<table class="dtable">' + header + ''.join(rows) + '</table>'
+
+
+def build_l0_matrix(l0_tags):
+    """The real L0 x Dimension table — G108, Alex's own direct ask.
+    Same real rendering shape as the River/Module tables (rule 8):
+    hub rows (3+ tags) highlighted, sorted by tag count descending."""
+    rows = []
+    for uid in sorted(l0_tags, key=lambda x: -sum(l0_tags[x].values())):
+        row = l0_tags[uid]
+        n = sum(row.values())
+        meta = UNIT_META[uid]
+        rows.append(
+            f'<tr class="{"hub" if n >= 3 else ""}"><td class="modname">'
+            f'<a href="galaxy_map.html">{meta["icon"]} {esc(meta["label"])}</a></td>'
+            f'{_dim_cells(row)}<td class="tagcount">{n}</td></tr>'
+        )
+    header = '<tr><th>L0 Unit</th>' + _dim_headers_row() + '<th>Dims</th></tr>'
+    return '<table class="dtable">' + header + ''.join(rows) + '</table>'
+
+
+def _bubble_ring(nodes_data, radius=300, cx=420, cy=420):
+    """Generic circular hub-and-spoke bubble layout — shared by L0/L1/L2
+    (rule 8, replacing what would otherwise be 3 near-identical hand-
+    written layouts). `nodes_data` is a list of dicts:
+    {key, color, short_label, n_dims, detail_html}. Returns
+    (svg, details_html)."""
+    n = len(nodes_data) or 1
+    nodes, details = [], []
+    for i, nd in enumerate(nodes_data):
+        angle = (360 / n) * i - 90
+        x = cx + radius * math.cos(math.radians(angle))
+        y = cy + radius * math.sin(math.radians(angle))
+        rsize = 24 + nd['n_dims'] * 4
+        nodes.append(
+            f'<g class="dbubble" data-key="{nd["key"]}" transform="translate({x:.0f},{y:.0f})">'
+            f'<circle r="{rsize}" fill="{nd["color"]}" fill-opacity="0.18" stroke="{nd["color"]}" stroke-width="2"/>'
+            f'<text text-anchor="middle" dy="-3" font-size="12" fill="#fff" font-weight="700">{nd["n_dims"]}</text>'
+            f'<text text-anchor="middle" dy="12" font-size="8" fill="{nd["color"]}">{esc(nd["short_label"][:16])}</text></g>')
+        details.append(
+            f'<div class="rdetail" id="dtl-{nd["key"]}" style="display:none">'
+            f'<h3>{esc(nd["full_label"])}</h3>{nd["detail_html"]}</div>')
+    svg = ('<svg viewBox="0 0 840 840" width="100%" style="max-width:760px;display:block;margin:0 auto">'
+           + ''.join(nodes) + '</svg>')
+    return svg, ''.join(details)
+
+
+def build_l0_bubbles(l0_tags):
+    nodes_data = []
+    for uid in UNIT_ORDER:
+        row = l0_tags[uid]
+        hit_dims = [d for d in DIMENSIONS if row[d['id']]]
+        meta = UNIT_META[uid]
+        items = ''.join(f'<li>{d["icon"]} <b>{_dim_label(d)}</b></li>' for d in hit_dims) \
+            or '<li class="meta">No real dimension membership detected for this unit (per its own already-computed facet links).</li>'
+        nodes_data.append(dict(
+            key=uid, color=meta['color'], short_label=meta['label'],
+            full_label=f"{meta['icon']} {meta['label']}", n_dims=len(hit_dims),
+            detail_html=f'<ul>{items}</ul>'))
+    svg, details = _bubble_ring(nodes_data)
+    return svg + '<div id="bubble-details">' + details + '</div>'
 
 
 def build_river_bubbles(tags):
     """Bubble view over the EXACT data build_river_matrix() renders —
     R22's own standing rule (the table is the source of truth, the
     bubble system follows it and never invents its own dataset)."""
-    import math
     rivers = sorted({r for m in tags if (r := _river_of(m)) is not None})
-    n = len(rivers) or 1
-    cx, cy, radius = 420, 420, 300
-    nodes, details = [], []
-    for i, r in enumerate(rivers):
-        angle = (360 / n) * i - 90
-        x = cx + radius * math.cos(math.radians(angle))
-        y = cy + radius * math.sin(math.radians(angle))
+    nodes_data = []
+    for r in rivers:
         mods = [m for m in tags if _river_of(m) == r]
         hit_dims = [d for d in DIMENSIONS if any(tags[m][d['id']] for m in mods)]
         color = RIVER_COLOR.get(r, '#888')
         full = RIVER_NAME.get(r, f'River {r}')
         short = full.split('—', 1)[1].strip() if '—' in full else full
-        rsize = 24 + len(hit_dims) * 4
-        nodes.append(
-            f'<g class="dbubble" data-river="{r}" transform="translate({x:.0f},{y:.0f})">'
-            f'<circle r="{rsize}" fill="{color}" fill-opacity="0.18" stroke="{color}" stroke-width="2"/>'
-            f'<text text-anchor="middle" dy="-3" font-size="12" fill="#fff" font-weight="700">{len(hit_dims)}</text>'
-            f'<text text-anchor="middle" dy="12" font-size="8" fill="{color}">{esc(short[:16])}</text></g>')
         items = ''.join(
             f'<li>{d["icon"]} <b>{_dim_label(d)}</b> — '
             f'{", ".join(_mod_link(m) for m in sorted(m for m in mods if tags[m][d["id"]]))}</li>'
             for d in hit_dims) or '<li class="meta">No real dimension membership detected for this river.</li>'
-        details.append(
-            f'<div class="rdetail" id="rdetail-{r}" style="display:none">'
-            f'<h3>{esc(full)}</h3><ul>{items}</ul></div>')
-    svg = ('<svg viewBox="0 0 840 840" width="100%" style="max-width:760px;display:block;margin:0 auto">'
-           + ''.join(nodes) + '</svg>')
-    return svg + '<div id="bubble-details">' + ''.join(details) + '</div>'
+        nodes_data.append(dict(
+            key=f'r{r}', color=color, short_label=short, full_label=full,
+            n_dims=len(hit_dims), detail_html=f'<ul>{items}</ul>'))
+    svg, details = _bubble_ring(nodes_data)
+    return svg + '<div id="bubble-details">' + details + '</div>'
+
+
+def build_module_bubbles(tags):
+    """Real module-grain bubble view — G108, per Alex's own ask that
+    the bubble map be reworked to genuinely match all 3 levels, not
+    just River. Honestly scoped to real hubs (3+ dimension tags) rather
+    than all 44+ modules — a full 44-node ring would be real visual
+    noise the table already serves better (same "too crowded" reasoning
+    G20 already fixed once for River's own canvas); every module still
+    has its own real row in the Table view above, this is the bubble
+    view's own deliberately narrower "which modules matter most" lens."""
+    hubs = [m for m in tags if sum(tags[m].values()) >= 3]
+    nodes_data = []
+    for m in sorted(hubs, key=lambda x: -sum(tags[x].values())):
+        row = tags[m]
+        hit_dims = [d for d in DIMENSIONS if row[d['id']]]
+        r = _river_of(m)
+        color = RIVER_COLOR.get(r, '#888') if r else '#888'
+        items = ''.join(f'<li>{d["icon"]} <b>{_dim_label(d)}</b></li>' for d in hit_dims)
+        nodes_data.append(dict(
+            key=m, color=color, short_label=m, full_label=m,
+            n_dims=len(hit_dims), detail_html=f'<ul>{items}</ul>'))
+    if not nodes_data:
+        return '<p class="vhint">No real module currently carries 3+ dimension tags.</p>'
+    svg, details = _bubble_ring(nodes_data)
+    note = (f'<p class="vhint">Real hubs only (3+ dimension tags) — {len(nodes_data)} of {len(tags)} modules. '
+            f'Every module, hub or not, still has its own real row in the Table view above.</p>')
+    return note + svg + '<div id="bubble-details">' + details + '</div>'
+
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -355,6 +462,15 @@ TEMPLATE = """<!DOCTYPE html>
   tr.hub{{background:rgba(155,89,182,0.06)}}
   .note{{max-width:1100px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--purple)}}
+  /* G108 (Aug 26 2026) — real LEVEL tabs, replacing the old flat
+     3-button "categorization" Alex asked to retire. Same visual
+     language as the level-rail/sidebar's own L0/L1/L2 chips elsewhere
+     in this pipeline (rule 8 — reused styling, not a new convention). */
+  .lvl-tabs{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0;flex-wrap:wrap}}
+  .lvl-tab{{padding:8px 18px;border-radius:16px;font-size:12px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .lvl-tab.active{{background:var(--gold);color:#1a1608;border-color:var(--gold)}}
+  .lvl-block{{display:none}}
+  .lvl-block.active{{display:block}}
   .toggle-row{{display:flex;justify-content:center;gap:8px;padding:14px 24px 0}}
   .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
   .toggle-btn.active{{background:var(--purple);color:#12040f;border-color:var(--purple)}}
@@ -382,62 +498,99 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Dimensions Matrix (G30)</div>
   <h1>🧭 Dimensions Matrix — Real Multi-Home Overlap</h1>
-  <p>Alex's own real ask, resolved via /interrogation: a real river/module can belong to MORE THAN ONE dimension at once (multi-home, not a strict partition) — this is the real cross-dimension ANALYSIS view, not a Level-0 replacement (the 4 galaxies stay exactly as they are). {n_hubs} of {n_mods} real modules are genuine "hubs" (3+ real dimension tags, highlighted) — these are the modules doing the most real, load-bearing cross-dimension work in RPGACE Total Systems, regardless of which river they're nominally grouped under.</p>
-</div>
-<div class="toggle-row">
-  <div class="toggle-btn active" data-view="rivers">🌊 River × Dimension (table)</div>
-  <div class="toggle-btn" data-view="bubbles">🫧 River × Dimension (bubbles)</div>
-  <div class="toggle-btn" data-view="modules">🧩 Module × Dimension (table)</div>
+  <p>Alex's own real ask, resolved via /interrogation: a real river/module can belong to MORE THAN ONE dimension at once (multi-home, not a strict partition) — this is the real cross-dimension ANALYSIS view, not a Level-0 replacement (the 4 galaxies stay exactly as they are). Real, structural rework (Aug 26 2026): L0/River/Module are 3 real LEVELS of the same recurring question ("which dimensions does this real object touch"), not 3 flat, unrelated categories — pick a level below, each with its own real Table (default) + Map. {n_hubs} of {n_mods} real modules are genuine "hubs" (3+ real dimension tags) — the modules doing the most real, load-bearing cross-dimension work in RPGACE Total Systems, regardless of which river they're nominally grouped under.</p>
 </div>
 
-<div class="view active" id="view-rivers">
-  <div class="vhint">Every real river cross-referenced against every dimension it genuinely participates in — a roll-up of the module-grain data below, never re-derived. A cell shows how many of that river's own modules carry that dimension; hover it for their names, click it (or the river name) for the full breakdown.</div>
-  <div class="wrap">{river_matrix}</div>
+<div class="lvl-tabs">
+  <div class="lvl-tab active" data-lvl="l0">🌌 L0 (units)</div>
+  <div class="lvl-tab" data-lvl="l1">🏛️ L1 (rivers)</div>
+  <div class="lvl-tab" data-lvl="l2">🌊 L2 (modules)</div>
 </div>
 
-<div class="view" id="view-bubbles">
-  <div class="vhint">The same data as the River × Dimension table, rendered as bubbles — sized by how many dimensions that river actually participates in. Per the standing rule, this view has no data of its own.</div>
-  <div class="bubblewrap">{river_bubbles}</div>
-</div>
-
-<div class="view" id="view-modules">
-  <div class="vhint">The finer grain the roll-up above deliberately loses: which individual module is a real cross-dimension hub, regardless of which river it is grouped under.</div>
-  <div class="wrap">
-    <table class="dtable">
-      <thead><tr><th>Module</th><th>River</th>{dim_headers}<th>Tags</th></tr></thead>
-      <tbody>{rows}</tbody>
-    </table>
+<div class="lvl-block active" id="lvl-l0">
+  <div class="vhint">Every real L0 unit cross-referenced against every dimension it genuinely touches — reusing that unit's own already-computed real facet links (rule 8), never a new detector. A unit counts as touching a dimension when at least one of its real facets links to that dimension's own page.</div>
+  <div class="toggle-row">
+    <div class="toggle-btn active" data-view="l0table">📊 Table</div>
+    <div class="toggle-btn" data-view="l0map">🌌 Map</div>
   </div>
+  <div class="view active" id="view-l0table"><div class="wrap">{l0_matrix}</div></div>
+  <div class="view" id="view-l0map"><div class="bubblewrap">{l0_bubbles}</div></div>
+</div>
+
+<div class="lvl-block" id="lvl-l1">
+  <div class="vhint">Every real river cross-referenced against every dimension it genuinely participates in — a roll-up of the module-grain data at L2, never re-derived. A cell shows how many of that river's own modules carry that dimension; hover it for their names, click it (or the river name) for the full breakdown.</div>
+  <div class="toggle-row">
+    <div class="toggle-btn active" data-view="l1table">📊 Table</div>
+    <div class="toggle-btn" data-view="l1map">🌌 Map</div>
+  </div>
+  <div class="view active" id="view-l1table"><div class="wrap">{river_matrix}</div></div>
+  <div class="view" id="view-l1map"><div class="bubblewrap">{river_bubbles}</div></div>
+</div>
+
+<div class="lvl-block" id="lvl-l2">
+  <div class="vhint">The finer grain the L1 roll-up deliberately loses: which individual module is a real cross-dimension hub, regardless of which river it is grouped under.</div>
+  <div class="toggle-row">
+    <div class="toggle-btn active" data-view="l2table">📊 Table</div>
+    <div class="toggle-btn" data-view="l2map">🌌 Map</div>
+  </div>
+  <div class="view active" id="view-l2table">
+    <div class="wrap">
+      <table class="dtable">
+        <thead><tr><th>Module</th><th>River</th>{dim_headers}<th>Tags</th></tr></thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="view" id="view-l2map"><div class="bubblewrap">{module_bubbles}</div></div>
 </div>
 
 {dim_index}
 <div class="note">
-  Generated by <code>scripts/galaxy_map_dimensions.py</code>, real detection functions in <code>graphify_river_group.py</code> —
-  never re-derived (rule 8), each dimension's own already-shipped detector reused as-is. G30 of the ratified
+  Generated by <code>scripts/galaxy_map_dimensions.py</code>, real detection functions in <code>graphify_river_group.py</code>/<code>galaxy_map.py</code> —
+  never re-derived (rule 8), each dimension's own already-shipped detector reused as-is. G30/G108 of the ratified
   "RPGACE Total Systems Galaxy Map" /CEO plan. Mapping rules: <code>system_map_spec.md</code>.
 </div>
 <script>
 (function() {{
-  var toggles = document.querySelectorAll('.toggle-btn');
-  var views = document.querySelectorAll('.view');
-  function showView(name) {{
-    toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === name); }});
-    views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + name); }});
-  }}
-  toggles.forEach(function(t) {{ t.addEventListener('click', function() {{ showView(t.dataset.view); }}); }});
-  function reveal(r) {{
-    showView('bubbles');
-    document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'rdetail-' + r) ? '' : 'none'; }});
-    var el = document.getElementById('rdetail-' + r);
+  // Real level-tab switcher (G108) — shows exactly one .lvl-block at a
+  // time; each block owns its own Table/Map sub-toggle underneath.
+  var lvlTabs = document.querySelectorAll('.lvl-tab');
+  var lvlBlocks = document.querySelectorAll('.lvl-block');
+  lvlTabs.forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      lvlTabs.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+      lvlBlocks.forEach(function(b) {{ b.classList.toggle('active', b.id === 'lvl-' + t.dataset.lvl); }});
+    }});
+  }});
+  // Table/Map sub-toggle — scoped to the enclosing .lvl-block so 3
+  // separate levels' worth of these buttons never cross-toggle.
+  document.querySelectorAll('.toggle-btn').forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      var block = t.closest('.lvl-block');
+      if (!block) return;
+      block.querySelectorAll('.toggle-btn').forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+      block.querySelectorAll('.view').forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+    }});
+  }});
+  function reveal(key) {{
+    document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'dtl-' + key) ? '' : 'none'; }});
+    var el = document.getElementById('dtl-' + key);
     if (el) el.scrollIntoView({{behavior:'smooth', block:'nearest'}});
   }}
   // Table rows AND cells both reach the same real bubble detail the
   // bubble view's own click already goes to — never a second target.
   document.querySelectorAll('th.rowjump, td.rcell').forEach(function(el) {{
-    el.addEventListener('click', function() {{ reveal(el.dataset.river); }});
+    el.addEventListener('click', function() {{
+      var block = el.closest('.lvl-block');
+      if (block) {{
+        block.querySelectorAll('.toggle-btn').forEach(function(x) {{ x.classList.toggle('active', x.dataset.view && x.dataset.view.indexOf('map') !== -1); }});
+        block.querySelectorAll('.view').forEach(function(v) {{ v.classList.toggle('active', v.id.indexOf('map') !== -1); }});
+      }}
+      reveal('r' + el.dataset.river);
+    }});
   }});
   document.querySelectorAll('.dbubble').forEach(function(b) {{
-    b.addEventListener('click', function() {{ reveal(b.dataset.river); }});
+    b.addEventListener('click', function() {{ reveal(b.dataset.key); }});
   }});
 }})();
 </script>
@@ -448,12 +601,16 @@ TEMPLATE = """<!DOCTYPE html>
 
 def main():
     tags = compute_matrix()
+    l0_tags = compute_l0_dim_tags()
     n_hubs = sum(1 for m, row in tags.items() if sum(row.values()) >= 3)
-    dim_headers = ''.join(_dim_header(d) for d in DIMENSIONS)
+    dim_headers = _dim_headers_row()
     rows = build_rows(tags)
     html = TEMPLATE.format(dim_headers=dim_headers, rows=rows, n_hubs=n_hubs, n_mods=len(tags),
                            river_matrix=build_river_matrix(tags),
                            river_bubbles=build_river_bubbles(tags),
+                           l0_matrix=build_l0_matrix(l0_tags),
+                           l0_bubbles=build_l0_bubbles(l0_tags),
+                           module_bubbles=build_module_bubbles(tags),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -463,7 +620,9 @@ def main():
     # regeneration can never wipe it. See inject_plan_overlay().
     html = inject_plan_overlay(html, 'dimensions')
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(tags)} modules, {n_hubs} real hub(s) (3+ dimension tags).")
+    n_l0_hubs = sum(1 for uid, row in l0_tags.items() if sum(row.values()) >= 3)
+    print(f"Wrote {OUT} — {len(tags)} modules ({n_hubs} hub(s)), {len(l0_tags)} L0 units ({n_l0_hubs} hub(s)) — "
+          f"3 real levels (L0/L1/L2), each with Table+Map, replacing the old flat 3-button toggle.")
     # Aug 25 2026 — real, measured destination coverage, printed so a
     # future build can never silently regress it.
     linked_dims = [d['id'] for d in DIMENSIONS if _dim_page(d)]

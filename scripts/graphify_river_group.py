@@ -4629,6 +4629,110 @@ INFRA_DRILLDOWN_JS = '''
 '''
 
 
+# G108 (Aug 26 2026) — real, shared Full/Choice sub-toggle, Alex's own
+# direct ask: "all infra inter should have map view with full/choice
+# with full open at default when navigated to, and the table toggle
+# able too, same with level 2 and 3." Full = everything expanded/
+# visible at once (best for seeing the whole real wiring in one look).
+# Choice = narrowed down to exactly one real object's own chain (best
+# for tracing a single thing). Full is always the sub-default — the
+# page-level Table/Map toggle each page already has (or gains) is
+# UNCHANGED by this; this only governs what MAP VIEW shows once you're
+# in it. One shared mechanism (rule 8), two real uses:
+#   (a) Infra-drilldown pages (Oracle/Supabase/Connectors/Orchestrator
+#       CC/Oversight Sync) — Choice is the EXISTING river->module->
+#       function pane click-through, unchanged; Full force-opens every
+#       `.idd-pane` at once via a CSS override, no picker needed (the
+#       existing L1/L2 bubbles ARE the picker, by clicking them).
+#   (b) Level 2/Current(L3)'s own evidence-bubble diagrams (Alex/
+#       Oracle/Composio/Last.fm/Supabase/Jina AI/Decision/Load/Logic) —
+#       these are flat SIBLING bubbles with no parent/child structure
+#       to drill through, so Choice needs a real picker: a small button
+#       per real evidence type actually present, only the picked one's
+#       `.ev-group` shown at a time.
+FULL_CHOICE_CSS = '''
+.fc-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.fc-btn{padding:5px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:#8a8a9a;border:1px solid rgba(255,255,255,0.12);user-select:none}
+.fc-btn:hover{background:rgba(255,255,255,0.09)}
+.fc-btn.active{background:#C9A84C;color:#1a1608;border-color:#C9A84C}
+.fc-pick{display:none;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.fc-pick-btn{padding:4px 11px;border-radius:10px;font-size:9.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid var(--c,#8a8a9a);color:var(--c,#8a8a9a);user-select:none}
+.fc-pick-btn:hover{background:color-mix(in srgb, var(--c,#8a8a9a) 14%, transparent)}
+.fc-pick-btn.on{background:var(--c,#8a8a9a);color:#0a0a0f}
+.fc-pick-hint{font-size:10px;color:#6a6a78;padding:2px 0 8px;width:100%}
+/* (a) Infra-drilldown pages: Choice is the existing pane click-through
+   (zero change); Full force-opens every real pane at once. */
+.fc-scope.mode-full .idd-pane{display:block !important}
+.fc-scope.mode-full .idd-hint{display:none}
+/* (b) Level 2/3 evidence-bubble picker: Full shows every real
+   `.ev-group` at once (today's existing behaviour, unchanged); Choice
+   shows only the one currently picked. */
+.fc-scope.mode-choice .fc-pick{display:flex}
+.fc-scope.mode-choice .ev-group{display:none}
+.fc-scope.mode-choice .ev-group.picked{display:inline}
+/* An .ev-group wrapping a plain HTML block (Level 3's Tier 2 panels)
+   needs block, not inline, or its own padding/border render squeezed
+   to content width — a real HTML div and an SVG <g> both match
+   `.ev-group.picked` above, so this more-specific override (2 classes
+   + a tag qualifier beats 2 classes alone) fixes the div case only,
+   leaving the SVG <g> case governed by the rule above unchanged. */
+.fc-scope.mode-choice div.ev-group.picked{display:block}
+'''
+
+FULL_CHOICE_JS = '''
+(function() {
+  // Event delegation on document, not a per-instance script tag —
+  // many real .fc-scope regions can share one page (every band-canvas
+  // on Current, every connector tab on Connectors), and this handles
+  // all of them with zero per-instance wiring.
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.fc-btn');
+    if (btn) {
+      var scope = btn.closest('.fc-scope');
+      if (!scope) return;
+      scope.classList.remove('mode-full', 'mode-choice');
+      scope.classList.add('mode-' + btn.dataset.mode);
+      scope.querySelectorAll('.fc-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
+      return;
+    }
+    var pick = e.target.closest('.fc-pick-btn');
+    if (pick) {
+      var scope2 = pick.closest('.fc-scope');
+      if (!scope2) return;
+      var key = pick.dataset.key;
+      scope2.querySelectorAll('.fc-pick-btn').forEach(function(x) { x.classList.toggle('on', x === pick); });
+      scope2.querySelectorAll('.ev-group').forEach(function(g) { g.classList.toggle('picked', g.dataset.unit === key); });
+    }
+  });
+})();
+'''
+
+
+def render_fc_bar(picker_items=None):
+    """Returns the shared Full/Choice control HTML for one `.fc-scope`
+    region — see FULL_CHOICE_CSS's own comment for the full design.
+
+    picker_items — optional list of (key, icon, label, color) for real
+    evidence-bubble TYPES actually present in this specific region.
+    Omit for an Infra-drilldown page's own `.idd` region (its Choice
+    mode is the existing click-through, no picker needed); pass it for
+    Level 2/3's flat evidence-bubble diagrams, built ONLY from types
+    with real evidence (the caller has already filtered — a picker
+    button for a type with zero real bubbles here would be a dead
+    control, never rendered)."""
+    bar = ('<div class="fc-bar">'
+           '<div class="fc-btn active" data-mode="full">🌌 Full</div>'
+           '<div class="fc-btn" data-mode="choice">🎯 Choice</div>'
+           '</div>')
+    if not picker_items:
+        return bar
+    buttons = ''.join(
+        f'<div class="fc-pick-btn" data-key="{key}" style="--c:{color}">{icon} {label}</div>'
+        for key, icon, label, color in picker_items
+    )
+    return bar + f'<div class="fc-pick"><div class="fc-pick-hint">Pick one to see just its own chain:</div>{buttons}</div>'
+
+
 def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
                            leaf_link_fn, resource_emoji='🗄️',
                            orphan_label='Cross-cutting (no river)',
@@ -4727,8 +4831,9 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
     c = infra_drilldown_counts(drill, orphans)
     unit_hub = dict(icon=unit_icon, label=unit_label, color=unit_color)
     return (
-        f'<div class="idd">'
-        f'<div class="idd-crumb"><span class="on">{unit_icon} {e(unit_label)}</span>'
+        f'<div class="idd fc-scope mode-full">'
+        + render_fc_bar()
+        + f'<div class="idd-crumb"><span class="on">{unit_icon} {e(unit_label)}</span>'
         f'<span class="idd-sep">→</span><span class="idd-c1">pick a river</span>'
         f'<span class="idd-sep">→</span><span class="idd-c2"></span></div>'
         f'<div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch {e(unit_label)} — '
@@ -4763,7 +4868,24 @@ def inject_level_rail(html, current_file):
     stripping regex (its own real de-dup step when building the hub
     index) is now a harmless no-op — nothing left to strip — left as-is
     rather than touched, since it costs nothing to keep and would still
-    be correct if a rail-shaped element ever returned."""
+    be correct if a rail-shaped element ever returned.
+
+    G108 (Aug 26 2026) — same shared-hook reasoning now also carries the
+    Full/Choice CSS/JS (FULL_CHOICE_CSS/FULL_CHOICE_JS above): every
+    page that already calls this one function to get the sidebar gets
+    the Full/Choice mechanism for free too, whether or not that specific
+    page actually uses a `.fc-scope` region — harmless, unused CSS/JS on
+    a page with no `.fc-scope` element, same precedent LEFT_NAV_CSS/JS
+    already set."""
+    if '.fc-bar{' not in html:
+        if '</style>' in html:
+            html = html.replace('</style>', FULL_CHOICE_CSS + '</style>', 1)
+        else:
+            html = html.replace('</head>', f'<style>{FULL_CHOICE_CSS}</style></head>', 1)
+        if '</body>' in html:
+            html = html.replace('</body>', f'<script>{FULL_CHOICE_JS}</script></body>', 1)
+        else:
+            html = html + f'<script>{FULL_CHOICE_JS}</script>'
     html = inject_left_nav(html, current_file)
     return html
 

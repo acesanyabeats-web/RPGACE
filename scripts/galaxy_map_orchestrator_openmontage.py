@@ -41,7 +41,7 @@ from graphify_river_group import (  # noqa: E402
 # Orchestrator CC's own 3 curated tables.
 from graphify_river_group import (  # noqa: E402
     build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
-    INFRA_DRILLDOWN_CSS, LEVEL3_MODULES,
+    INFRA_DRILLDOWN_CSS, LEVEL3_MODULES, RIVER_MODULES, RIVER_NAME,
 )
 
 OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
@@ -153,12 +153,33 @@ def _tbl_link(tbl):
 # referenced against every rpgace_core.js module/function that touches
 # the SAME tables — same shape as Oversight Docs' own Shared
 # Infrastructure tab, reused not re-derived.
+#
+# G108 (Aug 26 2026) — Alex's own direct ask: "all infra inter should
+# have map view with full/choice... and the table toggle able too."
+# This section had a Map view (the drill-down) with no Table view at
+# all — fixed with a real one, matching Supabase/Oracle's own per-table
+# row shape (module/river chips + a real per-function touch list), not
+# invented fresh. Table is the default landing view, same as the other
+# 3 Infra pages that already had a toggle (R22 precedent).
+_river_of = {}
+for _r, _mods in RIVER_MODULES.items():
+    for _m in _mods:
+        _river_of[_m] = _r
+
+
+def _river_chip(rnum):
+    if rnum is None:
+        return '<span class="tbl-none">cross-cutting, no river</span>'
+    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    return f'<a class="tbl-link" href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
+
+
 def build_shared_infra_section():
     orch_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get('orchestrator_cc', ()))
     all_touches = compute_all_supabase_table_touches()
     evidence = {tbl: all_touches[tbl] for tbl in orch_tables if tbl in all_touches}
     drill, orphans = build_infra_drilldown(evidence)
-    inner = render_infra_drilldown(
+    map_view = render_infra_drilldown(
         drill, orphans, unit_icon='🧭', unit_label='Orchestrator CC',
         leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
         resource_emoji='🗄️',
@@ -170,12 +191,49 @@ def build_shared_infra_section():
         f'non-code Total-system actors (a separate Claude Code session, a curated write), never client-side app '
         f'code: ' + ', '.join(f'<code>{esc(t)}</code>' for t in no_code) + '.</p>'
         if no_code else '')
+
+    table_rows = []
+    for tbl in orch_tables:
+        touches = evidence.get(tbl, [])
+        mods = sorted({m for m, _f, _d in touches})
+        # de-dup river chips (several modules can share one river)
+        seen_r = set()
+        river_chips_dedup = []
+        for m in mods:
+            r = _river_of.get(m)
+            if r not in seen_r:
+                seen_r.add(r)
+                river_chips_dedup.append(_river_chip(r))
+        mod_links = ''.join(
+            f'<a class="tbl-link" href="galaxy_map_current.html#mod-{m}"><code>🔽 {esc(m)}</code></a>'
+            if m in LEVEL3_MODULES else f'<code class="tbl-none">{esc(m)}</code>'
+            for m in mods
+        ) if mods else '<span class="tbl-none">no rpgace_core.js module touches this table</span>'
+        detail_rows = ''.join(
+            f'<div class="touch-row">{esc(m)}.{esc(f)}() — <code>{esc(d)}</code></div>'
+            for m, f, d in sorted(touches)
+        )
+        table_rows.append(f'''<section class="table-section" id="tbl-{tbl}">
+  <div class="thead"><span class="tdot"></span><h2>🗄️ {tbl}</h2>
+    <span class="tcount">{len(touches)} real function touch(es)</span></div>
+  <div class="rivers">{''.join(river_chips_dedup)}</div>
+  <div class="mods">{mod_links}</div>
+  {f'<details class="touches"><summary>Every real touch (module.function → detail)</summary>{detail_rows}</details>' if touches else ''}
+</section>''')
+
     return (f'<div class="l0block" id="cat-sharedinfra">'
             f'<h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2>'
             f'<p class="l0intro">Every real table Orchestrator CC genuinely touches (same source as its own L0 Infra '
             f'facets above), cross-referenced against every rpgace_core.js river/module/function that touches that '
             f'SAME table — real, live-code infrastructure sharing, not the dispatch-history narrative above.</p>'
-            f'{no_code_note}{inner}</div>')
+            f'{no_code_note}'
+            f'<div class="toggle-row">'
+            f'<div class="toggle-btn active" data-view="table">📊 Table view</div>'
+            f'<div class="toggle-btn" data-view="map">🌌 Map view</div>'
+            f'</div>'
+            f'<div class="view active" id="view-table"><div class="tables">{"".join(table_rows)}</div></div>'
+            f'<div class="view" id="view-map">{map_view}</div>'
+            f'</div>')
 
 
 def build_job_card(j):
@@ -229,6 +287,20 @@ TEMPLATE = """<!DOCTYPE html>
   .tbl-link:hover code{{border-bottom-style:solid}}
   .tbl-none{{color:var(--dim)}}
   a{{color:var(--purple)}}
+  .toggle-row{{display:flex;gap:8px;margin:6px 0 14px}}
+  .toggle-btn{{padding:6px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--gold);color:#1a1608;border-color:var(--gold)}}
+  .view{{display:none}} .view.active{{display:block}}
+  .tables{{display:flex;flex-direction:column;gap:12px}}
+  .table-section{{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:12px;padding:14px 16px}}
+  .thead{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}}
+  .tdot{{width:10px;height:10px;border-radius:50%;background:var(--purple)}}
+  .thead h2{{font-family:Georgia,serif;font-size:14px;color:#fff}}
+  .tcount{{font-size:9.5px;color:var(--dim);margin-left:auto}}
+  .rivers,.mods{{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}}
+  .touches{{margin-top:6px;font-size:10.5px}}
+  .touches summary{{cursor:pointer;color:var(--dim)}}
+  .touch-row{{padding:3px 0 3px 10px;color:#a8a8b8;font-size:10.5px}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
 {infra_dd_css}
 {dim_css}
@@ -253,6 +325,21 @@ TEMPLATE = """<!DOCTYPE html>
   {shared_infra}
 </div>
 {dim_index}
+
+<script>
+(function() {{
+  // Real G108 toggle — same exact map/table mechanic Supabase/Oracle
+  // already use (rule 8), scoped to this page's own single toggle-row.
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  toggles.forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+    }});
+  }});
+}})();
+</script>
 
 <div class="note">
   Generated by <code>scripts/galaxy_map_orchestrator_openmontage.py</code> — real data from <code>total_system_members</code>
