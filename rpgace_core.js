@@ -4990,6 +4990,33 @@ document.addEventListener('keydown', e=>{
         t.style.opacity = '0';
         setTimeout(function () { t.remove(); }, 300);
       }, ms);
+      // Aug 26 2026 (real Alex ask: "make these toast visible and hookable
+      // for oracle to pick up"). Purely additive - the visual behavior
+      // above is completely unchanged. #CC4A4A is the real, established
+      // error-toast color across this whole codebase (confirmed via a
+      // direct grep: 33 of the ~80 real toast() call sites use it for a
+      // genuine "something's wrong" message, vs. #E2A83D for soft
+      // warnings and #4CAF82 for success — never guessed, this is the
+      // codebase's own existing convention). An error-colored toast now
+      // (a) persists into error_log via the SAME real dedup/write path
+      // every other error type already uses (rule 8 — errorLog._capture,
+      // not a second logging mechanism), tagged 'ui_toast' so it's
+      // distinguishable from a genuine uncaught JS exception, since many
+      // of these are user-input validation nudges ("add a title first"),
+      // not code bugs; and (b) fires a real, new RPGACE.hooks event so
+      // ANY future consumer (Oracle Control, a future module) can
+      // subscribe to real-time error-toast signals - this is the actual
+      // "hookable" part Alex asked for. Neither is a live "Oracle watches
+      // the DOM" mechanism (that's still not real/possible) - this is a
+      // real, concrete signal fired at the moment the error happens,
+      // which something can choose to listen for.
+      if (color === '#CC4A4A') {
+        try {
+          var el = RPGACE.modules && RPGACE.modules.errorLog;
+          if (el && el._capture) el._capture('ui_toast', 'toast()', msg);
+        } catch (e) { /* fails open - a logging failure must never break the toast itself */ }
+        try { RPGACE.hooks.fire('rpgace:error-toast', { msg: msg, color: color, ts: Date.now() }); } catch (e) {}
+      }
     },
 
     /* Copy text to clipboard and briefly show feedback on a button */
@@ -8016,6 +8043,12 @@ RPGACE.register('oracleAppGrounding', {
         // _execute() branch before it can do anything at all (see
         // oracleControl._execute's own comment) - three real gates, not one.
         if (matched && oc && oc.buildSuggestBlock) block += oc.buildSuggestBlock();
+        // Aug 26 2026, same day, immediate follow-up ("make these toast
+        // visible and hookable for oracle to pick up") - same TRIGGER_
+        // KEYWORDS gate again (rule 8), which already includes "known
+        // bug"/"what's broken"-shaped phrases. Returns '' when nothing
+        // real has gone wrong recently, so this never pads a normal reply.
+        if (matched && oc && oc.buildRecentErrorsBlock) block += oc.buildRecentErrorsBlock();
         // July 28: was orig.call(this, messages, system+block, maxTokens) -
         // a fixed 3-arg forward that silently dropped any 4th+ argument
         // (main.js's callOracle gained an optional onChunk callback the
@@ -26911,12 +26944,50 @@ RPGACE.register('oracleControl', {
   _actionsFetchedAt: 0,
   _ACTIONS_TTL_MS: 10 * 60 * 1000,
   _overlayOpen: false,
+  _recentErrorToasts: [],
+  _MAX_RECENT_ERRORS: 5,
 
   init: function() {
     var self = this;
     self._fetchActions();
     self._listenForReplies();
+    self._listenForErrorToasts();
     RPGACE.registerBootTask(function() { return self._injectOverlayButton(); });
+  },
+
+  // Aug 26 2026 (real Alex ask: "make these toast visible and hookable for
+  // oracle to pick up") — this is the honest, buildable version of that:
+  // Oracle still has zero live DOM-watching ability (it only ever runs
+  // when a real message is sent to it), but it now carries real, recent
+  // context about what actually just went wrong, so the NEXT time Alex
+  // talks to it ("why does this keep failing"), it can see real evidence
+  // instead of nothing. A small in-memory buffer (last 5, this session
+  // only - not persisted, error_log.html already IS the durable record
+  // via toast()'s own new _capture call) rather than a live subscription
+  // firing an Oracle call on every toast, which would be a real,
+  // unbounded per-error API cost (rule 11) for something that's usually
+  // only relevant if Alex actually asks about it.
+  _listenForErrorToasts: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:error-toast', function(evt) {
+      self._recentErrorToasts.push(evt);
+      if (self._recentErrorToasts.length > self._MAX_RECENT_ERRORS) self._recentErrorToasts.shift();
+    });
+  },
+
+  // Rides the SAME oracleAppGrounding TRIGGER_KEYWORDS gate (rule 8, no
+  // new heuristic) — that list already includes "known bug"/"known
+  // issue"/"what's broken"/"whats broken", genuinely the right semantic
+  // territory for "why do things keep failing." Returns '' (no block at
+  // all) when nothing has actually gone wrong recently - never manufactures
+  // a report out of an empty buffer.
+  buildRecentErrorsBlock: function() {
+    if (!this._recentErrorToasts.length) return '';
+    var lines = this._recentErrorToasts.map(function(e) {
+      var secsAgo = Math.round((Date.now() - e.ts) / 1000);
+      return '- (' + secsAgo + 's ago) "' + e.msg + '"';
+    });
+    return '\n\nRECENT REAL ERROR TOASTS THIS SESSION (most recent ' + this._recentErrorToasts.length + '): if Alex asks why something is failing or broken, check whether one of these is the real cause before speculating:\n' + lines.join('\n');
   },
 
   // ── 1. Live oracle_actions fetch — same fetch-then-inject shape as       ──
