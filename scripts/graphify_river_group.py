@@ -4023,6 +4023,76 @@ def dimension_index_html(current_file=None, heading='🌌 Dimensions'):
 
 
 # ---------------------------------------------------------------------
+# _cid / _build_markers / _curved_edge — moved here from galaxy_map.py,
+# G106 (Aug 26 2026). render_infra_drilldown() below needed real SVG
+# edge/marker drawing to become a genuine bubble panel (Alex's own
+# direct ask, on a screenshot of galaxy_map_connectors.html's flat
+# card-grid drill-down: "it should be the same bubble system as in
+# level 2 and 3") and galaxy_map.py can't be imported from here (it
+# imports FROM this file — the reverse would be circular). Re-exported
+# from galaxy_map.py's own namespace so every existing
+# `from galaxy_map import _curved_edge, ...` call site
+# (galaxy_map_current.py/galaxy_map_module.py/galaxy_map_river.py) keeps
+# working unchanged — one real definition, not a second copy (rule 8).
+
+def _cid(color):
+    """Real, stable per-color id for a <marker> def — Aug 13 (5th pass),
+    Alex's own explicit ask: every edge gets a real X mark at its start
+    and a real arrowhead at its end, so the diagrams show relationship
+    DIRECTION, not just presence of a line. One marker pair per real
+    color actually used (never emitted for a color unused in that
+    diagram — same "only what's real" discipline as itype_legend's own
+    itype_used set)."""
+    return color.replace('#', '').lower()
+
+
+def _build_markers(colors):
+    """Real, shared marker defs (arrowhead + X-start) for a given set of
+    real colors — called once per file, right before its own </defs>,
+    covers every edge that file draws regardless of which script built
+    it. Deliberately NOT using CSS context-stroke/context-fill (real
+    portability risk — this app targets Android/desktop PWA via real
+    Chrome, and while modern Chromium supports it, a fixed-color-per-
+    marker approach has zero browser-version risk and costs only a few
+    extra <marker> defs)."""
+    out = []
+    for c in sorted(set(colors)):
+        cid = _cid(c)
+        out.append(
+            f'<marker id="arrow-{cid}" viewBox="0 0 10 10" refX="8.5" refY="5" '
+            f'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
+            f'<path d="M0,0 L10,5 L0,10 z" fill="{c}"/></marker>'
+        )
+        out.append(
+            f'<marker id="xstart-{cid}" viewBox="0 0 10 10" refX="5" refY="5" '
+            f'markerWidth="6" markerHeight="6">'
+            f'<path d="M1,1 L9,9 M9,1 L1,9" stroke="{c}" stroke-width="2" fill="none"/></marker>'
+        )
+    return ''.join(out)
+
+
+def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, r1=0, r2=0, markers=True):
+    dx, dy = x2 - x1, y2 - y1
+    length = math.hypot(dx, dy) or 1
+    ux, uy = dx / length, dy / length
+    # Real geometry fix: trim each endpoint inward by the real radius of
+    # the node it touches, so the X-start/arrow-end markers land AT the
+    # node's visible boundary instead of buried under its fill/icon at
+    # the node's exact center. r1/r2 default to 0 (no trim) for any
+    # caller that hasn't been updated with real radius info yet.
+    tx1, ty1 = x1 + ux * r1, y1 + uy * r1
+    tx2, ty2 = x2 - ux * r2, y2 - uy * r2
+    mx, my = (tx1 + tx2) / 2, (ty1 + ty2) / 2
+    ox, oy = -dy / length * 24 * offset_mult, dx / length * 24 * offset_mult
+    cx_, cy_ = mx + ox, my + oy
+    dash = ' stroke-dasharray="5,4"' if dashed else ''
+    op = '0.85' if real else '0.4'
+    mk = f' marker-start="url(#xstart-{_cid(color)})" marker-end="url(#arrow-{_cid(color)})"' if markers else ''
+    return (f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
+            f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}/>')
+
+
+# ---------------------------------------------------------------------
 # G74 (Aug 25 2026) — one shared renderer for the real, evidence-gated
 # connector bubbles (Oracle / Composio / Last.fm / Supabase).
 #
@@ -4157,6 +4227,131 @@ def render_evidence_bubble(items, pos, hub_xy, color, emoji, label,
     return edges, nodes
 
 
+def _bubble_leaf_svg(x, y, r, color, icon, label, sub):
+    """One real leaf node for render_bubble_row() below — a small circle
+    (icon centered) with a 2-line label underneath. Deliberately plain
+    text truncation, not CSS ellipsis (SVG <text> has no text-overflow),
+    with the FULL untruncated string kept in a real <title> tooltip so
+    nothing is silently lost, just visually shortened."""
+    def _cut(s, n):
+        s = s or ''
+        return s if len(s) <= n else s[:n - 1] + '…'
+    lbl, sub_s = _cut(label, 17), _cut(sub, 24)
+    title = f'<title>{label}{(" — " + sub) if sub else ""}</title>' if (label or sub) else ''
+    return (
+        f'{title}'
+        f'<circle cx="{x}" cy="{y}" r="{r}" fill="#0f0f1a" stroke="{color}" stroke-width="2.5"/>'
+        f'<text x="{x}" y="{y+5}" text-anchor="middle" font-size="15">{icon}</text>'
+        f'<text x="{x}" y="{y+r+13}" text-anchor="middle" font-size="9.5" fill="{color}" font-weight="700">{lbl}</text>'
+        f'<text x="{x}" y="{y+r+24}" text-anchor="middle" font-size="8" fill="#8a8a9a">{sub_s}</text>'
+    )
+
+
+def render_bubble_row(hub, leaves, edge_fn, markers_fn, leaf_r=25, width=1180, emit_defs=True):
+    """A real, self-contained radial hub-and-spoke SVG panel: one hub
+    node (a unit, or a river/module one level further into a drill-
+    down) with its own real leaves fanned out in a row beneath it,
+    connected by the exact same dashed glow-edge visual language
+    render_evidence_bubble() already established (reused here via the
+    caller's own `_curved_edge`/`_build_markers`, never re-derived —
+    rule 8; both now live in THIS file, see the note above).
+
+    G106 (Aug 26 2026) — Alex's own direct correction on a screenshot of
+    galaxy_map_connectors.html's flat `.idd-bub` card-grid drill-down:
+    "these are well done, but it should be the same bubble system as in
+    level 2 and 3, i think inters should have bubble systems too."
+    render_infra_drilldown() below now renders every one of its 3 real
+    levels (unit→rivers, river→modules, module→functions) this way —
+    the same real diagram Alex already sees at Level 2/Current, not a
+    second, plainer visual language for the exact same relationship.
+
+    hub    — dict(icon, label, color)
+    leaves — [dict(id, icon, label, sub, color, href=None, css_class='',
+              data={...}), ...]. No `href` = a real in-page reveal (the
+              caller's own existing click-to-reveal JS still drives it,
+              matched on `css_class`/`data-*` exactly as before); a real
+              `href` = a real migration bubble link, same convention
+              `render_evidence_bubble()` already uses.
+
+    emit_defs — G106 real fix: every panel embedding its OWN <defs>
+              (glow/edgeglow filters + per-color markers) produced
+              duplicate ids whenever more than one panel renders on the
+              same page (every real infra drilldown has L1 + one L2 pane
+              per river + one L3 pane per module — dozens of panels).
+              Harmless in practice (every <defs> block is byte-identical
+              for the same color, so `url(#glow)` resolving to whichever
+              copy is first in the DOM renders identically either way),
+              but real duplicate ids are still invalid markup worth
+              closing properly rather than accepting as a shrug. The
+              real fix: since every color any L2/L3 panel could ever use
+              is already a subset of L1's own hub+leaf colors (a river's
+              L2/L3 panels are always colored that SAME river's color,
+              which is already one of L1's own river leaves), only the
+              FIRST render_bubble_row() call on a page (L1) needs
+              emit_defs=True — every later panel passes emit_defs=False
+              and safely references the defs L1 already put in the DOM.
+
+    Returns '' for zero leaves (no bubble, matching render_evidence_
+    bubble()'s own "no real evidence, no bubble" rule)."""
+    n = len(leaves)
+    if n == 0:
+        return ''
+    hub_r, row_y, hub_y = 32, 150, 46
+    spacing = 150 if n <= 6 else max(92, min(150, (width - 140) / (n - 1)))
+    total_w = spacing * (n - 1) if n > 1 else 0
+    start_x = max(width / 2 - total_w / 2, 90)
+    real_w = max(width, start_x * 2 + total_w)
+    hx = real_w / 2
+    edges, nodes = [], []
+    colors_used = {hub['color']}
+    for i, leaf in enumerate(leaves):
+        lx = start_x + i * spacing if n > 1 else hx
+        colors_used.add(leaf['color'])
+        edges.append(edge_fn(lx, row_y, hx, hub_y, leaf['color'], real=True, dashed=True,
+                              r1=leaf_r, r2=hub_r, offset_mult=0.28))
+        body = _bubble_leaf_svg(lx, row_y, leaf_r, leaf['color'], leaf['icon'],
+                                 leaf.get('label', ''), leaf.get('sub', ''))
+        attrs = ''.join(f' data-{k}="{v}"' for k, v in (leaf.get('data') or {}).items())
+        cls = leaf.get('css_class', '')
+        if leaf.get('href'):
+            nodes.append(f'<a href="{leaf["href"]}" class="{cls}"{attrs}><g>{body}'
+                         f'<text x="{lx}" y="{row_y+leaf_r+35}" text-anchor="middle" font-size="7.5" '
+                         f'fill="#C9A84C" font-weight="700">🔽 jump ↗</text></g></a>')
+        elif leaf.get('dead'):
+            # A real, honestly-dead leaf — this module genuinely has no
+            # destination page (no river home for it). Non-clickable,
+            # dimmed, and says so, rather than a link that would 404 or
+            # a pointer cursor implying an interaction that isn't real.
+            nodes.append(f'<g class="{cls}"{attrs} opacity="0.55">{body}'
+                         f'<text x="{lx}" y="{row_y+leaf_r+35}" text-anchor="middle" font-size="7" '
+                         f'fill="#8a8a9a">{leaf.get("note", "no destination")}</text></g>')
+        else:
+            nodes.append(f'<g class="{cls}"{attrs} style="cursor:pointer">{body}</g>')
+    hub_svg = (
+        f'<circle cx="{hx}" cy="{hub_y}" r="{hub_r}" fill="#0f0f1a" stroke="{hub["color"]}" '
+        f'stroke-width="3" filter="url(#glow)"/>'
+        f'<text x="{hx}" y="{hub_y+6}" text-anchor="middle" font-size="19">{hub["icon"]}</text>'
+        f'<text x="{hx}" y="{hub_y+hub_r+16}" text-anchor="middle" font-size="10.5" '
+        f'fill="{hub["color"]}" font-weight="700">{hub["label"]}</text>'
+    )
+    height = row_y + leaf_r + 46
+    defs_block = ''
+    if emit_defs:
+        defs = (
+            '<filter id="glow" x="-60%" y="-60%" width="220%" height="220%">'
+            '<feGaussianBlur stdDeviation="4" result="blur"/>'
+            '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+            '<filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%">'
+            '<feGaussianBlur stdDeviation="1.4" result="blur"/>'
+            '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+            + markers_fn(colors_used)
+        )
+        defs_block = f'<defs>{defs}</defs>'
+    return (f'<div class="canvas-wrap"><svg viewBox="0 0 {real_w} {height}" width="100%" '
+            f'style="max-width:{real_w}px;display:block;margin:0 auto">'
+            f'{defs_block}{"".join(edges)}{"".join(nodes)}<g>{hub_svg}</g></svg></div>')
+
+
 # ---------------------------------------------------------------------
 # G83 (Aug 25 2026) — the shared INFRA BUBBLE SYSTEM mechanism.
 #
@@ -4257,6 +4452,10 @@ INFRA_DRILLDOWN_CSS = '''
 .idd-pane{display:none}
 .idd-pane.on{display:block}
 .idd-hint{font-size:10.5px;color:#8a8a9a;padding:6px 2px}
+.canvas-wrap{overflow-x:auto}
+.idd .idd-river,.idd .idd-mod{transition:opacity .15s}
+.idd .idd-river:hover,.idd .idd-mod:hover{opacity:0.8}
+.idd .idd-river.on circle:first-of-type,.idd .idd-mod.on circle:first-of-type{stroke-width:4.5}
 .idd-mig{display:block;text-decoration:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-left:3px solid var(--c,#C9A84C);border-radius:10px;padding:9px 12px;min-width:230px;flex:0 1 300px;transition:background .15s}
 .idd-mig:hover{background:rgba(201,168,76,0.1)}
 .idd-mig b{display:block;font-size:11px;color:#fff;font-family:'Cascadia Code','Fira Mono',monospace}
@@ -4268,32 +4467,52 @@ INFRA_DRILLDOWN_CSS = '''
 
 INFRA_DRILLDOWN_JS = '''
 (function() {
-  var root = document.querySelector('.idd');
-  if (!root) return;
-  var c1 = document.getElementById('idd-c1'), c2 = document.getElementById('idd-c2');
+  // G106 (Aug 26 2026) — real, pre-existing bug found while wiring the
+  // new bubble panels in: a page rendering MORE THAN ONE real infra
+  // drilldown at once (galaxy_map_connectors.html — 3 real ones,
+  // Composio/Jina AI/Last.fm, one per connector tab) emitted 3 copies
+  // of this exact script, and every copy did `document.querySelector
+  // ('.idd')`/`document.getElementById('idd-c1'/'idd-l2'/...)` — global
+  // lookups that ALWAYS resolve to the FIRST instance on the page
+  // (duplicate ids besides). Only the first connector's own click
+  // handlers ever attached to real elements; the other two connectors'
+  // river/module bubbles were silently unwired the whole time — a real
+  // bug that predates this session's own bubble-panel rewrite, just
+  // never surfaced under headless verification until a 3-instance page
+  // was actually click-tested. Fixed by scoping every lookup to
+  // `document.currentScript.previousElementSibling` — the specific
+  // `.idd` this exact script tag was written directly after — and by
+  // switching the id-based `#idd-c1`/`#idd-c2`/`#idd-l2`/`#idd-l3`
+  // selectors to real per-instance CLASS lookups scoped under that same
+  // root, so no two instances can ever collide again regardless of how
+  // many real drilldowns share one page.
+  var root = document.currentScript.previousElementSibling;
+  if (!root || !root.classList.contains('idd')) return;
+  var c1 = root.querySelector('.idd-c1'), c2 = root.querySelector('.idd-c2');
+  var l2wrap = root.querySelector('.idd-l2'), l3wrap = root.querySelector('.idd-l3');
   function panes(sel) { return root.querySelectorAll(sel); }
   function closeAll(sel) { panes(sel).forEach(function(p) { p.classList.remove('on'); }); }
   root.querySelectorAll('.idd-river').forEach(function(b) {
     b.addEventListener('click', function() {
       root.querySelectorAll('.idd-river').forEach(function(x) { x.classList.toggle('on', x === b); });
       root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.remove('on'); });
-      closeAll('#idd-l2 .idd-pane');
-      closeAll('#idd-l3 .idd-pane');
-      var p = root.querySelector('#idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
+      closeAll('.idd-l2 .idd-pane');
+      closeAll('.idd-l3 .idd-pane');
+      var p = root.querySelector('.idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
       if (p) p.classList.add('on');
-      c1.textContent = b.dataset.crumb; c1.className = 'on';
-      c2.textContent = ''; c2.className = '';
-      document.getElementById('idd-l2').scrollIntoView({behavior:'smooth', block:'nearest'});
+      c1.textContent = b.dataset.crumb; c1.className = 'idd-c1 on';
+      c2.textContent = ''; c2.className = 'idd-c2';
+      l2wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
     });
   });
   root.querySelectorAll('.idd-mod').forEach(function(b) {
     b.addEventListener('click', function() {
       root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.toggle('on', x === b); });
-      closeAll('#idd-l3 .idd-pane');
-      var p = root.querySelector('#idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
+      closeAll('.idd-l3 .idd-pane');
+      var p = root.querySelector('.idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
       if (p) p.classList.add('on');
-      c2.textContent = b.dataset.crumb; c2.className = 'on';
-      document.getElementById('idd-l3').scrollIntoView({behavior:'smooth', block:'nearest'});
+      c2.textContent = b.dataset.crumb; c2.className = 'idd-c2 on';
+      l3wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
     });
   });
 })();
@@ -4303,7 +4522,9 @@ INFRA_DRILLDOWN_JS = '''
 def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
                            leaf_link_fn, resource_emoji='🗄️',
                            orphan_label='Cross-cutting (no river)',
-                           orphan_note='', esc=None):
+                           orphan_note='', esc=None,
+                           edge_fn=_curved_edge, markers_fn=_build_markers,
+                           unit_color='#C9A84C'):
     """Renders one real infra bubble system: Level 1 rivers -> Level 2
     modules -> Level 3 migration bubbles.
 
@@ -4313,8 +4534,23 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
     static HTML rather than built by JS on click, deliberately: it keeps
     every real destination href greppable by this project's own
     link-integrity check, which is what has repeatedly caught dead
-    `#mod-…` anchors."""
+    `#mod-…` anchors.
+
+    G106 (Aug 26 2026) — every one of the 3 levels now renders as a real
+    SVG hub-and-spoke bubble panel (render_bubble_row(), which reuses
+    render_evidence_bubble()'s own dashed-glow-edge visual language) in
+    place of the old flat `.idd-bub` card grid — Alex's own direct ask,
+    on a screenshot: "it should be the same bubble system as in level 2
+    and 3, i think inters should have bubble systems too." The click-to-
+    reveal interaction and every real destination href are UNCHANGED —
+    only the visual language of the L1/L2 nodes moved from a div grid to
+    a real bubble diagram; `INFRA_DRILLDOWN_JS` below still drives it,
+    matched on the exact same `.idd-river`/`.idd-mod` classes and
+    `data-river`/`data-mod`/`data-crumb` attributes as before (now living
+    on SVG `<g>`/`<a>` elements instead of `<div>`s — both support
+    `dataset` and click listeners identically)."""
     e = esc or (lambda s: (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+    resource_noun = 'table' if resource_emoji == '🗄️' else 'resource'
 
     def _res_line(pairs):
         seen = []
@@ -4324,29 +4560,29 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
                 seen.append(lab)
         return ' &nbsp;·&nbsp; '.join(e(s) for s in sorted(seen))
 
-    def _mod_bubble(mod, fns, colour):
+    def _mod_leaf(mod, fns, colour):
         n_res = len({r for pairs in fns.values() for r, _d in pairs})
-        return (f'<div class="idd-bub idd-mod" data-mod="{mod}" data-crumb="{e(mod)}" '
-                f'style="--c:{colour}"><b>🔽 {e(mod)}</b>'
-                f'<em>{len(fns)} real function(s) · {n_res} {"table" if resource_emoji == "🗄️" else "resource"}(s)</em></div>')
+        return dict(icon='🔽', label=mod, color=colour,
+                    sub=f'{len(fns)} fn · {n_res} {resource_noun}(s)',
+                    css_class='idd-mod', data={'mod': e(mod), 'crumb': e(mod)})
 
     def _leaf_pane(mod, fns, colour):
         href = leaf_link_fn(mod)
-        rows = []
+        leaves = []
         for fn in sorted(fns):
-            body = (f'<b>{e(mod)}.{e(fn)}()</b>'
-                    f'<span class="idd-res">{_res_line(fns[fn])}</span>')
+            res_line = _res_line(fns[fn])
             if href:
-                rows.append(f'<a class="idd-mig" style="--c:{colour}" href="{href}">{body}'
-                            f'<span class="idd-jump">🔽 jump to this module\'s Current Series ↗</span></a>')
+                leaves.append(dict(icon=resource_emoji, label=f'{mod}.{fn}()', color=colour,
+                                    sub=res_line, href=href))
             else:
-                rows.append(f'<div class="idd-mig idd-dead" style="--c:{colour}">{body}'
-                            f'<span class="idd-jump">no Current Series page — this module has no river, '
-                            f'so Current Series has no section for it</span></div>')
-        return (f'<div class="idd-pane" data-mod="{mod}"><div class="idd-row">'
-                + ''.join(rows) + '</div></div>')
+                leaves.append(dict(icon=resource_emoji, label=f'{mod}.{fn}()', color=colour,
+                                    sub=res_line, dead=True,
+                                    note='no Current Series page for this module'))
+        hub = dict(icon='🔽', label=mod, color=colour)
+        return (f'<div class="idd-pane" data-mod="{mod}">'
+                + render_bubble_row(hub, leaves, edge_fn, markers_fn, emit_defs=False) + '</div>')
 
-    l1, l2, l3 = [], [], []
+    l1_leaves, l2, l3 = [], [], []
     for r in sorted(drill):
         mods = drill[r]
         colour = RIVER_COLOR.get(r, '#8a8a9a')
@@ -4355,39 +4591,42 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
         head = name.split('—')[0].strip() if '—' in name else name
         n_fn = sum(len(f) for f in mods.values())
         n_res = len({res for fs in mods.values() for pairs in fs.values() for res, _d in pairs})
-        l1.append(f'<div class="idd-bub idd-river" data-river="{r}" data-crumb="{e(head)}" '
-                  f'style="--c:{colour}"><b>🌊 {e(head)}</b><span>{e(short)}</span>'
-                  f'<em>{len(mods)} module(s) · {n_fn} function(s) · {n_res} table(s)</em></div>')
-        l2.append(f'<div class="idd-pane" data-river="{r}"><div class="idd-row">'
-                  + ''.join(_mod_bubble(m, mods[m], colour) for m in sorted(mods))
-                  + '</div></div>')
+        l1_leaves.append(dict(icon='🌊', label=head, color=colour,
+                               sub=f'{len(mods)} mod · {n_fn} fn · {n_res} {resource_noun}(s)',
+                               css_class='idd-river', data={'river': r, 'crumb': e(head)}))
+        r_hub = dict(icon='🌊', label=short, color=colour)
+        l2.append(f'<div class="idd-pane" data-river="{r}">'
+                  + render_bubble_row(r_hub, [_mod_leaf(m, mods[m], colour) for m in sorted(mods)],
+                                       edge_fn, markers_fn, emit_defs=False) + '</div>')
         for m in sorted(mods):
             l3.append(_leaf_pane(m, mods[m], colour))
     if orphans:
         colour = '#8a8a9a'
         n_fn = sum(len(f) for f in orphans.values())
         n_res = len({res for fs in orphans.values() for pairs in fs.values() for res, _d in pairs})
-        l1.append(f'<div class="idd-bub idd-river" data-river="orphan" data-crumb="{e(orphan_label)}" '
-                  f'style="--c:{colour}"><b>⚙️ {e(orphan_label)}</b><span>{e(orphan_note)}</span>'
-                  f'<em>{len(orphans)} module(s) · {n_fn} function(s) · {n_res} table(s)</em></div>')
-        l2.append('<div class="idd-pane" data-river="orphan"><div class="idd-row">'
-                  + ''.join(_mod_bubble(m, orphans[m], colour) for m in sorted(orphans))
-                  + '</div></div>')
+        l1_leaves.append(dict(icon='⚙️', label=orphan_label, color=colour,
+                               sub=f'{len(orphans)} mod · {n_fn} fn · {n_res} {resource_noun}(s)',
+                               css_class='idd-river', data={'river': 'orphan', 'crumb': e(orphan_label)}))
+        o_hub = dict(icon='⚙️', label=orphan_label, color=colour)
+        l2.append('<div class="idd-pane" data-river="orphan">'
+                  + render_bubble_row(o_hub, [_mod_leaf(m, orphans[m], colour) for m in sorted(orphans)],
+                                       edge_fn, markers_fn, emit_defs=False) + '</div>')
         for m in sorted(orphans):
             l3.append(_leaf_pane(m, orphans[m], colour))
 
     c = infra_drilldown_counts(drill, orphans)
+    unit_hub = dict(icon=unit_icon, label=unit_label, color=unit_color)
     return (
         f'<div class="idd">'
         f'<div class="idd-crumb"><span class="on">{unit_icon} {e(unit_label)}</span>'
-        f'<span class="idd-sep">→</span><span id="idd-c1">pick a river</span>'
-        f'<span class="idd-sep">→</span><span id="idd-c2"></span></div>'
+        f'<span class="idd-sep">→</span><span class="idd-c1">pick a river</span>'
+        f'<span class="idd-sep">→</span><span class="idd-c2"></span></div>'
         f'<div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch {e(unit_label)} — '
         f'{c["rivers"]} of {TOTAL_ZONES} real rivers qualify</div>'
-        f'<div class="idd-row">{"".join(l1)}</div></div>'
-        f'<div class="idd-lvl" id="idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div>'
+        + render_bubble_row(unit_hub, l1_leaves, edge_fn, markers_fn) + '</div>'
+        f'<div class="idd-lvl idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div>'
         f'<div class="idd-hint">Pick a river above.</div>{"".join(l2)}</div>'
-        f'<div class="idd-lvl" id="idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — '
+        f'<div class="idd-lvl idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — '
         f'each is a migration bubble out to that module\'s own Current Series section</div>'
         f'<div class="idd-hint">Pick a module above.</div>{"".join(l3)}</div>'
         f'</div><script>{INFRA_DRILLDOWN_JS}</script>')

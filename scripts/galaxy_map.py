@@ -69,6 +69,7 @@ from graphify_river_group import (  # noqa: E402
     compute_rpgace_architecture_supabase_infra, compute_oversight_docs_supabase_infra,
     compute_all_oracle_call_counts, compute_all_connector_call_counts,
     compute_all_supabase_table_touches, SKILL_SECONDARY_RIVER,
+    _cid, _build_markers, _curved_edge,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
@@ -1526,65 +1527,14 @@ def _connector_icon(name):
     return icons.get(name, '●')
 
 
-def _cid(color):
-    """Real, stable per-color id for a <marker> def — Aug 13 (5th pass),
-    Alex's own explicit ask: every edge gets a real X mark at its start
-    and a real arrowhead at its end, so the diagrams show relationship
-    DIRECTION, not just presence of a line. One marker pair per real
-    color actually used (never emitted for a color unused in that
-    diagram — same "only what's real" discipline as itype_legend's own
-    itype_used set)."""
-    return color.replace('#', '').lower()
-
-
-def _build_markers(colors):
-    """Real, shared marker defs (arrowhead + X-start) for a given set of
-    real colors — called once per file, right before its own </defs>,
-    covers every edge that file draws regardless of which script built
-    it (galaxy_map.py/galaxy_map_river.py/galaxy_map_module.py all
-    import this). Deliberately NOT using CSS context-stroke/context-fill
-    (real portability risk — this app targets Android/desktop PWA via
-    real Chrome, and while modern Chromium supports it, a fixed-color-
-    per-marker approach has zero browser-version risk and costs only a
-    few extra <marker> defs)."""
-    out = []
-    for c in sorted(set(colors)):
-        cid = _cid(c)
-        out.append(
-            f'<marker id="arrow-{cid}" viewBox="0 0 10 10" refX="8.5" refY="5" '
-            f'markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
-            f'<path d="M0,0 L10,5 L0,10 z" fill="{c}"/></marker>'
-        )
-        out.append(
-            f'<marker id="xstart-{cid}" viewBox="0 0 10 10" refX="5" refY="5" '
-            f'markerWidth="6" markerHeight="6">'
-            f'<path d="M1,1 L9,9 M9,1 L1,9" stroke="{c}" stroke-width="2" fill="none"/></marker>'
-        )
-    return ''.join(out)
-
-
-def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, r1=0, r2=0, markers=True):
-    dx, dy = x2 - x1, y2 - y1
-    length = math.hypot(dx, dy) or 1
-    ux, uy = dx / length, dy / length
-    # Real geometry fix, same pass: trim each endpoint inward by the
-    # real radius of the node it touches, so the X-start/arrow-end
-    # markers land AT the node's visible boundary instead of buried
-    # under its fill/icon at the node's exact center (a path drawn
-    # center-to-center would render both markers invisible). r1/r2
-    # default to 0 (no trim) for any caller that hasn't been updated
-    # with real radius info yet — never breaks a call site, just skips
-    # the trim there.
-    tx1, ty1 = x1 + ux * r1, y1 + uy * r1
-    tx2, ty2 = x2 - ux * r2, y2 - uy * r2
-    mx, my = (tx1 + tx2) / 2, (ty1 + ty2) / 2
-    ox, oy = -dy / length * 24 * offset_mult, dx / length * 24 * offset_mult
-    cx_, cy_ = mx + ox, my + oy
-    dash = ' stroke-dasharray="5,4"' if dashed else ''
-    op = '0.85' if real else '0.4'
-    mk = f' marker-start="url(#xstart-{_cid(color)})" marker-end="url(#arrow-{_cid(color)})"' if markers else ''
-    return (f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
-            f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}/>')
+# _cid/_build_markers/_curved_edge moved to graphify_river_group.py, G106
+# (Aug 26 2026) — render_infra_drilldown() there needed them to build a
+# real bubble-diagram panel and couldn't import this file (galaxy_map.py
+# imports FROM graphify_river_group.py, so the reverse would be
+# circular). Re-imported here so every existing `from galaxy_map import
+# _curved_edge, ...` call site (galaxy_map_current.py/galaxy_map_module.py/
+# galaxy_map_river.py) keeps working with zero changes — rule 8, one
+# real definition, not a second copy.
 
 
 TEMPLATE = """<!DOCTYPE html>
