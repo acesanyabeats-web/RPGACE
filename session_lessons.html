@@ -58,6 +58,19 @@
 
   <div class="card">
     <div class="card-top">
+      <div class="card-title">A confidently-stated claim about a just-shipped feature was wrong — checking it directly instead of building on it turned a false premise into a real, better feature</div>
+      <div class="card-date">Aug 26 2026</div>
+    </div>
+    <span class="trigger correction">Real evidence check before acting on a claim, rule 4</span>
+    <div class="block scope"><b>Prompt scope</b>Right after G41 Phase 1+2 shipped, Alex said: "so now that oracle connects, it will be able to monitor if any error toast pop-ups appear, thus closing a gap on error log inputs directly from within RPGACE app."</div>
+    <div class="block obstacle"><b>Obstacle</b>This is a real, plausible-sounding but FALSE claim about what had just been built. <code>RPGACE.utils.toast()</code> is purely visual — creates a div, appends it, removes it after a timeout; writes nothing, fires nothing. Oracle Control (G41) is entirely reactive — it only ever runs when a real message is sent to <code>callOracle()</code>, never a live background watcher. Building anything on top of "Oracle can now see toasts" without checking would have compounded a real misunderstanding into shipped, misleading behavior.</div>
+    <div class="block reasoning"><b>Reasoning</b>Checked both real mechanisms directly (read <code>toast()</code>'s actual body, read <code>errorLog</code>'s actual capture code) before responding at all, rather than accepting the premise because it sounded reasonable given what had just shipped. This surfaced a REAL, separate, genuine gap in the same breath: <code>errorLog</code> only ever caught <code>window.onerror</code>/<code>unhandledrejection</code> — a handled validation toast never throws, so it was invisible to <code>error_log</code> entirely, a real problem worth fixing even though Oracle monitoring wasn't the fix.</div>
+    <div class="block solution"><b>Solution</b>Corrected the claim plainly, in the same message, before proposing anything — then offered the real, buildable version of the underlying goal (wrap the one shared <code>toast()</code> function to write error-colored toasts into <code>error_log</code>). Alex confirmed and extended it ("make these toast visible and hookable for oracle to pick up... an error function for each module... flag to smoke test purple"), which became G109 — a real, working error→perspective-baseline→smoke_test→ceo_plan_items-purple cascade, genuinely bigger and more valuable than what the original (wrong) claim described.</div>
+    <div class="block rule"><b>Resulting rule</b>A claim about what a just-shipped feature can do — even one made confidently, even one that sounds like a natural extension of real work — gets the same rule-4 evidence check as any other claim before anything is built on it. Correcting it isn't a dead end: the real gap underneath a wrong claim is often genuine and worth closing anyway, just not the way the wrong claim described it.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
       <div class="card-title">"An added bonus" phrase, read literally, would have silently reversed a safety boundary shipped 5 minutes earlier — /paranoia + /CEO-Drift caught it before any code was written</div>
       <div class="card-date">Aug 26 2026</div>
     </div>

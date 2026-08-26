@@ -1,0 +1,188 @@
+G109 — REAL "ERROR → PERSPECTIVE BASELINE → SMOKE TEST BROKEN → CEO PLAN
+PURPLE" LOOP
+RPGACE Total Systems Galaxy Map / CEO plan, item G109
+Aug 26 2026 — built same day as G41 Phase 1+2, real follow-up ask:
+"so now that oracle connects, it will be able to monitor if any error toast
+pop-ups appear, thus closing a gap on error log inputs" (corrected — see
+below), then "make these toast visible and hookable for oracle to pick up
+... an error function for each module that will learn how each function
+operates properly will help identify /drift with errors... flags to oracle
+to send to orchestrator CC via smoke test purple."
+
+=========================================================================
+1. THE REAL CORRECTION THAT STARTED THIS
+=========================================================================
+Alex's original claim ("Oracle will be able to monitor toast pop-ups") was
+checked directly against real code and found FALSE — RPGACE.utils.toast()
+is purely visual (creates a div, appends it, removes it after a timeout; no
+write, no hook, no signal), and Oracle Control (G41) is entirely reactive —
+it only runs when a real message is sent to callOracle(), never a live DOM
+watcher. Corrected plainly rather than building on a false premise. The
+REAL underlying gap was confirmed genuine though: errorLog only ever caught
+window.onerror/unhandledrejection — a handled validation toast (e.g. "Add a
+beat title first") never throws, so it was invisible to error_log entirely.
+
+=========================================================================
+2. STEP 1 — TOASTS BECOME VISIBLE + HOOKABLE (shipped, commit 408e2f4)
+=========================================================================
+RPGACE.utils.toast() gained 2 additive behaviors when color === '#CC4A4A'
+(the codebase's own established error-toast convention, confirmed via a
+direct grep: 33 of ~80 real toast() call sites use it for a genuine
+failure, vs #E2A83D for soft warnings and #4CAF82 for success):
+  (a) writes into error_log via errorLog._capture (rule 8 — the same
+      dedup/write path every other error type already used), tagged
+      'ui_toast'.
+  (b) fires a new RPGACE.hooks event, 'rpgace:error-toast'.
+oracleControl listens for this hook and keeps a small in-memory buffer
+(last 5, session-only) surfaced to Oracle via buildRecentErrorsBlock(),
+riding the SAME oracleAppGrounding TRIGGER_KEYWORDS gate (rule 8) — the
+honest version of "Oracle picks these up": still reactive-only, but real,
+recent failures are visible the next time Alex actually asks Oracle
+something.
+
+=========================================================================
+3. STEP 2 — THE BIGGER ASK: 3 REAL FORKS, RESOLVED BY ASKUSERQUESTION
+=========================================================================
+Given the size (spans error_log, perspective_reports, smoke_test_items,
+ceo_plan_items, /Routine, future_integrations.html — genuinely 3+ new
+pieces, rule 5), real evidence was gathered on each existing mechanism
+BEFORE proposing a design, then 3 real forks were put to Alex directly:
+
+Q1. "An error function for each module that learns how each function
+    operates properly" — extend /perspective's existing per-module
+    expected_behavior baseline (44 real rows already exist), or build a
+    brand-new live self-test system?
+A1 (Alex): Extend /perspective's existing baseline. Confirmed — no new
+    "learning" mechanism invented, reuses what's already there.
+
+Q2. Purple only exists on ceo_plan_items.status, not on arbitrary modules —
+    what should actually happen when a real error hits?
+A2 (Alex, verbatim): "when error occurs it triggers smoke test to turn
+    needed bit from green to purple, which will then also trigger error
+    log, and then transcend everywhere else where needed, both 1 and 2
+    combined with mine could be a winner." Real reading: smoke_test_items
+    (which already has a real 'broken' status + linked_error_id/
+    linked_plan_item_id columns, confirmed via direct schema + smoke_
+    test.html JS read) is the real trigger surface, not a brand-new
+    per-module status table (Option 2 was effectively already served by
+    the 44 already-existing smoke_test_items module rows — no new schema
+    needed). error_log gets the connected row (Option 1). If a linked
+    ceo_plan_items row exists AND was genuinely green, it purples too —
+    matching /colourgradient's own existing purple definition exactly
+    (never from a non-green prior state).
+
+Q3. Oracle can't message a Claude Code session directly (no live AI-to-AI
+    channel) — where does "flag to Orchestrator CC" actually land?
+A3 (Alex): "1 and make it tied to /routine and future integrations too" —
+    a real Supabase queue + session-start check (error_log itself IS the
+    queue, no new table), explicitly tied into /Routine and confirmed
+    already-live in future_integrations.html's purple section (verified,
+    zero changes needed there — see section 5).
+
+=========================================================================
+4. REAL TECHNICAL FINDING: THE OBVIOUS APPROACH DOESN'T WORK
+=========================================================================
+The natural way to attribute a real error to "which module" would be a
+stack trace. Tested directly in headless Chromium against the live
+minified app (not assumed): RPGACE.register() modules are plain object
+literals, so V8 reports a real thrown error as "at Object._submit (...)"
+— the enclosing module name ("beatLog") is NOT present in the trace at
+all. This is a real, structural consequence of this codebase's own module
+convention, discovered by testing, not assumed.
+
+Real, viable fix found instead: mangle:false (this project's permanent
+minify setting) DOES preserve every real method name. A new generator
+script, scripts/generate_method_module_map.py, parses rpgace_core.js
+directly (real brace-depth matching per RPGACE.register('name', {...})
+block, not a naive regex) and builds a method-name -> owning-module
+lookup, keeping ONLY unambiguous entries (exactly one module defines that
+method name). Real, measured result: 58 modules scanned, 432 of 456
+distinct method names resolve unambiguously (94.7%); 24 genuinely
+ambiguous names (_inject/_render/init/_close/open/run/toggle/etc, shared
+by 2-8 modules each) are correctly EXCLUDED, never guessed. Confirmed via
+direct test: "_submit" -> "beatLog" (real, single owner); "_inject" ->
+null (real, 8 owners, correctly rejected rather than guessed).
+
+Re-run this script and paste its output into errorLog.METHOD_MODULE_MAP
+whenever a module gains/loses/renames a method — same "regenerate then
+re-embed" discipline as the Galaxy Map's own generator-script pipeline.
+
+=========================================================================
+5. THE REAL BUILT MECHANISM (rpgace_core.js, errorLog module)
+=========================================================================
+errorLog._capture(type, source, message, opts) now accepts an optional
+opts.stack. window.onerror/unhandledrejection pass e.error.stack/
+e.reason.stack; toast()'s own new call passes (new Error()).stack.
+
+_extractModule(stack) walks the stack's real frames, checks each method
+name against METHOD_MODULE_MAP, returns the first confident match or null
+— never a guess.
+
+On a genuinely NEW error (not a dedup-increment of an existing active
+row):
+  1. If a module was identified, look up its real perspective_reports row
+     (scope_level='module', scope_id=<moduleName>, status='active') and
+     attach linked_perspective_id/expected_baseline to the error_log row —
+     real Q1 answer, the existing baseline becomes real live context on
+     the error itself.
+  2. Insert the error_log row via raw fetch + Prefer:return=representation
+     (RPGACE.sb.insert() never returns the new id — the standing CLAUDE.md
+     landmine, avoided here the same way phylumPath._insertNewSteps/
+     bookworm._createBookFromExtraction already do, rule 8).
+  3. If a module was identified AND the insert's representation came back,
+     look up smoke_test_items (category='RPGACE App — Modules',
+     item_name=<moduleName>). If found, PATCH it to status='broken' with a
+     real broken_note derived from the actual error message, and
+     linked_error_id set to the new row — reusing the EXACT SAME columns
+     smoke_test.html's manual "Mark Broken"/"Fixed, Re-confirm" buttons
+     already read/write, just triggered from the opposite (automatic)
+     direction.
+  4. If that smoke_test row has a linked_plan_item_id, look up the real
+     ceo_plan_items row. Only if its CURRENT status is genuinely 'green'
+     does it flip to 'purple' (real /colourgradient discipline — a
+     regression requires a real prior-green state; anything else is
+     correctly left alone).
+Every step fails open independently (try/catch + .catch on each real
+network call) — a cascade step failing never blocks the base error_log
+insert, and never throws a second, louder error in front of Alex.
+
+future_integrations.html's own #purple-live section already live-queries
+ceo_plan_items for status='purple' (confirmed via direct read — zero
+changes needed there; it was built empty and waiting for exactly this).
+
+=========================================================================
+6. VERIFIED
+=========================================================================
+Headless Chromium, full cascade, mocked Supabase network responses (real
+network is blocked in this sandbox — the REQUEST shapes/bodies were
+verified, not faked): a synthetic error attributed to "beatLog" correctly
+triggered, in order — the dedup-check SELECT, the perspective_reports
+lookup (correct scope_level/scope_id filter), the error_log INSERT with
+linked_perspective_id/expected_baseline correctly attached, the smoke_
+test_items lookup + PATCH to broken with a real derived broken_note and
+linked_error_id, the ceo_plan_items lookup, and — because the mocked prior
+status was genuinely 'green' — the PATCH to 'purple'. Zero console errors.
+The extractModule test separately confirmed "_submit" -> "beatLog" and
+"_inject" -> null (ambiguous, correctly rejected) against a real stack
+trace shape.
+
+=========================================================================
+7. SCOPE, HONESTLY STATED
+=========================================================================
+- This only auto-flips a module's smoke_test row when a genuine JS
+  exception/promise rejection/error-toast is captured AND attributed to
+  exactly one module. A real bug that doesn't throw and doesn't toast
+  (silently wrong output) is invisible to this, same as it always was.
+- Module attribution covers ~95% of distinct method names — the ~5%
+  ambiguous ones (mostly generic lifecycle methods like init/_inject/
+  _render) never get auto-attributed, by design (never a wrong guess).
+- The purple cascade only reaches modules that (a) have a real smoke_test_
+  items row AND (b) that row has a linked_plan_item_id pointing at a
+  currently-green ceo_plan_items row — most of the 44 module rows have no
+  linked_plan_item_id yet (they track modules, not plan items), so most
+  real errors will stop at "smoke_test flips to broken," which is itself
+  the real, valuable, new signal.
+- error_log itself IS the real async queue Q3 asked for — no new table.
+  A new CLAUDE.md session-start check (mirroring the existing oracle_
+  dev_suggestions/graphify_jobs/system_map_flags pattern) plus a real
+  /Routine tie-in are the "picked up by a future session" half of the loop.
