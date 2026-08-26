@@ -56,6 +56,7 @@ from graphify_river_group import (  # noqa: E402
     compute_external_call_sites, compute_lastfm_call_sites,
     FLOWS_IN, attribute_river_connection_function, LEVEL3_MODULES,
     render_evidence_bubble, dimension_index_html, DIMENSION_INDEX_CSS,
+    INFRA_DRILLDOWN_CSS,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_decision_matrix import LOGIC_POINTS as DECISION_POINTS  # noqa: E402
@@ -687,11 +688,24 @@ def build_module_infra_inter_row(mod):
         return ''
     kind = 'infra' if len(units) == 1 else 'inter'
     kind_label = '💉 Infra' if kind == 'infra' else f'🔗 Inter ({len(units)} units compose here)'
-    chips = ''.join(
-        f'<a class="unit-chip" href="{UNIT_BUBBLE_SYSTEM.get(u, "#")}" style="--c:{UNIT_META[u]["color"]}">'
-        f'{UNIT_META[u]["icon"]} {UNIT_META[u]["label"]}</a>'
+    # G94 real fix (Aug 26 2026, Alex's own direct report: "still not
+    # clickable and no supabase migration bubble still") — root cause,
+    # confirmed by direct HTML read: the link WAS always real and
+    # clickable, but its own bespoke `.unit-chip` pill style read as
+    # plain, unstyled text next to everything else on the page, nothing
+    # like the real ".idd-mig" migration-bubble shape every OTHER real
+    # Infra drilldown in this whole system already uses (Oracle/
+    # Supabase/Connectors' own pages). Reused verbatim here instead of
+    # a 2nd bespoke style (rule 8) — a real card with a colored left
+    # border and an explicit "jump" cue, immediately recognizable as
+    # the same interactive element type everywhere else in the system.
+    bubbles = ''.join(
+        f'<a class="idd-mig" style="--c:{UNIT_META[u]["color"]}" href="{UNIT_BUBBLE_SYSTEM.get(u, "#")}">'
+        f'<b>{UNIT_META[u]["icon"]} {UNIT_META[u]["label"]}</b>'
+        f'<span class="idd-jump">🔽 jump to this unit\'s own Infra bubble system ↗</span></a>'
         for u in units)
-    return f'<div class="mod-infra-row"><span class="mod-infra-label">{kind_label}</span>{chips}</div>'
+    return (f'<div class="mod-infra-row"><span class="mod-infra-label">{kind_label}</span>'
+            f'<div class="mod-infra-bubbles">{bubbles}</div></div>')
 
 
 def build_module_section(mod):
@@ -756,11 +770,14 @@ TEMPLATE = """<!DOCTYPE html>
   .river-chip{{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--dim)}}
   .mtotal{{font-size:9.5px;color:var(--dim)}}
   .l3-link{{margin-left:auto;font-size:9.5px;color:var(--dim);text-decoration:none}}
-  /* G94 (Aug 25 2026) — real per-module Infra/Inter bubble row. */
-  .mod-infra-row{{max-width:900px;margin:0 auto;padding:0 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}}
-  .mod-infra-label{{font-size:9.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px}}
-  .unit-chip{{--c:#8a8a9a;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;border:1px solid var(--c);color:var(--c);text-decoration:none;background:color-mix(in srgb, var(--c) 10%, transparent);transition:background .15s}}
-  .unit-chip:hover{{background:color-mix(in srgb, var(--c) 22%, transparent)}}
+  /* G94 (Aug 25/26 2026) — real per-module Infra/Inter bubble row.
+     Real fix (Aug 26): the migration bubbles reuse .idd-mig verbatim
+     (INFRA_DRILLDOWN_CSS below) instead of a bespoke pill style that
+     read as plain text — see build_module_infra_inter_row()'s own
+     comment for the full root-cause account. */
+  .mod-infra-row{{max-width:900px;margin:0 auto;padding:0 24px 10px}}
+  .mod-infra-label{{display:block;font-size:9.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}}
+  .mod-infra-bubbles{{display:flex;gap:10px;flex-wrap:wrap}}
   .currents{{max-width:900px;margin:0 auto 40px;padding:0 24px;display:flex;flex-direction:column;gap:12px}}
   .current-block{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px}}
   .cur-head{{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}}
@@ -795,6 +812,7 @@ TEMPLATE = """<!DOCTYPE html>
   .hop-next{{background:rgba(201,168,76,0.1);font-weight:700}}
   .terminal{{color:var(--gold)}}
   .boundary{{font-size:10px;color:var(--gold);margin-top:6px}}
+{idd_css}
 {dim_css}
   a{{color:var(--gold)}}
   .note{{max-width:900px;margin:20px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
@@ -924,7 +942,7 @@ def main():
     html = TEMPLATE.format(mod_tabs=mod_tabs, mod_sections=mod_sections,
                             n_funcs=total_funcs, n_mods=len(all_mods),
                             dim_index=dimension_index_html(OUT.name),
-                            dim_css=DIMENSION_INDEX_CSS)
+                            dim_css=DIMENSION_INDEX_CSS, idd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

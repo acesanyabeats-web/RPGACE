@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card green" style="margin-bottom:30px;">
+    <div class="card-title">🪞✅ Aug 26 — /perspective writeups for Oracle + 6 connector units, Alex/Skills refreshed; real migration-bubble bug found and fixed; left-nav deduplicated with a new Modules division</div>
+    <div class="card-body">
+      <b>9 real `perspective_reports` rows built/refreshed</b> (Alex: "do 2" — build /perspective writeups for the 6 connector units + Alex + Skills). Found first: Alex/Skills already had `l0_unit`-scope reports from the Aug 21 "L0 Fusion" baseline, now genuinely stale (their real facet counts changed materially under this session's G93-G101 redesign — Alex went from 8 infra/4 inter to 7 infra/15 inter; Skills from 2 infra/4 inter to 7 infra/7 inter). Refreshed both in place from galaxy_map.py's own live `build_facets()` output, not guessed. 7 new reports built for Oracle (13 real modules, 20 real (module,function) pairs, sourced from `compute_all_oracle_call_counts()`) and the 6 connectors (Composio/Jina AI/Last.fm's real call-site evidence via `compute_all_connector_call_counts()`; librosa/n8n/Whisper's real, honest zero-evidence finding). The old `external_ai` l0_unit report — the unit it describes no longer exists — marked `status='superseded'`, pointing at Oracle's new report, not silently left stale.
+      <br><br>
+      <b>Real bug found and fixed, Alex's own direct report</b>: "still not clickable and no supabase migration bubble still" (after a genuine hard-refresh test ruled out caching). Direct HTML read confirmed the link was ALWAYS real and functional — the actual root cause was purely visual: the module-level Infra/Inter chip (G94) used a bespoke small pill style that read as plain, unstyled text next to everything else on the page, nothing like the real <code>.idd-mig</code> "migration bubble" shape every OTHER Infra drilldown in this whole system (Oracle/Supabase/Connectors' own pages) already uses. Fixed by reusing that exact shape verbatim (rule 8) — a real card with a colored left border and an explicit "🔽 jump to..." cue, immediately recognizable as the same interactive element type everywhere else.
+      <br><br>
+      <b>Left-nav deduplicated</b> (Alex: "too many repeats i dont like how it looks, include modules instead... keep it at highest possible point to make sense of it"): every real Dimension page now appears EXACTLY ONCE, at the highest level it's genuinely relevant to — infra-kind at L1 only (was repeating at L1/L2/L3), inter-kind at L2 only (was repeating at L2/L3), meta-kind at L0 (unchanged). A real new "Modules" division (all 45, paralleling the existing Rivers list) added under L2, each linking to its own real Current Series anchor.
+      <br><br>
+      <b>Independently verified</b>: all 19 pages regenerated, link-integrity + tag-balance clean; headless Chromium confirms the taxonomyReviewQueue migration bubble now renders with real border/jump-cue styling and the correct href; the left-nav's new structure confirmed dedup'd (L0=2 dims, L1=5 dims+0 repeat, L2=5 dims+45 modules, L3=0 dims — down from repeating 5 infra dims 3× and 5 inter dims 2× before this fix), zero console errors.
+      <br><br>
+      <b>Still open, explicitly not yet acted on</b>: Alex's broader ask to retire River XII (API/Auth) + the Externals/Oversight-Sync/Skills-Network Dimension pages, and to run a real /deduplication+/paranoia sweep for other retirement candidates across all 17 rivers — real evidence gathered (Rivers XII-XVI all have zero real modules, confirmed via direct RIVER_MODULES query) but the actual retirement, given its wide blast radius across ~19 pages plus multiple oversight docs, is being reported as a real finding for his confirmation before execution, not guessed at.
+    </div>
+  </div>
+
+<div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🗺️✅ Aug 25 — G101 corrected twice more (real hierarchy, not 2 sibling categories) + a real stale "Research Lab" dashboard-card entry found and fixed</div>
     <div class="card-body">
       Direct continuation of G101 below — Alex caught the first build getting his own spec wrong, twice, in rapid direct correction (his own established pattern this session: fast iterate, not a stop-and-ask cycle).

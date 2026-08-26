@@ -4360,30 +4360,27 @@ def inject_level_rail(html, current_file):
 # build): "the main category is levels, then those level groups are
 # split further within the level grouping, not separated like this" —
 # Dimensions is NOT a 2nd sibling top-level category; each real
-# Dimension page nests as a child of whichever Level(s) its own `kind`
-# is genuinely relevant to. This is the literal, evidence-grounded
-# reading of his own per-level breakdown ("infra and rivers in level 1,
-# modules and inter and infra in level 2, inter infra and currents in
-# level 3") cross-checked against the already-locked G93/G94
-# architecture this same session built: Rivers are Infra-only (G93's
-# own confirmed rule — a River never gets Inter), Modules/Currents get
-# both Infra and Inter (G94). So Infra-kind dimensions repeat under
-# L1/L2/L3 (genuinely relevant at every one of those 3 granularities);
-# Inter-kind dimensions repeat under L2/L3 only (never L1, matching
-# G93's rule exactly). Meta-kind pages (whole-system synthesis) sit
-# under L0, the one level with no river/module/current grain of its
-# own to attach to.
+# Dimension page nests as a child of whichever Level it's genuinely
+# relevant to. Real 2nd correction (Aug 26 2026, Alex: "too many
+# repeats i dont like how it looks... keep it at highest possible point
+# to make sense of it") — the original build repeated Infra-kind under
+# L1/L2/L3 and Inter-kind under L2/L3, which read as noisy duplication.
+# Fixed: every real dimension now appears EXACTLY ONCE, at the highest
+# (most general) level where it's genuinely still relevant — Infra at
+# L1 (the highest level Infra applies to, per G93's own rule), Inter at
+# L2 (the highest level Inter applies to, since Rivers never get Inter),
+# meta at L0 (whole-system synthesis, no river/module grain of its own).
 LEFT_NAV_LEVEL_ANNOTATION = {
     'galaxy_map.html': None,
     'galaxy_map_river.html': 'Infra',
-    'galaxy_map_module.html': 'Modules + Inter + Infra',
-    'galaxy_map_current.html': 'Inter + Infra + Currents',
+    'galaxy_map_module.html': 'Modules + Inter',
+    'galaxy_map_current.html': 'Currents',
 }
 LEFT_NAV_LEVEL_KINDS = {
     'galaxy_map.html': ('meta',),
     'galaxy_map_river.html': ('infra',),
-    'galaxy_map_module.html': ('infra', 'inter'),
-    'galaxy_map_current.html': ('infra', 'inter'),
+    'galaxy_map_module.html': ('inter',),
+    'galaxy_map_current.html': (),
 }
 
 # G101, 3rd real correction, same day (Alex: "not just dimensions - a
@@ -4493,6 +4490,22 @@ def left_nav_html(current_file):
             )
         return ''.join(rows)
 
+    def _module_rows():
+        rows = []
+        for m in sorted(LEVEL3_MODULES):
+            rows.append(f'<a class="gside-river" href="galaxy_map_current.html#mod-{m}"><b>🔽 {m}</b></a>')
+        return ''.join(rows)
+
+    # G101, real correction (Aug 26 2026, Alex: "include modules
+    # instead") — Modules get their own real nested division, same
+    # pattern as Rivers, added under L2 (the level whose own real
+    # content — galaxy_map_current.html's per-module Current Series —
+    # is what a Modules list should jump to). Real anchor evidence:
+    # galaxy_map_current.html genuinely has one id="mod-<name>" section
+    # per LEVEL3_MODULES entry (confirmed by G94's own already-verified
+    # link-integrity sweep, not re-checked here — same source, rule 8).
+    LEFT_NAV_LEVEL_MODULES = {'galaxy_map_module.html'}
+
     level_blocks = []
     for fname, icon, label in LEVEL_RAIL:
         cls = ' active' if fname == current_file else ''
@@ -4504,6 +4517,11 @@ def left_nav_html(current_file):
             nested += (
                 '<div class="gside-subhead">🌊 Rivers</div>'
                 f'<div class="gside-nested gside-rivers">{_river_rows()}</div>'
+            )
+        if fname in LEFT_NAV_LEVEL_MODULES:
+            nested += (
+                '<div class="gside-subhead">🔽 Modules</div>'
+                f'<div class="gside-nested gside-rivers">{_module_rows()}</div>'
             )
         dim_nested = ''.join(
             _left_nav_dim_row(entry, current_file)

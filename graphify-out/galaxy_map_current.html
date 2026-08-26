@@ -24,11 +24,14 @@
   .river-chip{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--dim)}
   .mtotal{font-size:9.5px;color:var(--dim)}
   .l3-link{margin-left:auto;font-size:9.5px;color:var(--dim);text-decoration:none}
-  /* G94 (Aug 25 2026) — real per-module Infra/Inter bubble row. */
-  .mod-infra-row{max-width:900px;margin:0 auto;padding:0 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-  .mod-infra-label{font-size:9.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px}
-  .unit-chip{--c:#8a8a9a;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;border:1px solid var(--c);color:var(--c);text-decoration:none;background:color-mix(in srgb, var(--c) 10%, transparent);transition:background .15s}
-  .unit-chip:hover{background:color-mix(in srgb, var(--c) 22%, transparent)}
+  /* G94 (Aug 25/26 2026) — real per-module Infra/Inter bubble row.
+     Real fix (Aug 26): the migration bubbles reuse .idd-mig verbatim
+     (INFRA_DRILLDOWN_CSS below) instead of a bespoke pill style that
+     read as plain text — see build_module_infra_inter_row()'s own
+     comment for the full root-cause account. */
+  .mod-infra-row{max-width:900px;margin:0 auto;padding:0 24px 10px}
+  .mod-infra-label{display:block;font-size:9.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+  .mod-infra-bubbles{display:flex;gap:10px;flex-wrap:wrap}
   .currents{max-width:900px;margin:0 auto 40px;padding:0 24px;display:flex;flex-direction:column;gap:12px}
   .current-block{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px}
   .cur-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
@@ -63,6 +66,32 @@
   .hop-next{background:rgba(201,168,76,0.1);font-weight:700}
   .terminal{color:var(--gold)}
   .boundary{font-size:10px;color:var(--gold);margin-top:6px}
+
+.idd{max-width:1400px;margin:12px auto 0;padding:0 24px}
+.idd-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;font-weight:700;padding:8px 10px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px}
+.idd-crumb span{padding:3px 9px;border-radius:10px;background:rgba(255,255,255,0.05);color:#8a8a9a}
+.idd-crumb span.on{color:#0a0a0f;background:#C9A84C}
+.idd-crumb .idd-sep{background:none;padding:0;color:#55555f}
+.idd-lvl{margin-bottom:16px}
+.idd-lbl{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin-bottom:8px}
+.idd-row{display:flex;flex-wrap:wrap;gap:10px}
+.idd-bub{--c:#8a8a9a;min-width:190px;flex:0 1 230px;background:rgba(255,255,255,0.03);border:2px solid var(--c);border-radius:16px;padding:11px 13px;cursor:pointer;transition:transform .15s,background .15s}
+.idd-bub:hover{transform:translateY(-2px);background:rgba(255,255,255,0.07)}
+.idd-bub.on{background:color-mix(in srgb, var(--c) 18%, transparent);box-shadow:0 0 0 2px var(--c)}
+.idd-bub b{display:block;font-size:12px;color:var(--c)}
+.idd-bub span{display:block;font-size:10.5px;color:#E2E2EC;margin-top:2px}
+.idd-bub em{display:block;font-style:normal;font-size:9px;color:#8a8a9a;margin-top:5px}
+.idd-pane{display:none}
+.idd-pane.on{display:block}
+.idd-hint{font-size:10.5px;color:#8a8a9a;padding:6px 2px}
+.idd-mig{display:block;text-decoration:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-left:3px solid var(--c,#C9A84C);border-radius:10px;padding:9px 12px;min-width:230px;flex:0 1 300px;transition:background .15s}
+.idd-mig:hover{background:rgba(201,168,76,0.1)}
+.idd-mig b{display:block;font-size:11px;color:#fff;font-family:'Cascadia Code','Fira Mono',monospace}
+.idd-mig .idd-res{display:block;font-size:9.5px;color:#8a8a9a;margin-top:4px;line-height:1.5}
+.idd-mig .idd-jump{display:block;font-size:9px;font-weight:700;color:#C9A84C;margin-top:6px}
+.idd-mig.idd-dead{cursor:default;opacity:0.8}
+.idd-mig.idd-dead .idd-jump{color:#8a8a9a}
+
 
 .dim-index{max-width:1180px;margin:18px auto 26px;padding:0 24px}
 .dim-index h2{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:4px;text-align:center}
@@ -142,7 +171,7 @@
 </style>
 </head>
 <body>
-<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button><div class="gside-backdrop"></div><nav class="gside-nav"><h3>🌌 Levels</h3><div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Nested under whichever Level(s) it's genuinely relevant to, not a separate category.</div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map.html"><b>🌌 L0</b></a><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🚦 Decision Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Every real decision — gates, curated core logic, text inputs — by river.</span></a><a class="gside-dim" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🧭 Dimensions Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Which modules are multi-home across every other dimension.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_river.html"><b>🏛️ L1</b><span>Infra</span></a><div class="gside-subhead">🌊 Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River I</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River II</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River III</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River IV</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River V</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River VI</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River VII</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River VIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River IX</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River X</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River XI</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#2ABFB0"><b>🌊 River XII</b></a><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#E2A83D"><b>🌊 River XIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#d4daf5"><b>🌊 River XIV</b></a><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#20263a"><b>🌊 River XV</b></a><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#2a3050"><b>🌊 River XVI</b></a><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#4A90E2"><b>🌊 River XVII</b></a></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🗑️ Decisions — Human Gates</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">The real human-confirm gates before a destructive or taxonomy write.</span></a><a class="gside-dim" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔬 Branch Ledger</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</span></a><a class="gside-dim" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>💉 Supabase</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Every real client-side Supabase table touch, by level/river/module.</span></a><a class="gside-dim" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔌 Externals</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Whether each external connector genuinely touches real UI AND real backend.</span></a><a class="gside-dim" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>⏳ Load Dimension</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">What actually triggers a load: boot task, page nav, or on-demand click.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_module.html"><b>🌊 L2</b><span>Modules + Inter + Infra</span></a><div class="gside-subhead">🌊 Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River I</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River II</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River III</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River IV</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River V</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River VI</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River VII</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River VIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River IX</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River X</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River XI</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#2ABFB0"><b>🌊 River XII</b></a><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#E2A83D"><b>🌊 River XIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#d4daf5"><b>🌊 River XIV</b></a><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#20263a"><b>🌊 River XV</b></a><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#2a3050"><b>🌊 River XVI</b></a><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#4A90E2"><b>🌊 River XVII</b></a></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🗑️ Decisions — Human Gates</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">The real human-confirm gates before a destructive or taxonomy write.</span></a><a class="gside-dim" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔬 Branch Ledger</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</span></a><a class="gside-dim" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>💉 Supabase</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Every real client-side Supabase table touch, by level/river/module.</span></a><a class="gside-dim" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔌 Externals</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Whether each external connector genuinely touches real UI AND real backend.</span></a><a class="gside-dim" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>⏳ Load Dimension</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">What actually triggers a load: boot task, page nav, or on-demand click.</span></a><a class="gside-dim" href="galaxy_map_logic_dimension.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📖 Logic Dimension</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Every river-to-river connection, connector and skill stream as a passage.</span></a><a class="gside-dim" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🕸️ Skills</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</span></a><a class="gside-dim" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧑 Alex’s Decision Path</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</span></a><a class="gside-dim" href="galaxy_map_orchestrator_openmontage.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🛰️ Orchestrator ↔ OpenMontage</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real async dispatch history between the two Claude Code sessions.</span></a><a class="gside-dim" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📚 Oversight Sync</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Which oversight doc gets touched, in what order, during a push or ritual.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level active" href="galaxy_map_current.html"><b>🔽 Current (L3)</b><span>Inter + Infra + Currents</span></a><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🗑️ Decisions — Human Gates</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">The real human-confirm gates before a destructive or taxonomy write.</span></a><a class="gside-dim" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔬 Branch Ledger</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</span></a><a class="gside-dim" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>💉 Supabase</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Every real client-side Supabase table touch, by level/river/module.</span></a><a class="gside-dim" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔌 Externals</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Whether each external connector genuinely touches real UI AND real backend.</span></a><a class="gside-dim" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>⏳ Load Dimension</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">What actually triggers a load: boot task, page nav, or on-demand click.</span></a><a class="gside-dim" href="galaxy_map_logic_dimension.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📖 Logic Dimension</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Every river-to-river connection, connector and skill stream as a passage.</span></a><a class="gside-dim" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🕸️ Skills</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</span></a><a class="gside-dim" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧑 Alex’s Decision Path</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</span></a><a class="gside-dim" href="galaxy_map_orchestrator_openmontage.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🛰️ Orchestrator ↔ OpenMontage</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real async dispatch history between the two Claude Code sessions.</span></a><a class="gside-dim" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📚 Oversight Sync</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Which oversight doc gets touched, in what order, during a push or ritual.</span></a></div></div></nav>
+<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button><div class="gside-backdrop"></div><nav class="gside-nav"><h3>🌌 Levels</h3><div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Nested under whichever Level(s) it's genuinely relevant to, not a separate category.</div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map.html"><b>🌌 L0</b></a><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🚦 Decision Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Every real decision — gates, curated core logic, text inputs — by river.</span></a><a class="gside-dim" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🧭 Dimensions Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Which modules are multi-home across every other dimension.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_river.html"><b>🏛️ L1</b><span>Infra</span></a><div class="gside-subhead">🌊 Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River I</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River II</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River III</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River IV</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River V</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River VI</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River VII</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River VIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River IX</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River X</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River XI</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#2ABFB0"><b>🌊 River XII</b></a><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#E2A83D"><b>🌊 River XIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#d4daf5"><b>🌊 River XIV</b></a><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#20263a"><b>🌊 River XV</b></a><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#2a3050"><b>🌊 River XVI</b></a><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#4A90E2"><b>🌊 River XVII</b></a></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🗑️ Decisions — Human Gates</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">The real human-confirm gates before a destructive or taxonomy write.</span></a><a class="gside-dim" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔬 Branch Ledger</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</span></a><a class="gside-dim" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>💉 Supabase</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Every real client-side Supabase table touch, by level/river/module.</span></a><a class="gside-dim" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔌 Externals</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Whether each external connector genuinely touches real UI AND real backend.</span></a><a class="gside-dim" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>⏳ Load Dimension</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">What actually triggers a load: boot task, page nav, or on-demand click.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_module.html"><b>🌊 L2</b><span>Modules + Inter</span></a><div class="gside-subhead">🌊 Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River I</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River II</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River III</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River IV</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River V</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River VI</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River VII</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River VIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River IX</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River X</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River XI</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#2ABFB0"><b>🌊 River XII</b></a><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#E2A83D"><b>🌊 River XIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#d4daf5"><b>🌊 River XIV</b></a><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#20263a"><b>🌊 River XV</b></a><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#2a3050"><b>🌊 River XVI</b></a><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#4A90E2"><b>🌊 River XVII</b></a></div><div class="gside-subhead">🔽 Modules</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_current.html#mod-agendaReminder"><b>🔽 agendaReminder</b></a><a class="gside-river" href="galaxy_map_current.html#mod-agentsIntoOracle"><b>🔽 agentsIntoOracle</b></a><a class="gside-river" href="galaxy_map_current.html#mod-authGate"><b>🔽 authGate</b></a><a class="gside-river" href="galaxy_map_current.html#mod-beatLog"><b>🔽 beatLog</b></a><a class="gside-river" href="galaxy_map_current.html#mod-bookworm"><b>🔽 bookworm</b></a><a class="gside-river" href="galaxy_map_current.html#mod-careerStatCard"><b>🔽 careerStatCard</b></a><a class="gside-river" href="galaxy_map_current.html#mod-chroniclesLog"><b>🔽 chroniclesLog</b></a><a class="gside-river" href="galaxy_map_current.html#mod-ciAutoPropose"><b>🔽 ciAutoPropose</b></a><a class="gside-river" href="galaxy_map_current.html#mod-conidPot"><b>🔽 conidPot</b></a><a class="gside-river" href="galaxy_map_current.html#mod-contentProductionLive"><b>🔽 contentProductionLive</b></a><a class="gside-river" href="galaxy_map_current.html#mod-contentRepurpose"><b>🔽 contentRepurpose</b></a><a class="gside-river" href="galaxy_map_current.html#mod-encSync"><b>🔽 encSync</b></a><a class="gside-river" href="galaxy_map_current.html#mod-encTaxonomyLink"><b>🔽 encTaxonomyLink</b></a><a class="gside-river" href="galaxy_map_current.html#mod-encyclopediaQoL"><b>🔽 encyclopediaQoL</b></a><a class="gside-river" href="galaxy_map_current.html#mod-feynman"><b>🔽 feynman</b></a><a class="gside-river" href="galaxy_map_current.html#mod-instaOraclePanel"><b>🔽 instaOraclePanel</b></a><a class="gside-river" href="galaxy_map_current.html#mod-intelBatchList"><b>🔽 intelBatchList</b></a><a class="gside-river" href="galaxy_map_current.html#mod-intelDedup"><b>🔽 intelDedup</b></a><a class="gside-river" href="galaxy_map_current.html#mod-intelDelete"><b>🔽 intelDelete</b></a><a class="gside-river" href="galaxy_map_current.html#mod-jargonEncyclopedia"><b>🔽 jargonEncyclopedia</b></a><a class="gside-river" href="galaxy_map_current.html#mod-journalQoL"><b>🔽 journalQoL</b></a><a class="gside-river" href="galaxy_map_current.html#mod-knowledgeGap"><b>🔽 knowledgeGap</b></a><a class="gside-river" href="galaxy_map_current.html#mod-mockOracle"><b>🔽 mockOracle</b></a><a class="gside-river" href="galaxy_map_current.html#mod-morningBrief"><b>🔽 morningBrief</b></a><a class="gside-river" href="galaxy_map_current.html#mod-oracleAppGrounding"><b>🔽 oracleAppGrounding</b></a><a class="gside-river" href="galaxy_map_current.html#mod-oracleDevBridge"><b>🔽 oracleDevBridge</b></a><a class="gside-river" href="galaxy_map_current.html#mod-oracleFetchGuard"><b>🔽 oracleFetchGuard</b></a><a class="gside-river" href="galaxy_map_current.html#mod-oracleProviderMode"><b>🔽 oracleProviderMode</b></a><a class="gside-river" href="galaxy_map_current.html#mod-oracleTreeGrounding"><b>🔽 oracleTreeGrounding</b></a><a class="gside-river" href="galaxy_map_current.html#mod-pathRouter"><b>🔽 pathRouter</b></a><a class="gside-river" href="galaxy_map_current.html#mod-phylumPath"><b>🔽 phylumPath</b></a><a class="gside-river" href="galaxy_map_current.html#mod-prodOraclePanel"><b>🔽 prodOraclePanel</b></a><a class="gside-river" href="galaxy_map_current.html#mod-refCorpus"><b>🔽 refCorpus</b></a><a class="gside-river" href="galaxy_map_current.html#mod-researchTabs"><b>🔽 researchTabs</b></a><a class="gside-river" href="galaxy_map_current.html#mod-scheduleFixes"><b>🔽 scheduleFixes</b></a><a class="gside-river" href="galaxy_map_current.html#mod-scheduleOracle"><b>🔽 scheduleOracle</b></a><a class="gside-river" href="galaxy_map_current.html#mod-shiftSync"><b>🔽 shiftSync</b></a><a class="gside-river" href="galaxy_map_current.html#mod-taxonomyReviewQueue"><b>🔽 taxonomyReviewQueue</b></a><a class="gside-river" href="galaxy_map_current.html#mod-taxonomySync"><b>🔽 taxonomySync</b></a><a class="gside-river" href="galaxy_map_current.html#mod-taxonomyTree"><b>🔽 taxonomyTree</b></a><a class="gside-river" href="galaxy_map_current.html#mod-tiktokOracle"><b>🔽 tiktokOracle</b></a><a class="gside-river" href="galaxy_map_current.html#mod-videoPipeline"><b>🔽 videoPipeline</b></a><a class="gside-river" href="galaxy_map_current.html#mod-videoSummary"><b>🔽 videoSummary</b></a><a class="gside-river" href="galaxy_map_current.html#mod-visualOracle"><b>🔽 visualOracle</b></a><a class="gside-river" href="galaxy_map_current.html#mod-youtubeOracle"><b>🔽 youtubeOracle</b></a></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_logic_dimension.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📖 Logic Dimension</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Every river-to-river connection, connector and skill stream as a passage.</span></a><a class="gside-dim" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🕸️ Skills</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</span></a><a class="gside-dim" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧑 Alex’s Decision Path</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</span></a><a class="gside-dim" href="galaxy_map_orchestrator_openmontage.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🛰️ Orchestrator ↔ OpenMontage</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real async dispatch history between the two Claude Code sessions.</span></a><a class="gside-dim" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📚 Oversight Sync</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Which oversight doc gets touched, in what order, during a push or ritual.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level active" href="galaxy_map_current.html"><b>🔽 Current (L3)</b><span>Currents</span></a></div></nav>
 <nav class="level-rail"><a href="galaxy_map.html">🌌 L0</a><span class="rail-sep">→</span><a href="galaxy_map_river.html">🏛️ L1</a><span class="rail-sep">→</span><a href="galaxy_map_module.html">🌊 L2</a><span class="rail-sep">→</span><a href="galaxy_map_current.html" class="active">🔽 Current (L3)</a></nav>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Current Series</div>
@@ -387,7 +416,7 @@
 </section><section class="mod-section" id="mod-beatLog" style="display:none">
   <div class="mhead"><h2>beatLog</h2><span class="river-chip">River XI</span>
     <span class="mtotal">19 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (3 units compose here)</span><a class="unit-chip" href="galaxy_map_connectors.html#conn-lastfm" style="--c:#E25454">🎧 Last.fm</a><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (3 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#E25454" href="galaxy_map_connectors.html#conn-lastfm"><b>🎧 Last.fm</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -785,7 +814,7 @@
 </section><section class="mod-section" id="mod-bookworm" style="display:none">
   <div class="mhead"><h2>bookworm</h2><span class="river-chip">River IV</span>
     <span class="mtotal">41 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_connectors.html#conn-jina" style="--c:#4A90E2">🕷️ Jina AI</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#4A90E2" href="galaxy_map_connectors.html#conn-jina"><b>🕷️ Jina AI</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -1901,7 +1930,7 @@
 </section><section class="mod-section" id="mod-chroniclesLog" style="display:none">
   <div class="mhead"><h2>chroniclesLog</h2><span class="river-chip">River X</span>
     <span class="mtotal">10 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -2197,7 +2226,7 @@
 </section><section class="mod-section" id="mod-conidPot" style="display:none">
   <div class="mhead"><h2>conidPot</h2><span class="river-chip">River XI</span>
     <span class="mtotal">16 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -2535,7 +2564,7 @@
 </section><section class="mod-section" id="mod-contentProductionLive" style="display:none">
   <div class="mhead"><h2>contentProductionLive</h2><span class="river-chip">River XI</span>
     <span class="mtotal">39 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -3333,7 +3362,7 @@
 </section><section class="mod-section" id="mod-contentRepurpose" style="display:none">
   <div class="mhead"><h2>contentRepurpose</h2><span class="river-chip">River XI</span>
     <span class="mtotal">9 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (3 units compose here)</span><a class="unit-chip" href="galaxy_map_connectors.html#conn-composio" style="--c:#3DAA6E">🧩 Composio</a><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (3 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#3DAA6E" href="galaxy_map_connectors.html#conn-composio"><b>🧩 Composio</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -3629,7 +3658,7 @@
 </section><section class="mod-section" id="mod-encTaxonomyLink" style="display:none">
   <div class="mhead"><h2>encTaxonomyLink</h2><span class="river-chip">River VII</span>
     <span class="mtotal">4 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -4343,7 +4372,7 @@
 </section><section class="mod-section" id="mod-instaOraclePanel" style="display:none">
   <div class="mhead"><h2>instaOraclePanel</h2><span class="river-chip">River III</span>
     <span class="mtotal">5 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -4677,7 +4706,7 @@
 </section><section class="mod-section" id="mod-intelDelete" style="display:none">
   <div class="mhead"><h2>intelDelete</h2><span class="river-chip">River XVII</span>
     <span class="mtotal">22 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -5135,7 +5164,7 @@
 </section><section class="mod-section" id="mod-jargonEncyclopedia" style="display:none">
   <div class="mhead"><h2>jargonEncyclopedia</h2><span class="river-chip">River VII</span>
     <span class="mtotal">4 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -5233,7 +5262,7 @@
 </section><section class="mod-section" id="mod-journalQoL" style="display:none">
   <div class="mhead"><h2>journalQoL</h2><span class="river-chip">River V</span>
     <span class="mtotal">5 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -5351,7 +5380,7 @@
 </section><section class="mod-section" id="mod-knowledgeGap" style="display:none">
   <div class="mhead"><h2>knowledgeGap</h2><span class="river-chip">River IX</span>
     <span class="mtotal">4 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -5449,7 +5478,7 @@
 </section><section class="mod-section" id="mod-mockOracle" style="display:none">
   <div class="mhead"><h2>mockOracle</h2><span class="river-chip">River III</span>
     <span class="mtotal">13 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -5727,7 +5756,7 @@
 </section><section class="mod-section" id="mod-morningBrief" style="display:none">
   <div class="mhead"><h2>morningBrief</h2><span class="river-chip">River V</span>
     <span class="mtotal">8 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_connectors.html#conn-composio" style="--c:#3DAA6E">🧩 Composio</a><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#3DAA6E" href="galaxy_map_connectors.html#conn-composio"><b>🧩 Composio</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -5905,7 +5934,7 @@
 </section><section class="mod-section" id="mod-oracleAppGrounding" style="display:none">
   <div class="mhead"><h2>oracleAppGrounding</h2><span class="river-chip">River III</span>
     <span class="mtotal">8 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -6397,7 +6426,7 @@
 </section><section class="mod-section" id="mod-oracleTreeGrounding" style="display:none">
   <div class="mhead"><h2>oracleTreeGrounding</h2><span class="river-chip">River III</span>
     <span class="mtotal">3 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -6593,7 +6622,7 @@
 </section><section class="mod-section" id="mod-phylumPath" style="display:none">
   <div class="mhead"><h2>phylumPath</h2><span class="river-chip">River VI</span>
     <span class="mtotal">40 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -7411,7 +7440,7 @@
 </section><section class="mod-section" id="mod-prodOraclePanel" style="display:none">
   <div class="mhead"><h2>prodOraclePanel</h2><span class="river-chip">River III</span>
     <span class="mtotal">5 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -7529,7 +7558,7 @@
 </section><section class="mod-section" id="mod-refCorpus" style="display:none">
   <div class="mhead"><h2>refCorpus</h2><span class="river-chip">River VII</span>
     <span class="mtotal">7 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -7883,7 +7912,7 @@
 </section><section class="mod-section" id="mod-scheduleOracle" style="display:none">
   <div class="mhead"><h2>scheduleOracle</h2><span class="river-chip">River III</span>
     <span class="mtotal">6 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_connectors.html#conn-jina" style="--c:#4A90E2">🕷️ Jina AI</a><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#4A90E2" href="galaxy_map_connectors.html#conn-jina"><b>🕷️ Jina AI</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -8021,7 +8050,7 @@
 </section><section class="mod-section" id="mod-shiftSync" style="display:none">
   <div class="mhead"><h2>shiftSync</h2><span class="river-chip">River V</span>
     <span class="mtotal">3 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -8099,7 +8128,7 @@
 </section><section class="mod-section" id="mod-taxonomyReviewQueue" style="display:none">
   <div class="mhead"><h2>taxonomyReviewQueue</h2><span class="river-chip">River VIII</span>
     <span class="mtotal">10 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -8317,7 +8346,7 @@
 </section><section class="mod-section" id="mod-taxonomySync" style="display:none">
   <div class="mhead"><h2>taxonomySync</h2><span class="river-chip">River VIII</span>
     <span class="mtotal">8 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -8495,7 +8524,7 @@
 </section><section class="mod-section" id="mod-taxonomyTree" style="display:none">
   <div class="mhead"><h2>taxonomyTree</h2><span class="river-chip">River VIII</span>
     <span class="mtotal">18 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -8873,7 +8902,7 @@
 </section><section class="mod-section" id="mod-tiktokOracle" style="display:none">
   <div class="mhead"><h2>tiktokOracle</h2><span class="river-chip">River III</span>
     <span class="mtotal">5 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -8991,7 +9020,7 @@
 </section><section class="mod-section" id="mod-videoPipeline" style="display:none">
   <div class="mhead"><h2>videoPipeline</h2><span class="river-chip">River XI</span>
     <span class="mtotal">3 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -9069,7 +9098,7 @@
 </section><section class="mod-section" id="mod-videoSummary" style="display:none">
   <div class="mhead"><h2>videoSummary</h2><span class="river-chip">River XI</span>
     <span class="mtotal">29 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -9667,7 +9696,7 @@
 </section><section class="mod-section" id="mod-visualOracle" style="display:none">
   <div class="mhead"><h2>visualOracle</h2><span class="river-chip">River XI</span>
     <span class="mtotal">9 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -9983,7 +10012,7 @@
 </section><section class="mod-section" id="mod-config" style="display:none">
   <div class="mhead"><h2>config</h2><span class="river-chip"></span>
     <span class="mtotal">12 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><a class="unit-chip" href="galaxy_map_oracle.html#view-map" style="--c:#9B59B6">🔮 Oracle</a><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">🔗 Inter (2 units compose here)</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#9B59B6" href="galaxy_map_oracle.html#view-map"><b>🔮 Oracle</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -10241,7 +10270,7 @@
 </section><section class="mod-section" id="mod-dashDeck" style="display:none">
   <div class="mhead"><h2>dashDeck</h2><span class="river-chip"></span>
     <span class="mtotal">21 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -10679,7 +10708,7 @@
 </section><section class="mod-section" id="mod-errorLog" style="display:none">
   <div class="mhead"><h2>errorLog</h2><span class="river-chip"></span>
     <span class="mtotal">3 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -11015,7 +11044,7 @@
 </section><section class="mod-section" id="mod-questEngine" style="display:none">
   <div class="mhead"><h2>questEngine</h2><span class="river-chip"></span>
     <span class="mtotal">27 real Current(s)</span></div>
-  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><a class="unit-chip" href="galaxy_map_supabase.html#view-map" style="--c:#2ABFB0">🗄️ Supabase</a></div>
+  <div class="mod-infra-row"><span class="mod-infra-label">💉 Infra</span><div class="mod-infra-bubbles"><a class="idd-mig" style="--c:#2ABFB0" href="galaxy_map_supabase.html#view-map"><b>🗄️ Supabase</b><span class="idd-jump">🔽 jump to this unit's own Infra bubble system ↗</span></a></div></div>
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
