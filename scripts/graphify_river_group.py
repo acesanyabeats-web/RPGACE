@@ -322,6 +322,79 @@ RIVER_ROLE_NOTE = {
     16: 'The actual scripts/config that build, ship, and graph the Total system — including the very scripts (graphify_recolor.py/graphify_river_group.py/graphify_to_obsidian.py/obsidian_vault_to_html.py) that generate this graph and the Obsidian vault themselves.',
 }
 
+# G102 (Aug 26 2026) — Rivers XII-XVI retired (marked deprecated/merged,
+# NEVER deleted outright — Alex's own confirmed answer, "all 5 and yes
+# too"). Real evidence for retiring these 5 specifically: all 5 have
+# ZERO real rpgace_core.js modules (RIVER_MODULES[12..16] == [] each,
+# confirmed by direct query) — they were always a role-DESCRIPTION of a
+# Total-systems category, never a river of real app code the way 1-11/17
+# are. The L0-unit Infra/Inter system (G77-G100, Aug 25 2026) now gives
+# every one of those same real categories its OWN evidence-grounded
+# bubble system, at finer grain than a single river-wide role note ever
+# was — so the retirement isn't a deletion of real coverage, it's a
+# real upgrade already built, just never pointed back at from here.
+# Deliberately NOT retiring 1-11/17 — those all have real modules
+# (RIVER_MODULES[n] non-empty) and are the real app-code rivers the
+# whole Galaxy Map hierarchy exists to describe; only the 5 zero-module
+# "Total-systems category" rivers are in scope, per Alex's own explicit
+# confirmation of exactly this list (not "retire everything the L0 unit
+# system also covers" — Oracle/Supabase, River III/River V's own hub
+# modules etc. stay live rivers with real modules, their own L0-unit
+# facet is an ADDITIONAL lens, not a replacement).
+RIVER_RETIRED = {
+    12: {
+        'reason': 'Zero real modules — this river was always a role description of the API/auth call surface, not a river of actual app code. That real role is now represented per-actor at L0, at finer grain than one river-wide note ever gave.',
+        'superseded_by': [
+            ('Supabase (Infra/Inter)', 'galaxy_map_supabase.html#view-map'),
+            ('Oracle (Infra/Inter)', 'galaxy_map_oracle.html#view-map'),
+            ('Composio', 'galaxy_map_connectors.html#conn-composio'),
+            ('Jina AI', 'galaxy_map_connectors.html#conn-jina'),
+            ('Last.fm', 'galaxy_map_connectors.html#conn-lastfm'),
+            ('librosa', 'galaxy_map_connectors.html#conn-librosa'),
+            ('n8n', 'galaxy_map_connectors.html#conn-n8n'),
+            ('Whisper', 'galaxy_map_connectors.html#conn-whisper'),
+        ],
+    },
+    13: {
+        'reason': 'Zero real modules — this river was always the Claude Code skills dev-process layer, not app code. The Skills L0 unit\'s own real Infra/Inter bubble system covers every skill individually now (per-skill axes), a real upgrade over one river-wide role note.',
+        'superseded_by': [('Skills (Infra/Inter, per-skill)', 'galaxy_map_skill_network.html#view-table')],
+    },
+    14: {
+        'reason': 'Zero real modules — the shared oversight-doc truth layer. The Oversight Docs L0 unit\'s own real Infra/Inter system covers this now.',
+        'superseded_by': [('Oversight Docs (Infra/Inter)', 'galaxy_map_oversight_sync.html#cat-sharedinfra')],
+    },
+    15: {
+        'reason': 'Zero real modules — real dispatch/session history (dated backlog .txt/.md at repo root). Honest gap, not force-mapped: no single L0 unit is a clean 1:1 successor for "every dated file at repo root." Orchestrator CC\'s own unit is the closest real relationship (real Total-systems dispatch history with OpenMontage CC/Graphify CC lives there), but it does not cover the river\'s full original file-path membership.',
+        'superseded_by': [('Orchestrator CC (partial — Total-systems dispatch history only)', 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra')],
+    },
+    16: {
+        'reason': 'Zero real modules — the actual scripts/config that build/ship/graph the Total system (including the very scripts that generate this graph and the Obsidian vault). Honest gap, not force-mapped: no L0 unit represents "dev tooling" as its own real actor. Orchestrator CC is the closest real relationship (it is the session that runs this tooling), but tooling itself was never promoted to a unit.',
+        'superseded_by': [('Orchestrator CC (partial — runs this tooling)', 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra')],
+    },
+}
+
+
+def river_retirement_note_html(rnum, compact=False):
+    """Real, evidence-grounded retirement banner for a river marked in
+    RIVER_RETIRED. Returns '' for a live river (1-11, 17) — every call
+    site can call this unconditionally, no per-caller river_num in
+    RIVER_RETIRED check needed (rule 8: one shared gate, not N copies).
+    `compact=True` renders a shorter one-line version for tight spaces
+    (ring-node tooltips, legend rows) vs. the fuller Level-2 banner."""
+    info = RIVER_RETIRED.get(rnum)
+    if not info:
+        return ''
+    links = ' · '.join(f'<a href="{href}">{label}</a>' for label, href in info['superseded_by'])
+    if compact:
+        return (f'<div class="river-retired-note" style="border-left:3px solid #cc4a4a;'
+                f'background:rgba(204,74,74,.10);padding:6px 10px;margin:6px 0;border-radius:5px;font-size:12px;">'
+                f'<b>⚠️ Deprecated — merged into the L0 Infra/Inter system.</b> See: {links}</div>')
+    return (f'<div class="river-retired-note" style="border-left:3px solid #cc4a4a;'
+            f'background:rgba(204,74,74,.10);padding:12px 16px;margin:12px 0;border-radius:6px;">'
+            f'<b>⚠️ Retired (Aug 26 2026, G102) — marked deprecated/merged, not deleted.</b><br>'
+            f'{info["reason"]}<br><b>See instead:</b> {links}</div>')
+
+
 # Real module -> river mapping, built from interconnection_map.md's own
 # section headers (Oracle Pipeline / Taxonomy Tree Pipeline / Content
 # Production Pipeline / Schedule System / the Unified placement engine /

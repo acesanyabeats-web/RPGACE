@@ -38,6 +38,7 @@ from graphify_river_group import (
     LINKS_BY_RIVER, ALL_SKILLS, SKILL_SECONDARY_RIVER,
     attribute_river_connection_function, _river_num_from_label,
     compute_cross_module_function_calls, LEVEL3_MODULES,
+    river_retirement_note_html,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
@@ -152,6 +153,7 @@ def build_river_section(rnum):
         )
     return f'''<section class="rsection" id="logic-river-{rnum}" style="display:none">
   <div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2><span class="pcount">{len(passages)} real edge(s)</span></div>
+  {river_retirement_note_html(rnum, compact=True)}
   <p class="modline">Real modules: {", ".join(f"<code>{esc(m)}</code>" for m in mods) if mods else "<i>no single-module home</i>"}</p>
   {body}
 </section>'''

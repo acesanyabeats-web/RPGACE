@@ -3,6 +3,7 @@ river_number: 9
 river_name: "River IX — The Mirror and the Far Shore"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#e05555"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,7 +12,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[knowledgeGap]] — `rpgace_core.js:11897-12098`
+- [[knowledgeGap]] — `rpgace_core.js:12541-12755`
 
 ## Flows into
 

@@ -3,11 +3,18 @@ river_number: 13
 river_name: "River XIII — Skills"
 kind: river
 carries_data_flow: false
+retired: true
 color: "#E2A83D"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # River XIII — Skills
+
+> [!warning] Retired (Aug 26 2026, G102) — marked deprecated/merged, not deleted
+> Zero real modules — this river was always the Claude Code skills dev-process layer, not app code. The Skills L0 unit's own real Infra/Inter bubble system covers every skill individually now (per-skill axes), a real upgrade over one river-wide role note.
+>
+> **See instead:**
+> - Skills (Infra/Inter, per-skill) — `graphify-out/galaxy_map_skill_network.html#view-table`
 
 ## Real role
 

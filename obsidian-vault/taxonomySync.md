@@ -3,13 +3,13 @@ module_name: "taxonomySync"
 kind: module
 river_number: 8
 river_name: "River VIII — The Confluence Pool"
-source_lines: "11686-11895"
+source_lines: "12319-12539"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # taxonomySync
 
-`rpgace_core.js:11686-11895`
+`rpgace_core.js:12319-12539`
 
 Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Confluence Pool]].
 

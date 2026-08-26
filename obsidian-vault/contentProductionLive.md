@@ -3,13 +3,13 @@ module_name: "contentProductionLive"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "19313-21277"
+source_lines: "20438-22967"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # contentProductionLive
 
-`rpgace_core.js:19313-21277`
+`rpgace_core.js:20438-22967`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 
@@ -17,11 +17,12 @@ Member of [[11 — River XI — Content Production Live.md|River XI — Content 
 
 - **UI**: renders real output, takes real input.
 - **Oracle**: 3 real call site(s) (sendToOracle/callOracle/fillGaps).
-- **Supabase**: 34 real touch(es) across content_productions, openmontage_jobs, video_jobs.
+- **Supabase**: 41 real touch(es) across conid_pot, content_productions, openmontage_jobs, video_jobs.
 
 ## Calls into
 
 - → [[beatLog.md|beatLog]]
+- → [[contentRepurpose.md|contentRepurpose]]
 - → [[videoPipeline.md|videoPipeline]]
 - → [[visualOracle.md|visualOracle]]
 

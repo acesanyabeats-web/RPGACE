@@ -3,13 +3,13 @@ module_name: "refCorpus"
 kind: module
 river_number: 7
 river_name: "River VII — The Library Current"
-source_lines: "18913-19311"
+source_lines: "20038-20436"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # refCorpus
 
-`rpgace_core.js:18913-19311`
+`rpgace_core.js:20038-20436`
 
 Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
 

@@ -3,6 +3,7 @@ river_number: 10
 river_name: "River X — The Confluence of Chronicles"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#868db8"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,8 +12,8 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[chroniclesLog]] — `rpgace_core.js:23429-23710`
-- [[careerStatCard]] — `rpgace_core.js:23026-23427`
+- [[chroniclesLog]] — `rpgace_core.js:26117-26398`
+- [[careerStatCard]] — `rpgace_core.js:25611-26115`
 
 ## Flows into
 

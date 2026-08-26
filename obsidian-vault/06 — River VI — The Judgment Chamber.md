@@ -3,6 +3,7 @@ river_number: 6
 river_name: "River VI — The Judgment Chamber"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#e8c96a"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,7 +12,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[phylumPath]] — `rpgace_core.js:12853-14763`
+- [[phylumPath]] — `rpgace_core.js:13528-15522`
 
 ## Flows into
 

@@ -3,11 +3,18 @@ river_number: 14
 river_name: "River XIV — Oversight Docs"
 kind: river
 carries_data_flow: false
+retired: true
 color: "#d4daf5"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # River XIV — Oversight Docs
+
+> [!warning] Retired (Aug 26 2026, G102) — marked deprecated/merged, not deleted
+> Zero real modules — the shared oversight-doc truth layer. The Oversight Docs L0 unit's own real Infra/Inter system covers this now.
+>
+> **See instead:**
+> - Oversight Docs (Infra/Inter) — `graphify-out/galaxy_map_oversight_sync.html#cat-sharedinfra`
 
 ## Real role
 

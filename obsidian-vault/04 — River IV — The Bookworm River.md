@@ -3,6 +3,7 @@ river_number: 4
 river_name: "River IV — The Bookworm River"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#9b6ec8"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,7 +12,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[bookworm]] — `rpgace_core.js:14765-16549`
+- [[bookworm]] — `rpgace_core.js:15524-17585`
 
 ## Flows into
 

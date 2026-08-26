@@ -95,7 +95,7 @@ from graphify_river_group import (  # noqa: E402
     LEVEL3_MODULES, compute_module_ui_signal, compute_cross_module_function_calls,
     attribute_river_connection_function, compute_module_oracle_call_count,
     rivers_needing_meanders, compute_module_supabase_touch_count,
-    render_evidence_bubble,
+    render_evidence_bubble, RIVER_RETIRED, river_retirement_note_html,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 # Real Aug 21 2026 fold (Alex's own direct ask: "2.5 is a table view of
@@ -847,7 +847,8 @@ def build_river_section(rnum):
     body = (
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
-        f'<div class="cur-toggle-row">'
+        + river_retirement_note_html(rnum)
+        + f'<div class="cur-toggle-row">'
         f'<div class="cur-toggle-btn active" data-view="map">🌊 Map view</div>'
         f'<div class="cur-toggle-btn" data-view="table">📊 Table view (Level 2.5)</div>'
         f'</div>'

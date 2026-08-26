@@ -3,6 +3,7 @@ river_number: 5
 river_name: "River V — Daily Ops: Agenda, Schedule & Journal"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#4caf82"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,11 +12,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[scheduleFixes]] — `rpgace_core.js:22553-22611`
-- [[shiftSync]] — `rpgace_core.js:22486-22551`
-- [[agendaReminder]] — `rpgace_core.js:9257-9329`
-- [[morningBrief]] — `rpgace_core.js:22131-22379`
-- [[journalQoL]] — `rpgace_core.js:22771-22910`
+- [[scheduleFixes]] — `rpgace_core.js:25138-25196`
+- [[shiftSync]] — `rpgace_core.js:25071-25136`
+- [[agendaReminder]] — `rpgace_core.js:9573-9645`
+- [[morningBrief]] — `rpgace_core.js:23879-24147`
+- [[journalQoL]] — `rpgace_core.js:25356-25495`
 
 ## Flows into
 

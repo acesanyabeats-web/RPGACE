@@ -3,13 +3,13 @@ module_name: "chroniclesLog"
 kind: module
 river_number: 10
 river_name: "River X — The Confluence of Chronicles"
-source_lines: "23429-23710"
+source_lines: "26117-26398"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # chroniclesLog
 
-`rpgace_core.js:23429-23710`
+`rpgace_core.js:26117-26398`
 
 Member of [[10 — River X — The Confluence of Chronicles.md|River X — The Confluence of Chronicles]].
 

@@ -3,13 +3,13 @@ module_name: "oracleAppGrounding"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "7551-7893"
+source_lines: "7849-8191"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleAppGrounding
 
-`rpgace_core.js:7551-7893`
+`rpgace_core.js:7849-8191`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

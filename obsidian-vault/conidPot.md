@@ -3,20 +3,20 @@ module_name: "conidPot"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "21527-22126"
+source_lines: "23217-23874"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # conidPot
 
-`rpgace_core.js:21527-22126`
+`rpgace_core.js:23217-23874`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
-- **Oracle**: 1 real call site(s) (sendToOracle/callOracle/fillGaps).
+- **Oracle**: 2 real call site(s) (sendToOracle/callOracle/fillGaps).
 - **Supabase**: 8 real touch(es) across conid_pot.
 
 ## Calls into

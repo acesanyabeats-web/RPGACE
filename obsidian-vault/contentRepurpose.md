@@ -3,13 +3,13 @@ module_name: "contentRepurpose"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "6245-6665"
+source_lines: "6449-6893"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # contentRepurpose
 
-`rpgace_core.js:6245-6665`
+`rpgace_core.js:6449-6893`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 
@@ -28,6 +28,7 @@ Member of [[11 — River XI — Content Production Live.md|River XI — Content 
 ## Called by
 
 - ← [[conidPot.md|conidPot]]
+- ← [[contentProductionLive.md|contentProductionLive]]
 
 ## Hook signals received
 

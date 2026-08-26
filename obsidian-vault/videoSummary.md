@@ -3,13 +3,13 @@ module_name: "videoSummary"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "11331-11684"
+source_lines: "11964-12317"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # videoSummary
 
-`rpgace_core.js:11331-11684`
+`rpgace_core.js:11964-12317`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 

@@ -2,7 +2,7 @@
 """
 galaxy_map_river.py — G3 of the ratified "RPGACE Total Systems Galaxy Map"
 /CEO plan (Aug 13 2026). Builds the real Level-1 drill-down: RPGACE
-Architecture's own 16 rivers, radial around a central hub, styled to
+Architecture's own 17 rivers, radial around a central hub, styled to
 match galaxy_map.py (G2) exactly — same dark radial aesthetic, same
 curved glowing edges, same tested/untested visual language — so
 drilling down never feels like a different tool.
@@ -22,7 +22,7 @@ one real caller-level edge crosses from a module in the source river
 into the target) rolled up for orientation, never drawn as if the river
 itself were a Total-system actor (system_map_spec.md §1a).
 
-Scope, per the ratified plan: ONLY the 16 rivers + RPGACE Architecture's
+Scope, per the ratified plan: ONLY the 17 rivers + RPGACE Architecture's
 own hub node + real RIVER_FLOWS edges between them. Function/module-level
 drill-down (G4, "river -> real tagged functions/nodes") is a real,
 separate, NOT-yet-built future item — this file deliberately stops at
@@ -36,7 +36,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers, count_crossings  # noqa: E402
 from graphify_river_group import (  # noqa: E402
-    RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS,
+    RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS, RIVER_RETIRED,
+    river_retirement_note_html,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
     compute_module_ui_signal, rivers_needing_meanders,
     compute_river_flow_cycles, describe_river_cycle,
@@ -153,7 +154,7 @@ def build_svg():
         if _river_num_from_label(target_label) == OVERSIGHT_RIVER
     }
 
-    # --- 16 rivers, evenly spaced around the hub, real crossing-reduced
+    # --- 17 rivers, evenly spaced around the hub, real crossing-reduced
     # ANGULAR ORDER (Aug 13, Alex's own rule — see
     # _crossing_reduced_ring_order()'s own docstring) ---
     river_radius = 480
@@ -208,6 +209,12 @@ def build_svg():
         if not mods:
             gx, gy = polar(rx, ry, 34, 135)
             nodes_svg.append(f'<text x="{gx}" y="{gy}" text-anchor="middle" font-size="13" opacity="0.85" title="0 real rpgace_core.js modules, by design — a Total-systems category, not an app module domain">⚙️</text>')
+        # G102 (Aug 26 2026) — a real, visible "retired" badge on the
+        # ring node itself, same treatment as the ⚙️/🧑/🔮 badges above,
+        # for the 5 rivers marked deprecated/merged in RIVER_RETIRED.
+        if rnum in RIVER_RETIRED:
+            tx_, ty_ = polar(rx, ry, 34, 180)
+            nodes_svg.append(f'<text x="{tx_}" y="{ty_}" text-anchor="middle" font-size="13" opacity="0.9" title="Retired — merged into the L0 Infra/Inter system, see legend below">🚫</text>')
         # Real, LIGHTWEIGHT Alex-presence badge (Aug 13, Alex's own ask,
         # "also present at level 0, 1 and 2 where it makes sense") — a
         # full bubble+edges (Level 2/3's own treatment) would be real
@@ -249,6 +256,7 @@ def build_svg():
             f'<span class="meta">Modules: {mods_txt}</span>'
             + (f'<br><span class="meta">{role}</span>' if role else '')
             + oversight_note
+            + river_retirement_note_html(rnum, compact=True)
             + '</div>'
         )
 
@@ -376,7 +384,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
   <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 16 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XIV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 16 nodes; see Level 2/3 for the real "Alex" bubble + edges). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 17 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XIV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 16 nodes; see Level 2/3 for the real "Alex" bubble + edges). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">

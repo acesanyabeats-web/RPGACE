@@ -2,7 +2,8 @@
 river_number: 17
 river_name: "River XVII — The Research & Intel Stream"
 kind: river
-carries_data_flow: false
+carries_data_flow: true
+retired: false
 color: "#4A90E2"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,11 +12,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[researchTabs]] — `rpgace_core.js:8034-8233`
-- [[intelBatchList]] — `rpgace_core.js:8640-8670`
-- [[intelDelete]] — `rpgace_core.js:9594-10180`
-- [[intelDedup]] — `rpgace_core.js:11198-11329`
-- [[ciAutoPropose]] — `rpgace_core.js:7318-7404`
+- [[researchTabs]] — `rpgace_core.js:8332-8531`
+- [[intelBatchList]] — `rpgace_core.js:8938-8968`
+- [[intelDelete]] — `rpgace_core.js:9910-10646`
+- [[intelDedup]] — `rpgace_core.js:11831-11962`
+- [[ciAutoPropose]] — `rpgace_core.js:7555-7702`
 
 ## Flows into
 

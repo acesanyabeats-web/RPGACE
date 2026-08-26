@@ -3,11 +3,25 @@ river_number: 12
 river_name: "River XII — The API / Auth Layer"
 kind: river
 carries_data_flow: false
+retired: true
 color: "#2ABFB0"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # River XII — The API / Auth Layer
+
+> [!warning] Retired (Aug 26 2026, G102) — marked deprecated/merged, not deleted
+> Zero real modules — this river was always a role description of the API/auth call surface, not a river of actual app code. That real role is now represented per-actor at L0, at finer grain than one river-wide note ever gave.
+>
+> **See instead:**
+> - Supabase (Infra/Inter) — `graphify-out/galaxy_map_supabase.html#view-map`
+> - Oracle (Infra/Inter) — `graphify-out/galaxy_map_oracle.html#view-map`
+> - Composio — `graphify-out/galaxy_map_connectors.html#conn-composio`
+> - Jina AI — `graphify-out/galaxy_map_connectors.html#conn-jina`
+> - Last.fm — `graphify-out/galaxy_map_connectors.html#conn-lastfm`
+> - librosa — `graphify-out/galaxy_map_connectors.html#conn-librosa`
+> - n8n — `graphify-out/galaxy_map_connectors.html#conn-n8n`
+> - Whisper — `graphify-out/galaxy_map_connectors.html#conn-whisper`
 
 ## Real role
 

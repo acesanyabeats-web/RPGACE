@@ -3,11 +3,18 @@ river_number: 16
 river_name: "River XVI — Dev Tooling"
 kind: river
 carries_data_flow: false
+retired: true
 color: "#2a3050"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # River XVI — Dev Tooling
+
+> [!warning] Retired (Aug 26 2026, G102) — marked deprecated/merged, not deleted
+> Zero real modules — the actual scripts/config that build/ship/graph the Total system (including the very scripts that generate this graph and the Obsidian vault). Honest gap, not force-mapped: no L0 unit represents "dev tooling" as its own real actor. Orchestrator CC is the closest real relationship (it is the session that runs this tooling), but tooling itself was never promoted to a unit.
+>
+> **See instead:**
+> - Orchestrator CC (partial — runs this tooling) — `graphify-out/galaxy_map_orchestrator_openmontage.html#cat-sharedinfra`
 
 ## Real role
 

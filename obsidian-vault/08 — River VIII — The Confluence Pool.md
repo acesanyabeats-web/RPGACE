@@ -3,6 +3,7 @@ river_number: 8
 river_name: "River VIII — The Confluence Pool"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#5588ee"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,9 +12,9 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[taxonomyReviewQueue]] — `rpgace_core.js:8702-9141`
-- [[taxonomySync]] — `rpgace_core.js:11686-11895`
-- [[taxonomyTree]] — `rpgace_core.js:12100-12851`
+- [[taxonomyReviewQueue]] — `rpgace_core.js:9000-9457`
+- [[taxonomySync]] — `rpgace_core.js:12319-12539`
+- [[taxonomyTree]] — `rpgace_core.js:12757-13526`
 
 ## Flows into
 

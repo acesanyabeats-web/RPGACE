@@ -46,6 +46,7 @@ from graphify_river_group import (  # noqa: E402  (import after sys.path fix, de
     compute_hook_signal_edges, compute_mainjs_window_bridge,
     compute_module_ui_signal, compute_module_oracle_call_count,
     compute_module_supabase_touch_count, compute_external_call_sites,
+    RIVER_RETIRED,
 )
 
 DEFAULT_VAULT = Path('obsidian-vault')
@@ -68,19 +69,40 @@ def note_filename(num: int) -> str:
 def build_hub_note(num: int, module_ranges) -> str:
     name = RIVER_NAME[num]
     color = RIVER_COLOR[num]
-    carries_data_flow = num <= 11
+    # Real bug found + fixed in passing (G102, Aug 26 2026) while
+    # touching this exact frontmatter field for the retirement work
+    # below: `num <= 11` predates the Aug 18 G49 River-v2 split — River
+    # XVII (a real, module-bearing app-code river, same species as 1-11)
+    # was silently marked carries_data_flow:false, the same "TOTAL_ZONES
+    # stale" class of bug this project has already caught and fixed
+    # once. `RIVER_RETIRED` is the single real source of "which rivers
+    # are a Total-systems category, not an app-code river" now — reusing
+    # it here means this can never drift out of sync with the retirement
+    # list itself (rule 8).
+    carries_data_flow = num not in RIVER_RETIRED
+    retired = num in RIVER_RETIRED
     lines = []
     lines.append('---')
     lines.append(f'river_number: {num}')
     lines.append(f'river_name: "{name}"')
     lines.append('kind: river')
     lines.append(f'carries_data_flow: {"true" if carries_data_flow else "false"}')
+    lines.append(f'retired: {"true" if retired else "false"}')
     lines.append(f'color: "{color}"')
     lines.append('source: "graphify_river_group.py — real, not guessed"')
     lines.append('---')
     lines.append('')
     lines.append(f'# {name}')
     lines.append('')
+    if retired:
+        info = RIVER_RETIRED[num]
+        lines.append('> [!warning] Retired (Aug 26 2026, G102) — marked deprecated/merged, not deleted')
+        lines.append(f'> {info["reason"]}')
+        lines.append('>')
+        lines.append('> **See instead:**')
+        for label, href in info['superseded_by']:
+            lines.append(f'> - {label} — `graphify-out/{href}`')
+        lines.append('')
 
     mods = RIVER_MODULES.get(num)
     if mods:

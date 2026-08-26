@@ -3,20 +3,20 @@ module_name: "phylumPath"
 kind: module
 river_number: 6
 river_name: "River VI — The Judgment Chamber"
-source_lines: "12853-14763"
+source_lines: "13528-15522"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # phylumPath
 
-`rpgace_core.js:12853-14763`
+`rpgace_core.js:13528-15522`
 
 Member of [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
-- **Supabase**: 20 real touch(es) across encyclopedia, oracle_fallback_queue, taxonomy_decision_log, taxonomy_links, taxonomy_proposals, taxonomy_tree.
+- **Supabase**: 23 real touch(es) across bibliography, encyclopedia, oracle_fallback_queue, taxonomy_decision_log, taxonomy_links, taxonomy_proposals, taxonomy_tree.
 
 ## Calls into
 

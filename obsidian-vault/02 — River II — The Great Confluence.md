@@ -3,6 +3,7 @@ river_number: 2
 river_name: "River II — The Great Confluence"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#4a8ccc"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,7 +12,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[pathRouter]] — `rpgace_core.js:23783-23860`
+- [[pathRouter]] — `rpgace_core.js:26471-26548`
 
 ## Flows into
 

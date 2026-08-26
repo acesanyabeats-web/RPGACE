@@ -3,6 +3,7 @@ river_number: 11
 river_name: "River XI — Content Production Live"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#3a4570"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,13 +12,13 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[contentProductionLive]] — `rpgace_core.js:19313-21277`
-- [[beatLog]] — `rpgace_core.js:17699-18910`
-- [[videoPipeline]] — `rpgace_core.js:21279-21525`
-- [[videoSummary]] — `rpgace_core.js:11331-11684`
-- [[conidPot]] — `rpgace_core.js:21527-22126`
-- [[contentRepurpose]] — `rpgace_core.js:6245-6665`
-- [[visualOracle]] — `rpgace_core.js:5672-6243`
+- [[contentProductionLive]] — `rpgace_core.js:20438-22967`
+- [[beatLog]] — `rpgace_core.js:18807-20035`
+- [[videoPipeline]] — `rpgace_core.js:22969-23215`
+- [[videoSummary]] — `rpgace_core.js:11964-12317`
+- [[conidPot]] — `rpgace_core.js:23217-23874`
+- [[contentRepurpose]] — `rpgace_core.js:6449-6893`
+- [[visualOracle]] — `rpgace_core.js:5832-6447`
 
 ## Flows into
 

@@ -3,6 +3,7 @@ river_number: 3
 river_name: "River III — The Oracle Current"
 kind: river
 carries_data_flow: true
+retired: false
 color: "#c9a84c"
 source: "graphify_river_group.py — real, not guessed"
 ---
@@ -11,19 +12,19 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[oracleAppGrounding]] — `rpgace_core.js:7551-7893`
-- [[oracleTreeGrounding]] — `rpgace_core.js:7406-7549`
-- [[oracleFetchGuard]] — `rpgace_core.js:7977-8032`
-- [[oracleDevBridge]] — `rpgace_core.js:7895-7975`
-- [[mockOracle]] — `rpgace_core.js:24096-24485`
-- [[oracleProviderMode]] — `rpgace_core.js:24487-24612`
-- [[agentsIntoOracle]] — `rpgace_core.js:22613-22662`
-- [[prodOraclePanel]] — `rpgace_core.js:5357-5472`
-- [[instaOraclePanel]] — `rpgace_core.js:5474-5569`
-- [[youtubeOracle]] — `rpgace_core.js:5101-5223`
-- [[tiktokOracle]] — `rpgace_core.js:5225-5355`
-- [[scheduleOracle]] — `rpgace_core.js:9331-9592`
-- [[feynman]] — `rpgace_core.js:6672-7219`
+- [[oracleAppGrounding]] — `rpgace_core.js:7849-8191`
+- [[oracleTreeGrounding]] — `rpgace_core.js:7704-7847`
+- [[oracleFetchGuard]] — `rpgace_core.js:8275-8330`
+- [[oracleDevBridge]] — `rpgace_core.js:8193-8273`
+- [[mockOracle]] — `rpgace_core.js:26784-27348`
+- [[oracleProviderMode]] — `rpgace_core.js:27350-27478`
+- [[agentsIntoOracle]] — `rpgace_core.js:25198-25247`
+- [[prodOraclePanel]] — `rpgace_core.js:5517-5632`
+- [[instaOraclePanel]] — `rpgace_core.js:5634-5729`
+- [[youtubeOracle]] — `rpgace_core.js:5261-5383`
+- [[tiktokOracle]] — `rpgace_core.js:5385-5515`
+- [[scheduleOracle]] — `rpgace_core.js:9647-9908`
+- [[feynman]] — `rpgace_core.js:6900-7456`
 
 ## Flows into
 
