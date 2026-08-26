@@ -85,6 +85,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon, barycenter_order, count_crossings  # noqa: E402
+from galaxy_map import compute_unit_river_touches, UNIT_META, UNIT_BUBBLE_SYSTEM  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
@@ -154,6 +155,11 @@ CARD_ICON_FALLBACK = '🎯'
 
 EXTERNAL_COLOR = '#5FB3D9'  # same family as Supabase's Level-0 accent — "external infra," not a river's own color
 SKILL_RIVER = 13  # River XIII — Skills' own real home; every real skill is a stream feeding it
+
+# G93 (Aug 25 2026) — real, project-wide "which L0 unit's Infra touches
+# which river" aggregate (galaxy_map.py), computed once here rather than
+# per-river-section-call (pure function of static evidence, rule 8/11).
+RIVER_UNIT_TOUCHES = compute_unit_river_touches()
 
 
 def build_river_section(rnum):
@@ -752,6 +758,23 @@ def build_river_section(rnum):
     skill_list = ''.join(_skill_row(s, n) for s, n in skills_here) or \
         '<div class="legend-row small"><span class="meta">No real skill has a direct, cited relationship with this river.</span></div>'
 
+    # G93 (Aug 25 2026) — real Infra-only bubbles: one per real L0 unit
+    # whose own Infra genuinely touches this river, linking straight to
+    # that unit's own drilldown page (never a duplicated inline copy of
+    # its evidence — rule 8). Rivers-only-Infra, never Inter, per Alex's
+    # own confirmed architecture call this session ("no rivers only
+    # infra - wouldnt that make more sense?" / "yes").
+    def _infra_bubble(uid):
+        meta = UNIT_META[uid]
+        href = UNIT_BUBBLE_SYSTEM.get(uid, '#')
+        return (f'<a class="legend-row small infra-bubble" href="{href}">'
+                f'<span class="dot" style="background:{meta["color"]}"></span>'
+                f'<b>{meta["icon"]} {meta["label"]}</b> '
+                f'<span class="meta">real Infra touches this river — open its own drilldown ↗</span></a>')
+    infra_units = sorted(RIVER_UNIT_TOUCHES.get(rnum, ()))
+    infra_list = ''.join(_infra_bubble(u) for u in infra_units) or \
+        '<div class="legend-row small"><span class="meta">No real L0 unit\'s Infra system (of the 7 with a clean river-grain mapping) touches this river.</span></div>'
+
     # G20 (Aug 14, Alex's own direct ask, real evidence: this river's own
     # crowded fan-out of mostly-isolated modules crossed by Alex/Oracle
     # bubble edges was the exact screenshot he flagged as "very messy").
@@ -810,6 +833,7 @@ def build_river_section(rnum):
         f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
         f'<div class="legend"><h3>External connectors (G0) that contribute here</h3>{link_list}</div>'
         f'<div class="legend"><h3>Skill streams that join this river</h3>{skill_list}</div>'
+        f'<div class="legend"><h3>Infra — L0 units whose own bubble system touches this river</h3>{infra_list}</div>'
     )
     # Real Aug 21 2026 fold — table view reuses galaxy_map_level2_5.py's
     # own build_river_section() directly (rule 8), not re-derived. Only
@@ -879,6 +903,11 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   .legend-row b{{color:#E2E2EC}}
   .legend-row .meta{{display:block;font-size:10px;color:#6a6a78;margin-top:2px}}
   .legend-row .warn{{color:#E0A040;font-weight:700}}
+  /* G93 (Aug 25 2026) — real Infra bubbles are the one .legend-row kind
+     that's an actual anchor tag, not a div; needs its own display/cursor
+     since an anchor defaults to inline. */
+  a.legend-row.infra-bubble{{display:block;text-decoration:none;cursor:pointer;transition:background .15s}}
+  a.legend-row.infra-bubble:hover{{background:rgba(255,255,255,0.04)}}
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
   .note{{max-width:820px;margin:0 auto 50px;padding:0 24px;font-size:10.5px;color:#6a6a78;line-height:1.7;text-align:center}}

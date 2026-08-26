@@ -61,6 +61,14 @@ from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_decision_matrix import LOGIC_POINTS as DECISION_POINTS  # noqa: E402
 from galaxy_map_decisions import DECISION_POINTS as _DECISION_POINTS  # noqa: E402
 from galaxy_map import _curved_edge, _build_markers, barycenter_order  # noqa: E402
+from galaxy_map import compute_unit_module_touches, UNIT_META, UNIT_BUBBLE_SYSTEM  # noqa: E402
+
+# G94 (Aug 25 2026) — real, project-wide "which L0 unit's Infra touches
+# which specific module" aggregate, computed once (pure function of
+# static evidence, rule 8/11). A module touched by exactly 1 of the 5
+# real module-grain units (oracle/composio/jina/lastfm/supabase) is
+# real Infra; 2+ is a real Inter (a genuine composition, never forced).
+MODULE_UNIT_TOUCHES = compute_unit_module_touches()
 
 OUT = Path('graphify-out/galaxy_map_current.html')
 
@@ -666,6 +674,26 @@ def build_walkthrough_details(mod, func, badges, branches, notable):
 </details>'''
 
 
+def build_module_infra_inter_row(mod):
+    """G94 (Aug 25 2026) — real Infra and/or Inter bubbles for this
+    specific module, whichever real evidence supports. Exactly 1
+    touching unit is Infra (a real attached resource); 2+ is a real
+    Inter (a genuine composition, e.g. beatLog: lastfm+oracle+supabase
+    all really do land on the same module). Honestly empty for the 12
+    of 45 modules no real evidence touches at all — no placeholder
+    row invented for those."""
+    units = sorted(MODULE_UNIT_TOUCHES.get(mod, ()))
+    if not units:
+        return ''
+    kind = 'infra' if len(units) == 1 else 'inter'
+    kind_label = '💉 Infra' if kind == 'infra' else f'🔗 Inter ({len(units)} units compose here)'
+    chips = ''.join(
+        f'<a class="unit-chip" href="{UNIT_BUBBLE_SYSTEM.get(u, "#")}" style="--c:{UNIT_META[u]["color"]}">'
+        f'{UNIT_META[u]["icon"]} {UNIT_META[u]["label"]}</a>'
+        for u in units)
+    return f'<div class="mod-infra-row"><span class="mod-infra-label">{kind_label}</span>{chips}</div>'
+
+
 def build_module_section(mod):
     branches = compute_function_branches(mod)
     ui_sigs = compute_function_ui_signals(mod)
@@ -686,9 +714,11 @@ def build_module_section(mod):
     # TABLE view. Same real `id="mod-{mod}"` anchor either script always
     # used, so nothing outside this file needed a scheme change.
     map_inner = build_module_map_inner(mod)
+    infra_inter_row = build_module_infra_inter_row(mod)
     return f'''<section class="mod-section" id="mod-{mod}" style="display:none">
   <div class="mhead"><h2>{mod}</h2><span class="river-chip">{river_label}</span>
     <span class="mtotal">{len(funcs)} real Current(s)</span></div>
+  {infra_inter_row}
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -726,6 +756,11 @@ TEMPLATE = """<!DOCTYPE html>
   .river-chip{{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--dim)}}
   .mtotal{{font-size:9.5px;color:var(--dim)}}
   .l3-link{{margin-left:auto;font-size:9.5px;color:var(--dim);text-decoration:none}}
+  /* G94 (Aug 25 2026) — real per-module Infra/Inter bubble row. */
+  .mod-infra-row{{max-width:900px;margin:0 auto;padding:0 24px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}}
+  .mod-infra-label{{font-size:9.5px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px}}
+  .unit-chip{{--c:#8a8a9a;font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;border:1px solid var(--c);color:var(--c);text-decoration:none;background:color-mix(in srgb, var(--c) 10%, transparent);transition:background .15s}}
+  .unit-chip:hover{{background:color-mix(in srgb, var(--c) 22%, transparent)}}
   .currents{{max-width:900px;margin:0 auto 40px;padding:0 24px;display:flex;flex-direction:column;gap:12px}}
   .current-block{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:14px 16px}}
   .cur-head{{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}}

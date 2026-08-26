@@ -67,6 +67,8 @@ from graphify_river_group import (  # noqa: E402
     L0_SUPABASE_UNITS, L0_UNIT_LABEL,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
     compute_rpgace_architecture_supabase_infra, compute_oversight_docs_supabase_infra,
+    compute_all_oracle_call_counts, compute_all_connector_call_counts,
+    compute_all_supabase_table_touches, SKILL_SECONDARY_RIVER,
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 # Real Aug 21 2026 fusion — Alex's own direct ask: "the l0 7 units
@@ -196,7 +198,8 @@ GALAXY_BY_ID = {g['id']: g for g in GALAXIES}
 # real, additional bubble row below the SVG, per Alex's own direct ask.
 UNIT_ORDER = [
     'rpgace_architecture', 'orchestrator_cc', 'openmontage_cc', 'graphify_cc',
-    'oracle', 'skills', 'alex', 'supabase', 'oversight_docs',
+    'oracle', 'composio', 'jina', 'lastfm', 'librosa', 'n8n', 'whisper',
+    'skills', 'alex', 'supabase', 'oversight_docs',
 ]
 UNIT_META = {
     'rpgace_architecture': {'label': 'RPGACE Architecture', 'icon': '🏛️', 'color': '#C9A84C'},
@@ -204,6 +207,18 @@ UNIT_META = {
     'openmontage_cc': {'label': 'OpenMontage CC', 'icon': '🎬', 'color': '#E25454'},
     'graphify_cc': {'label': 'Graphify CC', 'icon': '🌐', 'color': '#3DAA6E'},
     'oracle': {'label': 'Oracle', 'icon': '🔮', 'color': '#9B59B6'},
+    # G99 completion (Aug 25 2026) — the other 6 real "External AI"
+    # constituents, each promoted to its own real L0 unit, per Alex's
+    # own words: "make all its components their own l0 unit." Colors
+    # reused from EXTERNAL_CONNECTORS' own already-established real
+    # dot colors elsewhere in this file/graphify_river_group.py, never
+    # invented fresh.
+    'composio': {'label': 'Composio', 'icon': '🧩', 'color': '#3DAA6E'},
+    'jina': {'label': 'Jina AI', 'icon': '🕷️', 'color': '#4A90E2'},
+    'lastfm': {'label': 'Last.fm', 'icon': '🎧', 'color': '#E25454'},
+    'librosa': {'label': 'librosa', 'icon': '🎚️', 'color': '#8a8a9a'},
+    'n8n': {'label': 'n8n', 'icon': '🔗', 'color': '#8a8a9a'},
+    'whisper': {'label': 'Whisper (OpenAI, local)', 'icon': '🎙️', 'color': '#8a8a9a'},
     'skills': {'label': 'Skills', 'icon': '🧩', 'color': '#3DAA6E'},
     'alex': {'label': 'Alex', 'icon': '🧑', 'color': '#E25454'},
     'supabase': {'label': 'Supabase', 'icon': '🗄️', 'color': '#2ABFB0'},
@@ -219,17 +234,22 @@ assert L0_UNIT_LABEL == {uid: UNIT_META[uid]['label'] for uid in UNIT_ORDER}, (
     'L0_UNIT_LABEL (graphify_river_group.py) has drifted from UNIT_META here — '
     'update the mirror in the same commit.')
 
-# The 5 units that need a NEW bubble on this page (the other 4 already
-# render via the SVG satellites/harness node above).
-NEW_BUBBLE_UNITS = ['oracle', 'skills', 'alex', 'supabase', 'oversight_docs']
+# The units that need a NEW bubble on this page (the other 4 —
+# rpgace_architecture + its 3 satellites/harness node — already render
+# via the SVG above). G99 completion (Aug 25 2026): the 6 real
+# connector units join the bubble row alongside Oracle.
+NEW_BUBBLE_UNITS = ['oracle', 'composio', 'jina', 'lastfm', 'librosa', 'n8n', 'whisper',
+                     'skills', 'alex', 'supabase', 'oversight_docs']
 
 # Real, explicit override #1 — anything touching Oracle is INFRA
 # regardless of its stored EDGES 'kind' tag (Alex's own confirmed
 # example this session: infra = "Supabase touch, Oracle call,
 # external-connector touch"). Renamed from FORCE_INFRA_UNITS'
 # old 'external_ai' member (Aug 25 2026, G99 — External AI retired as
-# an L0 unit, Oracle inherits its own real edges/rule).
-FORCE_INFRA_UNITS = {'oracle'}
+# an L0 unit, Oracle inherits its own real edges/rule). The 6 new
+# connector units are single-actor real infra by the same logic — each
+# IS a real attached resource, not a composition of others.
+FORCE_INFRA_UNITS = {'oracle', 'composio', 'jina', 'lastfm', 'librosa', 'n8n', 'whisper'}
 # Real, explicit override #2 — RETIRED by G77 (Aug 25 2026). The
 # alex<->rpgace_architecture edge used to be force-flipped to INFRA so
 # it would sit next to the decision list. Alex's own direct critique
@@ -308,6 +328,31 @@ CC_UNIT_LINK = {
     'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html',
     'openmontage_cc': 'galaxy_map_orchestrator_openmontage.html',
     'graphify_cc': 'galaxy_map_externals.html',
+}
+
+# G93/G99/G100 (Aug 25 2026) — the real, single Python-side source for
+# "which L0 unit redirects to which real destination page." Was
+# previously hand-typed twice (once as a JS literal inside this file's
+# own TEMPLATE, once implicitly via CC_UNIT_LINK) — now built once here
+# and JSON-injected into the JS template below (rule 8), and reused
+# directly by River pages (galaxy_map_module.py's build_river_section())
+# to build a real clickable Infra bubble for each unit touching that
+# river, rather than a 3rd hand-typed copy of the same mapping.
+UNIT_BUBBLE_SYSTEM = {
+    'supabase': 'galaxy_map_supabase.html#view-map',
+    'oracle': 'galaxy_map_oracle.html#view-map',
+    'oversight_docs': 'galaxy_map_oversight_sync.html#cat-sharedinfra',
+    'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra',
+    'openmontage_cc': CC_UNIT_LINK['openmontage_cc'],
+    'graphify_cc': CC_UNIT_LINK['graphify_cc'],
+    'composio': 'galaxy_map_connectors.html#conn-composio',
+    'jina': 'galaxy_map_connectors.html#conn-jina',
+    'lastfm': 'galaxy_map_connectors.html#conn-lastfm',
+    'librosa': 'galaxy_map_connectors.html#conn-librosa',
+    'n8n': 'galaxy_map_connectors.html#conn-n8n',
+    'whisper': 'galaxy_map_connectors.html#conn-whisper',
+    'skills': 'galaxy_map_skill_network.html#view-table',
+    'alex': 'galaxy_map_decision_matrix.html#view-bubble',
 }
 
 
@@ -416,6 +461,86 @@ def river_flow_rank():
                 if dst in members:
                     intra[dst] += 1
     return {n: (layer[comp[n]], intra[n]) for n in sorted(nodes)}
+
+
+# G93 (Aug 25 2026) — real, project-wide "which L0 unit's Infra
+# genuinely touches which river" aggregate, powering River pages' own
+# real Infra-only bubbles (one per real touching unit, linking to that
+# unit's own drilldown). Lives here (not graphify_river_group.py) since
+# it needs dm_build_unified() (galaxy_map_decision_matrix.py) — that
+# module already imports FROM graphify_river_group.py, so importing it
+# back there would be circular; galaxy_map_river.py/galaxy_map_module.py
+# already import polar()/etc. from this file, so importing this
+# function from here too is zero new dependency shape, not a new one.
+#
+# Deliberately scoped to the 7 units with a real, CLEAN river-grain
+# mapping from already-built evidence (rule 8, nothing re-derived):
+# oracle/composio/jina/lastfm/supabase (function-body call-site
+# evidence, resolved to a river via the module it lives in) and
+# alex/skills (already river-tagged at the source — Decision Matrix's
+# own 'river' field, SKILL_SECONDARY_RIVER's own tuple). Honestly
+# EXCLUDED, not force-fitted: oversight_docs/orchestrator_cc (real
+# Infra exists, but at table/dispatch grain — a table has no single
+# river, several of its real touches span many), openmontage_cc/
+# graphify_cc/librosa/n8n/whisper (confirmed zero real client-side
+# rpgace_core.js evidence — see galaxy_map_connectors.py), and
+# rpgace_architecture (the whole app — trivially "touches" every river,
+# which would make its own bubble meaningless noise on all 17 pages).
+def _unit_module_evidence():
+    """Real, shared per-unit->{modules touched} evidence, the raw input
+    both compute_unit_river_touches() (river-grain, all 7 units) and
+    compute_unit_module_touches() (module-grain, G94) collapse from —
+    computed once here so neither has to re-derive it (rule 8)."""
+    out = {}
+    out['oracle'] = set(compute_all_oracle_call_counts().keys())
+    conn_calls = compute_all_connector_call_counts()
+    for uid, name in (('composio', 'Composio'), ('jina', 'Jina AI'), ('lastfm', 'Last.fm')):
+        out[uid] = {m for m, _f, _d in conn_calls.get(name, ())}
+    sb = compute_all_supabase_table_touches()
+    out['supabase'] = {m for pairs in sb.values() for m, _f, _op in pairs}
+    return out
+
+
+def compute_unit_river_touches():
+    """Returns {river_num: {unit_id, ...}} — real, sorted at use site.
+    Covers all 7 units with a clean river-grain mapping: the 5 with
+    real module-level evidence (_unit_module_evidence(), resolved up to
+    their river) plus alex/skills, which are only ever river-tagged at
+    the source (Decision Matrix's own 'river' field,
+    SKILL_SECONDARY_RIVER's own tuple) and have no real module to
+    resolve down to."""
+    river_of = {}
+    for r, mods in RIVER_MODULES.items():
+        for m in mods:
+            river_of[m] = r
+
+    by_river = {}
+    for uid, modules in _unit_module_evidence().items():
+        for r in {river_of[m] for m in modules if m in river_of}:
+            by_river.setdefault(r, set()).add(uid)
+    for d in dm_build_unified():
+        if d.get('river') is not None:
+            by_river.setdefault(d['river'], set()).add('alex')
+    for river_and_note in SKILL_SECONDARY_RIVER.values():
+        by_river.setdefault(river_and_note[0], set()).add('skills')
+    return by_river
+
+
+# G94 (Aug 25 2026) — real, MODULE-grain counterpart to G93's river-
+# grain aggregate. Only the 5 units with genuine per-function evidence
+# (oracle/composio/jina/lastfm/supabase) can honestly attribute to one
+# SPECIFIC module — alex/skills are only ever river-tagged at the
+# source (see compute_unit_river_touches()'s own docstring), so they
+# correctly do NOT appear here; a module they'd "probably" touch would
+# be a guess, not evidence. A module touched by exactly 1 of these 5 is
+# real Infra; 2+ is a real Inter (a genuine composition, not invented).
+def compute_unit_module_touches():
+    """Returns {module: {unit_id, ...}} — real, sorted at use site."""
+    by_module = {}
+    for uid, modules in _unit_module_evidence().items():
+        for m in modules:
+            by_module.setdefault(m, set()).add(uid)
+    return by_module
 
 
 def build_alex_decision_facets():
@@ -850,13 +975,33 @@ def build_facets():
             facets[uid].extend(compute_l0_unit_supabase_infra(uid))
         facets[uid].extend(compute_l0_unit_supabase_inter(uid))
 
-    connector_owner = {'OpenMontage': 'openmontage_cc', 'FFmpeg': 'openmontage_cc', 'Graphify CC': 'graphify_cc'}
+    # G99 completion (Aug 25 2026) — 6 of these 10 real connectors are
+    # now their own real L0 units (composio/jina/lastfm/librosa/n8n/
+    # whisper), no longer just "used by rpgace_architecture." Each
+    # routes to its own real per-connector page/tab now
+    # (galaxy_map_connectors.html), not the generic externals
+    # classification page — OpenArt (deferred, no real integration
+    # yet) is the one real connector left with no dedicated unit, so it
+    # correctly still falls back to rpgace_architecture/externals.
+    connector_owner = {
+        'OpenMontage': 'openmontage_cc', 'FFmpeg': 'openmontage_cc', 'Graphify CC': 'graphify_cc',
+        'Composio': 'composio', 'Jina AI': 'jina', 'Last.fm': 'lastfm',
+        'librosa': 'librosa', 'n8n': 'n8n', 'Whisper (OpenAI, local)': 'whisper',
+    }
+    connector_own_link = {
+        'Composio': 'galaxy_map_connectors.html#conn-composio',
+        'Jina AI': 'galaxy_map_connectors.html#conn-jina',
+        'Last.fm': 'galaxy_map_connectors.html#conn-lastfm',
+        'librosa': 'galaxy_map_connectors.html#conn-librosa',
+        'n8n': 'galaxy_map_connectors.html#conn-n8n',
+        'Whisper (OpenAI, local)': 'galaxy_map_connectors.html#conn-whisper',
+    }
     for name, itype in CONNECTOR_ITYPE.items():
         owner = connector_owner.get(name, 'rpgace_architecture')
         facets[owner].append({
             'kind': 'infra', 'dim': 'Externals', 'label': f"Uses: {esc(name)}",
             'detail': f"Real external connector, interaction type <code>{esc(itype)}</code>.",
-            'share_key': f"connector:{name}", 'link': 'galaxy_map_externals.html',
+            'share_key': f"connector:{name}", 'link': connector_own_link.get(name, 'galaxy_map_externals.html'),
         })
 
     for p in ORACLE_PROVIDERS:
@@ -1693,12 +1838,19 @@ TEMPLATE = """<!DOCTYPE html>
   // (th.unit-rowhead, #unit-facets tr.uf-row) can check it too, rather
   // than blindly assuming every unit still opens the inline Infra/Inter
   // panel. See the card click handler below for the full history.
-  var UNIT_BUBBLE_SYSTEM = {{
-    supabase: 'galaxy_map_supabase.html#view-map',
-    oracle: 'galaxy_map_oracle.html#view-map',
-    oversight_docs: 'galaxy_map_oversight_sync.html#cat-sharedinfra',
-    orchestrator_cc: 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra',
-  }};
+  // G93/G99/G100 (Aug 25 2026) — real, single Python-side source
+  // (UNIT_BUBBLE_SYSTEM, galaxy_map.py module level), JSON-injected —
+  // was a 2nd hand-typed copy of this exact mapping until this pass
+  // (rule 8). Every unit here gains a real redirect to its own already-
+  // established dedicated page; openmontage_cc/graphify_cc reuse
+  // CC_UNIT_LINK's own real mapping; the 6 new connector units go to
+  // their own tab on galaxy_map_connectors.html; skills/alex go to
+  // their own already-built dedicated pages (SKILL_SECONDARY_RIVER's
+  // real river data / the unified Decision Matrix's real 21 decisions —
+  // both were ALREADY wired as real facet data before this pass, this
+  // just gives each a real destination page instead of an inline
+  // expand-in-place choice).
+  var UNIT_BUBBLE_SYSTEM = {unit_bubble_system_json};
 
   function clearGlow() {{
     document.querySelectorAll('.unit-card, .unit-node, .unit-rowhead').forEach(function(c) {{ c.classList.remove('glow'); }});
@@ -1910,7 +2062,8 @@ def main():
     html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend, W=W, H=H,
                            markers=markers, unit_cards=unit_cards, data_json=json.dumps(data),
                            matrix_rows=matrix_rows, table_details=table_details,
-                           unit_facet_table=unit_facet_table)
+                           unit_facet_table=unit_facet_table,
+                           unit_bubble_system_json=json.dumps(UNIT_BUBBLE_SYSTEM))
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,

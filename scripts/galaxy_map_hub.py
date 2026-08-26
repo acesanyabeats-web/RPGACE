@@ -118,6 +118,8 @@ PAGES = [
      'scope': '25 tables, 113 of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
     {'file': 'galaxy_map_oracle.html', 'label': 'Oracle', 'level': 'Dimension', 'kind': 'infra',
      'scope': '13 modules, 28 real (module,function) call pairs', 'desc': 'G99 — Oracle\'s own real Infra bubble system (promoted from the retired "External AI" L0 grouping): every real function anywhere that calls Oracle, by river/module.'},
+    {'file': 'galaxy_map_connectors.html', 'label': 'Connectors (6 real L0 units)', 'level': 'Dimension', 'kind': 'infra',
+     'scope': '9 real (module,function) pairs across 3 connectors, 3 honest disclosure-only', 'desc': 'G99 completion — the other 6 real "External AI" constituents (Composio/Jina AI/Last.fm/librosa/n8n/Whisper), each its own real L0 unit; 3 get a genuine Infra drilldown, 3 honestly disclose they have no client-side call site.'},
     {'file': 'galaxy_map_externals.html', 'label': 'Externals — UI + Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
      'scope': '13 real external connectors', 'desc': 'G27 — whether each connector genuinely touches real UI AND real backend processing.'},
     {'file': 'galaxy_map_skill_network.html', 'label': 'Skills — Composition Network + AI/UI/Backend Dimension', 'level': 'Dimension', 'kind': 'inter',

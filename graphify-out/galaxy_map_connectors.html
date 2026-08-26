@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Connectors)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --accent:#3DAA6E; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 20%, #0e1a12 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto;line-height:1.6}
+  .conn-tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}
+  .conn-tab{padding:6px 14px;border-radius:16px;font-size:11.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}
+  .conn-tab.active{background:var(--accent);color:#0a0a0f;font-weight:700}
+  .conn-pane{display:none;max-width:900px;margin:0 auto;padding:24px}
+  .conn-pane.active{display:block}
+  .conn-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+  .conn-head h2{font-family:Georgia,serif;font-size:20px;color:#fff}
+  .conn-status{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--dim);text-transform:uppercase}
+  .conn-note{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:10px}
+  .conn-summary{font-size:10.5px;color:#a8a8b8;margin-bottom:12px}
+  .disclosure-box{background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.3);border-radius:10px;padding:14px 16px;font-size:11px;color:#e8c8c8;line-height:1.6;margin-bottom:12px}
+  .toggle-row{display:flex;gap:8px;margin-bottom:14px}
+  .toggle-btn{padding:6px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
+  .toggle-btn.active{background:var(--gold);color:#1a1608;border-color:var(--gold)}
+  .view{display:none} .view.active{display:block}
+  .tables{display:flex;flex-direction:column;gap:12px}
+  .table-section{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px}
+  .thead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .tdot{width:10px;height:10px;border-radius:50%}
+  .thead h2{font-family:Georgia,serif;font-size:14px;color:#fff}
+  .tcount{font-size:9.5px;color:var(--dim);margin-left:auto}
+  .rivers{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  .river-chip{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(74,144,226,0.14);color:#4A90E2;text-decoration:none}
+  .mod-chip{font-size:12px;font-weight:700;padding:2px 8px;border-radius:8px;background:rgba(201,168,76,0.1);color:var(--gold);text-decoration:none;font-family:Georgia,serif}
+  .mod-chip-none{background:rgba(255,255,255,0.04);color:var(--dim);font-size:9.5px}
+  .touches{margin-top:6px;font-size:10.5px}
+  .touches summary{cursor:pointer;color:var(--dim)}
+  .touch-row{padding:3px 0 3px 10px;color:#a8a8b8}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px}
+  a{color:var(--accent)}
+  .note{max-width:900px;margin:20px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+
+.idd{max-width:1400px;margin:12px auto 0;padding:0 24px}
+.idd-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;font-weight:700;padding:8px 10px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px}
+.idd-crumb span{padding:3px 9px;border-radius:10px;background:rgba(255,255,255,0.05);color:#8a8a9a}
+.idd-crumb span.on{color:#0a0a0f;background:#C9A84C}
+.idd-crumb .idd-sep{background:none;padding:0;color:#55555f}
+.idd-lvl{margin-bottom:16px}
+.idd-lbl{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin-bottom:8px}
+.idd-row{display:flex;flex-wrap:wrap;gap:10px}
+.idd-bub{--c:#8a8a9a;min-width:190px;flex:0 1 230px;background:rgba(255,255,255,0.03);border:2px solid var(--c);border-radius:16px;padding:11px 13px;cursor:pointer;transition:transform .15s,background .15s}
+.idd-bub:hover{transform:translateY(-2px);background:rgba(255,255,255,0.07)}
+.idd-bub.on{background:color-mix(in srgb, var(--c) 18%, transparent);box-shadow:0 0 0 2px var(--c)}
+.idd-bub b{display:block;font-size:12px;color:var(--c)}
+.idd-bub span{display:block;font-size:10.5px;color:#E2E2EC;margin-top:2px}
+.idd-bub em{display:block;font-style:normal;font-size:9px;color:#8a8a9a;margin-top:5px}
+.idd-pane{display:none}
+.idd-pane.on{display:block}
+.idd-hint{font-size:10.5px;color:#8a8a9a;padding:6px 2px}
+.idd-mig{display:block;text-decoration:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-left:3px solid var(--c,#C9A84C);border-radius:10px;padding:9px 12px;min-width:230px;flex:0 1 300px;transition:background .15s}
+.idd-mig:hover{background:rgba(201,168,76,0.1)}
+.idd-mig b{display:block;font-size:11px;color:#fff;font-family:'Cascadia Code','Fira Mono',monospace}
+.idd-mig .idd-res{display:block;font-size:9.5px;color:#8a8a9a;margin-top:4px;line-height:1.5}
+.idd-mig .idd-jump{display:block;font-size:9px;font-weight:700;color:#C9A84C;margin-top:6px}
+.idd-mig.idd-dead{cursor:default;opacity:0.8}
+.idd-mig.idd-dead .idd-jump{color:#8a8a9a}
+
+
+.dim-index{max-width:1180px;margin:18px auto 26px;padding:0 24px}
+.dim-index h2{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:4px;text-align:center}
+.dim-index .dim-sub{font-size:11px;color:#8a8a9a;text-align:center;margin-bottom:14px;line-height:1.6}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.dim-card{display:block;text-decoration:none;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.1);border-left-width:3px;border-radius:10px;padding:11px 13px;transition:background .15s,border-color .15s}
+.dim-card:hover{background:rgba(255,255,255,0.07)}
+.dim-card .dim-name{font-size:12.5px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+.dim-card .dim-desc{font-size:10px;color:#8a8a9a;line-height:1.55}
+.dim-card .dim-kind{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.9}
+
+
+.level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
+.level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
+.level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
+.level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
+.level-rail .rail-sep{color:#55555f}
+</style>
+</head>
+<body>
+<nav class="level-rail"><a href="galaxy_map.html">🌌 L0</a><span class="rail-sep">→</span><a href="galaxy_map_river.html">🏛️ L1</a><span class="rail-sep">→</span><a href="galaxy_map_module.html">🌊 L2</a><span class="rail-sep">→</span><a href="galaxy_map_current.html">🔽 Current (L3)</a></nav>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Connectors</div>
+  <h1>🔌 The 6 Remaining Real Connectors</h1>
+  <p>Promoted to their own real L0 units from the retired "External AI" grouping (Alex: "make all its components their own l0 unit") — Anthropic/Kimi/Luna already moved to Oracle's own dedicated page; OpenMontage/Graphify CC already have their own CC-unit pages. 3 of these 6 genuinely have a real, detectable client-side call site and get the same real Infra bubble system Oracle/Supabase already have; 3 genuinely don't, and say so plainly rather than faking one.</p>
+</div>
+<div class="conn-tabs"><div class="conn-tab" data-conn="composio">🧩 Composio</div><div class="conn-tab" data-conn="jina">🕷️ Jina AI</div><div class="conn-tab" data-conn="lastfm">🎧 Last.fm</div><div class="conn-tab" data-conn="librosa">🎚️ librosa</div><div class="conn-tab" data-conn="n8n">🔗 n8n</div><div class="conn-tab" data-conn="whisper">🎙️ Whisper (OpenAI, local)</div></div>
+<section class="conn-pane" id="conn-composio">
+  <div class="conn-head"><h2>🧩 Composio</h2>
+    <span class="conn-status">live</span></div>
+  <p class="conn-note">Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion page + YouTube channel data via Supadata). Real trigger: <code>api/composio.js / api/executor.js / api/orchestrate.js</code>.</p>
+  <p class="conn-summary">4 real (module,function) call pair(s) across 3 module(s), 2 river(s) — a genuine client-side rpgace_core.js call site, detected the same way Oracle/Supabase's own Infra systems are.</p>
+  <div class="toggle-row">
+    <div class="toggle-btn active" data-conn="composio" data-view="table">📊 Table</div>
+    <div class="toggle-btn" data-conn="composio" data-view="map">🌌 Map</div>
+  </div>
+  <div class="view active" id="view-composio-table"><div class="tables"><div class="table-section">
+  <div class="thead"><span class="tdot" style="background:#3DAA6E"></span><h2><a class="mod-chip" href="galaxy_map_current.html#mod-contentRepurpose">🔽 contentRepurpose</a></h2>
+    <span class="tcount">1 real function(s)</span></div>
+  <div class="rivers"><a class="river-chip" href="galaxy_map_module.html#river-11">🌊 River XI</a></div>
+  <details class="touches"><summary>real functions calling Composio</summary><div class="touch-row">🧩 <code>_injectAgentButtons()</code></div></details>
+</div><div class="table-section">
+  <div class="thead"><span class="tdot" style="background:#3DAA6E"></span><h2><a class="mod-chip" href="galaxy_map_current.html#mod-morningBrief">🔽 morningBrief</a></h2>
+    <span class="tcount">2 real function(s)</span></div>
+  <div class="rivers"><a class="river-chip" href="galaxy_map_module.html#river-5">🌊 River V</a></div>
+  <details class="touches"><summary>real functions calling Composio</summary><div class="touch-row">🧩 <code>_getGmail()</code></div><div class="touch-row">🧩 <code>_getYouTube()</code></div></details>
+</div><div class="table-section">
+  <div class="thead"><span class="tdot" style="background:#3DAA6E"></span><h2><span class="mod-chip-none">quickActions</span></h2>
+    <span class="tcount">1 real function(s)</span></div>
+  <div class="rivers"><span class="mod-chip-none">cross-cutting, no river</span></div>
+  <details class="touches"><summary>real functions calling Composio</summary><div class="touch-row">🧩 <code>_setup()</code></div></details>
+</div></div></div>
+  <div class="view" id="view-composio-map"><div class="idd"><div class="idd-crumb"><span class="on">🧩 Composio</span><span class="idd-sep">→</span><span id="idd-c1">pick a river</span><span class="idd-sep">→</span><span id="idd-c2"></span></div><div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch Composio — 2 of 17 real rivers qualify</div><div class="idd-row"><div class="idd-bub idd-river" data-river="5" data-crumb="River V" style="--c:#4caf82"><b>🌊 River V</b><span>Daily Ops: Agenda, Schedule &amp; Journal</span><em>1 module(s) · 2 function(s) · 1 table(s)</em></div><div class="idd-bub idd-river" data-river="11" data-crumb="River XI" style="--c:#3a4570"><b>🌊 River XI</b><span>Content Production Live</span><em>1 module(s) · 1 function(s) · 1 table(s)</em></div><div class="idd-bub idd-river" data-river="orphan" data-crumb="Cross-cutting (no river)" style="--c:#8a8a9a"><b>⚙️ Cross-cutting (no river)</b><span>RIVER_MODULES' own documented exclusions</span><em>1 module(s) · 1 function(s) · 1 table(s)</em></div></div></div><div class="idd-lvl" id="idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div><div class="idd-hint">Pick a river above.</div><div class="idd-pane" data-river="5"><div class="idd-row"><div class="idd-bub idd-mod" data-mod="morningBrief" data-crumb="morningBrief" style="--c:#4caf82"><b>🔽 morningBrief</b><em>2 real function(s) · 1 resource(s)</em></div></div></div><div class="idd-pane" data-river="11"><div class="idd-row"><div class="idd-bub idd-mod" data-mod="contentRepurpose" data-crumb="contentRepurpose" style="--c:#3a4570"><b>🔽 contentRepurpose</b><em>1 real function(s) · 1 resource(s)</em></div></div></div><div class="idd-pane" data-river="orphan"><div class="idd-row"><div class="idd-bub idd-mod" data-mod="quickActions" data-crumb="quickActions" style="--c:#8a8a9a"><b>🔽 quickActions</b><em>1 real function(s) · 1 resource(s)</em></div></div></div></div><div class="idd-lvl" id="idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — each is a migration bubble out to that module's own Current Series section</div><div class="idd-hint">Pick a module above.</div><div class="idd-pane" data-mod="morningBrief"><div class="idd-row"><a class="idd-mig" style="--c:#4caf82" href="galaxy_map_current.html#mod-morningBrief"><b>morningBrief._getGmail()</b><span class="idd-res">🧩 Composio · /api/composio (RPGACE.api)</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a><a class="idd-mig" style="--c:#4caf82" href="galaxy_map_current.html#mod-morningBrief"><b>morningBrief._getYouTube()</b><span class="idd-res">🧩 Composio · /api/composio (RPGACE.api)</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a></div></div><div class="idd-pane" data-mod="contentRepurpose"><div class="idd-row"><a class="idd-mig" style="--c:#3a4570" href="galaxy_map_current.html#mod-contentRepurpose"><b>contentRepurpose._injectAgentButtons()</b><span class="idd-res">🧩 Composio · /api/composio (RPGACE.api)</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a></div></div><div class="idd-pane" data-mod="quickActions"><div class="idd-row"><div class="idd-mig idd-dead" style="--c:#8a8a9a"><b>quickActions._setup()</b><span class="idd-res">🧩 Composio · /api/composio (RPGACE.api)</span><span class="idd-jump">no Current Series page — this module has no river, so Current Series has no section for it</span></div></div></div></div></div><script>
+(function() {
+  var root = document.querySelector('.idd');
+  if (!root) return;
+  var c1 = document.getElementById('idd-c1'), c2 = document.getElementById('idd-c2');
+  function panes(sel) { return root.querySelectorAll(sel); }
+  function closeAll(sel) { panes(sel).forEach(function(p) { p.classList.remove('on'); }); }
+  root.querySelectorAll('.idd-river').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-river').forEach(function(x) { x.classList.toggle('on', x === b); });
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.remove('on'); });
+      closeAll('#idd-l2 .idd-pane');
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
+      if (p) p.classList.add('on');
+      c1.textContent = b.dataset.crumb; c1.className = 'on';
+      c2.textContent = ''; c2.className = '';
+      document.getElementById('idd-l2').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  root.querySelectorAll('.idd-mod').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.toggle('on', x === b); });
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
+      if (p) p.classList.add('on');
+      c2.textContent = b.dataset.crumb; c2.className = 'on';
+      document.getElementById('idd-l3').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+})();
+</script></div>
+</section><section class="conn-pane" id="conn-jina">
+  <div class="conn-head"><h2>🕷️ Jina AI</h2>
+    <span class="conn-status">live</span></div>
+  <p class="conn-note">real, live URL-to-text fetch — load-bearing for Bookworm URL ingestion, Schedule Oracle, and chat-pasted-URL handling. Confirmed by direct grep, not assumed. Real trigger: <code>r.jina.ai, 4 real call sites (scout.js/bookworm-fetch.js/main.js/_context.js)</code>.</p>
+  <p class="conn-summary">4 real (module,function) call pair(s) across 2 module(s), 2 river(s) — a genuine client-side rpgace_core.js call site, detected the same way Oracle/Supabase's own Infra systems are.</p>
+  <div class="toggle-row">
+    <div class="toggle-btn active" data-conn="jina" data-view="table">📊 Table</div>
+    <div class="toggle-btn" data-conn="jina" data-view="map">🌌 Map</div>
+  </div>
+  <div class="view active" id="view-jina-table"><div class="tables"><div class="table-section">
+  <div class="thead"><span class="tdot" style="background:#4A90E2"></span><h2><a class="mod-chip" href="galaxy_map_current.html#mod-bookworm">🔽 bookworm</a></h2>
+    <span class="tcount">3 real function(s)</span></div>
+  <div class="rivers"><a class="river-chip" href="galaxy_map_module.html#river-4">🌊 River IV</a></div>
+  <details class="touches"><summary>real functions calling Jina AI</summary><div class="touch-row">🕷️ <code>_startBook()</code></div><div class="touch-row">🕷️ <code>_startBookFromEPUB()</code></div><div class="touch-row">🕷️ <code>_startBookFromPDF()</code></div></details>
+</div><div class="table-section">
+  <div class="thead"><span class="tdot" style="background:#4A90E2"></span><h2><a class="mod-chip" href="galaxy_map_current.html#mod-scheduleOracle">🔽 scheduleOracle</a></h2>
+    <span class="tcount">1 real function(s)</span></div>
+  <div class="rivers"><a class="river-chip" href="galaxy_map_module.html#river-3">🌊 River III</a></div>
+  <details class="touches"><summary>real functions calling Jina AI</summary><div class="touch-row">🕷️ <code>_ingest()</code></div></details>
+</div></div></div>
+  <div class="view" id="view-jina-map"><div class="idd"><div class="idd-crumb"><span class="on">🕷️ Jina AI</span><span class="idd-sep">→</span><span id="idd-c1">pick a river</span><span class="idd-sep">→</span><span id="idd-c2"></span></div><div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch Jina AI — 2 of 17 real rivers qualify</div><div class="idd-row"><div class="idd-bub idd-river" data-river="3" data-crumb="River III" style="--c:#c9a84c"><b>🌊 River III</b><span>The Oracle Current</span><em>1 module(s) · 1 function(s) · 1 table(s)</em></div><div class="idd-bub idd-river" data-river="4" data-crumb="River IV" style="--c:#9b6ec8"><b>🌊 River IV</b><span>The Bookworm River</span><em>1 module(s) · 3 function(s) · 1 table(s)</em></div></div></div><div class="idd-lvl" id="idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div><div class="idd-hint">Pick a river above.</div><div class="idd-pane" data-river="3"><div class="idd-row"><div class="idd-bub idd-mod" data-mod="scheduleOracle" data-crumb="scheduleOracle" style="--c:#c9a84c"><b>🔽 scheduleOracle</b><em>1 real function(s) · 1 resource(s)</em></div></div></div><div class="idd-pane" data-river="4"><div class="idd-row"><div class="idd-bub idd-mod" data-mod="bookworm" data-crumb="bookworm" style="--c:#9b6ec8"><b>🔽 bookworm</b><em>3 real function(s) · 1 resource(s)</em></div></div></div></div><div class="idd-lvl" id="idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — each is a migration bubble out to that module's own Current Series section</div><div class="idd-hint">Pick a module above.</div><div class="idd-pane" data-mod="scheduleOracle"><div class="idd-row"><a class="idd-mig" style="--c:#c9a84c" href="galaxy_map_current.html#mod-scheduleOracle"><b>scheduleOracle._ingest()</b><span class="idd-res">🕷️ Jina AI · /api/scout</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a></div></div><div class="idd-pane" data-mod="bookworm"><div class="idd-row"><a class="idd-mig" style="--c:#9b6ec8" href="galaxy_map_current.html#mod-bookworm"><b>bookworm._startBook()</b><span class="idd-res">🕷️ Jina AI · /api/bookworm-fetch</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a><a class="idd-mig" style="--c:#9b6ec8" href="galaxy_map_current.html#mod-bookworm"><b>bookworm._startBookFromEPUB()</b><span class="idd-res">🕷️ Jina AI · /api/bookworm-fetch</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a><a class="idd-mig" style="--c:#9b6ec8" href="galaxy_map_current.html#mod-bookworm"><b>bookworm._startBookFromPDF()</b><span class="idd-res">🕷️ Jina AI · /api/bookworm-fetch</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a></div></div></div></div><script>
+(function() {
+  var root = document.querySelector('.idd');
+  if (!root) return;
+  var c1 = document.getElementById('idd-c1'), c2 = document.getElementById('idd-c2');
+  function panes(sel) { return root.querySelectorAll(sel); }
+  function closeAll(sel) { panes(sel).forEach(function(p) { p.classList.remove('on'); }); }
+  root.querySelectorAll('.idd-river').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-river').forEach(function(x) { x.classList.toggle('on', x === b); });
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.remove('on'); });
+      closeAll('#idd-l2 .idd-pane');
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
+      if (p) p.classList.add('on');
+      c1.textContent = b.dataset.crumb; c1.className = 'on';
+      c2.textContent = ''; c2.className = '';
+      document.getElementById('idd-l2').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  root.querySelectorAll('.idd-mod').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.toggle('on', x === b); });
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
+      if (p) p.classList.add('on');
+      c2.textContent = b.dataset.crumb; c2.className = 'on';
+      document.getElementById('idd-l3').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+})();
+</script></div>
+</section><section class="conn-pane" id="conn-lastfm">
+  <div class="conn-head"><h2>🎧 Last.fm</h2>
+    <span class="conn-status">live</span></div>
+  <p class="conn-note">real artist/tag discovery — refCorpus.findMatches()'s real fallback when no reference-corpus match exists; grows the corpus from its own results. Real trigger: <code>api/lastfm.js, LASTFM_API_KEY</code>.</p>
+  <p class="conn-summary">1 real (module,function) call pair(s) across 1 module(s), 1 river(s) — a genuine client-side rpgace_core.js call site, detected the same way Oracle/Supabase's own Infra systems are.</p>
+  <div class="toggle-row">
+    <div class="toggle-btn active" data-conn="lastfm" data-view="table">📊 Table</div>
+    <div class="toggle-btn" data-conn="lastfm" data-view="map">🌌 Map</div>
+  </div>
+  <div class="view active" id="view-lastfm-table"><div class="tables"><div class="table-section">
+  <div class="thead"><span class="tdot" style="background:#E25454"></span><h2><a class="mod-chip" href="galaxy_map_current.html#mod-beatLog">🔽 beatLog</a></h2>
+    <span class="tcount">1 real function(s)</span></div>
+  <div class="rivers"><a class="river-chip" href="galaxy_map_module.html#river-11">🌊 River XI</a></div>
+  <details class="touches"><summary>real functions calling Last.fm</summary><div class="touch-row">🎧 <code>_searchArtists()</code></div></details>
+</div></div></div>
+  <div class="view" id="view-lastfm-map"><div class="idd"><div class="idd-crumb"><span class="on">🎧 Last.fm</span><span class="idd-sep">→</span><span id="idd-c1">pick a river</span><span class="idd-sep">→</span><span id="idd-c2"></span></div><div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch Last.fm — 1 of 17 real rivers qualify</div><div class="idd-row"><div class="idd-bub idd-river" data-river="11" data-crumb="River XI" style="--c:#3a4570"><b>🌊 River XI</b><span>Content Production Live</span><em>1 module(s) · 1 function(s) · 1 table(s)</em></div></div></div><div class="idd-lvl" id="idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div><div class="idd-hint">Pick a river above.</div><div class="idd-pane" data-river="11"><div class="idd-row"><div class="idd-bub idd-mod" data-mod="beatLog" data-crumb="beatLog" style="--c:#3a4570"><b>🔽 beatLog</b><em>1 real function(s) · 1 resource(s)</em></div></div></div></div><div class="idd-lvl" id="idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — each is a migration bubble out to that module's own Current Series section</div><div class="idd-hint">Pick a module above.</div><div class="idd-pane" data-mod="beatLog"><div class="idd-row"><a class="idd-mig" style="--c:#3a4570" href="galaxy_map_current.html#mod-beatLog"><b>beatLog._searchArtists()</b><span class="idd-res">🎧 Last.fm · fetch('/api/lastfm')</span><span class="idd-jump">🔽 jump to this module's Current Series ↗</span></a></div></div></div></div><script>
+(function() {
+  var root = document.querySelector('.idd');
+  if (!root) return;
+  var c1 = document.getElementById('idd-c1'), c2 = document.getElementById('idd-c2');
+  function panes(sel) { return root.querySelectorAll(sel); }
+  function closeAll(sel) { panes(sel).forEach(function(p) { p.classList.remove('on'); }); }
+  root.querySelectorAll('.idd-river').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-river').forEach(function(x) { x.classList.toggle('on', x === b); });
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.remove('on'); });
+      closeAll('#idd-l2 .idd-pane');
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
+      if (p) p.classList.add('on');
+      c1.textContent = b.dataset.crumb; c1.className = 'on';
+      c2.textContent = ''; c2.className = '';
+      document.getElementById('idd-l2').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  root.querySelectorAll('.idd-mod').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.toggle('on', x === b); });
+      closeAll('#idd-l3 .idd-pane');
+      var p = root.querySelector('#idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
+      if (p) p.classList.add('on');
+      c2.textContent = b.dataset.crumb; c2.className = 'on';
+      document.getElementById('idd-l3').scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+})();
+</script></div>
+</section><section class="conn-pane" id="conn-librosa">
+  <div class="conn-head"><h2>🎚️ librosa</h2>
+    <span class="conn-status">optional/local</span></div>
+  <p class="conn-note">BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI's Beat Log, nowhere else.</p>
+  <div class="disclosure-box">
+    <b>⚠️ Honest finding, not a gap in this page</b> — the same real, project-wide
+    detector that found Composio/Jina AI/Last.fm's own client-side call sites
+    (<code>compute_all_connector_call_counts()</code>) found <b>zero</b> for
+    librosa. Its real trigger genuinely lives outside <code>rpgace_core.js</code>
+    entirely: <code>beat_audio_jobs + beat-audio bucket, local_server.py</code>. Building a river/module/
+    function drilldown here would claim evidence that does not exist — this
+    connector's real "Infra" is the fact stated above, not a fabricated map.
+  </div>
+  <p class="conn-summary">Bridges to: Alex's own local machine, via local_server.py (not a hosted service)</p>
+</section><section class="conn-pane" id="conn-n8n">
+  <div class="conn-head"><h2>🔗 n8n</h2>
+    <span class="conn-status">built, unconfirmed</span></div>
+  <p class="conn-note">real, importable workflow for F10's rota-sync automation — never test-run against a live unattended execution (2 manual login-confirmation gates deliberately untouched).</p>
+  <div class="disclosure-box">
+    <b>⚠️ Honest finding, not a gap in this page</b> — the same real, project-wide
+    detector that found Composio/Jina AI/Last.fm's own client-side call sites
+    (<code>compute_all_connector_call_counts()</code>) found <b>zero</b> for
+    n8n. Its real trigger genuinely lives outside <code>rpgace_core.js</code>
+    entirely: <code>n8n/rota_sync_workflow.json (Cron -&gt; scripts/fourth_rota.py)</code>. Building a river/module/
+    function drilldown here would claim evidence that does not exist — this
+    connector's real "Infra" is the fact stated above, not a fabricated map.
+  </div>
+  <p class="conn-summary">Bridges to: a self-hosted/cloud n8n instance Alex imports the workflow into</p>
+</section><section class="conn-pane" id="conn-whisper">
+  <div class="conn-head"><h2>🎙️ Whisper (OpenAI, local)</h2>
+    <span class="conn-status">built, unconfirmed this session</span></div>
+  <p class="conn-note">local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata-&gt;download-&gt;Whisper-&gt;frame extraction-&gt;Claude Vision-&gt;Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py's other integrations — do not claim active without asking Alex.</p>
+  <div class="disclosure-box">
+    <b>⚠️ Honest finding, not a gap in this page</b> — the same real, project-wide
+    detector that found Composio/Jina AI/Last.fm's own client-side call sites
+    (<code>compute_all_connector_call_counts()</code>) found <b>zero</b> for
+    Whisper (OpenAI, local). Its real trigger genuinely lives outside <code>rpgace_core.js</code>
+    entirely: <code>local_server.py / Python scripts on Alex's own machine</code>. Building a river/module/
+    function drilldown here would claim evidence that does not exist — this
+    connector's real "Infra" is the fact stated above, not a fabricated map.
+  </div>
+  <p class="conn-summary">Bridges to: Alex's own local machine — not in this repo</p>
+</section>
+<div class="dim-index"><h2>🌌 Dimensions</h2><div class="dim-sub">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Equal standing with Rivers, different shape.</div><div class="dim-grid"><a class="dim-card" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><div class="dim-name">🚦 Decision Matrix</div><div class="dim-kind" style="color:#8a8a9a">🧭 meta</div><div class="dim-desc">Every real decision — gates, curated core logic, text inputs — by river.</div></a><a class="dim-card" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><div class="dim-name">🧭 Dimensions Matrix</div><div class="dim-kind" style="color:#8a8a9a">🧭 meta</div><div class="dim-desc">Which modules are multi-home across every other dimension.</div></a><a class="dim-card" href="galaxy_map_logic_dimension.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">📖 Logic Dimension</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Every river-to-river connection, connector and skill stream as a passage.</div></a><a class="dim-card" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🗑️ Decisions — Human Gates</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">The real human-confirm gates before a destructive or taxonomy write.</div></a><a class="dim-card" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🔬 Branch Ledger</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</div></a><a class="dim-card" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">💉 Supabase</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Every real client-side Supabase table touch, by level/river/module.</div></a><a class="dim-card" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">🔌 Externals</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">Whether each external connector genuinely touches real UI AND real backend.</div></a><a class="dim-card" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><div class="dim-name">⏳ Load Dimension</div><div class="dim-kind" style="color:#9B59B6">💉 infra</div><div class="dim-desc">What actually triggers a load: boot task, page nav, or on-demand click.</div></a><a class="dim-card" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🕸️ Skills</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</div></a><a class="dim-card" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🧑 Alex’s Decision Path</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</div></a><a class="dim-card" href="galaxy_map_orchestrator_openmontage.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">🛰️ Orchestrator ↔ OpenMontage</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Real async dispatch history between the two Claude Code sessions.</div></a><a class="dim-card" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><div class="dim-name">📚 Oversight Sync</div><div class="dim-kind" style="color:#4A90E2">🔗 inter</div><div class="dim-desc">Which oversight doc gets touched, in what order, during a push or ritual.</div></a></div></div>
+
+<script>
+(function() {
+  var tabs = document.querySelectorAll('.conn-tab');
+  var panes = document.querySelectorAll('.conn-pane');
+  function show(id) {
+    panes.forEach(function(p) { p.classList.toggle('active', p.id === 'conn-' + id); });
+    tabs.forEach(function(t) { t.classList.toggle('active', t.dataset.conn === id); });
+  }
+  tabs.forEach(function(t) { t.addEventListener('click', function() { location.hash = 'conn-' + t.dataset.conn; }); });
+  window.addEventListener('hashchange', function() {
+    var h = (location.hash || '').replace('#', '');
+    var id = h.indexOf('conn-') === 0 ? h.replace('conn-', '').split('-')[0] : null;
+    show(id || (tabs[0] && tabs[0].dataset.conn));
+  });
+  var h0 = (location.hash || '').replace('#', '');
+  var id0 = h0.indexOf('conn-') === 0 ? h0.replace('conn-', '').split('-')[0] : null;
+  show(id0 || (tabs[0] && tabs[0].dataset.conn));
+
+  document.querySelectorAll('.toggle-btn').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var cid = b.dataset.conn;
+      document.querySelectorAll('.toggle-btn[data-conn="' + cid + '"]').forEach(function(x) {
+        x.classList.toggle('active', x === b);
+      });
+      document.getElementById('view-' + cid + '-table').classList.toggle('active', b.dataset.view === 'table');
+      document.getElementById('view-' + cid + '-map').classList.toggle('active', b.dataset.view === 'map');
+    });
+  });
+})();
+</script>
+
+<div class="note">
+  Generated by <code>scripts/galaxy_map_connectors.py</code> — real data from
+  <code>graphify_river_group.py</code>'s <code>compute_all_connector_call_counts()</code> (function-level
+  evidence for Composio/Jina AI/Last.fm) and <code>EXTERNAL_CONNECTORS</code> (already-sourced facts for
+  librosa/n8n/Whisper). G99 completion of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan —
+  each reached from the <a href="galaxy_map.html">L0 map</a>'s own unit for that connector.
+</div>
+</body>
+</html>
