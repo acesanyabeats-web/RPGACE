@@ -133,7 +133,9 @@ PAGES = [
     {'file': 'galaxy_map_alex_path.html', 'label': "Alex's Decision Path", 'level': 'Dimension', 'kind': 'inter',
      'scope': '11 real dashboard cards', 'desc': 'G37 — real Level-4 flow to target module(s), then the real Y/N fork Alex actually hits, if any.'},
     {'file': 'galaxy_map_load.html', 'label': 'Load Dimension', 'level': 'Dimension', 'kind': 'infra',
-     'scope': '27 boot tasks, 29 nav triggers, 5 click triggers', 'desc': 'G39 — 3 real, separately-tracked load-trigger categories: boot sequence, page-nav, on-demand click.'},
+     'scope': '29 boot tasks, 21 nav modules, 5 click triggers, 24 cross-module event edges', 'desc': 'G39 — 4 real, separately-tracked load-trigger categories: boot sequence, page-nav, on-demand click, and (G104, Aug 26 2026) cross-module event signals — every real hook name, not just page:show.'},
+    {'file': 'galaxy_map_loops.html', 'label': 'Loops', 'level': 'Dimension', 'kind': 'meta',
+     'scope': '1 call/event loop (15 modules), 2 data loops (6 modules each)', 'desc': 'G104 (Aug 26 2026) — Alex\'s own direct pushback on a chat-only loop finding ("surely there are more") plus a real rule-8 catch ("wouldn\'t these hooks calls and shared tables be present in galaxy map too?"). Real Tarjan-SCC synthesis over already-computed call/hook/table data — never a new detector, only recombined and cross-referenced with Alex-touch evidence.'},
 ]
 
 LEVEL_ORDER = ['L0', 'L1', 'L2', 'L2.5', 'Current (L3)', 'L3', 'Zoom (L4)', 'L4', 'L5', 'L6', 'Dimension']

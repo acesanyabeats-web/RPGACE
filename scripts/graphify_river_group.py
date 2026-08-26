@@ -3975,6 +3975,8 @@ DIMENSION_PAGES = [
      'Real async dispatch history between the two Claude Code sessions.'),
     ('galaxy_map_oversight_sync.html', '📚', 'Oversight Sync', 'inter',
      'Which oversight doc gets touched, in what order, during a push or ritual.'),
+    ('galaxy_map_loops.html', '🔄', 'Loops', 'meta',
+     'Real cycles across direct calls, cross-module event signals, and shared Supabase tables.'),
 ]
 
 DIMENSION_KIND_META = {

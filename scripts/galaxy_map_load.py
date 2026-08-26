@@ -47,7 +47,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (
     LEVEL3_MODULES, RIVER_MODULES,
     compute_boot_task_registrations, compute_page_nav_triggers,
-    compute_click_load_triggers,
+    compute_click_load_triggers, compute_hook_signal_edges,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
@@ -151,6 +151,37 @@ def build_click_section(click_triggers):
 </section>'''
 
 
+def build_events_section(event_edges):
+    """G104 (Aug 26 2026) — a real 4th Load category, Alex's own direct
+    question: "wouldn't these hooks calls and shared tables be present
+    in galaxy map too? like in load..." Real evidence: compute_hook_
+    signal_edges() already computes the FULL project-wide fire/listen
+    graph (every real hook name, no hardcoded list) — this page only
+    ever rendered its page:show slice of it via a separate, narrower
+    function. Rather than re-deriving anything (rule 8), this section
+    reuses that same shared function directly and renders everything
+    it returns EXCEPT page:show edges (already covered by its own
+    section above — showing them twice would be a real duplicate, not
+    a fix)."""
+    rows = []
+    for firer, listener, hook in event_edges:
+        if hook == 'page:show':
+            continue
+        kind = 'direct-call' if hook == 'direct-call' else f"hook <code>{esc(hook)}</code>"
+        rows.append(
+            f'<tr><td class="modname">{esc(firer)}</td>'
+            f'<td class="pagelist">{kind}</td>'
+            f'<td class="modname">{esc(listener)}</td>'
+            f'<td class="linkcell">{_mod_links(listener)}</td></tr>'
+        )
+    return f'''<section class="gsection" id="cat-events" style="display:none">
+  <div class="ghead"><h2>📡 Cross-Module Event Signals</h2><span class="gcount">{len(rows)} real edge(s)</span></div>
+  <p class="catnote">Every real <code>RPGACE.hooks.fire()</code>/<code>hooks.on()</code> pairing and every real legacy-section (main.js) <code>RPGACE.modules.X.method()</code> direct call, project-wide — <code>page:show</code> excluded here since it already has its own tab above. This is the same real, shared <code>compute_hook_signal_edges()</code> data every other consumer in this pipeline reads (rule 8) — nothing here is re-derived. Real diagnostic use: two modules that both react to the same named event without ever calling each other directly are invisible to a plain call-graph — this is where that relationship actually lives. <code>core-wrapper[mainjs:X]</code> means the legacy (main.js) section itself is the real firer, not a registered module.</p>
+  <table class="ltable"><thead><tr><th>Firer</th><th>Signal</th><th>Listener</th><th>Links</th></tr></thead>
+  <tbody>{''.join(rows)}</tbody></table>
+</section>'''
+
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -194,7 +225,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Load Dimension (G39)</div>
   <h1>⏳ Load Dimension — What Triggers What To Load, And When</h1>
-  <p>Alex's own real ask: "what ui, backend or alex trigger certain backend and ui to load, in what steps etc — this could help tie everything together for diagnosing." 3 real, mechanically-confirmed load-trigger idioms, kept as separate categories — never merged into one undifferentiated list. Serves both diagnostic correctness (what SHOULD trigger a panel to appear — the exact bug class found and fixed in this same session's A5 build) and boot-time performance visibility, equally.</p>
+  <p>Alex's own real ask: "what ui, backend or alex trigger certain backend and ui to load, in what steps etc — this could help tie everything together for diagnosing." 4 real, mechanically-confirmed load-trigger idioms (a 4th, <code>page:show</code>-EXCLUDED cross-module event-signal category, added G104, Aug 26 2026, per Alex's own direct follow-up question about the Loops page), kept as separate categories — never merged into one undifferentiated list. Serves both diagnostic correctness (what SHOULD trigger a panel to appear — the exact bug class found and fixed in this same session's A5 build) and boot-time performance visibility, equally.</p>
 </div>
 <div class="tabs">{tabs}</div>
 {sections}
@@ -233,17 +264,20 @@ TABS = [
     {'id': 'cat-boot', 'label': '⏱️ Boot-Time Sequence'},
     {'id': 'cat-pagenav', 'label': '📄 Page-Navigation Triggers'},
     {'id': 'cat-click', 'label': '🖱️ On-Demand / Click Triggers'},
+    {'id': 'cat-events', 'label': '📡 Cross-Module Event Signals'},
 ]
 
 
 def main():
     boot_regs = compute_boot_task_registrations()
     click_triggers = compute_click_load_triggers()
+    event_edges = compute_hook_signal_edges()
     tabs = ''.join(f'<div class="tab" data-target="{t["id"]}">{t["label"]}</div>' for t in TABS)
     sections = (
         build_boot_section(boot_regs)
         + build_pagenav_section()
         + build_click_section(click_triggers)
+        + build_events_section(event_edges)
     )
     html = TEMPLATE.format(tabs=tabs, sections=sections,
                            dim_index=dimension_index_html(OUT.name),
@@ -253,7 +287,8 @@ def main():
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(boot_regs)} boot-task registrations, "
           f"{sum(len(compute_page_nav_triggers(m)) for m in LEVEL3_MODULES)} page-nav modules with triggers, "
-          f"{sum(len(v) for v in click_triggers.values())} click-load triggers.")
+          f"{sum(len(v) for v in click_triggers.values())} click-load triggers, "
+          f"{len([e for e in event_edges if e[2] != 'page:show'])} cross-module event edges.")
     # Aug 25 2026 — real, measured destination coverage, printed so a
     # future build can never silently regress it (same fail-visible
     # discipline galaxy_map_supabase.py/galaxy_map_alex_path.py print).
