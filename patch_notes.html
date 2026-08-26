@@ -73,6 +73,25 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧩🟡 Aug 26 — G53 real pilot begins: videoPipeline restructured into UI/logic halves (1 of 4 pilot modules), real /interrogation locked the split's actual shape first</div>
+    <div class="card-body">
+      Alex's own confirmed ask (Aug 20): every one of the 60 real <code>RPGACE.register()</code> modules should split into its DOM/rendering half and its business-logic half. Given the real scale and risk, ran a real 2-question <code>/interrogation</code> before touching any code rather than guessing at the mechanics.
+      <br><br>
+      <b>Confirmed shape</b>: one module keeps ONE <code>RPGACE.register()</code> entry — zero caller/onclick breakage — internally reorganized into <code>module.ui.*</code> (rendering/DOM) and <code>module.logic.*</code> (business logic/data), with the existing top-level methods kept as thin pass-through calls into whichever half they belong to. Rejected alternatives: fully separate modules per split (biggest blast radius — every external caller across all 60 modules would eventually need updating) and a cosmetic-only reorg (same flat API, no real separation — closer to what the main.js merge already did, not what Alex was actually asking for).
+      <br><br>
+      <b>Confirmed pilot set</b>: <code>videoPipeline</code> (tiny, 3 functions), <code>beatLog</code> (medium, 18), <code>bookworm</code> (largest, 41, DOM-heavy), <code>phylumPath</code> (40, logic/scoring-heavy) — a real spread of module shapes chosen from actual function-count data, not guessed.
+      <br><br>
+      <b>Module 1/4 shipped: <code>videoPipeline</code></b>. <code>STAGES</code>/<code>STAGE_LABELS</code>/<code>EXPORT_TARGETS</code> stay module-scope shared constants (both halves reach them via <code>RPGACE.modules.videoPipeline.*</code>). <code>logic.updateEntry</code>/<code>logic._computeAutoAdvancedStatus</code> (pure Supabase write + pure computation, zero DOM). <code>ui._showDetails</code> (the one real popup-building function) delegates every non-display decision to <code>mod.logic.*</code> rather than deciding anything itself. Thin top-level pass-throughs preserve <code>contentProductionLive</code>'s own real external call site (confirmed via grep as the ONLY external caller — <code>vp.STAGES</code>/<code>vp.updateEntry()</code>/<code>vp._showDetails()</code>) byte-identically.
+      <br><br>
+      <b>The one real load-bearing risk, found and handled correctly</b>: a function moved into <code>ui</code>/<code>logic</code> is invoked with <code>this</code> bound to THAT sub-object, not the module — every bare <code>self.X</code>/<code>this.X</code> reference inside a moved function had to be rewritten to a fully-qualified <code>RPGACE.modules.videoPipeline.X</code> (aliased <code>mod</code> per function) to avoid silently breaking. Verified with a real isolated Node test — a minimal RPGACE stub plus the exact extracted module source, not a mock — confirming the top-level passthrough and a direct <code>.logic</code>/<code>.ui</code> call produce byte-identical results, and the real external caller's exact usage pattern still resolves correctly.
+      <br><br>
+      A real, safe, in-passing cleanup: the original source had a byte-identical duplicate <code>STAGES</code>/<code>STAGE_LABELS</code>/<code>EXPORT_TARGETS</code> declaration (the 2nd silently shadowing the 1st) — merged into one, since this exact block was already being touched (rule 8). <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260826a</code>→<code>20260826b</code>.
+      <br><br>
+      <b>Status YELLOW, deliberately not green</b> — genuinely mid-pilot (1 of 4 modules done), <code>beatLog</code>/<code>bookworm</code>/<code>phylumPath</code> are real, unstarted, larger, riskier work still ahead. <b>Untested by hand</b> — verified via an isolated Node harness, not a real browser click-through, same standing gap as all refactor work this project does.
+    </div>
+  </div>
+
 <div class="card green" style="margin-bottom:30px;">
     <div class="card-title">🌌✅ Aug 26 — /Routine: every red Galaxy Development Framework G-step cleared (G60/G73/G86/G87/G88/G92/G95), plus G89 closed from the blues</div>
     <div class="card-body">

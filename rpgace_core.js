@@ -22990,10 +22990,7 @@ RPGACE.register('videoPipeline', {
   // fits every real video_jobs row rather than falsely implying camera
   // footage. No data migration needed - both real existing rows were
   // still at 'beat_logged', never 'raw_footage'.
-  STAGES: ['beat_logged', 'in_production', 'edited', 'rendered', 'exported'],
-  STAGE_LABELS: { beat_logged: 'Beat Logged', in_production: 'In Production', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
-  EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
-
+  //
   // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
   // absorption, Alex's explicit /deduplication ask: "get rid of video
   // pipeline, i want it to be completely absorbed by content pipeline
@@ -23013,203 +23010,247 @@ RPGACE.register('videoPipeline', {
   // anymore. `_showDetails` now takes an explicit onSaved callback
   // instead of a hardcoded self._refreshWidget() call, since there is
   // no longer a standalone widget to refresh.
+  //
+  // G53 pilot (Aug 26 2026) — real /interrogation-confirmed shape:
+  // "one module, two internal namespaces" (ui.*/logic.*), thin
+  // top-level pass-throughs preserving the exact existing public API
+  // (contentProductionLive's own `vp.STAGES`/`vp.updateEntry()`/
+  // `vp._showDetails()` calls, confirmed via grep as this module's ONLY
+  // real external caller, keep working byte-identically). Shared
+  // constants (STAGES/STAGE_LABELS/EXPORT_TARGETS) stay at module-scope
+  // — both ui and logic reach them via RPGACE.modules.videoPipeline.*,
+  // never bare `this`/`self`, since a function moved into `ui`/`logic`
+  // is invoked with `this` bound to THAT sub-object, not the module —
+  // the one real risk this whole split has to get right, function by
+  // function. A real, safe cleanup made in passing: the July 30 and
+  // Aug 6 comments above used to sit on top of two byte-identical
+  // duplicate STAGES/STAGE_LABELS/EXPORT_TARGETS declarations (the 2nd
+  // silently shadowing the 1st, itself harmless) — merged into one.
   STAGES: ['beat_logged', 'in_production', 'edited', 'rendered', 'exported'],
   STAGE_LABELS: { beat_logged: 'Beat Logged', in_production: 'In Production', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
   EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
 
-  updateEntry: function(id, updates) {
-    updates.updated_at = new Date().toISOString();
-    return RPGACE.sb.secureWrite('video_jobs', 'update', updates, 'id=eq.' + id);
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + writes.
+  // ============================================================
+  logic: {
+
+    updateEntry: function(id, updates) {
+      updates.updated_at = new Date().toISOString();
+      return RPGACE.sb.secureWrite('video_jobs', 'update', updates, 'id=eq.' + id);
+    },
+
+    // Engineer pass 2026-07-30 (Slice A item 4). Real judgment call, made
+    // and documented rather than left undecided: the first populated
+    // export_paths entry advances status straight to 'exported' - NOT all
+    // 4 targets. Reasoning: most productions only ever post to one or two
+    // platforms (a non-sale video never gets a Beatstars listing at all,
+    // per F16's own licence_type gate), so requiring all 4 would mean many
+    // real videos could never reach 'exported' even once genuinely done.
+    // Never moves status backward - takes the further of the current
+    // stage and whatever the new data supports.
+    _computeAutoAdvancedStatus: function(currentStatus, updates) {
+      var mod = RPGACE.modules.videoPipeline;
+      var computed = 'beat_logged';
+      if (updates.raw_path) computed = 'in_production';
+      if (updates.edited_path) computed = 'edited';
+      if (updates.rendered_path) computed = 'rendered';
+      if (updates.export_paths && Object.keys(updates.export_paths).length > 0) computed = 'exported';
+      var curIdx = mod.STAGES.indexOf(currentStatus);
+      var newIdx = mod.STAGES.indexOf(computed);
+      if (curIdx === -1) curIdx = 0;
+      return newIdx > curIdx ? computed : currentStatus;
+    },
+
   },
 
-  // Per-stage paths + the "4 exports" (YouTube/Instagram/TikTok/Beatstars) —
-  // no rendering happens here, these are just where the human puts the
-  // real file path or URL once that step is done outside RPGACE.
-  _showDetails: function(row, onSaved) {
-    var self = this;
-    var pop = RPGACE.modules.dashDeck._popup({
-      dim: '0.9', scroll: true, width: '480px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-      title: row.title, noDefaultClose: true,
-    });
-    var overlay = pop.overlay, box = pop.box;
+  // ============================================================
+  // ui — rendering/DOM: builds the popup, wires buttons, delegates
+  // every non-display decision to logic.* rather than deciding itself.
+  // ============================================================
+  ui: {
 
-    // 2026-07-31 — real, honest handoff surface (Alex asked for Video
-    // Pipeline to "take the script and keywords and phrases and context
-    // off visual treatment" to build the actual video). No video-rendering
-    // engine exists inside RPGACE (OpenMontage is a separate operated tool
-    // per the July 24 Aintergration verdict, never embedded) and real
-    // beat-grid sync isn't built yet (Slice C, already planned) — so this
-    // does NOT generate a video. It surfaces the real ingredients that DO
-    // already exist (this job's own script/EDL, plus the linked ConID's
-    // saved creative_docs) together in one place, so whatever's real is
-    // visible and ready to hand off manually, rather than scattered across
-    // separate Oracle conversations Alex has to remember.
-    var handoffWrap = document.createElement('div');
-    handoffWrap.style.cssText = 'margin-bottom:10px;';
-    var handoffLbl = document.createElement('div');
-    handoffLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;';
-    handoffLbl.textContent = '📄 Script + Treatment';
-    handoffWrap.appendChild(handoffLbl);
-
-    var beat = null;
-    if (row.script) { try { beat = JSON.parse(row.script); } catch (e) { beat = null; } }
-    if (beat) {
-      var beatLine = document.createElement('div');
-      beatLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;line-height:1.5;';
-      beatLine.textContent = 'Beat: ' + (beat.title || row.title) + (beat.key ? ' · ' + beat.key + ' ' + (beat.scale || '') : '') + (beat.bpm ? ' · ' + beat.bpm + ' BPM' : '') + (beat.mood ? ' · ' + beat.mood : '');
-      handoffWrap.appendChild(beatLine);
-    }
-    if (row.edl && Array.isArray(row.edl) && row.edl.length > 0) {
-      var edlLine = document.createElement('div');
-      edlLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;';
-      edlLine.textContent = '🎞️ Storyboard EDL saved: ' + row.edl.length + ' scenes';
-      handoffWrap.appendChild(edlLine);
-    }
-    var docsHolder = document.createElement('div');
-    docsHolder.id = 'vp-docs-holder';
-    docsHolder.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
-    docsHolder.textContent = row.content_production_id ? 'Loading saved creative docs...' : 'No linked Content Pipeline ConID — nothing to show here yet.';
-    handoffWrap.appendChild(docsHolder);
-    box.appendChild(handoffWrap);
-
-    if (row.content_production_id) {
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.content_production_id + '&select=creative_docs&limit=1')
-        .then(function(rows) {
-          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-          var keys = Object.keys(docs);
-          docsHolder.innerHTML = '';
-          if (keys.length === 0) {
-            docsHolder.textContent = 'No creative docs saved on the linked ConID yet.';
-            return;
-          }
-          keys.forEach(function(k) {
-            var row2 = document.createElement('div');
-            row2.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
-            var lbl2 = document.createElement('span');
-            lbl2.textContent = '✓ ' + k.replace(/_/g, ' ');
-            lbl2.style.cssText = 'color:rgba(155,89,182,0.8);';
-            var viewBtn = document.createElement('button');
-            viewBtn.textContent = 'View';
-            viewBtn.style.cssText = 'padding:2px 8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(226,226,236,0.5);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            // Reuses the shared popup helper (July 30 consolidation) rather
-            // than a native alert() — keeps this one viewer on the same
-            // pattern as every other popup in the app.
-            viewBtn.onclick = function() {
-              var docPop = RPGACE.modules.dashDeck._popup({
-                dim: '0.9', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
-                title: k.replace(/_/g, ' '),
-              });
-              var pre = document.createElement('div');
-              pre.style.cssText = 'font-size:12px;color:#D4DAF5;white-space:pre-wrap;line-height:1.6;';
-              pre.textContent = docs[k];
-              docPop.box.appendChild(pre);
-            };
-            row2.appendChild(lbl2); row2.appendChild(viewBtn);
-            docsHolder.appendChild(row2);
-          });
-        })
-        .catch(function(e) { docsHolder.textContent = 'Load error: ' + e.message; });
-    }
-
-    var pathFields = [
-      { id: 'vp-raw', label: 'Raw footage path', value: row.raw_path },
-      { id: 'vp-edited', label: 'Edited file path', value: row.edited_path },
-      { id: 'vp-rendered', label: 'Rendered file path', value: row.rendered_path },
-      { id: 'vp-notes', label: 'Notes', value: row.notes },
-    ];
-    pathFields.forEach(function(f) {
-      var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-      lbl.textContent = f.label;
-      var inp = document.createElement('input');
-      inp.id = f.id; inp.type = 'text'; inp.value = f.value || '';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      box.appendChild(lbl); box.appendChild(inp);
-    });
-
-    var exportLbl = document.createElement('div');
-    exportLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;margin-top:16px;';
-    exportLbl.textContent = 'Export URLs / paths (4)';
-    box.appendChild(exportLbl);
-
-    var exportPaths = row.export_paths || {};
-    self.EXPORT_TARGETS.forEach(function(t) {
-      var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:4px;margin-top:8px;text-transform:capitalize;';
-      lbl.textContent = t;
-      var inp = document.createElement('input');
-      inp.id = 'vp-export-' + t; inp.type = 'text'; inp.value = exportPaths[t] || '';
-      inp.placeholder = 'URL or file path';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      box.appendChild(lbl); box.appendChild(inp);
-    });
-
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
-    var saveBtn = document.createElement('button');
-    saveBtn.textContent = '💾 Save';
-    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    saveBtn.onclick = function() {
-      var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
-      var newExportPaths = {};
-      self.EXPORT_TARGETS.forEach(function(t) {
-        var v = g('vp-export-' + t);
-        if (v) newExportPaths[t] = v;
+    // Per-stage paths + the "4 exports" (YouTube/Instagram/TikTok/Beatstars) —
+    // no rendering happens here, these are just where the human puts the
+    // real file path or URL once that step is done outside RPGACE.
+    _showDetails: function(row, onSaved) {
+      var mod = RPGACE.modules.videoPipeline;
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.9', scroll: true, width: '480px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+        title: row.title, noDefaultClose: true,
       });
-      var updates = {
-        raw_path: g('vp-raw') || null,
-        edited_path: g('vp-edited') || null,
-        rendered_path: g('vp-rendered') || null,
-        notes: g('vp-notes') || null,
-        export_paths: newExportPaths,
+      var overlay = pop.overlay, box = pop.box;
+
+      // 2026-07-31 — real, honest handoff surface (Alex asked for Video
+      // Pipeline to "take the script and keywords and phrases and context
+      // off visual treatment" to build the actual video). No video-rendering
+      // engine exists inside RPGACE (OpenMontage is a separate operated tool
+      // per the July 24 Aintergration verdict, never embedded) and real
+      // beat-grid sync isn't built yet (Slice C, already planned) — so this
+      // does NOT generate a video. It surfaces the real ingredients that DO
+      // already exist (this job's own script/EDL, plus the linked ConID's
+      // saved creative_docs) together in one place, so whatever's real is
+      // visible and ready to hand off manually, rather than scattered across
+      // separate Oracle conversations Alex has to remember.
+      var handoffWrap = document.createElement('div');
+      handoffWrap.style.cssText = 'margin-bottom:10px;';
+      var handoffLbl = document.createElement('div');
+      handoffLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;';
+      handoffLbl.textContent = '📄 Script + Treatment';
+      handoffWrap.appendChild(handoffLbl);
+
+      var beat = null;
+      if (row.script) { try { beat = JSON.parse(row.script); } catch (e) { beat = null; } }
+      if (beat) {
+        var beatLine = document.createElement('div');
+        beatLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;line-height:1.5;';
+        beatLine.textContent = 'Beat: ' + (beat.title || row.title) + (beat.key ? ' · ' + beat.key + ' ' + (beat.scale || '') : '') + (beat.bpm ? ' · ' + beat.bpm + ' BPM' : '') + (beat.mood ? ' · ' + beat.mood : '');
+        handoffWrap.appendChild(beatLine);
+      }
+      if (row.edl && Array.isArray(row.edl) && row.edl.length > 0) {
+        var edlLine = document.createElement('div');
+        edlLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;';
+        edlLine.textContent = '🎞️ Storyboard EDL saved: ' + row.edl.length + ' scenes';
+        handoffWrap.appendChild(edlLine);
+      }
+      var docsHolder = document.createElement('div');
+      docsHolder.id = 'vp-docs-holder';
+      docsHolder.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
+      docsHolder.textContent = row.content_production_id ? 'Loading saved creative docs...' : 'No linked Content Pipeline ConID — nothing to show here yet.';
+      handoffWrap.appendChild(docsHolder);
+      box.appendChild(handoffWrap);
+
+      if (row.content_production_id) {
+        RPGACE.sb.select('content_productions', 'id=eq.' + row.content_production_id + '&select=creative_docs&limit=1')
+          .then(function(rows) {
+            var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+            var keys = Object.keys(docs);
+            docsHolder.innerHTML = '';
+            if (keys.length === 0) {
+              docsHolder.textContent = 'No creative docs saved on the linked ConID yet.';
+              return;
+            }
+            keys.forEach(function(k) {
+              var row2 = document.createElement('div');
+              row2.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
+              var lbl2 = document.createElement('span');
+              lbl2.textContent = '✓ ' + k.replace(/_/g, ' ');
+              lbl2.style.cssText = 'color:rgba(155,89,182,0.8);';
+              var viewBtn = document.createElement('button');
+              viewBtn.textContent = 'View';
+              viewBtn.style.cssText = 'padding:2px 8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(226,226,236,0.5);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              // Reuses the shared popup helper (July 30 consolidation) rather
+              // than a native alert() — keeps this one viewer on the same
+              // pattern as every other popup in the app.
+              viewBtn.onclick = function() {
+                var docPop = RPGACE.modules.dashDeck._popup({
+                  dim: '0.9', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
+                  title: k.replace(/_/g, ' '),
+                });
+                var pre = document.createElement('div');
+                pre.style.cssText = 'font-size:12px;color:#D4DAF5;white-space:pre-wrap;line-height:1.6;';
+                pre.textContent = docs[k];
+                docPop.box.appendChild(pre);
+              };
+              row2.appendChild(lbl2); row2.appendChild(viewBtn);
+              docsHolder.appendChild(row2);
+            });
+          })
+          .catch(function(e) { docsHolder.textContent = 'Load error: ' + e.message; });
+      }
+
+      var pathFields = [
+        { id: 'vp-raw', label: 'Raw footage path', value: row.raw_path },
+        { id: 'vp-edited', label: 'Edited file path', value: row.edited_path },
+        { id: 'vp-rendered', label: 'Rendered file path', value: row.rendered_path },
+        { id: 'vp-notes', label: 'Notes', value: row.notes },
+      ];
+      pathFields.forEach(function(f) {
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+        lbl.textContent = f.label;
+        var inp = document.createElement('input');
+        inp.id = f.id; inp.type = 'text'; inp.value = f.value || '';
+        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+        box.appendChild(lbl); box.appendChild(inp);
+      });
+
+      var exportLbl = document.createElement('div');
+      exportLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;margin-top:16px;';
+      exportLbl.textContent = 'Export URLs / paths (4)';
+      box.appendChild(exportLbl);
+
+      var exportPaths = row.export_paths || {};
+      mod.EXPORT_TARGETS.forEach(function(t) {
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:4px;margin-top:8px;text-transform:capitalize;';
+        lbl.textContent = t;
+        var inp = document.createElement('input');
+        inp.id = 'vp-export-' + t; inp.type = 'text'; inp.value = exportPaths[t] || '';
+        inp.placeholder = 'URL or file path';
+        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+        box.appendChild(lbl); box.appendChild(inp);
+      });
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
+      var saveBtn = document.createElement('button');
+      saveBtn.textContent = '💾 Save';
+      saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      saveBtn.onclick = function() {
+        var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+        var newExportPaths = {};
+        mod.EXPORT_TARGETS.forEach(function(t) {
+          var v = g('vp-export-' + t);
+          if (v) newExportPaths[t] = v;
+        });
+        var updates = {
+          raw_path: g('vp-raw') || null,
+          edited_path: g('vp-edited') || null,
+          rendered_path: g('vp-rendered') || null,
+          notes: g('vp-notes') || null,
+          export_paths: newExportPaths,
+        };
+        // Engineer pass 2026-07-30 (Slice A item 4) - real Council-of-5
+        // finding: both real video_jobs rows sat stuck at stage 1 because
+        // advancing required a separate manual "Mark [stage]" click on top
+        // of actually filling in a path here. Auto-advances status to the
+        // furthest stage the newly-saved data supports, never backward
+        // (max of current stage and computed stage) - filling in a field
+        // out of order (e.g. rendered_path before edited_path) still only
+        // advances, never skips silently past a stage the data doesn't
+        // support yet.
+        var newStatus = mod.logic._computeAutoAdvancedStatus(row.status, updates);
+        if (newStatus !== row.status) updates.status = newStatus;
+        mod.logic.updateEntry(row.id, updates).then(function() {
+          overlay.remove();
+          if (onSaved) onSaved();
+          RPGACE.utils.toast(newStatus !== row.status
+            ? '✅ Video job updated — auto-advanced to ' + (mod.STAGE_LABELS[newStatus] || newStatus)
+            : '✅ Video job updated', '#4CAF82', 2500);
+        });
       };
-      // Engineer pass 2026-07-30 (Slice A item 4) - real Council-of-5
-      // finding: both real video_jobs rows sat stuck at stage 1 because
-      // advancing required a separate manual "Mark [stage]" click on top
-      // of actually filling in a path here. Auto-advances status to the
-      // furthest stage the newly-saved data supports, never backward
-      // (max of current stage and computed stage) - filling in a field
-      // out of order (e.g. rendered_path before edited_path) still only
-      // advances, never skips silently past a stage the data doesn't
-      // support yet.
-      var newStatus = self._computeAutoAdvancedStatus(row.status, updates);
-      if (newStatus !== row.status) updates.status = newStatus;
-      self.updateEntry(row.id, updates).then(function() {
-        overlay.remove();
-        if (onSaved) onSaved();
-        RPGACE.utils.toast(newStatus !== row.status
-          ? '✅ Video job updated — auto-advanced to ' + (self.STAGE_LABELS[newStatus] || newStatus)
-          : '✅ Video job updated', '#4CAF82', 2500);
-      });
-    };
-    var cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    cancelBtn.onclick = function() { overlay.remove(); };
-    btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-    box.appendChild(btnRow);
+      var cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      cancelBtn.onclick = function() { overlay.remove(); };
+      btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+      box.appendChild(btnRow);
+    },
+
   },
 
-  // Engineer pass 2026-07-30 (Slice A item 4). Real judgment call, made
-  // and documented rather than left undecided: the first populated
-  // export_paths entry advances status straight to 'exported' - NOT all
-  // 4 targets. Reasoning: most productions only ever post to one or two
-  // platforms (a non-sale video never gets a Beatstars listing at all,
-  // per F16's own licence_type gate), so requiring all 4 would mean many
-  // real videos could never reach 'exported' even once genuinely done.
-  // Never moves status backward - takes the further of the current
-  // stage and whatever the new data supports.
-  _computeAutoAdvancedStatus: function(currentStatus, updates) {
-    var computed = 'beat_logged';
-    if (updates.raw_path) computed = 'in_production';
-    if (updates.edited_path) computed = 'edited';
-    if (updates.rendered_path) computed = 'rendered';
-    if (updates.export_paths && Object.keys(updates.export_paths).length > 0) computed = 'exported';
-    var curIdx = this.STAGES.indexOf(currentStatus);
-    var newIdx = this.STAGES.indexOf(computed);
-    if (curIdx === -1) curIdx = 0;
-    return newIdx > curIdx ? computed : currentStatus;
-  },
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API (rule 8/9: contentProductionLive's own `vp.updateEntry(...)`/
+  // `vp._showDetails(...)` calls, confirmed the only real external
+  // caller, keep working byte-identically with zero change on their
+  // side). `this` here is always the module object itself, since every
+  // real call site invokes these as `RPGACE.modules.videoPipeline.
+  // methodName(...)` (a property access on the module) — never a
+  // detached function reference.
+  updateEntry: function(id, updates) { return this.logic.updateEntry(id, updates); },
+  _showDetails: function(row, onSaved) { return this.ui._showDetails(row, onSaved); },
+  _computeAutoAdvancedStatus: function(currentStatus, updates) { return this.logic._computeAutoAdvancedStatus(currentStatus, updates); },
 
 });
 /* ===END:videoPipeline=== */
