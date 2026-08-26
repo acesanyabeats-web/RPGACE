@@ -7977,8 +7977,21 @@ RPGACE.register('oracleAppGrounding', {
         // silently downgrades a streaming call to blocking - a 4th wrap would
         // be a 4th chance to get that wrong for zero benefit.
         var anatomyHit = self.ANATOMY_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
-        if (!matched && !anatomyHit) return orig.apply(this, arguments);
+        // Aug 26 2026 (G41 Phase 1, Oracle Control) - a real THIRD gate,
+        // riding this same wrap rather than a 4th window.callOracle wrapper
+        // (same landmine anatomyHit's own comment already names: every wrap
+        // must forward all 4 args or a matched block silently downgrades
+        // streaming - a 4th wrap is a 4th chance to get that wrong for zero
+        // benefit). oracleControl owns its own live-fetched trigger-phrase
+        // list (the real oracle_actions Supabase table) - this only asks
+        // whether the CURRENT message matches one, synchronously, from
+        // whatever oracleControl already has cached (fails open to false if
+        // the cache hasn't warmed yet, same discipline as everywhere else).
+        var oc = RPGACE.modules.oracleControl;
+        var actionHit = !!(oc && oc.matchesAnyTrigger && oc.matchesAnyTrigger(lower));
+        if (!matched && !anatomyHit && !actionHit) return orig.apply(this, arguments);
         var block = matched ? self._buildBlock() : '';
+        if (actionHit && oc.buildActionsBlock) block += oc.buildActionsBlock();
         // July 28: was orig.call(this, messages, system+block, maxTokens) -
         // a fixed 3-arg forward that silently dropped any 4th+ argument
         // (main.js's callOracle gained an optional onChunk callback the
@@ -18575,9 +18588,24 @@ RPGACE.register('config', {
       lastMsg.dataset.phylaScanned = '1';
 
       var text = lastMsg.textContent || '';
-      if (text.length < 60) return; // too short to matter
 
-      var matches = RPGACE.utils._quickPhylaScan(text);
+      // Aug 26 2026 (G41 Phase 1) — real bug found while wiring oracleControl's
+      // ORACLE_ACTION: trailer: the hook fire below used to sit AFTER a
+      // `text.length < 60` early return, so a short reply (exactly the shape
+      // Oracle's own concise conversational persona produces for a real
+      // action-trigger like "log the beat") never fired oracle:response-
+      // scanned at all — silently breaking any consumer that needs a SHORT
+      // reply's trailer, not just the long-document trailers (DIRECTOR_
+      // CHOSEN:/EDL_JSON:) this hook was originally built for, which never
+      // hit the gate since a Visual Treatment Doc/EDL is always long. Fixed
+      // by computing matches (or [] on short text — accurate, not
+      // fabricated) and firing the hook unconditionally; only the
+      // phyla-badge-specific work below stays gated on the real 60-char
+      // floor, since that gate genuinely still matters there (a short reply
+      // can't meaningfully carry 2+ phyla topics) — every existing consumer
+      // that only cares about long replies is unaffected, their own regex
+      // just won't match on short, irrelevant text, same as before.
+      var matches = text.length >= 60 ? RPGACE.utils._quickPhylaScan(text) : [];
       var gapConcepts = matches.length > 0 ? 1 : 0; // placeholder signal, refined on click
 
       // Fires once per completed Oracle response, before the generic badge's
@@ -18588,6 +18616,8 @@ RPGACE.register('config', {
       // and fixed same-session: phylumPath's first version did exactly
       // that duplicate-observer thing this hook now prevents.
       RPGACE.hooks.fire('oracle:response-scanned', text, lastMsg, matches);
+
+      if (text.length < 60) return; // too short for a real phyla badge specifically
 
       // Confidence gate: only show if 2+ phyla matched
       if (matches.length < 2) return;
@@ -26821,6 +26851,276 @@ RPGACE.register('voiceInput', {
 
 });
 /* ===END:voiceInput=== */
+
+/* ===MODULE:oracleControl=== */
+// Aug 26 2026 (G41 Phase 1, real /CEO Loop 1 plan, Alex-confirmed via
+// /interrogation — records/2026-08/g41_oracle_control_ceo_spec_2026-08-26.txt).
+// Two real, separate pieces, built together because they're one flow end to
+// end (per the spec's own real correction — the overlay IS Oracle Control's
+// front door, not a separate feature):
+//   1. ACTION EXECUTION: a curated, live-editable vocabulary (oracle_actions,
+//      Supabase — NOT a hardcoded JS constant, per Alex's own direct catch:
+//      "why pre-written, just use supabase... so whenever i update a skill it
+//      can give oracle an updated pre-written"). Oracle recognizes a matching
+//      phrase and ends its reply with a trailer line (ORACLE_ACTION: <id>),
+//      same real mechanism visualOracle's DIRECTOR_CHOSEN/EDL_JSON trailers
+//      already prove in production (rule 8) — never open-ended NL parsing,
+//      never auto-execute-without-confirm (rule 4, confirm_required starts
+//      true on every row, deliberately conservative).
+//   2. THE OVERLAY: a real, persistent, reachable-from-anywhere entry point
+//      into Oracle, extending voiceInput's own proven "one fixed floating
+//      button on every page" convention (rule 8) rather than inventing a
+//      new one. Sends through the EXACT SAME real pipeline the dashboard
+//      chat uses (#chat-input + sendChatWithImage(), never a 2nd parallel
+//      Oracle-calling mechanism) so every existing grounding wrap and the
+//      oracle:response-scanned hook keep working unchanged — #chat-msgs/
+//      #chat-input persist in the DOM even while their page is hidden (the
+//      .page display:none convention never destroys them), so this genuinely
+//      works from any page, not just while Oracle's own dashboard is open.
+// Honest Phase 1 scope, matching the spec's own §4d/§6e/§7d: exactly ONE real
+// action (log_beat -> beatLog._submit, unchanged). No voice path yet (needs
+// Fish Audio ASR, itself dormant until Alex activates a real key) — text
+// only. No auto-execute. No open-ended action vocabulary.
+RPGACE.register('oracleControl', {
+
+  _actions: [],
+  _actionsFetchedAt: 0,
+  _ACTIONS_TTL_MS: 10 * 60 * 1000,
+  _overlayOpen: false,
+
+  init: function() {
+    var self = this;
+    self._fetchActions();
+    self._listenForReplies();
+    RPGACE.registerBootTask(function() { return self._injectOverlayButton(); });
+  },
+
+  // ── 1. Live oracle_actions fetch — same fetch-then-inject shape as       ──
+  // ── oracle_module_anatomy (rule 8), so an edit/add/retire lands on the   ──
+  // ── very next real Oracle call, zero redeploy needed for a content-only  ──
+  // ── change.
+  _fetchActions: function(force) {
+    var self = this;
+    if (!force && self._actions.length && Date.now() - self._actionsFetchedAt < self._ACTIONS_TTL_MS) {
+      return Promise.resolve(self._actions);
+    }
+    if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve(self._actions);
+    return RPGACE.sb.select('oracle_actions', 'active=eq.true&select=action_id,trigger_phrases,target,data_touched,explanation_significance,explanation_path_reasoning,explanation_benefit,confirm_required')
+      .then(function(rows) {
+        self._actions = rows || [];
+        self._actionsFetchedAt = Date.now();
+        return self._actions;
+      })
+      .catch(function() { return self._actions; }); // fails open — keeps whatever was already cached
+  },
+
+  _byId: function(actionId) {
+    return (this._actions || []).find(function(a) { return a.action_id === actionId; });
+  },
+
+  // Cheap, synchronous, cache-only check — deliberately never awaits a fresh
+  // fetch (this runs inside oracleAppGrounding's own window.callOracle wrap,
+  // which must stay synchronous up to the point it decides whether to await
+  // anything at all — see that module's own comment on why a 4th wrap is a
+  // real landmine). A cold cache just means this gate misses once; the
+  // background _fetchActions() call from init() almost always wins the race.
+  matchesAnyTrigger: function(lowerText) {
+    return (this._actions || []).some(function(a) {
+      return (a.trigger_phrases || []).some(function(p) { return lowerText.indexOf(String(p).toLowerCase()) !== -1; });
+    });
+  },
+
+  buildActionsBlock: function() {
+    var self = this;
+    if (!self._actions.length) return '';
+    var lines = self._actions.map(function(a) {
+      return '- "' + (a.trigger_phrases || []).join('" / "') + '" -> ORACLE_ACTION: ' + a.action_id;
+    });
+    return '\n\nRECOGNIZED ACTIONS: if the user\'s message clearly, confidently matches one of the phrasings below, end your ENTIRE reply with exactly one trailer line, on its own line, nothing after it:\nORACLE_ACTION: <action_id>\n' + lines.join('\n') + '\nOnly emit this trailer when you are genuinely confident the user wants that specific action performed right now — never guess, and never emit more than one trailer in a single reply.';
+  },
+
+  // ── 2. Trailer-scan consumer — same shared oracle:response-scanned hook  ──
+  // ── DIRECTOR_CHOSEN/EDL_JSON already use (rule 8), fires regardless of   ──
+  // ── which page/panel the reply actually rendered on (the observer      ──
+  // ── watches #send-btn's disabled attribute + #chat-msgs' own content,   ──
+  // ── neither gated on CSS visibility) — so this correctly fires whether  ──
+  // ── the message came from the dashboard chat OR this module's own       ──
+  // ── overlay (both funnel through the same real sendChatWithImage()).
+  _listenForReplies: function() {
+    var self = this;
+    RPGACE.hooks.on('oracle:response-scanned', function(text) {
+      if (!text) return;
+      var m = /ORACLE_ACTION:\s*([a-z0-9_]+)/i.exec(text);
+      if (m) {
+        var actionId = m[1];
+        self._fetchActions().then(function() {
+          var row = self._byId(actionId);
+          if (!row) { console.warn('[oracleControl] unrecognized ORACLE_ACTION id:', actionId); return; }
+          self._showActionConfirm(row);
+        });
+      }
+      self._mirrorReplyToOverlay(text);
+    });
+  },
+
+  // ── 3. Confirm popup — matches taxonomy's own _showPlacementConfirm      ──
+  // ── pattern (rule 4: a real button, never typed "yes"), routed through   ──
+  // ── dashDeck._popup() per the spec's own resolved open question (§5i).
+  _showActionConfirm: function(row) {
+    var dd = RPGACE.modules.dashDeck;
+    if (!dd || !dd._popup) { console.warn('[oracleControl] dashDeck._popup unavailable, cannot show confirm'); return; }
+    var pop = dd._popup({
+      eyebrow: '🔮 Oracle wants to act',
+      title: row.action_id.replace(/_/g, ' '),
+      accent: '#9B59B6',
+      borderColor: '#9B59B6',
+      width: '440px',
+      noDefaultClose: true,
+    });
+    var esc = function(s) { var d = document.createElement('div'); d.textContent = String(s || ''); return d.innerHTML; };
+    pop.box.innerHTML =
+      '<div style="font-size:13px;color:rgba(226,226,236,0.85);margin-bottom:10px;"><b>What happens:</b> ' + esc(row.explanation_significance) + '</div>' +
+      '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:10px;"><b>Data touched:</b> ' + esc((row.data_touched || []).join(', ')) + '</div>' +
+      '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:10px;"><b>Why this path:</b> ' + esc(row.explanation_path_reasoning) + '</div>' +
+      '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:16px;"><b>Benefit:</b> ' + esc(row.explanation_benefit) + '</div>' +
+      '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+        '<button id="oc-deny-btn" style="padding:8px 16px;border-radius:8px;border:1px solid rgba(226,226,236,0.2);background:none;color:rgba(226,226,236,0.7);font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;">Deny</button>' +
+        '<button id="oc-accept-btn" style="padding:8px 16px;border-radius:8px;border:none;background:#9B59B6;color:#fff;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;">Accept</button>' +
+      '</div>';
+    pop.box.querySelector('#oc-deny-btn').onclick = function() {
+      pop.close();
+      RPGACE.utils.toast('Cancelled — nothing was done', '#E2A83D', 2200);
+      // Spec §5ii's own recommended answer: a plain toast is enough for
+      // Phase 1, a denial log is real future scope-creep for one action.
+    };
+    pop.box.querySelector('#oc-accept-btn').onclick = function() {
+      pop.close();
+      RPGACE.modules.oracleControl._execute(row);
+    };
+  },
+
+  // ── 4. Real execution — Phase 1 has exactly one real target, unchanged. ──
+  _execute: function(row) {
+    if (row.action_id === 'log_beat') {
+      var dd = RPGACE.modules.dashDeck;
+      var bl = RPGACE.modules.beatLog;
+      var runSubmit = function() { if (bl && bl._submit) bl._submit(); };
+      // Same real open-then-inject-then-act pattern _openRetroactive already
+      // uses (rule 8) — beatLog._submit reads its data straight off the
+      // live DOM form (#bl-title/#bl-mood/etc, see _getForm), so the panel
+      // has to actually be open and rendered before submit can read anything
+      // real from it. If the form is empty, _submit's own existing
+      // validation toasts "Add a beat title first" — the exact same
+      // fail-loud behavior a manual click would get, unchanged.
+      if (dd && dd._openPanelById) {
+        dd._openPanelById('beat-log-panel', function() { if (bl && bl._inject) bl._inject(); });
+        setTimeout(runSubmit, 450);
+      } else if (bl && bl._inject) {
+        bl._inject();
+        setTimeout(runSubmit, 450);
+      } else {
+        runSubmit();
+      }
+      return;
+    }
+    console.warn('[oracleControl] no execution handler wired for action:', row.action_id);
+    RPGACE.utils.toast('⚠️ This Oracle action isn\'t wired up yet', '#E2A83D', 2500);
+  },
+
+  // ── 5. The overlay — a real, persistent, reachable-from-anywhere entry   ──
+  // ── point (spec §7). Extends voiceInput's own proven fixed-button        ──
+  // ── convention (rule 8) rather than a 2nd competing floating element —   ──
+  // ── sits directly beside the mic button, same size/z-index tier.        ──
+  _injectOverlayButton: function() {
+    if (document.getElementById('oc-floating-btn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'oc-floating-btn';
+    btn.title = 'Talk to Oracle from anywhere';
+    btn.textContent = '🔮';
+    btn.style.cssText = 'position:fixed;bottom:24px;right:84px;width:52px;height:52px;border-radius:50%;background:#0c0c16;border:2px solid rgba(155,89,182,.5);color:#9B59B6;font-size:22px;cursor:pointer;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,.5);';
+    btn.onclick = function() { RPGACE.modules.oracleControl._toggleOverlay(); };
+    document.body.appendChild(btn);
+  },
+
+  _toggleOverlay: function() {
+    var panel = document.getElementById('oc-overlay-panel');
+    if (panel) { panel.remove(); this._overlayOpen = false; return; }
+    this._overlayOpen = true;
+    var box = document.createElement('div');
+    box.id = 'oc-overlay-panel';
+    box.style.cssText = 'position:fixed;bottom:84px;right:20px;width:min(340px,88vw);max-height:60vh;background:#0c0c16;border:1px solid rgba(155,89,182,.4);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:999998;display:flex;flex-direction:column;overflow:hidden;font-family:Rajdhani,sans-serif;';
+    box.innerHTML =
+      '<div style="padding:10px 14px;border-bottom:1px solid rgba(155,89,182,.25);font-size:12px;font-weight:700;letter-spacing:1px;color:#9B59B6;display:flex;justify-content:space-between;align-items:center;">' +
+        '<span>🔮 ORACLE</span><button id="oc-ov-close" style="background:none;border:none;color:rgba(226,226,236,.5);font-size:16px;cursor:pointer;">✕</button>' +
+      '</div>' +
+      '<div id="oc-ov-log" style="flex:1;overflow-y:auto;padding:10px 14px;font-size:12.5px;color:rgba(226,226,236,.85);max-height:220px;"></div>' +
+      '<div style="display:flex;gap:6px;padding:10px 12px;border-top:1px solid rgba(155,89,182,.2);">' +
+        '<textarea id="oc-ov-input" rows="1" placeholder="Talk to Oracle..." style="flex:1;resize:none;background:rgba(255,255,255,.04);border:1px solid rgba(226,226,236,.15);border-radius:8px;color:var(--text);font-size:12.5px;padding:8px 10px;font-family:Rajdhani,sans-serif;"></textarea>' +
+        '<button id="oc-ov-send" style="padding:0 14px;border-radius:8px;border:none;background:#9B59B6;color:#fff;font-weight:700;cursor:pointer;">Send</button>' +
+      '</div>';
+    document.body.appendChild(box);
+    box.querySelector('#oc-ov-close').onclick = function() { RPGACE.modules.oracleControl._toggleOverlay(); };
+    var send = function() {
+      var input = box.querySelector('#oc-ov-input');
+      var text = (input.value || '').trim();
+      if (!text) return;
+      RPGACE.modules.oracleControl._sendFromOverlay(text);
+      input.value = '';
+    };
+    box.querySelector('#oc-ov-send').onclick = send;
+    box.querySelector('#oc-ov-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+  },
+
+  // Real reuse (rule 8), NOT a 2nd Oracle-calling mechanism: #chat-input/
+  // #chat-msgs/#send-btn are real, static elements defined once in
+  // index.html inside the Oracle page — RPGACE's .page display:none
+  // convention never destroys them on navigation, so setting the value and
+  // calling the SAME global sendChatWithImage() the real SEND button calls
+  // works identically whether or not the Oracle page is the one currently
+  // visible. This is genuinely the smallest possible build: zero forked
+  // grounding, zero forked streaming, zero 2nd system prompt.
+  _sendFromOverlay: function(text) {
+    var log = document.getElementById('oc-ov-log');
+    if (log) {
+      var you = document.createElement('div');
+      you.style.cssText = 'margin-bottom:8px;color:var(--gold,#C9A84C);';
+      you.textContent = '🧑 ' + text;
+      log.appendChild(you);
+      var thinking = document.createElement('div');
+      thinking.id = 'oc-ov-thinking';
+      thinking.style.cssText = 'color:rgba(226,226,236,.4);font-style:italic;';
+      thinking.textContent = 'Oracle is thinking...';
+      log.appendChild(thinking);
+      log.scrollTop = 99999;
+    }
+    var input = document.getElementById('chat-input');
+    if (!input) { RPGACE.utils.toast('⚠️ Oracle chat isn\'t ready yet — open the Oracle page once first', '#E2A83D', 3000); return; }
+    input.value = text;
+    if (typeof window.sendChatWithImage === 'function') window.sendChatWithImage();
+    else if (typeof window.sendChat === 'function') window.sendChat();
+  },
+
+  // Mirrors whatever the real dashboard chat just rendered into the
+  // overlay's own compact log, so a message sent from the overlay gets its
+  // reply visible IN the overlay too, without a 2nd rendering of the real
+  // reply text (this reads the same text oracle:response-scanned already
+  // carries — never re-fetches or re-renders from scratch).
+  _mirrorReplyToOverlay: function(text) {
+    var log = document.getElementById('oc-ov-log');
+    if (!log) return; // overlay isn't open — nothing to mirror into
+    var thinking = document.getElementById('oc-ov-thinking');
+    if (thinking) thinking.remove();
+    var reply = document.createElement('div');
+    reply.style.cssText = 'margin-bottom:8px;';
+    reply.textContent = '🔮 ' + String(text || '').replace(/\n?ORACLE_ACTION:\s*[a-z0-9_]+\s*$/i, '').trim();
+    log.appendChild(reply);
+    log.scrollTop = 99999;
+  },
+
+});
+/* ===END:oracleControl=== */
 
 /* ===MODULE:mockOracle=== */
 // Aug 6 (Alex out of real Anthropic credits, real "test the wiring without

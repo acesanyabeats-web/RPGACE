@@ -83,6 +83,101 @@ async function callFreeTierProvider(providerName, messages, system, maxTokens) {
   return { content: [{ type: 'text', text }] };
 }
 
+// Real Fish Audio dormant scaffold (Aug 26 2026, G41 Phase 1 — records/
+// 2026-08/g41_oracle_control_ceo_spec_2026-08-26.txt §6d) — same honest,
+// dormant-until-a-real-key-exists shape as the Kimi/Luna scaffold above,
+// folded into this same file for the same real reason (the 12-Serverless-
+// Function Vercel Hobby cap). Alex's own explicit, repeated instruction:
+// build the mechanism now, activate it (add a real FISH_AUDIO_API_KEY to
+// Vercel) only when he says so — this stays fully inert until that env var
+// exists.
+//
+// Real, load-bearing architecture finding (not guessed): Fish Audio also
+// offers a real-time WebSocket variant for both TTS and ASR
+// (wss://api.fish.audio/v1/tts/live, similar for ASR) — but a Vercel
+// serverless function is a single-invocation request/response handler, not
+// a persistent process, so it CANNOT hold open or relay a live WebSocket
+// connection the way a long-running server could. This scaffold
+// deliberately uses Fish Audio's real synchronous REST endpoints instead
+// (confirmed live via Fish Audio's own current API docs, Aug 26 2026):
+//   POST https://api.fish.audio/v1/tts  — JSON body {text, reference_id,
+//     format}, model passed as a header, Bearer auth, returns raw audio
+//     bytes (base64-encoded here for this file's existing all-JSON
+//     response convention — a real, deliberate simplification, easy to
+//     revisit once activation is real).
+//   POST https://api.fish.audio/v1/asr  — multipart/form-data {audio,
+//     language, ignore_timestamps}, Bearer auth.
+// This actually fits Phase 1's real usage shape fine — voiceInput's own
+// mechanism is "speak, then a transcript lands," not a continuous live
+// stream, so a single batch round-trip per utterance is a genuine match,
+// not a downgrade. Voice identity (a real Fish Audio voice_id) is
+// deliberately NOT set here — that's real Phase-1 BUILD work for whoever
+// activates this, resolved at that time (never a named real person's
+// voice, per the spec's own resolved Q3/6c).
+const FISH_AUDIO_TTS_URL = 'https://api.fish.audio/v1/tts';
+const FISH_AUDIO_ASR_URL = 'https://api.fish.audio/v1/asr';
+const FISH_AUDIO_MODEL = 's2.1-pro-free'; // real model header value confirmed live, Aug 26 2026 — re-verify before the free tier's own Aug 31 2026 cutoff (see CLAUDE.md G41 Fish Audio section)
+
+async function callFishAudioTTS({ text, voiceId, format }) {
+  const key = process.env.FISH_AUDIO_API_KEY;
+  if (!key) {
+    throw new Error(
+      'Fish Audio TTS was requested but FISH_AUDIO_API_KEY is not configured yet — ' +
+      'real key needed before this route can be used (scaffold built Aug 26 2026, ' +
+      'deliberately not yet activated; Alex activates this himself, on his own timing).'
+    );
+  }
+  if (!text) throw new Error('Fish Audio TTS: no text provided');
+  const resp = await fetch(FISH_AUDIO_TTS_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${key}`,
+      'content-type': 'application/json',
+      'model': FISH_AUDIO_MODEL,
+    },
+    body: JSON.stringify({
+      text,
+      reference_id: voiceId || undefined, // undefined = provider's own default voice, until a real chosen voice_id exists
+      format: format || 'mp3',
+    }),
+  });
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`Fish Audio TTS error: ${errText.slice(0, 300)}`);
+  }
+  const buf = Buffer.from(await resp.arrayBuffer());
+  return { audioBase64: buf.toString('base64'), format: format || 'mp3' };
+}
+
+async function callFishAudioASR({ audioBase64, language }) {
+  const key = process.env.FISH_AUDIO_API_KEY;
+  if (!key) {
+    throw new Error(
+      'Fish Audio ASR was requested but FISH_AUDIO_API_KEY is not configured yet — ' +
+      'real key needed before this route can be used (scaffold built Aug 26 2026, ' +
+      'deliberately not yet activated). voiceInput\'s existing free browser ' +
+      'SpeechRecognition stays the real fallback until this is activated.'
+    );
+  }
+  if (!audioBase64) throw new Error('Fish Audio ASR: no audio provided');
+  const buf = Buffer.from(audioBase64, 'base64');
+  const form = new FormData();
+  form.append('audio', new Blob([buf]), 'audio.webm');
+  form.append('language', language || 'en');
+  form.append('ignore_timestamps', 'true');
+  const resp = await fetch(FISH_AUDIO_ASR_URL, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${key}` },
+    body: form,
+  });
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`Fish Audio ASR error: ${errText.slice(0, 300)}`);
+  }
+  const data = await resp.json();
+  return { text: data?.text || '' };
+}
+
 // Raises the Vercel serverless function timeout ceiling - was using the
 // account's default limit, which is too short for long, detailed responses
 // (e.g. multi-layer teaching explanations), causing 504 Gateway Timeout.
@@ -115,12 +210,28 @@ export default async function handler(req, res) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { messages, system, maxTokens, max_tokens, model, stream, provider } = body;
+    const { messages, system, maxTokens, max_tokens, model, stream, provider, action, text, voiceId, format, audioBase64, language } = body;
     const tokens = maxTokens || max_tokens || 1000;
     const useModel = model || MODEL;
     const hasImages = messages && messages.some(m =>
       Array.isArray(m.content) && m.content.some(c => c.type === 'image')
     );
+
+    // Fish Audio dormant scaffold dispatch (Aug 26 2026, see the module
+    // comment above) — only reached when a caller explicitly sends
+    // `action: 'fish-tts'` or `action: 'fish-asr'`. No existing caller does
+    // this today (voiceInput still uses the free browser SpeechRecognition
+    // API directly, client-side, no server round-trip at all) — this branch
+    // is real but fully dormant until FISH_AUDIO_API_KEY exists AND a future
+    // client-side change starts sending these fields.
+    if (action === 'fish-tts') {
+      const result = await callFishAudioTTS({ text, voiceId, format });
+      return res.status(200).json(result);
+    }
+    if (action === 'fish-asr') {
+      const result = await callFishAudioASR({ audioBase64, language });
+      return res.status(200).json(result);
+    }
 
     // Kimi/Luna free-tier routing (Aug 11 2026 scaffold, see the module
     // comment above) — only reached when a caller explicitly sends
