@@ -694,7 +694,13 @@ def build_module_map_inner(module_name):
         # every real evidence bubble (Tier 1 + Tier 2) visible at once,
         # exactly today's rendering. Choice = a picker naming only the
         # real evidence types actually present on THIS band's own canvas.
-        fc_bar_html = render_fc_bar(band_ev_present) if band_ev_present else ''
+        #
+        # G108 continuation (same day) — Alex's own direct catch, on a
+        # small Infra page screenshot: "no point in choice and full map
+        # since they are the same and not cluttered." Same real
+        # principle applied here: with fewer than 2 real evidence types,
+        # Full and Choice render identically, so the toggle is skipped.
+        fc_bar_html = render_fc_bar(band_ev_present) if len(band_ev_present) >= 2 else ''
         band_canvases.append(
             f'<div class="band-canvas" id="{band_id}" style="{display}">'
             f'<div class="fc-scope mode-full">{fc_bar_html}'

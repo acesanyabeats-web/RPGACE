@@ -192,8 +192,7 @@ def build_shared_infra_section():
         f'code: ' + ', '.join(f'<code>{esc(t)}</code>' for t in no_code) + '.</p>'
         if no_code else '')
 
-    table_rows = []
-    for tbl in orch_tables:
+    def _one_table_row(tbl):
         touches = evidence.get(tbl, [])
         mods = sorted({m for m, _f, _d in touches})
         # de-dup river chips (several modules can share one river)
@@ -213,13 +212,33 @@ def build_shared_infra_section():
             f'<div class="touch-row">{esc(m)}.{esc(f)}() — <code>{esc(d)}</code></div>'
             for m, f, d in sorted(touches)
         )
-        table_rows.append(f'''<section class="table-section" id="tbl-{tbl}">
+        return f'''<section class="table-section" id="tbl-{tbl}">
   <div class="thead"><span class="tdot"></span><h2>🗄️ {tbl}</h2>
     <span class="tcount">{len(touches)} real function touch(es)</span></div>
   <div class="rivers">{''.join(river_chips_dedup)}</div>
   <div class="mods">{mod_links}</div>
   {f'<details class="touches"><summary>Every real touch (module.function → detail)</summary>{detail_rows}</details>' if touches else ''}
-</section>''')
+</section>'''
+
+    # G108 continuation (Aug 26 2026) — Alex's own direct catch, on a
+    # screenshot of this exact table: "why are they still not 2 separate
+    # infra?" pointing at graphify_jobs/total_system_members sitting in
+    # the SAME flat list as openmontage_jobs despite the prose note right
+    # above already saying they're a genuinely different kind of fact
+    # (real code-verified touch vs. real non-code-actor-only touch). The
+    # note was correct; the TABLE STRUCTURE hadn't caught up to it — real
+    # fix, matching the exact precedent galaxy_map_supabase.py's own
+    # build_oversight_note() already set for this identical class of gap
+    # (rule 8): split into 2 real, separately-headed groups instead of
+    # one flat list with a disclaimer floating above it.
+    code_rows = [_one_table_row(t) for t in orch_tables if t in evidence]
+    no_code_rows = [_one_table_row(t) for t in orch_tables if t not in evidence]
+    table_view = (
+        (f'<h3 class="tblgroup-head">🗄️ Real code-verified Infra ({len(code_rows)})</h3>'
+         f'<div class="tables">{"".join(code_rows)}</div>' if code_rows else '')
+        + (f'<h3 class="tblgroup-head noncode">⚙️ Non-code Infra — real Total-system actors only, no rpgace_core.js touch ({len(no_code_rows)})</h3>'
+           f'<div class="tables">{"".join(no_code_rows)}</div>' if no_code_rows else '')
+    )
 
     return (f'<div class="l0block" id="cat-sharedinfra">'
             f'<h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2>'
@@ -231,7 +250,7 @@ def build_shared_infra_section():
             f'<div class="toggle-btn active" data-view="table">📊 Table view</div>'
             f'<div class="toggle-btn" data-view="map">🌌 Map view</div>'
             f'</div>'
-            f'<div class="view active" id="view-table"><div class="tables">{"".join(table_rows)}</div></div>'
+            f'<div class="view active" id="view-table">{table_view}</div>'
             f'<div class="view" id="view-map">{map_view}</div>'
             f'</div>')
 
@@ -293,6 +312,9 @@ TEMPLATE = """<!DOCTYPE html>
   .view{{display:none}} .view.active{{display:block}}
   .tables{{display:flex;flex-direction:column;gap:12px}}
   .table-section{{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:12px;padding:14px 16px}}
+  .tblgroup-head{{font-family:Georgia,serif;font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--dim);margin:16px 0 8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)}}
+  .tblgroup-head:first-child{{margin-top:0;padding-top:0;border-top:none}}
+  .tblgroup-head.noncode{{color:#8a8a9a}}
   .thead{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}}
   .tdot{{width:10px;height:10px;border-radius:50%;background:var(--purple)}}
   .thead h2{{font-family:Georgia,serif;font-size:14px;color:#fff}}

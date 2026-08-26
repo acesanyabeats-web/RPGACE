@@ -282,8 +282,7 @@ def build_shared_infra_section():
     # able too." A real Table view, matching Supabase/Oracle/
     # Orchestrator CC's own per-table row shape — Table is the default
     # landing view (R22 precedent), Map is the drill-down above.
-    table_rows = []
-    for tbl in oversight_tables:
+    def _one_ovs_row(tbl):
         touches = evidence.get(tbl, [])
         mods = sorted({m for m, _f, _d in touches})
         seen_r = set()
@@ -302,12 +301,31 @@ def build_shared_infra_section():
             f'<div class="catnote" style="margin:2px 0">{esc(m)}.{esc(f)}() — <code>{esc(d)}</code></div>'
             for m, f, d in sorted(touches)
         )
-        table_rows.append(f'''<div class="table-section" id="tbl-{tbl}">
+        return f'''<div class="table-section" id="tbl-{tbl}">
   <div class="thead"><h2>🗄️ {tbl}</h2><span class="tcount">{len(touches)} real function touch(es)</span></div>
   <div class="rivers">{''.join(river_chips)}</div>
   <div class="mods">{mod_links}</div>
   {f'<details><summary class="catnote" style="cursor:pointer">Every real touch (module.function → detail)</summary>{detail_rows}</details>' if touches else ''}
-</div>''')
+</div>'''
+
+    # G108 continuation (Aug 26 2026) — Alex's own direct catch on the
+    # Orchestrator CC page's IDENTICAL structure: "why are they still
+    # not 2 separate infra?" — a table with zero real code touches was
+    # sitting in the SAME flat list as a genuinely code-touched table,
+    # with only a prose note above (not the list itself) saying they're
+    # different. Applied here too (rule 8, same real gap, same fix):
+    # 2 separately-headed groups, matching galaxy_map_supabase.py's own
+    # build_oversight_note() precedent.
+    code_tables = [t for t in oversight_tables if t in evidence]
+    no_code_tables = [t for t in oversight_tables if t not in evidence]
+    table_rows = []
+    if code_tables:
+        table_rows.append(f'<h3 class="tblgroup-head">🗄️ Real code-verified Infra ({len(code_tables)})</h3>')
+        table_rows.extend(_one_ovs_row(t) for t in code_tables)
+    if no_code_tables:
+        table_rows.append(
+            f'<h3 class="tblgroup-head noncode">📚 Oversight-doc-only Infra — no rpgace_core.js touch ({len(no_code_tables)})</h3>')
+        table_rows.extend(_one_ovs_row(t) for t in no_code_tables)
     table_view = f'<div class="tables">{"".join(table_rows)}</div>'
 
     return (f'<section class="gsection" id="cat-sharedinfra" style="display:none">'
@@ -372,6 +390,9 @@ TEMPLATE = """<!DOCTYPE html>
   .view{{display:none}} .view.active{{display:block}}
   .tables{{display:flex;flex-direction:column;gap:12px}}
   .table-section{{background:rgba(255,255,255,0.03);border:1px solid rgba(168,115,74,0.2);border-radius:12px;padding:14px 16px}}
+  .tblgroup-head{{font-family:Georgia,serif;font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--dim);margin:16px 0 8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)}}
+  .tblgroup-head:first-child{{margin-top:0;padding-top:0;border-top:none}}
+  .tblgroup-head.noncode{{color:#8a8a9a}}
   .table-section .thead{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}}
   .table-section h2{{font-family:Georgia,serif;font-size:14px;color:#fff}}
   .table-section .tcount{{font-size:9.5px;color:var(--dim);margin-left:auto}}

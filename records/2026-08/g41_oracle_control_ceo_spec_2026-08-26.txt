@@ -1,0 +1,360 @@
+G41 — "ORACLE CONTROL" — REAL CEO LOOP 1 PLANNING PASS
+RPGACE Total Systems Galaxy Map / CEO plan, item G41
+Aug 26 2026 — compiled during Orchestrator CC's own Galaxy Map Full/Choice + Dimensions
+Matrix session, at Alex's own direct ask: "lets do g41 planning in the meantime to get it
+red, lets start with oracle control."
+
+=========================================================================
+0. WHERE THIS CAME FROM (verbatim, from CLAUDE.md's own existing record)
+=========================================================================
+G41 was logged Aug 15 2026 as a real future idea, deliberately NOT built:
+"Oracle eventually taking real ACTION on pipelines via its own self-awareness layer,
+plus a possible Fish Audio voice integration."
+
+Standing status before this pass: BLUE (an idea, not a plan) — Alex's own explicit
+deferral on Aug 26 (same session, earlier): "we will do it once the others are done...
+leave both blue" (referring to G41's two halves: Oracle pipeline orchestration, and
+Fish Audio voice).
+
+This pass covers ONLY the first half — Oracle pipeline orchestration ("oracle control"),
+per Alex's own explicit scoping ("lets start with oracle control"). Fish Audio voice
+stays blue, referenced only as a stated future addition (see §6).
+
+=========================================================================
+1. REAL EVIDENCE GATHERED BEFORE ASKING ANYTHING (GODMODE pass)
+=========================================================================
+
+1a. The closest real, ALREADY-SHIPPED precedent for "Oracle takes a real action":
+    `visualOracle`'s DIRECTOR_CHOSEN:/EDL_JSON: trailer pattern (rpgace_core.js).
+    - Oracle's own reply text, when responding to specific commands (Director Match,
+      Visual Treatment Doc, Storyboard Scene Builder), is asked to end with a
+      structured machine-readable trailer line: `DIRECTOR_CHOSEN: <name>` or
+      `EDL_JSON: [...]`.
+    - The client listens via a one-shot `'oracle:response-scanned'` hook
+      (`visualOracle._captureNextResponse`), regexes the trailer out, and writes the
+      result to Supabase (`style_profiles`, `video_jobs.edl`).
+    - This is a REAL, working example of "Oracle's own output triggers a real app
+      action" — narrow (2 action types), single-purpose, but proven in production
+      since July/Aug.
+
+1b. Oracle's real self-awareness layer already exists:
+    - `oracleAppGrounding.SELF_KNOWLEDGE` — a hand-maintained ~22,000-char digest of
+      RPGACE's own real architecture/rules, injected into Oracle's system prompt when
+      a keyword gate fires.
+    - `oracle_module_anatomy` (Supabase table) — 13 rows of real module-level
+      architecture facts (source_ref, gotchas, connects_to), grounding Oracle on HOW
+      specific risky modules actually work.
+    - Neither of these currently lets Oracle DO anything — they only make Oracle's
+      TALK about RPGACE more accurate. G41 is the first real ask to close that gap.
+
+1c. Oracle's real runtime constraint (load-bearing, checked directly):
+    - `api/oracle.js` is a stateless Vercel serverless function proxying the
+      Anthropic API. It has NO access to `.claude/skills/*.md` files — those are
+      this Claude Code environment's own tooling, never shipped to the browser or
+      the API route. Oracle cannot literally "invoke /CEO" or any other skill.
+    - Oracle has no persistent session state across page loads beyond whatever the
+      client (`rpgace_core.js`) keeps in memory/Supabase.
+    - Real implication: any "Oracle control" mechanism must be built the SAME way
+      DIRECTOR_CHOSEN/EDL_JSON already are — a curated trailer/marker vocabulary in
+      the prompt, parsed client-side — never a literal "Oracle running a skill."
+
+1d. The standing safety rule this must respect (rule 4, non-negotiable):
+    "Every taxonomy write gets a human checkpoint before committing... No exceptions;
+    this rule has caught real garbage twice." G41's design must not create a SECOND,
+    weaker confirmation standard for a different class of consequential write.
+
+1e. The standing cost rule this must respect (rule 11):
+    "Token cost is a design constraint... never add a second premium-model 'triage'
+    call in front of a ground-worker call." A design that makes Oracle live-reason a
+    fresh justification for every single triggered action is a real, avoidable,
+    recurring cost — flagged directly to Alex in the interrogation below.
+
+1f. Real candidate pipeline named directly by Alex: Content Pipeline
+    (`beatLog`→`contentProductionLive`→`videoPipeline`→captions), because it already
+    has the most Oracle-touching stages and the only real existing "Oracle triggers a
+    write" precedent (1a). Alex's own example command: "log the beat."
+
+=========================================================================
+2. /interrogation — REAL QUESTIONS ASKED, REAL ANSWERS (verbatim)
+=========================================================================
+
+Q1. Which real pipeline should G41 extend to first?
+A1 (Alex, confirmed): Content Pipeline (beat→video→captions) — the Recommended
+option, matching 1a/1f above.
+
+Q2. What should "Oracle control" actually DO, concretely?
+A2 (Alex, verbatim): "1 and 2, but i can type something like log the beat and it will
+execute a module based on what we planned together. its like /CEO for projects with
+oracle when it comes to getting stuff on RPGACE app done, its a huge QoL for the
+consumer side of things."
+ → Real reading: BOTH "extend the existing trailer pattern" (mechanism) AND "Oracle
+   decides when to act" (from Alex's own natural-language cue, not a rigid form) are
+   wanted together — Alex types a normal sentence in Oracle chat ("log the beat"),
+   Oracle recognizes it against a PRE-AGREED vocabulary ("what we planned together")
+   and triggers the matching real module action. Framed explicitly as a CONSUMER-side
+   QoL feature (Alex using his own app), not a dev-tooling feature.
+
+Q3. Should Oracle-triggered actions always need a human confirm, or can some
+    auto-execute?
+A3 (Alex, verbatim): "1 and 2, but it can ask what i want to do (what data taken, what
+path it goes, why significant, why pathing makes sense, what it benefit it has, do you
+i accept or deny (all on /paranoia and /interrogation i think, tell me what you think))
+then i just say yes or no and it auto executes based on /CEO. having /CEO scoped for
+oracle touching all modules where needed is such a game changer, alongside /Routine and
+/Bedtime scoped for RPGACE app. Then adding fish audio will add voice control of oracle,
+making it the best conversational tool for learning and making it in my niche."
+ → Real reading: every action gets a real, structured confirmation (not a blanket
+   "always ask" OR "sometimes auto-run" — a THIRD shape: always show the reasoning,
+   then execute immediately on a real yes). Alex directly asked for Orchestrator CC's
+   own opinion on whether the confirmation step should be run through /paranoia and
+   /interrogation — answered in §3.
+
+=========================================================================
+3. ORCHESTRATOR CC'S REAL OPINION (asked for directly, given honestly)
+=========================================================================
+
+The FEEL Alex described (say a thing → get shown reasoning → say yes → it happens) is
+fully buildable. The literal MECHANISM ("/CEO running inside Oracle," "/paranoia and
+/interrogation" firing per-action) is not, for a concrete, evidence-based reason (1c):
+Oracle cannot invoke a Claude Code skill file. Two real design choices resolve this
+honestly rather than faking it:
+
+(a) Recognize intent, don't reason it live. A small, CURATED vocabulary (a real
+    lookup table, not open-ended NL parsing) maps a recognized phrase → one specific
+    real action. Oracle's job is pattern-matching within a known set, exactly like
+    DIRECTOR_CHOSEN/EDL_JSON already do — not open-ended agentic decision-making.
+
+(b) Pre-written explanations, not live-reasoned ones — AND real, correction from
+    Alex: stored in Supabase, never hardcoded in JS. Alex's own direct catch: "why
+    pre-written, just use supabase where skills are stored, so whenever i update a
+    skill it can give oracle an updated pre-written." Real, honest reconciliation:
+    `.claude/skills/*.md` files themselves stay Claude-Code-only (the standing
+    Total-systems constraint — Oracle's own deployed runtime has zero access to this
+    repo's skill files, same as 1c already establishes) — but the REAL, correct fix
+    his catch points at is that the "pre-written explanation" text should NOT be a
+    hardcoded JS constant either. It belongs in a real Supabase table (new
+    `oracle_actions`, same live-editable-content pattern `oracle_module_anatomy`
+    already proves in production) — so a future Claude Code session (or Alex
+    directly) can update an action's wording, add a new action, or retire one with a
+    plain UPDATE/INSERT, and Oracle picks up the current version on its next fetch —
+    zero code redeploy needed. The explanation text still gets written with real
+    care once per action (matching the same rigor a /paranoia-level pass would give
+    it) — it just now lives as data, not code, per this same discipline every other
+    "curated but living" fact in this project already follows (rule 8: reuse the
+    `oracle_module_anatomy` precedent, don't invent a second pattern for the same
+    real need).
+
+Verdict: build the CONFIRM-BEFORE-EXECUTE experience Alex described, exactly as he
+described it, using a real, evidence-honest mechanism — a curated vocabulary + a real
+client-side confirm popup (matching taxonomy's own `_showPlacementConfirm` pattern,
+rule 8) — rather than a literal per-action live-paranoia call neither the architecture
+nor the cost budget supports.
+
+=========================================================================
+4. THE REAL PLAN — WHAT GETS BUILT, PHASE 1
+=========================================================================
+
+4a. New Oracle vocabulary table (source of truth, not yet built — this pass is
+    planning only): a real Supabase table, `oracle_actions` (corrected per Alex's own
+    direct ask above — a real table, never a hardcoded JS constant), one row per
+    recognized command:
+      { action_id, trigger_phrases: [...], target: 'module.method',
+        data_touched: [...], explanation_significance, explanation_path_reasoning,
+        explanation_benefit, confirm_required: true }
+    Every row's `confirm_required` starts `true` — a deliberately conservative
+    default (rule 4), never auto-execute-without-asking in Phase 1, matching Alex's
+    own Q3 answer (a real confirm every time, not a low-stakes-auto-execute carve-out
+    — that "some things auto-run" question from earlier in this same session was
+    already answered differently here: EVERY action shows the confirm, then executes
+    immediately on yes). Client-side, Oracle's grounding fetches the current live
+    `oracle_actions` rows (same fetch-and-inject pattern `oracle_module_anatomy`
+    already uses) so an edited/added/retired row reaches Oracle on its very next real
+    call — no redeploy in the loop for a content-only change.
+
+4b. Real first candidate action, matching Alex's own example: `log_beat`
+      trigger_phrases: ["log the beat", "log this beat", "save this beat"]
+      target: beatLog._submit (the EXISTING real function, unchanged)
+      data_touched: content_productions row (insert), video_jobs row (insert)
+      This is the smallest real, already-proven-safe action to start with — beatLog
+      already has a real, working submit path; G41 only adds the NL-trigger +
+      confirm-popup layer in front of it, zero change to the underlying write.
+
+4c. Mechanism (extends 1a, never re-derived):
+    - Oracle's prompt (scoped to a real keyword/context gate, same pattern as
+      `oracleAppGrounding`'s existing gates) is built from the LIVE `oracle_actions`
+      Supabase rows at grounding time (same fetch-then-inject shape
+      `oracle_module_anatomy` already uses) and told: "if the user's message matches
+      one of these recognized actions, end your reply with a trailer line:
+      ORACLE_ACTION: <action_id>."
+    - Client-side: a new hook consumer (same `'oracle:response-scanned'` hook
+      DIRECTOR_CHOSEN/EDL_JSON already use) scans for `ORACLE_ACTION:`, looks up the
+      matching `oracle_actions` row (already fetched, or a fresh read), and renders a
+      real confirm popup with that
+      entry's pre-written explanation fields filled in.
+    - Alex clicks Accept/Deny (a real button — not typed "yes", matching rule 4's
+      established UI pattern, e.g. `_showPlacementConfirm`).
+    - On Accept: the client calls the real target function directly
+      (`RPGACE.modules.beatLog._submit(...)`), using whatever real data the current
+      conversation/page context already has (never fabricated).
+    - On Deny: nothing happens, a toast confirms cancellation, same fail-loud
+      discipline as everywhere else in this project.
+
+4d. Explicitly NOT built in Phase 1 (real, honest scope limit, not silently dropped):
+    - No auto-execute-without-confirm path at all yet, even for something Alex might
+      later call "low-stakes" — starting maximally conservative, per rule 4's own
+      established discipline; loosening this is a real, separate future decision, not
+      assumed here.
+    - No NL parsing beyond a fixed, curated phrase list — a genuinely open-ended
+      "understand any instruction and improvise an action" system is a different,
+      much bigger and riskier build (real agentic action-taking) that this plan does
+      NOT propose.
+    - Only ONE action (`log_beat`) ships in Phase 1 — proving the mechanism end-to-end
+      on the single real example Alex himself gave, before expanding the vocabulary
+      to more Content Pipeline stages (Visual Treatment trigger, Captions trigger,
+      etc. — real, named Phase 2 candidates, not built this pass).
+
+=========================================================================
+5. REAL OPEN QUESTIONS STILL NEEDING ALEX'S ANSWER BEFORE BUILD
+=========================================================================
+None block a red status — the shape above is fully specified. Two smaller items are
+worth a quick confirm before /Engineer executes Phase 1, not blocking the plan itself:
+  (i) Where does the confirm popup live — inline in the Oracle chat panel, or a
+      dashDeck-style overlay popup (matching the existing `_popup()` convention)?
+      Recommended: the overlay popup, since it needs real buttons or main.js/
+      rpgace_core.js's own inline-chat rendering, not a hand-rolled 2nd surface.
+  (ii) Should a Denied action get logged anywhere (so Alex/Oracle can see "you said
+      no to X" later), or is a plain toast enough? Recommended: a plain toast for
+      Phase 1 — a denial log is real future scope-creep for one action type.
+
+=========================================================================
+6. FISH AUDIO (the 2nd half of G41) — real /interrogation pass, same day,
+   later continuation. Alex asked directly: "lets /interrogation on fish
+   audio too if you need to so g41 is fully red."
+=========================================================================
+
+6a. Real evidence gathered before asking anything (live web search, this session —
+    Fish Audio has no code presence in this repo at all yet, a genuinely new
+    connector, same class as Composio/Jina/Last.fm):
+    - Auth: a plain Bearer API-key header (`Authorization: Bearer $FISH_API_KEY`) —
+      identical shape to every other paid connector this project already proxies
+      server-side, never client-side (rule: API keys never ship to the browser).
+    - Real-time WebSocket streaming exists for BOTH directions: TTS
+      (`wss://api.fish.audio/v1/tts/live`, ~100ms latency) AND ASR/speech-to-text
+      (confirmed via a 2nd real search this pass — NOT text-to-speech-only as first
+      assumed). ASR also has a simpler batch endpoint (`POST /v1/asr`, file upload,
+      up to 60 min/20MB) for a non-realtime fallback.
+    - Voice cloning: a real, 2-step process — upload ~15-60s of clean reference
+      audio, get back a voice ID, reference it in TTS calls.
+    - Real, time-sensitive cost fact: Fish Audio's current free tier (S2.1 Pro model,
+      Fair Use) is only guaranteed through Aug 31 2026 — 5 days from this spec's own
+      date. After that: TTS $15/million UTF-8 bytes (~characters), ASR $0.36/audio
+      hour — both genuinely cheap per real use, but real, ongoing, non-zero spend.
+    - Real, load-bearing architecture constraint: this project sits at 11 of 12
+      Vercel Hobby serverless functions (the standing landmine already documented in
+      CLAUDE.md's own Known Landmines section) — a real Fish Audio proxy CANNOT be
+      its own new `api/fishaudio.js` file; it must fold into an existing endpoint
+      with the closest matching posture (same pattern Phase H's `bundle-deliverables`
+      action already set inside `api/data-write.js`), or the deploy will hard-fail
+      exactly the way it already has once before.
+
+6b. Real /interrogation, questions asked, real answers (verbatim):
+
+Q1. Fish Audio's free tier ends Aug 31 2026 (5 days away) — commit to the real
+    ongoing cost, or hold off?
+A1 (Alex, verbatim): "2 but ill hold off until i start saving money for running
+rpgace app once ready to be used." → Real reading: build the mechanism now (Phase 1,
+this plan), but the actual API key / paid activation is explicitly deferred to a
+later moment of Alex's own choosing, tied to RPGACE itself generating real revenue —
+not a build blocker, a real, separate financial gate on ACTIVATION, confirmed again
+in Q-follow-up below.
+
+Q2. What should "voice control of Oracle" cover — TTS output only, or something
+    broader?
+A2 (Alex, verbatim, after a direct follow-up question): "it should replace the mic we
+currently have, it is shit." → Real, confirmed scope: BOTH directions. TTS (Oracle
+speaks its replies) AND ASR (Fish Audio's real speech-to-text REPLACES `voiceInput`'s
+current free browser-native `SpeechRecognition` mechanism) — Alex's own direct,
+blunt quality complaint about the existing mic is the real reason for the ASR side,
+not a nice-to-have add-on.
+
+Q3. Whose voice should Oracle speak in?
+A3 (Alex, verbatim, after a real pushback on his first answer — see 6c below): "A
+voice styled like that quality (energetic, warm, UK-accented) rather than an actual
+clone of a named person — Fish Audio's library likely has options in that direction,
+or a cloned sample from a voice actor who's licensed their voice for exactly this." →
+Real, confirmed, safe choice — no real person's identity cloned.
+
+Q4. Auto-speak every reply, or only on request?
+A4 (Alex, confirmed): "Only when explicitly toggled on" — same real
+off-by-default discipline as `mockOracle`'s existing toggle, rule 11 cost-conscious.
+
+Q5 (activation timing, asked directly mid-pass): "also activate the free tier for
+fish audio when i say so, not on build. i want to activate it later on." → Confirms
+and sharpens A1: the CODE is built and shipped dormant (same real, already-proven
+pattern as `api/oracle.js`'s own `provider:'kimi'|'luna'` scaffold — built, dormant,
+zero real calls until a real key exists) — Alex personally controls the moment a
+real Fish Audio API key gets added to Vercel's environment variables, not this or any
+future session.
+
+6c. A real, honest pushback delivered before Q3's final answer, not silently
+    complied with: Alex's first answer named a real, specific, identifiable public
+    figure (a UK TV/radio presenter) as his ideal reference voice for cloning. Flagged
+    directly: cloning a real, identifiable person's actual voice without their
+    consent is a genuine legal/ethical issue (right of publicity, and very likely a
+    direct violation of Fish Audio's own platform terms on using someone's likeness
+    without permission) — not just a stylistic preference. Alex's real, considered
+    answer (Q3 above) resolved this cleanly: a similarly-styled voice, or a properly
+    licensed voice actor's cloned sample — never a named real person's identity.
+
+6d. THE REAL PLAN — Fish Audio, Phase 1 (build now, activation deferred):
+    - New Supabase-config-gated connector, same dormant-scaffold pattern as
+      `api/oracle.js`'s Kimi/Luna: real client code exists and is wired end-to-end,
+      but every real Fish Audio call is gated behind a real, checkable
+      "is a Fish Audio API key actually configured" check — false until Alex adds
+      one, so nothing real-costs a cent until he explicitly activates it (per 6b Q1/Q5).
+    - Server-side: folded into an EXISTING `api/*.js` file (per 6a's own Vercel-cap
+      constraint) — closest-matching posture: a new `action:'fish-tts'`/
+      `action:'fish-asr'` branch inside `api/oracle.js` itself (Oracle-adjacent,
+      already has the auth/CORS shape a 2nd provider call needs), never a 14th
+      physical file.
+    - Client-side TTS: a new toggle (off by default, per 6b A4), same visual pattern
+      as `mockOracle`'s existing switch — when on, Oracle's spoken replies stream via
+      the real `wss://.../tts/live` WebSocket once a key exists.
+    - Client-side ASR: `voiceInput` gets a real, evidence-based rework — its current
+      free `SpeechRecognition`-based mechanism becomes the honest FALLBACK (kept, not
+      deleted — it still works with zero cost/config when no Fish Audio key exists),
+      and a real Fish Audio ASR path (WebSocket streaming, matching 6a's confirmed
+      real-time capability) becomes the PRIMARY path once a key is configured —
+      never a silent, forced replacement that breaks voice input entirely if Alex's
+      key ever lapses or hits a real quota.
+    - Voice identity: a real, curated Fish Audio voice ID (library voice or a
+      licensed actor's cloned sample, per 6c) — resolved at actual build time, not
+      guessed here; a real, separate small task for whoever executes Phase 1
+      (browse Fish Audio's own voice library / licensing options for a genuine match
+      to "energetic, warm, UK-accented," never a named person).
+
+6e. Explicitly NOT built in Phase 1:
+    - No real API key added to Vercel by this or any future session without Alex's
+      own explicit, in-the-moment instruction to do so (6b Q1/Q5 — a real, standing
+      Tier-3 gate, not a default).
+    - No removal of the existing free `SpeechRecognition` fallback — it stays as
+      real insurance, per 6d.
+    - No cloning of any real, identifiable person's voice, ever, per 6c.
+
+6f. Real, honest limit stated plainly: this section is the real, specified PLAN
+    (moves Fish Audio BLUE → RED) — the actual voice-ID selection and the exact
+    `api/oracle.js` branch code are real Phase-1 BUILD work, not finished by this
+    planning pass, and correctly wait for Alex's own "go" the same way Oracle
+    Control's Phase 1 does.
+
+=========================================================================
+7. STATUS
+=========================================================================
+G41, BOTH halves, move from BLUE → RED as of this pass: real, specified,
+Alex-confirmed plans, neither yet built.
+  - Oracle Control (§1-5): ready for /Engineer to execute Phase 1 (4b/4c) whenever
+    Alex says go — no remaining blocking forks, per §5.
+  - Fish Audio (§6): ready for /Engineer to execute Phase 1 (6d) whenever Alex says
+    go for the BUILD — the real API-key ACTIVATION stays a separate, later decision
+    entirely in Alex's own hands (6b Q1/Q5), independent of when the code itself
+    ships.

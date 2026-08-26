@@ -1944,8 +1944,15 @@ def compute_hook_signal_edges(core_js_path: Path = CORE_JS):
     # `core-wrapper[mainjs:<fn>]` pseudo-node naming CORE_WRAPPER_HOOKS
     # already established, labeled 'direct-call' instead of a real hook
     # name so a reader can tell the two signal types apart at a glance.
-    for fname, body in _mainjs_function_bodies(core_js_path).items():
-        for called_mod in set(re.findall(r'RPGACE\.modules\.(\w+)\.', body)):
+    # G108 continuation (Aug 26 2026) — real R5 idempotency bug caught
+    # by this session's own before/after diff (galaxy_map_load.html's
+    # last 2 rows swapped order between 2 regenerations, no source
+    # change in between): iterating a bare `set()` here relies on
+    # Python's hash-randomized set order, which is NOT guaranteed
+    # stable across process runs — `sorted()` fixes it, same standing
+    # discipline every other detector in this file already follows.
+    for fname, body in sorted(_mainjs_function_bodies(core_js_path).items()):
+        for called_mod in sorted(set(re.findall(r'RPGACE\.modules\.(\w+)\.', body))):
             if called_mod in ranges:
                 edges.append(('core-wrapper[mainjs:%s]' % fname, called_mod, 'direct-call'))
     return edges
@@ -4830,9 +4837,23 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
 
     c = infra_drilldown_counts(drill, orphans)
     unit_hub = dict(icon=unit_icon, label=unit_label, color=unit_color)
+    # G108 continuation (Aug 26 2026) — Alex's own direct catch, on a
+    # screenshot of Orchestrator CC's own drilldown (1 river, 1 module,
+    # 4 functions): "no point in choice and full map since they are the
+    # same and not cluttered. i think cluttered ones need the choice
+    # one on top of full one." Real, evidence-gated fix: the Full/Choice
+    # bar only renders when this specific unit's own real counts are
+    # actually crowded enough for the two modes to look genuinely
+    # different — more than one real river, or enough real leaves at
+    # Level 3 that a single always-open view would be a lot to scan at
+    # once. A small unit (like Orchestrator CC) renders in Full mode
+    # permanently, with no toggle UI at all, rather than offering a
+    # choice that changes nothing.
+    is_cluttered = c['rivers'] > 1 or c['functions'] > 12
+    fc_bar_html = render_fc_bar() if is_cluttered else ''
     return (
         f'<div class="idd fc-scope mode-full">'
-        + render_fc_bar()
+        + fc_bar_html
         + f'<div class="idd-crumb"><span class="on">{unit_icon} {e(unit_label)}</span>'
         f'<span class="idd-sep">→</span><span class="idd-c1">pick a river</span>'
         f'<span class="idd-sep">→</span><span class="idd-c2"></span></div>'

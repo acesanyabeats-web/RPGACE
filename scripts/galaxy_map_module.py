@@ -853,9 +853,18 @@ def build_river_section(rnum):
         # only the real evidence types actually present on THIS river's
         # own canvas (never a dead button for a type with zero bubbles
         # here).
+        #
+        # G108 continuation (same day) — Alex's own direct catch, on a
+        # small Infra page screenshot: "no point in choice and full map
+        # since they are the same and not cluttered." Same real
+        # principle applied here: with fewer than 2 real evidence types
+        # present, Full and Choice render identically (Choice's picker
+        # would have exactly one button, showing the one thing Full
+        # already shows) — the toggle is skipped outright rather than
+        # offering a choice that changes nothing.
         fc_bar_html = (
             render_fc_bar([(key, icon, label, color) for key, icon, label, color in river_ev_present])
-            if river_ev_present else ''
+            if len(river_ev_present) >= 2 else ''
         )
         canvas_html = (
             f'<div class="fc-scope mode-full">{fc_bar_html}'

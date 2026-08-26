@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🧹✅ Aug 26 — Galaxy Map: real 2 real follow-up fixes from Alex's own direct screenshots — Orchestrator CC's Shared Infrastructure table now splits code-verified vs. non-code tables into 2 separate groups, and the Full/Choice toggle is now evidence-gated (skipped entirely when a unit/river/module is too small for the 2 modes to differ)</div>
+    <div class="card-body">
+      Two real, separate catches on the same G108 build, both from Alex looking directly at what shipped.
+      <br><br>
+      <b>(1) "why are they still not 2 separate infra?"</b> — pointing at <code>graphify_jobs</code>/<code>total_system_members</code> (zero real rpgace_core.js touches) sitting in the exact same flat table list as <code>openmontage_jobs</code> (a real code-verified touch), with only a prose note above the table — not the table's own structure — saying they were different kinds of fact. Fixed on both <code>galaxy_map_orchestrator_openmontage.py</code> and <code>galaxy_map_oversight_sync.py</code> (same real gap, same fix, rule 8): the Table view now splits into 2 separately-headed groups — "🗄️ Real code-verified Infra" and "⚙️ Non-code Infra" / "📚 Oversight-doc-only Infra" — matching the exact precedent <code>galaxy_map_supabase.py</code>'s own <code>build_oversight_note()</code> already set for this identical class of gap.
+      <br><br>
+      <b>(2) "no point in choice and full map since they are the same and not cluttered. i think cluttered ones need the choice one on top of full one"</b> — on a screenshot of Orchestrator CC's own drilldown (1 river, 1 module, 4 functions), where Full and Choice mode rendered visually identically since there was nothing to narrow down. Real, evidence-gated fix: <code>render_infra_drilldown()</code> now only renders the Full/Choice bar when a unit's own real counts are actually crowded (more than 1 real river, or more than 12 real function-level leaves) — a small unit like Orchestrator CC now renders in Full mode permanently with no toggle UI at all. Same principle applied to Level 2/Current(L3)'s own evidence-bubble picker: the toggle only appears where 2+ real evidence types are genuinely present on that specific river/module — with 0 or 1, Full and Choice would be pixel-identical, so the toggle is skipped rather than offering a choice that changes nothing.
+      <br><br>
+      Full pipeline regenerated (all 19 pages); idempotency re-verified; div/a tag-balance clean; headless Chromium confirmed: Orchestrator CC/Oversight Sync's Table views now show 2 real groups each; Orchestrator CC's Map view has zero Full/Choice buttons (correctly not cluttered); Supabase/Oracle/2-of-3-Connectors still show the toggle (genuinely cluttered); Level 2 shows the picker on only 2 of 16 rivers, Level 3 on 20 of 69 bands — exactly the rivers/bands with 2+ real evidence types.
+    </div>
+  </div>
+
+<div class="card" style="margin-bottom:30px;">
     <div class="card-title">🎯✅ Aug 26 — Galaxy Map: real Full/Choice sub-toggle on every Infra/Inter page (Oracle/Supabase/Connectors/Orchestrator CC/Oversight Sync) and on Level 2/Current(L3)'s own evidence-bubble diagrams, plus the Dimensions Matrix reworked into 3 real levels (L0/River/Module)</div>
     <div class="card-body">
       Alex's own direct ask, in one continuous pass: "all infra inter should have map view with full/choice with full open at default when navigated to, and the table toggle able too, same with level 2 and 3."
