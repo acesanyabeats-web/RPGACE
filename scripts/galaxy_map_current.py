@@ -56,8 +56,9 @@ from graphify_river_group import (  # noqa: E402
     compute_external_call_sites, compute_lastfm_call_sites,
     compute_outbound_api_call_sites,
     FLOWS_IN, attribute_river_connection_function, LEVEL3_MODULES,
-    render_evidence_bubble, dimension_index_html, DIMENSION_INDEX_CSS,
+    render_evidence_bubble, render_bubble_row, dimension_index_html, DIMENSION_INDEX_CSS,
     INFRA_DRILLDOWN_CSS,
+    compute_load_signal, compute_decision_targets, compute_logic_attribution_targets,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_decision_matrix import LOGIC_POINTS as DECISION_POINTS  # noqa: E402
@@ -97,6 +98,15 @@ LASTFM_COLOR = '#D9534F'
 # reads — never a fresh color invented for a 3rd time (rule 8).
 SUPABASE_COLOR = '#2ABFB0'
 JINA_COLOR = '#4A90E2'
+# G87 (Aug 26 2026) — 3 more real evidence-gated bubble types, all built
+# from data this file (or a sibling Dimension page) already computes
+# elsewhere, zero new detection code. Rendered as a real, SEPARATE
+# collapsed-by-default Tier 2 canvas (G88) rather than 3 more always-on
+# rows on the same SVG — see _render_band()'s own comment for the real
+# crowding reasoning.
+DECISION_COLOR = '#C9A84C'
+LOAD_COLOR = '#E8967A'
+LOGIC_COLOR = '#7FB3D5'
 BAND_LABELS = ['🚪 Entry & Early Logic', '⚙️ Core Logic', '🏁 Output & Terminal']
 BAND_THRESHOLD = 15
 
@@ -111,7 +121,40 @@ for _r, _mods in RIVER_MODULES.items():
 # it stays real Level-5 content, just not attachable to one function.
 NOTABLE = {(dp['module'], dp['func']): dp for dp in DECISION_POINTS if dp.get('func')}
 
+# G73 (Aug 26 2026) — Alex's own direct ask: "add github repos that are
+# used into galaxy map... those might be the missing links that end
+# without logical sense." Real evidence gathered before building (not
+# guessed): compute_cross_module_function_calls()/compute_module_
+# function_flow() confirmed `contentProductionLive._buildVideoPipeline
+# Payload` has ZERO outgoing edges of either kind — a genuine real
+# terminal in the current diagram — even though it's the actual function
+# whose payload gets RPGACE.sb.insert()'d into `openmontage_jobs`
+# (rpgace_core.js, ~line 22686), the real hand-off to the separate
+# OpenMontage CC Claude Code session operating github.com/calesthio/
+# OpenMontage. Every OTHER real terminal in this diagram genuinely has
+# no further real relationship; this one specific terminal's "nothing
+# calls it" reading was misleading — it hands off externally, just not
+# via a code-level call this detector can see. Real, honest, deliberately
+# narrow scope: only this one confirmed case is logged here, not a
+# guessed broader list — a future real candidate (e.g. a genuine
+# Graphify CC hand-off point, if one is ever found with the same
+# rigor) gets added to this same dict, never a 2nd copy.
+EXTERNAL_HANDOFF_TARGETS = {
+    ('contentProductionLive', '_buildVideoPipelinePayload'): {
+        'repo': 'calesthio/OpenMontage',
+        'url': 'https://github.com/calesthio/OpenMontage',
+        'via': 'openmontage_jobs (RPGACE.sb.insert, real async dispatch — see galaxy_map_orchestrator_openmontage.html)',
+    },
+}
+
 CROSS_CALLS = compute_cross_module_function_calls()
+# G87's own global detector calls — computed once, not per-module (both
+# are project-wide roll-ups). LOGIC_TARGETS reuses the already-computed
+# CROSS_CALLS (rule 8/11 — avoids a 2nd real regex sweep of the whole
+# file for the exact same edge set attribute_river_connection_function()
+# needs).
+DECISION_TARGETS = compute_decision_targets()
+LOGIC_TARGETS = compute_logic_attribution_targets(cross_calls=CROSS_CALLS)
 NEXT_HOPS = {}
 PREV_HOPS = {}
 for fm, ff, tm, tf in CROSS_CALLS:
@@ -237,11 +280,31 @@ def _split_into_bands(funcs, depth):
 def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges, ui_sigs,
                   incoming_attr, backdoors, func_to_band, bands, band_idx, alex_y_const, has_backdoors_module,
                   oracle_counts=None, composio_counts=None, lastfm_counts=None,
-                  supabase_counts=None, jina_counts=None):
+                  supabase_counts=None, jina_counts=None,
+                  decision_targets_mod=None, load_signal_mod=None, logic_targets_mod=None):
     """Real, per-band canvas builder (moved verbatim from galaxy_map_
     level3.py, G65 fold — see that file's own git history for the full
     real design rationale: rank-band split, evidence-gated Alex/Oracle/
-    Composio/Last.fm bubbles, real cross-band/backdoor stubs)."""
+    Composio/Last.fm bubbles, real cross-band/backdoor stubs).
+
+    G87/G88 (Aug 26 2026) — 3 more real evidence-gated bubble types
+    (Decision/Load/Logic) were the real next step after G105/G106's
+    Oracle/Composio/Last.fm/Supabase/Jina AI, but a naive 6th/7th/8th
+    always-on row on the SAME canvas would crowd it exactly the way
+    Meanders/L2.5 already had to be built to fix a real crowding problem
+    once before (G88's own real justification, not invented caution).
+    Real fix: Tier 1 (the existing 5, unchanged, zero regression risk)
+    stays on the main canvas as before; Tier 2 (Decision/Load/Logic)
+    renders as up to 3 SEPARATE, self-contained render_bubble_row()
+    panels (G106's own real shared function, reused verbatim — rule 8,
+    each type gets its own real hub+leaves diagram rather than being
+    force-fit onto the main diagram's own function-node positions) —
+    returned separately so the caller can wrap them in a real, native
+    `<details>` collapsed-by-default block placed right after the main
+    canvas. "Collapsed by default, not all-always-on" is the literal
+    G88 ask; native `<details>` was chosen over a JS-driven SVG-viewBox
+    resize specifically because it needs no dynamic resizing logic at
+    all — normal document flow handles the reveal/reflow for free."""
     band_funcs_set = set(band_funcs)
     band_depths = [depth[f] for f in band_funcs]
     min_d, max_d = min(band_depths, default=0), max(band_depths, default=0)
@@ -470,7 +533,43 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     ) or '<div class="legend-row small"><span class="meta">No real direct same-module calls found between this band\'s own functions.</span></div>'
     legend_rows += ''.join(backdoor_legend)
 
-    return W, H, ''.join(edges_svg) + ''.join(nodes_svg), legend_rows, edge_colors_used
+    # G87/G88 — Tier 2 (Decision/Load/Logic): up to 3 real, SEPARATE
+    # render_bubble_row() panels, one per type, each showing only this
+    # band's own real functions with that specific evidence. Collapsed
+    # by default by the CALLER (a native <details>), never inline on the
+    # main canvas — see this function's own docstring for the real
+    # crowding reasoning.
+    tier2_panels = []
+    for t_targets, t_color, t_emoji, t_label, t_link_href in (
+        (decision_targets_mod, DECISION_COLOR, '🗑️', 'Decision', 'galaxy_map_decision_matrix.html'),
+        (load_signal_mod, LOAD_COLOR, '⏳', 'Load', 'galaxy_map_load.html'),
+        (logic_targets_mod, LOGIC_COLOR, '🧠', 'Logic', 'galaxy_map_logic_dimension.html'),
+    ):
+        t_targets = t_targets or {}
+        leaves = [
+            dict(icon='⚙️', label=f, sub=f'{len(reasons)} signal(s)', color=t_color,
+                 data={'kind': t_label.lower()})
+            for f, reasons in sorted(t_targets.items()) if f in band_funcs_set
+        ]
+        if not leaves:
+            continue
+        hub = dict(icon=t_emoji, label=t_label, color=t_color)
+        panel_svg = render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=22, width=900)
+        tier2_panels.append(
+            f'<div class="tier2-panel"><div class="tier2-head" style="color:{t_color}">'
+            f'{t_emoji} {t_label} — {len(leaves)} real function(s) in this band '
+            f'<a href="{t_link_href}" class="drill-link" style="font-size:9px;margin-left:8px">🔽 open {t_label} Dimension ↗</a>'
+            f'</div>{panel_svg}</div>'
+        )
+    tier2_html = ''
+    if tier2_panels:
+        tier2_html = (
+            '<details class="tier2-details"><summary>📎 '
+            + f'{len(tier2_panels)} more signal type(s) available (Decision/Load/Logic) — click to expand'
+            + '</summary><div class="tier2-body">' + ''.join(tier2_panels) + '</div></details>'
+        )
+
+    return W, H, ''.join(edges_svg) + ''.join(nodes_svg), legend_rows, edge_colors_used, tier2_html
 
 
 def build_module_map_inner(module_name):
@@ -523,6 +622,13 @@ def build_module_map_inner(module_name):
         (f, len([lbl for lbl in labels if lbl in ('/api/scout', '/api/bookworm-fetch')]))
         for f, labels in outbound_sites.items()
     ) if n > 0}
+    # G87 (Aug 26 2026) — real Tier 2 evidence, per module. DECISION_
+    # TARGETS/LOGIC_TARGETS are the project-wide roll-ups (computed once,
+    # module-level constants); Load is genuinely per-module (boot-task/
+    # nav-trigger/click-trigger detection all take module_name).
+    decision_targets_mod = DECISION_TARGETS.get(module_name, {})
+    load_signal_mod = compute_load_signal(module_name)
+    logic_targets_mod = LOGIC_TARGETS.get(module_name, {})
     if has_init and ui_sigs.get('init') and (ui_sigs['init']['output'] or ui_sigs['init']['input']):
         init_sig = ui_sigs['init']
         anchor = incoming_attr[1] if incoming_attr and incoming_attr[1] in ui_sigs else next(
@@ -544,10 +650,10 @@ def build_module_map_inner(module_name):
     for bi, band in enumerate(bands):
         band_funcs = band['funcs']
         band_id = f'mod-{module_name}-b{bi}' if multi_band else f'mod-{module_name}'
-        w, h, svg_inner, legend_rows_b, edge_colors_b = _render_band(
+        w, h, svg_inner, legend_rows_b, edge_colors_b, tier2_html = _render_band(
             module_name, color, band_funcs, funcs, depth, edges, ui_sigs, incoming_attr,
             backdoors, func_to_band, bands, bi, ALEX_Y, has_backdoors, oracle_counts, composio_counts, lastfm_counts,
-            supabase_counts, jina_counts)
+            supabase_counts, jina_counts, decision_targets_mod, load_signal_mod, logic_targets_mod)
         if multi_band:
             active = ' active' if bi == 0 else ''
             band_tabs.append(
@@ -561,6 +667,7 @@ def build_module_map_inner(module_name):
             f'<filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
             f'{_build_markers(edge_colors_b)}</defs>{svg_inner}</svg></div>'
             f'<div class="legend"><h3>Real function-call edges{" — " + band["label"] if band["label"] else ""}</h3>{legend_rows_b}</div>'
+            f'{tier2_html}'
             f'</div>'
         )
 
@@ -630,7 +737,10 @@ def build_current_block(mod, func, branches, ui, oracle_n, sb_touches, notable):
         f'<a class="hop-chip" href="#cur-{tm}-{tf}">→ {esc(tm)}.{esc(tf)}()</a>' for tm, tf in NEXT_HOPS.get((mod, func), []))
     prev_chips = ''.join(
         f'<a class="hop-chip" href="#cur-{fm}-{ff}">← {esc(fm)}.{esc(ff)}()</a>' for fm, ff in PREV_HOPS.get((mod, func), []))
-    if not next_chips:
+    handoff = EXTERNAL_HANDOFF_TARGETS.get((mod, func))
+    if not next_chips and handoff:
+        next_chips = f'<a class="hop-chip handoff" href="{handoff["url"]}">🐙 hands off to {esc(handoff["repo"])} ↗</a>'
+    elif not next_chips:
         next_chips = '<span class="meta">not tracked at this grain (same-module hop, or a genuine terminal)</span>'
     if not prev_chips:
         prev_chips = '<span class="meta">not tracked at this grain, or a genuine real entry point</span>'
@@ -691,9 +801,19 @@ def build_walkthrough_details(mod, func, badges, branches, notable):
     prev_html = ''.join(
         f'<a class="hop-btn" href="#cur-{fm}-{ff}">← {esc(fm)}.{esc(ff)}()</a>' for fm, ff in prev_hops) or \
         '<span class="meta">No real cross-module caller detected — a genuine real entry point, or same-module (not tracked at this grain).</span>'
+    handoff = EXTERNAL_HANDOFF_TARGETS.get((mod, func))
     next_html = ''.join(
-        f'<a class="hop-btn hop-next" href="#cur-{tm}-{tf}">Continue → {esc(tm)}.{esc(tf)}() →</a>' for tm, tf in next_hops) or \
-        '<span class="meta terminal">🏁 Real terminal — no further cross-module hop detected. The chain ends here, or continues within the same module (not tracked at this grain).</span>'
+        f'<a class="hop-btn hop-next" href="#cur-{tm}-{tf}">Continue → {esc(tm)}.{esc(tf)}() →</a>' for tm, tf in next_hops)
+    if not next_html and handoff:
+        # G73 — a real, confirmed external hand-off: this terminal's real
+        # downstream is a SEPARATE Claude Code session's own repo, not a
+        # code-level call this detector could ever see.
+        next_html = (f'<a class="hop-btn hop-next handoff" href="{handoff["url"]}">'
+                     f'🐙 Continue → {esc(handoff["repo"])} (external repo) →</a>'
+                     f'<div class="handoff-note">Real hand-off via <code>{esc(handoff["via"])}</code> — '
+                     f'polled/picked up by a separate Claude Code session operating that repo, not a same-codebase call.</div>')
+    elif not next_html:
+        next_html = '<span class="meta terminal">🏁 Real terminal — no further cross-module hop detected. The chain ends here, or continues within the same module (not tracked at this grain).</span>'
 
     boundary_note = ''
     if next_hops and any(tm != mod for tm, _tf in next_hops):
@@ -872,6 +992,13 @@ TEMPLATE = """<!DOCTYPE html>
   .hop-next{{background:rgba(201,168,76,0.1);font-weight:700}}
   .terminal{{color:var(--gold)}}
   .boundary{{font-size:10px;color:var(--gold);margin-top:6px}}
+  /* G73 (Aug 26 2026) — a real, confirmed external hand-off terminal
+     (github.com/calesthio/OpenMontage), styled distinctly from a
+     same-codebase hop so it reads as "leaves RPGACE entirely," not just
+     "the next function in a normal chain." */
+  .hop-chip.handoff{{color:#8ec5ff}}
+  .hop-btn.handoff{{color:#8ec5ff;border-color:rgba(142,197,255,0.35);background:rgba(142,197,255,0.08)}}
+  .handoff-note{{font-size:9px;color:var(--dim);margin-top:6px;line-height:1.5}}
 {idd_css}
 {dim_css}
   a{{color:var(--gold)}}
@@ -902,6 +1029,16 @@ TEMPLATE = """<!DOCTYPE html>
   .legend h3{{font-family:Georgia,serif;font-size:14px;color:var(--gold);margin:0 0 8px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:6px}}
   .legend-row{{font-size:11.5px;color:var(--dim);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04)}}
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
+  /* G87/G88 (Aug 26 2026) — Tier 2 (Decision/Load/Logic): collapsed by
+     default, same real reasoning as .cur-zoom's own toggle above,
+     reused rather than a 2nd bespoke details style (rule 8). */
+  .tier2-details{{max-width:900px;margin:8px auto 0;padding:0 24px}}
+  .tier2-details summary{{cursor:pointer;font-size:11px;color:var(--dim);list-style:none;padding:8px 0;border-top:1px dashed rgba(255,255,255,0.1)}}
+  .tier2-details summary::-webkit-details-marker{{display:none}}
+  .tier2-details summary:hover{{color:var(--gold)}}
+  .tier2-details[open] summary{{color:var(--gold)}}
+  .tier2-body{{display:flex;flex-direction:column;gap:14px;padding:6px 0 10px}}
+  .tier2-head{{font-size:10.5px;font-weight:700;margin-bottom:2px}}
 </style>
 </head>
 <body>

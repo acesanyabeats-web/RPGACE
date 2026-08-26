@@ -1,0 +1,109 @@
+RPGACE /Routine — Aug 26 2026 (2nd pass, same day)
+Alex's own explicit sequencing, not re-litigated: "go through all the red g-steps
+so it can be built out, then we look through blues and see what can be done."
+Per /Routine's own guardrail ("if Alex answers a blocking question in the same
+message that triggers /Routine, act on it directly rather than re-asking"), the
+ceremony below is real but compressed to fit the sequencing Alex already gave —
+Team 1/Team 2 debate real evidence, not priority order, which was already set.
+
+=== STEP 1 — real evidence gathered (GODMODE) ===
+Queried ceo_plan_items for the Galaxy Development Framework plan
+(6f8536fd-7d98-4565-9369-c75a149fce8f) for every status='red'/'blue' row, plus a
+full G60-G106 status sweep. Real reds found: G60, G73, G86, G87, G88, G92, G95.
+Real blues found: G9, G11, G13, G41, G53, G89.
+
+Direct code checks (not trusted from stale evidence text alone):
+- G86's own evidence claimed "render_evidence_bubble() draws SVG lines with no
+  <a> wrapper" and "compute_supabase_table_touches(mod) data never reaches the
+  map view" — BOTH now false, confirmed by direct grep: G105 added a real
+  `link_href` param to render_evidence_bubble() (every Alex/Oracle/Composio/
+  Last.fm/Supabase/Jina AI bubble at L2+Current now wraps in a real <a>), and
+  G106 added Supabase's own bubble row to the Current(L3) loop. G86 is fully
+  superseded by G105/G106 — a real status correction, not new build work.
+- G93/G94's actual shipped implementation (galaxy_map_module.py's
+  `_infra_bubble()`) renders ONE ROW PER real touching unit — a real list, never
+  a single-slot selector. This is the exact multi-bubble, non-selector design
+  that fully supersedes G60's older "per-edge selector" concept (logged before
+  G92-G98's redesign existed) — there is no longer a single shared bubble that
+  would ever need a selector to switch between competing units. G60 is stale,
+  confirmed by reading the actual shipped code, not assumed from its own
+  (never-updated) evidence text.
+- G92 (umbrella) sub-items G93/G94/G96/G97/G98 are all green; G95's own
+  evidence text says "RESOLVED (Alex answered)... superseded by G99/G100" and
+  G99/G100 are both green. The umbrella's real work is done — a status
+  correction, not new build work.
+- G87/G88 checked against the current bubble loop (galaxy_map_current.py) —
+  confirmed genuinely NOT built: only 5 of the up-to-8 real evidence-gated
+  bubble types exist (Oracle/Composio/Last.fm/Supabase/Jina AI); Decision/
+  Load/Logic are real, computed elsewhere (build_unified(),
+  compute_boot_task_registrations/compute_page_nav_triggers/
+  compute_click_load_triggers, attribute_river_connection_function) but never
+  surfaced at Current(L3) grain. G88's crowding concern is real and confirmed:
+  adding 3 more fixed-position bubble rows on top of the existing 5 would
+  collide with the function-node grid below (the same class of overflow G105
+  already had to raise ALEX_MARGIN once to avoid).
+- G73 checked against real total_system_members/graphify_jobs data — confirmed
+  2 real git-clonable repos (RPGACE itself, calesthio/OpenMontage) plus
+  Graphify CC (a PyPI package, not a repo — a real distinction already logged
+  correctly). No Galaxy Map page currently renders "hands off to
+  calesthio/OpenMontage" as an explicit terminal at the point a reader would
+  hit the dead end. Genuinely needs its own real evidence pass (which Level-3/
+  Current/L6 terminals currently show "no declared downstream") before
+  building — not yet scoped in enough detail to build blind.
+
+=== STEP 2 — Team 2's honest counter-case ===
+Real question raised: should G73 (a genuinely new, unscoped evidence-gather-
+then-build item) outrank G87/G88 (bounded, fully-specified, straightforward
+build)? Team 2's case: G73 closes a real, Alex-named gap ("missing links that
+end without logical sense") that's arguably more USER-VISIBLE than 3 more
+bubble types on an already-bubble-heavy page. Team 1's counter: G87/G88 are a
+tight, bounded, already-fully-specified pair (G88 explicitly named as "a real,
+necessary companion to G86/G87, not optional polish") — shipping them first is
+lower-risk and closes out the Current(L3) bubble work as a complete unit before
+starting a new evidence-gathering thread. Verdict: build G87+G88 first (bounded,
+spec already exists), then G73 (needs its own real evidence pass, naturally a
+2nd distinct piece of work). Real, not manufactured — this is a genuine
+sequencing call with a real tradeoff on both sides.
+
+=== STEP 3-4 — reconciliation (compressed, no Fable, per standing default) ===
+No drift found between this plan and Alex's own stated goal (clear the reds,
+then survey blues) — the compressed debate above is entirely about internal
+sequencing among the reds themselves, not about whether to follow Alex's
+explicit instruction, which stands as given.
+
+=== FINAL SEQUENCE, LOCKED ===
+1. Status corrections (no build): G60 -> superseded by G92-98, green.
+                                   G86 -> superseded by G105/G106, green.
+                                   G92 -> umbrella closed, all sub-items done, green.
+                                   G95 -> superseded by G99/G100 per its own text, green.
+2. G87 + G88 (coupled real build): 3 new Current(L3) bubble types (Decision/
+   Load/Logic) + a real layout redesign so up to 8 simultaneous bubble types
+   don't crowd/overlap the function-node grid.
+3. G73 (real evidence-gather then build): identify actual dead-end Level-3/
+   Current/L6 terminals with no declared downstream, cross-check against real
+   openmontage_jobs-triggering call sites, render explicit "-> hands off to
+   calesthio/OpenMontage (external repo)" terminals where a real match exists.
+
+=== BLUES SURVEY (after the reds) ===
+G89 — documentation-only, zero code change, a real quick win: name the
+       already-proven "Matrix crosses ANY grain x Dimension tags" pattern in
+       CEO SKILL.md (same treatment R22 already got). Do it today.
+G9  — Alex's own real correction already reclassified this "way further down
+       the line" (post-product-launch consumer/developer tiering) — correctly
+       stays untouched, not a candidate for today.
+G11 — module scope (44/44) + onclick-feature scope (47/47) already done; the
+       remaining ~116 main.js non-onclick functions are real, deliberately
+       NOT rushed per its own rule-4/5 discipline — no action today, still
+       genuinely multi-session by design.
+G13 — explicitly gated on G11's feature scope landing fully; correctly stays
+       blue, no action today.
+G41 — Oracle-as-pipeline-orchestrator + Fish Audio voice: a real, large,
+       unscoped architectural idea needing its own CEO Loop 1 before any build
+       — logged, not sized today.
+G53 — the 60-module UI/logic split: same shape, needs its own CEO Loop 1 —
+       logged, not sized today.
+
+Real, honest result: only G89 is genuinely actionable from the blues today
+without first running a dedicated CEO Loop 1 on the larger ones (G41/G53) or
+waiting on G11's own multi-session schedule (G13). Nothing dropped silently —
+every blue item's real reason for staying blue is stated above.

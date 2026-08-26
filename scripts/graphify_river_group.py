@@ -1684,6 +1684,34 @@ def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     return funcs
 
 
+def _function_line_spans(module_name, core_js_path: Path = CORE_JS):
+    """Real {func_name: (abs_start_line, abs_end_line)}, 1-indexed and
+    inclusive at both ends — factored out of _function_bodies() below,
+    G87 (Aug 26 2026), so a second real consumer (compute_boot_task_
+    by_function(), which needs to resolve a bare global line number back
+    to its enclosing function) can reuse the exact same span logic
+    rather than re-deriving it a 2nd time (rule 8)."""
+    ranges = parse_module_ranges(core_js_path)
+    if module_name not in ranges:
+        return {}
+    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    s, e = ranges[module_name]
+    block_lines = lines[s - 1:e]
+    funcs = parse_module_functions(module_name, core_js_path)
+    if not funcs:
+        return {}
+    def_lines = []
+    for i, line in enumerate(block_lines):
+        name = _module_def_line_match(line)
+        if name and name in funcs:
+            def_lines.append((i, name))
+    spans = {}
+    for idx, (start_i, fname) in enumerate(def_lines):
+        end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
+        spans[fname] = (s + start_i, s + end_i - 1)
+    return spans
+
+
 def _function_bodies(module_name, core_js_path: Path = CORE_JS):
     """Real, shared per-function source-span splitter (rule 8 — Aug 13,
     factored out here after a real self-audit caught this exact
@@ -1699,21 +1727,8 @@ def _function_bodies(module_name, core_js_path: Path = CORE_JS):
     if module_name not in ranges:
         return {}
     lines = core_js_path.read_text(encoding='utf-8').splitlines()
-    s, e = ranges[module_name]
-    block_lines = lines[s - 1:e]
-    funcs = parse_module_functions(module_name, core_js_path)
-    if not funcs:
-        return {}
-    def_lines = []
-    for i, line in enumerate(block_lines):
-        name = _module_def_line_match(line)
-        if name and name in funcs:
-            def_lines.append((i, name))
-    bodies = {}
-    for idx, (start_i, fname) in enumerate(def_lines):
-        end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
-        bodies[fname] = '\n'.join(block_lines[start_i:end_i])
-    return bodies
+    spans = _function_line_spans(module_name, core_js_path)
+    return {fname: '\n'.join(lines[a - 1:b]) for fname, (a, b) in spans.items()}
 
 
 def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
@@ -2523,6 +2538,107 @@ def compute_click_load_triggers(module_name='dashDeck', core_js_path: Path = COR
                 pairs.append(pair)
         if pairs:
             out[f] = pairs
+    return out
+
+
+# ---------------------------------------------------------------------
+# G87 (Aug 26 2026) — 3 more real, evidence-gated Current(L3) bubble
+# types (Decision/Load/Logic), all 3 built from data this file already
+# computes elsewhere for a DIFFERENT real page (Decision Matrix, Load
+# Dimension, Logic Dimension) — zero new detection code, per this
+# item's own /debate-confirmed evidence. Every helper below just
+# resolves the SAME already-real fact down to Current(L3)'s own
+# function grain.
+
+def compute_boot_task_by_function(core_js_path: Path = CORE_JS):
+    """Real, per-(module,function) resolution of compute_boot_task_
+    registrations()'s own global module+line list — that detector can't
+    say WHICH function registered a boot task on its own, only which
+    module and which raw line. Resolves each real registration to its
+    enclosing function via that module's own real _function_line_spans()
+    — a registration outside every known function span (bare module-
+    scope code) is honestly dropped, never force-attributed to the
+    nearest function. Returns {module: {func: True}}."""
+    regs = compute_boot_task_registrations(core_js_path)
+    out = {}
+    spans_cache = {}
+    for reg in regs:
+        mod = reg['module']
+        if mod not in spans_cache:
+            spans_cache[mod] = _function_line_spans(mod, core_js_path)
+        for fname, (a, b) in spans_cache[mod].items():
+            if a <= reg['line'] <= b:
+                out.setdefault(mod, {})[fname] = True
+                break
+    return out
+
+
+def compute_load_signal(module_name, core_js_path: Path = CORE_JS):
+    """Real, per-function union of all 3 Load Dimension signals for ONE
+    module — G87's Current(L3) "Load" bubble: a function has a real
+    Load signal if it registers a boot task, a page:show nav trigger, or
+    (dashDeck only, the one real confirmed source of this idiom) a
+    click-load trigger. Returns {func: [reason, ...]}, never a bare
+    boolean — the real reason is what a hover/tooltip actually shows."""
+    out = {}
+    boot = compute_boot_task_by_function(core_js_path).get(module_name, {})
+    for f in boot:
+        out.setdefault(f, []).append('registers a boot task')
+    for f, pages in compute_page_nav_triggers(module_name, core_js_path).items():
+        out.setdefault(f, []).append(f'page:show trigger ({"/".join(pages)})')
+    if module_name == 'dashDeck':
+        for f, pairs in compute_click_load_triggers(module_name, core_js_path).items():
+            targets = ', '.join(f'{m}.{fn}()' for m, fn in pairs)
+            out.setdefault(f, []).append(f'click-load ({targets})')
+    return out
+
+
+def compute_decision_targets():
+    """Real, per-(module,function) roll-up of every real Decision Matrix
+    entry (G72's build_unified() — gate/logic/text-input points alike) —
+    G87's Current(L3) "Decision" bubble. Lazy import: galaxy_map_
+    decision_matrix.py itself imports FROM this file, so a module-level
+    import here would be circular; a function-local import resolves
+    fine since both modules are always fully loaded by the time this is
+    actually called. A decision point with no real per-function `func`
+    (some gate points are module-scope, not one specific function) is
+    honestly skipped, never force-attributed."""
+    from galaxy_map_decision_matrix import build_unified
+    out = {}
+    for d in build_unified():
+        mod, func = d.get('module'), d.get('func')
+        if mod and func:
+            out.setdefault(mod, {}).setdefault(func, []).append(d['title'])
+    return out
+
+
+def compute_logic_attribution_targets(cross_calls=None, core_js_path: Path = CORE_JS):
+    """Real, global {module: {func: [connection_label, ...]}} of every
+    function attribute_river_connection_function() has resolved a real
+    RIVER_FLOWS connection onto — G87's Current(L3) "Logic" bubble.
+    Reuses the EXACT SAME RIVER_FLOWS iteration galaxy_map_logic_
+    dimension.py's own G82 coverage count already performs (rule 8) —
+    never a second independent walk of the same data. Pass a pre-
+    computed `cross_calls` (compute_cross_module_function_calls()) when
+    the caller already has one cached, to avoid a second real regex
+    sweep of the whole file."""
+    if cross_calls is None:
+        cross_calls = compute_cross_module_function_calls(core_js_path)
+    out = {}
+    for src, targets in RIVER_FLOWS.items():
+        for label, note, itype in targets:
+            tgt = _river_num_from_label(label)
+            if not tgt:
+                continue
+            attr = attribute_river_connection_function(
+                src, tgt, note, core_js_path, cross_calls=cross_calls, itype=itype)
+            if not attr:
+                continue
+            _from_mod, to_mod, to_func, reason = attr
+            if to_mod == 'main.js' or not to_func:
+                continue  # no real Current(L3) page for main.js
+            out.setdefault(to_mod, {}).setdefault(to_func, []).append(
+                f'River {src}→{tgt}: {reason}')
     return out
 
 
