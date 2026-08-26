@@ -73,6 +73,23 @@
 
 <div class="content">
 
+<div class="card" style="margin-bottom:30px;">
+    <div class="card-title">🗺️✅ Aug 26 — Galaxy Map: top level-rail bar + in-page Dimensions index block removed (left-nav sidebar only, per Alex's direct ask), sidebar's L2 Rivers+Modules duplicate list merged into one river→module nested hierarchy, and the Alex bubble made clickable on Level 2 and Current(L3)</div>
+    <div class="card-body">
+      Three real, separate fixes from Alex's own direct feedback in one pass, all on the shared Galaxy Map generator pipeline (<code>scripts/graphify_river_group.py</code> + regeneration of all 19 real page scripts).
+      <br><br>
+      <b>(1) Top level-rail bar + in-page Dimensions index, removed outright</b> — Alex: "also get rid of these, i only want left nav now," pointing at the top-of-page L0→L1→L2→Current(L3) chip bar and the separate "🌌 Dimensions" index card beneath it. Both were a second, always-visible copy of navigation the left-nav sidebar (built earlier as G101) already covers. <code>level_rail_html()</code>/<code>LEVEL_RAIL_CSS</code> deleted outright (kept the function name <code>inject_level_rail()</code> since ~19 page scripts call it by that exact name as their one shared post-process hook — renaming it would be a purely cosmetic 19-file edit for zero real benefit); <code>dimension_index_html()</code> reduced to a documented no-op rather than deleted, for the same reason. <code>galaxy_map_hub.py</code>'s own pre-existing <code>&lt;nav class="level-rail"&gt;</code> stripping regex is now a harmless no-op, left as-is.
+      <br><br>
+      <b>(2) Sidebar L2 duplicate list, merged</b> — Alex: "get rid of the duplicate scroll down list - divide modules by river as category, so river 1 - then under its module, then sub head river 2 - smaller sub head module etc." The previous sidebar rendered two separate flat lists back to back under Level 2 (all 17 rivers, then all 45 modules alphabetically with no river context) — replaced with one real nested list, <code>_river_module_nested_rows()</code>: each of the 17 rivers is its own sub-heading (river-numbered, in order), its real <code>RIVER_MODULES</code> members render directly beneath it. A river with zero tracked modules (5 of the 17, the real retired/cross-cutting categories) still gets its own sub-heading with an honest "— no modules —" note rather than being silently skipped, so the numbering stays visibly complete. Level 1 (<code>galaxy_map_river.html</code>) keeps the plain river-only list, unchanged — it has no per-module content of its own to jump to.
+      <br><br>
+      <b>(3) Alex bubble made clickable at Level 2 and Current(L3)</b> — a real follow-up bug Alex reported directly ("but alex is still not clickable in video pipeline") after confirming G105/G106 worked elsewhere: the Alex hub node was deliberately excluded from G105's <code>link_href</code> treatment by its own original design, but Alex expected it to behave like every other evidence bubble. Fixed in both <code>galaxy_map_current.py</code> and <code>galaxy_map_module.py</code> — the Alex hub now renders as a real <code>&lt;a href&gt;</code> pointing at <code>UNIT_BUBBLE_SYSTEM['alex']</code> (the same Decision Matrix destination the L0 Infra system already uses, rule 8), with a "🔽 jump to Decision Matrix ↗" cue.
+      <br><br>
+      A real, pre-existing, unrelated bug found and NOT fixed this pass (out of scope, flagged plainly): <code>galaxy_map_loops.py</code> has 10 real <code>href="#d-..."</code> fragment links missing their target filename (should read <code>galaxy_map_decision_matrix.html#d-...</code>) — confirmed via git history to predate this session's own work, unrelated to the level-rail/sidebar changes. Logged as a small separate follow-up, not blocking this ship.
+      <br><br>
+      All 19 real page scripts regenerated; idempotency re-verified (2 fresh runs, byte-identical); div/a tag-balance clean across all touched pages; full internal link-integrity scan clean except the pre-existing loops.py issue above; headless Chromium confirmed zero console errors, the rail/dimension-index gone, the sidebar toggling correctly, the nested river→module list rendering, and both Alex-bubble links present and correctly targeted.
+    </div>
+  </div>
+
 <div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧩🟡 Aug 26 — G53 real pilot begins: videoPipeline restructured into UI/logic halves (1 of 4 pilot modules), real /interrogation locked the split's actual shape first</div>
     <div class="card-body">

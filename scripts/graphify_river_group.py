@@ -4115,27 +4115,21 @@ DIMENSION_INDEX_CSS = '''
 
 
 def dimension_index_html(current_file=None, heading='🌌 Dimensions'):
-    """Renders the real, shared Dimension index — the same card treatment
-    Rivers get, which is the whole point of G74 (equal visual weight,
-    not a numbered rung). Skips `current_file` so a page never links to
-    itself. Data comes from DIMENSION_PAGES only — never hand-typed."""
-    cards = []
-    for fname, icon, label, kind, desc in DIMENSION_PAGES:
-        if fname == current_file:
-            continue
-        kicon, klabel, kcolor = DIMENSION_KIND_META[kind]
-        cards.append(
-            f'<a class="dim-card" href="{fname}" style="border-left-color:{kcolor}" title="{klabel}">'
-            f'<div class="dim-name">{icon} {label}</div>'
-            f'<div class="dim-kind" style="color:{kcolor}">{kicon} {kind}</div>'
-            f'<div class="dim-desc">{desc}</div></a>'
-        )
-    return (f'<div class="dim-index"><h2>{heading}</h2>'
-            '<div class="dim-sub">A Dimension is a real cross-cutting facet — the same modules and functions, '
-            'seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, '
-            'which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home '
-            'partition). Equal standing with Rivers, different shape.</div>'
-            f'<div class="dim-grid">{"".join(cards)}</div></div>')
+    """Real no-op, Aug 26 2026 — Alex's own direct ask: "get rid of
+    these [the in-page Dimensions index]... i only want left nav now."
+    The real left-nav sidebar (left_nav_html()/G101) already nests every
+    Dimension page under its own genuinely-relevant Level, sourced from
+    the SAME DIMENSION_PAGES data this function used to render inline —
+    a second, always-visible in-page copy of the identical list is
+    exactly the redundancy he's asking to remove. Kept as a real
+    no-op (not deleted) since ~18 page scripts still call it and
+    interpolate the result into their own TEMPLATE strings — returning
+    '' is a safe, single-point removal with zero risk of a broken
+    template placeholder, versus editing 18 files individually. Real
+    call-site cleanup (removing the now-dead calls entirely) is a
+    future, lower-risk-tolerance pass, not needed to satisfy the actual
+    ask."""
+    return ''
 
 
 # ---------------------------------------------------------------------
@@ -4748,52 +4742,28 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
         f'</div><script>{INFRA_DRILLDOWN_JS}</script>')
 
 
-LEVEL_RAIL_CSS = '''
-.level-rail{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;margin:0 auto 14px;max-width:1400px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;font-size:0.76rem;font-family:inherit}
-.level-rail a{color:#9a9aa8;text-decoration:none;padding:3px 8px;border-radius:6px;white-space:nowrap;transition:background .15s,color .15s}
-.level-rail a:hover{background:rgba(201,168,76,0.14);color:#e8e8ec}
-.level-rail a.active{background:#C9A84C;color:#1a1a1f;font-weight:600}
-.level-rail .rail-sep{color:#55555f}
-'''
-
-
-def level_rail_html(current_file):
-    """Renders the shared 4-stop containment ladder (L0 -> L1 -> L2 ->
-    Current/L3), current stop highlighted. Length is read from
-    LEVEL_RAIL itself, never hardcoded — see that list's own comment for
-    why the old L2.5/L4/L5/L6 stops are gone."""
-    chips = []
-    for i, (fname, icon, label) in enumerate(LEVEL_RAIL):
-        cls = ' class="active"' if fname == current_file else ''
-        chips.append(f'<a href="{fname}"{cls}>{icon} {label}</a>')
-        if i < len(LEVEL_RAIL) - 1:
-            chips.append('<span class="rail-sep">→</span>')
-    return '<nav class="level-rail">' + ''.join(chips) + '</nav>'
-
-
 def inject_level_rail(html, current_file):
     """Mechanical post-process applied to an already-rendered page, right
-    before it's written to disk — injects the shared CSS (once) and the
-    rail nav (right after <body...>). Never touches an existing TEMPLATE
-    string or an existing breadcrumb — purely additive, same "nothing
-    superseded" discipline as everywhere else this session.
+    before it's written to disk — injects the real left-nav sidebar
+    (see inject_left_nav() below), for every one of the ~20 pages that
+    already call this one function (rule 8/11: zero other page script
+    needed to change when the sidebar itself changes).
 
-    G101 (Aug 25 2026, Alex's own direct ask: "lets make a left nav side
-    panel for each of these") — also injects the real left-nav sidebar
-    (see inject_left_nav() below) at the SAME point, for every one of
-    the 19 pages that already call this one function (rule 8/11: zero
-    other page script needed to change to gain the new sidebar)."""
-    if '.level-rail{' not in html:
-        if '</style>' in html:
-            html = html.replace('</style>', LEVEL_RAIL_CSS + '</style>', 1)
-        else:
-            html = html.replace('</head>', f'<style>{LEVEL_RAIL_CSS}</style></head>', 1)
-    rail = level_rail_html(current_file)
-    m = re.search(r'(<body[^>]*>)', html)
-    if m:
-        after = html[m.end():m.end() + 2000]
-        if 'class="level-rail"' not in after:
-            html = html[:m.end()] + '\n' + rail + html[m.end():]
+    Real removal, Aug 26 2026 — Alex's own direct ask: "get rid of
+    these [the top level-rail bar]... i only want left nav now." The
+    old top-of-page rail (`level_rail_html()`/`LEVEL_RAIL_CSS`, a
+    single-row L0→L1→L2→Current chain) is gone outright — the left-nav
+    sidebar's own "🌌 Levels" section already covers the identical real
+    navigation, sourced from the SAME LEVEL_RAIL data, so the rail was
+    a second, always-visible copy of one thing. Function kept under its
+    original name (only the docstring/body changed) since ~20 page
+    scripts call it by this exact name as their one shared post-process
+    hook — renaming it would be a purely cosmetic 20-file edit for zero
+    real benefit. `galaxy_map_hub.py`'s own `<nav class="level-rail">`
+    stripping regex (its own real de-dup step when building the hub
+    index) is now a harmless no-op — nothing left to strip — left as-is
+    rather than touched, since it costs nothing to keep and would still
+    be correct if a rail-shaped element ever returned."""
     html = inject_left_nav(html, current_file)
     return html
 
@@ -4896,7 +4866,10 @@ LEFT_NAV_CSS = '''
 .gside-river{display:block;text-decoration:none;padding:4px 9px;border-radius:6px;margin-bottom:1px;border-left:2px solid transparent;font-size:10.5px}
 .gside-river:hover{background:rgba(255,255,255,0.05)}
 .gside-river b{font-weight:400;color:#b8b8c4}
-.gside-rivers{max-height:180px;overflow-y:auto}
+.gside-rivers{max-height:320px;overflow-y:auto}
+.gside-river-mod{margin-left:14px;font-size:9.5px;opacity:.85}
+.gside-river-mod b{color:#8a8a98}
+.gside-river-empty{color:#55555f;font-style:italic;padding:2px 9px 4px}
 '''
 
 LEFT_NAV_JS = '''
@@ -4955,21 +4928,39 @@ def left_nav_html(current_file):
             )
         return ''.join(rows)
 
-    def _module_rows():
+    # G101, 4th real correction (Aug 26 2026, Alex: "get rid of the
+    # duplicate scroll down list - divide modules by river as category,
+    # so river 1 - then under its module, then sub head river 2 -
+    # smaller sub head module etc.") — the previous build rendered TWO
+    # separate flat lists back to back under L2 (all 17 rivers, then
+    # all 45 modules alphabetically with no river context), which read
+    # as a duplicated, disconnected scroll. Real fix: one single nested
+    # list — each river is its own sub-heading, its own real
+    # RIVER_MODULES members render directly beneath it, repeated per
+    # river in river-number order. Rivers with zero tracked modules
+    # (the 5 real retired categories, RIVER_RETIRED) still get their own
+    # sub-heading with an honest "— no modules —" note rather than being
+    # silently skipped, so the river numbering stays visibly complete.
+    def _river_module_nested_rows():
         rows = []
-        for m in sorted(LEVEL3_MODULES):
-            rows.append(f'<a class="gside-river" href="galaxy_map_current.html#mod-{m}"><b>🔽 {m}</b></a>')
+        for r in sorted(RIVER_NAME):
+            name = RIVER_NAME[r].split('—')[0].strip()
+            color = RIVER_COLOR.get(r, '#8a8a9a')
+            rows.append(
+                f'<a class="gside-river" href="galaxy_map_module.html#river-{r}" '
+                f'style="border-left-color:{color}"><b>🌊 River {r}: {name}</b></a>'
+            )
+            mods = RIVER_MODULES.get(r, [])
+            if mods:
+                for m in sorted(mods):
+                    rows.append(
+                        f'<a class="gside-river gside-river-mod" '
+                        f'href="galaxy_map_current.html#mod-{m}">'
+                        f'<b>🔽 {m}</b></a>'
+                    )
+            else:
+                rows.append('<span class="gside-river gside-river-mod gside-river-empty">— no modules —</span>')
         return ''.join(rows)
-
-    # G101, real correction (Aug 26 2026, Alex: "include modules
-    # instead") — Modules get their own real nested division, same
-    # pattern as Rivers, added under L2 (the level whose own real
-    # content — galaxy_map_current.html's per-module Current Series —
-    # is what a Modules list should jump to). Real anchor evidence:
-    # galaxy_map_current.html genuinely has one id="mod-<name>" section
-    # per LEVEL3_MODULES entry (confirmed by G94's own already-verified
-    # link-integrity sweep, not re-checked here — same source, rule 8).
-    LEFT_NAV_LEVEL_MODULES = {'galaxy_map_module.html'}
 
     level_blocks = []
     for fname, icon, label in LEVEL_RAIL:
@@ -4978,15 +4969,19 @@ def left_nav_html(current_file):
         sub = f'<span>{annot}</span>' if annot else ''
         head = f'<a class="gside-level{cls}" href="{fname}"><b>{icon} {label}</b>{sub}</a>'
         nested = ''
-        if LEFT_NAV_LEVEL_RIVERS.get(fname):
+        if fname == 'galaxy_map_module.html':
+            # L2 gets the ONE combined river->module nested list (rivers
+            # and modules were previously two separate flat lists here).
+            nested += (
+                '<div class="gside-subhead">🌊 Rivers &amp; Modules</div>'
+                f'<div class="gside-nested gside-rivers">{_river_module_nested_rows()}</div>'
+            )
+        elif LEFT_NAV_LEVEL_RIVERS.get(fname):
+            # L1 (galaxy_map_river.html) has no per-module content of
+            # its own to jump to — plain river list only.
             nested += (
                 '<div class="gside-subhead">🌊 Rivers</div>'
                 f'<div class="gside-nested gside-rivers">{_river_rows()}</div>'
-            )
-        if fname in LEFT_NAV_LEVEL_MODULES:
-            nested += (
-                '<div class="gside-subhead">🔽 Modules</div>'
-                f'<div class="gside-nested gside-rivers">{_module_rows()}</div>'
             )
         dim_nested = ''.join(
             _left_nav_dim_row(entry, current_file)

@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (26808, 26839), 'anchor': "MODES: ['real', 'dummy', 'fallback']",
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (26849, 26882), 'anchor': "MODES: ['real', 'dummy', 'fallback']",
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',

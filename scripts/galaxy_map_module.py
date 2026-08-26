@@ -302,11 +302,20 @@ def build_river_section(rnum):
                 ix = ALEX_X + (n_in * 17 if n_in % 2 == 1 else -n_in * 17)
                 edges_svg.append(_curved_edge(ix, ALEX_Y, mx, my, ALEX_COLOR, real=True, dashed=True, r1=20, r2=22, offset_mult=-0.5))
         edge_colors_used.add(ALEX_COLOR)
+        # Real fix, Aug 26 2026 — Alex's own direct report on the Current
+        # (L3) page ("alex is still not clickable in video pipeline")
+        # applies here too: this hub was hand-built, never routed through
+        # render_evidence_bubble()'s real link_href treatment. Same real
+        # fix, same real destination (UNIT_BUBBLE_SYSTEM['alex']).
+        _alex_href = UNIT_BUBBLE_SYSTEM.get('alex')
         nodes_svg.append(
-            f'<g class="node central"><circle cx="{ALEX_X}" cy="{ALEX_Y}" r="30" fill="#0f0f1a" stroke="{ALEX_COLOR}" stroke-width="3.5" filter="url(#glow)"/>'
+            f'<a href="{_alex_href}"><g class="node central">'
+            f'<circle cx="{ALEX_X}" cy="{ALEX_Y}" r="30" fill="#0f0f1a" stroke="{ALEX_COLOR}" stroke-width="3.5" filter="url(#glow)"/>'
             f'<text x="{ALEX_X}" y="{ALEX_Y-3}" text-anchor="middle" font-size="17">🧑</text>'
             f'<text x="{ALEX_X}" y="{ALEX_Y+42}" text-anchor="middle" font-size="10" fill="{ALEX_COLOR}" font-weight="700">Alex</text>'
-            f'<text x="{ALEX_X}" y="{ALEX_Y+55}" text-anchor="middle" font-size="7.5" fill="{ALEX_COLOR}" opacity="0.85">{n_out} modules shown to me · {n_in} modules I input into</text></g>'
+            f'<text x="{ALEX_X}" y="{ALEX_Y+55}" text-anchor="middle" font-size="7.5" fill="{ALEX_COLOR}" opacity="0.85">{n_out} modules shown to me · {n_in} modules I input into</text>'
+            f'<text x="{ALEX_X}" y="{ALEX_Y+66}" text-anchor="middle" font-size="7" fill="{ALEX_COLOR}" opacity="0.65">🔽 jump to Decision Matrix ↗</text>'
+            f'</g></a>'
         )
 
         # Real, evidence-driven "Oracle" bubble (Aug 14, Level-2 rollup

@@ -446,11 +446,25 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             n_in += 1
             ix = alex_x + (n_in * 15 if n_in % 2 == 1 else -n_in * 15)
             edges_svg.append(_curved_edge(ix, alex_y, fx, fy, ALEX_COLOR, real=True, dashed=True, r1=20, r2=26, offset_mult=-0.6))
+    # Real fix, Aug 26 2026 — Alex's own direct report: "alex is still not
+    # clickable in video pipeline." Root cause: this hub was hand-built
+    # (deliberately NOT routed through render_evidence_bubble() — see
+    # that function's own docstring on why the Alex bubble is a
+    # genuinely different bidirectional/uncounted/permanent shape) and
+    # simply never got the same real `<a href>` treatment G105/G106 gave
+    # every OTHER bubble. UNIT_BUBBLE_SYSTEM['alex'] already names a
+    # real destination (galaxy_map_decision_matrix.html) — wired in now,
+    # unconditionally (this hub is drawn regardless of this specific
+    # module's own evidence count, so its link is real regardless too).
+    _alex_href = UNIT_BUBBLE_SYSTEM.get('alex')
     nodes_svg.append(
-        f'<g class="node central"><circle cx="{alex_x}" cy="{alex_y}" r="34" fill="#0f0f1a" stroke="{ALEX_COLOR}" stroke-width="3.5" filter="url(#glow)"/>'
+        f'<a href="{_alex_href}"><g class="node central">'
+        f'<circle cx="{alex_x}" cy="{alex_y}" r="34" fill="#0f0f1a" stroke="{ALEX_COLOR}" stroke-width="3.5" filter="url(#glow)"/>'
         f'<text x="{alex_x}" y="{alex_y-4}" text-anchor="middle" font-size="20">🧑</text>'
         f'<text x="{alex_x}" y="{alex_y+50}" text-anchor="middle" font-size="10.5" fill="{ALEX_COLOR}" font-weight="700">Alex</text>'
-        f'<text x="{alex_x}" y="{alex_y+64}" text-anchor="middle" font-size="8" fill="{ALEX_COLOR}" opacity="0.85">{n_out} shown to me · {n_in} buttons I press</text></g>'
+        f'<text x="{alex_x}" y="{alex_y+64}" text-anchor="middle" font-size="8" fill="{ALEX_COLOR}" opacity="0.85">{n_out} shown to me · {n_in} buttons I press</text>'
+        f'<text x="{alex_x}" y="{alex_y+75}" text-anchor="middle" font-size="7" fill="{ALEX_COLOR}" opacity="0.65">🔽 jump to Decision Matrix ↗</text>'
+        f'</g></a>'
     )
     edge_colors_used.add(ALEX_COLOR)
 
