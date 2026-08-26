@@ -445,3 +445,143 @@ Alex-confirmed plans, neither yet built.
     says go for the BUILD — the real API-key ACTIVATION stays a separate,
     later decision entirely in Alex's own hands (6b Q1/Q5), independent of
     when the code itself ships.
+
+PHASE 1 BUILT (same day, immediate continuation, real "go"): oracle_actions
+table created + seeded (log_beat), oracleControl module shipped
+(rpgace_core.js), api/oracle.js gained the dormant Fish Audio scaffold. A real
+pre-existing bug was found and fixed along the way: RPGACE.utils._runPhylaScan
+fired the shared oracle:response-scanned hook AFTER a text.length<60 early
+return, silently breaking trailer detection for a short reply — fixed to fire
+unconditionally. Committed d5aa6a4, pushed to main, Vercel production
+confirmed READY matching the SHA. Verified via node --check + headless-
+Chromium functional tests, zero console errors. ceo_plan_items G41 moved
+blue -> yellow. Untested by Alex's own hand. Full detail: CLAUDE.md's own G41
+Phase 1 bullet, patch_notes.html's dated card.
+
+=========================================================================
+9. REAL COMPRESSED /paranoia + /CEO-Drift PASS, same day, immediate
+   follow-up — Alex's own direct ask, right after Phase 1 shipped:
+   "oracle control should also use self-awareness to know how to execute
+   tasks itself using modules, that is an added bonus. /paranoia and /CEO
+   with /Drift."
+=========================================================================
+
+9a. Real, honest context check first (rule 1) — this is NOT a brand-new idea
+    appearing from nowhere. §0 already quotes G41's own ORIGINAL Aug 15
+    framing verbatim: "Oracle eventually taking real ACTION on pipelines via
+    its own self-awareness layer." The Phase 1 interrogation (§2-4) made a
+    real, DELIBERATE simplification away from that — a curated, human-
+    authored oracle_actions vocabulary instead of Oracle reasoning live from
+    its own self-awareness data — for real, stated reasons (§3: "pre-written
+    explanations, not live-reasoned ones... a curated vocabulary... not
+    open-ended agentic decision-making"). Alex's new message is asking to
+    layer the self-awareness angle BACK IN, explicitly as "an added bonus" —
+    additive to what Phase 1 already shipped, not a request to rip it out.
+
+9b. Real /CEO-Drift check on this specific point.
+    BASIS: ratified (this exact plan, Alex-confirmed via /interrogation,
+    §2-4). §4d states explicitly: "No NL parsing beyond a fixed, curated
+    phrase list — a genuinely open-ended 'understand any instruction and
+    improvise an action' system is a different, much bigger and riskier
+    build... that this plan does NOT propose."
+    VERDICT: Alex's new ask, read LITERALLY (Oracle reasoning live from
+    oracle_module_anatomy to decide which module/function to call for an
+    UNCURATED request, with no oracle_actions row existing first), would
+    directly reverse that explicit §4d boundary. This is not "drifted work" —
+    nothing was built off-plan — it is a real, NEW scope-expansion request
+    that needs its own explicit confirmation before any build, exactly the
+    class of thing /paranoia + /CEO exist to catch before it gets built on
+    an assumption.
+    GRADE: would be MATERIAL if built without re-confirming scope — the
+    original plan's own stated safety boundary would be silently reversed.
+
+9c. Real technical/GODMODE evidence on WHY that boundary was drawn, checked
+    directly rather than taken on faith:
+    - oracle_module_anatomy (13 rows: dashDeck, phylumPath, authGate,
+      oracleAppGrounding, oracleTreeGrounding, bookworm, config,
+      taxonomyTree, leftNav, beatLog, contentProductionLive, videoPipeline,
+      voiceInput) is real, human-written PROSE (purpose/anatomy/connects_to/
+      gotchas/source_ref) — built to let Oracle EXPLAIN how something works
+      when Alex asks. It has no function signatures, no parameter types, no
+      side-effect/safety annotations, and (per its own July 31 build note)
+      is a hand-maintained digest that can drift stale relative to live code
+      the same way SELF_KNOWLEDGE itself was found stale more than once this
+      project's history.
+    - oracle_actions (the real table Phase 1 just built) IS a structured,
+      machine-checkable execution manifest (action_id/target/data_touched/
+      confirm_required) — but the safety property it provides comes
+      specifically from a HUMAN having written each row, checking the
+      target function's real current signature before doing so. A row Oracle
+      wrote for itself, live, from its own reading of anatomy prose, would
+      not carry that same verified guarantee — Oracle could misread a
+      gotcha, misjudge which of several similarly-described functions is the
+      real match, or describe the "what happens" confirm text based on a
+      stale anatomy row, giving Alex a confident-sounding but WRONG
+      explanation to approve. Rule 4's whole point (a human sees a TRUE
+      description before approving) genuinely depends on that gap not
+      existing.
+    - This project has no Supabase backup/PITR at all (a standing, repeatedly
+      -cited fact) — a live, self-directed dispatch mechanism that could
+      misfire on a wrong-target guess is a real, uniquely bad fit for a
+      project with zero rollback safety net, independent of how good the
+      self-awareness data is.
+
+9d. Real Council-of-5-shaped scrutiny, three genuinely different readings of
+    the same one-sentence ask, each with a real different risk/cost profile
+    (not manufactured balance — these are the real distinct ways to build
+    this):
+    (1) SAFE — self-awareness as a CURATION AID. Oracle (or a future
+        session) consults oracle_module_anatomy when DRAFTING a new
+        oracle_actions row, but the row still goes through the exact same
+        human-authoring/review step every current row already does before it
+        is ever live and callable. Zero new execution risk — this is
+        documentation reuse feeding an already-human-gated process.
+    (2) MIDDLE — self-awareness-ASSISTED VOCABULARY GROWTH, live. When
+        Oracle recognizes a real request that doesn't match any existing
+        oracle_actions row, it uses its own self-awareness to draft a
+        SUGGESTED new row (target, data touched, a plain-language
+        explanation) and surfaces it to Alex as a real, distinct "add this
+        as a new Oracle action?" confirm — separate from and prior to any
+        actual execution. Only once Alex approves does the row become live
+        in oracle_actions, and ONLY THEN can it ever be triggered (by that
+        message or a future one) through the exact same Accept/Deny
+        execution-confirm Phase 1 already built. Real, new value (Oracle can
+        propose growing its own capability instead of a human having to
+        author every row by hand) while keeping BOTH human checkpoints Phase
+        1 already established intact — vocabulary growth is gated, and
+        execution is separately gated.
+    (3) RISKY — full open-ended live dispatch. Oracle reasons from
+        oracle_module_anatomy at chat-time and calls whatever module/method
+        it decides fits, for ANY request, with no oracle_actions row ever
+        existing first and no separate vocabulary-approval step. This is
+        precisely the "different, much bigger and riskier build" §4d
+        explicitly ruled out — real technical risk (9c), real safety
+        regression (no verified interface contract, no accurate pre-written
+        confirm text possible since the action was never pre-curated,
+        directly reopening the exact tradeoff §3 already reasoned through
+        and closed).
+
+9e. Real, honest recommendation, not a forced middle-ground for its own
+    sake: (2) is the genuine best fit for "an added bonus" as Alex phrased
+    it — it is real, new, valuable capability (self-awareness now actively
+    grows Oracle's own action vocabulary instead of a human having to
+    author every row from scratch) while adding ZERO new execution-time
+    risk beyond what Phase 1 already accepted, because a self-suggested row
+    still cannot execute anything until a human explicitly approves it into
+    oracle_actions — the exact same "curated, not open-ended" property §3
+    already reasoned through, just with self-awareness now helping WRITE the
+    curation instead of a human doing 100% of that work alone. (1) is real
+    but smaller — a pure documentation-reuse convention with no live Oracle
+    involvement at all. (3) is not recommended without its own dedicated,
+    separate real interrogation of Alex specifically on the interface-
+    contract/no-backup risk in 9c, since it reverses an already-made,
+    reasoned safety decision rather than extending it.
+
+9f. STATUS: this is a real, planned NEXT PHASE (Phase 2), not built this
+    pass — /paranoia's own purpose is scrutiny BEFORE building, and a real
+    fork this consequential (three genuinely different risk profiles) needs
+    Alex's own confirmed answer before code, per rule 5, not a guessed
+    default even though (2) is the recommended one. Logged to ceo_plan_items
+    G41's own evidence field as a real, dated addendum — status stays yellow
+    (Phase 1 real and shipped) pending his answer on which of (1)/(2)/(3) — or
+    a genuine 4th option he names himself — Phase 2 should actually be.
