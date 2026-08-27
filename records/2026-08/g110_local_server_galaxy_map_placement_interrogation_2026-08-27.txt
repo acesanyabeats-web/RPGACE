@@ -1,0 +1,128 @@
+G110 — local_server.py/rpgace_intel.py's real Galaxy Map placement
+Real /interrogation + /paranoia + /drift + /scope pass — 2026-08-27
+Alex: "so lets add this to the galaxy map. blue this for now - and we
+straight /interrogation on where it should go. use /paranoia /drift
+/scope and /CEO for this too"
+
+=========================================================================
+STEP 1 — REAL EVIDENCE (/scope), gathered before any interrogation round
+=========================================================================
+`local_server.py`/`rpgace_intel.py` (both real, in-repo as of today —
+commits 51beab3/b6a87fd/558e905/fe11db1) currently have NO first-class
+identity anywhere in the Galaxy Map. Direct grep of
+scripts/graphify_river_group.py confirms `local_server.py` appears ONLY
+as a "via" footnote inside 2 OTHER connectors' own entries:
+  - librosa: "via: beat_audio_jobs + beat-audio bucket, local_server.py"
+  - Whisper (OpenAI, local): "via: local_server.py / Python scripts"
+
+Real, load-bearing facts about what it actually does, confirmed by direct
+read of the real source (not the stale footnote text):
+  - Runs its own HTTP server (port 7842), serving /reports/watchlist/
+    stats/push-to-supabase, plus a background poller draining intel_jobs.
+  - Writes to Supabase DIRECTLY (its own hardcoded publishable key),
+    bypassing RPGACE's own /api/data-write.js proxy layer entirely.
+  - rpgace_intel.py calls Anthropic's Claude API DIRECTLY
+    (api.anthropic.com), its own separate key (~/RPGACE/.anthropic_key) -
+    NOT the same key/path as RPGACE's own api/oracle.js proxy.
+  - Orchestrates yt-dlp (download) + Whisper (transcription) + ffmpeg
+    (frame extraction) as a real, standalone analysis pipeline.
+
+Real, existing River XII (Research & Intel Stream) module list, confirmed
+directly (RIVER_MODULES[12] in graphify_river_group.py): researchTabs,
+intelBatchList, intelDelete, intelDedup, ciAutoPropose. `intelDelete` is
+the exact module edited earlier today for the "delete doesn't stick" fix
+- a real, direct link between today's 2 pieces of work.
+
+Real, existing EXTERNAL_RIVER_LINKS precedent (the established mechanism
+for attaching a connector to a specific river, feeding Level 1's 4th ring
++ Level 2's externals-attachment section automatically once the data
+exists - no separate rendering code needed):
+  Whisper -> rivers: [12] ("The Content Intelligence pipeline (River XII)")
+  librosa -> rivers: [11] ("Triggered by River XI's Beat Log, nowhere else")
+
+Real, NEW finding from this pass, not previously known: direct grep of
+the actual local_server.py/rpgace_intel.py source (both now real,
+in-repo) for librosa/beat_audio/bpm found ZERO matches in either file.
+The existing librosa connector entry's "via: ...local_server.py" claim is
+therefore imprecise or stale - librosa's BPM analysis is evidently a
+DIFFERENT, separate local Python snippet than the one now in
+local_server/, not confirmed to be invoked by this file at all. Flagged
+for Alex, not silently corrected by guessing what the real separate
+script is.
+
+=========================================================================
+STEP 2 — REAL /INTERROGATION (2 rounds, verbatim)
+=========================================================================
+Round 1, Q1 (what kind of thing should it be): Alex's real answer -
+"wouldn't it just be a connector between backend ui river module and the
+2 external ais?" - a direct correction of my first-offered "new L0 unit"
+framing.
+
+Round 1, Q2 (if L0, narrow or broad scope): Alex's real answer - "1 but i
+dont think its a l0 unit, more so part of river and a module - or a
+module as part of a river that connects to the 2 externals."
+
+Real, converged reading: NOT an L0 unit (never proposed again). A real,
+first-class EXTERNAL_CONNECTORS entry (elevated from its current
+footnote-only existence), attached via EXTERNAL_RIVER_LINKS to the one
+river whose real modules it actually serves - River XII (Research & Intel
+Stream) - since it's the real bridge between those modules and the 2
+external AI calls it makes directly (Anthropic + Whisper). This maps
+exactly onto the already-established OpenMontage/Jina AI/Last.fm pattern
+- no new Galaxy Map vocabulary invented, a real instance of an existing
+one.
+
+=========================================================================
+STEP 3 — REAL /PARANOIA (condensed, proportionate to a metadata-only
+Python-dict change - not application code, zero live-app risk)
+=========================================================================
+Technical risk: LOW. Pure Galaxy Map data (graphify_river_group.py's own
+EXTERNAL_CONNECTORS/EXTERNAL_RIVER_LINKS lists) - no rpgace_core.js/
+api/*.js/local_server/*.py change, zero risk to the live app or to
+local_server.py's own real runtime behavior.
+Scope/cost: proportionate - one new connector entry + one river-link
+entry, following an already-proven pattern 8+ times over.
+Maintainability: real improvement - closes the exact "invisible until you
+read the source cold" gap that made today's earlier residual-risk
+investigation slower than it needed to be.
+Why NOT to build now: real, valid, Alex's own explicit sequencing choice
+("blue this for now") - not a technical objection, a genuine "log the
+decision, don't execute yet" instruction to be honored as-is.
+
+=========================================================================
+STEP 4 — REAL /DRIFT CHECK against the Galaxy Development Framework
+=========================================================================
+BASIS: ratified (`ceo_plans` "RPGACE Total Systems Galaxy Map",
+6f8536fd-7d98-4565-9369-c75a149fce8f).
+VERDICT: on track, no gap. R16 (no privileged L0 gateway) is honored by
+NOT making this an L0 unit, exactly per Alex's own correction. R22
+("bubble systems always follow and showcase what on table") is honored
+by construction - EXTERNAL_CONNECTORS/EXTERNAL_RIVER_LINKS ARE the real
+table data; Level 1's 4th ring and Level 2's externals-attachment section
+already render FROM this data automatically, so no new bubble-rendering
+code is needed once the data itself is added.
+GRADE: no MINOR/MATERIAL/CAPTURED finding - a clean, well-precedented
+extension, not a new structural type.
+
+=========================================================================
+STEP 5 — /CEO — logged BLUE, NOT built, per Alex's explicit instruction
+=========================================================================
+New ceo_plan_items row, G110, plan_id 6f8536fd-7d98-4565-9369-c75a149fce8f,
+status='blue', basis='provisional' (real /interrogation-confirmed
+DIRECTION, not yet a ratified build). Describes the confirmed placement:
+a new EXTERNAL_CONNECTORS entry for local_server.py/rpgace_intel.py +
+an EXTERNAL_RIVER_LINKS attachment to River XII only - plus the real,
+separate, unresolved librosa-attribution finding as a named open
+question for Alex, not folded into this item's own scope.
+
+Real, separate, smaller finding logged alongside (not a new G-item,
+folded into G110's own evidence): the existing librosa EXTERNAL_CONNECTORS
+entry's "via: local_server.py" text is unconfirmed/likely stale - real
+source shows no librosa/bpm code in either file now in this repo. Needs
+Alex's own clarification on what the actual separate script is before
+that entry gets corrected.
+
+Nothing built this pass. Next step, once Alex is ready: fold G110 into
+a real Loop 2 `/Engineer` pass (edit graphify_river_group.py, regenerate
+the Galaxy Map pipeline, verify idempotency/balance/headless-Chromium,
+update the real oversight docs this action touches).
