@@ -1,0 +1,160 @@
+FABLE TOTAL-SYSTEMS RECONCILIATION & OPTIMIZATION AUDIT — real ask, compiled 2026-08-27
+Status: BLUE (an idea, real and named, NOT yet /interrogation'd or /paranoia'd — nothing in
+this file is authorized to build). Logged per rule 5 (multi-subsystem asks get spec'd and
+confirmed first, verbatim answers in a committed file) and per future_integrations.html's
+own "only green goes in the live tier docs" discipline.
+
+================================================================================
+1. ALEX'S OWN VERBATIM ASK (end-of-session message, 2026-08-27, right after /Bedtime)
+================================================================================
+"excellent now /bedtime as much as you can, we are starting fresh next week tuesday. i will
+also be getting fable credits to untangle all done and get the documentation and code and
+rewiring of this system 10x better. i want fable to analyze everything with /drift and /ceo
+and /paranoia and /omnitrix to get RPGACE total systems running as smoothly and efficiently
+as possible with all things built, planned and archived and logged to make it work at best
+and optimal capacity."
+
+================================================================================
+2. WHAT THIS ASK ACTUALLY IS, READ PLAINLY (not yet confirmed with Alex — a real, honest
+   restatement so a future session/Fable can pick this up without re-deriving intent from
+   one paraphrased sentence)
+================================================================================
+A genuinely NEW, whole-Total-systems reconciliation pass — bigger in scope than any single
+one of the 6 currently-active real /CEO plans (Massive Expansion, RPGACE Total Systems
+Galaxy Map, Worm Family & Encyclopedia Wrapper, UI Consistency & Worm Family Cohesion Batch 1,
+Oversight Doc Drift Discipline & Plan-First Restructure, RPGACE Total Systems Logic Plan —
+see section 4). The real, distinguishing features of this ask vs. those 6:
+  - It names FABLE specifically as the executing model, not Sonnet/Opus — matching
+    Omnitrix's own July 20 rebalance criteria almost exactly: "Large, exhaustive, multi-file/
+    multi-session audits where a dedicated fresh context window has a real edge." This is
+    the single biggest, most exhaustive audit this project could take on — a legitimate,
+    correctly-scoped use of Fable's reserved role, not a default-first-move misuse of it.
+  - It names FOUR protocols to run together (/drift, /CEO, /paranoia, /omnitrix), not one —
+    this is not a request for a NEW 5th protocol; it's a request to actually RUN the existing
+    stack, at full Total-systems scope, in the sequence those protocols already define when
+    combined (this is closest in shape to what /paranoia already IS — "runs Aintergration+
+    restructure in tandem... GODMODE+scope+commit-archaeologist+Omnitrix+5thDimension...
+    debate+free-for-all-debate... /interrogation... a fact-checking Council of 5 pass...
+    supervised end-to-end by /Engineer" — /paranoia's own definition already names /CEO's
+    sibling concerns implicitly via /5thDimension and GODMODE; naming /CEO+/omnitrix
+    explicitly alongside it is Alex asking for /paranoia's own real machinery, at the largest
+    possible scope, not a 5th new invention).
+  - Its OUTCOME criteria are explicit and worth preserving verbatim rather than paraphrased:
+    "all things built, planned and archived and logged" (real: matches this project's own
+    6-color /colourgradient vocabulary — green=built, red/blue=planned, brown=archived-
+    stale-claim, purple=regression — and its own oversight-doc discipline) "to make it work
+    at best and optimal capacity" (real: an efficiency/coherence goal, not just a correctness
+    sweep — closest existing lens is /investor's commercial-readiness angle plus /decompress's
+    performance discipline, neither of which has ever been run at Total-systems scope before).
+
+================================================================================
+3. REAL, ORIENTING EVIDENCE — where things actually stand right now (2026-08-27), so a
+   future Loop 1 compile step doesn't have to re-derive this from scratch
+================================================================================
+- 6 real ceo_plans rows exist, all status='active': Massive Expansion (ratified),
+  RPGACE Total Systems Galaxy Map (ratified — the Galaxy Development Framework, by far the
+  largest, G1 through G109+ shipped across many sessions), Worm Family & Encyclopedia
+  Wrapper (ratified, Phase 1 shipped, Phase 2 deferred), UI Consistency & Worm Family
+  Cohesion Batch 1 (ratified), Oversight Doc Drift Discipline & Plan-First Restructure
+  (ratified), RPGACE Total Systems Logic Plan (provisional — never fully ratified/executed,
+  a real candidate for what this new audit should actually resolve).
+- The Galaxy Map itself (24 real HTML pages under graphify-out/) is the existing real,
+  evidence-derived map of the whole codebase — L0 units, L1 rivers, L2 modules, Current(L3)
+  functions, plus cross-cutting Dimensions (Externals, Supabase, Skills, Decisions, Load,
+  Logic/Branch-Ledger). This is almost certainly the real STARTING SURFACE for a Fable audit
+  of "everything" — it already IS a structured, queryable inventory of what's built, what
+  connects to what, and (via error_log/perspective_reports/smoke_test_items) what's verified
+  vs. not. A Fable pass should be pointed AT this existing map, not asked to re-derive one
+  from raw grep.
+- Real, currently-open items this new audit would need to reconcile (not exhaustive — a
+  real Loop 1 compile step should re-derive this fresh, not trust this list blindly):
+    - G110 (local_server.py as a real cross-cutting Dimension, joining Anthropic+Whisper) —
+      red, not built.
+    - G111's own larger scope (disperse the 21 curated Logic Dimension entries onto their
+      real home objects, retire it as a standalone destination) — red, only the narrower
+      Current<->Level6 cross-link sub-piece has shipped.
+    - G112 (Current-page 5-messiest plain-English rewrite), G113 (in-place collapsed
+      methodology <details>) — both red, neither started.
+    - G114 (librosa/BPM-key-detection script — real existence genuinely unconfirmed).
+    - A real, LIVE, unresolved production bug: quest creation (questEngine._createQuests,
+      via RPGACE.sb.secureWrite -> /api/data-write) has been failing repeatedly and
+      recently (6 active error_log rows, most recently seen within the hour before this
+      file was written) with an "Unexpected token '<', <!DOCTYPE" parse error — meaning the
+      response body is real HTML, not the expected JSON. Real diagnostic work this session
+      (via Vercel MCP tools + direct code read, not guesses) RULED OUT 3 candidate causes:
+      Vercel SSO/Deployment Protection blocking the whole domain (ruled out — /api/auth and
+      /api/composio succeed in the identical timeframe), a missing X-RPGACE-Auth header
+      (ruled out — requireAuth() returns valid JSON on a real 401, never HTML), and the
+      service worker serving a cached index.html as an offline fallback for a failed API
+      call (ruled out by direct code read — sw.js explicitly excludes every /api/* path from
+      its fetch handler). The leading, still-unconfirmed theory remains a platform-level
+      intercept before the function is ever invoked (zero Vercel runtime-log lines for
+      /api/data-write despite repeated real calls, zero clustered runtime errors) — possibly
+      a cold-start import failure in the shared api/data-write.js file (which also imports
+      `archiver` for Phase H's bundle-deliverables job). Full diagnostic trail logged into
+      each of the 6 error_log rows' own `attempts` array. TWO CONCRETE THINGS ONLY ALEX CAN
+      DO (already handed to him with a real checkable outcome per rule 10, not just "look
+      into it"): (a) Vercel dashboard -> rpgace project -> Deployments -> current production
+      deployment -> Functions tab -> open api/data-write.js's own function detail page and
+      check its build/invocation logs for an import-time error naming `archiver`; (b) next
+      time this toast fires live, open DevTools Network tab, find the failing /api/data-write
+      POST, and report its actual HTTP status code + the first ~200 characters of the raw
+      response body. A separate, real, independently-confirmed finding worth Alex's own
+      attention regardless of this specific bug: Vercel's own "Vercel Authentication" (SSO)
+      deployment-protection setting IS currently enabled on this project
+      (all_except_custom_domains) — RPGACE already has its own custom password gate
+      (api/auth.js + authGate), so having Vercel's OWN SSO layer active too is a real,
+      possibly-redundant double-gate that's worth a deliberate decision (keep, since it adds
+      a genuine extra layer for anyone without a Vercel team login; or disable, since
+      RPGACE's own gate is the intended real access-control mechanism) — NOT changed this
+      session since it's a real Tier-3 (security-posture) change needing Alex's explicit
+      confirmation, not a guess.
+    - 1 real oracle_dev_suggestions row was reviewed and closed this session (a Mock-Oracle
+      wiring-test artifact accidentally flagged, not real content, marked 'reviewed').
+    - Standing landmines list in CLAUDE.md (Vercel 12-function cap at 11/12, no Supabase
+      backup/PITR, the swipe-gesture freeze, ~72 unreconciled hardcoded hex colors, etc.) —
+      a real Fable audit should treat this list as a starting inventory to re-verify, not
+      re-discover from zero.
+
+================================================================================
+4. A REAL, HONEST RECOMMENDATION FOR HOW TO ACTUALLY RUN THIS (not yet Alex-approved —
+   flag as a recommendation, not a decision)
+================================================================================
+Given the scale named ("RPGACE total systems," "everything"), this should run as its OWN
+new /CEO plan (a 7th ceo_plans row), through the standard PLANNING loop before any execution:
+  Step 1 (compile): Fable's own first real pass — read the Galaxy Map's own 24 pages plus
+    all 12 oversight docs plus the 6 existing ceo_plans/ceo_plan_items rows, and produce a
+    genuinely fresh "what's actually true right now" compilation. This is exactly the kind
+    of large, exhaustive, multi-file evidence-gathering task Fable is reserved for.
+  Step 2 (/interrogation): real, necessary — "optimal capacity" and "10x better" are
+    real but currently unmeasurable success criteria; a real interrogation needs to ask
+    Alex what benchmark/finish-line he actually means (a /investor-style commercial-
+    readiness bar? a /colourgradient all-green bar across all 6+ plans? a /decompress-style
+    load-time number? all three?) before Fable is set loose "optimizing" against a guessed
+    target. Likely also needs to ask: does this new audit SUPERSEDE/absorb the 6 existing
+    active plans (especially the provisional, never-executed "RPGACE Total Systems Logic
+    Plan"), or run alongside them as a 7th? Does "archived" mean the existing brown/
+    achiever.html mechanism, or something new?
+  Step 3 (/paranoia-advised draft): exactly as named in Alex's own ask — draft the real
+    plan using /paranoia's existing machinery (which already contains GODMODE+scope+
+    commit-archaeologist+Omnitrix+5thDimension+debate+free-for-all-debate+Council of 5,
+    supervised by /Engineer) rather than re-inventing a parallel ceremony.
+  Step 4 (/drift-check the draft): confirm the draft plan doesn't quietly re-litigate or
+    contradict any of the 6 already-ratified active plans' own real decisions.
+  Step 5 (report + Step 6 Alex approves): a real compiled report, same shape as every prior
+    /CEO Loop 1 output in this project, before ANY execution begins.
+Only once ratified does Loop 2 (execution) actually touch code/docs — this file is
+deliberately NOT that ratified plan; it is the raw material for Loop 1 to work from next
+session, so nothing gets lost to chat memory over the week-long gap.
+
+================================================================================
+5. WHAT WAS NOT DONE THIS SESSION, AND WHY (honest, not a silent gap)
+================================================================================
+No AskUserQuestion round was run on this ask before Alex signed off — he explicitly said
+"we are starting fresh next week tuesday" in the same message, meaning he was closing the
+session, not opening a design conversation. Per this project's own standing discipline
+(don't force a clarifying-question round on a user who is actively ending a session), this
+file compiles the real ask, real orienting evidence, and a real recommended shape — but
+deliberately stops short of actually running /interrogation, /paranoia, /CEO Loop 1, or
+/omnitrix against it. That is next Tuesday's (or whenever Fable credits land) first real
+job, not something guessed at or half-executed here.
