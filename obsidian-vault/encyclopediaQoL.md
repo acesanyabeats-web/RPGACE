@@ -3,13 +3,13 @@ module_name: "encyclopediaQoL"
 kind: module
 river_number: 7
 river_name: "River VII — The Library Current"
-source_lines: "25249-25354"
+source_lines: "25596-25701"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encyclopediaQoL
 
-`rpgace_core.js:25249-25354`
+`rpgace_core.js:25596-25701`
 
 Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
 

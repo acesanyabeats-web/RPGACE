@@ -3,13 +3,13 @@ module_name: "conidPot"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "23217-23874"
+source_lines: "23564-24221"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # conidPot
 
-`rpgace_core.js:23217-23874`
+`rpgace_core.js:23564-24221`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 

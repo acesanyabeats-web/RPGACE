@@ -3,13 +3,13 @@ module_name: "prodOraclePanel"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "5517-5632"
+source_lines: "5756-5871"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # prodOraclePanel
 
-`rpgace_core.js:5517-5632`
+`rpgace_core.js:5756-5871`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

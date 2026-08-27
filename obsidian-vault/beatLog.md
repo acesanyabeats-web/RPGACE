@@ -3,13 +3,13 @@ module_name: "beatLog"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "18807-20035"
+source_lines: "19113-20341"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # beatLog
 
-`rpgace_core.js:18807-20035`
+`rpgace_core.js:19113-20341`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 

@@ -12,7 +12,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[knowledgeGap]] — `rpgace_core.js:12541-12755`
+- [[knowledgeGap]] — `rpgace_core.js:12830-13044`
 
 ## Flows into
 

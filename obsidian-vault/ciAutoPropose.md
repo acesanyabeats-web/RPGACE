@@ -3,13 +3,13 @@ module_name: "ciAutoPropose"
 kind: module
 river_number: 12
 river_name: "River XII — The Research & Intel Stream"
-source_lines: "7555-7702"
+source_lines: "7794-7941"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # ciAutoPropose
 
-`rpgace_core.js:7555-7702`
+`rpgace_core.js:7794-7941`
 
 Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
 

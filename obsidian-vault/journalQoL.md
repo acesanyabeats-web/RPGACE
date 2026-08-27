@@ -3,13 +3,13 @@ module_name: "journalQoL"
 kind: module
 river_number: 5
 river_name: "River V — Daily Ops: Agenda, Schedule & Journal"
-source_lines: "25356-25495"
+source_lines: "25703-25842"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # journalQoL
 
-`rpgace_core.js:25356-25495`
+`rpgace_core.js:25703-25842`
 
 Member of [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]].
 

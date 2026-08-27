@@ -3,13 +3,13 @@ module_name: "feynman"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "6900-7456"
+source_lines: "7139-7695"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # feynman
 
-`rpgace_core.js:6900-7456`
+`rpgace_core.js:7139-7695`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

@@ -3,13 +3,13 @@ module_name: "instaOraclePanel"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "5634-5729"
+source_lines: "5873-5968"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # instaOraclePanel
 
-`rpgace_core.js:5634-5729`
+`rpgace_core.js:5873-5968`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

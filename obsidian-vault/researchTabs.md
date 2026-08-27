@@ -3,13 +3,13 @@ module_name: "researchTabs"
 kind: module
 river_number: 12
 river_name: "River XII — The Research & Intel Stream"
-source_lines: "8332-8531"
+source_lines: "8614-8813"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # researchTabs
 
-`rpgace_core.js:8332-8531`
+`rpgace_core.js:8614-8813`
 
 Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
 

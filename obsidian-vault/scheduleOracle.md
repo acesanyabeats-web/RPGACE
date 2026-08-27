@@ -3,13 +3,13 @@ module_name: "scheduleOracle"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "9647-9908"
+source_lines: "9929-10190"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # scheduleOracle
 
-`rpgace_core.js:9647-9908`
+`rpgace_core.js:9929-10190`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

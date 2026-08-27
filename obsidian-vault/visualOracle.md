@@ -3,13 +3,13 @@ module_name: "visualOracle"
 kind: module
 river_number: 11
 river_name: "River XI — Content Production Live"
-source_lines: "5832-6447"
+source_lines: "6071-6686"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # visualOracle
 
-`rpgace_core.js:5832-6447`
+`rpgace_core.js:6071-6686`
 
 Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
 

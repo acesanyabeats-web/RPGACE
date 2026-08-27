@@ -12,7 +12,7 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[pathRouter]] — `rpgace_core.js:26471-26548`
+- [[pathRouter]] — `rpgace_core.js:26818-26895`
 
 ## Flows into
 

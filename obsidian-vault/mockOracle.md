@@ -3,13 +3,13 @@ module_name: "mockOracle"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "26784-27348"
+source_lines: "27534-28098"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # mockOracle
 
-`rpgace_core.js:26784-27348`
+`rpgace_core.js:27534-28098`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

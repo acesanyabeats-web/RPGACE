@@ -3,13 +3,13 @@ module_name: "morningBrief"
 kind: module
 river_number: 5
 river_name: "River V — Daily Ops: Agenda, Schedule & Journal"
-source_lines: "23879-24147"
+source_lines: "24226-24494"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # morningBrief
 
-`rpgace_core.js:23879-24147`
+`rpgace_core.js:24226-24494`
 
 Member of [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]].
 

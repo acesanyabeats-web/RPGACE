@@ -12,11 +12,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[researchTabs]] — `rpgace_core.js:8332-8531`
-- [[intelBatchList]] — `rpgace_core.js:8938-8968`
-- [[intelDelete]] — `rpgace_core.js:9910-10646`
-- [[intelDedup]] — `rpgace_core.js:11831-11962`
-- [[ciAutoPropose]] — `rpgace_core.js:7555-7702`
+- [[researchTabs]] — `rpgace_core.js:8614-8813`
+- [[intelBatchList]] — `rpgace_core.js:9220-9250`
+- [[intelDelete]] — `rpgace_core.js:10192-10935`
+- [[intelDedup]] — `rpgace_core.js:12120-12251`
+- [[ciAutoPropose]] — `rpgace_core.js:7794-7941`
 
 ## Core infrastructure
 
@@ -31,7 +31,7 @@ Canonical source: `ai_tooling_and_rules_map.md`'s own "External AI/tool provider
 - **Composio** (live) via `api/composio.js / api/executor.js / api/orchestrate.js` — Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion page + YouTube channel data via Supadata).
 - **Moonshot AI (Kimi)** (dormant) via `api/oracle.js provider:'kimi'` **(not tested)** — real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from River III's Oracle Current in place of the default Anthropic call once live.
 - **OpenAI (Luna)** (dormant) via `api/oracle.js provider:'luna'` **(not tested)** — same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same River III relationship once live.
-- **librosa** (optional/local) via `beat_audio_jobs + beat-audio bucket, local_server.py` **(not tested)** — BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI's Beat Log, nowhere else.
+- **librosa** (optional/local) via `beat_audio_jobs + beat-audio bucket, a local Python script (real script identity UNCONFIRMED as of Aug 27)` **(not tested)** — BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI's Beat Log, nowhere else.
 - **FFmpeg** (live (external repo)) via `OpenMontage's own pipeline, confirmed working July 31` — runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river.
 - **OpenArt** (deferred) via `none yet` **(not tested)** — "connect it at a later date" — a named future video-gen companion to OpenMontage, not wired to anything yet
 - **Graphify CC** (live) via `graphify_jobs Supabase queue` — the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from River IX's own session-start check, deposits real findings back into River XIV via graphify_jobs.
