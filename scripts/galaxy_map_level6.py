@@ -82,10 +82,19 @@ def build_module_section(mod, branches):
         # so this link's real destination is the function's own module
         # page, not a scrolled-to individual node — stated plainly, not
         # overclaimed as function-precise.
+        # Aug 27 2026 (real Alex ask: "the l6 would be great to feed into
+        # currents too") — each function block now has its own real id,
+        # not just the module-level section, so Current(L3) can link
+        # directly to THIS function's own branch points instead of a
+        # generic "go to Level 6" link. The n-1 link above stays
+        # module-precise (Level 3's own hash-router still can't scroll
+        # to a function, same honest limit already stated), but Current
+        # can now link here BECAUSE this file gained a real anchor to
+        # land on (see the hashchange handler below).
         func_blocks.append(
-            f'<div class="fblock"><div class="fname">{esc(f)}() '
+            f'<div class="fblock" id="fn-{mod}-{esc(f)}"><div class="fname">{esc(f)}() '
             f'<span class="fcount">{len(branches[f])} real branch point(s)</span>'
-            f'<a class="n1-link" href="galaxy_map_current.html#mod-{mod}" title="Real n-1 — this function\'s own module page (Current Series lands on the module, not a scrolled-to function)">🔭 n-1: {mod}.{esc(f)}()</a></div>{rows}</div>'
+            f'<a class="n1-link" href="galaxy_map_current.html#cur-{mod}-{esc(f)}" title="Real n-1 — this function\'s own Current(L3) block">🔭 n-1: {mod}.{esc(f)}()</a></div>{rows}</div>'
         )
     return f'''<section class="msection" id="m-{mod}" style="display:none">
   <div class="mhead"><h2>{mod}</h2>{_river_chip(rnum)}<span class="mtotal">{total} real branch point(s) across {len(branches)} function(s)</span></div>
@@ -162,12 +171,28 @@ TEMPLATE = """<!DOCTYPE html>
     tabs.forEach(function(t) {{ t.classList.toggle('active', t.dataset.target === id); }});
   }}
   tabs.forEach(function(t) {{ t.addEventListener('click', function() {{ location.hash = t.dataset.target; }}); }});
+  // Aug 27 2026 (real Alex ask: "the l6 would be great to feed into
+  // currents too") — a #fn-mod-func hash (Current's own new per-function
+  // link into this page) doesn't match a .msection id directly, only the
+  // module-level #m-mod does. Same real fix pattern galaxy_map_current.py
+  // already uses for its own #cur-mod-func hashes: resolve to the parent
+  // module's section, show it, then scroll to the specific function block.
+  function resolve(raw) {{
+    if (raw.indexOf('fn-') === 0) return 'm-' + raw.split('-')[1];
+    return raw || (sections[0] && sections[0].id);
+  }}
   window.addEventListener('hashchange', function() {{
-    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-    show(id);
+    var raw = location.hash.replace('#', '');
+    show(resolve(raw));
+    if (raw.indexOf('fn-') === 0) {{
+      setTimeout(function() {{ var el = document.getElementById(raw); if (el) el.scrollIntoView({{block:'center'}}); }}, 60);
+    }}
   }});
-  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-  show(id0);
+  var raw0 = location.hash.replace('#', '');
+  show(resolve(raw0));
+  if (raw0.indexOf('fn-') === 0) {{
+    setTimeout(function() {{ var el = document.getElementById(raw0); if (el) el.scrollIntoView({{block:'center'}}); }}, 60);
+  }}
 }})();
 </script>
 </body>

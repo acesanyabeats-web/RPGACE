@@ -1377,10 +1377,42 @@ for _src, _targets in RIVER_FLOWS.items():
             FLOWS_IN.setdefault(_tgt, []).append((_src, _note, _itype))
 
 
+_CORE_JS_LINES_CACHE = {}
+
+
+def _cached_core_js_lines(core_js_path: Path):
+    """Real, Aug 27 2026 fix — same real overhead class as
+    _legacy_mainjs_text()'s own cache (rule 8, same pattern): 4 separate
+    real functions (parse_module_ranges/parse_module_functions/
+    _function_line_spans/_function_bodies) each independently called
+    core_js_path.read_text().splitlines() fresh, and parse_module_ranges
+    ITSELF got called 3x per real function-body lookup — for a real
+    58-module rollup (compute_all_oracle_call_counts and friends), that's
+    174+ full-file reads/scans of an now ~1.7MB file. Caught the same way
+    the mainjs cache was: a real regen-and-verify pass timed out where it
+    hadn't before, this time galaxy_map_current.py (a live faulthandler
+    trace pinned it to parse_module_ranges via _function_bodies via
+    compute_oracle_call_counts, not guessed). Module-level memoized by
+    path string, same as _LEGACY_MAINJS_TEXT_CACHE."""
+    key = str(core_js_path)
+    if key not in _CORE_JS_LINES_CACHE:
+        _CORE_JS_LINES_CACHE[key] = core_js_path.read_text(encoding='utf-8').splitlines()
+    return _CORE_JS_LINES_CACHE[key]
+
+
+_MODULE_RANGES_CACHE = {}
+
+
 def parse_module_ranges(core_js_path: Path):
-    """Real module -> (start_line, end_line) from the file's own markers."""
+    """Real module -> (start_line, end_line) from the file's own markers.
+    Module-level memoized (see _cached_core_js_lines's own note) — this
+    was the real hot path: called 3x per _function_bodies() lookup,
+    itself called once per module in every project-wide rollup."""
+    key = str(core_js_path)
+    if key in _MODULE_RANGES_CACHE:
+        return _MODULE_RANGES_CACHE[key]
     ranges = {}
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    lines = _cached_core_js_lines(core_js_path)
     stack = None
     for i, line in enumerate(lines, start=1):
         m = re.match(r'/\* ===MODULE:(\w+)=== \*/', line.strip())
@@ -1391,6 +1423,7 @@ def parse_module_ranges(core_js_path: Path):
         if e and stack and e.group(1) == stack[0]:
             ranges[stack[0]] = (stack[1], i)
             stack = None
+    _MODULE_RANGES_CACHE[key] = ranges
     return ranges
 
 
@@ -1673,7 +1706,7 @@ def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     ranges = parse_module_ranges(core_js_path)
     if module_name not in ranges:
         return []
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    lines = _cached_core_js_lines(core_js_path)
     s, e = ranges[module_name]
     block_lines = lines[s - 1:e]
     funcs = []
@@ -1694,7 +1727,7 @@ def _function_line_spans(module_name, core_js_path: Path = CORE_JS):
     ranges = parse_module_ranges(core_js_path)
     if module_name not in ranges:
         return {}
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    lines = _cached_core_js_lines(core_js_path)
     s, e = ranges[module_name]
     block_lines = lines[s - 1:e]
     funcs = parse_module_functions(module_name, core_js_path)
@@ -1726,7 +1759,7 @@ def _function_bodies(module_name, core_js_path: Path = CORE_JS):
     ranges = parse_module_ranges(core_js_path)
     if module_name not in ranges:
         return {}
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    lines = _cached_core_js_lines(core_js_path)
     spans = _function_line_spans(module_name, core_js_path)
     return {fname: '\n'.join(lines[a - 1:b]) for fname, (a, b) in spans.items()}
 
@@ -2320,7 +2353,7 @@ def compute_dynamic_table_config_touches(module_name, core_js_path: Path = CORE_
     if module_name not in ranges:
         return {}
     start, end = ranges[module_name]
-    lines = core_js_path.read_text(encoding='utf-8').splitlines()
+    lines = _cached_core_js_lines(core_js_path)
     module_text = '\n'.join(lines[start - 1:end])
 
     arrays = {}
@@ -4257,7 +4290,7 @@ def core_js_lines(a, b, core_js_path: Path = CORE_JS):
     verify_core_js_anchor() below, so a caller can read an excerpt and
     assert on it as two separate, explicit steps.
     """
-    return '\n'.join(core_js_path.read_text(encoding='utf-8').splitlines()[a - 1:b])
+    return '\n'.join(_cached_core_js_lines(core_js_path)[a - 1:b])
 
 
 def verify_core_js_anchor(point_id, anchor, a, b, core_js_path: Path = CORE_JS):

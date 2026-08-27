@@ -775,6 +775,14 @@ def build_current_block(mod, func, branches, ui, oracle_n, sb_touches, notable):
         f'<code>{esc(b["condition"]) if b["condition"] else "(fallback branch)"}</code></div>'
         for b in branches
     ) if branches else '<div class="no-branch">No real conditional branch in this function\'s own body.</div>'
+    # Aug 27 2026 (real Alex ask: "the l6 would be great to feed into
+    # currents too") — a real, direct link to THIS function's own branch
+    # points in the Branch Ledger (Level 6), not a generic "go to Level 6"
+    # link. Only rendered when real branch data exists — an empty-branch
+    # function has nothing there to link to.
+    l6_link = (f'<a class="l6-link" href="galaxy_map_level6.html#fn-{mod}-{esc(func)}" '
+               f'title="Every real branch point for this function, in the exhaustive Branch Ledger">'
+               f'🔢 See all {len(branches)} in the Branch Ledger →</a>') if branches else ''
 
     next_chips = ''.join(
         f'<a class="hop-chip" href="#cur-{tm}-{tf}">→ {esc(tm)}.{esc(tf)}()</a>' for tm, tf in NEXT_HOPS.get((mod, func), []))
@@ -799,7 +807,7 @@ def build_current_block(mod, func, branches, ui, oracle_n, sb_touches, notable):
   <div class="cur-head"><span class="cur-name">{esc(func)}()</span>{''.join(badges)}{star}</div>
   <div class="cur-io">
     <div class="io-col"><div class="io-label">⬅ Input</div>{prev_chips}</div>
-    <div class="io-col"><div class="io-label">Handling ({len(branches)} real branch point(s))</div>{branch_rows}</div>
+    <div class="io-col"><div class="io-label">Handling ({len(branches)} real branch point(s))</div>{branch_rows}{l6_link}</div>
     <div class="io-col"><div class="io-label">Output → Next ➡</div>{next_chips}</div>
   </div>
   {notable_html}
@@ -1014,6 +1022,8 @@ TEMPLATE = """<!DOCTYPE html>
   .io-col{{font-size:10px}}
   .io-label{{font-size:8.5px;font-weight:700;color:var(--dim);text-transform:uppercase;margin-bottom:5px}}
   .hop-chip{{display:block;color:var(--gold);text-decoration:none;font-size:9.5px;margin-bottom:3px}}
+  .l6-link{{display:block;color:var(--purple);text-decoration:none;font-size:9.5px;margin-top:6px;font-weight:700}}
+  .l6-link:hover{{text-decoration:underline}}
   .branch-row{{display:flex;gap:6px;margin-bottom:3px;align-items:baseline}}
   .bkind{{opacity:0.7}}
   .no-branch,.meta{{color:#5a5a68;font-size:9.5px}}
