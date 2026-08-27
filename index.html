@@ -513,7 +513,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20260826h"></script>
+<script src="rpgace_core.min.js?v=20260827a"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
@@ -553,6 +553,13 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
     <button class="learn-btn" onclick="clearEncyclopedia()" style="border-color:var(--muted);color:var(--muted)">🗑 Clear All</button>
     <span id="enc-count" style="font-size:12px;color:var(--muted)"></span>
   </div>
+
+  <!-- Aug 27 2026 (/Routine item #1, "delete doesn't stick"): a real,
+       visible list of intel-sourced entries deleted for a bad extraction
+       — Alex's own words: "a list I can access and choose from to revisit
+       that I found interesting in the past." Populated by
+       renderReanalysisPool(), called from refreshEncyclopediaDisplay(). -->
+  <div id="enc-reanalysis-pool"></div>
 
   <div id="enc-output">
     <div style="text-align:center;padding:60px 20px">

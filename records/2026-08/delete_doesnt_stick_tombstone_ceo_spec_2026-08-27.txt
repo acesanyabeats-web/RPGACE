@@ -1,0 +1,249 @@
+/Routine item #1 — "delete doesn't stick" bug class
+Real /CEO Loop 1 compiled spec — 2026-08-27
+Ordered per Alex's own explicit instruction: "go ahead with 1, /CEO, /interrogation /drift /paranoia"
+
+=========================================================================
+STEP 0 — WHAT /Routine ACTUALLY FLAGGED (the basis this plan is checked against)
+=========================================================================
+From daily_priorities_debate_2026-08-26.txt, Team 1 item #2 / smoke_test_items,
+real Alex hand-test broken_notes, verbatim:
+  - videoSummary._delete — "the 5 entries keep popping up"
+  - clearEncyclopedia / clearJournal — "the 5 encyclopedia entries still
+    keep popping up"
+Framed at the time as "same real symptom shape... likely one shared root
+cause, worth investigating together."
+
+=========================================================================
+STEP 1 — REAL EVIDENCE GATHERED (GODMODE, this session, direct code read —
+never assumed from either the smoke_test broken_note or the earlier /Routine
+hypothesis alone)
+=========================================================================
+
+BUG A — videoSummary._delete
+-----------------------------
+Confirmed chain, by direct read:
+  intelDelete._deleteUnified(entry,...) deletes:
+    - the Supabase intel_reports row (via _sbDel -> secureWrite)
+    - the browser localStorage cache key 'rpgace_intel_insights' (via _rmLocal)
+  It does NOT and CANNOT touch local_server.py's own JSON files — that
+  server is not part of this repo, runs on Alex's own Windows machine
+  (port 7842), confirmed via CLAUDE.md as outside this session's reach.
+
+  startIntelPolling() (rpgace_core.js:4322) fires once at boot via a single
+  setTimeout(startIntelPolling, 2000) (line 2370) — but its OWN body then
+  establishes a REAL recurring setInterval at 30000ms, forever:
+    syncIntelData(false); checkServerStatus();  // every 30s, indefinitely
+
+  syncIntelData() (line 4250): calls fetchFromLocal() (reads local_server.py's
+  files) FIRST, then fetchFromSupabase(), merges both via mergeByUrl(), then
+  merges AGAIN against the existing localStorage cache, then overwrites
+  'rpgace_intel_insights' with the result.
+
+  mergeByUrl(primary,secondary) (line 4243): a pure union-by-URL — "if this
+  URL isn't already in the primary list, add it" — with ZERO concept of "this
+  was deliberately deleted, never re-add it."
+
+  RESULT: every 30 seconds, forever, any report whose URL still exists in
+  local_server.py's own untouched files gets silently merged back into
+  localStorage and re-rendered by videoSummary. Deterministic, continuously
+  reproducing — not a one-off race.
+
+BUG B — clearEncyclopedia ("the 5 encyclopedia entries keep popping up")
+--------------------------------------------------------------------------
+Confirmed chain, by direct read (a materially different, and probably the
+REAL PRIMARY, mechanism vs. what was first hypothesized in the prior
+session's carried-forward notes):
+
+  refreshEncyclopediaDisplay()'s own EMPTY-STATE branch (rendered the moment
+  the encyclopedia has 0 entries — i.e. immediately after a real clear)
+  renders a live, prominent button:
+    <button onclick="syncAndPush()">⚡ Sync &amp; Push All Reports</button>
+
+  syncAndPush() (line 3501): calls pushLocalToSupabase() (line 4218), which
+  fetches `${LOCAL_SERVER}/push-to-supabase` — i.e. tells local_server.py to
+  push ALL of its own locally-stored report files UP into Supabase — files
+  the clear never touched, since clearEncyclopedia only ever deletes
+  RPGACE's own `encyclopedia` Supabase table + browser localStorage. Then
+  syncAndPush() calls syncIntelData(true) (the same merge function as Bug A)
+  and refreshEncyclopediaDisplay() again.
+
+  RESULT: if that button is clicked — and it sits right on the page the
+  user lands on immediately after a successful clear, framed as an
+  innocuous "sync" action with no warning that it can resurrect deleted
+  data — the exact reports/entries just deleted get pushed straight back
+  into Supabase and re-rendered. Confirmed via grep: pushLocalToSupabase()
+  has exactly ONE caller (syncAndPush), and syncAndPush() has exactly ONE
+  trigger (this one onclick) — so this is a real, human-driven trigger, not
+  an automatic recurring one like Bug A.
+
+  encSync._patch() (line 7485) also wraps window.clearEncyclopedia at boot
+  to additionally clear the intel-insights backlog cache (rpgace_enc_saved /
+  rpgace_intel_insights) — checked directly and confirmed this wrap does
+  NOT re-introduce data; it only clears more, correctly. Not a contributing
+  cause.
+
+  clearJournal — checked directly, NOT confirmed broken by Alex's own
+  words (his broken_note names only "encyclopedia entries"). refreshJournal-
+  Display()'s own empty-state has no local-server-sync button (its only
+  button, "Write First Entry", opens a blank manual entry form — zero
+  resurrection risk). Journal has no interaction with local_server.py/
+  syncIntelData/pushLocalToSupabase anywhere in the codebase (confirmed by
+  grep). It DOES share one real, separate, much-rarer latent bug with
+  refreshEncyclopediaDisplay(): both functions' fallback logic
+  (`if(!entries.length){ ...fall back to stale localStorage cache... }`)
+  cannot distinguish "the Supabase fetch genuinely failed" from "the fetch
+  succeeded and correctly found zero real rows" — both hit the identical
+  fallback branch. This is a real, narrow, confirmed-by-grep-to-occur-in-
+  exactly-these-2-places pattern, but it is NOT the confirmed cause of
+  Alex's own reported symptom (which is squarely explained by the Sync &
+  Push button above) — it's a smaller, latent, harder-to-trigger risk
+  (needs a genuine fetch failure racing right after a clear) worth fixing
+  for consistency, not the headline bug.
+
+SHARED ARCHITECTURAL ROOT (validates /Routine's "one shared root cause"
+framing at the architecture level, even though the literal trigger
+mechanisms differ — auto-recurring poll vs. one manual button click):
+  RPGACE has no "deletion tombstone" concept anywhere in the intel-report /
+  encyclopedia pipeline. Any sync/merge/push path that pulls from
+  local_server.py's own independent, un-informed copy of the data can
+  silently resurrect something the user just deleted client-side, because
+  nothing ever tells the local server (or the merge logic itself) that a
+  URL/report was deliberately removed.
+
+=========================================================================
+STEP 2 — REAL /DRIFT CHECK against /Routine's own item #1 framing
+=========================================================================
+BASIS: provisional (a same-day /Routine hypothesis, not a ratified fact).
+VERDICT: partially drifted, in a way that sharpens rather than invalidates
+the original goal. /Routine guessed "likely one shared root cause" in the
+sense of one literal shared function/bug. Real evidence shows: 2 distinct
+TRIGGER MECHANISMS (an automatic 30s poll vs. a manually-clicked button),
+converging on ONE real shared ARCHITECTURAL gap (no tombstone concept for
+local_server.py-sourced data). GRADE: MINOR — the underlying goal (find and
+fix the real "delete doesn't stick" behavior) is intact and the fix is
+still naturally ONE shared mechanism; only the "one function, one cause"
+framing needed correcting, not the priority or scope of the work itself.
+
+=========================================================================
+STEP 3 — REAL FORKS NEEDING ALEX'S ANSWER (/interrogation) — see chat
+=========================================================================
+1. Tombstone mechanism scope: one shared, reusable client-side helper
+   (checked by both syncIntelData's merge AND syncAndPush's push-then-merge
+   path) vs. two narrow, separate patches.
+2. Tombstone retention: permanent (matches "delete means delete" elsewhere
+   in the app — ConID cascade delete has no undo either) vs. a real
+   time-limited grace period after which a re-detected URL is allowed back.
+3. The "⚡ Sync & Push All Reports" button itself: keep it functioning but
+   make it tombstone-aware (so it can never resurrect a deleted report) vs.
+   add an explicit warning before it runs vs. remove/hide it from the
+   empty-state entirely.
+4. clearJournal's own latent (unconfirmed-in-practice) ambiguous-empty-fetch
+   bug: fix it in this same pass for consistency (cheap, same pattern) vs.
+   leave it out of scope since Alex never actually reported it broken.
+
+=========================================================================
+STEP 4 — REAL /PARANOIA RISK SCRUTINY (Council of 5, condensed —
+proportionate to a well-evidenced, narrowly-scoped bug fix, not a large
+architecture change)
+=========================================================================
+Technical risk: LOW. The fix is purely additive (a new tombstone list
+checked before a merge/push completes) — no existing data path is removed,
+no schema change, no Supabase migration. Failure mode if the tombstone
+check itself has a bug: worst case, a deleted report resurfaces again
+(exactly today's status quo) — never data loss beyond what already exists.
+Scope/cost: proportionate — reuses the exact `mergeByUrl`/`syncIntelData`/
+`syncAndPush` call sites already identified, no new module needed beyond a
+small addition to an existing one (likely `intelDelete` or a new tiny
+lookup inline with `mergeByUrl`, per rule 8 — decide exact placement once
+Q1 above is answered).
+Maintainability: good — a single, named, documented tombstone list is
+easier to reason about than the current implicit "hope nothing re-merges
+it" non-behavior.
+UX: real improvement — closes a repeatedly-reported, confusing bug
+("I deleted this, why is it back") with no new user-facing complexity if
+the retention is permanent and silent.
+Why NOT to build now: none identified — this is real, evidenced,
+Alex-reported, cheap to fix, on today's own locked Top 10. No genuine
+counter-case found.
+
+=========================================================================
+STEP 3b — ALEX'S REAL ANSWERS (2nd interrogation round, verbatim intent)
+=========================================================================
+1. Tombstone scope: shared mechanism, confirmed. PLUS a new, separate real
+   ask: move local_server.py + inter.bat (a Windows batch file, unknown
+   contents, never seen by this repo) from his desktop into this GitHub
+   repo, "like how other python scripts work" (i.e. tracked/editable the
+   way scripts/ already is) — confirmed, on follow-up, as the REPO-MOVE
+   reading, not a cloud-hosting reading. Confirmed as separate, later work
+   — does not block today's fix (see Sequencing below).
+2. Delete semantics — REAL CORRECTION to this session's own framing: a
+   "tombstone" must NOT permanently exclude a URL. Alex's own words: "these
+   are just old entries that take wrong info, the info from videos and
+   URL are still there, just the extraction is wrong." Confirmed design:
+   delete removes that EXACT extraction only; the same URL must stay free
+   to be reprocessed and produce a genuinely new, better report later.
+   PLUS a new, real feature ask: the deleted URL should land in a real,
+   visible "re-analysis pool" list inside Encyclopedia that Alex can browse
+   and choose from later.
+3. Sequencing: ship today's fix now, client-side only. Repo-move is
+   separate/later (needs Alex to actually provide local_server.py/
+   inter.bat's real source — not available to this session yet).
+4. Button rethink: log as a real future_integrations.html item; for today,
+   make the existing Sync & Push button safe via the same shared
+   suppression mechanism (no bespoke patch needed — see design below).
+
+=========================================================================
+STEP 4b — REVISED CONCRETE DESIGN (real schema checked live via Supabase
+MCP before finalizing — encyclopedia has NO url column; intel_reports
+does; saveOracleToEncyclopedia hardcodes source:'oracle' always, a real
+separate pre-existing bug that blocks the render layer's own e.source
+==='intel' icon logic from ever firing — fixed in passing, rule 8)
+=========================================================================
+New table `intel_reanalysis_pool` (id, url, title, source_table
+['intel_reports'|'encyclopedia'], deleted_row_created_at, deleted_at,
+status ['pending'|'reanalyzed'|'dismissed'], reason) — anon_read_only +
+authenticated_all RLS, added to api/data-write.js ALLOWED_TABLES.
+New additive column `encyclopedia.source_url` (text, nullable) — lets a
+genuinely intel-sourced encyclopedia entry carry its real source URL for
+the first time (it never could before); entries with no source_url (plain
+Oracle-chat saves) correctly never enter the reanalysis pool — there is
+nothing to reanalyze.
+
+Suppression rule (one shared helper, used by both paths — rule 8): a
+merge/fetch candidate is filtered out only if a `pending` pool row exists
+for its URL AND the candidate's own date/created_at <= that row's
+deleted_row_created_at (i.e. it's the same or an older/identical
+extraction being silently resurrected). A candidate with a NEWER date
+passes through untouched — a genuine fresh reanalysis is always allowed.
+Applied in: (a) the intel_reports/videoSummary merge path (syncIntelData's
+final list before it's cached), and (b) refreshEncyclopediaDisplay's own
+post-fetch entries list — this also makes the "⚡ Sync & Push All Reports"
+button structurally safe with zero changes to syncAndPush/
+pushLocalToSupabase themselves, since the suppression runs at render time
+regardless of what pushed the data there.
+
+Real, honestly-scoped residual risk, stated plainly, not hidden: if
+local_server.py's own /push-to-supabase handler (opaque to this session,
+outside the repo) does something today's evidence can't see (e.g. writes
+under a brand-new created_at that makes an old extraction look "fresh"),
+this client-side suppression cannot catch that specific case — full
+closure needs the confirmed-separate repo-move. Named honestly rather than
+oversold as fully fixed.
+
+Encyclopedia gains a new "🔁 Re-analysis Pool" section: lists `pending`
+pool rows, a "🔗 Revisit" button opens the real URL in a new tab (the only
+honest action buildable from this repo — there is no button-triggerable
+re-analysis pipeline visible here; the real Intel script runs externally
+against a pasted URL), a 2-click "✕ Dismiss" sets status='dismissed'.
+
+Also fixed in this same pass (both confirmed by Alex): refreshJournal-
+Display's identical ambiguous-empty-fetch bug (track real fetch success
+independent of row count, mirrored on refreshEncyclopediaDisplay).
+
+=========================================================================
+STEP 5 — BUILDING NOW, per Alex's confirmed answers above
+=========================================================================
+The repo-move (local_server.py/inter.bat into this repo) and the "rethink
+those buttons" UX pass are logged separately (future_integrations.html /
+CLAUDE.md open forks), NOT built this pass — both confirmed by Alex as
+later, separate work.

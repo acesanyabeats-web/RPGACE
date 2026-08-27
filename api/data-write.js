@@ -122,6 +122,12 @@ const ALLOWED_TABLES = new Set([
   // path (a new row Alex explicitly approved from an Oracle-drafted
   // suggestion) - never a live, unapproved insert.
   'oracle_actions',
+  // 2026-08-27 - /Routine item #1 "delete doesn't stick" fix. Created
+  // anon_read_only/authenticated_all FROM THE START (same as oracle_actions/
+  // quest_log above) - satisfies "flip RLS first, then allowlist" by
+  // construction. intelDelete/deleteEncEntry/clearEncyclopedia are the
+  // real write paths (a fire-and-forget insert on delete).
+  'intel_reanalysis_pool',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

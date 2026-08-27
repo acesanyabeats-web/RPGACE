@@ -2513,7 +2513,16 @@ DM script: "Yo [name], I make beats in FL Studio and I want to flip your vocals 
 // functions). Full record: engineer_pass_2026-08-06_13.txt.
 
 // ── ENCYCLOPEDIA — SUPABASE SYNCED ──
-async function saveOracleToEncyclopedia(title, content){
+// Aug 27 2026 (/Routine item #1) — real, separately-found bug fixed in
+// passing: `source` was hardcoded to 'oracle' for EVERY caller, including
+// intel/video-sourced saves — meaning renderEncEntries()'s own
+// e.source==='intel'?'🧠':... icon logic could never actually fire. Now a
+// real optional 3rd param, sourceUrl: when present, this is a genuine
+// intel-sourced entry (source becomes 'intel', source_url is persisted —
+// a real, additive encyclopedia.source_url column) so a later delete can
+// log the real url into the reanalysis pool; entries with no sourceUrl
+// (plain Oracle-chat saves) are unaffected, byte-identical to before.
+async function saveOracleToEncyclopedia(title, content, sourceUrl){
   try {
     const date = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
     const html = `<div class="enc-entry" style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)">
@@ -2522,7 +2531,7 @@ async function saveOracleToEncyclopedia(title, content){
       <div style="font-size:13px;line-height:1.8">${renderMarkdown(content)}</div>
     </div>`;
 
-    const entry = { title, date, content, html, source:'oracle', created_at: new Date().toISOString() };
+    const entry = { title, date, content, html, source: sourceUrl ? 'intel' : 'oracle', source_url: sourceUrl || null, created_at: new Date().toISOString() };
 
     // Extract VSTs before saving
     entry.vst_tags = extractVSTsFromText(content);
@@ -3461,6 +3470,14 @@ async function deleteEncEntry(id){
       await RPGACE.sb.secureWrite('encyclopedia', 'delete', null, 'id=eq.' + id);
     } catch(e){}
   }
+  // Aug 27 2026 (/Routine item #1) — only entries with a real source_url
+  // (a genuine intel-sourced analysis, per saveIntelToEncyclopedia) have
+  // anything to reanalyze; a plain Oracle-chat save has no video/URL
+  // behind it, so it correctly never enters the pool.
+  const deletedEntry = ENC_ALL_ENTRIES.find(e => (e.id||e.created_at) === id);
+  if (deletedEntry && deletedEntry.source_url) {
+    RPGACE.utils.logReanalysisCandidate(deletedEntry.source_url, deletedEntry.title, 'encyclopedia', deletedEntry.created_at || null, 'bad_extraction');
+  }
   ENC_ALL_ENTRIES = ENC_ALL_ENTRIES.filter(e => (e.id||e.created_at) !== id);
   localStorage.setItem('rpgace_encyclopedia', JSON.stringify(ENC_ALL_ENTRIES));
   renderEncEntries();
@@ -3472,16 +3489,37 @@ async function refreshEncyclopediaDisplay(){
   encOutput.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:16px">Loading...</div>';
 
   let entries = [];
+  // Aug 27 2026 (/Routine item #1) — track real fetch success separately
+  // from row count. Before this fix, a genuinely successful fetch that
+  // correctly found 0 rows (right after a real clear) was indistinguishable
+  // from a fetch that failed outright — both fell back to whatever stale
+  // localStorage cache was left, silently resurrecting cleared entries.
+  let fetchSucceeded = false;
   try {
     const res = await _sbGet('/rest/v1/encyclopedia?order=created_at.desc&limit=200');
-    if(res.ok){ entries = await res.json(); localStorage.setItem('rpgace_encyclopedia', JSON.stringify(entries)); }
+    if(res.ok){
+      entries = await res.json();
+      fetchSucceeded = true;
+      localStorage.setItem('rpgace_encyclopedia', JSON.stringify(entries));
+    }
   } catch(e){}
 
-  if(!entries.length){
+  if(!fetchSucceeded){
     try { const p = JSON.parse(localStorage.getItem('rpgace_encyclopedia')||'[]'); entries = Array.isArray(p)?p:[]; } catch(e){}
   }
 
+  // Suppress any entry that's the same age or older than a real deletion
+  // Alex made (see RPGACE.utils.filterReanalysisSuppressed) — this is what
+  // makes the "⚡ Sync & Push All Reports" button safe without touching it
+  // directly, since the suppression runs here regardless of what pushed
+  // stale data back into the encyclopedia table.
+  try { entries = await RPGACE.utils.filterReanalysisSuppressed(entries, 'created_at', 'source_url'); } catch(e){}
+
   ENC_ALL_ENTRIES = entries;
+
+  // Aug 27 2026 (/Routine item #1) — runs regardless of which branch below
+  // fires, so the pool stays current whether the encyclopedia is empty or not.
+  try { renderReanalysisPool(); } catch(e){}
 
   if(!entries.length){
     encOutput.innerHTML = `<div style="text-align:center;padding:60px 20px">
@@ -3496,6 +3534,70 @@ async function refreshEncyclopediaDisplay(){
   }
 
   renderEncEntries();
+}
+
+// Aug 27 2026 (/Routine item #1) — real, visible "re-analysis pool" list,
+// Alex's own words: "a list I can access and choose from to revisit that I
+// found interesting in the past when I'm in encyclopedia." Same 2-click
+// arm/confirm dismiss pattern as intelDelete._injectBibSection's per-row
+// delete. "Revisit" opens the real url in a new tab — the only honest
+// action buildable from this repo (there is no button-triggerable
+// re-analysis pipeline here; the real Intel script runs externally
+// against a pasted URL on Alex's own machine).
+async function renderReanalysisPool(){
+  const holder = document.getElementById('enc-reanalysis-pool');
+  if(!holder) return;
+  let rows = [];
+  try {
+    rows = await RPGACE.sb.select('intel_reanalysis_pool', 'status=eq.pending&order=deleted_at.desc&limit=100');
+    rows = Array.isArray(rows) ? rows : [];
+  } catch(e){ rows = []; }
+
+  if(!rows.length){ holder.innerHTML=''; return; }
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  holder.innerHTML = `<details style="margin-bottom:16px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+    <summary style="cursor:pointer;font-size:12px;font-weight:700;color:var(--gold);font-family:'Rajdhani',sans-serif;letter-spacing:.5px">🔁 RE-ANALYSIS POOL · ${rows.length} deleted extraction${rows.length===1?'':'s'}, source still there</summary>
+    <div style="font-size:11px;color:var(--muted);margin:8px 0 10px">These were deleted because the extraction was wrong — the video/URL itself is untouched. Revisit any of them to reprocess with the Intel script.</div>
+    <div id="enc-reanalysis-pool-rows"></div>
+  </details>`;
+
+  const rowsEl = document.getElementById('enc-reanalysis-pool-rows');
+  rows.forEach(r => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);align-items:flex-start';
+    row.innerHTML = `<div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:600;color:var(--text)">${esc(r.title||'Untitled')}</div>
+      <a href="${esc(r.url)}" target="_blank" rel="noopener" style="font-size:10px;color:rgba(201,168,76,.55);text-decoration:none;font-family:monospace;word-break:break-all">${esc((r.url||'').length>65?r.url.slice(0,65)+'...':r.url)}</a>
+    </div>`;
+    const revisit = document.createElement('button');
+    revisit.textContent = '🔗 Revisit';
+    revisit.style.cssText = 'background:none;border:1px solid var(--border);color:var(--gold);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:\'Rajdhani\',sans-serif;flex-shrink:0';
+    revisit.onclick = () => { window.open(r.url, '_blank', 'noopener'); };
+    const dismiss = document.createElement('button');
+    dismiss.textContent = '✕';
+    dismiss.title = 'Dismiss from this list';
+    dismiss.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);cursor:pointer;font-size:13px;padding:2px 6px;flex-shrink:0;font-family:\'Rajdhani\',sans-serif';
+    let armed = false, busy = false;
+    dismiss.onclick = () => {
+      if(busy) return;
+      if(!armed){
+        armed = true; dismiss.textContent = '❌'; dismiss.style.color = '#CC4A4A';
+        setTimeout(()=>{ if(busy) return; armed=false; dismiss.textContent='✕'; dismiss.style.color='rgba(226,84,84,.4)'; }, 3000);
+        return;
+      }
+      busy = true; dismiss.textContent = '…';
+      RPGACE.sb.secureWrite('intel_reanalysis_pool', 'update', {status:'dismissed'}, 'id=eq.'+r.id)
+        .then(()=>{ renderReanalysisPool(); })
+        .catch(e=>{
+          busy=false; armed=false; dismiss.textContent='✕'; dismiss.style.color='rgba(226,84,84,.4)';
+          if(typeof RPGACE!=='undefined' && RPGACE.utils) RPGACE.utils.toast('Dismiss FAILED: '+((e&&e.message)||'unknown error'), '#CC4A4A', 4000);
+        });
+    };
+    row.appendChild(revisit); row.appendChild(dismiss);
+    rowsEl.appendChild(row);
+  });
 }
 
 async function syncAndPush(){
@@ -3517,6 +3619,15 @@ async function syncAndPush(){
 // separately) - this stays genuinely unrecoverable if fired.
 async function clearEncyclopedia(){
   if(!confirm('Clear all encyclopedia entries from all devices?')) return;
+  // Aug 27 2026 (/Routine item #1) — snapshot every real intel-sourced
+  // entry BEFORE wiping, so each one's real url lands in the reanalysis
+  // pool (fire-and-forget, never blocks the clear). Plain Oracle-chat
+  // saves (no source_url) have nothing to reanalyze and are skipped.
+  (ENC_ALL_ENTRIES || []).forEach(function(e){
+    if (e && e.source_url) {
+      RPGACE.utils.logReanalysisCandidate(e.source_url, e.title, 'encyclopedia', e.created_at || null, 'bad_extraction');
+    }
+  });
   try {
     await RPGACE.sb.secureWrite('encyclopedia', 'delete', null, 'created_at=gte.2000-01-01');
   } catch(e){}
@@ -3755,15 +3866,21 @@ async function refreshJournalDisplay(){
   el.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:12px">Loading...</div>';
 
   let entries = [];
+  // Aug 27 2026 (/Routine item #1) — same fix as refreshEncyclopediaDisplay:
+  // track real fetch success independent of row count, so a genuinely
+  // successful fetch that correctly finds 0 rows (right after a clear)
+  // never falls back to stale localStorage cache.
+  let fetchSucceeded = false;
   try {
     const res = await _sbGet('/rest/v1/journal?order=created_at.desc&limit=200');
     if(res.ok){
       entries = await res.json();
+      fetchSucceeded = true;
       localStorage.setItem('rpgace_journal', JSON.stringify(entries));
     }
   } catch(e){}
 
-  if(!entries.length){
+  if(!fetchSucceeded){
     const cached = JSON.parse(localStorage.getItem('rpgace_journal') || '[]');
     entries = cached;
   }
@@ -4268,7 +4385,15 @@ async function syncIntelData(showStatus=false){
 
   // Merge with localStorage cache
   const cached = JSON.parse(localStorage.getItem('rpgace_intel_insights')||'[]');
-  const all = mergeByUrl(reports||[], cached);
+  let all = mergeByUrl(reports||[], cached);
+
+  // Aug 27 2026 (/Routine item #1, "delete doesn't stick") — drop any
+  // report that's the same age or older than a real deletion Alex made
+  // (local_server.py's own files have no concept of that deletion, so
+  // this merge would otherwise silently bring it straight back every
+  // 30s). A genuinely newer reanalysis of the same URL still passes
+  // through untouched — see RPGACE.utils.filterReanalysisSuppressed.
+  try { all = await RPGACE.utils.filterReanalysisSuppressed(all); } catch(e) {}
 
   // Watchlist
   let wl = await fetchWatchlistFromSupabase();
@@ -4409,7 +4534,9 @@ function saveIntelToEncyclopedia(index){
   const item=insights[index]; if(!item) return;
   const enc=item.insights?.encyclopedia_entry||{};
   const content=`## ${enc.title||item.title}\n\n**Source:** ${item.title} by ${item.creator} (${item.platform})\n**Score:** ${item.score}/10\n**Date:** ${new Date(item.date||item.created_at).toLocaleDateString()}\n\n### Summary\n${enc.summary||''}\n\n### Key Learnings\n${enc.key_learnings?.map(l=>'- '+l).join('\n')||''}\n\n### Production Techniques\n${(item.insights?.production_techniques||[]).map(t=>'- '+t).join('\n')}\n\n### What To Apply\n${(item.insights?.what_to_steal||[]).map(s=>'→ '+s).join('\n')}\n\n### Tags\n${enc.tags?.join(', ')||''}`;
-  saveOracleToEncyclopedia(enc.title||item.title, content);
+  // Aug 27 2026 (/Routine item #1) — pass the real source url through so
+  // this entry can enter the reanalysis pool if later deleted.
+  saveOracleToEncyclopedia(enc.title||item.title, content, item.url);
   // Switch to encyclopedia tab to show it
   const encTab = document.querySelector('[onclick*="encyclopedia"]');
   if(encTab) showPage('encyclopedia', encTab);
@@ -5017,6 +5144,91 @@ document.addEventListener('keydown', e=>{
         } catch (e) { /* fails open - a logging failure must never break the toast itself */ }
         try { RPGACE.hooks.fire('rpgace:error-toast', { msg: msg, color: color, ts: Date.now() }); } catch (e) {}
       }
+    },
+
+    // ── Reanalysis-pool insurance write + resurrection suppression ──
+    // Aug 27 2026 (/Routine item #1, "delete doesn't stick" - real
+    // /CEO+/interrogation+/drift+/paranoia pass, see
+    // records/2026-08/delete_doesnt_stick_tombstone_ceo_spec_2026-08-27.txt).
+    // Real root cause: local_server.py (outside this repo, Alex's own
+    // machine) holds its own independent copy of intel report/encyclopedia
+    // source data with zero concept of "this was deleted" - syncIntelData's
+    // 30s recurring poll and the encyclopedia empty-state's own
+    // "Sync & Push" button both merge that stale data straight back in.
+    // Alex's own real correction mid-interrogation: a delete here means
+    // "this extraction was wrong", not "ban this URL forever" - the same
+    // URL must stay free to produce a genuinely NEW, better report later.
+    // So this is NOT a permanent tombstone: a merge candidate is only
+    // suppressed if it's the same age or OLDER than the row that was
+    // deleted; anything newer (a real fresh reanalysis) passes through.
+    // ONE shared mechanism (rule 8) used by both the intel_reports/
+    // videoSummary merge path and the encyclopedia fetch/render path.
+    _reanalysisPoolCache: null,
+    _reanalysisPoolCacheAt: 0,
+
+    // Fire-and-forget insurance write - called from intelDelete/deleteEncEntry/
+    // clearEncyclopedia at the moment something with a real url is deleted.
+    // Never blocks or throws into the caller's own delete flow.
+    logReanalysisCandidate: function (url, title, sourceTable, deletedRowCreatedAt, reason) {
+      if (!url) return;
+      try {
+        RPGACE.sb.secureWrite('intel_reanalysis_pool', 'insert', {
+          url: url,
+          title: title || null,
+          source_table: sourceTable || 'intel_reports',
+          deleted_row_created_at: deletedRowCreatedAt || null,
+          reason: reason || 'bad_extraction',
+        }).then(function () {
+          RPGACE.utils._reanalysisPoolCacheAt = 0; // invalidate cache, a new row exists
+        }).catch(function (e) { console.warn('[reanalysisPool] insert failed:', e.message); });
+      } catch (e) { /* never break a delete over this */ }
+    },
+
+    // Cached ~30s (matches the poll interval this is guarding against) so
+    // the 30s syncIntelData loop doesn't hammer Supabase every cycle.
+    _fetchReanalysisPool: function () {
+      var now = Date.now();
+      if (RPGACE.utils._reanalysisPoolCache && (now - RPGACE.utils._reanalysisPoolCacheAt) < 30000) {
+        return Promise.resolve(RPGACE.utils._reanalysisPoolCache);
+      }
+      return RPGACE.sb.select('intel_reanalysis_pool', 'status=eq.pending&select=url,deleted_row_created_at')
+        .then(function (rows) {
+          RPGACE.utils._reanalysisPoolCache = Array.isArray(rows) ? rows : [];
+          RPGACE.utils._reanalysisPoolCacheAt = now;
+          return RPGACE.utils._reanalysisPoolCache;
+        }).catch(function () { return RPGACE.utils._reanalysisPoolCache || []; });
+    },
+
+    // Filters `list`, dropping anything that matches a pending pool row's
+    // url AND is the same age or older than that row's
+    // deleted_row_created_at. An item with no date is treated
+    // conservatively (suppressed if a pool row exists for its url) since
+    // an undated candidate is more likely stale legacy data than a genuine
+    // fresh reanalysis. urlKey/dateKey let callers whose objects use a
+    // different field name (encyclopedia's source_url vs. intel_reports'
+    // plain url) reuse the exact same suppression logic (rule 8) instead
+    // of a second copy.
+    filterReanalysisSuppressed: function (list, dateKey, urlKey) {
+      if (!Array.isArray(list) || !list.length) return Promise.resolve(list || []);
+      urlKey = urlKey || 'url';
+      return RPGACE.utils._fetchReanalysisPool().then(function (pool) {
+        if (!pool.length) return list;
+        var norm = (RPGACE.modules.intelDedup && RPGACE.modules.intelDedup.normUrl) || function (u) { return (u || '').toLowerCase(); };
+        var byUrl = {};
+        pool.forEach(function (p) {
+          var k = norm(p.url);
+          if (!k) return;
+          var d = p.deleted_row_created_at ? new Date(p.deleted_row_created_at).getTime() : Infinity;
+          if (!byUrl[k] || d > byUrl[k]) byUrl[k] = d; // keep the LATEST deletion marker per url
+        });
+        return list.filter(function (item) {
+          var k = norm(item && item[urlKey]);
+          if (!k || !(k in byUrl)) return true;
+          var itemDateRaw = dateKey ? item[dateKey] : (item.date || item.created_at);
+          var itemDate = itemDateRaw ? new Date(itemDateRaw).getTime() : 0;
+          return itemDate > byUrl[k]; // strictly newer than the deletion -> genuine fresh reanalysis, let it through
+        });
+      });
     },
 
     /* Copy text to clipboard and briefly show feedback on a button */
@@ -9898,7 +10110,7 @@ RPGACE.register('scheduleOracle', {
         actionLabel: '📖 Save now',
         action: function(done) {
           if (typeof saveOracleToEncyclopedia !== 'function') { done(); return; }
-          saveOracleToEncyclopedia(data.title, '## ' + data.title + '\n\n' + data.analysis + (data.sourceURL ? '\n\n**Source:** ' + data.sourceURL : ''))
+          saveOracleToEncyclopedia(data.title, '## ' + data.title + '\n\n' + data.analysis + (data.sourceURL ? '\n\n**Source:** ' + data.sourceURL : ''), data.sourceURL)
             .then(function() { RPGACE.utils.toast('✅ Saved to Encyclopedia', '#4CAF82', 2500); done(); })
             .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3000); done(); });
         }
@@ -10107,6 +10319,13 @@ RPGACE.register('intelDelete', {
       }
       // 2. Delete from localStorage intel_insights
       self._rmLocal('rpgace_intel_insights', title);
+      // 2b. Aug 27 2026 (/Routine item #1) - log the real url into the
+      // reanalysis pool so it can never be silently resurrected by
+      // syncIntelData's 30s poll pulling the same stale extraction back
+      // from local_server.py, but stays free to be reprocessed fresh.
+      if (entry && entry.url) {
+        RPGACE.utils.logReanalysisCandidate(entry.url, title, 'intel_reports', entry.date || entry.created_at || null, 'bad_extraction');
+      }
       // 3. Save to bibliography if requested.
       // Aug 23 2026 - this used to hand-roll its own
       // _sbInsert('intel_bibliography', ...) with a silent .catch(), a real
