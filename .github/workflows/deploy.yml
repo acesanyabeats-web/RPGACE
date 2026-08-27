@@ -10,8 +10,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # main.js was mechanically absorbed into rpgace_core.js Aug 20 2026 and
+      # deleted (see CLAUDE.md's Architecture section) - this check silently
+      # broke every push since (node --check main.js -> MODULE_NOT_FOUND,
+      # exit 1) because this workflow file was never on the "grep for a
+      # hardcoded main.js reference" list at the time, unlike
+      # .claude/settings.json's check_commands (fixed Aug 22) and
+      # scripts/graphify_river_group.py (fixed Aug 20). Found via a GitHub
+      # Actions failure-email Alex forwarded Aug 27, reproduced locally
+      # before fixing (rule 4). This never affected the live app - Vercel's
+      # own native GitHub integration deploys every push independently of
+      # this Action (confirmed via list_deployments: every commit shows
+      # state:READY regardless of this workflow's own pass/fail history).
       - name: Check JS syntax
-        run: node --check main.js && node --check rpgace_core.js && echo "JS syntax clean"
+        run: node --check rpgace_core.js && echo "JS syntax clean"
 
       # Advisory only, per the July 25 Aintergration pass on emilkowalski/skills +
       # pbakaus/impeccable - real deterministic anti-pattern findings (contrast,
