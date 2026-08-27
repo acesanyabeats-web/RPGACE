@@ -4,7 +4,7 @@ RPGACE Local Intel Server v3
 Uses Supabase job queue AND serves local JSON files as fallback.
 RPGACE polls this server every 10s for new reports.
 """
-import os, json, ssl, time, sys, threading, re
+import os, json, ssl, time, sys, threading, re, subprocess
 from pathlib import Path
 from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -23,9 +23,25 @@ SB_HEADERS = {
     "Content-Type": "application/json",
     "Prefer": "return=minimal"
 }
-SSL_CTX = ssl.create_default_context()
-SSL_CTX.check_hostname = False
-SSL_CTX.verify_mode    = ssl.CERT_NONE
+
+def get_ssl_context():
+    """Real, verified TLS context - Aug 27 2026 fix. The old code here
+    (ssl.CERT_NONE + check_hostname=False) disabled certificate
+    verification ENTIRELY, a real MITM exposure - almost certainly a
+    workaround for the common Windows Python issue where the system cert
+    store isn't wired into the stdlib ssl module, not a deliberate
+    security tradeoff. The real, standard fix is certifi's own bundled CA
+    root store (auto-installed on first run, same pattern rpgace_intel.py
+    already uses for yt-dlp/whisper), not disabling verification."""
+    try:
+        import certifi
+    except ImportError:
+        print("  Installing certifi (for real TLS certificate verification)...")
+        subprocess.run([sys.executable, "-m", "pip", "install", "certifi", "--quiet"])
+        import certifi
+    return ssl.create_default_context(cafile=certifi.where())
+
+SSL_CTX = get_ssl_context()
 
 POLL_INTERVAL = 10
 CORS = {

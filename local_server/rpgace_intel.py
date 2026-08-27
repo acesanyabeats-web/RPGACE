@@ -475,10 +475,20 @@ def process_url(url: str):
                     "Content-Type": "application/json",
                     "Prefer": "return=minimal"
                 }
-                # Windows SSL fix — bypass cert verification
-                ssl_ctx = ssl.create_default_context()
-                ssl_ctx.check_hostname = False
-                ssl_ctx.verify_mode = ssl.CERT_NONE
+                # Aug 27 2026 fix: the old "Windows SSL fix" here disabled
+                # cert verification entirely (ssl.CERT_NONE) - confirmed via
+                # its own comment to be a workaround for Windows Python's
+                # missing system cert store, not a deliberate tradeoff. The
+                # real fix is certifi's own bundled CA root store (auto-
+                # installed on first run, same pattern already used for
+                # yt-dlp/whisper below), not disabling verification.
+                try:
+                    import certifi
+                except ImportError:
+                    log("Installing certifi (for real TLS certificate verification)...", CYAN)
+                    subprocess.run([sys.executable, "-m", "pip", "install", "certifi", "--quiet"])
+                    import certifi
+                ssl_ctx = ssl.create_default_context(cafile=certifi.where())
 
                 def sb_post(table, data):
                     payload = json.dumps(data, ensure_ascii=False, default=str).encode("utf-8")
