@@ -74,6 +74,21 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🖥️✅ Aug 27 — local_server.py + rpgace_intel.py brought into the repo, and the same-day "delete doesn't stick" fix closes its own last residual risk</div>
+    <div class="card-body">
+      Same session, immediate follow-up to the fix below. Alex: "let's do local server and intel bat" — provided the real, actual source of both `.bat` launchers (`start_server.bat`/`intel.bat` — not literally "inter.bat," that was shorthand for the Content Intelligence batch file) and both real Python files (`local_server.py`, `rpgace_intel.py`), previously invisible to every Claude Code session.
+      <br><br>
+      Both brought into a new <code>local_server/</code> folder, <code>python3 -m py_compile</code> clean on both, a real README documenting what each file does and how they're launched (still only on Alex's own machine — <code>HOME = ~/RPGACE</code>, no new hosting/spend/exposure).
+      <br><br>
+      <b>Real findings from reading the actual source, not assumed</b>: the hardcoded Supabase key is the byte-identical publishable key already public in <code>rpgace_core.js</code> — not a new secret. <code>local_server.py</code> disables TLS cert verification for its Supabase calls (<code>ssl.CERT_NONE</code>) — flagged, not fixed this pass. And — the real reason this mattered — <code>/push-to-supabase</code>'s handler was read directly and confirmed the residual risk the "delete doesn't stick" fix (below) had honestly flagged as unclosed: it blindly re-POSTed every local <code>intel_*.json</code> file on every call, with ZERO check for "does Supabase already have this" or "was this deleted." A real, confirmed (not theoretical) duplicate-row risk on every re-sync, in addition to being the exact server-side mechanism that could resurrect a deleted report.
+      <br><br>
+      <b>Fixed, same pass, Alex confirmed "fix both in one pass"</b>: a new <code>norm_url()</code> mirrors <code>intelDedup.normUrl</code> (rpgace_core.js) behaviorally — verified against 8 real URL-normalization test cases including all 3 YouTube special-cases. Before pushing a report, <code>/push-to-supabase</code> now checks (a) does an <code>intel_reports</code> row already exist for this URL → skip (fixes duplicates), (b) does a pending <code>intel_reanalysis_pool</code> marker exist at least as new as this local file's own date → skip (fixes resurrection). A genuinely newer local re-analysis of the same URL still gets pushed through untouched — 5 more real scenario assertions verify the full decision logic (13 total). A real, adjacent gap found and fixed in passing: neither <code>local_server.py</code> nor <code>rpgace_intel.py</code>'s own direct encyclopedia push ever set <code>encyclopedia.source_url</code> — meaning entries pushed via either server-side path would silently fail RPGACE's own <code>deleteEncEntry</code> check and never enter the reanalysis pool if later deleted. Both now set it.
+      <br><br>
+      Commits <code>51beab3</code> (batch launchers), <code>b6a87fd</code> (real Python source), <code>558e905</code> (the push-to-supabase fix). Every doc that named this as an open residual risk earlier the same session (CLAUDE.md, <code>interconnection_map.md</code>, <code>system_flow_map.md</code> §18, <code>oracleAppGrounding.SELF_KNOWLEDGE</code>) corrected in the same pass — the loop is genuinely closed now, client AND server side, not just client side. <b>Untested by Alex's own hand yet</b> — no local `.bat` has actually been run against this new code.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔁✅ Aug 27 — "Delete doesn't stick" fixed: videoSummary._delete and clearEncyclopedia's shared real root cause found and closed, real /CEO+/interrogation+/drift+/paranoia pass, /Routine item #1</div>
     <div class="card-body">
       Real evidence-gathering, not a guess: <code>syncIntelData</code>'s 30s recurring poll and the Encyclopedia empty-state's own "⚡ Sync & Push All Reports" button both merge in reports/entries from <code>local_server.py</code> (Alex's own Windows machine, outside this repo) — which has no concept of "this was deleted" — so a real, deleted extraction kept silently resurfacing.
