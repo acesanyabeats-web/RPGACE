@@ -512,7 +512,14 @@ def process_url(url: str):
                         "title":   enc["title"],
                         "date":    date_str,
                         "content": content,
-                        "source":  "intel"
+                        "source":  "intel",
+                        # Aug 27 2026 - real, adjacent gap fixed while already
+                        # touching this exact push path: without a real
+                        # source_url, RPGACE's own deleteEncEntry/
+                        # clearEncyclopedia can't log this entry into the
+                        # reanalysis pool if it's later deleted for a bad
+                        # extraction (they check for source_url before doing so).
+                        "source_url": meta.get("url","") or None
                     })
                     log(f"Encyclopedia entry pushed: {enc['title'][:50]}", GREEN)
 
