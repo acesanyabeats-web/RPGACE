@@ -1,0 +1,134 @@
+Galaxy Map HTML reformatting — real /CEO Loop 1 (compile→interrogate→
+paranoia/debate→drift→report), 2026-08-27, same day as G110
+Alex: "these 2 relationships between 3 external ais should be documented
+and fit in a bubble system map and table, how would we do this? also if
+it doesnt exist [librosa finding] blue it, then we turn to red for
+build. /CEO and /drift and /restructure and /scope and paranoia with
+/interrogation" — then, after G110's own build direction interrogation,
+a much bigger real ask surfaced and got its own full round.
+
+=========================================================================
+STEP 1 — REAL /INTERROGATION, 3 rounds, verbatim answers
+=========================================================================
+
+Round A (G110 build mechanics): Alex rejected the proposed "3 peer
+connector bubbles on River XII" design outright: "make a dimension
+joining three as an inter, so it all one bubble migration with the logic
+attached." Real, converged direction: a NEW DIMENSION (not 3 separate
+peer EXTERNAL_CONNECTORS entries) joining local_server.py + Anthropic +
+Whisper (+ librosa, pending) as one real "Inter" bubble cluster, with the
+governing logic attached inline rather than left as a separate reference.
+
+Round A, same message, real structural expansion: "I also think the logic
+dimension (prev l5) should be retired an dispersed into its level, river,
+module, infra or inter explanation." Plus a new standing documentation
+discipline: "all htmls also have texts explaining how the docs is formed.
+id like that in a roll up, and only information on each object that lies
+within the level object we are observing to be explained by what input
+it gets, what it does, how does it contribute to module - river - at
+which level - infra and inter contributions and any other important
+info like this to give the viewer context what this is."
+Explicit ask: "/paranoia /drift /interrogation and /CEO this idea of
+reformatting galaxy map htmls."
+
+Round B, 3 real forks put to Alex directly:
+1. Logic Dimension dispersal scope (all ~1200 entries vs. the 21
+   curated ones only) — Alex: "im not sure if this is a good idea,
+   /paranoia and all debate skills for me to make a decision." Deferred
+   to Round C below rather than guessed.
+2. Per-object "explain what this is" template rollout scope — Alex:
+   "phase it as 1 but start with currents instead, get 5 that are most
+   messy with unreadable to normal human explanations in code that
+   should be in plain text - with quote of pure code for the geeks and
+   you." Real, converged scope: start with Current (L3) pages, not
+   Dimensions as I'd first proposed; find the 5 real MESSIEST/least-
+   readable entries; rewrite each in plain English (what input it gets,
+   what it does, contribution to module/river/level, infra/inter
+   touches); keep a real quoted code excerpt alongside for technical
+   readers.
+3. "Roll up" meaning — Alex: "no just a methodology that is in the doc
+   to only be in the doc with context to only doc, just expand/
+   contractable with contracted as default to remove clutter - rarely
+   need this information unless im changing the oversight doc in
+   context is working and extracting information itself, otherwise i
+   just need the data." Real, converged meaning: NOT a single shared
+   methodology page (my first proposal, rejected) - the existing
+   methodology text stays exactly where it already lives (per-doc, in
+   context), wrapped in a real <details> (collapsed by default) so it
+   never clutters normal use; only worth expanding when actively working
+   on/regenerating the Galaxy Map tooling itself.
+
+Round C — the real debate Alex asked for on the Logic Dimension question
+(full text delivered in chat, condensed here):
+  FOR dispersing all ~1200: total consistency, matches the same
+  with-the-object principle behind the Current-page ask.
+  AGAINST (and for 21-only): real quantified cost - 1180 branch points
+  spread across ~44 modules averages ~26 more entries per module page,
+  directly working against the SAME session's own goal of making Current
+  pages MORE readable. Level 6 was deliberately built "exhaustive, not
+  narrated" - a real, existing design choice, not an oversight; the "geeks
+  and you" split Alex just asked for on Current pages already argues for
+  keeping narrated vs. exhaustive content separate, not collapsing them.
+  The 21 were hand-curated - that curation signal is real and would be
+  lost if flattened in with 1180 mechanical ones. 2 more real competitor
+  framings considered and rejected: retiring Level 6 too (serves a
+  genuinely different real audit use, not redundant); leaving the Logic
+  Dimension as-is with better navigation (under-delivers what Alex
+  actually asked for - retiring it as a destination).
+  Alex's real, final answer: "21 curated only, Level 6 stays link-out
+  (Recommended)."
+
+=========================================================================
+STEP 2 — REAL /PARANOIA + /DRIFT, consolidated across the whole plan
+=========================================================================
+Technical risk: MODERATE for the Logic Dispersal + Current-page rewrite
+pieces (real content edits across several page scripts, real risk of
+breaking the regeneration pipeline's own idempotency if done carelessly)
+- LOW for the methodology-<details> wrap (purely cosmetic, additive CSS/
+HTML) and for G110's new dimension page (new, additive script, doesn't
+touch existing pages' own logic).
+Scope/cost: proportionate given Alex's own real, converged scoping
+answers (21 not 1200; 5 Currents not all 45; in-place <details> not a
+new consolidated page) - each piece individually bounded, not open-ended.
+Maintainability: real improvement across the board - closes the exact
+"invisible/buried" pattern (local_server.py's own footnote-only
+existence, generic methodology clutter, unreadable Current-page prose)
+this whole session has been finding and fixing all day.
+/DRIFT check against the ratified Galaxy Development Framework baseline:
+BASIS ratified. VERDICT on track - honors R22 (bubble follows table,
+still true: the new Dimension's table data is built first, its bubble
+view renders from it) and R16 (no privileged L0 gateway - none of this
+touches L0). No MINOR/MATERIAL/CAPTURED gap.
+/RESTRUCTURE check: not applicable - no third-party repo/framework is in
+play here, this is RPGACE's own tooling evolving on its own established
+patterns. A quick, honest negative result, not skipped.
+
+=========================================================================
+STEP 3 — /CEO — real items logged, RED (specified, ready to build) except
+where genuine uncertainty remains (blue)
+=========================================================================
+G110 (existing, updated): local_server.py's real Galaxy Map identity -
+now specified as a new DIMENSION (an "Inter") joining local_server.py +
+Anthropic + Whisper as one real bubble cluster with governing logic
+attached, NOT 3 peer connector bubbles. Moved blue -> red.
+G111 (new): Logic Dimension retirement - the 21 curated decision/logic
+entries disperse onto their real home objects (module/river/connector
+pages); the Logic Dimension page itself retires as a standalone
+destination; Level 6 (1180 mechanical branch points) stays exactly as-is,
+link-out only, never dispersed or inlined. Logged red.
+G112 (new): Current(L3) page cleanup, phase 1 - find the 5 real
+messiest/least human-readable Current entries, rewrite each in plain
+English (input/what it does/module-river-level contribution/infra-inter
+touches) with a real quoted code excerpt alongside. Logged red.
+G113 (new): wrap existing "how this doc/methodology is formed" text,
+wherever it already lives, in a real <details> (collapsed by default) -
+in place, not consolidated into one shared page. Logged red.
+G114 (new): the librosa/BPM-detection script - Alex's own honest answer,
+"i think so but forgot it" - genuine uncertainty, not confirmed either
+way. Logged blue with that real uncertainty stated plainly; NOT
+red-for-build until Alex either locates the real script or confirms it
+needs writing fresh.
+
+Execution order this pass, smallest/most-certain first: G110 (the
+dimension this whole thread started from) built first; G111/G112/G113
+logged red and queued for the next real build pass, not silently dropped.
