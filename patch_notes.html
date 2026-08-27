@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔒✅ Aug 27 — local_server.py/rpgace_intel.py: real TLS certificate verification fixed (was disabled entirely)</div>
+    <div class="card-body">
+      Same-session immediate follow-up. Alex: "lets deal with it," referring to the TLS-cert-verification finding flagged in the previous card's own README update.
+      <br><br>
+      Both files disabled certificate verification entirely for their outbound Supabase calls (<code>ssl.CERT_NONE</code> + <code>check_hostname=False</code>) — a real MITM exposure, not a cosmetic issue. <code>rpgace_intel.py</code>'s own comment on its copy ("Windows SSL fix — bypass cert verification") confirmed this was a real workaround for Windows Python's missing system CA store, not a deliberate tradeoff someone chose on purpose.
+      <br><br>
+      <b>Real fix</b>: <code>certifi</code>'s own bundled CA root store (<code>ssl.create_default_context(cafile=certifi.where())</code>), auto-installed via pip on first run if missing — the exact same auto-install pattern <code>rpgace_intel.py</code> already uses for yt-dlp/Whisper/torch, applied identically to both files (their original insecure code was already duplicated the same way).
+      <br><br>
+      <b>Verified, honestly scoped</b>: direct inspection confirms the resulting SSL context has <code>check_hostname=True</code> and <code>verify_mode=ssl.CERT_REQUIRED</code> — real certificate verification is genuinely active now, not bypassed. A live round-trip against the real Supabase host could not be completed from this sandboxed session (its own outbound proxy blocks non-whitelisted hosts, the same standing limitation as Lighthouse/raw-curl elsewhere in this project) — an environment constraint on THIS session, not a gap in the fix; Alex's own Windows machine has no such proxy. <code>python3 -m py_compile</code> clean on both files. Commit <code>fe11db1</code>. <b>Untested by Alex's own hand yet.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🖥️✅ Aug 27 — local_server.py + rpgace_intel.py brought into the repo, and the same-day "delete doesn't stick" fix closes its own last residual risk</div>
     <div class="card-body">
       Same session, immediate follow-up to the fix below. Alex: "let's do local server and intel bat" — provided the real, actual source of both `.bat` launchers (`start_server.bat`/`intel.bat` — not literally "inter.bat," that was shorthand for the Content Intelligence batch file) and both real Python files (`local_server.py`, `rpgace_intel.py`), previously invisible to every Claude Code session.
