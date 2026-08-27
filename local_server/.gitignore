@@ -1,0 +1,12 @@
+# Real runtime state these scripts create at HOME = ~/RPGACE on Alex's own
+# machine — normally outside any git checkout entirely (HOME is hardcoded to
+# Path.home()/"RPGACE", not this repo's own location). This .gitignore is a
+# defensive backstop only, in case that ever changes.
+.anthropic_key
+intel/
+strategy/
+transcripts/
+inbox/
+processed/
+__pycache__/
+*.pyc
