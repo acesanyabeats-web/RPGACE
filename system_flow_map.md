@@ -768,3 +768,44 @@ flowchart TD
 **Real, deliberate 3-gate safety structure — the whole reason this is safe to run automatically**: (1) Oracle must draft a plausible suggestion from real self-awareness data; (2) Alex must separately approve adding it to the vocabulary; (3) a human must have already coded, or must still code, a real `_execute()` branch before Accept can do anything beyond the honest fallback toast. No step can be skipped by the ones before it.
 
 **Real, honest scope limits**, stated plainly rather than oversold: the error→purple cascade only fires for a genuine thrown exception, promise rejection, or an already-error-colored toast — a bug with no visible symptom is invisible to it, same as it always was. Module attribution covers ~95% of real distinct method names (432 of 456); the rest are correctly left unattributed, never guessed. Purple only ever fires from a real prior-`green` state — a module that was never confirmed working in the first place correctly stays wherever it already was.
+
+---
+
+## 18. "Delete doesn't stick" fix — real deletion-suppression, not a tombstone — added Aug 27 2026 (/Routine item #1)
+
+Real root cause: `local_server.py` (Alex's own machine, outside this repo) holds its own copy of intel report/encyclopedia source data with no concept of "this was deleted." §7 above already shows real content flowing IN from `local_server.py` via the Analysis pipeline — this diagram shows the other half: what happens when that same content is later deleted, and how the system now stops it silently flowing back in.
+
+```mermaid
+flowchart TD
+    DEL([Alex deletes a report — videoSummary,<br/>or an Encyclopedia entry]) --> WHICH{Which delete path?}
+    WHICH -->|intel report| DU[intelDelete._deleteUnified —<br/>deletes intel_reports row +<br/>localStorage cache]
+    WHICH -->|encyclopedia entry| DE[deleteEncEntry / clearEncyclopedia —<br/>deletes encyclopedia row(s) +<br/>localStorage cache]
+
+    DU --> HASURL1{entry has a real url?}
+    DE --> HASURL2{entry has a real<br/>source_url? — plain Oracle-<br/>chat saves never do}
+    HASURL1 -->|yes| LOG[logReanalysisCandidate —<br/>fire-and-forget INSERT into<br/>intel_reanalysis_pool]
+    HASURL2 -->|yes| LOG
+    HASURL1 -->|no| SKIP1([Nothing to log — no URL,<br/>nothing to reanalyze])
+    HASURL2 -->|no| SKIP1
+
+    LOG --> POOL[(intel_reanalysis_pool —<br/>url/title/source_table/<br/>deleted_row_created_at/status)]
+
+    subgraph MERGE["Every later merge/fetch path"]
+        POLL([syncIntelData — 30s<br/>recurring poll, forever]) --> FRO[fetchFromLocal — reads<br/>local_server.py's own<br/>UNTOUCHED files]
+        PUSH([Encyclopedia's "⚡ Sync & Push"<br/>button]) --> PLS[pushLocalToSupabase —<br/>tells local_server.py to push<br/>its own files to Supabase]
+        REFRESH([refreshEncyclopediaDisplay —<br/>any page load/refresh]) --> FETCH[Fetches encyclopedia<br/>table fresh]
+        FRO --> MERGEFN[mergeByUrl — old logic:<br/>pure union, no concept<br/>of deletion]
+        PLS --> MERGEFN
+        MERGEFN --> SUPPRESS{filterReanalysisSuppressed —<br/>ONE shared helper}
+        FETCH --> SUPPRESS
+        POOL -.reads pending rows.-> SUPPRESS
+        SUPPRESS -->|candidate same age<br/>or OLDER than deletion| DROP([Suppressed — never<br/>re-rendered or re-cached])
+        SUPPRESS -->|candidate NEWER<br/>than deletion| PASS([Passes through —<br/>a genuine fresh reanalysis])
+    end
+
+    POOL --> UI[Encyclopedia's real<br/>"🔁 Re-analysis Pool" list —<br/>Alex can browse + revisit]
+```
+
+**Real, deliberate design choice, not a bug carried over from the original ask**: this is NOT a permanent per-URL ban. Alex's own correction mid-`/interrogation`: "these are just old entries that take wrong info, the info from videos and URL are still there, just the extraction is wrong." A bad extraction should never block a genuinely better one of the same URL later — hence the strict age comparison (`itemDate > deletion date`) rather than a blanket exclude-forever list.
+
+**Real, honest residual, stated plainly**: this whole fix is client-side only (`RPGACE.utils.filterReanalysisSuppressed`, `intel_reanalysis_pool`) — `local_server.py`'s own `/push-to-supabase` handler is opaque to any Claude Code session (outside this repo), so if it ever does something today's evidence can't see, this can't catch that specific case. Full closure needs the separately-confirmed, not-yet-built move of `local_server.py`/`inter.bat` into this repo (see CLAUDE.md's Open Forks). Full record: `records/2026-08/delete_doesnt_stick_tombstone_ceo_spec_2026-08-27.txt`.

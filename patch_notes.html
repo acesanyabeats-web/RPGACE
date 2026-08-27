@@ -73,6 +73,23 @@
 
 <div class="content">
 
+<div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔁✅ Aug 27 — "Delete doesn't stick" fixed: videoSummary._delete and clearEncyclopedia's shared real root cause found and closed, real /CEO+/interrogation+/drift+/paranoia pass, /Routine item #1</div>
+    <div class="card-body">
+      Real evidence-gathering, not a guess: <code>syncIntelData</code>'s 30s recurring poll and the Encyclopedia empty-state's own "⚡ Sync & Push All Reports" button both merge in reports/entries from <code>local_server.py</code> (Alex's own Windows machine, outside this repo) — which has no concept of "this was deleted" — so a real, deleted extraction kept silently resurfacing.
+      <br><br>
+      <b>A real correction from Alex mid-interrogation reshaped the fix</b>: "these are just old entries that take wrong info, the info from videos and URL are still there, just the extraction is wrong" — a delete here means "this specific extraction was bad," never "ban this URL forever." So this is NOT a permanent tombstone: a new <code>intel_reanalysis_pool</code> table + additive <code>encyclopedia.source_url</code> column back one shared suppression helper (<code>RPGACE.utils.filterReanalysisSuppressed</code>, rule 8 — used by both the intel_reports/videoSummary merge path and the encyclopedia fetch/render path) that drops a merge candidate ONLY if it's the same age or older than the real deletion; a genuinely newer reanalysis of the same URL passes straight through.
+      <br><br>
+      Also fixed in the same pass: <code>refreshEncyclopediaDisplay</code>/<code>refreshJournalDisplay</code> shared a separate real bug — both fell back to stale localStorage on ANY empty result, unable to tell "the fetch failed" from "the fetch succeeded and correctly found 0 rows" (exactly what happens right after a real clear). A real, separately-found bug fixed in passing: <code>saveOracleToEncyclopedia</code> hardcoded <code>source:'oracle'</code> for every caller, meaning <code>renderEncEntries()</code>'s own intel-icon logic could never fire — now a real optional <code>sourceUrl</code> param sets <code>source:'intel'</code> correctly and persists the real url.
+      <br><br>
+      Encyclopedia gained a real, visible "🔁 Re-analysis Pool" section — Alex's own explicit ask, "a list I can access and choose from to revisit that I found interesting in the past." Each row opens the real source url in a new tab; a 2-click arm/confirm "✕" dismisses it, same pattern as <code>intelDelete</code>'s own bibliography-row delete.
+      <br><br>
+      <b>Real, honest residual risk, not hidden</b>: this is entirely client-side, per Alex's own confirmed sequencing ("ship the fix now... repo-move is separate"). If <code>local_server.py</code>'s own <code>/push-to-supabase</code> handler does something today's evidence can't see (opaque, outside this repo), this suppression can't catch that specific case — flagged plainly, not oversold as fully closed. Alex separately confirmed moving <code>local_server.py</code> + <code>inter.bat</code> into this repo ("like how other python scripts work") as real, later, later work — logged to CLAUDE.md's Open Forks, not built this pass. "Rethink the buttons" (his own words) also logged there — for now the buttons are made structurally safe, not redesigned.
+      <br><br>
+      Verified: isolated Node unit tests (6/6 real assertions on the suppression date-comparison logic — old-suppressed / newer-passes / unrelated-untouched / undated-conservative / URL-normalization / encyclopedia's own <code>source_url</code> key) plus a headless-Chromium functional check of <code>renderReanalysisPool</code> with mocked Supabase data, zero console errors. <code>node --check</code> clean, re-minified, cache-bust bumped to <code>20260827a</code>. Committed <code>0e88b86</code>, Vercel production confirmed <code>READY</code> matching the SHA. 3 real <code>smoke_test_items</code> rows (Alex's own hand-test broken_notes) flagged <code>needs_confirm_highlight</code> for his real re-test. Full record: <code>records/2026-08/delete_doesnt_stick_tombstone_ceo_spec_2026-08-27.txt</code>. <b>Untested by Alex's own hand yet.</b>
+    </div>
+  </div>
+
 <div class="card" style="margin-bottom:30px;border-left-color:#8a8a9a;">
     <div class="card-title">🏁 Aug 26 — SESSION CLOSED via /Bedtime (Galaxy Map Infra/Inter fixes, G41 Phase 1+2 Oracle Control, G109's error→purple loop, a real Cross-Doc Drift Check)</div>
     <div class="card-body">
