@@ -22947,6 +22947,18 @@ RPGACE.register('contentProductionLive', {
             if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
             if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
             var briefParts = [];
+            // Aug 30 2026 — Alex confirmed a real OpenArt subscription,
+            // reversing the standing "no paid providers" note for this one
+            // provider specifically. RPGACE never calls OpenArt directly
+            // (real provider orchestration happens in the separate
+            // OpenMontage CC session/repo) — this is the real signal
+            // channel OpenMontage CC actually reads (the brief text),
+            // NOT a new column (a `provider_hint` field was tried here
+            // first and broke the insert with a real 400 - openmontage_jobs
+            // has no such column; PostgREST rejects any field that isn't a
+            // real column. Reverted to keep the payload matching the
+            // actual live schema exactly.)
+            briefParts.push('PROVIDER NOTE: Alex has a real, active OpenArt subscription (confirmed Aug 30 2026) - a usable paid provider for this job now, alongside whichever else fits best.');
             if (docs.visual_treatment) briefParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
             if (docs.script) briefParts.push('ORACLE PROMPT USED:\n' + docs.script);
             var payload = {
@@ -22957,15 +22969,6 @@ RPGACE.register('contentProductionLive', {
               beat_meta: beatMeta || {},
               status: 'queued',
               requested_by: 'rpgace_claude_code',
-              // Aug 30 2026 — Alex confirmed a real OpenArt subscription,
-              // reversing the standing "no paid providers" constraint for
-              // this one provider specifically. RPGACE never calls OpenArt
-              // directly (real provider orchestration happens in the
-              // separate OpenMontage CC session/repo) — this field is the
-              // real signal that OpenMontage CC reads from this same queue
-              // row, naming OpenArt as a now-available real option rather
-              // than leaving it silently unmentioned in the brief.
-              provider_hint: 'OpenArt subscription active (Alex, confirmed Aug 30 2026) — a real, usable paid provider for this job now, alongside whichever else OpenMontage CC judges best fit.',
             };
             callback(payload, vj ? vj.id : null);
           });
