@@ -20748,13 +20748,12 @@ RPGACE.register('contentProductionLive', {
   _oracleSession: [],
 
   // Aug 5 (Engineer pass, Phase F) — real freeze flag mirroring
-  // ENABLED_PHYLA's own shape (phylumPath module): false until Alex makes
-  // his real Tier-3 paid-video-provider decision (Kling, per the July 31
-  // OpenMontage findings). While false, "Generate Video" builds and shows
-  // the REAL payload it would send, but does not actually write to
-  // openmontage_jobs - so the feature is honestly inspectable, not a dead
-  // button and not a silent fake success.
-  OPENMONTAGE_HANDOFF_ENABLED: false,
+  // ENABLED_PHYLA's own shape (phylumPath module): was false until Alex
+  // made his real Tier-3 paid-video-provider decision. FLIPPED TRUE Aug 30
+  // 2026 — Alex confirmed a real OpenArt subscription, resolving the spend
+  // fork. "Generate Video" now actually writes the real payload to
+  // openmontage_jobs instead of only showing it.
+  OPENMONTAGE_HANDOFF_ENABLED: true,
 
   init: function() {
     var self = this;
