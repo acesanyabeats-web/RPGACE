@@ -24708,6 +24708,32 @@ RPGACE.register('questEngine', {
       setTimeout(function() { self._boot(); }, 400);
       return Promise.resolve();
     }
+    // Aug 30 (real Fable-audit finding, F1 — the same real bug class as
+    // morningBrief._autoRun's own Aug 22 fix, never applied here): this
+    // boot task fires at MODULE-INIT time via registerBootTask, before any
+    // real login, since #gate's own hide only happens inside
+    // checkPassword()'s success branch. refresh() below can reach
+    // _createQuests() -> RPGACE.sb.secureWrite(), which needs
+    // authGate._apiSecret to attach the auth header - pre-login that's
+    // null, so every quest-log write gets a real, valid JSON 401 back
+    // from requireAuth() (confirmed live in error_log, Aug 27-28: a real
+    // "Unauthorized" wave distinct from the still-separately-diagnosed
+    // "Unexpected token '<'" HTML-response wave). Same real fix, same
+    // real signal, no new mechanism (rule 8): wait for 'rpgace:login' if
+    // login hasn't happened yet.
+    var apiSecretReady = RPGACE.modules.authGate && RPGACE.modules.authGate._apiSecret;
+    if (!apiSecretReady) {
+      var off = RPGACE.hooks.on('rpgace:login', function() {
+        off();
+        self._runBoot();
+      });
+      return Promise.resolve();
+    }
+    return self._runBoot();
+  },
+
+  _runBoot: function() {
+    var self = this;
     self._inject();
     return self._loadStats()
       .then(function() { return self._restoreBoardState(); })
@@ -26938,195 +26964,12 @@ RPGACE.register('perfWatch', {
 });
 /* ===END:perfWatch=== */
 
-/* ===MODULE:voiceInput=== */
-// 2026-07-28 — Alex fractured his right hand and asked whether voice
-// input was possible, both for talking to Claude Code (answer: yes,
-// already solved with zero code — the phone/OS keyboard's own mic/
-// dictation button works in any text field, including wherever he types
-// to Claude Code) and inside RPGACE itself (this module). Real,
-// buildable via the browser's native Web Speech API (SpeechRecognition)
-// — free, zero new dependency, fits the zero-npm-runtime architecture.
-// Honest limitation: Chrome (desktop + Android — what Alex uses
-// throughout this session's own screenshots) supports this well;
-// Firefox has no support at all, Safari's has historically been
-// unreliable. Not a blocker for a single-user app used from Chrome, but
-// stated plainly rather than assumed universal.
-RPGACE.register('voiceInput', {
-
-  _recognition: null,
-  _listening: false,
-  _baseText: '',
-  _target: null,
-  _lastFocusedField: null,
-
-  // 2026-07-29 — Alex is working one-handed today (fractured hand, "aching
-  // like no tomorrow") and asked to make everything as low-click as
-  // possible while he works mostly by mic. The existing button only
-  // dictated into Oracle chat specifically - generalized the same core
-  // recognition logic (rule 8: one shared mechanism, not a copy per field)
-  // to target WHATEVER text input/textarea last had focus, plus a single
-  // persistent floating mic button (fixed, on every page, body-level per
-  // the fixed-overlay convention) so he never has to hunt for a per-page
-  // button before he can dictate into Beat Log/Journal/Encyclopedia/
-  // anywhere else that takes free text.
-  init: function() {
-    var self = this;
-    // Global function name, matching this exact row's existing sibling
-    // buttons (oracleImageUpload()/sendChatWithImage(), both plain global
-    // functions called via onclick= in the static HTML) rather than
-    // introducing a different calling convention for one new button.
-    window.toggleVoiceInput = function() { self.toggle(); };
-    window.toggleVoiceInputGlobal = function() { self.toggleGlobal(); };
-
-    document.addEventListener('focusin', function(e) {
-      var t = e.target;
-      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') && !t.disabled && !t.readOnly) {
-        self._lastFocusedField = t;
-      }
-    });
-
-    RPGACE.registerBootTask(function() { return self._injectFloatingButton(); });
-  },
-
-  _injectFloatingButton: function() {
-    if (document.getElementById('vi-floating-btn')) return;
-    var btn = document.createElement('button');
-    btn.id = 'vi-floating-btn';
-    btn.title = 'Voice input — dictates into whatever text field you last tapped';
-    btn.textContent = '🎤';
-    btn.style.cssText = 'position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:#0c0c16;border:2px solid rgba(201,168,76,.5);color:var(--gold);font-size:22px;cursor:pointer;z-index:999999;box-shadow:0 6px 20px rgba(0,0,0,.5);';
-    btn.onclick = function() { window.toggleVoiceInputGlobal(); };
-    document.body.appendChild(btn);
-  },
-
-  _supported: function() {
-    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
-  },
-
-  toggle: function() {
-    if (!this._supported()) {
-      RPGACE.utils.toast('🎤 Voice input isn\'t supported in this browser — try Chrome', '#CC4A4A', 3500);
-      return;
-    }
-    if (this._listening) { this._stop(); return; }
-    this._start(document.getElementById('chat-input'));
-  },
-
-  // Targets whatever text input/textarea last had real focus, so ONE
-  // floating button works on every page/popup without per-field wiring.
-  toggleGlobal: function() {
-    if (!this._supported()) {
-      RPGACE.utils.toast('🎤 Voice input isn\'t supported in this browser — try Chrome', '#CC4A4A', 3500);
-      return;
-    }
-    if (this._listening) { this._stop(); return; }
-    var field = this._lastFocusedField;
-    if (!field || !document.body.contains(field)) {
-      RPGACE.utils.toast('🎤 Tap into a text field first, then tap the mic', '#C9A84C', 3000);
-      return;
-    }
-    this._start(field);
-  },
-
-  _start: function(input) {
-    if (!input) return;
-    this._target = input;
-    this._listening = true;
-    this._setButtonState(true);
-    this._baseText = input.value ? input.value.replace(/\s+$/, '') + ' ' : '';
-    this._spawnRecognizer(input);
-  },
-
-  // July 29 — first fix attempt (looping from e.resultIndex instead of 0)
-  // did NOT resolve it: Alex confirmed, via a real reload-and-retest, that
-  // the exact same compounding duplication ("can you" -> "can you can
-  // you" -> ...) still happened. Real evidence this points to: Android
-  // Chrome's SpeechRecognition implementation (what Alex uses) is known
-  // to be far less spec-reliable than desktop Chrome specifically around
-  // e.resultIndex and continuous-mode restarts - relying on the browser's
-  // own "what's new" hint was the wrong foundation. This rewrite ignores
-  // e.resultIndex entirely and tracks our OWN idempotency by array
-  // position (_finalizedCount) instead - once e.results[i].isFinal is
-  // true, that transcript is committed to _baseText exactly once, no
-  // matter what the browser claims changed. Also spawns a genuinely NEW
-  // SpeechRecognition object on every restart rather than reusing the
-  // ended one - the standard, more robust pattern real SpeechRecognition
-  // wrapper libraries use, since reusing an ended instance is undefined/
-  // inconsistent behavior on some mobile implementations. Per this
-  // project's own per-defect cap (CLAUDE.md rule 9 / Engineer skill): this
-  // is the LAST attempt before stopping to get real console evidence
-  // instead of guessing a third time.
-  _spawnRecognizer: function(input) {
-    var self = this;
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    var rec = new SR();
-    rec.lang = 'en-GB';
-    rec.continuous = true;
-    rec.interimResults = true;
-    this._finalizedCount = 0;
-
-    rec.onresult = function(e) {
-      var interimText = '';
-      for (var i = 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          if (i >= self._finalizedCount) {
-            self._baseText += e.results[i][0].transcript + ' ';
-            self._finalizedCount = i + 1;
-          }
-        } else if (i >= self._finalizedCount) {
-          interimText += e.results[i][0].transcript;
-        }
-      }
-      input.value = self._baseText + interimText;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-    rec.onerror = function(e) {
-      RPGACE.utils.toast('🎤 Voice input error: ' + (e.error || 'unknown'), '#CC4A4A', 3000);
-      self._stop();
-    };
-    rec.onend = function() {
-      // Chrome auto-stops recognition after a silence gap even in
-      // continuous mode — restart transparently (with a FRESH recognizer,
-      // see note above) while still toggled on, so a fractured-hand user
-      // isn't stuck re-tapping the button after every pause in speech.
-      if (self._listening) { try { self._spawnRecognizer(input); } catch (e2) {} }
-    };
-
-    this._recognition = rec;
-    try {
-      rec.start();
-    } catch (e) {
-      RPGACE.utils.toast('🎤 Could not start: ' + e.message, '#CC4A4A', 3000);
-      this._listening = false;
-      this._setButtonState(false);
-    }
-  },
-
-  _stop: function() {
-    this._listening = false;
-    if (this._recognition) { try { this._recognition.stop(); } catch (e) {} this._recognition = null; }
-    this._setButtonState(false);
-  },
-
-  _setButtonState: function(active) {
-    var btn = document.getElementById('voice-input-btn');
-    if (btn) {
-      btn.textContent = active ? '🔴' : '🎤';
-      btn.title = active ? 'Stop voice input' : 'Voice input';
-      btn.style.borderColor = active ? '#CC4A4A' : 'rgba(201,168,76,.3)';
-      btn.style.color = active ? '#CC4A4A' : 'var(--gold)';
-    }
-    var fbtn = document.getElementById('vi-floating-btn');
-    if (fbtn) {
-      fbtn.textContent = active ? '🔴' : '🎤';
-      fbtn.title = active ? 'Stop voice input' : 'Voice input — dictates into whatever text field you last tapped';
-      fbtn.style.borderColor = active ? '#CC4A4A' : 'rgba(201,168,76,.5)';
-      fbtn.style.color = active ? '#CC4A4A' : 'var(--gold)';
-    }
-  },
-
-});
-/* ===END:voiceInput=== */
+/* voiceInput module retired Aug 30 2026 (real Fable-audit-driven ask,
+   Alex confirmed: "Remove the browser mic now") - reverses G41 Phase 1's
+   original keep-as-fallback design, ahead of Fish Audio actually shipping.
+   No replacement voice-input path exists yet; that's real, honest, and
+   Alex's own explicit choice, not an oversight. Full source preserved in
+   git history (git log -p -- rpgace_core.js, search "voiceInput"). */
 
 /* ===MODULE:oracleControl=== */
 // Aug 26 2026 (G41 Phase 1, real /CEO Loop 1 plan, Alex-confirmed via
