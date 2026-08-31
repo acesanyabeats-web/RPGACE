@@ -6472,9 +6472,49 @@ RPGACE.register('visualOracle', {
   // 'oracle:response-scanned' hook (fires once per completed reply,
   // already relied on by kg-panel/phylumPath's own auto-detect) rather
   // than a second MutationObserver.
+  // Aug 31 2026 — real, confirmed bug: 2 overlapping captures (e.g. a
+  // Visual Treatment started on one ConID while an earlier one on a
+  // DIFFERENT ConID hadn't returned yet) both stay armed on this same
+  // shared hook with zero request correlation - whichever Oracle reply
+  // arrives first gets grabbed by whichever capture armed first,
+  // regardless of which job it was actually for. Confirmed live: a
+  // "Turnover" ConID's creative_docs ended up holding an "Asylum" beat's
+  // Visual Treatment text. This is a DIFFERENT, deeper flavor of the
+  // already-documented Aug 6 dangling-capture bug (that fix only covered
+  // a capture left armed by a FAILED send - this covers two SUCCESSFUL
+  // sends racing each other). Real fix: refuse a second arm while one is
+  // still outstanding, fail loud (toast) instead of silently
+  // cross-consuming - forces one Oracle round-trip to finish before the
+  // next one starts, which is the only way to guarantee correct
+  // attribution without a much larger request-correlation rewrite across
+  // every real call site (rule 11 - proportionate to the actual risk).
+  _pendingCapture: false,
   _captureNextResponse: function(callback) {
+    var self = this;
+    if (self._pendingCapture) {
+      RPGACE.utils.toast('⚠️ Another Oracle reply is still pending — wait for it to finish before starting a new Visual Treatment/action, or it can save into the wrong ConID', '#CC4A4A', 5000);
+      return;
+    }
+    self._pendingCapture = true;
+    // Real safety release: oracle:response-scanned only fires off a
+    // successfully RENDERED chat reply (RPGACE.utils._runPhylaScan scans
+    // the actual DOM) - if Oracle's own call fails/times out server-side
+    // after a confirmed send (no reply ever renders), this flag would
+    // otherwise get stuck true forever, permanently blocking every future
+    // capture. 90s comfortably covers a real Visual Treatment Doc's own
+    // observed reply time; clearing it after that is strictly safer than
+    // a permanent lock, even in the rare case a genuinely slow reply
+    // still lands right after.
+    var timedOut = false;
+    var timer = setTimeout(function() {
+      timedOut = true;
+      self._pendingCapture = false;
+    }, 90000);
     var off = RPGACE.hooks.on('oracle:response-scanned', function(text) {
       off();
+      if (timedOut) return; // already released; a late reply just isn't captured
+      clearTimeout(timer);
+      self._pendingCapture = false;
       callback(text);
     });
   },
