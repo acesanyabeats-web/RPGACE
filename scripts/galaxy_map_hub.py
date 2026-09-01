@@ -105,11 +105,11 @@ PAGES = [
     {'file': 'galaxy_map_module.html', 'label': 'Level 2 — Modules, Flow, Externals & Skills (+ Level 2.5 table view)', 'level': 'L2', 'kind': 'core',
      'scope': 'All 17 rivers\' real modules', 'desc': 'G4+G5 — real left-to-right module flow per river, terminal badges, dashboard/external/skill tributaries. G-fold (Aug 21 2026, Alex: "2.5 is a table view of 2"): each river section gained a real map/table toggle — table view is galaxy_map_level2_5.py\'s own river→card→module content, imported directly. galaxy_map_level2_5.html no longer exists as its own page.'},
     {'file': 'galaxy_map_current.html', 'label': 'Current Series (map+table, function-level)', 'level': 'Current (L3)', 'kind': 'core',
-     'scope': 'All 45 modules, 436 functions', 'desc': 'G47, folded with the old Level 3 Aug 21 2026 (G65) — real per-function input/handling/output/next detail (table view) AND the real per-module call-chain diagram (map view), same real data, one page. galaxy_map_level3.html is gone, not superseded — its content lives here now.'},
+     'scope': 'All 50 modules, 532 Currents', 'desc': 'G47, folded with the old Level 3 Aug 21 2026 (G65) — real per-function input/handling/output/next detail (table view) AND the real per-module call-chain diagram (map view), same real data, one page. galaxy_map_level3.html is gone, not superseded — its content lives here now. (Real count corrected Sep 1 2026, G110-G113 pass — verified directly against the live generated page: 50 real distinct module sections, matching the count galaxy_map_dimensions.py/G30 already used.)'},
     {'file': 'galaxy_map_level6.html', 'label': 'Branch Ledger', 'level': 'L6', 'kind': 'infra',
-     'scope': '1089 branch points, 45 modules', 'desc': 'G18 — exhaustive, mechanical if/else-if/else/switch branch extraction, listed not narrated.'},
-    {'file': 'galaxy_map_logic_dimension.html', 'label': 'Logic Dimension', 'level': 'Dimension', 'kind': 'inter',
-     'scope': '96 edges across 17 rivers', 'desc': 'Level 5\'s real companion — every river-to-river connection, external connector, and skill stream as a clickable passage.'},
+     'scope': '1173 branch points, 44 modules', 'desc': 'G18 — exhaustive, mechanical if/else-if/else/switch branch extraction, listed not narrated. (Real count corrected Sep 1 2026, G110-G113 pass — 1173 branch-row entries verified directly against the live generated page. 44 vs Current\'s 50 modules is a genuine grain difference, not yet root-caused — some modules apparently contribute zero real branch points and are absent from this ledger; flagged for a future pass, not investigated here.)'},
+    {'file': 'galaxy_map_logic_dimension.html', 'label': 'Logic Dimension (RETIRED — reference only)', 'level': 'Dimension', 'kind': 'inter',
+     'scope': '98 edges across 17 rivers', 'desc': 'G111 (Sep 1 2026) — retired as a standalone destination and de-registered from DIMENSION_PAGES, kept on disk so no link 404s. Its 21 curated decision/logic entries now render on their real home objects (each module\'s Current(L3) section, each river\'s Level 2 section), sourced from the Decision Matrix\'s own table. Its river-to-river/connector/skill passages were always a second presentation of what Level 2\'s per-river legend already draws from the same RIVER_FLOWS/FLOWS_IN/LINKS_BY_RIVER data. Level 6 (Branch Ledger) is untouched and stays link-out only.'},
     {'file': 'galaxy_map_decisions.html', 'label': 'Decisions — Website Perspective', 'level': 'Dimension', 'kind': 'infra',
      'scope': '10 human-confirm gates, RPGACE app code only', 'desc': 'G26 Phase 1 — destructive-delete/taxonomy/pipeline confirm gates, grouped by decision type.'},
     {'file': 'galaxy_map_decision_matrix.html', 'label': 'Decision Matrix — Unified Table + Bubble System', 'level': 'Dimension', 'kind': 'meta',
@@ -136,6 +136,9 @@ PAGES = [
      'scope': '29 boot tasks, 21 nav modules, 5 click triggers, 24 cross-module event edges', 'desc': 'G39 — 4 real, separately-tracked load-trigger categories: boot sequence, page-nav, on-demand click, and (G104, Aug 26 2026) cross-module event signals — every real hook name, not just page:show.'},
     {'file': 'galaxy_map_loops.html', 'label': 'Loops', 'level': 'Dimension', 'kind': 'meta',
      'scope': '1 call/event loop (15 modules), 2 data loops (6 modules each)', 'desc': 'G104 (Aug 26 2026) — Alex\'s own direct pushback on a chat-only loop finding ("surely there are more") plus a real rule-8 catch ("wouldn\'t these hooks calls and shared tables be present in galaxy map too?"). Real Tarjan-SCC synthesis over already-computed call/hook/table data — never a new detector, only recombined and cross-referenced with Alex-touch evidence.'},
+    {'file': 'galaxy_map_local_pipeline.html', 'label': 'Local Analysis Pipeline', 'level': 'Dimension', 'kind': 'inter',
+     'scope': '3 cluster members, 7 pipeline stages, 3 real client call sites, host River XII',
+     'desc': 'G110 (Sep 1 2026) — local_server.py\'s first real Galaxy Map identity, built as ONE Inter dimension joining local_server.py + Whisper + a DIRECT Anthropic call (Alex\'s own ratified direction, not 3 peer connector bubbles), with the governing job-lifecycle logic attached inline. Every citation read directly from local_server/local_server.py, local_server/rpgace_intel.py and rpgace_core.js. librosa deliberately excluded — its existence is still genuinely unconfirmed (G114).'},
 ]
 
 LEVEL_ORDER = ['L0', 'L1', 'L2', 'L2.5', 'Current (L3)', 'L3', 'Zoom (L4)', 'L4', 'L5', 'L6', 'Dimension']
@@ -284,8 +287,15 @@ def build_primer():
     n_rivers = len(RIVER_NAME)
     n_pages = len(PAGES)
     dim_names = ', '.join(label for _f, _i, label, _k, _d in DIMENSION_PAGES)
-    return f'''<div class="primer">
-  <h2>🧭 How to read this map</h2>
+    # G113 (Sep 1 2026) — Alex's own ratified ask: methodology text
+    # stays exactly where it lives, wrapped in a real <details>,
+    # collapsed by default ("rarely need this information unless im
+    # changing the oversight doc... otherwise i just need the data").
+    # This primer is the one methodology block that is NOT the uniform
+    # `.note` footer collapse_methodology() handles for all 21 pages —
+    # it sits mid-page with its own heading, so it is wrapped at source.
+    return f'''<details class="primer">
+  <summary><h2>🧭 How to read this map</h2></summary>
   <p>Three words do most of the work here, and they are <b>not</b> interchangeable. {n_pages} real pages, all of them one of the three.</p>
   <div class="primer-grid">
     <div class="primer-card" style="border-left-color:#C9A84C">
@@ -302,7 +312,7 @@ def build_primer():
     </div>
   </div>
   <p class="primer-foot">Real Aug 25 2026 correction (G75): the map used to show eight ladder stops. Four of them — L2.5, Zoom/L4, L5, L6 — failed the containment test above; they were lenses wearing a level's name. L2.5 is Level 2\'s own table view, Zoom is now an inline toggle on each Current, L5\'s write-ups are on the Decision Matrix, and L6 keeps its page as link-out-only branch detail. Nothing was deleted without its content landing somewhere real first.</p>
-</div>'''
+</details>'''
 
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
@@ -360,6 +370,19 @@ TEMPLATE = """<!DOCTYPE html>
   .note{{max-width:900px;margin:10px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--gold)}}
   .primer{{max-width:1100px;margin:20px auto 6px;padding:0 24px}}
+  /* G113 (Sep 1 2026) — the primer is now a real disclosure element,
+     collapsed by default. Its heading lives inside the summary row, so
+     it needs to render inline rather than as its own block for that row
+     to read as one clickable line. (Tag names deliberately not written
+     out literally here: this pipeline's tag-balance check counts raw
+     markup, and a tag name inside a CSS comment reads as a real
+     unclosed element to it — a real false positive already present
+     elsewhere in this codebase, not worth adding another.) */
+  .primer > summary{{cursor:pointer;list-style:none;text-align:center;padding:6px 0}}
+  .primer > summary::-webkit-details-marker{{display:none}}
+  .primer > summary h2{{display:inline;margin:0}}
+  .primer > summary::before{{content:'\25B6  ';font-size:10px;color:var(--gold)}}
+  .primer[open] > summary::before{{content:'\25BC  '}}
   .primer h2{{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:6px;text-align:center}}
   .primer > p{{font-size:11.5px;color:var(--dim);text-align:center;margin-bottom:14px;line-height:1.6}}
   .primer-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}}

@@ -62,7 +62,17 @@ from graphify_river_group import (  # noqa: E402
     render_fc_bar,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
+# G112 — the same shared, fail-loud anchor verification every other
+# hand-cited code excerpt in this pipeline already uses (rule 8).
+from graphify_river_group import core_js_lines, verify_core_js_anchor  # noqa: E402
 from galaxy_map_decision_matrix import LOGIC_POINTS as DECISION_POINTS  # noqa: E402
+# G111 (Sep 1 2026) — the real dispersal of the 21 curated decision/logic
+# entries onto their home objects, imported from the Decision Matrix's
+# own single source of truth rather than re-derived here (rule 8/R22).
+from galaxy_map_decision_matrix import (  # noqa: E402
+    build_unified as _dm_build_unified, unified_by_module as _dm_by_module,
+    build_module_decisions_html, DISPERSED_DECISIONS_CSS,
+)
 from galaxy_map_decisions import DECISION_POINTS as _DECISION_POINTS  # noqa: E402
 from galaxy_map import _curved_edge, _build_markers, barycenter_order  # noqa: E402
 from galaxy_map import compute_unit_module_touches, UNIT_META, UNIT_BUBBLE_SYSTEM  # noqa: E402
@@ -121,6 +131,97 @@ for _r, _mods in RIVER_MODULES.items():
 # point with no real 'func' key (module-scoped only) is skipped here —
 # it stays real Level-5 content, just not attachable to one function.
 NOTABLE = {(dp['module'], dp['func']): dp for dp in DECISION_POINTS if dp.get('func')}
+
+# G111 (Sep 1 2026) — the real dispersed-decision index, computed ONCE
+# at module scope. build_unified() runs the live anchor verification for
+# every curated point, so calling it per-module (45x) would repeat that
+# whole check 45 times for identical output — the same memoization
+# discipline the G111 pass's own compute_all_oracle_call_counts() fix
+# already established in graphify_river_group.py.
+DECISIONS_BY_MODULE = _dm_by_module(_dm_build_unified())
+
+# ---------------------------------------------------------------------
+# G112 (Sep 1 2026) — Current(L3) page cleanup, PHASE 1.
+#
+# Alex's own ratified scope, verbatim: "phase it as 1 but start with
+# currents instead, get 5 that are most messy with unreadable to normal
+# human explanations in code that should be in plain text - with quote
+# of pure code for the geeks and you."
+#
+# WHICH 5, and how they were actually chosen (real evidence, not taste):
+# the only thing the compact row shows under "Handling" is a raw dump of
+# each real branch CONDITION — literal JavaScript expressions. So the
+# genuinely least-readable entries are the ones with the most, and the
+# most symbol-dense, raw conditions. Scored every real function in every
+# tracked module as
+#     branch_count x mean_condition_length x symbol_density
+# (symbol density = share of !&|=<>?.()[]{}+-*/%: characters), and took
+# the real top 5:
+#     careerStatCard._detailFor                    103.1  (18 branches)
+#     contentProductionLive._openProductionPanel    68.0  (16 branches)
+#     refCorpus.findMatches                         67.4  ( 9 branches)
+#     visualOracle._saveDocToProduction             64.6  (17 branches)
+#     conidPot._quickDetectPhyla                    64.2  ( 5 branches,
+#                                                          66-char mean)
+# The other 431 entries are deliberately untouched — this is phase 1.
+#
+# Every `lines` range below is anchor-verified against the LIVE
+# rpgace_core.js at build time by verify_core_js_anchor() (fails loud,
+# never renders a stale excerpt), and the quoted code is read straight
+# out of the file by core_js_lines() — never retyped, never paraphrased
+# as though it were literal source.
+PLAIN_ENGLISH = {
+    ('careerStatCard', '_detailFor'): {
+        'anchor': '  _detailFor: function(it) {',
+        'lines': (26497, 26521),
+        'headline': 'Turns one row of raw history into the four sentences the career card actually shows you.',
+        'input': 'One activity item — a plain object with a `type` string ("proposal", "journal", "beat", and so on) and `row`, the untouched database record it came from.',
+        'does': 'It is one long sorting exercise. For each kind of activity it knows where that kind keeps its real information, and it digs the same four answers out of a differently-shaped record every time: what was done, what the outcome was, where it ended up, and why it mattered. Most of the dense-looking conditions are it trying several likely fields in order and settling for the first one that is actually filled in — an accepted taxonomy proposal, for instance, might carry its description as an insight text, a new branch name, or the first line of its explainers, depending on which part of the app created it.',
+        'contributes': 'Without this, the career card could only show raw table rows. It is the single translation layer between six unrelated activity tables and one consistent human-readable card.',
+        'level': 'Current (L3) — a leaf function inside careerStatCard, itself a module of River II (App Shell & Navigation).',
+        'touches': 'No Supabase call and no Oracle call of its own — it is pure formatting over data another function already fetched. Its only real output is text rendered to Alex.',
+    },
+    ('contentProductionLive', '_openProductionPanel'): {
+        'anchor': '  _openProductionPanel: function() {',
+        'lines': (22560, 22567),
+        'headline': 'Opens the slide-in Production Panel for whichever ConID is currently selected — and builds a different panel depending on what kind of content it is.',
+        'input': 'Nothing passed in. It reads the currently-active ConID off the module itself, then fetches that production\'s real `content_type` from Supabase.',
+        'does': 'First it refuses to open twice (if the panel is already on screen it stops immediately). Then it builds the panel shell by hand in code — header, close button, scrolling body — and only after the database answers does it decide which set of phases to draw: a tutorial gets the original 3-phase recording flow, a music video gets the 4-phase reference/direction/script/video flow, and OBS raw footage gets its own 4-stage flow. Almost all the branching this function is scored on is that fork, plus the many small "does this ConID already have a script / a treatment / a video job" checks that decide which buttons are live.',
+        'contributes': 'This is the real front door to Content Pipeline work. Every stage a beat passes through after Beat Log is reached from this one panel.',
+        'level': 'Current (L3) — inside contentProductionLive, a module of River XI (Content Pipeline).',
+        'touches': 'Reads `content_productions` from Supabase on every open, and renders directly to Alex. It does not call Oracle itself — the buttons it draws do.',
+    },
+    ('refCorpus', 'findMatches'): {
+        'anchor': '  findMatches: function(bpm, mood, scale, energy, genre) {',
+        'lines': (20805, 20838),
+        'headline': 'Given a beat\'s tags, scores every reference track in the corpus and returns the closest ones.',
+        'input': 'Five values off the beat: BPM, mood, scale, energy and genre. Missing BPM defaults to 130 and missing energy to 3, so it never fails on a half-filled form.',
+        'does': 'Pulls the most recent 200 reference tracks and gives each one a score. Tempo is worth the most: within 5 BPM scores 4, within 10 scores 3, within 15 scores 1, and anything further away actively loses 2 points. A matching mood or genre adds 3 each, a matching scale adds 2, and an energy rating within one step adds 2. Anything that ends up at zero or below is dropped, and what is left comes back sorted best-first.',
+        'contributes': 'It is how Beat Log suggests comparable tracks. Worth knowing honestly: the `scale` and `genre` columns are still empty for all 32 corpus rows, so two of the five signals contribute nothing in practice today — which is the real reason matches feel repetitive.',
+        'level': 'Current (L3) — inside refCorpus, a module of River VII (the Library/Corpus current).',
+        'touches': 'One real Supabase read of `reference_tracks`. No Oracle call. Its results feed the UI Alex sees in Beat Log.',
+    },
+    ('visualOracle', '_saveDocToProduction'): {
+        'anchor': '  _saveDocToProduction: function(docSlug, text, productionId, videoJobId) {',
+        'lines': (6542, 6561),
+        'headline': 'Files a document Oracle just produced onto the right ConID, and moves that ConID forward a stage if the document warrants it.',
+        'input': 'A slug naming which document this is (`visual_treatment`, `obs_script`, `captions`), the document text itself, and the ids of the production and video job it belongs to.',
+        'does': 'If there is no production to attach to it stops loudly with a visible warning rather than silently dropping the document. Otherwise it reads the production\'s existing documents, adds this one under its slug, and then checks whether arriving should also advance the ConID\'s stage: a visual treatment or an OBS script moves it from Idea to Scripted, and captions move it all the way to Posted. Every one of those checks is deliberately forward-only — it will never drag a ConID backwards past a stage it has genuinely already reached.',
+        'contributes': 'This is the join between Oracle producing text and the Content Pipeline knowing progress happened. Before it existed, Alex had to click a separate "mark this stage done" button by hand.',
+        'level': 'Current (L3) — inside visualOracle, a module of River III (the Oracle current), writing into River XI\'s data.',
+        'touches': 'Reads and then writes `content_productions` (through the server-side write proxy, not the anon key). Renders a toast to Alex on failure.',
+    },
+    ('conidPot', '_quickDetectPhyla'): {
+        'anchor': '  _quickDetectPhyla: function(text) {',
+        'lines': (24386, 24395),
+        'headline': 'A free, instant guess at which taxonomy phyla an idea belongs to — plain keyword spotting, no AI involved.',
+        'input': 'One string: the text of a content idea.',
+        'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',
+        'contributes': 'It exists precisely so an Oracle call is not spent on a guess. It is the cheap prefilter the token-cost rule asks for — a real answer when the keywords are obvious, and silence rather than a fabricated one when they are not.',
+        'level': 'Current (L3) — inside conidPot, a module of River XI (Content Pipeline).',
+        'touches': 'Nothing at all: no Supabase, no Oracle, no network. Pure local string matching, which is the whole point of it.',
+    },
+}
 
 # G73 (Aug 26 2026) — Alex's own direct ask: "add github repos that are
 # used into galaxy map... those might be the missing links that end
@@ -574,10 +675,22 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
     # mechanism, not two (rule 8 — the old <details> collapse and the
     # new picker were both solving "too much at once," no need for both).
     tier2_panels = []
-    for t_targets, t_color, t_emoji, t_label, t_link_href, t_unit in (
-        (decision_targets_mod, DECISION_COLOR, '🗑️', 'Decision', 'galaxy_map_decision_matrix.html', 'decision'),
-        (load_signal_mod, LOAD_COLOR, '⏳', 'Load', 'galaxy_map_load.html', 'load'),
-        (logic_targets_mod, LOGIC_COLOR, '🧠', 'Logic', 'galaxy_map_logic_dimension.html', 'logic'),
+    for t_targets, t_color, t_emoji, t_label, t_link_href, t_unit, t_link_label in (
+        (decision_targets_mod, DECISION_COLOR, '🗑️', 'Decision', 'galaxy_map_decision_matrix.html', 'decision', 'open Decision Dimension'),
+        (load_signal_mod, LOAD_COLOR, '⏳', 'Load', 'galaxy_map_load.html', 'load', 'open Load Dimension'),
+        # G111 (Sep 1 2026) — repointed off the retired Logic Dimension
+        # page onto the real home of the data this bubble is actually
+        # built from. compute_logic_attribution_targets() resolves real
+        # RIVER_FLOWS river-to-river connections onto a function; Level
+        # 2's own per-river section is where those same RIVER_FLOWS
+        # edges genuinely render (verified directly — galaxy_map_
+        # module.py imports RIVER_FLOWS/FLOWS_IN/LINKS_BY_RIVER and
+        # draws them as its mid-ring bubbles + legend). The retired
+        # page was only ever a second presentation of that same data.
+        (logic_targets_mod, LOGIC_COLOR, '🧠', 'Logic',
+         (f'galaxy_map_module.html#river-{_river_of[module_name]}'
+          if module_name in _river_of else 'galaxy_map_module.html'), 'logic',
+         'see these river connections at Level 2'),
     ):
         t_targets = t_targets or {}
         leaves = [
@@ -592,7 +705,7 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         tier2_panels.append(
             f'<div class="tier2-panel ev-group" data-unit="{t_unit}"><div class="tier2-head" style="color:{t_color}">'
             f'{t_emoji} {t_label} — {len(leaves)} real function(s) in this band '
-            f'<a href="{t_link_href}" class="drill-link" style="font-size:9px;margin-left:8px">🔽 open {t_label} Dimension ↗</a>'
+            f'<a href="{t_link_href}" class="drill-link" style="font-size:9px;margin-left:8px">🔽 {t_link_label} ↗</a>'
             f'</div>{panel_svg}</div>'
         )
         band_ev_present.append((t_unit, t_emoji, t_label, t_color))
@@ -757,6 +870,45 @@ def esc(s):
     return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
+def build_plain_english(mod, func):
+    """G112 phase 1 — the real plain-English rewrite for one of the 5
+    genuinely messiest Currents, rendered ALONGSIDE a real quoted
+    excerpt of the actual current code (Alex's own "with quote of pure
+    code for the geeks and you"), never instead of it.
+
+    Returns '' for every other function — 431 of 436 entries are
+    deliberately untouched in this phase."""
+    pe = PLAIN_ENGLISH.get((mod, func))
+    if not pe:
+        return ''
+    a, b = pe['lines']
+    # Fails loud if the hand-cited range no longer holds its anchor —
+    # a moved excerpt is worse than no excerpt, and this project has
+    # been saved by exactly this check several times already.
+    verify_core_js_anchor(f'{mod}.{func} (G112 plain-English)', pe['anchor'], a, b)
+    code = core_js_lines(a, b).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    rows = ''.join(
+        f'<div class="pe-row"><b>{label}</b><p>{pe[key]}</p></div>'
+        for label, key in (
+            ('What it gets', 'input'),
+            ('What it actually does', 'does'),
+            ('What it contributes', 'contributes'),
+            ('Where it sits', 'level'),
+            ('What it touches (infra / inter)', 'touches'),
+        )
+    )
+    return (
+        '<div class="pe-block">'
+        f'<div class="pe-head">📖 In plain English <span class="pe-tag">G112 · rewritten phase 1</span></div>'
+        f'<div class="pe-headline">{pe["headline"]}</div>'
+        '<div class="pe-grid">'
+        f'<div class="pe-prose">{rows}</div>'
+        '<div class="pe-code"><div class="pe-code-label">The real code, quoted from '
+        f'<code>rpgace_core.js</code> lines {a}–{b} (verified at build time)</div>'
+        f'<pre>{code}</pre></div>'
+        '</div></div>')
+
+
 def build_current_block(mod, func, branches, ui, oracle_n, sb_touches, notable):
     badges = []
     if ui.get('input'):
@@ -805,6 +957,7 @@ def build_current_block(mod, func, branches, ui, oracle_n, sb_touches, notable):
 
     return f'''<div class="current-block" id="cur-{mod}-{func}">
   <div class="cur-head"><span class="cur-name">{esc(func)}()</span>{''.join(badges)}{star}</div>
+  {build_plain_english(mod, func)}
   <div class="cur-io">
     <div class="io-col"><div class="io-label">⬅ Input</div>{prev_chips}</div>
     <div class="io-col"><div class="io-label">Handling ({len(branches)} real branch point(s))</div>{branch_rows}{l6_link}</div>
@@ -960,10 +1113,15 @@ def build_module_section(mod):
     # used, so nothing outside this file needed a scheme change.
     map_inner = build_module_map_inner(mod)
     infra_inter_row = build_module_infra_inter_row(mod)
+    # G111 — this module's own dispersed curated decisions, if it has
+    # any. Evidence-gated inside the helper (returns '' for the 32 of
+    # 45 modules that genuinely carry none), so no empty box appears.
+    decisions_row = build_module_decisions_html(mod, DECISIONS_BY_MODULE)
     return f'''<section class="mod-section" id="mod-{mod}" style="display:none">
   <div class="mhead"><h2>{mod}</h2><span class="river-chip">{river_label}</span>
     <span class="mtotal">{len(funcs)} real Current(s)</span></div>
   {infra_inter_row}
+  {decisions_row}
   <div class="cur-toggle-row">
     <div class="cur-toggle-btn active" data-view="map">🔽 Map view</div>
     <div class="cur-toggle-btn" data-view="table">📊 Table view</div>
@@ -1052,6 +1210,25 @@ TEMPLATE = """<!DOCTYPE html>
   .hop-chip.handoff{{color:#8ec5ff}}
   .hop-btn.handoff{{color:#8ec5ff;border-color:rgba(142,197,255,0.35);background:rgba(142,197,255,0.08)}}
   .handoff-note{{font-size:9px;color:var(--dim);margin-top:6px;line-height:1.5}}
+  /* G112 (Sep 1 2026) — the plain-English rewrite block. Prose and the
+     real quoted code sit side by side ("alongside", Alex's own word),
+     collapsing to one column on a narrow screen rather than forcing a
+     horizontal scroll. */
+  .pe-block{{margin:10px 0 12px;border:1px solid rgba(127,179,213,0.3);border-radius:10px;
+    background:rgba(127,179,213,0.05);padding:11px 13px}}
+  .pe-head{{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#7FB3D5;margin-bottom:5px}}
+  .pe-tag{{font-size:8.5px;font-weight:700;color:var(--dim);margin-left:8px;letter-spacing:.3px}}
+  .pe-headline{{font-size:13px;color:#fff;line-height:1.55;margin-bottom:10px}}
+  .pe-grid{{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:14px}}
+  @media (max-width:900px){{ .pe-grid{{grid-template-columns:1fr}} }}
+  .pe-row{{margin-bottom:9px}}
+  .pe-row b{{display:block;font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:#7FB3D5;margin-bottom:3px}}
+  .pe-row p{{font-size:11.5px;color:#c8c8d8;line-height:1.72}}
+  .pe-code-label{{font-size:9.5px;color:var(--dim);margin-bottom:5px;line-height:1.5}}
+  .pe-code pre{{background:rgba(0,0,0,0.42);border:1px solid rgba(255,255,255,0.08);border-radius:7px;
+    padding:9px 11px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:9.5px;line-height:1.55;
+    color:#b6d4e8;overflow-x:auto;max-height:420px;overflow-y:auto;white-space:pre}}
+{dd_css}
 {idd_css}
 {dim_css}
   a{{color:var(--gold)}}
@@ -1191,7 +1368,8 @@ def main():
     html = TEMPLATE.format(mod_tabs=mod_tabs, mod_sections=mod_sections,
                             n_funcs=total_funcs, n_mods=len(all_mods),
                             dim_index=dimension_index_html(OUT.name),
-                            dim_css=DIMENSION_INDEX_CSS, idd_css=INFRA_DRILLDOWN_CSS)
+                            dim_css=DIMENSION_INDEX_CSS, idd_css=INFRA_DRILLDOWN_CSS,
+                            dd_css=DISPERSED_DECISIONS_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

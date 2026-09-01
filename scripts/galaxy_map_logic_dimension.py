@@ -204,14 +204,33 @@ TEMPLATE = """<!DOCTYPE html>
   .empty-note{{font-size:11px;color:var(--dim);font-style:italic}}
   .note{{max-width:900px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--purple)}}
+  /* G111 (Sep 1 2026) — page-level retirement banner. Deliberately the
+     same visual language (red left rule, translucent red ground) as
+     river_retirement_note_html()'s own RIVER_RETIRED banner, so a
+     retired PAGE and a retired RIVER read as the same kind of fact. */
+  .page-retired{{max-width:900px;margin:14px auto 0;padding:12px 16px;border-left:3px solid #cc4a4a;
+    background:rgba(204,74,74,.10);border-radius:6px;font-size:11.5px;line-height:1.7;color:#c8c8d8}}
+  .page-retired b{{color:#fff}}
+  .page-retired a{{color:var(--gold)}}
+  .page-retired code{{background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:10.5px}}
 {dim_css}
 </style>
 </head>
 <body>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Logic Dimension (Level 5 extension)</div>
-  <h1>📖 Logic Dimension — Every Real Edge, Grouped By River, Click To Read</h1>
-  <p>A real, additive companion to Level 5's own curated core-logic decision points (unchanged, cross-linked above) — every real river-to-river connection, external connector, and skill stream, grouped the same way modules already are, each one a clickable passage. Where a connection has real function-level attribution, that deeper detail merges into the same passage rather than a separate line.</p>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Logic Dimension (RETIRED — kept for reference)</div>
+  <h1>📖 Logic Dimension — Retired As A Destination (G111)</h1>
+  <p>A real, additive companion to the curated core-logic decision points — every real river-to-river connection, external connector, and skill stream, grouped the same way modules already are, each one a clickable passage. Where a connection has real function-level attribution, that deeper detail merges into the same passage rather than a separate line.</p>
+</div>
+<div class="page-retired">
+  <b>⚠️ Retired as a standalone destination (Sep 1 2026, G111) — deprecated, not deleted.</b><br>
+  Alex's own ratified scope: the <b>21 curated decision/logic entries</b> now live on their real home objects instead of on a separate page — each module's own section on
+  <a href="galaxy_map_current.html">Current (L3)</a> and each river's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
+  <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>'s single source-of-truth table (R22). The exhaustive, mechanical branch list stays exactly where it was —
+  <a href="galaxy_map_level6.html">the Branch Ledger (L6)</a>, link-out only, never dispersed or inlined.<br>
+  Everything still rendered below is a <i>second presentation</i> of data <a href="galaxy_map_module.html">Level 2</a>'s own per-river legend already draws from the same
+  <code>RIVER_FLOWS</code>/<code>FLOWS_IN</code>/<code>LINKS_BY_RIVER</code>/<code>ALL_SKILLS</code>/<code>SKILL_SECONDARY_RIVER</code> tables — kept live here so no existing link breaks, but
+  this page is no longer listed in the left-nav Dimension index.
 </div>
 <div class="tabs">{tabs}</div>
 <div class="wrap">{sections}</div>

@@ -106,6 +106,18 @@ from graphify_river_group import inject_level_rail  # noqa: E402
 from galaxy_map_level2_5 import (  # noqa: E402
     build_river_section as l25_build_river_section, RIVER_NUMS as L25_RIVER_NUMS,
 )
+# G111 (Sep 1 2026) — the retired Logic Dimension's 21 curated entries,
+# dispersed onto their real home objects. Imported from the Decision
+# Matrix's own single source of truth (R22), never re-typed here.
+from galaxy_map_decision_matrix import (  # noqa: E402
+    build_unified as _dm_build_unified, unified_by_river as _dm_by_river,
+    build_river_decisions_html, DISPERSED_DECISIONS_CSS,
+)
+
+# Computed once — build_unified() runs live anchor verification over
+# every curated point, so a per-river call would repeat that same check
+# 17 times for identical output.
+DECISIONS_BY_RIVER = _dm_by_river(_dm_build_unified())
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
 # "Human Gate — Alex" node (rule 8, one consistent identity, not a
@@ -897,6 +909,11 @@ def build_river_section(rnum):
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
         + river_retirement_note_html(rnum)
+        # G111 (Sep 1 2026) — this river's own dispersed curated
+        # decisions, rolled up from the Decision Matrix's single source
+        # of truth. Evidence-gated inside the helper: '' for the 11 of
+        # 17 rivers that genuinely carry none.
+        + build_river_decisions_html(rnum, DECISIONS_BY_RIVER)
         + f'<div class="cur-toggle-row">'
         f'<div class="cur-toggle-btn active" data-view="map">🌊 Map view</div>'
         f'<div class="cur-toggle-btn" data-view="table">📊 Table view (Level 2.5)</div>'
@@ -990,6 +1007,7 @@ TABS_TEMPLATE = """<!DOCTYPE html>
   .extchip b{{color:#fff}}
   .extchip span{{color:var(--dim);font-size:9.5px}}
   .extnone,.dimstub{{font-size:10.5px;color:var(--dim);font-style:italic}}
+{dd_css}
 </style>
 </head>
 <body>
@@ -1066,7 +1084,8 @@ def main():
             f'<div class="tab" data-target="river-{rnum}" data-color="{color}">{short}</div>'
         )
         sections.append(build_river_section(rnum))
-    html = TABS_TEMPLATE.format(tabs='\n'.join(tabs), sections='\n'.join(sections))
+    html = TABS_TEMPLATE.format(tabs='\n'.join(tabs), sections='\n'.join(sections),
+                                dd_css=DISPERSED_DECISIONS_CSS)
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

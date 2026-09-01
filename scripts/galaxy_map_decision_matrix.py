@@ -100,7 +100,7 @@ LOGIC_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy dashboard card: popup vs. page fallback',
         'decider': 'Code logic (real pending-review count)',
-        'module': 'dashDeck', 'lines': (11097, 11101),  # re-verified Aug 27 2026, drifted from 10808
+        'module': 'dashDeck', 'lines': (11143, 11147),  # re-verified Aug 27 2026, drifted from 10808
         'anchor': "_pendingReviewCount !== 0",
         'decides': 'Whether clicking the "🌳 Taxonomy & Review" dashboard card opens the review-queue popup or navigates straight to the taxonomy tree page.',
         'changes': 'A real, live-queried count (RPGACE.modules.dashDeck._pendingReviewCount, set by _refreshGlance from a real taxonomy_proposals SELECT) — not a static config flag.',
@@ -111,7 +111,7 @@ LOGIC_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (14511, 14542),  # re-verified Aug 27 2026, drifted from 14222
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (14640, 14671),  # re-verified Sep 1 2026 (G111 pass). Real finding: this range was ALREADY stale at HEAD (anchor sat at 14551, 9 lines PAST the cited end of 14542) — it was not merely line-drift from later edits, so the range was rebuilt to START at the real anchor rather than shifted. Two live hits exist for this anchor text; the real one is phylumPath's own definition, not oracleTreeGrounding's `_decidePlacementScored` thin delegate.
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -122,7 +122,7 @@ LOGIC_POINTS = [
         'id': 'dedup-extend',
         'title': 'Taxonomy dedup: extend existing leaf vs. reject',
         'decider': 'Code logic (real empty-newSteps + existing-leaf check)',
-        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (14814, 14827),  # re-verified Aug 27 2026, drifted from 14525
+        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (14957, 14970),  # re-verified Aug 27 2026, drifted from 14525
         'anchor': '_insertNewSteps: function',
         'decides': 'What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).',
         'changes': "attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.",
@@ -133,7 +133,7 @@ LOGIC_POINTS = [
         'id': 'oracle-grounding-gate',
         'title': "Oracle grounding gate: does this prompt get RPGACE's own facts injected",
         'decider': 'Code logic (real keyword match against the live prompt)',
-        'module': 'oracleAppGrounding', 'lines': (8218, 8230),  # re-verified Aug 27 2026, drifted from 7979
+        'module': 'oracleAppGrounding', 'lines': (8258, 8270),  # re-verified Aug 27 2026, drifted from 7979
         'anchor': 'anatomyHit = self.ANATOMY_KEYWORDS.some',
         'decides': "Whether a real window.callOracle() send gets RPGACE's own SELF_KNOWLEDGE/anatomy grounding block injected into the system prompt before it goes out.",
         'changes': "The user's own last message text, scanned against 2 real keyword lists (TRIGGER_KEYWORDS for general app-knowledge grounding, ANATOMY_KEYWORDS for module-architecture grounding) — or a forced override via forceGroundNext() for a command that always needs it (Prod Oracle's \"5thDimension\").",
@@ -144,7 +144,7 @@ LOGIC_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (22010, 22018),  # re-verified Aug 27 2026: real code now reads flow.primary[row.status] via _flowFor's dispatcher (a real, legit A7 refactor), not the bare MUSIC_VIDEO_PRIMARY_ACTION literal anymore - anchor text updated to match, not just the line range
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (22186, 22194),  # re-verified Aug 27 2026: real code now reads flow.primary[row.status] via _flowFor's dispatcher (a real, legit A7 refactor), not the bare MUSIC_VIDEO_PRIMARY_ACTION literal anymore - anchor text updated to match, not just the line range
         'anchor': 'flow.primary[row.status]',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (20043, 20051),  # re-verified Aug 27 2026, drifted from 19735
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (20215, 20223),  # re-verified Aug 27 2026, drifted from 19735
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (19665, 19685),  # re-verified Aug 27 2026, drifted from 19359
+        'module': 'beatLog', 'func': '_getForm', 'lines': (19821, 19841),  # re-verified Aug 27 2026, drifted from 19359
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,
@@ -205,7 +205,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'taxonomy-placement-editor',
         'title': 'Taxonomy Placement Editor — editing a proposed step name/explainer before it writes to taxonomy_tree',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (14662, 14662),  # re-verified Aug 27 2026, drifted from 14373
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (14805, 14805),  # re-verified Aug 27 2026, drifted from 14373
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
         # Aug 25 2026 — real dead-anchor fix (see the note on the gate
@@ -254,6 +254,11 @@ def build_unified():
             # already live on this page's own matrix), fixed at the one
             # shared source rather than patched per-consumer (rule 8).
             'detail': p['logic'], 'link': 'galaxy_map_decisions.html#dp-' + p['id'],
+            # G111 (Sep 1 2026) — additive only, for the real dispersal
+            # renderer below. Existing consumers read named keys, so
+            # extra keys are inert for them (rule 8: one dataset, not a
+            # second hand-typed copy on each home object's own page).
+            'trigger': p.get('trigger', ''), 'decider': 'Alex (human confirm gate)',
         })
     for p in LOGIC_POINTS:
         # G75 — anchor-verified HERE now that the write-ups live on this
@@ -267,6 +272,11 @@ def build_unified():
             'river': MODULE_TO_RIVER.get(p['module']),
             'depth': 'curated',  # every curated core-logic point IS the curation
             'detail': p['decides'], 'link': '#d-' + p['id'],
+            # G111 — the curated write-up's own real prose, carried so a
+            # dispersed copy on the home object shows the real substance
+            # rather than a bare title + link.
+            'trigger': p.get('changes', ''), 'decider': p.get('decider', ''),
+            'result': p.get('result', ''),
         })
     for p in TEXT_INPUT_POINTS:
         _verify_anchor(p)
@@ -288,6 +298,9 @@ def build_unified():
             'river': river_of(p),
             'depth': 'curated' if p['id'] in L5_IDS else 'standard',
             'detail': p['decides'], 'link': p.get('link') or default_link,
+            # G111 — a text-input point has no `trigger`/`result` prose
+            # of its own; stated honestly as empty rather than padded.
+            'trigger': '', 'decider': 'Alex (free text)', 'result': '',
         })
     out.sort(key=lambda d: (d['river'] or 99, d['kind'], d['title']))
     return out
@@ -302,6 +315,150 @@ DEPTH_LABEL = {
     'curated': 'Current (L3) + curated write-up here + branch detail',
     'standard': 'Current (L3) + branch detail only',
 }
+
+
+# ---------------------------------------------------------------------
+# G111 (Sep 1 2026) — the real DISPERSAL API.
+#
+# Alex's own ratified scope: "the 21 curated decision/logic entries
+# disperse onto their real home objects (module/river/connector pages);
+# the Logic Dimension page itself retires as a standalone destination;
+# Level 6 (1180 mechanical branch points) stays exactly as-is, link-out
+# only, never dispersed or inlined."
+#
+# Real design, not invented: this file's own build_unified() stays the
+# ONE source of truth (CEO SKILL.md R22 — the table is authoritative,
+# every other rendering follows it). These helpers are a pure grouping +
+# rendering layer over that same list, imported by each home object's
+# own page, so a dispersed copy can never drift from the matrix (rule 8
+# — the exact failure a hand-typed second copy on 45 module pages would
+# have guaranteed).
+#
+# What is deliberately NOT dispersed: Level 6's exhaustive ~1180
+# mechanical branch points. Each dispersed entry instead carries a real
+# link OUT to its own function's Level 6 block (`#fn-<mod>-<func>`, the
+# real per-function anchor scheme galaxy_map_level6.py already emits) —
+# the "keep Level 6 as a link-out-only exhaustive reference" half of
+# G111's own ratified scope.
+DISPERSED_DECISIONS_CSS = '''
+.dd-disperse{margin:14px 0 6px;border:1px solid rgba(226,84,84,0.28);border-radius:10px;background:rgba(226,84,84,0.05);padding:10px 13px}
+.dd-disperse > h4{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#E25454;margin-bottom:3px}
+.dd-disperse > .dd-sub{font-size:10px;color:#8a8a9a;line-height:1.55;margin-bottom:9px}
+.dd-item{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-left:3px solid #E25454;border-radius:7px;padding:7px 11px;margin-bottom:7px}
+.dd-item summary{cursor:pointer;font-size:11.5px;font-weight:700;color:#E2E2EC;list-style:none}
+.dd-item summary::-webkit-details-marker{display:none}
+.dd-item summary::before{content:'▶ ';color:#E25454;font-size:8.5px}
+.dd-item[open] summary::before{content:'▼ '}
+.dd-item .dd-kind{font-size:9px;font-weight:700;letter-spacing:.4px;color:#8a8a9a;margin-left:6px}
+.dd-item .dd-body{margin-top:7px}
+.dd-item .dd-row{font-size:10.5px;color:#b8b8c8;line-height:1.6;margin-bottom:5px}
+.dd-item .dd-row b{color:#E2E2EC;font-weight:700}
+.dd-item code{background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:4px;font-size:10px}
+.dd-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.07)}
+.dd-links a{font-size:9.5px;color:#C9A84C;text-decoration:none;border-bottom:1px dotted #C9A84C}
+.dd-links a:hover{color:#fff;border-bottom-color:#fff}
+'''
+
+
+def unified_by_module(unified=None):
+    """{module: [entry, ...]} — the real module-grain home for each of
+    the 21. Never invents a home: an entry whose `module` isn't a real
+    tracked LEVEL3_MODULES member (only `legacy (sendChat)`, main.js's
+    own pre-merge chat handler) is genuinely returned under that same
+    literal key, and it is the CALLER's job to notice it has no real
+    Current(L3) section — see build_river_decisions_html()'s own
+    honest handling."""
+    out = {}
+    for d in (unified if unified is not None else build_unified()):
+        out.setdefault(d['module'], []).append(d)
+    return out
+
+
+def unified_by_river(unified=None):
+    """{river_number: [entry, ...]} — the real river-grain roll-up.
+    An entry with no resolvable river (dashDeck, which is deliberately
+    NOT one of the 45 RIVER_MODULES-tracked modules) lands under the
+    key None and is rendered on no river page, stated plainly rather
+    than force-assigned to a river it doesn't belong to."""
+    out = {}
+    for d in (unified if unified is not None else build_unified()):
+        out.setdefault(d['river'], []).append(d)
+    return out
+
+
+_KIND_ONE = {'gate': '🗑️ Human confirm gate', 'logic': '🧠 Curated core logic',
+             'text_input': '⌨️ Text input'}
+
+
+def _dd_item(d, matrix_prefix='galaxy_map_decision_matrix.html'):
+    """One real dispersed entry. `matrix_prefix` exists because the
+    Decision Matrix's own curated write-ups use a bare same-page
+    `#d-<id>` anchor; every OTHER page needs the filename in front of
+    it, and hand-typing that per consumer is exactly the drift this
+    helper exists to prevent."""
+    link = d['link'] or ''
+    if link.startswith('#'):
+        link = matrix_prefix + link
+    rows = []
+    if d.get('decider'):
+        rows.append(f'<div class="dd-row"><b>Who decides:</b> {esc(d["decider"])}</div>')
+    rows.append(f'<div class="dd-row"><b>What it decides:</b> {esc(d["detail"])}</div>')
+    if d.get('trigger'):
+        rows.append(f'<div class="dd-row"><b>What feeds it:</b> {esc(d["trigger"])}</div>')
+    if d.get('result'):
+        rows.append(f'<div class="dd-row"><b>What comes out:</b> {esc(d["result"])}</div>')
+    links = [f'<a href="{link}">📋 full write-up ↗</a>'] if link else []
+    if d['func'] and d['module'] in LEVEL3_MODULES:
+        links.append(f'<a href="galaxy_map_current.html#mod-{esc(d["module"])}">🔽 this module\'s Currents ↗</a>')
+        # G111's own "Level 6 stays link-out only" half — the real
+        # per-function Branch Ledger anchor, never the branch content
+        # itself inlined here.
+        links.append(f'<a href="galaxy_map_level6.html#fn-{esc(d["module"])}-{esc(d["func"])}">'
+                     f'🔬 every branch in this function (Branch Ledger) ↗</a>')
+    elif d['module'] in LEVEL3_MODULES:
+        links.append(f'<a href="galaxy_map_level6.html#m-{esc(d["module"])}">🔬 this module\'s Branch Ledger ↗</a>')
+    fn = f'<code>{esc(d["module"])}.{esc(d["func"])}()</code>' if d['func'] else f'<code>{esc(d["module"])}</code>'
+    return (f'<details class="dd-item"><summary>{esc(d["title"])}'
+            f'<span class="dd-kind">{_KIND_ONE.get(d["kind"], d["kind"])}</span></summary>'
+            f'<div class="dd-body"><div class="dd-row"><b>Where it lives:</b> {fn}</div>'
+            f'{"".join(rows)}'
+            f'<div class="dd-links">{"".join(links)}</div></div></details>')
+
+
+def build_module_decisions_html(mod, by_module=None):
+    """Real per-MODULE dispersed block for Current(L3). Returns '' for
+    a module with no real curated decision — evidence-gated, never an
+    empty placeholder box on 39 of 45 module pages."""
+    by_module = by_module if by_module is not None else unified_by_module()
+    items = by_module.get(mod, [])
+    if not items:
+        return ''
+    return (
+        '<div class="dd-disperse">'
+        f'<h4>🚦 Curated decisions &amp; core logic in {esc(mod)} — {len(items)} real point(s)</h4>'
+        '<div class="dd-sub">Dispersed here from the retired Logic Dimension page (G111) — this module '
+        'is these decisions\' real home. The exhaustive, mechanical branch list stays where it belongs, '
+        'on the Branch Ledger (L6), linked per function below rather than inlined.</div>'
+        + ''.join(_dd_item(d) for d in items) + '</div>')
+
+
+def build_river_decisions_html(rnum, by_river=None):
+    """Real per-RIVER roll-up for Level 2. A genuinely different grain
+    from the module block above (which module in this river carries a
+    decision at all), not a second copy of the same question — the same
+    non-duplication precedent as the L0/River/Module levels of the
+    Dimensions Matrix. Evidence-gated: '' for a river with none."""
+    by_river = by_river if by_river is not None else unified_by_river()
+    items = by_river.get(rnum, [])
+    if not items:
+        return ''
+    return (
+        '<div class="dd-disperse">'
+        f'<h4>🚦 Curated decisions &amp; core logic in this river — {len(items)} real point(s)</h4>'
+        '<div class="dd-sub">Dispersed here from the retired Logic Dimension page (G111). Each one\'s full '
+        'detail lives on its own module\'s Current(L3) section; its exhaustive branch list stays on the '
+        'Branch Ledger (L6). Source of truth for all of it: the Decision Matrix table.</div>'
+        + ''.join(_dd_item(d) for d in items) + '</div>')
 
 
 def build_logic_writeups():
