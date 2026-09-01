@@ -463,6 +463,62 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
   </div>
 </div>
 
+<!-- Aug 31 2026 (UI11) — 8 real routable pages for interfaces that used to
+     only exist inside a dashDeck popup (or, before UI2, behind the retired
+     Research Lab tab bar). Each starts as an empty shell; the real content
+     (bookworm-widget / file-analyzer-panel+video-finder-panel / ref-corpus-
+     panel / bookworm-bibliography / cpl-widget / cp-idea-bank / beat-log-
+     panel / video-workshop-panel) is MOVED in on first visit by
+     dashDeck._openPage() (PAGE_PANELS table) — never cloned, never rebuilt,
+     so every real onclick/listener on those panels keeps working exactly as
+     before. Once moved in, a panel stays — pages never leave the DOM,
+     showPage() only toggles .active, so there is nothing to move back on
+     "close" the way a popup needed. Alex's own confirmed design (UI11
+     evidence): NOT added to the primary leftNav tab bar — these are real,
+     URL-addressable sub-pages of Bookworm/Content Pipeline, not top-level
+     destinations, reached via the rebuilt Bookworm/Content Pipeline nav
+     popups (UI12/UI13) or a direct link/bookmark. Each gets a real "Back to
+     Dashboard" button since none of them sit in the tab bar. -->
+<div class="page" id="page-bookworm">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">📖 Bookworm</div>
+</div>
+
+<div class="page" id="page-videoworm">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">🐛 Videoworm</div>
+</div>
+
+<div class="page" id="page-musicworm">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">🎼 MusicWorm</div>
+</div>
+
+<div class="page" id="page-bibliography">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">📚 Bibliography</div>
+</div>
+
+<div class="page" id="page-content-pipeline">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">🎬 Content Pipeline</div>
+</div>
+
+<div class="page" id="page-idea-bank">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">💡 Idea Bank</div>
+</div>
+
+<div class="page" id="page-beat-log">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">🥁 Beat Log</div>
+</div>
+
+<div class="page" id="page-upload-workshop">
+  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <div class="section-title">🔀 Upload Workshop</div>
+</div>
+
 <!-- POPUPS -->
 <div class="popup-overlay" id="suggestion-popup">
   <div class="popup">
@@ -512,7 +568,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20260831b"></script>
+<script src="rpgace_core.min.js?v=20260831c"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
