@@ -74,6 +74,13 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🔔✅ Sep 2 — Toast-capture tuning: fixed the one confirmed info-shaped toast false-positive in error_log</div>
+    <div class="card-body">
+      Small, well-scoped fix from the Fable Total-Systems Audit's own flagged item. The chat-input "⏳ Oracle is still answering — wait for it to finish first" guard was colored <code>#CC4A4A</code> (the exact real error-toast color G109's <code>toast()→error_log</code> capture net keys off) despite being a benign rate-limit nudge, not a real error — it landed in <code>error_log</code> Aug 28 as a false positive. Recolored to <code>#E2A83D</code>, this codebase's own established soft-warning color. Checked all ~90 other <code>#CC4A4A</code> toast call sites for the same class rather than fixing only the reported instance — one structurally similar case (<code>_captureNextResponse</code>'s "reply still pending" guard) was deliberately left error-colored, since it warns of a real correctness risk (a reply "can save into the wrong ConID"), not a purely benign status message. <code>node --check</code> clean, re-minified, cache-bust <code>20260902d→20260902e</code>. Deployed and confirmed <code>READY</code> (commit <code>a14fb43</code>). The item's own 2nd half (deciding a real target duration for <code>perfWatch</code>'s freeze-detection threshold) stays open — a product/UX judgment call, deliberately left for Alex rather than picked unilaterally.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 pilot 4/4 COMPLETE: phylumPath split into ui/logic, secureWrite error-handling fixed for good</div>
     <div class="card-body">
       Last of the 4 G53 pilot modules, closing out the overnight pilot. Built via a dispatched Opus agent (survived one mid-task usage-limit interrupt, resumed from real confirmed partial progress rather than restarted from scratch), independently re-verified by Sonnet before committing — same discipline as all 3 prior modules.<br><br>
