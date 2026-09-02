@@ -10103,7 +10103,16 @@ RPGACE.register('scheduleOracle', {
         // manual flow's own reply once it landed. Returning `false` here
         // (instead of undefined) lets every call site that cares check it.
         if (window._oracleRequestInFlight) {
-          RPGACE.utils.toast('⏳ Oracle is still answering — wait for it to finish first', '#CC4A4A', 2800);
+          // Real fix, Sep 2 2026 (Fable-audit item "Toast-capture tuning" -
+          // an info-shaped nudge, not an error, was landing in error_log
+          // because #CC4A4A is toast()'s own real trigger for the G109
+          // error-capture net (see toast()'s header comment). "Please wait,
+          // a request is already in flight" is a normal rate-limit-style
+          // guard, not something broken - recolored to #E2A83D, this
+          // codebase's own established soft-warning color, so it renders
+          // correctly (a real amber nudge, not a red error) AND no longer
+          // false-positives into error_log.
+          RPGACE.utils.toast('⏳ Oracle is still answering — wait for it to finish first', '#E2A83D', 2800);
           return false;
         }
         var input = document.getElementById('chat-input');
