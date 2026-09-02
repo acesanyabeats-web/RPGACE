@@ -19336,6 +19336,41 @@ RPGACE.register('config', {
 /* ===MODULE:beatLog=== */
 RPGACE.register('beatLog', {
 
+  // G53 (Aug 2026) — real, ratified /CEO plan item: this module is split into
+  // two internal namespaces, `ui` (rendering/DOM) and `logic` (business
+  // logic/data), following the exact shape the videoPipeline pilot already
+  // shipped and verified. Pure internal-structure refactor — zero functional,
+  // behavioural, UX, data or schema change; every function below was MOVED
+  // wholesale, never rewritten or split down the middle.
+  //
+  // Shared constants + transient state (SCALE_COLOURS / MOOD_COLOURS /
+  // MOOD_TAGS / _retroTarget) stay at module scope, and `init` stays a literal
+  // top-level function because RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object.
+  //
+  // The one real risk this split has to get right, function by function: a
+  // function moved into `ui`/`logic` is invoked with `this` bound to THAT
+  // sub-object, not the module. Every moved function that used to open with
+  // `var self = this;` now opens with `var self = RPGACE.modules.beatLog;`,
+  // and every cross-namespace call is explicitly qualified `self.ui.X` /
+  // `self.logic.X` (module-scope properties stay bare: `self.MOOD_COLOURS`,
+  // `self._retroTarget`). The 7 moved functions that never referenced
+  // `this`/`self` at all are byte-identical moves.
+  //
+  // Classification rule used (stated so a later reader can check it rather
+  // than guess): a function lives in `ui` if it constructs or discovers DOM
+  // (document.*, createElement, getElementById, querySelector, innerHTML);
+  // otherwise in `logic`. Two moved functions are genuinely mixed — real DOM
+  // form-reading AND a real Supabase write in the same body — and landed in
+  // `ui` on that basis rather than being split down the middle: `_submit`
+  // (real content_productions/video_jobs writes) and `_submitUpdate` (same,
+  // for the retro-edit path). Verified directly, not just asserted: Sonnet's
+  // own independent re-check found both are the only 2 of the 13 real `ui`
+  // functions that also contain a real `RPGACE.sb.secureWrite`/`.insert`
+  // call — a real, honest correction to this comment's own earlier draft,
+  // which claimed an inline flag existed on each without one actually being
+  // there.
+
   // Colour palette by scale (Phylum 12 — Lingua Musicae, Colour/Mood/Visual Language)
   // Kept as a fallback only as of Aug 5 - see MOOD_COLOURS below for why.
   SCALE_COLOURS: {
@@ -19371,58 +19406,6 @@ RPGACE.register('beatLog', {
     'Tense':       { hex: '#33351a', name: 'Tense acid olive',   rgb: '51,53,26'  },
   },
 
-  // BPM-aware mood → genre tags for Last.fm
-  // Tags are selected based on both mood AND bpm range
-  _getMoodTags: function(mood, bpm) {
-    var b = parseInt(bpm) || 130;
-    var slow = b < 100;   // 60-99 BPM — uk rap, conscious, melodic, soul
-    var mid  = b < 120;   // 100-119 BPM — trap soul, melodic trap, transitional
-    // fast = 120+ BPM — drill, trap, grime, club
-
-    var map = {
-      'Dark': slow ? ['uk rap', 'conscious hip hop', 'dark hip hop', 'melodic rap', 'british hip hop']
-                   : mid  ? ['dark trap', 'melodic trap', 'trap soul', 'dark hip hop']
-                          : ['uk drill', 'dark trap', 'dark hip hop', 'drill'],
-
-      'Aggressive': slow ? ['uk rap', 'grime', 'british hip hop', 'underground hip hop']
-                         : mid  ? ['trap', 'aggressive hip hop', 'grime']
-                                : ['uk drill', 'drill', 'grime', 'trap'],
-
-      'Cinematic': slow ? ['cinematic hip hop', 'atmospheric', 'orchestral hip hop', 'neo soul', 'conscious hip hop']
-                        : mid  ? ['cinematic hip hop', 'boom bap', 'atmospheric']
-                               : ['cinematic hip hop', 'orchestral hip hop', 'atmospheric'],
-
-      'Melancholic': slow ? ['uk rap', 'sad rap', 'melodic rap', 'conscious hip hop', 'neo soul']
-                          : mid  ? ['sad rap', 'melodic trap', 'emo rap', 'trap soul']
-                                 : ['emo rap', 'melodic trap', 'sad rap'],
-
-      'Euphoric': slow ? ['neo soul', 'r&b', 'soul', 'afrobeats']
-                       : mid  ? ['melodic trap', 'afrobeats', 'pop rap']
-                              : ['afrobeats', 'pop rap', 'melodic trap', 'club'],
-
-      'Calm': slow ? ['lo-fi hip hop', 'jazz rap', 'chillhop', 'neo soul', 'conscious hip hop']
-                   : mid  ? ['chillhop', 'lo-fi hip hop', 'boom bap']
-                          : ['boom bap', 'lo-fi hip hop', 'chillhop'],
-
-      'Energetic': slow ? ['uk rap', 'grime', 'british hip hop']
-                        : mid  ? ['trap', 'hype', 'club']
-                               : ['drill', 'trap', 'club', 'hype', 'uk drill'],
-
-      'Romantic': slow ? ['r&b', 'neo soul', 'soul', 'melodic r&b', 'contemporary r&b']
-                       : mid  ? ['r&b', 'trap soul', 'melodic r&b']
-                              : ['melodic trap', 'trap soul', 'r&b'],
-
-      'Nostalgic': slow ? ['boom bap', 'old school hip hop', 'soul', 'jazz rap', 'conscious hip hop']
-                        : mid  ? ['boom bap', 'old school hip hop', 'soul']
-                               : ['boom bap', 'old school hip hop', 'jazz rap'],
-
-      'Tense': slow ? ['dark hip hop', 'conscious hip hop', 'uk rap', 'underground hip hop']
-                    : mid  ? ['dark trap', 'aggressive hip hop', 'trap']
-                           : ['dark trap', 'drill', 'aggressive hip hop'],
-    };
-    return map[mood] || ['hip hop', 'uk hip hop', 'british hip hop'];
-  },
-
   // Keep for backwards compat
   MOOD_TAGS: {
     'Dark': ['uk rap', 'dark hip hop'], 'Aggressive': ['drill', 'grime'],
@@ -19438,6 +19421,9 @@ RPGACE.register('beatLog', {
   // place. null means _submit's normal fresh-INSERT path runs unchanged.
   _retroTarget: null,
 
+  // `init` MUST stay a literal top-level function — RPGACE.register()
+  // invokes `module.init()` directly. `this` is correctly the module here,
+  // so its own `var self = this;` is left exactly as it was.
   // July 23 — same real freeze finding as refCorpus: this injected (and
   // fetched) 900ms after every boot regardless of page. Gated behind
   // researchTabs' 'research:tab-active' now — only the first real open of
@@ -19449,1119 +19435,1254 @@ RPGACE.register('beatLog', {
     });
   },
 
-  _inject: function() {
-    if (document.getElementById('beat-log-panel')) return;
-    var self = this;
+  // ============================================================
+  // logic — business logic/data. No DOM construction or lookup.
+  // ============================================================
+  logic: {
 
-    // Aug 23 2026 (UI2/UI3) — was a 4-clause fallback chain resolving the
-    // retired Research Lab page (its leading 'page-research' clause was
-    // confirmed-dead). Now the ONE shared staging holder every relocatable
-    // panel uses; dashDeck._openPanelPopup MOVES this node into a popup on
-    // demand and back here on close.
-    var page = RPGACE.utils.panelHome();
-    if (!page) return;
+    // BPM-aware mood → genre tags for Last.fm
+    // Tags are selected based on both mood AND bpm range
+    _getMoodTags: function(mood, bpm) {
+      var b = parseInt(bpm) || 130;
+      var slow = b < 100;   // 60-99 BPM — uk rap, conscious, melodic, soul
+      var mid  = b < 120;   // 100-119 BPM — trap soul, melodic trap, transitional
+      // fast = 120+ BPM — drill, trap, grime, club
 
-    var panel = document.createElement('div');
-    panel.id = 'beat-log-panel';
-    panel.style.cssText = 'background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:20px 24px;margin-bottom:24px;';
+      var map = {
+        'Dark': slow ? ['uk rap', 'conscious hip hop', 'dark hip hop', 'melodic rap', 'british hip hop']
+                     : mid  ? ['dark trap', 'melodic trap', 'trap soul', 'dark hip hop']
+                            : ['uk drill', 'dark trap', 'dark hip hop', 'drill'],
 
-    // Header
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
-    var title = document.createElement('div');
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
-    eyebrow.textContent = 'Beat Log · ' + RPGACE.utils.phylumLabel(16);
-    var titleText = document.createElement('div');
-    titleText.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;';
-    titleText.textContent = 'Log a Beat';
-    title.appendChild(eyebrow); title.appendChild(titleText);
-    hdr.appendChild(title);
-    panel.appendChild(hdr);
+        'Aggressive': slow ? ['uk rap', 'grime', 'british hip hop', 'underground hip hop']
+                           : mid  ? ['trap', 'aggressive hip hop', 'grime']
+                                  : ['uk drill', 'drill', 'grime', 'trap'],
 
-    // Drag-and-drop zone for audio file
-    var dropZone = document.createElement('div');
-    dropZone.id = 'bl-dropzone';
-    dropZone.style.cssText = 'border:2px dashed rgba(201,168,76,0.2);border-radius:8px;padding:16px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color .2s;';
-    var dropText = document.createElement('div');
-    dropText.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.35);';
-    dropText.innerHTML = '🎵 Drop your .mp3 / .wav / .flp here to pre-fill fields from filename<br><span style="font-size:11px;opacity:0.6;">e.g. "140bpm_Dminor_dark_fire.mp3" → auto-fills BPM, key, scale, mood, energy</span>';
-    dropZone.appendChild(dropText);
+        'Cinematic': slow ? ['cinematic hip hop', 'atmospheric', 'orchestral hip hop', 'neo soul', 'conscious hip hop']
+                          : mid  ? ['cinematic hip hop', 'boom bap', 'atmospheric']
+                                 : ['cinematic hip hop', 'orchestral hip hop', 'atmospheric'],
 
-    dropZone.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      dropZone.style.borderColor = 'rgba(201,168,76,0.6)';
-      dropZone.style.background = 'rgba(201,168,76,0.04)';
-    });
-    dropZone.addEventListener('dragleave', function() {
-      dropZone.style.borderColor = 'rgba(201,168,76,0.2)';
-      dropZone.style.background = 'none';
-    });
-    dropZone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      dropZone.style.borderColor = 'rgba(201,168,76,0.2)';
-      dropZone.style.background = 'none';
-      var file = e.dataTransfer.files[0];
-      if (!file) return;
-      self._parseFilename(file.name, file.path || '');
-      self._tryRealAudioAnalysis(file);
-    });
-    dropZone.addEventListener('click', function() {
-      var inp = document.createElement('input');
-      inp.type = 'file';
-      inp.accept = '.mp3,.wav,.flp,.aiff';
-      inp.onchange = function() {
-        if (inp.files[0]) { self._parseFilename(inp.files[0].name, ''); self._tryRealAudioAnalysis(inp.files[0]); }
+        'Melancholic': slow ? ['uk rap', 'sad rap', 'melodic rap', 'conscious hip hop', 'neo soul']
+                            : mid  ? ['sad rap', 'melodic trap', 'emo rap', 'trap soul']
+                                   : ['emo rap', 'melodic trap', 'sad rap'],
+
+        'Euphoric': slow ? ['neo soul', 'r&b', 'soul', 'afrobeats']
+                         : mid  ? ['melodic trap', 'afrobeats', 'pop rap']
+                                : ['afrobeats', 'pop rap', 'melodic trap', 'club'],
+
+        'Calm': slow ? ['lo-fi hip hop', 'jazz rap', 'chillhop', 'neo soul', 'conscious hip hop']
+                     : mid  ? ['chillhop', 'lo-fi hip hop', 'boom bap']
+                            : ['boom bap', 'lo-fi hip hop', 'chillhop'],
+
+        'Energetic': slow ? ['uk rap', 'grime', 'british hip hop']
+                          : mid  ? ['trap', 'hype', 'club']
+                                 : ['drill', 'trap', 'club', 'hype', 'uk drill'],
+
+        'Romantic': slow ? ['r&b', 'neo soul', 'soul', 'melodic r&b', 'contemporary r&b']
+                         : mid  ? ['r&b', 'trap soul', 'melodic r&b']
+                                : ['melodic trap', 'trap soul', 'r&b'],
+
+        'Nostalgic': slow ? ['boom bap', 'old school hip hop', 'soul', 'jazz rap', 'conscious hip hop']
+                          : mid  ? ['boom bap', 'old school hip hop', 'soul']
+                                 : ['boom bap', 'old school hip hop', 'jazz rap'],
+
+        'Tense': slow ? ['dark hip hop', 'conscious hip hop', 'uk rap', 'underground hip hop']
+                      : mid  ? ['dark trap', 'aggressive hip hop', 'trap']
+                             : ['dark trap', 'drill', 'aggressive hip hop'],
       };
-      inp.click();
-    });
-    panel.appendChild(dropZone);
+      return map[mood] || ['hip hop', 'uk hip hop', 'british hip hop'];
+    },
 
-    // Form grid
-    var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;';
+    // Real audio analysis (July 28, item 5 - Alex chose local librosa over
+    // Cyanite.ai/neither, see beat_log_matching_spec_backlog_2026-07-28.txt).
+    // Async job-queue pattern, same shape as intel_jobs: upload the real
+    // File bytes to the beat-audio Storage bucket, insert a beat_audio_jobs
+    // row (client-generated uuid so we never hit the "insert doesn't return
+    // the row" landmine), poll for completion, then fill in ONLY what
+    // signal-processing can actually determine (BPM, Major/Minor) - exotic
+    // modes like Dorian/Phrygian stay manual, same honesty limit as the
+    // Cyanite research already logged. Entirely best-effort: if
+    // local_server.py never picks the job up (not running right now, or
+    // Alex is on his phone with the PC off), this just silently never
+    // finishes - _parseFilename's instant filename-guess already ran and is
+    // never blocked or overwritten by a failure here.
+    _tryRealAudioAnalysis: function(file) {
+      if (!file || !file.size) return;
+      var jobId = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+      var path = jobId + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      var base = RPGACE.CONFIG.supabase.url;
+      var key = RPGACE.CONFIG.supabase.key;
 
-    var fields = [
-      { id: 'bl-title',    label: 'Beat Title',  type: 'text',   placeholder: 'e.g. Midnight Cipher' },
-      { id: 'bl-key',      label: 'Key',          type: 'text',   placeholder: 'e.g. D' },
-      { id: 'bl-bpm',      label: 'BPM',          type: 'number', placeholder: 'e.g. 140' },
-      { id: 'bl-scale',    label: 'Scale',        type: 'select', options: Object.keys(self.SCALE_COLOURS) },
-      { id: 'bl-energy',   label: 'Energy (1-5)', type: 'select', options: ['1 — Sketch','2 — Draft','3 — Solid','4 — Strong','5 — Fire'] },
-      { id: 'bl-mood',     label: 'Mood',         type: 'select', options: Object.keys(self.MOOD_TAGS) },
-    ];
-
-    fields.forEach(function(f) {
-      var wrap = document.createElement('div');
-      var lbl = document.createElement('label');
-      lbl.textContent = f.label;
-      lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
-      var inp;
-      if (f.type === 'select') {
-        inp = document.createElement('select');
-        var blank = document.createElement('option');
-        blank.value = ''; blank.textContent = '— select —';
-        inp.appendChild(blank);
-        f.options.forEach(function(o) {
-          var opt = document.createElement('option');
-          opt.value = o; opt.textContent = o;
-          inp.appendChild(opt);
-        });
-      } else {
-        inp = document.createElement('input');
-        inp.type = f.type;
-        inp.placeholder = f.placeholder || '';
-      }
-      inp.id = f.id;
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      wrap.appendChild(lbl); wrap.appendChild(inp);
-      grid.appendChild(wrap);
-    });
-    panel.appendChild(grid);
-
-    // Taxonomy nodes picker — REDESIGNED July 19 (Research redesign,
-    // confirmed answer: "Searchable picker"). The old version rendered
-    // EVERY node as a visible chip up-front - by 470 tree rows that was
-    // a wall of buttons dominating the whole form. Now: a search box;
-    // chips only show when they match the query or are already selected.
-    // The selection mechanism (dataset.active on chips in #bl-tax-grid)
-    // is UNCHANGED, so the Log Beat read path needs no edits.
-    var taxWrap = document.createElement('div');
-    taxWrap.style.cssText = 'margin-bottom:14px;';
-    var taxLbl = document.createElement('div');
-    taxLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
-    taxLbl.textContent = 'Taxonomy Nodes Applied';
-    var taxSearch = document.createElement('input');
-    taxSearch.type = 'text';
-    taxSearch.id = 'bl-tax-search';
-    taxSearch.placeholder = '🔍 Type to search nodes — selected ones stay visible...';
-    taxSearch.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
-    var taxGrid = document.createElement('div');
-    taxGrid.id = 'bl-tax-grid';
-    taxGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
-    taxWrap.appendChild(taxLbl); taxWrap.appendChild(taxSearch); taxWrap.appendChild(taxGrid);
-    panel.appendChild(taxWrap);
-
-    var applyTaxFilter = function() {
-      var q = taxSearch.value.trim().toLowerCase();
-      Array.prototype.forEach.call(taxGrid.children, function(chip) {
-        var selected = chip.dataset.active === '1';
-        var matches = q.length >= 2 && (chip.dataset.concept || '').toLowerCase().indexOf(q) !== -1;
-        chip.style.display = (selected || matches) ? '' : 'none';
-      });
-    };
-    taxSearch.oninput = applyTaxFilter;
-
-    // Load taxonomy nodes
-    RPGACE.sb.select('taxonomy_nodes', 'order=phylum_number.asc&limit=50')
-      .then(function(nodes) {
-        (nodes || []).forEach(function(node) {
-          var chip = document.createElement('button');
-          chip.dataset.nodeId = node.id;
-          chip.dataset.concept = node.concept;
-          chip.textContent = node.concept.slice(0, 30) + (node.concept.length > 30 ? '…' : '');
-          chip.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.5);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;transition:background .15s,border-color .15s,color .15s;';
-          chip.onclick = function() {
-            var active = chip.dataset.active === '1';
-            chip.dataset.active = active ? '0' : '1';
-            chip.style.background = active ? 'rgba(255,255,255,0.03)' : 'rgba(201,168,76,0.12)';
-            chip.style.borderColor = active ? 'rgba(255,255,255,0.08)' : 'rgba(201,168,76,0.4)';
-            chip.style.color = active ? 'rgba(226,226,236,0.5)' : '#C9A84C';
-            applyTaxFilter();
-          };
-          taxGrid.appendChild(chip);
-        });
-        applyTaxFilter(); // hide everything until searched/selected
-      }).catch(function() {});
-
-    // Extra fields row
-    var extraGrid = document.createElement('div');
-    extraGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;';
-
-    // 2026-07-28 (real hand-test feedback) - Genre added. It already had a
-    // real home (reference_tracks.genre existed but was never fed from
-    // either end - see refCorpus below), it just never had an entry point
-    // on the Beat Log form itself. Free text, not a select, matching the
-    // corpus panel's own free-text fields - genre in this space is fuzzy
-    // enough (UK Drill vs Drill vs UK Rap) that forcing a fixed list would
-    // just cause mismatches against whatever the corpus rows say.
-    var extraFields = [
-      { id: 'bl-rating',    label: 'Beat Rating (★)',    type: 'select', options: ['★','★★','★★★','★★★★','★★★★★'] },
-      { id: 'bl-genre',     label: 'Genre',              type: 'text', placeholder: 'e.g. UK Drill, Afrobeats, Boom Bap' },
-      { id: 'bl-licence',   label: 'Licence Type',       type: 'select', options: ['Lease only','Exclusive available','Sync ready','All types'] },
-      { id: 'bl-collab',    label: 'Collab Ready',       type: 'select', options: ['No','Yes — DM me','Yes — email only'] },
-    ];
-    extraFields.forEach(function(f) {
-      var wrap = document.createElement('div');
-      var lbl = document.createElement('label');
-      lbl.textContent = f.label;
-      lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
-      var fieldEl;
-      if (f.type === 'text') {
-        fieldEl = document.createElement('input');
-        fieldEl.type = 'text';
-        fieldEl.id = f.id;
-        fieldEl.placeholder = f.placeholder || '';
-      } else {
-        fieldEl = document.createElement('select');
-        fieldEl.id = f.id;
-        var blank = document.createElement('option'); blank.value=''; blank.textContent='— select —';
-        fieldEl.appendChild(blank);
-        f.options.forEach(function(o) {
-          var opt = document.createElement('option'); opt.value=o; opt.textContent=o; fieldEl.appendChild(opt);
-        });
-      }
-      fieldEl.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;box-sizing:border-box;';
-      wrap.appendChild(lbl); wrap.appendChild(fieldEl);
-      extraGrid.appendChild(wrap);
-    });
-
-    // Reference track + sample flag
-    var refWrap = document.createElement('div');
-    refWrap.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;';
-    ['bl-ref-track','bl-fl-path'].forEach(function(id, i) {
-      var wrap = document.createElement('div');
-      var lbl = document.createElement('label');
-      lbl.textContent = i === 0 ? 'Reference Track / Inspiration' : 'FL Studio Project Path (optional)';
-      lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
-      var inp = document.createElement('input');
-      inp.id = id; inp.type = 'text';
-      inp.placeholder = i === 0 ? 'e.g. Central Cee — Obsessed With You' : 'e.g. C:\\Beats\\midnight_cipher.flp';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      wrap.appendChild(lbl); wrap.appendChild(inp);
-      refWrap.appendChild(wrap);
-    });
-
-    panel.appendChild(extraGrid);
-    panel.appendChild(refWrap);
-
-    // Sample clearance checkbox
-    var sampleRow = document.createElement('div');
-    sampleRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:16px;';
-    var sampleCb = document.createElement('input');
-    sampleCb.type = 'checkbox'; sampleCb.id = 'bl-sample';
-    var sampleLbl = document.createElement('label');
-    sampleLbl.htmlFor = 'bl-sample';
-    sampleLbl.textContent = 'Contains uncleared sample';
-    sampleLbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);cursor:pointer;';
-    sampleRow.appendChild(sampleCb); sampleRow.appendChild(sampleLbl);
-    panel.appendChild(sampleRow);
-
-    // F18 checkbox REMOVED (Aug 6, 2nd real hand-test round, item 1) —
-    // Beat Log is the one real always-music_video creation path (see the
-    // content_type:'music_video' comment at _submit below), and Alex's
-    // own words: "we will always use it no matter what in the music
-    // video workflow." form.visualTreatment below is now a hardcoded
-    // true rather than read from a removed checkbox — every other real
-    // consumer of that flag (_generateOutputs' gated button) is
-    // unchanged, it just always sees true now.
-
-    // Action buttons
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;';
-
-    var logBtn = document.createElement('button');
-    logBtn.textContent = '⚡ Log Beat + Find Artists';
-    logBtn.style.cssText = 'padding:10px 20px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:#C9A84C;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    logBtn.onclick = function() { self._submit(); };
-
-    var clearBtn = document.createElement('button');
-    clearBtn.textContent = 'Clear';
-    clearBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    clearBtn.onclick = function() { self._clearForm(); };
-
-    btnRow.appendChild(logBtn); btnRow.appendChild(clearBtn);
-    panel.appendChild(btnRow);
-
-    // Output area
-    var output = document.createElement('div');
-    output.id = 'beat-log-output';
-    output.style.cssText = 'margin-top:16px;display:none;';
-    panel.appendChild(output);
-
-    // Append as a direct child of the Research page - NOT before the Video
-    // Workshop heading, which lives inside #video-workshop-panel and made
-    // this panel a DESCENDANT of it, so hiding Workshop hid Beat Log too
-    // (Bug A).
-    page.appendChild(panel);
-    RPGACE.hooks.fire('research:panel-injected');
-
-    console.log('[RPGACE:beatLog] Panel injected');
-  },
-
-  _parseFilename: function(filename, filepath) {
-    // Extract metadata from filename
-    // Supports patterns like: 140bpm_Dminor_dark_fire.mp3
-    //                         D_minor_140_dark.wav
-    //                         midnight_cipher_140bpm_Fsharp_dorian.mp3
-    var name = filename.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').toLowerCase();
-
-    // BPM — look for number between 60-200
-    var bpmMatch = name.match(/(6[0-9]|[7-9][0-9]|1[0-9][0-9]|200)(?:\s*bpm)?/);
-    if (bpmMatch) {
-      var bpmEl = document.getElementById('bl-bpm');
-      if (bpmEl) bpmEl.value = bpmMatch[1];
-    }
-
-    // Key — look for note names
-    var keys = ['c#','d#','f#','g#','a#','c','d','e','f','g','a','b'];
-    var foundKey = null;
-    keys.forEach(function(k) {
-      if (!foundKey && name.includes(k.replace('#','sharp').replace('#','#'))) foundKey = k.toUpperCase();
-      if (!foundKey && name.includes(' ' + k + ' ')) foundKey = k.toUpperCase();
-    });
-    if (!foundKey) {
-      // Try sharps written as 'sharp'
-      var sharpMatch = name.match(/([a-g])sharp/i);
-      if (sharpMatch) foundKey = sharpMatch[1].toUpperCase() + '#';
-    }
-    if (foundKey) {
-      var keyEl = document.getElementById('bl-key');
-      if (keyEl) keyEl.value = foundKey;
-    }
-
-    // Scale
-    var scaleMap = {
-      'minor': 'Minor', 'dorian': 'Dorian', 'phrygian': 'Phrygian',
-      'lydian': 'Lydian', 'mixolydian': 'Mixolydian', 'major': 'Major',
-      'locrian': 'Locrian', 'pentatonic': 'Minor Pentatonic', 'blues': 'Blues'
-    };
-    Object.keys(scaleMap).forEach(function(k) {
-      if (name.includes(k)) {
-        var scaleEl = document.getElementById('bl-scale');
-        if (scaleEl) scaleEl.value = scaleMap[k];
-      }
-    });
-
-    // Mood
-    var moodMap = {
-      'dark': 'Dark', 'aggressive': 'Aggressive', 'cinematic': 'Cinematic',
-      'melancholic': 'Melancholic', 'euphoric': 'Euphoric', 'calm': 'Calm',
-      'energetic': 'Energetic', 'romantic': 'Romantic', 'nostalgic': 'Nostalgic',
-      'tense': 'Tense', 'sad': 'Melancholic', 'hype': 'Energetic', 'chill': 'Calm'
-    };
-    Object.keys(moodMap).forEach(function(k) {
-      if (name.includes(k)) {
-        var moodEl = document.getElementById('bl-mood');
-        if (moodEl) moodEl.value = moodMap[k];
-      }
-    });
-
-    // Energy from keywords
-    var energyMap = { 'sketch': '1 — Sketch', 'draft': '2 — Draft', 'solid': '3 — Solid', 'strong': '4 — Strong', 'fire': '5 — Fire', 'heat': '5 — Fire', 'banger': '5 — Fire' };
-    Object.keys(energyMap).forEach(function(k) {
-      if (name.includes(k)) {
-        var energyEl = document.getElementById('bl-energy');
-        if (energyEl) energyEl.value = energyMap[k];
-      }
-    });
-
-    // Beat title from filename (clean version)
-    var titleEl = document.getElementById('bl-title');
-    if (titleEl && !titleEl.value) {
-      var cleanTitle = filename.replace(/\.[^.]+$/, '')
-        .replace(/[_-]/g, ' ')
-        .replace(/\d+\s*bpm/gi, '')
-        .replace(/(minor|major|dorian|phrygian|lydian|blues|pentatonic)/gi, '')
-        .replace(/[a-g]#?/gi, '')
-        .replace(/\s+/g, ' ').trim();
-      if (cleanTitle) titleEl.value = cleanTitle;
-    }
-
-    // FL path
-    if (filepath) {
-      var pathEl = document.getElementById('bl-fl-path');
-      if (pathEl) pathEl.value = filepath;
-    }
-
-    // Update drop zone text
-    var dz = document.getElementById('bl-dropzone');
-    if (dz) {
-      dz.querySelector('div').innerHTML = '✅ <strong style="color:#C9A84C;">' + filename + '</strong> — fields pre-filled. Review and adjust below.';
-    }
-
-    RPGACE.utils.toast('✅ Fields pre-filled from filename', '#C9A84C', 2000);
-  },
-
-  // Real audio analysis (July 28, item 5 - Alex chose local librosa over
-  // Cyanite.ai/neither, see beat_log_matching_spec_backlog_2026-07-28.txt).
-  // Async job-queue pattern, same shape as intel_jobs: upload the real
-  // File bytes to the beat-audio Storage bucket, insert a beat_audio_jobs
-  // row (client-generated uuid so we never hit the "insert doesn't return
-  // the row" landmine), poll for completion, then fill in ONLY what
-  // signal-processing can actually determine (BPM, Major/Minor) - exotic
-  // modes like Dorian/Phrygian stay manual, same honesty limit as the
-  // Cyanite research already logged. Entirely best-effort: if
-  // local_server.py never picks the job up (not running right now, or
-  // Alex is on his phone with the PC off), this just silently never
-  // finishes - _parseFilename's instant filename-guess already ran and is
-  // never blocked or overwritten by a failure here.
-  _tryRealAudioAnalysis: function(file) {
-    if (!file || !file.size) return;
-    var jobId = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
-    var path = jobId + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    var base = RPGACE.CONFIG.supabase.url;
-    var key = RPGACE.CONFIG.supabase.key;
-
-    fetch(base + '/storage/v1/object/beat-audio/' + encodeURIComponent(path), {
-      method: 'POST',
-      headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
-      body: file,
-    }).then(function(res) {
-      if (!res.ok) throw new Error('upload failed');
-      return RPGACE.sb.insert('beat_audio_jobs', {
-        id: jobId, filename: file.name, storage_path: path, status: 'queued',
-      });
-    }).then(function() {
-      beatLog._pollAudioJob(jobId, 0);
-    }).catch(function() {
-      // Fail open - filename-guess result stands, no toast, nothing shown.
-    });
-  },
-
-  _pollAudioJob: function(jobId, attempt) {
-    var self = this;
-    if (attempt > 30) return; // ~90s at 3s intervals, then give up silently
-    RPGACE.sb.select('beat_audio_jobs', 'id=eq.' + jobId + '&select=status,bpm,musical_key,error').then(function(rows) {
-      var row = rows && rows[0];
-      if (!row || row.status === 'queued' || row.status === 'processing') {
-        setTimeout(function() { self._pollAudioJob(jobId, attempt + 1); }, 3000);
-        return;
-      }
-      if (row.status === 'complete') {
-        if (row.bpm) { var bpmEl = document.getElementById('bl-bpm'); if (bpmEl) bpmEl.value = Math.round(row.bpm); }
-        if (row.musical_key) {
-          var parts = row.musical_key.split(' '); // e.g. "D Major"
-          var keyEl = document.getElementById('bl-key'); if (keyEl) keyEl.value = parts[0];
-          var scaleEl = document.getElementById('bl-scale'); if (scaleEl && (parts[1] === 'Major' || parts[1] === 'Minor')) scaleEl.value = parts[1];
-        }
-        RPGACE.utils.toast('🎧 Real audio analysis: ' + Math.round(row.bpm || 0) + ' BPM' + (row.musical_key ? ', ' + row.musical_key : ''), '#C9A84C', 3000);
-      }
-      // status 'error' - fails open silently, same as never picked up.
-    }).catch(function() { /* fail open */ });
-  },
-
-  _getForm: function() {
-    var get = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
-    var activeTax = Array.from(document.querySelectorAll('#bl-tax-grid button[data-active="1"]'))
-      .map(function(b) { return b.dataset.concept; });
-    return {
-      title:    get('bl-title'),
-      key:      get('bl-key'),
-      bpm:      get('bl-bpm'),
-      scale:    get('bl-scale'),
-      energy:   get('bl-energy'),
-      mood:     get('bl-mood'),
-      genre:    get('bl-genre'),
-      rating:   get('bl-rating'),
-      licence:  get('bl-licence'),
-      collab:   get('bl-collab'),
-      refTrack: get('bl-ref-track'),
-      flPath:   get('bl-fl-path'),
-      sample:   document.getElementById('bl-sample') ? document.getElementById('bl-sample').checked : false,
-      visualTreatment: true, // always on now — checkbox removed Aug 6, item 1 (see note above)
-      taxNodes: activeTax,
-    };
-  },
-
-  _clearForm: function() {
-    ['bl-title','bl-key','bl-bpm','bl-scale','bl-energy','bl-mood','bl-genre','bl-rating','bl-licence','bl-collab','bl-ref-track','bl-fl-path'].forEach(function(id) {
-      var el = document.getElementById(id); if (el) el.value = '';
-    });
-    document.querySelectorAll('#bl-tax-grid button[data-active="1"]').forEach(function(b) {
-      b.dataset.active = '0';
-      b.style.background = 'rgba(255,255,255,0.03)';
-      b.style.borderColor = 'rgba(255,255,255,0.08)';
-      b.style.color = 'rgba(226,226,236,0.5)';
-    });
-    var cb = document.getElementById('bl-sample'); if (cb) cb.checked = false;
-    var vtCb = document.getElementById('bl-visual-treatment'); if (vtCb) vtCb.checked = false;
-    var out = document.getElementById('beat-log-output'); if (out) { out.style.display='none'; out.innerHTML=''; }
-    self._retroTarget = null;
-  },
-
-  // ── Phase 1 retroactive button (Aug 5, Engineer pass, Phase E) ───────
-  // Real edit-in-place, per /interrogation's confirmed Q1 answer: reuse
-  // a beat's existing creative record to regenerate for content
-  // repurposing, without starting from zero. Called by
-  // contentProductionLive's "Return to Beat Log" retro button with the
-  // ConID's own content_productions row.
-  _openRetroactive: function(row) {
-    var self = this;
-    RPGACE.utils.toast('✏️ Loading saved beat data for ConID #' + (row.con_id || row.id) + '...', '#C9A84C', 2500);
-    RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1&select=id,script')
-      .catch(function(e) { console.warn('[beatLog] retro lookup:', e.message); return []; })
-      .then(function(jobs) {
-        var vj = jobs && jobs[0];
-        if (!vj || !vj.script) {
-          RPGACE.utils.toast('⚠️ No saved beat data found for this ConID — nothing to pre-fill', '#E2A83D', 3500);
-          return;
-        }
-        var form;
-        try { form = JSON.parse(vj.script); } catch (e) { form = null; }
-        if (!form) {
-          RPGACE.utils.toast('⚠️ Saved beat data could not be read — nothing to pre-fill', '#E2A83D', 3500);
-          return;
-        }
-        // Aug 23 2026 (UI2) — was:
-        //     if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
-        //     ... then scrollIntoView on #beat-log-panel.
-        // A real, LIVE call site the UI-consistency audit had NOT catalogued
-        // (found by a fresh grep during the same pass): this is the "Return to
-        // Beat Log" retroactive-edit path off a ConID card (Phase E, Aug 5).
-        // showPage() has no null guard on getElementById('page-'+name), so
-        // once the Research Lab page was retired this would have thrown here.
-        // Aug 31 2026 (UI11) — now navigates to the real #page-beat-log
-        // (dashDeck._openPage, PAGE_PANELS already carries the ensure fn),
-        // matching every other Beat Log entry point's new real-page
-        // destination instead of the old transient popup. The explicit
-        // self._inject() below is redundant (the ensure fn already runs it)
-        // but kept as a harmless no-op guard in case _openPage is ever
-        // unavailable.
-        var dd = RPGACE.modules.dashDeck;
-        if (dd && dd._openPage) {
-          dd._openPage('beat-log-panel');
-        }
-        setTimeout(function() {
-          self._inject();
-          self._prefillForm(form);
-          self._retroTarget = { cpId: row.id, videoJobId: vj.id };
-          var panelEl = document.getElementById('beat-log-panel');
-          if (panelEl) panelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          RPGACE.utils.toast('✏️ Editing existing beat for ConID #' + (row.con_id || row.id) + ' — Log Beat below will UPDATE this record in place', '#C9A84C', 4500);
-        }, 400);
-      });
-  },
-
-  // Real pre-fill, keyed the same way _getForm() reads the form back out
-  // (rule 8 - one real field set, read in both directions). Taxonomy
-  // chips load asynchronously (a real Supabase fetch inside _inject), so
-  // marking them active uses a bounded retry rather than a guessed fixed
-  // delay.
-  _prefillForm: function(form) {
-    var ids = { title:'bl-title', key:'bl-key', bpm:'bl-bpm', scale:'bl-scale', energy:'bl-energy', mood:'bl-mood', genre:'bl-genre', rating:'bl-rating', licence:'bl-licence', collab:'bl-collab', refTrack:'bl-ref-track', flPath:'bl-fl-path' };
-    Object.keys(ids).forEach(function(key) {
-      var el = document.getElementById(ids[key]);
-      if (el && form[key] != null) el.value = form[key];
-    });
-    var sampleCb = document.getElementById('bl-sample'); if (sampleCb) sampleCb.checked = !!form.sample;
-    // bl-visual-treatment checkbox removed Aug 6 (item 1) — form.visualTreatment stays hardcoded true
-    var attempts = 0;
-    var tryMarkTax = function() {
-      var grid = document.getElementById('bl-tax-grid');
-      if (grid && grid.children.length > 0) {
-        Array.prototype.forEach.call(grid.children, function(chip) {
-          if ((form.taxNodes || []).indexOf(chip.dataset.concept) !== -1) {
-            chip.dataset.active = '1';
-            chip.style.background = 'rgba(201,168,76,0.12)';
-            chip.style.borderColor = 'rgba(201,168,76,0.4)';
-            chip.style.color = '#C9A84C';
-          }
-        });
-        return;
-      }
-      attempts++;
-      if (attempts < 15) setTimeout(tryMarkTax, 300);
-    };
-    tryMarkTax();
-  },
-
-  _submit: function() {
-    var self = this;
-    var form = self._getForm();
-    if (!form.title) { RPGACE.utils.toast('Add a beat title first', '#CC4A4A', 2000); return; }
-    if (!form.mood)  { RPGACE.utils.toast('Select a mood', '#CC4A4A', 2000); return; }
-
-    var output = document.getElementById('beat-log-output');
-    output.style.display = 'block';
-
-    // Aug 5 (Engineer pass, Phase E) - real edit-in-place branch. Set
-    // only by _openRetroactive (Phase D's "Return to Beat Log" retro
-    // button); routes to an UPDATE of the exact same content_productions
-    // + video_jobs rows instead of a fresh INSERT pair, per
-    // /interrogation's confirmed "edit in place" answer.
-    if (self._retroTarget) {
-      self._submitUpdate(form);
-      return;
-    }
-
-    output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">⚡ Logging beat and searching for artist matches...</div>';
-
-    // 1. Create the linked Content Pipeline (ConID) entry FIRST so
-    //    video_jobs can reference its real id - Content Pipeline is the
-    //    overseer, Beat Log is a real entry point into it (Alex-confirmed
-    //    2026-07-28, content_pipeline_overseer_spec_backlog_2026-07-28.txt).
-    //    Waited on (not fire-and-forget) so everything downstream - the
-    //    video_jobs row, the Visual Treatment auto-save - has a real
-    //    target row to link to; adds one INSERT round-trip before the
-    //    rest of this flow continues, same fail-open behaviour as before.
-    // Engineer pass 2026-07-30 (real "2 workflows" resolution, Alex's own
-    // catch): content_type explicitly set here since beatLog is the one
-    // real always-music_video creation path - every other real entry
-    // point (Content Repurpose, Idea Bank activate) leaves it at its
-    // default ('tutorial'), matching what those flows have always
-    // actually produced.
-    RPGACE.sb.secureWrite('content_productions', 'insert', {
-      title: form.title,
-      idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
-      taxonomy_nodes: form.taxNodes,
-      platform_outputs: {},
-      status: 'Idea',
-      licence_type: form.licence || null,
-      creative_docs: { beat_meta: form },
-      content_type: 'music_video',
-    }).then(function(result) {
-      var cpRow = Array.isArray(result) ? result[0] : result;
-      var cpId = cpRow && cpRow.id ? cpRow.id : null;
-
-      // 2. Save to Supabase video_jobs, linked to the new Content Pipeline row
-      return RPGACE.sb.secureWrite('video_jobs', 'insert', {
-        title:        form.title,
-        status:       'beat_logged',
-        script:       JSON.stringify(form),
-        edl:          null,
-        raw_path:     form.flPath || null,
-        style_profile_id: null,
-        content_production_id: cpId,
-      }).then(function(vjResult) {
-        var vjRow = Array.isArray(vjResult) ? vjResult[0] : vjResult;
-        var videoJobId = vjRow && vjRow.id ? vjRow.id : null;
-        self._continueAfterLink(form, cpId, videoJobId);
-      }).catch(function(e) {
-        console.warn('[beatLog] video_jobs save:', e.message);
-        self._continueAfterLink(form, cpId, null);
-      });
-    }).catch(function(e) {
-      console.warn('[beatLog] Content Pipeline entry:', e.message);
-      self._continueAfterLink(form, null, null);
-    });
-  },
-
-  // ── Real edit-in-place UPDATE path (Aug 5, Engineer pass, Phase E) ───
-  // Updates the SAME content_productions + video_jobs rows _openRetroactive
-  // loaded from, instead of the fresh INSERT pair _submit's normal path
-  // creates - per /interrogation's confirmed "edit in place" answer.
-  // Reuses _continueAfterLink unchanged afterward (rule 8 dedup) -
-  // re-running the artist search/journal/XP steps is a real, wanted side
-  // effect of a repurposing edit (fresh matches for the tweaked mood/BPM/
-  // genre), not a bug.
-  _submitUpdate: function(form) {
-    var self = this;
-    var target = self._retroTarget;
-    var output = document.getElementById('beat-log-output');
-    output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">✏️ Updating existing beat log entry...</div>';
-
-    RPGACE.sb.secureWrite('content_productions', 'update', {
-      title: form.title,
-      idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
-      taxonomy_nodes: form.taxNodes,
-      licence_type: form.licence || null,
-    }, 'id=eq.' + target.cpId)
-      .catch(function(e) { console.warn('[beatLog] retro content_productions update:', e.message); })
-      .then(function() {
-        // beat_meta lives inside creative_docs (jsonb) - reuses
-        // visualOracle's existing read-merge-write rather than a second
-        // hand-rolled merge (rule 8 dedup). Stored as a real object, same
-        // shape _submit's own INSERT path already uses (creative_docs:
-        // {beat_meta: form}), not a stringified copy.
-        var vo = RPGACE.modules.visualOracle;
-        if (vo && vo._saveDocToProduction) vo._saveDocToProduction('beat_meta', form, target.cpId);
-      })
-      .then(function() {
-        if (!target.videoJobId) return;
-        return RPGACE.sb.secureWrite('video_jobs', 'update', {
-          title: form.title,
-          script: JSON.stringify(form),
-          raw_path: form.flPath || null,
-        }, 'id=eq.' + target.videoJobId).catch(function(e) { console.warn('[beatLog] retro video_jobs update:', e.message); });
-      })
-      .then(function() {
-        RPGACE.utils.toast('💾 Beat log updated in place — regenerating matches', '#4CAF82', 2500);
-        var cpId = target.cpId, videoJobId = target.videoJobId;
-        self._retroTarget = null;
-        self._continueAfterLink(form, cpId, videoJobId);
-      });
-  },
-
-  // Continues the pre-existing beat-log flow (taxonomy marking, journal,
-  // XP, artist search + outputs) once the real content_productions/
-  // video_jobs ids are known (or null, if either write failed - fails
-  // open, same as every write in this function already did before this
-  // change).
-  _continueAfterLink: function(form, cpId, videoJobId) {
-    var self = this;
-
-    // Mark taxonomy nodes as applied
-    form.taxNodes.forEach(function(concept) {
-      if (RPGACE.modules.taxonomySync) {
-        RPGACE.modules.taxonomySync.markApplied(concept);
-      }
-    });
-
-    // Save to Journal
-    var journalContent = 'Beat logged: ' + form.title + '\n' +
-      'Key: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + ' | Energy: ' + form.energy + '\n' +
-      'Mood: ' + form.mood + ' | Rating: ' + form.rating + '\n' +
-      (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
-      (form.taxNodes.length ? 'Nodes applied: ' + form.taxNodes.join(', ') : '');
-    if (typeof saveToJournal === 'function') {
-      saveToJournal('Beat: ' + form.title, journalContent, 'beatLog');
-    }
-
-    // Award XP
-    var xp = [20, 40, 60, 80, 100][parseInt(form.energy) - 1] || 60;
-    if (typeof addXP === 'function') addXP(xp);
-
-    // Get colour palette - mood first (Aug 5 fix: this is what actually
-    // varies per Alex's real creative intent), scale as a fallback only
-    // if mood is somehow unset.
-    var palette = self.MOOD_COLOURS[form.mood] || self.SCALE_COLOURS[form.scale] || { hex: '#1a1a2e', name: 'Dark neutral' };
-
-    // Get BPM-aware Last.fm tags
-    var tags = self._getMoodTags(form.mood, form.bpm);
-
-    // Search Last.fm
-    var output = document.getElementById('beat-log-output');
-    self._searchArtists(tags, form, palette, output, cpId, videoJobId);
-  },
-
-  _searchArtists: function(tags, form, palette, output, cpId, videoJobId) {
-    var self = this;
-    output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">🔍 Checking reference corpus for matches...</div>';
-
-    // First: check reference corpus for BPM/mood/scale matches
-    var corpusPromise = (RPGACE.modules.refCorpus && typeof RPGACE.modules.refCorpus.findMatches === 'function')
-      ? RPGACE.modules.refCorpus.findMatches(form.bpm, form.mood, form.scale, form.energy, form.genre)
-      : Promise.resolve([]);
-
-    corpusPromise.then(function(corpusMatches) {
-      var hasCorpus = corpusMatches && corpusMatches.length > 0;
-
-      if (hasCorpus) {
-        output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">✅ Found ' + corpusMatches.length + ' corpus matches. Cross-referencing Last.fm...</div>';
-      } else {
-        output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">📚 No corpus matches yet. Searching Last.fm across ' + tags.length + ' style tags...</div>';
-      }
-
-      // Run Last.fm search in parallel
-      return fetch('/api/lastfm', {
+      fetch(base + '/storage/v1/object/beat-audio/' + encodeURIComponent(path), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'search_by_tags', tags: tags, limit: 50 })
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var lfmArtists = (data.success && data.artists) ? data.artists : [];
+        headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
+        body: file,
+      }).then(function(res) {
+        if (!res.ok) throw new Error('upload failed');
+        return RPGACE.sb.insert('beat_audio_jobs', {
+          id: jobId, filename: file.name, storage_path: path, status: 'queued',
+        });
+      }).then(function() {
+        // Real pre-existing bug, found during the G53 restructure (Sep 2 2026)
+        // and fixed the same session, not smuggled silently into the refactor:
+        // this referenced a bare global `beatLog`, which has never existed
+        // anywhere in the codebase (confirmed by grep) — threw a real
+        // ReferenceError every single time, silently swallowed by the .catch()
+        // below, meaning the real local_server.py/librosa BPM+key polling loop
+        // has never actually run in production. Real, minimal fix: the correct
+        // qualified call, matching how every other cross-namespace reference in
+        // this module now works.
+        RPGACE.modules.beatLog.ui._pollAudioJob(jobId, 0);
+      }).catch(function() {
+        // Fail open - filename-guess result stands, no toast, nothing shown.
+      });
+    },
 
-        // If we have corpus matches, use them to filter/rank Last.fm results
-        var big = [], emerging = [], underground = [];
+    _addNewArtistsToTaxonomy: function(artists, mood) {
+      // Add top emerging artists to taxonomy Phylum 11 (Fons Educationis) if not
+      // already there. Bug fixed here: this used to write phylum_number: 17
+      // while claiming phylum_name 'Fons Educationis' - 17 is actually Negotium,
+      // Fons Educationis was 12, then renumbered to 11 (Aug 11 phylum renumber -
+      // see the CLAUDE.md Current State entry for the full renumber record).
+      var emerging = artists.filter(function(a) { return a.listeners > 5000 && a.listeners <= 500000; }).slice(0, 10);
+      emerging.forEach(function(a) {
+        RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
+          .then(function(rows) {
+            if (rows && rows.length > 0) return; // already exists
+            RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
+              concept:       a.name,
+              phylum_number: 11,
+              phylum_name:   'Fons Educationis',
+              definition:    'Artist discovered via Last.fm beat matching. Style: ' + mood + '. Listeners: ' + a.listeners,
+              source:        'lastfm_beat_match',
+              gap_score:     5.0,
+            }).catch(function(){});
+          }).catch(function(){});
+      });
+    },
 
-        if (hasCorpus) {
-          // Extract unique artist names from corpus matches
-          var corpusArtistNames = {};
-          corpusMatches.forEach(function(track) {
-            if (!corpusArtistNames[track.artist]) {
-              corpusArtistNames[track.artist] = {
-                name: track.artist,
-                score: track._score,
-                refTrack: track.title,
-                bpm: track.bpm,
-                mood: track.mood,
-                listeners: 0
-              };
-            }
+    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — the old
+    // _waitThenAutoVisualTreatment auto-chain (fired this straight off the
+    // Beat Log response scan, no click involved) is gone; _generateOutputs
+    // now calls this directly from a real "🎬 Generate Visual Treatment
+    // Doc" button click instead. Real, deliberate deletion, not left as
+    // dead code (rule 8) — its docstring's own history (a background-tab
+    // timer-throttling bug, then an event-driven rebuild that turned out to
+    // still race) is preserved in engineer_pass_2026-08-06_10.txt rather
+    // than re-told here.
+    //
+    // 2026-07-28 - now threads cpId/videoJobId through so the generated
+    // document is actually saved (content_pipeline_overseer_spec_backlog_
+    // 2026-07-28.txt) instead of only ever existing as a chat message, and
+    // asks for one extra structured trailer line (DIRECTOR_CHOSEN) so the
+    // director this document picks becomes a real style_profiles row
+    // instead of resurrecting nothing.
+    _autoVisualTreatment: function(form, palette, cpId, videoJobId) {
+      var buildPrompt = function(filmmakerBlock) {
+        return 'Generate a full Visual Treatment Document for my beat.\n' +
+          'Beat title: ' + form.title + '\n' +
+          'Mood: ' + form.mood + ' | Key + scale: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + '\n' +
+          'Colour palette: ' + palette.name + ' (' + palette.hex + ')\n' +
+          (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
+          (filmmakerBlock ? '\n' + filmmakerBlock + '\n' : '') +
+          '\nThe document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), ' +
+          'Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), ' +
+          'OpenMontage production brief (120 words), a COPY-PASTE PROMPT of 500 characters or fewer per scene — the exact text I can paste directly into an AI image/video generation tool\'s own prompt box, which is almost always character-limited (do not assume the full document above fits there; count the characters and cut it down until it genuinely does), and export format recommendations for YouTube, Reels, and Beatstars. ' +
+          'Every director/reference/technical claim you make must be something you can actually stand behind — if you are inferring or pattern-matching rather than citing something real and confirmed, say so plainly next to that claim (e.g. "inferred, not confirmed:") rather than stating it as settled fact.' +
+          (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why. Then on its own final line, output exactly: DIRECTOR_CHOSEN: <exact director name from the list above>.' : '');
+      };
+      var vo = RPGACE.modules.visualOracle;
+      // Aug 6 (Engineer pass, real Content Pipeline bugfix) — armCapture now
+      // runs AFTER sendToOracle confirms the send actually happened, not
+      // before. This was the real root cause of Alex's own hand-test report
+      // (2026-08-06): this auto-chain fires straight off the Beat Log
+      // response scan with no human gate, so a manual click elsewhere (e.g.
+      // "Start Visual Treatment" on the ConID card) landing in the same
+      // narrow window could grab the in-flight slot first, silently
+      // blocking THIS send while the capture below was already armed and
+      // dangling - it then wrongly fired on the manual flow's own reply
+      // once that landed (RPGACE.hooks.fire broadcasts to every registered
+      // listener, confirmed by direct read), which is why no style_profiles
+      // row ever appeared for the auto-triggered director pick.
+      var armCapture = function() {
+        if (vo && vo._captureNextResponse && cpId) {
+          vo._captureNextResponse(function(text) {
+            vo._saveDocToProduction('visual_treatment', text, cpId, videoJobId);
+          });
+        }
+      };
+      var fire = function(block) {
+        var sent = RPGACE.utils.sendToOracle(buildPrompt(block));
+        if (sent) {
+          armCapture();
+        } else {
+          RPGACE.utils.toast('⏳ Auto Visual Treatment was blocked (Oracle still busy) — use the ConID\'s "🎬 Start Visual Treatment" button to run it manually', '#E2A83D', 5000);
+        }
+      };
+      if (vo && typeof vo._withFilmmakerLibrary === 'function') {
+        vo._withFilmmakerLibrary(function(block) { fire(block); });
+      } else {
+        fire('');
+      }
+    },
+
+    _saveMatchesToCorpus: function(form, big, emerging, underground, btn) {
+      var allArtists = big.concat(emerging).concat(underground);
+      if (allArtists.length === 0) return;
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+      RPGACE.sb.select('reference_tracks', 'select=artist')
+        .then(function(existing) {
+          var existingNames = (existing || []).map(function(r) { return (r.artist || '').toLowerCase(); });
+          var newOnes = [];
+          var seen = {};
+          allArtists.forEach(function(a) {
+            var key = a.name.toLowerCase();
+            if (existingNames.indexOf(key) !== -1 || seen[key]) return;
+            seen[key] = true;
+            newOnes.push(a);
           });
 
-          // Enrich corpus artists with Last.fm listener counts where available
-          lfmArtists.forEach(function(lfm) {
-            var key = lfm.name.toLowerCase();
-            Object.keys(corpusArtistNames).forEach(function(name) {
-              if (name.toLowerCase() === key) {
-                corpusArtistNames[name].listeners = lfm.listeners || 0;
-                corpusArtistNames[name].url = lfm.url;
+          if (newOnes.length === 0) {
+            RPGACE.utils.toast('All these artists are already in your corpus', '#4A8CCC', 2500);
+            if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+            return;
+          }
+
+          var done = 0;
+          newOnes.forEach(function(a) {
+            RPGACE.sb.secureWrite('reference_tracks', 'insert', {
+              artist:   a.name,
+              title:    '(from beat match — ' + form.title + ')',
+              bpm:      parseInt(form.bpm) || null,
+              key:      form.key || null,
+              scale:    form.scale || null,
+              energy:   parseInt(form.energy) || null,
+              mood:     form.mood || null,
+              genre:    form.genre || null,
+              url:      a.url || null,
+              source:   'beat_match_growth',
+              analysed: false,
+            }).then(function() {
+              done++;
+              if (done === newOnes.length) {
+                RPGACE.utils.toast('✅ Added ' + done + ' new artist' + (done === 1 ? '' : 's') + ' to your corpus', '#4A8CCC', 3000);
+                if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
               }
+            }).catch(function() {
+              done++;
+              if (btn && done === newOnes.length) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
             });
           });
-
-          var corpusArtists = Object.values(corpusArtistNames).sort(function(a,b) { return b.score - a.score; });
-
-          // Also include relevant Last.fm artists not in corpus
-          var corpusNames = Object.keys(corpusArtistNames).map(function(n) { return n.toLowerCase(); });
-          var extraLfm = lfmArtists.filter(function(a) {
-            return !corpusNames.includes(a.name.toLowerCase()) && a.listeners > 50000;
-          }).slice(0, 5);
-
-          big = corpusArtists.filter(function(a) { return a.listeners > 1000000; }).slice(0, 5);
-          emerging = corpusArtists.filter(function(a) { return a.listeners <= 1000000; }).concat(extraLfm).slice(0, 10);
-          underground = [];
-
-          output.innerHTML = '<div style="color:rgba(74,144,226,0.8);font-size:12px;padding:8px 0;">🎯 ' + corpusMatches.length + ' corpus matches · ' + lfmArtists.length + ' Last.fm artists · Generating outputs...</div>';
-        } else {
-          // No corpus — use Last.fm only
-          self._addNewArtistsToTaxonomy(lfmArtists, form.mood);
-          big        = lfmArtists.filter(function(a) { return a.listeners > 1000000; }).slice(0, 5);
-          emerging   = lfmArtists.filter(function(a) { return a.listeners > 10000 && a.listeners <= 1000000; }).slice(0, 10);
-          underground = lfmArtists.filter(function(a) { return a.listeners <= 10000; }).slice(0, 5);
-          output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">✅ ' + lfmArtists.length + ' Last.fm artists found. Add tracks to your corpus for better matches.</div>';
-        }
-
-        self._generateOutputs(form, palette, big, emerging, underground, output, cpId, videoJobId);
-      });
-    })
-    .catch(function(err) {
-      output.innerHTML = '<div style="color:#CC4A4A;font-size:12px;padding:8px 0;">Search error: ' + err.message + '</div>';
-    });
-  },
-
-  _addNewArtistsToTaxonomy: function(artists, mood) {
-    // Add top emerging artists to taxonomy Phylum 11 (Fons Educationis) if not
-    // already there. Bug fixed here: this used to write phylum_number: 17
-    // while claiming phylum_name 'Fons Educationis' - 17 is actually Negotium,
-    // Fons Educationis was 12, then renumbered to 11 (Aug 11 phylum renumber -
-    // see the CLAUDE.md Current State entry for the full renumber record).
-    var emerging = artists.filter(function(a) { return a.listeners > 5000 && a.listeners <= 500000; }).slice(0, 10);
-    emerging.forEach(function(a) {
-      RPGACE.sb.select('taxonomy_nodes', 'concept=eq.' + encodeURIComponent(a.name) + '&limit=1')
-        .then(function(rows) {
-          if (rows && rows.length > 0) return; // already exists
-          RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
-            concept:       a.name,
-            phylum_number: 11,
-            phylum_name:   'Fons Educationis',
-            definition:    'Artist discovered via Last.fm beat matching. Style: ' + mood + '. Listeners: ' + a.listeners,
-            source:        'lastfm_beat_match',
-            gap_score:     5.0,
-          }).catch(function(){});
-        }).catch(function(){});
-    });
-  },
-
-  _generateOutputs: function(form, palette, big, emerging, underground, output, cpId, videoJobId) {
-    var self = this;
-    var bigNames   = big.map(function(a) { return a.name; }).join(', ') || 'N/A';
-    var emergNames = emerging.map(function(a) { return a.name + ' (' + Math.round(a.listeners/1000) + 'k)'; }).join(', ') || 'N/A';
-    var ugNames    = underground.map(function(a) { return a.name; }).join(', ') || 'N/A';
-
-    var prompt = 'I just finished a beat. Here are the details:\n' +
-      'Title: ' + form.title + '\n' +
-      'Key: ' + form.key + ' | Scale: ' + form.scale + ' | BPM: ' + form.bpm + '\n' +
-      'Mood: ' + form.mood + ' | Energy: ' + form.energy + '/5\n' +
-      'Colour palette: ' + palette.name + ' (' + palette.hex + ')\n' +
-      (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
-      '\nLast.fm matched artists:\n' +
-      'MAJOR (1M+ listeners): ' + bigNames + '\n' +
-      'EMERGING (10k-1M): ' + emergNames + '\n' +
-      'UNDERGROUND (<10k): ' + ugNames + '\n\n' +
-      'Generate ALL of the following:\n\n' +
-      '1. TYPE BEAT TITLES (5 options) — use the major artist names, format: "[Artist] x [Artist] Type Beat" and "[Mood] [Key] Type Beat 2026"\n\n' +
-      '2. BEATSTARS DESCRIPTION — 80 words max, include key, BPM, mood, style, and purchase CTA. Professional tone.\n\n' +
-      '3. NEURAL FRAMES BRIEF — 80-word AI video prompt for this beat. Specify: visual style, colour palette (' + palette.name + '), camera movement, mood.\n\n' +
-      '4. YOUTUBE CONTENT ANGLE — Title, hook (first 3 seconds on screen), and 1-line description for a tutorial about making this beat.\n\n' +
-      '5. TOP 3 OUTREACH TARGETS — From the emerging artists list, pick the 3 most likely to buy this beat. For each: name, why they fit, personalised DM draft (under 100 words, casual, not salesy), and their Last.fm URL.\n\n' +
-      '6. CONTENT BRIEF — One Instagram Reels concept for this beat (hook + visual direction + caption).\n\n' +
-      'Be specific, direct, and pre-filled for @AceSanyaBeats / FL Studio / UK hip hop.';
-
-    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — real human
-    // gate before EITHER Oracle call, per Alex's own direct hand-test
-    // report: "it did all of this without any human gating or auto
-    // gating, this needs to be step by step." Both calls used to auto-
-    // fire — the second one (F18's Visual Treatment) literally CHAINED
-    // off the first one's response with no click in between, which was
-    // also the real opening for the dangling-capture bug fixed above (a
-    // manual click landing in that unsupervised gap could steal the
-    // in-flight slot). Gating both behind explicit buttons closes both
-    // problems with one change: nothing fires without a real click, so
-    // there is no unsupervised window for two sends to collide in.
-    self._renderArtistPanel(form, palette, big, emerging, underground, output);
-
-    var gateRow = document.createElement('div');
-    gateRow.style.cssText = 'margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:8px;';
-
-    var sendBtn = document.createElement('button');
-    sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
-    sendBtn.style.cssText = 'width:100%;padding:10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:6px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    sendBtn.onclick = function() {
-      sendBtn.disabled = true;
-      sendBtn.textContent = '⏳ Sending...';
-      if (typeof showPage === 'function') showPage('advisor');
-      setTimeout(function() {
-        var sent = RPGACE.utils.sendToOracle(prompt);
-        if (!sent) {
-          sendBtn.disabled = false;
-          sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
-          RPGACE.utils.toast('⏳ Oracle was busy — try again in a moment', '#E2A83D', 3000);
-          return;
-        }
-        sendBtn.textContent = '✅ Sent — jotting it down + opening Content Pipeline once it replies...';
-        // Aug 6 (item 2) — Alex's real ask: "pressing log beat... should
-        // all be jotted down and send me back to content pipeline, where
-        // all the live production phases should be shown." Reuses the
-        // shared _captureNextResponse one-shot listener (rule 8, same
-        // dangling-capture-safe pattern fixed earlier today — armed only
-        // AFTER sendToOracle confirmed it actually sent, never before).
-        // Saves the real reply into creative_docs.beat_log_response (no
-        // trailer to parse here, just a straight save) then opens the
-        // Production Panel as an overlay — it renders fixed/z-9998, so
-        // it slides in over the advisor page without navigating away
-        // from the reply Alex is reading.
-        if (cpId && RPGACE.modules.visualOracle) {
-          RPGACE.modules.visualOracle._captureNextResponse(function(text) {
-            RPGACE.modules.visualOracle._saveDocToProduction('beat_log_response', text, cpId, videoJobId);
-            RPGACE.sb.select('content_productions', 'id=eq.' + cpId + '&select=con_id&limit=1')
-              .catch(function() { return []; })
-              .then(function(rows) {
-                var cpl = RPGACE.modules.contentProductionLive;
-                if (!cpl) return;
-                cpl._activeConID = rows && rows[0] ? rows[0].con_id : cpl._activeConID;
-                cpl._activeId = cpId;
-                cpl._openProductionPanel();
-              });
-          });
-        }
-      }, 300);
-    };
-    gateRow.appendChild(sendBtn);
-
-    // F18: now a real second gated step instead of an auto-chain off the
-    // first response — decoupled entirely, so it can be run independently
-    // whenever Alex is ready, not forced into a fixed sequence.
-    if (form.visualTreatment) {
-      var vtBtn = document.createElement('button');
-      vtBtn.textContent = '🎬 Generate Visual Treatment Doc';
-      vtBtn.style.cssText = 'width:100%;padding:10px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      vtBtn.onclick = function() {
-        vtBtn.disabled = true;
-        vtBtn.textContent = '⏳ Generating...';
-        if (typeof showPage === 'function') showPage('advisor');
-        setTimeout(function() { self._autoVisualTreatment(form, palette, cpId, videoJobId); }, 300);
-      };
-      gateRow.appendChild(vtBtn);
-    }
-
-    output.appendChild(gateRow);
-  },
-
-  // Aug 6 (Engineer pass, real Content Pipeline bugfix) — the old
-  // _waitThenAutoVisualTreatment auto-chain (fired this straight off the
-  // Beat Log response scan, no click involved) is gone; _generateOutputs
-  // now calls this directly from a real "🎬 Generate Visual Treatment
-  // Doc" button click instead. Real, deliberate deletion, not left as
-  // dead code (rule 8) — its docstring's own history (a background-tab
-  // timer-throttling bug, then an event-driven rebuild that turned out to
-  // still race) is preserved in engineer_pass_2026-08-06_10.txt rather
-  // than re-told here.
-  //
-  // 2026-07-28 - now threads cpId/videoJobId through so the generated
-  // document is actually saved (content_pipeline_overseer_spec_backlog_
-  // 2026-07-28.txt) instead of only ever existing as a chat message, and
-  // asks for one extra structured trailer line (DIRECTOR_CHOSEN) so the
-  // director this document picks becomes a real style_profiles row
-  // instead of resurrecting nothing.
-  _autoVisualTreatment: function(form, palette, cpId, videoJobId) {
-    var buildPrompt = function(filmmakerBlock) {
-      return 'Generate a full Visual Treatment Document for my beat.\n' +
-        'Beat title: ' + form.title + '\n' +
-        'Mood: ' + form.mood + ' | Key + scale: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + '\n' +
-        'Colour palette: ' + palette.name + ' (' + palette.hex + ')\n' +
-        (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
-        (filmmakerBlock ? '\n' + filmmakerBlock + '\n' : '') +
-        '\nThe document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), ' +
-        'Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), ' +
-        'OpenMontage production brief (120 words), a COPY-PASTE PROMPT of 500 characters or fewer per scene — the exact text I can paste directly into an AI image/video generation tool\'s own prompt box, which is almost always character-limited (do not assume the full document above fits there; count the characters and cut it down until it genuinely does), and export format recommendations for YouTube, Reels, and Beatstars. ' +
-        'Every director/reference/technical claim you make must be something you can actually stand behind — if you are inferring or pattern-matching rather than citing something real and confirmed, say so plainly next to that claim (e.g. "inferred, not confirmed:") rather than stating it as settled fact.' +
-        (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why. Then on its own final line, output exactly: DIRECTOR_CHOSEN: <exact director name from the list above>.' : '');
-    };
-    var vo = RPGACE.modules.visualOracle;
-    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — armCapture now
-    // runs AFTER sendToOracle confirms the send actually happened, not
-    // before. This was the real root cause of Alex's own hand-test report
-    // (2026-08-06): this auto-chain fires straight off the Beat Log
-    // response scan with no human gate, so a manual click elsewhere (e.g.
-    // "Start Visual Treatment" on the ConID card) landing in the same
-    // narrow window could grab the in-flight slot first, silently
-    // blocking THIS send while the capture below was already armed and
-    // dangling - it then wrongly fired on the manual flow's own reply
-    // once that landed (RPGACE.hooks.fire broadcasts to every registered
-    // listener, confirmed by direct read), which is why no style_profiles
-    // row ever appeared for the auto-triggered director pick.
-    var armCapture = function() {
-      if (vo && vo._captureNextResponse && cpId) {
-        vo._captureNextResponse(function(text) {
-          vo._saveDocToProduction('visual_treatment', text, cpId, videoJobId);
-        });
-      }
-    };
-    var fire = function(block) {
-      var sent = RPGACE.utils.sendToOracle(buildPrompt(block));
-      if (sent) {
-        armCapture();
-      } else {
-        RPGACE.utils.toast('⏳ Auto Visual Treatment was blocked (Oracle still busy) — use the ConID\'s "🎬 Start Visual Treatment" button to run it manually', '#E2A83D', 5000);
-      }
-    };
-    if (vo && typeof vo._withFilmmakerLibrary === 'function') {
-      vo._withFilmmakerLibrary(function(block) { fire(block); });
-    } else {
-      fire('');
-    }
-  },
-
-  _renderArtistPanel: function(form, palette, big, emerging, underground, output) {
-    var self = this;
-    output.innerHTML = '';
-    output.style.cssText = 'margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;';
-
-    // Colour palette display
-    var palRow = document.createElement('div');
-    palRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px;';
-    var swatch = document.createElement('div');
-    swatch.style.cssText = 'width:32px;height:32px;border-radius:6px;background:' + palette.hex + ';border:1px solid rgba(255,255,255,0.1);flex-shrink:0;';
-    var palText = document.createElement('div');
-    palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#D4DAF5;">' + palette.name + '</div><div style="font-size:11px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
-    palRow.appendChild(swatch); palRow.appendChild(palText);
-    output.appendChild(palRow);
-
-    // Artist tiers
-    var tiers = [
-      { label: 'Major artists', color: '#C9A84C', artists: big },
-      { label: 'Emerging targets', color: '#4CAF82', artists: emerging.slice(0, 8) },
-      { label: 'Underground', color: '#4A8CCC', artists: underground },
-    ];
-
-    tiers.forEach(function(tier) {
-      if (tier.artists.length === 0) return;
-      var section = document.createElement('div');
-      section.style.cssText = 'margin-bottom:12px;';
-      var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + tier.color + ';margin-bottom:6px;';
-      lbl.textContent = tier.label + ' (' + tier.artists.length + ')';
-      section.appendChild(lbl);
-      var chips = document.createElement('div');
-      chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
-      tier.artists.forEach(function(a) {
-        var chip = document.createElement('a');
-        chip.href = a.url || '#';
-        chip.target = '_blank';
-        chip.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.7);font-size:11px;text-decoration:none;cursor:pointer;';
-        chip.textContent = a.name + (a.listeners ? ' · ' + (a.listeners > 1000000 ? Math.round(a.listeners/1000000)+'M' : Math.round(a.listeners/1000)+'k') : '');
-        chips.appendChild(chip);
-      });
-      section.appendChild(chips);
-      output.appendChild(section);
-    });
-
-    // 2026-07-28 (real hand-test feedback): "Save to Notion" replaced.
-    // Alex's own words: matches keep being the same handful of names, and
-    // he didn't want a Notion dump - he wanted the reference corpus
-    // actually built up in Supabase, which is the real fix for repeat
-    // matches (a thin corpus with only ~8 well-known names at ~140BPM/
-    // Aggressive is exactly why they kept recurring - see refCorpus
-    // .findMatches). This button grows that corpus directly from real
-    // matches instead, using the current beat's own real metadata as the
-    // anchor point for each artist - skips names already in the corpus so
-    // repeat beat-logs don't just pile up duplicates.
-    var corpusBtn = document.createElement('button');
-    corpusBtn.textContent = '💾 Add These Artists to Reference Corpus';
-    corpusBtn.style.cssText = 'margin-top:10px;padding:8px 16px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:6px;color:#4A8CCC;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    corpusBtn.onclick = function() { self._saveMatchesToCorpus(form, big, emerging, underground, corpusBtn); };
-    output.appendChild(corpusBtn);
-
-    RPGACE.utils.toast('✅ Beat logged · ' + (big.length + emerging.length + underground.length) + ' artists found · Check Oracle for outputs', '#C9A84C', 5000);
-  },
-
-  _saveMatchesToCorpus: function(form, big, emerging, underground, btn) {
-    var allArtists = big.concat(emerging).concat(underground);
-    if (allArtists.length === 0) return;
-    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-
-    RPGACE.sb.select('reference_tracks', 'select=artist')
-      .then(function(existing) {
-        var existingNames = (existing || []).map(function(r) { return (r.artist || '').toLowerCase(); });
-        var newOnes = [];
-        var seen = {};
-        allArtists.forEach(function(a) {
-          var key = a.name.toLowerCase();
-          if (existingNames.indexOf(key) !== -1 || seen[key]) return;
-          seen[key] = true;
-          newOnes.push(a);
-        });
-
-        if (newOnes.length === 0) {
-          RPGACE.utils.toast('All these artists are already in your corpus', '#4A8CCC', 2500);
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('Corpus save error: ' + e.message, '#CC4A4A', 3000);
           if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+        });
+    },
+
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: builds the Beat Log panel, reads and writes
+  // its fields, paints progress, and delegates data/computation work
+  // to logic.* rather than doing it inline.
+  // ============================================================
+  ui: {
+
+    _inject: function() {
+      if (document.getElementById('beat-log-panel')) return;
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+
+      // Aug 23 2026 (UI2/UI3) — was a 4-clause fallback chain resolving the
+      // retired Research Lab page (its leading 'page-research' clause was
+      // confirmed-dead). Now the ONE shared staging holder every relocatable
+      // panel uses; dashDeck._openPanelPopup MOVES this node into a popup on
+      // demand and back here on close.
+      var page = RPGACE.utils.panelHome();
+      if (!page) return;
+
+      var panel = document.createElement('div');
+      panel.id = 'beat-log-panel';
+      panel.style.cssText = 'background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:20px 24px;margin-bottom:24px;';
+
+      // Header
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;';
+      var title = document.createElement('div');
+      var eyebrow = document.createElement('div');
+      eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px;';
+      eyebrow.textContent = 'Beat Log · ' + RPGACE.utils.phylumLabel(16);
+      var titleText = document.createElement('div');
+      titleText.style.cssText = 'font-size:16px;font-weight:700;color:#D4DAF5;';
+      titleText.textContent = 'Log a Beat';
+      title.appendChild(eyebrow); title.appendChild(titleText);
+      hdr.appendChild(title);
+      panel.appendChild(hdr);
+
+      // Drag-and-drop zone for audio file
+      var dropZone = document.createElement('div');
+      dropZone.id = 'bl-dropzone';
+      dropZone.style.cssText = 'border:2px dashed rgba(201,168,76,0.2);border-radius:8px;padding:16px;text-align:center;margin-bottom:16px;cursor:pointer;transition:border-color .2s;';
+      var dropText = document.createElement('div');
+      dropText.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.35);';
+      dropText.innerHTML = '🎵 Drop your .mp3 / .wav / .flp here to pre-fill fields from filename<br><span style="font-size:11px;opacity:0.6;">e.g. "140bpm_Dminor_dark_fire.mp3" → auto-fills BPM, key, scale, mood, energy</span>';
+      dropZone.appendChild(dropText);
+
+      dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.style.borderColor = 'rgba(201,168,76,0.6)';
+        dropZone.style.background = 'rgba(201,168,76,0.04)';
+      });
+      dropZone.addEventListener('dragleave', function() {
+        dropZone.style.borderColor = 'rgba(201,168,76,0.2)';
+        dropZone.style.background = 'none';
+      });
+      dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.style.borderColor = 'rgba(201,168,76,0.2)';
+        dropZone.style.background = 'none';
+        var file = e.dataTransfer.files[0];
+        if (!file) return;
+        self.ui._parseFilename(file.name, file.path || '');
+        self.logic._tryRealAudioAnalysis(file);
+      });
+      dropZone.addEventListener('click', function() {
+        var inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = '.mp3,.wav,.flp,.aiff';
+        inp.onchange = function() {
+          if (inp.files[0]) { self.ui._parseFilename(inp.files[0].name, ''); self.logic._tryRealAudioAnalysis(inp.files[0]); }
+        };
+        inp.click();
+      });
+      panel.appendChild(dropZone);
+
+      // Form grid
+      var grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;';
+
+      var fields = [
+        { id: 'bl-title',    label: 'Beat Title',  type: 'text',   placeholder: 'e.g. Midnight Cipher' },
+        { id: 'bl-key',      label: 'Key',          type: 'text',   placeholder: 'e.g. D' },
+        { id: 'bl-bpm',      label: 'BPM',          type: 'number', placeholder: 'e.g. 140' },
+        { id: 'bl-scale',    label: 'Scale',        type: 'select', options: Object.keys(self.SCALE_COLOURS) },
+        { id: 'bl-energy',   label: 'Energy (1-5)', type: 'select', options: ['1 — Sketch','2 — Draft','3 — Solid','4 — Strong','5 — Fire'] },
+        { id: 'bl-mood',     label: 'Mood',         type: 'select', options: Object.keys(self.MOOD_TAGS) },
+      ];
+
+      fields.forEach(function(f) {
+        var wrap = document.createElement('div');
+        var lbl = document.createElement('label');
+        lbl.textContent = f.label;
+        lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
+        var inp;
+        if (f.type === 'select') {
+          inp = document.createElement('select');
+          var blank = document.createElement('option');
+          blank.value = ''; blank.textContent = '— select —';
+          inp.appendChild(blank);
+          f.options.forEach(function(o) {
+            var opt = document.createElement('option');
+            opt.value = o; opt.textContent = o;
+            inp.appendChild(opt);
+          });
+        } else {
+          inp = document.createElement('input');
+          inp.type = f.type;
+          inp.placeholder = f.placeholder || '';
+        }
+        inp.id = f.id;
+        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+        wrap.appendChild(lbl); wrap.appendChild(inp);
+        grid.appendChild(wrap);
+      });
+      panel.appendChild(grid);
+
+      // Taxonomy nodes picker — REDESIGNED July 19 (Research redesign,
+      // confirmed answer: "Searchable picker"). The old version rendered
+      // EVERY node as a visible chip up-front - by 470 tree rows that was
+      // a wall of buttons dominating the whole form. Now: a search box;
+      // chips only show when they match the query or are already selected.
+      // The selection mechanism (dataset.active on chips in #bl-tax-grid)
+      // is UNCHANGED, so the Log Beat read path needs no edits.
+      var taxWrap = document.createElement('div');
+      taxWrap.style.cssText = 'margin-bottom:14px;';
+      var taxLbl = document.createElement('div');
+      taxLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:8px;';
+      taxLbl.textContent = 'Taxonomy Nodes Applied';
+      var taxSearch = document.createElement('input');
+      taxSearch.type = 'text';
+      taxSearch.id = 'bl-tax-search';
+      taxSearch.placeholder = '🔍 Type to search nodes — selected ones stay visible...';
+      taxSearch.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+      var taxGrid = document.createElement('div');
+      taxGrid.id = 'bl-tax-grid';
+      taxGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+      taxWrap.appendChild(taxLbl); taxWrap.appendChild(taxSearch); taxWrap.appendChild(taxGrid);
+      panel.appendChild(taxWrap);
+
+      var applyTaxFilter = function() {
+        var q = taxSearch.value.trim().toLowerCase();
+        Array.prototype.forEach.call(taxGrid.children, function(chip) {
+          var selected = chip.dataset.active === '1';
+          var matches = q.length >= 2 && (chip.dataset.concept || '').toLowerCase().indexOf(q) !== -1;
+          chip.style.display = (selected || matches) ? '' : 'none';
+        });
+      };
+      taxSearch.oninput = applyTaxFilter;
+
+      // Load taxonomy nodes
+      RPGACE.sb.select('taxonomy_nodes', 'order=phylum_number.asc&limit=50')
+        .then(function(nodes) {
+          (nodes || []).forEach(function(node) {
+            var chip = document.createElement('button');
+            chip.dataset.nodeId = node.id;
+            chip.dataset.concept = node.concept;
+            chip.textContent = node.concept.slice(0, 30) + (node.concept.length > 30 ? '…' : '');
+            chip.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.5);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;transition:background .15s,border-color .15s,color .15s;';
+            chip.onclick = function() {
+              var active = chip.dataset.active === '1';
+              chip.dataset.active = active ? '0' : '1';
+              chip.style.background = active ? 'rgba(255,255,255,0.03)' : 'rgba(201,168,76,0.12)';
+              chip.style.borderColor = active ? 'rgba(255,255,255,0.08)' : 'rgba(201,168,76,0.4)';
+              chip.style.color = active ? 'rgba(226,226,236,0.5)' : '#C9A84C';
+              applyTaxFilter();
+            };
+            taxGrid.appendChild(chip);
+          });
+          applyTaxFilter(); // hide everything until searched/selected
+        }).catch(function() {});
+
+      // Extra fields row
+      var extraGrid = document.createElement('div');
+      extraGrid.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px;';
+
+      // 2026-07-28 (real hand-test feedback) - Genre added. It already had a
+      // real home (reference_tracks.genre existed but was never fed from
+      // either end - see refCorpus below), it just never had an entry point
+      // on the Beat Log form itself. Free text, not a select, matching the
+      // corpus panel's own free-text fields - genre in this space is fuzzy
+      // enough (UK Drill vs Drill vs UK Rap) that forcing a fixed list would
+      // just cause mismatches against whatever the corpus rows say.
+      var extraFields = [
+        { id: 'bl-rating',    label: 'Beat Rating (★)',    type: 'select', options: ['★','★★','★★★','★★★★','★★★★★'] },
+        { id: 'bl-genre',     label: 'Genre',              type: 'text', placeholder: 'e.g. UK Drill, Afrobeats, Boom Bap' },
+        { id: 'bl-licence',   label: 'Licence Type',       type: 'select', options: ['Lease only','Exclusive available','Sync ready','All types'] },
+        { id: 'bl-collab',    label: 'Collab Ready',       type: 'select', options: ['No','Yes — DM me','Yes — email only'] },
+      ];
+      extraFields.forEach(function(f) {
+        var wrap = document.createElement('div');
+        var lbl = document.createElement('label');
+        lbl.textContent = f.label;
+        lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
+        var fieldEl;
+        if (f.type === 'text') {
+          fieldEl = document.createElement('input');
+          fieldEl.type = 'text';
+          fieldEl.id = f.id;
+          fieldEl.placeholder = f.placeholder || '';
+        } else {
+          fieldEl = document.createElement('select');
+          fieldEl.id = f.id;
+          var blank = document.createElement('option'); blank.value=''; blank.textContent='— select —';
+          fieldEl.appendChild(blank);
+          f.options.forEach(function(o) {
+            var opt = document.createElement('option'); opt.value=o; opt.textContent=o; fieldEl.appendChild(opt);
+          });
+        }
+        fieldEl.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;box-sizing:border-box;';
+        wrap.appendChild(lbl); wrap.appendChild(fieldEl);
+        extraGrid.appendChild(wrap);
+      });
+
+      // Reference track + sample flag
+      var refWrap = document.createElement('div');
+      refWrap.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;';
+      ['bl-ref-track','bl-fl-path'].forEach(function(id, i) {
+        var wrap = document.createElement('div');
+        var lbl = document.createElement('label');
+        lbl.textContent = i === 0 ? 'Reference Track / Inspiration' : 'FL Studio Project Path (optional)';
+        lbl.style.cssText = 'display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.4);margin-bottom:5px;';
+        var inp = document.createElement('input');
+        inp.id = id; inp.type = 'text';
+        inp.placeholder = i === 0 ? 'e.g. Central Cee — Obsessed With You' : 'e.g. C:\\Beats\\midnight_cipher.flp';
+        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+        wrap.appendChild(lbl); wrap.appendChild(inp);
+        refWrap.appendChild(wrap);
+      });
+
+      panel.appendChild(extraGrid);
+      panel.appendChild(refWrap);
+
+      // Sample clearance checkbox
+      var sampleRow = document.createElement('div');
+      sampleRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:16px;';
+      var sampleCb = document.createElement('input');
+      sampleCb.type = 'checkbox'; sampleCb.id = 'bl-sample';
+      var sampleLbl = document.createElement('label');
+      sampleLbl.htmlFor = 'bl-sample';
+      sampleLbl.textContent = 'Contains uncleared sample';
+      sampleLbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);cursor:pointer;';
+      sampleRow.appendChild(sampleCb); sampleRow.appendChild(sampleLbl);
+      panel.appendChild(sampleRow);
+
+      // F18 checkbox REMOVED (Aug 6, 2nd real hand-test round, item 1) —
+      // Beat Log is the one real always-music_video creation path (see the
+      // content_type:'music_video' comment at _submit below), and Alex's
+      // own words: "we will always use it no matter what in the music
+      // video workflow." form.visualTreatment below is now a hardcoded
+      // true rather than read from a removed checkbox — every other real
+      // consumer of that flag (_generateOutputs' gated button) is
+      // unchanged, it just always sees true now.
+
+      // Action buttons
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:10px;flex-wrap:wrap;';
+
+      var logBtn = document.createElement('button');
+      logBtn.textContent = '⚡ Log Beat + Find Artists';
+      logBtn.style.cssText = 'padding:10px 20px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:#C9A84C;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      logBtn.onclick = function() { self.ui._submit(); };
+
+      var clearBtn = document.createElement('button');
+      clearBtn.textContent = 'Clear';
+      clearBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      clearBtn.onclick = function() { self.ui._clearForm(); };
+
+      btnRow.appendChild(logBtn); btnRow.appendChild(clearBtn);
+      panel.appendChild(btnRow);
+
+      // Output area
+      var output = document.createElement('div');
+      output.id = 'beat-log-output';
+      output.style.cssText = 'margin-top:16px;display:none;';
+      panel.appendChild(output);
+
+      // Append as a direct child of the Research page - NOT before the Video
+      // Workshop heading, which lives inside #video-workshop-panel and made
+      // this panel a DESCENDANT of it, so hiding Workshop hid Beat Log too
+      // (Bug A).
+      page.appendChild(panel);
+      RPGACE.hooks.fire('research:panel-injected');
+
+      console.log('[RPGACE:beatLog] Panel injected');
+    },
+
+    _parseFilename: function(filename, filepath) {
+      // Extract metadata from filename
+      // Supports patterns like: 140bpm_Dminor_dark_fire.mp3
+      //                         D_minor_140_dark.wav
+      //                         midnight_cipher_140bpm_Fsharp_dorian.mp3
+      var name = filename.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').toLowerCase();
+
+      // BPM — look for number between 60-200
+      var bpmMatch = name.match(/(6[0-9]|[7-9][0-9]|1[0-9][0-9]|200)(?:\s*bpm)?/);
+      if (bpmMatch) {
+        var bpmEl = document.getElementById('bl-bpm');
+        if (bpmEl) bpmEl.value = bpmMatch[1];
+      }
+
+      // Key — look for note names
+      var keys = ['c#','d#','f#','g#','a#','c','d','e','f','g','a','b'];
+      var foundKey = null;
+      keys.forEach(function(k) {
+        if (!foundKey && name.includes(k.replace('#','sharp').replace('#','#'))) foundKey = k.toUpperCase();
+        if (!foundKey && name.includes(' ' + k + ' ')) foundKey = k.toUpperCase();
+      });
+      if (!foundKey) {
+        // Try sharps written as 'sharp'
+        var sharpMatch = name.match(/([a-g])sharp/i);
+        if (sharpMatch) foundKey = sharpMatch[1].toUpperCase() + '#';
+      }
+      if (foundKey) {
+        var keyEl = document.getElementById('bl-key');
+        if (keyEl) keyEl.value = foundKey;
+      }
+
+      // Scale
+      var scaleMap = {
+        'minor': 'Minor', 'dorian': 'Dorian', 'phrygian': 'Phrygian',
+        'lydian': 'Lydian', 'mixolydian': 'Mixolydian', 'major': 'Major',
+        'locrian': 'Locrian', 'pentatonic': 'Minor Pentatonic', 'blues': 'Blues'
+      };
+      Object.keys(scaleMap).forEach(function(k) {
+        if (name.includes(k)) {
+          var scaleEl = document.getElementById('bl-scale');
+          if (scaleEl) scaleEl.value = scaleMap[k];
+        }
+      });
+
+      // Mood
+      var moodMap = {
+        'dark': 'Dark', 'aggressive': 'Aggressive', 'cinematic': 'Cinematic',
+        'melancholic': 'Melancholic', 'euphoric': 'Euphoric', 'calm': 'Calm',
+        'energetic': 'Energetic', 'romantic': 'Romantic', 'nostalgic': 'Nostalgic',
+        'tense': 'Tense', 'sad': 'Melancholic', 'hype': 'Energetic', 'chill': 'Calm'
+      };
+      Object.keys(moodMap).forEach(function(k) {
+        if (name.includes(k)) {
+          var moodEl = document.getElementById('bl-mood');
+          if (moodEl) moodEl.value = moodMap[k];
+        }
+      });
+
+      // Energy from keywords
+      var energyMap = { 'sketch': '1 — Sketch', 'draft': '2 — Draft', 'solid': '3 — Solid', 'strong': '4 — Strong', 'fire': '5 — Fire', 'heat': '5 — Fire', 'banger': '5 — Fire' };
+      Object.keys(energyMap).forEach(function(k) {
+        if (name.includes(k)) {
+          var energyEl = document.getElementById('bl-energy');
+          if (energyEl) energyEl.value = energyMap[k];
+        }
+      });
+
+      // Beat title from filename (clean version)
+      var titleEl = document.getElementById('bl-title');
+      if (titleEl && !titleEl.value) {
+        var cleanTitle = filename.replace(/\.[^.]+$/, '')
+          .replace(/[_-]/g, ' ')
+          .replace(/\d+\s*bpm/gi, '')
+          .replace(/(minor|major|dorian|phrygian|lydian|blues|pentatonic)/gi, '')
+          .replace(/[a-g]#?/gi, '')
+          .replace(/\s+/g, ' ').trim();
+        if (cleanTitle) titleEl.value = cleanTitle;
+      }
+
+      // FL path
+      if (filepath) {
+        var pathEl = document.getElementById('bl-fl-path');
+        if (pathEl) pathEl.value = filepath;
+      }
+
+      // Update drop zone text
+      var dz = document.getElementById('bl-dropzone');
+      if (dz) {
+        dz.querySelector('div').innerHTML = '✅ <strong style="color:#C9A84C;">' + filename + '</strong> — fields pre-filled. Review and adjust below.';
+      }
+
+      RPGACE.utils.toast('✅ Fields pre-filled from filename', '#C9A84C', 2000);
+    },
+
+    _pollAudioJob: function(jobId, attempt) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      if (attempt > 30) return; // ~90s at 3s intervals, then give up silently
+      RPGACE.sb.select('beat_audio_jobs', 'id=eq.' + jobId + '&select=status,bpm,musical_key,error').then(function(rows) {
+        var row = rows && rows[0];
+        if (!row || row.status === 'queued' || row.status === 'processing') {
+          setTimeout(function() { self.ui._pollAudioJob(jobId, attempt + 1); }, 3000);
           return;
         }
+        if (row.status === 'complete') {
+          if (row.bpm) { var bpmEl = document.getElementById('bl-bpm'); if (bpmEl) bpmEl.value = Math.round(row.bpm); }
+          if (row.musical_key) {
+            var parts = row.musical_key.split(' '); // e.g. "D Major"
+            var keyEl = document.getElementById('bl-key'); if (keyEl) keyEl.value = parts[0];
+            var scaleEl = document.getElementById('bl-scale'); if (scaleEl && (parts[1] === 'Major' || parts[1] === 'Minor')) scaleEl.value = parts[1];
+          }
+          RPGACE.utils.toast('🎧 Real audio analysis: ' + Math.round(row.bpm || 0) + ' BPM' + (row.musical_key ? ', ' + row.musical_key : ''), '#C9A84C', 3000);
+        }
+        // status 'error' - fails open silently, same as never picked up.
+      }).catch(function() { /* fail open */ });
+    },
 
-        var done = 0;
-        newOnes.forEach(function(a) {
-          RPGACE.sb.secureWrite('reference_tracks', 'insert', {
-            artist:   a.name,
-            title:    '(from beat match — ' + form.title + ')',
-            bpm:      parseInt(form.bpm) || null,
-            key:      form.key || null,
-            scale:    form.scale || null,
-            energy:   parseInt(form.energy) || null,
-            mood:     form.mood || null,
-            genre:    form.genre || null,
-            url:      a.url || null,
-            source:   'beat_match_growth',
-            analysed: false,
-          }).then(function() {
-            done++;
-            if (done === newOnes.length) {
-              RPGACE.utils.toast('✅ Added ' + done + ' new artist' + (done === 1 ? '' : 's') + ' to your corpus', '#4A8CCC', 3000);
-              if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+    _getForm: function() {
+      var get = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      var activeTax = Array.from(document.querySelectorAll('#bl-tax-grid button[data-active="1"]'))
+        .map(function(b) { return b.dataset.concept; });
+      return {
+        title:    get('bl-title'),
+        key:      get('bl-key'),
+        bpm:      get('bl-bpm'),
+        scale:    get('bl-scale'),
+        energy:   get('bl-energy'),
+        mood:     get('bl-mood'),
+        genre:    get('bl-genre'),
+        rating:   get('bl-rating'),
+        licence:  get('bl-licence'),
+        collab:   get('bl-collab'),
+        refTrack: get('bl-ref-track'),
+        flPath:   get('bl-fl-path'),
+        sample:   document.getElementById('bl-sample') ? document.getElementById('bl-sample').checked : false,
+        visualTreatment: true, // always on now — checkbox removed Aug 6, item 1 (see note above)
+        taxNodes: activeTax,
+      };
+    },
+
+    _clearForm: function() {
+      ['bl-title','bl-key','bl-bpm','bl-scale','bl-energy','bl-mood','bl-genre','bl-rating','bl-licence','bl-collab','bl-ref-track','bl-fl-path'].forEach(function(id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+      document.querySelectorAll('#bl-tax-grid button[data-active="1"]').forEach(function(b) {
+        b.dataset.active = '0';
+        b.style.background = 'rgba(255,255,255,0.03)';
+        b.style.borderColor = 'rgba(255,255,255,0.08)';
+        b.style.color = 'rgba(226,226,236,0.5)';
+      });
+      var cb = document.getElementById('bl-sample'); if (cb) cb.checked = false;
+      var vtCb = document.getElementById('bl-visual-treatment'); if (vtCb) vtCb.checked = false;
+      var out = document.getElementById('beat-log-output'); if (out) { out.style.display='none'; out.innerHTML=''; }
+      // Real pre-existing bug, found during the G53 restructure (Sep 2 2026)
+      // and fixed the same session, not smuggled silently into the refactor:
+      // `_clearForm` never declared `var self`, and this module sits OUTSIDE
+      // rpgace_core.js's strict-mode IIFE — so bare `self` resolved to the
+      // browser global `self` (=== window), meaning this line had only ever
+      // set `window._retroTarget`, never the module's own `_retroTarget`.
+      // Real effect: clicking Clear during a "Return to Beat Log" retro edit
+      // never actually cancelled it — the next Log Beat click would still
+      // silently UPDATE the old ConID instead of creating a fresh one. Real,
+      // minimal fix: qualify the target explicitly (same discipline every
+      // other moved function in this module now uses).
+      RPGACE.modules.beatLog._retroTarget = null;
+    },
+
+    // ── Phase 1 retroactive button (Aug 5, Engineer pass, Phase E) ───────
+    // Real edit-in-place, per /interrogation's confirmed Q1 answer: reuse
+    // a beat's existing creative record to regenerate for content
+    // repurposing, without starting from zero. Called by
+    // contentProductionLive's "Return to Beat Log" retro button with the
+    // ConID's own content_productions row.
+    _openRetroactive: function(row) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      RPGACE.utils.toast('✏️ Loading saved beat data for ConID #' + (row.con_id || row.id) + '...', '#C9A84C', 2500);
+      RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1&select=id,script')
+        .catch(function(e) { console.warn('[beatLog] retro lookup:', e.message); return []; })
+        .then(function(jobs) {
+          var vj = jobs && jobs[0];
+          if (!vj || !vj.script) {
+            RPGACE.utils.toast('⚠️ No saved beat data found for this ConID — nothing to pre-fill', '#E2A83D', 3500);
+            return;
+          }
+          var form;
+          try { form = JSON.parse(vj.script); } catch (e) { form = null; }
+          if (!form) {
+            RPGACE.utils.toast('⚠️ Saved beat data could not be read — nothing to pre-fill', '#E2A83D', 3500);
+            return;
+          }
+          // Aug 23 2026 (UI2) — was:
+          //     if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
+          //     ... then scrollIntoView on #beat-log-panel.
+          // A real, LIVE call site the UI-consistency audit had NOT catalogued
+          // (found by a fresh grep during the same pass): this is the "Return to
+          // Beat Log" retroactive-edit path off a ConID card (Phase E, Aug 5).
+          // showPage() has no null guard on getElementById('page-'+name), so
+          // once the Research Lab page was retired this would have thrown here.
+          // Aug 31 2026 (UI11) — now navigates to the real #page-beat-log
+          // (dashDeck._openPage, PAGE_PANELS already carries the ensure fn),
+          // matching every other Beat Log entry point's new real-page
+          // destination instead of the old transient popup. The explicit
+          // self._inject() below is redundant (the ensure fn already runs it)
+          // but kept as a harmless no-op guard in case _openPage is ever
+          // unavailable.
+          var dd = RPGACE.modules.dashDeck;
+          if (dd && dd._openPage) {
+            dd._openPage('beat-log-panel');
+          }
+          setTimeout(function() {
+            self.ui._inject();
+            self.ui._prefillForm(form);
+            self._retroTarget = { cpId: row.id, videoJobId: vj.id };
+            var panelEl = document.getElementById('beat-log-panel');
+            if (panelEl) panelEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            RPGACE.utils.toast('✏️ Editing existing beat for ConID #' + (row.con_id || row.id) + ' — Log Beat below will UPDATE this record in place', '#C9A84C', 4500);
+          }, 400);
+        });
+    },
+
+    // Real pre-fill, keyed the same way _getForm() reads the form back out
+    // (rule 8 - one real field set, read in both directions). Taxonomy
+    // chips load asynchronously (a real Supabase fetch inside _inject), so
+    // marking them active uses a bounded retry rather than a guessed fixed
+    // delay.
+    _prefillForm: function(form) {
+      var ids = { title:'bl-title', key:'bl-key', bpm:'bl-bpm', scale:'bl-scale', energy:'bl-energy', mood:'bl-mood', genre:'bl-genre', rating:'bl-rating', licence:'bl-licence', collab:'bl-collab', refTrack:'bl-ref-track', flPath:'bl-fl-path' };
+      Object.keys(ids).forEach(function(key) {
+        var el = document.getElementById(ids[key]);
+        if (el && form[key] != null) el.value = form[key];
+      });
+      var sampleCb = document.getElementById('bl-sample'); if (sampleCb) sampleCb.checked = !!form.sample;
+      // bl-visual-treatment checkbox removed Aug 6 (item 1) — form.visualTreatment stays hardcoded true
+      var attempts = 0;
+      var tryMarkTax = function() {
+        var grid = document.getElementById('bl-tax-grid');
+        if (grid && grid.children.length > 0) {
+          Array.prototype.forEach.call(grid.children, function(chip) {
+            if ((form.taxNodes || []).indexOf(chip.dataset.concept) !== -1) {
+              chip.dataset.active = '1';
+              chip.style.background = 'rgba(201,168,76,0.12)';
+              chip.style.borderColor = 'rgba(201,168,76,0.4)';
+              chip.style.color = '#C9A84C';
             }
-          }).catch(function() {
-            done++;
-            if (btn && done === newOnes.length) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
           });
+          return;
+        }
+        attempts++;
+        if (attempts < 15) setTimeout(tryMarkTax, 300);
+      };
+      tryMarkTax();
+    },
+
+    _submit: function() {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      var form = self.ui._getForm();
+      if (!form.title) { RPGACE.utils.toast('Add a beat title first', '#CC4A4A', 2000); return; }
+      if (!form.mood)  { RPGACE.utils.toast('Select a mood', '#CC4A4A', 2000); return; }
+
+      var output = document.getElementById('beat-log-output');
+      output.style.display = 'block';
+
+      // Aug 5 (Engineer pass, Phase E) - real edit-in-place branch. Set
+      // only by _openRetroactive (Phase D's "Return to Beat Log" retro
+      // button); routes to an UPDATE of the exact same content_productions
+      // + video_jobs rows instead of a fresh INSERT pair, per
+      // /interrogation's confirmed "edit in place" answer.
+      if (self._retroTarget) {
+        self.ui._submitUpdate(form);
+        return;
+      }
+
+      output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">⚡ Logging beat and searching for artist matches...</div>';
+
+      // 1. Create the linked Content Pipeline (ConID) entry FIRST so
+      //    video_jobs can reference its real id - Content Pipeline is the
+      //    overseer, Beat Log is a real entry point into it (Alex-confirmed
+      //    2026-07-28, content_pipeline_overseer_spec_backlog_2026-07-28.txt).
+      //    Waited on (not fire-and-forget) so everything downstream - the
+      //    video_jobs row, the Visual Treatment auto-save - has a real
+      //    target row to link to; adds one INSERT round-trip before the
+      //    rest of this flow continues, same fail-open behaviour as before.
+      // Engineer pass 2026-07-30 (real "2 workflows" resolution, Alex's own
+      // catch): content_type explicitly set here since beatLog is the one
+      // real always-music_video creation path - every other real entry
+      // point (Content Repurpose, Idea Bank activate) leaves it at its
+      // default ('tutorial'), matching what those flows have always
+      // actually produced.
+      RPGACE.sb.secureWrite('content_productions', 'insert', {
+        title: form.title,
+        idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
+        taxonomy_nodes: form.taxNodes,
+        platform_outputs: {},
+        status: 'Idea',
+        licence_type: form.licence || null,
+        creative_docs: { beat_meta: form },
+        content_type: 'music_video',
+      }).then(function(result) {
+        var cpRow = Array.isArray(result) ? result[0] : result;
+        var cpId = cpRow && cpRow.id ? cpRow.id : null;
+
+        // 2. Save to Supabase video_jobs, linked to the new Content Pipeline row
+        return RPGACE.sb.secureWrite('video_jobs', 'insert', {
+          title:        form.title,
+          status:       'beat_logged',
+          script:       JSON.stringify(form),
+          edl:          null,
+          raw_path:     form.flPath || null,
+          style_profile_id: null,
+          content_production_id: cpId,
+        }).then(function(vjResult) {
+          var vjRow = Array.isArray(vjResult) ? vjResult[0] : vjResult;
+          var videoJobId = vjRow && vjRow.id ? vjRow.id : null;
+          self.ui._continueAfterLink(form, cpId, videoJobId);
+        }).catch(function(e) {
+          console.warn('[beatLog] video_jobs save:', e.message);
+          self.ui._continueAfterLink(form, cpId, null);
+        });
+      }).catch(function(e) {
+        console.warn('[beatLog] Content Pipeline entry:', e.message);
+        self.ui._continueAfterLink(form, null, null);
+      });
+    },
+
+    // ── Real edit-in-place UPDATE path (Aug 5, Engineer pass, Phase E) ───
+    // Updates the SAME content_productions + video_jobs rows _openRetroactive
+    // loaded from, instead of the fresh INSERT pair _submit's normal path
+    // creates - per /interrogation's confirmed "edit in place" answer.
+    // Reuses _continueAfterLink unchanged afterward (rule 8 dedup) -
+    // re-running the artist search/journal/XP steps is a real, wanted side
+    // effect of a repurposing edit (fresh matches for the tweaked mood/BPM/
+    // genre), not a bug.
+    _submitUpdate: function(form) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      var target = self._retroTarget;
+      var output = document.getElementById('beat-log-output');
+      output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:12px 0;">✏️ Updating existing beat log entry...</div>';
+
+      RPGACE.sb.secureWrite('content_productions', 'update', {
+        title: form.title,
+        idea: 'Beat: ' + form.title + ' (' + form.key + ' ' + form.scale + ', ' + form.bpm + ' BPM, ' + form.mood + ')',
+        taxonomy_nodes: form.taxNodes,
+        licence_type: form.licence || null,
+      }, 'id=eq.' + target.cpId)
+        .catch(function(e) { console.warn('[beatLog] retro content_productions update:', e.message); })
+        .then(function() {
+          // beat_meta lives inside creative_docs (jsonb) - reuses
+          // visualOracle's existing read-merge-write rather than a second
+          // hand-rolled merge (rule 8 dedup). Stored as a real object, same
+          // shape _submit's own INSERT path already uses (creative_docs:
+          // {beat_meta: form}), not a stringified copy.
+          var vo = RPGACE.modules.visualOracle;
+          if (vo && vo._saveDocToProduction) vo._saveDocToProduction('beat_meta', form, target.cpId);
+        })
+        .then(function() {
+          if (!target.videoJobId) return;
+          return RPGACE.sb.secureWrite('video_jobs', 'update', {
+            title: form.title,
+            script: JSON.stringify(form),
+            raw_path: form.flPath || null,
+          }, 'id=eq.' + target.videoJobId).catch(function(e) { console.warn('[beatLog] retro video_jobs update:', e.message); });
+        })
+        .then(function() {
+          RPGACE.utils.toast('💾 Beat log updated in place — regenerating matches', '#4CAF82', 2500);
+          var cpId = target.cpId, videoJobId = target.videoJobId;
+          self._retroTarget = null;
+          self.ui._continueAfterLink(form, cpId, videoJobId);
+        });
+    },
+
+    // Continues the pre-existing beat-log flow (taxonomy marking, journal,
+    // XP, artist search + outputs) once the real content_productions/
+    // video_jobs ids are known (or null, if either write failed - fails
+    // open, same as every write in this function already did before this
+    // change).
+    _continueAfterLink: function(form, cpId, videoJobId) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+
+      // Mark taxonomy nodes as applied
+      form.taxNodes.forEach(function(concept) {
+        if (RPGACE.modules.taxonomySync) {
+          RPGACE.modules.taxonomySync.markApplied(concept);
+        }
+      });
+
+      // Save to Journal
+      var journalContent = 'Beat logged: ' + form.title + '\n' +
+        'Key: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + ' | Energy: ' + form.energy + '\n' +
+        'Mood: ' + form.mood + ' | Rating: ' + form.rating + '\n' +
+        (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
+        (form.taxNodes.length ? 'Nodes applied: ' + form.taxNodes.join(', ') : '');
+      if (typeof saveToJournal === 'function') {
+        saveToJournal('Beat: ' + form.title, journalContent, 'beatLog');
+      }
+
+      // Award XP
+      var xp = [20, 40, 60, 80, 100][parseInt(form.energy) - 1] || 60;
+      if (typeof addXP === 'function') addXP(xp);
+
+      // Get colour palette - mood first (Aug 5 fix: this is what actually
+      // varies per Alex's real creative intent), scale as a fallback only
+      // if mood is somehow unset.
+      var palette = self.MOOD_COLOURS[form.mood] || self.SCALE_COLOURS[form.scale] || { hex: '#1a1a2e', name: 'Dark neutral' };
+
+      // Get BPM-aware Last.fm tags
+      var tags = self.logic._getMoodTags(form.mood, form.bpm);
+
+      // Search Last.fm
+      var output = document.getElementById('beat-log-output');
+      self.ui._searchArtists(tags, form, palette, output, cpId, videoJobId);
+    },
+
+    _searchArtists: function(tags, form, palette, output, cpId, videoJobId) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">🔍 Checking reference corpus for matches...</div>';
+
+      // First: check reference corpus for BPM/mood/scale matches
+      var corpusPromise = (RPGACE.modules.refCorpus && typeof RPGACE.modules.refCorpus.findMatches === 'function')
+        ? RPGACE.modules.refCorpus.findMatches(form.bpm, form.mood, form.scale, form.energy, form.genre)
+        : Promise.resolve([]);
+
+      corpusPromise.then(function(corpusMatches) {
+        var hasCorpus = corpusMatches && corpusMatches.length > 0;
+
+        if (hasCorpus) {
+          output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">✅ Found ' + corpusMatches.length + ' corpus matches. Cross-referencing Last.fm...</div>';
+        } else {
+          output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">📚 No corpus matches yet. Searching Last.fm across ' + tags.length + ' style tags...</div>';
+        }
+
+        // Run Last.fm search in parallel
+        return fetch('/api/lastfm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'search_by_tags', tags: tags, limit: 50 })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var lfmArtists = (data.success && data.artists) ? data.artists : [];
+
+          // If we have corpus matches, use them to filter/rank Last.fm results
+          var big = [], emerging = [], underground = [];
+
+          if (hasCorpus) {
+            // Extract unique artist names from corpus matches
+            var corpusArtistNames = {};
+            corpusMatches.forEach(function(track) {
+              if (!corpusArtistNames[track.artist]) {
+                corpusArtistNames[track.artist] = {
+                  name: track.artist,
+                  score: track._score,
+                  refTrack: track.title,
+                  bpm: track.bpm,
+                  mood: track.mood,
+                  listeners: 0
+                };
+              }
+            });
+
+            // Enrich corpus artists with Last.fm listener counts where available
+            lfmArtists.forEach(function(lfm) {
+              var key = lfm.name.toLowerCase();
+              Object.keys(corpusArtistNames).forEach(function(name) {
+                if (name.toLowerCase() === key) {
+                  corpusArtistNames[name].listeners = lfm.listeners || 0;
+                  corpusArtistNames[name].url = lfm.url;
+                }
+              });
+            });
+
+            var corpusArtists = Object.values(corpusArtistNames).sort(function(a,b) { return b.score - a.score; });
+
+            // Also include relevant Last.fm artists not in corpus
+            var corpusNames = Object.keys(corpusArtistNames).map(function(n) { return n.toLowerCase(); });
+            var extraLfm = lfmArtists.filter(function(a) {
+              return !corpusNames.includes(a.name.toLowerCase()) && a.listeners > 50000;
+            }).slice(0, 5);
+
+            big = corpusArtists.filter(function(a) { return a.listeners > 1000000; }).slice(0, 5);
+            emerging = corpusArtists.filter(function(a) { return a.listeners <= 1000000; }).concat(extraLfm).slice(0, 10);
+            underground = [];
+
+            output.innerHTML = '<div style="color:rgba(74,144,226,0.8);font-size:12px;padding:8px 0;">🎯 ' + corpusMatches.length + ' corpus matches · ' + lfmArtists.length + ' Last.fm artists · Generating outputs...</div>';
+          } else {
+            // No corpus — use Last.fm only
+            self.logic._addNewArtistsToTaxonomy(lfmArtists, form.mood);
+            big        = lfmArtists.filter(function(a) { return a.listeners > 1000000; }).slice(0, 5);
+            emerging   = lfmArtists.filter(function(a) { return a.listeners > 10000 && a.listeners <= 1000000; }).slice(0, 10);
+            underground = lfmArtists.filter(function(a) { return a.listeners <= 10000; }).slice(0, 5);
+            output.innerHTML = '<div style="color:rgba(226,226,236,0.4);font-size:12px;padding:8px 0;">✅ ' + lfmArtists.length + ' Last.fm artists found. Add tracks to your corpus for better matches.</div>';
+          }
+
+          self.ui._generateOutputs(form, palette, big, emerging, underground, output, cpId, videoJobId);
         });
       })
-      .catch(function(e) {
-        RPGACE.utils.toast('Corpus save error: ' + e.message, '#CC4A4A', 3000);
-        if (btn) { btn.disabled = false; btn.textContent = '💾 Add These Artists to Reference Corpus'; }
+      .catch(function(err) {
+        output.innerHTML = '<div style="color:#CC4A4A;font-size:12px;padding:8px 0;">Search error: ' + err.message + '</div>';
       });
+    },
+
+    _generateOutputs: function(form, palette, big, emerging, underground, output, cpId, videoJobId) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      var bigNames   = big.map(function(a) { return a.name; }).join(', ') || 'N/A';
+      var emergNames = emerging.map(function(a) { return a.name + ' (' + Math.round(a.listeners/1000) + 'k)'; }).join(', ') || 'N/A';
+      var ugNames    = underground.map(function(a) { return a.name; }).join(', ') || 'N/A';
+
+      var prompt = 'I just finished a beat. Here are the details:\n' +
+        'Title: ' + form.title + '\n' +
+        'Key: ' + form.key + ' | Scale: ' + form.scale + ' | BPM: ' + form.bpm + '\n' +
+        'Mood: ' + form.mood + ' | Energy: ' + form.energy + '/5\n' +
+        'Colour palette: ' + palette.name + ' (' + palette.hex + ')\n' +
+        (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
+        '\nLast.fm matched artists:\n' +
+        'MAJOR (1M+ listeners): ' + bigNames + '\n' +
+        'EMERGING (10k-1M): ' + emergNames + '\n' +
+        'UNDERGROUND (<10k): ' + ugNames + '\n\n' +
+        'Generate ALL of the following:\n\n' +
+        '1. TYPE BEAT TITLES (5 options) — use the major artist names, format: "[Artist] x [Artist] Type Beat" and "[Mood] [Key] Type Beat 2026"\n\n' +
+        '2. BEATSTARS DESCRIPTION — 80 words max, include key, BPM, mood, style, and purchase CTA. Professional tone.\n\n' +
+        '3. NEURAL FRAMES BRIEF — 80-word AI video prompt for this beat. Specify: visual style, colour palette (' + palette.name + '), camera movement, mood.\n\n' +
+        '4. YOUTUBE CONTENT ANGLE — Title, hook (first 3 seconds on screen), and 1-line description for a tutorial about making this beat.\n\n' +
+        '5. TOP 3 OUTREACH TARGETS — From the emerging artists list, pick the 3 most likely to buy this beat. For each: name, why they fit, personalised DM draft (under 100 words, casual, not salesy), and their Last.fm URL.\n\n' +
+        '6. CONTENT BRIEF — One Instagram Reels concept for this beat (hook + visual direction + caption).\n\n' +
+        'Be specific, direct, and pre-filled for @AceSanyaBeats / FL Studio / UK hip hop.';
+
+      // Aug 6 (Engineer pass, real Content Pipeline bugfix) — real human
+      // gate before EITHER Oracle call, per Alex's own direct hand-test
+      // report: "it did all of this without any human gating or auto
+      // gating, this needs to be step by step." Both calls used to auto-
+      // fire — the second one (F18's Visual Treatment) literally CHAINED
+      // off the first one's response with no click in between, which was
+      // also the real opening for the dangling-capture bug fixed above (a
+      // manual click landing in that unsupervised gap could steal the
+      // in-flight slot). Gating both behind explicit buttons closes both
+      // problems with one change: nothing fires without a real click, so
+      // there is no unsupervised window for two sends to collide in.
+      self.ui._renderArtistPanel(form, palette, big, emerging, underground, output);
+
+      var gateRow = document.createElement('div');
+      gateRow.style.cssText = 'margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;gap:8px;';
+
+      var sendBtn = document.createElement('button');
+      sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
+      sendBtn.style.cssText = 'width:100%;padding:10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:6px;color:#C9A84C;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      sendBtn.onclick = function() {
+        sendBtn.disabled = true;
+        sendBtn.textContent = '⏳ Sending...';
+        if (typeof showPage === 'function') showPage('advisor');
+        setTimeout(function() {
+          var sent = RPGACE.utils.sendToOracle(prompt);
+          if (!sent) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = '📤 Send to Oracle — type beat titles, description, outreach, content brief';
+            RPGACE.utils.toast('⏳ Oracle was busy — try again in a moment', '#E2A83D', 3000);
+            return;
+          }
+          sendBtn.textContent = '✅ Sent — jotting it down + opening Content Pipeline once it replies...';
+          // Aug 6 (item 2) — Alex's real ask: "pressing log beat... should
+          // all be jotted down and send me back to content pipeline, where
+          // all the live production phases should be shown." Reuses the
+          // shared _captureNextResponse one-shot listener (rule 8, same
+          // dangling-capture-safe pattern fixed earlier today — armed only
+          // AFTER sendToOracle confirmed it actually sent, never before).
+          // Saves the real reply into creative_docs.beat_log_response (no
+          // trailer to parse here, just a straight save) then opens the
+          // Production Panel as an overlay — it renders fixed/z-9998, so
+          // it slides in over the advisor page without navigating away
+          // from the reply Alex is reading.
+          if (cpId && RPGACE.modules.visualOracle) {
+            RPGACE.modules.visualOracle._captureNextResponse(function(text) {
+              RPGACE.modules.visualOracle._saveDocToProduction('beat_log_response', text, cpId, videoJobId);
+              RPGACE.sb.select('content_productions', 'id=eq.' + cpId + '&select=con_id&limit=1')
+                .catch(function() { return []; })
+                .then(function(rows) {
+                  var cpl = RPGACE.modules.contentProductionLive;
+                  if (!cpl) return;
+                  cpl._activeConID = rows && rows[0] ? rows[0].con_id : cpl._activeConID;
+                  cpl._activeId = cpId;
+                  cpl._openProductionPanel();
+                });
+            });
+          }
+        }, 300);
+      };
+      gateRow.appendChild(sendBtn);
+
+      // F18: now a real second gated step instead of an auto-chain off the
+      // first response — decoupled entirely, so it can be run independently
+      // whenever Alex is ready, not forced into a fixed sequence.
+      if (form.visualTreatment) {
+        var vtBtn = document.createElement('button');
+        vtBtn.textContent = '🎬 Generate Visual Treatment Doc';
+        vtBtn.style.cssText = 'width:100%;padding:10px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        vtBtn.onclick = function() {
+          vtBtn.disabled = true;
+          vtBtn.textContent = '⏳ Generating...';
+          if (typeof showPage === 'function') showPage('advisor');
+          setTimeout(function() { self.logic._autoVisualTreatment(form, palette, cpId, videoJobId); }, 300);
+        };
+        gateRow.appendChild(vtBtn);
+      }
+
+      output.appendChild(gateRow);
+    },
+
+    _renderArtistPanel: function(form, palette, big, emerging, underground, output) {
+      // G53: `this` inside a ui/logic function is that SUB-OBJECT, not the
+      // module — so `self` is pinned to the module explicitly.
+      var self = RPGACE.modules.beatLog;
+      output.innerHTML = '';
+      output.style.cssText = 'margin-top:16px;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;';
+
+      // Colour palette display
+      var palRow = document.createElement('div');
+      palRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:14px;';
+      var swatch = document.createElement('div');
+      swatch.style.cssText = 'width:32px;height:32px;border-radius:6px;background:' + palette.hex + ';border:1px solid rgba(255,255,255,0.1);flex-shrink:0;';
+      var palText = document.createElement('div');
+      palText.innerHTML = '<div style="font-size:11px;font-weight:700;color:#D4DAF5;">' + palette.name + '</div><div style="font-size:11px;color:rgba(226,226,236,0.4);">' + RPGACE.utils.phylumLabel(11) + ' · ' + form.scale + ' · ' + palette.hex + '</div>';
+      palRow.appendChild(swatch); palRow.appendChild(palText);
+      output.appendChild(palRow);
+
+      // Artist tiers
+      var tiers = [
+        { label: 'Major artists', color: '#C9A84C', artists: big },
+        { label: 'Emerging targets', color: '#4CAF82', artists: emerging.slice(0, 8) },
+        { label: 'Underground', color: '#4A8CCC', artists: underground },
+      ];
+
+      tiers.forEach(function(tier) {
+        if (tier.artists.length === 0) return;
+        var section = document.createElement('div');
+        section.style.cssText = 'margin-bottom:12px;';
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + tier.color + ';margin-bottom:6px;';
+        lbl.textContent = tier.label + ' (' + tier.artists.length + ')';
+        section.appendChild(lbl);
+        var chips = document.createElement('div');
+        chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+        tier.artists.forEach(function(a) {
+          var chip = document.createElement('a');
+          chip.href = a.url || '#';
+          chip.target = '_blank';
+          chip.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:rgba(226,226,236,0.7);font-size:11px;text-decoration:none;cursor:pointer;';
+          chip.textContent = a.name + (a.listeners ? ' · ' + (a.listeners > 1000000 ? Math.round(a.listeners/1000000)+'M' : Math.round(a.listeners/1000)+'k') : '');
+          chips.appendChild(chip);
+        });
+        section.appendChild(chips);
+        output.appendChild(section);
+      });
+
+      // 2026-07-28 (real hand-test feedback): "Save to Notion" replaced.
+      // Alex's own words: matches keep being the same handful of names, and
+      // he didn't want a Notion dump - he wanted the reference corpus
+      // actually built up in Supabase, which is the real fix for repeat
+      // matches (a thin corpus with only ~8 well-known names at ~140BPM/
+      // Aggressive is exactly why they kept recurring - see refCorpus
+      // .findMatches). This button grows that corpus directly from real
+      // matches instead, using the current beat's own real metadata as the
+      // anchor point for each artist - skips names already in the corpus so
+      // repeat beat-logs don't just pile up duplicates.
+      var corpusBtn = document.createElement('button');
+      corpusBtn.textContent = '💾 Add These Artists to Reference Corpus';
+      corpusBtn.style.cssText = 'margin-top:10px;padding:8px 16px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:6px;color:#4A8CCC;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      corpusBtn.onclick = function() { self.logic._saveMatchesToCorpus(form, big, emerging, underground, corpusBtn); };
+      output.appendChild(corpusBtn);
+
+      RPGACE.utils.toast('✅ Beat logged · ' + (big.length + emerging.length + underground.length) + ' artists found · Check Oracle for outputs', '#C9A84C', 5000);
+    },
+
   },
+
+  // Thin top-level pass-throughs — preserve the exact existing public API.
+  // The 3 real external call sites (dashDeck.PAGE_PANELS beat-log-panel
+  // .ensure -> _inject; contentProductionLive Return to Beat Log ->
+  // _openRetroactive; oracleControl._execute log_beat action -> _submit,
+  // confirmed by grep as the only ones) keep working byte-identically with
+  // zero change on their side. Every other moved function gets a
+  // pass-through too, so the module object exposes exactly the same method
+  // names it did before this split. `this` here is always the module
+  // itself — every real call site invokes these as a property access on
+  // RPGACE.modules.beatLog, never as a detached function reference.
+  _getMoodTags: function(mood, bpm) { return this.logic._getMoodTags(mood, bpm); },
+  _tryRealAudioAnalysis: function(file) { return this.logic._tryRealAudioAnalysis(file); },
+  _addNewArtistsToTaxonomy: function(artists, mood) { return this.logic._addNewArtistsToTaxonomy(artists, mood); },
+  _autoVisualTreatment: function(form, palette, cpId, videoJobId) { return this.logic._autoVisualTreatment(form, palette, cpId, videoJobId); },
+  _saveMatchesToCorpus: function(form, big, emerging, underground, btn) { return this.logic._saveMatchesToCorpus(form, big, emerging, underground, btn); },
+  _inject: function() { return this.ui._inject(); },
+  _parseFilename: function(filename, filepath) { return this.ui._parseFilename(filename, filepath); },
+  _pollAudioJob: function(jobId, attempt) { return this.ui._pollAudioJob(jobId, attempt); },
+  _getForm: function() { return this.ui._getForm(); },
+  _clearForm: function() { return this.ui._clearForm(); },
+  _openRetroactive: function(row) { return this.ui._openRetroactive(row); },
+  _prefillForm: function(form) { return this.ui._prefillForm(form); },
+  _submit: function() { return this.ui._submit(); },
+  _submitUpdate: function(form) { return this.ui._submitUpdate(form); },
+  _continueAfterLink: function(form, cpId, videoJobId) { return this.ui._continueAfterLink(form, cpId, videoJobId); },
+  _searchArtists: function(tags, form, palette, output, cpId, videoJobId) { return this.ui._searchArtists(tags, form, palette, output, cpId, videoJobId); },
+  _generateOutputs: function(form, palette, big, emerging, underground, output, cpId, videoJobId) { return this.ui._generateOutputs(form, palette, big, emerging, underground, output, cpId, videoJobId); },
+  _renderArtistPanel: function(form, palette, big, emerging, underground, output) { return this.ui._renderArtistPanel(form, palette, big, emerging, underground, output); },
 
 });
 /* ===END:beatLog=== */
