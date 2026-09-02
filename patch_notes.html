@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧭✅ Sep 2 — leftNav gains Bookworm + Content Pipeline as grouped entries, per a real /interrogation</div>
+    <div class="card-body">
+      Alex, directly: "add these to the primary leftNav tab bar, /interrogation me on what will be added and removed" — referring to UI11's own flagged open question from the Sep 1 build. Real 3-question <code>/interrogation</code> before touching code, all his own recommended answers.<br><br>
+      <b>1. Grouped, not flat</b>: 2 new top-level leftNav cards (Bookworm, Content Pipeline) instead of 8 new flat entries — a real, dormant sub-card mechanism built for the old Research Lab (<code>subKind:'research'</code>, zero live use since <code>researchTabs.TABS</code> went permanently empty Aug 15) was generalized into a real <code>subItems</code> shape (a page per sub-card) rather than building a second one. leftNav now has 10 top-level cards; 5 real sub-cards nest under the 2 new ones — Videoworm and Bibliography under Bookworm, Idea Bank/Beat Log/Upload Workshop under Content Pipeline (the ConID list is the parent card's own destination).<br><br>
+      <b>2. Nothing removed</b>: the Bookworm/Content Pipeline dashboard-card nav popups (UI12/UI13) stay exactly as they were, including their own real Resume-button convenience (jump straight into your most recent in-progress book/production/idea) that leftNav's plain cards don't replicate — leftNav is a second, faster direct route alongside them, not a replacement.<br><br>
+      <b>3. MusicWorm deliberately excluded</b>: giving it a direct leftNav entry would reverse UI10's own retirement of Corpus's standalone dashboard card ("the UI module is not needed there") — kept worm-picker-only, one entry point, exactly as decided last session.<br><br>
+      <code>_syncActive()</code> extended so the new page-based sub-cards highlight correctly on navigation, same as top-level cards already did. Verified via headless Chromium: 10 top-level cards render (2 new + the original 8 unchanged), both subwraps render their real sub-cards, a parent-card click and a sub-card click both navigate to the correct real page, active-highlighting correctly follows a sub-page nav, zero console/page errors. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260831c→20260902a</code>. Deployed and confirmed on production via the Vercel API. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🗺️✅ Sep 1 — G110-G113 shipped: a real Local Analysis Pipeline dimension, the Logic Dimension retired and dispersed, 5 messiest Currents rewritten, methodology text collapsed</div>
     <div class="card-body">
       Same night's real <code>/Routine</code> Top 10, item 2. Dispatched to Opus as a background build (Omnitrix builder role, real Python/HTML tooling work entirely separate from the UI10-13 app-code work above — disjoint files, run concurrently) — hit the session's own usage limit once mid-task ("Now update the hub catalogue entry:"), resumed from exactly where it left off per Alex's own "Try again," and finished clean on the second pass.<br><br>
