@@ -21482,6 +21482,101 @@ RPGACE.register('refCorpus', {
 /* ===MODULE:contentProductionLive=== */
 RPGACE.register('contentProductionLive', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Aug 2026) — real, ratified /CEO plan item, and the FIFTH module
+  // to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot): this module is split into two internal namespaces,
+  // `ui` (rendering/DOM) and `logic` (business logic/data), following the
+  // exact shape those four already shipped and verified. Pure internal-
+  // structure refactor — zero functional, behavioural, UX, data or schema
+  // change; every function below was MOVED wholesale, never rewritten,
+  // never split down the middle, and its own body is otherwise untouched.
+  //
+  // 39 real functions: `init` stays a literal top-level function (because
+  // RPGACE.register() calls `module.init()` directly and cannot see into a
+  // sub-object, and its own `self` genuinely IS the module — byte-identical,
+  // still calling the top-level pass-throughs), 21 moved into `logic`, 17
+  // into `ui`. Every module-scope DATA field stays exactly where it was:
+  // _activeConID / _oracleSession / _activeId (the last one is never
+  // declared in this literal — createEntry mints it at runtime, see below)
+  // / OPENMONTAGE_HANDOFF_ENABLED / the 6 MUSIC_VIDEO_* + OBS_RAW_* lookup
+  // tables / STAGE_DOC_KEYS. Only functions moved.
+  //
+  // The one real risk this split has to get right, function by function: a
+  // function moved into `ui`/`logic` is invoked with `this` bound to THAT
+  // sub-object, not the module. Every moved function that used to open with
+  // `var self = this;` now opens with `var self = RPGACE.modules.
+  // contentProductionLive;` (36 of the 38), so every pre-existing `self.X`
+  // reference keeps resolving to the module exactly as before — including
+  // the real module-scope WRITES (`self._activeConID = ...`, `self._activeId
+  // = ...`, in createEntry/_prepOracleBarFor/_generateBeatstarsListing/
+  // _refreshWidget/_openProductionPanel/_endSession), which is the silent
+  // state-desync bug this pattern exists to prevent: those must land on the
+  // module, never on a sub-object, because 2 real EXTERNAL call sites read
+  // and write them directly (see the pass-through block at the foot of this
+  // module). The 2 functions that had NO `var self` and used bare `this.X`
+  // (_flowFor, _undoLastStage) get that same handle inserted as their first
+  // statement, with `this.` rewritten to `self.` — the videoPipeline pilot's
+  // own `var mod = RPGACE.modules.videoPipeline;` precedent. _injectOracleBar
+  // is the one genuinely awkward case: it had BOTH a `var self = this;` AND
+  // a bare `this._activeConID` guard one line ABOVE that declaration, so the
+  // declaration is hoisted to the top of the body — it moves past exactly 2
+  // side-effect-free early-return guards, so ordering is unchanged in effect.
+  // `self[primary.fn](row)` / `self[redo.fn](row)` inside _refreshWidget are
+  // dynamic dispatch through the module (the string values live in the
+  // MUSIC_VIDEO_*/OBS_RAW_PRIMARY_ACTION tables), so they resolve to the
+  // top-level pass-throughs — which is exactly why every moved function
+  // keeps one.
+  //
+  // Classification rule used (stated so a later reader can check it by grep
+  // rather than guess, and identical to the rule beatLog's own split
+  // recorded): a function lives in `ui` if it CONSTRUCTS OR DISCOVERS DOM
+  // (document.*, createElement, getElementById, querySelector, innerHTML);
+  // otherwise in `logic`. Deliberately NOT counted as a ui signal, matching
+  // the phylumPath pilot's own precedent (`_placeInsight`/`_generateArticle`
+  // landed in `logic` despite opening a confirm popup, because neither
+  // builds DOM itself): a bare window `confirm()`/`prompt()` dialog, a
+  // `showPage()` page-nav call, or opening ANOTHER module's picker/popup.
+  // A function that merely TRIGGERS a UI action without constructing any
+  // DOM of its own is logic.
+  //
+  // The genuinely mixed / judgment-call functions, each named here with the
+  // real evidence rather than silently classified:
+  //   • 4 of the 17 `ui` functions also contain a real Supabase write, and
+  //     are in `ui` on dominant responsibility (each is primarily a popup or
+  //     the card list itself), never split down the middle — verified as
+  //     exactly these 4 and no others: _openObsRawIntake (secureWrite on
+  //     conid_pot after a successful createEntry), _refreshWidget (the real
+  //     3-step cascade delete: secureWrite video_jobs -> sb.del
+  //     openmontage_jobs -> secureWrite content_productions), _generateVideo
+  //     (sb.insert openmontage_jobs), _viewOpenMontageJob (secureWrite
+  //     content_productions from its "Mark ConID as Filmed" button).
+  //   • _generateVideo is the sharpest of those four: its DOM half is only
+  //     the honest OPENMONTAGE_HANDOFF_ENABLED=false payload-preview popup
+  //     (that flag is currently TRUE, so in live use it only ever inserts).
+  //     Kept in `ui` anyway so the classification rule above stays a single
+  //     uniform, grep-checkable test rather than a per-function verdict.
+  //   • _sendFilledPromptToOracle is in `ui` and renders nothing: it
+  //     genuinely DISCOVERS a live DOM node (`document.querySelector
+  //     ('#chat-input')`) and writes into it. Real consequence worth
+  //     knowing: 4 `logic` functions (_generateVisualTreatment,
+  //     _generateObsScript, _generateCaptions, _retroRegenerateScript) call
+  //     it, so logic -> ui cross-namespace calls are normal here, exactly as
+  //     _revertToStage/createEntry/_markObsCutDone already call
+  //     ui._refreshWidget.
+  //   • 3 `logic` functions touch the browser without building DOM, per the
+  //     rule above: _undoLastStage (`confirm()`), _markObsCutDone
+  //     (`prompt()`), and _generateBundle — the last is the only logic
+  //     function that MUTATES a DOM element, and only one supplied by its
+  //     caller (`btnEl.textContent`/`.disabled` spinner state); it neither
+  //     constructs nor discovers one, and its real job is the server-side
+  //     zip call + download.
+  //   • _generateBeatstarsListing / _prepOracleBarFor / _generateVisualTreatment
+  //     / _generateObsScript are all in `logic` on the "merely triggers UI"
+  //     clause: they close a popup, call showPage(), open visualOracle's own
+  //     picker, and build prompt strings — none constructs DOM here.
+  // ══════════════════════════════════════════════════════════════════
+
   _activeConID: null,
   _oracleSession: [],
 
@@ -21645,2378 +21740,2477 @@ RPGACE.register('contentProductionLive', {
     'Filmed':   ['captions'],
   },
 
-  // One accessor instead of a three-way `if` repeated at every one of the
-  // real call sites below (rule 8). Returns null for 'tutorial', which is
-  // exactly what the existing code already means by "not the stage-aware
-  // path" — so tutorial's own generic advance button keeps working
-  // byte-identically, and a future 4th content_type only has to add a
-  // table set plus one line here.
-  _flowFor: function(contentType) {
-    if (contentType === 'music_video') {
-      return { labels: this.MUSIC_VIDEO_STATUS_LABELS, badges: this.MUSIC_VIDEO_BADGE_LABELS,
-               primary: this.MUSIC_VIDEO_PRIMARY_ACTION, redo: this.MUSIC_VIDEO_REDO_ACTION,
-               prev: this.MUSIC_VIDEO_PREV_STAGE, docKeys: this.STAGE_DOC_KEYS };
-    }
-    if (contentType === 'obs_raw') {
-      return { labels: this.OBS_RAW_STATUS_LABELS, badges: this.OBS_RAW_BADGE_LABELS,
-               primary: this.OBS_RAW_PRIMARY_ACTION, redo: this.OBS_RAW_REDO_ACTION,
-               prev: this.OBS_RAW_PREV_STAGE, docKeys: this.OBS_RAW_STAGE_DOC_KEYS };
-    }
-    return null;
-  },
+  // ============================================================
+  // logic — business logic/data: builds no DOM of its own. May call a
+  // window confirm()/prompt() dialog, showPage(), or another module's
+  // picker, and may call into ui.* for a refresh — none of that is DOM
+  // construction. Order below is the original file order, unchanged.
+  // ============================================================
+  logic: {
 
-  // Shared revert helper — used by both the redo-checkbox path (edit vs.
-  // revert-and-redo) and the standalone Undo button (item 3 + item 12,
-  // one real function instead of two, rule 8).
-  // A7: `flow` param added so an obs_raw revert clears ITS own real
-  // creative_docs keys, not music_video's. Defaults to the music_video
-  // set, so both pre-existing call sites are unchanged if they pass
-  // nothing — but both now pass the real flow explicitly.
-  _revertToStage: function(row, targetStatus, callback, flow) {
-    var self = this;
-    var keyTable = (flow && flow.docKeys) || self.STAGE_DOC_KEYS;
-    var clearKeys = keyTable[targetStatus] || [];
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .then(function(rows) {
-        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-        clearKeys.forEach(function(k) { delete docs[k]; });
-        var updates = { status: targetStatus, creative_docs: docs, updated_at: new Date().toISOString() };
-        if (targetStatus === 'Idea' || targetStatus === 'Scripted' || targetStatus === 'Filmed') {
-          updates.posted_at = null;
-        }
-        return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id);
-      })
-      .then(function() {
-        RPGACE.utils.toast('↩ ConID #' + row.con_id + ' reverted to "' + targetStatus + '" — outputs from later stages cleared', '#E2A83D', 3500);
-        self._refreshWidget();
-        if (callback) callback();
-      })
-      .catch(function(e) {
-        RPGACE.utils.toast('⚠️ Revert failed: ' + e.message, '#CC4A4A', 4000);
-      });
-  },
-
-  // Item 12 — standalone Undo: reverts to the previous stage and clears
-  // that stage's outputs, without re-launching any action (unlike the
-  // redo-checkbox path, which reverts THEN re-runs). Reuses
-  // MUSIC_VIDEO_PREV_STAGE + _revertToStage — no separate logic.
-  // A7: reads the real flow for THIS row's own content_type rather than
-  // music_video's table unconditionally — an obs_raw Undo used to be
-  // impossible to reach at all (obs_raw never took this branch), and
-  // hardcoding the music_video table here would have cleared the wrong
-  // creative_docs keys the moment it did.
-  _undoLastStage: function(row) {
-    var flow = this._flowFor(row.content_type);
-    if (!flow) return;
-    var target = flow.prev[row.status];
-    if (!target) {
-      RPGACE.utils.toast('Nothing to undo — ConID #' + row.con_id + ' is already at its first stage', 'rgba(226,226,236,0.4)', 2500);
-      return;
-    }
-    if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
-    this._revertToStage(row, target, null, flow);
-  },
-
-  // A7 (Aug 23 2026) — three OPTIONAL pass-through fields added
-  // (content_type / raw_footage_path / creative_docs). Every pre-existing
-  // caller (contentRepurpose's generate handler, conidPot's "⚡ Activate
-  // ConID") passes none of them and is byte-identical: content_type falls
-  // through to the column's own 'tutorial' DEFAULT exactly as before, and
-  // the other two stay unset. Returns the promise so a caller that needs
-  // to know the insert really landed (the OBS-raw intake gate) can chain
-  // off it instead of guessing — previously the promise was swallowed
-  // here and nothing downstream could tell success from failure.
-  createEntry: function(data) {
-    var self = this;
-    var payload = {
-      title:          data.title || 'Untitled Content Idea',
-      idea:           data.idea || '',
-      taxonomy_nodes: data.taxonomy_nodes || [],
-      platform_outputs: data.platform_outputs || {},
-      status:         data.status || 'Idea',
-    };
-    if (data.content_type) payload.content_type = data.content_type;
-    if (data.raw_footage_path) payload.raw_footage_path = data.raw_footage_path;
-    if (data.creative_docs) payload.creative_docs = data.creative_docs;
-    return RPGACE.sb.secureWrite('content_productions', 'insert', payload).then(function(result) {
-      var entry = Array.isArray(result) ? result[0] : result;
-      if (entry && entry.con_id) {
-        self._activeConID = entry.con_id;
-        self._activeId = entry.id;
-        RPGACE.utils.toast('📋 ConID #' + entry.con_id + ' created: ' + data.title, '#4CAF82', 4000);
-        self._refreshWidget();
-        self._injectOracleBar();
+    // One accessor instead of a three-way `if` repeated at every one of the
+    // real call sites below (rule 8). Returns null for 'tutorial', which is
+    // exactly what the existing code already means by "not the stage-aware
+    // path" — so tutorial's own generic advance button keeps working
+    // byte-identically, and a future 4th content_type only has to add a
+    // table set plus one line here.
+    _flowFor: function(contentType) {
+      var self = RPGACE.modules.contentProductionLive;
+      if (contentType === 'music_video') {
+        return { labels: self.MUSIC_VIDEO_STATUS_LABELS, badges: self.MUSIC_VIDEO_BADGE_LABELS,
+                 primary: self.MUSIC_VIDEO_PRIMARY_ACTION, redo: self.MUSIC_VIDEO_REDO_ACTION,
+                 prev: self.MUSIC_VIDEO_PREV_STAGE, docKeys: self.STAGE_DOC_KEYS };
       }
-      return entry;
-    }).catch(function(e) {
-      // Deliberately RESOLVES to null rather than re-throwing: the two
-      // pre-existing callers don't attach a .catch, so re-throwing here
-      // would turn every real insert failure into an unhandled rejection
-      // (which errorLog's own window.onunhandledrejection hook would then
-      // log as a crash). A caller that cares checks the resolved value.
-      // The toast is new and deliberate — this path used to console.warn
-      // only, so a genuinely failed ConID creation was invisible to Alex
-      // (rule 7, fail loud).
-      console.warn('[contentProductionLive] createEntry error:', e.message);
-      RPGACE.utils.toast('⚠️ Could not create ConID: ' + e.message, '#CC4A4A', 4500);
+      if (contentType === 'obs_raw') {
+        return { labels: self.OBS_RAW_STATUS_LABELS, badges: self.OBS_RAW_BADGE_LABELS,
+                 primary: self.OBS_RAW_PRIMARY_ACTION, redo: self.OBS_RAW_REDO_ACTION,
+                 prev: self.OBS_RAW_PREV_STAGE, docKeys: self.OBS_RAW_STAGE_DOC_KEYS };
+      }
       return null;
-    });
-  },
+    },
 
-  // ══════════════════════════════════════════════════════════════════
-  // A7 — the OBS-raw intake gate (Aug 23 2026)
-  // ══════════════════════════════════════════════════════════════════
-  // Alex's own hard requirement, verbatim: "if saved for later, the saved
-  // idea can only convert if I actually submit raw obs footage (this is a
-  // must requirement to convert potconid to conid if it is going down the
-  // obs raw workflow)."
-  //
-  // The real pre-existing potConID→conID conversion is conidPot's own
-  // "⚡ Activate ConID" connector button (_refreshIdeaBank), which calls
-  // contentProductionLive.createEntry() and then flips the conid_pot row
-  // to status='activated'. There was no gate of any kind on it — one
-  // click, always converts. This function is that gate, and it is the ONE
-  // real creation path for an obs_raw ConID (rule 8): the same function
-  // serves BOTH of Alex's stated entry points —
-  //   (a) "saved for later" — called from an Idea Bank row, `potRow` set,
-  //       so the conid_pot row is marked activated only AFTER the footage
-  //       has genuinely been submitted and the ConID really inserted;
-  //   (b) "straight to Content Pipeline (footage already done)" — called
-  //       from the Content Pipeline popup with potRow null, no Idea Bank
-  //       row involved at all.
-  //
-  // The gate is enforced structurally, not by a warning: the Create button
-  // is disabled until the path field holds real non-whitespace text, and
-  // the handler re-checks before writing. Reuses the existing
-  // content_productions.raw_footage_path column (already real, already
-  // written by the tutorial Production Panel's Phase 2 input and by
-  // _showPostDetails) rather than inventing a second footage field.
-  _openObsRawIntake: function(potRow, onCreated) {
-    var self = this;
-    var pop = RPGACE.modules.dashDeck._popup({
-      dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
-      eyebrow: 'OBS Raw → Content Pipeline', title: 'Submit raw OBS footage', noDefaultClose: true,
-    });
-    var overlay = pop.overlay, box = pop.box;
+    // Shared revert helper — used by both the redo-checkbox path (edit vs.
+    // revert-and-redo) and the standalone Undo button (item 3 + item 12,
+    // one real function instead of two, rule 8).
+    // A7: `flow` param added so an obs_raw revert clears ITS own real
+    // creative_docs keys, not music_video's. Defaults to the music_video
+    // set, so both pre-existing call sites are unchanged if they pass
+    // nothing — but both now pass the real flow explicitly.
+    _revertToStage: function(row, targetStatus, callback, flow) {
+      var self = RPGACE.modules.contentProductionLive;
+      var keyTable = (flow && flow.docKeys) || self.STAGE_DOC_KEYS;
+      var clearKeys = keyTable[targetStatus] || [];
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .then(function(rows) {
+          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+          clearKeys.forEach(function(k) { delete docs[k]; });
+          var updates = { status: targetStatus, creative_docs: docs, updated_at: new Date().toISOString() };
+          if (targetStatus === 'Idea' || targetStatus === 'Scripted' || targetStatus === 'Filmed') {
+            updates.posted_at = null;
+          }
+          return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id);
+        })
+        .then(function() {
+          RPGACE.utils.toast('↩ ConID #' + row.con_id + ' reverted to "' + targetStatus + '" — outputs from later stages cleared', '#E2A83D', 3500);
+          self._refreshWidget();
+          if (callback) callback();
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('⚠️ Revert failed: ' + e.message, '#CC4A4A', 4000);
+        });
+    },
 
-    var note = document.createElement('div');
-    note.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:14px;';
-    note.textContent = potRow
-      ? 'This idea can only become a real ConID on the OBS-raw path once the raw footage actually exists. Paste the real path to the recording — the ConID is not created until you do.'
-      : 'Footage already recorded? Paste its real path and this creates the ConID directly, skipping the Idea Bank.';
-    box.appendChild(note);
+    // Item 12 — standalone Undo: reverts to the previous stage and clears
+    // that stage's outputs, without re-launching any action (unlike the
+    // redo-checkbox path, which reverts THEN re-runs). Reuses
+    // MUSIC_VIDEO_PREV_STAGE + _revertToStage — no separate logic.
+    // A7: reads the real flow for THIS row's own content_type rather than
+    // music_video's table unconditionally — an obs_raw Undo used to be
+    // impossible to reach at all (obs_raw never took this branch), and
+    // hardcoding the music_video table here would have cleared the wrong
+    // creative_docs keys the moment it did.
+    _undoLastStage: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      var flow = self._flowFor(row.content_type);
+      if (!flow) return;
+      var target = flow.prev[row.status];
+      if (!target) {
+        RPGACE.utils.toast('Nothing to undo — ConID #' + row.con_id + ' is already at its first stage', 'rgba(226,226,236,0.4)', 2500);
+        return;
+      }
+      if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
+      self._revertToStage(row, target, null, flow);
+    },
 
-    function field(labelText, placeholder, value, multiline) {
-      var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-      lbl.textContent = labelText;
-      var inp = document.createElement(multiline ? 'textarea' : 'input');
-      if (!multiline) inp.type = 'text';
-      inp.placeholder = placeholder;
-      inp.value = value || '';
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;' +
-        (multiline ? 'resize:vertical;min-height:70px;' : '');
-      box.appendChild(lbl); box.appendChild(inp);
-      return inp;
-    }
-
-    var titleInp = field('Video title', 'e.g. I remade a UK drill beat in 10 minutes', potRow ? potRow.title : '');
-    var pathInp  = field('Raw OBS footage path (required)', 'E:\\OBS\\raw_2026-08-23.mkv', '');
-    var ideaInp  = field('What the video is about', 'Angle, sections, what actually happens in the footage...', potRow ? (potRow.idea_text || '') : '', true);
-
-    var gateMsg = document.createElement('div');
-    gateMsg.style.cssText = 'font-size:11px;color:rgba(226,84,84,0.75);line-height:1.5;margin-bottom:12px;';
-    gateMsg.textContent = '⚠️ No footage path yet — an OBS-raw ConID cannot be created without one.';
-    box.appendChild(gateMsg);
-
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:8px;';
-    var createBtn = document.createElement('button');
-    createBtn.textContent = '🎥 Create OBS Raw ConID';
-    createBtn.disabled = true;
-    var cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    cancelBtn.onclick = function() { overlay.remove(); };
-
-    function paint() {
-      var ok = !!pathInp.value.trim();
-      createBtn.disabled = !ok;
-      createBtn.style.cssText = 'flex:1;padding:10px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;' + (ok
-        ? 'background:rgba(226,168,61,0.14);border:1px solid rgba(226,168,61,0.4);color:#E2A83D;cursor:pointer;'
-        : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);color:rgba(226,226,236,0.2);cursor:not-allowed;');
-      gateMsg.style.display = ok ? 'none' : 'block';
-    }
-    pathInp.addEventListener('input', paint);
-    paint();
-
-    createBtn.onclick = function() {
-      var path = pathInp.value.trim();
-      // Re-checked here, not only via the disabled attribute — the gate is
-      // Alex's own stated hard requirement, so it does not rely on the
-      // button state alone being trustworthy.
-      if (!path) { RPGACE.utils.toast('⚠️ Raw OBS footage path is required', '#CC4A4A', 3000); return; }
-      var title = titleInp.value.trim() || (potRow && potRow.title) || 'Untitled OBS Video';
-      createBtn.disabled = true;
-      createBtn.textContent = '⏳ Creating...';
-      self.createEntry({
-        title: title,
-        idea: ideaInp.value.trim(),
-        taxonomy_nodes: (potRow && potRow.phyla_detected) || [],
-        status: 'Idea',
-        content_type: 'obs_raw',
-        raw_footage_path: path,
-      }).then(function(entry) {
-        if (!entry) { createBtn.disabled = false; createBtn.textContent = '🎥 Create OBS Raw ConID'; return; }
-        overlay.remove();
-        RPGACE.utils.toast('🎥 OBS-raw ConID #' + entry.con_id + ' created — footage logged', '#E2A83D', 4000);
-        // Only NOW is the potConID genuinely converted. If the insert had
-        // failed, the Idea Bank row is deliberately left untouched so the
-        // idea isn't silently lost (the old ungated path flipped it to
-        // 'activated' without ever checking the insert succeeded).
-        if (potRow && potRow.id) {
-          RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated', con_id: entry.con_id }, 'id=eq.' + potRow.id)
-            .catch(function(e) { console.warn('[contentProductionLive] conid_pot activate:', e.message); });
-        }
-        if (onCreated) onCreated(entry);
-      });
-    };
-
-    btnRow.appendChild(createBtn); btnRow.appendChild(cancelBtn);
-    box.appendChild(btnRow);
-  },
-
-  // ── Update an existing entry ──────────────────────────────────
-  updateEntry: function(id, updates) {
-    updates.updated_at = new Date().toISOString();
-    return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + id);
-  },
-
-  // ── F16: Beatstars listing generator ──────────────────────────
-  // BeatStars has no public API for creating listings (confirmed July 13
-  // via web search — it's a repeatedly-requested, still-unimplemented
-  // feature). So this generates ready-to-copy-paste listing content via
-  // Oracle instead of attempting true auto-posting — same pattern as F10's
-  // scoped-down Fourth automation.
-  _generateBeatstarsListing: function(row) {
-    var self = this;
-    RPGACE.utils.toast('🎧 Pulling beat data + generating listing...', '#C9A84C', 3000);
-
-    RPGACE.sb.select('video_jobs', 'status=eq.beat_logged&title=ilike.*' + encodeURIComponent(row.title.split(' ')[0]) + '*&order=id.desc&limit=1')
-      .catch(function(e) {
-        console.warn('[contentProductionLive] beatstars listing lookup error:', e.message);
-        return [];
-      })
-      .then(function(jobs) {
-        var beat = null;
-        if (jobs && jobs[0] && jobs[0].script) {
-          try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
-        }
-
-        var licenceTerms = {
-          'lease': 'Lease — MP3/WAV, non-exclusive, up to 10,000 streams/sales, credit required, seller retains ownership and may resell.',
-          'non-exclusive': 'Non-Exclusive — WAV + trackout stems, unlimited streams/sales, credit required, seller retains ownership and may resell.',
-          'exclusive': 'Exclusive — full trackout stems + exclusive rights transfer, unlimited use, no credit required, beat removed from store after sale, one buyer only.'
-        };
-
-        var prompt = 'Generate a complete BeatStars listing for a beat I am selling.\n' +
-          'Title: ' + row.title + '\n' +
-          (beat && beat.key ? 'Key: ' + beat.key + ' ' + (beat.scale || '') + '\n' : '') +
-          (beat && beat.bpm ? 'BPM: ' + beat.bpm + '\n' : '') +
-          (beat && beat.mood ? 'Mood: ' + beat.mood + '\n' : '') +
-          'Licence: ' + row.licence_type + '\n' +
-          'Price: £' + (row.price != null ? row.price : 'TBD') + '\n' +
-          'Licence terms to use verbatim: ' + (licenceTerms[row.licence_type] || row.licence_type) + '\n\n' +
-          'Generate ALL of the following, ready to copy-paste directly into BeatStars\' listing fields:\n\n' +
-          '1. LISTING TITLE (3 options) — BeatStars SEO format, e.g. "[Artist] x [Artist] Type Beat - \\"' + row.title + '\\""\n\n' +
-          '2. DESCRIPTION — 150-200 words, professional, SEO-friendly, mention key/BPM/mood, end with a clear purchase CTA.\n\n' +
-          '3. GENRE + TAGS — 10-15 comma-separated BeatStars tags, most relevant first.\n\n' +
-          '4. LICENCE TERMS BLOCK — formatted as it should appear in the listing, based on the licence terms given above.\n\n' +
-          'Be specific and pre-filled for @AceSanyaBeats / UK hip hop — no placeholders.';
-
-        // Close the hosting dashDeck popup first — showPage('advisor') would
-        // otherwise swap the page UNDER the still-open overlay. No-op when
-        // opened outside the popup.
-        if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-          RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-        }
-        if (typeof showPage === 'function') showPage('advisor');
-        setTimeout(function() {
-          self._activeConID = row.con_id;
-          self._activeId = row.id;
+    // A7 (Aug 23 2026) — three OPTIONAL pass-through fields added
+    // (content_type / raw_footage_path / creative_docs). Every pre-existing
+    // caller (contentRepurpose's generate handler, conidPot's "⚡ Activate
+    // ConID") passes none of them and is byte-identical: content_type falls
+    // through to the column's own 'tutorial' DEFAULT exactly as before, and
+    // the other two stay unset. Returns the promise so a caller that needs
+    // to know the insert really landed (the OBS-raw intake gate) can chain
+    // off it instead of guessing — previously the promise was swallowed
+    // here and nothing downstream could tell success from failure.
+    createEntry: function(data) {
+      var self = RPGACE.modules.contentProductionLive;
+      var payload = {
+        title:          data.title || 'Untitled Content Idea',
+        idea:           data.idea || '',
+        taxonomy_nodes: data.taxonomy_nodes || [],
+        platform_outputs: data.platform_outputs || {},
+        status:         data.status || 'Idea',
+      };
+      if (data.content_type) payload.content_type = data.content_type;
+      if (data.raw_footage_path) payload.raw_footage_path = data.raw_footage_path;
+      if (data.creative_docs) payload.creative_docs = data.creative_docs;
+      return RPGACE.sb.secureWrite('content_productions', 'insert', payload).then(function(result) {
+        var entry = Array.isArray(result) ? result[0] : result;
+        if (entry && entry.con_id) {
+          self._activeConID = entry.con_id;
+          self._activeId = entry.id;
+          RPGACE.utils.toast('📋 ConID #' + entry.con_id + ' created: ' + data.title, '#4CAF82', 4000);
+          self._refreshWidget();
           self._injectOracleBar();
-          RPGACE.utils.sendToOracle(prompt);
-        }, 500);
+        }
+        return entry;
+      }).catch(function(e) {
+        // Deliberately RESOLVES to null rather than re-throwing: the two
+        // pre-existing callers don't attach a .catch, so re-throwing here
+        // would turn every real insert failure into an unhandled rejection
+        // (which errorLog's own window.onunhandledrejection hook would then
+        // log as a crash). A caller that cares checks the resolved value.
+        // The toast is new and deliberate — this path used to console.warn
+        // only, so a genuinely failed ConID creation was invisible to Alex
+        // (rule 7, fail loud).
+        console.warn('[contentProductionLive] createEntry error:', e.message);
+        RPGACE.utils.toast('⚠️ Could not create ConID: ' + e.message, '#CC4A4A', 4500);
+        return null;
       });
-  },
+    },
 
-  // ── Visual Treatment Doc, triggered directly from a ConID card ──
-  // 2026-07-31. Real gap Alex named: visualOracle's "Visual Treatment Doc"
-  // command already exists but only lived on the global Visual Oracle
-  // panel, decoupled from any specific ConID/beat — using it meant
-  // hand-typing the beat's own data into bracketed placeholders and then
-  // manually picking which ConID to save the result to. This reuses
-  // visualOracle.CMDS[1]'s real prompt text (never re-typed here — dedup,
-  // rule 8) and _saveDocToProduction's real trailer-parsing, but skips the
-  // manual save picker entirely since we already know the exact target row.
-  // Aug 5 (Engineer pass, Phase E) — optional `prefill` param added,
-  // forwarded straight to _showDirectorPicker, so contentProductionLive's
-  // own "Redo Visual Treatment" retroactive button can reopen this exact
-  // flow pre-filled with a previously-saved director blend. Purely
-  // additive - the ConID-card call site that passes nothing behaves
-  // exactly as before.
-  _generateVisualTreatment: function(row, prefill) {
-    var self = this;
-    var vo = RPGACE.modules.visualOracle;
-    if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+    // ── Update an existing entry ──────────────────────────────────
+    updateEntry: function(id, updates) {
+      updates.updated_at = new Date().toISOString();
+      return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + id);
+    },
 
-    // 2026-07-31 — real UX fix Alex asked for directly: show the real
-    // director dropdown + taxonomy summary + inspiration box FIRST, before
-    // anything else fires. Filling this placeholder here (rather than
-    // leaving it for fillGaps) means fillGaps sees zero remaining gaps
-    // once every other beat field is also filled below, so it skips its
-    // own generic "Step X of Y" textbox entirely for this whole command.
-    vo._showDirectorPicker(function(directorText, directorMeta) {
-      // Aug 5 (Engineer pass, Phase E) - save the STRUCTURED director
-      // choice too (not just the rendered text), so a later "Redo Visual
-      // Treatment" retroactive click can pre-fill the real picker instead
-      // of regex-parsing it back out of prose (rule 8 - one real data
-      // path). Fire-and-forget, same as the other creative_docs saves.
-      if (directorMeta) vo._saveDocToProduction('director_blend', directorMeta, row.id);
-      RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
+    // ── F16: Beatstars listing generator ──────────────────────────
+    // BeatStars has no public API for creating listings (confirmed July 13
+    // via web search — it's a repeatedly-requested, still-unimplemented
+    // feature). So this generates ready-to-copy-paste listing content via
+    // Oracle instead of attempting true auto-posting — same pattern as F10's
+    // scoped-down Fourth automation.
+    _generateBeatstarsListing: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      RPGACE.utils.toast('🎧 Pulling beat data + generating listing...', '#C9A84C', 3000);
 
-      RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-        .catch(function(e) { console.warn('[contentProductionLive] visual treatment beat lookup:', e.message); return []; })
+      RPGACE.sb.select('video_jobs', 'status=eq.beat_logged&title=ilike.*' + encodeURIComponent(row.title.split(' ')[0]) + '*&order=id.desc&limit=1')
+        .catch(function(e) {
+          console.warn('[contentProductionLive] beatstars listing lookup error:', e.message);
+          return [];
+        })
         .then(function(jobs) {
-          var vjId = jobs && jobs[0] ? jobs[0].id : null;
           var beat = null;
           if (jobs && jobs[0] && jobs[0].script) {
             try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
           }
-          var template = vo.CMDS[1][1];
-          var prompt = template
-            .replace('[TYPE BEAT TITLE]', row.title || '[TYPE BEAT TITLE]')
-            .replace('[TYPE GENRE]', (beat && beat.genre) || '[TYPE GENRE]')
-            .replace('[TYPE MOOD]', (beat && beat.mood) || '[TYPE MOOD]')
-            .replace('[TYPE KEY AND SCALE]', (beat && beat.key) ? (beat.key + ' ' + (beat.scale || '')) : '[TYPE KEY AND SCALE]')
-            .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
-            .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText);
 
-          self._prepOracleBarFor(row, function() {
-            RPGACE.utils.fillGaps(prompt, function(filled) {
-              // Aug 5 (Engineer pass, Phase D, Alex-confirmed "save both,
-              // separately" data model) - the exact outbound prompt is
-              // captured verbatim right here, the moment fillGaps'
-              // "Send to Oracle" click actually fires (this IS the real
-              // "step 4 Continue" moment item 5 describes). Saved as
-              // creative_docs.script - a DIFFERENT field from video_jobs'
-              // own pre-existing 'script' column (which holds beat
-              // metadata JSON, see the JSON.parse above - a real, already-
-              // existing naming collision on the word "script" across two
-              // different tables, not something this pass introduces or
-              // fixes; noted here so a future reader doesn't conflate the
-              // two). Reuses _saveDocToProduction directly (rule 8 dedup)
-              // rather than a new merge-write helper.
-              vo._saveDocToProduction('script', filled, row.id, vjId);
-              self._sendFilledPromptToOracle(row, vjId, filled);
-            });
-          });
+          var licenceTerms = {
+            'lease': 'Lease — MP3/WAV, non-exclusive, up to 10,000 streams/sales, credit required, seller retains ownership and may resell.',
+            'non-exclusive': 'Non-Exclusive — WAV + trackout stems, unlimited streams/sales, credit required, seller retains ownership and may resell.',
+            'exclusive': 'Exclusive — full trackout stems + exclusive rights transfer, unlimited use, no credit required, beat removed from store after sale, one buyer only.'
+          };
+
+          var prompt = 'Generate a complete BeatStars listing for a beat I am selling.\n' +
+            'Title: ' + row.title + '\n' +
+            (beat && beat.key ? 'Key: ' + beat.key + ' ' + (beat.scale || '') + '\n' : '') +
+            (beat && beat.bpm ? 'BPM: ' + beat.bpm + '\n' : '') +
+            (beat && beat.mood ? 'Mood: ' + beat.mood + '\n' : '') +
+            'Licence: ' + row.licence_type + '\n' +
+            'Price: £' + (row.price != null ? row.price : 'TBD') + '\n' +
+            'Licence terms to use verbatim: ' + (licenceTerms[row.licence_type] || row.licence_type) + '\n\n' +
+            'Generate ALL of the following, ready to copy-paste directly into BeatStars\' listing fields:\n\n' +
+            '1. LISTING TITLE (3 options) — BeatStars SEO format, e.g. "[Artist] x [Artist] Type Beat - \\"' + row.title + '\\""\n\n' +
+            '2. DESCRIPTION — 150-200 words, professional, SEO-friendly, mention key/BPM/mood, end with a clear purchase CTA.\n\n' +
+            '3. GENRE + TAGS — 10-15 comma-separated BeatStars tags, most relevant first.\n\n' +
+            '4. LICENCE TERMS BLOCK — formatted as it should appear in the listing, based on the licence terms given above.\n\n' +
+            'Be specific and pre-filled for @AceSanyaBeats / UK hip hop — no placeholders.';
+
+          // Close the hosting dashDeck popup first — showPage('advisor') would
+          // otherwise swap the page UNDER the still-open overlay. No-op when
+          // opened outside the popup.
+          if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+            RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+          }
+          if (typeof showPage === 'function') showPage('advisor');
+          setTimeout(function() {
+            self._activeConID = row.con_id;
+            self._activeId = row.id;
+            self._injectOracleBar();
+            RPGACE.utils.sendToOracle(prompt);
+          }, 500);
         });
-    }, prefill);
-  },
+    },
 
-  // ── Shared Oracle-send tail (Aug 5, Engineer pass, Phase E) ──────────
-  // Extracted out of _generateVisualTreatment so _retroRegenerateScript
-  // (Phase 3's real retroactive button - resends an already-saved script
-  // with no fillGaps step at all) can reuse the exact same real send/
-  // capture path instead of a second hand-rolled copy (rule 8 dedup).
-  _prepOracleBarFor: function(row, callback) {
-    var self = this;
-    if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-      RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-    }
-    if (typeof showPage === 'function') showPage('advisor');
-    setTimeout(function() {
-      self._activeConID = row.con_id;
-      self._activeId = row.id;
-      self._injectOracleBar();
-      callback();
-    }, 500);
-  },
+    // ── Visual Treatment Doc, triggered directly from a ConID card ──
+    // 2026-07-31. Real gap Alex named: visualOracle's "Visual Treatment Doc"
+    // command already exists but only lived on the global Visual Oracle
+    // panel, decoupled from any specific ConID/beat — using it meant
+    // hand-typing the beat's own data into bracketed placeholders and then
+    // manually picking which ConID to save the result to. This reuses
+    // visualOracle.CMDS[1]'s real prompt text (never re-typed here — dedup,
+    // rule 8) and _saveDocToProduction's real trailer-parsing, but skips the
+    // manual save picker entirely since we already know the exact target row.
+    // Aug 5 (Engineer pass, Phase E) — optional `prefill` param added,
+    // forwarded straight to _showDirectorPicker, so contentProductionLive's
+    // own "Redo Visual Treatment" retroactive button can reopen this exact
+    // flow pre-filled with a previously-saved director blend. Purely
+    // additive - the ConID-card call site that passes nothing behaves
+    // exactly as before.
+    _generateVisualTreatment: function(row, prefill) {
+      var self = RPGACE.modules.contentProductionLive;
+      var vo = RPGACE.modules.visualOracle;
+      if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
 
-  // Aug 5 (Engineer pass, Phase G) — optional docSlug param added
-  // (defaults to 'visual_treatment', every existing caller's real
-  // behavior unchanged) so _generateCaptions can reuse this exact same
-  // real send/capture tail for a different creative_docs key, instead of
-  // a second hand-rolled copy (rule 8 dedup).
-  // Aug 6 (Engineer pass, real Content Pipeline bugfix) — send FIRST, only
-  // arm the capture if it actually went through. Previously armed
-  // unconditionally before sending, which left a dangling capture (ready
-  // to wrongly consume a LATER, unrelated reply per RPGACE.hooks.fire's
-  // broadcast-to-all-listeners semantics) whenever the in-flight guard
-  // silently blocked this exact send - e.g. this flow firing while a
-  // still-in-flight Beat Log auto-chain hadn't cleared yet. Real root
-  // cause of Alex's own hand-test report (2026-08-06): a missing
-  // style_profiles row + "duplicated stages" in Content Pipeline.
-  _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) {
-    docSlug = docSlug || 'visual_treatment';
-    var vo = RPGACE.modules.visualOracle;
-    var input = document.querySelector('#chat-input');
-    if (!input) return;
-    input.value = filled;
-    input.dispatchEvent(new Event('input', {bubbles:true}));
-    var sent = (typeof sendChat === 'function') ? (sendChat() !== false) : true;
-    if (sent && vo && vo._captureNextResponse) {
-      vo._captureNextResponse(function(text) {
-        vo._saveDocToProduction(docSlug, text, row.id, vjId);
-      });
-    } else if (!sent) {
-      RPGACE.utils.toast('⏳ Oracle was still busy — click again in a moment (nothing was lost, this attempt just didn\'t send)', '#E2A83D', 4000);
-    }
-  },
+      // 2026-07-31 — real UX fix Alex asked for directly: show the real
+      // director dropdown + taxonomy summary + inspiration box FIRST, before
+      // anything else fires. Filling this placeholder here (rather than
+      // leaving it for fillGaps) means fillGaps sees zero remaining gaps
+      // once every other beat field is also filled below, so it skips its
+      // own generic "Step X of Y" textbox entirely for this whole command.
+      vo._showDirectorPicker(function(directorText, directorMeta) {
+        // Aug 5 (Engineer pass, Phase E) - save the STRUCTURED director
+        // choice too (not just the rendered text), so a later "Redo Visual
+        // Treatment" retroactive click can pre-fill the real picker instead
+        // of regex-parsing it back out of prose (rule 8 - one real data
+        // path). Fire-and-forget, same as the other creative_docs saves.
+        if (directorMeta) vo._saveDocToProduction('director_blend', directorMeta, row.id);
+        RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
 
-  // ── Phase H (Aug 5, Engineer pass 09) — real beat deliverables ──────
-  // (stems/wav/zips) per licence tier, per Alex's confirmed /interrogation
-  // answers on the follow-up "autoport beats depending on licensing" ask:
-  // (1) BeatStars has no upload/listing API at all (reconfirmed live,
-  // Aug 2026 WebSearch, not just the pre-existing July 13 code comment) —
-  // so this stops at "auto-prepare a downloadable bundle," never a real
-  // push to BeatStars; real browser-automation autoport (e.g. cr4wl.ai)
-  // is a confirmed, deliberately deferred future phase, logged in
-  // beat_deliverables_autoport_backlog_2026-08-05.txt, not built here.
-  // (2) Files are uploaded fresh from Alex's own machine — no existing
-  // external storage to link to, so this is real new Storage + schema.
-  // (3) Automatic server-side zipping (the `bundle-deliverables` action
-  // inside api/data-write.js — folded in rather than its own file, see
-  // that file's header comment for why) is the primary bundling
-  // mechanism, but Alex can ALSO drop in a whole folder of files to be
-  // zipped together, not just individually-named stems — both upload
-  // paths below feed the exact same deliverable_files array.
-  //
-  // Small, deliberate rule-8 exception: fileAppliesToTier's real tier-
-  // inclusion logic (lease < non-exclusive < exclusive) is duplicated here
-  // AND in api/data-write.js, because this codebase has no build step to
-  // share a module between a browser file and a Node/ESM Vercel function
-  // — the duplication is named and reasoned, not accidental.
-  _fileAppliesToTier: function(fileTier, tier) {
-    var ORDER = { 'lease': 0, 'non-exclusive': 1, 'exclusive': 2 };
-    if (!fileTier) return true;
-    if (!(fileTier in ORDER) || !(tier in ORDER)) return false;
-    return ORDER[fileTier] <= ORDER[tier];
-  },
-
-  _showDeliverablesManager: function(row) {
-    var self = this;
-    var pop = RPGACE.modules.dashDeck._popup({
-      dim: '0.9', scroll: true, width: '560px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.3)',
-      title: '📦 ConID #' + row.con_id + ' — Manage Deliverables', noDefaultClose: true,
-    });
-    var overlay = pop.overlay, box = pop.box;
-
-    var status = document.createElement('div');
-    status.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);margin-bottom:12px;';
-    status.textContent = 'Loading uploaded files...';
-    box.appendChild(status);
-
-    var fileListEl = document.createElement('div');
-    box.appendChild(fileListEl);
-
-    var bundleListEl = document.createElement('div');
-    bundleListEl.style.cssText = 'margin-top:14px;';
-    box.appendChild(bundleListEl);
-
-    var render = function() {
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files,deliverable_bundles')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var r = rows && rows[0];
-          var files = (r && Array.isArray(r.deliverable_files)) ? r.deliverable_files : [];
-          var bundles = (r && r.deliverable_bundles) || {};
-          status.textContent = files.length ? (files.length + ' file(s) uploaded') : 'No files uploaded yet.';
-
-          fileListEl.innerHTML = '';
-          files.forEach(function(f, idx) {
-            var line = document.createElement('div');
-            line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;';
-            var label = document.createElement('span');
-            label.style.cssText = 'color:#D4DAF5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;';
-            var tierTag = f.tier ? (' [' + f.tier + '+]') : ' [all tiers]';
-            label.textContent = f.name + tierTag + ' (' + Math.round((f.size || 0) / 1024) + 'KB)';
-            var rm = document.createElement('button');
-            rm.textContent = '✕';
-            rm.style.cssText = 'padding:2px 8px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:4px;color:#CC4A4A;font-size:11px;cursor:pointer;';
-            rm.onclick = function() { self._removeDeliverableFile(row, idx, render); };
-            line.appendChild(label); line.appendChild(rm);
-            fileListEl.appendChild(line);
-          });
-
-          bundleListEl.innerHTML = '';
-          ['lease', 'non-exclusive', 'exclusive'].forEach(function(tier) {
-            var applicableCount = files.filter(function(f) { return self._fileAppliesToTier(f.tier, tier); }).length;
-            var line = document.createElement('div');
-            line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;';
-            var lbl = document.createElement('span');
-            lbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.6);text-transform:capitalize;';
-            var b = bundles[tier];
-            lbl.textContent = tier + ' (' + applicableCount + ' file' + (applicableCount === 1 ? '' : 's') + ')' + (b ? ' — bundle ready, ' + Math.round(b.size / 1024 / 1024 * 10) / 10 + 'MB' : ' — no bundle yet');
-            var genBtn = document.createElement('button');
-            genBtn.textContent = b ? '🔄 Regenerate + Download' : '🎁 Generate Bundle';
-            genBtn.disabled = !applicableCount;
-            genBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:5px;color:#C9A84C;font-size:11px;cursor:' + (applicableCount ? 'pointer' : 'not-allowed') + ';opacity:' + (applicableCount ? '1' : '0.4') + ';';
-            genBtn.onclick = function() { if (applicableCount) self._generateBundle(row, tier, genBtn, render); };
-            line.appendChild(lbl); line.appendChild(genBtn);
-            bundleListEl.appendChild(line);
-          });
-        });
-    };
-    render();
-
-    var uploadLbl = document.createElement('div');
-    uploadLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin:16px 0 6px 0;';
-    uploadLbl.textContent = 'Upload files — tag which licence tier they unlock at:';
-    box.appendChild(uploadLbl);
-
-    var tierSelect = document.createElement('select');
-    tierSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
-    [['', 'All tiers (e.g. main MP3/WAV)'], ['lease', 'Lease and above'], ['non-exclusive', 'Non-Exclusive and above (stems)'], ['exclusive', 'Exclusive only']].forEach(function(o) {
-      var opt = document.createElement('option'); opt.value = o[0]; opt.textContent = o[1];
-      opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
-      tierSelect.appendChild(opt);
-    });
-    box.appendChild(tierSelect);
-
-    var fileLbl = document.createElement('div');
-    fileLbl.textContent = 'Individual files (e.g. named stems):';
-    fileLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:3px;';
-    var fileInp = document.createElement('input');
-    fileInp.type = 'file'; fileInp.multiple = true;
-    fileInp.style.cssText = 'width:100%;font-size:11px;color:#D4DAF5;margin-bottom:10px;';
-
-    // Real Q3 addition (Alex, verbatim): "1, but i can also put a folder
-    // in, with content to be zipped" — a whole folder drop, not just
-    // named individual stems. webkitRelativePath preserves the folder
-    // structure in the stored filename (see _uploadDeliverableFiles).
-    var folderLbl = document.createElement('div');
-    folderLbl.textContent = 'Or a whole folder to zip together:';
-    folderLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:3px;';
-    var folderInp = document.createElement('input');
-    folderInp.type = 'file'; folderInp.multiple = true;
-    folderInp.webkitdirectory = true; folderInp.directory = true;
-    folderInp.style.cssText = 'width:100%;font-size:11px;color:#D4DAF5;';
-
-    box.appendChild(fileLbl); box.appendChild(fileInp);
-    box.appendChild(folderLbl); box.appendChild(folderInp);
-
-    var doUpload = function(fileList) {
-      var arr = Array.prototype.slice.call(fileList);
-      if (!arr.length) return;
-      var tier = tierSelect.value || null;
-      status.textContent = 'Uploading ' + arr.length + ' file(s)...';
-      self._uploadDeliverableFiles(row, arr, tier, function(err) {
-        if (err) { RPGACE.utils.toast('⚠️ Upload error: ' + err.message, '#CC4A4A', 4000); }
-        else { RPGACE.utils.toast('✅ ' + arr.length + ' file(s) uploaded', '#4CAF82', 3000); }
-        render();
-      });
-    };
-    fileInp.onchange = function() { doUpload(fileInp.files); fileInp.value = ''; };
-    folderInp.onchange = function() { doUpload(folderInp.files); folderInp.value = ''; };
-
-    var closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Close';
-    closeBtn.style.cssText = 'width:100%;margin-top:16px;padding:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    closeBtn.onclick = function() { overlay.remove(); };
-    box.appendChild(closeBtn);
-  },
-
-  // Real direct-to-Storage upload (client, anon key) — same pattern as
-  // beatLog._tryRealAudioAnalysis for the beat-audio bucket, applied to
-  // the new private beat-deliverables bucket. One batched read-modify-
-  // write of deliverable_files at the end (not per-file) so several files
-  // from the same folder-drop don't race each other's Supabase write.
-  _uploadDeliverableFiles: function(row, files, tier, callback) {
-    var base = RPGACE.CONFIG.supabase.url;
-    var key = RPGACE.CONFIG.supabase.key;
-    var uploads = files.map(function(file) {
-      var relName = file.webkitRelativePath || file.name;
-      var safeName = relName.replace(/[^a-zA-Z0-9._\/-]/g, '_');
-      var uuid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
-      var storagePath = row.id + '/' + uuid + '-' + safeName.replace(/\//g, '_');
-      return fetch(base + '/storage/v1/object/beat-deliverables/' + encodeURIComponent(storagePath), {
-        method: 'POST',
-        headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
-        body: file,
-      }).then(function(res) {
-        if (!res.ok) throw new Error('upload failed: ' + relName);
-        return { name: relName, storage_path: storagePath, size: file.size, tier: tier || null };
-      });
-    });
-
-    Promise.all(uploads).then(function(newEntries) {
-      return RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files').then(function(rows) {
-        var existing = (rows && rows[0] && Array.isArray(rows[0].deliverable_files)) ? rows[0].deliverable_files : [];
-        var merged = existing.concat(newEntries);
-        return RPGACE.sb.secureWrite('content_productions', 'update', { deliverable_files: merged }, 'id=eq.' + row.id);
-      });
-    }).then(function() {
-      callback(null);
-    }).catch(function(e) {
-      callback(e);
-    });
-  },
-
-  _removeDeliverableFile: function(row, idx, afterCallback) {
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files')
-      .then(function(rows) {
-        var existing = (rows && rows[0] && Array.isArray(rows[0].deliverable_files)) ? rows[0].deliverable_files : [];
-        var removed = existing[idx];
-        existing.splice(idx, 1);
-        return RPGACE.sb.secureWrite('content_productions', 'update', { deliverable_files: existing }, 'id=eq.' + row.id)
-          .then(function() { return removed; });
-      })
-      .then(function(removed) {
-        // Best-effort real delete from Storage too — fire-and-forget, not
-        // fatal if it fails, since the DB record (what the UI reflects)
-        // is already gone.
-        if (removed && removed.storage_path) {
-          var base = RPGACE.CONFIG.supabase.url;
-          var key = RPGACE.CONFIG.supabase.key;
-          fetch(base + '/storage/v1/object/beat-deliverables/' + encodeURIComponent(removed.storage_path), {
-            method: 'DELETE',
-            headers: { 'apikey': key, 'Authorization': 'Bearer ' + key },
-          }).catch(function() {});
-        }
-        RPGACE.utils.toast('🗑 File removed', 'rgba(226,226,236,0.5)', 2000);
-        if (afterCallback) afterCallback();
-      })
-      .catch(function(e) {
-        RPGACE.utils.toast('⚠️ Remove failed: ' + e.message, '#CC4A4A', 3500);
-      });
-  },
-
-  // Calls the real server-side zip logic, folded into api/data-write.js
-  // as an `action: 'bundle-deliverables'` branch rather than its own file
-  // (Vercel Hobby's 12-Serverless-Function cap — see data-write.js's own
-  // header comment for the real deploy-failure evidence that forced this).
-  // authGate's global fetch() wrap attaches the X-RPGACE-Auth header to
-  // this automatically, same as every other /api/* call — no manual
-  // header handling needed here.
-  _generateBundle: function(row, tier, btnEl, afterCallback) {
-    var origText = btnEl.textContent;
-    btnEl.textContent = '⏳ Zipping...';
-    btnEl.disabled = true;
-    fetch('/api/data-write', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'bundle-deliverables', conId: row.id, tier: tier }),
-    }).then(function(res) {
-      return res.json().then(function(data) { return { ok: res.ok, data: data }; });
-    }).then(function(result) {
-      btnEl.textContent = origText;
-      btnEl.disabled = false;
-      if (!result.ok) {
-        RPGACE.utils.toast('⚠️ Bundle failed: ' + (result.data.error || 'unknown error'), '#CC4A4A', 4500);
-        return;
-      }
-      RPGACE.utils.toast('🎁 Bundle ready — opening download...', '#4CAF82', 3000);
-      window.open(result.data.url, '_blank');
-      if (afterCallback) afterCallback();
-    }).catch(function(e) {
-      btnEl.textContent = origText;
-      btnEl.disabled = false;
-      RPGACE.utils.toast('⚠️ Bundle request failed: ' + e.message, '#CC4A4A', 4000);
-    });
-  },
-
-  // ── Phase 2 retroactive button (Aug 5, Engineer pass, Phase E) ───────
-  // Real edit-in-place: reads back the STRUCTURED director choice this
-  // module already saves (creative_docs.director_blend, added above -
-  // no regex-parsing of rendered prose needed) and reopens the exact
-  // same picker + Visual Treatment flow pre-filled with it, per
-  // /interrogation's confirmed "edit in place" answer. Gracefully
-  // degrades to a fresh, unprefilled flow for any ConID logged before
-  // this field existed.
-  // ══════════════════════════════════════════════════════════════════
-  // A7 — the OBS-raw scripting phase (Aug 23 2026)
-  // ══════════════════════════════════════════════════════════════════
-  // The one place the OBS-raw workflow genuinely DIVERGES from the beat→
-  // music-video workflow, per Alex's own spec: "the scripting phase for
-  // this path should NOT include the Director phylum. Instead: a real
-  // YouTube Meme Director... classic youtube meme additions in unexpected
-  // places, or effects for comic effect or attention retention."
-  //
-  // Structurally this is _generateVisualTreatment's exact shape (picker →
-  // save the structured choice → build prompt → _prepOracleBarFor →
-  // _sendFilledPromptToOracle), reusing every one of those real helpers
-  // rather than a second hand-rolled copy (rule 8). Three real
-  // differences, each traceable to something Alex actually asked for:
-  //
-  //  1. The picker is opened with opts {only:['YouTube Meme Director'],
-  //     rows:1} — one real f14_filmmaker_library row, not the cinematic
-  //     3-director blend. The free-text inspiration box stays, because
-  //     that IS still genuinely variable per video.
-  //  2. The prompt folds in ALL THREE social-media Oracles' own real
-  //     command text (via _findOracleCmdText, the same mechanism
-  //     _generateCaptions already uses) AND contentRepurpose's own real
-  //     platform-output instructions (via its newly-shared
-  //     platformOutputInstructions()) — "the scripting will also include
-  //     all social media oracles and repurpose to make one script."
-  //  3. One explicit, prominent editing constraint — Alex's own "one
-  //     vital rule": the long-form video must be assemblable with ffmpeg
-  //     cuts alone, minimal OpenMontage/OpenArt stitching.
-  //
-  // ONE Oracle call, deliberately — the cut list is part of the same
-  // script ("make ONE script"), not a second premium round-trip (rule 11).
-  _generateObsScript: function(row, prefill) {
-    var self = this;
-    var vo = RPGACE.modules.visualOracle;
-    if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
-
-    vo._showDirectorPicker(function(styleText, styleMeta) {
-      if (styleMeta) vo._saveDocToProduction('director_blend', styleMeta, row.id);
-      RPGACE.utils.toast('🎞 Building the meme script + ffmpeg cut plan...', '#E2A83D', 3000);
-
-      // Real full-record read, same discipline as _generateCaptions: the
-      // script has to describe THIS footage, so the real footage path and
-      // the real idea text ride along, never a generic placeholder.
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=title,idea,raw_footage_path,creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var full = (rows && rows[0]) || row;
-          var cr = RPGACE.modules.contentRepurpose;
-
-          var instaMind  = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
-          var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
-          var ytMind     = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
-          var ytHooks    = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
-          var ttMind     = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
-          var ttHooks    = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
-          var expertise = [];
-          if (instaMind || instaHooks) expertise.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [instaMind, instaHooks].filter(Boolean).join('\n\n'));
-          if (ytMind || ytHooks)       expertise.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ytMind, ytHooks].filter(Boolean).join('\n\n'));
-          if (ttMind || ttHooks)       expertise.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ttMind, ttHooks].filter(Boolean).join('\n\n'));
-
-          var prompt =
-            'Write ONE long-form YouTube video script for @AceSanyaBeats (FL Studio, UK hip hop, aspiring producers 18-35), built directly on top of raw OBS screen-recording footage that ALREADY EXISTS. You are not planning a shoot — the footage is recorded; you are planning how it gets cut and what gets layered on top of it.\n\n' +
-            'VIDEO: ' + (full.title || row.title || 'Untitled') + '\n' +
-            'RAW OBS FOOTAGE: ' + (full.raw_footage_path || '(path not recorded)') + '\n' +
-            (full.idea ? 'WHAT THE FOOTAGE COVERS:\n' + full.idea + '\n' : '') + '\n' +
-            styleText + '\n\n' +
-            (expertise.length ? expertise.join('\n\n') + '\n\n' : '') +
-            '════ THE ONE VITAL EDITING RULE — THIS OVERRIDES EVERYTHING BELOW ════\n' +
-            'The finished long-form video must be assemblable using ffmpeg CUTS ONLY. That means:\n' +
-            '• Every edit you specify is a straight cut at a timestamp in the raw footage — never a crossfade, speed ramp, motion track, or any transition needing a real NLE.\n' +
-            '• Give the cut plan as an ordered list of KEEP segments with approximate in/out timecodes and the reason each one earns its place, so it maps 1:1 onto ffmpeg trim + concat.\n' +
-            '• Anything that is NOT already in the raw footage (a meme cutaway, a reaction insert, a generated shot) must be listed SEPARATELY as a discrete standalone clip with its own duration and the exact cut point it drops into — so it is a single extra input file to concat, never a composited layer.\n' +
-            '• Keep those external inserts to the MINIMUM that still lands the joke or holds attention. Every insert is real manual work in OpenMontage/OpenArt, so justify each one.\n' +
-            '• Text overlays and captions are fine to specify as burn-in instructions, but list them separately from the cut plan so they can be skipped without breaking the edit.\n\n' +
-            'Produce, in this order:\n\n' +
-            '1. 🎬 LONG-FORM SCRIPT — the hook (first 10 seconds), then the real sections in order, with what is said/shown in each. Written against the actual footage, not a generic outline.\n\n' +
-            '2. ✂️ FFMPEG CUT PLAN — the ordered KEEP-segment list described in the vital rule above, with approximate timecodes.\n\n' +
-            '3. 😂 MEME / COMIC INSERT LIST — each insert: what it is, where it drops in (cut point), how long, and whether it is stock/meme footage, a still, or something that genuinely needs OpenMontage/OpenArt generation. Put them in unexpected places, per the direction above — not one predictable insert per section.\n\n' +
-            '4. 📌 BURN-IN TEXT / CAPTION OVERLAYS — separate list, timecoded.\n\n' +
-            'Then, repurpose the SAME video into platform outputs:\n\n' +
-            (cr && cr.platformOutputInstructions ? cr.platformOutputInstructions() : '') +
-            'Be specific to FL Studio and UK hip hop throughout, and stay anchored to what is genuinely in this footage — no invented moments the recording does not contain.';
-
-          self._prepOracleBarFor(row, function() {
-            // The outbound prompt is saved verbatim under its own slug so
-            // Phase 3's editor can show and re-send it, exactly like
-            // music_video's creative_docs.script — a SEPARATE key, since
-            // an OBS meme script and a beat's Visual Treatment Doc are
-            // genuinely different documents that can both exist on one
-            // ConID's history if its type is ever changed.
-            vo._saveDocToProduction('obs_script_prompt', prompt, row.id);
-            self._sendFilledPromptToOracle(row, null, prompt, 'obs_script');
-          });
-        });
-    }, prefill, {
-      only: ['YouTube Meme Director'],
-      rows: 1,
-      title: 'YouTube Meme Direction',
-      intro: 'This is the OBS-raw path — it uses the YouTube Meme Director instead of the cinematic director blend. Add your own angle for THIS video below; it rides alongside the meme direction, not instead of it.',
-      styleLabel: 'MEME DIRECTION (YouTube Meme Director, Phylum 13 filmmaker library)',
-      inspLabel: 'CREATIVE INSPIRATION (Alex\'s own free-text, for this specific video)',
-    });
-  },
-
-  // A7 — reopen the meme-direction picker pre-filled with what was saved
-  // last time. Exact mirror of _retroVisualTreatment (rule 8, same shape,
-  // same creative_docs.director_blend field) for the OBS-raw path.
-  _retroObsScript: function(row) {
-    var self = this;
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
-        var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
-        self._generateObsScript(row, prefill);
-      });
-  },
-
-  // A7 — Stage 3. An honest MANUAL acknowledgment, not a fake render:
-  // RPGACE does not run ffmpeg, and the cut plan Oracle produced is
-  // something Alex executes on his own machine. Same real precedent as
-  // _viewOpenMontageJob's own "✅ Mark ConID as Filmed" button (Aug 6),
-  // which exists for exactly this reason — an external, un-pollable step
-  // that only the human can truthfully confirm happened.
-  _markObsCutDone: function(row) {
-    var self = this;
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs,status&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var cur = (rows && rows[0]) || {};
-        var docs = cur.creative_docs || {};
-        if (!docs.obs_script) {
-          RPGACE.utils.toast('⚠️ No meme script yet — build the script first, there is no cut plan to have followed', '#E2A83D', 4000);
-          return;
-        }
-        var note = prompt('Mark ConID #' + row.con_id + ' as cut and assembled?\n\nOptional note — the edited file path, or anything you changed from the cut plan:', docs.obs_cut_note || '');
-        if (note === null) return;
-        docs.obs_cut_note = note;
-        var updates = { creative_docs: docs, updated_at: new Date().toISOString() };
-        // Forward-only, same guard shape as _saveDocToProduction's own
-        // auto-advances — never drags an already-Posted ConID backwards.
-        if (['Idea', 'Scripted'].indexOf(cur.status) !== -1) updates.status = 'Filmed';
-        RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id)
-          .then(function() {
-            RPGACE.utils.toast('✂️ ConID #' + row.con_id + ' marked cut & assembled', '#4CAF82', 3000);
-            self._refreshWidget();
-          })
-          .catch(function(e) { RPGACE.utils.toast('⚠️ Could not save: ' + e.message, '#CC4A4A', 4000); });
-      });
-  },
-
-  // A7 — read-only view of the saved meme script + cut plan, mirroring
-  // _viewCaptions' own honest "none yet" behaviour rather than fabricating
-  // placeholder content.
-  _viewObsScript: function(row) {
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-        var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
-          title: 'Meme Script + FFmpeg Cut Plan',
-        });
-        var body = document.createElement('div');
-        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
-        body.textContent = docs.obs_script || 'No meme script generated yet for this ConID — use Build Meme Script first.';
-        pop.box.appendChild(body);
-        if (docs.obs_cut_note) {
-          var n = document.createElement('div');
-          n.style.cssText = 'margin-top:14px;padding:10px;background:rgba(76,175,130,0.05);border:1px solid rgba(76,175,130,0.2);border-radius:6px;font-size:11px;color:rgba(226,226,236,0.7);line-height:1.5;white-space:pre-wrap;';
-          n.textContent = '✂️ Your cut note: ' + docs.obs_cut_note;
-          pop.box.appendChild(n);
-        }
-      });
-  },
-
-  _retroVisualTreatment: function(row) {
-    var self = this;
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
-        var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
-        self._generateVisualTreatment(row, prefill);
-      });
-  },
-
-  // ── Phase 3 retroactive button (Aug 5, Engineer pass, Phase E) ───────
-  // Resends whatever is CURRENTLY saved in creative_docs.script (any
-  // manual edits made in Phase 3's own editor included) straight to
-  // Oracle again - genuinely distinct from Phase 2's "start over with a
-  // new director pick" retro button. The saved text has no [BRACKET]
-  // placeholders left in it (it's already the fully-filled prompt), so
-  // this skips fillGaps entirely and reuses the same real send/capture
-  // tail as _generateVisualTreatment (rule 8 dedup).
-  _retroRegenerateScript: function(row) {
-    var self = this;
-    var vo = RPGACE.modules.visualOracle;
-    if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var script = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.script;
-        if (!script) {
-          RPGACE.utils.toast('⚠️ No saved script yet — use Phase 2\'s Start Visual Treatment first', '#E2A83D', 3500);
-          return;
-        }
         RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-          .catch(function() { return []; })
+          .catch(function(e) { console.warn('[contentProductionLive] visual treatment beat lookup:', e.message); return []; })
           .then(function(jobs) {
             var vjId = jobs && jobs[0] ? jobs[0].id : null;
+            var beat = null;
+            if (jobs && jobs[0] && jobs[0].script) {
+              try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
+            }
+            var template = vo.CMDS[1][1];
+            var prompt = template
+              .replace('[TYPE BEAT TITLE]', row.title || '[TYPE BEAT TITLE]')
+              .replace('[TYPE GENRE]', (beat && beat.genre) || '[TYPE GENRE]')
+              .replace('[TYPE MOOD]', (beat && beat.mood) || '[TYPE MOOD]')
+              .replace('[TYPE KEY AND SCALE]', (beat && beat.key) ? (beat.key + ' ' + (beat.scale || '')) : '[TYPE KEY AND SCALE]')
+              .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
+              .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText);
+
             self._prepOracleBarFor(row, function() {
-              self._sendFilledPromptToOracle(row, vjId, script);
-              RPGACE.utils.toast('🔁 Resending saved script to Oracle...', '#4CAF82', 2500);
+              RPGACE.utils.fillGaps(prompt, function(filled) {
+                // Aug 5 (Engineer pass, Phase D, Alex-confirmed "save both,
+                // separately" data model) - the exact outbound prompt is
+                // captured verbatim right here, the moment fillGaps'
+                // "Send to Oracle" click actually fires (this IS the real
+                // "step 4 Continue" moment item 5 describes). Saved as
+                // creative_docs.script - a DIFFERENT field from video_jobs'
+                // own pre-existing 'script' column (which holds beat
+                // metadata JSON, see the JSON.parse above - a real, already-
+                // existing naming collision on the word "script" across two
+                // different tables, not something this pass introduces or
+                // fixes; noted here so a future reader doesn't conflate the
+                // two). Reuses _saveDocToProduction directly (rule 8 dedup)
+                // rather than a new merge-write helper.
+                vo._saveDocToProduction('script', filled, row.id, vjId);
+                self._sendFilledPromptToOracle(row, vjId, filled);
+              });
             });
           });
+      }, prefill);
+    },
+
+    // ── Shared Oracle-send tail (Aug 5, Engineer pass, Phase E) ──────────
+    // Extracted out of _generateVisualTreatment so _retroRegenerateScript
+    // (Phase 3's real retroactive button - resends an already-saved script
+    // with no fillGaps step at all) can reuse the exact same real send/
+    // capture path instead of a second hand-rolled copy (rule 8 dedup).
+    _prepOracleBarFor: function(row, callback) {
+      var self = RPGACE.modules.contentProductionLive;
+      if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+        RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+      }
+      if (typeof showPage === 'function') showPage('advisor');
+      setTimeout(function() {
+        self._activeConID = row.con_id;
+        self._activeId = row.id;
+        self._injectOracleBar();
+        callback();
+      }, 500);
+    },
+
+    // ── Phase H (Aug 5, Engineer pass 09) — real beat deliverables ──────
+    // (stems/wav/zips) per licence tier, per Alex's confirmed /interrogation
+    // answers on the follow-up "autoport beats depending on licensing" ask:
+    // (1) BeatStars has no upload/listing API at all (reconfirmed live,
+    // Aug 2026 WebSearch, not just the pre-existing July 13 code comment) —
+    // so this stops at "auto-prepare a downloadable bundle," never a real
+    // push to BeatStars; real browser-automation autoport (e.g. cr4wl.ai)
+    // is a confirmed, deliberately deferred future phase, logged in
+    // beat_deliverables_autoport_backlog_2026-08-05.txt, not built here.
+    // (2) Files are uploaded fresh from Alex's own machine — no existing
+    // external storage to link to, so this is real new Storage + schema.
+    // (3) Automatic server-side zipping (the `bundle-deliverables` action
+    // inside api/data-write.js — folded in rather than its own file, see
+    // that file's header comment for why) is the primary bundling
+    // mechanism, but Alex can ALSO drop in a whole folder of files to be
+    // zipped together, not just individually-named stems — both upload
+    // paths below feed the exact same deliverable_files array.
+    //
+    // Small, deliberate rule-8 exception: fileAppliesToTier's real tier-
+    // inclusion logic (lease < non-exclusive < exclusive) is duplicated here
+    // AND in api/data-write.js, because this codebase has no build step to
+    // share a module between a browser file and a Node/ESM Vercel function
+    // — the duplication is named and reasoned, not accidental.
+    _fileAppliesToTier: function(fileTier, tier) {
+      var ORDER = { 'lease': 0, 'non-exclusive': 1, 'exclusive': 2 };
+      if (!fileTier) return true;
+      if (!(fileTier in ORDER) || !(tier in ORDER)) return false;
+      return ORDER[fileTier] <= ORDER[tier];
+    },
+
+    // Real direct-to-Storage upload (client, anon key) — same pattern as
+    // beatLog._tryRealAudioAnalysis for the beat-audio bucket, applied to
+    // the new private beat-deliverables bucket. One batched read-modify-
+    // write of deliverable_files at the end (not per-file) so several files
+    // from the same folder-drop don't race each other's Supabase write.
+    _uploadDeliverableFiles: function(row, files, tier, callback) {
+      var base = RPGACE.CONFIG.supabase.url;
+      var key = RPGACE.CONFIG.supabase.key;
+      var uploads = files.map(function(file) {
+        var relName = file.webkitRelativePath || file.name;
+        var safeName = relName.replace(/[^a-zA-Z0-9._\/-]/g, '_');
+        var uuid = (crypto.randomUUID ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
+        var storagePath = row.id + '/' + uuid + '-' + safeName.replace(/\//g, '_');
+        return fetch(base + '/storage/v1/object/beat-deliverables/' + encodeURIComponent(storagePath), {
+          method: 'POST',
+          headers: { 'apikey': key, 'Authorization': 'Bearer ' + key, 'Content-Type': file.type || 'application/octet-stream' },
+          body: file,
+        }).then(function(res) {
+          if (!res.ok) throw new Error('upload failed: ' + relName);
+          return { name: relName, storage_path: storagePath, size: file.size, tier: tier || null };
+        });
       });
-  },
 
-  // ── Dashboard widget — ConID tracker ─────────────────────────
-  _injectDashboardWidget: function() {
-    if (document.getElementById('cpl-widget')) return;
-    var self = this;
-    var page = document.getElementById('page-dashboard');
-    if (!page) return;
+      Promise.all(uploads).then(function(newEntries) {
+        return RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files').then(function(rows) {
+          var existing = (rows && rows[0] && Array.isArray(rows[0].deliverable_files)) ? rows[0].deliverable_files : [];
+          var merged = existing.concat(newEntries);
+          return RPGACE.sb.secureWrite('content_productions', 'update', { deliverable_files: merged }, 'id=eq.' + row.id);
+        });
+      }).then(function() {
+        callback(null);
+      }).catch(function(e) {
+        callback(e);
+      });
+    },
 
-    var widget = document.createElement('div');
-    widget.id = 'cpl-widget';
-    widget.style.cssText = 'background:rgba(61,170,110,0.03);border:1px solid rgba(61,170,110,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
+    _removeDeliverableFile: function(row, idx, afterCallback) {
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files')
+        .then(function(rows) {
+          var existing = (rows && rows[0] && Array.isArray(rows[0].deliverable_files)) ? rows[0].deliverable_files : [];
+          var removed = existing[idx];
+          existing.splice(idx, 1);
+          return RPGACE.sb.secureWrite('content_productions', 'update', { deliverable_files: existing }, 'id=eq.' + row.id)
+            .then(function() { return removed; });
+        })
+        .then(function(removed) {
+          // Best-effort real delete from Storage too — fire-and-forget, not
+          // fatal if it fails, since the DB record (what the UI reflects)
+          // is already gone.
+          if (removed && removed.storage_path) {
+            var base = RPGACE.CONFIG.supabase.url;
+            var key = RPGACE.CONFIG.supabase.key;
+            fetch(base + '/storage/v1/object/beat-deliverables/' + encodeURIComponent(removed.storage_path), {
+              method: 'DELETE',
+              headers: { 'apikey': key, 'Authorization': 'Bearer ' + key },
+            }).catch(function() {});
+          }
+          RPGACE.utils.toast('🗑 File removed', 'rgba(226,226,236,0.5)', 2000);
+          if (afterCallback) afterCallback();
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('⚠️ Remove failed: ' + e.message, '#CC4A4A', 3500);
+        });
+    },
 
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
-    var titleEl = document.createElement('div');
-    // Aug 6 (Engineer pass, real /deduplication ask) — was "Content
-    // Production Live" (eyebrow) stacked over "Content Pipeline" (title):
-    // two different names on the SAME single widget/node (this is not
-    // two systems — see the _openPipeline comment above, "node MOVED,
-    // never rebuilt"), which read exactly like two overlapping features.
-    // Real code check confirmed there is only ever one #cpl-widget; the
-    // module's internal name (contentProductionLive) is an implementation
-    // detail that never needed to leak into the user-facing header. Now
-    // one consistent brand voice, matching the dashDeck card's own real
-    // desc string (line ~5707: "Ideas -> productions -> posts.").
-    var eyebrow = document.createElement('div');
-    eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:3px;';
-    eyebrow.textContent = 'Ideas → Productions → Posts';
-    var titleText = document.createElement('div');
-    titleText.className = 'section-title';
-    titleText.style.cssText = 'font-size:14px;';
-    titleText.textContent = 'Content Pipeline';
-    titleEl.appendChild(eyebrow); titleEl.appendChild(titleText);
-
-    var refreshBtn = document.createElement('button');
-    refreshBtn.textContent = '↻';
-    refreshBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);cursor:pointer;font-size:12px;padding:4px 10px;';
-    refreshBtn.onclick = function() { self._refreshWidget(); };
-    hdr.appendChild(titleEl); hdr.appendChild(refreshBtn);
-    widget.appendChild(hdr);
-
-    var list = document.createElement('div');
-    list.id = 'cpl-list';
-    list.style.cssText = 'max-height:300px;overflow-y:auto;';
-    list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
-    widget.appendChild(list);
-
-    // July 20 Pass 1: this widget now lives inside dashDeck's Content Pipeline
-    // card popup (_openPipeline relocates the live node in/out). Inject
-    // straight into the shared hidden stash holder — dashDeck owns showing
-    // it. Prefer dashDeck's holder helper; fall back to the same-id holder if
-    // dashDeck hasn't run yet.
-    var holder = document.getElementById('dd-stash-holder');
-    if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
-      holder = RPGACE.modules.dashDeck._ensureStash();
-    }
-    if (!holder) {
-      holder = document.createElement('div');
-      holder.id = 'dd-stash-holder';
-      holder.style.display = 'none';
-      page.appendChild(holder);
-    }
-    holder.appendChild(widget);
-
-    self._refreshWidget();
-    console.log('[contentProductionLive] Dashboard widget injected (stashed for dashDeck popup)');
-  },
-
-  _refreshWidget: function() {
-    var self = this;
-    var list = document.getElementById('cpl-list');
-    if (!list) return;
-
-    // Engineer pass 2026-07-30 (Slice A item 3, symmetric reverse of the
-    // Video Pipeline "↩ Beat Log" button) - bulk-fetch which productions
-    // have a linked video_jobs row, once, rather than an N+1 query per
-    // row (rule 8/11 - one extra request total, not one per card).
-    Promise.all([
-      RPGACE.sb.select('content_productions', 'order=updated_at.desc&limit=20'),
-      RPGACE.sb.select('video_jobs', 'select=content_production_id&content_production_id=not.is.null'),
-    ])
-      .then(function(results) {
-        var rows = results[0] || [];
-        var linkedIds = {};
-        (results[1] || []).forEach(function(vj) { if (vj.content_production_id) linkedIds[vj.content_production_id] = true; });
-        list.innerHTML = '';
-
-        if (rows.length === 0) {
-          list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;padding:8px 0;">No content ideas yet. Use 🔀 Repurpose in Oracle to create your first ConID.</div>';
+    // Calls the real server-side zip logic, folded into api/data-write.js
+    // as an `action: 'bundle-deliverables'` branch rather than its own file
+    // (Vercel Hobby's 12-Serverless-Function cap — see data-write.js's own
+    // header comment for the real deploy-failure evidence that forced this).
+    // authGate's global fetch() wrap attaches the X-RPGACE-Auth header to
+    // this automatically, same as every other /api/* call — no manual
+    // header handling needed here.
+    _generateBundle: function(row, tier, btnEl, afterCallback) {
+      var origText = btnEl.textContent;
+      btnEl.textContent = '⏳ Zipping...';
+      btnEl.disabled = true;
+      fetch('/api/data-write', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'bundle-deliverables', conId: row.id, tier: tier }),
+      }).then(function(res) {
+        return res.json().then(function(data) { return { ok: res.ok, data: data }; });
+      }).then(function(result) {
+        btnEl.textContent = origText;
+        btnEl.disabled = false;
+        if (!result.ok) {
+          RPGACE.utils.toast('⚠️ Bundle failed: ' + (result.data.error || 'unknown error'), '#CC4A4A', 4500);
           return;
         }
-
-        rows.forEach(function(row) {
-          var hasVideoJob = !!linkedIds[row.id];
-          var statusColors = {
-            'Idea': '#4A8CCC', 'Scripted': '#C9A84C', 'Filmed': '#9B6EC8',
-            'Edited': '#CC4A4A', 'Posted': '#4CAF82', 'Analysed': '#2ABFB0'
-          };
-          var color = statusColors[row.status] || '#4A8CCC';
-
-          var item = document.createElement('div');
-          item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
-
-          var topRow = document.createElement('div');
-          topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
-
-          var idBadge = document.createElement('span');
-          idBadge.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(61,170,110,0.7);background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:10px;padding:2px 7px;margin-right:8px;';
-          idBadge.textContent = 'ConID #' + row.con_id;
-
-          var titleSpan = document.createElement('span');
-          titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-          titleSpan.textContent = row.title;
-
-          // A7 (Aug 23 2026) — this used to be a bare
-          // `row.content_type === 'music_video'` boolean, so a third
-          // content_type would have silently fallen into the tutorial
-          // branch below (generic "→ Mark [next]" chip, no stage-aware
-          // action, no redo, no undo). `flow` is now the real per-type
-          // table set (null for tutorial, which is exactly what the old
-          // `false` meant), so obs_raw gets its own real stage-aware
-          // buttons and CANNOT inherit tutorial's or music_video's.
-          var flow = self._flowFor(row.content_type);
-
-          var statusBadge = document.createElement('span');
-          statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
-          statusBadge.textContent = flow ? (flow.badges[row.status] || row.status) : row.status;
-
-          topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
-          item.appendChild(topRow);
-
-          // Status progress bar
-          var statuses = ['Idea','Scripted','Filmed','Edited','Posted','Analysed'];
-          var statusIdx = statuses.indexOf(row.status);
-          var progressWrap = document.createElement('div');
-          progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
-          statuses.forEach(function(s, i) {
-            var dot = document.createElement('div');
-            dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= statusIdx ? color : 'rgba(255,255,255,0.08)') + ';';
-            progressWrap.appendChild(dot);
-          });
-          item.appendChild(progressWrap);
-
-          // Aug 6 (Engineer pass, 2nd real hand-test round, item 8) —
-          // "⇄ Swap ConID" removed entirely. Alex's own words: "i think
-          // swap conid is so redundant now with no actual benefit to
-          // me" — the same ConID list is already one click away (this
-          // widget itself), and the Oracle-session/Production-Panel
-          // buttons below already carry the con_id context switch.
-          var topActions = document.createElement('div');
-          topActions.style.cssText = 'display:flex;align-items:center;margin-bottom:6px;';
-
-          // Inline title edit
-          var titleWrap = document.createElement('div');
-          titleWrap.style.cssText = 'flex:1;';
-          var titleDisplay = document.createElement('div');
-          titleDisplay.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);cursor:pointer;';
-          titleDisplay.textContent = '✎ Edit title';
-          titleDisplay.onclick = function() {
-            var inp = document.createElement('input');
-            inp.type = 'text';
-            inp.value = row.title;
-            inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(61,170,110,0.3);border-radius:4px;color:#D4DAF5;font-size:11px;padding:3px 6px;outline:none;font-family:Rajdhani,sans-serif;';
-            titleWrap.replaceChild(inp, titleDisplay);
-            inp.focus();
-            inp.onblur = function() {
-              var newTitle = inp.value.trim() || row.title;
-              self.updateEntry(row.id, { title: newTitle }).then(function() {
-                RPGACE.utils.toast('✅ Title updated', '#4CAF82', 2000);
-                self._refreshWidget();
-              });
-            };
-            inp.onkeydown = function(e) { if (e.key === 'Enter') inp.blur(); };
-          };
-          titleWrap.appendChild(titleDisplay);
-          topActions.appendChild(titleWrap);
-          item.appendChild(topActions);
-
-          // Action buttons row
-          var actions = document.createElement('div');
-          actions.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
-
-          // Aug 6 (Engineer pass, 2nd real hand-test round, items 5/7/13) —
-          // real fix for the recurring "duplicate stage" bug Alex hit
-          // twice. music_video ConIDs now get ONE stage-aware primary
-          // action button (label + handler keyed off real status via
-          // MUSIC_VIDEO_PRIMARY_ACTION) instead of the old fixed
-          // "-> Mark [next]" chip PLUS a permanently-shown "Start Visual
-          // Treatment" button rendering at the same time regardless of
-          // real progress — that fixed-set rendering was the actual root
-          // cause, confirmed by direct code read, not a race condition.
-          // Tutorial ConIDs keep the original generic advance button
-          // unchanged (their workflow was never the one Alex complained
-          // about).
-          if (flow) {
-            var primary = flow.primary[row.status];
-            if (primary) {
-              var primaryBtn = document.createElement('button');
-              primaryBtn.textContent = primary.label;
-              primaryBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              primaryBtn.onclick = function() { self[primary.fn](row); };
-              actions.appendChild(primaryBtn);
-            }
-
-            // Item 3 — redo button for the most-recently-completed stage,
-            // paired with a real "revert progress" checkbox. Unchecked
-            // (default) = edit-in-place only, status untouched — same
-            // behaviour Alex already confirmed working on ConID #11
-            // ("everything stays as is with how conid 11 changes worked
-            // just now"). Checked = _revertToStage runs first, clearing
-            // that stage's real outputs, THEN the action re-runs.
-            var redo = flow.redo[row.status];
-            if (redo) {
-              var redoWrap = document.createElement('span');
-              redoWrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
-              var redoBtn = document.createElement('button');
-              redoBtn.textContent = redo.label;
-              redoBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              var revertCb = document.createElement('input');
-              revertCb.type = 'checkbox';
-              revertCb.id = 'cpl-revert-' + row.id;
-              revertCb.title = 'Revert progress to this stage first (clears this stage\'s real outputs, later stages need redoing). Leave unchecked to just edit in place — status stays as-is.';
-              revertCb.style.cssText = 'cursor:pointer;margin:0;';
-              var revertLbl = document.createElement('label');
-              revertLbl.htmlFor = revertCb.id;
-              revertLbl.textContent = 'revert';
-              revertLbl.title = revertCb.title;
-              revertLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);cursor:pointer;';
-              redoBtn.onclick = function() {
-                if (revertCb.checked) {
-                  self._revertToStage(row, redo.revertTo, function() { self[redo.fn](row); }, flow);
-                } else {
-                  self[redo.fn](row);
-                }
-              };
-              redoWrap.appendChild(redoBtn); redoWrap.appendChild(revertCb); redoWrap.appendChild(revertLbl);
-              actions.appendChild(redoWrap);
-            }
-
-            // Item 12 — standalone Undo (reverts without re-running the
-            // action; see _undoLastStage above for the real scope).
-            if (flow.prev[row.status]) {
-              var undoBtn = document.createElement('button');
-              undoBtn.textContent = '🔙 Undo';
-              undoBtn.title = 'Revert to the previous stage and delete the output it produced.';
-              undoBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.05);border:1px solid rgba(226,84,84,0.15);border-radius:5px;color:rgba(226,84,84,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              undoBtn.onclick = function() { self._undoLastStage(row); };
-              actions.appendChild(undoBtn);
-            }
-          } else if (statusIdx < statuses.length - 1) {
-            var nextStatus = statuses[statusIdx + 1];
-            var advBtn = document.createElement('button');
-            advBtn.textContent = '→ Mark ' + nextStatus;
-            advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            advBtn.onclick = function() {
-              var updates = { status: nextStatus };
-              if (nextStatus === 'Posted') updates.posted_at = new Date().toISOString();
-              if (nextStatus === 'Analysed') updates.analysed_at = new Date().toISOString();
-              self.updateEntry(row.id, updates).then(function() {
-                self._refreshWidget();
-                RPGACE.utils.toast('ConID #' + row.con_id + ' → ' + nextStatus, color, 2000);
-              });
-            };
-            actions.appendChild(advBtn);
-          }
-
-          // Posted — show URL input questionnaire
-          if (row.status === 'Posted' || row.status === 'Analysed') {
-            if (row.youtube_url) {
-              var ytLink = document.createElement('a');
-              ytLink.href = row.youtube_url; ytLink.target = '_blank';
-              ytLink.textContent = '▶ YouTube';
-              ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#CC4A4A;font-size:11px;text-decoration:none;';
-              actions.appendChild(ytLink);
-            }
-            if (row.instagram_url) {
-              var igLink = document.createElement('a');
-              igLink.href = row.instagram_url; igLink.target = '_blank';
-              igLink.textContent = '📸 Instagram';
-              igLink.style.cssText = 'padding:4px 10px;background:rgba(193,53,132,0.08);border:1px solid rgba(193,53,132,0.2);border-radius:5px;color:#E1306C;font-size:11px;text-decoration:none;';
-              actions.appendChild(igLink);
-            }
-          }
-
-          // Post details button (when status hits Posted)
-          if (row.status === 'Filmed' || row.status === 'Edited') {
-            var postBtn = document.createElement('button');
-            postBtn.textContent = '📋 Add post details';
-            postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            postBtn.onclick = function() { self._showPostDetails(row); };
-            actions.appendChild(postBtn);
-          }
-
-          // Open in Oracle button
-          var oracleBtn = document.createElement('button');
-          oracleBtn.textContent = '💬 Oracle session';
-          oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          oracleBtn.onclick = function() {
-            self._activeConID = row.con_id;
-            self._activeId = row.id;
-            // Close the hosting dashDeck popup first — showPage('advisor')
-            // would otherwise swap the page UNDER the still-open overlay.
-            // No-op when opened outside the popup.
-            if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-              RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-            }
-            if (typeof showPage === 'function') showPage('advisor');
-            setTimeout(function() {
-              self._injectOracleBar();
-              RPGACE.utils.sendToOracle('I am working on ConID #' + row.con_id + ': "' + row.title + '". Status: ' + row.status + '. Idea: ' + (row.idea || '').slice(0, 300) + '\n\nHelp me with the next step in the content production process.');
-            }, 500);
-          };
-          actions.appendChild(oracleBtn);
-
-          // Aug 6 (Engineer pass, 2nd real hand-test round, item 7) —
-          // renamed + demoted to a muted secondary link. Alex's real
-          // complaint wasn't that this capability shouldn't exist, it's
-          // that it (and Beatstars Listing, right below) rendered as a
-          // same-weight button next to the real primary action at every
-          // stage, including the very first one — before this pass,
-          // hasVideoJob was true from the moment Log Beat ran (the linked
-          // video_jobs row is created in the same insert), so this button
-          // showed even on a fresh ConID. Still opens the full multi-phase
-          // Production Panel (script editing, Phase breakdown) — that
-          // capability isn't removed, just no longer competing visually
-          // with the one real next-action button.
-          var vpBtn = document.createElement('button');
-          vpBtn.textContent = '⚙ Full Production Panel';
-          vpBtn.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:rgba(74,144,226,0.55);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          vpBtn.onclick = function() {
-            if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-            self._activeConID = row.con_id;
-            self._activeId = row.id;
-            self._openProductionPanel();
-          };
-          actions.appendChild(vpBtn);
-
-          // Aug 6 (item 7) — "Sell This Beat" now folded behind a small
-          // toggle instead of rendering Beatstars Listing + Manage
-          // Deliverables inline at every stage (Alex's real complaint:
-          // "there should also be no video pipeline button and generate
-          // beatstars listings" cluttering the early-stage view). Real
-          // /debate verdict on moving Phase H earlier in the pipeline
-          // (whether monetisation should be a parallel track rather than
-          // a late linear phase) is a bigger architecture question logged
-          // separately, not resolved here — this is the honest interim
-          // fix: keep the real capability reachable, stop it competing
-          // with the primary action row. Still gated on licence_type (a
-          // beat sale, not just content).
-          if (row.licence_type) {
-            var sellWrap = document.createElement('span');
-            sellWrap.style.cssText = 'display:inline-flex;';
-            var sellToggle = document.createElement('button');
-            sellToggle.textContent = '💰 Sell This Beat ▾';
-            sellToggle.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(201,168,76,0.2);border-radius:5px;color:rgba(201,168,76,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            var sellPanel = document.createElement('div');
-            sellPanel.style.cssText = 'display:none;gap:6px;margin-top:4px;flex-basis:100%;';
-            sellToggle.onclick = function() {
-              sellPanel.style.display = sellPanel.style.display === 'none' ? 'flex' : 'none';
-            };
-            var bsBtn = document.createElement('button');
-            // 2026-07-31 — Alex's own direct catch: "Beatstars Listing" read
-            // as a status label, not an action. Renamed to remove the
-            // ambiguity; behaviour unchanged.
-            bsBtn.textContent = '🎧 Generate Beatstars Listing';
-            bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
-            sellPanel.appendChild(bsBtn);
-
-            // Phase H (Aug 5, Engineer pass 09) — real file handling, same
-            // gate as the Beatstars button (this ConID is a beat sale).
-            // Alex's confirmed scope: auto-prepare a downloadable bundle
-            // per licence tier (server-side zip), NOT a real BeatStars API
-            // push (doesn't exist — reconfirmed live, Aug 2026) or browser
-            // automation (deliberately deferred, see
-            // beat_deliverables_autoport_backlog_2026-08-05.txt).
-            var dmBtn = document.createElement('button');
-            dmBtn.textContent = '📦 Manage Deliverables';
-            dmBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            dmBtn.onclick = function() { self._showDeliverablesManager(row); };
-            sellPanel.appendChild(dmBtn);
-
-            sellWrap.appendChild(sellToggle);
-            actions.appendChild(sellWrap);
-            actions.appendChild(sellPanel);
-          }
-
-          // 2026-07-31 — Alex's real ask: "a delete for each conID should
-          // be present." Real risk checked first (pg_constraint): video_jobs.
-          // content_production_id has NO cascade, so deleting a linked
-          // ConID would hard-fail with an FK violation.
-          //
-          // Aug 6, real Alex ask ("the button should delete both, one
-          // button also triggers the other") — the FK-violation confirm
-          // dialog was correct but unhelpful; it made Alex manually delete
-          // the linked job first instead of just doing it. Re-checked
-          // pg_constraint directly (rule 1, never assume): a SECOND
-          // non-cascading FK exists too — openmontage_jobs.content_production_id
-          // — not previously handled here, a real gap this fix also closes.
-          // Cascade delete now: video_jobs rows (via the service-role
-          // secureWrite proxy, content_productions/video_jobs are both in
-          // api/data-write.js's ALLOWED_TABLES) → openmontage_jobs rows
-          // (plain anon-key RPGACE.sb.del — deliberately NOT secureWrite,
-          // per the standing landmine: openmontage_jobs must stay anon_all
-          // so the separate OpenMontage Claude Code session can still
-          // write to it) → the content_productions row itself. Each step
-          // still fails loud on a real error (rule 7) rather than silently
-          // leaving an orphaned row.
-          var delBtn = document.createElement('button');
-          delBtn.textContent = '🗑';
-          delBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.06);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:rgba(226,84,84,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          delBtn.onclick = function() {
-            var msg = 'Delete ConID #' + row.con_id + ' ("' + row.title + '")?';
-            if (hasVideoJob) msg += '\n\nThis will also delete its linked Video Pipeline job (and any OpenMontage job record) — that cannot be undone.';
-            if (!confirm(msg)) return;
-            RPGACE.sb.secureWrite('video_jobs', 'delete', null, 'content_production_id=eq.' + row.id)
-              .catch(function(e) { throw new Error('linked video job: ' + e.message); })
-              .then(function() {
-                return RPGACE.sb.del('openmontage_jobs', 'content_production_id=eq.' + row.id)
-                  .catch(function(e) { throw new Error('linked OpenMontage job: ' + e.message); });
-              })
-              .then(function() {
-                return RPGACE.sb.secureWrite('content_productions', 'delete', null, 'id=eq.' + row.id)
-                  .catch(function(e) { throw new Error('ConID row: ' + e.message); });
-              })
-              .then(function() {
-                RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id + (hasVideoJob ? ' + linked jobs' : ''), 'rgba(226,226,236,0.5)', 2500);
-                self._refreshWidget();
-              })
-              .catch(function(e) {
-                RPGACE.utils.toast('⚠️ Delete failed (' + e.message + ')', '#CC4A4A', 4500);
-              });
-          };
-          actions.appendChild(delBtn);
-
-          item.appendChild(actions);
-          list.appendChild(item);
-        });
+        RPGACE.utils.toast('🎁 Bundle ready — opening download...', '#4CAF82', 3000);
+        window.open(result.data.url, '_blank');
+        if (afterCallback) afterCallback();
       }).catch(function(e) {
-        list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
+        btnEl.textContent = origText;
+        btnEl.disabled = false;
+        RPGACE.utils.toast('⚠️ Bundle request failed: ' + e.message, '#CC4A4A', 4000);
       });
-  },
+    },
 
-  // ── Post details questionnaire ────────────────────────────────
-  _showPostDetails: function(row) {
-    var self = this;
-    var pop = RPGACE.modules.dashDeck._popup({
-      dim: '0.9', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(61,170,110,0.25)',
-      title: 'ConID #' + row.con_id + ' — Post Details', noDefaultClose: true,
-    });
-    var overlay = pop.overlay, box = pop.box;
+    // ⚠️ FLAGGED, NOT FIXED (G53 split, Aug 2026) — the 8-line comment block
+    // immediately below is PRE-EXISTING and ORPHANED: it describes
+    // `_retroVisualTreatment` (which actually sits ~4 functions further
+    // down, its own definition carrying no header comment), not
+    // `_generateObsScript`, which is what it currently heads. Confirmed by
+    // reading both functions and by `git log` predating this split — it was
+    // already sitting here before this pass, so it is left byte-identical
+    // and in place rather than silently moved, per this split's own
+    // "pure structural refactor, flag don't fix" scope. Both functions land
+    // in `logic`, so their relative order is unchanged by the split and the
+    // orphan is no more misleading now than it was before.
+    // ── Phase 2 retroactive button (Aug 5, Engineer pass, Phase E) ───────
+    // Real edit-in-place: reads back the STRUCTURED director choice this
+    // module already saves (creative_docs.director_blend, added above -
+    // no regex-parsing of rendered prose needed) and reopens the exact
+    // same picker + Visual Treatment flow pre-filled with it, per
+    // /interrogation's confirmed "edit in place" answer. Gracefully
+    // degrades to a fresh, unprefilled flow for any ConID logged before
+    // this field existed.
+    // ══════════════════════════════════════════════════════════════════
+    // A7 — the OBS-raw scripting phase (Aug 23 2026)
+    // ══════════════════════════════════════════════════════════════════
+    // The one place the OBS-raw workflow genuinely DIVERGES from the beat→
+    // music-video workflow, per Alex's own spec: "the scripting phase for
+    // this path should NOT include the Director phylum. Instead: a real
+    // YouTube Meme Director... classic youtube meme additions in unexpected
+    // places, or effects for comic effect or attention retention."
+    //
+    // Structurally this is _generateVisualTreatment's exact shape (picker →
+    // save the structured choice → build prompt → _prepOracleBarFor →
+    // _sendFilledPromptToOracle), reusing every one of those real helpers
+    // rather than a second hand-rolled copy (rule 8). Three real
+    // differences, each traceable to something Alex actually asked for:
+    //
+    //  1. The picker is opened with opts {only:['YouTube Meme Director'],
+    //     rows:1} — one real f14_filmmaker_library row, not the cinematic
+    //     3-director blend. The free-text inspiration box stays, because
+    //     that IS still genuinely variable per video.
+    //  2. The prompt folds in ALL THREE social-media Oracles' own real
+    //     command text (via _findOracleCmdText, the same mechanism
+    //     _generateCaptions already uses) AND contentRepurpose's own real
+    //     platform-output instructions (via its newly-shared
+    //     platformOutputInstructions()) — "the scripting will also include
+    //     all social media oracles and repurpose to make one script."
+    //  3. One explicit, prominent editing constraint — Alex's own "one
+    //     vital rule": the long-form video must be assemblable with ffmpeg
+    //     cuts alone, minimal OpenMontage/OpenArt stitching.
+    //
+    // ONE Oracle call, deliberately — the cut list is part of the same
+    // script ("make ONE script"), not a second premium round-trip (rule 11).
+    _generateObsScript: function(row, prefill) {
+      var self = RPGACE.modules.contentProductionLive;
+      var vo = RPGACE.modules.visualOracle;
+      if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
 
-    var fields = [
-      { id: 'pd-yt',    label: 'YouTube URL', placeholder: 'https://youtube.com/watch?v=...' },
-      { id: 'pd-ig',    label: 'Instagram URL', placeholder: 'https://instagram.com/p/...' },
-      { id: 'pd-tiktok',label: 'TikTok URL', placeholder: 'https://tiktok.com/@acesanyabeats/...' },
-      { id: 'pd-raw',   label: 'Raw footage path (E: drive)', placeholder: 'E:\\Videos\\edison_tutorial_raw.mp4' },
-      { id: 'pd-notes', label: 'Post notes / performance observations', placeholder: 'e.g. Posted Sunday 6pm, got 200 views in first hour...' },
-    ];
+      vo._showDirectorPicker(function(styleText, styleMeta) {
+        if (styleMeta) vo._saveDocToProduction('director_blend', styleMeta, row.id);
+        RPGACE.utils.toast('🎞 Building the meme script + ffmpeg cut plan...', '#E2A83D', 3000);
 
-    fields.forEach(function(f) {
-      var lbl = document.createElement('div');
-      lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-      lbl.textContent = f.label + ':';
-      var inp = document.createElement('input');
-      inp.id = f.id; inp.type = 'text'; inp.placeholder = f.placeholder;
-      inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      box.appendChild(lbl); box.appendChild(inp);
-    });
-
-    // F15: licence + price, if this ConID has a beat attached to it (not
-    // every post is a beat sale, so both are optional and null if left
-    // blank) - precondition for F16's Beatstars auto-listing, which reads
-    // these two columns straight off content_productions.
-    var licLbl = document.createElement('div');
-    licLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-    licLbl.textContent = 'Licence type (if selling this beat):';
-    var licSelect = document.createElement('select');
-    licSelect.id = 'pd-licence';
-    licSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-    [['', '— not a beat sale —'], ['lease', 'Lease'], ['non-exclusive', 'Non-Exclusive'], ['exclusive', 'Exclusive']].forEach(function(o) {
-      var opt = document.createElement('option');
-      opt.value = o[0]; opt.textContent = o[1];
-      opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
-      licSelect.appendChild(opt);
-    });
-    box.appendChild(licLbl); box.appendChild(licSelect);
-
-    var priceLbl = document.createElement('div');
-    priceLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-    priceLbl.textContent = 'Price (GBP):';
-    var priceInp = document.createElement('input');
-    priceInp.id = 'pd-price'; priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01'; priceInp.placeholder = 'e.g. 29.99';
-    priceInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-    box.appendChild(priceLbl); box.appendChild(priceInp);
-
-    var btnRow = document.createElement('div');
-    btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
-    var saveBtn = document.createElement('button');
-    saveBtn.textContent = '💾 Save + Mark Posted';
-    saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    saveBtn.onclick = function() {
-      var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
-      var priceVal = g('pd-price');
-      var updates = {
-        status: 'Posted',
-        posted_at: new Date().toISOString(),
-        youtube_url: g('pd-yt') || null,
-        instagram_url: g('pd-ig') || null,
-        tiktok_url: g('pd-tiktok') || null,
-        raw_footage_path: g('pd-raw') || null,
-        notes: g('pd-notes') || null,
-        licence_type: g('pd-licence') || null,
-        price: priceVal ? parseFloat(priceVal) : null,
-      };
-      self.updateEntry(row.id, updates).then(function() {
-        overlay.remove();
-        self._refreshWidget();
-        RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Posted', '#4CAF82', 3000);
-        // Auto-post to Instagram if URL not provided
-        if (!updates.instagram_url && updates.status === 'Posted') {
-          RPGACE.utils.toast('💡 Tip: Instagram auto-post available via Composio', '#9B6EC8', 4000);
-        }
-      });
-    };
-    var cancelBtn = document.createElement('button');
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    cancelBtn.onclick = function() { overlay.remove(); };
-    btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-    box.appendChild(btnRow);
-  },
-
-  // ── Oracle bar — shows active ConID in Oracle tab ─────────────
-  _injectOracleBar: function() {
-    if (!this._activeConID) return;
-    if (document.getElementById('cpl-oracle-bar')) return;
-    var self = this;
-    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
-    if (!chatBox) return;
-
-    var bar = document.createElement('div');
-    bar.id = 'cpl-oracle-bar';
-    bar.style.cssText = 'background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;';
-
-    var left = document.createElement('div');
-    left.style.cssText = 'font-size:11px;color:rgba(61,170,110,0.8);';
-    left.textContent = '📋 Active: ConID #' + self._activeConID + ' — Oracle session being recorded';
-
-    var optionBBtn = document.createElement('button');
-    optionBBtn.textContent = '🎬 Switch to Production Panel';
-    optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    optionBBtn.onclick = function() { self._openProductionPanel(); };
-
-    var endBtn = document.createElement('button');
-    endBtn.textContent = 'End session';
-    endBtn.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.3);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
-    endBtn.onclick = function() { self._endSession(); };
-
-    left.appendChild(document.createElement('br'));
-    bar.appendChild(left);
-    var btnWrap = document.createElement('div');
-    btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
-    btnWrap.appendChild(optionBBtn); btnWrap.appendChild(endBtn);
-    bar.appendChild(btnWrap);
-    chatBox.parentElement.insertBefore(bar, chatBox);
-  },
-
-  // ── Option B: Production Panel ────────────────────────────────
-  _openProductionPanel: function() {
-    if (document.getElementById('cpl-prod-panel')) return;
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'cpl-prod-panel';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(61,170,110,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(61,170,110,0.06);border-bottom:1px solid rgba(61,170,110,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var htxt = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
-    lb.textContent = 'CONTENT PRODUCTION LIVE · ConID #' + self._activeConID;
-    var sub = document.createElement('div');
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
-    sub.textContent = 'Production Panel';
-    htxt.appendChild(lb); htxt.appendChild(sub);
-    var closeHdr = document.createElement('button');
-    closeHdr.textContent = '×';
-    closeHdr.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;';
-    closeHdr.onclick = function() {
-      RPGACE.ui.slideOutPanel(panel, 'right');
-    };
-    hdr.appendChild(htxt); hdr.appendChild(closeHdr);
-    panel.appendChild(hdr);
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:16px;';
-
-    // Engineer pass 2026-07-30 (real "2 workflows" resolution) — this
-    // panel's 3 phases were built for a talking-head/OBS-tutorial
-    // recording (confirmed from its own original copy: "hook," "key
-    // teaching points," "film section by section," raw footage path) -
-    // a real, different content shape from a beat-driven production,
-    // where the real next steps are reference-matching/mood-palette/
-    // director-match/script, never "go film something." Fetches the
-    // real content_type once per open rather than guessing/threading a
-    // new field through every _activeId-setting call site.
-    var loadingRow = document.createElement('div');
-    loadingRow.style.cssText = 'color:rgba(226,226,236,0.3);font-size:11px;';
-    loadingRow.textContent = 'Loading...';
-    body.appendChild(loadingRow);
-    panel.appendChild(body);
-    RPGACE.ui.slideInPanel(panel, {edge:'right'});
-
-    // Aug 5 (Engineer pass, Phase D — content_video_pipeline_unification_
-    // spec_2026-08-05.txt item 5): music_video's real select widened to
-    // id/con_id/title so the new 4-phase branch below has a real row to
-    // hand to _generateVisualTreatment and the retroactive-button stubs,
-    // not just a content_type string.
-    RPGACE.sb.select('content_productions', 'id=eq.' + self._activeId + '&select=id,con_id,title,content_type&limit=1')
-      .then(function(rows) {
-        var row = rows && rows[0];
-        var contentType = (row && row.content_type) || 'tutorial';
-        body.innerHTML = '';
-
-        // music_video gets a real 4-phase model (more granular than the
-        // 3-phase tutorial shape below, which is byte-identical to before -
-        // Phase A's own "tutorial copy untouched" precedent). Phase 3
-        // (Script Editing) is genuinely new, not folded into Phase 2 -
-        // Alex confirmed directly this session that BOTH the outbound
-        // Oracle prompt and Oracle's returned Visual Treatment Doc get
-        // saved separately (creative_docs.script / .visual_treatment) and
-        // are each independently editable here.
-        // A7 (Aug 23 2026) — this was a two-way ternary whose `else` was
-        // the tutorial branch, so a third content_type would have silently
-        // rendered tutorial's 3 phases (including its "film your video
-        // section by section" copy and its raw-footage-path input) for an
-        // OBS-raw ConID whose footage is by definition already recorded.
-        // Now an explicit three-way lookup keyed on the real content_type,
-        // with tutorial as the honest default for anything unrecognised —
-        // the same default the column itself carries.
-        var PHASES_BY_TYPE = {
-          music_video: [
-            { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 12 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
-            { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 13) and generate a real Visual Treatment Doc for this beat.' },
-            { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
-            { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
-          ],
-          obs_raw: [
-            { icon: '🎞', title: 'Phase 1 — Raw OBS Footage', desc: 'The recording this ConID is built on. It already existed before the ConID did — submitting it is what allowed this ConID to be created at all.' },
-            { icon: '😂', title: 'Phase 2 — Meme Direction + Script', desc: 'One Oracle pass builds the long-form script, the ffmpeg cut plan, the meme/comic insert list, and the platform repurposing — grounded in the YouTube Meme Director plus Insta/YouTube/TikTok Oracle expertise.' },
-            { icon: '✂️', title: 'Phase 3 — Cut + Assemble', desc: 'Edit the script and cut plan here, run the cuts yourself in ffmpeg, then mark it done. RPGACE does not run ffmpeg — this stage records what you actually did.' },
-            { icon: '📣', title: 'Phase 4 — Captions + Publish', desc: 'Generate the three platform captions from the finished video record, then paste URLs once posted.' },
-          ],
-          tutorial: [
-            { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
-            { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
-            { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
-          ],
-        };
-        var phases = PHASES_BY_TYPE[contentType] || PHASES_BY_TYPE.tutorial;
-
-        phases.forEach(function(ph, i) {
-          var phaseCard = document.createElement('div');
-          phaseCard.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:10px;';
-          var phTitle = document.createElement('div');
-          phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
-          phTitle.textContent = ph.icon + ' ' + ph.title;
-          var phDesc = document.createElement('div');
-          phDesc.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:10px;';
-          phDesc.textContent = ph.desc;
-          phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
-
-          if (i === 1 && contentType === 'tutorial') {
-            // Phase 2 — raw footage path input (tutorial workflow only;
-            // a beat-driven production's real paths live on its linked
-            // video_jobs row instead, reachable via the Video Pipeline
-            // card).
-            var pathInp = document.createElement('input');
-            pathInp.type = 'text';
-            pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
-            pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-            var savePathBtn = document.createElement('button');
-            savePathBtn.textContent = 'Save footage path';
-            savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            savePathBtn.onclick = function() {
-              if (self._activeId && pathInp.value.trim()) {
-                self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
-                  .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#4CAF82', 2000); });
-              }
-            };
-            phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
-          } else if (contentType === 'obs_raw' && row) {
-            // ── A7 (Aug 23 2026) — the OBS-raw Production Panel ────────
-            // Deliberately the SAME four-phase shape as music_video below
-            // (Alex: "should include all the components from beat to music
-            // video workflow, with tweaks that make sense"), reusing
-            // _buildRetroActionButton / _buildScriptEditor /
-            // _generateCaptions / _viewCaptions unchanged. The real
-            // divergences: Phase 1 is footage rather than beat metadata,
-            // Phase 2 is the meme script rather than a Visual Treatment,
-            // and there is NO video-generation phase at all — the footage
-            // already exists, so an OpenMontage/Kling handoff would be
-            // meaningless here (any generated meme insert the script calls
-            // for is listed as a discrete manual clip, see the prompt).
-            if (i === 0) {
-              var obsPathWrap = document.createElement('div');
-              var obsPathInp = document.createElement('input');
-              obsPathInp.type = 'text';
-              obsPathInp.placeholder = 'E:\\OBS\\raw_2026-08-23.mkv';
-              obsPathInp.value = '';
-              obsPathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-              // Real current value, read live rather than assumed — the
-              // panel's own select is deliberately narrow (id/con_id/
-              // title/content_type), so this fetches the one extra column
-              // it actually needs instead of widening that shared query.
-              RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=raw_footage_path&limit=1')
-                .then(function(r) { if (r && r[0] && r[0].raw_footage_path) obsPathInp.value = r[0].raw_footage_path; })
-                .catch(function() {});
-              var obsSaveBtn = document.createElement('button');
-              obsSaveBtn.textContent = 'Update footage path';
-              obsSaveBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              obsSaveBtn.onclick = function() {
-                var v = obsPathInp.value.trim();
-                // The footage gate applies for the life of the ConID, not
-                // only at creation: clearing this field would leave an
-                // obs_raw ConID that could never legitimately have been
-                // created (see _openObsRawIntake).
-                if (!v) { RPGACE.utils.toast('⚠️ An OBS-raw ConID must keep a real footage path', '#CC4A4A', 3500); return; }
-                self.updateEntry(row.id, { raw_footage_path: v })
-                  .then(function() { RPGACE.utils.toast('📁 Footage path updated', '#4CAF82', 2000); })
-                  .catch(function(e) { RPGACE.utils.toast('⚠️ Save failed: ' + e.message, '#CC4A4A', 3500); });
-              };
-              obsPathWrap.appendChild(obsPathInp); obsPathWrap.appendChild(obsSaveBtn);
-              phaseCard.appendChild(obsPathWrap);
-            } else if (i === 1) {
-              var obsGenBtn = document.createElement('button');
-              obsGenBtn.textContent = '🎞 Build Meme Script (fresh direction)';
-              obsGenBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-              obsGenBtn.onclick = function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._generateObsScript(row);
-              };
-              phaseCard.appendChild(obsGenBtn);
-              phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Direction (pre-filled)', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._retroObsScript(row);
-              }));
-            } else if (i === 2) {
-              // Same real editor as music_video's Phase 3, pointed at the
-              // OBS-raw path's own creative_docs keys via its new optional
-              // `fields` param (rule 8 — one editor, not a second copy).
-              self._buildScriptEditor(phaseCard, row.id, [
-                { label: 'Outbound Prompt (sent to Oracle)', slug: 'obs_script_prompt', placeholder: 'Not generated yet — use Phase 2\'s Build Meme Script first.' },
-                { label: 'Meme Script + FFmpeg Cut Plan (Oracle\'s reply)', slug: 'obs_script', placeholder: 'Not generated yet.' },
-                { label: 'Your Edit Note (what you actually cut)', slug: 'obs_cut_note', placeholder: 'Filled in when you mark the cut done — editable here too.' },
-              ]);
-              var cutBtn = document.createElement('button');
-              cutBtn.textContent = '✂️ Mark Cut Done (ffmpeg)';
-              cutBtn.style.cssText = 'padding:5px 12px;background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.3);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-              cutBtn.onclick = function() { self._markObsCutDone(row); };
-              phaseCard.appendChild(cutBtn);
-              phaseCard.appendChild(self._buildRetroActionButton('👁 View Script + Cut Plan', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
-                self._viewObsScript(row);
-              }));
-            } else if (i === 3) {
-              var obsCapBtn = document.createElement('button');
-              obsCapBtn.textContent = '📝 Generate Captions';
-              obsCapBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-              obsCapBtn.onclick = function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._generateCaptions(row);
-              };
-              phaseCard.appendChild(obsCapBtn);
-              phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
-                self._viewCaptions(row);
-              }));
-              phaseCard.appendChild(document.createElement('br'));
-              phaseCard.appendChild(self._buildRetroActionButton('📋 Add post details / URLs', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._showPostDetails(row);
-              }));
-            }
-          } else if (contentType === 'music_video' && row) {
-            if (i === 0) {
-              // Phase 1 — Reference + Style: content unchanged. Real
-              // edit-in-place retroactive button (Aug 5, Phase E) -
-              // reopens Beat Log pre-filled with this ConID's saved data.
-              phaseCard.appendChild(self._buildRetroActionButton('↩ Return to Beat Log (edit in place)', '#C9A84C', 'rgba(201,168,76,0.3)', function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                if (RPGACE.modules.beatLog && RPGACE.modules.beatLog._openRetroactive) RPGACE.modules.beatLog._openRetroactive(row);
-              }));
-            } else if (i === 1) {
-              // Phase 2 — real trigger into the already-existing
-              // _generateVisualTreatment flow (dedup: reuses the exact
-              // function the ConID-card button calls, not a second
-              // hand-rolled copy). Real retroactive button (Aug 5, Phase
-              // E) reopens the same flow pre-filled with the previously
-              // saved director blend.
-              // Aug 6 (Engineer pass, real Content Pipeline bugfix) —
-              // relabeled per Alex's own "duplicated stages" report:
-              // showing "Start Visual Treatment" next to "Redo Visual
-              // Treatment" read as two copies of the same action. Now
-              // named for what's actually different — a fresh director
-              // pick vs. reopening the LAST saved one pre-selected.
-              var vtBtn2 = document.createElement('button');
-              vtBtn2.textContent = '🎬 New Visual Treatment (fresh director pick)';
-              vtBtn2.style.cssText = 'padding:5px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-              vtBtn2.onclick = function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._generateVisualTreatment(row);
-              };
-              phaseCard.appendChild(vtBtn2);
-              phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Visual Treatment (pre-filled)', '#9B6EC8', 'rgba(155,89,182,0.3)', function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._retroVisualTreatment(row);
-              }));
-            } else if (i === 2) {
-              // Phase 3 — NEW real Script Editing surface (Alex-confirmed
-              // this session): both creative_docs.script (the exact
-              // outbound Oracle prompt) and creative_docs.visual_treatment
-              // (Oracle's reply) shown independently editable. Real
-              // retroactive button (Aug 5, Phase E) resends whatever is
-              // currently saved straight to Oracle again.
-              self._buildScriptEditor(phaseCard, row.id);
-              phaseCard.appendChild(self._buildRetroActionButton('↩ Regenerate (resend saved script)', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._retroRegenerateScript(row);
-              }));
-            } else if (i === 3) {
-              // Aug 6 (Engineer pass, real Video Pipeline absorption) —
-              // real inline video-job status (stage progress + "Mark
-              // next stage" + "Paths + exports") replaces the old
-              // "Open Video Pipeline" link-out to a now-deleted separate
-              // card. Real dedup, not a rename: reuses videoPipeline's
-              // own STAGES/STAGE_LABELS/_showDetails/_computeAuto
-              // AdvancedStatus rather than a second hand-rolled copy.
-              self._buildVideoJobStatus(phaseCard, row);
-
-              // Aug 5 (Engineer pass, Phase F) — real Generate Video
-              // trigger. Gated behind OPENMONTAGE_HANDOFF_ENABLED (false
-              // by default) - see _generateVideo for the honest
-              // preview-not-fake-success behaviour while it's off.
-              var genVidBtn = document.createElement('button');
-              genVidBtn.textContent = '🎬 Generate Video';
-              genVidBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-bottom:6px;';
-              genVidBtn.onclick = function() { self._generateVideo(row); };
-              phaseCard.appendChild(genVidBtn);
-
-              // Test-only tool, deliberately labeled - fakes a completed
-              // job so the rest of the pipeline (Video Pipeline widget,
-              // this Phase's own "View Kling Project" retro button below)
-              // can be validated for real without any Kling spend.
-              var simBtn = document.createElement('button');
-              simBtn.textContent = '🧪 Simulate Response (test only)';
-              simBtn.style.cssText = 'padding:5px 12px;background:none;border:1px dashed rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-              simBtn.onclick = function() { self._simulateOpenMontageResponse(row); };
-              phaseCard.appendChild(simBtn);
-              phaseCard.appendChild(document.createElement('br'));
-
-              // Aug 5 (Engineer pass, Phase F) — genuinely real now, not a
-              // stub: Phase F stores a real openmontage_jobs reference
-              // (via either Generate Video or Simulate Response), so this
-              // button can finally show real job data instead of an
-              // honest "not built yet" toast.
-              phaseCard.appendChild(self._buildRetroActionButton('↩ View Kling Project', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
-                self._viewOpenMontageJob(row);
-              }));
-              phaseCard.appendChild(document.createElement('br'));
-
-              // Aug 5 (Engineer pass, Phase G) — real Generate Captions
-              // trigger, item 12's "Captions Generating" stage. NOT hard-
-              // gated on all-scenes-accepted (item 11's review workflow
-              // isn't built) - the real content this needs already exists
-              // once Phase 2/3 have run, and blocking a working feature on
-              // an unbuilt one would be a worse default than letting Alex
-              // use it whenever he judges the video ready. Explicitly
-              // stops at saving captions - no Composio auto-posting, per
-              // /interrogation's confirmed scope.
-              var capBtn = document.createElement('button');
-              capBtn.textContent = '📝 Generate Captions';
-              capBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-top:6px;';
-              capBtn.onclick = function() {
-                RPGACE.ui.slideOutPanel(panel, 'right');
-                self._generateCaptions(row);
-              };
-              phaseCard.appendChild(capBtn);
-              phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
-                self._viewCaptions(row);
-              }));
-            }
-          }
-
-          body.appendChild(phaseCard);
-        });
-
-        // Switch back to Oracle button
-        var backBtn = document.createElement('button');
-        backBtn.textContent = '← Back to Oracle (Option A)';
-        backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
-        backBtn.onclick = function() {
-          RPGACE.ui.slideOutPanel(panel, 'right');
-        };
-        body.appendChild(backBtn);
-      })
-      .catch(function() {
-        body.innerHTML = '';
-        var err = document.createElement('div');
-        err.style.cssText = 'color:#CC4A4A;font-size:12px;';
-        err.textContent = 'Could not load this production\'s details.';
-        body.appendChild(err);
-      });
-  },
-
-  // ── Phase D retroactive-button stub — NOW ONLY the Phase 4 button ────
-  // Real, honest placeholder (rule 7 - never fake a not-yet-built
-  // feature). Phases 1-3's retroactive buttons became real edit-in-place
-  // actions in the Aug 5 Phase E pass below (_buildRetroActionButton) -
-  // this stub now covers exactly ONE remaining case, Phase 4's "View
-  // Kling Project" button, which is genuinely blocked on Phase F (video
-  // generation handoff hasn't shipped, so no real Kling project
-  // reference exists anywhere in the schema yet to pull up).
-  _buildRetroButton: function(label, row) {
-    var btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid rgba(226,226,236,0.15);border-radius:5px;color:rgba(226,226,236,0.45);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    btn.onclick = function() {
-      RPGACE.utils.toast('🔧 "' + label.replace('↩ ', '') + '" — needs Phase F (video generation handoff) to exist first for ConID #' + (row.con_id || row.id), '#E2A83D', 4000);
-    };
-    return btn;
-  },
-
-  // ── Phase E real-action button style (Aug 5, Engineer pass) ──────────
-  // Shared by the 3 retroactive buttons that now do real work (rule 8
-  // dedup - one builder, not 3 hand-rolled copies), each tinted to match
-  // its phase's existing accent colour.
-  _buildRetroActionButton: function(label, colorCss, borderCss, onclick) {
-    var btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid ' + borderCss + ';border-radius:5px;color:' + colorCss + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    btn.onclick = onclick;
-    return btn;
-  },
-
-  // ── Phase D Script Editing surface (Aug 5, Engineer pass) ────────────
-  // Real editable view of both creative_docs.script (the exact outbound
-  // Oracle prompt, saved the moment _generateVisualTreatment's fillGaps
-  // flow completes) and creative_docs.visual_treatment (Oracle's reply,
-  // already saved by _saveDocToProduction elsewhere). Both save paths
-  // reuse visualOracle._saveDocToProduction directly rather than a new
-  // hand-rolled merge-write (rule 8 dedup) - it already does the real
-  // read-merge-write-into-creative_docs shape this needs.
-  // A7 (Aug 23 2026) — OPTIONAL third param `fields`:
-  // [{label, slug, placeholder}, ...]. Omitted (every pre-existing
-  // caller) = the original two music_video fields, byte-identical. The
-  // OBS-raw Production Panel passes its own three creative_docs keys so
-  // it reuses this exact editor — including its real save path through
-  // visualOracle._saveDocToProduction — instead of a second hand-rolled
-  // copy of the same load/edit/save markup (rule 8).
-  _buildScriptEditor: function(container, productionId, fields) {
-    var loading = document.createElement('div');
-    loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
-    loading.textContent = 'Loading saved script + doc...';
-    container.appendChild(loading);
-
-    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
-      .then(function(rows) {
-        loading.remove();
-        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-
-        function buildField(labelText, docSlug, placeholder) {
-          var lbl = document.createElement('div');
-          lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
-          lbl.textContent = labelText;
-          var ta = document.createElement('textarea');
-          ta.value = docs[docSlug] || '';
-          ta.placeholder = placeholder;
-          ta.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:70px;margin-bottom:6px;';
-          var saveBtn = document.createElement('button');
-          saveBtn.textContent = 'Save ' + labelText;
-          saveBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
-          saveBtn.onclick = function() {
-            var vo = RPGACE.modules.visualOracle;
-            if (!vo || !vo._saveDocToProduction) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
-            vo._saveDocToProduction(docSlug, ta.value, productionId);
-          };
-          container.appendChild(lbl); container.appendChild(ta); container.appendChild(saveBtn);
-        }
-
-        // Aug 6 (Engineer pass, 2nd real hand-test round, item 9) — Alex's
-        // real gap: he wrote free-text creative inspiration into the
-        // director picker (Phase 2), then couldn't find it again when he
-        // reopened a ConID's Visual Treatment to copy what he'd written.
-        // It WAS being saved (creative_docs.director_blend.inspiration,
-        // real structured data — see _showDirectorPicker/_generateVisualTreatment
-        // above), just never rendered anywhere. Read-only here (it's an
-        // input to Phase 2's picker, not itself an editable script field —
-        // editing it means reopening the picker via the retro button).
-        var blend = docs.director_blend;
-        if (blend && (blend.inspiration || (blend.names && blend.names.length))) {
-          var blLbl = document.createElement('div');
-          blLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
-          blLbl.textContent = 'Director Blend + Your Inspiration Notes';
-          var blBox = document.createElement('div');
-          blBox.style.cssText = 'font-size:11px;color:#D4DAF5;background:rgba(155,89,182,0.05);border:1px solid rgba(155,89,182,0.15);border-radius:5px;padding:8px;margin-bottom:14px;line-height:1.5;';
-          blBox.innerHTML = (blend.names && blend.names.length ? '<strong>Directors:</strong> ' + blend.names.join(', ').replace(/</g, '&lt;') + '<br>' : '') +
-            (blend.inspiration ? '<strong>Your notes:</strong> ' + blend.inspiration.replace(/</g, '&lt;') : '<span style="color:rgba(226,226,236,0.3);">No free-text inspiration notes were added.</span>');
-          container.appendChild(blLbl); container.appendChild(blBox);
-        }
-
-        var specs = (fields && fields.length) ? fields : [
-          { label: 'Outbound Prompt (sent to Oracle)', slug: 'script', placeholder: 'Not generated yet — use Phase 2\'s Start Visual Treatment first.' },
-          { label: 'Visual Treatment Doc (Oracle\'s reply)', slug: 'visual_treatment', placeholder: 'Not generated yet.' },
-        ];
-        specs.forEach(function(f) { buildField(f.label, f.slug, f.placeholder || ''); });
-      })
-      .catch(function() {
-        loading.textContent = 'Could not load saved script/doc.';
-        loading.style.color = '#CC4A4A';
-      });
-  },
-
-  // ── Phase 4 real video-job status (Aug 6, Engineer pass, real Video
-  // Pipeline → Content Pipeline absorption) — replaces the old link-out
-  // to a separate "Video Pipeline" card (now deleted) with the real
-  // stage tracker inline, for THIS ConID's own linked video_jobs row.
-  // Reuses videoPipeline's own STAGES/STAGE_LABELS/_showDetails/
-  // _computeAutoAdvancedStatus directly (rule 8 dedup) rather than a
-  // second hand-rolled copy of the same stage/paths/exports logic.
-  _buildVideoJobStatus: function(phaseCard, row) {
-    var self = this;
-    var wrap = document.createElement('div');
-    wrap.style.cssText = 'margin-bottom:10px;';
-    var loading = document.createElement('div');
-    loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
-    loading.textContent = 'Loading video job status...';
-    wrap.appendChild(loading);
-    phaseCard.appendChild(wrap);
-
-    var render = function() {
-      RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-        .catch(function() { return []; })
-        .then(function(jobs) {
-          wrap.innerHTML = '';
-          var vj = jobs && jobs[0];
-          if (!vj) {
-            var none = document.createElement('div');
-            none.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);';
-            none.textContent = 'No linked video job found for this ConID yet.';
-            wrap.appendChild(none);
-            return;
-          }
-          var vp = RPGACE.modules.videoPipeline;
-          var statusColors = { beat_logged: '#C9A84C', in_production: '#4A8CCC', edited: '#9B6EC8', rendered: '#CC4A4A', exported: '#4CAF82' };
-          var stageIdx = vp.STAGES.indexOf(vj.status);
-          if (stageIdx === -1) stageIdx = 0;
-          var color = statusColors[vj.status] || '#4A8CCC';
-
-          var topRow = document.createElement('div');
-          topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
-          var statusBadge = document.createElement('span');
-          statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';';
-          statusBadge.textContent = vp.STAGE_LABELS[vj.status] || vj.status;
-          topRow.appendChild(statusBadge);
-          wrap.appendChild(topRow);
-
-          var progressWrap = document.createElement('div');
-          progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
-          vp.STAGES.forEach(function(s, i) {
-            var dot = document.createElement('div');
-            dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= stageIdx ? color : 'rgba(255,255,255,0.08)') + ';';
-            progressWrap.appendChild(dot);
-          });
-          wrap.appendChild(progressWrap);
-
-          var actions = document.createElement('div');
-          actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;';
-          if (stageIdx < vp.STAGES.length - 1) {
-            var nextStage = vp.STAGES[stageIdx + 1];
-            var advBtn = document.createElement('button');
-            advBtn.textContent = '→ Mark ' + vp.STAGE_LABELS[nextStage];
-            advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            advBtn.onclick = function() {
-              vp.updateEntry(vj.id, { status: nextStage }).then(function() {
-                RPGACE.utils.toast(vj.title + ' → ' + vp.STAGE_LABELS[nextStage], color, 2000);
-                render();
-              });
-            };
-            actions.appendChild(advBtn);
-          }
-          var detailsBtn = document.createElement('button');
-          detailsBtn.textContent = '📋 Paths + exports';
-          detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          detailsBtn.onclick = function() { vp._showDetails(vj, render); };
-          actions.appendChild(detailsBtn);
-          wrap.appendChild(actions);
-        })
-        .catch(function(e) {
-          wrap.innerHTML = '';
-          var err = document.createElement('div');
-          err.style.cssText = 'font-size:11px;color:#CC4A4A;';
-          err.textContent = 'Could not load video job: ' + e.message;
-          wrap.appendChild(err);
-        });
-    };
-    render();
-  },
-
-  // ── Phase F: video generation handoff (Aug 5, Engineer pass) ─────────
-  // Real, shared payload builder (rule 8 dedup - one real construction
-  // path, reused by both _generateVideo and _simulateOpenMontageResponse
-  // rather than 2 hand-rolled copies). Packages exactly what the Phase D/
-  // E retroactive-button work already saves: beat metadata (video_jobs.
-  // script JSON, falling back to creative_docs.beat_meta), the Visual
-  // Treatment Doc, and the outbound script prompt - into the real
-  // openmontage_jobs row shape (confirmed via live schema read: id,
-  // content_production_id, video_job_id, title, brief, beat_meta jsonb,
-  // status, output_note, requested_by, created_at, updated_at,
-  // source_audio_url, revision_notes).
-  _buildVideoPipelinePayload: function(row, callback) {
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+        // Real full-record read, same discipline as _generateCaptions: the
+        // script has to describe THIS footage, so the real footage path and
+        // the real idea text ride along, never a generic placeholder.
+        RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=title,idea,raw_footage_path,creative_docs&limit=1')
           .catch(function() { return []; })
-          .then(function(jobs) {
-            var vj = jobs && jobs[0];
-            var beatMeta = null;
-            if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
-            if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
-            var briefParts = [];
-            // Aug 30 2026 — Alex confirmed a real OpenArt subscription,
-            // reversing the standing "no paid providers" note for this one
-            // provider specifically. RPGACE never calls OpenArt directly
-            // (real provider orchestration happens in the separate
-            // OpenMontage CC session/repo) — this is the real signal
-            // channel OpenMontage CC actually reads (the brief text),
-            // NOT a new column (a `provider_hint` field was tried here
-            // first and broke the insert with a real 400 - openmontage_jobs
-            // has no such column; PostgREST rejects any field that isn't a
-            // real column. Reverted to keep the payload matching the
-            // actual live schema exactly.)
-            briefParts.push('PROVIDER NOTE: Alex has a real, active OpenArt subscription (confirmed Aug 30 2026) - a usable paid provider for this job now, alongside whichever else fits best.');
-            if (docs.visual_treatment) briefParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
-            if (docs.script) briefParts.push('ORACLE PROMPT USED:\n' + docs.script);
-            var payload = {
-              content_production_id: row.id,
-              video_job_id: vj ? vj.id : null,
-              title: row.title || null,
-              brief: briefParts.length ? briefParts.join('\n\n---\n\n') : null,
-              beat_meta: beatMeta || {},
-              status: 'queued',
-              requested_by: 'rpgace_claude_code',
-            };
-            callback(payload, vj ? vj.id : null);
-          });
-      });
-  },
+          .then(function(rows) {
+            var full = (rows && rows[0]) || row;
+            var cr = RPGACE.modules.contentRepurpose;
 
-  // Real "Generate Video" action, gated behind OPENMONTAGE_HANDOFF_ENABLED.
-  // While off (the real default - Alex hasn't chosen a paid provider yet,
-  // Tier 3 spend fork), this does NOT fake success and does NOT silently
-  // no-op (rule 7) - it builds the real payload and shows it verbatim, so
-  // the feature is honestly inspectable before it's ever flipped on.
-  // openmontage_jobs deliberately uses the plain anon-key RPGACE.sb.insert
-  // (NOT secureWrite) - confirmed against api/data-write.js's own
-  // ALLOWED_TABLES list, which does not include it, matching the standing
-  // landmine that this table must never be swept into an RLS-restriction
-  // batch without breaking the separate OpenMontage session's writes.
-  _generateVideo: function(row) {
-    var self = this;
-    self._buildVideoPipelinePayload(row, function(payload) {
-      if (!self.OPENMONTAGE_HANDOFF_ENABLED) {
-        var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-          title: 'Generate Video — handoff currently OFF',
-        });
-        var body = document.createElement('div');
-        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
-        body.innerHTML = '<div style="margin-bottom:12px;color:#E2A83D;">OpenMontage handoff is OFF (<code>OPENMONTAGE_HANDOFF_ENABLED = false</code>) — Alex hasn\'t chosen a paid video provider yet, a real Tier-3 spend decision. Nothing was sent. This is exactly the real payload that WOULD be sent once this is flipped on:</div>' +
-          '<pre style="white-space:pre-wrap;font-size:11px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px;max-height:320px;overflow-y:auto;">' + JSON.stringify(payload, null, 2).replace(/</g, '&lt;') + '</pre>';
-        pop.box.appendChild(body);
-        return;
-      }
-      RPGACE.sb.insert('openmontage_jobs', payload)
-        .then(function(r) {
-          if (!r.ok) throw new Error('insert returned ' + r.status);
-          RPGACE.utils.toast('🎬 Video generation job queued to OpenMontage', '#4A8CCC', 3000);
-        })
-        .catch(function(e) {
-          RPGACE.utils.toast('⚠️ Failed to queue OpenMontage job: ' + e.message, '#CC4A4A', 4000);
-        });
-    });
-  },
-
-  // Test-only tool (clearly labeled in its own button text): fakes a
-  // COMPLETE openmontage_jobs row and bumps the linked video_jobs row to
-  // 'rendered' with an obviously-fake path, so the rest of the pipeline
-  // (this Phase's own "View Kling Project" button, the Video Pipeline
-  // widget) can be exercised and validated for real without any actual
-  // provider call or spend. Runs regardless of OPENMONTAGE_HANDOFF_ENABLED
-  // - it never talks to a real provider either way, so the freeze flag
-  // doesn't apply to it.
-  _simulateOpenMontageResponse: function(row) {
-    var self = this;
-    self._buildVideoPipelinePayload(row, function(payload, vjId) {
-      var simulated = {
-        content_production_id: payload.content_production_id,
-        video_job_id: payload.video_job_id,
-        title: payload.title,
-        brief: payload.brief,
-        beat_meta: payload.beat_meta,
-        status: 'complete',
-        requested_by: payload.requested_by,
-        output_note: '[SIMULATED — Aug 5 Phase F test tool] Fake completed render for safe workflow validation. No real video was generated, no cost incurred, no real provider was called.',
-      };
-      RPGACE.sb.insert('openmontage_jobs', simulated)
-        .then(function(r) {
-          if (!r.ok) throw new Error('insert returned ' + r.status);
-          RPGACE.utils.toast('🧪 Simulated a completed OpenMontage job (test only — no real render)', '#9B6EC8', 3500);
-          if (vjId) {
-            return RPGACE.sb.secureWrite('video_jobs', 'update', { status: 'rendered', raw_path: '[SIMULATED] /fake/path/simulated_render.mp4' }, 'id=eq.' + vjId);
-          }
-        })
-        // Aug 6 (Engineer pass, 2nd real hand-test round, item 13a) — real
-        // gap Alex's screenshots surfaced: neither this nor the real
-        // _generateVideo path ever advanced content_productions.status,
-        // so "Video Generation: tick" never became true and the next
-        // stage's real button (Generate Captions) never appeared. This
-        // path fakes a COMPLETE render (test tool, clearly labeled), so
-        // advancing status here is honest — a genuinely queued-but-not-
-        // finished real job (via _generateVideo) deliberately does NOT
-        // get this treatment, see _viewOpenMontageJob's own real "mark
-        // complete" button below for that case (rule 7 — no fake
-        // progress for a job that hasn't actually finished).
-        .then(function() {
-          return RPGACE.sb.select('content_productions', 'id=eq.' + payload.content_production_id + '&select=status&limit=1');
-        })
-        .then(function(rows) {
-          var cur = rows && rows[0] && rows[0].status;
-          if (['Idea', 'Scripted'].indexOf(cur) !== -1) {
-            return RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + payload.content_production_id);
-          }
-        })
-        .catch(function(e) { RPGACE.utils.toast('⚠️ Simulate failed: ' + e.message, '#CC4A4A', 3500); });
-    });
-  },
-
-  // Real reader for Phase 4's "View Kling Project" button (genuinely real
-  // as of this pass, not the honest stub Phase D/E left it as) - shows
-  // whatever real openmontage_jobs row exists for this ConID, or an
-  // honest "none yet" message rather than fabricating one.
-  _viewOpenMontageJob: function(row) {
-    var self = this;
-    RPGACE.sb.select('openmontage_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var job = rows && rows[0];
-        var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.92', scroll: true, width: '440px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-          title: 'OpenMontage Job',
-        });
-        var body = document.createElement('div');
-        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
-        if (!job) {
-          body.textContent = 'No OpenMontage job exists yet for this ConID — use Generate Video (or Simulate Response, for testing) first.';
-        } else {
-          body.innerHTML = '<div style="margin-bottom:8px;"><strong>Status:</strong> ' + (job.status || '').replace(/</g, '&lt;') + '</div>' +
-            '<div style="margin-bottom:8px;"><strong>Title:</strong> ' + (job.title || '').replace(/</g, '&lt;') + '</div>' +
-            (job.output_note ? '<div style="margin-bottom:8px;"><strong>Output note:</strong> ' + job.output_note.replace(/</g, '&lt;') + '</div>' : '') +
-            '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Job id: ' + job.id + '</div>';
-        }
-        // Aug 6 (Engineer pass, item 13a) — real, non-fake completion
-        // path: unlike Simulate Response, a genuine OpenMontage job
-        // completes asynchronously and RPGACE has no live push/webhook
-        // for that write-back (openmontage_jobs is polled, not pushed —
-        // see CLAUDE.md's own external-handoff-lane note). So a real
-        // 'complete' job needs one honest manual acknowledgment click
-        // to advance content_productions.status, rather than either
-        // faking it early (rule 7) or leaving "Video Generation: tick"
-        // permanently unreachable for real (non-simulated) jobs.
-        if (job && job.status === 'complete' && ['Idea', 'Scripted'].indexOf(row.status) !== -1) {
-          var markBtn = document.createElement('button');
-          markBtn.textContent = '✅ Mark ConID as Filmed';
-          markBtn.style.cssText = 'margin-top:6px;padding:8px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-          markBtn.onclick = function() {
-            RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + row.id)
-              .then(function() {
-                RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Filmed — video generation complete', '#4CAF82', 3000);
-                pop.overlay.remove();
-                self._refreshWidget();
-              })
-              .catch(function(e) { RPGACE.utils.toast('⚠️ Failed: ' + e.message, '#CC4A4A', 3500); });
-          };
-          body.appendChild(markBtn);
-        }
-        pop.box.appendChild(body);
-      });
-  },
-
-  // Aug 5 (Engineer pass, Phase G curveball) — real reuse, not a retyped
-  // paraphrase: pulls a named command's exact prompt text straight out of
-  // instaOraclePanel/youtubeOracle's own CMDS array (matched by name, same
-  // pattern prodOraclePanel.run() already uses so a future CMDS reorder
-  // can't silently break this), so their real audience-psychology/hook
-  // expertise is one source of truth read from 2 places, never copy-
-  // pasted and left to drift.
-  _findOracleCmdText: function(moduleName, cmdName) {
-    var mod = RPGACE.modules[moduleName];
-    if (!mod || !mod.CMDS) return null;
-    var found = mod.CMDS.filter(function(c) { return c[0] === cmdName; })[0];
-    return found ? found[1] : null;
-  },
-
-  // ── Phase G: Generate Captions (Aug 5, Engineer pass) ────────────────
-  // Real trigger built from the FULL ConID record (beat metadata, Visual
-  // Treatment Doc, outbound script, video job status/path) per item 12's
-  // explicit "using the full ConID record for accurate captions" - one
-  // real fetch of content_productions + one of video_jobs, no duplicate
-  // lookups. Reuses the same 3-platform caption shape (Instagram Reels/
-  // YouTube Shorts/TikTok) contentRepurpose's own "4 platform formats"
-  // generator already uses elsewhere for a different real purpose
-  // (repurposing a raw Oracle idea, not an existing beat's finished
-  // record) - same voice, not a forced shared function, since the real
-  // inputs genuinely differ. Explicitly stops at saving captions - no
-  // Composio auto-posting, per /interrogation's confirmed scope.
-  //
-  // Curveball (same session, real fork put to Alex directly): Insta-
-  // Oracle and YouTube Oracle become real participants via their OWN
-  // real expertise borrowed into this ONE combined call (Alex's chosen
-  // option over 3 separate round-trips) - their actual Audience Mind
-  // Reader / viral-hook-generator command TEXT rides alongside the beat
-  // record as real grounding, not a fresh generic instruction imitating
-  // what those panels already say better.
-  // A7 (Aug 23 2026) — genuinely reused by the OBS-raw path (rule 8:
-  // captions for a finished OBS video are the same real job as captions
-  // for a finished music video, so this is one function, not two). Two
-  // real, minimal branches added so the prompt describes what the video
-  // actually IS: an obs_raw ConID has no beat metadata and no
-  // visual_treatment doc, it has a meme script and a real OBS recording.
-  // Everything else — the 3-Oracle expertise grounding, the 3-platform
-  // output shape, _prepOracleBarFor/_sendFilledPromptToOracle, the
-  // 'captions' auto-advance — is byte-identical for both types.
-  _generateCaptions: function(row) {
-    var self = this;
-    var isObs = row.content_type === 'obs_raw';
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-          .catch(function() { return []; })
-          .then(function(jobs) {
-            var vj = jobs && jobs[0];
-            var vjId = vj ? vj.id : null;
-            var beatMeta = null;
-            if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
-            if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
-
-            var contextParts = [];
-            if (isObs) {
-              contextParts.push('VIDEO: ' + (row.title || 'Untitled') + ' — a long-form YouTube video cut from raw OBS screen-recording footage.');
-              if (docs.obs_script) contextParts.push('MEME SCRIPT + CUT PLAN (what the finished video actually is):\n' + docs.obs_script);
-              if (docs.obs_cut_note) contextParts.push('EDIT NOTE: ' + docs.obs_cut_note);
-            } else {
-              contextParts.push('BEAT: ' + (row.title || 'Untitled') +
-                (beatMeta ? ' (' + [beatMeta.genre, beatMeta.mood, beatMeta.key ? (beatMeta.key + ' ' + (beatMeta.scale || '')) : null, beatMeta.bpm ? (beatMeta.bpm + ' BPM') : null].filter(Boolean).join(', ') + ')' : ''));
-              if (docs.visual_treatment) contextParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
-              if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
-              if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
-            }
-
-            var instaMind = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
+            var instaMind  = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
             var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
-            var ytMind = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
-            var ytHooks = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
-            // Aug 5 (Engineer pass, Phase G curveball 2) - tiktokOracle
-            // joins the same real grounding pattern as Insta/YouTube,
-            // reusing its own real Audience Mind Reader/Viral Hook
-            // Generator commands rather than a new TikTok-flavoured
-            // paraphrase.
-            var ttMind = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
-            var ttHooks = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
-            var expertiseParts = [];
-            if (instaMind || instaHooks) {
-              expertiseParts.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
-                [instaMind, instaHooks].filter(Boolean).join('\n\n'));
-            }
-            if (ytMind || ytHooks) {
-              expertiseParts.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
-                [ytMind, ytHooks].filter(Boolean).join('\n\n'));
-            }
-            if (ttMind || ttHooks) {
-              expertiseParts.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
-                [ttMind, ttHooks].filter(Boolean).join('\n\n'));
-            }
+            var ytMind     = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
+            var ytHooks    = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
+            var ttMind     = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
+            var ttHooks    = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
+            var expertise = [];
+            if (instaMind || instaHooks) expertise.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [instaMind, instaHooks].filter(Boolean).join('\n\n'));
+            if (ytMind || ytHooks)       expertise.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ytMind, ytHooks].filter(Boolean).join('\n\n'));
+            if (ttMind || ttHooks)       expertise.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ttMind, ttHooks].filter(Boolean).join('\n\n'));
 
-            var prompt = (isObs
-                ? 'Generate short-form captions for @AceSanyaBeats\' long-form YouTube video, using the FULL real record below — stay specific to what actually happens in this video, no generic filler.\n\n'
-                : 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n') +
-              contextParts.join('\n\n') +
-              (expertiseParts.length ? '\n\n' + expertiseParts.join('\n\n') : '') + '\n\n' +
-              'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
-              '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags. Draw on the INSTAGRAM EXPERTISE above.\n\n' +
-              '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags. Draw on the YOUTUBE EXPERTISE above.\n\n' +
-              '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram — completion-rate and rewatch-driven, not follower-driven. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags. Draw on the TIKTOK EXPERTISE above.\n\n' +
-              (isObs
-                ? 'Be specific to FL Studio and UK hip hop production throughout — reference the actual moments, jokes, or teaching beats from the script above, not a generic "new video out" caption. Each caption should also work as a standalone clip pulled straight out of this long-form video.'
-                : 'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.');
+            var prompt =
+              'Write ONE long-form YouTube video script for @AceSanyaBeats (FL Studio, UK hip hop, aspiring producers 18-35), built directly on top of raw OBS screen-recording footage that ALREADY EXISTS. You are not planning a shoot — the footage is recorded; you are planning how it gets cut and what gets layered on top of it.\n\n' +
+              'VIDEO: ' + (full.title || row.title || 'Untitled') + '\n' +
+              'RAW OBS FOOTAGE: ' + (full.raw_footage_path || '(path not recorded)') + '\n' +
+              (full.idea ? 'WHAT THE FOOTAGE COVERS:\n' + full.idea + '\n' : '') + '\n' +
+              styleText + '\n\n' +
+              (expertise.length ? expertise.join('\n\n') + '\n\n' : '') +
+              '════ THE ONE VITAL EDITING RULE — THIS OVERRIDES EVERYTHING BELOW ════\n' +
+              'The finished long-form video must be assemblable using ffmpeg CUTS ONLY. That means:\n' +
+              '• Every edit you specify is a straight cut at a timestamp in the raw footage — never a crossfade, speed ramp, motion track, or any transition needing a real NLE.\n' +
+              '• Give the cut plan as an ordered list of KEEP segments with approximate in/out timecodes and the reason each one earns its place, so it maps 1:1 onto ffmpeg trim + concat.\n' +
+              '• Anything that is NOT already in the raw footage (a meme cutaway, a reaction insert, a generated shot) must be listed SEPARATELY as a discrete standalone clip with its own duration and the exact cut point it drops into — so it is a single extra input file to concat, never a composited layer.\n' +
+              '• Keep those external inserts to the MINIMUM that still lands the joke or holds attention. Every insert is real manual work in OpenMontage/OpenArt, so justify each one.\n' +
+              '• Text overlays and captions are fine to specify as burn-in instructions, but list them separately from the cut plan so they can be skipped without breaking the edit.\n\n' +
+              'Produce, in this order:\n\n' +
+              '1. 🎬 LONG-FORM SCRIPT — the hook (first 10 seconds), then the real sections in order, with what is said/shown in each. Written against the actual footage, not a generic outline.\n\n' +
+              '2. ✂️ FFMPEG CUT PLAN — the ordered KEEP-segment list described in the vital rule above, with approximate timecodes.\n\n' +
+              '3. 😂 MEME / COMIC INSERT LIST — each insert: what it is, where it drops in (cut point), how long, and whether it is stock/meme footage, a still, or something that genuinely needs OpenMontage/OpenArt generation. Put them in unexpected places, per the direction above — not one predictable insert per section.\n\n' +
+              '4. 📌 BURN-IN TEXT / CAPTION OVERLAYS — separate list, timecoded.\n\n' +
+              'Then, repurpose the SAME video into platform outputs:\n\n' +
+              (cr && cr.platformOutputInstructions ? cr.platformOutputInstructions() : '') +
+              'Be specific to FL Studio and UK hip hop throughout, and stay anchored to what is genuinely in this footage — no invented moments the recording does not contain.';
 
             self._prepOracleBarFor(row, function() {
-              self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
-              RPGACE.utils.toast('📝 Generating platform captions (Insta-Oracle + YouTube Oracle + TikTok Oracle grounded) from the full ConID record...', '#4A8CCC', 3500);
+              // The outbound prompt is saved verbatim under its own slug so
+              // Phase 3's editor can show and re-send it, exactly like
+              // music_video's creative_docs.script — a SEPARATE key, since
+              // an OBS meme script and a beat's Visual Treatment Doc are
+              // genuinely different documents that can both exist on one
+              // ConID's history if its type is ever changed.
+              vo._saveDocToProduction('obs_script_prompt', prompt, row.id);
+              self._sendFilledPromptToOracle(row, null, prompt, 'obs_script');
             });
           });
+      }, prefill, {
+        only: ['YouTube Meme Director'],
+        rows: 1,
+        title: 'YouTube Meme Direction',
+        intro: 'This is the OBS-raw path — it uses the YouTube Meme Director instead of the cinematic director blend. Add your own angle for THIS video below; it rides alongside the meme direction, not instead of it.',
+        styleLabel: 'MEME DIRECTION (YouTube Meme Director, Phylum 13 filmmaker library)',
+        inspLabel: 'CREATIVE INSPIRATION (Alex\'s own free-text, for this specific video)',
       });
-  },
+    },
 
-  // Real reader for the saved captions - honest "none yet" message
-  // rather than fabricating placeholder text.
-  _viewCaptions: function(row) {
-    RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-      .catch(function() { return []; })
-      .then(function(rows) {
-        var captions = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.captions;
-        var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-          title: 'Platform Captions',
+    // A7 — reopen the meme-direction picker pre-filled with what was saved
+    // last time. Exact mirror of _retroVisualTreatment (rule 8, same shape,
+    // same creative_docs.director_blend field) for the OBS-raw path.
+    _retroObsScript: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
+          var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
+          self._generateObsScript(row, prefill);
         });
-        var body = document.createElement('div');
-        body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
-        body.textContent = captions || 'No captions generated yet for this ConID — use Generate Captions first.';
-        pop.box.appendChild(body);
+    },
+
+    // A7 — Stage 3. An honest MANUAL acknowledgment, not a fake render:
+    // RPGACE does not run ffmpeg, and the cut plan Oracle produced is
+    // something Alex executes on his own machine. Same real precedent as
+    // _viewOpenMontageJob's own "✅ Mark ConID as Filmed" button (Aug 6),
+    // which exists for exactly this reason — an external, un-pollable step
+    // that only the human can truthfully confirm happened.
+    _markObsCutDone: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs,status&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var cur = (rows && rows[0]) || {};
+          var docs = cur.creative_docs || {};
+          if (!docs.obs_script) {
+            RPGACE.utils.toast('⚠️ No meme script yet — build the script first, there is no cut plan to have followed', '#E2A83D', 4000);
+            return;
+          }
+          var note = prompt('Mark ConID #' + row.con_id + ' as cut and assembled?\n\nOptional note — the edited file path, or anything you changed from the cut plan:', docs.obs_cut_note || '');
+          if (note === null) return;
+          docs.obs_cut_note = note;
+          var updates = { creative_docs: docs, updated_at: new Date().toISOString() };
+          // Forward-only, same guard shape as _saveDocToProduction's own
+          // auto-advances — never drags an already-Posted ConID backwards.
+          if (['Idea', 'Scripted'].indexOf(cur.status) !== -1) updates.status = 'Filmed';
+          RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id)
+            .then(function() {
+              RPGACE.utils.toast('✂️ ConID #' + row.con_id + ' marked cut & assembled', '#4CAF82', 3000);
+              self._refreshWidget();
+            })
+            .catch(function(e) { RPGACE.utils.toast('⚠️ Could not save: ' + e.message, '#CC4A4A', 4000); });
+        });
+    },
+
+    _retroVisualTreatment: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
+          var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
+          self._generateVisualTreatment(row, prefill);
+        });
+    },
+
+    // ── Phase 3 retroactive button (Aug 5, Engineer pass, Phase E) ───────
+    // Resends whatever is CURRENTLY saved in creative_docs.script (any
+    // manual edits made in Phase 3's own editor included) straight to
+    // Oracle again - genuinely distinct from Phase 2's "start over with a
+    // new director pick" retro button. The saved text has no [BRACKET]
+    // placeholders left in it (it's already the fully-filled prompt), so
+    // this skips fillGaps entirely and reuses the same real send/capture
+    // tail as _generateVisualTreatment (rule 8 dedup).
+    _retroRegenerateScript: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      var vo = RPGACE.modules.visualOracle;
+      if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var script = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.script;
+          if (!script) {
+            RPGACE.utils.toast('⚠️ No saved script yet — use Phase 2\'s Start Visual Treatment first', '#E2A83D', 3500);
+            return;
+          }
+          RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+            .catch(function() { return []; })
+            .then(function(jobs) {
+              var vjId = jobs && jobs[0] ? jobs[0].id : null;
+              self._prepOracleBarFor(row, function() {
+                self._sendFilledPromptToOracle(row, vjId, script);
+                RPGACE.utils.toast('🔁 Resending saved script to Oracle...', '#4CAF82', 2500);
+              });
+            });
+        });
+    },
+
+    // ── Phase F: video generation handoff (Aug 5, Engineer pass) ─────────
+    // Real, shared payload builder (rule 8 dedup - one real construction
+    // path, reused by both _generateVideo and _simulateOpenMontageResponse
+    // rather than 2 hand-rolled copies). Packages exactly what the Phase D/
+    // E retroactive-button work already saves: beat metadata (video_jobs.
+    // script JSON, falling back to creative_docs.beat_meta), the Visual
+    // Treatment Doc, and the outbound script prompt - into the real
+    // openmontage_jobs row shape (confirmed via live schema read: id,
+    // content_production_id, video_job_id, title, brief, beat_meta jsonb,
+    // status, output_note, requested_by, created_at, updated_at,
+    // source_audio_url, revision_notes).
+    _buildVideoPipelinePayload: function(row, callback) {
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+          RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+            .catch(function() { return []; })
+            .then(function(jobs) {
+              var vj = jobs && jobs[0];
+              var beatMeta = null;
+              if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
+              if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
+              var briefParts = [];
+              // Aug 30 2026 — Alex confirmed a real OpenArt subscription,
+              // reversing the standing "no paid providers" note for this one
+              // provider specifically. RPGACE never calls OpenArt directly
+              // (real provider orchestration happens in the separate
+              // OpenMontage CC session/repo) — this is the real signal
+              // channel OpenMontage CC actually reads (the brief text),
+              // NOT a new column (a `provider_hint` field was tried here
+              // first and broke the insert with a real 400 - openmontage_jobs
+              // has no such column; PostgREST rejects any field that isn't a
+              // real column. Reverted to keep the payload matching the
+              // actual live schema exactly.)
+              briefParts.push('PROVIDER NOTE: Alex has a real, active OpenArt subscription (confirmed Aug 30 2026) - a usable paid provider for this job now, alongside whichever else fits best.');
+              if (docs.visual_treatment) briefParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
+              if (docs.script) briefParts.push('ORACLE PROMPT USED:\n' + docs.script);
+              var payload = {
+                content_production_id: row.id,
+                video_job_id: vj ? vj.id : null,
+                title: row.title || null,
+                brief: briefParts.length ? briefParts.join('\n\n---\n\n') : null,
+                beat_meta: beatMeta || {},
+                status: 'queued',
+                requested_by: 'rpgace_claude_code',
+              };
+              callback(payload, vj ? vj.id : null);
+            });
+        });
+    },
+
+    // Test-only tool (clearly labeled in its own button text): fakes a
+    // COMPLETE openmontage_jobs row and bumps the linked video_jobs row to
+    // 'rendered' with an obviously-fake path, so the rest of the pipeline
+    // (this Phase's own "View Kling Project" button, the Video Pipeline
+    // widget) can be exercised and validated for real without any actual
+    // provider call or spend. Runs regardless of OPENMONTAGE_HANDOFF_ENABLED
+    // - it never talks to a real provider either way, so the freeze flag
+    // doesn't apply to it.
+    _simulateOpenMontageResponse: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      self._buildVideoPipelinePayload(row, function(payload, vjId) {
+        var simulated = {
+          content_production_id: payload.content_production_id,
+          video_job_id: payload.video_job_id,
+          title: payload.title,
+          brief: payload.brief,
+          beat_meta: payload.beat_meta,
+          status: 'complete',
+          requested_by: payload.requested_by,
+          output_note: '[SIMULATED — Aug 5 Phase F test tool] Fake completed render for safe workflow validation. No real video was generated, no cost incurred, no real provider was called.',
+        };
+        RPGACE.sb.insert('openmontage_jobs', simulated)
+          .then(function(r) {
+            if (!r.ok) throw new Error('insert returned ' + r.status);
+            RPGACE.utils.toast('🧪 Simulated a completed OpenMontage job (test only — no real render)', '#9B6EC8', 3500);
+            if (vjId) {
+              return RPGACE.sb.secureWrite('video_jobs', 'update', { status: 'rendered', raw_path: '[SIMULATED] /fake/path/simulated_render.mp4' }, 'id=eq.' + vjId);
+            }
+          })
+          // Aug 6 (Engineer pass, 2nd real hand-test round, item 13a) — real
+          // gap Alex's screenshots surfaced: neither this nor the real
+          // _generateVideo path ever advanced content_productions.status,
+          // so "Video Generation: tick" never became true and the next
+          // stage's real button (Generate Captions) never appeared. This
+          // path fakes a COMPLETE render (test tool, clearly labeled), so
+          // advancing status here is honest — a genuinely queued-but-not-
+          // finished real job (via _generateVideo) deliberately does NOT
+          // get this treatment, see _viewOpenMontageJob's own real "mark
+          // complete" button below for that case (rule 7 — no fake
+          // progress for a job that hasn't actually finished).
+          .then(function() {
+            return RPGACE.sb.select('content_productions', 'id=eq.' + payload.content_production_id + '&select=status&limit=1');
+          })
+          .then(function(rows) {
+            var cur = rows && rows[0] && rows[0].status;
+            if (['Idea', 'Scripted'].indexOf(cur) !== -1) {
+              return RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + payload.content_production_id);
+            }
+          })
+          .catch(function(e) { RPGACE.utils.toast('⚠️ Simulate failed: ' + e.message, '#CC4A4A', 3500); });
       });
+    },
+
+    // Aug 5 (Engineer pass, Phase G curveball) — real reuse, not a retyped
+    // paraphrase: pulls a named command's exact prompt text straight out of
+    // instaOraclePanel/youtubeOracle's own CMDS array (matched by name, same
+    // pattern prodOraclePanel.run() already uses so a future CMDS reorder
+    // can't silently break this), so their real audience-psychology/hook
+    // expertise is one source of truth read from 2 places, never copy-
+    // pasted and left to drift.
+    _findOracleCmdText: function(moduleName, cmdName) {
+      var mod = RPGACE.modules[moduleName];
+      if (!mod || !mod.CMDS) return null;
+      var found = mod.CMDS.filter(function(c) { return c[0] === cmdName; })[0];
+      return found ? found[1] : null;
+    },
+
+    // ── Phase G: Generate Captions (Aug 5, Engineer pass) ────────────────
+    // Real trigger built from the FULL ConID record (beat metadata, Visual
+    // Treatment Doc, outbound script, video job status/path) per item 12's
+    // explicit "using the full ConID record for accurate captions" - one
+    // real fetch of content_productions + one of video_jobs, no duplicate
+    // lookups. Reuses the same 3-platform caption shape (Instagram Reels/
+    // YouTube Shorts/TikTok) contentRepurpose's own "4 platform formats"
+    // generator already uses elsewhere for a different real purpose
+    // (repurposing a raw Oracle idea, not an existing beat's finished
+    // record) - same voice, not a forced shared function, since the real
+    // inputs genuinely differ. Explicitly stops at saving captions - no
+    // Composio auto-posting, per /interrogation's confirmed scope.
+    //
+    // Curveball (same session, real fork put to Alex directly): Insta-
+    // Oracle and YouTube Oracle become real participants via their OWN
+    // real expertise borrowed into this ONE combined call (Alex's chosen
+    // option over 3 separate round-trips) - their actual Audience Mind
+    // Reader / viral-hook-generator command TEXT rides alongside the beat
+    // record as real grounding, not a fresh generic instruction imitating
+    // what those panels already say better.
+    // A7 (Aug 23 2026) — genuinely reused by the OBS-raw path (rule 8:
+    // captions for a finished OBS video are the same real job as captions
+    // for a finished music video, so this is one function, not two). Two
+    // real, minimal branches added so the prompt describes what the video
+    // actually IS: an obs_raw ConID has no beat metadata and no
+    // visual_treatment doc, it has a meme script and a real OBS recording.
+    // Everything else — the 3-Oracle expertise grounding, the 3-platform
+    // output shape, _prepOracleBarFor/_sendFilledPromptToOracle, the
+    // 'captions' auto-advance — is byte-identical for both types.
+    _generateCaptions: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      var isObs = row.content_type === 'obs_raw';
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+          RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+            .catch(function() { return []; })
+            .then(function(jobs) {
+              var vj = jobs && jobs[0];
+              var vjId = vj ? vj.id : null;
+              var beatMeta = null;
+              if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
+              if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
+
+              var contextParts = [];
+              if (isObs) {
+                contextParts.push('VIDEO: ' + (row.title || 'Untitled') + ' — a long-form YouTube video cut from raw OBS screen-recording footage.');
+                if (docs.obs_script) contextParts.push('MEME SCRIPT + CUT PLAN (what the finished video actually is):\n' + docs.obs_script);
+                if (docs.obs_cut_note) contextParts.push('EDIT NOTE: ' + docs.obs_cut_note);
+              } else {
+                contextParts.push('BEAT: ' + (row.title || 'Untitled') +
+                  (beatMeta ? ' (' + [beatMeta.genre, beatMeta.mood, beatMeta.key ? (beatMeta.key + ' ' + (beatMeta.scale || '')) : null, beatMeta.bpm ? (beatMeta.bpm + ' BPM') : null].filter(Boolean).join(', ') + ')' : ''));
+                if (docs.visual_treatment) contextParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
+                if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
+                if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
+              }
+
+              var instaMind = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
+              var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
+              var ytMind = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
+              var ytHooks = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
+              // Aug 5 (Engineer pass, Phase G curveball 2) - tiktokOracle
+              // joins the same real grounding pattern as Insta/YouTube,
+              // reusing its own real Audience Mind Reader/Viral Hook
+              // Generator commands rather than a new TikTok-flavoured
+              // paraphrase.
+              var ttMind = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
+              var ttHooks = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
+              var expertiseParts = [];
+              if (instaMind || instaHooks) {
+                expertiseParts.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
+                  [instaMind, instaHooks].filter(Boolean).join('\n\n'));
+              }
+              if (ytMind || ytHooks) {
+                expertiseParts.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
+                  [ytMind, ytHooks].filter(Boolean).join('\n\n'));
+              }
+              if (ttMind || ttHooks) {
+                expertiseParts.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
+                  [ttMind, ttHooks].filter(Boolean).join('\n\n'));
+              }
+
+              var prompt = (isObs
+                  ? 'Generate short-form captions for @AceSanyaBeats\' long-form YouTube video, using the FULL real record below — stay specific to what actually happens in this video, no generic filler.\n\n'
+                  : 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n') +
+                contextParts.join('\n\n') +
+                (expertiseParts.length ? '\n\n' + expertiseParts.join('\n\n') : '') + '\n\n' +
+                'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
+                '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags. Draw on the INSTAGRAM EXPERTISE above.\n\n' +
+                '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags. Draw on the YOUTUBE EXPERTISE above.\n\n' +
+                '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram — completion-rate and rewatch-driven, not follower-driven. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags. Draw on the TIKTOK EXPERTISE above.\n\n' +
+                (isObs
+                  ? 'Be specific to FL Studio and UK hip hop production throughout — reference the actual moments, jokes, or teaching beats from the script above, not a generic "new video out" caption. Each caption should also work as a standalone clip pulled straight out of this long-form video.'
+                  : 'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.');
+
+              self._prepOracleBarFor(row, function() {
+                self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
+                RPGACE.utils.toast('📝 Generating platform captions (Insta-Oracle + YouTube Oracle + TikTok Oracle grounded) from the full ConID record...', '#4A8CCC', 3500);
+              });
+            });
+        });
+    },
+
   },
 
-  // ── End session — compile to journal ─────────────────────────
-  _endSession: function() {
-    var self = this;
-    var bar = document.getElementById('cpl-oracle-bar');
-    if (bar) bar.remove();
+  // ============================================================
+  // ui — rendering/DOM: constructs or discovers real DOM (the ConID card
+  // list, the Production Panel, every popup, the Oracle bar). Delegates
+  // the non-display decisions to logic.* rather than deciding itself.
+  // Order below is the original file order, unchanged.
+  // ============================================================
+  ui: {
 
-    // Compile Oracle conversation to journal and update entry
-    var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
-    var sessionText = chatBox ? chatBox.innerText.slice(-3000) : '';
+    // ══════════════════════════════════════════════════════════════════
+    // A7 — the OBS-raw intake gate (Aug 23 2026)
+    // ══════════════════════════════════════════════════════════════════
+    // Alex's own hard requirement, verbatim: "if saved for later, the saved
+    // idea can only convert if I actually submit raw obs footage (this is a
+    // must requirement to convert potconid to conid if it is going down the
+    // obs raw workflow)."
+    //
+    // The real pre-existing potConID→conID conversion is conidPot's own
+    // "⚡ Activate ConID" connector button (_refreshIdeaBank), which calls
+    // contentProductionLive.createEntry() and then flips the conid_pot row
+    // to status='activated'. There was no gate of any kind on it — one
+    // click, always converts. This function is that gate, and it is the ONE
+    // real creation path for an obs_raw ConID (rule 8): the same function
+    // serves BOTH of Alex's stated entry points —
+    //   (a) "saved for later" — called from an Idea Bank row, `potRow` set,
+    //       so the conid_pot row is marked activated only AFTER the footage
+    //       has genuinely been submitted and the ConID really inserted;
+    //   (b) "straight to Content Pipeline (footage already done)" — called
+    //       from the Content Pipeline popup with potRow null, no Idea Bank
+    //       row involved at all.
+    //
+    // The gate is enforced structurally, not by a warning: the Create button
+    // is disabled until the path field holds real non-whitespace text, and
+    // the handler re-checks before writing. Reuses the existing
+    // content_productions.raw_footage_path column (already real, already
+    // written by the tutorial Production Panel's Phase 2 input and by
+    // _showPostDetails) rather than inventing a second footage field.
+    _openObsRawIntake: function(potRow, onCreated) {
+      var self = RPGACE.modules.contentProductionLive;
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
+        eyebrow: 'OBS Raw → Content Pipeline', title: 'Submit raw OBS footage', noDefaultClose: true,
+      });
+      var overlay = pop.overlay, box = pop.box;
 
-    if (self._activeId && sessionText) {
-      self.updateEntry(self._activeId, { oracle_session: sessionText });
-    }
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:14px;';
+      note.textContent = potRow
+        ? 'This idea can only become a real ConID on the OBS-raw path once the raw footage actually exists. Paste the real path to the recording — the ConID is not created until you do.'
+        : 'Footage already recorded? Paste its real path and this creates the ConID directly, skipping the Idea Bank.';
+      box.appendChild(note);
 
-    if (typeof saveToJournal === 'function' && self._activeConID) {
-      saveToJournal(
-        'Content Production Session — ConID #' + self._activeConID,
-        'Session ended. Oracle conversation captured.\n\n' + sessionText.slice(0, 2000),
-        'contentProductionLive'
-      );
-    }
+      function field(labelText, placeholder, value, multiline) {
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
+        lbl.textContent = labelText;
+        var inp = document.createElement(multiline ? 'textarea' : 'input');
+        if (!multiline) inp.type = 'text';
+        inp.placeholder = placeholder;
+        inp.value = value || '';
+        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;' +
+          (multiline ? 'resize:vertical;min-height:70px;' : '');
+        box.appendChild(lbl); box.appendChild(inp);
+        return inp;
+      }
 
-    RPGACE.utils.toast('✅ Session ended · Saved to Journal · ConID #' + self._activeConID, '#4CAF82', 4000);
-    self._activeConID = null;
-    self._activeId = null;
-    self._refreshWidget();
+      var titleInp = field('Video title', 'e.g. I remade a UK drill beat in 10 minutes', potRow ? potRow.title : '');
+      var pathInp  = field('Raw OBS footage path (required)', 'E:\\OBS\\raw_2026-08-23.mkv', '');
+      var ideaInp  = field('What the video is about', 'Angle, sections, what actually happens in the footage...', potRow ? (potRow.idea_text || '') : '', true);
+
+      var gateMsg = document.createElement('div');
+      gateMsg.style.cssText = 'font-size:11px;color:rgba(226,84,84,0.75);line-height:1.5;margin-bottom:12px;';
+      gateMsg.textContent = '⚠️ No footage path yet — an OBS-raw ConID cannot be created without one.';
+      box.appendChild(gateMsg);
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;';
+      var createBtn = document.createElement('button');
+      createBtn.textContent = '🎥 Create OBS Raw ConID';
+      createBtn.disabled = true;
+      var cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      cancelBtn.onclick = function() { overlay.remove(); };
+
+      function paint() {
+        var ok = !!pathInp.value.trim();
+        createBtn.disabled = !ok;
+        createBtn.style.cssText = 'flex:1;padding:10px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;' + (ok
+          ? 'background:rgba(226,168,61,0.14);border:1px solid rgba(226,168,61,0.4);color:#E2A83D;cursor:pointer;'
+          : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);color:rgba(226,226,236,0.2);cursor:not-allowed;');
+        gateMsg.style.display = ok ? 'none' : 'block';
+      }
+      pathInp.addEventListener('input', paint);
+      paint();
+
+      createBtn.onclick = function() {
+        var path = pathInp.value.trim();
+        // Re-checked here, not only via the disabled attribute — the gate is
+        // Alex's own stated hard requirement, so it does not rely on the
+        // button state alone being trustworthy.
+        if (!path) { RPGACE.utils.toast('⚠️ Raw OBS footage path is required', '#CC4A4A', 3000); return; }
+        var title = titleInp.value.trim() || (potRow && potRow.title) || 'Untitled OBS Video';
+        createBtn.disabled = true;
+        createBtn.textContent = '⏳ Creating...';
+        self.createEntry({
+          title: title,
+          idea: ideaInp.value.trim(),
+          taxonomy_nodes: (potRow && potRow.phyla_detected) || [],
+          status: 'Idea',
+          content_type: 'obs_raw',
+          raw_footage_path: path,
+        }).then(function(entry) {
+          if (!entry) { createBtn.disabled = false; createBtn.textContent = '🎥 Create OBS Raw ConID'; return; }
+          overlay.remove();
+          RPGACE.utils.toast('🎥 OBS-raw ConID #' + entry.con_id + ' created — footage logged', '#E2A83D', 4000);
+          // Only NOW is the potConID genuinely converted. If the insert had
+          // failed, the Idea Bank row is deliberately left untouched so the
+          // idea isn't silently lost (the old ungated path flipped it to
+          // 'activated' without ever checking the insert succeeded).
+          if (potRow && potRow.id) {
+            RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated', con_id: entry.con_id }, 'id=eq.' + potRow.id)
+              .catch(function(e) { console.warn('[contentProductionLive] conid_pot activate:', e.message); });
+          }
+          if (onCreated) onCreated(entry);
+        });
+      };
+
+      btnRow.appendChild(createBtn); btnRow.appendChild(cancelBtn);
+      box.appendChild(btnRow);
+    },
+
+    // Aug 5 (Engineer pass, Phase G) — optional docSlug param added
+    // (defaults to 'visual_treatment', every existing caller's real
+    // behavior unchanged) so _generateCaptions can reuse this exact same
+    // real send/capture tail for a different creative_docs key, instead of
+    // a second hand-rolled copy (rule 8 dedup).
+    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — send FIRST, only
+    // arm the capture if it actually went through. Previously armed
+    // unconditionally before sending, which left a dangling capture (ready
+    // to wrongly consume a LATER, unrelated reply per RPGACE.hooks.fire's
+    // broadcast-to-all-listeners semantics) whenever the in-flight guard
+    // silently blocked this exact send - e.g. this flow firing while a
+    // still-in-flight Beat Log auto-chain hadn't cleared yet. Real root
+    // cause of Alex's own hand-test report (2026-08-06): a missing
+    // style_profiles row + "duplicated stages" in Content Pipeline.
+    _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) {
+      docSlug = docSlug || 'visual_treatment';
+      var vo = RPGACE.modules.visualOracle;
+      var input = document.querySelector('#chat-input');
+      if (!input) return;
+      input.value = filled;
+      input.dispatchEvent(new Event('input', {bubbles:true}));
+      var sent = (typeof sendChat === 'function') ? (sendChat() !== false) : true;
+      if (sent && vo && vo._captureNextResponse) {
+        vo._captureNextResponse(function(text) {
+          vo._saveDocToProduction(docSlug, text, row.id, vjId);
+        });
+      } else if (!sent) {
+        RPGACE.utils.toast('⏳ Oracle was still busy — click again in a moment (nothing was lost, this attempt just didn\'t send)', '#E2A83D', 4000);
+      }
+    },
+
+    _showDeliverablesManager: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.9', scroll: true, width: '560px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.3)',
+        title: '📦 ConID #' + row.con_id + ' — Manage Deliverables', noDefaultClose: true,
+      });
+      var overlay = pop.overlay, box = pop.box;
+
+      var status = document.createElement('div');
+      status.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.5);margin-bottom:12px;';
+      status.textContent = 'Loading uploaded files...';
+      box.appendChild(status);
+
+      var fileListEl = document.createElement('div');
+      box.appendChild(fileListEl);
+
+      var bundleListEl = document.createElement('div');
+      bundleListEl.style.cssText = 'margin-top:14px;';
+      box.appendChild(bundleListEl);
+
+      var render = function() {
+        RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=deliverable_files,deliverable_bundles')
+          .catch(function() { return []; })
+          .then(function(rows) {
+            var r = rows && rows[0];
+            var files = (r && Array.isArray(r.deliverable_files)) ? r.deliverable_files : [];
+            var bundles = (r && r.deliverable_bundles) || {};
+            status.textContent = files.length ? (files.length + ' file(s) uploaded') : 'No files uploaded yet.';
+
+            fileListEl.innerHTML = '';
+            files.forEach(function(f, idx) {
+              var line = document.createElement('div');
+              line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:12px;';
+              var label = document.createElement('span');
+              label.style.cssText = 'color:#D4DAF5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;';
+              var tierTag = f.tier ? (' [' + f.tier + '+]') : ' [all tiers]';
+              label.textContent = f.name + tierTag + ' (' + Math.round((f.size || 0) / 1024) + 'KB)';
+              var rm = document.createElement('button');
+              rm.textContent = '✕';
+              rm.style.cssText = 'padding:2px 8px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:4px;color:#CC4A4A;font-size:11px;cursor:pointer;';
+              rm.onclick = function() { self._removeDeliverableFile(row, idx, render); };
+              line.appendChild(label); line.appendChild(rm);
+              fileListEl.appendChild(line);
+            });
+
+            bundleListEl.innerHTML = '';
+            ['lease', 'non-exclusive', 'exclusive'].forEach(function(tier) {
+              var applicableCount = files.filter(function(f) { return self._fileAppliesToTier(f.tier, tier); }).length;
+              var line = document.createElement('div');
+              line.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;';
+              var lbl = document.createElement('span');
+              lbl.style.cssText = 'font-size:12px;color:rgba(226,226,236,0.6);text-transform:capitalize;';
+              var b = bundles[tier];
+              lbl.textContent = tier + ' (' + applicableCount + ' file' + (applicableCount === 1 ? '' : 's') + ')' + (b ? ' — bundle ready, ' + Math.round(b.size / 1024 / 1024 * 10) / 10 + 'MB' : ' — no bundle yet');
+              var genBtn = document.createElement('button');
+              genBtn.textContent = b ? '🔄 Regenerate + Download' : '🎁 Generate Bundle';
+              genBtn.disabled = !applicableCount;
+              genBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:5px;color:#C9A84C;font-size:11px;cursor:' + (applicableCount ? 'pointer' : 'not-allowed') + ';opacity:' + (applicableCount ? '1' : '0.4') + ';';
+              genBtn.onclick = function() { if (applicableCount) self._generateBundle(row, tier, genBtn, render); };
+              line.appendChild(lbl); line.appendChild(genBtn);
+              bundleListEl.appendChild(line);
+            });
+          });
+      };
+      render();
+
+      var uploadLbl = document.createElement('div');
+      uploadLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin:16px 0 6px 0;';
+      uploadLbl.textContent = 'Upload files — tag which licence tier they unlock at:';
+      box.appendChild(uploadLbl);
+
+      var tierSelect = document.createElement('select');
+      tierSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+      [['', 'All tiers (e.g. main MP3/WAV)'], ['lease', 'Lease and above'], ['non-exclusive', 'Non-Exclusive and above (stems)'], ['exclusive', 'Exclusive only']].forEach(function(o) {
+        var opt = document.createElement('option'); opt.value = o[0]; opt.textContent = o[1];
+        opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
+        tierSelect.appendChild(opt);
+      });
+      box.appendChild(tierSelect);
+
+      var fileLbl = document.createElement('div');
+      fileLbl.textContent = 'Individual files (e.g. named stems):';
+      fileLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:3px;';
+      var fileInp = document.createElement('input');
+      fileInp.type = 'file'; fileInp.multiple = true;
+      fileInp.style.cssText = 'width:100%;font-size:11px;color:#D4DAF5;margin-bottom:10px;';
+
+      // Real Q3 addition (Alex, verbatim): "1, but i can also put a folder
+      // in, with content to be zipped" — a whole folder drop, not just
+      // named individual stems. webkitRelativePath preserves the folder
+      // structure in the stored filename (see _uploadDeliverableFiles).
+      var folderLbl = document.createElement('div');
+      folderLbl.textContent = 'Or a whole folder to zip together:';
+      folderLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.4);margin-bottom:3px;';
+      var folderInp = document.createElement('input');
+      folderInp.type = 'file'; folderInp.multiple = true;
+      folderInp.webkitdirectory = true; folderInp.directory = true;
+      folderInp.style.cssText = 'width:100%;font-size:11px;color:#D4DAF5;';
+
+      box.appendChild(fileLbl); box.appendChild(fileInp);
+      box.appendChild(folderLbl); box.appendChild(folderInp);
+
+      var doUpload = function(fileList) {
+        var arr = Array.prototype.slice.call(fileList);
+        if (!arr.length) return;
+        var tier = tierSelect.value || null;
+        status.textContent = 'Uploading ' + arr.length + ' file(s)...';
+        self._uploadDeliverableFiles(row, arr, tier, function(err) {
+          if (err) { RPGACE.utils.toast('⚠️ Upload error: ' + err.message, '#CC4A4A', 4000); }
+          else { RPGACE.utils.toast('✅ ' + arr.length + ' file(s) uploaded', '#4CAF82', 3000); }
+          render();
+        });
+      };
+      fileInp.onchange = function() { doUpload(fileInp.files); fileInp.value = ''; };
+      folderInp.onchange = function() { doUpload(folderInp.files); folderInp.value = ''; };
+
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.style.cssText = 'width:100%;margin-top:16px;padding:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.6);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      closeBtn.onclick = function() { overlay.remove(); };
+      box.appendChild(closeBtn);
+    },
+
+    // A7 — read-only view of the saved meme script + cut plan, mirroring
+    // _viewCaptions' own honest "none yet" behaviour rather than fabricating
+    // placeholder content.
+    _viewObsScript: function(row) {
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+          var pop = RPGACE.modules.dashDeck._popup({
+            dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
+            title: 'Meme Script + FFmpeg Cut Plan',
+          });
+          var body = document.createElement('div');
+          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
+          body.textContent = docs.obs_script || 'No meme script generated yet for this ConID — use Build Meme Script first.';
+          pop.box.appendChild(body);
+          if (docs.obs_cut_note) {
+            var n = document.createElement('div');
+            n.style.cssText = 'margin-top:14px;padding:10px;background:rgba(76,175,130,0.05);border:1px solid rgba(76,175,130,0.2);border-radius:6px;font-size:11px;color:rgba(226,226,236,0.7);line-height:1.5;white-space:pre-wrap;';
+            n.textContent = '✂️ Your cut note: ' + docs.obs_cut_note;
+            pop.box.appendChild(n);
+          }
+        });
+    },
+
+    // ── Dashboard widget — ConID tracker ─────────────────────────
+    _injectDashboardWidget: function() {
+      if (document.getElementById('cpl-widget')) return;
+      var self = RPGACE.modules.contentProductionLive;
+      var page = document.getElementById('page-dashboard');
+      if (!page) return;
+
+      var widget = document.createElement('div');
+      widget.id = 'cpl-widget';
+      widget.style.cssText = 'background:rgba(61,170,110,0.03);border:1px solid rgba(61,170,110,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
+
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
+      var titleEl = document.createElement('div');
+      // Aug 6 (Engineer pass, real /deduplication ask) — was "Content
+      // Production Live" (eyebrow) stacked over "Content Pipeline" (title):
+      // two different names on the SAME single widget/node (this is not
+      // two systems — see the _openPipeline comment above, "node MOVED,
+      // never rebuilt"), which read exactly like two overlapping features.
+      // Real code check confirmed there is only ever one #cpl-widget; the
+      // module's internal name (contentProductionLive) is an implementation
+      // detail that never needed to leak into the user-facing header. Now
+      // one consistent brand voice, matching the dashDeck card's own real
+      // desc string (line ~5707: "Ideas -> productions -> posts.").
+      var eyebrow = document.createElement('div');
+      eyebrow.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(61,170,110,0.6);text-transform:uppercase;margin-bottom:3px;';
+      eyebrow.textContent = 'Ideas → Productions → Posts';
+      var titleText = document.createElement('div');
+      titleText.className = 'section-title';
+      titleText.style.cssText = 'font-size:14px;';
+      titleText.textContent = 'Content Pipeline';
+      titleEl.appendChild(eyebrow); titleEl.appendChild(titleText);
+
+      var refreshBtn = document.createElement('button');
+      refreshBtn.textContent = '↻';
+      refreshBtn.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);cursor:pointer;font-size:12px;padding:4px 10px;';
+      refreshBtn.onclick = function() { self._refreshWidget(); };
+      hdr.appendChild(titleEl); hdr.appendChild(refreshBtn);
+      widget.appendChild(hdr);
+
+      var list = document.createElement('div');
+      list.id = 'cpl-list';
+      list.style.cssText = 'max-height:300px;overflow-y:auto;';
+      list.innerHTML = '<div style="color:rgba(226,226,236,0.25);font-size:11px;">Loading...</div>';
+      widget.appendChild(list);
+
+      // July 20 Pass 1: this widget now lives inside dashDeck's Content Pipeline
+      // card popup (_openPipeline relocates the live node in/out). Inject
+      // straight into the shared hidden stash holder — dashDeck owns showing
+      // it. Prefer dashDeck's holder helper; fall back to the same-id holder if
+      // dashDeck hasn't run yet.
+      var holder = document.getElementById('dd-stash-holder');
+      if (!holder && RPGACE.modules.dashDeck && RPGACE.modules.dashDeck._ensureStash) {
+        holder = RPGACE.modules.dashDeck._ensureStash();
+      }
+      if (!holder) {
+        holder = document.createElement('div');
+        holder.id = 'dd-stash-holder';
+        holder.style.display = 'none';
+        page.appendChild(holder);
+      }
+      holder.appendChild(widget);
+
+      self._refreshWidget();
+      console.log('[contentProductionLive] Dashboard widget injected (stashed for dashDeck popup)');
+    },
+
+    _refreshWidget: function() {
+      var self = RPGACE.modules.contentProductionLive;
+      var list = document.getElementById('cpl-list');
+      if (!list) return;
+
+      // Engineer pass 2026-07-30 (Slice A item 3, symmetric reverse of the
+      // Video Pipeline "↩ Beat Log" button) - bulk-fetch which productions
+      // have a linked video_jobs row, once, rather than an N+1 query per
+      // row (rule 8/11 - one extra request total, not one per card).
+      Promise.all([
+        RPGACE.sb.select('content_productions', 'order=updated_at.desc&limit=20'),
+        RPGACE.sb.select('video_jobs', 'select=content_production_id&content_production_id=not.is.null'),
+      ])
+        .then(function(results) {
+          var rows = results[0] || [];
+          var linkedIds = {};
+          (results[1] || []).forEach(function(vj) { if (vj.content_production_id) linkedIds[vj.content_production_id] = true; });
+          list.innerHTML = '';
+
+          if (rows.length === 0) {
+            list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;padding:8px 0;">No content ideas yet. Use 🔀 Repurpose in Oracle to create your first ConID.</div>';
+            return;
+          }
+
+          rows.forEach(function(row) {
+            var hasVideoJob = !!linkedIds[row.id];
+            var statusColors = {
+              'Idea': '#4A8CCC', 'Scripted': '#C9A84C', 'Filmed': '#9B6EC8',
+              'Edited': '#CC4A4A', 'Posted': '#4CAF82', 'Analysed': '#2ABFB0'
+            };
+            var color = statusColors[row.status] || '#4A8CCC';
+
+            var item = document.createElement('div');
+            item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
+
+            var topRow = document.createElement('div');
+            topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
+
+            var idBadge = document.createElement('span');
+            idBadge.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(61,170,110,0.7);background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:10px;padding:2px 7px;margin-right:8px;';
+            idBadge.textContent = 'ConID #' + row.con_id;
+
+            var titleSpan = document.createElement('span');
+            titleSpan.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+            titleSpan.textContent = row.title;
+
+            // A7 (Aug 23 2026) — this used to be a bare
+            // `row.content_type === 'music_video'` boolean, so a third
+            // content_type would have silently fallen into the tutorial
+            // branch below (generic "→ Mark [next]" chip, no stage-aware
+            // action, no redo, no undo). `flow` is now the real per-type
+            // table set (null for tutorial, which is exactly what the old
+            // `false` meant), so obs_raw gets its own real stage-aware
+            // buttons and CANNOT inherit tutorial's or music_video's.
+            var flow = self._flowFor(row.content_type);
+
+            var statusBadge = document.createElement('span');
+            statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';background:' + color.replace(')', ',0.1)').replace('rgb','rgba') + ';border:1px solid ' + color.replace(')', ',0.3)').replace('rgb','rgba') + ';border-radius:10px;padding:2px 8px;margin-left:8px;flex-shrink:0;';
+            statusBadge.textContent = flow ? (flow.badges[row.status] || row.status) : row.status;
+
+            topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
+            item.appendChild(topRow);
+
+            // Status progress bar
+            var statuses = ['Idea','Scripted','Filmed','Edited','Posted','Analysed'];
+            var statusIdx = statuses.indexOf(row.status);
+            var progressWrap = document.createElement('div');
+            progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
+            statuses.forEach(function(s, i) {
+              var dot = document.createElement('div');
+              dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= statusIdx ? color : 'rgba(255,255,255,0.08)') + ';';
+              progressWrap.appendChild(dot);
+            });
+            item.appendChild(progressWrap);
+
+            // Aug 6 (Engineer pass, 2nd real hand-test round, item 8) —
+            // "⇄ Swap ConID" removed entirely. Alex's own words: "i think
+            // swap conid is so redundant now with no actual benefit to
+            // me" — the same ConID list is already one click away (this
+            // widget itself), and the Oracle-session/Production-Panel
+            // buttons below already carry the con_id context switch.
+            var topActions = document.createElement('div');
+            topActions.style.cssText = 'display:flex;align-items:center;margin-bottom:6px;';
+
+            // Inline title edit
+            var titleWrap = document.createElement('div');
+            titleWrap.style.cssText = 'flex:1;';
+            var titleDisplay = document.createElement('div');
+            titleDisplay.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);cursor:pointer;';
+            titleDisplay.textContent = '✎ Edit title';
+            titleDisplay.onclick = function() {
+              var inp = document.createElement('input');
+              inp.type = 'text';
+              inp.value = row.title;
+              inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(61,170,110,0.3);border-radius:4px;color:#D4DAF5;font-size:11px;padding:3px 6px;outline:none;font-family:Rajdhani,sans-serif;';
+              titleWrap.replaceChild(inp, titleDisplay);
+              inp.focus();
+              inp.onblur = function() {
+                var newTitle = inp.value.trim() || row.title;
+                self.updateEntry(row.id, { title: newTitle }).then(function() {
+                  RPGACE.utils.toast('✅ Title updated', '#4CAF82', 2000);
+                  self._refreshWidget();
+                });
+              };
+              inp.onkeydown = function(e) { if (e.key === 'Enter') inp.blur(); };
+            };
+            titleWrap.appendChild(titleDisplay);
+            topActions.appendChild(titleWrap);
+            item.appendChild(topActions);
+
+            // Action buttons row
+            var actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+
+            // Aug 6 (Engineer pass, 2nd real hand-test round, items 5/7/13) —
+            // real fix for the recurring "duplicate stage" bug Alex hit
+            // twice. music_video ConIDs now get ONE stage-aware primary
+            // action button (label + handler keyed off real status via
+            // MUSIC_VIDEO_PRIMARY_ACTION) instead of the old fixed
+            // "-> Mark [next]" chip PLUS a permanently-shown "Start Visual
+            // Treatment" button rendering at the same time regardless of
+            // real progress — that fixed-set rendering was the actual root
+            // cause, confirmed by direct code read, not a race condition.
+            // Tutorial ConIDs keep the original generic advance button
+            // unchanged (their workflow was never the one Alex complained
+            // about).
+            if (flow) {
+              var primary = flow.primary[row.status];
+              if (primary) {
+                var primaryBtn = document.createElement('button');
+                primaryBtn.textContent = primary.label;
+                primaryBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                primaryBtn.onclick = function() { self[primary.fn](row); };
+                actions.appendChild(primaryBtn);
+              }
+
+              // Item 3 — redo button for the most-recently-completed stage,
+              // paired with a real "revert progress" checkbox. Unchecked
+              // (default) = edit-in-place only, status untouched — same
+              // behaviour Alex already confirmed working on ConID #11
+              // ("everything stays as is with how conid 11 changes worked
+              // just now"). Checked = _revertToStage runs first, clearing
+              // that stage's real outputs, THEN the action re-runs.
+              var redo = flow.redo[row.status];
+              if (redo) {
+                var redoWrap = document.createElement('span');
+                redoWrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
+                var redoBtn = document.createElement('button');
+                redoBtn.textContent = redo.label;
+                redoBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                var revertCb = document.createElement('input');
+                revertCb.type = 'checkbox';
+                revertCb.id = 'cpl-revert-' + row.id;
+                revertCb.title = 'Revert progress to this stage first (clears this stage\'s real outputs, later stages need redoing). Leave unchecked to just edit in place — status stays as-is.';
+                revertCb.style.cssText = 'cursor:pointer;margin:0;';
+                var revertLbl = document.createElement('label');
+                revertLbl.htmlFor = revertCb.id;
+                revertLbl.textContent = 'revert';
+                revertLbl.title = revertCb.title;
+                revertLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);cursor:pointer;';
+                redoBtn.onclick = function() {
+                  if (revertCb.checked) {
+                    self._revertToStage(row, redo.revertTo, function() { self[redo.fn](row); }, flow);
+                  } else {
+                    self[redo.fn](row);
+                  }
+                };
+                redoWrap.appendChild(redoBtn); redoWrap.appendChild(revertCb); redoWrap.appendChild(revertLbl);
+                actions.appendChild(redoWrap);
+              }
+
+              // Item 12 — standalone Undo (reverts without re-running the
+              // action; see _undoLastStage above for the real scope).
+              if (flow.prev[row.status]) {
+                var undoBtn = document.createElement('button');
+                undoBtn.textContent = '🔙 Undo';
+                undoBtn.title = 'Revert to the previous stage and delete the output it produced.';
+                undoBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.05);border:1px solid rgba(226,84,84,0.15);border-radius:5px;color:rgba(226,84,84,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                undoBtn.onclick = function() { self._undoLastStage(row); };
+                actions.appendChild(undoBtn);
+              }
+            } else if (statusIdx < statuses.length - 1) {
+              var nextStatus = statuses[statusIdx + 1];
+              var advBtn = document.createElement('button');
+              advBtn.textContent = '→ Mark ' + nextStatus;
+              advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              advBtn.onclick = function() {
+                var updates = { status: nextStatus };
+                if (nextStatus === 'Posted') updates.posted_at = new Date().toISOString();
+                if (nextStatus === 'Analysed') updates.analysed_at = new Date().toISOString();
+                self.updateEntry(row.id, updates).then(function() {
+                  self._refreshWidget();
+                  RPGACE.utils.toast('ConID #' + row.con_id + ' → ' + nextStatus, color, 2000);
+                });
+              };
+              actions.appendChild(advBtn);
+            }
+
+            // Posted — show URL input questionnaire
+            if (row.status === 'Posted' || row.status === 'Analysed') {
+              if (row.youtube_url) {
+                var ytLink = document.createElement('a');
+                ytLink.href = row.youtube_url; ytLink.target = '_blank';
+                ytLink.textContent = '▶ YouTube';
+                ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#CC4A4A;font-size:11px;text-decoration:none;';
+                actions.appendChild(ytLink);
+              }
+              if (row.instagram_url) {
+                var igLink = document.createElement('a');
+                igLink.href = row.instagram_url; igLink.target = '_blank';
+                igLink.textContent = '📸 Instagram';
+                igLink.style.cssText = 'padding:4px 10px;background:rgba(193,53,132,0.08);border:1px solid rgba(193,53,132,0.2);border-radius:5px;color:#E1306C;font-size:11px;text-decoration:none;';
+                actions.appendChild(igLink);
+              }
+            }
+
+            // Post details button (when status hits Posted)
+            if (row.status === 'Filmed' || row.status === 'Edited') {
+              var postBtn = document.createElement('button');
+              postBtn.textContent = '📋 Add post details';
+              postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              postBtn.onclick = function() { self._showPostDetails(row); };
+              actions.appendChild(postBtn);
+            }
+
+            // Open in Oracle button
+            var oracleBtn = document.createElement('button');
+            oracleBtn.textContent = '💬 Oracle session';
+            oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            oracleBtn.onclick = function() {
+              self._activeConID = row.con_id;
+              self._activeId = row.id;
+              // Close the hosting dashDeck popup first — showPage('advisor')
+              // would otherwise swap the page UNDER the still-open overlay.
+              // No-op when opened outside the popup.
+              if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
+                RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+              }
+              if (typeof showPage === 'function') showPage('advisor');
+              setTimeout(function() {
+                self._injectOracleBar();
+                RPGACE.utils.sendToOracle('I am working on ConID #' + row.con_id + ': "' + row.title + '". Status: ' + row.status + '. Idea: ' + (row.idea || '').slice(0, 300) + '\n\nHelp me with the next step in the content production process.');
+              }, 500);
+            };
+            actions.appendChild(oracleBtn);
+
+            // Aug 6 (Engineer pass, 2nd real hand-test round, item 7) —
+            // renamed + demoted to a muted secondary link. Alex's real
+            // complaint wasn't that this capability shouldn't exist, it's
+            // that it (and Beatstars Listing, right below) rendered as a
+            // same-weight button next to the real primary action at every
+            // stage, including the very first one — before this pass,
+            // hasVideoJob was true from the moment Log Beat ran (the linked
+            // video_jobs row is created in the same insert), so this button
+            // showed even on a fresh ConID. Still opens the full multi-phase
+            // Production Panel (script editing, Phase breakdown) — that
+            // capability isn't removed, just no longer competing visually
+            // with the one real next-action button.
+            var vpBtn = document.createElement('button');
+            vpBtn.textContent = '⚙ Full Production Panel';
+            vpBtn.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:rgba(74,144,226,0.55);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            vpBtn.onclick = function() {
+              if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+              self._activeConID = row.con_id;
+              self._activeId = row.id;
+              self._openProductionPanel();
+            };
+            actions.appendChild(vpBtn);
+
+            // Aug 6 (item 7) — "Sell This Beat" now folded behind a small
+            // toggle instead of rendering Beatstars Listing + Manage
+            // Deliverables inline at every stage (Alex's real complaint:
+            // "there should also be no video pipeline button and generate
+            // beatstars listings" cluttering the early-stage view). Real
+            // /debate verdict on moving Phase H earlier in the pipeline
+            // (whether monetisation should be a parallel track rather than
+            // a late linear phase) is a bigger architecture question logged
+            // separately, not resolved here — this is the honest interim
+            // fix: keep the real capability reachable, stop it competing
+            // with the primary action row. Still gated on licence_type (a
+            // beat sale, not just content).
+            if (row.licence_type) {
+              var sellWrap = document.createElement('span');
+              sellWrap.style.cssText = 'display:inline-flex;';
+              var sellToggle = document.createElement('button');
+              sellToggle.textContent = '💰 Sell This Beat ▾';
+              sellToggle.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(201,168,76,0.2);border-radius:5px;color:rgba(201,168,76,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              var sellPanel = document.createElement('div');
+              sellPanel.style.cssText = 'display:none;gap:6px;margin-top:4px;flex-basis:100%;';
+              sellToggle.onclick = function() {
+                sellPanel.style.display = sellPanel.style.display === 'none' ? 'flex' : 'none';
+              };
+              var bsBtn = document.createElement('button');
+              // 2026-07-31 — Alex's own direct catch: "Beatstars Listing" read
+              // as a status label, not an action. Renamed to remove the
+              // ambiguity; behaviour unchanged.
+              bsBtn.textContent = '🎧 Generate Beatstars Listing';
+              bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
+              sellPanel.appendChild(bsBtn);
+
+              // Phase H (Aug 5, Engineer pass 09) — real file handling, same
+              // gate as the Beatstars button (this ConID is a beat sale).
+              // Alex's confirmed scope: auto-prepare a downloadable bundle
+              // per licence tier (server-side zip), NOT a real BeatStars API
+              // push (doesn't exist — reconfirmed live, Aug 2026) or browser
+              // automation (deliberately deferred, see
+              // beat_deliverables_autoport_backlog_2026-08-05.txt).
+              var dmBtn = document.createElement('button');
+              dmBtn.textContent = '📦 Manage Deliverables';
+              dmBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              dmBtn.onclick = function() { self._showDeliverablesManager(row); };
+              sellPanel.appendChild(dmBtn);
+
+              sellWrap.appendChild(sellToggle);
+              actions.appendChild(sellWrap);
+              actions.appendChild(sellPanel);
+            }
+
+            // 2026-07-31 — Alex's real ask: "a delete for each conID should
+            // be present." Real risk checked first (pg_constraint): video_jobs.
+            // content_production_id has NO cascade, so deleting a linked
+            // ConID would hard-fail with an FK violation.
+            //
+            // Aug 6, real Alex ask ("the button should delete both, one
+            // button also triggers the other") — the FK-violation confirm
+            // dialog was correct but unhelpful; it made Alex manually delete
+            // the linked job first instead of just doing it. Re-checked
+            // pg_constraint directly (rule 1, never assume): a SECOND
+            // non-cascading FK exists too — openmontage_jobs.content_production_id
+            // — not previously handled here, a real gap this fix also closes.
+            // Cascade delete now: video_jobs rows (via the service-role
+            // secureWrite proxy, content_productions/video_jobs are both in
+            // api/data-write.js's ALLOWED_TABLES) → openmontage_jobs rows
+            // (plain anon-key RPGACE.sb.del — deliberately NOT secureWrite,
+            // per the standing landmine: openmontage_jobs must stay anon_all
+            // so the separate OpenMontage Claude Code session can still
+            // write to it) → the content_productions row itself. Each step
+            // still fails loud on a real error (rule 7) rather than silently
+            // leaving an orphaned row.
+            var delBtn = document.createElement('button');
+            delBtn.textContent = '🗑';
+            delBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.06);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:rgba(226,84,84,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            delBtn.onclick = function() {
+              var msg = 'Delete ConID #' + row.con_id + ' ("' + row.title + '")?';
+              if (hasVideoJob) msg += '\n\nThis will also delete its linked Video Pipeline job (and any OpenMontage job record) — that cannot be undone.';
+              if (!confirm(msg)) return;
+              RPGACE.sb.secureWrite('video_jobs', 'delete', null, 'content_production_id=eq.' + row.id)
+                .catch(function(e) { throw new Error('linked video job: ' + e.message); })
+                .then(function() {
+                  return RPGACE.sb.del('openmontage_jobs', 'content_production_id=eq.' + row.id)
+                    .catch(function(e) { throw new Error('linked OpenMontage job: ' + e.message); });
+                })
+                .then(function() {
+                  return RPGACE.sb.secureWrite('content_productions', 'delete', null, 'id=eq.' + row.id)
+                    .catch(function(e) { throw new Error('ConID row: ' + e.message); });
+                })
+                .then(function() {
+                  RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id + (hasVideoJob ? ' + linked jobs' : ''), 'rgba(226,226,236,0.5)', 2500);
+                  self._refreshWidget();
+                })
+                .catch(function(e) {
+                  RPGACE.utils.toast('⚠️ Delete failed (' + e.message + ')', '#CC4A4A', 4500);
+                });
+            };
+            actions.appendChild(delBtn);
+
+            item.appendChild(actions);
+            list.appendChild(item);
+          });
+        }).catch(function(e) {
+          list.innerHTML = '<div style="color:#CC4A4A;font-size:11px;">Load error: ' + e.message + '</div>';
+        });
+    },
+
+    // ── Post details questionnaire ────────────────────────────────
+    _showPostDetails: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.9', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(61,170,110,0.25)',
+        title: 'ConID #' + row.con_id + ' — Post Details', noDefaultClose: true,
+      });
+      var overlay = pop.overlay, box = pop.box;
+
+      var fields = [
+        { id: 'pd-yt',    label: 'YouTube URL', placeholder: 'https://youtube.com/watch?v=...' },
+        { id: 'pd-ig',    label: 'Instagram URL', placeholder: 'https://instagram.com/p/...' },
+        { id: 'pd-tiktok',label: 'TikTok URL', placeholder: 'https://tiktok.com/@acesanyabeats/...' },
+        { id: 'pd-raw',   label: 'Raw footage path (E: drive)', placeholder: 'E:\\Videos\\edison_tutorial_raw.mp4' },
+        { id: 'pd-notes', label: 'Post notes / performance observations', placeholder: 'e.g. Posted Sunday 6pm, got 200 views in first hour...' },
+      ];
+
+      fields.forEach(function(f) {
+        var lbl = document.createElement('div');
+        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+        lbl.textContent = f.label + ':';
+        var inp = document.createElement('input');
+        inp.id = f.id; inp.type = 'text'; inp.placeholder = f.placeholder;
+        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+        box.appendChild(lbl); box.appendChild(inp);
+      });
+
+      // F15: licence + price, if this ConID has a beat attached to it (not
+      // every post is a beat sale, so both are optional and null if left
+      // blank) - precondition for F16's Beatstars auto-listing, which reads
+      // these two columns straight off content_productions.
+      var licLbl = document.createElement('div');
+      licLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+      licLbl.textContent = 'Licence type (if selling this beat):';
+      var licSelect = document.createElement('select');
+      licSelect.id = 'pd-licence';
+      licSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      [['', '— not a beat sale —'], ['lease', 'Lease'], ['non-exclusive', 'Non-Exclusive'], ['exclusive', 'Exclusive']].forEach(function(o) {
+        var opt = document.createElement('option');
+        opt.value = o[0]; opt.textContent = o[1];
+        opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
+        licSelect.appendChild(opt);
+      });
+      box.appendChild(licLbl); box.appendChild(licSelect);
+
+      var priceLbl = document.createElement('div');
+      priceLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
+      priceLbl.textContent = 'Price (GBP):';
+      var priceInp = document.createElement('input');
+      priceInp.id = 'pd-price'; priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01'; priceInp.placeholder = 'e.g. 29.99';
+      priceInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
+      box.appendChild(priceLbl); box.appendChild(priceInp);
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
+      var saveBtn = document.createElement('button');
+      saveBtn.textContent = '💾 Save + Mark Posted';
+      saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      saveBtn.onclick = function() {
+        var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
+        var priceVal = g('pd-price');
+        var updates = {
+          status: 'Posted',
+          posted_at: new Date().toISOString(),
+          youtube_url: g('pd-yt') || null,
+          instagram_url: g('pd-ig') || null,
+          tiktok_url: g('pd-tiktok') || null,
+          raw_footage_path: g('pd-raw') || null,
+          notes: g('pd-notes') || null,
+          licence_type: g('pd-licence') || null,
+          price: priceVal ? parseFloat(priceVal) : null,
+        };
+        self.updateEntry(row.id, updates).then(function() {
+          overlay.remove();
+          self._refreshWidget();
+          RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Posted', '#4CAF82', 3000);
+          // Auto-post to Instagram if URL not provided
+          if (!updates.instagram_url && updates.status === 'Posted') {
+            RPGACE.utils.toast('💡 Tip: Instagram auto-post available via Composio', '#9B6EC8', 4000);
+          }
+        });
+      };
+      var cancelBtn = document.createElement('button');
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      cancelBtn.onclick = function() { overlay.remove(); };
+      btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
+      box.appendChild(btnRow);
+    },
+
+    // ── Oracle bar — shows active ConID in Oracle tab ─────────────
+    _injectOracleBar: function() {
+      var self = RPGACE.modules.contentProductionLive;
+      if (!self._activeConID) return;
+      if (document.getElementById('cpl-oracle-bar')) return;
+      var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
+      if (!chatBox) return;
+
+      var bar = document.createElement('div');
+      bar.id = 'cpl-oracle-bar';
+      bar.style.cssText = 'background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;';
+
+      var left = document.createElement('div');
+      left.style.cssText = 'font-size:11px;color:rgba(61,170,110,0.8);';
+      left.textContent = '📋 Active: ConID #' + self._activeConID + ' — Oracle session being recorded';
+
+      var optionBBtn = document.createElement('button');
+      optionBBtn.textContent = '🎬 Switch to Production Panel';
+      optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      optionBBtn.onclick = function() { self._openProductionPanel(); };
+
+      var endBtn = document.createElement('button');
+      endBtn.textContent = 'End session';
+      endBtn.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.3);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
+      endBtn.onclick = function() { self._endSession(); };
+
+      left.appendChild(document.createElement('br'));
+      bar.appendChild(left);
+      var btnWrap = document.createElement('div');
+      btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+      btnWrap.appendChild(optionBBtn); btnWrap.appendChild(endBtn);
+      bar.appendChild(btnWrap);
+      chatBox.parentElement.insertBefore(bar, chatBox);
+    },
+
+    // ── Option B: Production Panel ────────────────────────────────
+    _openProductionPanel: function() {
+      if (document.getElementById('cpl-prod-panel')) return;
+      var self = RPGACE.modules.contentProductionLive;
+      var panel = document.createElement('div');
+      panel.id = 'cpl-prod-panel';
+      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(61,170,110,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
+
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'background:rgba(61,170,110,0.06);border-bottom:1px solid rgba(61,170,110,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+      var htxt = document.createElement('div');
+      var lb = document.createElement('div');
+      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
+      lb.textContent = 'CONTENT PRODUCTION LIVE · ConID #' + self._activeConID;
+      var sub = document.createElement('div');
+      sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
+      sub.textContent = 'Production Panel';
+      htxt.appendChild(lb); htxt.appendChild(sub);
+      var closeHdr = document.createElement('button');
+      closeHdr.textContent = '×';
+      closeHdr.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;';
+      closeHdr.onclick = function() {
+        RPGACE.ui.slideOutPanel(panel, 'right');
+      };
+      hdr.appendChild(htxt); hdr.appendChild(closeHdr);
+      panel.appendChild(hdr);
+
+      var body = document.createElement('div');
+      body.style.cssText = 'flex:1;overflow-y:auto;padding:16px;';
+
+      // Engineer pass 2026-07-30 (real "2 workflows" resolution) — this
+      // panel's 3 phases were built for a talking-head/OBS-tutorial
+      // recording (confirmed from its own original copy: "hook," "key
+      // teaching points," "film section by section," raw footage path) -
+      // a real, different content shape from a beat-driven production,
+      // where the real next steps are reference-matching/mood-palette/
+      // director-match/script, never "go film something." Fetches the
+      // real content_type once per open rather than guessing/threading a
+      // new field through every _activeId-setting call site.
+      var loadingRow = document.createElement('div');
+      loadingRow.style.cssText = 'color:rgba(226,226,236,0.3);font-size:11px;';
+      loadingRow.textContent = 'Loading...';
+      body.appendChild(loadingRow);
+      panel.appendChild(body);
+      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+
+      // Aug 5 (Engineer pass, Phase D — content_video_pipeline_unification_
+      // spec_2026-08-05.txt item 5): music_video's real select widened to
+      // id/con_id/title so the new 4-phase branch below has a real row to
+      // hand to _generateVisualTreatment and the retroactive-button stubs,
+      // not just a content_type string.
+      RPGACE.sb.select('content_productions', 'id=eq.' + self._activeId + '&select=id,con_id,title,content_type&limit=1')
+        .then(function(rows) {
+          var row = rows && rows[0];
+          var contentType = (row && row.content_type) || 'tutorial';
+          body.innerHTML = '';
+
+          // music_video gets a real 4-phase model (more granular than the
+          // 3-phase tutorial shape below, which is byte-identical to before -
+          // Phase A's own "tutorial copy untouched" precedent). Phase 3
+          // (Script Editing) is genuinely new, not folded into Phase 2 -
+          // Alex confirmed directly this session that BOTH the outbound
+          // Oracle prompt and Oracle's returned Visual Treatment Doc get
+          // saved separately (creative_docs.script / .visual_treatment) and
+          // are each independently editable here.
+          // A7 (Aug 23 2026) — this was a two-way ternary whose `else` was
+          // the tutorial branch, so a third content_type would have silently
+          // rendered tutorial's 3 phases (including its "film your video
+          // section by section" copy and its raw-footage-path input) for an
+          // OBS-raw ConID whose footage is by definition already recorded.
+          // Now an explicit three-way lookup keyed on the real content_type,
+          // with tutorial as the honest default for anything unrecognised —
+          // the same default the column itself carries.
+          var PHASES_BY_TYPE = {
+            music_video: [
+              { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 12 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
+              { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 13) and generate a real Visual Treatment Doc for this beat.' },
+              { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
+              { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
+            ],
+            obs_raw: [
+              { icon: '🎞', title: 'Phase 1 — Raw OBS Footage', desc: 'The recording this ConID is built on. It already existed before the ConID did — submitting it is what allowed this ConID to be created at all.' },
+              { icon: '😂', title: 'Phase 2 — Meme Direction + Script', desc: 'One Oracle pass builds the long-form script, the ffmpeg cut plan, the meme/comic insert list, and the platform repurposing — grounded in the YouTube Meme Director plus Insta/YouTube/TikTok Oracle expertise.' },
+              { icon: '✂️', title: 'Phase 3 — Cut + Assemble', desc: 'Edit the script and cut plan here, run the cuts yourself in ffmpeg, then mark it done. RPGACE does not run ffmpeg — this stage records what you actually did.' },
+              { icon: '📣', title: 'Phase 4 — Captions + Publish', desc: 'Generate the three platform captions from the finished video record, then paste URLs once posted.' },
+            ],
+            tutorial: [
+              { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
+              { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
+              { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
+            ],
+          };
+          var phases = PHASES_BY_TYPE[contentType] || PHASES_BY_TYPE.tutorial;
+
+          phases.forEach(function(ph, i) {
+            var phaseCard = document.createElement('div');
+            phaseCard.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:10px;';
+            var phTitle = document.createElement('div');
+            phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
+            phTitle.textContent = ph.icon + ' ' + ph.title;
+            var phDesc = document.createElement('div');
+            phDesc.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:10px;';
+            phDesc.textContent = ph.desc;
+            phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
+
+            if (i === 1 && contentType === 'tutorial') {
+              // Phase 2 — raw footage path input (tutorial workflow only;
+              // a beat-driven production's real paths live on its linked
+              // video_jobs row instead, reachable via the Video Pipeline
+              // card).
+              var pathInp = document.createElement('input');
+              pathInp.type = 'text';
+              pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
+              pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+              var savePathBtn = document.createElement('button');
+              savePathBtn.textContent = 'Save footage path';
+              savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              savePathBtn.onclick = function() {
+                if (self._activeId && pathInp.value.trim()) {
+                  self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
+                    .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#4CAF82', 2000); });
+                }
+              };
+              phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
+            } else if (contentType === 'obs_raw' && row) {
+              // ── A7 (Aug 23 2026) — the OBS-raw Production Panel ────────
+              // Deliberately the SAME four-phase shape as music_video below
+              // (Alex: "should include all the components from beat to music
+              // video workflow, with tweaks that make sense"), reusing
+              // _buildRetroActionButton / _buildScriptEditor /
+              // _generateCaptions / _viewCaptions unchanged. The real
+              // divergences: Phase 1 is footage rather than beat metadata,
+              // Phase 2 is the meme script rather than a Visual Treatment,
+              // and there is NO video-generation phase at all — the footage
+              // already exists, so an OpenMontage/Kling handoff would be
+              // meaningless here (any generated meme insert the script calls
+              // for is listed as a discrete manual clip, see the prompt).
+              if (i === 0) {
+                var obsPathWrap = document.createElement('div');
+                var obsPathInp = document.createElement('input');
+                obsPathInp.type = 'text';
+                obsPathInp.placeholder = 'E:\\OBS\\raw_2026-08-23.mkv';
+                obsPathInp.value = '';
+                obsPathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+                // Real current value, read live rather than assumed — the
+                // panel's own select is deliberately narrow (id/con_id/
+                // title/content_type), so this fetches the one extra column
+                // it actually needs instead of widening that shared query.
+                RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=raw_footage_path&limit=1')
+                  .then(function(r) { if (r && r[0] && r[0].raw_footage_path) obsPathInp.value = r[0].raw_footage_path; })
+                  .catch(function() {});
+                var obsSaveBtn = document.createElement('button');
+                obsSaveBtn.textContent = 'Update footage path';
+                obsSaveBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                obsSaveBtn.onclick = function() {
+                  var v = obsPathInp.value.trim();
+                  // The footage gate applies for the life of the ConID, not
+                  // only at creation: clearing this field would leave an
+                  // obs_raw ConID that could never legitimately have been
+                  // created (see _openObsRawIntake).
+                  if (!v) { RPGACE.utils.toast('⚠️ An OBS-raw ConID must keep a real footage path', '#CC4A4A', 3500); return; }
+                  self.updateEntry(row.id, { raw_footage_path: v })
+                    .then(function() { RPGACE.utils.toast('📁 Footage path updated', '#4CAF82', 2000); })
+                    .catch(function(e) { RPGACE.utils.toast('⚠️ Save failed: ' + e.message, '#CC4A4A', 3500); });
+                };
+                obsPathWrap.appendChild(obsPathInp); obsPathWrap.appendChild(obsSaveBtn);
+                phaseCard.appendChild(obsPathWrap);
+              } else if (i === 1) {
+                var obsGenBtn = document.createElement('button');
+                obsGenBtn.textContent = '🎞 Build Meme Script (fresh direction)';
+                obsGenBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+                obsGenBtn.onclick = function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._generateObsScript(row);
+                };
+                phaseCard.appendChild(obsGenBtn);
+                phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Direction (pre-filled)', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._retroObsScript(row);
+                }));
+              } else if (i === 2) {
+                // Same real editor as music_video's Phase 3, pointed at the
+                // OBS-raw path's own creative_docs keys via its new optional
+                // `fields` param (rule 8 — one editor, not a second copy).
+                self._buildScriptEditor(phaseCard, row.id, [
+                  { label: 'Outbound Prompt (sent to Oracle)', slug: 'obs_script_prompt', placeholder: 'Not generated yet — use Phase 2\'s Build Meme Script first.' },
+                  { label: 'Meme Script + FFmpeg Cut Plan (Oracle\'s reply)', slug: 'obs_script', placeholder: 'Not generated yet.' },
+                  { label: 'Your Edit Note (what you actually cut)', slug: 'obs_cut_note', placeholder: 'Filled in when you mark the cut done — editable here too.' },
+                ]);
+                var cutBtn = document.createElement('button');
+                cutBtn.textContent = '✂️ Mark Cut Done (ffmpeg)';
+                cutBtn.style.cssText = 'padding:5px 12px;background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.3);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+                cutBtn.onclick = function() { self._markObsCutDone(row); };
+                phaseCard.appendChild(cutBtn);
+                phaseCard.appendChild(self._buildRetroActionButton('👁 View Script + Cut Plan', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
+                  self._viewObsScript(row);
+                }));
+              } else if (i === 3) {
+                var obsCapBtn = document.createElement('button');
+                obsCapBtn.textContent = '📝 Generate Captions';
+                obsCapBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+                obsCapBtn.onclick = function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._generateCaptions(row);
+                };
+                phaseCard.appendChild(obsCapBtn);
+                phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
+                  self._viewCaptions(row);
+                }));
+                phaseCard.appendChild(document.createElement('br'));
+                phaseCard.appendChild(self._buildRetroActionButton('📋 Add post details / URLs', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._showPostDetails(row);
+                }));
+              }
+            } else if (contentType === 'music_video' && row) {
+              if (i === 0) {
+                // Phase 1 — Reference + Style: content unchanged. Real
+                // edit-in-place retroactive button (Aug 5, Phase E) -
+                // reopens Beat Log pre-filled with this ConID's saved data.
+                phaseCard.appendChild(self._buildRetroActionButton('↩ Return to Beat Log (edit in place)', '#C9A84C', 'rgba(201,168,76,0.3)', function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  if (RPGACE.modules.beatLog && RPGACE.modules.beatLog._openRetroactive) RPGACE.modules.beatLog._openRetroactive(row);
+                }));
+              } else if (i === 1) {
+                // Phase 2 — real trigger into the already-existing
+                // _generateVisualTreatment flow (dedup: reuses the exact
+                // function the ConID-card button calls, not a second
+                // hand-rolled copy). Real retroactive button (Aug 5, Phase
+                // E) reopens the same flow pre-filled with the previously
+                // saved director blend.
+                // Aug 6 (Engineer pass, real Content Pipeline bugfix) —
+                // relabeled per Alex's own "duplicated stages" report:
+                // showing "Start Visual Treatment" next to "Redo Visual
+                // Treatment" read as two copies of the same action. Now
+                // named for what's actually different — a fresh director
+                // pick vs. reopening the LAST saved one pre-selected.
+                var vtBtn2 = document.createElement('button');
+                vtBtn2.textContent = '🎬 New Visual Treatment (fresh director pick)';
+                vtBtn2.style.cssText = 'padding:5px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
+                vtBtn2.onclick = function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._generateVisualTreatment(row);
+                };
+                phaseCard.appendChild(vtBtn2);
+                phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Visual Treatment (pre-filled)', '#9B6EC8', 'rgba(155,89,182,0.3)', function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._retroVisualTreatment(row);
+                }));
+              } else if (i === 2) {
+                // Phase 3 — NEW real Script Editing surface (Alex-confirmed
+                // this session): both creative_docs.script (the exact
+                // outbound Oracle prompt) and creative_docs.visual_treatment
+                // (Oracle's reply) shown independently editable. Real
+                // retroactive button (Aug 5, Phase E) resends whatever is
+                // currently saved straight to Oracle again.
+                self._buildScriptEditor(phaseCard, row.id);
+                phaseCard.appendChild(self._buildRetroActionButton('↩ Regenerate (resend saved script)', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._retroRegenerateScript(row);
+                }));
+              } else if (i === 3) {
+                // Aug 6 (Engineer pass, real Video Pipeline absorption) —
+                // real inline video-job status (stage progress + "Mark
+                // next stage" + "Paths + exports") replaces the old
+                // "Open Video Pipeline" link-out to a now-deleted separate
+                // card. Real dedup, not a rename: reuses videoPipeline's
+                // own STAGES/STAGE_LABELS/_showDetails/_computeAuto
+                // AdvancedStatus rather than a second hand-rolled copy.
+                self._buildVideoJobStatus(phaseCard, row);
+
+                // Aug 5 (Engineer pass, Phase F) — real Generate Video
+                // trigger. Gated behind OPENMONTAGE_HANDOFF_ENABLED (false
+                // by default) - see _generateVideo for the honest
+                // preview-not-fake-success behaviour while it's off.
+                var genVidBtn = document.createElement('button');
+                genVidBtn.textContent = '🎬 Generate Video';
+                genVidBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-bottom:6px;';
+                genVidBtn.onclick = function() { self._generateVideo(row); };
+                phaseCard.appendChild(genVidBtn);
+
+                // Test-only tool, deliberately labeled - fakes a completed
+                // job so the rest of the pipeline (Video Pipeline widget,
+                // this Phase's own "View Kling Project" retro button below)
+                // can be validated for real without any Kling spend.
+                var simBtn = document.createElement('button');
+                simBtn.textContent = '🧪 Simulate Response (test only)';
+                simBtn.style.cssText = 'padding:5px 12px;background:none;border:1px dashed rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
+                simBtn.onclick = function() { self._simulateOpenMontageResponse(row); };
+                phaseCard.appendChild(simBtn);
+                phaseCard.appendChild(document.createElement('br'));
+
+                // Aug 5 (Engineer pass, Phase F) — genuinely real now, not a
+                // stub: Phase F stores a real openmontage_jobs reference
+                // (via either Generate Video or Simulate Response), so this
+                // button can finally show real job data instead of an
+                // honest "not built yet" toast.
+                phaseCard.appendChild(self._buildRetroActionButton('↩ View Kling Project', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
+                  self._viewOpenMontageJob(row);
+                }));
+                phaseCard.appendChild(document.createElement('br'));
+
+                // Aug 5 (Engineer pass, Phase G) — real Generate Captions
+                // trigger, item 12's "Captions Generating" stage. NOT hard-
+                // gated on all-scenes-accepted (item 11's review workflow
+                // isn't built) - the real content this needs already exists
+                // once Phase 2/3 have run, and blocking a working feature on
+                // an unbuilt one would be a worse default than letting Alex
+                // use it whenever he judges the video ready. Explicitly
+                // stops at saving captions - no Composio auto-posting, per
+                // /interrogation's confirmed scope.
+                var capBtn = document.createElement('button');
+                capBtn.textContent = '📝 Generate Captions';
+                capBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-top:6px;';
+                capBtn.onclick = function() {
+                  RPGACE.ui.slideOutPanel(panel, 'right');
+                  self._generateCaptions(row);
+                };
+                phaseCard.appendChild(capBtn);
+                phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
+                  self._viewCaptions(row);
+                }));
+              }
+            }
+
+            body.appendChild(phaseCard);
+          });
+
+          // Switch back to Oracle button
+          var backBtn = document.createElement('button');
+          backBtn.textContent = '← Back to Oracle (Option A)';
+          backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
+          backBtn.onclick = function() {
+            RPGACE.ui.slideOutPanel(panel, 'right');
+          };
+          body.appendChild(backBtn);
+        })
+        .catch(function() {
+          body.innerHTML = '';
+          var err = document.createElement('div');
+          err.style.cssText = 'color:#CC4A4A;font-size:12px;';
+          err.textContent = 'Could not load this production\'s details.';
+          body.appendChild(err);
+        });
+    },
+
+    // ── Phase D retroactive-button stub — NOW ONLY the Phase 4 button ────
+    // Real, honest placeholder (rule 7 - never fake a not-yet-built
+    // feature). Phases 1-3's retroactive buttons became real edit-in-place
+    // actions in the Aug 5 Phase E pass below (_buildRetroActionButton) -
+    // this stub now covers exactly ONE remaining case, Phase 4's "View
+    // Kling Project" button, which is genuinely blocked on Phase F (video
+    // generation handoff hasn't shipped, so no real Kling project
+    // reference exists anywhere in the schema yet to pull up).
+    _buildRetroButton: function(label, row) {
+      var btn = document.createElement('button');
+      btn.textContent = label;
+      btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid rgba(226,226,236,0.15);border-radius:5px;color:rgba(226,226,236,0.45);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.onclick = function() {
+        RPGACE.utils.toast('🔧 "' + label.replace('↩ ', '') + '" — needs Phase F (video generation handoff) to exist first for ConID #' + (row.con_id || row.id), '#E2A83D', 4000);
+      };
+      return btn;
+    },
+
+    // ── Phase E real-action button style (Aug 5, Engineer pass) ──────────
+    // Shared by the 3 retroactive buttons that now do real work (rule 8
+    // dedup - one builder, not 3 hand-rolled copies), each tinted to match
+    // its phase's existing accent colour.
+    _buildRetroActionButton: function(label, colorCss, borderCss, onclick) {
+      var btn = document.createElement('button');
+      btn.textContent = label;
+      btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid ' + borderCss + ';border-radius:5px;color:' + colorCss + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      btn.onclick = onclick;
+      return btn;
+    },
+
+    // ── Phase D Script Editing surface (Aug 5, Engineer pass) ────────────
+    // Real editable view of both creative_docs.script (the exact outbound
+    // Oracle prompt, saved the moment _generateVisualTreatment's fillGaps
+    // flow completes) and creative_docs.visual_treatment (Oracle's reply,
+    // already saved by _saveDocToProduction elsewhere). Both save paths
+    // reuse visualOracle._saveDocToProduction directly rather than a new
+    // hand-rolled merge-write (rule 8 dedup) - it already does the real
+    // read-merge-write-into-creative_docs shape this needs.
+    // A7 (Aug 23 2026) — OPTIONAL third param `fields`:
+    // [{label, slug, placeholder}, ...]. Omitted (every pre-existing
+    // caller) = the original two music_video fields, byte-identical. The
+    // OBS-raw Production Panel passes its own three creative_docs keys so
+    // it reuses this exact editor — including its real save path through
+    // visualOracle._saveDocToProduction — instead of a second hand-rolled
+    // copy of the same load/edit/save markup (rule 8).
+    _buildScriptEditor: function(container, productionId, fields) {
+      var loading = document.createElement('div');
+      loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
+      loading.textContent = 'Loading saved script + doc...';
+      container.appendChild(loading);
+
+      RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
+        .then(function(rows) {
+          loading.remove();
+          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
+
+          function buildField(labelText, docSlug, placeholder) {
+            var lbl = document.createElement('div');
+            lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
+            lbl.textContent = labelText;
+            var ta = document.createElement('textarea');
+            ta.value = docs[docSlug] || '';
+            ta.placeholder = placeholder;
+            ta.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:70px;margin-bottom:6px;';
+            var saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save ' + labelText;
+            saveBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
+            saveBtn.onclick = function() {
+              var vo = RPGACE.modules.visualOracle;
+              if (!vo || !vo._saveDocToProduction) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
+              vo._saveDocToProduction(docSlug, ta.value, productionId);
+            };
+            container.appendChild(lbl); container.appendChild(ta); container.appendChild(saveBtn);
+          }
+
+          // Aug 6 (Engineer pass, 2nd real hand-test round, item 9) — Alex's
+          // real gap: he wrote free-text creative inspiration into the
+          // director picker (Phase 2), then couldn't find it again when he
+          // reopened a ConID's Visual Treatment to copy what he'd written.
+          // It WAS being saved (creative_docs.director_blend.inspiration,
+          // real structured data — see _showDirectorPicker/_generateVisualTreatment
+          // above), just never rendered anywhere. Read-only here (it's an
+          // input to Phase 2's picker, not itself an editable script field —
+          // editing it means reopening the picker via the retro button).
+          var blend = docs.director_blend;
+          if (blend && (blend.inspiration || (blend.names && blend.names.length))) {
+            var blLbl = document.createElement('div');
+            blLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
+            blLbl.textContent = 'Director Blend + Your Inspiration Notes';
+            var blBox = document.createElement('div');
+            blBox.style.cssText = 'font-size:11px;color:#D4DAF5;background:rgba(155,89,182,0.05);border:1px solid rgba(155,89,182,0.15);border-radius:5px;padding:8px;margin-bottom:14px;line-height:1.5;';
+            blBox.innerHTML = (blend.names && blend.names.length ? '<strong>Directors:</strong> ' + blend.names.join(', ').replace(/</g, '&lt;') + '<br>' : '') +
+              (blend.inspiration ? '<strong>Your notes:</strong> ' + blend.inspiration.replace(/</g, '&lt;') : '<span style="color:rgba(226,226,236,0.3);">No free-text inspiration notes were added.</span>');
+            container.appendChild(blLbl); container.appendChild(blBox);
+          }
+
+          var specs = (fields && fields.length) ? fields : [
+            { label: 'Outbound Prompt (sent to Oracle)', slug: 'script', placeholder: 'Not generated yet — use Phase 2\'s Start Visual Treatment first.' },
+            { label: 'Visual Treatment Doc (Oracle\'s reply)', slug: 'visual_treatment', placeholder: 'Not generated yet.' },
+          ];
+          specs.forEach(function(f) { buildField(f.label, f.slug, f.placeholder || ''); });
+        })
+        .catch(function() {
+          loading.textContent = 'Could not load saved script/doc.';
+          loading.style.color = '#CC4A4A';
+        });
+    },
+
+    // ── Phase 4 real video-job status (Aug 6, Engineer pass, real Video
+    // Pipeline → Content Pipeline absorption) — replaces the old link-out
+    // to a separate "Video Pipeline" card (now deleted) with the real
+    // stage tracker inline, for THIS ConID's own linked video_jobs row.
+    // Reuses videoPipeline's own STAGES/STAGE_LABELS/_showDetails/
+    // _computeAutoAdvancedStatus directly (rule 8 dedup) rather than a
+    // second hand-rolled copy of the same stage/paths/exports logic.
+    _buildVideoJobStatus: function(phaseCard, row) {
+      // ⚠️ FLAGGED, NOT FIXED (G53 split, Aug 2026): `self` is PRE-EXISTING
+      // dead code here — this function declared `var self = this;` but never
+      // referenced `self` even once (verified by direct scan of its whole
+      // body, before and after the split). It is re-pointed at the module
+      // rather than deleted, purely to keep this a byte-for-byte move; the
+      // reviewing session can drop the line as a separate, clearly-scoped
+      // change. Every real call this function makes goes to `vp`
+      // (RPGACE.modules.videoPipeline), not to this module.
+      var self = RPGACE.modules.contentProductionLive;
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-bottom:10px;';
+      var loading = document.createElement('div');
+      loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
+      loading.textContent = 'Loading video job status...';
+      wrap.appendChild(loading);
+      phaseCard.appendChild(wrap);
+
+      var render = function() {
+        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+          .catch(function() { return []; })
+          .then(function(jobs) {
+            wrap.innerHTML = '';
+            var vj = jobs && jobs[0];
+            if (!vj) {
+              var none = document.createElement('div');
+              none.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);';
+              none.textContent = 'No linked video job found for this ConID yet.';
+              wrap.appendChild(none);
+              return;
+            }
+            var vp = RPGACE.modules.videoPipeline;
+            var statusColors = { beat_logged: '#C9A84C', in_production: '#4A8CCC', edited: '#9B6EC8', rendered: '#CC4A4A', exported: '#4CAF82' };
+            var stageIdx = vp.STAGES.indexOf(vj.status);
+            if (stageIdx === -1) stageIdx = 0;
+            var color = statusColors[vj.status] || '#4A8CCC';
+
+            var topRow = document.createElement('div');
+            topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
+            var statusBadge = document.createElement('span');
+            statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';';
+            statusBadge.textContent = vp.STAGE_LABELS[vj.status] || vj.status;
+            topRow.appendChild(statusBadge);
+            wrap.appendChild(topRow);
+
+            var progressWrap = document.createElement('div');
+            progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
+            vp.STAGES.forEach(function(s, i) {
+              var dot = document.createElement('div');
+              dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= stageIdx ? color : 'rgba(255,255,255,0.08)') + ';';
+              progressWrap.appendChild(dot);
+            });
+            wrap.appendChild(progressWrap);
+
+            var actions = document.createElement('div');
+            actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;';
+            if (stageIdx < vp.STAGES.length - 1) {
+              var nextStage = vp.STAGES[stageIdx + 1];
+              var advBtn = document.createElement('button');
+              advBtn.textContent = '→ Mark ' + vp.STAGE_LABELS[nextStage];
+              advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              advBtn.onclick = function() {
+                vp.updateEntry(vj.id, { status: nextStage }).then(function() {
+                  RPGACE.utils.toast(vj.title + ' → ' + vp.STAGE_LABELS[nextStage], color, 2000);
+                  render();
+                });
+              };
+              actions.appendChild(advBtn);
+            }
+            var detailsBtn = document.createElement('button');
+            detailsBtn.textContent = '📋 Paths + exports';
+            detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            detailsBtn.onclick = function() { vp._showDetails(vj, render); };
+            actions.appendChild(detailsBtn);
+            wrap.appendChild(actions);
+          })
+          .catch(function(e) {
+            wrap.innerHTML = '';
+            var err = document.createElement('div');
+            err.style.cssText = 'font-size:11px;color:#CC4A4A;';
+            err.textContent = 'Could not load video job: ' + e.message;
+            wrap.appendChild(err);
+          });
+      };
+      render();
+    },
+
+    // Real "Generate Video" action, gated behind OPENMONTAGE_HANDOFF_ENABLED.
+    // While off (the real default - Alex hasn't chosen a paid provider yet,
+    // Tier 3 spend fork), this does NOT fake success and does NOT silently
+    // no-op (rule 7) - it builds the real payload and shows it verbatim, so
+    // the feature is honestly inspectable before it's ever flipped on.
+    // openmontage_jobs deliberately uses the plain anon-key RPGACE.sb.insert
+    // (NOT secureWrite) - confirmed against api/data-write.js's own
+    // ALLOWED_TABLES list, which does not include it, matching the standing
+    // landmine that this table must never be swept into an RLS-restriction
+    // batch without breaking the separate OpenMontage session's writes.
+    _generateVideo: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      self._buildVideoPipelinePayload(row, function(payload) {
+        if (!self.OPENMONTAGE_HANDOFF_ENABLED) {
+          var pop = RPGACE.modules.dashDeck._popup({
+            dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+            title: 'Generate Video — handoff currently OFF',
+          });
+          var body = document.createElement('div');
+          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
+          body.innerHTML = '<div style="margin-bottom:12px;color:#E2A83D;">OpenMontage handoff is OFF (<code>OPENMONTAGE_HANDOFF_ENABLED = false</code>) — Alex hasn\'t chosen a paid video provider yet, a real Tier-3 spend decision. Nothing was sent. This is exactly the real payload that WOULD be sent once this is flipped on:</div>' +
+            '<pre style="white-space:pre-wrap;font-size:11px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px;max-height:320px;overflow-y:auto;">' + JSON.stringify(payload, null, 2).replace(/</g, '&lt;') + '</pre>';
+          pop.box.appendChild(body);
+          return;
+        }
+        RPGACE.sb.insert('openmontage_jobs', payload)
+          .then(function(r) {
+            if (!r.ok) throw new Error('insert returned ' + r.status);
+            RPGACE.utils.toast('🎬 Video generation job queued to OpenMontage', '#4A8CCC', 3000);
+          })
+          .catch(function(e) {
+            RPGACE.utils.toast('⚠️ Failed to queue OpenMontage job: ' + e.message, '#CC4A4A', 4000);
+          });
+      });
+    },
+
+    // Real reader for Phase 4's "View Kling Project" button (genuinely real
+    // as of this pass, not the honest stub Phase D/E left it as) - shows
+    // whatever real openmontage_jobs row exists for this ConID, or an
+    // honest "none yet" message rather than fabricating one.
+    _viewOpenMontageJob: function(row) {
+      var self = RPGACE.modules.contentProductionLive;
+      RPGACE.sb.select('openmontage_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var job = rows && rows[0];
+          var pop = RPGACE.modules.dashDeck._popup({
+            dim: '0.92', scroll: true, width: '440px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+            title: 'OpenMontage Job',
+          });
+          var body = document.createElement('div');
+          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
+          if (!job) {
+            body.textContent = 'No OpenMontage job exists yet for this ConID — use Generate Video (or Simulate Response, for testing) first.';
+          } else {
+            body.innerHTML = '<div style="margin-bottom:8px;"><strong>Status:</strong> ' + (job.status || '').replace(/</g, '&lt;') + '</div>' +
+              '<div style="margin-bottom:8px;"><strong>Title:</strong> ' + (job.title || '').replace(/</g, '&lt;') + '</div>' +
+              (job.output_note ? '<div style="margin-bottom:8px;"><strong>Output note:</strong> ' + job.output_note.replace(/</g, '&lt;') + '</div>' : '') +
+              '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Job id: ' + job.id + '</div>';
+          }
+          // Aug 6 (Engineer pass, item 13a) — real, non-fake completion
+          // path: unlike Simulate Response, a genuine OpenMontage job
+          // completes asynchronously and RPGACE has no live push/webhook
+          // for that write-back (openmontage_jobs is polled, not pushed —
+          // see CLAUDE.md's own external-handoff-lane note). So a real
+          // 'complete' job needs one honest manual acknowledgment click
+          // to advance content_productions.status, rather than either
+          // faking it early (rule 7) or leaving "Video Generation: tick"
+          // permanently unreachable for real (non-simulated) jobs.
+          if (job && job.status === 'complete' && ['Idea', 'Scripted'].indexOf(row.status) !== -1) {
+            var markBtn = document.createElement('button');
+            markBtn.textContent = '✅ Mark ConID as Filmed';
+            markBtn.style.cssText = 'margin-top:6px;padding:8px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            markBtn.onclick = function() {
+              RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + row.id)
+                .then(function() {
+                  RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Filmed — video generation complete', '#4CAF82', 3000);
+                  pop.overlay.remove();
+                  self._refreshWidget();
+                })
+                .catch(function(e) { RPGACE.utils.toast('⚠️ Failed: ' + e.message, '#CC4A4A', 3500); });
+            };
+            body.appendChild(markBtn);
+          }
+          pop.box.appendChild(body);
+        });
+    },
+
+    // Real reader for the saved captions - honest "none yet" message
+    // rather than fabricating placeholder text.
+    _viewCaptions: function(row) {
+      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
+        .catch(function() { return []; })
+        .then(function(rows) {
+          var captions = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.captions;
+          var pop = RPGACE.modules.dashDeck._popup({
+            dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
+            title: 'Platform Captions',
+          });
+          var body = document.createElement('div');
+          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
+          body.textContent = captions || 'No captions generated yet for this ConID — use Generate Captions first.';
+          pop.box.appendChild(body);
+        });
+    },
+
+    // ── End session — compile to journal ─────────────────────────
+    _endSession: function() {
+      var self = RPGACE.modules.contentProductionLive;
+      var bar = document.getElementById('cpl-oracle-bar');
+      if (bar) bar.remove();
+
+      // Compile Oracle conversation to journal and update entry
+      var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
+      var sessionText = chatBox ? chatBox.innerText.slice(-3000) : '';
+
+      if (self._activeId && sessionText) {
+        self.updateEntry(self._activeId, { oracle_session: sessionText });
+      }
+
+      if (typeof saveToJournal === 'function' && self._activeConID) {
+        saveToJournal(
+          'Content Production Session — ConID #' + self._activeConID,
+          'Session ended. Oracle conversation captured.\n\n' + sessionText.slice(0, 2000),
+          'contentProductionLive'
+        );
+      }
+
+      RPGACE.utils.toast('✅ Session ended · Saved to Journal · ConID #' + self._activeConID, '#4CAF82', 4000);
+      self._activeConID = null;
+      self._activeId = null;
+      self._refreshWidget();
+    },
+
   },
+
+  // Thin top-level pass-throughs — these preserve the exact existing
+  // public API byte-for-byte. `this` is always the module object itself,
+  // because every real call site invokes them as a property access on the
+  // module (RPGACE.modules.contentProductionLive.X(...), a local
+  // `var cpl = RPGACE.modules.contentProductionLive;` alias, or `self.X`/
+  // `self[table.fn]` from inside this module) — never a detached function
+  // reference. Confirmed real external callers, from a fresh whole-repo
+  // grep for BOTH the `RPGACE.modules.contentProductionLive.X` form and
+  // every local-alias form (rpgace_core.js is the only live-code file that
+  // references this module at all): createEntry (contentRepurpose's
+  // generate handler + conidPot's "⚡ Activate ConID"), _injectDashboardWidget
+  // (dashDeck.PAGE_PANELS' own `ensure:` hook for #cpl-widget — reached
+  // through no alias at all, the exact caller shape the bookworm split
+  // nearly missed), _openProductionPanel (dashDeck._openPage + beatLog),
+  // _openObsRawIntake (dashDeck + conidPot), _findOracleCmdText
+  // (contentRepurpose, 3 calls), _flowFor (conidPot), plus the two module-
+  // scope DATA fields _activeConID and _activeId, which 2 of those sites
+  // assign directly — data, so they stay at module scope and are NOT
+  // pass-throughs.
+  _flowFor: function(contentType) { return this.logic._flowFor(contentType); },
+  _revertToStage: function(row, targetStatus, callback, flow) { return this.logic._revertToStage(row, targetStatus, callback, flow); },
+  _undoLastStage: function(row) { return this.logic._undoLastStage(row); },
+  createEntry: function(data) { return this.logic.createEntry(data); },
+  _openObsRawIntake: function(potRow, onCreated) { return this.ui._openObsRawIntake(potRow, onCreated); },
+  updateEntry: function(id, updates) { return this.logic.updateEntry(id, updates); },
+  _generateBeatstarsListing: function(row) { return this.logic._generateBeatstarsListing(row); },
+  _generateVisualTreatment: function(row, prefill) { return this.logic._generateVisualTreatment(row, prefill); },
+  _prepOracleBarFor: function(row, callback) { return this.logic._prepOracleBarFor(row, callback); },
+  _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) { return this.ui._sendFilledPromptToOracle(row, vjId, filled, docSlug); },
+  _fileAppliesToTier: function(fileTier, tier) { return this.logic._fileAppliesToTier(fileTier, tier); },
+  _showDeliverablesManager: function(row) { return this.ui._showDeliverablesManager(row); },
+  _uploadDeliverableFiles: function(row, files, tier, callback) { return this.logic._uploadDeliverableFiles(row, files, tier, callback); },
+  _removeDeliverableFile: function(row, idx, afterCallback) { return this.logic._removeDeliverableFile(row, idx, afterCallback); },
+  _generateBundle: function(row, tier, btnEl, afterCallback) { return this.logic._generateBundle(row, tier, btnEl, afterCallback); },
+  _generateObsScript: function(row, prefill) { return this.logic._generateObsScript(row, prefill); },
+  _retroObsScript: function(row) { return this.logic._retroObsScript(row); },
+  _markObsCutDone: function(row) { return this.logic._markObsCutDone(row); },
+  _viewObsScript: function(row) { return this.ui._viewObsScript(row); },
+  _retroVisualTreatment: function(row) { return this.logic._retroVisualTreatment(row); },
+  _retroRegenerateScript: function(row) { return this.logic._retroRegenerateScript(row); },
+  _injectDashboardWidget: function() { return this.ui._injectDashboardWidget(); },
+  _refreshWidget: function() { return this.ui._refreshWidget(); },
+  _showPostDetails: function(row) { return this.ui._showPostDetails(row); },
+  _injectOracleBar: function() { return this.ui._injectOracleBar(); },
+  _openProductionPanel: function() { return this.ui._openProductionPanel(); },
+  _buildRetroButton: function(label, row) { return this.ui._buildRetroButton(label, row); },
+  _buildRetroActionButton: function(label, colorCss, borderCss, onclick) { return this.ui._buildRetroActionButton(label, colorCss, borderCss, onclick); },
+  _buildScriptEditor: function(container, productionId, fields) { return this.ui._buildScriptEditor(container, productionId, fields); },
+  _buildVideoJobStatus: function(phaseCard, row) { return this.ui._buildVideoJobStatus(phaseCard, row); },
+  _buildVideoPipelinePayload: function(row, callback) { return this.logic._buildVideoPipelinePayload(row, callback); },
+  _generateVideo: function(row) { return this.ui._generateVideo(row); },
+  _simulateOpenMontageResponse: function(row) { return this.logic._simulateOpenMontageResponse(row); },
+  _viewOpenMontageJob: function(row) { return this.ui._viewOpenMontageJob(row); },
+  _findOracleCmdText: function(moduleName, cmdName) { return this.logic._findOracleCmdText(moduleName, cmdName); },
+  _generateCaptions: function(row) { return this.logic._generateCaptions(row); },
+  _viewCaptions: function(row) { return this.ui._viewCaptions(row); },
+  _endSession: function() { return this.ui._endSession(); },
 
 });
 /* ===END:contentProductionLive=== */
