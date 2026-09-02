@@ -8917,6 +8917,32 @@ RPGACE.register('leftNav', {
       { icon: '📓', label: 'Journal',       desc: 'Session logs, morning briefs',        page: P.journal },
       { icon: '🧬', label: 'Phylum Path',   desc: 'Taxonomy drill-down + placement',     page: P.phylumPath },
       { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
+      // Sep 2 2026, real /interrogation with Alex before building — 3 real
+      // forks resolved, all his own recommended answers: (1) grouped under
+      // 2 parent cards, not 8 flat entries — reuses the `subItems` sub-card
+      // mechanism below (a real generalization of the old research-tabs-
+      // specific subKind:'research' rendering, which has had zero live use
+      // since researchTabs.TABS went permanently empty Aug 15 — same visual
+      // pattern, a real destination page per sub-card instead of a
+      // research-tab key); (2) the Bookworm/Content Pipeline dashboard-card
+      // nav popups (UI12/UI13, with their own real Resume-button logic
+      // leftNav's plain cards don't replicate) stay exactly as a second
+      // route, nothing removed; (3) MusicWorm deliberately does NOT get its
+      // own leftNav entry — UI10's own retirement of Corpus's standalone
+      // dashboard card ("the UI module is not needed there") stays a
+      // real, single-entry-point decision, not silently reversed by
+      // giving it a second independent route here.
+      { icon: '📖', label: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy', page: P.bookworm,
+        subItems: [
+          { icon: '🐛', label: 'Videoworm',    page: P.videoworm },
+          { icon: '📚', label: 'Bibliography', page: P.bibliography }
+        ] },
+      { icon: '🎬', label: 'Content Pipeline', desc: 'Ideas → productions → posts', page: P.contentPipeline,
+        subItems: [
+          { icon: '💡', label: 'Idea Bank',        page: P.ideaBank },
+          { icon: '🥁', label: 'Beat Log',         page: P.beatLogPage },
+          { icon: '🔀', label: 'Upload Workshop',  page: P.uploadWorkshop }
+        ] },
     ];
   },
 
@@ -9111,7 +9137,28 @@ RPGACE.register('leftNav', {
     row.onclick = function() { self._go(it.page); };
     list.appendChild(row);
 
-    if (it.subKind === 'research') {
+    // Sep 2 2026 — a real, generalized sub-card mechanism: any item can
+    // carry `subItems` ([{icon,label,page}]), each rendered as a real
+    // .ln-subcard navigating straight to its own page via _go(), same
+    // visual language (.ln-subwrap/.ln-subcard, unchanged CSS) the old
+    // research-tabs-specific subKind:'research' branch already used.
+    if (it.subItems && it.subItems.length) {
+      var wrap = document.createElement('div');
+      wrap.className = 'ln-subwrap';
+      it.subItems.forEach(function(sub) {
+        var s = document.createElement('button');
+        s.className = 'ln-subcard';
+        s.type = 'button';
+        s.dataset.page = sub.page;
+        s.textContent = sub.icon + ' ' + sub.label;
+        s.onclick = function() { self._go(sub.page); };
+        wrap.appendChild(s);
+      });
+      list.appendChild(wrap);
+    } else if (it.subKind === 'research') {
+      // Kept on disk, harmlessly unused (researchTabs.TABS has been
+      // permanently empty since Aug 15 2026) — no remaining item sets this
+      // subKind, `subItems` above is the real, live mechanism now.
       var rWrap = document.createElement('div');
       rWrap.className = 'ln-subwrap';
       var rt = RPGACE.modules.researchTabs;
@@ -9198,6 +9245,12 @@ RPGACE.register('leftNav', {
     var onResearch = activePage === RPGACE.CONFIG.pages.research;
     Array.prototype.forEach.call(panel.querySelectorAll('.ln-subcard[data-research-tab]'), function(s) {
       s.classList.toggle('active', onResearch && s.dataset.researchTab === activeTab);
+    });
+    // Sep 2 2026 — the new, generalized subItems mechanism's own sub-cards
+    // (real pages, not a research-tab key) highlight the same way the
+    // top-level .ln-card rows already do.
+    Array.prototype.forEach.call(panel.querySelectorAll('.ln-subcard[data-page]'), function(s) {
+      s.classList.toggle('active', s.dataset.page === activePage);
     });
   },
 
