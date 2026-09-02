@@ -26018,6 +26018,167 @@ RPGACE.register('docsLinks', {
 // them. Nothing in this module calls Oracle at all.
 RPGACE.register('questEngine', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Aug 2026) — real, ratified /CEO plan item, and the EIGHTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot and
+  // videoSummary): this module is split into two internal namespaces,
+  // `ui` (rendering/DOM) and `logic` (business logic/data), following the
+  // exact shape those seven already shipped and verified. Pure internal-
+  // structure refactor — zero functional, behavioural, UX, data or schema
+  // change; every function below was MOVED wholesale, never rewritten,
+  // never split down the middle, and its own body is otherwise untouched.
+  //
+  // 36 real members: 28 functions + 8 data fields. `init` stays a literal
+  // top-level function (because RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object, and its own `self`
+  // genuinely IS the module — byte-identical, still calling the top-level
+  // pass-throughs), 24 moved into `logic`, 3 into `ui`.
+  //
+  // The lopsided 24/3 split is REAL, not a misclassification: grep the
+  // module for document.*/createElement/getElementById/querySelector/
+  // innerHTML and every single hit falls inside exactly three functions
+  // (_paintRestoredState, _inject, _renderPanel). questEngine is
+  // overwhelmingly a data engine — four Supabase trigger scans, the
+  // running-average formula, quest_log persistence, board-state restore —
+  // with one panel bolted on the end. The split says so honestly rather
+  // than padding `ui` out to look balanced.
+  //
+  // DATA FIELDS — one real difference from the earlier modules in this
+  // series, named here rather than done silently. The other seven could
+  // leave their data "exactly where it was" because it sat in one
+  // contiguous block; questEngine's 8 data fields were INTERLEAVED with
+  // its functions (NEEDS_INPUT_SOURCES sat between _scanTaxonomyReview and
+  // _scanNeedsInput, TRIGGERS just after _scanNeedsInput, _boardStarts
+  // between recordBoardCompletion and _persistBoardStarts). They are all
+  // still at MODULE SCOPE — none moved into `ui`/`logic`, which is the
+  // load-bearing part — but they are now grouped together at the top, each
+  // still carrying its own explanatory comment verbatim. Object-literal
+  // property ORDER is not load-bearing here: RPGACE.register() only ever
+  // calls module.init() and never enumerates keys (confirmed by direct
+  // read of R.register, not assumed), and nothing inside or outside this
+  // module iterates the module object. The one dynamic lookup that exists,
+  // logic.refresh's `self[fn]()` over the TRIGGERS array, is a named
+  // property read, not an enumeration.
+  //
+  // The one real risk this split has to get right, function by function: a
+  // function moved into `ui`/`logic` is invoked with `this` bound to THAT
+  // sub-object, not the module. Every moved function that touches `this`
+  // now opens with `var self = RPGACE.modules.questEngine;` and has every
+  // pre-existing `this.X` rewritten to `self.X`, so each reference keeps
+  // resolving to the module exactly as before — reaching the top-level
+  // pass-throughs, which is precisely why every moved function keeps one.
+  // That matters most for the real module-scope MUTATIONS, which must land
+  // on the module and never on a sub-object or the two namespaces silently
+  // desync: `self._stats` (logic._loadStats, logic.recordDuration),
+  // `self._rows` (logic.refresh, logic.completeQuest, logic.dismissQuest),
+  // `self._boardStarts` (logic._loadBoardStarts, logic._persistBoardStarts,
+  // logic.recordBoardCompletion) and — the genuinely cross-namespace one —
+  // `self._budget`, WRITTEN by ui._inject's own budget-input handler and
+  // READ straight back by ui._renderPanel and, indirectly, by logic's
+  // estimate filtering. If that one landed on `ui` instead of the module
+  // the time-budget filter would still appear to work, which is exactly
+  // why it is called out here rather than left to be noticed later.
+  //
+  // Exact accounting of the 27 moved functions, so a later reader can
+  // check this by grep rather than take it on trust:
+  //   • 16 already had `var self = this;` at or above their first
+  //     `this.`/`self.` use and simply have that one line swapped for the
+  //     handle, so the handle lands in exactly the same position and
+  //     statement order is literally unchanged: logic._boot, _runBoot,
+  //     _loadStats, recordDuration, _scanObsRaw, _scanNeedsInput, refresh,
+  //     _createQuests, startQuest, completeQuest, dismissQuest,
+  //     recordBoardCompletion, _restoreBoardState, _fmtEstimate, plus
+  //     ui._inject and ui._renderPanel.
+  //   • ui._inject is the single function that used BOTH forms: it had its
+  //     own `var self = this;` AND one bare `this._renderPanel();` as its
+  //     very last statement. The declaration is swapped as above and that
+  //     one bare call is rewritten to `self._renderPanel();` — otherwise
+  //     it would have resolved to `ui._renderPanel` and silently bypassed
+  //     the pass-through.
+  //   • 1 (logic.workflowEstimate) had `var self = this;` BELOW its first
+  //     `this.` use, so the handle is hoisted to the top of the body:
+  //     above one property lookup and one guarded early return. A bare
+  //     property read of RPGACE.modules.questEngine has no side effects
+  //     and the module is always registered before any of these can run,
+  //     so ordering is unchanged in effect. (Same case videoSummary._delete
+  //     and contentProductionLive._injectOracleBar already set precedent
+  //     for.)
+  //   • 5 had no `var self` at all and used bare `this.X` (logic.estimateFor,
+  //     samplesFor, _persistBoardStarts, _loadBoardStarts, startBoardQuest):
+  //     they get the handle inserted as their first statement — the
+  //     videoPipeline pilot's own `var mod = RPGACE.modules.videoPipeline;`
+  //     precedent.
+  //   • 5 reference neither `this` nor `self` at all and moved completely
+  //     untouched: logic.blend, logic._statId, logic._scanKnowledgeGaps,
+  //     logic._scanTaxonomyReview, ui._paintRestoredState.
+  //
+  // `init` keeps its own `var self = this;` verbatim — that `this`
+  // genuinely IS the module, and it is the only function in the module
+  // where that is still true.
+  //
+  // Classification rule used (identical to the rule beatLog/
+  // contentProductionLive/conidPot/videoSummary each recorded): a function
+  // lives in `ui` if it CONSTRUCTS OR DISCOVERS DOM (document.*,
+  // createElement, getElementById, querySelector, innerHTML); otherwise in
+  // `logic`. Deliberately NOT counted as a ui signal, matching the
+  // phylumPath pilot's own precedent: a bare window `confirm()`/`prompt()`
+  // dialog, a `showPage()` page-nav call, or opening ANOTHER module's
+  // picker/popup. A function that merely TRIGGERS a UI action without
+  // constructing any DOM of its own is logic.
+  //
+  // videoSummary's markup-string RULE EXTENSION (a function returning
+  // markup destined for `.innerHTML` counts as constructing DOM) was
+  // checked against this module and DOES NOT APPLY: questEngine renders
+  // exclusively through createElement/appendChild/textContent. The only
+  // `innerHTML` in the whole module is ui._renderPanel's `grid.innerHTML
+  // = ''` clear, which builds no markup, and a grep for a markup-opening
+  // string literal returns exactly one hit — inside a comment. Recorded
+  // here so a future reader knows the extension was considered and ruled
+  // out on evidence, not forgotten.
+  //
+  // The genuinely mixed / judgment-call functions, each named here with the
+  // real evidence rather than silently classified:
+  //   • logic.startBoardQuest MUTATES a DOM element, but only one handed to
+  //     it by its caller (`btn.textContent` / `btn.disabled` /
+  //     `btn.style.opacity`) — it neither constructs nor discovers one.
+  //     That is the exact shape videoSummary._runRetro and
+  //     contentProductionLive._generateBundle were classified `logic` on,
+  //     and its real job is data: the localStorage start-timestamp write
+  //     via _loadBoardStarts/_persistBoardStarts.
+  //   • logic._restoreBoardState is the module's biggest judgment call and
+  //     is `logic` on its real job: it reads 1000 completed quest_log rows
+  //     and rebuilds the legacy globals STATE (totalXP/tasksCompleted/
+  //     level/xp, re-walking the real xpRequired bands) and QUESTS (per-
+  //     quest `done` inside each recurrence window). It touches no DOM
+  //     itself — the actual painting is delegated to ui._paintRestoredState
+  //     and to the legacy global buildAllQuests(). Mutating a plain global
+  //     object is data work, not rendering.
+  //   • ui._paintRestoredState is the paint half of that same pair and is
+  //     `ui` purely because it DISCOVERS DOM (document.getElementById plus
+  //     textContent writes across six elements). It contains no decisions
+  //     of its own — every value it writes was already computed by
+  //     logic._restoreBoardState.
+  //   • logic._runBoot, logic.refresh, logic.startQuest, logic.completeQuest
+  //     and logic.dismissQuest are all in `logic` on the "merely triggers
+  //     UI" clause: each ends in a `self._inject()` / `self._renderPanel()`
+  //     call and builds no DOM here.
+  //   • So logic -> ui cross-namespace calls are normal in this module,
+  //     exactly as ui._inject/_renderPanel already call logic.* functions
+  //     (self._loadStats, self.refresh, self.startQuest, self.completeQuest,
+  //     self.dismissQuest, self._fmtEstimate, self.estimateFor). Every one
+  //     of those calls goes through the top-level pass-throughs via
+  //     `self.X`, never `this.ui.X` / `this.logic.X` directly, so no call
+  //     site inside the module had to change.
+  //
+  // Three pre-existing oddities were found while reading every function for
+  // this split and are FLAGGED IN PLACE, NOT FIXED — see the notes on
+  // logic._scanObsRaw (a dead local), logic.startQuest/logic.completeQuest
+  // (an inconsistent return type left behind by the Aug 24 2026 "return the
+  // chain" fix) and logic.recordBoardCompletion (a latent clobber of the
+  // persisted start-timestamp map).
+  // ══════════════════════════════════════════════════════════════════
+
   // Real first-run estimates, in minutes. These are only ever sample 0 -
   // the moment one real timed completion lands, the running average
   // starts moving off them and never returns.
@@ -26055,258 +26216,10 @@ RPGACE.register('questEngine', {
   },
 
   _stats: null,        // scope|stat_key -> row
+
   _rows: [],           // live open/in-progress quest_log rows
+
   _budget: null,       // "how much time have I got" filter, in minutes
-
-  init: function() {
-    var self = this;
-    RPGACE.registerBootTask(function() { return self._boot(); });
-    RPGACE.hooks.on('page:show', function(name) {
-      if (name === RPGACE.CONFIG.pages.agenda) { self._inject(); self.refresh(); }
-    });
-  },
-
-  _boot: function() {
-    var self = this;
-    if (!RPGACE.sb || !RPGACE.sb.select) {
-      // Same real boot-order race taxonomySync.getTopGaps and
-      // dashDeck._refreshGlance already guard against: this boot task can
-      // fire before config.init() has set RPGACE.sb. Retry once rather
-      // than resolving to a permanently empty board.
-      setTimeout(function() { self._boot(); }, 400);
-      return Promise.resolve();
-    }
-    // Aug 30 (real Fable-audit finding, F1 — the same real bug class as
-    // morningBrief._autoRun's own Aug 22 fix, never applied here): this
-    // boot task fires at MODULE-INIT time via registerBootTask, before any
-    // real login, since #gate's own hide only happens inside
-    // checkPassword()'s success branch. refresh() below can reach
-    // _createQuests() -> RPGACE.sb.secureWrite(), which needs
-    // authGate._apiSecret to attach the auth header - pre-login that's
-    // null, so every quest-log write gets a real, valid JSON 401 back
-    // from requireAuth() (confirmed live in error_log, Aug 27-28: a real
-    // "Unauthorized" wave distinct from the still-separately-diagnosed
-    // "Unexpected token '<'" HTML-response wave). Same real fix, same
-    // real signal, no new mechanism (rule 8): wait for 'rpgace:login' if
-    // login hasn't happened yet.
-    var apiSecretReady = RPGACE.modules.authGate && RPGACE.modules.authGate._apiSecret;
-    if (!apiSecretReady) {
-      var off = RPGACE.hooks.on('rpgace:login', function() {
-        off();
-        self._runBoot();
-      });
-      return Promise.resolve();
-    }
-    return self._runBoot();
-  },
-
-  _runBoot: function() {
-    var self = this;
-    self._inject();
-    return self._loadStats()
-      .then(function() { return self._restoreBoardState(); })
-      .then(function() { return self.refresh(); })
-      .catch(function(e) { console.warn('[questEngine] boot:', e.message); });
-  },
-
-  // ── the formula ────────────────────────────────────────────────────
-  // One implementation, three scopes (rule 8). See the header comment.
-  blend: function(estimate, completionCount, totalActual) {
-    var est = Number(estimate) || 0;
-    var n = Number(completionCount) || 0;
-    var tot = Number(totalActual) || 0;
-    return (est + tot) / (n + 1);
-  },
-
-  _statId: function(scope, key) { return scope + '|' + key; },
-
-  _loadStats: function() {
-    var self = this;
-    return RPGACE.sb.select('quest_duration_stats', 'select=*&limit=500')
-      .then(function(rows) {
-        self._stats = {};
-        (rows || []).forEach(function(r) { self._stats[self._statId(r.scope, r.stat_key)] = r; });
-        return self._stats;
-      })
-      .catch(function(e) {
-        console.warn('[questEngine] stats load failed:', e.message);
-        self._stats = self._stats || {};
-        return self._stats;
-      });
-  },
-
-  // Current best-known duration for a key: the real running average once
-  // any real data exists, otherwise the caller's first-run estimate.
-  estimateFor: function(scope, key, fallback) {
-    var row = this._stats && this._stats[this._statId(scope, key)];
-    if (row && row.average_minutes != null) return Number(row.average_minutes);
-    return Number(fallback) || 0;
-  },
-
-  // How much of that estimate is real, for honest labelling.
-  samplesFor: function(scope, key) {
-    var row = this._stats && this._stats[this._statId(scope, key)];
-    return row ? (Number(row.completion_count) || 0) : 0;
-  },
-
-  // A workflow's estimate = the sum of its steps' current averages.
-  workflowEstimate: function(workflowKey) {
-    var wf = this.WORKFLOWS[workflowKey];
-    if (!wf) return null;
-    var self = this;
-    var total = 0;
-    wf.steps.forEach(function(s) { total += self.estimateFor('step', s.key, s.estimate); });
-    return total;
-  },
-
-  // Records one real completion at one scope, per Alex's formula.
-  // actualMinutes === null means "completed but never timed" - the row is
-  // still real, but it is NOT folded into the average (see header).
-  recordDuration: function(scope, key, label, firstEstimate, actualMinutes) {
-    var self = this;
-    var id = self._statId(scope, key);
-    var existing = self._stats && self._stats[id];
-    var actual = (actualMinutes == null) ? null : Number(actualMinutes);
-    if (actual != null && (!isFinite(actual) || actual < 0)) actual = null;
-
-    // Real gap found + fixed during the A9 verification pass (Aug 24
-    // 2026): an untimed first-ever completion used to still write a
-    // completion_count:0 row here. Harmless in practice - estimateFor/
-    // samplesFor already fall back to the exact same estimate/0 with no
-    // row at all - but a needless write that reads as data when it is
-    // not, and doesn't match this function's own "must not touch the
-    // stats table" spirit for an untimed completion. Skip outright.
-    if (!existing && actual == null) return Promise.resolve(null);
-
-    if (!existing) {
-      var est = Number(firstEstimate) || 0;
-      var count = actual == null ? 0 : 1;
-      var total = actual == null ? 0 : actual;
-      var payload = {
-        scope: scope, stat_key: key, label: label || key,
-        estimate_minutes: est,
-        completion_count: count,
-        total_actual_minutes: total,
-        average_minutes: self.blend(est, count, total),
-        last_actual_minutes: actual,
-        updated_at: new Date().toISOString(),
-      };
-      return RPGACE.sb.secureWrite('quest_duration_stats', 'insert', payload)
-        .then(function(data) {
-          var row = (data && data[0]) || payload;
-          self._stats[id] = row;
-          return row;
-        });
-    }
-
-    if (actual == null) return Promise.resolve(existing);
-
-    var newCount = (Number(existing.completion_count) || 0) + 1;
-    var newTotal = (Number(existing.total_actual_minutes) || 0) + actual;
-    var upd = {
-      completion_count: newCount,
-      total_actual_minutes: newTotal,
-      // estimate_minutes is deliberately never rewritten - it is sample 0
-      // of the mean, forever.
-      average_minutes: self.blend(existing.estimate_minutes, newCount, newTotal),
-      last_actual_minutes: actual,
-      updated_at: new Date().toISOString(),
-    };
-    return RPGACE.sb.secureWrite('quest_duration_stats', 'update', upd, 'id=eq.' + existing.id)
-      .then(function() {
-        Object.keys(upd).forEach(function(k) { existing[k] = upd[k]; });
-        return existing;
-      });
-  },
-
-  // ── the 4 real triggers ────────────────────────────────────────────
-  // Every one of these queries a real table and only ever produces a
-  // quest from a real row that actually came back. Nothing here invents
-  // quest content; a trigger with no matching data produces no quests,
-  // and says so.
-
-  // (a) A beat with raw OBS footage finished and editable. Real basis:
-  //     A7's `content_productions.content_type='obs_raw'` flow, whose own
-  //     OBS_RAW_PRIMARY_ACTION lookup table (contentProductionLive) is
-  //     reused here rather than re-deriving what the next real action is
-  //     (rule 8). A row only exists at all because _openObsRawIntake
-  //     gated it behind a real footage submission.
-  _scanObsRaw: function() {
-    var self = this;
-    return RPGACE.sb.select('content_productions',
-      'select=id,con_id,title,status,raw_footage_path&content_type=eq.obs_raw' +
-      '&status=in.(Idea,Scripted,Filmed,Edited)&order=updated_at.desc&limit=20')
-      .then(function(rows) {
-        var cpl = RPGACE.modules.contentProductionLive;
-        var flow = (cpl && cpl._flowFor) ? cpl._flowFor('obs_raw') : null;
-        return (rows || []).map(function(r) {
-          var action = (flow && flow.primary && flow.primary[r.status]) || null;
-          if (!action) return null;   // last real stage - nothing left to do
-          return {
-            kind: 'obs_raw_edit',
-            workflow: 'obs_raw_edit',
-            key: 'obs_raw_edit:' + r.status,
-            name: action.label.replace(/^[^A-Za-z]+/, '') + ' — ConID #' + r.con_id,
-            description: '"' + (r.title || 'Untitled') + '" has real OBS footage logged and is sitting at "' +
-                         r.status + '". Next real stage action: ' + action.label + '.',
-            category: 'career', questType: 'generated', xp: 120,
-            sourceTable: 'content_productions', sourceRef: r.id,
-          };
-        }).filter(Boolean);
-      })
-      .catch(function(e) { console.warn('[questEngine] obs_raw scan:', e.message); return []; });
-  },
-
-  // (b) Closing knowledge gaps. Real basis: `taxonomy_nodes` rows with
-  //     applied_in_beat=false and gap_score>0 - the exact same definition
-  //     dashDeck._refreshGlance's own "gaps tracked" count uses. Reuses
-  //     taxonomySync.getTopGaps rather than a second hand-rolled query.
-  _scanKnowledgeGaps: function() {
-    var ts = RPGACE.modules.taxonomySync;
-    if (!ts || !ts.getTopGaps) return Promise.resolve([]);
-    return ts.getTopGaps(3)
-      .then(function(nodes) {
-        return (nodes || []).filter(function(n) { return Number(n.gap_score) > 0; }).map(function(n) {
-          return {
-            kind: 'knowledge_gap',
-            workflow: 'knowledge_gap',
-            key: 'knowledge_gap',
-            name: 'Close the gap: ' + n.concept,
-            description: 'Gap score ' + Number(n.gap_score).toFixed(1) + '/10, and it has never been applied in a real beat.',
-            category: 'career', questType: 'generated', xp: 90,
-            sourceTable: 'taxonomy_nodes', sourceRef: n.id,
-          };
-        });
-      })
-      .catch(function(e) { console.warn('[questEngine] gap scan:', e.message); return []; });
-  },
-
-  // (c) Taxonomy nodes to review. Real basis: pending `taxonomy_proposals`
-  //     + pending `taxonomy_links` - the same two queries the review
-  //     queue itself and dashDeck's "Needs you now" list already run.
-  //     Deliberately ONE quest for the whole queue rather than one per
-  //     row: at the real current backlog size that would mint dozens of
-  //     quests for what is genuinely one sitting of work.
-  _scanTaxonomyReview: function() {
-    return Promise.all([
-      RPGACE.sb.select('taxonomy_proposals', 'select=id&status=eq.pending'),
-      RPGACE.sb.select('taxonomy_links', 'select=id&status=eq.pending')
-    ]).then(function(res) {
-      var total = ((res[0] || []).length) + ((res[1] || []).length);
-      if (!total) return [];
-      return [{
-        kind: 'taxonomy_review',
-        workflow: 'taxonomy_review',
-        key: 'taxonomy_review',
-        name: 'Review ' + total + ' pending taxonomy item' + (total === 1 ? '' : 's'),
-        description: (res[0] || []).length + ' proposal' + ((res[0] || []).length === 1 ? '' : 's') + ' and ' +
-                     (res[1] || []).length + ' fusion link' + ((res[1] || []).length === 1 ? '' : 's') +
-                     ' are waiting on your judgement.',
-        category: 'career', questType: 'generated', xp: 80,
-        sourceTable: 'taxonomy_proposals,taxonomy_links', sourceRef: 'review_queue',
-      }];
-    }).catch(function(e) { console.warn('[questEngine] review scan:', e.message); return []; });
-  },
 
   // (d) Anything that needs Alex's input. Real basis: four separate,
   //     genuinely existing "waiting on a human" signals already used by
@@ -26330,477 +26243,858 @@ RPGACE.register('questEngine', {
       desc: 'trickle-down/up finding(s) flagged by /cartographer' },
   ],
 
-  _scanNeedsInput: function() {
-    var self = this;
-    return Promise.all(self.NEEDS_INPUT_SOURCES.map(function(src) {
-      return RPGACE.sb.select(src.table, src.params)
-        .then(function(rows) { return { src: src, n: (rows || []).length }; })
-        .catch(function() { return { src: src, n: 0 }; });
-    })).then(function(results) {
-      return results.filter(function(r) { return r.n > 0; }).map(function(r) {
-        return {
-          kind: 'needs_input',
-          workflow: 'needs_input',
-          key: 'needs_input:' + r.src.ref,
-          name: r.n + ' ' + r.src.label + (r.n === 1 ? '' : 's') + ' need you',
-          description: r.n + ' ' + r.src.desc + ' (' + r.src.table + ').',
-          category: 'career', questType: 'generated', xp: 60,
-          sourceTable: r.src.table, sourceRef: r.src.ref,
-        };
-      });
-    });
-  },
-
   TRIGGERS: ['_scanObsRaw', '_scanKnowledgeGaps', '_scanTaxonomyReview', '_scanNeedsInput'],
 
-  // ── generation ─────────────────────────────────────────────────────
-  refresh: function() {
+  _boardStarts: null,
+
+  init: function() {
     var self = this;
-    if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve();
-    return RPGACE.sb.select('quest_log',
-      'select=*&status=eq.open&parent_quest_id=is.null&order=created_at.asc&limit=100')
-      .then(function(open) {
-        self._rows = open || [];
-        return Promise.all(self.TRIGGERS.map(function(fn) { return self[fn](); }));
-      })
-      .then(function(batches) {
-        var cands = [];
-        batches.forEach(function(b) { cands = cands.concat(b || []); });
-        var haveRef = {};
-        self._rows.forEach(function(r) { if (r.source_ref) haveRef[r.quest_kind + '|' + r.source_ref] = true; });
-        var fresh = cands.filter(function(c) { return !haveRef[c.kind + '|' + c.sourceRef]; });
-        if (!fresh.length) return null;
-        return self._createQuests(fresh);
-      })
-      .then(function(created) {
-        if (created && created.length) self._rows = self._rows.concat(created);
-        self._renderPanel();
-      })
-      .catch(function(e) {
-        console.warn('[questEngine] refresh:', e.message);
-        RPGACE.utils.toast('Quest scan failed: ' + e.message, '#CC4A4A', 4000);
-      });
+    RPGACE.registerBootTask(function() { return self._boot(); });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name === RPGACE.CONFIG.pages.agenda) { self._inject(); self.refresh(); }
+    });
   },
 
-  _createQuests: function(cands) {
-    var self = this;
-    return Promise.all(cands.map(function(c) {
-      var est = self.workflowEstimate(c.workflow);
-      if (est == null) est = self.estimateFor('quest', c.key, self.DEFAULT_ESTIMATES[c.kind] || 30);
-      var payload = {
-        quest_key: c.key, quest_kind: c.kind, name: c.name, description: c.description,
-        category: c.category, quest_type: c.questType, xp: c.xp,
-        source_table: c.sourceTable, source_ref: String(c.sourceRef),
-        workflow_key: c.workflow || null,
-        estimated_minutes: Math.round(est * 10) / 10,
-        status: 'open',
-      };
-      return RPGACE.sb.secureWrite('quest_log', 'insert', payload)
-        .then(function(data) {
-          var row = (data && data[0]) || null;
-          if (!row || !row.id) return row;
-          var wf = self.WORKFLOWS[c.workflow];
-          if (!wf) return row;
-          // Real step rows - this is what makes "total of average time for
-          // step execution" a checkable number rather than a claim.
-          var steps = wf.steps.map(function(s, i) {
-            return {
-              quest_key: s.key, quest_kind: 'workflow_step', name: s.label,
-              category: c.category, quest_type: 'step', xp: 0,
-              workflow_key: c.workflow, parent_quest_id: row.id, step_index: i,
-              estimated_minutes: self.estimateFor('step', s.key, s.estimate),
-              status: 'open',
-            };
-          });
-          return RPGACE.sb.secureWrite('quest_log', 'insert', steps).then(function() { return row; });
+  // ============================================================
+  // logic — business logic/data: constructs and discovers no DOM.
+  // ============================================================
+  logic: {
+
+    _boot: function() {
+      var self = RPGACE.modules.questEngine;
+      if (!RPGACE.sb || !RPGACE.sb.select) {
+        // Same real boot-order race taxonomySync.getTopGaps and
+        // dashDeck._refreshGlance already guard against: this boot task can
+        // fire before config.init() has set RPGACE.sb. Retry once rather
+        // than resolving to a permanently empty board.
+        setTimeout(function() { self._boot(); }, 400);
+        return Promise.resolve();
+      }
+      // Aug 30 (real Fable-audit finding, F1 — the same real bug class as
+      // morningBrief._autoRun's own Aug 22 fix, never applied here): this
+      // boot task fires at MODULE-INIT time via registerBootTask, before any
+      // real login, since #gate's own hide only happens inside
+      // checkPassword()'s success branch. refresh() below can reach
+      // _createQuests() -> RPGACE.sb.secureWrite(), which needs
+      // authGate._apiSecret to attach the auth header - pre-login that's
+      // null, so every quest-log write gets a real, valid JSON 401 back
+      // from requireAuth() (confirmed live in error_log, Aug 27-28: a real
+      // "Unauthorized" wave distinct from the still-separately-diagnosed
+      // "Unexpected token '<'" HTML-response wave). Same real fix, same
+      // real signal, no new mechanism (rule 8): wait for 'rpgace:login' if
+      // login hasn't happened yet.
+      var apiSecretReady = RPGACE.modules.authGate && RPGACE.modules.authGate._apiSecret;
+      if (!apiSecretReady) {
+        var off = RPGACE.hooks.on('rpgace:login', function() {
+          off();
+          self._runBoot();
+        });
+        return Promise.resolve();
+      }
+      return self._runBoot();
+    },
+
+    _runBoot: function() {
+      var self = RPGACE.modules.questEngine;
+      self._inject();
+      return self._loadStats()
+        .then(function() { return self._restoreBoardState(); })
+        .then(function() { return self.refresh(); })
+        .catch(function(e) { console.warn('[questEngine] boot:', e.message); });
+    },
+
+    // ── the formula ────────────────────────────────────────────────────
+    // One implementation, three scopes (rule 8). See the header comment.
+    blend: function(estimate, completionCount, totalActual) {
+      var est = Number(estimate) || 0;
+      var n = Number(completionCount) || 0;
+      var tot = Number(totalActual) || 0;
+      return (est + tot) / (n + 1);
+    },
+
+    _statId: function(scope, key) { return scope + '|' + key; },
+
+    _loadStats: function() {
+      var self = RPGACE.modules.questEngine;
+      return RPGACE.sb.select('quest_duration_stats', 'select=*&limit=500')
+        .then(function(rows) {
+          self._stats = {};
+          (rows || []).forEach(function(r) { self._stats[self._statId(r.scope, r.stat_key)] = r; });
+          return self._stats;
         })
         .catch(function(e) {
-          // Rule 7 - never silently swallow a failed write. But the unique
-          // partial index on (quest_kind, source_ref) WHERE status='open'
-          // is a LEGITIMATE, expected rejection: it means this exact quest
-          // is already open, which is the index doing its job, not a
-          // failure worth alarming Alex about. secureWrite only surfaces
-          // the generic top-level error string (the PostgREST detail stays
-          // in the response body), so rather than string-matching a
-          // message this endpoint does not actually pass through, ask the
-          // real table directly whether that row now exists.
-          return RPGACE.sb.select('quest_log',
-            'select=id&status=eq.open&quest_kind=eq.' + encodeURIComponent(c.kind) +
-            '&source_ref=eq.' + encodeURIComponent(String(c.sourceRef)) + '&limit=1')
-            .then(function(hit) {
-              if (hit && hit.length) {
-                console.log('[questEngine] quest already open for ' + c.kind + '/' + c.sourceRef);
-                return null;
-              }
-              console.warn('[questEngine] create failed:', e.message);
-              RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
-              return null;
-            })
-            .catch(function() {
-              console.warn('[questEngine] create failed:', e.message);
-              RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
-              return null;
+          console.warn('[questEngine] stats load failed:', e.message);
+          self._stats = self._stats || {};
+          return self._stats;
+        });
+    },
+
+    // Current best-known duration for a key: the real running average once
+    // any real data exists, otherwise the caller's first-run estimate.
+    estimateFor: function(scope, key, fallback) {
+      var self = RPGACE.modules.questEngine;
+      var row = self._stats && self._stats[self._statId(scope, key)];
+      if (row && row.average_minutes != null) return Number(row.average_minutes);
+      return Number(fallback) || 0;
+    },
+
+    // How much of that estimate is real, for honest labelling.
+    samplesFor: function(scope, key) {
+      var self = RPGACE.modules.questEngine;
+      var row = self._stats && self._stats[self._statId(scope, key)];
+      return row ? (Number(row.completion_count) || 0) : 0;
+    },
+
+    // A workflow's estimate = the sum of its steps' current averages.
+    workflowEstimate: function(workflowKey) {
+      var self = RPGACE.modules.questEngine;
+      var wf = self.WORKFLOWS[workflowKey];
+      if (!wf) return null;
+      var total = 0;
+      wf.steps.forEach(function(s) { total += self.estimateFor('step', s.key, s.estimate); });
+      return total;
+    },
+
+    // Records one real completion at one scope, per Alex's formula.
+    // actualMinutes === null means "completed but never timed" - the row is
+    // still real, but it is NOT folded into the average (see header).
+    recordDuration: function(scope, key, label, firstEstimate, actualMinutes) {
+      var self = RPGACE.modules.questEngine;
+      var id = self._statId(scope, key);
+      var existing = self._stats && self._stats[id];
+      var actual = (actualMinutes == null) ? null : Number(actualMinutes);
+      if (actual != null && (!isFinite(actual) || actual < 0)) actual = null;
+
+      // Real gap found + fixed during the A9 verification pass (Aug 24
+      // 2026): an untimed first-ever completion used to still write a
+      // completion_count:0 row here. Harmless in practice - estimateFor/
+      // samplesFor already fall back to the exact same estimate/0 with no
+      // row at all - but a needless write that reads as data when it is
+      // not, and doesn't match this function's own "must not touch the
+      // stats table" spirit for an untimed completion. Skip outright.
+      if (!existing && actual == null) return Promise.resolve(null);
+
+      if (!existing) {
+        var est = Number(firstEstimate) || 0;
+        var count = actual == null ? 0 : 1;
+        var total = actual == null ? 0 : actual;
+        var payload = {
+          scope: scope, stat_key: key, label: label || key,
+          estimate_minutes: est,
+          completion_count: count,
+          total_actual_minutes: total,
+          average_minutes: self.blend(est, count, total),
+          last_actual_minutes: actual,
+          updated_at: new Date().toISOString(),
+        };
+        return RPGACE.sb.secureWrite('quest_duration_stats', 'insert', payload)
+          .then(function(data) {
+            var row = (data && data[0]) || payload;
+            self._stats[id] = row;
+            return row;
+          });
+      }
+
+      if (actual == null) return Promise.resolve(existing);
+
+      var newCount = (Number(existing.completion_count) || 0) + 1;
+      var newTotal = (Number(existing.total_actual_minutes) || 0) + actual;
+      var upd = {
+        completion_count: newCount,
+        total_actual_minutes: newTotal,
+        // estimate_minutes is deliberately never rewritten - it is sample 0
+        // of the mean, forever.
+        average_minutes: self.blend(existing.estimate_minutes, newCount, newTotal),
+        last_actual_minutes: actual,
+        updated_at: new Date().toISOString(),
+      };
+      return RPGACE.sb.secureWrite('quest_duration_stats', 'update', upd, 'id=eq.' + existing.id)
+        .then(function() {
+          Object.keys(upd).forEach(function(k) { existing[k] = upd[k]; });
+          return existing;
+        });
+    },
+
+    // ── the 4 real triggers ────────────────────────────────────────────
+    // Every one of these queries a real table and only ever produces a
+    // quest from a real row that actually came back. Nothing here invents
+    // quest content; a trigger with no matching data produces no quests,
+    // and says so.
+
+    // (a) A beat with raw OBS footage finished and editable. Real basis:
+    //     A7's `content_productions.content_type='obs_raw'` flow, whose own
+    //     OBS_RAW_PRIMARY_ACTION lookup table (contentProductionLive) is
+    //     reused here rather than re-deriving what the next real action is
+    //     (rule 8). A row only exists at all because _openObsRawIntake
+    //     gated it behind a real footage submission.
+    _scanObsRaw: function() {
+      // PRE-EXISTING, FLAGGED NOT FIXED (found while reading every function
+      // for the G53 ui/logic split, Aug 2026): this `self` handle is DEAD —
+      // nothing in this function's body ever reads it (the body reaches
+      // RPGACE.sb and RPGACE.modules.contentProductionLive directly). It was
+      // already an unused `var self = this;` before the split and is kept,
+      // converted, rather than deleted, so this function stays a pure move
+      // like the other 26. Harmless — an unused local — but real: a future
+      // reader should not take its presence as evidence that this function
+      // depends on module state, because it does not.
+      var self = RPGACE.modules.questEngine;
+      return RPGACE.sb.select('content_productions',
+        'select=id,con_id,title,status,raw_footage_path&content_type=eq.obs_raw' +
+        '&status=in.(Idea,Scripted,Filmed,Edited)&order=updated_at.desc&limit=20')
+        .then(function(rows) {
+          var cpl = RPGACE.modules.contentProductionLive;
+          var flow = (cpl && cpl._flowFor) ? cpl._flowFor('obs_raw') : null;
+          return (rows || []).map(function(r) {
+            var action = (flow && flow.primary && flow.primary[r.status]) || null;
+            if (!action) return null;   // last real stage - nothing left to do
+            return {
+              kind: 'obs_raw_edit',
+              workflow: 'obs_raw_edit',
+              key: 'obs_raw_edit:' + r.status,
+              name: action.label.replace(/^[^A-Za-z]+/, '') + ' — ConID #' + r.con_id,
+              description: '"' + (r.title || 'Untitled') + '" has real OBS footage logged and is sitting at "' +
+                           r.status + '". Next real stage action: ' + action.label + '.',
+              category: 'career', questType: 'generated', xp: 120,
+              sourceTable: 'content_productions', sourceRef: r.id,
+            };
+          }).filter(Boolean);
+        })
+        .catch(function(e) { console.warn('[questEngine] obs_raw scan:', e.message); return []; });
+    },
+
+    // (b) Closing knowledge gaps. Real basis: `taxonomy_nodes` rows with
+    //     applied_in_beat=false and gap_score>0 - the exact same definition
+    //     dashDeck._refreshGlance's own "gaps tracked" count uses. Reuses
+    //     taxonomySync.getTopGaps rather than a second hand-rolled query.
+    _scanKnowledgeGaps: function() {
+      var ts = RPGACE.modules.taxonomySync;
+      if (!ts || !ts.getTopGaps) return Promise.resolve([]);
+      return ts.getTopGaps(3)
+        .then(function(nodes) {
+          return (nodes || []).filter(function(n) { return Number(n.gap_score) > 0; }).map(function(n) {
+            return {
+              kind: 'knowledge_gap',
+              workflow: 'knowledge_gap',
+              key: 'knowledge_gap',
+              name: 'Close the gap: ' + n.concept,
+              description: 'Gap score ' + Number(n.gap_score).toFixed(1) + '/10, and it has never been applied in a real beat.',
+              category: 'career', questType: 'generated', xp: 90,
+              sourceTable: 'taxonomy_nodes', sourceRef: n.id,
+            };
+          });
+        })
+        .catch(function(e) { console.warn('[questEngine] gap scan:', e.message); return []; });
+    },
+
+    // (c) Taxonomy nodes to review. Real basis: pending `taxonomy_proposals`
+    //     + pending `taxonomy_links` - the same two queries the review
+    //     queue itself and dashDeck's "Needs you now" list already run.
+    //     Deliberately ONE quest for the whole queue rather than one per
+    //     row: at the real current backlog size that would mint dozens of
+    //     quests for what is genuinely one sitting of work.
+    _scanTaxonomyReview: function() {
+      return Promise.all([
+        RPGACE.sb.select('taxonomy_proposals', 'select=id&status=eq.pending'),
+        RPGACE.sb.select('taxonomy_links', 'select=id&status=eq.pending')
+      ]).then(function(res) {
+        var total = ((res[0] || []).length) + ((res[1] || []).length);
+        if (!total) return [];
+        return [{
+          kind: 'taxonomy_review',
+          workflow: 'taxonomy_review',
+          key: 'taxonomy_review',
+          name: 'Review ' + total + ' pending taxonomy item' + (total === 1 ? '' : 's'),
+          description: (res[0] || []).length + ' proposal' + ((res[0] || []).length === 1 ? '' : 's') + ' and ' +
+                       (res[1] || []).length + ' fusion link' + ((res[1] || []).length === 1 ? '' : 's') +
+                       ' are waiting on your judgement.',
+          category: 'career', questType: 'generated', xp: 80,
+          sourceTable: 'taxonomy_proposals,taxonomy_links', sourceRef: 'review_queue',
+        }];
+      }).catch(function(e) { console.warn('[questEngine] review scan:', e.message); return []; });
+    },
+
+    _scanNeedsInput: function() {
+      var self = RPGACE.modules.questEngine;
+      return Promise.all(self.NEEDS_INPUT_SOURCES.map(function(src) {
+        return RPGACE.sb.select(src.table, src.params)
+          .then(function(rows) { return { src: src, n: (rows || []).length }; })
+          .catch(function() { return { src: src, n: 0 }; });
+      })).then(function(results) {
+        return results.filter(function(r) { return r.n > 0; }).map(function(r) {
+          return {
+            kind: 'needs_input',
+            workflow: 'needs_input',
+            key: 'needs_input:' + r.src.ref,
+            name: r.n + ' ' + r.src.label + (r.n === 1 ? '' : 's') + ' need you',
+            description: r.n + ' ' + r.src.desc + ' (' + r.src.table + ').',
+            category: 'career', questType: 'generated', xp: 60,
+            sourceTable: r.src.table, sourceRef: r.src.ref,
+          };
+        });
+      });
+    },
+
+    // ── generation ─────────────────────────────────────────────────────
+    refresh: function() {
+      var self = RPGACE.modules.questEngine;
+      if (!RPGACE.sb || !RPGACE.sb.select) return Promise.resolve();
+      return RPGACE.sb.select('quest_log',
+        'select=*&status=eq.open&parent_quest_id=is.null&order=created_at.asc&limit=100')
+        .then(function(open) {
+          self._rows = open || [];
+          return Promise.all(self.TRIGGERS.map(function(fn) { return self[fn](); }));
+        })
+        .then(function(batches) {
+          var cands = [];
+          batches.forEach(function(b) { cands = cands.concat(b || []); });
+          var haveRef = {};
+          self._rows.forEach(function(r) { if (r.source_ref) haveRef[r.quest_kind + '|' + r.source_ref] = true; });
+          var fresh = cands.filter(function(c) { return !haveRef[c.kind + '|' + c.sourceRef]; });
+          if (!fresh.length) return null;
+          return self._createQuests(fresh);
+        })
+        .then(function(created) {
+          if (created && created.length) self._rows = self._rows.concat(created);
+          self._renderPanel();
+        })
+        .catch(function(e) {
+          console.warn('[questEngine] refresh:', e.message);
+          RPGACE.utils.toast('Quest scan failed: ' + e.message, '#CC4A4A', 4000);
+        });
+    },
+
+    _createQuests: function(cands) {
+      var self = RPGACE.modules.questEngine;
+      return Promise.all(cands.map(function(c) {
+        var est = self.workflowEstimate(c.workflow);
+        if (est == null) est = self.estimateFor('quest', c.key, self.DEFAULT_ESTIMATES[c.kind] || 30);
+        var payload = {
+          quest_key: c.key, quest_kind: c.kind, name: c.name, description: c.description,
+          category: c.category, quest_type: c.questType, xp: c.xp,
+          source_table: c.sourceTable, source_ref: String(c.sourceRef),
+          workflow_key: c.workflow || null,
+          estimated_minutes: Math.round(est * 10) / 10,
+          status: 'open',
+        };
+        return RPGACE.sb.secureWrite('quest_log', 'insert', payload)
+          .then(function(data) {
+            var row = (data && data[0]) || null;
+            if (!row || !row.id) return row;
+            var wf = self.WORKFLOWS[c.workflow];
+            if (!wf) return row;
+            // Real step rows - this is what makes "total of average time for
+            // step execution" a checkable number rather than a claim.
+            var steps = wf.steps.map(function(s, i) {
+              return {
+                quest_key: s.key, quest_kind: 'workflow_step', name: s.label,
+                category: c.category, quest_type: 'step', xp: 0,
+                workflow_key: c.workflow, parent_quest_id: row.id, step_index: i,
+                estimated_minutes: self.estimateFor('step', s.key, s.estimate),
+                status: 'open',
+              };
             });
-        });
-    })).then(function(rows) { return rows.filter(Boolean); });
-  },
-
-  // ── start / complete for generated quests ──────────────────────────
-  startQuest: function(id) {
-    var self = this;
-    var row = self._rows.filter(function(r) { return r.id === id; })[0];
-    if (!row || row.started_at) return;
-    var now = new Date().toISOString();
-    // Return the chain (real bug found + fixed during the A9 verification
-    // pass, Aug 24 2026: this used to be fire-and-forget with nothing
-    // returned, so a caller had no way to actually await the write - the
-    // in-page ▶ button never needed that, but startQuest is also called
-    // directly by module code, which does.
-    return RPGACE.sb.secureWrite('quest_log', 'update', { started_at: now }, 'id=eq.' + id)
-      .then(function() {
-        row.started_at = now;
-        RPGACE.utils.toast('⏱ Timing "' + row.name + '"', '#2ABFB0', 2500);
-        self._renderPanel();
-      })
-      .catch(function(e) {
-        RPGACE.utils.toast('Could not start timer: ' + e.message, '#CC4A4A', 4500);
-      });
-  },
-
-  completeQuest: function(id) {
-    var self = this;
-    var row = self._rows.filter(function(r) { return r.id === id; })[0];
-    if (!row || row.status !== 'open') return;
-    var now = new Date();
-    var actual = row.started_at ? ((now - new Date(row.started_at)) / 60000) : null;
-    if (actual != null) actual = Math.round(actual * 10) / 10;
-
-    // Same real fix as startQuest above - return the chain.
-    return RPGACE.sb.secureWrite('quest_log', 'update',
-      { status: 'completed', completed_at: now.toISOString(), actual_minutes: actual },
-      'id=eq.' + id)
-      .then(function() {
-        row.status = 'completed';
-        // Quest scope, then the workflow scope it belongs to - "exactly
-        // same for steps" per Alex, same function both times.
-        var chain = self.recordDuration('quest', row.quest_key, row.name,
-          row.estimated_minutes, actual);
-        if (row.workflow_key) {
-          chain = chain.then(function() {
-            return self.recordDuration('workflow', row.workflow_key,
-              (self.WORKFLOWS[row.workflow_key] || {}).label || row.workflow_key,
-              row.estimated_minutes, actual);
+            return RPGACE.sb.secureWrite('quest_log', 'insert', steps).then(function() { return row; });
+          })
+          .catch(function(e) {
+            // Rule 7 - never silently swallow a failed write. But the unique
+            // partial index on (quest_kind, source_ref) WHERE status='open'
+            // is a LEGITIMATE, expected rejection: it means this exact quest
+            // is already open, which is the index doing its job, not a
+            // failure worth alarming Alex about. secureWrite only surfaces
+            // the generic top-level error string (the PostgREST detail stays
+            // in the response body), so rather than string-matching a
+            // message this endpoint does not actually pass through, ask the
+            // real table directly whether that row now exists.
+            return RPGACE.sb.select('quest_log',
+              'select=id&status=eq.open&quest_kind=eq.' + encodeURIComponent(c.kind) +
+              '&source_ref=eq.' + encodeURIComponent(String(c.sourceRef)) + '&limit=1')
+              .then(function(hit) {
+                if (hit && hit.length) {
+                  console.log('[questEngine] quest already open for ' + c.kind + '/' + c.sourceRef);
+                  return null;
+                }
+                console.warn('[questEngine] create failed:', e.message);
+                RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
+                return null;
+              })
+              .catch(function() {
+                console.warn('[questEngine] create failed:', e.message);
+                RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
+                return null;
+              });
           });
-        }
-        return chain;
-      })
-      .then(function() {
-        if (typeof addXP === 'function') addXP(row.xp || 0);
-        RPGACE.utils.toast('✓ ' + row.name + (actual != null ? ' — ' + actual + ' min logged' : ' — completed (untimed)'),
-          '#4AAE6E', 3500);
-        self._rows = self._rows.filter(function(r) { return r.id !== id; });
-        self._renderPanel();
-      })
-      .catch(function(e) {
-        RPGACE.utils.toast('Quest completion did NOT save: ' + e.message, '#CC4A4A', 6000);
-        console.warn('[questEngine] complete failed:', e.message);
+      })).then(function(rows) { return rows.filter(Boolean); });
+    },
+
+    // ── start / complete for generated quests ──────────────────────────
+    startQuest: function(id) {
+      // Real bug fixed Sep 2 (flagged by the G53 split's own review, fixed
+      // here as a clearly separate change): the Aug 24 2026 A9-verification
+      // fix made the HAPPY path return its promise chain but left this
+      // guard path returning bare `undefined` - an inconsistent return
+      // type (a thenable when it acts, undefined when it no-ops) that
+      // would throw on a caller doing .then() whenever the guard fired.
+      // Fixed to return Promise.resolve() instead - zero-risk for the
+      // current real call sites (an in-page button handler that ignores
+      // the return; 3 external callers that touch neither this nor
+      // completeQuest below), and correct for any future caller that
+      // awaits it. dismissQuest has no guard, so it was already consistent.
+      var self = RPGACE.modules.questEngine;
+      var row = self._rows.filter(function(r) { return r.id === id; })[0];
+      if (!row || row.started_at) return Promise.resolve();
+      var now = new Date().toISOString();
+      // Return the chain (real bug found + fixed during the A9 verification
+      // pass, Aug 24 2026: this used to be fire-and-forget with nothing
+      // returned, so a caller had no way to actually await the write - the
+      // in-page ▶ button never needed that, but startQuest is also called
+      // directly by module code, which does.
+      return RPGACE.sb.secureWrite('quest_log', 'update', { started_at: now }, 'id=eq.' + id)
+        .then(function() {
+          row.started_at = now;
+          RPGACE.utils.toast('⏱ Timing "' + row.name + '"', '#2ABFB0', 2500);
+          self._renderPanel();
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('Could not start timer: ' + e.message, '#CC4A4A', 4500);
+        });
+    },
+
+    completeQuest: function(id) {
+      var self = RPGACE.modules.questEngine;
+      var row = self._rows.filter(function(r) { return r.id === id; })[0];
+      // Same real fix as startQuest above - return Promise.resolve() from
+      // the guard instead of bare undefined.
+      if (!row || row.status !== 'open') return Promise.resolve();
+      var now = new Date();
+      var actual = row.started_at ? ((now - new Date(row.started_at)) / 60000) : null;
+      if (actual != null) actual = Math.round(actual * 10) / 10;
+
+      // Same real fix as startQuest above - return the chain.
+      return RPGACE.sb.secureWrite('quest_log', 'update',
+        { status: 'completed', completed_at: now.toISOString(), actual_minutes: actual },
+        'id=eq.' + id)
+        .then(function() {
+          row.status = 'completed';
+          // Quest scope, then the workflow scope it belongs to - "exactly
+          // same for steps" per Alex, same function both times.
+          var chain = self.recordDuration('quest', row.quest_key, row.name,
+            row.estimated_minutes, actual);
+          if (row.workflow_key) {
+            chain = chain.then(function() {
+              return self.recordDuration('workflow', row.workflow_key,
+                (self.WORKFLOWS[row.workflow_key] || {}).label || row.workflow_key,
+                row.estimated_minutes, actual);
+            });
+          }
+          return chain;
+        })
+        .then(function() {
+          if (typeof addXP === 'function') addXP(row.xp || 0);
+          RPGACE.utils.toast('✓ ' + row.name + (actual != null ? ' — ' + actual + ' min logged' : ' — completed (untimed)'),
+            '#4AAE6E', 3500);
+          self._rows = self._rows.filter(function(r) { return r.id !== id; });
+          self._renderPanel();
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('Quest completion did NOT save: ' + e.message, '#CC4A4A', 6000);
+          console.warn('[questEngine] complete failed:', e.message);
+        });
+    },
+
+    dismissQuest: function(id) {
+      var self = RPGACE.modules.questEngine;
+      // Same real fix as startQuest/completeQuest above - return the chain.
+      return RPGACE.sb.secureWrite('quest_log', 'update', { status: 'dismissed' }, 'id=eq.' + id)
+        .then(function() {
+          self._rows = self._rows.filter(function(r) { return r.id !== id; });
+          self._renderPanel();
+        })
+        .catch(function(e) { RPGACE.utils.toast('Dismiss failed: ' + e.message, '#CC4A4A', 4500); });
+    },
+
+    // ── Quest Board persistence (the real fix for the 4x-flagged gap) ──
+    // Called directly from the legacy completeQuest(); `q` is the real
+    // QUESTS entry that was just ticked.
+    recordBoardCompletion: function(q) {
+      var self = RPGACE.modules.questEngine;
+      if (!q || !RPGACE.sb || !RPGACE.sb.secureWrite) return Promise.resolve();
+      // Real bug fixed Sep 2 (flagged by the G53 split's own review, fixed
+      // here as a clearly separate change): if _boardStarts was still null
+      // here (only possible if _loadBoardStarts had never run this page
+      // load - true today only because makeCard() happens to call it on
+      // every render, a real ordering dependency on a different function
+      // in a different file section, not a guarantee), _persistBoardStarts
+      // would have written `{}` over localStorage['rpgace_quest_starts'],
+      // silently destroying every OTHER board quest's real in-flight start
+      // timestamp. Calling _loadBoardStarts() here directly removes the
+      // dependency entirely - it's already idempotent (early-returns if
+      // _boardStarts is already populated), so this is a zero-risk no-op
+      // on the current always-safe call path, and a real fix for any
+      // future caller that doesn't happen to go through makeCard() first.
+      self._loadBoardStarts();
+      var started = self._boardStarts && self._boardStarts[q.id];
+      var actual = started ? Math.round(((Date.now() - started) / 60000) * 10) / 10 : null;
+      if (self._boardStarts) delete self._boardStarts[q.id];
+      self._persistBoardStarts();
+
+      var est = self.estimateFor('quest', q.id, self.DEFAULT_ESTIMATES.board);
+      return RPGACE.sb.secureWrite('quest_log', 'insert', {
+        quest_key: q.id, quest_kind: 'board', name: q.name, description: q.desc,
+        category: q.cat, quest_type: q.type, xp: q.xp || 0,
+        estimated_minutes: est, actual_minutes: actual,
+        status: 'completed', completed_at: new Date().toISOString(),
+        started_at: started ? new Date(started).toISOString() : null,
+      }).then(function() {
+        return self.recordDuration('quest', q.id, q.name, est, actual);
+      }).then(function() {
+        if (actual != null) RPGACE.utils.toast('⏱ ' + actual + ' min logged for "' + q.name + '"', '#2ABFB0', 3000);
+      }).catch(function(e) {
+        // Rule 7. The in-memory tick already happened and the XP already
+        // showed - saying nothing here would leave Alex believing a
+        // completion was saved when it was not, which is the exact failure
+        // this whole module exists to end.
+        RPGACE.utils.toast('⚠ "' + q.name + '" was NOT saved: ' + e.message, '#CC4A4A', 6000);
+        console.warn('[questEngine] board completion failed:', e.message);
       });
-  },
+    },
 
-  dismissQuest: function(id) {
-    var self = this;
-    // Same real fix as startQuest/completeQuest above - return the chain.
-    return RPGACE.sb.secureWrite('quest_log', 'update', { status: 'dismissed' }, 'id=eq.' + id)
-      .then(function() {
-        self._rows = self._rows.filter(function(r) { return r.id !== id; });
-        self._renderPanel();
-      })
-      .catch(function(e) { RPGACE.utils.toast('Dismiss failed: ' + e.message, '#CC4A4A', 4500); });
-  },
+    _persistBoardStarts: function() {
+      var self = RPGACE.modules.questEngine;
+      try { localStorage.setItem('rpgace_quest_starts', JSON.stringify(self._boardStarts || {})); } catch (e) {}
+    },
 
-  // ── Quest Board persistence (the real fix for the 4x-flagged gap) ──
-  // Called directly from the legacy completeQuest(); `q` is the real
-  // QUESTS entry that was just ticked.
-  recordBoardCompletion: function(q) {
-    var self = this;
-    if (!q || !RPGACE.sb || !RPGACE.sb.secureWrite) return Promise.resolve();
-    var started = self._boardStarts && self._boardStarts[q.id];
-    var actual = started ? Math.round(((Date.now() - started) / 60000) * 10) / 10 : null;
-    if (self._boardStarts) delete self._boardStarts[q.id];
-    self._persistBoardStarts();
+    _loadBoardStarts: function() {
+      var self = RPGACE.modules.questEngine;
+      if (self._boardStarts) return self._boardStarts;
+      try { self._boardStarts = JSON.parse(localStorage.getItem('rpgace_quest_starts') || '{}'); }
+      catch (e) { self._boardStarts = {}; }
+      return self._boardStarts;
+    },
 
-    var est = self.estimateFor('quest', q.id, self.DEFAULT_ESTIMATES.board);
-    return RPGACE.sb.secureWrite('quest_log', 'insert', {
-      quest_key: q.id, quest_kind: 'board', name: q.name, description: q.desc,
-      category: q.cat, quest_type: q.type, xp: q.xp || 0,
-      estimated_minutes: est, actual_minutes: actual,
-      status: 'completed', completed_at: new Date().toISOString(),
-      started_at: started ? new Date(started).toISOString() : null,
-    }).then(function() {
-      return self.recordDuration('quest', q.id, q.name, est, actual);
-    }).then(function() {
-      if (actual != null) RPGACE.utils.toast('⏱ ' + actual + ' min logged for "' + q.name + '"', '#2ABFB0', 3000);
-    }).catch(function(e) {
-      // Rule 7. The in-memory tick already happened and the XP already
-      // showed - saying nothing here would leave Alex believing a
-      // completion was saved when it was not, which is the exact failure
-      // this whole module exists to end.
-      RPGACE.utils.toast('⚠ "' + q.name + '" was NOT saved: ' + e.message, '#CC4A4A', 6000);
-      console.warn('[questEngine] board completion failed:', e.message);
-    });
-  },
+    // Called from the board card's own ▶ button. A board quest is a
+    // small, same-session thing, so its in-flight start time is a genuine
+    // per-viewer convenience - localStorage, not a Supabase round trip.
+    startBoardQuest: function(id, btn) {
+      var self = RPGACE.modules.questEngine;
+      var starts = self._loadBoardStarts();
+      if (starts[id]) return;
+      starts[id] = Date.now();
+      self._persistBoardStarts();
+      if (btn) { btn.textContent = '⏱ timing'; btn.disabled = true; btn.style.opacity = '0.6'; }
+      RPGACE.utils.toast('⏱ Timer started', '#2ABFB0', 2000);
+    },
 
-  _boardStarts: null,
-  _persistBoardStarts: function() {
-    try { localStorage.setItem('rpgace_quest_starts', JSON.stringify(this._boardStarts || {})); } catch (e) {}
-  },
-  _loadBoardStarts: function() {
-    if (this._boardStarts) return this._boardStarts;
-    try { this._boardStarts = JSON.parse(localStorage.getItem('rpgace_quest_starts') || '{}'); }
-    catch (e) { this._boardStarts = {}; }
-    return this._boardStarts;
-  },
+    // ── restore what used to evaporate on every page load ──────────────
+    _restoreBoardState: function() {
+      var self = RPGACE.modules.questEngine;
+      return RPGACE.sb.select('quest_log',
+        'select=quest_key,quest_kind,xp,completed_at&status=eq.completed&order=completed_at.desc&limit=1000')
+        .then(function(rows) {
+          rows = rows || [];
+          if (typeof STATE === 'undefined' || !STATE) return;
+          var totalXP = 0;
+          rows.forEach(function(r) { totalXP += Number(r.xp) || 0; });
+          STATE.totalXP = totalXP;
+          STATE.tasksCompleted = rows.length;
+          // Walk the same real per-level bands addXP/levelUp use, so a
+          // restored level means exactly what an earned one means.
+          var lvl = 1, rem = totalXP;
+          while (lvl <= STATE.xpRequired.length && rem >= STATE.xpRequired[lvl - 1]) {
+            rem -= STATE.xpRequired[lvl - 1]; lvl++;
+          }
+          STATE.level = lvl; STATE.xp = rem;
+          self._paintRestoredState();
 
-  // Called from the board card's own ▶ button. A board quest is a
-  // small, same-session thing, so its in-flight start time is a genuine
-  // per-viewer convenience - localStorage, not a Supabase round trip.
-  startBoardQuest: function(id, btn) {
-    var starts = this._loadBoardStarts();
-    if (starts[id]) return;
-    starts[id] = Date.now();
-    this._persistBoardStarts();
-    if (btn) { btn.textContent = '⏱ timing'; btn.disabled = true; btn.style.opacity = '0.6'; }
-    RPGACE.utils.toast('⏱ Timer started', '#2ABFB0', 2000);
-  },
-
-  // ── restore what used to evaporate on every page load ──────────────
-  _restoreBoardState: function() {
-    var self = this;
-    return RPGACE.sb.select('quest_log',
-      'select=quest_key,quest_kind,xp,completed_at&status=eq.completed&order=completed_at.desc&limit=1000')
-      .then(function(rows) {
-        rows = rows || [];
-        if (typeof STATE === 'undefined' || !STATE) return;
-        var totalXP = 0;
-        rows.forEach(function(r) { totalXP += Number(r.xp) || 0; });
-        STATE.totalXP = totalXP;
-        STATE.tasksCompleted = rows.length;
-        // Walk the same real per-level bands addXP/levelUp use, so a
-        // restored level means exactly what an earned one means.
-        var lvl = 1, rem = totalXP;
-        while (lvl <= STATE.xpRequired.length && rem >= STATE.xpRequired[lvl - 1]) {
-          rem -= STATE.xpRequired[lvl - 1]; lvl++;
-        }
-        STATE.level = lvl; STATE.xp = rem;
-        self._paintRestoredState();
-
-        // Re-tick board quests already completed inside their own real
-        // recurrence window, so a daily quest done this morning still
-        // reads as done after a reload.
-        var now = Date.now();
-        var windowMs = { daily: 864e5, weekly: 6048e5, monthly: 2592e6 };
-        if (typeof QUESTS === 'undefined' || !QUESTS) return;
-        var doneKeys = {};
-        rows.forEach(function(r) {
-          if (r.quest_kind !== 'board' || !r.completed_at) return;
-          if (doneKeys[r.quest_key]) return;
-          doneKeys[r.quest_key] = new Date(r.completed_at).getTime();
-        });
-        Object.keys(QUESTS).forEach(function(group) {
-          (QUESTS[group] || []).forEach(function(q) {
-            var t = doneKeys[q.id];
-            if (!t) return;
-            var win = windowMs[q.type] || windowMs.daily;
-            if (now - t < win) q.done = true;
+          // Re-tick board quests already completed inside their own real
+          // recurrence window, so a daily quest done this morning still
+          // reads as done after a reload.
+          var now = Date.now();
+          var windowMs = { daily: 864e5, weekly: 6048e5, monthly: 2592e6 };
+          if (typeof QUESTS === 'undefined' || !QUESTS) return;
+          var doneKeys = {};
+          rows.forEach(function(r) {
+            if (r.quest_kind !== 'board' || !r.completed_at) return;
+            if (doneKeys[r.quest_key]) return;
+            doneKeys[r.quest_key] = new Date(r.completed_at).getTime();
           });
-        });
-        if (typeof buildAllQuests === 'function') buildAllQuests();
-      })
-      .catch(function(e) { console.warn('[questEngine] restore:', e.message); });
+          Object.keys(QUESTS).forEach(function(group) {
+            (QUESTS[group] || []).forEach(function(q) {
+              var t = doneKeys[q.id];
+              if (!t) return;
+              var win = windowMs[q.type] || windowMs.daily;
+              if (now - t < win) q.done = true;
+            });
+          });
+          if (typeof buildAllQuests === 'function') buildAllQuests();
+        })
+        .catch(function(e) { console.warn('[questEngine] restore:', e.message); });
+    },
+
+    _fmtEstimate: function(row) {
+      var self = RPGACE.modules.questEngine;
+      var scope = 'quest', key = row.quest_key;
+      var mins = self.estimateFor(scope, key, row.estimated_minutes);
+      var n = self.samplesFor(scope, key);
+      var txt = '~' + (Math.round(mins * 10) / 10) + ' min';
+      if (n === 0) txt += ' · estimate only, never timed';
+      else txt += ' · averaged over ' + n + ' real run' + (n === 1 ? '' : 's') + ' + the original estimate';
+      return { mins: mins, text: txt };
+    },
   },
 
-  _paintRestoredState: function() {
-    var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
-    var req = STATE.xpRequired[STATE.level - 1] || 9999;
-    if (typeof paintXpBar === 'function') paintXpBar(STATE.xp, req);
-    set('xp-val', STATE.xp + ' / ' + req);
-    set('stat-tasks', STATE.tasksCompleted);
-    set('stat-xp', STATE.totalXP);
-    set('stat-lvl', STATE.level);
-    set('lvl-display', STATE.level);
-    var title = (typeof LEVEL_TITLES !== 'undefined' && LEVEL_TITLES)
-      ? LEVEL_TITLES[Math.min(STATE.level - 1, LEVEL_TITLES.length - 1)] : null;
-    if (title) set('char-title', title + ' • Level ' + STATE.level);
-    if (typeof updateSkillTree === 'function') { try { updateSkillTree(); } catch (e) {} }
-  },
+  // ============================================================
+  // ui — rendering/DOM: every document.* / createElement /
+  // getElementById / querySelector / innerHTML hit in this module
+  // lives inside exactly these three functions.
+  // ============================================================
+  ui: {
 
-  // ── UI ─────────────────────────────────────────────────────────────
-  _inject: function() {
-    if (document.getElementById('qe-panel')) return;
-    var page = document.getElementById('page-quests');
-    if (!page) return;
-    var self = this;
+    _paintRestoredState: function() {
+      var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+      var req = STATE.xpRequired[STATE.level - 1] || 9999;
+      if (typeof paintXpBar === 'function') paintXpBar(STATE.xp, req);
+      set('xp-val', STATE.xp + ' / ' + req);
+      set('stat-tasks', STATE.tasksCompleted);
+      set('stat-xp', STATE.totalXP);
+      set('stat-lvl', STATE.level);
+      set('lvl-display', STATE.level);
+      var title = (typeof LEVEL_TITLES !== 'undefined' && LEVEL_TITLES)
+        ? LEVEL_TITLES[Math.min(STATE.level - 1, LEVEL_TITLES.length - 1)] : null;
+      if (title) set('char-title', title + ' • Level ' + STATE.level);
+      if (typeof updateSkillTree === 'function') { try { updateSkillTree(); } catch (e) {} }
+    },
 
-    var panel = document.createElement('div');
-    panel.id = 'qe-panel';
-    panel.style.cssText = 'border-top:1px solid var(--border);padding-top:18px;margin-bottom:24px;';
+    // ── UI ─────────────────────────────────────────────────────────────
+    _inject: function() {
+      if (document.getElementById('qe-panel')) return;
+      var page = document.getElementById('page-quests');
+      if (!page) return;
+      var self = RPGACE.modules.questEngine;
 
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;';
-    var t = document.createElement('div');
-    t.className = 'section-title';
-    t.style.margin = '0';
-    t.textContent = '🎯 Generated From Your Real Data';
-    hdr.appendChild(t);
+      var panel = document.createElement('div');
+      panel.id = 'qe-panel';
+      panel.style.cssText = 'border-top:1px solid var(--border);padding-top:18px;margin-bottom:24px;';
 
-    var controls = document.createElement('div');
-    controls.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;';
+      var t = document.createElement('div');
+      t.className = 'section-title';
+      t.style.margin = '0';
+      t.textContent = '🎯 Generated From Your Real Data';
+      hdr.appendChild(t);
 
-    // "how much time I have" - the real, data-backed half of Alex's ask.
-    var mins = document.createElement('input');
-    mins.id = 'qe-budget';
-    mins.type = 'number'; mins.min = '5'; mins.step = '5'; mins.placeholder = 'mins free';
-    mins.style.cssText = 'width:86px;background:var(--panel2,#12121c);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:12px;padding:4px 8px;';
-    mins.oninput = function() {
-      var v = parseFloat(mins.value);
-      self._budget = (isFinite(v) && v > 0) ? v : null;
+      var controls = document.createElement('div');
+      controls.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+
+      // "how much time I have" - the real, data-backed half of Alex's ask.
+      var mins = document.createElement('input');
+      mins.id = 'qe-budget';
+      mins.type = 'number'; mins.min = '5'; mins.step = '5'; mins.placeholder = 'mins free';
+      mins.style.cssText = 'width:86px;background:var(--panel2,#12121c);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:12px;padding:4px 8px;';
+      mins.oninput = function() {
+        var v = parseFloat(mins.value);
+        self._budget = (isFinite(v) && v > 0) ? v : null;
+        self._renderPanel();
+      };
+      controls.appendChild(mins);
+
+      var rescan = document.createElement('button');
+      rescan.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.4);cursor:pointer;font-size:11px;padding:4px 10px;';
+      rescan.textContent = '↻ Rescan';
+      rescan.onclick = function() { self._loadStats().then(function() { return self.refresh(); }); };
+      controls.appendChild(rescan);
+
+      hdr.appendChild(controls);
+      panel.appendChild(hdr);
+
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;';
+      note.textContent = 'Every quest here comes from a real row in your own data — an OBS ConID, a tracked knowledge gap, the taxonomy review queue, or something genuinely waiting on you. Times are real running averages once you have actually timed a run.';
+      panel.appendChild(note);
+
+      var grid = document.createElement('div');
+      grid.id = 'qe-grid';
+      grid.className = 'quest-grid';
+      panel.appendChild(grid);
+
+      var first = page.querySelector('.section-title');
+      if (first && first.parentNode === page) page.insertBefore(panel, first.nextSibling);
+      else page.appendChild(panel);
       self._renderPanel();
-    };
-    controls.appendChild(mins);
+    },
 
-    var rescan = document.createElement('button');
-    rescan.style.cssText = 'background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.4);cursor:pointer;font-size:11px;padding:4px 10px;';
-    rescan.textContent = '↻ Rescan';
-    rescan.onclick = function() { self._loadStats().then(function() { return self.refresh(); }); };
-    controls.appendChild(rescan);
+    _renderPanel: function() {
+      var grid = document.getElementById('qe-grid');
+      if (!grid) return;
+      var self = RPGACE.modules.questEngine;
+      grid.innerHTML = '';
 
-    hdr.appendChild(controls);
-    panel.appendChild(hdr);
-
-    var note = document.createElement('div');
-    note.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;';
-    note.textContent = 'Every quest here comes from a real row in your own data — an OBS ConID, a tracked knowledge gap, the taxonomy review queue, or something genuinely waiting on you. Times are real running averages once you have actually timed a run.';
-    panel.appendChild(note);
-
-    var grid = document.createElement('div');
-    grid.id = 'qe-grid';
-    grid.className = 'quest-grid';
-    panel.appendChild(grid);
-
-    var first = page.querySelector('.section-title');
-    if (first && first.parentNode === page) page.insertBefore(panel, first.nextSibling);
-    else page.appendChild(panel);
-    this._renderPanel();
-  },
-
-  _fmtEstimate: function(row) {
-    var self = this;
-    var scope = 'quest', key = row.quest_key;
-    var mins = self.estimateFor(scope, key, row.estimated_minutes);
-    var n = self.samplesFor(scope, key);
-    var txt = '~' + (Math.round(mins * 10) / 10) + ' min';
-    if (n === 0) txt += ' · estimate only, never timed';
-    else txt += ' · averaged over ' + n + ' real run' + (n === 1 ? '' : 's') + ' + the original estimate';
-    return { mins: mins, text: txt };
-  },
-
-  _renderPanel: function() {
-    var grid = document.getElementById('qe-grid');
-    if (!grid) return;
-    var self = this;
-    grid.innerHTML = '';
-
-    var rows = self._rows.slice();
-    if (self._budget != null) {
-      rows = rows.filter(function(r) { return self._fmtEstimate(r).mins <= self._budget; });
-    }
-
-    if (!rows.length) {
-      var empty = document.createElement('div');
-      empty.style.cssText = 'font-size:12px;color:var(--muted);padding:14px;border:1px solid var(--border);border-radius:8px;';
-      empty.textContent = self._budget != null
-        ? 'Nothing currently fits in ' + self._budget + ' minutes.'
-        : 'No generated quests right now — none of the four triggers found real matching data.';
-      grid.appendChild(empty);
-      return;
-    }
-
-    rows.forEach(function(r) {
-      var est = self._fmtEstimate(r);
-      var card = document.createElement('div');
-      card.className = 'quest-card ' + (r.category || 'career');
-
-      var top = document.createElement('div');
-      top.className = 'quest-top';
-      var nm = document.createElement('div'); nm.className = 'quest-name'; nm.textContent = r.name;
-      var xp = document.createElement('div'); xp.className = 'quest-xp'; xp.textContent = '+' + (r.xp || 0) + ' XP';
-      top.appendChild(nm); top.appendChild(xp);
-      card.appendChild(top);
-
-      var desc = document.createElement('div');
-      desc.className = 'quest-desc'; desc.textContent = r.description || '';
-      card.appendChild(desc);
-
-      var time = document.createElement('div');
-      time.style.cssText = 'font-size:11px;color:#2ABFB0;margin:6px 0 2px;';
-      time.textContent = '⏱ ' + est.text;
-      card.appendChild(time);
-
-      if (r.workflow_key && self.WORKFLOWS[r.workflow_key]) {
-        var wf = self.WORKFLOWS[r.workflow_key];
-        var steps = document.createElement('div');
-        steps.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.6;';
-        steps.textContent = 'Workflow · ' + wf.steps.map(function(s) {
-          return s.label + ' (' + Math.round(self.estimateFor('step', s.key, s.estimate)) + 'm)';
-        }).join(' → ');
-        card.appendChild(steps);
+      var rows = self._rows.slice();
+      if (self._budget != null) {
+        rows = rows.filter(function(r) { return self._fmtEstimate(r).mins <= self._budget; });
       }
 
-      var tags = document.createElement('div');
-      tags.className = 'quest-tags';
-      [r.quest_kind, r.source_table].forEach(function(x) {
-        if (!x) return;
-        var s = document.createElement('span'); s.className = 'tag'; s.textContent = x;
-        tags.appendChild(s);
+      if (!rows.length) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'font-size:12px;color:var(--muted);padding:14px;border:1px solid var(--border);border-radius:8px;';
+        empty.textContent = self._budget != null
+          ? 'Nothing currently fits in ' + self._budget + ' minutes.'
+          : 'No generated quests right now — none of the four triggers found real matching data.';
+        grid.appendChild(empty);
+        return;
+      }
+
+      rows.forEach(function(r) {
+        var est = self._fmtEstimate(r);
+        var card = document.createElement('div');
+        card.className = 'quest-card ' + (r.category || 'career');
+
+        var top = document.createElement('div');
+        top.className = 'quest-top';
+        var nm = document.createElement('div'); nm.className = 'quest-name'; nm.textContent = r.name;
+        var xp = document.createElement('div'); xp.className = 'quest-xp'; xp.textContent = '+' + (r.xp || 0) + ' XP';
+        top.appendChild(nm); top.appendChild(xp);
+        card.appendChild(top);
+
+        var desc = document.createElement('div');
+        desc.className = 'quest-desc'; desc.textContent = r.description || '';
+        card.appendChild(desc);
+
+        var time = document.createElement('div');
+        time.style.cssText = 'font-size:11px;color:#2ABFB0;margin:6px 0 2px;';
+        time.textContent = '⏱ ' + est.text;
+        card.appendChild(time);
+
+        if (r.workflow_key && self.WORKFLOWS[r.workflow_key]) {
+          var wf = self.WORKFLOWS[r.workflow_key];
+          var steps = document.createElement('div');
+          steps.style.cssText = 'font-size:10px;color:var(--muted);margin-bottom:6px;line-height:1.6;';
+          steps.textContent = 'Workflow · ' + wf.steps.map(function(s) {
+            return s.label + ' (' + Math.round(self.estimateFor('step', s.key, s.estimate)) + 'm)';
+          }).join(' → ');
+          card.appendChild(steps);
+        }
+
+        var tags = document.createElement('div');
+        tags.className = 'quest-tags';
+        [r.quest_kind, r.source_table].forEach(function(x) {
+          if (!x) return;
+          var s = document.createElement('span'); s.className = 'tag'; s.textContent = x;
+          tags.appendChild(s);
+        });
+        card.appendChild(tags);
+
+        var btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+
+        if (!r.started_at) {
+          var startBtn = document.createElement('button');
+          startBtn.className = 'complete-btn';
+          startBtn.style.cssText = 'flex:1;border-color:#2ABFB0;color:#2ABFB0;';
+          startBtn.textContent = '▶ Start timer';
+          startBtn.onclick = function() { self.startQuest(r.id); };
+          btnRow.appendChild(startBtn);
+        } else {
+          var timing = document.createElement('div');
+          timing.style.cssText = 'flex:1;font-size:11px;color:#2ABFB0;align-self:center;';
+          timing.textContent = '⏱ running since ' + new Date(r.started_at).toLocaleTimeString();
+          btnRow.appendChild(timing);
+        }
+
+        var doneBtn = document.createElement('button');
+        doneBtn.className = 'complete-btn';
+        doneBtn.style.flex = '1';
+        doneBtn.textContent = '◎ Mark Complete';
+        doneBtn.onclick = function() { self.completeQuest(r.id); };
+        btnRow.appendChild(doneBtn);
+
+        var dis = document.createElement('button');
+        dis.className = 'complete-btn';
+        dis.style.cssText = 'flex:0 0 auto;border-color:var(--border);color:var(--muted);';
+        dis.textContent = '✕';
+        dis.title = 'Dismiss this quest';
+        dis.onclick = function() { self.dismissQuest(r.id); };
+        btnRow.appendChild(dis);
+
+        card.appendChild(btnRow);
+        grid.appendChild(card);
       });
-      card.appendChild(tags);
-
-      var btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
-
-      if (!r.started_at) {
-        var startBtn = document.createElement('button');
-        startBtn.className = 'complete-btn';
-        startBtn.style.cssText = 'flex:1;border-color:#2ABFB0;color:#2ABFB0;';
-        startBtn.textContent = '▶ Start timer';
-        startBtn.onclick = function() { self.startQuest(r.id); };
-        btnRow.appendChild(startBtn);
-      } else {
-        var timing = document.createElement('div');
-        timing.style.cssText = 'flex:1;font-size:11px;color:#2ABFB0;align-self:center;';
-        timing.textContent = '⏱ running since ' + new Date(r.started_at).toLocaleTimeString();
-        btnRow.appendChild(timing);
-      }
-
-      var doneBtn = document.createElement('button');
-      doneBtn.className = 'complete-btn';
-      doneBtn.style.flex = '1';
-      doneBtn.textContent = '◎ Mark Complete';
-      doneBtn.onclick = function() { self.completeQuest(r.id); };
-      btnRow.appendChild(doneBtn);
-
-      var dis = document.createElement('button');
-      dis.className = 'complete-btn';
-      dis.style.cssText = 'flex:0 0 auto;border-color:var(--border);color:var(--muted);';
-      dis.textContent = '✕';
-      dis.title = 'Dismiss this quest';
-      dis.onclick = function() { self.dismissQuest(r.id); };
-      btnRow.appendChild(dis);
-
-      card.appendChild(btnRow);
-      grid.appendChild(card);
-    });
+    },
   },
+
+  // Thin top-level pass-throughs — these preserve the exact existing
+  // public API byte-for-byte. `this` is always the module object itself,
+  // because every real call site invokes them as a property access on the
+  // module (`self.X` from inside this module's own init / boot chain /
+  // promise chains / button handlers, or RPGACE.modules.questEngine.X(...))
+  // — never a detached function reference.
+  //
+  // Real external API surface, from a fresh whole-repo grep run for this
+  // split, covering BOTH the `RPGACE.modules.questEngine.X` direct form AND
+  // every local-alias form (`var qe = RPGACE.modules.questEngine`), the
+  // bracket form `RPGACE.modules['questEngine']`, and index.html's inline
+  // onclick handlers: this module has THREE real external call sites, all
+  // of them in this same file's own LEGACY:mainjs section (the mechanically
+  // merged former main.js), and all three invoke a TOP-LEVEL method on the
+  // module object, so all three keep working byte-identically through the
+  // pass-throughs below:
+  //   • makeCard()        -> qe._loadBoardStarts()[q.id]   (now logic)
+  //   • completeQuest()   -> qe.recordBoardCompletion(q)   (now logic)
+  //   • startBoardQuest() -> qe.startBoardQuest(id, btn)   (now logic)
+  // index.html itself contains ZERO references to this module by name — the
+  // Quest Board's `onclick="startBoardQuest(...)"` / `onclick=
+  // "completeQuest(...)"` handlers are generated inside makeCard's own
+  // innerHTML string and call those legacy GLOBALS, which are the three
+  // wrappers above.
+  //
+  // A real name collision worth knowing before touching either side: this
+  // module's own `completeQuest` and `startBoardQuest` are DIFFERENT
+  // functions from the legacy globals of the same names. The legacy global
+  // `startBoardQuest(id, btn)` does delegate to this module's
+  // `startBoardQuest`; the legacy global `completeQuest(id, xp, btn)` does
+  // NOT delegate to this module's `completeQuest(id)` — it calls
+  // `recordBoardCompletion(q)` instead. They are two genuinely different
+  // quest systems (the in-memory board vs. the generated quest_log rows)
+  // that happen to share two method names.
+  //
+  // All 27 moved functions keep a pass-through regardless, for two real
+  // reasons: the module's own internal call graph reaches nearly every one
+  // of them through `self.X` (which resolves to the module, i.e. to these),
+  // and the module's real member surface must stay byte-identical to before
+  // this split. The 8 DATA fields are data, stay at module scope, and are
+  // NOT pass-throughs.
+  //
+  // Note for a future reader: errorLog.METHOD_MODULE_MAP (the G109 stack-
+  // trace attribution table) is keyed by method NAME, and this split changes
+  // no method name — scripts/generate_method_module_map.py was re-run before
+  // and after and produced byte-identical output, confirmed, not assumed.
+  _boot: function() { return this.logic._boot(); },
+  _runBoot: function() { return this.logic._runBoot(); },
+  blend: function(estimate, completionCount, totalActual) { return this.logic.blend(estimate, completionCount, totalActual); },
+  _statId: function(scope, key) { return this.logic._statId(scope, key); },
+  _loadStats: function() { return this.logic._loadStats(); },
+  estimateFor: function(scope, key, fallback) { return this.logic.estimateFor(scope, key, fallback); },
+  samplesFor: function(scope, key) { return this.logic.samplesFor(scope, key); },
+  workflowEstimate: function(workflowKey) { return this.logic.workflowEstimate(workflowKey); },
+  recordDuration: function(scope, key, label, firstEstimate, actualMinutes) { return this.logic.recordDuration(scope, key, label, firstEstimate, actualMinutes); },
+  _scanObsRaw: function() { return this.logic._scanObsRaw(); },
+  _scanKnowledgeGaps: function() { return this.logic._scanKnowledgeGaps(); },
+  _scanTaxonomyReview: function() { return this.logic._scanTaxonomyReview(); },
+  _scanNeedsInput: function() { return this.logic._scanNeedsInput(); },
+  refresh: function() { return this.logic.refresh(); },
+  _createQuests: function(cands) { return this.logic._createQuests(cands); },
+  startQuest: function(id) { return this.logic.startQuest(id); },
+  completeQuest: function(id) { return this.logic.completeQuest(id); },
+  dismissQuest: function(id) { return this.logic.dismissQuest(id); },
+  recordBoardCompletion: function(q) { return this.logic.recordBoardCompletion(q); },
+  _persistBoardStarts: function() { return this.logic._persistBoardStarts(); },
+  _loadBoardStarts: function() { return this.logic._loadBoardStarts(); },
+  startBoardQuest: function(id, btn) { return this.logic.startBoardQuest(id, btn); },
+  _restoreBoardState: function() { return this.logic._restoreBoardState(); },
+  _paintRestoredState: function() { return this.ui._paintRestoredState(); },
+  _inject: function() { return this.ui._inject(); },
+  _fmtEstimate: function(row) { return this.logic._fmtEstimate(row); },
+  _renderPanel: function() { return this.ui._renderPanel(); },
 
 });
 /* ===END:questEngine=== */
