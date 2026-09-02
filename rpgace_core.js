@@ -9856,25 +9856,31 @@ RPGACE.register('taxonomyReviewQueue', {
   //     pass-throughs via `self.X`, never `this.logic.X` directly.
   //
   // THREE pre-existing oddities were found while reading every function for
-  // this split and are FLAGGED IN PLACE, NOT FIXED (each carries its own note
-  // at the exact spot). None is caused by, or affected by, this refactor:
+  // this split. The first two (below) were FIXED separately, same session,
+  // after the split — real toasts added on 7 real write-failure sites plus
+  // the malformed-fusion-proposal guard, per rule 7 (fail loud). Neither
+  // fix changed any successful-path behaviour; only the failure path now
+  // surfaces. The third (init) is correct as-is, not a bug:
   //   • Silent-swallow writes — SEVEN sites, counted by direct grep of the
   //     module's own line range, not estimated. Every `secureWrite` that marks
-  //     a row accepted/rejected/confirmed ends in `.catch(function() {})`: six
-  //     status writes (logic._acceptPhylumPathProposal, logic._acceptConcept-
+  //     a row accepted/rejected/confirmed used to end in `.catch(function() {})`:
+  //     six status writes (logic._acceptPhylumPathProposal, logic._acceptConcept-
   //     Fusion, logic._editPhylumPathProposal, ui._renderProposalRow's Reject
   //     button, and BOTH of ui._renderLinkRow's buttons), plus one more on the
   //     two-row `taxonomy_links` insert inside logic._acceptConceptFusion. A
-  //     failed write leaves the row visually gone but still `pending` in
-  //     Supabase, with no toast and no console line, contradicting rule 7
-  //     (fail loud). Pre-dates this pass by months.
-  //   • logic._acceptConceptFusion returns early and silently when a stored
-  //     proposal is missing attachToId/otherNodeId/newName, while its caller
-  //     (ui._renderProposalRow's Accept button) has already faded and removed
-  //     the row unconditionally — so a malformed fusion proposal vanishes from
-  //     view without being accepted OR rejected. It does reappear on the next
-  //     open (the row stays `pending`), so nothing is lost; it is a no-feedback
-  //     dead click, not data loss.
+  //     failed write left the row visually gone but still `pending` in
+  //     Supabase, with no toast and no console line. FIXED: every one of the
+  //     7 sites now shows a real RPGACE.utils.toast on failure, naming what
+  //     happened and what state the row is really in.
+  //   • logic._acceptConceptFusion used to return early and silently when a
+  //     stored proposal was missing attachToId/otherNodeId/newName, while its
+  //     caller (ui._renderProposalRow's Accept button) had already faded and
+  //     removed the row unconditionally — so a malformed fusion proposal
+  //     vanished from view without being accepted OR rejected, with zero
+  //     feedback. FIXED: the guard now shows a real toast before returning.
+  //     Nothing was ever lost either way (the row stays `pending` and
+  //     reappears on the next open) — this was a no-feedback dead click, not
+  //     data loss, but rule 7 still applies to a dead click.
   //   • `init` is an empty function body (`init: function() {},`). That is
   //     correct and deliberate — the standalone dashboard badge this module
   //     used to inject was removed in July 2026 (see the module comment above)
@@ -9921,19 +9927,16 @@ RPGACE.register('taxonomyReviewQueue', {
       var meta = RPGACE.modules.taxonomyReviewQueue._sourceMetaForProposal(p);
       var finish = function(attachNode) {
         pp._insertNewSteps(p.phylum_number, attachNode, ps.newSteps || [], ps.explainers || [], ps.insightText || '', meta)
-          // FLAGGED, NOT FIXED (G53 split, Sep 2026) — SILENT-SWALLOW WRITE,
-          // and this is the FIRST of seven identical sites in this module (the
-          // header block above names all seven). `.catch(function() {})` means
-          // a failed status write is invisible: the leaf has already been
-          // inserted into taxonomy_tree by _insertNewSteps, but the proposal
-          // stays `pending`, so re-opening the queue offers the same proposal
-          // again and a second Accept would insert the leaf twice. Contradicts
-          // rule 7 (fail loud). Pre-dates this pass; fixing it means adding a
-          // real toast, which is a behaviour change a pure-refactor pass must
-          // not make. There is also no Supabase backup to recover a double
-          // insert from, which is why this is worth a real look separately.
           .then(function() {
-            RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
+            // Fail-loud fix (rule 7): the leaf is already in taxonomy_tree at
+            // this point via _insertNewSteps — if THIS status write fails, the
+            // proposal stays 'pending' and a second Accept would insert the
+            // same leaf twice, with no Supabase backup to recover from. A
+            // failure must be visible, not silently swallowed.
+            RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id)
+              .catch(function() {
+                RPGACE.utils.toast('⚠ Leaf created, but marking the proposal accepted failed — it may reappear in the queue. Reject it manually if so, to avoid a duplicate insert.', '#CC4A4A', 6000);
+              });
           });
       };
       if (ps.attachToId) {
@@ -9954,17 +9957,16 @@ RPGACE.register('taxonomyReviewQueue', {
     // ── RPGACE.sb.insert() defaults to return=minimal).                    ──
     _acceptConceptFusion: function(p) {
       var ps = p.proposed_steps || {};
-      // FLAGGED, NOT FIXED (G53 split, Sep 2026) — SILENT NO-OP DEAD CLICK.
-      // This guard returns without marking the proposal accepted OR rejected,
-      // while its caller (ui._renderProposalRow's Accept button) has already
-      // faded the row and calls row.remove() unconditionally right after. So a
-      // malformed stored concept-fusion proposal disappears from the queue with
-      // zero feedback — no toast, no console line. Nothing is lost (the row
-      // stays `pending` and reappears on the next open), which is why this is a
-      // no-feedback dead click rather than data loss, but it contradicts rule 7
-      // (fail loud). Pre-dates this pass; a pure-refactor pass must not change
-      // behaviour, so it is named here rather than fixed.
-      if (!ps.attachToId || !ps.otherNodeId || !ps.newName) return;
+      // Fail-loud fix (rule 7): the caller (ui._renderProposalRow's Accept
+      // button) has already faded the row and removes it unconditionally right
+      // after calling this — without a toast here, a malformed stored
+      // concept-fusion proposal would vanish from view with zero feedback.
+      // Nothing is lost (the row stays 'pending' and reappears on the next
+      // open), but the dead click needs to be visible, not silent.
+      if (!ps.attachToId || !ps.otherNodeId || !ps.newName) {
+        RPGACE.utils.toast('⚠ This fusion proposal is missing required data and can\'t be accepted — it will reappear in the queue.', '#CC4A4A', 6000);
+        return;
+      }
 
       RPGACE.sb.select('taxonomy_tree', 'id=eq.' + ps.attachToId + '&limit=1')
         .then(function(rows) {
@@ -9986,14 +9988,19 @@ RPGACE.register('taxonomyReviewQueue', {
             return RPGACE.sb.secureWrite('taxonomy_links', 'insert', [
               { node_a_id: newNode.id, node_b_id: attachNode.id, link_insight: ps.synthesis || '', status: 'confirmed' },
               { node_a_id: newNode.id, node_b_id: ps.otherNodeId, link_insight: ps.synthesis || '', status: 'confirmed' }
-            ]).catch(function() {});
+            ]).catch(function() {
+              RPGACE.utils.toast('⚠ Merged leaf created, but linking it back to its two source branches failed — the fusion links are missing.', '#CC4A4A', 6000);
+            });
           });
         })
         .then(function() {
-          RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
+          RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {
+            RPGACE.utils.toast('⚠ Merged leaf created, but marking the proposal accepted failed — it may reappear in the queue.', '#CC4A4A', 6000);
+          });
         })
         .catch(function(e) {
           console.warn('[taxonomyReviewQueue] concept-fusion accept failed:', e.message);
+          RPGACE.utils.toast('⚠ Creating the merged leaf failed: ' + (e && e.message || 'unknown error'), '#CC4A4A', 6000);
         });
     },
 
@@ -10010,7 +10017,9 @@ RPGACE.register('taxonomyReviewQueue', {
         pp._showPlacementConfirm(p.phylum_number, attachNode, (ps.newSteps || []).slice(), (ps.explainers || []).slice(), ps.insightText || '',
           function(finalSteps, finalExplainers) {
             pp._insertNewSteps(p.phylum_number, attachNode, finalSteps, finalExplainers, ps.insightText || '', meta).then(function() {
-              RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
+              RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'accepted', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {
+                RPGACE.utils.toast('⚠ Leaf created, but marking the proposal accepted failed — it may reappear in the queue.', '#CC4A4A', 6000);
+              });
             });
           }
         );
@@ -10196,7 +10205,9 @@ RPGACE.register('taxonomyReviewQueue', {
       rejectBtn.textContent = '✗ Reject';
       rejectBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       rejectBtn.onclick = function() {
-        RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {});
+        RPGACE.sb.secureWrite('taxonomy_proposals', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + p.id).catch(function() {
+          RPGACE.utils.toast('⚠ Rejecting this proposal failed — it may still show as pending. Try again.', '#CC4A4A', 6000);
+        });
         row.remove();
       };
 
@@ -10249,7 +10260,9 @@ RPGACE.register('taxonomyReviewQueue', {
       acceptBtn2.style.cssText = 'padding:6px 12px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
       acceptBtn2.onclick = function() {
         row.style.opacity = '0.4'; row.style.pointerEvents = 'none';
-        RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'confirmed', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
+        RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'confirmed', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {
+          RPGACE.utils.toast('⚠ Confirming this fusion link failed — it may still show as pending. Try again.', '#CC4A4A', 6000);
+        });
         row.remove();
       };
 
@@ -10257,7 +10270,9 @@ RPGACE.register('taxonomyReviewQueue', {
       rejectBtn2.textContent = '✗ Reject';
       rejectBtn2.style.cssText = 'padding:6px 12px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:6px;color:#CC4A4A;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
       rejectBtn2.onclick = function() {
-        RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {});
+        RPGACE.sb.secureWrite('taxonomy_links', 'update', { status: 'rejected', reviewed_at: new Date().toISOString() }, 'id=eq.' + l.id).catch(function() {
+          RPGACE.utils.toast('⚠ Rejecting this fusion link failed — it may still show as pending. Try again.', '#CC4A4A', 6000);
+        });
         row.remove();
       };
 
