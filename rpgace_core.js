@@ -6704,6 +6704,20 @@ RPGACE.register('visualOracle', {
 
   ICONS: ['🎬','📄','⚠️','🎨','🎞️','🎥'],
 
+  _pendingCapture: false,
+
+  // G53 (Sep 2026) split note: ui holds real DOM construction (the
+  // quick-row button injection, the slide-in command panel, and both
+  // popup pickers). logic holds pure Supabase-read/text-building work
+  // with zero DOM refs (the filmmaker-library fetch, the shared
+  // response-capture guard, and the creative_docs/style_profiles/
+  // video_jobs save chain). Every moved function was MOVED wholesale,
+  // never rewritten. Any function that reads a module-scope field
+  // (CMDS/DOC_SLUGS/ICONS/_pendingCapture) or calls a sibling method
+  // resolves through `var self = RPGACE.modules.visualOracle;`, never
+  // bare `this.` - a function invoked as ui.X()/logic.X() has `this`
+  // bound to that sub-object, not the module.
+
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._inject(); });
@@ -6711,6 +6725,9 @@ RPGACE.register('visualOracle', {
       if (name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self._inject(); }, 600);
     });
   },
+
+  // ui - rendering/DOM.
+  ui: {
 
   _inject: function() {
     if (document.getElementById('visual-oracle-btn')) return;
@@ -6731,8 +6748,8 @@ RPGACE.register('visualOracle', {
   },
 
   open: function() {
-    if (document.getElementById('visual-op')) { this._close(); return; }
-    var self = this;
+    var self = RPGACE.modules.visualOracle;
+    if (document.getElementById('visual-op')) { self._close(); return; }
     var panel = document.createElement('div');
     panel.id = 'visual-op';
     panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(155,89,182,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
@@ -6833,23 +6850,6 @@ RPGACE.register('visualOracle', {
     RPGACE.ui.slideInPanel(panel, {edge:'right'});
   },
 
-  // F14: fetches the 50-director Phylum 13 (Visio Cinematica) library and
-  // formats it as a compact reference block for Director Match. Fails open
-  // (empty block, same behaviour as before F14) if the fetch fails, rather
-  // than blocking the command entirely.
-  _withFilmmakerLibrary: function(callback) {
-    RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
-      .then(function(rows) {
-        rows = rows || [];
-        if (rows.length === 0) { callback(''); return; }
-        var list = rows.map(function(r) {
-          return '- ' + r.concept + ': ' + r.definition + ' Palette: ' + r.colour_palette;
-        }).join('\n');
-        callback(RPGACE.utils.phylumContext(14) + ' FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
-      })
-      .catch(function() { callback(''); });
-  },
-
   // 2026-07-31 — real UX gap Alex hit directly: the Visual Treatment Doc's
   // "DIRECTOR REFERENCE" placeholder used to fall through to fillGaps'
   // generic one-line textbox, no different from typing a genre or a BPM.
@@ -6884,7 +6884,14 @@ RPGACE.register('visualOracle', {
   // meaningfully variable for an OBS video) stays exactly as it is. One
   // picker, one blend/callback contract, no second hand-rolled copy (rule 8).
   _showDirectorPicker: function(callback, prefill, opts) {
-    var self = this;
+    // G53 split (Sep 2026): `self` below is a pre-existing DEAD LOCAL -
+    // nothing in this body reads it (every real reference inside uses
+    // `rows`/`opts`/local closures directly). Requalified to the module
+    // handle in place rather than deleted, same treatment as every other
+    // dead local this series has found - kept correct if a future edit
+    // ever does read it, per rule 4's "don't make a source change outside
+    // a pure refactor's remit" discipline.
+    var self = RPGACE.modules.visualOracle;
     opts = opts || {};
     RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
       .catch(function() { return []; })
@@ -7073,6 +7080,77 @@ RPGACE.register('visualOracle', {
       });
   },
 
+  // Manual save picker - shown after any of the 6 commands completes
+  // (Fork 3, Alex-confirmed: explicit picker, not an ambient "active
+  // production" context - that idea is logged as a real future
+  // enhancement, not built, per the same spec backlog). Lists recent
+  // content_productions rows so Alex can pick a target; calls the same
+  // _saveDocToProduction logic the automatic flow uses.
+  _showSaveToPipelinePicker: function(docSlug, text) {
+    var self = RPGACE.modules.visualOracle;
+    RPGACE.sb.select('content_productions', 'select=id,con_id,title&order=created_at.desc&limit=15')
+      .then(function(rows) {
+        rows = rows || [];
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.9', width: '420px', borderColor: 'rgba(155,89,182,0.25)',
+          title: '💾 Save to Content Pipeline', closeLabel: 'Skip',
+        });
+        var box = pop.box;
+
+        if (rows.length === 0) {
+          var msg = document.createElement('div');
+          msg.style.cssText = 'color:rgba(226,226,236,0.4);font-size:12px;margin-bottom:16px;';
+          msg.textContent = 'No Content Pipeline entries yet.';
+          box.appendChild(msg);
+        } else {
+          var sel = document.createElement('select');
+          sel.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
+          rows.forEach(function(r) {
+            var opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = '#' + r.con_id + ' — ' + r.title;
+            sel.appendChild(opt);
+          });
+          box.appendChild(sel);
+        }
+
+        var saveBtn = document.createElement('button');
+        saveBtn.textContent = '💾 Save';
+        saveBtn.disabled = rows.length === 0;
+        saveBtn.style.cssText = 'width:100%;padding:10px;margin-bottom:8px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        saveBtn.onclick = function() {
+          var selEl = box.querySelector('select');
+          var productionId = selEl ? selEl.value : null;
+          pop.close();
+          if (productionId) self._saveDocToProduction(docSlug, text, productionId, null);
+        };
+        box.appendChild(saveBtn);
+      })
+      .catch(function() {});
+  },
+
+  },
+
+  // logic - business logic/data.
+  logic: {
+
+  // F14: fetches the 50-director Phylum 13 (Visio Cinematica) library and
+  // formats it as a compact reference block for Director Match. Fails open
+  // (empty block, same behaviour as before F14) if the fetch fails, rather
+  // than blocking the command entirely.
+  _withFilmmakerLibrary: function(callback) {
+    RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
+      .then(function(rows) {
+        rows = rows || [];
+        if (rows.length === 0) { callback(''); return; }
+        var list = rows.map(function(r) {
+          return '- ' + r.concept + ': ' + r.definition + ' Palette: ' + r.colour_palette;
+        }).join('\n');
+        callback(RPGACE.utils.phylumContext(14) + ' FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
+      })
+      .catch(function() { callback(''); });
+  },
+
   // ── Content Pipeline overseer build (2026-07-28, Alex-confirmed forks:
   // content_pipeline_overseer_spec_backlog_2026-07-28.txt) ──────────────
   // Shared one-shot capture: waits for the very next completed Oracle
@@ -7099,9 +7177,8 @@ RPGACE.register('visualOracle', {
   // next one starts, which is the only way to guarantee correct
   // attribution without a much larger request-correlation rewrite across
   // every real call site (rule 11 - proportionate to the actual risk).
-  _pendingCapture: false,
   _captureNextResponse: function(callback) {
-    var self = this;
+    var self = RPGACE.modules.visualOracle;
     if (self._pendingCapture) {
       RPGACE.utils.toast('⚠️ Another Oracle reply is still pending — wait for it to finish before starting a new Visual Treatment/action, or it can save into the wrong ConID', '#CC4A4A', 5000);
       return;
@@ -7284,54 +7361,18 @@ RPGACE.register('visualOracle', {
     }
   },
 
-  // Manual save picker - shown after any of the 6 commands completes
-  // (Fork 3, Alex-confirmed: explicit picker, not an ambient "active
-  // production" context - that idea is logged as a real future
-  // enhancement, not built, per the same spec backlog). Lists recent
-  // content_productions rows so Alex can pick a target; calls the same
-  // _saveDocToProduction logic the automatic flow uses.
-  _showSaveToPipelinePicker: function(docSlug, text) {
-    var self = this;
-    RPGACE.sb.select('content_productions', 'select=id,con_id,title&order=created_at.desc&limit=15')
-      .then(function(rows) {
-        rows = rows || [];
-        var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.9', width: '420px', borderColor: 'rgba(155,89,182,0.25)',
-          title: '💾 Save to Content Pipeline', closeLabel: 'Skip',
-        });
-        var box = pop.box;
-
-        if (rows.length === 0) {
-          var msg = document.createElement('div');
-          msg.style.cssText = 'color:rgba(226,226,236,0.4);font-size:12px;margin-bottom:16px;';
-          msg.textContent = 'No Content Pipeline entries yet.';
-          box.appendChild(msg);
-        } else {
-          var sel = document.createElement('select');
-          sel.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:16px;';
-          rows.forEach(function(r) {
-            var opt = document.createElement('option');
-            opt.value = r.id;
-            opt.textContent = '#' + r.con_id + ' — ' + r.title;
-            sel.appendChild(opt);
-          });
-          box.appendChild(sel);
-        }
-
-        var saveBtn = document.createElement('button');
-        saveBtn.textContent = '💾 Save';
-        saveBtn.disabled = rows.length === 0;
-        saveBtn.style.cssText = 'width:100%;padding:10px;margin-bottom:8px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-        saveBtn.onclick = function() {
-          var selEl = box.querySelector('select');
-          var productionId = selEl ? selEl.value : null;
-          pop.close();
-          if (productionId) self._saveDocToProduction(docSlug, text, productionId, null);
-        };
-        box.appendChild(saveBtn);
-      })
-      .catch(function() {});
   },
+
+  // Thin top-level pass-throughs - preserve the exact existing public
+  // API. See ui/logic above for the real implementations.
+  _inject: function() { return this.ui._inject(); },
+  _close: function() { return this.ui._close(); },
+  open: function() { return this.ui.open(); },
+  _showDirectorPicker: function(callback, prefill, opts) { return this.ui._showDirectorPicker(callback, prefill, opts); },
+  _showSaveToPipelinePicker: function(docSlug, text) { return this.ui._showSaveToPipelinePicker(docSlug, text); },
+  _withFilmmakerLibrary: function(callback) { return this.logic._withFilmmakerLibrary(callback); },
+  _captureNextResponse: function(callback) { return this.logic._captureNextResponse(callback); },
+  _saveDocToProduction: function(docSlug, text, productionId, videoJobId) { return this.logic._saveDocToProduction(docSlug, text, productionId, videoJobId); },
 
 });
 /* ===END:visualOracle=== */
@@ -21887,6 +21928,15 @@ RPGACE.register('bookworm', {
 
 /* ===MODULE:config=== */
 RPGACE.register('config', {
+
+  // G53 (Sep 2026) housekeeping note: reviewed for the ui/logic split —
+  // genuinely not applicable. This module has exactly one real function
+  // (`init`, which must stay a literal top-level function regardless,
+  // since RPGACE.register() calls `module.init()` directly) — the rest of
+  // its size is a single large static data literal (RPGACE.CONFIG), never
+  // executed as its own function. There is nothing to separate into
+  // `ui`/`logic` sub-namespaces with only one real method. Left as-is,
+  // byte-identical.
 
   init: function() {
     /* CONFIG module — no DOM work, just sets globals */
