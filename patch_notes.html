@@ -74,6 +74,16 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧩✅ Sep 2 — G53 batch 9 complete: prodOraclePanel + journalQoL + ciAutoPropose split, 29 of 60 modules now done, 4 real bugs fixed</div>
+    <div class="card-body">
+      3 more zero-touchpoint modules. <code>prodOraclePanel</code> is a near-exact structural twin of <code>instaOraclePanel</code> (3 <code>ui</code>/1 <code>logic</code>). <code>journalQoL</code> splits 4/0 (all <code>ui</code>). <code>ciAutoPropose</code> splits 0/2 (both <code>logic</code>) — the "empty ui" precedent's third instance.<br><br>
+      <b>2 real requalification bugs found and fixed by the builder</b>, same class as batch 7's <code>oracleDevBridge.TABLE</code> bug: <code>prodOraclePanel.logic.run</code> read bare <code>this.CMDS[i]</code> (would TypeError on every command press, no feedback); <code>journalQoL</code> had an undeclared, runtime-assigned field <code>_activeSource</code> (created by one function, read by another as bare <code>this</code>) — left unqualified, a filter chip would visibly highlight and then silently filter nothing, forever, invisible to a plain top-level-key grep since the field is never declared.<br><br>
+      <b>2 more real bugs found in review and fixed as clearly separate, safe fixes</b>: <code>journalQoL</code>'s "All" chip never got active styling on first render despite being the real starting filter (cosmetic, single-site). <code>ciAutoPropose</code>'s shared-key <code>localStorage.setItem</code> had no try/catch, unlike <code>videoSummary</code>'s own write to the identical key — matched to the sibling's existing convention.<br><br>
+      Independently re-verified: <code>node --check</code> clean, self/this sweep clean, touchpoint re-grep clean, headless Chromium 15/15 real assertions including both fixes exercised end-to-end. Cache-bust <code>20260902q→20260902r</code>. Deployed and confirmed <code>READY</code>, commit <code>c0d7a73</code>. <b>29 of 60 real modules now split. Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 8 complete: 6 trivial modules split directly (no dispatch), 26 of 60 modules now done</div>
     <div class="card-body">
       Real correction found mid-session: the module-size scan used before batch 5 had a genuine bug (a brace-counting body extractor corrupted by string-escaping edge cases) that inflated several remaining modules to absurd sizes — re-derived every real size directly from the file's own <code>MODULE:</code>/<code>END:</code> markers (reliable ground truth) and found the true remaining set is much smaller than believed: none of the 34 modules left exceed ~1300 lines.<br><br>
