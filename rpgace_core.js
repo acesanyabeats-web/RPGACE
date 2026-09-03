@@ -28531,6 +28531,75 @@ RPGACE.register('agentsIntoOracle', {
 // encTaxonomyLink just above) so it survives category/sort clicks.
 RPGACE.register('encyclopediaQoL', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the SIXTEENTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
+  // tiktokOracle, instaOraclePanel and jargonEncyclopedia): split into two
+  // internal namespaces, `ui` (rendering/DOM) and `logic` (business
+  // logic/data), following the exact shape those fifteen already shipped
+  // and verified. Pure internal-structure refactor — zero functional,
+  // behavioural, UX, data or schema change; every function below was
+  // MOVED wholesale, never rewritten and never split down the middle.
+  //
+  // 4 real members, all functions, no data fields (checked by direct
+  // read of every top-level key, not assumed). `init` stays a literal
+  // top-level function (RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object) — byte-identical,
+  // including its `window.renderEncEntries` wrap, whose inner closure
+  // still calls `self._injectTaxBadges()`/`self._applySearch()` against
+  // the module and therefore lands on the top-level pass-throughs.
+  //
+  // REAL, HONEST RESULT WORTH NAMING RATHER THAN HIDING: all 3 movable
+  // functions land in `ui`, and `logic` below is genuinely EMPTY — the
+  // second module in this batch where that is the true answer. Each
+  // body was grepped BOTH ways before concluding this (for DOM
+  // keywords, and separately for anything that ISN'T DOM-related — a
+  // real computation, a Supabase call, an Oracle call), rather than
+  // reading names or taking a prior description on trust:
+  //   • _injectSearchBar — getElementById ×2, createElement,
+  //     addEventListener, insertBefore. DOM throughout; no computation
+  //     of any kind.
+  //   • _applySearch — reads the live input's `.value`, querySelectorAll
+  //     over the rendered cards, and sets `card.style.display`. Its
+  //     only "computation" is an inline `.toLowerCase().indexOf()`
+  //     against each card's own `textContent` — that is a read OF the
+  //     DOM, not a separable business rule, and this module's own
+  //     header note above says so outright: it deliberately filters
+  //     ALREADY-RENDERED cards rather than re-deriving the underlying
+  //     filter/sort logic. There is no data-layer half to extract.
+  //   • _injectTaxBadges — querySelectorAll, dataset read/write,
+  //     querySelector ×2, createElement, appendChild. It does hold one
+  //     genuinely non-DOM line (a `.find()` over
+  //     `window.ENC_ALL_ENTRIES`), but that lookup is keyed on a
+  //     `data-entry-id` attribute read out of the card being iterated,
+  //     inside the per-card DOM loop — extracting it would mean
+  //     splitting the function down the middle, which this pass's own
+  //     rules forbid. Moved wholesale to `ui`, correctly.
+  // Zero Supabase reads/writes and zero Oracle calls exist anywhere in
+  // this module — it is purely a presentation layer over data other
+  // modules already fetched, which is exactly why `logic` is empty. The
+  // empty `logic: {}` is kept deliberately so the module still presents
+  // the same two-namespace shape as its fifteen siblings, with the
+  // emptiness stated outright rather than silently omitted.
+  //
+  // `this`/`self` accounting for all 3 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _injectSearchBar — already had `var self = this;`, that one
+  //     line swapped for the module handle IN PLACE (it sits after the
+  //     three early-return guards, none of which touch `this`), so
+  //     statement order is literally unchanged. Left as `this`, the
+  //     input listener's `self._applySearch()` would have resolved
+  //     against `ui`, which has no such key — a real TypeError on
+  //     every keystroke in the search box.
+  //   • _applySearch — references neither `this` nor `self`; moved
+  //     byte-identical, no handle needed and none added.
+  //   • _injectTaxBadges — same: no `this`/`self` anywhere in its body
+  //     (its inner `forEach` callback closes over nothing from the
+  //     module), moved byte-identical.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     function patch() {
@@ -28554,63 +28623,96 @@ RPGACE.register('encyclopediaQoL', {
     });
   },
 
-  _injectSearchBar: function() {
-    if (document.getElementById('enc-search-input')) return;
-    var countEl = document.getElementById('enc-count');
-    var controlsRow = countEl ? countEl.parentElement : null;
-    if (!controlsRow) return;
-    var self = this;
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + writes.
+  // Genuinely EMPTY for this module (see the G53 note above): all 3
+  // movable functions touch the DOM directly, and this module makes no
+  // Supabase or Oracle calls at all. Kept rather than omitted so the
+  // two-namespace shape matches its fifteen siblings and the emptiness
+  // is stated, not silent.
+  // ============================================================
+  logic: {},
 
-    var input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'enc-search-input';
-    input.placeholder = '🔍 Search entries...';
-    input.style.cssText = 'flex:1;min-width:160px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:Rajdhani,sans-serif;outline:none';
-    input.addEventListener('input', function() { self._applySearch(); });
-    controlsRow.insertBefore(input, countEl);
+  // ============================================================
+  // ui — rendering/DOM: injects the search input into the Encyclopedia
+  // control row, filters the already-rendered cards, and stamps the
+  // taxonomy-link status badge onto each card's visible header row.
+  // ============================================================
+  ui: {
+
+    _injectSearchBar: function() {
+      if (document.getElementById('enc-search-input')) return;
+      var countEl = document.getElementById('enc-count');
+      var controlsRow = countEl ? countEl.parentElement : null;
+      if (!controlsRow) return;
+      var self = RPGACE.modules.encyclopediaQoL;
+
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.id = 'enc-search-input';
+      input.placeholder = '🔍 Search entries...';
+      input.style.cssText = 'flex:1;min-width:160px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:Rajdhani,sans-serif;outline:none';
+      input.addEventListener('input', function() { self._applySearch(); });
+      controlsRow.insertBefore(input, countEl);
+    },
+
+    _applySearch: function() {
+      var input = document.getElementById('enc-search-input');
+      var term = input ? input.value.trim().toLowerCase() : '';
+      var cards = document.querySelectorAll('#enc-output > div[id^="enc-card-"]');
+      Array.prototype.forEach.call(cards, function(card) {
+        var match = !term || card.textContent.toLowerCase().indexOf(term) !== -1;
+        card.style.display = match ? '' : 'none';
+      });
+    },
+
+    // Surfaces the SAME entry.taxonomy_node_id status encTaxonomyLink
+    // already tracks, but in the always-visible header row instead of only
+    // after expanding - the data-entry-id attribute is already present in
+    // each card's expanded section (just visually hidden, not absent from
+    // the DOM), so this reads it directly rather than recomputing anything.
+    _injectTaxBadges: function() {
+      var cards = document.querySelectorAll('#enc-output > div[id^="enc-card-"]');
+      Array.prototype.forEach.call(cards, function(card) {
+        if (card.dataset.taxBadge) return;
+        card.dataset.taxBadge = '1';
+        var idHolder = card.querySelector('[data-entry-id]');
+        var id = idHolder ? idHolder.getAttribute('data-entry-id') : null;
+        var entry = (window.ENC_ALL_ENTRIES || []).find(function(e) { return String(e.id || e.created_at) === String(id); });
+        // Header row is the div with the toggleEncEntry onclick; its first
+        // child wraps [title div, meta div] - meta is that wrapper's last
+        // child. Explicit structural knowledge from the real markup, not a
+        // generic nth-child guess that could match the wrong nested div.
+        var headerRow = card.querySelector('[onclick^="toggleEncEntry"]');
+        var metaRow = headerRow && headerRow.firstElementChild && headerRow.firstElementChild.lastElementChild;
+        if (!entry || !metaRow) return;
+        var badge = document.createElement('span');
+        if (entry.taxonomy_node_id) {
+          badge.textContent = ' · 🌳 Linked';
+          badge.style.color = '#4CAF82';
+        } else {
+          badge.textContent = ' · ○ Not yet placed';
+          badge.style.color = 'rgba(226,226,236,0.35)';
+        }
+        metaRow.appendChild(badge);
+      });
+    },
+
   },
 
-  _applySearch: function() {
-    var input = document.getElementById('enc-search-input');
-    var term = input ? input.value.trim().toLowerCase() : '';
-    var cards = document.querySelectorAll('#enc-output > div[id^="enc-card-"]');
-    Array.prototype.forEach.call(cards, function(card) {
-      var match = !term || card.textContent.toLowerCase().indexOf(term) !== -1;
-      card.style.display = match ? '' : 'none';
-    });
-  },
-
-  // Surfaces the SAME entry.taxonomy_node_id status encTaxonomyLink
-  // already tracks, but in the always-visible header row instead of only
-  // after expanding - the data-entry-id attribute is already present in
-  // each card's expanded section (just visually hidden, not absent from
-  // the DOM), so this reads it directly rather than recomputing anything.
-  _injectTaxBadges: function() {
-    var cards = document.querySelectorAll('#enc-output > div[id^="enc-card-"]');
-    Array.prototype.forEach.call(cards, function(card) {
-      if (card.dataset.taxBadge) return;
-      card.dataset.taxBadge = '1';
-      var idHolder = card.querySelector('[data-entry-id]');
-      var id = idHolder ? idHolder.getAttribute('data-entry-id') : null;
-      var entry = (window.ENC_ALL_ENTRIES || []).find(function(e) { return String(e.id || e.created_at) === String(id); });
-      // Header row is the div with the toggleEncEntry onclick; its first
-      // child wraps [title div, meta div] - meta is that wrapper's last
-      // child. Explicit structural knowledge from the real markup, not a
-      // generic nth-child guess that could match the wrong nested div.
-      var headerRow = card.querySelector('[onclick^="toggleEncEntry"]');
-      var metaRow = headerRow && headerRow.firstElementChild && headerRow.firstElementChild.lastElementChild;
-      if (!entry || !metaRow) return;
-      var badge = document.createElement('span');
-      if (entry.taxonomy_node_id) {
-        badge.textContent = ' · 🌳 Linked';
-        badge.style.color = '#4CAF82';
-      } else {
-        badge.textContent = ' · ○ Not yet placed';
-        badge.style.color = 'rgba(226,226,236,0.35)';
-      }
-      metaRow.appendChild(badge);
-    });
-  },
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of rpgace_core.js and index.html both, and of the whole repo
+  // for `RPGACE.modules.encyclopediaQoL.` — zero hits outside this
+  // module's own body), so these exist for convention and for its OWN
+  // internal calls: `init`'s `window.renderEncEntries` wrap calls
+  // `self._injectTaxBadges()` and `self._applySearch()`, its two timers/
+  // page:show hook call `self._injectSearchBar()`, and `ui.
+  // _injectSearchBar`'s input listener calls `self._applySearch()` —
+  // every one of those `self`s is the module, so each lands here first.
+  _injectSearchBar: function() { return this.ui._injectSearchBar(); },
+  _applySearch: function() { return this.ui._applySearch(); },
+  _injectTaxBadges: function() { return this.ui._injectTaxBadges(); },
 
 });
 /* ===END:encyclopediaQoL=== */
@@ -29674,6 +29776,89 @@ RPGACE.register('chroniclesLog', {
 // into Phylum Path's EXISTING page shell (not a new nav entry/page) per
 // Alex's explicit "build in to the existing rather than build on top."
 RPGACE.register('jargonEncyclopedia', {
+
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the FIFTEENTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
+  // tiktokOracle and instaOraclePanel): split into two internal
+  // namespaces, `ui` (rendering/DOM) and `logic` (business logic/data),
+  // following the exact shape those fourteen already shipped and
+  // verified. Pure internal-structure refactor — zero functional,
+  // behavioural, UX, data or schema change; every function below was
+  // MOVED wholesale, never rewritten and never split down the middle,
+  // its own body otherwise untouched apart from the explicitly-listed
+  // `this` → module-handle requalifications below.
+  //
+  // 4 real members, all functions, no data fields (checked by direct
+  // read of every top-level key, not assumed). `init` stays a literal
+  // top-level function (RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object) — byte-identical, still
+  // calling the top-level pass-through.
+  //
+  // REAL, HONEST RESULT WORTH NAMING RATHER THAN HIDING: all 3 movable
+  // functions land in `ui`, and `logic` below is genuinely EMPTY. That
+  // is not a classification failure or a shortcut — it is what this
+  // module actually is once looked at squarely: an injected button
+  // (_injectButton), a popup builder that also runs the one Supabase
+  // read (_openGlossary), and a markup renderer (_renderTerms). Each
+  // was checked by a keyword grep of its own body, never inferred from
+  // its name:
+  //   • _injectButton — getElementById ×2, createElement,
+  //     insertAdjacentElement. DOM throughout.
+  //   • _openGlossary — builds the whole popup, writes `pop.box.
+  //     innerHTML`, querySelectors two children out of it, and attaches
+  //     a real `input` listener. Its Supabase read is genuinely NOT
+  //     separable into `logic` without splitting the function down the
+  //     middle (forbidden by this pass's own rules) — the query's
+  //     `.then` immediately renders into the DOM nodes the same
+  //     function just created, and its `.catch` writes an error string
+  //     straight into `listEl.textContent`.
+  //   • _renderTerms — builds a markup STRING and assigns it to
+  //     `listEl.innerHTML`. Per the established rule extension from
+  //     prior batches, returning/assigning built HTML to `.innerHTML`
+  //     counts as constructing DOM exactly as `createElement` does.
+  // The empty `logic: {}` is kept deliberately so the module still
+  // presents the same two-namespace shape as its fourteen siblings,
+  // with the emptiness stated outright rather than silently omitted —
+  // the same real precedent youtubeOracle already set.
+  //
+  // The one real risk this split has to get right, function by
+  // function: a function moved into `ui`/`logic` is invoked with `this`
+  // bound to THAT sub-object, not the module. Exact accounting for all
+  // 3 moved functions, so a later reader can check by grep rather than
+  // take it on trust:
+  //   • _injectButton — already had `var self = this;`, that one line
+  //     swapped for the module handle IN PLACE, so statement order is
+  //     literally unchanged. (It sits after the two early-return
+  //     guards, which use neither `this` nor `self`, so nothing needed
+  //     hoisting.) Left as `this`, `self._openGlossary()` in the
+  //     onclick would have resolved against `ui`, which has no
+  //     `_openGlossary` — a real TypeError on every button press.
+  //   • _openGlossary — same in-place swap of its existing first-line
+  //     `var self = this;`. THIS IS THE ONE GENUINELY LOAD-BEARING
+  //     CASE IN THIS MODULE, and it is not the obvious one: the line
+  //     `self._allTerms = rows;` is a DYNAMIC property assignment onto
+  //     a field that is NOT declared as a top-level object-literal key
+  //     anywhere in this module (verified by direct grep — its only
+  //     occurrence in the whole file is that single write). It is
+  //     created at runtime. With the module handle it lands on the
+  //     module, exactly as it does today; had `self` been left as
+  //     `this` inside `ui`, the field would have silently attached
+  //     itself to the `ui` sub-object instead — no error, no warning,
+  //     just a field quietly living on the wrong object. The handle
+  //     below therefore resolves to
+  //     `RPGACE.modules.jargonEncyclopedia`, never `this.ui`.
+  //     (Separately: nothing in the codebase ever READS `_allTerms` —
+  //     a real pre-existing dead write, flagged in this pass's report
+  //     and deliberately left exactly as-is, per the standing
+  //     "restructure only, never silently fix" rule.)
+  //   • _renderTerms — references neither `this` nor `self` anywhere in
+  //     its body; moved byte-identical, no handle needed and none
+  //     added.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
@@ -29683,50 +29868,82 @@ RPGACE.register('jargonEncyclopedia', {
     setTimeout(function() { self._injectButton(); }, 2000);
   },
 
-  _injectButton: function() {
-    if (document.getElementById('jargon-enc-btn')) return;
-    var title = document.getElementById('pp-phylum-title');
-    if (!title || !title.parentNode) return;
-    var self = this;
-    var btn = document.createElement('button');
-    btn.id = 'jargon-enc-btn';
-    btn.textContent = '📖 Jargon Encyclopedia';
-    btn.style.cssText = 'margin-bottom:10px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
-    btn.onclick = function() { self._openGlossary(); };
-    title.insertAdjacentElement('afterend', btn);
-  },
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + writes.
+  // Genuinely EMPTY for this module (see the G53 note above): all 3
+  // movable functions touch the DOM directly, so all 3 are `ui`. Kept
+  // rather than omitted so the two-namespace shape matches its
+  // fourteen siblings and the emptiness is stated, not silent.
+  // ============================================================
+  logic: {},
 
-  _openGlossary: function() {
-    var self = this;
-    var dd = RPGACE.modules.dashDeck;
-    if (!dd || !dd._popup) return;
-    var pop = dd._popup({ eyebrow: '📖 Every leaf term across your tree', title: 'Jargon Encyclopedia', width: '640px', accent: 'var(--gold)' });
-    pop.box.innerHTML = '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;"><div id="jarg-list" style="max-height:50vh;overflow-y:auto;">Loading…</div>';
-    var listEl = pop.box.querySelector('#jarg-list');
-    var searchInp = pop.box.querySelector('#jarg-search');
-    RPGACE.sb.select('jargon_encyclopedia', 'select=name,path,explainer,phylum_number&order=name.asc&limit=1000').then(function(rows) {
-      rows = rows || [];
-      self._allTerms = rows;
-      self._renderTerms(listEl, rows);
-      searchInp.addEventListener('input', function() {
-        var q = searchInp.value.toLowerCase();
-        var filtered = rows.filter(function(r) { return (r.name || '').toLowerCase().indexOf(q) !== -1; });
-        self._renderTerms(listEl, filtered);
+  // ============================================================
+  // ui — rendering/DOM: injects the entry button into Phylum Path's
+  // existing page shell, builds the glossary popup (and runs the one
+  // read that fills it), and renders the term list markup.
+  // ============================================================
+  ui: {
+
+    _injectButton: function() {
+      if (document.getElementById('jargon-enc-btn')) return;
+      var title = document.getElementById('pp-phylum-title');
+      if (!title || !title.parentNode) return;
+      var self = RPGACE.modules.jargonEncyclopedia;
+      var btn = document.createElement('button');
+      btn.id = 'jargon-enc-btn';
+      btn.textContent = '📖 Jargon Encyclopedia';
+      btn.style.cssText = 'margin-bottom:10px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
+      btn.onclick = function() { self._openGlossary(); };
+      title.insertAdjacentElement('afterend', btn);
+    },
+
+    _openGlossary: function() {
+      var self = RPGACE.modules.jargonEncyclopedia;
+      var dd = RPGACE.modules.dashDeck;
+      if (!dd || !dd._popup) return;
+      var pop = dd._popup({ eyebrow: '📖 Every leaf term across your tree', title: 'Jargon Encyclopedia', width: '640px', accent: 'var(--gold)' });
+      pop.box.innerHTML = '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;"><div id="jarg-list" style="max-height:50vh;overflow-y:auto;">Loading…</div>';
+      var listEl = pop.box.querySelector('#jarg-list');
+      var searchInp = pop.box.querySelector('#jarg-search');
+      RPGACE.sb.select('jargon_encyclopedia', 'select=name,path,explainer,phylum_number&order=name.asc&limit=1000').then(function(rows) {
+        rows = rows || [];
+        self._allTerms = rows;
+        self._renderTerms(listEl, rows);
+        searchInp.addEventListener('input', function() {
+          var q = searchInp.value.toLowerCase();
+          var filtered = rows.filter(function(r) { return (r.name || '').toLowerCase().indexOf(q) !== -1; });
+          self._renderTerms(listEl, filtered);
+        });
+      }).catch(function(e) {
+        listEl.textContent = 'Load failed: ' + e.message;
       });
-    }).catch(function(e) {
-      listEl.textContent = 'Load failed: ' + e.message;
-    });
+    },
+
+    _renderTerms: function(listEl, rows) {
+      if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No terms match.</div>'; return; }
+      listEl.innerHTML = rows.map(function(r) {
+        return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
+          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.name || '').replace(/</g, '&lt;') + '</div>'
+          + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</div>'
+          + '</div>';
+      }).join('');
+    },
+
   },
 
-  _renderTerms: function(listEl, rows) {
-    if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No terms match.</div>'; return; }
-    listEl.innerHTML = rows.map(function(r) {
-      return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
-        + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.name || '').replace(/</g, '&lt;') + '</div>'
-        + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</div>'
-        + '</div>';
-    }).join('');
-  }
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of rpgace_core.js and index.html both, and of the whole repo
+  // for `RPGACE.modules.jargonEncyclopedia.` — zero hits outside this
+  // module's own body), so these exist for convention and for its OWN
+  // internal calls: `init` calls `self._injectButton()`, `ui.
+  // _injectButton`'s onclick calls `self._openGlossary()`, and
+  // `ui._openGlossary` calls `self._renderTerms(...)` twice — every one
+  // of those `self`s is the module, so each lands here first.
+  _injectButton: function() { return this.ui._injectButton(); },
+  _openGlossary: function() { return this.ui._openGlossary(); },
+  _renderTerms: function(listEl, rows) { return this.ui._renderTerms(listEl, rows); },
+
 });
 /* ===END:jargonEncyclopedia=== */
 
@@ -29741,6 +29958,119 @@ RPGACE.register('jargonEncyclopedia', {
 // interdependent modules, a fragile already-documented rpgace:ready timing
 // pattern) held back for its own dedicated pass, not bundled in here.
 RPGACE.register('pathRouter', {
+
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the SEVENTEENTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
+  // tiktokOracle, instaOraclePanel, jargonEncyclopedia and
+  // encyclopediaQoL): split into two internal namespaces, `ui`
+  // (rendering/DOM) and `logic` (business logic/data), following the
+  // exact shape those sixteen already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle.
+  //
+  // 6 real members: 5 functions and ONE plain data field,
+  // `_syncingFromHistory` (checked by direct read of every top-level
+  // key, not assumed). That field STAYS AT MODULE SCOPE and was not
+  // moved — it is real cross-function state written by `init`'s
+  // popstate closure and read by `_pushIfNeeded`, and a copy inside
+  // `ui`/`logic` would be a second, divergent flag rather than the one
+  // real one. `init` stays a literal top-level function (RPGACE.
+  // register() calls `module.init()` directly and cannot see into a
+  // sub-object) — byte-identical, its own `self = this` genuinely IS
+  // the module, so its popstate closure still reads/writes the real
+  // `self._syncingFromHistory` and still reaches `self._slugFromPath`
+  // through the top-level pass-through below.
+  //
+  // Unlike the other two modules in this batch, this one splits for
+  // real: 3 functions in `logic`, 1 in `ui`. Classification, function
+  // by function, each checked against its actual body rather than its
+  // name:
+  //   • _validSlugs → logic. Reads RPGACE.CONFIG, Object.keys, map.
+  //     Zero DOM, zero navigation, pure derivation.
+  //   • _slugFromPath → logic. String normalisation plus a membership
+  //     test against _validSlugs(). Zero DOM. It reads the `pathname`
+  //     it is GIVEN as an argument — it does not reach for `location`
+  //     itself — so it is pure even of browser state.
+  //   • _routeFromCurrentURL → ui. Contains zero literal DOM keywords,
+  //     and is classified `ui` anyway on DOMINANT RESPONSIBILITY, per
+  //     the established precedent already shipped for
+  //     phylumPath._jumpToNode, bookworm._goToDashboard and
+  //     instaOraclePanel._intercept: its entire job is deciding and
+  //     driving which page the user sees, via a real `showPage(slug)`
+  //     call. Classified by what it actually does, never by keyword
+  //     match.
+  //   • _pushIfNeeded → logic. SEE THE DEDICATED NOTE BELOW — this was
+  //     the one genuinely open call in this batch and is named here
+  //     rather than decided quietly.
+  //
+  // ─── _pushIfNeeded: the open call, both readings stated ───────────
+  // Superficially it looks like _routeFromCurrentURL's twin: both touch
+  // `location.pathname` and a `history.*` method, neither touches
+  // `document`. Two real, defensible readings existed:
+  //   (a) `ui`, for symmetry — both are "URL/history management", they
+  //       are a matched push/read pair, and a reader looking for one
+  //       would expect to find the other beside it. `history.pushState`
+  //       also has a genuinely user-visible effect (the address bar,
+  //       and what the Back button will do next).
+  //   (b) `logic` — it never drives what the user sees. It is called
+  //       FROM the `page:show` hook, i.e. AFTER a navigation has
+  //       already been performed by someone else, and its whole job is
+  //       keeping the browser's URL record consistent with the page
+  //       that is already showing. It calls no `showPage`, renders
+  //       nothing, constructs nothing, reads no element. Its body is
+  //       three guards and one state write.
+  // (b) was chosen, and (a) rejected, for two real reasons. First, the
+  // dominant-responsibility precedent invoked above exists specifically
+  // for functions whose job IS live navigation; _pushIfNeeded's job
+  // explicitly is not, so applying that override here would be
+  // extending a precedent past the thing it was created for. Second,
+  // classifying it `ui` purely because it resembles its sibling would
+  // be shape-matching — the exact reasoning this pass's own rules warn
+  // against ("classify by what the function actually DOES, never by
+  // keyword-match alone"). `history.pushState` is a state write to the
+  // session history record, closer in kind to a persistence call than
+  // to a render; and `history` cannot itself be the discriminator here,
+  // since _routeFromCurrentURL's own `history.replaceState` is
+  // incidental to the `showPage` call that actually earns it `ui`.
+  // The honest cost of (b), stated rather than hidden: the push/read
+  // pair now lives in two different namespaces, which is a small
+  // readability loss. That is the trade, made deliberately.
+  //
+  // `this`/`self` accounting for all 4 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _validSlugs — references neither `this` nor `self`; moved
+  //     byte-identical, no handle needed and none added.
+  //   • _slugFromPath — used bare `this._validSlugs()`; a module handle
+  //     is inserted as its first statement and the call rewritten to
+  //     `self._validSlugs()`. Left as `this.`, it would have read
+  //     `logic._validSlugs` — which DOES exist on `logic`, so this one
+  //     would have kept working by luck rather than by design; it is
+  //     requalified anyway so the module never depends on two
+  //     functions happening to share a namespace.
+  //   • _routeFromCurrentURL — used bare `this._slugFromPath(...)`;
+  //     handle inserted as its first statement, call rewritten to
+  //     `self.`. This one genuinely WOULD have broken: `_slugFromPath`
+  //     lives in `logic`, so `this._slugFromPath` inside `ui` is
+  //     undefined — a real TypeError on every login, killing deep-link
+  //     routing entirely.
+  //   • _pushIfNeeded — read bare `this._syncingFromHistory`; handle
+  //     inserted as its first statement, read rewritten to `self.`.
+  //     THIS IS THE MOST DANGEROUS ONE IN THE MODULE and it fails
+  //     SILENTLY rather than loudly: left as `this.`, it would have
+  //     read `logic._syncingFromHistory`, which is `undefined` and
+  //     therefore always falsy, so the re-entrancy guard would never
+  //     fire. The real consequence: during a Back-button navigation,
+  //     `init`'s popstate handler calls `showPage`, which fires
+  //     `page:show`, which calls this function — and with the guard
+  //     dead it would pushState a NEW history entry while the user is
+  //     travelling backwards through history. No error, no warning,
+  //     just a browser Back button that stops working correctly.
+  // ══════════════════════════════════════════════════════════════════
+
   _syncingFromHistory: false,
 
   init: function() {
@@ -29768,44 +30098,86 @@ RPGACE.register('pathRouter', {
     });
   },
 
-  _validSlugs: function() {
-    var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
-    if (!pages) return [];
-    return Object.keys(pages).map(function(k) { return pages[k]; });
-  },
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + state.
+  // Slug derivation/validation, plus the history-record sync that
+  // keeps the URL consistent with the already-showing page (see the
+  // dedicated _pushIfNeeded note in the G53 block above for why that
+  // one lands here and not in `ui`).
+  // ============================================================
+  logic: {
 
-  _slugFromPath: function(pathname) {
-    var slug = (pathname || '/').replace(/^\/+/, '').replace(/\/+$/, '');
-    return this._validSlugs().indexOf(slug) !== -1 ? slug : null;
-  },
-
-  // Runs once, right after real login (never before - #app is hidden and
-  // showPage() has nothing to act on pre-login). Reads whatever page the
-  // URL already names (a bookmark, a shared link, a hard refresh on a
-  // deep page) and shows it instead of always defaulting to the dashboard.
-  _routeFromCurrentURL: function() {
-    var slug = this._slugFromPath(location.pathname);
-    if (slug && typeof showPage === 'function') {
-      showPage(slug);
-    } else {
-      // No recognizable page in the URL (a fresh "/" visit) - dashboard is
-      // already showing from the raw HTML default, but give this root
-      // entry real state too, so a later "back" to it lands on a properly
-      // recognized page instead of relying on the popstate fallback.
+    _validSlugs: function() {
       var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
-      if (pages && pages.dashboard) {
-        try { history.replaceState({ page: pages.dashboard }, '', location.pathname); } catch (e) {}
-      }
-    }
+      if (!pages) return [];
+      return Object.keys(pages).map(function(k) { return pages[k]; });
+    },
+
+    _slugFromPath: function(pathname) {
+      var self = RPGACE.modules.pathRouter;
+      var slug = (pathname || '/').replace(/^\/+/, '').replace(/\/+$/, '');
+      return self._validSlugs().indexOf(slug) !== -1 ? slug : null;
+    },
+
+    _pushIfNeeded: function(name) {
+      var self = RPGACE.modules.pathRouter;
+      if (self._syncingFromHistory) return;
+      if (!name) return;
+      var target = '/' + name;
+      if (location.pathname === target) return;
+      try { history.pushState({ page: name }, '', target); } catch (e) {}
+    },
+
   },
 
-  _pushIfNeeded: function(name) {
-    if (this._syncingFromHistory) return;
-    if (!name) return;
-    var target = '/' + name;
-    if (location.pathname === target) return;
-    try { history.pushState({ page: name }, '', target); } catch (e) {}
-  }
+  // ============================================================
+  // ui — the one function here whose real job is driving which page
+  // the user actually sees (a live showPage() navigation), classified
+  // on dominant responsibility per the established precedent, despite
+  // containing no literal DOM keyword of its own.
+  // ============================================================
+  ui: {
+
+    // Runs once, right after real login (never before - #app is hidden and
+    // showPage() has nothing to act on pre-login). Reads whatever page the
+    // URL already names (a bookmark, a shared link, a hard refresh on a
+    // deep page) and shows it instead of always defaulting to the dashboard.
+    _routeFromCurrentURL: function() {
+      var self = RPGACE.modules.pathRouter;
+      var slug = self._slugFromPath(location.pathname);
+      if (slug && typeof showPage === 'function') {
+        showPage(slug);
+      } else {
+        // No recognizable page in the URL (a fresh "/" visit) - dashboard is
+        // already showing from the raw HTML default, but give this root
+        // entry real state too, so a later "back" to it lands on a properly
+        // recognized page instead of relying on the popstate fallback.
+        var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
+        if (pages && pages.dashboard) {
+          try { history.replaceState({ page: pages.dashboard }, '', location.pathname); } catch (e) {}
+        }
+      }
+    },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of rpgace_core.js and index.html both, and of the whole repo
+  // for `RPGACE.modules.pathRouter.` — zero hits outside this module's
+  // own body; the module is driven entirely by the two hooks and the
+  // popstate listener that `init` registers), so these exist for
+  // convention and for its OWN internal calls: `init`'s rpgace:login
+  // hook calls `self._routeFromCurrentURL()`, its page:show hook calls
+  // `self._pushIfNeeded(name)`, its popstate closure calls
+  // `self._slugFromPath(...)`, and `logic._slugFromPath` itself reaches
+  // `self._validSlugs()` — every one of those `self`s is the module, so
+  // each lands here first and is routed on to the right namespace.
+  _validSlugs: function() { return this.logic._validSlugs(); },
+  _slugFromPath: function(pathname) { return this.logic._slugFromPath(pathname); },
+  _pushIfNeeded: function(name) { return this.logic._pushIfNeeded(name); },
+  _routeFromCurrentURL: function() { return this.ui._routeFromCurrentURL(); },
+
 });
 /* ===END:pathRouter=== */
 
