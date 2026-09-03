@@ -8521,10 +8521,24 @@ RPGACE.register('feynman', {
 /* ===MODULE:encSync=== */
 RPGACE.register('encSync', {
 
+  // G53 (Sep 2026), module 26 of 60. init stays literal top-level.
+  // All 3 movable functions are zero-DOM (localStorage/global-function
+  // wrapping/keyword-scan+taxonomy-write logic, no document.* anywhere)
+  // - all land in logic, ui is genuinely empty, the honest inverse of
+  // the "empty logic" precedent already shipped 4x this series. _patch
+  // had `var self = this;` requalified to the module handle (it's
+  // captured by two later closures calling `self._clearBacklog()`/
+  // `self._autoPropose(...)`, both cross-namespace-safe once inside
+  // logic since all three land there together). Zero external
+  // touchpoints confirmed via repo-wide grep. Handled directly given
+  // the trivial scope (no real judgment call - the DOM-keyword rule
+  // is unambiguous here).
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._patch(); });
   },
+
+  logic: {
 
   _clearBacklog: function() {
     /* Wipe URL queue so next sync doesn't reimport the same items */
@@ -8541,7 +8555,7 @@ RPGACE.register('encSync', {
     if (!fn || !clr) return;
 
     window._encSyncPatched = true;
-    var self = this;
+    var self = RPGACE.modules.encSync;
 
     /* ── Patch syncAndPush ── */
     window.syncAndPush = function() {
@@ -8611,6 +8625,14 @@ RPGACE.register('encSync', {
       RPGACE.utils.toast('🌳 ' + queued + ' taxonomy proposal' + (queued > 1 ? 's' : '') + ' queued for review', 'rgba(155,89,182,0.85)', 3000);
     }
   },
+
+  },
+
+  ui: {},
+
+  _clearBacklog: function() { return this.logic._clearBacklog(); },
+  _patch: function() { return this.logic._patch(); },
+  _autoPropose: function(entries) { return this.logic._autoPropose(entries); },
 
 });
 /* ===END:encSync=== */
@@ -27510,22 +27532,37 @@ RPGACE.register('morningBrief', {
 
 /* ===MODULE:suppressQuestPopup=== */
 RPGACE.register('suppressQuestPopup', {
+
+  // G53 (Sep 2026), module 22 of 60. init stays literal top-level.
+  // _suppress discovers/mutates real DOM (getElementById + .remove())
+  // alongside disabling two global functions - the DOM touch is real
+  // and qualifies it for ui on the primary rule; logic is empty.
+  // Zero external touchpoints confirmed via repo-wide grep. Handled
+  // directly given the trivial single-function scope.
   init: function() {
     var self = this;
     self._suppress();
   },
-  _suppress: function() {
-    if (window._questSuppressed) return;
-    window._questSuppressed = true;
-    if (typeof window.checkForQuestSuggestions === 'function') {
-      window.checkForQuestSuggestions = function() {};
+
+  logic: {},
+
+  ui: {
+    _suppress: function() {
+      if (window._questSuppressed) return;
+      window._questSuppressed = true;
+      if (typeof window.checkForQuestSuggestions === 'function') {
+        window.checkForQuestSuggestions = function() {};
+      }
+      if (typeof window.showSuggestionPopup === 'function') {
+        window.showSuggestionPopup = function() {};
+      }
+      var el = document.getElementById('suggestion-popup');
+      if (el) el.remove();
     }
-    if (typeof window.showSuggestionPopup === 'function') {
-      window.showSuggestionPopup = function() {};
-    }
-    var el = document.getElementById('suggestion-popup');
-    if (el) el.remove();
-  }
+  },
+
+  _suppress: function() { return this.ui._suppress(); },
+
 });
 /* ===END:suppressQuestPopup=== */
 
@@ -27533,6 +27570,15 @@ RPGACE.register('suppressQuestPopup', {
 /* ===MODULE:docsLinks=== */
 RPGACE.register('docsLinks', {
 
+  // G53 (Sep 2026), module 25 of 60. init stays literal top-level.
+  // _inject is confirmed dead (a bare `return;` as its first real
+  // statement - already noted below, predates this split) but its
+  // unreachable body is real DOM-construction code (createElement,
+  // querySelector, insertBefore), so it's classified ui on the
+  // primary rule same as any other module - logic empty. Zero
+  // external touchpoints confirmed via repo-wide grep. Handled
+  // directly given the trivial single-function scope; the dead-code
+  // status is untouched, per the standing restructure-only rule.
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._inject(); });
@@ -27541,6 +27587,9 @@ RPGACE.register('docsLinks', {
     });
   },
 
+  logic: {},
+
+  ui: {
   _inject: function() {
     // Neutered 2026-07-20 — this widget's content is now a strict subset of
     // dashDeck's Oversight card popup (_openOversight), which also has 6
@@ -27602,6 +27651,9 @@ RPGACE.register('docsLinks', {
     if (firstChild) page.insertBefore(box, firstChild);
     else page.appendChild(box);
   },
+  },
+
+  _inject: function() { return this.ui._inject(); },
 
 });
 /* ===END:docsLinks=== */
@@ -28844,6 +28896,13 @@ RPGACE.register('shiftSync', {
 //    their XP normally.
 RPGACE.register('scheduleFixes', {
 
+  // G53 (Sep 2026), module 23 of 60. init stays literal top-level
+  // (its page:show closure calls a bare global `window.showSched`,
+  // not a module method - untouched). _patchAutoApply is zero-DOM:
+  // it wraps a global function to temporarily neutralise window.addXP
+  // during a bulk auto-apply, pure logic - ui is empty. Zero external
+  // touchpoints confirmed via repo-wide grep. Handled directly given
+  // the trivial single-function scope.
   init: function() {
     var self = this;
     self._patchAutoApply();
@@ -28855,20 +28914,26 @@ RPGACE.register('scheduleFixes', {
     });
   },
 
-  _patchAutoApply: function() {
-    if (typeof window.autoApplyStoredShifts !== 'function' || window._autoApplyXPPatched) return;
-    window._autoApplyXPPatched = true;
-    var orig = window.autoApplyStoredShifts;
-    window.autoApplyStoredShifts = function() {
-      var realAddXP = window.addXP;
-      if (typeof realAddXP === 'function') window.addXP = function() {};
-      try {
-        return orig.apply(this, arguments);
-      } finally {
-        window.addXP = realAddXP;
-      }
-    };
+  logic: {
+    _patchAutoApply: function() {
+      if (typeof window.autoApplyStoredShifts !== 'function' || window._autoApplyXPPatched) return;
+      window._autoApplyXPPatched = true;
+      var orig = window.autoApplyStoredShifts;
+      window.autoApplyStoredShifts = function() {
+        var realAddXP = window.addXP;
+        if (typeof realAddXP === 'function') window.addXP = function() {};
+        try {
+          return orig.apply(this, arguments);
+        } finally {
+          window.addXP = realAddXP;
+        }
+      };
+    },
   },
+
+  ui: {},
+
+  _patchAutoApply: function() { return this.logic._patchAutoApply(); },
 
 });
 /* ===END:scheduleFixes=== */
@@ -28890,36 +28955,47 @@ RPGACE.register('scheduleFixes', {
 // just a one-way permanent move here, not a toggle in/out of a popup.
 RPGACE.register('agentsIntoOracle', {
 
+  // G53 (Sep 2026), module 24 of 60. init stays literal top-level.
+  // _relocate is heavy real DOM (getElementById x2, createElement,
+  // real child-node relocation via appendChild) - unambiguous ui,
+  // logic empty. Zero external touchpoints confirmed via repo-wide
+  // grep. Handled directly given the trivial single-function scope.
   init: function() {
     var self = this;
     self._relocate();
     RPGACE.registerBootTask(function() { return self._relocate(); });
   },
 
-  _relocate: function() {
-    if (document.getElementById('agents-in-oracle')) return; // already moved
-    var agentsPage = document.getElementById('page-agents');
-    var oraclePage = document.getElementById('page-advisor');
-    if (!agentsPage || !oraclePage) return;
+  logic: {},
 
-    var wrapper = document.createElement('div');
-    wrapper.id = 'agents-in-oracle';
-    wrapper.style.cssText = 'margin-top:24px;padding-top:20px;border-top:1px solid var(--border)';
+  ui: {
+    _relocate: function() {
+      if (document.getElementById('agents-in-oracle')) return; // already moved
+      var agentsPage = document.getElementById('page-agents');
+      var oraclePage = document.getElementById('page-advisor');
+      if (!agentsPage || !oraclePage) return;
 
-    var heading = document.createElement('div');
-    heading.className = 'section-title';
-    heading.textContent = '⚡ Agent Actions';
-    wrapper.appendChild(heading);
+      var wrapper = document.createElement('div');
+      wrapper.id = 'agents-in-oracle';
+      wrapper.style.cssText = 'margin-top:24px;padding-top:20px;border-top:1px solid var(--border)';
 
-    // Move everything except the old page's own top title - Oracle's page
-    // already has its own, no need for a second one.
-    Array.prototype.slice.call(agentsPage.children).forEach(function(k) {
-      if (k.classList && k.classList.contains('section-title') && k.textContent.indexOf('Composio Agent Control Centre') !== -1) return;
-      wrapper.appendChild(k);
-    });
+      var heading = document.createElement('div');
+      heading.className = 'section-title';
+      heading.textContent = '⚡ Agent Actions';
+      wrapper.appendChild(heading);
 
-    oraclePage.appendChild(wrapper);
+      // Move everything except the old page's own top title - Oracle's page
+      // already has its own, no need for a second one.
+      Array.prototype.slice.call(agentsPage.children).forEach(function(k) {
+        if (k.classList && k.classList.contains('section-title') && k.textContent.indexOf('Composio Agent Control Centre') !== -1) return;
+        wrapper.appendChild(k);
+      });
+
+      oraclePage.appendChild(wrapper);
+    },
   },
+
+  _relocate: function() { return this.ui._relocate(); },
 
 });
 /* ===END:agentsIntoOracle=== */
@@ -29286,19 +29362,39 @@ RPGACE.register('journalQoL', {
 // "never add a static script tag" landmine) since it's plain JS logic,
 // not an external library needing its own file.
 RPGACE.register('pwaInstall', {
+
+  // G53 (Sep 2026), module 21 of 60: split into ui/logic. init is a
+  // real, deliberate no-op (see its own comment) and stays literal
+  // top-level. _register is the only movable function: zero DOM
+  // (feature-detects `serviceWorker in navigator`, then a real async
+  // Service Worker API call) - it lands in logic, and ui is genuinely
+  // empty, stated outright. Handled directly (self-verified: node
+  // --check + a headless call-through test), not dispatched, given
+  // the trivial single-function scope. Called from module-scope right
+  // after registration (`RPGACE.modules.pwaInstall._register()` below,
+  // unchanged) via the top-level pass-through - no external caller
+  // (confirmed via a repo-wide grep) beyond that one immediate call.
   init: function() {
     // No-op: registration already ran below, outside init(). This module
     // exists mainly so failures show up in RPGACE's normal module-init
     // logging/console conventions rather than as a silent bare call.
   },
-  _register: function() {
-    if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register('/sw.js').then(function(reg) {
-      console.log('[RPGACE] Service worker registered', reg.scope);
-    }).catch(function(err) {
-      console.warn('[RPGACE] Service worker registration failed', err.message);
-    });
-  }
+
+  logic: {
+    _register: function() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        console.log('[RPGACE] Service worker registered', reg.scope);
+      }).catch(function(err) {
+        console.warn('[RPGACE] Service worker registration failed', err.message);
+      });
+    }
+  },
+
+  ui: {},
+
+  _register: function() { return this.logic._register(); },
+
 });
 RPGACE.modules.pwaInstall._register();
 /* ===END:pwaInstall=== */
