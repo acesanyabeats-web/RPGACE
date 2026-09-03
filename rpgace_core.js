@@ -5990,6 +5990,120 @@ RPGACE.register('tiktokOracle', {
 /* ===MODULE:prodOraclePanel=== */
 RPGACE.register('prodOraclePanel', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 27 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // twenty-six predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale
+  // (the one function that changed POSITION, `run`, moved byte-for-byte
+  // apart from its named `this` requalifications), never rewritten and
+  // never split down the middle. Bodies are deliberately NOT
+  // re-indented inside their new namespace, matching the two most
+  // recently shipped modules (docsLinks/25, encSync/26), so the diff
+  // shows only real changes rather than a whitespace wall.
+  //
+  // 6 real members: 4 functions and TWO plain data fields, CMDS and
+  // ICONS. Both data fields STAY AT MODULE SCOPE — and that is
+  // load-bearing here, not cosmetic: contentProductionLive's
+  // `_findOracleCmdText(moduleName, cmdName)` reaches sibling Oracle
+  // panels by DYNAMIC BRACKET LOOKUP (`RPGACE.modules[moduleName]`
+  // then `.CMDS`), which a literal `RPGACE.modules.prodOraclePanel.`
+  // grep structurally cannot see. It is not called with
+  // 'prodOraclePanel' today (only 'youtubeOracle'/'tiktokOracle'/
+  // 'instaOraclePanel' — checked, not assumed), but moving CMDS into a
+  // sub-namespace would silently break that lookup the day it is, with
+  // no error at all. `init` stays a literal top-level function
+  // (RPGACE.register() calls `module.init()` directly and cannot see
+  // into a sub-object). 3 moved into `ui`, 1 into `logic`.
+  //
+  // This module is a near-exact structural twin of instaOraclePanel
+  // (module 14): same CMDS/ICONS pair, same `_intercept` global-toggle
+  // hijack, same `_close`, same panel-building `open`, same
+  // fillGaps-dispatching `run`. Both of its non-obvious calls were
+  // re-derived from THIS module's own body rather than inherited, and
+  // both landed the same way:
+  //
+  //   1. `_intercept` → `ui`, DESPITE containing zero `document.*`
+  //      calls. A literal DOM-keyword grep of its body says `logic`:
+  //      it only reads `typeof window.toggleProdOraclePanel`, sets the
+  //      `window._prodOraclePanelIntercepted` guard, and reassigns
+  //      `window.toggleProdOraclePanel` to a closure. But its real
+  //      responsibility is UI wiring — it hijacks the global function
+  //      an existing on-page button's click handler resolves to, so
+  //      pressing that button opens THIS module's panel. That is
+  //      button-to-panel plumbing, i.e. exactly what `_btn` does on the
+  //      youtubeOracle/tiktokOracle siblings (unambiguous `ui` there),
+  //      just reached by intercepting a global rather than injecting an
+  //      element. The competing reading is real and worth stating: it
+  //      is the same SHAPE as encSync.logic._patch (module 26), a
+  //      `window.X` wrapper-installer that was shipped as `logic`. The
+  //      discriminator that separates them is the WRAPPED GLOBAL'S OWN
+  //      job — encSync wraps `syncAndPush`/`clearEncyclopedia`, which
+  //      are data operations, so wrapping them is data work; this wraps
+  //      a panel TOGGLE, whose entire job is showing/hiding UI, so
+  //      wrapping it is UI work. `ui` chosen on dominant responsibility,
+  //      matching instaOraclePanel.ui._intercept exactly.
+  //
+  //   2. `run` → `logic`, matching instaOraclePanel.run and
+  //      tiktokOracle.run, and diverging from youtubeOracle.run. Its
+  //      own body was grepped: zero `document.*`, zero
+  //      `createElement`/`innerHTML`/`querySelector`. It selects the
+  //      command, makes two real by-name dispatch DECISIONS (the
+  //      Council-of-5 `allowConversationCapture` opt-in and the
+  //      forceGroundNext() opt-in), and hands the prompt to the shared
+  //      `RPGACE.utils.fillGaps` → `sendToOracle` helpers. Its
+  //      `self._close()` call and its `RPGACE.utils.toast(...)` are
+  //      TRIGGERS of UI, not construction of it — the standing rule
+  //      since the phylumPath pilot. youtubeOracle.run is `ui` because
+  //      it genuinely reads `#chat-input`, writes `.value` and clicks
+  //      `#send-btn` by hand; same method name, genuinely different
+  //      responsibility.
+  //
+  // The one real risk this split has to get right: a function moved
+  // into `ui`/`logic` is invoked with `this` bound to THAT sub-object,
+  // not the module. Exact accounting for all 4 moved functions, so a
+  // later reader can check by grep rather than take it on trust:
+  //   • ui._intercept — already had `var self = this;`, swapped for the
+  //     module handle IN PLACE (it sits after the two guards, neither
+  //     of which touches `this`, so control flow is unchanged). It is
+  //     captured by the `window.toggleProdOraclePanel` closure calling
+  //     `self.open()`. Left as `this.`, it would have read `ui.open` —
+  //     which DOES exist on `ui`, so this one would have kept working
+  //     by luck rather than by design; requalified anyway so the module
+  //     never depends on two functions happening to share a namespace.
+  //   • ui._close — touches no module state, moved byte-identical.
+  //   • ui.open — had `var self = this;` on its SECOND line while its
+  //     FIRST line (the already-open guard) calls `this._close()`, so
+  //     the handle is inserted as the first statement and the old line
+  //     removed; the only statement-order change in this module, and a
+  //     forced one. Its `self.CMDS`/`self.ICONS` reads are module-scope
+  //     DATA FIELDS — the exact bug class oracleDevBridge's `this.TABLE`
+  //     documented — and would have read `undefined` off `ui`, throwing
+  //     inside `self.CMDS.forEach` the first time the panel opened. Its
+  //     inner `btn.onmouseover`/`onmouseout` closures keep their bare
+  //     `this`: that `this` is the DOM button, not the module.
+  //   • logic.run — had NO `var self` and used bare `this.CMDS[i]` and
+  //     `this._close()`; handle inserted as its first statement, both
+  //     rewritten. THIS IS THE ONE THAT GENUINELY WOULD HAVE BROKEN
+  //     SILENTLY: `this.CMDS` inside `logic` is `undefined`, so
+  //     `undefined[i]` throws a TypeError, and it throws at the moment
+  //     Alex actually presses a command button — not at load — with no
+  //     toast and no visible feedback at all.
+  //
+  // ui -> logic and logic -> ui cross-namespace calls are both normal
+  // here (ui.open -> logic.run, logic.run -> ui._close, ui._intercept
+  // -> ui.open); every one goes through the top-level pass-through via
+  // `self.X`, never `this.logic.X`/`this.ui.X` directly, so no call
+  // site inside the module had to change.
+  //
+  // Zero external touchpoints confirmed by a fresh repo-wide grep for
+  // `RPGACE.modules.prodOraclePanel` (0 hits anywhere, rpgace_core.js
+  // and index.html included) — the module is driven entirely by the
+  // `window.toggleProdOraclePanel` global its own `_intercept` hijacks.
+  // ══════════════════════════════════════════════════════════════════
+
   CMDS: [
     ['Master Learning', 'I am a music producer using FL Studio making UK hip hop and drill beats. I want to master [TYPE A SPECIFIC PRODUCTION TOPIC]. Teach me this concept completely. Use the 3-layer method: simple terms first, then technical mechanics, then the expert nuance most tutorials miss. Be specific to FL Studio throughout.'],
     ['Instant Understanding', 'Explain [TYPE A PRODUCTION CONCEPT OR TECHNIQUE] to me in exactly 3 layers. Layer 1: explain it like I am 10 years old in 2 sentences. Layer 2: explain the real technical mechanics in 5 sentences. Layer 3: the one expert insight about this that most FL Studio producers never figure out.'],
@@ -6016,11 +6130,58 @@ RPGACE.register('prodOraclePanel', {
     RPGACE.registerBootTask(function() { return self._intercept(); });
   },
 
+  // ============================================================
+  // logic — business logic/data: no DOM construction or discovery.
+  // The one function here picks the command, makes the two real
+  // by-name dispatch decisions (conversation capture, force-grounding)
+  // and hands the prompt to the shared fillGaps -> sendToOracle
+  // helpers. See the `run` note in the G53 block above for why it
+  // lands here despite triggering a panel close and a toast.
+  // ============================================================
+  logic: {
+
+  run: function(i) {
+    var self = RPGACE.modules.prodOraclePanel;
+    var cmd = self.CMDS[i];
+    if (!cmd) return;
+    self._close();
+    // July 22 — Council of 5 specifically can use the real conversation
+    // as its context instead of Alex re-typing a summary of what was
+    // discussed (see fillGaps' new opts.allowConversationCapture). Opted
+    // in by name, not by index, so reordering CMDS can't silently break it.
+    var opts = (cmd[0] === 'Council of 5 — Decision Audit') ? { allowConversationCapture: true } : {};
+    // July 28 real bug fix: this command's own prompt text told Oracle to
+    // "ground yourself using whatever real self-awareness data you
+    // actually have access to" but never contained any of
+    // oracleAppGrounding's keyword triggers, so the grounding block never
+    // fired - the exact command whose purpose is a grounded self-audit was
+    // the one that ran fully ungrounded. Force it in by name (same opt-in-
+    // by-name pattern as Council of 5's allowConversationCapture above)
+    // rather than relying on keyword luck. Council of 5 gets the same
+    // treatment - a real decision audit benefits from real app state too.
+    if ((cmd[0] === '5thDimension — Built vs Reported' || cmd[0] === 'Council of 5 — Decision Audit') && RPGACE.modules.oracleAppGrounding) {
+      RPGACE.modules.oracleAppGrounding.forceGroundNext();
+    }
+    RPGACE.utils.fillGaps(cmd[1], function(filled) {
+      RPGACE.utils.sendToOracle(filled);
+      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
+    }, opts);
+  },
+
+  },
+
+  // ============================================================
+  // ui — rendering/DOM + UI wiring: hijacks the existing global
+  // toggle so the on-page button opens this panel, and builds/tears
+  // down the slide-in panel itself.
+  // ============================================================
+  ui: {
+
   _intercept: function() {
     if (window._prodOraclePanelIntercepted) return;
     if (typeof window.toggleProdOraclePanel === 'undefined') return;
     window._prodOraclePanelIntercepted = true;
-    var self = this;
+    var self = RPGACE.modules.prodOraclePanel;
     window.toggleProdOraclePanel = function() { self.open(); };
   },
 
@@ -6029,8 +6190,8 @@ RPGACE.register('prodOraclePanel', {
   },
 
   open: function() {
-    if (document.getElementById('prod-op')) { this._close(); return; }
-    var self = this;
+    var self = RPGACE.modules.prodOraclePanel;
+    if (document.getElementById('prod-op')) { self._close(); return; }
     var panel = document.createElement('div');
     panel.id = 'prod-op';
     panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(201,168,76,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
@@ -6074,32 +6235,23 @@ RPGACE.register('prodOraclePanel', {
     RPGACE.ui.slideInPanel(panel, {edge:'right'});
   },
 
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    // July 22 — Council of 5 specifically can use the real conversation
-    // as its context instead of Alex re-typing a summary of what was
-    // discussed (see fillGaps' new opts.allowConversationCapture). Opted
-    // in by name, not by index, so reordering CMDS can't silently break it.
-    var opts = (cmd[0] === 'Council of 5 — Decision Audit') ? { allowConversationCapture: true } : {};
-    // July 28 real bug fix: this command's own prompt text told Oracle to
-    // "ground yourself using whatever real self-awareness data you
-    // actually have access to" but never contained any of
-    // oracleAppGrounding's keyword triggers, so the grounding block never
-    // fired - the exact command whose purpose is a grounded self-audit was
-    // the one that ran fully ungrounded. Force it in by name (same opt-in-
-    // by-name pattern as Council of 5's allowConversationCapture above)
-    // rather than relying on keyword luck. Council of 5 gets the same
-    // treatment - a real decision audit benefits from real app state too.
-    if ((cmd[0] === '5thDimension — Built vs Reported' || cmd[0] === 'Council of 5 — Decision Audit') && RPGACE.modules.oracleAppGrounding) {
-      RPGACE.modules.oracleAppGrounding.forceGroundNext();
-    }
-    RPGACE.utils.fillGaps(cmd[1], function(filled) {
-      RPGACE.utils.sendToOracle(filled);
-      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(201,168,76,0.9)', 2000);
-    }, opts);
   },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.prodOraclePanel` anywhere outside this module's
+  // own body), so these exist for convention and for its OWN internal
+  // calls: `init` calls `self._intercept()`, `ui._intercept`'s installed
+  // global calls `self.open()`, `ui.open`'s per-command button onclick
+  // calls `self.run(i)` and its close button calls `self._close()`, and
+  // `logic.run` calls `self._close()` — every one of those `self`s is
+  // the module, so each lands here first and is routed on to the right
+  // namespace.
+  _intercept: function() { return this.ui._intercept(); },
+  _close: function() { return this.ui._close(); },
+  open: function() { return this.ui.open(); },
+  run: function(i) { return this.logic.run(i); },
 
 });
 /* ===END:prodOraclePanel=== */
@@ -8645,6 +8797,87 @@ RPGACE.register('encSync', {
 // doesn't fan out into a burst of Oracle calls on a big backlog sync.
 RPGACE.register('ciAutoPropose', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 29 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // twenty-eight predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the recently shipped docsLinks/encSync precedent, so the diff shows
+  // only real changes rather than a whitespace wall.
+  //
+  // 3 real members, all functions, no data fields at all (checked by
+  // direct read of every top-level key, not assumed from the shape).
+  // `init` stays a literal top-level function (RPGACE.register() calls
+  // `module.init()` directly and cannot see into a sub-object) —
+  // byte-identical, its own `self = this` genuinely IS the module, so
+  // the `window.syncIntelData` wrapper it installs still reaches
+  // `self._scan(all || [])` through the top-level pass-through below.
+  //
+  // This module splits 0 / 2: BOTH movable functions land in `logic`,
+  // and `ui` is genuinely EMPTY — the same honest inverse already
+  // shipped for encSync (26) and scheduleFixes (23), kept as an
+  // explicit `ui: {}` so the module still declares the same
+  // two-namespace shape as every sibling. Classification, function by
+  // function, each checked against its actual body rather than its
+  // name — and neither is a close call:
+  //   • _scan → logic. Zero `document.*`, zero `createElement`, zero
+  //     `innerHTML`, zero `querySelector`/`getElementById` (grepped,
+  //     not assumed). Its whole body is data work: a localStorage
+  //     dedup-guard read/write, a walk over the synced intel rows
+  //     reading `insights.encyclopedia_entry.key_learnings` /
+  //     `insights.key_learnings` / `insights.production_techniques`,
+  //     a normalized-text dedup, a length prefilter, the free
+  //     `RPGACE.utils._quickPhylaScan` keyword prefilter, the three
+  //     volume caps, and the summary-blob fallback for older reports.
+  //     Its single `RPGACE.utils.toast(...)` at the end is a TRIGGER
+  //     of UI, not construction of it — the standing rule since the
+  //     phylumPath pilot, and the same reasoning that put
+  //     encTaxonomyLink.logic._propose and videoSummary.logic._runRetro
+  //     in `logic` despite their user-facing feedback.
+  //   • _dispatch → logic. Pure promise-throttling control flow: N
+  //     workers pulling from one shared job list, each awaiting its own
+  //     `RPGACE.modules.taxonomyTree.silentPropose(...)` before taking
+  //     the next, with a per-item `.catch` that only `console.warn`s.
+  //     No DOM of any kind, and no UI trigger either.
+  //
+  // The one real risk this split has to get right: a function moved
+  // into `ui`/`logic` is invoked with `this` bound to THAT sub-object,
+  // not the module. Exact accounting for both moved functions:
+  //   • logic._scan — already had `var self = this;`, swapped for the
+  //     module handle IN PLACE (it sits after the readiness guard,
+  //     which does not touch `this`, so control flow is unchanged). It
+  //     is used once, for `self._dispatch(jobs, CONCURRENCY)`. Left as
+  //     `this.`, it would have read `logic._dispatch` — which DOES
+  //     exist on `logic`, so this one would have kept working by luck
+  //     rather than by design; requalified anyway so the module never
+  //     depends on two functions happening to share a namespace.
+  //   • logic._dispatch — references neither `this` nor `self` (its
+  //     cross-module call to `RPGACE.modules.taxonomyTree.silentPropose`
+  //     was already fully qualified); moved byte-identical, no handle
+  //     needed and none added.
+  //
+  // Zero external METHOD touchpoints confirmed by a fresh repo-wide
+  // grep for `RPGACE.modules.ciAutoPropose` (0 hits anywhere,
+  // rpgace_core.js and index.html included) — the module is driven
+  // entirely by the `window.syncIntelData` wrapper `init` installs. The
+  // two `"_dispatch"`/`"_scan"` entries in this file's own
+  // METHOD_MODULE_MAP (G109) are a generated name->module DATA table,
+  // not call sites, and are unaffected by this split.
+  //
+  // REAL DATA-LEVEL TOUCHPOINT, THOUGH — named plainly because the
+  // obvious grep does not show it: `_scan`'s dedup guard is the shared
+  // localStorage key `rpgace_ci_proposed`, and `videoSummary` writes to
+  // that SAME key (see its `_delete`/retro path) specifically so a
+  // deleted report is never re-proposed by the next sync. That is a
+  // real cross-module contract on the KEY NAME, not on any method, so
+  // it is unaffected by this split — but a future reader changing the
+  // guard format here must check that call site too.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     function patch() {
@@ -8662,6 +8895,24 @@ RPGACE.register('ciAutoPropose', {
     patch();
     setTimeout(patch, 1500);
   },
+
+  // ============================================================
+  // ui — deliberately empty. Neither movable function in this module
+  // touches the DOM at all (see the G53 block above); the only
+  // user-facing thing either does is fire one shared
+  // `RPGACE.utils.toast(...)`, which is a trigger, not construction.
+  // Kept as an explicit `{}` so the module still declares the same
+  // two-namespace shape as every sibling.
+  // ============================================================
+  ui: {},
+
+  // ============================================================
+  // logic — business logic/data: the per-insight scan that turns a
+  // finished Content Intelligence sync into a bounded, deduplicated
+  // list of taxonomy proposal jobs, and the throttled dispatcher that
+  // feeds them to taxonomyTree.silentPropose a few at a time.
+  // ============================================================
+  logic: {
 
   // REWRITTEN July 19 (Fable audit follow-up, confirmed by Alex): the
   // old version proposed ONE title-led 300-char blob per video - which
@@ -8707,7 +8958,7 @@ RPGACE.register('ciAutoPropose', {
   // can't turn into a 45-wide simultaneous burst against the API.
   _scan: function(all) {
     if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) return;
-    var self = this;
+    var self = RPGACE.modules.ciAutoPropose;
     var guard = localStorage.getItem('rpgace_ci_proposed') || '';
     var checked = 0;
     var MAX_VIDEOS = 4, MAX_PER_VIDEO = 15, MAX_TOTAL = 45, CONCURRENCY = 3;
@@ -8760,7 +9011,12 @@ RPGACE.register('ciAutoPropose', {
       jobs.push({ text: blob.slice(0, 400), phylum: matches[0].num, url: r.url || null });
     });
 
-    localStorage.setItem('rpgace_ci_proposed', guard);
+    // Real bug fix (found + fixed in review, G53 batch 9): unguarded,
+    // unlike videoSummary's own write to this SAME shared key (its
+    // retro/_delete path already wraps this exact call in try/catch) -
+    // a quota exception here would throw uncaught inside _scan. Matched
+    // to the sibling writer's convention.
+    try { localStorage.setItem('rpgace_ci_proposed', guard); } catch (e) {}
     if (!jobs.length) return;
     self._dispatch(jobs, CONCURRENCY);
     RPGACE.utils.toast('🌳 ' + jobs.length + ' taxonomy proposal' + (jobs.length > 1 ? 's' : '') + ' queued for review', 'rgba(155,89,182,0.85)', 3000);
@@ -8782,6 +9038,27 @@ RPGACE.register('ciAutoPropose', {
     }
     for (var w = 0; w < Math.min(concurrency, jobs.length); w++) next();
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.ciAutoPropose` anywhere outside this module's
+  // own body), so these exist for convention and for its OWN internal
+  // calls: `init`'s `window.syncIntelData` wrapper calls
+  // `self._scan(all || [])`, and `logic._scan` calls
+  // `self._dispatch(jobs, CONCURRENCY)` — both of those `self`s are the
+  // module, so each lands here first and is routed on to `logic`.
+  //
+  // Note for a future reader doing an external-touchpoint grep: this
+  // module DOES make a real outbound cross-module call,
+  // `RPGACE.modules.taxonomyTree.silentPropose(...)` in
+  // `logic._dispatch`. That is a call OUT of this module and is
+  // unaffected by this split; the "zero external touchpoints" fact
+  // above is about calls INTO it.
+  _scan: function(all) { return this.logic._scan(all); },
+  _dispatch: function(jobs, concurrency) { return this.logic._dispatch(jobs, concurrency); },
 
 });
 /* ===END:ciAutoPropose=== */
@@ -29223,6 +29500,121 @@ RPGACE.register('encyclopediaQoL', {
 // touching or duplicating the frozen render function.
 RPGACE.register('journalQoL', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 28 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // twenty-seven predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the recently shipped docsLinks/encSync precedent, so the diff shows
+  // only real changes rather than a whitespace wall.
+  //
+  // 6 real members: 4 functions, one declared data field (SOURCES) and
+  // one UNDECLARED, RUNTIME-ASSIGNED data field (`_activeSource` — see
+  // the dedicated note below, it is the whole risk of this module).
+  // SOURCES stays at module scope. `init` stays a literal top-level
+  // function (RPGACE.register() calls `module.init()` directly and
+  // cannot see into a sub-object).
+  //
+  // This module splits 4 / 0: all four movable functions land in `ui`,
+  // and `logic` is genuinely EMPTY — the honest inverse of the "empty
+  // ui" precedent already shipped several times this series (encSync,
+  // scheduleFixes), and kept as an explicit `logic: {}` so the module
+  // still declares the same two-namespace shape as every sibling.
+  // Classification, function by function, each checked against its
+  // actual body rather than its name:
+  //   • _injectControls → ui. Unambiguous: two `getElementById` reads,
+  //     `document.createElement` ×2, `insertBefore` and
+  //     `insertAdjacentElement`.
+  //   • _makeChip → ui. Unambiguous: `document.createElement('button')`
+  //     plus a full inline style/dataset build. Its onclick closure
+  //     additionally runs `document.querySelectorAll` and writes
+  //     `.style` on every chip.
+  //   • _applyFilter → ui. Unambiguous: `getElementById`,
+  //     `querySelectorAll('#journal-output > div')` and a
+  //     `card.style.display` write per card. Worth naming that its
+  //     matching is done on `card.textContent` rather than on any data
+  //     model — there is no in-memory row list here at all (see the
+  //     module's own July 22 header note above), so there is genuinely
+  //     no data half of this function to lift into `logic`.
+  //   • _injectAuditEntries → ui. SEE THE INSEPARABILITY NOTE BELOW —
+  //     it runs two real Supabase reads, so it is named here rather
+  //     than filed quietly.
+  //
+  // ─── _injectAuditEntries: why its Supabase reads stay in `ui` ─────
+  // It opens with `document.getElementById('journal-output')` and an
+  // `el.querySelector('.journal-audit-entry')` re-entry guard, so it
+  // DISCOVERS DOM and qualifies for `ui` on the primary rule outright.
+  // The `Promise.all` over `taxonomy_decision_log` +
+  // `oracle_dev_suggestions` that follows is genuinely NOT separable
+  // into `logic` without splitting the function down the middle, which
+  // this pass's own rules forbid: the `.then` maps both result sets
+  // straight into an HTML STRING and calls
+  // `el.insertAdjacentHTML('afterbegin', html)` on the element captured
+  // before the query was ever issued, then `self._applyFilter()`. The
+  // rows are not returned, not stored and not reused; their only
+  // consumer is the markup this function was already committed to
+  // building. That is the exact shape jargonEncyclopedia.ui._openGlossary
+  // and encTaxonomyLink.ui._injectButtons were both shipped on, and it
+  // is reinforced here by the standing rule extension that building
+  // HTML markup for injection is itself DOM construction.
+  //
+  // ─── `_activeSource`: the real bug this split had to not create ───
+  // `_activeSource` is a module field that is never DECLARED as a
+  // top-level key — it is created at runtime by `_injectControls`
+  // (`self._activeSource = 'all';`) and reassigned by every chip's
+  // onclick inside `_makeChip` (`self._activeSource = key;`), then READ
+  // by `_applyFilter` (`this._activeSource || 'all'`). That read was
+  // the one genuinely dangerous line in this module: inside `ui`,
+  // `this` is the `ui` object, so `this._activeSource` would have been
+  // `undefined` and the `|| 'all'` fallback would have swallowed it
+  // completely — no error, no warning, just a source-filter chip that
+  // visibly highlights when pressed and then filters nothing, forever.
+  // This is the same bug class oracleDevBridge's `this.TABLE`
+  // documented, with the extra trap that a grep of the top-level keys
+  // does not reveal `_activeSource` at all. All three sites now go
+  // through the module handle, so the field lives on the module exactly
+  // where it always did.
+  //
+  // `this`/`self` accounting for all 4 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _injectControls — already had `var self = this;`, swapped for
+  //     the module handle IN PLACE (it sits after the three guards,
+  //     none of which touches `this`, so control flow is unchanged).
+  //     Captured for `self._makeChip(...)` ×2, `self.SOURCES` (a
+  //     module-scope data field) and `self._activeSource = 'all'`.
+  //   • _makeChip — same in-place swap. Captured by the button's
+  //     onclick closure for `self._activeSource = key` and
+  //     `self._applyFilter()`. Its inner `Array.prototype.forEach.call`
+  //     callback uses a plain `b` parameter, not `this`, so nothing
+  //     else there needed touching.
+  //   • _applyFilter — had NO `var self` at all; the handle is inserted
+  //     as its first statement and the bare `this._activeSource`
+  //     rewritten. Its own `Array.prototype.forEach.call` callback uses
+  //     a plain `card` parameter, untouched.
+  //   • _injectAuditEntries — already had `var self = this;`, swapped
+  //     in place. Captured by the `.then` for `self._applyFilter()`.
+  //
+  // Every one of those cross-references (`_makeChip`, `_applyFilter`)
+  // is ui -> ui, so all four would in fact have kept working through a
+  // bare `this.` — EXCEPT `_activeSource` and `SOURCES`, which are
+  // module-scope DATA and would not have. Requalified uniformly anyway,
+  // per the standing rule that the module must never depend on two
+  // members happening to share a namespace.
+  //
+  // Zero external touchpoints confirmed by a fresh repo-wide grep for
+  // `RPGACE.modules.journalQoL` (0 hits anywhere, rpgace_core.js and
+  // index.html included) — the module is driven entirely by the
+  // `window.refreshJournalDisplay` wrapper `init` installs, its own
+  // 1500ms boot timer, and the `page:show` hook. The four `"_applyFilter"
+  // / "_injectAuditEntries" / "_injectControls" / "_makeChip"` entries in
+  // this file's own METHOD_MODULE_MAP (G109) are a generated name->module
+  // DATA table, not call sites, and are unaffected by this split.
+  // ══════════════════════════════════════════════════════════════════
+
   SOURCES: ['schedule', 'feynman', 'oracle', 'beatLog', 'contentProductionLive', 'morning-routine', 'manual'],
 
   init: function() {
@@ -29250,12 +29642,30 @@ RPGACE.register('journalQoL', {
     });
   },
 
+  // ============================================================
+  // logic — deliberately empty. All four movable functions in this
+  // module construct or discover DOM (see the G53 block above); there
+  // is no in-memory row model here to filter against, so there is no
+  // data half to lift out. Kept as an explicit `{}` so the module
+  // still declares the same two-namespace shape as every sibling.
+  // ============================================================
+  logic: {},
+
+  // ============================================================
+  // ui — rendering/DOM: injects the search box + source chips into
+  // the Journal control row, builds each chip, applies the live
+  // text/source filter over the rendered cards, and prepends the
+  // read-only audit entries fetched from taxonomy_decision_log +
+  // oracle_dev_suggestions.
+  // ============================================================
+  ui: {
+
   _injectControls: function() {
     if (document.getElementById('journal-search-input')) return;
     var countEl = document.getElementById('journal-count');
     var controlsRow = countEl ? countEl.parentElement : null;
     if (!controlsRow) return;
-    var self = this;
+    var self = RPGACE.modules.journalQoL;
 
     var input = document.createElement('input');
     input.type = 'text';
@@ -29269,6 +29679,14 @@ RPGACE.register('journalQoL', {
     chipRow.id = 'journal-source-chips';
     chipRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px';
     var allChip = self._makeChip('all', 'All');
+    // Real bug fix (found + fixed in review, G53 batch 9): 'all' is the
+    // real active source on first render (set below), but the chip
+    // itself always renders with _makeChip's plain inactive style - so
+    // nothing looked selected even though 'all' genuinely was. Apply
+    // the same active-state styling _makeChip's own onclick uses.
+    allChip.style.background = 'rgba(201,168,76,0.15)';
+    allChip.style.borderColor = 'rgba(201,168,76,0.45)';
+    allChip.style.color = 'var(--gold)';
     chipRow.appendChild(allChip);
     self.SOURCES.forEach(function(s) { chipRow.appendChild(self._makeChip(s, s)); });
     controlsRow.insertAdjacentElement('afterend', chipRow);
@@ -29276,7 +29694,7 @@ RPGACE.register('journalQoL', {
   },
 
   _makeChip: function(key, label) {
-    var self = this;
+    var self = RPGACE.modules.journalQoL;
     var btn = document.createElement('button');
     btn.dataset.sourceKey = key;
     btn.textContent = label;
@@ -29295,9 +29713,10 @@ RPGACE.register('journalQoL', {
   },
 
   _applyFilter: function() {
+    var self = RPGACE.modules.journalQoL;
     var input = document.getElementById('journal-search-input');
     var term = input ? input.value.trim().toLowerCase() : '';
-    var source = this._activeSource || 'all';
+    var source = self._activeSource || 'all';
     var cards = document.querySelectorAll('#journal-output > div');
     Array.prototype.forEach.call(cards, function(card) {
       var text = card.textContent.toLowerCase();
@@ -29319,7 +29738,7 @@ RPGACE.register('journalQoL', {
     if (!el || el.querySelector('.journal-audit-entry')) return;
     if (el.textContent.indexOf('Your Journal is Empty') !== -1) return;
 
-    var self = this;
+    var self = RPGACE.modules.journalQoL;
     Promise.all([
       RPGACE.sb.select('taxonomy_decision_log', 'order=created_at.desc&limit=10').catch(function() { return []; }),
       RPGACE.sb.select('oracle_dev_suggestions', 'order=created_at.desc&limit=10').catch(function() { return []; }),
@@ -29346,6 +29765,25 @@ RPGACE.register('journalQoL', {
       self._applyFilter();
     });
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.journalQoL` anywhere outside this module's own
+  // body), so these exist for convention and for its OWN internal
+  // calls: `init`'s `window.refreshJournalDisplay` wrapper calls
+  // `self._injectAuditEntries()`/`self._applyFilter()`, its boot timer
+  // and `page:show` listener both call `self._injectControls()`,
+  // `ui._injectControls` calls `self._makeChip(...)`, `ui._makeChip`'s
+  // onclick calls `self._applyFilter()`, and `ui._injectAuditEntries`'s
+  // `.then` calls `self._applyFilter()` — every one of those `self`s is
+  // the module, so each lands here first and is routed on to `ui`.
+  _injectControls: function() { return this.ui._injectControls(); },
+  _makeChip: function(key, label) { return this.ui._makeChip(key, label); },
+  _applyFilter: function() { return this.ui._applyFilter(); },
+  _injectAuditEntries: function() { return this.ui._injectAuditEntries(); },
 
 });
 /* ===END:journalQoL=== */
