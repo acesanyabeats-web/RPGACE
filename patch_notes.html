@@ -74,6 +74,16 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧩✅ Sep 2 — G53 batch 10 complete: shiftSync + agendaReminder + oracleTreeGrounding split, 32 of 60 modules now done</div>
+    <div class="card-body">
+      3 more zero-touchpoint modules, re-confirmed via a repo-wide grep plus dedicated checks for the dynamic-bracket-lookup pattern and undeclared runtime-assigned module fields (the two bug classes found in prior batches) — neither found in any of the three.<br><br>
+      <code>shiftSync</code> splits 2 <code>logic</code>/0 <code>ui</code> — a real judgment call: neither function has a DOM keyword but both trigger real global redraws, chosen <code>logic</code> since the fetched rows are genuinely persisted (not render-and-discard) and the redraw calls are optional guarded trailing side effects, not the function's real job. <code>agendaReminder</code> splits 0/2 (the honest inverse). <code>oracleTreeGrounding</code> splits 2/0 — sits entirely between chat input and the Anthropic API; both functions return built prompt-text strings, explicitly distinguished from the markup-construction rule (never assigned to <code>innerHTML</code>, never handed to an element).<br><br>
+      2 real, pre-existing bugs found and correctly left flagged (not fixed, given genuine ambiguous intent): <code>shiftSync</code>'s empty-Supabase-response branch never clears stale local shifts, asymmetric with its own sibling; <code>agendaReminder._show</code> reads localStorage directly rather than through the <code>RPGACE.DB</code> helper.<br><br>
+      Independently re-verified: <code>node --check</code> clean, self/this sweep clean, touchpoint re-grep clean (dotted calls, string literals, dynamic lookup), headless Chromium 16/16 real assertions including both real cross-namespace self-requalifications exercised end-to-end. Cache-bust <code>20260902r→20260902s</code>. Deployed and confirmed <code>READY</code>, commit <code>41cf7c8</code>. <b>32 of 60 real modules now split. Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 9 complete: prodOraclePanel + journalQoL + ciAutoPropose split, 29 of 60 modules now done, 4 real bugs fixed</div>
     <div class="card-body">
       3 more zero-touchpoint modules. <code>prodOraclePanel</code> is a near-exact structural twin of <code>instaOraclePanel</code> (3 <code>ui</code>/1 <code>logic</code>). <code>journalQoL</code> splits 4/0 (all <code>ui</code>). <code>ciAutoPropose</code> splits 0/2 (both <code>logic</code>) — the "empty ui" precedent's third instance.<br><br>
