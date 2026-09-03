@@ -16805,7 +16805,24 @@ RPGACE.register('taxonomyTree', {
   // display-only array in taxonomy_map.html - Phylum Path is the first live
   // app feature that reasons about rank names, not just raw depth integers.
   RANK_NAMES: ['Phylum', 'Order', 'Class', 'Family', 'Genus', 'Species', 'Variant'],
-  rankNameForDepth: function(depth) { return this.RANK_NAMES[depth] || ('Rank ' + depth); },
+
+
+  // G53 (Sep 2026) split note: ui holds real DOM construction (the
+  // manual-entry button + popup, the named-topic picker, and the full
+  // accept/edit/reject/morph proposal popup). logic holds the actual
+  // placement/proposal pipeline - decision delegation to phylumPath,
+  // the taxonomy_proposals writes, the accept/write chain, and the
+  // Oracle content-generation call - with zero DOM refs. Every moved
+  // function was MOVED wholesale, never rewritten. Any function that
+  // reads a module-scope field (PHYLUM_NAMES/PHYLUM_ENGLISH/
+  // PHYLUM_PURPOSE/PHYLUM_SCOPE_GROUPS/RANK_NAMES) or calls a sibling
+  // method resolves through `var self = RPGACE.modules.taxonomyTree;`
+  // (or a direct inline reference for a one-liner), never bare `this.`
+  // - a function invoked as ui.X()/logic.X() has `this` bound to that
+  // sub-object, not the module. ONE deliberate exception, documented
+  // in place, not silently fixed: extractNamedTopics's own bare,
+  // undeclared `self` (a real pre-existing bug predating this split)
+  // is left completely untouched, per rule 4.
 
   init: function() {
     var self = this;
@@ -16820,10 +16837,13 @@ RPGACE.register('taxonomyTree', {
     });
   },
 
+  // ui - rendering/DOM.
+  ui: {
+
   // ── Manual trigger button ─────────────────────────────────────
   _injectManualButton: function() {
     if (document.getElementById('taxtree-manual-btn')) return;
-    var self = this;
+    var self = RPGACE.modules.taxonomyTree;
     // Aug 23 2026 (UI2/UI3) — was 'page-research' (confirmed dead) ||
     // 'page-learning' (the retired Research Lab page). This button is NOT one
     // of the relocated panels; it inserts itself as a DOM SIBLING immediately
@@ -16848,7 +16868,7 @@ RPGACE.register('taxonomyTree', {
   },
 
   _openManualEntry: function() {
-    var self = this;
+    var self = RPGACE.modules.taxonomyTree;
     var pop = RPGACE.modules.dashDeck._popup({
       dim: '0.9', width: '520px', borderColor: 'rgba(155,89,182,0.25)',
       eyebrow: 'Taxonomy Tree · Manual Entry', title: 'What topic do you want to add?',
@@ -16921,62 +16941,11 @@ RPGACE.register('taxonomyTree', {
     input.focus();
   },
 
-  // ── Cheap pre-check: does this phylum's keyword set actually overlap  ──
-  // ── the text at all? Uses the FREE Layer 1 scan already computed —    ──
-  // ── prevents wasting an Oracle API call generating a mismatch notice. ──
-  isPlausiblePhylum: function(text, phylumNumber) {
-    // F2: reads from the shared RPGACE.utils.phylaKeywordScore(), same
-    // scoring function the badge scan uses - one source of truth, can't drift.
-    // F8: threshold now lives on RPGACE.utils.PHYLA_MATCH_THRESHOLD (weighted
-    // score, not raw hit count) so this can't drift out of sync with
-    // _quickPhylaScan's bar the way the old two-hardcoded-"2"s did.
-    if (!RPGACE.utils.phylaKeywordScore) return true; // fail open if scorer unavailable
-    return RPGACE.utils.phylaKeywordScore(text, phylumNumber) >= (RPGACE.utils.PHYLA_MATCH_THRESHOLD || 3);
-  },
-
-  // ── Extract named node candidates from an Oracle response ──────────
-  // ── Looks for bullet-point items with a bold/named lead-in — Oracle    ──
-  // ── frequently writes exactly this pattern when suggesting topics      ──
-  // ── ("• The Major Scale & Interval Structure (tones/semitones...)").   ──
-  // ── If found, these become the ACTUAL proposal topics instead of a     ──
-  // ── vague blob slice of the whole response.                           ──
-  extractNamedTopics: function(text, phylumNumber) {
-    var phylumName = self.PHYLUM_NAMES ? self.PHYLUM_NAMES[phylumNumber] : null;
-    var lines = text.split('\n');
-    var candidates = [];
-    var inRelevantSection = !phylumName; // if we don't know the name, scan everything
-
-    lines.forEach(function(line) {
-      var trimmed = line.trim();
-      // Detect a section header naming this phylum's English or Latin name
-      if (phylumName && trimmed.length < 80) {
-        var lower = trimmed.toLowerCase();
-        if (lower.includes(phylumName.toLowerCase())) { inRelevantSection = true; return; }
-        // A new bolded header that ISN'T this phylum likely ends the section
-        if (/^[•\-\*]/.test(trimmed) === false && trimmed.length > 10 && /^[A-Z]/.test(trimmed) && inRelevantSection) {
-          // heuristic: heading-like line with no bullet, treat as new section boundary
-        }
-      }
-      // Bullet items: "• Name Here (parenthetical description)"
-      var bulletMatch = trimmed.match(/^[•\-\*]\s*(.+)/);
-      if (bulletMatch && inRelevantSection) {
-        var itemText = bulletMatch[1];
-        // Strip trailing parenthetical for the "name" but keep full text as context
-        var nameOnly = itemText.split('(')[0].trim();
-        if (nameOnly.length > 3 && nameOnly.length < 90) {
-          candidates.push({ name: nameOnly, fullText: itemText });
-        }
-      }
-    });
-
-    return candidates;
-  },
-
   // ── Picker shown when Oracle's response contains multiple named nodes ──
   // ── for one phylum — lets user pick which specific ones to propose,   ──
   // ── instead of collapsing them all into one vague blob topic.          ──
   _showNamedTopicPicker: function(candidates, phylumNumber) {
-    var self = this;
+    var self = RPGACE.modules.taxonomyTree;
     var phylumName = self.PHYLUM_NAMES[phylumNumber] || '';
     var pop = RPGACE.modules.dashDeck._popup({
       dim: '0.9', width: '520px', borderColor: 'rgba(155,89,182,0.3)',
@@ -17023,209 +16992,9 @@ RPGACE.register('taxonomyTree', {
     box.appendChild(btnRow);
   },
 
-  // ── Core: propose a lineage for any topic, from any source ────────
-  // sourceType: 'manual' | 'oracle' | 'content_intelligence' | 'encyclopedia'
-  // July 15, "old feeds new": this function used to be the only decision-
-  // maker for every trigger source, and its flat top-down generation has
-  // no real structural awareness (_checkForMorph only catches exact name
-  // matches) - confirmed live to create duplicate/overlapping branches
-  // (a whole new "Harmony & Chord Theory" Order sitting beside the
-  // existing "Harmony" Order for near-identical content). For any phylum
-  // phylumPath has taken over, delegate the actual placement DECISION to
-  // its structure-aware 5-check reasoning instead - this function's job
-  // becomes "how did the insight get here," not "where does it go."
-  // UNIFIED July 19 (Fable audit): the old flat-prompt body that lived
-  // here is deleted, not just bypassed. Real evidence from the tree audit:
-  // it produced literal VIDEO TITLES as leaf names ("How to Make a Jazz
-  // Sampled Type Beat for Nemzzz, Knucks & Hurricane Wisdom | FL Studio
-  // Tutorial", two beat-selling chains with "(2022)"/"(2025)" in the
-  // node names), invented parallel one-off branch chains per video with
-  // zero fit-challenge (the phylum was pre-assumed), no confidence score,
-  // and no stored justification - measurably the worst of the three
-  // placement pipelines that existed. ALL placement decisions now go
-  // through phylumPath.decidePlacementScored (one engine, one prompt,
-  // one call - also cheaper than this path's 800-token flat call plus
-  // decidePlacement's old extractor+worker two-call chain). The enabled-
-  // phyla gate is gone too: the scored engine is structure-aware for any
-  // phylum, including a completely empty one.
-  proposeLineage: function(topicText, phylumNumber, sourceType, sourceId) {
-    return this._proposeLineageViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
-  },
-
-  // ── Interactive placement via Phylum Path's structure-aware engine ──
-  // Same external behavior as the old proposeLineage() from the caller's
-  // point of view (fires, shows a confirm UI, writes on accept) - just a
-  // smarter decision underneath, and a lighter confirm popup than the
-  // old full-path editor since Phylum Path only ever appends below an
-  // attach point.
-  _proposeLineageViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
-    var pp = RPGACE.modules.phylumPath;
-    RPGACE.utils.toast('🧬 Deciding placement (Phylum Path)...', '#4CAF82', 2500);
-    return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
-      pp._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, topicText,
-        function(finalSteps, finalExplainers) {
-          // W5: this entry point already receives its own real sourceType/
-          // sourceId as parameters ('manual'|'oracle'|'content_intelligence'
-          // |'encyclopedia', per this function's own doc comment above), so
-          // label the companion entry with the real value rather than a
-          // guess; 'oracle' only as the fallback when a caller passed none.
-          pp._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, topicText,
-            { source: sourceType || 'oracle', title: sourceId || (topicText || '').slice(0, 80) });
-        }
-      );
-    }).catch(function(err) {
-      RPGACE.utils.toast('Error generating placement: ' + err.message, '#CC4A4A', 3500);
-    });
-  },
-
-  // ── F4/F5: silent sibling of proposeLineage() — same Oracle-generated  ──
-  // ── lineage, but queues it into taxonomy_proposals for later batch      ──
-  // ── review (F6's Dashboard queue) instead of opening the accept popup   ──
-  // ── immediately. Used by unattended triggers (Content Intelligence      ──
-  // ── pipeline completion, Encyclopedia sync) that must not block on a    ──
-  // ── human decision mid-pipeline.                                       ──
-  // UNIFIED July 19 (Fable audit): same deletion + reasoning as
-  // proposeLineage above - the old flat body here was the SILENT variant
-  // of the same worst-of-three pipeline (video-title leaves, pre-assumed
-  // phylum fit, no score, no justification), and being silent made it
-  // more dangerous, not less: its garbage only surfaced at review time,
-  // titled exactly like a plausible proposal. All decisions now flow
-  // through phylumPath.decidePlacementScored via the ViaPhylumPath
-  // variant below, for every phylum.
-  // Note on error handling, carried over: deliberately no .catch() here -
-  // errors propagate to the caller. ciAutoPropose/encSync's batch scans
-  // swallow per-item failures on purpose; encTaxonomyLink's per-entry
-  // button attaches its own .catch() for real user feedback.
-  silentPropose: function(topicText, phylumNumber, sourceType, sourceId) {
-    return this._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
-  },
-
-  // ── Silent placement via Phylum Path's structure-aware engine ──────
-  // Same queue-not-block contract as silentPropose() - writes into the
-  // SAME taxonomy_proposals table so F6's existing Dashboard review queue
-  // is still the one place all of this surfaces for review, just tagged
-  // so taxonomyReviewQueue knows to render the lighter Phylum Path confirm
-  // view (attach point + appended steps) instead of the old full-path
-  // editor when the row's engine is 'phylum_path'.
-  _silentProposeViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
-    var self = this;
-    var pp = RPGACE.modules.phylumPath;
-    // July 24 - Claude fallback build: this is a genuinely SILENT/
-    // background caller (ciAutoPropose's batch scan, encSync's auto-
-    // propose) with no live user watching for a toast - exactly the
-    // shape of call worth tracking through the fallback queue, unlike
-    // Phylum Path's own foreground confirm-popup flow where a user just
-    // got a visible error and can retry by hand. Passing this context is
-    // what lets _resolvePlacementDecision's shared insert logic below be
-    // reused automatically once an external Routine answers it.
-    var fallbackContext = { type: 'silent_propose', topicText: topicText, phylumNumber: phylumNumber, sourceType: sourceType, sourceId: sourceId };
-    return pp.decidePlacement(topicText, phylumNumber, fallbackContext).then(function(decision) {
-      return self._insertProposalFromDecision(decision, phylumNumber, sourceType, sourceId, topicText);
-    });
-    // Same no-.catch() contract as silentPropose() above - errors
-    // propagate to the caller's own error handling.
-  },
-
-  // Split out of _silentProposeViaPhylumPath above (July 24, Claude-
-  // fallback build) so the exact same insert can run either right after
-  // a live decidePlacement call (above) or later, once
-  // taxonomyTree._resumeSilentProposeFromFallback resolves a decision
-  // from an externally-answered fallback row - one shared function per
-  // rule 8, not two copies that could drift.
-  _insertProposalFromDecision: function(decision, phylumNumber, sourceType, sourceId, topicText) {
-    var phylumName = this.PHYLUM_NAMES[phylumNumber] || 'Unknown';
-    var base = decision.attachNode ? decision.attachNode.path : phylumName;
-    var previewPath = base + (decision.newSteps.length ? '/' + decision.newSteps.join('/') : '');
-    return RPGACE.sb.secureWrite('taxonomy_proposals', 'insert', {
-      source_type: sourceType,
-      source_id: sourceId,
-      proposed_path: previewPath.replace(/\//g, ' → '),
-      proposed_steps: {
-        engine: 'phylum_path',
-        attachToId: decision.attachNode ? decision.attachNode.id : null,
-        newSteps: decision.newSteps,
-        explainers: decision.explainers,
-        insightText: topicText,
-        // July 19: the scored engine's reasoning now rides along so the
-        // review queue can SHOW it - previously the decision used the
-        // score internally but threw the evidence away before review.
-        justification: decision.justification || '',
-        confidenceScore: decision.confidenceScore || 0,
-      },
-      phylum_number: phylumNumber,
-      matched_existing_node_id: decision.attachNode ? decision.attachNode.id : null,
-    });
-  },
-
-  // Resume the silent side of the Claude-fallback lane (July 24): given
-  // an answered oracle_fallback_queue row whose context.type is
-  // 'silent_propose', resolve the real decision from the fallback
-  // Routine's answer and insert it into taxonomy_proposals exactly like
-  // the live path would - unlike Bookworm's cascade, a silent propose is
-  // a single atomic call, so "resuming" it just means finishing the one
-  // insert that never happened, not continuing a multi-step chain.
-  _resumeSilentProposeFromFallback: function(row) {
-    var self = this;
-    var ctx = row.context || {};
-    RPGACE.modules.phylumPath.resumeFallbackPlacement(row.answer, ctx.phylumNumber).then(function(decision) {
-      return self._insertProposalFromDecision(decision, ctx.phylumNumber, ctx.sourceType, ctx.sourceId, ctx.topicText);
-    }).then(function() {
-      return RPGACE.sb.secureWrite('oracle_fallback_queue', 'update', { resumed_at: new Date().toISOString() }, 'id=eq.' + row.id);
-    }).then(function() {
-      RPGACE.utils.toast('🌉 A queued taxonomy proposal came back from the fallback lane and is now in the review queue', 'rgba(42,191,176,0.85)', 4500);
-    }).catch(function(e) {
-      console.warn('[taxonomyTree] fallback resume failed:', e.message);
-    });
-  },
-
-  // ── Check if any step in the proposed path already exists ────────
-  // ── Now also detects if the NEW leaf's explainer is meaningfully      ──
-  // ── different/better-written than an existing matching leaf, and      ──
-  // ── offers to UPDATE the existing node's content instead of just      ──
-  // ── warning about duplication.                                        ──
-  _checkForMorph: function(phylumNumber, path, callback) {
-    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=depth.asc')
-      .then(function(existing) {
-        existing = existing || [];
-        var matched = null;
-        var exactLeafMatch = null;
-        var lastStepName = path[path.length - 1];
-
-        path.forEach(function(stepName) {
-          var found = existing.find(function(n) {
-            return n.name.toLowerCase().trim() === stepName.toLowerCase().trim();
-          });
-          if (found && !matched) matched = found;
-        });
-
-        // Check specifically if the LEAF matches an existing leaf — this is the
-        // "duplicate insight" case, distinct from "shares a parent grouping" case
-        exactLeafMatch = existing.find(function(n) {
-          return n.node_type === 'leaf' && n.name.toLowerCase().trim() === lastStepName.toLowerCase().trim();
-        });
-
-        callback(matched, exactLeafMatch);
-      }).catch(function() { callback(null, null); });
-  },
-
-  // ── Update an existing node's content with a better-written version ──
-  _updateExistingNode: function(existingNode, proposal) {
-    var self = this;
-    RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#4CAF82', 2500);
-    var newExplainer = proposal.explainers[proposal.explainers.length - 1] || existingNode.explainer;
-
-    RPGACE.sb.secureWrite('taxonomy_tree', 'update', { explainer: newExplainer, updated_at: new Date().toISOString() }, 'id=eq.' + existingNode.id)
-    .then(function() {
-      RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#4CAF82', 3000);
-      self._generateNodeContent(existingNode);
-    }).catch(function(e) {
-      RPGACE.utils.toast('Error updating node: ' + e.message, '#CC4A4A', 3000);
-    });
-  },
-
   // ── The accept/edit/reject/morph popup ────────────────────────────
   _showProposalPopup: function(proposal) {
-    var self = this;
+    var self = RPGACE.modules.taxonomyTree;
     var pop = RPGACE.modules.dashDeck._popup({
       dim: '0.92', scroll: true, width: '560px', borderColor: 'rgba(155,89,182,0.3)',
       eyebrow: 'Proposed Taxonomy Lineage · ' + proposal.sourceType,
@@ -17376,9 +17145,282 @@ RPGACE.register('taxonomyTree', {
   },
 
 
+  },
+
+  // logic - business logic/data.
+  logic: {
+
+  rankNameForDepth: function(depth) { return RPGACE.modules.taxonomyTree.RANK_NAMES[depth] || ('Rank ' + depth); },
+  // ── Cheap pre-check: does this phylum's keyword set actually overlap  ──
+  // ── the text at all? Uses the FREE Layer 1 scan already computed —    ──
+  // ── prevents wasting an Oracle API call generating a mismatch notice. ──
+  isPlausiblePhylum: function(text, phylumNumber) {
+    // F2: reads from the shared RPGACE.utils.phylaKeywordScore(), same
+    // scoring function the badge scan uses - one source of truth, can't drift.
+    // F8: threshold now lives on RPGACE.utils.PHYLA_MATCH_THRESHOLD (weighted
+    // score, not raw hit count) so this can't drift out of sync with
+    // _quickPhylaScan's bar the way the old two-hardcoded-"2"s did.
+    if (!RPGACE.utils.phylaKeywordScore) return true; // fail open if scorer unavailable
+    return RPGACE.utils.phylaKeywordScore(text, phylumNumber) >= (RPGACE.utils.PHYLA_MATCH_THRESHOLD || 3);
+  },
+
+  // ── Extract named node candidates from an Oracle response ──────────
+  // ── Looks for bullet-point items with a bold/named lead-in — Oracle    ──
+  // ── frequently writes exactly this pattern when suggesting topics      ──
+  // ── ("• The Major Scale & Interval Structure (tones/semitones...)").   ──
+  // ── If found, these become the ACTUAL proposal topics instead of a     ──
+  // ── vague blob slice of the whole response.                           ──
+  // FLAGGED, NOT FIXED (G53 split, Sep 2026) - `self` below is a REAL,
+  // PRE-EXISTING BUG, not introduced by this split: it was never
+  // declared anywhere in this function, in the original source either -
+  // it silently resolves to the browser global `window.self` (which
+  // === window), so `self.PHYLUM_NAMES` has always been `undefined`
+  // (`window.PHYLUM_NAMES` doesn't exist) regardless of which namespace
+  // this function lives in. Net effect: `phylumName` is always `null`,
+  // so `inRelevantSection` starts `true` and the phylum-name section
+  // filter this function's own comment describes never actually runs -
+  // every bullet line in the text is scanned, not just the ones under
+  // this phylum's own heading. Left completely untouched per rule 4 -
+  // fixing it would be real behavior-changing feature work outside a
+  // pure refactor's remit (same precedent as contentRepurpose.openPopup's
+  // unread 2 args, G53 batch 14). Moving this function to a namespace
+  // changes nothing here either way, since it never read `this`/`self`
+  // correctly to begin with.
+  extractNamedTopics: function(text, phylumNumber) {
+    var phylumName = self.PHYLUM_NAMES ? self.PHYLUM_NAMES[phylumNumber] : null;
+    var lines = text.split('\n');
+    var candidates = [];
+    var inRelevantSection = !phylumName; // if we don't know the name, scan everything
+
+    lines.forEach(function(line) {
+      var trimmed = line.trim();
+      // Detect a section header naming this phylum's English or Latin name
+      if (phylumName && trimmed.length < 80) {
+        var lower = trimmed.toLowerCase();
+        if (lower.includes(phylumName.toLowerCase())) { inRelevantSection = true; return; }
+        // A new bolded header that ISN'T this phylum likely ends the section
+        if (/^[•\-\*]/.test(trimmed) === false && trimmed.length > 10 && /^[A-Z]/.test(trimmed) && inRelevantSection) {
+          // heuristic: heading-like line with no bullet, treat as new section boundary
+        }
+      }
+      // Bullet items: "• Name Here (parenthetical description)"
+      var bulletMatch = trimmed.match(/^[•\-\*]\s*(.+)/);
+      if (bulletMatch && inRelevantSection) {
+        var itemText = bulletMatch[1];
+        // Strip trailing parenthetical for the "name" but keep full text as context
+        var nameOnly = itemText.split('(')[0].trim();
+        if (nameOnly.length > 3 && nameOnly.length < 90) {
+          candidates.push({ name: nameOnly, fullText: itemText });
+        }
+      }
+    });
+
+    return candidates;
+  },
+
+  // ── Core: propose a lineage for any topic, from any source ────────
+  // sourceType: 'manual' | 'oracle' | 'content_intelligence' | 'encyclopedia'
+  // July 15, "old feeds new": this function used to be the only decision-
+  // maker for every trigger source, and its flat top-down generation has
+  // no real structural awareness (_checkForMorph only catches exact name
+  // matches) - confirmed live to create duplicate/overlapping branches
+  // (a whole new "Harmony & Chord Theory" Order sitting beside the
+  // existing "Harmony" Order for near-identical content). For any phylum
+  // phylumPath has taken over, delegate the actual placement DECISION to
+  // its structure-aware 5-check reasoning instead - this function's job
+  // becomes "how did the insight get here," not "where does it go."
+  // UNIFIED July 19 (Fable audit): the old flat-prompt body that lived
+  // here is deleted, not just bypassed. Real evidence from the tree audit:
+  // it produced literal VIDEO TITLES as leaf names ("How to Make a Jazz
+  // Sampled Type Beat for Nemzzz, Knucks & Hurricane Wisdom | FL Studio
+  // Tutorial", two beat-selling chains with "(2022)"/"(2025)" in the
+  // node names), invented parallel one-off branch chains per video with
+  // zero fit-challenge (the phylum was pre-assumed), no confidence score,
+  // and no stored justification - measurably the worst of the three
+  // placement pipelines that existed. ALL placement decisions now go
+  // through phylumPath.decidePlacementScored (one engine, one prompt,
+  // one call - also cheaper than this path's 800-token flat call plus
+  // decidePlacement's old extractor+worker two-call chain). The enabled-
+  // phyla gate is gone too: the scored engine is structure-aware for any
+  // phylum, including a completely empty one.
+  proposeLineage: function(topicText, phylumNumber, sourceType, sourceId) {
+    return RPGACE.modules.taxonomyTree._proposeLineageViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
+  },
+
+  // ── Interactive placement via Phylum Path's structure-aware engine ──
+  // Same external behavior as the old proposeLineage() from the caller's
+  // point of view (fires, shows a confirm UI, writes on accept) - just a
+  // smarter decision underneath, and a lighter confirm popup than the
+  // old full-path editor since Phylum Path only ever appends below an
+  // attach point.
+  _proposeLineageViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
+    var pp = RPGACE.modules.phylumPath;
+    RPGACE.utils.toast('🧬 Deciding placement (Phylum Path)...', '#4CAF82', 2500);
+    return pp.decidePlacement(topicText, phylumNumber).then(function(decision) {
+      pp._showPlacementConfirm(phylumNumber, decision.attachNode, decision.newSteps, decision.explainers, topicText,
+        function(finalSteps, finalExplainers) {
+          // W5: this entry point already receives its own real sourceType/
+          // sourceId as parameters ('manual'|'oracle'|'content_intelligence'
+          // |'encyclopedia', per this function's own doc comment above), so
+          // label the companion entry with the real value rather than a
+          // guess; 'oracle' only as the fallback when a caller passed none.
+          pp._insertNewSteps(phylumNumber, decision.attachNode, finalSteps, finalExplainers, topicText,
+            { source: sourceType || 'oracle', title: sourceId || (topicText || '').slice(0, 80) });
+        }
+      );
+    }).catch(function(err) {
+      RPGACE.utils.toast('Error generating placement: ' + err.message, '#CC4A4A', 3500);
+    });
+  },
+
+  // ── F4/F5: silent sibling of proposeLineage() — same Oracle-generated  ──
+  // ── lineage, but queues it into taxonomy_proposals for later batch      ──
+  // ── review (F6's Dashboard queue) instead of opening the accept popup   ──
+  // ── immediately. Used by unattended triggers (Content Intelligence      ──
+  // ── pipeline completion, Encyclopedia sync) that must not block on a    ──
+  // ── human decision mid-pipeline.                                       ──
+  // UNIFIED July 19 (Fable audit): same deletion + reasoning as
+  // proposeLineage above - the old flat body here was the SILENT variant
+  // of the same worst-of-three pipeline (video-title leaves, pre-assumed
+  // phylum fit, no score, no justification), and being silent made it
+  // more dangerous, not less: its garbage only surfaced at review time,
+  // titled exactly like a plausible proposal. All decisions now flow
+  // through phylumPath.decidePlacementScored via the ViaPhylumPath
+  // variant below, for every phylum.
+  // Note on error handling, carried over: deliberately no .catch() here -
+  // errors propagate to the caller. ciAutoPropose/encSync's batch scans
+  // swallow per-item failures on purpose; encTaxonomyLink's per-entry
+  // button attaches its own .catch() for real user feedback.
+  silentPropose: function(topicText, phylumNumber, sourceType, sourceId) {
+    return RPGACE.modules.taxonomyTree._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId);
+  },
+
+  // ── Silent placement via Phylum Path's structure-aware engine ──────
+  // Same queue-not-block contract as silentPropose() - writes into the
+  // SAME taxonomy_proposals table so F6's existing Dashboard review queue
+  // is still the one place all of this surfaces for review, just tagged
+  // so taxonomyReviewQueue knows to render the lighter Phylum Path confirm
+  // view (attach point + appended steps) instead of the old full-path
+  // editor when the row's engine is 'phylum_path'.
+  _silentProposeViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) {
+    var self = RPGACE.modules.taxonomyTree;
+    var pp = RPGACE.modules.phylumPath;
+    // July 24 - Claude fallback build: this is a genuinely SILENT/
+    // background caller (ciAutoPropose's batch scan, encSync's auto-
+    // propose) with no live user watching for a toast - exactly the
+    // shape of call worth tracking through the fallback queue, unlike
+    // Phylum Path's own foreground confirm-popup flow where a user just
+    // got a visible error and can retry by hand. Passing this context is
+    // what lets _resolvePlacementDecision's shared insert logic below be
+    // reused automatically once an external Routine answers it.
+    var fallbackContext = { type: 'silent_propose', topicText: topicText, phylumNumber: phylumNumber, sourceType: sourceType, sourceId: sourceId };
+    return pp.decidePlacement(topicText, phylumNumber, fallbackContext).then(function(decision) {
+      return self._insertProposalFromDecision(decision, phylumNumber, sourceType, sourceId, topicText);
+    });
+    // Same no-.catch() contract as silentPropose() above - errors
+    // propagate to the caller's own error handling.
+  },
+
+  // Split out of _silentProposeViaPhylumPath above (July 24, Claude-
+  // fallback build) so the exact same insert can run either right after
+  // a live decidePlacement call (above) or later, once
+  // taxonomyTree._resumeSilentProposeFromFallback resolves a decision
+  // from an externally-answered fallback row - one shared function per
+  // rule 8, not two copies that could drift.
+  _insertProposalFromDecision: function(decision, phylumNumber, sourceType, sourceId, topicText) {
+    var phylumName = RPGACE.modules.taxonomyTree.PHYLUM_NAMES[phylumNumber] || 'Unknown';
+    var base = decision.attachNode ? decision.attachNode.path : phylumName;
+    var previewPath = base + (decision.newSteps.length ? '/' + decision.newSteps.join('/') : '');
+    return RPGACE.sb.secureWrite('taxonomy_proposals', 'insert', {
+      source_type: sourceType,
+      source_id: sourceId,
+      proposed_path: previewPath.replace(/\//g, ' → '),
+      proposed_steps: {
+        engine: 'phylum_path',
+        attachToId: decision.attachNode ? decision.attachNode.id : null,
+        newSteps: decision.newSteps,
+        explainers: decision.explainers,
+        insightText: topicText,
+        // July 19: the scored engine's reasoning now rides along so the
+        // review queue can SHOW it - previously the decision used the
+        // score internally but threw the evidence away before review.
+        justification: decision.justification || '',
+        confidenceScore: decision.confidenceScore || 0,
+      },
+      phylum_number: phylumNumber,
+      matched_existing_node_id: decision.attachNode ? decision.attachNode.id : null,
+    });
+  },
+
+  // Resume the silent side of the Claude-fallback lane (July 24): given
+  // an answered oracle_fallback_queue row whose context.type is
+  // 'silent_propose', resolve the real decision from the fallback
+  // Routine's answer and insert it into taxonomy_proposals exactly like
+  // the live path would - unlike Bookworm's cascade, a silent propose is
+  // a single atomic call, so "resuming" it just means finishing the one
+  // insert that never happened, not continuing a multi-step chain.
+  _resumeSilentProposeFromFallback: function(row) {
+    var self = RPGACE.modules.taxonomyTree;
+    var ctx = row.context || {};
+    RPGACE.modules.phylumPath.resumeFallbackPlacement(row.answer, ctx.phylumNumber).then(function(decision) {
+      return self._insertProposalFromDecision(decision, ctx.phylumNumber, ctx.sourceType, ctx.sourceId, ctx.topicText);
+    }).then(function() {
+      return RPGACE.sb.secureWrite('oracle_fallback_queue', 'update', { resumed_at: new Date().toISOString() }, 'id=eq.' + row.id);
+    }).then(function() {
+      RPGACE.utils.toast('🌉 A queued taxonomy proposal came back from the fallback lane and is now in the review queue', 'rgba(42,191,176,0.85)', 4500);
+    }).catch(function(e) {
+      console.warn('[taxonomyTree] fallback resume failed:', e.message);
+    });
+  },
+
+  // ── Check if any step in the proposed path already exists ────────
+  // ── Now also detects if the NEW leaf's explainer is meaningfully      ──
+  // ── different/better-written than an existing matching leaf, and      ──
+  // ── offers to UPDATE the existing node's content instead of just      ──
+  // ── warning about duplication.                                        ──
+  _checkForMorph: function(phylumNumber, path, callback) {
+    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=depth.asc')
+      .then(function(existing) {
+        existing = existing || [];
+        var matched = null;
+        var exactLeafMatch = null;
+        var lastStepName = path[path.length - 1];
+
+        path.forEach(function(stepName) {
+          var found = existing.find(function(n) {
+            return n.name.toLowerCase().trim() === stepName.toLowerCase().trim();
+          });
+          if (found && !matched) matched = found;
+        });
+
+        // Check specifically if the LEAF matches an existing leaf — this is the
+        // "duplicate insight" case, distinct from "shares a parent grouping" case
+        exactLeafMatch = existing.find(function(n) {
+          return n.node_type === 'leaf' && n.name.toLowerCase().trim() === lastStepName.toLowerCase().trim();
+        });
+
+        callback(matched, exactLeafMatch);
+      }).catch(function() { callback(null, null); });
+  },
+
+  // ── Update an existing node's content with a better-written version ──
+  _updateExistingNode: function(existingNode, proposal) {
+    var self = RPGACE.modules.taxonomyTree;
+    RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#4CAF82', 2500);
+    var newExplainer = proposal.explainers[proposal.explainers.length - 1] || existingNode.explainer;
+
+    RPGACE.sb.secureWrite('taxonomy_tree', 'update', { explainer: newExplainer, updated_at: new Date().toISOString() }, 'id=eq.' + existingNode.id)
+    .then(function() {
+      RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#4CAF82', 3000);
+      self._generateNodeContent(existingNode);
+    }).catch(function(e) {
+      RPGACE.utils.toast('Error updating node: ' + e.message, '#CC4A4A', 3000);
+    });
+  },
+
   // ── Write accepted lineage into taxonomy_tree, generate content ──
   _acceptLineage: function(proposal) {
-    var self = this;
+    var self = RPGACE.modules.taxonomyTree;
     RPGACE.utils.toast('🌳 Writing lineage + generating content...', '#4CAF82', 3000);
 
     var parentId = null;
@@ -17495,6 +17537,28 @@ RPGACE.register('taxonomyTree', {
       console.warn('[taxonomyTree] Content generation failed:', e.message);
     });
   },
+
+  },
+
+  // Thin top-level pass-throughs - preserve the exact existing public
+  // API. See ui/logic above for the real implementations.
+  _injectManualButton: function() { return this.ui._injectManualButton(); },
+  _openManualEntry: function() { return this.ui._openManualEntry(); },
+  _showNamedTopicPicker: function(candidates, phylumNumber) { return this.ui._showNamedTopicPicker(candidates, phylumNumber); },
+  _showProposalPopup: function(proposal) { return this.ui._showProposalPopup(proposal); },
+  rankNameForDepth: function(depth) { return this.logic.rankNameForDepth(depth); },
+  isPlausiblePhylum: function(text, phylumNumber) { return this.logic.isPlausiblePhylum(text, phylumNumber); },
+  extractNamedTopics: function(text, phylumNumber) { return this.logic.extractNamedTopics(text, phylumNumber); },
+  proposeLineage: function(topicText, phylumNumber, sourceType, sourceId) { return this.logic.proposeLineage(topicText, phylumNumber, sourceType, sourceId); },
+  _proposeLineageViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) { return this.logic._proposeLineageViaPhylumPath(topicText, phylumNumber, sourceType, sourceId); },
+  silentPropose: function(topicText, phylumNumber, sourceType, sourceId) { return this.logic.silentPropose(topicText, phylumNumber, sourceType, sourceId); },
+  _silentProposeViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) { return this.logic._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId); },
+  _insertProposalFromDecision: function(decision, phylumNumber, sourceType, sourceId, topicText) { return this.logic._insertProposalFromDecision(decision, phylumNumber, sourceType, sourceId, topicText); },
+  _resumeSilentProposeFromFallback: function(row) { return this.logic._resumeSilentProposeFromFallback(row); },
+  _checkForMorph: function(phylumNumber, path, callback) { return this.logic._checkForMorph(phylumNumber, path, callback); },
+  _updateExistingNode: function(existingNode, proposal) { return this.logic._updateExistingNode(existingNode, proposal); },
+  _acceptLineage: function(proposal) { return this.logic._acceptLineage(proposal); },
+  _generateNodeContent: function(node) { return this.logic._generateNodeContent(node); },
 
 });
 /* ===END:taxonomyTree=== */
