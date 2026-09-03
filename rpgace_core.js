@@ -6317,6 +6317,84 @@ RPGACE.register('instaOraclePanel', {
 
 /* ===MODULE:quickActions=== */
 RPGACE.register('quickActions', {
+
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the NINETEENTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
+  // tiktokOracle, instaOraclePanel, jargonEncyclopedia, encyclopediaQoL,
+  // pathRouter and oracleDevBridge): split into two internal namespaces,
+  // `ui` (rendering/DOM) and `logic` (business logic/data), following
+  // the exact shape those eighteen already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle.
+  //
+  // 3 real members, all functions, no data fields at all (checked by
+  // direct read of every top-level key, not assumed from the shape).
+  // `init` stays a literal top-level function (RPGACE.register() calls
+  // `module.init()` directly and cannot see into a sub-object) —
+  // byte-identical, its own `self = this` genuinely IS the module, so
+  // both its boot task and its page:show hook still reach
+  // `self._setup()` through the top-level pass-through below.
+  //
+  // REAL, HONEST RESULT WORTH NAMING RATHER THAN HIDING: both movable
+  // functions land in `ui`, and `logic` below is genuinely EMPTY —
+  // the same real precedent youtubeOracle, jargonEncyclopedia and
+  // encyclopediaQoL already set. That is not a classification failure
+  // or a shortcut; it is what this module actually is once looked at
+  // squarely: a chat-box driver and a button-rewiring pass over an
+  // existing DOM row. Each was checked by a keyword grep of its own
+  // body, never inferred from its name:
+  //   • _send → ui. Two `document.querySelector` lookups (`#chat-input`,
+  //     then `#send-btn` with an attribute-selector fallback), a direct
+  //     `input.value` write, a synthetic `input` Event dispatch and a
+  //     real `btn.click()`. DOM discovery and DOM driving throughout.
+  //   • _setup → ui. DOM discovery and wiring end to end:
+  //     `document.querySelector('.quick-row')`, `row.querySelectorAll`
+  //     twice, `dataset` guard writes, `cloneNode`/`removeAttribute`/
+  //     `parentNode.replaceChild` node surgery on the 4 broken
+  //     quickPrompt buttons, and three `addEventListener` attachments.
+  //
+  // ─── why _setup's two Composio calls do NOT earn a `logic` half ────
+  // Named explicitly, because a reader skimming for `RPGACE.api(` will
+  // find two real outbound Composio calls in this file and reasonably
+  // ask why neither was separated out. Both
+  // (`SUPADATA_GET_YOUTUBE_CHANNEL` and `NOTION_CREATE_NOTION_PAGE`)
+  // live INSIDE an `addEventListener` callback, not in `_setup`'s own
+  // top-level body — `_setup` never invokes either one; it only
+  // ATTACHES the closures that will, later, when Alex actually clicks.
+  // `_setup`'s own executed body is 100% DOM discovery and wiring.
+  // Extracting the two API calls into `logic` would therefore mean
+  // splitting a function down the middle, which this pass's own rules
+  // forbid outright — and would buy nothing, since the extracted half
+  // would still have to be handed the same `self._send` callback to be
+  // useful. Left exactly as they are, and the emptiness of `logic` is
+  // stated outright rather than papered over by a token extraction.
+  // The empty `logic: {}` is kept deliberately so the module still
+  // presents the same two-namespace shape as its eighteen siblings.
+  //
+  // The one real risk this split has to get right, function by
+  // function: a function moved into `ui`/`logic` is invoked with `this`
+  // bound to THAT sub-object, not the module. Exact accounting for both
+  // moved functions, so a later reader can check by grep rather than
+  // take it on trust:
+  //   • _send — references neither `this` nor `self`; moved
+  //     byte-identical, no handle needed and none added.
+  //   • _setup — already had `var self = this;`, that one line swapped
+  //     for the module handle IN PLACE (`var self =
+  //     RPGACE.modules.quickActions;`) so statement order is unchanged.
+  //     It matters: `self` is captured by all three of its
+  //     addEventListener closures, which call `self._send(...)` three
+  //     times between them (the quickPrompt rewire, the YT-stats
+  //     success path, the YT-stats failure path). Left as `this.`, it
+  //     would have read `ui._send` — which DOES exist on `ui`, so this
+  //     one would have kept working by luck rather than by design; it
+  //     is requalified anyway so the module never depends on two
+  //     functions happening to share a namespace.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._setup(); });
@@ -6327,92 +6405,125 @@ RPGACE.register('quickActions', {
     });
   },
 
-  _send: function(text) {
-    var input = document.querySelector('#chat-input');
-    if (!input) return;
-    input.value = text;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    if (typeof sendChat === 'function') {
-      sendChat();
-    } else {
-      var btn = document.querySelector('#send-btn') || document.querySelector('button[onclick*="sendChat"]');
-      if (btn) btn.click();
-    }
-  },
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + writes.
+  // Genuinely empty here, deliberately and honestly — see the
+  // dedicated note in the G53 block above for why _setup's two
+  // Composio calls do not belong in it.
+  // ============================================================
+  logic: {},
 
-  _setup: function() {
-    var self = this;
-    var row = document.querySelector('.quick-row');
-    if (!row || row.dataset.qa === '1') return;
-    row.dataset.qa = '1';
+  // ============================================================
+  // ui — rendering/DOM. Both real functions: driving the Oracle chat
+  // box, and the one-time rewiring pass over the quick-action button
+  // row (including replacing the 4 buttons whose inline onclick
+  // handlers reference a `quickPrompt` global that does not exist —
+  // this runtime patch is what makes them work at all).
+  // ============================================================
+  ui: {
 
-    // Fix the 4 broken quickPrompt buttons
-    var broken = row.querySelectorAll('button[onclick*="quickPrompt"]');
-    broken.forEach(function(btn) {
-      var match = btn.getAttribute('onclick').match(/quickPrompt\('(.+)'\)/);
-      if (!match) return;
-      var text = match[1];
-      var newBtn = btn.cloneNode(true);
-      newBtn.removeAttribute('onclick');
-      newBtn.addEventListener('click', function() {
-        self._send(text);
-      });
-      btn.parentNode.replaceChild(newBtn, btn);
-    });
+    _send: function(text) {
+      var input = document.querySelector('#chat-input');
+      if (!input) return;
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      if (typeof sendChat === 'function') {
+        sendChat();
+      } else {
+        var btn = document.querySelector('#send-btn') || document.querySelector('button[onclick*="sendChat"]');
+        if (btn) btn.click();
+      }
+    },
 
-    var allBtns = Array.from(row.querySelectorAll('button'));
+    _setup: function() {
+      var self = RPGACE.modules.quickActions;
+      var row = document.querySelector('.quick-row');
+      if (!row || row.dataset.qa === '1') return;
+      row.dataset.qa = '1';
 
-    // YT Stats — Composio direct, correct Supadata field names
-    var ytStatsBtn = allBtns.find(function(b) {
-      return b.textContent.trim() === '🎬 YT stats';
-    });
-    if (ytStatsBtn && !ytStatsBtn.dataset.qa) {
-      ytStatsBtn.dataset.qa = '1';
-      ytStatsBtn.removeAttribute('onclick');
-      ytStatsBtn.addEventListener('click', function() {
-        RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
-        RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
-          .then(function(result) {
-            var d = result.data || result;
-            var msg = '📊 YouTube Stats for @AceSanyaBeats:\n'
-              + 'Channel: ' + (d.name || 'AceSanya') + '\n'
-              + 'Handle: ' + (d.handle || '@AceSanyaBeats') + '\n'
-              + 'Total Views: ' + (d.viewCount || 0) + '\n'
-              + 'Videos Published: ' + (d.videoCount || 0) + '\n'
-              + (d.description ? 'Bio: ' + d.description + '\n' : '')
-              + '\nGiven this is an early-stage channel (FL Studio / UK hip hop, targeting aspiring producers 18-35), what are the 3 most important things I should do THIS WEEK to grow @AceSanyaBeats? Be specific and actionable.';
-            self._send(msg);
-          })
-          .catch(function(err) {
-            self._send('YouTube stats fetch failed: ' + err.message);
-          });
-      });
-    }
-
-    // Log to Notion — Composio direct call, no Oracle relay
-    var notionBtn = allBtns.find(function(b) {
-      return b.textContent.includes('Log to Notion');
-    });
-    if (notionBtn && !notionBtn.dataset.qa) {
-      notionBtn.dataset.qa = '1';
-      notionBtn.removeAttribute('onclick');
-      notionBtn.addEventListener('click', function() {
-        var today = new Date().toISOString().split('T')[0];
-        var title = 'RPGACE Session Log — ' + today;
-        RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
-          parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
-          title: title,
-          markdown: '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.'
-        }).then(function() {
-          RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B6EC8', 3000);
-        }).catch(function(err) {
-          RPGACE.utils.toast('Notion failed: ' + err.message, '#CC4A4A', 3000);
+      // Fix the 4 broken quickPrompt buttons
+      var broken = row.querySelectorAll('button[onclick*="quickPrompt"]');
+      broken.forEach(function(btn) {
+        var match = btn.getAttribute('onclick').match(/quickPrompt\('(.+)'\)/);
+        if (!match) return;
+        var text = match[1];
+        var newBtn = btn.cloneNode(true);
+        newBtn.removeAttribute('onclick');
+        newBtn.addEventListener('click', function() {
+          self._send(text);
         });
+        btn.parentNode.replaceChild(newBtn, btn);
       });
-    }
 
-    console.log('[RPGACE:quickActions] Quick-action bar patched');
+      var allBtns = Array.from(row.querySelectorAll('button'));
+
+      // YT Stats — Composio direct, correct Supadata field names
+      var ytStatsBtn = allBtns.find(function(b) {
+        return b.textContent.trim() === '🎬 YT stats';
+      });
+      if (ytStatsBtn && !ytStatsBtn.dataset.qa) {
+        ytStatsBtn.dataset.qa = '1';
+        ytStatsBtn.removeAttribute('onclick');
+        ytStatsBtn.addEventListener('click', function() {
+          RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
+          RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
+            .then(function(result) {
+              var d = result.data || result;
+              var msg = '📊 YouTube Stats for @AceSanyaBeats:\n'
+                + 'Channel: ' + (d.name || 'AceSanya') + '\n'
+                + 'Handle: ' + (d.handle || '@AceSanyaBeats') + '\n'
+                + 'Total Views: ' + (d.viewCount || 0) + '\n'
+                + 'Videos Published: ' + (d.videoCount || 0) + '\n'
+                + (d.description ? 'Bio: ' + d.description + '\n' : '')
+                + '\nGiven this is an early-stage channel (FL Studio / UK hip hop, targeting aspiring producers 18-35), what are the 3 most important things I should do THIS WEEK to grow @AceSanyaBeats? Be specific and actionable.';
+              self._send(msg);
+            })
+            .catch(function(err) {
+              self._send('YouTube stats fetch failed: ' + err.message);
+            });
+        });
+      }
+
+      // Log to Notion — Composio direct call, no Oracle relay
+      var notionBtn = allBtns.find(function(b) {
+        return b.textContent.includes('Log to Notion');
+      });
+      if (notionBtn && !notionBtn.dataset.qa) {
+        notionBtn.dataset.qa = '1';
+        notionBtn.removeAttribute('onclick');
+        notionBtn.addEventListener('click', function() {
+          var today = new Date().toISOString().split('T')[0];
+          var title = 'RPGACE Session Log — ' + today;
+          RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
+            parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
+            title: title,
+            markdown: '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.'
+          }).then(function() {
+            RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B6EC8', 3000);
+          }).catch(function(err) {
+            RPGACE.utils.toast('Notion failed: ' + err.message, '#CC4A4A', 3000);
+          });
+        });
+      }
+
+      console.log('[RPGACE:quickActions] Quick-action bar patched');
+    },
+
   },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of the whole repo for `RPGACE.modules.quickActions.` and of
+  // index.html both — zero hits outside this module's own body; the
+  // module is driven entirely by the boot task and the page:show hook
+  // that `init` registers). These exist for convention and for its OWN
+  // internal calls: `init` calls `self._setup()` twice, and `ui._setup`
+  // reaches `self._send(...)` from three separate click closures —
+  // every one of those `self`s is the module, so each lands here first
+  // and is routed on to the right namespace.
+  _send: function(text) { return this.ui._send(text); },
+  _setup: function() { return this.ui._setup(); },
+
 });
 /* ===END:quickActions=== */
 
@@ -9210,6 +9321,100 @@ RPGACE.register('oracleAppGrounding', {
 // nothing gets written to Supabase without Alex choosing to flag it.
 RPGACE.register('oracleDevBridge', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the EIGHTEENTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
+  // tiktokOracle, instaOraclePanel, jargonEncyclopedia, encyclopediaQoL
+  // and pathRouter): split into two internal namespaces, `ui`
+  // (rendering/DOM) and `logic` (business logic/data), following the
+  // exact shape those seventeen already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle.
+  //
+  // 4 real members, checked by direct read of every top-level key
+  // rather than assumed: 3 functions and ONE plain data field, `TABLE`
+  // ('oracle_dev_suggestions'). That field STAYS AT MODULE SCOPE and
+  // was not moved — see the dedicated requalification note below, which
+  // is the single most dangerous line in this whole split. `init` stays
+  // a literal top-level function (RPGACE.register() calls
+  // `module.init()` directly and cannot see into a sub-object) —
+  // byte-identical, its own `self = this` genuinely IS the module, so
+  // its boot task still reaches `self._hook()` through the top-level
+  // pass-through below.
+  //
+  // Classification, function by function, each checked against its
+  // actual body rather than its name:
+  //   • _hook → ui. Unambiguous on the primary rule: document.
+  //     createElement, a full inline style/textContent build, and
+  //     insertAdjacentElement onto a live chat message. It DISCOVERS
+  //     and CONSTRUCTS DOM outright.
+  //   • _flag → logic. SEE THE DEDICATED NOTE BELOW — this was the one
+  //     genuinely open call in this module and is named here rather
+  //     than decided quietly.
+  //
+  // ─── _flag: the open call, both readings stated ───────────────────
+  // Two real, defensible readings existed:
+  //   (a) `ui` — it directly mutates a DOM element's properties
+  //       (`btn.disabled`, `btn.textContent`) in three separate places:
+  //       the optimistic pre-write state, the success `.then`, and the
+  //       failure `.catch`. A literal "does it touch DOM at all" test
+  //       lands here.
+  //   (b) `logic` — its DOMINANT RESPONSIBILITY is the async
+  //       `RPGACE.sb.secureWrite(TABLE, 'insert', …)` plus the real
+  //       16000-char truncation-with-marker decision that precedes it.
+  //       It DISCOVERS and CONSTRUCTS zero DOM of its own: `btn`
+  //       arrives as a caller-supplied handle, and there is no
+  //       `document.*` / `createElement` / `querySelector` /
+  //       `innerHTML` anywhere in the body. The button writes are
+  //       success/failure FEEDBACK on that handle, not construction.
+  // (b) was chosen. This is not a fresh judgment — it is the exact
+  // shape videoSummary.logic._runRetro was already shipped on
+  // ("MUTATE a DOM element, and only one handed to them by their
+  // caller (`btn.disabled` / `btn.textContent` spinner state) —
+  // neither constructs nor discovers one… and their real jobs are
+  // data"), and contentProductionLive._generateBundle before that.
+  // The counter-precedent that keeps the rule honest is
+  // intelDelete.ui._hideCard, which has the SAME "mutates a handed-in
+  // element" shape but was classified `ui` — because it has no data
+  // job at all (a 180ms opacity fade is 100% presentation). That
+  // discriminator is exactly what separates the two here: _flag's body
+  // is a truncation decision plus a Supabase insert, so the data half
+  // is real and dominant, and the `ui`/`logic` line falls on the
+  // `logic` side. _hook is this module's deliberate counter-example
+  // and stays `ui` — it genuinely builds an element from nothing.
+  // The honest cost of (b), stated rather than hidden: a reader
+  // scanning for "who touches this button" now finds the creation in
+  // `ui` and the state changes in `logic`. That is the trade, made
+  // deliberately, and it is the same trade every prior module in this
+  // series already made.
+  //
+  // ─── the `this.TABLE` requalification — the real bug risk here ────
+  // `_flag` read a bare `this.TABLE`. `TABLE` stays at module scope,
+  // so inside `logic` that would have resolved to `logic.TABLE`, which
+  // is `undefined` — and it fails LOUDLY but wrongly: the write would
+  // have gone to `RPGACE.sb.secureWrite(undefined, 'insert', …)`,
+  // hitting the write proxy with no table name at all. Every flag Alex
+  // pressed would have failed, and the only surface would have been
+  // the `.catch` toast. Requalified to
+  // `RPGACE.modules.oracleDevBridge.TABLE` via the standard module
+  // handle inserted as `_flag`'s first statement.
+  //
+  // `this`/`self` accounting for both moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _hook — references neither `this` nor `self`; its own onclick
+  //     closure was ALREADY fully qualified as
+  //     `RPGACE.modules.oracleDevBridge._flag(text, btn)` before this
+  //     pass, so it moved byte-identical, no handle needed and none
+  //     added. That pre-existing qualification is why the button still
+  //     routes through the top-level pass-through correctly.
+  //   • _flag — read bare `this.TABLE`; module handle inserted as its
+  //     first statement, read rewritten to `self.TABLE` (see the
+  //     dedicated note above).
+  // ══════════════════════════════════════════════════════════════════
+
   TABLE: 'oracle_dev_suggestions',
 
   init: function() {
@@ -9217,52 +9422,86 @@ RPGACE.register('oracleDevBridge', {
     RPGACE.registerBootTask(function() { return self._hook(); });
   },
 
-  _hook: function() {
-    if (window._oracleDevBridgeHooked) return;
-    window._oracleDevBridgeHooked = true;
-    RPGACE.hooks.on('oracle:response-scanned', function(text, lastMsg) {
-      if (!text || text.length < 40 || !lastMsg || !lastMsg.parentNode) return;
-      if (lastMsg.nextElementSibling && lastMsg.nextElementSibling.classList && lastMsg.nextElementSibling.classList.contains('odb-flag-btn')) return;
-      var btn = document.createElement('button');
-      btn.className = 'odb-flag-btn';
-      btn.textContent = '🧪 Flag to Orchestrator CC';
-      btn.style.cssText = 'display:inline-block;background:none;border:1px solid rgba(74,144,226,.3);color:#4A8CCC;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin:2px 0 8px 0;';
-      btn.onclick = function() { RPGACE.modules.oracleDevBridge._flag(text, btn); };
-      lastMsg.insertAdjacentElement('afterend', btn);
-    });
+  // ============================================================
+  // logic — business logic/data: no DOM construction or discovery.
+  // The single Supabase write path for Oracle-flagged suggestions,
+  // plus the truncation decision in front of it (see the dedicated
+  // _flag note in the G53 block above for why it lands here despite
+  // writing to a caller-supplied button).
+  // ============================================================
+  logic: {
+
+    _flag: function(text, btn) {
+      var self = RPGACE.modules.oracleDevBridge;
+      btn.disabled = true;
+      btn.textContent = '⏳ Logging...';
+      // July 28: the old 4000-char cap silently cut off a real flagged
+      // 5thDimension reply mid-sentence, with no indication to Alex that
+      // anything was lost - `suggestion_text` is a plain unbounded `text`
+      // column (confirmed via information_schema), so this was a client-
+      // side-only limit, not a real DB constraint. Raised to 8000 at the time
+      // (comfortably covered the then-current max_tokens:1200 reply cap).
+      // Aug 6 (real /Summary review of this exact table's own rows) — that
+      // cap is now itself stale: sendChat's callOracle cap was raised to
+      // max_tokens:3000 on July 31 (a separate real fix, for a different
+      // "reply cut off mid-document" complaint about Visual Treatment Docs)
+      // and NEVER cross-checked against this flag cap. Real evidence: 6 of
+      // 8 real flagged rows in this exact table between Aug 5-6 hit the old
+      // 8000-char ceiling almost exactly and lost their endings — including
+      // DIRECTOR_CHOSEN:/EDL_JSON: trailers and final scene breakdowns on
+      // real Visual Treatment Docs. Raised to 16000 (comfortable headroom
+      // over a 3000-token reply) with the same explicit-marker safety net
+      // for anything that somehow still exceeds it.
+      var toSave = text.length > 16000 ? (text.slice(0, 16000) + '\n\n[...truncated - original reply was ' + text.length + ' chars]') : text;
+      RPGACE.sb.secureWrite(self.TABLE, 'insert', [{ suggestion_text: toSave, category: 'oracle-flagged', status: 'new', source: 'oracle' }])
+      .then(function() {
+        btn.textContent = '✓ Sent to Orchestrator CC';
+        RPGACE.utils.toast('🧪 Logged for the next Orchestrator CC session', 'rgba(74,144,226,0.9)', 2400);
+      }).catch(function(e) {
+        btn.disabled = false;
+        btn.textContent = '🧪 Flag to Orchestrator CC';
+        RPGACE.utils.toast('⚠️ Could not log: ' + e.message, '#CC4A4A', 3200);
+      });
+    },
+
   },
 
-  _flag: function(text, btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Logging...';
-    // July 28: the old 4000-char cap silently cut off a real flagged
-    // 5thDimension reply mid-sentence, with no indication to Alex that
-    // anything was lost - `suggestion_text` is a plain unbounded `text`
-    // column (confirmed via information_schema), so this was a client-
-    // side-only limit, not a real DB constraint. Raised to 8000 at the time
-    // (comfortably covered the then-current max_tokens:1200 reply cap).
-    // Aug 6 (real /Summary review of this exact table's own rows) — that
-    // cap is now itself stale: sendChat's callOracle cap was raised to
-    // max_tokens:3000 on July 31 (a separate real fix, for a different
-    // "reply cut off mid-document" complaint about Visual Treatment Docs)
-    // and NEVER cross-checked against this flag cap. Real evidence: 6 of
-    // 8 real flagged rows in this exact table between Aug 5-6 hit the old
-    // 8000-char ceiling almost exactly and lost their endings — including
-    // DIRECTOR_CHOSEN:/EDL_JSON: trailers and final scene breakdowns on
-    // real Visual Treatment Docs. Raised to 16000 (comfortable headroom
-    // over a 3000-token reply) with the same explicit-marker safety net
-    // for anything that somehow still exceeds it.
-    var toSave = text.length > 16000 ? (text.slice(0, 16000) + '\n\n[...truncated - original reply was ' + text.length + ' chars]') : text;
-    RPGACE.sb.secureWrite(this.TABLE, 'insert', [{ suggestion_text: toSave, category: 'oracle-flagged', status: 'new', source: 'oracle' }])
-    .then(function() {
-      btn.textContent = '✓ Sent to Orchestrator CC';
-      RPGACE.utils.toast('🧪 Logged for the next Orchestrator CC session', 'rgba(74,144,226,0.9)', 2400);
-    }).catch(function(e) {
-      btn.disabled = false;
-      btn.textContent = '🧪 Flag to Orchestrator CC';
-      RPGACE.utils.toast('⚠️ Could not log: ' + e.message, '#CC4A4A', 3200);
-    });
+  // ============================================================
+  // ui — rendering/DOM. The one function here builds the flag button
+  // from nothing (document.createElement + insertAdjacentElement) and
+  // attaches it to a live Oracle chat message, on the shared
+  // 'oracle:response-scanned' hook.
+  // ============================================================
+  ui: {
+
+    _hook: function() {
+      if (window._oracleDevBridgeHooked) return;
+      window._oracleDevBridgeHooked = true;
+      RPGACE.hooks.on('oracle:response-scanned', function(text, lastMsg) {
+        if (!text || text.length < 40 || !lastMsg || !lastMsg.parentNode) return;
+        if (lastMsg.nextElementSibling && lastMsg.nextElementSibling.classList && lastMsg.nextElementSibling.classList.contains('odb-flag-btn')) return;
+        var btn = document.createElement('button');
+        btn.className = 'odb-flag-btn';
+        btn.textContent = '🧪 Flag to Orchestrator CC';
+        btn.style.cssText = 'display:inline-block;background:none;border:1px solid rgba(74,144,226,.3);color:#4A8CCC;border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin:2px 0 8px 0;';
+        btn.onclick = function() { RPGACE.modules.oracleDevBridge._flag(text, btn); };
+        lastMsg.insertAdjacentElement('afterend', btn);
+      });
+    },
+
   },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of the whole repo for `RPGACE.modules.oracleDevBridge.` and
+  // of index.html both — the only hits are inside this module's own
+  // body: `init`'s boot task calling `self._hook()`, and `ui._hook`'s
+  // own injected onclick calling
+  // `RPGACE.modules.oracleDevBridge._flag(text, btn)`, which was already
+  // fully qualified before this pass). Both of those land here first and
+  // are routed on to the right namespace.
+  _flag: function(text, btn) { return this.logic._flag(text, btn); },
+  _hook: function() { return this.ui._hook(); },
 
 });
 /* ===END:oracleDevBridge=== */
@@ -10764,6 +11003,140 @@ RPGACE.register('taxonomyReviewQueue', {
 // pass - a MutationObserver would fight the innerHTML replace on every call.
 RPGACE.register('encTaxonomyLink', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the TWENTIETH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
+  // tiktokOracle, instaOraclePanel, jargonEncyclopedia, encyclopediaQoL,
+  // pathRouter, oracleDevBridge and quickActions): split into two
+  // internal namespaces, `ui` (rendering/DOM) and `logic` (business
+  // logic/data), following the exact shape those nineteen already
+  // shipped and verified. Pure internal-structure refactor — zero
+  // functional, behavioural, UX, data or schema change; every function
+  // below was MOVED wholesale, never rewritten and never split down the
+  // middle.
+  //
+  // 4 real members, all functions, no data fields at all (checked by
+  // direct read of every top-level key, not assumed from the shape).
+  // `init` stays a literal top-level function (RPGACE.register() calls
+  // `module.init()` directly and cannot see into a sub-object) —
+  // byte-identical, its own `self = this` genuinely IS the module, so
+  // the `window.renderEncEntries` wrapper it installs still reaches
+  // `self._injectButtons()` through the top-level pass-through below.
+  //
+  // This module splits 1 / 2: one function in `logic`, two in `ui`.
+  // Classification, function by function, each checked against its
+  // actual body rather than its name:
+  //   • _injectButtons → ui. SEE THE INSEPARABILITY NOTE BELOW — it
+  //     runs a real Supabase read, so it is named here rather than
+  //     filed quietly.
+  //   • _injectOne → ui. Unambiguous on the primary rule and the
+  //     heaviest DOM function in the module: `div.dataset` guard
+  //     writes, `getAttribute`, `closest`, `querySelector`,
+  //     `document.createElement` ×3 and `insertAdjacentElement` /
+  //     `appendChild` on all three of its mutually-exclusive render
+  //     branches (already-linked label, pending label, live button).
+  //   • _propose → logic. SEE THE DEDICATED NOTE BELOW — this was the
+  //     one genuinely open call in this module.
+  //
+  // ─── _injectButtons: why its Supabase read stays in `ui` ──────────
+  // It opens with `document.querySelectorAll('#enc-output
+  // [data-entry-id]')`, so it DISCOVERS DOM and qualifies for `ui` on
+  // the primary rule outright. The read that follows
+  // (`RPGACE.sb.select('taxonomy_proposals', …)`) is genuinely NOT
+  // separable into `logic` without splitting the function down the
+  // middle, which this pass's own rules forbid: both the `.then` AND
+  // the `.catch` do nothing but loop the SAME `contentDivs` NodeList —
+  // captured before the query was ever issued — into
+  // `self._injectOne(...)`. The query result is not returned, not
+  // stored and not reused; its only consumer is the DOM injection this
+  // function was already committed to performing. That is the exact
+  // shape jargonEncyclopedia.ui._openGlossary was shipped on ("the
+  // query's `.then` immediately renders into the DOM nodes the same
+  // function just created"), applied here to nodes it just discovered
+  // rather than created — the same inseparability either way. The one
+  // real behavioural consequence, stated because it is a design choice
+  // and not an accident: the `.catch` injects with an EMPTY
+  // `pendingIds` map, so a failed query degrades to showing a live
+  // "Propose" button on an entry that already has a pending proposal,
+  // rather than showing nothing at all.
+  //
+  // ─── _propose: the open call, both readings stated ────────────────
+  // Two real, defensible readings existed:
+  //   (a) `ui` — it mutates a DOM element's properties in four places
+  //       (`btn.disabled`, `btn.textContent` ×3, `btn.style.opacity`)
+  //       across the optimistic pre-write state, the success `.then`
+  //       and the failure `.catch`, and its two early-return guards
+  //       both surface a real `RPGACE.utils.toast(...)` to the user.
+  //   (b) `logic` — its DOMINANT RESPONSIBILITY is data: it builds the
+  //       title+content blob, runs the free `RPGACE.utils.
+  //       _quickPhylaScan(blob)` keyword prefilter, and on a real match
+  //       drives `RPGACE.modules.taxonomyTree.silentPropose(...)`,
+  //       which mints an actual `taxonomy_proposals` row. It DISCOVERS
+  //       and CONSTRUCTS zero DOM: `btn` arrives as a caller-supplied
+  //       handle from `ui._injectOne`, and there is no `document.*` /
+  //       `createElement` / `querySelector` / `innerHTML` anywhere in
+  //       the body. The button writes are success/failure FEEDBACK on
+  //       that handle; the toasts are explicitly NOT a `ui` signal per
+  //       the standing rule this series has used since the phylumPath
+  //       pilot (a function that merely TRIGGERS a UI action without
+  //       constructing DOM of its own is logic).
+  // (b) was chosen. It is worth being precise that this is not a fresh
+  // judgment: `_propose` is near-identical in shape to
+  // videoSummary.logic._runRetro, which was already shipped as `logic`
+  // on exactly this reasoning — same `btn.disabled`/`btn.textContent`
+  // spinner-state mutation on a handed-in element, and the same real
+  // job of driving a sequential `taxonomyTree.silentPropose` chain.
+  //
+  // ─── do _propose and oracleDevBridge._flag land the same way? ─────
+  // Yes — and that is a real, checked conclusion, not reasoning copied
+  // across because the two rhyme. Both were read independently and
+  // both were tested against the SAME discriminator, which is the one
+  // that already separates the shipped precedents: for a function that
+  // mutates a caller-supplied element and constructs nothing, does it
+  // have a real DATA job? videoSummary.logic._runRetro and
+  // contentProductionLive.logic._generateBundle answered yes and are
+  // `logic`; intelDelete.ui._hideCard answered NO — a 180ms opacity
+  // fade is 100% presentation with no data half at all — and is `ui`.
+  // `_flag`'s data half is a truncation decision plus a
+  // `secureWrite` insert; `_propose`'s is a keyword prefilter plus a
+  // `silentPropose` call that writes a real proposal row. Both answer
+  // yes, on their own evidence, so both land in `logic`. If either had
+  // been a bare "grey the button out" with no write behind it, it
+  // would have gone to `ui` like `_hideCard` — the rule, not the
+  // resemblance, is what put them together.
+  //
+  // `this`/`self` accounting for all 3 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _injectButtons — already had `var self = this;`, that one line
+  //     swapped for the module handle IN PLACE so statement order is
+  //     unchanged. It is captured by both the `.then` and the `.catch`
+  //     closures, which call `self._injectOne(...)`. Left as `this.`,
+  //     it would have read `ui._injectOne` — which DOES exist on `ui`,
+  //     so this one would have kept working by luck rather than by
+  //     design; requalified anyway so the module never depends on two
+  //     functions happening to share a namespace.
+  //   • _injectOne — same treatment, same in-place swap. THIS IS THE
+  //     ONE THAT GENUINELY WOULD HAVE BROKEN: its `btn.onclick` closure
+  //     calls `self._propose(entry, btn)`, and `_propose` lives in
+  //     `logic`, so `this._propose` inside `ui` is `undefined`. The
+  //     failure mode is nasty precisely because it is not a load-time
+  //     error: the buttons would inject and render perfectly, and only
+  //     throw a TypeError at the moment Alex actually clicked one, with
+  //     no toast and no visible feedback at all.
+  //   • _propose — references neither `this` nor `self` (its cross-
+  //     module call to `RPGACE.modules.taxonomyTree.silentPropose` was
+  //     already fully qualified); moved byte-identical, no handle
+  //     needed and none added.
+  //
+  // ui -> logic cross-namespace calls are therefore normal in this
+  // module (ui._injectOne -> logic._propose), exactly as in intelDelete
+  // and videoSummary before it. That call goes through the top-level
+  // pass-through via `self._propose`, never `this.logic._propose`
+  // directly, so no call site inside the module had to change.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     function patch() {
@@ -10780,90 +11153,133 @@ RPGACE.register('encTaxonomyLink', {
     setTimeout(patch, 1500);
   },
 
-  _injectButtons: function() {
-    var self = this;
-    var contentDivs = document.querySelectorAll('#enc-output [data-entry-id]');
-    if (contentDivs.length === 0) return;
+  // ============================================================
+  // logic — business logic/data: no DOM construction or discovery.
+  // The one function here runs the free keyword prefilter and drives
+  // the real taxonomy_proposals write (see the dedicated _propose note
+  // in the G53 block above for why it lands here despite writing to a
+  // caller-supplied button).
+  // ============================================================
+  logic: {
 
-    // One batch query for which entries already have a pending proposal,
-    // instead of one query per card - RPGACE.sb.select already caches for
-    // 60s so repeated re-renders (sort/filter clicks) don't refetch.
-    RPGACE.sb.select('taxonomy_proposals', 'source_type=eq.encyclopedia&status=eq.pending&select=source_id')
-      .then(function(pending) {
-        var pendingIds = {};
-        (pending || []).forEach(function(p) { if (p.source_id) pendingIds[p.source_id] = true; });
-        contentDivs.forEach(function(div) { self._injectOne(div, pendingIds); });
-      })
-      .catch(function() {
-        contentDivs.forEach(function(div) { self._injectOne(div, {}); });
-      });
+    _propose: function(entry, btn) {
+      if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) {
+        RPGACE.utils.toast('Taxonomy system not ready yet — try again in a moment', '#CC4A4A', 2500);
+        return;
+      }
+      var blob = (entry.title || '') + ' ' + (entry.content || '');
+      var matches = RPGACE.utils._quickPhylaScan(blob);
+      if (matches.length === 0) {
+        RPGACE.utils.toast('No clear phylum match for this entry — try "🌳 Add to Taxonomy Tree" on the Research tab instead', '#CC4A4A', 3500);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '🌳 Generating proposal...';
+      var entryId = entry.id || entry.created_at;
+
+      RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'encyclopedia', entryId)
+        .then(function() {
+          btn.textContent = '✓ Queued for review';
+          btn.style.opacity = '0.6';
+          RPGACE.utils.toast('🌳 Queued — review it from the Dashboard', 'rgba(155,89,182,0.85)', 3000);
+        })
+        .catch(function(err) {
+          btn.disabled = false;
+          btn.textContent = '🌳 Propose to Taxonomy';
+          RPGACE.utils.toast('Error generating proposal: ' + err.message, '#CC4A4A', 3500);
+        });
+    },
+
   },
 
-  _injectOne: function(div, pendingIds) {
-    var self = this;
-    if (div.dataset.taxLinkInjected) return;
-    div.dataset.taxLinkInjected = '1';
+  // ============================================================
+  // ui — rendering/DOM. The batch injection pass over every rendered
+  // Encyclopedia card, and the per-card renderer that decides between
+  // the three mutually-exclusive states (already linked / proposal
+  // pending / a live Propose button).
+  // ============================================================
+  ui: {
 
-    var id = div.getAttribute('data-entry-id');
-    var entry = (window.ENC_ALL_ENTRIES || []).find(function(e) { return String(e.id || e.created_at) === String(id); });
-    if (!entry) return;
+    _injectButtons: function() {
+      var self = RPGACE.modules.encTaxonomyLink;
+      var contentDivs = document.querySelectorAll('#enc-output [data-entry-id]');
+      if (contentDivs.length === 0) return;
 
-    var expandedContainer = div.closest('[id^="enc-expanded-"]');
-    if (!expandedContainer) return;
-    var collapseBtn = expandedContainer.querySelector('button[onclick^="collapseEncEntry"]');
-    var anchor = collapseBtn || null;
+      // One batch query for which entries already have a pending proposal,
+      // instead of one query per card - RPGACE.sb.select already caches for
+      // 60s so repeated re-renders (sort/filter clicks) don't refetch.
+      RPGACE.sb.select('taxonomy_proposals', 'source_type=eq.encyclopedia&status=eq.pending&select=source_id')
+        .then(function(pending) {
+          var pendingIds = {};
+          (pending || []).forEach(function(p) { if (p.source_id) pendingIds[p.source_id] = true; });
+          contentDivs.forEach(function(div) { self._injectOne(div, pendingIds); });
+        })
+        .catch(function() {
+          contentDivs.forEach(function(div) { self._injectOne(div, {}); });
+        });
+    },
 
-    if (entry.taxonomy_node_id) {
-      var linked = document.createElement('span');
-      linked.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-family:Rajdhani,sans-serif;';
-      linked.textContent = '🌳 Linked to Taxonomy Tree';
-      if (anchor) anchor.insertAdjacentElement('beforebegin', linked); else expandedContainer.appendChild(linked);
-      return;
-    }
+    _injectOne: function(div, pendingIds) {
+      var self = RPGACE.modules.encTaxonomyLink;
+      if (div.dataset.taxLinkInjected) return;
+      div.dataset.taxLinkInjected = '1';
 
-    if (pendingIds[id]) {
-      var pendingLabel = document.createElement('span');
-      pendingLabel.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:rgba(155,89,182,0.7);font-size:11px;font-family:Rajdhani,sans-serif;';
-      pendingLabel.textContent = '⏳ Proposal pending review';
-      if (anchor) anchor.insertAdjacentElement('beforebegin', pendingLabel); else expandedContainer.appendChild(pendingLabel);
-      return;
-    }
+      var id = div.getAttribute('data-entry-id');
+      var entry = (window.ENC_ALL_ENTRIES || []).find(function(e) { return String(e.id || e.created_at) === String(id); });
+      if (!entry) return;
 
-    var btn = document.createElement('button');
-    btn.textContent = '🌳 Propose to Taxonomy';
-    btn.style.cssText = 'background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);color:#9B6EC8;border-radius:5px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-right:8px;';
-    btn.onclick = function() { self._propose(entry, btn); };
-    if (anchor) anchor.insertAdjacentElement('beforebegin', btn); else expandedContainer.appendChild(btn);
+      var expandedContainer = div.closest('[id^="enc-expanded-"]');
+      if (!expandedContainer) return;
+      var collapseBtn = expandedContainer.querySelector('button[onclick^="collapseEncEntry"]');
+      var anchor = collapseBtn || null;
+
+      if (entry.taxonomy_node_id) {
+        var linked = document.createElement('span');
+        linked.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-family:Rajdhani,sans-serif;';
+        linked.textContent = '🌳 Linked to Taxonomy Tree';
+        if (anchor) anchor.insertAdjacentElement('beforebegin', linked); else expandedContainer.appendChild(linked);
+        return;
+      }
+
+      if (pendingIds[id]) {
+        var pendingLabel = document.createElement('span');
+        pendingLabel.style.cssText = 'display:inline-block;margin-top:10px;margin-right:8px;padding:4px 10px;background:rgba(155,89,182,0.06);border:1px solid rgba(155,89,182,0.2);border-radius:5px;color:rgba(155,89,182,0.7);font-size:11px;font-family:Rajdhani,sans-serif;';
+        pendingLabel.textContent = '⏳ Proposal pending review';
+        if (anchor) anchor.insertAdjacentElement('beforebegin', pendingLabel); else expandedContainer.appendChild(pendingLabel);
+        return;
+      }
+
+      var btn = document.createElement('button');
+      btn.textContent = '🌳 Propose to Taxonomy';
+      btn.style.cssText = 'background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);color:#9B6EC8;border-radius:5px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-right:8px;';
+      btn.onclick = function() { self._propose(entry, btn); };
+      if (anchor) anchor.insertAdjacentElement('beforebegin', btn); else expandedContainer.appendChild(btn);
+    },
+
   },
 
-  _propose: function(entry, btn) {
-    if (!RPGACE.utils._quickPhylaScan || !RPGACE.modules.taxonomyTree) {
-      RPGACE.utils.toast('Taxonomy system not ready yet — try again in a moment', '#CC4A4A', 2500);
-      return;
-    }
-    var blob = (entry.title || '') + ' ' + (entry.content || '');
-    var matches = RPGACE.utils._quickPhylaScan(blob);
-    if (matches.length === 0) {
-      RPGACE.utils.toast('No clear phylum match for this entry — try "🌳 Add to Taxonomy Tree" on the Research tab instead', '#CC4A4A', 3500);
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = '🌳 Generating proposal...';
-    var entryId = entry.id || entry.created_at;
-
-    RPGACE.modules.taxonomyTree.silentPropose(blob.slice(0, 300), matches[0].num, 'encyclopedia', entryId)
-      .then(function() {
-        btn.textContent = '✓ Queued for review';
-        btn.style.opacity = '0.6';
-        RPGACE.utils.toast('🌳 Queued — review it from the Dashboard', 'rgba(155,89,182,0.85)', 3000);
-      })
-      .catch(function(err) {
-        btn.disabled = false;
-        btn.textContent = '🌳 Propose to Taxonomy';
-        RPGACE.utils.toast('Error generating proposal: ' + err.message, '#CC4A4A', 3500);
-      });
-  },
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of the whole repo for `RPGACE.modules.encTaxonomyLink.` and
+  // of index.html both — zero hits outside this module's own body; the
+  // module is driven entirely by the `window.renderEncEntries` wrapper
+  // that `init` installs). These exist for convention and for its OWN
+  // internal calls: `init`'s wrapper calls `self._injectButtons()`,
+  // `ui._injectButtons` calls `self._injectOne(...)` from both its
+  // `.then` and its `.catch`, and `ui._injectOne`'s button onclick
+  // calls `self._propose(entry, btn)` — every one of those `self`s is
+  // the module, so each lands here first and is routed on to the right
+  // namespace.
+  //
+  // Note for a future reader doing an external-touchpoint grep: this
+  // module DOES make a real outbound cross-module call,
+  // `RPGACE.modules.taxonomyTree.silentPropose(...)` in logic._propose.
+  // That is a call OUT of this module and is unaffected by this split;
+  // the "zero external touchpoints" fact above is about calls INTO it.
+  _injectButtons: function() { return this.ui._injectButtons(); },
+  _injectOne: function(div, pendingIds) { return this.ui._injectOne(div, pendingIds); },
+  _propose: function(entry, btn) { return this.logic._propose(entry, btn); },
 
 });
 /* ===END:encTaxonomyLink=== */
