@@ -10482,75 +10482,180 @@ RPGACE.register('researchTabs', {
 // selectors must never match the drawer's buttons.
 RPGACE.register('leftNav', {
 
-  // Top-level drawer items. `page` = a RPGACE.CONFIG.pages value.
-  // `subKind` (optional): 'research' renders the 7 research tabs as sub-rows.
-  // July 22 QoL: Schedule's own sub-nav (Daily/Weekly/Monthly/Import) removed
-  // per direct request ("not needed") - Schedule's own in-page tab buttons
-  // already do this job; having it twice was pure redundancy, not a feature.
-  _items: function() {
-    // Real ordering bug, found live July 22 (not new - has existed
-    // silently since this module shipped July 20): RPGACE.register()
-    // queues every module's init() as a 'rpgace:ready' listener in FILE
-    // REGISTRATION ORDER, and hooks.fire() runs that queue as a plain
-    // forEach - no reordering. leftNav registers earlier in this file
-    // than the `config` module, which is what actually sets
-    // RPGACE.CONFIG (inside ITS OWN init(), not a bare top-level
-    // assignment) - so leftNav.init() always ran before CONFIG existed.
-    // This silently self-healed via toggle()'s own lazy-rebuild fallback
-    // (by the time a user actually clicks the hamburger, config.init()
-    // has long since run) - real in effect, but never actually fixed at
-    // the root. Guard here + the retry in init() below fixes it properly.
-    if (!RPGACE.CONFIG || !RPGACE.CONFIG.pages) return [];
-    var P = RPGACE.CONFIG.pages;
-    // Aug 4 restructure (Alex-requested): same card language as dashDeck's
-    // #dd-grid (icon/title/desc, dd-card visual identity) instead of a
-    // flat button-row list - every nav destination is now a real card,
-    // not just a label. `desc` is new; `icon` replaces the old inline-emoji
-    // convention so _renderItem can lay out icon/title/desc consistently.
-    return [
-      { icon: '🏠', label: 'Dashboard',     desc: 'Command deck + Needs you now',        page: P.dashboard },
-      { icon: '📋', label: 'Agenda',        desc: 'Quests, shifts, daily grid',          page: P.agenda },
-      { icon: '📅', label: 'Schedule',      desc: 'Weekly / daily / monthly calendar',   page: P.schedule },
-      { icon: '🔮', label: 'Oracle AI',     desc: 'Chat, panels, agents',                page: P.oracle },
-      // Aug 15 2026 (A5/A8) — "🔬 Research Lab" entry retired: its real
-      // content all moved to Content Pipeline/Corpus/Bookworm's own
-      // dashboard cards (see researchTabs.TABS' own comment). _renderItem's
-      // subKind:'research' handling is left in place, harmlessly unused —
-      // no remaining item sets that subKind. Bookworm has no leftNav entry
-      // of its own yet (never did) — reachable via its dashboard card, or
-      // the "Open Bookworm" quick-action link, same as before this pass.
-      { icon: '📖', label: 'Encyclopedia',  desc: 'Saved insights + articles',           page: P.encyclopedia },
-      { icon: '📓', label: 'Journal',       desc: 'Session logs, morning briefs',        page: P.journal },
-      { icon: '🧬', label: 'Phylum Path',   desc: 'Taxonomy drill-down + placement',     page: P.phylumPath },
-      { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
-      // Sep 2 2026, real /interrogation with Alex before building — 3 real
-      // forks resolved, all his own recommended answers: (1) grouped under
-      // 2 parent cards, not 8 flat entries — reuses the `subItems` sub-card
-      // mechanism below (a real generalization of the old research-tabs-
-      // specific subKind:'research' rendering, which has had zero live use
-      // since researchTabs.TABS went permanently empty Aug 15 — same visual
-      // pattern, a real destination page per sub-card instead of a
-      // research-tab key); (2) the Bookworm/Content Pipeline dashboard-card
-      // nav popups (UI12/UI13, with their own real Resume-button logic
-      // leftNav's plain cards don't replicate) stay exactly as a second
-      // route, nothing removed; (3) MusicWorm deliberately does NOT get its
-      // own leftNav entry — UI10's own retirement of Corpus's standalone
-      // dashboard card ("the UI module is not needed there") stays a
-      // real, single-entry-point decision, not silently reversed by
-      // giving it a second independent route here.
-      { icon: '📖', label: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy', page: P.bookworm,
-        subItems: [
-          { icon: '🐛', label: 'Videoworm',    page: P.videoworm },
-          { icon: '📚', label: 'Bibliography', page: P.bibliography }
-        ] },
-      { icon: '🎬', label: 'Content Pipeline', desc: 'Ideas → productions → posts', page: P.contentPipeline,
-        subItems: [
-          { icon: '💡', label: 'Idea Bank',        page: P.ideaBank },
-          { icon: '🥁', label: 'Beat Log',         page: P.beatLogPage },
-          { icon: '🔀', label: 'Upload Workshop',  page: P.uploadWorkshop }
-        ] },
-    ];
-  },
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 45 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // forty-four predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL/shiftSync/knowledgeGap precedent,
+  // so the diff shows only real changes rather than a whitespace wall.
+  //
+  // 12 real top-level keys, ALL of them functions — ZERO data fields,
+  // declared or otherwise. Checked BOTH ways rather than assumed from
+  // the shape: a direct read of every top-level key (`_items`, `init`,
+  // `_initSwipeGesture`, `_injectStyles`, `_injectHamburger`,
+  // `_buildDrawer`, `_renderItem`, `_go`, `toggle`, `open`, `close`,
+  // `_syncActive`), and a grep of the whole module body for
+  // `self.X =` / `this.X =` (0 hits), so this module has NONE of the
+  // undeclared runtime-assigned field trap that journalQoL's
+  // `_activeSource` and oracleDevBridge's `this.TABLE` both hit. Every
+  // `X.Y =` write in the body is onto a locally-created DOM element
+  // (`btn.id`, `row.className`, `s.dataset.page`, …) or a local
+  // closure variable (`startX`/`startY`/`tracking` inside
+  // `_initSwipeGesture`), never onto the module. `init` stays a
+  // literal top-level function (RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object) — byte-identical, its
+  // own `self = this` genuinely IS the module, so its two
+  // `_buildDrawer()` calls, its `page:show`/`research:tab-changed`
+  // listeners, its Escape-key `close()` and its
+  // `_initSwipeGesture()` call all still reach the right namespace
+  // through the top-level pass-throughs below.
+  //
+  // This module splits 10 ui / 1 logic. Classification, function by
+  // function, each checked against its actual body rather than its
+  // name:
+  //   • _initSwipeGesture → ui. Two `document.addEventListener` touch
+  //     listeners, two `getElementById('ln-drawer')` reads and two
+  //     `classList.contains('open')` reads. The swipe arithmetic
+  //     (EDGE_ZONE / OPEN_THRESHOLD / CLOSE_THRESHOLD, the
+  //     `Math.abs(dy) > Math.abs(dx)` vertical-scroll rejection) is
+  //     inseparably a decision ABOUT the drawer element it just read.
+  //   • _injectStyles → ui. Unambiguous: a `getElementById` idempotency
+  //     guard, `createElement('style')`, a full CSS string build and
+  //     `document.head.appendChild`.
+  //   • _injectHamburger → ui. Unambiguous: `getElementById` guard,
+  //     `querySelector('.nav')`, `createElement('button')`, an
+  //     `onclick` assignment and `nav.insertBefore`.
+  //   • _buildDrawer → ui. Unambiguous: `getElementById` guard, seven
+  //     `createElement` calls, two `document.body.appendChild` handoffs
+  //     and two `onclick` assignments. NOTE it is also the one real
+  //     ui → logic caller in this module (`self._items()`) — see the
+  //     cross-namespace note below.
+  //   • _renderItem → ui. Unambiguous: it is handed a `list` element
+  //     and builds a `.ln-card` button plus, for an item carrying
+  //     `subItems`, a `.ln-subwrap` of `.ln-subcard` buttons — a dozen
+  //     `createElement`/`appendChild`/`dataset`/`onclick` writes. The
+  //     `subKind === 'research'` branch (kept on disk, harmlessly
+  //     unused since researchTabs.TABS went permanently empty Aug 15)
+  //     moves with it untouched, comment and all.
+  //   • _go → ui. Two real reasons, either sufficient: it discovers DOM
+  //     itself (`getElementById('page-' + page)`, the guard that exists
+  //     because phylumPath's page shell is injected ~1500ms after load),
+  //     and its whole remaining body is live page navigation
+  //     (`showPage(page)` then `close()`) — the same "entire body is
+  //     live page navigation is ui on dominant responsibility"
+  //     precedent already applied elsewhere in this series.
+  //   • toggle / open / close → ui. All three are pure drawer-element
+  //     state machines: `getElementById('ln-drawer')` /
+  //     `getElementById('ln-backdrop')`, `classList.add/remove/toggle`,
+  //     `style.display` writes, and (in `open`) the deliberate
+  //     double-`requestAnimationFrame` so the slide actually animates
+  //     instead of snapping. Zero data work of any kind.
+  //   • _syncActive → ui. `getElementById`, `querySelector('.page.active')`
+  //     and three `querySelectorAll` sweeps writing `classList.toggle`.
+  //     Its one non-DOM read (`researchTabs._activeTab()`) is only used
+  //     to decide which class to toggle.
+  //   • _items → logic. SEE THE DEDICATED NOTE BELOW — it is the one
+  //     genuine call in this module, so it is argued rather than filed
+  //     quietly.
+  //
+  // ─── _items: why the nav manifest is logic, not ui ────────────────
+  // `_items` contains zero DOM of any kind — no `document.*`, no
+  // `createElement`, no `innerHTML`, no `querySelector`/
+  // `getElementById`, no listener (grepped, not assumed). Its entire
+  // body is the `RPGACE.CONFIG.pages` readiness guard (the real July 22
+  // ordering bug documented in its own comment) and a `return [...]` of
+  // plain data objects: `{ icon, label, desc, page }`, some carrying a
+  // `subItems` array of the same shape. Nothing in it is markup — the
+  // `icon` values are emoji STRINGS inside a data record, not rendered
+  // output, and `_renderItem` is what later turns each record into a
+  // button. This is exactly the "returns a built STRING/record, never
+  // assigned to innerHTML, never handed to a DOM element → logic"
+  // precedent (jargonEncyclopedia's prompt builders, videoSummary's
+  // `_key`/`_coerce`), not the "inseparable fetch+render" case: the
+  // seam here already exists in the source as two separately named,
+  // separately reachable functions, and `_items` returns its value to
+  // its caller rather than drawing anything.
+  //
+  // ─── THE ONE DANGEROUS CROSS-NAMESPACE CALL ──────────────────────
+  // `ui._buildDrawer` calls `self._items()`. That is the ONLY real
+  // ui → logic call in this module, and it is the single most
+  // dangerous line in the split: `_buildDrawer`'s pre-existing
+  // `var self = this;` is swapped to the module handle IN PLACE, so
+  // `self._items()` lands on the top-level pass-through and is routed
+  // into `logic`. Left as `this.`, it would have read `ui._items`,
+  // which does NOT exist on `ui` — and the failure would have been
+  // SILENT rather than loud in the worst possible way: `_buildDrawer`
+  // is called twice from `init` (once immediately, once on a 300ms
+  // retry) and again from `toggle`/`open`'s lazy-build fallbacks, and a
+  // TypeError there would have aborted the drawer build every time,
+  // leaving the hamburger permanently opening nothing.
+  //
+  // `this`/`self` accounting for all 11 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • 4 already had `var self = this;` and get the module handle
+  //     swapped in IN PLACE, never hoisted, so no control flow moved:
+  //     ui._initSwipeGesture (captured for `self.open()`/`self.close()`
+  //     inside its touchend handler), ui._injectHamburger (captured
+  //     for the burger's `self.toggle()` onclick — and note it sits
+  //     AFTER both early-return guards, neither of which touches
+  //     `this`), ui._buildDrawer (the `self._items()` call above, plus
+  //     `self.close()` for the backdrop/× onclicks and
+  //     `self._renderItem(list, it)` per item — again declared after
+  //     its own early-return guard), and ui._renderItem (captured for
+  //     `self._go(it.page)`, `self._go(sub.page)` and `self.close()`).
+  //   • 3 had no `var self` at all and used bare `this.X` calls —
+  //     ui.toggle (`this._buildDrawer()`, `this.close()`, `this.open()`)
+  //     and ui.open (`this._buildDrawer()`, `this._syncActive()`) each
+  //     get the handle inserted as their first statement with every
+  //     `this.` rewritten to `self.`, the videoPipeline pilot's own
+  //     `var mod = RPGACE.modules.videoPipeline;` precedent; ui._go has
+  //     exactly ONE `this` touch (`this.close();`) and is qualified
+  //     directly to `RPGACE.modules.leftNav.close();` rather than
+  //     gaining a one-use handle, keeping its short body short — the
+  //     same call feynman.ui.closePanel already made. Left as `this.`,
+  //     all three would have resolved against `ui`: `toggle`/`open`
+  //     would have thrown on `ui._buildDrawer` (which does not exist
+  //     there) on every hamburger press before init's retry landed, and
+  //     `_go` would have thrown on `ui.close` after navigating,
+  //     leaving the drawer stuck open over the new page.
+  //   • 4 reference neither `this` nor `self` at all and moved
+  //     completely untouched: ui._injectStyles, ui.close,
+  //     ui._syncActive, logic._items.
+  //
+  // ─── EXTERNAL TOUCHPOINTS: two real ones, both LOAD-BEARING ───────
+  // Named plainly rather than waved off, because both sit OUTSIDE the
+  // register() block, immediately below `});` at the bottom of this
+  // module — the July 22 "left sidebar takes ages to load" fix that
+  // deliberately runs these two at script-parse time instead of behind
+  // 'rpgace:ready':
+  //   `RPGACE.modules.leftNav._injectStyles();`
+  //   `RPGACE.modules.leftNav._injectHamburger();`
+  // Both land on the top-level pass-throughs below. Had those been
+  // omitted, this would have thrown UNCAUGHT MID-SCRIPT at parse time
+  // and silently aborted every module registration after this point in
+  // the file — the exact failure this module's own bottom comment
+  // documents having already happened once (only 15 of ~40 modules
+  // registered). That makes these two pass-throughs the highest-
+  // consequence lines in this whole batch.
+  // The alias check is clean: a repo-wide grep finds no
+  // `var X = RPGACE.modules.leftNav;` local-alias site anywhere (unlike
+  // knowledgeGap's `var kg = …` in dashDeck._openGaps). The dynamic-
+  // lookup check is separately clean: the only real
+  // `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at any of its call sites. index.html has
+  // zero references to it in any form (its one textual mention of
+  // "leftNav" is inside a comment). The eight `"…": "leftNav"` entries
+  // in this file's own METHOD_MODULE_MAP (G109, in the errorLog module)
+  // are a generated name->module DATA table, not call sites, and are
+  // unaffected by this split.
+  // ══════════════════════════════════════════════════════════════════
 
   init: function() {
     var self = this;
@@ -10585,6 +10690,18 @@ RPGACE.register('leftNav', {
     self._initSwipeGesture();
   },
 
+  // ============================================================
+  // ui — rendering/DOM: everything that builds, discovers or mutates
+  // the drawer's own DOM. The injected <style> block and the hamburger
+  // button in the slim sticky .nav shell; the backdrop + slide-out
+  // panel and the per-item .ln-card / .ln-subcard rows inside it; the
+  // open/close/toggle element state machine (classList + style.display
+  // + the double-rAF that makes the slide actually animate); the
+  // edge-swipe gesture listeners; the active-page highlight sweep; and
+  // the navigate-then-close handoff to showPage().
+  // ============================================================
+  ui: {
+
   // July 23 — swipe from the left edge to mid-screen opens the drawer,
   // matching native app drawer conventions. Deliberately NOT a live
   // finger-follow drag (that needs converting the drawer's CSS transition
@@ -10592,7 +10709,7 @@ RPGACE.register('leftNav', {
   // simple start/end-position swipe reusing the EXISTING open()/close()
   // slide animation is the smaller, safer build for the same real result.
   _initSwipeGesture: function() {
-    var self = this;
+    var self = RPGACE.modules.leftNav;
     var startX = null, startY = null, tracking = false;
     var EDGE_ZONE = 28, OPEN_THRESHOLD = 70, CLOSE_THRESHOLD = 60;
 
@@ -10670,7 +10787,7 @@ RPGACE.register('leftNav', {
     if (document.getElementById('ln-burger')) return;
     var nav = document.querySelector('.nav');
     if (!nav) return;
-    var self = this;
+    var self = RPGACE.modules.leftNav;
     var btn = document.createElement('button');
     btn.id = 'ln-burger';
     btn.type = 'button';
@@ -10682,7 +10799,10 @@ RPGACE.register('leftNav', {
 
   _buildDrawer: function() {
     if (document.getElementById('ln-drawer')) return;
-    var self = this;
+    // THE one real ui -> logic call in this module: `self` MUST be the
+    // module handle, not `this` (which is `ui` here) — `_items` lives in
+    // `logic`, so `ui._items` does not exist. See the G53 block above.
+    var self = RPGACE.modules.leftNav;
     var items = self._items();
     // CONFIG isn't ready yet (see _items' comment) - don't build an
     // empty, permanently-cached shell; bail out so a later retry (init()'s
@@ -10727,7 +10847,7 @@ RPGACE.register('leftNav', {
   // (one per researchTabs.TABS entry), same single-source-of-truth pattern
   // dashDeck._openResearch() already established for that tab list.
   _renderItem: function(list, it) {
-    var self = this;
+    var self = RPGACE.modules.leftNav;
     var row = document.createElement('button');
     row.className = 'ln-card';
     row.type = 'button';
@@ -10800,21 +10920,27 @@ RPGACE.register('leftNav', {
       return;
     }
     if (typeof showPage === 'function') showPage(page);
-    this.close();
+    // G53: one single `this` touch, qualified directly to the module
+    // rather than gaining a one-use handle (feynman.ui.closePanel's own
+    // precedent) — `this` is `ui` here, and `close` reaches the module's
+    // top-level pass-through.
+    RPGACE.modules.leftNav.close();
   },
 
   toggle: function() {
+    var self = RPGACE.modules.leftNav;
     var panel = document.getElementById('ln-drawer');
-    if (!panel) { this._buildDrawer(); panel = document.getElementById('ln-drawer'); }
-    if (panel && panel.classList.contains('open')) this.close(); else this.open();
+    if (!panel) { self._buildDrawer(); panel = document.getElementById('ln-drawer'); }
+    if (panel && panel.classList.contains('open')) self.close(); else self.open();
   },
 
   open: function() {
+    var self = RPGACE.modules.leftNav;
     var panel = document.getElementById('ln-drawer');
     var back = document.getElementById('ln-backdrop');
-    if (!panel || !back) { this._buildDrawer(); panel = document.getElementById('ln-drawer'); back = document.getElementById('ln-backdrop'); }
+    if (!panel || !back) { self._buildDrawer(); panel = document.getElementById('ln-drawer'); back = document.getElementById('ln-backdrop'); }
     if (!panel || !back) return;
-    this._syncActive();
+    self._syncActive();
     back.style.display = 'block';
     panel.style.display = 'flex';
     // Force layout, then add .open on the next frame so the slide animates.
@@ -10859,6 +10985,116 @@ RPGACE.register('leftNav', {
       s.classList.toggle('active', s.dataset.page === activePage);
     });
   },
+
+  },
+
+  // ============================================================
+  // logic — business logic/data: the drawer's nav manifest. Zero DOM of
+  // any kind; see the dedicated note in the G53 block above for why
+  // returning a list of plain {icon,label,desc,page} records (which
+  // ui._renderItem later turns into buttons) is data, not markup.
+  // ============================================================
+  logic: {
+
+  // Top-level drawer items. `page` = a RPGACE.CONFIG.pages value.
+  // `subKind` (optional): 'research' renders the 7 research tabs as sub-rows.
+  // July 22 QoL: Schedule's own sub-nav (Daily/Weekly/Monthly/Import) removed
+  // per direct request ("not needed") - Schedule's own in-page tab buttons
+  // already do this job; having it twice was pure redundancy, not a feature.
+  _items: function() {
+    // Real ordering bug, found live July 22 (not new - has existed
+    // silently since this module shipped July 20): RPGACE.register()
+    // queues every module's init() as a 'rpgace:ready' listener in FILE
+    // REGISTRATION ORDER, and hooks.fire() runs that queue as a plain
+    // forEach - no reordering. leftNav registers earlier in this file
+    // than the `config` module, which is what actually sets
+    // RPGACE.CONFIG (inside ITS OWN init(), not a bare top-level
+    // assignment) - so leftNav.init() always ran before CONFIG existed.
+    // This silently self-healed via toggle()'s own lazy-rebuild fallback
+    // (by the time a user actually clicks the hamburger, config.init()
+    // has long since run) - real in effect, but never actually fixed at
+    // the root. Guard here + the retry in init() below fixes it properly.
+    if (!RPGACE.CONFIG || !RPGACE.CONFIG.pages) return [];
+    var P = RPGACE.CONFIG.pages;
+    // Aug 4 restructure (Alex-requested): same card language as dashDeck's
+    // #dd-grid (icon/title/desc, dd-card visual identity) instead of a
+    // flat button-row list - every nav destination is now a real card,
+    // not just a label. `desc` is new; `icon` replaces the old inline-emoji
+    // convention so _renderItem can lay out icon/title/desc consistently.
+    return [
+      { icon: '🏠', label: 'Dashboard',     desc: 'Command deck + Needs you now',        page: P.dashboard },
+      { icon: '📋', label: 'Agenda',        desc: 'Quests, shifts, daily grid',          page: P.agenda },
+      { icon: '📅', label: 'Schedule',      desc: 'Weekly / daily / monthly calendar',   page: P.schedule },
+      { icon: '🔮', label: 'Oracle AI',     desc: 'Chat, panels, agents',                page: P.oracle },
+      // Aug 15 2026 (A5/A8) — "🔬 Research Lab" entry retired: its real
+      // content all moved to Content Pipeline/Corpus/Bookworm's own
+      // dashboard cards (see researchTabs.TABS' own comment). _renderItem's
+      // subKind:'research' handling is left in place, harmlessly unused —
+      // no remaining item sets that subKind. Bookworm has no leftNav entry
+      // of its own yet (never did) — reachable via its dashboard card, or
+      // the "Open Bookworm" quick-action link, same as before this pass.
+      { icon: '📖', label: 'Encyclopedia',  desc: 'Saved insights + articles',           page: P.encyclopedia },
+      { icon: '📓', label: 'Journal',       desc: 'Session logs, morning briefs',        page: P.journal },
+      { icon: '🧬', label: 'Phylum Path',   desc: 'Taxonomy drill-down + placement',     page: P.phylumPath },
+      { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
+      // Sep 2 2026, real /interrogation with Alex before building — 3 real
+      // forks resolved, all his own recommended answers: (1) grouped under
+      // 2 parent cards, not 8 flat entries — reuses the `subItems` sub-card
+      // mechanism below (a real generalization of the old research-tabs-
+      // specific subKind:'research' rendering, which has had zero live use
+      // since researchTabs.TABS went permanently empty Aug 15 — same visual
+      // pattern, a real destination page per sub-card instead of a
+      // research-tab key); (2) the Bookworm/Content Pipeline dashboard-card
+      // nav popups (UI12/UI13, with their own real Resume-button logic
+      // leftNav's plain cards don't replicate) stay exactly as a second
+      // route, nothing removed; (3) MusicWorm deliberately does NOT get its
+      // own leftNav entry — UI10's own retirement of Corpus's standalone
+      // dashboard card ("the UI module is not needed there") stays a
+      // real, single-entry-point decision, not silently reversed by
+      // giving it a second independent route here.
+      { icon: '📖', label: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy', page: P.bookworm,
+        subItems: [
+          { icon: '🐛', label: 'Videoworm',    page: P.videoworm },
+          { icon: '📚', label: 'Bibliography', page: P.bibliography }
+        ] },
+      { icon: '🎬', label: 'Content Pipeline', desc: 'Ideas → productions → posts', page: P.contentPipeline,
+        subItems: [
+          { icon: '💡', label: 'Idea Bank',        page: P.ideaBank },
+          { icon: '🥁', label: 'Beat Log',         page: P.beatLogPage },
+          { icon: '🔀', label: 'Upload Workshop',  page: P.uploadWorkshop }
+        ] },
+    ];
+  },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Two of these are LOAD-BEARING for a real external caller and
+  // would fail LOUDLY (uncaught, mid-script, at parse time) if dropped:
+  // `_injectStyles` and `_injectHamburger` are called on
+  // `RPGACE.modules.leftNav` directly below this register() block, by
+  // the July 22 "left sidebar takes ages to load" fix. The rest carry
+  // this module's own internal calls — `init`'s two `_buildDrawer()`
+  // calls, its `page:show`/`research:tab-changed` `_syncActive()`
+  // listeners, its Escape-key `close()` and its `_initSwipeGesture()`;
+  // `ui._buildDrawer`'s `_items()` (the one real ui -> logic hop) plus
+  // its `close()`/`_renderItem()`; `ui._renderItem`'s two `_go()` calls
+  // and its `close()`; `ui._initSwipeGesture`'s `open()`/`close()`;
+  // `ui._injectHamburger`'s `toggle()`; and `ui.toggle`/`ui.open`'s own
+  // `_buildDrawer()`/`close()`/`open()`/`_syncActive()` — every one of
+  // those `self`s is the module, so each lands here first and is routed
+  // on to the right namespace.
+  _items: function() { return this.logic._items(); },
+  _initSwipeGesture: function() { return this.ui._initSwipeGesture(); },
+  _injectStyles: function() { return this.ui._injectStyles(); },
+  _injectHamburger: function() { return this.ui._injectHamburger(); },
+  _buildDrawer: function() { return this.ui._buildDrawer(); },
+  _renderItem: function(list, it) { return this.ui._renderItem(list, it); },
+  _go: function(page) { return this.ui._go(page); },
+  toggle: function() { return this.ui.toggle(); },
+  open: function() { return this.ui.open(); },
+  close: function() { return this.ui.close(); },
+  _syncActive: function() { return this.ui._syncActive(); },
 
 });
 // July 22 QoL fix ("left sidebar takes ages to load"): the hamburger's
@@ -24285,6 +24521,158 @@ RPGACE.register('beatLog', {
 /* ===MODULE:refCorpus=== */
 RPGACE.register('refCorpus', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 46 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // forty-five predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL/shiftSync/knowledgeGap precedent,
+  // so the diff shows only real changes rather than a whitespace wall.
+  //
+  // 7 real top-level keys, ALL of them functions — ZERO data fields,
+  // declared or otherwise. Checked BOTH ways rather than assumed from
+  // the shape: a direct read of every top-level key (`init`,
+  // `_inject`, `_addSingle`, `_bulkImport`, `_loadList`, `findMatches`,
+  // `_showBackfillPopup`), and a grep of the whole module body for
+  // `self.X =` / `this.X =` (0 hits), so this module has NONE of the
+  // undeclared runtime-assigned field trap that journalQoL's
+  // `_activeSource` and oracleDevBridge's `this.TABLE` both hit. The
+  // `X.Y =` writes in the body are all onto locally-created DOM
+  // elements (`inp.id`, `panel.style.cssText`, `saveBtn.disabled`, …)
+  // or onto a caller-supplied row object — `row._score = score` inside
+  // `logic.findMatches`, a scratch field written onto each fetched
+  // `reference_tracks` ROW, never onto the module. `init` stays a
+  // literal top-level function (RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object) — byte-identical, its
+  // own `self = this` genuinely IS the module, so the
+  // 'research:tab-active' listener's `self._inject()` still reaches
+  // `ui` through the top-level pass-through below.
+  //
+  // This module splits 5 ui / 1 logic. Classification, function by
+  // function, each checked against its actual body rather than its
+  // name:
+  //   • _inject → ui. Unambiguous: a `getElementById` idempotency
+  //     guard, `RPGACE.utils.panelHome()` for its host node, ~20
+  //     `createElement` calls (panel, eyebrow/title/sub, the 9-field
+  //     auto-fit input grid, bulk textarea, 4 buttons, list wrapper +
+  //     header), four `onclick` assignments and a `page.appendChild`.
+  //   • _addSingle → ui. GENUINELY MIXED and filed here deliberately
+  //     rather than split down the middle — see the mixed-function
+  //     note below.
+  //   • _bulkImport → ui. Same mixed shape as `_addSingle`; same note.
+  //   • _loadList → ui. The INSEPARABLE FETCH+RENDER case, and it
+  //     genuinely meets that rule's precondition (unlike
+  //     knowledgeGap._load, which did not): it DISCOVERS the DOM nodes
+  //     itself up front (`getElementById('rc-list')`,
+  //     `getElementById('rc-list-header')`, plus the early
+  //     `if (!list) return;` bail), then its own `.then` writes the
+  //     header text, drains the old children, and builds every row
+  //     (name/link/meta/delete) straight into that same discovered
+  //     node. The rows are never returned, never stored and never
+  //     reused — there is no seam to cut along.
+  //   • _showBackfillPopup → ui. Same inseparable shape at popup
+  //     grain: the `or=(scale.is.null,genre.is.null)` read exists only
+  //     to build the popup, and its `.then` opens
+  //     `dashDeck._popup(...)` and fills `pop.box` with a name +
+  //     scale/genre input line per row plus the Save button, closing
+  //     over `inputs` (live DOM element references) for the write.
+  //   • findMatches → logic. SEE THE DEDICATED NOTE BELOW — it is the
+  //     one genuinely clean call in this module and the only member
+  //     with a real external consumer, so it is argued rather than
+  //     filed quietly.
+  //
+  // ─── the two genuinely mixed functions: why ui, not split ─────────
+  // `_addSingle` and `_bulkImport` each contain real DOM form-reading
+  // AND a real `RPGACE.sb.secureWrite('reference_tracks', 'insert', …)`
+  // in the same body. `_addSingle` reads all 9 inputs via its own
+  // `get(id)` `getElementById` helper, validates, writes, then clears
+  // those same 9 inputs on success; `_bulkImport` reads
+  // `getElementById('rc-bulk')`, parses its lines into rows, writes
+  // each, then clears `raw.value` when the last one lands. Neither
+  // could be cut in two without inventing a new intermediate contract
+  // that does not exist in the source. They land in `ui` on the exact
+  // precedent beatLog.ui._submit / beatLog.ui._submitUpdate already
+  // set in this same series — real form-reading plus a real Supabase
+  // write in one body goes to `ui`, because the DOM discovery is what
+  // the function cannot be understood without. The honest cost, stated
+  // rather than hidden: a reader looking for "where does a corpus row
+  // get written" will find two of the three write sites in `ui`.
+  //
+  // ─── findMatches: why the corpus scorer is logic ──────────────────
+  // `findMatches` contains zero DOM of any kind — no `document.*`, no
+  // `createElement`, no `innerHTML`, no `querySelector`/
+  // `getElementById`, no listener (grepped, not assumed). Its whole
+  // body is a `reference_tracks` read and a pure similarity score per
+  // row (BPM band with a far-BPM penalty, mood/scale/genre exact
+  // matches, an energy-within-1 bonus), then a `_score > 0` filter and
+  // a descending sort — and it RETURNS that array to its caller rather
+  // than drawing anything. It is also the one member of this module
+  // with a real cross-module consumer (beatLog, see below), which
+  // makes the data-not-markup reading doubly clear.
+  //
+  // ─── EXTERNAL TOUCHPOINTS: three real ones, one via a LOCAL ALIAS ──
+  // Named plainly because the obvious direct-call grep alone would
+  // have missed the second of these:
+  //   1. `dashDeck.PAGE_PANELS['ref-corpus-panel'].ensure` —
+  //      `var m = RPGACE.modules.refCorpus; if (m && m._inject) m._inject();`
+  //      the real lazy-injection hook behind UI12's
+  //      `_openPage('ref-corpus-panel')` MusicWorm route.
+  //   2. `dashDeck._openCorpus` — reaches this module through a LOCAL
+  //      ALIAS the direct grep does not surface:
+  //      `var rc = RPGACE.modules.refCorpus; if (rc && rc._inject) { … rc._inject(); … }`.
+  //      (That function is itself marked SUPERSEDED with zero live
+  //      callers as of UI10/UI12, but is kept on disk, so the
+  //      touchpoint is still real code.)
+  //   3. `beatLog` — `RPGACE.modules.refCorpus && typeof
+  //      RPGACE.modules.refCorpus.findMatches === 'function'` then
+  //      `RPGACE.modules.refCorpus.findMatches(form.bpm, form.mood,
+  //      form.scale, form.energy, form.genre)`.
+  // All three are guarded by a `typeof`/truthiness check, which is
+  // exactly what makes them dangerous: had the pass-throughs below
+  // been omitted, every one of those guards would have quietly
+  // evaluated false — MusicWorm would have opened an empty page and
+  // Beat Log would have silently produced zero artist matches, with no
+  // error thrown anywhere. All three land on the top-level
+  // pass-throughs and are routed on unchanged. The dynamic-lookup
+  // check is separately clean: the only real `RPGACE.modules[variable]`
+  // site in the file is contentProductionLive._findOracleCmdText,
+  // which reaches modules by NAME STRING and then reads `.CMDS` — this
+  // module has no `CMDS` field and is never named at any of its call
+  // sites. index.html has zero references to it in any form. The five
+  // `"…": "refCorpus"` entries in this file's own METHOD_MODULE_MAP
+  // (G109, in the errorLog module) are a generated name->module DATA
+  // table, not call sites, and are unaffected by this split.
+  //
+  // `this`/`self` accounting for all 6 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • 3 already had `var self = this;` and get the module handle
+  //     swapped in IN PLACE, never hoisted, so no control flow moved:
+  //     ui._inject (declared after its own `getElementById` guard;
+  //     captured four times, for the Add/Bulk/Refresh/Backfill button
+  //     onclicks, plus the trailing initial `self._loadList()`),
+  //     ui._bulkImport (captured for `self._loadList()` once the last
+  //     row lands) and ui._showBackfillPopup (captured for
+  //     `self._loadList()` after a successful save).
+  //   • 1 (ui._loadList) has `var self = this;` used ONLY inside the
+  //     per-row delete handler's `self._loadList()` refresh — same
+  //     in-place swap.
+  //   • 1 (ui._addSingle) had no `var self` at all: it reaches its own
+  //     refresh through `.bind(this)` on the success `.then`, so
+  //     `this._loadList()` inside that callback would have resolved to
+  //     `ui._loadList` — which, unusually for this series, DOES exist
+  //     on `ui`, so this one would NOT have thrown. It is still
+  //     rewritten to the module handle rather than left alone, so
+  //     every internal call in this module routes through the same
+  //     public pass-throughs and no caller quietly bypasses them
+  //     (the same reasoning intelDelete.ui._injectAll was fixed on).
+  //   • 1 (logic.findMatches) references neither `this` nor `self` at
+  //     all and moved completely untouched.
+  // ══════════════════════════════════════════════════════════════════
+
   // July 23 — this used to inject (and fetch reference_tracks) 1100ms
   // after EVERY boot, regardless of whether Research Lab was even open
   // (`.page` divs exist in the DOM at all times, just hidden via CSS) -
@@ -24298,9 +24686,21 @@ RPGACE.register('refCorpus', {
     });
   },
 
+  // ============================================================
+  // ui — rendering/DOM: builds the Reference Corpus panel (the 9-field
+  // add form, the bulk-import textarea, the Add/Bulk/Refresh/Backfill
+  // button row and the scrolling track list) into whatever host
+  // RPGACE.utils.panelHome() resolves to, then draws the corpus list
+  // itself and the backfill popup. The two form handlers live here too
+  // — they read and clear the very inputs this namespace built, even
+  // though each also performs a real reference_tracks write; see the
+  // mixed-function note in the G53 block above.
+  // ============================================================
+  ui: {
+
   _inject: function() {
     if (document.getElementById('ref-corpus-panel')) return;
-    var self = this;
+    var self = RPGACE.modules.refCorpus;
     // Aug 23 2026 (UI2/UI3) — see RPGACE.utils.panelHome()'s own comment:
     // one shared staging holder, replacing 5 copies of a fallback chain that
     // pointed at the now-retired Research Lab page.
@@ -24425,6 +24825,12 @@ RPGACE.register('refCorpus', {
   },
 
   _addSingle: function() {
+    // G53: `this` is `ui` inside this namespace, and the success `.then`
+    // below is `.bind(this)` — so its `this._loadList()` would resolve
+    // to `ui._loadList` and quietly bypass the module's own public
+    // pass-through. Bound to the module handle instead, same call
+    // intelDelete.ui._injectAll was fixed on.
+    var self = RPGACE.modules.refCorpus;
     var get = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
     var artist = get('rc-artist');
     var title  = get('rc-title');
@@ -24448,8 +24854,8 @@ RPGACE.register('refCorpus', {
         ['rc-artist','rc-title','rc-bpm','rc-key','rc-scale','rc-energy','rc-mood','rc-genre','rc-url'].forEach(function(id) {
           var el = document.getElementById(id); if (el) el.value = '';
         });
-        this._loadList();
-      }.bind(this))
+        self._loadList();
+      }.bind(self))
       .catch(function(e) { RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3000); });
   },
 
@@ -24458,7 +24864,7 @@ RPGACE.register('refCorpus', {
   // pasted lists in the old 6-field shape still import fine (parts[6-8]
   // simply come back undefined -> null, never an error).
   _bulkImport: function() {
-    var self = this;
+    var self = RPGACE.modules.refCorpus;
     var raw = document.getElementById('rc-bulk');
     if (!raw || !raw.value.trim()) { RPGACE.utils.toast('Paste tracks first', '#CC4A4A', 2000); return; }
     var lines = raw.value.trim().split('\n').filter(function(l) { return l.trim(); });
@@ -24497,7 +24903,7 @@ RPGACE.register('refCorpus', {
   },
 
   _loadList: function() {
-    var self = this;
+    var self = RPGACE.modules.refCorpus;
     var list = document.getElementById('rc-list');
     var header = document.getElementById('rc-list-header');
     if (!list) return;
@@ -24562,49 +24968,6 @@ RPGACE.register('refCorpus', {
       });
   },
 
-  // Called by beatLog to find matching artists from corpus.
-  // 2026-07-28 (real hand-test feedback): genre added as a real scoring
-  // dimension - the corpus already had this column (and scale, scored
-  // below), but real evidence showed every existing row had both stuck at
-  // null (the add-track UI never collected them), which flattened the
-  // corpus's own ability to tell apart two rows with the same BPM/mood/
-  // energy - the real reason matches kept surfacing the same handful of
-  // names for any aggressive ~140BPM beat.
-  findMatches: function(bpm, mood, scale, energy, genre) {
-    var bpmNum = parseInt(bpm) || 130;
-    var energyNum = parseInt(energy) || 3;
-    var bpmRange = 15; // match within ±15 BPM
-
-    return RPGACE.sb.select('reference_tracks',
-      'order=created_at.desc&limit=200'
-    ).then(function(rows) {
-      if (!rows || rows.length === 0) return [];
-
-      // Score each track by similarity
-      var scored = rows.map(function(row) {
-        var score = 0;
-        if (row.bpm) {
-          var bpmDiff = Math.abs(row.bpm - bpmNum);
-          if (bpmDiff <= 5) score += 4;
-          else if (bpmDiff <= 10) score += 3;
-          else if (bpmDiff <= bpmRange) score += 1;
-          else score -= 2; // penalise far BPM
-        }
-        if (row.mood && mood && row.mood.toLowerCase() === mood.toLowerCase()) score += 3;
-        if (row.scale && scale && row.scale.toLowerCase() === scale.toLowerCase()) score += 2;
-        if (row.energy && Math.abs(row.energy - energyNum) <= 1) score += 2;
-        if (row.genre && genre && row.genre.toLowerCase() === genre.toLowerCase()) score += 3;
-        row._score = score;
-        return row;
-      });
-
-      // Filter minimum score and sort
-      return scored
-        .filter(function(r) { return r._score > 0; })
-        .sort(function(a, b) { return b._score - a._score });
-    });
-  },
-
   // Engineer pass 2026-07-30 (Slice A item 5). Lists every corpus row
   // missing scale and/or genre with two small inline inputs each, so
   // Alex can fill in his own real judgment call per track in one place
@@ -24612,7 +24975,7 @@ RPGACE.register('refCorpus', {
   // writes rows he actually changed - untouched inputs are skipped, not
   // overwritten with empty strings.
   _showBackfillPopup: function() {
-    var self = this;
+    var self = RPGACE.modules.refCorpus;
     RPGACE.sb.select('reference_tracks', 'or=(scale.is.null,genre.is.null)&order=artist.asc&limit=200')
       .then(function(rows) {
         rows = rows || [];
@@ -24678,6 +25041,86 @@ RPGACE.register('refCorpus', {
         RPGACE.utils.toast('Error loading backfill list: ' + e.message, '#CC4A4A', 3500);
       });
   },
+
+  },
+
+  // ============================================================
+  // logic — business logic/data: the corpus similarity scorer beatLog
+  // calls to turn a beat's own BPM/mood/scale/energy/genre into a
+  // ranked list of reference tracks. No DOM of any kind; it returns
+  // the scored array to its caller rather than drawing anything.
+  // ============================================================
+  logic: {
+
+  // Called by beatLog to find matching artists from corpus.
+  // 2026-07-28 (real hand-test feedback): genre added as a real scoring
+  // dimension - the corpus already had this column (and scale, scored
+  // below), but real evidence showed every existing row had both stuck at
+  // null (the add-track UI never collected them), which flattened the
+  // corpus's own ability to tell apart two rows with the same BPM/mood/
+  // energy - the real reason matches kept surfacing the same handful of
+  // names for any aggressive ~140BPM beat.
+  findMatches: function(bpm, mood, scale, energy, genre) {
+    var bpmNum = parseInt(bpm) || 130;
+    var energyNum = parseInt(energy) || 3;
+    var bpmRange = 15; // match within ±15 BPM
+
+    return RPGACE.sb.select('reference_tracks',
+      'order=created_at.desc&limit=200'
+    ).then(function(rows) {
+      if (!rows || rows.length === 0) return [];
+
+      // Score each track by similarity
+      var scored = rows.map(function(row) {
+        var score = 0;
+        if (row.bpm) {
+          var bpmDiff = Math.abs(row.bpm - bpmNum);
+          if (bpmDiff <= 5) score += 4;
+          else if (bpmDiff <= 10) score += 3;
+          else if (bpmDiff <= bpmRange) score += 1;
+          else score -= 2; // penalise far BPM
+        }
+        if (row.mood && mood && row.mood.toLowerCase() === mood.toLowerCase()) score += 3;
+        if (row.scale && scale && row.scale.toLowerCase() === scale.toLowerCase()) score += 2;
+        if (row.energy && Math.abs(row.energy - energyNum) <= 1) score += 2;
+        if (row.genre && genre && row.genre.toLowerCase() === genre.toLowerCase()) score += 3;
+        row._score = score;
+        return row;
+      });
+
+      // Filter minimum score and sort
+      return scored
+        .filter(function(r) { return r._score > 0; })
+        .sort(function(a, b) { return b._score - a._score });
+    });
+  },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Three of these are genuinely LOAD-BEARING for real external
+  // callers, all behind truthiness/`typeof` guards that would have
+  // failed SILENTLY had these been dropped:
+  // `dashDeck.PAGE_PANELS['ref-corpus-panel'].ensure` and the
+  // superseded-but-still-present `dashDeck._openCorpus` (via its
+  // `var rc = RPGACE.modules.refCorpus;` LOCAL ALIAS) both reach
+  // `_inject`, and `beatLog` reaches `findMatches` — see the
+  // external-touchpoints note in the G53 block above. They also carry
+  // this module's own internal calls: `init`'s 'research:tab-active'
+  // listener calls `self._inject()`, `ui._inject` calls
+  // `self._addSingle()` / `self._bulkImport()` / `self._loadList()` /
+  // `self._showBackfillPopup()` from its four button onclicks plus a
+  // trailing initial `self._loadList()`, and `ui._addSingle`,
+  // `ui._bulkImport`, `ui._loadList`'s per-row delete handler and
+  // `ui._showBackfillPopup`'s save handler each call `self._loadList()`
+  // to refresh — every one of those `self`s is the module, so each
+  // lands here first and is routed on to the right namespace.
+  _inject: function() { return this.ui._inject(); },
+  _addSingle: function() { return this.ui._addSingle(); },
+  _bulkImport: function() { return this.ui._bulkImport(); },
+  _loadList: function() { return this.ui._loadList(); },
+  _showBackfillPopup: function() { return this.ui._showBackfillPopup(); },
+  findMatches: function(bpm, mood, scale, energy, genre) { return this.logic.findMatches(bpm, mood, scale, energy, genre); },
 
 });
 /* ===END:refCorpus=== */
@@ -33895,6 +34338,151 @@ RPGACE.register('oracleProviderMode', {
 // built blind in this pass - see CLAUDE.md's Open forks.
 RPGACE.register('errorLog', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 47 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // forty-six predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL/shiftSync/knowledgeGap precedent,
+  // so the diff shows only real changes rather than a whitespace wall.
+  //
+  // This module splits 0 ui / 6 logic — `ui` is declared explicitly as
+  // an empty object literal rather than omitted, matching the
+  // authGate.ui / oracleAppGrounding.ui / youtubeOracle.logic
+  // precedent, so every split module in this series presents the same
+  // two-namespace surface and a later reader never has to wonder
+  // whether the namespace was forgotten or genuinely empty.
+  //
+  // That 0 is a REAL measurement, not an assumption from the module's
+  // name: a grep of the whole module body for
+  // `document.` / `innerHTML` / `createElement` / `querySelector` /
+  // `getElementById` / `addEventListener` returns exactly TWO hits,
+  // both `window.addEventListener` — and both live inside `init`,
+  // which stays a literal top-level function regardless (RPGACE.
+  // register() calls `module.init()` directly and cannot see into a
+  // sub-object). Every other member is Supabase reads/writes, string
+  // normalisation and stack parsing. This is genuinely a pure back-end
+  // telemetry module: the human-facing surface for this data is
+  // error_log.html and smoke_test.html, both of which live outside
+  // this file entirely and read the same rows from Supabase.
+  //
+  // ─── THE SINGLE MOST DANGEROUS LINE IN THIS SPLIT ────────────────
+  // `METHOD_MODULE_MAP` is a real DATA FIELD (the G109 generated
+  // method-name -> owning-module table, 400+ entries) and stays at
+  // MODULE scope, untouched. `_extractModule` reads it TWICE per stack
+  // frame as bare `this.METHOD_MODULE_MAP[m[1]]` — and `_extractModule`
+  // moves into `logic`, where `this` is the `logic` sub-object, on
+  // which `METHOD_MODULE_MAP` does NOT exist. Left unqualified, that
+  // line would have thrown `TypeError: Cannot read properties of
+  // undefined` on the FIRST frame of every captured stack. The failure
+  // would have been near-invisible and actively self-concealing:
+  // `_capture`'s own `.catch` is a deliberate no-op ("an error-LOGGING
+  // failure must never itself throw a second, louder error in front of
+  // Alex"), so the module would have silently stopped recording ANY
+  // error at all — including the ones this very module exists to
+  // catch, and including the whole G109 cascade
+  // (error_log -> perspective baseline -> smoke_test_items `broken` ->
+  // ceo_plan_items `purple`) that a future session's session-start
+  // check depends on. Both reads are qualified to
+  // `RPGACE.modules.errorLog.METHOD_MODULE_MAP` via a handle taken as
+  // the function's first statement.
+  //
+  // 8 real top-level keys: 7 functions (`init`, `_signature`,
+  // `_extractModule`, `_capture`, `_insertWithCascade`,
+  // `_cascadeToSmokeTest`, `_cascadeToPlanItem`) and 1 data field
+  // (`METHOD_MODULE_MAP`). Checked BOTH ways rather than assumed from
+  // the shape: a direct read of every top-level key, and a grep of the
+  // whole module body for `self.X =` / `this.X =` (0 hits), so this
+  // module has none of the UNDECLARED runtime-assigned field trap that
+  // journalQoL's `_activeSource` and oracleDevBridge's `this.TABLE`
+  // both hit — its one shared field is a declared literal, and the
+  // danger above is the opposite failure (a declared field read from
+  // the wrong `this`), not an undeclared one. The `X.Y =` writes in
+  // the body are onto plain local objects being assembled for a
+  // Supabase call (`row.linked_perspective_id`, `patch.status`,
+  // `headers['Prefer']`), never onto the module.
+  //
+  // Classification, function by function, each checked against its
+  // actual body rather than its name — all six are unambiguous:
+  //   • _signature → logic. Pure string work: two regex normalisations
+  //     (hex/uuid-ish runs -> `<id>`, digit runs -> `<n>`) and two
+  //     `.slice`s, returning the dedup key. The same normalised-key
+  //     method intelDedup already proves in production (rule 8).
+  //   • _extractModule → logic. Pure parsing: splits a stack string,
+  //     regex-matches each frame's method name, and returns the first
+  //     one with exactly one owning module in the table — or `null`,
+  //     never a guess. See the danger note above for its `this`.
+  //   • _capture → logic. Supabase only: the `error_log` dedup lookup
+  //     by signature, an occurrence-count/`last_seen_at` bump on a
+  //     hit, or the new-row cascade on a miss.
+  //   • _insertWithCascade → logic. Supabase only: the optional
+  //     `perspective_reports` baseline lookup, then a RAW `fetch` with
+  //     `Prefer: return=representation` (deliberately not
+  //     `RPGACE.sb.insert()`, which sends `return=minimal` and can
+  //     never hand back the new row's id — the documented landmine),
+  //     then the smoke-test cascade.
+  //   • _cascadeToSmokeTest → logic. Supabase only: finds this
+  //     module's own `smoke_test_items` row and flips it to `broken`
+  //     with a `broken_note` and `linked_error_id`.
+  //   • _cascadeToPlanItem → logic. Supabase only: flips a linked
+  //     `ceo_plan_items` row to `purple` — and ONLY from a genuine
+  //     prior `green`, which is real /colourgradient discipline
+  //     (purple means a REGRESSION), not a detail this split may
+  //     touch.
+  //
+  // `this`/`self` accounting for all 6 moved functions:
+  //   • 4 already had `var self = this;` and get the module handle
+  //     swapped in IN PLACE, never hoisted, so no control flow moved:
+  //     logic._capture (captured for `self._extractModule(opts.stack)`
+  //     and `self._insertWithCascade(...)`), logic._insertWithCascade
+  //     (captured for `self._cascadeToSmokeTest(...)` inside its
+  //     `.then`), logic._cascadeToSmokeTest (captured for
+  //     `self._cascadeToPlanItem(...)`) and — flagged plainly —
+  //     logic._insertWithCascade's sibling case below.
+  //   • logic._capture ALSO had one bare `this._signature(...)` call
+  //     alongside its `var self`, which is rewritten to `self.` (it
+  //     would otherwise have read `logic._signature`, bypassing the
+  //     pass-through).
+  //   • 1 (logic._extractModule) had no `var self` at all and used two
+  //     bare `this.METHOD_MODULE_MAP` reads: it gets the handle
+  //     inserted as its first statement — the videoPipeline pilot's
+  //     own `var mod = RPGACE.modules.videoPipeline;` precedent. This
+  //     is the dangerous case described above.
+  //   • 1 (logic._cascadeToPlanItem) references neither `this` nor
+  //     `self` at all and moved completely untouched.
+  //
+  // ─── EXTERNAL TOUCHPOINTS: one real one, and it is guarded ────────
+  // `RPGACE.utils.toast()` (the shared toast helper, ~29,000 lines up
+  // this same file) reaches this module on every error-coloured
+  // (`#CC4A4A`) toast — the Aug 26 2026 G109 hook:
+  //   `var el = RPGACE.modules && RPGACE.modules.errorLog;`
+  //   `if (el && el._capture) el._capture('ui_toast', 'toast()', msg, { stack: (new Error()).stack });`
+  // That is a LOCAL-ALIAS call site (`var el = …`), the form a naive
+  // `RPGACE.modules.errorLog.` grep would miss, and it is wrapped in
+  // both an `if (el && el._capture)` guard and a `try/catch` that
+  // explicitly fails open. Had the `_capture` pass-through below been
+  // omitted, the guard would have quietly evaluated false and every
+  // error-toast telemetry write in the app would have stopped, with no
+  // error thrown and nothing visible to Alex. It lands on the
+  // top-level pass-through and is routed on unchanged.
+  // The dynamic-lookup check is separately clean: the only real
+  // `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at any of its call sites. index.html has
+  // zero references to it in any form. The two `"_capture": "errorLog"`
+  // / `"_signature": "errorLog"` entries inside this module's OWN
+  // METHOD_MODULE_MAP are generated name->module DATA rows, not call
+  // sites, and stay correct: `mangle:false` keeps every real method
+  // name, and a moved function's NAME is unchanged by this split, so
+  // a real stack frame still reports `_capture` / `_signature` exactly
+  // as before and still attributes to `errorLog`.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     window.addEventListener('error', function(e) {
@@ -33904,15 +34492,6 @@ RPGACE.register('errorLog', {
       var msg = (e.reason && (e.reason.message || String(e.reason))) || 'unhandled promise rejection';
       self._capture('js_promise', 'unhandledrejection', msg, { stack: e.reason && e.reason.stack });
     });
-  },
-
-  // Real, same-method normalized-key dedup as intelDedup already proves
-  // in production (rule 8) - strips ids/numbers so the SAME real error
-  // recurring with a different row id/count in its message still
-  // dedupes onto one row instead of minting a new one every time.
-  _signature: function(type, source, message) {
-    var norm = String(message || '').replace(/[0-9a-f-]{8,}/gi, '<id>').replace(/\d+/g, '<n>').slice(0, 200);
-    return (type + '|' + (source || '') + '|' + norm).slice(0, 300);
   },
 
   // Aug 26 2026 (real Alex ask: "an error function for each module that
@@ -34370,23 +34949,64 @@ RPGACE.register('errorLog', {
   "workflowEstimate": "questEngine",
 },
 
+  // ============================================================
+  // ui — rendering/DOM: genuinely EMPTY, and declared explicitly
+  // rather than omitted (the authGate.ui / oracleAppGrounding.ui /
+  // youtubeOracle.logic precedent) so this module presents the same
+  // two-namespace surface as every other split module in the series.
+  // This is a real measurement, not an assumption: the only DOM-shaped
+  // calls anywhere in the module are the two `window.addEventListener`
+  // registrations inside `init`, which stays top-level. The
+  // human-facing surface for this data is error_log.html and
+  // smoke_test.html, both outside this file.
+  // ============================================================
+  ui: {},
+
+  // ============================================================
+  // logic — business logic/data: the whole module. Signature
+  // normalisation for dedup, stack-trace -> owning-module attribution
+  // against METHOD_MODULE_MAP above, and the G109 cascade
+  // (error_log row -> /perspective baseline -> smoke_test_items
+  // `broken` -> ceo_plan_items `purple`). Every step fails open: a
+  // cascade step failing never blocks the base error_log row, and an
+  // error-LOGGING failure never throws a second, louder error.
+  // ============================================================
+  logic: {
+
+  // Real, same-method normalized-key dedup as intelDedup already proves
+  // in production (rule 8) - strips ids/numbers so the SAME real error
+  // recurring with a different row id/count in its message still
+  // dedupes onto one row instead of minting a new one every time.
+  _signature: function(type, source, message) {
+    var norm = String(message || '').replace(/[0-9a-f-]{8,}/gi, '<id>').replace(/\d+/g, '<n>').slice(0, 200);
+    return (type + '|' + (source || '') + '|' + norm).slice(0, 300);
+  },
+
   // Best-effort, evidence-gated - walks a real stack trace looking for the
   // first frame whose method name has exactly one owning module in the
   // map above. Returns null (never a guess) if nothing matches.
   _extractModule: function(stack) {
+    // G53: THE single most dangerous line in this module's split.
+    // METHOD_MODULE_MAP is a MODULE-scope data field; `this` inside
+    // `logic` is the `logic` sub-object, on which it does not exist, so
+    // the two reads below MUST go through the module handle. Left bare,
+    // this threw on the first frame of every captured stack — and
+    // _capture's deliberate no-op `.catch` would have swallowed it,
+    // silently killing all error telemetry and the whole G109 cascade.
+    var self = RPGACE.modules.errorLog;
     if (!stack) return null;
     var lines = String(stack).split('\n');
     for (var i = 0; i < lines.length; i++) {
       var m = /at (?:Object\.)?([A-Za-z0-9_]+)\s*\(/.exec(lines[i]);
-      if (m && this.METHOD_MODULE_MAP[m[1]]) return this.METHOD_MODULE_MAP[m[1]];
+      if (m && self.METHOD_MODULE_MAP[m[1]]) return self.METHOD_MODULE_MAP[m[1]];
     }
     return null;
   },
 
   _capture: function(type, source, message, opts) {
     opts = opts || {};
-    var self = this;
-    var sig = this._signature(type, source, message);
+    var self = RPGACE.modules.errorLog;
+    var sig = self._signature(type, source, message);
     var moduleName = self._extractModule(opts.stack);
     RPGACE.sb.select('error_log', 'error_signature=eq.' + encodeURIComponent(sig) + '&status=eq.active&limit=1')
       .then(function(rows) {
@@ -34418,7 +35038,7 @@ RPGACE.register('errorLog', {
   // a cascade step failing never blocks the base error_log row itself
   // from being saved, and never throws a second, louder error.
   _insertWithCascade: function(sig, type, source, message, moduleName) {
-    var self = this;
+    var self = RPGACE.modules.errorLog;
     var row = {
       error_signature: sig, error_type: type, source: source,
       message: String(message).slice(0, 2000), status: 'active',
@@ -34448,7 +35068,7 @@ RPGACE.register('errorLog', {
   },
 
   _cascadeToSmokeTest: function(moduleName, errorLogId, message) {
-    var self = this;
+    var self = RPGACE.modules.errorLog;
     return RPGACE.sb.select('smoke_test_items', 'category=eq.' + encodeURIComponent('RPGACE App \u2014 Modules') + '&item_name=eq.' + encodeURIComponent(moduleName) + '&limit=1')
       .then(function(rows) {
         var row = rows && rows[0];
@@ -34476,6 +35096,34 @@ RPGACE.register('errorLog', {
       }
     }).catch(function(e) { console.warn('[errorLog] plan-item cascade failed:', e && e.message); });
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. `_capture` is genuinely LOAD-BEARING for a real external
+  // caller: RPGACE.utils.toast() reaches it on every error-coloured
+  // toast through a LOCAL ALIAS (`var el = RPGACE.modules && RPGACE.
+  // modules.errorLog;`), behind an `if (el && el._capture)` guard
+  // inside a fail-open `try/catch` — had this been dropped, that guard
+  // would have evaluated false and every error-toast telemetry write
+  // in the app would have stopped SILENTLY. See the external-
+  // touchpoints note in the G53 block above. The rest carry this
+  // module's own internal calls: `init`'s two window listeners both
+  // call `self._capture(...)`, `logic._capture` calls
+  // `self._signature(...)` / `self._extractModule(...)` /
+  // `self._insertWithCascade(...)`, `logic._insertWithCascade` calls
+  // `self._cascadeToSmokeTest(...)`, and `logic._cascadeToSmokeTest`
+  // calls `self._cascadeToPlanItem(...)` — every one of those `self`s
+  // is the module, so each lands here first and is routed on into
+  // `logic`. METHOD_MODULE_MAP stays at module scope and needs no
+  // pass-through; it is read directly off the module handle inside
+  // `logic._extractModule`.
+  _signature: function(type, source, message) { return this.logic._signature(type, source, message); },
+  _extractModule: function(stack) { return this.logic._extractModule(stack); },
+  _capture: function(type, source, message, opts) { return this.logic._capture(type, source, message, opts); },
+  _insertWithCascade: function(sig, type, source, message, moduleName) { return this.logic._insertWithCascade(sig, type, source, message, moduleName); },
+  _cascadeToSmokeTest: function(moduleName, errorLogId, message) { return this.logic._cascadeToSmokeTest(moduleName, errorLogId, message); },
+  _cascadeToPlanItem: function(planItemId) { return this.logic._cascadeToPlanItem(planItemId); },
 
 });
 /* ===END:errorLog=== */
