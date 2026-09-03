@@ -31863,6 +31863,97 @@ RPGACE.register('careerStatCard', {
   // reused so a "Level" here means the same thing on the same scale.
   CUM_BANDS: [500,1700,3900,7400,12400,19400,28900,41400],
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), batch 16, module 47 of 60 — real, ratified /CEO plan
+  // item: split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 3 ui (_render, _detailFor, _showDetail) / 9 logic
+  // (_fetchAll, _isShipped, _dateStr, _computeStreak, _relTime, _levelFor,
+  // _buildItems, _proposalShortName, _esc).
+  //
+  // Classification rule used, identical to every prior batch: a function
+  // lives in `ui` if it CONSTRUCTS OR DISCOVERS DOM (document.*,
+  // createElement, getElementById, querySelector, innerHTML); otherwise in
+  // `logic`. Plus videoSummary's own named extension: a function that
+  // returns a markup STRING destined for `.innerHTML` counts as
+  // constructing DOM and lives in `ui`, even where it names no document.*
+  // API.
+  //
+  // The genuinely non-obvious calls, each named with the real evidence
+  // rather than silently classified:
+  //   • logic._fetchAll is the clean fetch/render-seam case this series
+  //     already established: the seam ALREADY exists as two separate named
+  //     functions in the source, and _fetchAll is independently reachable
+  //     (chroniclesLog.logic._render and the boot prefetch at the top of
+  //     this file both call it directly and never render from it). It
+  //     returns a plain data object and touches no DOM at all.
+  //   • ui._detailFor is classified on the markup-string extension, not on
+  //     the primary DOM rule: it names no document.* API, but several of
+  //     its branches build real `'<a href="…"` markup (the proposal
+  //     source line, both bibliography `whereStored`/`linkStored` lines)
+  //     and its ENTIRE return value is fed straight into `.innerHTML` by
+  //     ui._showDetail. Reading the primary rule literally would have put
+  //     the whole detail-popup render layer into `logic`.
+  //   • logic._esc is the deliberate counter-example that keeps that
+  //     extension honest, and the exact same call videoSummary.logic._esc
+  //     was already classified on: a bare RPGACE.utils.escapeHtml
+  //     delegation (a pure string→string transform — verified by direct
+  //     read, it is a 4-step regex replace, not a createElement trick)
+  //     that builds no markup of its own.
+  //   • logic._buildItems builds a plain JS array of `{t, icon, label,
+  //     type, row}` objects — data, never markup, never handed to a DOM
+  //     element here. Its consumers (chroniclesLog.ui._renderList, its own
+  //     _openCard preview) do the real rendering.
+  //
+  // Real shared-state check, done directly rather than assumed: the ONE
+  // runtime-written module field in this module is `_inflightFetch` — and
+  // unlike chroniclesLog._allItems / journalQoL._activeSource, it IS a
+  // real declared top-level key (`_inflightFetch: null`, kept at module
+  // scope below, deliberately NOT nested inside `logic`). A whole-body
+  // grep for `self\.X =` / `this\.X =` found no other runtime-assigned
+  // field anywhere in the module. It is read and written only by
+  // logic._fetchAll, whose module handle is `RPGACE.modules.careerStatCard`
+  // — so the July 23 request-storm dedup guard still collapses concurrent
+  // callers onto ONE shared promise. Getting this wrong (a stray `this.`
+  // inside the moved _fetchAll) would have made each namespace hold its
+  // own disconnected lock and silently reinstated the exact 8-calls-times-
+  // 4-waves storm that guard was built to stop.
+  //
+  // One `this`-rebinding subtlety worth stating outright, because it is
+  // the only cross-namespace data handoff here: ui._render sets
+  // `data.self = self` so logic._computeStreak can reuse _dateStr without
+  // rebinding (a pre-existing pattern, unchanged). `self` there is now the
+  // MODULE, so `data.self._dateStr(...)` lands on the top-level
+  // pass-through and is routed into `logic` correctly. Had ui._render kept
+  // a bare `this`, `data.self` would have been the `ui` sub-object and
+  // `_dateStr` would have been undefined — a real, silent streak-
+  // computation crash.
+  //
+  // Real, load-bearing external touchpoints, all confirmed by grep and all
+  // preserved by the pass-throughs below (three distinct reference forms,
+  // checked separately per the standing two-greps discipline):
+  //   • rpgace_core.js:5377-5378 — the boot-task prefetch, via this file's
+  //     own `R` alias for RPGACE: `R.modules.careerStatCard._fetchAll()`.
+  //   • rpgace_core.js:32497 / :32499 — chroniclesLog.ui._renderList calls
+  //     `RPGACE.modules.careerStatCard._relTime(it.t)` and
+  //     `._showDetail(it)` directly.
+  //   • rpgace_core.js:32569 / :32608 — chroniclesLog.ui._openCard and
+  //     chroniclesLog.logic._render each take a local alias
+  //     (`var csc = RPGACE.modules.careerStatCard;`) and call
+  //     `csc._fetchAll()`, `csc._isShipped(r)`, `csc._buildItems(...)`
+  //     through it.
+  // No reference exists in index.html or any other file (checked), and no
+  // dynamic `RPGACE.modules['careerStatCard']` bracket lookup exists.
+  // METHOD_MODULE_MAP (G109, near the foot of this file) names 10 of these
+  // methods — it maps METHOD NAMES to a module and is unaffected by an
+  // internal namespace move, since every name is preserved exactly.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     // Aug 22 (/Routine item 1, boot-lag diagnosis) — this used to call
@@ -31895,12 +31986,21 @@ RPGACE.register('careerStatCard', {
   // concurrent calls to share one real in-flight request fixes this
   // directly, regardless of whether it's the whole story.
   _inflightFetch: null,
+
+  // ============================================================
+  // logic — business logic/data: the shared Supabase fetch and its
+  // in-flight dedup lock, the pure predicates/formatters, the level-band
+  // lookup, and the timeline item-list builder. Constructs and discovers
+  // no DOM, and builds no markup string (see the rule extension above).
+  // ============================================================
+  logic: {
+
   _fetchAll: function() {
-    if (this._inflightFetch) return this._inflightFetch;
-    var self = this;
+    var self = RPGACE.modules.careerStatCard;
+    if (self._inflightFetch) return self._inflightFetch;
     var sb = RPGACE.sb;
     var safe = function(p) { return p.catch(function() { return []; }); };
-    this._inflightFetch = Promise.all([
+    self._inflightFetch = Promise.all([
       safe(sb.select('content_productions', 'select=con_id,status,youtube_url,instagram_url,tiktok_url,title,idea,notes,created_at&order=created_at.desc&limit=200')),
       safe(sb.select('journal', 'select=title,content,source,created_at&order=created_at.desc&limit=200')),
       safe(sb.select('encyclopedia_insights', 'select=source_entry_title,insight_text,macro_category,micro_categories,created_at&order=created_at.desc&limit=200')),
@@ -31946,8 +32046,8 @@ RPGACE.register('careerStatCard', {
     // later real refresh (cache expired, 60s+ later) can fetch again -
     // this dedup is only meant to collapse calls that land in the same
     // narrow window, not permanently share one stale result.
-    this._inflightFetch.then(function() { self._inflightFetch = null; }, function() { self._inflightFetch = null; });
-    return this._inflightFetch;
+    self._inflightFetch.then(function() { self._inflightFetch = null; }, function() { self._inflightFetch = null; });
+    return self._inflightFetch;
   },
 
   _isShipped: function(row) {
@@ -31986,19 +32086,101 @@ RPGACE.register('careerStatCard', {
   },
 
   _levelFor: function(totalXP) {
-    var bands = this.CUM_BANDS;
+    var self = RPGACE.modules.careerStatCard;
+    var bands = self.CUM_BANDS;
     for (var i = 0; i < bands.length; i++) {
       if (totalXP < bands[i]) {
         var floor = i === 0 ? 0 : bands[i - 1];
-        return { levelNum: i + 1, title: this.LEVEL_TITLES[i], floor: floor, ceil: bands[i] };
+        return { levelNum: i + 1, title: self.LEVEL_TITLES[i], floor: floor, ceil: bands[i] };
       }
     }
     var last = bands.length - 1;
-    return { levelNum: bands.length + 1, title: this.LEVEL_TITLES[this.LEVEL_TITLES.length - 1], floor: bands[last], ceil: bands[last] + 10000 };
+    return { levelNum: bands.length + 1, title: self.LEVEL_TITLES[self.LEVEL_TITLES.length - 1], floor: bands[last], ceil: bands[last] + 10000 };
   },
 
+  // July 22, round 3: renamed "Recent Wins" -> "The Chronicles" (Alex's own
+  // name for the whole group), and added a real "View Full Log" nav button
+  // - the group's real expand point, opening the new dedicated
+  // #page-chronicles page (chroniclesLog module) rather than growing this
+  // dashboard preview indefinitely. See chronicles_spec_backlog.txt.
+  // July 22, round 2: Alex's real complaint was the taxonomy rows in this
+  // feed all read as the same generic "Taxonomy insight placed" line with
+  // nothing to click into. taxonomy_proposals actually stores rich real
+  // content per row (proposed_path, proposed_steps.insightText/synthesis/
+  // justification/confidenceScore, source_type/source_id) - it was just
+  // never being read. Each feed row is now a real DOM node (not an innerHTML
+  // string) carrying its full source row, clickable into a detail popup
+  // built from RPGACE.modules.dashDeck._popup (the one shared overlay
+  // helper that already exists in this file - reused rather than hand-
+  // rolling a second one, per the standing "grep before new UI behaviour,
+  // this project has a history of duplicate implementations" rule).
+  // Shared by the Chronicles dashboard-card popup (chroniclesLog._openCard,
+  // top 5) and the full Chronicles log page (chroniclesLog, all of them) -
+  // one place builds the item list so both surfaces can never drift out of sync.
+  _buildItems: function(data, shipped, ideas) {
+    var self = RPGACE.modules.careerStatCard;
+    var items = [];
+    shipped.forEach(function(r) { items.push({ t: r.created_at, icon: '🚀', label: 'Shipped: ' + (r.title || 'content'), type: 'content_shipped', row: r }); });
+    ideas.forEach(function(r) { items.push({ t: r.created_at, icon: '💡', label: 'Idea logged: ' + (r.title || 'content'), type: 'content_idea', row: r }); });
+    data.journal.forEach(function(r) { items.push({ t: r.created_at, icon: '📓', label: 'Journal: ' + (r.title || 'entry'), type: 'journal', row: r }); });
+    data.insights.forEach(function(r) { items.push({ t: r.created_at, icon: '🧠', label: 'Insight: ' + (r.source_entry_title || 'captured'), type: 'insight', row: r }); });
+    data.proposals.forEach(function(r) { items.push({ t: r.created_at, icon: '🌳', label: 'Taxonomy: ' + self._proposalShortName(r), type: 'proposal', row: r }); });
+    data.tracks.forEach(function(r) { items.push({ t: r.created_at, icon: '🎧', label: 'Reference logged: ' + (r.title || 'track'), type: 'track', row: r }); });
+    (data.finance || []).forEach(function(r) {
+      var isSale = r.type === 'sale';
+      items.push({ t: r.created_at, icon: isSale ? '💰' : '🧾', label: (isSale ? 'Sale: ' : 'Expense: ') + (r.item || r.category) + ' (£' + r.amount + ')', type: isSale ? 'finance_sale' : 'finance_expense', row: r });
+    });
+    (data.systemUpdates || []).forEach(function(r) {
+      items.push({ t: r.created_at, icon: '🛠️', label: 'Claude Code: ' + (r.title || 'system update'), type: 'system_update', row: r });
+    });
+    // Bibliography (A15) — a completed book is a real timeline event. Note
+    // the timestamp column here is completed_at, not created_at like every
+    // other row type, because that IS the moment the real event happened.
+    // Aug 23 2026 — `bibliography` now holds two genuinely different kinds of
+    // row, told apart by one discriminator: book_id IS NULL is a saved LINK
+    // (a reference kept for later, from intelDelete's save-before-delete
+    // flow); book_id IS NOT NULL is a COMPLETED BOOK (bookworm._markBookComplete).
+    // They get different icons so the feed itself distinguishes them at a
+    // glance, not only once the detail popup is open. For a link row,
+    // completed_at is reused as "when it was saved".
+    (data.bibliography || []).forEach(function(r) {
+      var isLink = (r.book_id == null);
+      items.push({
+        t: r.completed_at,
+        icon: isLink ? '🔗' : '📚',
+        label: 'Bibliography: ' + (r.title || (isLink ? 'reference' : 'book')),
+        type: 'bibliography',
+        row: r
+      });
+    });
+    items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
+    return items;
+  },
+
+  // proposed_steps' shape varies by engine (phylum_path / concept_fusion /
+  // plain path-array) - this pulls a short human name out of whichever
+  // shape is actually present, for the feed row label.
+  _proposalShortName: function(r) {
+    function truncate(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+    var ps = (r && r.proposed_steps) || {};
+    if (ps.insightText) return truncate(ps.insightText, 60);
+    if (ps.newName) return truncate(ps.newName, 60);
+    if (r && r.proposed_path) { var segs = r.proposed_path.split(/→|\//); return truncate(segs[segs.length - 1].trim(), 60); }
+    return 'new branch added';
+  },
+
+  _esc: function(s) { return RPGACE.utils.escapeHtml(s); },
+
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: the profile-card stat/bar repaint, the
+  // detail-popup markup builder, and the popup itself.
+  // ============================================================
+  ui: {
+
   _render: function() {
-    var self = this;
+    var self = RPGACE.modules.careerStatCard;
     self._fetchAll().then(function(data) {
       data.self = self; // let _computeStreak reuse _dateStr without rebinding
       var W = self.WEIGHTS;
@@ -32056,83 +32238,10 @@ RPGACE.register('careerStatCard', {
     });
   },
 
-  // July 22, round 3: renamed "Recent Wins" -> "The Chronicles" (Alex's own
-  // name for the whole group), and added a real "View Full Log" nav button
-  // - the group's real expand point, opening the new dedicated
-  // #page-chronicles page (chroniclesLog module) rather than growing this
-  // dashboard preview indefinitely. See chronicles_spec_backlog.txt.
-  // July 22, round 2: Alex's real complaint was the taxonomy rows in this
-  // feed all read as the same generic "Taxonomy insight placed" line with
-  // nothing to click into. taxonomy_proposals actually stores rich real
-  // content per row (proposed_path, proposed_steps.insightText/synthesis/
-  // justification/confidenceScore, source_type/source_id) - it was just
-  // never being read. Each feed row is now a real DOM node (not an innerHTML
-  // string) carrying its full source row, clickable into a detail popup
-  // built from RPGACE.modules.dashDeck._popup (the one shared overlay
-  // helper that already exists in this file - reused rather than hand-
-  // rolling a second one, per the standing "grep before new UI behaviour,
-  // this project has a history of duplicate implementations" rule).
-  // Shared by the Chronicles dashboard-card popup (chroniclesLog._openCard,
-  // top 5) and the full Chronicles log page (chroniclesLog, all of them) -
-  // one place builds the item list so both surfaces can never drift out of sync.
-  _buildItems: function(data, shipped, ideas) {
-    var self = this;
-    var items = [];
-    shipped.forEach(function(r) { items.push({ t: r.created_at, icon: '🚀', label: 'Shipped: ' + (r.title || 'content'), type: 'content_shipped', row: r }); });
-    ideas.forEach(function(r) { items.push({ t: r.created_at, icon: '💡', label: 'Idea logged: ' + (r.title || 'content'), type: 'content_idea', row: r }); });
-    data.journal.forEach(function(r) { items.push({ t: r.created_at, icon: '📓', label: 'Journal: ' + (r.title || 'entry'), type: 'journal', row: r }); });
-    data.insights.forEach(function(r) { items.push({ t: r.created_at, icon: '🧠', label: 'Insight: ' + (r.source_entry_title || 'captured'), type: 'insight', row: r }); });
-    data.proposals.forEach(function(r) { items.push({ t: r.created_at, icon: '🌳', label: 'Taxonomy: ' + self._proposalShortName(r), type: 'proposal', row: r }); });
-    data.tracks.forEach(function(r) { items.push({ t: r.created_at, icon: '🎧', label: 'Reference logged: ' + (r.title || 'track'), type: 'track', row: r }); });
-    (data.finance || []).forEach(function(r) {
-      var isSale = r.type === 'sale';
-      items.push({ t: r.created_at, icon: isSale ? '💰' : '🧾', label: (isSale ? 'Sale: ' : 'Expense: ') + (r.item || r.category) + ' (£' + r.amount + ')', type: isSale ? 'finance_sale' : 'finance_expense', row: r });
-    });
-    (data.systemUpdates || []).forEach(function(r) {
-      items.push({ t: r.created_at, icon: '🛠️', label: 'Claude Code: ' + (r.title || 'system update'), type: 'system_update', row: r });
-    });
-    // Bibliography (A15) — a completed book is a real timeline event. Note
-    // the timestamp column here is completed_at, not created_at like every
-    // other row type, because that IS the moment the real event happened.
-    // Aug 23 2026 — `bibliography` now holds two genuinely different kinds of
-    // row, told apart by one discriminator: book_id IS NULL is a saved LINK
-    // (a reference kept for later, from intelDelete's save-before-delete
-    // flow); book_id IS NOT NULL is a COMPLETED BOOK (bookworm._markBookComplete).
-    // They get different icons so the feed itself distinguishes them at a
-    // glance, not only once the detail popup is open. For a link row,
-    // completed_at is reused as "when it was saved".
-    (data.bibliography || []).forEach(function(r) {
-      var isLink = (r.book_id == null);
-      items.push({
-        t: r.completed_at,
-        icon: isLink ? '🔗' : '📚',
-        label: 'Bibliography: ' + (r.title || (isLink ? 'reference' : 'book')),
-        type: 'bibliography',
-        row: r
-      });
-    });
-    items.sort(function(a, b) { return new Date(b.t) - new Date(a.t); });
-    return items;
-  },
-
-  // proposed_steps' shape varies by engine (phylum_path / concept_fusion /
-  // plain path-array) - this pulls a short human name out of whichever
-  // shape is actually present, for the feed row label.
-  _proposalShortName: function(r) {
-    function truncate(s, n) { return s.length > n ? s.slice(0, n - 1) + '…' : s; }
-    var ps = (r && r.proposed_steps) || {};
-    if (ps.insightText) return truncate(ps.insightText, 60);
-    if (ps.newName) return truncate(ps.newName, 60);
-    if (r && r.proposed_path) { var segs = r.proposed_path.split(/→|\//); return truncate(segs[segs.length - 1].trim(), 60); }
-    return 'new branch added';
-  },
-
-  _esc: function(s) { return RPGACE.utils.escapeHtml(s); },
-
   // Builds the {what, outcome, whereStored, whySignificant} shape every
   // detail popup renders, from whichever real row type was clicked.
   _detailFor: function(it) {
-    var self = this, r = it.row, esc = function(s) { return self._esc(s); };
+    var self = RPGACE.modules.careerStatCard, r = it.row, esc = function(s) { return self._esc(s); };
     if (it.type === 'proposal') {
       var ps = r.proposed_steps || {};
       var what = ps.insightText || ps.newName || (ps.explainers && ps.explainers[0]) || 'New taxonomy branch added';
@@ -32296,15 +32405,43 @@ RPGACE.register('careerStatCard', {
   },
 
   _showDetail: function(it) {
+    var self = RPGACE.modules.careerStatCard;
     var dd = RPGACE.modules.dashDeck;
     if (!dd || !dd._popup) { console.warn('[RPGACE:careerStatCard] dashDeck._popup unavailable'); return; }
-    var d = this._detailFor(it);
+    var d = self._detailFor(it);
     var pop = dd._popup({ eyebrow: d.eyebrow, title: d.title, width: '560px', accent: 'var(--gold)' });
     pop.box.innerHTML = d.rows.map(function(row) {
       return '<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">' + row[0] + '</div>'
         + '<div style="font-size:13px;color:var(--text);line-height:1.5">' + row[1] + '</div></div>';
     }).join('');
   }
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public API.
+  // Real, load-bearing external touchpoints these carry (all confirmed by
+  // grep, see the G53 block above): the boot prefetch's own
+  // `R.modules.careerStatCard._fetchAll()`, chroniclesLog's direct
+  // `RPGACE.modules.careerStatCard._relTime(...)`/`._showDetail(...)`
+  // calls, and its two local-alias (`var csc = …`) call sites reaching
+  // `_fetchAll`/`_isShipped`/`_buildItems`. Also carries this module's own
+  // internal cross-namespace calls — every `self` inside a moved function
+  // is the MODULE, so each call lands here first and is routed on to the
+  // right namespace (including `data.self._dateStr(...)`, the one
+  // cross-namespace data handoff, described in the G53 block above).
+  _fetchAll: function() { return this.logic._fetchAll(); },
+  _isShipped: function(row) { return this.logic._isShipped(row); },
+  _dateStr: function(iso) { return this.logic._dateStr(iso); },
+  _computeStreak: function(data) { return this.logic._computeStreak(data); },
+  _relTime: function(iso) { return this.logic._relTime(iso); },
+  _levelFor: function(totalXP) { return this.logic._levelFor(totalXP); },
+  _buildItems: function(data, shipped, ideas) { return this.logic._buildItems(data, shipped, ideas); },
+  _proposalShortName: function(r) { return this.logic._proposalShortName(r); },
+  _esc: function(s) { return this.logic._esc(s); },
+  _render: function() { return this.ui._render(); },
+  _detailFor: function(it) { return this.ui._detailFor(it); },
+  _showDetail: function(it) { return this.ui._showDetail(it); },
+
 });
 /* ===END:careerStatCard=== */
 
@@ -33193,6 +33330,117 @@ RPGACE.register('oracleControl', {
   _recentErrorToasts: [],
   _MAX_RECENT_ERRORS: 5,
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), batch 16, module 48 of 60 — real, ratified /CEO plan
+  // item: split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 6 ui (_showSuggestConfirm, _showActionConfirm,
+  // _injectOverlayButton, _toggleOverlay, _sendFromOverlay,
+  // _mirrorReplyToOverlay) / 10 logic (_listenForErrorToasts,
+  // buildRecentErrorsBlock, _fetchActions, _byId, matchesAnyTrigger,
+  // buildActionsBlock, buildSuggestBlock, _listenForReplies,
+  // _approveSuggestedAction, _execute).
+  //
+  // Classification rule used, identical to every prior batch: a function
+  // lives in `ui` if it CONSTRUCTS OR DISCOVERS DOM (document.*,
+  // createElement, getElementById, querySelector, innerHTML); otherwise in
+  // `logic`. Deliberately NOT counted as a ui signal, per the standing
+  // precedent: opening ANOTHER module's popup, a page-nav call, or a bare
+  // RPGACE.utils.toast() — a function that merely TRIGGERS a UI action
+  // without constructing any DOM of its own is logic.
+  //
+  // The genuinely non-obvious calls, each named with the real evidence
+  // rather than silently classified — and read with extra care, because
+  // this module IS the human-consent gate in front of Oracle acting on
+  // RPGACE (G41): the invariant that must survive this refactor is that
+  // NOTHING executes without a real Accept click, and that the confirm
+  // popup shown is always the one matching what is about to happen:
+  //   • The four buildXBlock/matchesAnyTrigger functions return PROMPT
+  //     TEXT strings, never markup, never assigned to `.innerHTML` and
+  //     never handed to a DOM element — they are string-concatenated into
+  //     the outbound `system` prompt inside oracleAppGrounding's own
+  //     window.callOracle wrap. That is the "builds text, not markup"
+  //     case this series already named, so they are `logic`, not `ui`,
+  //     despite "build" being in three of their names. (The videoSummary
+  //     markup-string extension does NOT apply: none of them opens a `'<`
+  //     string literal.)
+  //   • logic._listenForReplies is the trailer-scan hook consumer. It
+  //     constructs and discovers no DOM of its own; its whole job is
+  //     regex-matching Oracle's reply text, defensively JSON-parsing a
+  //     suggestion trailer, and then CALLING the two `ui` confirm popups
+  //     (and _mirrorReplyToOverlay). Classified `logic` on the "merely
+  //     triggers UI" clause — logic → ui calls are normal in this series.
+  //   • logic._execute is the real, safety-critical dispatch branch and is
+  //     `logic` on the same clause, verified by direct read rather than by
+  //     name: it names no document.* API at all. It resolves dashDeck /
+  //     beatLog, calls dashDeck._openPage('beat-log-panel') (another
+  //     module's page-nav, explicitly not a ui signal per the rule above),
+  //     and falls through to a bare RPGACE.utils.toast on an unwired
+  //     action_id. Its own honest "isn't wired up yet" fail-loud path is
+  //     unchanged, so an approved-but-uncoded oracle_actions row still
+  //     cannot do anything.
+  //   • logic._approveSuggestedAction is `logic` on the primary rule: a
+  //     real RPGACE.sb.secureWrite insert plus a toast, zero DOM. It is
+  //     only ever reached from ui._showSuggestConfirm's Accept handler, so
+  //     the human gate in front of the write is structurally intact.
+  //   • The two confirm popups are `ui` on the primary rule (both do
+  //     document.createElement inside their local `esc` helper, both write
+  //     pop.box.innerHTML, both querySelector their own buttons). They are
+  //     deliberately kept as TWO separate functions, as before — one asks
+  //     "should this RUN now", the other "should this be ADDED to the
+  //     recognized list"; merging them would have collapsed two genuinely
+  //     different consent questions into one.
+  //
+  // Real shared-state check, done directly rather than assumed: a
+  // whole-body grep for `self\.X =` / `this\.X =` found exactly three
+  // runtime-written module fields — `_actions`, `_actionsFetchedAt` and
+  // `_overlayOpen` — and, unlike chroniclesLog._allItems /
+  // journalQoL._activeSource, all three ARE real declared top-level keys
+  // already (plus `_recentErrorToasts`, mutated in place rather than
+  // reassigned). Every one of them is kept at MODULE scope above,
+  // deliberately not nested inside `logic` or `ui`:
+  //   • `_actions` / `_actionsFetchedAt` / `_ACTIONS_TTL_MS` are the live
+  //     oracle_actions cache + its TTL, written by logic._fetchActions and
+  //     read by logic._byId, logic.matchesAnyTrigger and
+  //     logic.buildActionsBlock. All four resolve them through
+  //     `RPGACE.modules.oracleControl`. If this were wrong,
+  //     matchesAnyTrigger would read a permanently-empty second copy and
+  //     the whole action gate would silently never fire — the failure
+  //     would look like "Oracle just ignores me", with no error anywhere.
+  //   • `_recentErrorToasts` / `_MAX_RECENT_ERRORS` are written by
+  //     logic._listenForErrorToasts and read by
+  //     logic.buildRecentErrorsBlock — same module handle in both.
+  //   • `_overlayOpen` is written ONLY by ui._toggleOverlay (verified by
+  //     grep: 3 total references, the declaration plus both writes) and is
+  //     still written through the module handle rather than `this`, so a
+  //     future reader outside `ui` sees the same value.
+  //
+  // Real, load-bearing external touchpoints, all confirmed by grep and all
+  // preserved by the pass-throughs below (checked in all three reference
+  // forms per the standing two-greps discipline):
+  //   • rpgace_core.js:9585-9619 — oracleAppGrounding's window.callOracle
+  //     wrap takes a LOCAL ALIAS (`var oc = RPGACE.modules.oracleControl;`)
+  //     and calls FOUR methods through it: `oc.matchesAnyTrigger(lower)`,
+  //     `oc.buildActionsBlock()`, `oc.buildSuggestBlock()` and
+  //     `oc.buildRecentErrorsBlock()`, each behind an `oc && oc.method &&`
+  //     presence guard — so the pass-throughs must exist as own-properties
+  //     on the module, which they do. This is the alias form a plain
+  //     `RPGACE.modules.oracleControl.` grep would have missed entirely.
+  //   • Five in-module `RPGACE.modules.oracleControl.X(...)` calls inside
+  //     event handlers (:33368 _approveSuggestedAction, :33434 _execute,
+  //     :33480 / :33501 _toggleOverlay, :33506 _sendFromOverlay) — these
+  //     were ALREADY written against the module rather than `this`,
+  //     because they run as DOM callbacks, and are unchanged.
+  // No reference exists in index.html or any other file (checked;
+  // api/data-write.js names _approveSuggestedAction in a comment only),
+  // and no dynamic `RPGACE.modules['oracleControl']` bracket lookup exists.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     self._fetchActions();
@@ -33200,6 +33448,15 @@ RPGACE.register('oracleControl', {
     self._listenForErrorToasts();
     RPGACE.registerBootTask(function() { return self._injectOverlayButton(); });
   },
+
+  // ============================================================
+  // logic — business logic/data: the live oracle_actions cache, the
+  // recent-error buffer, every outbound prompt-text block builder, the
+  // trailer-scan hook consumer, the suggested-action write, and the real
+  // action dispatch. Constructs and discovers no DOM, and builds no
+  // markup string (see the rule extension above).
+  // ============================================================
+  logic: {
 
   // Aug 26 2026 (real Alex ask: "make these toast visible and hookable for
   // oracle to pick up") — this is the honest, buildable version of that:
@@ -33214,7 +33471,7 @@ RPGACE.register('oracleControl', {
   // unbounded per-error API cost (rule 11) for something that's usually
   // only relevant if Alex actually asks about it.
   _listenForErrorToasts: function() {
-    var self = this;
+    var self = RPGACE.modules.oracleControl;
     RPGACE.hooks.on('rpgace:error-toast', function(evt) {
       self._recentErrorToasts.push(evt);
       if (self._recentErrorToasts.length > self._MAX_RECENT_ERRORS) self._recentErrorToasts.shift();
@@ -33228,12 +33485,13 @@ RPGACE.register('oracleControl', {
   // all) when nothing has actually gone wrong recently - never manufactures
   // a report out of an empty buffer.
   buildRecentErrorsBlock: function() {
-    if (!this._recentErrorToasts.length) return '';
-    var lines = this._recentErrorToasts.map(function(e) {
+    var self = RPGACE.modules.oracleControl;
+    if (!self._recentErrorToasts.length) return '';
+    var lines = self._recentErrorToasts.map(function(e) {
       var secsAgo = Math.round((Date.now() - e.ts) / 1000);
       return '- (' + secsAgo + 's ago) "' + e.msg + '"';
     });
-    return '\n\nRECENT REAL ERROR TOASTS THIS SESSION (most recent ' + this._recentErrorToasts.length + '): if Alex asks why something is failing or broken, check whether one of these is the real cause before speculating:\n' + lines.join('\n');
+    return '\n\nRECENT REAL ERROR TOASTS THIS SESSION (most recent ' + self._recentErrorToasts.length + '): if Alex asks why something is failing or broken, check whether one of these is the real cause before speculating:\n' + lines.join('\n');
   },
 
   // ── 1. Live oracle_actions fetch — same fetch-then-inject shape as       ──
@@ -33241,7 +33499,7 @@ RPGACE.register('oracleControl', {
   // ── very next real Oracle call, zero redeploy needed for a content-only  ──
   // ── change.
   _fetchActions: function(force) {
-    var self = this;
+    var self = RPGACE.modules.oracleControl;
     if (!force && self._actions.length && Date.now() - self._actionsFetchedAt < self._ACTIONS_TTL_MS) {
       return Promise.resolve(self._actions);
     }
@@ -33256,7 +33514,7 @@ RPGACE.register('oracleControl', {
   },
 
   _byId: function(actionId) {
-    return (this._actions || []).find(function(a) { return a.action_id === actionId; });
+    return (RPGACE.modules.oracleControl._actions || []).find(function(a) { return a.action_id === actionId; });
   },
 
   // Cheap, synchronous, cache-only check — deliberately never awaits a fresh
@@ -33266,13 +33524,13 @@ RPGACE.register('oracleControl', {
   // real landmine). A cold cache just means this gate misses once; the
   // background _fetchActions() call from init() almost always wins the race.
   matchesAnyTrigger: function(lowerText) {
-    return (this._actions || []).some(function(a) {
+    return (RPGACE.modules.oracleControl._actions || []).some(function(a) {
       return (a.trigger_phrases || []).some(function(p) { return lowerText.indexOf(String(p).toLowerCase()) !== -1; });
     });
   },
 
   buildActionsBlock: function() {
-    var self = this;
+    var self = RPGACE.modules.oracleControl;
     if (!self._actions.length) return '';
     var lines = self._actions.map(function(a) {
       return '- "' + (a.trigger_phrases || []).join('" / "') + '" -> ORACLE_ACTION: ' + a.action_id;
@@ -33303,7 +33561,7 @@ RPGACE.register('oracleControl', {
   // ── the message came from the dashboard chat OR this module's own       ──
   // ── overlay (both funnel through the same real sendChatWithImage()).
   _listenForReplies: function() {
-    var self = this;
+    var self = RPGACE.modules.oracleControl;
     RPGACE.hooks.on('oracle:response-scanned', function(text) {
       if (!text) return;
       var m = /ORACLE_ACTION:\s*([a-z0-9_]+)/i.exec(text);
@@ -33332,6 +33590,77 @@ RPGACE.register('oracleControl', {
       self._mirrorReplyToOverlay(text);
     });
   },
+
+  // Writes a real, new oracle_actions row via the server-side write proxy
+  // (this table is anon_read_only, matching oracle_module_anatomy's own
+  // RLS posture — the plain anon key cannot insert into it directly).
+  // action_id is derived defensively from the trigger phrase, never taken
+  // as free text from the model (rule 5's own "sanitize structure-affecting
+  // output in code" discipline).
+  _approveSuggestedAction: function(suggestion) {
+    var self = RPGACE.modules.oracleControl;
+    var slug = String(suggestion.trigger_phrase || 'oracle_action')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60) || ('oracle_action_' + Date.now());
+    var today = new Date().toISOString().slice(0, 10);
+    RPGACE.sb.secureWrite('oracle_actions', 'insert', {
+      action_id: slug,
+      trigger_phrases: [suggestion.trigger_phrase],
+      target: suggestion.target,
+      data_touched: [],
+      explanation_significance: suggestion.description,
+      explanation_path_reasoning: 'Suggested by Oracle from its own module self-awareness; approved by Alex on ' + today + '. Not yet wired to a real execution path unless a future session has coded one.',
+      explanation_benefit: suggestion.description,
+      confirm_required: true,
+      active: true,
+    }).then(function() {
+      RPGACE.utils.toast('✅ Added "' + suggestion.trigger_phrase + '" to Oracle\'s recognized actions', '#4CAF82', 3000);
+      self._fetchActions(true);
+    }).catch(function(e) {
+      console.warn('[oracleControl] failed to save suggested action:', e.message);
+      RPGACE.utils.toast('⚠️ Could not save that suggestion: ' + e.message, '#E2A83D', 3500);
+    });
+  },
+
+  // ── 4. Real execution — Phase 1 has exactly one real target, unchanged. ──
+  _execute: function(row) {
+    if (row.action_id === 'log_beat') {
+      var dd = RPGACE.modules.dashDeck;
+      var bl = RPGACE.modules.beatLog;
+      var runSubmit = function() { if (bl && bl._submit) bl._submit(); };
+      // Same real open-then-inject-then-act pattern _openRetroactive already
+      // uses (rule 8) — beatLog._submit reads its data straight off the
+      // live DOM form (#bl-title/#bl-mood/etc, see _getForm), so the panel
+      // has to actually be open and rendered before submit can read anything
+      // real from it. If the form is empty, _submit's own existing
+      // validation toasts "Add a beat title first" — the exact same
+      // fail-loud behavior a manual click would get, unchanged.
+      // Aug 31 2026 (UI11) — navigates to the real #page-beat-log instead of
+      // a transient popup (dashDeck._openPage, PAGE_PANELS already carries
+      // beat-log-panel's real ensure fn).
+      if (dd && dd._openPage) {
+        dd._openPage('beat-log-panel');
+        setTimeout(runSubmit, 450);
+      } else if (bl && bl._inject) {
+        bl._inject();
+        setTimeout(runSubmit, 450);
+      } else {
+        runSubmit();
+      }
+      return;
+    }
+    console.warn('[oracleControl] no execution handler wired for action:', row.action_id);
+    RPGACE.utils.toast('⚠️ This Oracle action isn\'t wired up yet', '#E2A83D', 2500);
+  },
+
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: the two DELIBERATELY-SEPARATE human confirm
+  // popups (run-this-now vs. add-this-to-the-list), and the whole
+  // floating overlay surface (button, panel, outbound send, reply
+  // mirror).
+  // ============================================================
+  ui: {
 
   // ── Real, DISTINCT confirm — deliberately NOT the same popup as          ──
   // ── _showActionConfirm: this one only asks "should this be ADDED to the  ──
@@ -33367,36 +33696,6 @@ RPGACE.register('oracleControl', {
       pop.close();
       RPGACE.modules.oracleControl._approveSuggestedAction(suggestion);
     };
-  },
-
-  // Writes a real, new oracle_actions row via the server-side write proxy
-  // (this table is anon_read_only, matching oracle_module_anatomy's own
-  // RLS posture — the plain anon key cannot insert into it directly).
-  // action_id is derived defensively from the trigger phrase, never taken
-  // as free text from the model (rule 5's own "sanitize structure-affecting
-  // output in code" discipline).
-  _approveSuggestedAction: function(suggestion) {
-    var self = this;
-    var slug = String(suggestion.trigger_phrase || 'oracle_action')
-      .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60) || ('oracle_action_' + Date.now());
-    var today = new Date().toISOString().slice(0, 10);
-    RPGACE.sb.secureWrite('oracle_actions', 'insert', {
-      action_id: slug,
-      trigger_phrases: [suggestion.trigger_phrase],
-      target: suggestion.target,
-      data_touched: [],
-      explanation_significance: suggestion.description,
-      explanation_path_reasoning: 'Suggested by Oracle from its own module self-awareness; approved by Alex on ' + today + '. Not yet wired to a real execution path unless a future session has coded one.',
-      explanation_benefit: suggestion.description,
-      confirm_required: true,
-      active: true,
-    }).then(function() {
-      RPGACE.utils.toast('✅ Added "' + suggestion.trigger_phrase + '" to Oracle\'s recognized actions', '#4CAF82', 3000);
-      self._fetchActions(true);
-    }).catch(function(e) {
-      console.warn('[oracleControl] failed to save suggested action:', e.message);
-      RPGACE.utils.toast('⚠️ Could not save that suggestion: ' + e.message, '#E2A83D', 3500);
-    });
   },
 
   // ── 3. Confirm popup — matches taxonomy's own _showPlacementConfirm      ──
@@ -33435,37 +33734,6 @@ RPGACE.register('oracleControl', {
     };
   },
 
-  // ── 4. Real execution — Phase 1 has exactly one real target, unchanged. ──
-  _execute: function(row) {
-    if (row.action_id === 'log_beat') {
-      var dd = RPGACE.modules.dashDeck;
-      var bl = RPGACE.modules.beatLog;
-      var runSubmit = function() { if (bl && bl._submit) bl._submit(); };
-      // Same real open-then-inject-then-act pattern _openRetroactive already
-      // uses (rule 8) — beatLog._submit reads its data straight off the
-      // live DOM form (#bl-title/#bl-mood/etc, see _getForm), so the panel
-      // has to actually be open and rendered before submit can read anything
-      // real from it. If the form is empty, _submit's own existing
-      // validation toasts "Add a beat title first" — the exact same
-      // fail-loud behavior a manual click would get, unchanged.
-      // Aug 31 2026 (UI11) — navigates to the real #page-beat-log instead of
-      // a transient popup (dashDeck._openPage, PAGE_PANELS already carries
-      // beat-log-panel's real ensure fn).
-      if (dd && dd._openPage) {
-        dd._openPage('beat-log-panel');
-        setTimeout(runSubmit, 450);
-      } else if (bl && bl._inject) {
-        bl._inject();
-        setTimeout(runSubmit, 450);
-      } else {
-        runSubmit();
-      }
-      return;
-    }
-    console.warn('[oracleControl] no execution handler wired for action:', row.action_id);
-    RPGACE.utils.toast('⚠️ This Oracle action isn\'t wired up yet', '#E2A83D', 2500);
-  },
-
   // ── 5. The overlay — a real, persistent, reachable-from-anywhere entry   ──
   // ── point (spec §7). Extends voiceInput's own proven fixed-button        ──
   // ── convention (rule 8) rather than a 2nd competing floating element —   ──
@@ -33482,9 +33750,10 @@ RPGACE.register('oracleControl', {
   },
 
   _toggleOverlay: function() {
+    var self = RPGACE.modules.oracleControl;
     var panel = document.getElementById('oc-overlay-panel');
-    if (panel) { panel.remove(); this._overlayOpen = false; return; }
-    this._overlayOpen = true;
+    if (panel) { panel.remove(); self._overlayOpen = false; return; }
+    self._overlayOpen = true;
     var box = document.createElement('div');
     box.id = 'oc-overlay-panel';
     box.style.cssText = 'position:fixed;bottom:84px;right:20px;width:min(340px,88vw);max-height:60vh;background:#0c0c16;border:1px solid rgba(155,89,182,.4);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:999998;display:flex;flex-direction:column;overflow:hidden;font-family:Rajdhani,sans-serif;';
@@ -33558,6 +33827,39 @@ RPGACE.register('oracleControl', {
     log.scrollTop = 99999;
   },
 
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public API.
+  // Real, load-bearing external touchpoints these carry (see the G53 block
+  // above): oracleAppGrounding's own window.callOracle wrap reaches FOUR of
+  // them through a LOCAL ALIAS (`var oc = RPGACE.modules.oracleControl;` at
+  // :9585) — matchesAnyTrigger, buildActionsBlock, buildSuggestBlock and
+  // buildRecentErrorsBlock — each behind an `oc && oc.method &&` presence
+  // guard, so every one must remain a real own-property on the module.
+  // Also carries this module's own internal cross-namespace calls
+  // (logic._listenForReplies -> ui._showActionConfirm /
+  // ui._showSuggestConfirm / ui._mirrorReplyToOverlay;
+  // ui._showSuggestConfirm -> logic._approveSuggestedAction;
+  // ui._showActionConfirm -> logic._execute) — every one goes through the
+  // module handle, never `this.ui.X` / `this.logic.X` directly, so no call
+  // site inside the module had to change.
+  _listenForErrorToasts: function() { return this.logic._listenForErrorToasts(); },
+  buildRecentErrorsBlock: function() { return this.logic.buildRecentErrorsBlock(); },
+  _fetchActions: function(force) { return this.logic._fetchActions(force); },
+  _byId: function(actionId) { return this.logic._byId(actionId); },
+  matchesAnyTrigger: function(lowerText) { return this.logic.matchesAnyTrigger(lowerText); },
+  buildActionsBlock: function() { return this.logic.buildActionsBlock(); },
+  buildSuggestBlock: function() { return this.logic.buildSuggestBlock(); },
+  _listenForReplies: function() { return this.logic._listenForReplies(); },
+  _approveSuggestedAction: function(suggestion) { return this.logic._approveSuggestedAction(suggestion); },
+  _execute: function(row) { return this.logic._execute(row); },
+  _showSuggestConfirm: function(suggestion) { return this.ui._showSuggestConfirm(suggestion); },
+  _showActionConfirm: function(row) { return this.ui._showActionConfirm(row); },
+  _injectOverlayButton: function() { return this.ui._injectOverlayButton(); },
+  _toggleOverlay: function() { return this.ui._toggleOverlay(); },
+  _sendFromOverlay: function(text) { return this.ui._sendFromOverlay(text); },
+  _mirrorReplyToOverlay: function(text) { return this.ui._mirrorReplyToOverlay(text); },
+
 });
 /* ===END:oracleControl=== */
 
@@ -33589,6 +33891,108 @@ RPGACE.register('mockOracle', {
   LEGACY_KEY: 'rpgace_mock_oracle',
   MODES: ['real', 'dummy', 'fallback'],
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), batch 16, module 49 of 60 — real, ratified /CEO plan
+  // item: split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 5 ui (_injectToggleButton, _injectScoutButton,
+  // _renderState, _pushBodyBelow, _openScoutedList) / 7 logic (getMode,
+  // setMode, isEnabled, isFallbackMode, toggle, _fakeReply,
+  // _queueScoutItem).
+  //
+  // Classification rule used, identical to every prior batch: a function
+  // lives in `ui` if it CONSTRUCTS OR DISCOVERS DOM (document.*,
+  // createElement, getElementById, querySelector, innerHTML); otherwise in
+  // `logic`. Deliberately NOT counted as a ui signal, per the standing
+  // precedent: a bare RPGACE.utils.toast(), or calling another module's
+  // popup helper — a function that merely TRIGGERS a UI action without
+  // constructing any DOM of its own is logic.
+  //
+  // The genuinely non-obvious calls, each named with the real evidence
+  // rather than silently classified — and read with extra care, because
+  // this module is the Real/Dummy/Fallback gate main.js's own callOracle()
+  // consults BEFORE deciding whether to make a real, billable API call.
+  // The invariant that must survive this refactor is that getMode() always
+  // reads the ONE persisted localStorage value, so Dummy mode can never
+  // leak into a real call and Real mode can never be silently faked:
+  //   • logic.getMode / logic.setMode / logic.isEnabled /
+  //     logic.isFallbackMode / logic.toggle are the mode state machine.
+  //     Their real store is localStorage (MODE_KEY), not a JS field, so
+  //     there is no per-namespace copy that could diverge — but every one
+  //     of them still resolves MODE_KEY/MODES through
+  //     `RPGACE.modules.mockOracle` rather than `this`, since a bare
+  //     `this.MODE_KEY` inside `logic` would be undefined and getMode()
+  //     would silently start returning its 'real' fallback on EVERY call —
+  //     i.e. Dummy/Fallback mode would appear to toggle in the UI while
+  //     every Oracle send quietly went out as a real, billable API call.
+  //     That is the single most dangerous way this particular split could
+  //     have gone wrong, and it is why nothing here is left on `this`.
+  //   • logic.setMode is `logic` on the "merely triggers UI" clause: its
+  //     real job is the localStorage write; the three RPGACE.utils.toast
+  //     calls and the trailing self._renderState() are triggers, not DOM
+  //     construction of its own.
+  //   • logic._fakeReply builds the synthetic reply TEXT (including the
+  //     DIRECTOR_CHOSEN:/EDL_JSON: trailers) and streams it back through
+  //     the caller's onChunk. It is text, never markup, never handed to a
+  //     DOM element here — the real chat rendering happens downstream in
+  //     main.js's own streaming path. `logic`, on the same "builds text,
+  //     not markup" basis this series already named.
+  //   • logic._queueScoutItem is `logic` on the primary rule: an
+  //     RPGACE.sb.select dedup check plus an RPGACE.sb.secureWrite insert,
+  //     then the same text-only acknowledgment shape as _fakeReply. Zero
+  //     DOM.
+  //   • ui._pushBodyBelow is the one judgment call worth stating plainly:
+  //     it MEASURES a DOM element it discovers itself
+  //     (getElementById('mock-oracle-bar').offsetHeight) and writes
+  //     document.body.style.paddingTop. It discovers DOM, so it is `ui` on
+  //     the primary rule — and it is 100% presentation (no data job behind
+  //     the mutation), which is the same side of the beatLog/refCorpus
+  //     mutating-a-caller's-element test.
+  //
+  // Real shared-state check, done directly rather than assumed: a
+  // whole-body grep for `self\.X =` / `this\.X =` across the entire module
+  // returned NOTHING — this module has no runtime-assigned module field at
+  // all (the chroniclesLog._allItems / journalQoL._activeSource bug class
+  // simply does not arise here). Its only state is the persisted
+  // localStorage value read/written through the three declared top-level
+  // constants (MODE_KEY, LEGACY_KEY, MODES), all kept at module scope
+  // above and reached through the module handle from both namespaces.
+  //
+  // Two PRE-EXISTING DEAD LOCALS found while reading every body for this
+  // split, both KEPT rather than deleted (deleting an inert local would be
+  // a real source change outside a pure refactor's remit — the same call
+  // chroniclesLog.ui._openCard's own dead `self` already set):
+  //   • logic._queueScoutItem's `var self = this;` — declared, never read
+  //     anywhere in its ~85-line body (verified by grep for `self\.`
+  //     inside the function's own line range, zero hits).
+  //   • ui._openScoutedList's `var self = this;` — same, zero hits across
+  //     its ~137-line body.
+  // Both are requalified IN PLACE to `var self = RPGACE.modules.mockOracle;`
+  // so they are correct if a future edit ever does start using them,
+  // rather than left holding a namespace sub-object.
+  //
+  // Real, load-bearing external touchpoints, all confirmed by grep and all
+  // preserved by the pass-throughs below (checked in all three reference
+  // forms per the standing two-greps discipline) — these are the ones that
+  // matter most, since they sit inside callOracle() itself:
+  //   • rpgace_core.js:152 — `RPGACE.modules.mockOracle.isEnabled()`
+  //   • rpgace_core.js:153 — `._fakeReply(messages, system, onChunk)`
+  //   • rpgace_core.js:161 — `.isFallbackMode()`
+  //   • rpgace_core.js:162 — `._queueScoutItem(messages, system, onChunk)`
+  //     (all four in the LEGACY former-main.js section's callOracle, each
+  //     behind a `window.RPGACE && RPGACE.modules.mockOracle &&` guard.)
+  // No local-alias (`var x = RPGACE.modules.mockOracle`) call site exists
+  // anywhere, no dynamic `RPGACE.modules['mockOracle']` bracket lookup
+  // exists, and no reference exists in index.html or any other file
+  // (checked; the remaining rpgace_core.js hits at :13787/:13833/:22299
+  // and manual.html are prose comments about this module, not calls).
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     try {
@@ -33601,15 +34005,25 @@ RPGACE.register('mockOracle', {
     RPGACE.registerBootTask(function() { return self._injectScoutButton(); });
   },
 
+  // ============================================================
+  // logic — business logic/data: the persisted Real/Dummy/Fallback mode
+  // state machine, the synthetic dummy-reply generator, and the Fallback
+  // Scout queue write. Constructs and discovers no DOM, and builds no
+  // markup string (see the rule extension above).
+  // ============================================================
+  logic: {
+
   getMode: function() {
+    var self = RPGACE.modules.mockOracle;
     try {
-      var m = localStorage.getItem(this.MODE_KEY);
-      return this.MODES.indexOf(m) !== -1 ? m : 'real';
+      var m = localStorage.getItem(self.MODE_KEY);
+      return self.MODES.indexOf(m) !== -1 ? m : 'real';
     } catch (e) { return 'real'; }
   },
   setMode: function(mode) {
-    if (this.MODES.indexOf(mode) === -1) return;
-    try { localStorage.setItem(this.MODE_KEY, mode); } catch (e) {}
+    var self = RPGACE.modules.mockOracle;
+    if (self.MODES.indexOf(mode) === -1) return;
+    try { localStorage.setItem(self.MODE_KEY, mode); } catch (e) {}
     if (mode === 'dummy') {
       RPGACE.utils.toast('🧪 Dummy Oracle ON — every Oracle reply from now on is fake, wiring-test only. No real API calls, no real cost.', '#E2A83D', 5000);
     } else if (mode === 'fallback') {
@@ -33617,17 +34031,18 @@ RPGACE.register('mockOracle', {
     } else {
       RPGACE.utils.toast('✅ Real Oracle API — live calls resume', '#4CAF82', 3000);
     }
-    this._renderState();
+    self._renderState();
   },
   // Back-compat: "isEnabled" has always meant "is Dummy mode active" -
   // main.js's callOracle() calls this exact method name/meaning already.
-  isEnabled: function() { return this.getMode() === 'dummy'; },
-  isFallbackMode: function() { return this.getMode() === 'fallback'; },
+  isEnabled: function() { return RPGACE.modules.mockOracle.getMode() === 'dummy'; },
+  isFallbackMode: function() { return RPGACE.modules.mockOracle.getMode() === 'fallback'; },
   // Cycles Real -> Dummy -> Fallback -> Real on click.
   toggle: function() {
+    var self = RPGACE.modules.mockOracle;
     var order = ['real', 'dummy', 'fallback'];
-    var next = order[(order.indexOf(this.getMode()) + 1) % order.length];
-    this.setMode(next);
+    var next = order[(order.indexOf(self.getMode()) + 1) % order.length];
+    self.setMode(next);
   },
 
   // Real reply generator, called from main.js's callOracle() when mock
@@ -33678,198 +34093,6 @@ RPGACE.register('mockOracle', {
     });
   },
 
-  // Aug 6 (real hand-test report: "i cant see dummy oracle right now...
-  // it is not there") — replaced the small bottom-right circular button
-  // (competing for space/attention with voiceInput's own floating mic
-  // button, easy to miss) with a real, always-visible toggle switch fixed
-  // at the top of the page. Alex's own exact spec: red track = Dummy
-  // Oracle, click, slides to green = Oracle API. Unlike the old design
-  // (which only showed a warning banner while mock mode was ON), this
-  // switch is permanently rendered regardless of state — the discoverability
-  // complaint was the real bug, not the toggle logic itself, so the fix is
-  // "always there," not "smarter hiding."
-  // Widened to a 3-position track same day (2nd pass) for the Fallback
-  // mode: Real -> Dummy -> Fallback -> Real, cycling on click, per Alex's
-  // own spec ("in the toggle in top right as a third mode").
-  // Aug 22 (real Alex follow-up ask, 2nd redesign pass): "hide the
-  // scouted button and dummy/fallback/api pill and local pill behind a
-  // pressable button on the dummy oracle banner that will reveal those
-  // three options." Real, structural change: the top strip is now a
-  // PERMANENT bar (all 3 modes, not just dummy/fallback) carrying the
-  // current mode label plus one reveal button (⚙) — the cluster (switch/
-  // Scouted/Local, still built via the same shared getDevStatusCluster/
-  // addClusterRow from the 1st redesign pass) now starts hidden and only
-  // shows when that one button is pressed. Bar + switch are created
-  // together in this one function (not split across 2 boot tasks) so
-  // _renderState's very first call always finds every element it needs
-  // — a real, deliberate ordering fix, not an accident: registerBootTask
-  // runs each registration's fn() synchronously and in file order, so
-  // splitting bar-creation into its own separate boot task risked
-  // _renderState running before the bar existed on whichever pass ran
-  // first.
-  _injectToggleButton: function () {
-    if (document.getElementById('mock-oracle-switch')) return;
-    var self = this;
-
-    // The permanent status bar — always shown once logged in, in all 3
-    // modes. Real content/color per mode set in _renderState; only the
-    // reveal button's own behavior lives here.
-    var bar = document.createElement('div');
-    bar.id = 'mock-oracle-bar';
-    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999998;display:flex;align-items:center;justify-content:center;background:#0f0f18;border-bottom:1px solid rgba(255,255,255,0.1);padding:6px 40px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:12px;text-align:center;letter-spacing:0.5px;';
-
-    var barLabel = document.createElement('span');
-    barLabel.id = 'mock-oracle-bar-label';
-    bar.appendChild(barLabel);
-
-    var revealBtn = document.createElement('button');
-    revealBtn.id = 'mock-oracle-bar-toggle';
-    revealBtn.title = 'Show/hide Oracle mode controls (mode switch, Scouted, provider)';
-    revealBtn.textContent = '⚙';
-    revealBtn.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(226,226,236,0.5);font-size:14px;line-height:1;cursor:pointer;padding:2px 6px;';
-    revealBtn.onclick = function (e) {
-      e.stopPropagation();
-      var cluster = RPGACE.utils.getDevStatusCluster();
-      var showing = cluster.style.display !== 'none';
-      if (showing) {
-        cluster.style.display = 'none';
-      } else {
-        cluster.style.top = bar.offsetHeight + 'px';
-        cluster.style.display = 'flex';
-      }
-    };
-    bar.appendChild(revealBtn);
-    document.body.appendChild(bar);
-    RPGACE.utils.hideUntilLogin(bar);
-
-    // Aug 22 real redesign — this used to be its own separately-styled
-    // floating pill (own background/border/radius/shadow at top:10px).
-    // Now a plain row inside the shared RPGACE.utils dev-status cluster
-    // (getDevStatusCluster/addClusterRow) alongside the Scouted button
-    // and oracleProviderMode's switch, so all 3 read as one cohesive
-    // control instead of 3 separately-bolted-on widgets — and, per this
-    // same-day follow-up, hidden by default behind the bar's own ⚙
-    // button rather than always visible.
-    var wrap = document.createElement('div');
-    wrap.id = 'mock-oracle-switch';
-    wrap.title = 'Click to cycle Oracle Mode: Real API → Dummy (wiring tests, zero cost) → Fallback Scout (queue for free later answers)';
-    wrap.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;';
-
-    var track = document.createElement('div');
-    track.id = 'mock-oracle-track';
-    track.style.cssText = 'position:relative;width:56px;height:22px;border-radius:11px;flex-shrink:0;transition:background .2s ease;';
-
-    var knob = document.createElement('div');
-    knob.id = 'mock-oracle-knob';
-    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
-    track.appendChild(knob);
-
-    var label = document.createElement('span');
-    label.id = 'mock-oracle-label';
-    label.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.4px;white-space:nowrap;';
-
-    wrap.appendChild(track);
-    wrap.appendChild(label);
-    wrap.onclick = function () { self.toggle(); };
-    RPGACE.utils.addClusterRow(wrap);
-    self._renderState();
-  },
-
-  // Small pill next to the switch, opening the "Scouted, Now Answered"
-  // browsable list. Always present (not just while Fallback mode is
-  // active) since past scouted items stay worth browsing regardless of
-  // which mode is active right now.
-  _injectScoutButton: function () {
-    if (document.getElementById('mock-oracle-scout-btn')) return;
-    var self = this;
-    var btn = document.createElement('div');
-    btn.id = 'mock-oracle-scout-btn';
-    btn.title = 'Browse scouted questions and their free fallback answers';
-    // Aug 22 real redesign — now a plain row in the shared dev-status
-    // cluster (see _injectToggleButton's own note), not its own floating
-    // pill at a hardcoded top:44px offset.
-    btn.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.3px;color:rgba(201,168,76,0.85);cursor:pointer;';
-    btn.textContent = '📥 Scouted';
-    btn.onclick = function () { self._openScoutedList(); };
-    RPGACE.utils.addClusterRow(btn);
-  },
-
-  _renderState: function () {
-    var track = document.getElementById('mock-oracle-track');
-    var knob = document.getElementById('mock-oracle-knob');
-    var label = document.getElementById('mock-oracle-label');
-    var barLabel = document.getElementById('mock-oracle-bar-label');
-    if (!track || !knob || !label || !barLabel) return;
-
-    var mode = this.getMode();
-    if (mode === 'dummy') {
-      // Dummy Oracle active — red, knob left.
-      track.style.background = '#CC4A4A';
-      knob.style.left = '2px';
-      label.textContent = '🧪 Dummy Oracle';
-      label.style.color = '#CC4A4A';
-      barLabel.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
-      barLabel.style.color = '#CC4A4A';
-    } else if (mode === 'fallback') {
-      // Fallback Scout mode active — amber/gold, knob center.
-      track.style.background = 'rgba(201,168,76,0.85)';
-      knob.style.left = '19px';
-      label.textContent = '📥 Fallback Scout';
-      label.style.color = '#C9A84C';
-      barLabel.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
-      barLabel.style.color = '#C9A84C';
-    } else {
-      // Real Oracle API — green, knob right.
-      track.style.background = '#4CAF82';
-      knob.style.left = '36px';
-      label.textContent = '✅ Oracle API';
-      label.style.color = '#4CAF82';
-      barLabel.textContent = '✅ Oracle API — live calls active';
-      barLabel.style.color = '#4CAF82';
-    }
-    this._pushBodyBelow();
-  },
-
-  // Aug 22 (/Routine item A2) — Alex's own verbatim ask: "dummy oracle
-  // blocks off the top of the html, I want the feature to make the html
-  // slide down to make space for the oracle status mode, so both don't
-  // obstruct each other." Real root cause: the full-width warning strip
-  // above (position:fixed, top:0) had zero compensating offset on real
-  // page content, so it simply covered whatever sat at the very top of
-  // #app. Real, minimal fix — push document.body down by the strip's
-  // own MEASURED height (never a guessed pixel value; its text can wrap
-  // to 2 lines on a narrow phone). body uses normal document flow
-  // (confirmed: style.css's own body{} rule has no fixed height/
-  // overflow-y), so padding-top here genuinely moves #app's visible
-  // content down rather than being silently absorbed by an inner scroll
-  // container — every other position:fixed overlay in this file is
-  // unaffected, since fixed elements position against the viewport,
-  // never a parent's padding box.
-  //
-  // Deliberately NOT animated (rule 2/4 — real headless-browser evidence
-  // gathered before shipping, not guessed): a `transition:padding-top`
-  // version was built and tested first, and reproducibly left the
-  // computed padding stuck at its old value after clearing it back to ''
-  // — confirmed via 4 separate real headless-Chromium checks, including
-  // one with a forced reflow and a 1000ms settle wait. Whether that's a
-  // genuine cross-browser CSS quirk or an artifact of this test
-  // environment's virtual-time handling was left unresolved rather than
-  // gambled on — a correct instant shift beats a smoother one that can
-  // leave a permanent stale gap at the top of the page. A plain, un-
-  // animated set/clear was re-verified 100% correct across a full show
-  // -> clear -> show cycle before shipping.
-  //
-  // Aug 22 (2nd redesign pass) — the bar is now permanent across all 3
-  // modes (not just dummy/fallback), so this always applies now instead
-  // of being cleared to '' in Real mode. Reads the live #mock-oracle-bar
-  // element directly rather than taking a param, since _renderState no
-  // longer creates/destroys a separate badge per mode — one persistent
-  // bar, content updated in place.
-  _pushBodyBelow: function () {
-    var bar = document.getElementById('mock-oracle-bar');
-    document.body.style.paddingTop = bar ? bar.offsetHeight + 'px' : '';
-  },
-
   // ── Fallback Scout mode — real behavior ─────────────────────────────
   // Called from main.js's callOracle() when getMode()==='fallback',
   // exactly parallel to _fakeReply's dummy-mode call site. Instead of
@@ -33896,7 +34119,10 @@ RPGACE.register('mockOracle', {
   // alone, not on which module queued it) so it protects every current
   // and future Fallback Scout caller the same way, per rule 8.
   _queueScoutItem: function (messages, system, onChunk) {
-    var self = this;
+    // Pre-existing DEAD local (declared, never read anywhere in this
+    // body) — kept, not deleted, and requalified to the module handle
+    // per the G53 block above.
+    var self = RPGACE.modules.mockOracle;
     var lastUser = (messages || []).slice().reverse().filter(function (m) { return m.role === 'user'; })[0];
     var promptText = (lastUser && lastUser.content) || '';
 
@@ -33980,6 +34206,209 @@ RPGACE.register('mockOracle', {
       });
   },
 
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: the permanent Oracle-mode status bar and its
+  // reveal button, the mode switch and Scouted rows inside the shared
+  // dev-status cluster, the per-mode repaint, the body-offset push, and
+  // the "Scouted, Now Answered" browsable popup.
+  // ============================================================
+  ui: {
+
+  // Aug 6 (real hand-test report: "i cant see dummy oracle right now...
+  // it is not there") — replaced the small bottom-right circular button
+  // (competing for space/attention with voiceInput's own floating mic
+  // button, easy to miss) with a real, always-visible toggle switch fixed
+  // at the top of the page. Alex's own exact spec: red track = Dummy
+  // Oracle, click, slides to green = Oracle API. Unlike the old design
+  // (which only showed a warning banner while mock mode was ON), this
+  // switch is permanently rendered regardless of state — the discoverability
+  // complaint was the real bug, not the toggle logic itself, so the fix is
+  // "always there," not "smarter hiding."
+  // Widened to a 3-position track same day (2nd pass) for the Fallback
+  // mode: Real -> Dummy -> Fallback -> Real, cycling on click, per Alex's
+  // own spec ("in the toggle in top right as a third mode").
+  // Aug 22 (real Alex follow-up ask, 2nd redesign pass): "hide the
+  // scouted button and dummy/fallback/api pill and local pill behind a
+  // pressable button on the dummy oracle banner that will reveal those
+  // three options." Real, structural change: the top strip is now a
+  // PERMANENT bar (all 3 modes, not just dummy/fallback) carrying the
+  // current mode label plus one reveal button (⚙) — the cluster (switch/
+  // Scouted/Local, still built via the same shared getDevStatusCluster/
+  // addClusterRow from the 1st redesign pass) now starts hidden and only
+  // shows when that one button is pressed. Bar + switch are created
+  // together in this one function (not split across 2 boot tasks) so
+  // _renderState's very first call always finds every element it needs
+  // — a real, deliberate ordering fix, not an accident: registerBootTask
+  // runs each registration's fn() synchronously and in file order, so
+  // splitting bar-creation into its own separate boot task risked
+  // _renderState running before the bar existed on whichever pass ran
+  // first.
+  _injectToggleButton: function () {
+    if (document.getElementById('mock-oracle-switch')) return;
+    var self = RPGACE.modules.mockOracle;
+
+    // The permanent status bar — always shown once logged in, in all 3
+    // modes. Real content/color per mode set in _renderState; only the
+    // reveal button's own behavior lives here.
+    var bar = document.createElement('div');
+    bar.id = 'mock-oracle-bar';
+    bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999998;display:flex;align-items:center;justify-content:center;background:#0f0f18;border-bottom:1px solid rgba(255,255,255,0.1);padding:6px 40px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:12px;text-align:center;letter-spacing:0.5px;';
+
+    var barLabel = document.createElement('span');
+    barLabel.id = 'mock-oracle-bar-label';
+    bar.appendChild(barLabel);
+
+    var revealBtn = document.createElement('button');
+    revealBtn.id = 'mock-oracle-bar-toggle';
+    revealBtn.title = 'Show/hide Oracle mode controls (mode switch, Scouted, provider)';
+    revealBtn.textContent = '⚙';
+    revealBtn.style.cssText = 'position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(226,226,236,0.5);font-size:14px;line-height:1;cursor:pointer;padding:2px 6px;';
+    revealBtn.onclick = function (e) {
+      e.stopPropagation();
+      var cluster = RPGACE.utils.getDevStatusCluster();
+      var showing = cluster.style.display !== 'none';
+      if (showing) {
+        cluster.style.display = 'none';
+      } else {
+        cluster.style.top = bar.offsetHeight + 'px';
+        cluster.style.display = 'flex';
+      }
+    };
+    bar.appendChild(revealBtn);
+    document.body.appendChild(bar);
+    RPGACE.utils.hideUntilLogin(bar);
+
+    // Aug 22 real redesign — this used to be its own separately-styled
+    // floating pill (own background/border/radius/shadow at top:10px).
+    // Now a plain row inside the shared RPGACE.utils dev-status cluster
+    // (getDevStatusCluster/addClusterRow) alongside the Scouted button
+    // and oracleProviderMode's switch, so all 3 read as one cohesive
+    // control instead of 3 separately-bolted-on widgets — and, per this
+    // same-day follow-up, hidden by default behind the bar's own ⚙
+    // button rather than always visible.
+    var wrap = document.createElement('div');
+    wrap.id = 'mock-oracle-switch';
+    wrap.title = 'Click to cycle Oracle Mode: Real API → Dummy (wiring tests, zero cost) → Fallback Scout (queue for free later answers)';
+    wrap.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;';
+
+    var track = document.createElement('div');
+    track.id = 'mock-oracle-track';
+    track.style.cssText = 'position:relative;width:56px;height:22px;border-radius:11px;flex-shrink:0;transition:background .2s ease;';
+
+    var knob = document.createElement('div');
+    knob.id = 'mock-oracle-knob';
+    knob.style.cssText = 'position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .2s ease;';
+    track.appendChild(knob);
+
+    var label = document.createElement('span');
+    label.id = 'mock-oracle-label';
+    label.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.4px;white-space:nowrap;';
+
+    wrap.appendChild(track);
+    wrap.appendChild(label);
+    wrap.onclick = function () { self.toggle(); };
+    RPGACE.utils.addClusterRow(wrap);
+    self._renderState();
+  },
+
+  // Small pill next to the switch, opening the "Scouted, Now Answered"
+  // browsable list. Always present (not just while Fallback mode is
+  // active) since past scouted items stay worth browsing regardless of
+  // which mode is active right now.
+  _injectScoutButton: function () {
+    if (document.getElementById('mock-oracle-scout-btn')) return;
+    var self = RPGACE.modules.mockOracle;
+    var btn = document.createElement('div');
+    btn.id = 'mock-oracle-scout-btn';
+    btn.title = 'Browse scouted questions and their free fallback answers';
+    // Aug 22 real redesign — now a plain row in the shared dev-status
+    // cluster (see _injectToggleButton's own note), not its own floating
+    // pill at a hardcoded top:44px offset.
+    btn.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:.3px;color:rgba(201,168,76,0.85);cursor:pointer;';
+    btn.textContent = '📥 Scouted';
+    btn.onclick = function () { self._openScoutedList(); };
+    RPGACE.utils.addClusterRow(btn);
+  },
+
+  _renderState: function () {
+    var self = RPGACE.modules.mockOracle;
+    var track = document.getElementById('mock-oracle-track');
+    var knob = document.getElementById('mock-oracle-knob');
+    var label = document.getElementById('mock-oracle-label');
+    var barLabel = document.getElementById('mock-oracle-bar-label');
+    if (!track || !knob || !label || !barLabel) return;
+
+    var mode = self.getMode();
+    if (mode === 'dummy') {
+      // Dummy Oracle active — red, knob left.
+      track.style.background = '#CC4A4A';
+      knob.style.left = '2px';
+      label.textContent = '🧪 Dummy Oracle';
+      label.style.color = '#CC4A4A';
+      barLabel.textContent = '🧪 DUMMY ORACLE ON — every reply is fake, wiring-test only';
+      barLabel.style.color = '#CC4A4A';
+    } else if (mode === 'fallback') {
+      // Fallback Scout mode active — amber/gold, knob center.
+      track.style.background = 'rgba(201,168,76,0.85)';
+      knob.style.left = '19px';
+      label.textContent = '📥 Fallback Scout';
+      label.style.color = '#C9A84C';
+      barLabel.textContent = '📥 FALLBACK SCOUT MODE — every send is queued, not answered live. Check "Scouted" for answers.';
+      barLabel.style.color = '#C9A84C';
+    } else {
+      // Real Oracle API — green, knob right.
+      track.style.background = '#4CAF82';
+      knob.style.left = '36px';
+      label.textContent = '✅ Oracle API';
+      label.style.color = '#4CAF82';
+      barLabel.textContent = '✅ Oracle API — live calls active';
+      barLabel.style.color = '#4CAF82';
+    }
+    self._pushBodyBelow();
+  },
+
+  // Aug 22 (/Routine item A2) — Alex's own verbatim ask: "dummy oracle
+  // blocks off the top of the html, I want the feature to make the html
+  // slide down to make space for the oracle status mode, so both don't
+  // obstruct each other." Real root cause: the full-width warning strip
+  // above (position:fixed, top:0) had zero compensating offset on real
+  // page content, so it simply covered whatever sat at the very top of
+  // #app. Real, minimal fix — push document.body down by the strip's
+  // own MEASURED height (never a guessed pixel value; its text can wrap
+  // to 2 lines on a narrow phone). body uses normal document flow
+  // (confirmed: style.css's own body{} rule has no fixed height/
+  // overflow-y), so padding-top here genuinely moves #app's visible
+  // content down rather than being silently absorbed by an inner scroll
+  // container — every other position:fixed overlay in this file is
+  // unaffected, since fixed elements position against the viewport,
+  // never a parent's padding box.
+  //
+  // Deliberately NOT animated (rule 2/4 — real headless-browser evidence
+  // gathered before shipping, not guessed): a `transition:padding-top`
+  // version was built and tested first, and reproducibly left the
+  // computed padding stuck at its old value after clearing it back to ''
+  // — confirmed via 4 separate real headless-Chromium checks, including
+  // one with a forced reflow and a 1000ms settle wait. Whether that's a
+  // genuine cross-browser CSS quirk or an artifact of this test
+  // environment's virtual-time handling was left unresolved rather than
+  // gambled on — a correct instant shift beats a smoother one that can
+  // leave a permanent stale gap at the top of the page. A plain, un-
+  // animated set/clear was re-verified 100% correct across a full show
+  // -> clear -> show cycle before shipping.
+  //
+  // Aug 22 (2nd redesign pass) — the bar is now permanent across all 3
+  // modes (not just dummy/fallback), so this always applies now instead
+  // of being cleared to '' in Real mode. Reads the live #mock-oracle-bar
+  // element directly rather than taking a param, since _renderState no
+  // longer creates/destroys a separate badge per mode — one persistent
+  // bar, content updated in place.
+  _pushBodyBelow: function () {
+    var bar = document.getElementById('mock-oracle-bar');
+    document.body.style.paddingTop = bar ? bar.offsetHeight + 'px' : '';
+  },
+
   // "📥 Scouted, Now Answered" — real browsable list, confirms Q1 from the
   // earlier /paranoia interrogation round. Reads oracle_fallback_queue
   // directly (anon_all RLS, never restricted — same landmine-protected
@@ -33987,7 +34416,10 @@ RPGACE.register('mockOracle', {
   // both still-pending and already-answered scout_item rows so Alex can
   // see the real state of his own queue, not just a black box.
   _openScoutedList: function () {
-    var self = this;
+    // Pre-existing DEAD local (declared, never read anywhere in this
+    // body) — kept, not deleted, and requalified to the module handle
+    // per the G53 block above.
+    var self = RPGACE.modules.mockOracle;
     var pop = RPGACE.modules.dashDeck._popup({
       dim: '0.92', scroll: true, width: '640px', borderColor: 'rgba(201,168,76,0.35)',
       eyebrow: 'Fallback Scout Mode', title: '📥 Scouted, Now Answered', accent: 'rgba(201,168,76,0.9)',
@@ -34123,6 +34555,35 @@ RPGACE.register('mockOracle', {
 
     renderList();
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public API.
+  // Real, load-bearing external touchpoints these carry (see the G53 block
+  // above): the LEGACY former-main.js callOracle() at :152/:153/:161/:162
+  // calls isEnabled(), _fakeReply(), isFallbackMode() and _queueScoutItem()
+  // directly on the module, and those four sit in front of every real,
+  // billable Anthropic API call in the app. Also carries this module's own
+  // internal cross-namespace calls — logic.setMode -> ui._renderState,
+  // logic.isEnabled/isFallbackMode/toggle -> logic.getMode,
+  // ui._injectToggleButton -> logic.toggle + ui._renderState,
+  // ui._injectScoutButton -> ui._openScoutedList, ui._renderState ->
+  // logic.getMode + ui._pushBodyBelow — every one goes through the module
+  // handle, never `this.ui.X` / `this.logic.X` directly, so no call site
+  // inside the module had to change. `init` also calls _injectToggleButton
+  // and _injectScoutButton through its own top-level `this`, landing here.
+  getMode: function() { return this.logic.getMode(); },
+  setMode: function(mode) { return this.logic.setMode(mode); },
+  isEnabled: function() { return this.logic.isEnabled(); },
+  isFallbackMode: function() { return this.logic.isFallbackMode(); },
+  toggle: function() { return this.logic.toggle(); },
+  _fakeReply: function(messages, system, onChunk) { return this.logic._fakeReply(messages, system, onChunk); },
+  _queueScoutItem: function(messages, system, onChunk) { return this.logic._queueScoutItem(messages, system, onChunk); },
+  _injectToggleButton: function() { return this.ui._injectToggleButton(); },
+  _injectScoutButton: function() { return this.ui._injectScoutButton(); },
+  _renderState: function() { return this.ui._renderState(); },
+  _pushBodyBelow: function() { return this.ui._pushBodyBelow(); },
+  _openScoutedList: function() { return this.ui._openScoutedList(); },
 
 });
 /* ===END:mockOracle=== */
