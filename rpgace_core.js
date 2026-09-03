@@ -9081,6 +9081,111 @@ RPGACE.register('ciAutoPropose', {
 // and bookworm's sendChat wraps.
 RPGACE.register('oracleTreeGrounding', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 32 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // thirty-one predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL precedent, so the diff shows only
+  // real changes rather than a whitespace wall.
+  //
+  // 4 real members: 3 functions and ONE declared data field,
+  // `PERSONA_MARKERS` (checked by direct read of every top-level key,
+  // not assumed). That field STAYS AT MODULE SCOPE and was not moved —
+  // it is read only by `init`'s own `window.callOracle` wrapper, where
+  // `self` genuinely IS the module, so the read is correct as-is and a
+  // copy inside `ui`/`logic` would be a second, divergent marker list
+  // rather than the one real one. A grep of the whole module body for
+  // `self.X =` / `this.X =` returns no hits, so this module has none of
+  // the undeclared runtime-assigned field trap journalQoL's
+  // `_activeSource` and oracleDevBridge's `this.TABLE` both hit — the
+  // one flag it does set, `window._treeGroundingPatched`, is a GLOBAL
+  // (the standard wrap guard this codebase uses everywhere), not a
+  // module field, and is untouched. `init` stays a literal top-level
+  // function (RPGACE.register() calls `module.init()` directly and
+  // cannot see into a sub-object) — byte-identical.
+  //
+  // This module splits 2 / 0: both movable functions land in `logic`,
+  // and `ui` is genuinely EMPTY — kept as an explicit `ui: {}` so the
+  // module still declares the same two-namespace shape as every
+  // sibling. That is the honest answer here rather than a shortcut:
+  // this module never touches the page at all. It sits entirely
+  // between the chat input and the Anthropic API, wrapping
+  // `window.callOracle` to append retrieved library context to the
+  // SYSTEM PROMPT of a call someone else already initiated.
+  // Classification, function by function, each checked against its
+  // actual body rather than its name:
+  //   • _buildGroundingBlock → logic. Zero DOM keywords, and zero DOM
+  //     reached indirectly either: its one helper call,
+  //     `RPGACE.utils._quickPhylaScan`, was read directly to confirm it
+  //     is pure (a keyword/regex scoring loop over
+  //     `_PHYLA_KEYWORDS` — it is the DOM-free HALF of that pair; its
+  //     sibling `_runPhylaScan` is the one that reads `#chat-msgs` and
+  //     writes badges, and is NOT called here). The rest is a Supabase
+  //     `select`, a Supabase `rpc`, word-overlap scoring and
+  //     reciprocal-rank fusion.
+  //   • _gapOnlyBlock → logic. A single `return` of a fixed string
+  //     constant. No branching, no DOM, no I/O.
+  //
+  // ─── The one thing worth stating plainly: strings ≠ markup ────────
+  // Both functions RETURN a built string, and this pass's own standing
+  // rule says a function that builds HTML markup counts as
+  // constructing DOM. That rule does not reach these two, and the
+  // distinction is real rather than a technicality: what they build is
+  // PROMPT TEXT, not markup. There is no tag, no attribute and no
+  // entity anywhere in either output — `_buildGroundingBlock` emits a
+  // plain-text `'- ' + path + ' — ' + explainer` bullet list under a
+  // `---` separator, and `_gapOnlyBlock` a single English sentence.
+  // Neither string is ever assigned to `.innerHTML`, passed to
+  // `insertAdjacentHTML` or handed to any element; the sole consumer
+  // is `init`'s wrapper, which concatenates it onto the `system`
+  // argument (`newArgs[1] = system + block`) of the outbound API call.
+  // The markup rule exists to catch DOM construction wearing a string
+  // disguise; this is the opposite case, and filing either function in
+  // `ui` on the basis of "it builds a string" would be exactly the
+  // shape-matching this pass's rules warn against.
+  //
+  // `this`/`self` accounting for both moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _buildGroundingBlock — already had `var self = this;` as its
+  //     first statement, swapped for the module handle IN PLACE (it
+  //     sits before the `_quickPhylaScan` guard, so control flow is
+  //     unchanged). Captured by two separate nested `.then` callbacks
+  //     for `self._gapOnlyBlock()` — the no-leaves-at-all branch and
+  //     the empty-after-fusion branch. Left as `this.`, it would have
+  //     read `logic._gapOnlyBlock` — which DOES exist on `logic`, so
+  //     this one would have kept working by luck rather than by
+  //     design; requalified anyway, per the standing rule that the
+  //     module must never depend on two functions happening to share a
+  //     namespace.
+  //   • _gapOnlyBlock — references neither `this` nor `self`; moved
+  //     byte-identical, no handle needed and none added.
+  //
+  // Zero external touchpoints confirmed by a fresh repo-wide grep for
+  // `RPGACE.modules.oracleTreeGrounding.` (0 hits anywhere —
+  // rpgace_core.js and index.html both), plus the dynamic-lookup
+  // check: the only real `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at any of its call sites. The module is
+  // driven entirely by the `window.callOracle` wrapper `init` installs.
+  // The two `"_buildGroundingBlock"` / `"_gapOnlyBlock"` entries in
+  // this file's own METHOD_MODULE_MAP (G109) are a generated
+  // name->module DATA table, not call sites, and are unaffected by
+  // this split.
+  //
+  // Standing note preserved, unchanged by this split: this module is
+  // ONE of the three real `window.callOracle` wrappers CLAUDE.md's own
+  // landmine names (with oracleAppGrounding and oracleFetchGuard), and
+  // its wrapper's `Array.prototype.slice.call(args)` full-argument
+  // rebuild is the exact thing that landmine requires. Nothing in this
+  // refactor touches `init`, so that guarantee is untouched.
+  // ══════════════════════════════════════════════════════════════════
+
   PERSONA_MARKERS: ['You are the Oracle —', "You are Alex's personal 300IQ music production teacher"],
 
   init: function() {
@@ -9126,8 +9231,18 @@ RPGACE.register('oracleTreeGrounding', {
   // Keyword-match trigger: reuses the same phyla-keyword machinery the
   // auto-detect badge already uses. No match = empty block = the call
   // proceeds untouched, costing nothing.
+  // ============================================================
+  // logic — business logic/data: no DOM, and none reached
+  // indirectly either. Keyword prefilter, taxonomy retrieval,
+  // reciprocal-rank fusion, and the prompt-text block both branches
+  // return. See the "strings ≠ markup" note in the G53 block above
+  // for why building a returned string does not make either of
+  // these `ui`.
+  // ============================================================
+  logic: {
+
   _buildGroundingBlock: function(userText) {
-    var self = this;
+    var self = RPGACE.modules.oracleTreeGrounding;
     if (!RPGACE.utils._quickPhylaScan) return Promise.resolve('');
     var matches = RPGACE.utils._quickPhylaScan(userText);
     if (!matches.length) return Promise.resolve('');
@@ -9204,6 +9319,31 @@ RPGACE.register('oracleTreeGrounding', {
   _gapOnlyBlock: function() {
     return '\n\n---\nNOTE: this message matches topics in RPGACE\'s taxonomy, but no gathered insight in Alex\'s own knowledge library covers it yet. Answer from general knowledge, but say briefly that this isn\'t in his RPGACE library yet and offer to place it via Phylum Path so it gets learned properly.';
   },
+
+  },
+
+  // ============================================================
+  // ui — genuinely empty. This module sits entirely between the chat
+  // input and the Anthropic API; it discovers, constructs, reads and
+  // mutates zero DOM nodes. Kept as an explicit empty object so the
+  // module still declares the same two-namespace shape as every
+  // sibling.
+  // ============================================================
+  ui: {},
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.oracleTreeGrounding` anywhere outside this
+  // module's own body), so these exist for convention and for its OWN
+  // internal calls: `init`'s `window.callOracle` wrapper calls
+  // `self._buildGroundingBlock(lastUser)` on every conversational
+  // Oracle call, and `logic._buildGroundingBlock` itself reaches
+  // `self._gapOnlyBlock()` from two separate branches — every one of
+  // those `self`s is the module, so each lands here first and is routed
+  // on to `logic`.
+  _buildGroundingBlock: function(userText) { return this.logic._buildGroundingBlock(userText); },
+  _gapOnlyBlock: function() { return this.logic._gapOnlyBlock(); },
 
 });
 /* ===END:oracleTreeGrounding=== */
@@ -11592,6 +11732,100 @@ RPGACE.register('encTaxonomyLink', {
 // rather than doing a one-time DOM pass.
 RPGACE.register('agendaReminder', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 31 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // thirty predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL precedent, so the diff shows only
+  // real changes rather than a whitespace wall.
+  //
+  // 3 real members, all functions — ZERO data fields, declared or
+  // otherwise (checked by direct read of every top-level key, and by a
+  // grep of the whole module body for `self.X =` / `this.X =`: no hits,
+  // so this module has none of the undeclared runtime-assigned field
+  // trap journalQoL's `_activeSource` hit. The one flag it does set,
+  // `window._agendaReminderPatched`, is a GLOBAL — the standard wrap
+  // guard this codebase uses everywhere — not a module field, and is
+  // untouched). `init` stays a literal top-level function (RPGACE.
+  // register() calls `module.init()` directly and cannot see into a
+  // sub-object) — byte-identical, its own `self = this` genuinely IS
+  // the module, so the `window.renderDailyGrid` wrapper it installs
+  // still reaches `_injectButtons` through the top-level pass-through
+  // below.
+  //
+  // This module splits 0 / 2: both movable functions land in `ui`, and
+  // `logic` is genuinely EMPTY — kept as an explicit `logic: {}` so the
+  // module still declares the same two-namespace shape as every
+  // sibling (the same honest inverse already shipped for journalQoL).
+  // Classification, function by function, each checked against its
+  // actual body rather than its name:
+  //   • _injectButtons → ui. Unambiguous: `document.querySelectorAll`,
+  //     a `.dataset` re-entry guard write, `getAttribute`,
+  //     `document.createElement('button')`, a full inline `style.
+  //     cssText` build, an `onclick` assignment and `appendChild`.
+  //   • _show → ui. SEE THE INSEPARABILITY NOTE BELOW — it opens with
+  //     a real localStorage read, so it is named here rather than
+  //     filed quietly.
+  //
+  // ─── _show: why its localStorage read stays in `ui` ───────────────
+  // Its first four lines are a genuine data read: parse
+  // `rpgace_sched_agendas` out of localStorage and `.find` the entry
+  // matching the id it was handed. In isolation that is textbook
+  // `logic`. It is NOT lifted out, for the reason this pass's own rules
+  // give: lifting it would split the function down the middle, which is
+  // forbidden, and the read is not separable from what follows without
+  // doing exactly that. The rest of the body is unambiguous DOM
+  // construction — `RPGACE.modules.dashDeck._popup(...)`, two
+  // `document.createElement('div')` calls with full `style.cssText`
+  // builds, and two `box.appendChild(...)` calls — and it consumes
+  // `entry` field by field (`entry.title`, `.hour`, `.minute`,
+  // `.category`, `.estimated_mins`, `.xp`, `.description`) straight
+  // into the popup it just built. The entry is never returned, never
+  // stored and never reused; its only consumer is the markup this
+  // function was already committed to building, and the not-found
+  // branch's response is itself a UI action (`RPGACE.utils.toast`),
+  // not a returned error. That is the exact shape
+  // journalQoL.ui._injectAuditEntries, jargonEncyclopedia.ui.
+  // _openGlossary and encTaxonomyLink.ui._injectButtons were all
+  // shipped on.
+  //
+  // `this`/`self` accounting for both moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _injectButtons — already had `var self = this;` as its first
+  //     statement, swapped for the module handle IN PLACE. Captured by
+  //     the created button's `onclick` closure for `self._show(id)`.
+  //     Left as `this.`, it would have read `ui._show` — which DOES
+  //     exist on `ui`, so this one would have kept working by luck
+  //     rather than by design; requalified anyway, per the standing
+  //     rule that the module must never depend on two functions
+  //     happening to share a namespace. Its `startBtns.forEach`
+  //     callback uses a plain `startBtn` parameter, not `this`, so
+  //     nothing else there needed touching.
+  //   • _show — references neither `this` nor `self` anywhere in its
+  //     body (it reaches dashDeck through the full `RPGACE.modules.
+  //     dashDeck` path already); moved byte-identical, no handle
+  //     needed and none added. Its `stored.find` callback uses a plain
+  //     `a` parameter, untouched.
+  //
+  // Zero external touchpoints confirmed by a fresh repo-wide grep for
+  // `RPGACE.modules.agendaReminder.` (0 hits anywhere — rpgace_core.js
+  // and index.html both), plus the dynamic-lookup check: the only real
+  // `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at any of its call sites. The module is
+  // driven entirely by the `window.renderDailyGrid` wrapper `init`
+  // installs and by the injected buttons' own onclick handlers. The
+  // `"_show"` entry in this file's own METHOD_MODULE_MAP (G109) is a
+  // generated name->module DATA table, not a call site, and is
+  // unaffected by this split.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     function patch() {
@@ -11608,8 +11842,24 @@ RPGACE.register('agendaReminder', {
     setTimeout(patch, 1500);
   },
 
+  // ============================================================
+  // logic — genuinely empty. Both real functions in this module
+  // construct DOM; the only data read that exists here (the
+  // localStorage lookup at the head of `_show`) is inseparable from
+  // the popup it feeds, per the dedicated note in the G53 block
+  // above. Kept as an explicit empty object so the module still
+  // declares the same two-namespace shape as every sibling.
+  // ============================================================
+  logic: {},
+
+  // ============================================================
+  // ui — rendering/DOM: the injected 🔔 Reminder button on every
+  // scheduled Daily Grid block, and the popup it opens.
+  // ============================================================
+  ui: {
+
   _injectButtons: function() {
-    var self = this;
+    var self = RPGACE.modules.agendaReminder;
     var startBtns = document.querySelectorAll('#time-slots button[onclick*="startScheduledTask("]');
     startBtns.forEach(function(startBtn) {
       var actions = startBtn.parentElement;
@@ -11653,6 +11903,21 @@ RPGACE.register('agendaReminder', {
 
     box.appendChild(meta); box.appendChild(desc);
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.agendaReminder` anywhere outside this module's
+  // own body), so these exist for convention and for its OWN internal
+  // calls: `init`'s `window.renderDailyGrid` wrapper calls
+  // `self._injectButtons()` on a 50ms timer after every real grid
+  // rebuild, and `ui._injectButtons`'s created-button onclick calls
+  // `self._show(id)` — both of those `self`s are the module, so each
+  // lands here first and is routed on to `ui`.
+  _injectButtons: function() { return this.ui._injectButtons(); },
+  _show: function(id) { return this.ui._show(id); },
 
 });
 /* ===END:agendaReminder=== */
@@ -29078,6 +29343,111 @@ RPGACE.register('questEngine', {
 /* ===MODULE:shiftSync=== */
 RPGACE.register('shiftSync', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 30 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // twenty-nine predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL precedent, so the diff shows only
+  // real changes rather than a whitespace wall.
+  //
+  // 3 real members, all functions — ZERO data fields, declared or
+  // otherwise (checked by direct read of every top-level key, and by a
+  // grep of the whole module body for `self.X =` / `this.X =`: no
+  // hits, so this module has none of the undeclared runtime-assigned
+  // field trap that journalQoL's `_activeSource` and oracleDevBridge's
+  // `this.TABLE` both hit). `init` stays a literal top-level function
+  // (RPGACE.register() calls `module.init()` directly and cannot see
+  // into a sub-object) — byte-identical, its own `self = this`
+  // genuinely IS the module, so its 1200ms boot timer and `page:show`
+  // listener still reach `_syncFromSupabase` through the top-level
+  // pass-through below.
+  //
+  // This module splits 2 / 0: both movable functions land in `logic`,
+  // and `ui` is genuinely EMPTY — kept as an explicit `ui: {}` so the
+  // module still declares the same two-namespace shape as every
+  // sibling (same precedent already shipped for scheduleFixes/encSync
+  // in the ui-empty direction, and journalQoL in the logic-empty one).
+  //
+  // ─── Both functions: the one real judgment call in this module ────
+  // Neither `_syncFromSupabase` nor `_syncAgendasFromSupabase`
+  // contains a single literal DOM keyword — no `document.*`, no
+  // `createElement`, no `innerHTML`, no `querySelector`, no listener.
+  // But both END by calling real, global DOM-rendering functions:
+  // `_syncFromSupabase` calls `window.autoApplyStoredShifts()` (which
+  // is genuinely a renderer — it does `document.querySelectorAll
+  // ('.day-col')` and builds `.auto-shift-block` divs, see its
+  // definition in the LEGACY:mainjs section), and
+  // `_syncAgendasFromSupabase` calls `window.buildMonthSlots()`,
+  // `window.buildWeekSlots()` and `window.renderDailyGrid()`. So two
+  // real readings existed and are named here rather than decided
+  // quietly:
+  //   (a) `ui`, on the DOMINANT-RESPONSIBILITY override already
+  //       shipped for pathRouter._routeFromCurrentURL,
+  //       phylumPath._jumpToNode and bookworm._goToDashboard — a
+  //       function whose real job is what the user ends up seeing is
+  //       `ui` even with zero literal DOM keywords, and these two
+  //       demonstrably cause a real redraw of the Schedule page.
+  //   (b) `logic` — their real job is CROSS-DEVICE DATA
+  //       SYNCHRONISATION (the module's whole reason to exist: a shift
+  //       or task entered on the phone showing up on the desktop). The
+  //       body is a Supabase read, a row map, and a `RPGACE.DB.set`
+  //       persistence write; the render calls are a trailing "now
+  //       redraw with the new data" side effect.
+  // (b) was chosen for two real reasons, neither of them keyword
+  // counting. First, the "inseparable fetch + render" rule that sends
+  // a whole function to `ui` has an explicit condition — results never
+  // returned, stored or reused — and it is plainly not met here: both
+  // functions' entire point is that the rows ARE stored, via
+  // `RPGACE.DB.set('shifts', ...)` and `RPGACE.DB.set('sched', rows)`,
+  // into localStorage, where every other Schedule consumer reads them
+  // independently of this module. The data outlives the call; that is
+  // the opposite of the render-and-discard shape that rule describes.
+  // Second, the dominant-responsibility override exists for functions
+  // whose ENTIRE job is driving what the user sees — pathRouter's own
+  // note is explicit that extending it past that would be misuse. Here
+  // the render calls are optional trailing follow-ons, each individually
+  // guarded by `typeof window.X === 'function'` and (for the three in
+  // `_syncAgendasFromSupabase`) wrapped in its own `try{}catch{}` — the
+  // sync still completes and still persists correctly if every one of
+  // them is absent, which is not how a function's actual purpose
+  // behaves. The honest cost of (b), stated rather than hidden: a
+  // reader chasing "why did the Schedule grid just redraw" will find
+  // the trigger in `logic`, not `ui`.
+  //
+  // `this`/`self` accounting for both moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • _syncFromSupabase — already had `var self = this;` as its
+  //     first statement, swapped for the module handle IN PLACE.
+  //     Captured by BOTH the `.then` and the `.catch` for
+  //     `self._syncAgendasFromSupabase()`. Left as `this.`, that would
+  //     have read `logic._syncAgendasFromSupabase` — which DOES exist
+  //     on `logic`, so this one would have kept working by luck rather
+  //     than by design; requalified anyway, per the standing rule that
+  //     the module must never depend on two functions happening to
+  //     share a namespace.
+  //   • _syncAgendasFromSupabase — references neither `this` nor
+  //     `self` anywhere in its body; moved byte-identical, no handle
+  //     needed and none added.
+  //
+  // Zero external touchpoints confirmed by a fresh repo-wide grep for
+  // `RPGACE.modules.shiftSync.` (0 hits anywhere — rpgace_core.js and
+  // index.html both), plus the dynamic-lookup check: the only real
+  // `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at any of its call sites. The module is
+  // driven entirely by the 1200ms boot timer and the `page:show` hook
+  // that `init` registers. The two `"_syncFromSupabase"` /
+  // `"_syncAgendasFromSupabase"` entries in this file's own
+  // METHOD_MODULE_MAP (G109) are a generated name->module DATA table,
+  // not call sites, and are unaffected by this split.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     // Do NOT rely solely on rpgace:ready — it may have already fired before
@@ -29093,8 +29463,16 @@ RPGACE.register('shiftSync', {
     });
   },
 
+  // ============================================================
+  // logic — business logic/data: no DOM, pure fetch + persistence.
+  // Both real functions live here; see the dedicated judgment-call
+  // note in the G53 block above for why the trailing global render
+  // calls do NOT pull them into `ui`.
+  // ============================================================
+  logic: {
+
   _syncFromSupabase: function() {
-    var self = this;
+    var self = RPGACE.modules.shiftSync;
     RPGACE.sb.select('rpgace_shifts', 'order=date.asc&limit=200')
       .then(function(rows) {
         rows = rows || [];
@@ -29138,6 +29516,30 @@ RPGACE.register('shiftSync', {
         console.warn('[shiftSync] Supabase agendas fetch failed:', e.message);
       });
   },
+
+  },
+
+  // ============================================================
+  // ui — genuinely empty. This module discovers, constructs, reads
+  // and mutates zero DOM nodes of its own; the redraws it triggers
+  // are performed by global functions defined elsewhere. Kept as an
+  // explicit empty object so the module still declares the same
+  // two-namespace shape as every sibling.
+  // ============================================================
+  ui: {},
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.shiftSync` anywhere outside this module's own
+  // body), so these exist for convention and for its OWN internal
+  // calls: `init`'s 1200ms boot timer and its `page:show` listener both
+  // call `self._syncFromSupabase()`, and `logic._syncFromSupabase`
+  // itself reaches `self._syncAgendasFromSupabase()` from both its
+  // `.then` and its `.catch` — every one of those `self`s is the
+  // module, so each lands here first and is routed on to `logic`.
+  _syncFromSupabase: function() { return this.logic._syncFromSupabase(); },
+  _syncAgendasFromSupabase: function() { return this.logic._syncAgendasFromSupabase(); },
 
 });
 /* ===END:shiftSync=== */
