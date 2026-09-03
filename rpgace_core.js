@@ -7339,6 +7339,50 @@ RPGACE.register('visualOracle', {
 /* ===MODULE:contentRepurpose=== */
 RPGACE.register('contentRepurpose', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 43 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 4 ui (openPopup, _restructureQuickBar,
+  // _injectAgentButtons, _injectVideoWorkshopBtn) / 4 logic
+  // (platformOutputInstructions, _getOracleMessages, _detectPhyla,
+  // _getPhylaContext). `platformOutputInstructions` returns a built
+  // prompt-text string never assigned to innerHTML, same
+  // oracleTreeGrounding-shaped precedent already established this
+  // series; `_getOracleMessages` delegates its one DOM query to the
+  // already-separate shared `RPGACE.utils.getOracleMessageElements()`
+  // utility and does pure array processing on the result, so it's `logic`
+  // by the same "delegated DOM discovery, no direct DOM touch in this
+  // function's own body" reasoning already applied to
+  // taxonomySync.logic._runSync. `openPopup` is kept as ONE whole
+  // function despite containing real judgment-shaped inline handlers
+  // (phylum detection, prompt building) — same `_showOptionSequence`-
+  // shaped precedent: it is not separable into `logic` without splitting
+  // the function down the middle, which this pass forbids. `init` stays
+  // a literal top-level function.
+  //
+  // Real, PRE-EXISTING bug found while reading this module for the
+  // split, NOT introduced or fixed by this refactor, flagged per this
+  // project's own standing discipline (multi-effect/ambiguous-intent,
+  // left for a separate task): the one real external caller of
+  // `openPopup`, an Idea Bank card's "🔀 Repurpose" connector button,
+  // calls `RPGACE.modules.contentRepurpose.openPopup(row.idea_text,
+  // row.title)` — but `openPopup`'s own signature takes zero parameters
+  // and has never read either argument (checked directly, confirmed
+  // both before and after this pure move). Clicking that specific
+  // button opens the popup with the dropdown/textarea empty rather than
+  // pre-filled with the idea's own text — a real, silent UX gap, not a
+  // crash. A real fix would need new routing logic to feed both params
+  // into the popup's Step-1 flow, which is genuine feature work outside
+  // this pass's pure-refactor scope — left exactly as-is, not guessed
+  // at or silently patched.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() {
@@ -7359,6 +7403,12 @@ RPGACE.register('contentRepurpose', {
       if (key === 'workshop') setTimeout(function() { self._injectVideoWorkshopBtn(); }, 400);
     });
   },
+
+  // ============================================================
+  // logic — business logic/data: prompt-text building, Oracle-message
+  // extraction, phylum detection, taxonomy-context fetching. Zero DOM.
+  // ============================================================
+  logic: {
 
   // ── Shared platform-output instruction block (Aug 23 2026, A7) ───────
   // This exact text used to live inline inside openPopup's own generate
@@ -7459,10 +7509,18 @@ RPGACE.register('contentRepurpose', {
       }).catch(function() { callback(''); });
   },
 
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: the main repurpose popup, the quick-bar
+  // restructure, agent-page quick buttons, and the Video Workshop button.
+  // ============================================================
+  ui: {
+
   // ── Main repurpose popup ──────────────────────────────────────
   openPopup: function() {
     if (document.getElementById('cr-popup-overlay')) return;
-    var self = this;
+    var self = RPGACE.modules.contentRepurpose;
     var oracleMsgs = self._getOracleMessages(8);
 
     var pop = RPGACE.modules.dashDeck._popup({
@@ -7687,7 +7745,7 @@ RPGACE.register('contentRepurpose', {
     if (document.getElementById('cr-restructured')) return;
     var row = document.querySelector('.quick-row');
     if (!row) return;
-    var self = this;
+    var self = RPGACE.modules.contentRepurpose;
 
     // Remove 4 redundant buttons
     Array.from(row.querySelectorAll('button')).forEach(function(btn) {
@@ -7715,7 +7773,12 @@ RPGACE.register('contentRepurpose', {
 
   _injectAgentButtons: function() {
     if (document.getElementById('agent-quick-btns')) return;
-    var self = this;
+    // Pre-existing dead local, unused anywhere in this function's own
+    // body (checked directly — every onclick handler below calls
+    // RPGACE.utils/RPGACE.api directly, never `self.`) — kept and
+    // swapped to the module handle in place rather than deleted, same
+    // treatment as chroniclesLog.ui._openCard elsewhere in this series.
+    var self = RPGACE.modules.contentRepurpose;
     var agentPage = document.getElementById('page-agents');
     if (!agentPage) return;
 
@@ -7767,7 +7830,7 @@ RPGACE.register('contentRepurpose', {
 
   _injectVideoWorkshopBtn: function() {
     if (document.getElementById('vw-repurpose-btn')) return;
-    var self = this;
+    var self = RPGACE.modules.contentRepurpose;
     var sections = document.querySelectorAll('.section-title, h2, h3');
     var vwSection = Array.from(sections).find(function(s){ return s.textContent && s.textContent.includes('VIDEO WORKSHOP'); });
     if (!vwSection) return;
@@ -7777,7 +7840,31 @@ RPGACE.register('contentRepurpose', {
     btn.style.cssText = 'margin-top:10px;padding:9px 18px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
     btn.onclick = function() { self.openPopup(); };
     vwSection.parentElement.insertBefore(btn, vwSection.nextSibling);
+  }
+
   },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Real, load-bearing external touchpoint: an Idea Bank card's
+  // "🔀 Repurpose" connector calls
+  // `RPGACE.modules.contentRepurpose.openPopup(...)` directly (see the
+  // pre-existing unused-parameters bug flagged in the G53 block above).
+  // Also carries this module's own internal calls: `init`'s boot task
+  // and hook listeners call `self._restructureQuickBar()`/
+  // `self._injectAgentButtons()`/`self._injectVideoWorkshopBtn()`, and
+  // `ui.openPopup` reaches `self._getOracleMessages()`/
+  // `self._detectPhyla()`/`self._getPhylaContext()`/
+  // `self.platformOutputInstructions()` — every one of those `self`s is
+  // the module, so each lands here first and is routed on to the right
+  // namespace.
+  platformOutputInstructions: function() { return this.logic.platformOutputInstructions(); },
+  _getOracleMessages: function(limit) { return this.logic._getOracleMessages(limit); },
+  _detectPhyla: function(ideaText, callback) { return this.logic._detectPhyla(ideaText, callback); },
+  _getPhylaContext: function(phylaNums, callback) { return this.logic._getPhylaContext(phylaNums, callback); },
+  openPopup: function() { return this.ui.openPopup(); },
+  _restructureQuickBar: function() { return this.ui._restructureQuickBar(); },
+  _injectAgentButtons: function() { return this.ui._injectAgentButtons(); },
+  _injectVideoWorkshopBtn: function() { return this.ui._injectVideoWorkshopBtn(); },
 
 });
 /* ===END:contentRepurpose=== */
@@ -9383,8 +9470,14 @@ RPGACE.register('oracleAppGrounding', {
   // than relying on keyword luck, AND 5thdimension-shaped phrases are
   // added below as a real second line of defense if this method is ever
   // called some other way.
+  // `_forceNext` stays a MODULE-SCOPE field — `init`'s own wrap reads
+  // it via its own module-level `self` (init is never moved), so it
+  // must live at the same address `logic.forceGroundNext` below writes
+  // to. The function itself moved into `logic` (see the G53 block
+  // further below, right after SELF_KNOWLEDGE) since keeping it here
+  // right beside the field it sets would have made the split harder to
+  // verify, not easier — it now sits with its 6 logic siblings instead.
   _forceNext: false,
-  forceGroundNext: function() { this._forceNext = true; },
 
   // Cheap free keyword gate (rule 11 - never pay tokens on every message
   // for a block only relevant sometimes). Deliberately broad since a
@@ -9562,11 +9655,85 @@ RPGACE.register('oracleAppGrounding', {
   // hand - if the cache is empty (first call, or the last fetch failed),
   // this block is simply omitted, never replaced with a guess. Same
   // fails-open philosophy this module's own header comment already states.
+
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 44 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 0 ui / 7 logic (forceGroundNext, _refreshLiveFacts,
+  // _liveFactsLine, _buildBlock, _anatomyNameVariants, _loadAnatomyIndex,
+  // _buildAnatomyBlock) — a genuine "empty ui" case, same precedent as
+  // authGate/oracleTreeGrounding elsewhere in this series: this whole
+  // module is prompt-text assembly and Supabase reads that ride inside
+  // the shared `window.callOracle` wrap `init` installs, never touching
+  // a single DOM node. `PERSONA_MARKERS`/`TRIGGER_KEYWORDS`/
+  // `ANATOMY_KEYWORDS`/`SELF_KNOWLEDGE`/`_forceNext`/`_liveCache`/
+  // `_LIVE_TTL_MS`/`_anatomyIndex`/`_anatomyIndexAt`/`_ANATOMY_TTL_MS`
+  // all stay module-scope fields, untouched. `init` stays a literal
+  // top-level function and needed ZERO internal changes — its own
+  // `var self = this;` already correctly resolves to the module (init
+  // is never moved), and every one of its calls (`self._buildBlock()`,
+  // `self._buildAnatomyBlock(...)`) already goes through what becomes a
+  // real pass-through below.
+  //
+  // Real, DANGEROUS shared-field risk, checked and handled with extra
+  // care given how central this module is to every grounded Oracle
+  // call: `forceGroundNext` writes `_forceNext` (a module-scope field
+  // `init`'s own wrap reads via ITS OWN module-level `self`) — a naive
+  // `this._forceNext = true` inside the moved function would instead
+  // set `logic._forceNext` (since it's called through
+  // `module.logic.forceGroundNext()`, so `this` there is `logic`, not
+  // the module) — the exact bug class this series' own convention
+  // exists to prevent. `_buildBlock` originally used bare `this.` with
+  // NO `var self` declaration at all (`this._refreshLiveFacts()`,
+  // `this.SELF_KNOWLEDGE`, `this._liveFactsLine()`) — the single most
+  // dangerous line in this module, since a wrong `this` there would
+  // have silently returned `undefined` for the ENTIRE self-knowledge
+  // digest on every single grounded Oracle reply, with no error, no
+  // crash, just Oracle confidently answering without its own status
+  // digest. Both fixed with an explicit
+  // `var self = RPGACE.modules.oracleAppGrounding;` requalification.
+  //
+  // Real, load-bearing external touchpoint, confirmed by grep, not
+  // assumed: `prodOraclePanel`'s "5thDimension" command calls
+  // `RPGACE.modules.oracleAppGrounding.forceGroundNext()` directly.
+  // Preserved via the pass-through below.
+  // ══════════════════════════════════════════════════════════════════
+
+  // ============================================================
+  // ui — genuinely empty. Zero DOM anywhere in this module (checked
+  // directly, not assumed) — declared explicitly rather than omitted,
+  // matching the established "empty namespace" precedent elsewhere in
+  // this series (e.g. authGate.ui, youtubeOracle.logic).
+  // ============================================================
+  ui: {},
+
+  // `_liveCache`/`_LIVE_TTL_MS`/`_anatomyIndex`/`_anatomyIndexAt`/
+  // `_ANATOMY_TTL_MS` all stay module-scope fields too, same reasoning
+  // as `_forceNext` — read/written by multiple functions below, all
+  // consistently requalified to the module rather than relying on
+  // same-namespace `this` binding, matching this whole series'
+  // established convention.
   _liveCache: { taxonomyPending: null, recentUpdates: null, designScan: null, fetchedAt: 0 },
   _LIVE_TTL_MS: 10 * 60 * 1000,
+  _anatomyIndex: null,
+  _anatomyIndexAt: 0,
+  _ANATOMY_TTL_MS: 10 * 60 * 1000,
+
+  logic: {
+
+  forceGroundNext: function() {
+    var self = RPGACE.modules.oracleAppGrounding;
+    self._forceNext = true;
+  },
 
   _refreshLiveFacts: function() {
-    var self = this;
+    var self = RPGACE.modules.oracleAppGrounding;
     if (Date.now() - self._liveCache.fetchedAt < self._LIVE_TTL_MS) return;
     if (!RPGACE.sb || !RPGACE.sb.select) return;
     self._liveCache.fetchedAt = Date.now(); // claim the slot before the await resolves - avoids a duplicate fetch if triggered twice quickly
@@ -9590,7 +9757,7 @@ RPGACE.register('oracleAppGrounding', {
   },
 
   _liveFactsLine: function() {
-    var self = this;
+    var self = RPGACE.modules.oracleAppGrounding;
     var moduleCount = RPGACE.modules ? Object.keys(RPGACE.modules).length : null;
     var bits = [];
     // Module count is genuinely free and always-accurate - no network,
@@ -9619,14 +9786,22 @@ RPGACE.register('oracleAppGrounding', {
   },
 
   _buildBlock: function() {
-    this._refreshLiveFacts();
+    // Real, dangerous fix (G53 split) — this function originally used
+    // bare `this.` with NO `var self` declaration at all. Called as
+    // `module.logic._buildBlock()` via the pass-through, `this` here
+    // is the `logic` sub-object, not the module — `this.SELF_KNOWLEDGE`
+    // would have silently returned `undefined` (SELF_KNOWLEDGE is a
+    // module-scope field) on every single grounded Oracle reply, with
+    // no error, no crash. Requalified to the module explicitly.
+    var self = RPGACE.modules.oracleAppGrounding;
+    self._refreshLiveFacts();
     var dd = RPGACE.modules && RPGACE.modules.dashDeck;
     var cardLines = '';
     if (dd && dd.MODULES) {
       cardLines = dd.MODULES.map(function(m) { return '- ' + m.name + ': ' + m.desc; }).join('\n');
     }
-    return '\n\n---\n' + this.SELF_KNOWLEDGE +
-      this._liveFactsLine() +
+    return '\n\n---\n' + self.SELF_KNOWLEDGE +
+      self._liveFactsLine() +
       (cardLines ? '\n\nRPGACE\'s live dashboard cards right now:\n' + cardLines : '') +
       '\n\nIf Alex asks what to build/fix next, give ONE concrete, specific suggestion grounded in the real gaps above - not a generic list.';
   },
@@ -9645,10 +9820,9 @@ RPGACE.register('oracleAppGrounding', {
   // index fetch (module_name/layer/keywords only, no prose) is TTL-cached so
   // repeated anatomy questions in one session cost one network read, not one
   // per message; the full-prose rows are fetched ONLY for the 2-3 that
-  // actually scored.
-  _anatomyIndex: null,
-  _anatomyIndexAt: 0,
-  _ANATOMY_TTL_MS: 10 * 60 * 1000,
+  // actually scored. (`_anatomyIndex`/`_anatomyIndexAt`/`_ANATOMY_TTL_MS`
+  // moved to module scope, same reasoning as `_liveCache` above — see
+  // the G53 block further up.)
 
   // 'dashDeck' -> ['dashdeck', 'dash deck'] so a human typing "how does the
   // dash deck work" still matches a camelCase module name. Compound-phrase
@@ -9660,7 +9834,7 @@ RPGACE.register('oracleAppGrounding', {
   },
 
   _loadAnatomyIndex: function() {
-    var self = this;
+    var self = RPGACE.modules.oracleAppGrounding;
     if (self._anatomyIndex && (Date.now() - self._anatomyIndexAt < self._ANATOMY_TTL_MS)) {
       return Promise.resolve(self._anatomyIndex);
     }
@@ -9676,7 +9850,7 @@ RPGACE.register('oracleAppGrounding', {
   },
 
   _buildAnatomyBlock: function(userText) {
-    var self = this;
+    var self = RPGACE.modules.oracleAppGrounding;
     var lower = String(userText || '').toLowerCase();
     if (!lower) return Promise.resolve('');
     return self._loadAnatomyIndex().then(function(index) {
@@ -9731,6 +9905,25 @@ RPGACE.register('oracleAppGrounding', {
       }).catch(function() { return ''; });
     }).catch(function() { return ''; });
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Real, load-bearing external touchpoint: `prodOraclePanel`'s
+  // "5thDimension" command calls
+  // `RPGACE.modules.oracleAppGrounding.forceGroundNext()` directly.
+  // Also carries this module's own internal calls: `init`'s wrap calls
+  // `self._buildBlock()`/`self._buildAnatomyBlock(...)`, and every
+  // logic function above reaches its siblings/fields through `self.X`
+  // — every one of those `self`s is the module, so each lands here
+  // first and is routed on to the right namespace.
+  forceGroundNext: function() { return this.logic.forceGroundNext(); },
+  _refreshLiveFacts: function() { return this.logic._refreshLiveFacts(); },
+  _liveFactsLine: function() { return this.logic._liveFactsLine(); },
+  _buildBlock: function() { return this.logic._buildBlock(); },
+  _anatomyNameVariants: function(name) { return this.logic._anatomyNameVariants(name); },
+  _loadAnatomyIndex: function() { return this.logic._loadAnatomyIndex(); },
+  _buildAnatomyBlock: function(userText) { return this.logic._buildAnatomyBlock(userText); },
 
 });
 /* ===END:oracleAppGrounding=== */
