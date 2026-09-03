@@ -5502,6 +5502,82 @@ document.addEventListener('keydown', e=>{
 /* ===MODULE:youtubeOracle=== */
 RPGACE.register('youtubeOracle', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the TWELFTH
+  // module to take this shape (after the videoPipeline/beatLog/bookworm/
+  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
+  // questEngine, intelDelete, feynman and taxonomyReviewQueue): this
+  // module is split into two internal namespaces, `ui` (rendering/DOM)
+  // and `logic` (business logic/data), following the exact shape those
+  // eleven already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten, never
+  // split down the middle, and its own body is otherwise untouched (a
+  // deterministic line-range extract plus an explicit, asserted list of
+  // `this`/`self` requalifications, not a retype, so no character of any
+  // body could drift silently).
+  //
+  // 7 real members: 5 functions and TWO plain data fields, CMDS and
+  // ICONS (checked by direct read of every top-level key, not assumed).
+  // Both data fields STAY AT MODULE SCOPE and were not moved — a copy
+  // inside `ui` would be a second, divergent command list rather than
+  // the one real one. `init` stays a literal top-level function (because
+  // RPGACE.register() calls `module.init()` directly and cannot see into
+  // a sub-object, and its own `self` genuinely IS the module —
+  // byte-identical, still calling the top-level pass-throughs).
+  //
+  // REAL, HONEST RESULT WORTH NAMING RATHER THAN HIDING: all 4 movable
+  // functions land in `ui`, and `logic` below is genuinely EMPTY. That
+  // is not a classification failure or a shortcut — it is what this
+  // module actually is once looked at squarely: an injected button
+  // (_btn), a slide-out (_close), a panel builder (open), and a command
+  // dispatcher that reaches straight into the live chat textarea and
+  // clicks the real send button (run). Every one of the four touches the
+  // DOM directly, verified by a keyword grep of each individual body
+  // rather than assumed from its name. The empty `logic: {}` is kept
+  // deliberately so the module still presents the same two-namespace
+  // shape as its eleven siblings, with the emptiness stated outright
+  // instead of silently omitted.
+  //
+  // NOTE — `run` is the one genuinely non-obvious call here, and it goes
+  // to `ui` DESPITE the name. Its two siblings on the other two social
+  // panels (tiktokOracle.run, instaOraclePanel.run) are real `logic`,
+  // because they hand the prompt to the shared RPGACE.utils.fillGaps/
+  // sendToOracle helpers and touch no DOM of their own. THIS one does
+  // not use those helpers at all — it reads `#chat-input`, writes
+  // `.value`, dispatches a real input Event, then finds and clicks
+  // `#send-btn`. Classified by real DOM touch, never by the name it
+  // shares with its siblings. (That divergence is itself flagged as a
+  // pre-existing oddity in this pass's report — left exactly as-is here,
+  // per the standing "restructure only, never silently fix" rule.)
+  //
+  // The one real risk this split has to get right, function by function:
+  // a function moved into `ui`/`logic` is invoked with `this` bound to
+  // THAT sub-object, not the module. Every moved function that needs
+  // module state now reaches it through
+  // `var self = RPGACE.modules.youtubeOracle;`. Exact accounting for all
+  // 4 moved functions, so a later reader can check by grep rather than
+  // take it on trust:
+  //   • _btn — already had `var self = this;`, that one line swapped for
+  //     the handle IN PLACE, so statement order is literally unchanged.
+  //   • _close — touches no module state at all, moved byte-identical.
+  //   • open — had `var self = this;` on its SECOND line, but its FIRST
+  //     line (the already-open guard) calls `this._close()`. Leaving the
+  //     declaration where it sat would have left `self` undefined at the
+  //     guard (a real TypeError on the second click, `var` hoisting
+  //     giving the name but not the value), so the handle is inserted as
+  //     the first statement and the old `var self = this;` line removed —
+  //     the only statement-order change anywhere in this module, and a
+  //     forced one. Its inner `btn.onmouseover`/`onmouseout` closures
+  //     keep their bare `this` untouched: that `this` is the DOM button,
+  //     not the module, and rewriting it would have been a real bug.
+  //   • run — had no `var self` at all and used bare `this.CMDS`/
+  //     `this._close()`; the handle is inserted as its first statement
+  //     and both rewritten to `self.`. Left as `this.`, it would have
+  //     read `ui.CMDS` (undefined), so every command press would have
+  //     hit the `if (!cmd) return;` guard and silently done nothing.
+  // ══════════════════════════════════════════════════════════════════
+
   CMDS: [
     ['Find Your Niche', 'Analyse this YouTube niche for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FREQUENCY: 2x per week. Return: 1) Niche saturation score 1-10 with explanation 2) Top 3 direct competitors and their strengths 3) Three underserved sub-niches with lower competition 4) Monetisation potential ranking 5) Your single strongest differentiation angle. Be specific to this niche only.'],
     ['Channel Identity Builder', 'Build the channel identity for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. UNIQUE ANGLES: Russian and French and London cultural perspective, building while working hospitality shifts. Return: 1) Three tagline options under 10 words each 2) My Unique Mechanism 3) Brand voice in 3 words 4) Positioning statement in one sentence 5) Visual identity direction 6) What cliches to avoid.'],
@@ -5531,94 +5607,155 @@ RPGACE.register('youtubeOracle', {
     });
   },
 
-  _btn: function() {
-    if (document.getElementById('yt-ob')) return;
-    var self = this;
-    var tries = 0;
-    var go = function() {
-      tries++;
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + writes.
+  // Genuinely EMPTY for this module (see the G53 note above): all 4
+  // movable functions touch the DOM directly, so all 4 are `ui`.
+  // Kept rather than omitted so the two-namespace shape matches its
+  // eleven siblings and the emptiness is stated, not silent.
+  // ============================================================
+  logic: {},
+
+  // ============================================================
+  // ui — rendering/DOM: injects the button, builds/tears down the
+  // slide-in panel, and drives the live chat input directly.
+  // ============================================================
+  ui: {
+
+    _btn: function() {
       if (document.getElementById('yt-ob')) return;
-      var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
-      if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
-      var b = document.createElement('button');
-      b.id = 'yt-ob';
-      b.className = anchor.className;
-      b.textContent = '\uD83C\uDFAC YouTube Oracle';
-      b.onclick = function() { self.open(); };
-      anchor.parentElement.insertBefore(b, anchor.nextSibling);
-    };
-    setTimeout(go, 600);
-    setTimeout(go, 1500);
-    setTimeout(go, 3000);
-  },
+      var self = RPGACE.modules.youtubeOracle;
+      var tries = 0;
+      var go = function() {
+        tries++;
+        if (document.getElementById('yt-ob')) return;
+        var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
+        if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
+        var b = document.createElement('button');
+        b.id = 'yt-ob';
+        b.className = anchor.className;
+        b.textContent = '\uD83C\uDFAC YouTube Oracle';
+        b.onclick = function() { self.open(); };
+        anchor.parentElement.insertBefore(b, anchor.nextSibling);
+      };
+      setTimeout(go, 600);
+      setTimeout(go, 1500);
+      setTimeout(go, 3000);
+    },
 
-  _close: function() {
-    RPGACE.ui.slideOutPanel(document.getElementById('yt-op'), 'right');
-  },
+    _close: function() {
+      RPGACE.ui.slideOutPanel(document.getElementById('yt-op'), 'right');
+    },
 
-  open: function() {
-    if (document.getElementById('yt-op')) { this._close(); return; }
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'yt-op';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(255,80,80,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
+    open: function() {
+      var self = RPGACE.modules.youtubeOracle;
+      if (document.getElementById('yt-op')) { self._close(); return; }
+      var panel = document.createElement('div');
+      panel.id = 'yt-op';
+      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(255,80,80,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
 
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(255,40,40,0.06);border-bottom:1px solid rgba(255,80,80,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var ht = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.textContent = 'YOUTUBE ORACLE';
-    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
-    var ch = document.createElement('div');
-    ch.textContent = '@AceSanyaBeats';
-    ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
-    ht.appendChild(lb); ht.appendChild(ch);
-    var cb = document.createElement('button');
-    cb.textContent = '×';
-    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-    cb.onclick = function() { self._close(); };
-    hdr.appendChild(ht); hdr.appendChild(cb);
-    panel.appendChild(hdr);
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'background:rgba(255,40,40,0.06);border-bottom:1px solid rgba(255,80,80,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+      var ht = document.createElement('div');
+      var lb = document.createElement('div');
+      lb.textContent = 'YOUTUBE ORACLE';
+      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
+      var ch = document.createElement('div');
+      ch.textContent = '@AceSanyaBeats';
+      ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
+      ht.appendChild(lb); ht.appendChild(ch);
+      var cb = document.createElement('button');
+      cb.textContent = '×';
+      cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+      cb.onclick = function() { self._close(); };
+      hdr.appendChild(ht); hdr.appendChild(cb);
+      panel.appendChild(hdr);
 
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-    var note = document.createElement('div');
-    note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR CHANNEL';
-    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-    body.appendChild(note);
+      var body = document.createElement('div');
+      body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+      var note = document.createElement('div');
+      note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR CHANNEL';
+      note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+      body.appendChild(note);
 
-    self.CMDS.forEach(function(cmd, i) {
-      var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-      var ic = document.createElement('span');
-      ic.textContent = self.ICONS[i] || '';
-      ic.style.fontSize = '16px';
-      var tx = document.createElement('span');
-      tx.textContent = cmd[0];
-      btn.appendChild(ic); btn.appendChild(tx);
-      btn.onmouseover = function() { this.style.background = 'rgba(255,60,60,0.1)'; };
-      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-      btn.onclick = function() { self.run(i); };
-      body.appendChild(btn);
-    });
-    panel.appendChild(body);
-    RPGACE.ui.slideInPanel(panel, {edge:'right'});
-  },
+      self.CMDS.forEach(function(cmd, i) {
+        var btn = document.createElement('button');
+        btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+        var ic = document.createElement('span');
+        ic.textContent = self.ICONS[i] || '';
+        ic.style.fontSize = '16px';
+        var tx = document.createElement('span');
+        tx.textContent = cmd[0];
+        btn.appendChild(ic); btn.appendChild(tx);
+        btn.onmouseover = function() { this.style.background = 'rgba(255,60,60,0.1)'; };
+        btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+        btn.onclick = function() { self.run(i); };
+        body.appendChild(btn);
+      });
+      panel.appendChild(body);
+      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+    },
 
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    var input = document.getElementById('chat-input') || document.querySelector('textarea');
-    if (input) {
+    // G53 batch 5 review (Sep 2026, real rule-7 fix, flagged during the
+    // split and fixed here as a clearly separate, single-function change
+    // — never bundled into the restructure itself): the success toast
+    // used to fire unconditionally, even when no chat input existed at
+    // all, or when a prompt was placed but nothing sent it. Now toasts
+    // success only on the real happy path, and an honest failure toast
+    // otherwise — matching the shared error-toast convention (#CC4A4A),
+    // which errorLog._capture now also records automatically (G109).
+    run: function(i) {
+      var self = RPGACE.modules.youtubeOracle;
+      var cmd = self.CMDS[i];
+      if (!cmd) return;
+      self._close();
+      var input = document.getElementById('chat-input') || document.querySelector('textarea');
+      if (!input) {
+        RPGACE.utils.toast('Could not find the chat input — open Oracle chat first', '#CC4A4A', 3000);
+        return;
+      }
       input.value = cmd[1];
       input.dispatchEvent(new Event('input', { bubbles: true }));
       var sb = document.getElementById('send-btn') || document.querySelector('[onclick*="sendChat"]');
-      if (sb) { setTimeout(function() { sb.click(); }, 80); }
-      else if (typeof sendChat === 'function') { setTimeout(sendChat, 80); }
-    }
-    RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2500);
+      if (sb) {
+        setTimeout(function() { sb.click(); }, 80);
+      } else if (typeof sendChat === 'function') {
+        setTimeout(sendChat, 80);
+      } else {
+        RPGACE.utils.toast('Filled the prompt but could not find a way to send it — press send in Oracle chat', '#CC4A4A', 3500);
+        return;
+      }
+      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2500);
+    },
+
   },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of rpgace_core.js and index.html both), so these exist for
+  // convention and for its OWN internal calls: `init` calls
+  // `self._btn()`, `ui._btn` calls `self.open()`, and `ui.open` calls
+  // `self.run(i)`/`self._close()` — every one of those `self`s is the
+  // module, so each lands here first.
+  //
+  // REAL EXTERNAL TOUCHPOINT ON THE DATA, THOUGH — found during this
+  // split and worth stating plainly, because the obvious grep does not
+  // show it: `contentProductionLive._findOracleCmdText(moduleName,
+  // cmdName)` reaches this module by DYNAMIC BRACKET LOOKUP,
+  // `RPGACE.modules[moduleName]`, then reads `.CMDS`. A grep for
+  // `RPGACE.modules.youtubeOracle.` structurally cannot see that. It is
+  // called with the literal string 'youtubeOracle' from three real
+  // sites (contentProductionLive's Phase-G caption generator, twice, and
+  // contentRepurpose), pulling this panel's real command text into the
+  // combined captions prompt. It only ever reads `.CMDS` — never a
+  // method — which is exactly why CMDS and ICONS stay at module scope
+  // here. Had CMDS been moved inside `logic`/`ui`, all of those lookups
+  // would have silently returned null and the captions prompt would
+  // have lost its YouTube expertise block with no error at all.
+  _btn: function() { return this.ui._btn(); },
+  _close: function() { return this.ui._close(); },
+  open: function() { return this.ui.open(); },
+  run: function(i) { return this.ui.run(i); },
 
 });
 /* ===END:youtubeOracle=== */
@@ -5646,6 +5783,58 @@ RPGACE.register('youtubeOracle', {
 // closer real precedent for a newly-added platform panel.
 RPGACE.register('tiktokOracle', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the THIRTEENTH
+  // module to take this shape: split into two internal namespaces, `ui`
+  // (rendering/DOM) and `logic` (business logic/data), following the
+  // exact shape its twelve predecessors already shipped and verified.
+  // Pure internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten, never split down the middle (a deterministic
+  // line-range extract plus an explicit, asserted list of `this`/`self`
+  // requalifications, not a retype).
+  //
+  // 7 real members: 5 functions and TWO plain data fields, CMDS and
+  // ICONS. Both data fields STAY AT MODULE SCOPE. `init` stays a literal
+  // top-level function (RPGACE.register() calls `module.init()` directly
+  // and cannot see into a sub-object, and its own `self` genuinely IS
+  // the module). 3 moved into `ui`, 1 into `logic`.
+  //
+  // NOTE — the 3/1 split is the real, evidenced answer and it differs
+  // from youtubeOracle's own 4/0 despite the two modules looking like
+  // near-twins. `run` here is genuine `logic`: it hands the prompt
+  // straight to the shared RPGACE.utils.fillGaps → sendToOracle helpers
+  // and touches no DOM in its own body (verified by a keyword grep of
+  // the body itself, not inferred from the module's shape).
+  // youtubeOracle.run, by contrast, reads `#chat-input`, writes `.value`
+  // and clicks `#send-btn` by hand, so it is `ui` there. Same method
+  // name, genuinely different responsibility — classified per body, not
+  // per name. `run` does call `self._close()`, which is a UI action, but
+  // it reaches it through the module handle exactly as any other caller
+  // would; a `logic` function delegating a close to `ui` is the normal
+  // direction of that dependency, not a DOM touch of its own.
+  //
+  // The one real risk this split has to get right: a function moved into
+  // `ui`/`logic` is invoked with `this` bound to THAT sub-object, not
+  // the module. Exact accounting for all 4 moved functions:
+  //   • ui._btn — already had `var self = this;`, swapped for the handle
+  //     IN PLACE, statement order literally unchanged.
+  //   • ui._close — touches no module state, moved byte-identical.
+  //   • ui.open — had `var self = this;` on its second line while its
+  //     FIRST line (the already-open guard) calls `this._close()`, so
+  //     the handle is inserted as the first statement and the old line
+  //     removed; the only statement-order change here, and a forced one
+  //     (leaving it would have made `self` undefined at the guard — a
+  //     real TypeError on the second click). Its inner
+  //     `btn.onmouseover`/`onmouseout` closures keep their bare `this`:
+  //     that `this` is the DOM button, and rewriting it would be a bug.
+  //   • logic.run — had no `var self` and used bare `this.CMDS`/
+  //     `this._close()`; handle inserted as its first statement, both
+  //     rewritten. Left as `this.`, it would have read `logic.CMDS`
+  //     (undefined) and every command press would have silently returned
+  //     at the `if (!cmd) return;` guard.
+  // ══════════════════════════════════════════════════════════════════
+
   CMDS: [
     ['Find Your Niche', 'Analyse this TikTok niche for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. FREQUENCY: 3-5x per week. Return: 1) Niche saturation score 1-10 with explanation 2) Top 3 direct competitors and their strengths 3) Three underserved sub-niches with lower competition 4) Which content pillar to lead with on a brand-new TikTok specifically (distinct from an existing Instagram/YouTube presence) 5) Your single strongest differentiation angle. Be specific to this niche only.'],
     ['FYP Algorithm Audit', 'Audit @AceSanyaBeats for TikTok For You Page performance. NICHE: FL Studio beats and UK hip hop production tutorials. FREQUENCY: 3-5x per week. TikTok ranks almost entirely on completion rate, rewatches, and comments/shares in the first hour - NOT follower count or CTR like other platforms. Return: 1) COMPLETION RATE architecture (how to structure a video so people watch to the end) 2) REWATCH ENGINEERING (what makes someone watch a second time) 3) FIRST-HOUR VELOCITY (comment/share triggers in the critical early window) 4) POSTING CADENCE for FYP favour 5) THE SINGLE BIGGEST MISTAKE music production creators make on TikTok specifically. Specific to FL Studio and UK hip hop only.'],
@@ -5671,86 +5860,129 @@ RPGACE.register('tiktokOracle', {
     });
   },
 
-  _btn: function() {
-    if (document.getElementById('tt-ob')) return;
-    var self = this;
-    var tries = 0;
-    var go = function() {
-      tries++;
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + dispatch.
+  // ============================================================
+  logic: {
+
+    run: function(i) {
+      var self = RPGACE.modules.tiktokOracle;
+      var cmd = self.CMDS[i];
+      if (!cmd) return;
+      self._close();
+      RPGACE.utils.fillGaps(cmd[1], function(filled) {
+        RPGACE.utils.sendToOracle(filled);
+        RPGACE.utils.toast('🎵 ' + cmd[0], 'rgba(80,220,180,0.9)', 2000);
+      });
+    },
+
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: injects the button and builds/tears down
+  // the slide-in panel.
+  // ============================================================
+  ui: {
+
+    _btn: function() {
       if (document.getElementById('tt-ob')) return;
-      var anchor = document.getElementById('yt-ob') || document.querySelector('[onclick*="toggleProdOraclePanel"]');
-      if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
-      var b = document.createElement('button');
-      b.id = 'tt-ob';
-      b.className = anchor.className;
-      b.textContent = '🎵 TikTok Oracle';
-      b.onclick = function() { self.open(); };
-      anchor.parentElement.insertBefore(b, anchor.nextSibling);
-    };
-    setTimeout(go, 600);
-    setTimeout(go, 1500);
-    setTimeout(go, 3000);
+      var self = RPGACE.modules.tiktokOracle;
+      var tries = 0;
+      var go = function() {
+        tries++;
+        if (document.getElementById('tt-ob')) return;
+        var anchor = document.getElementById('yt-ob') || document.querySelector('[onclick*="toggleProdOraclePanel"]');
+        if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
+        var b = document.createElement('button');
+        b.id = 'tt-ob';
+        b.className = anchor.className;
+        b.textContent = '🎵 TikTok Oracle';
+        b.onclick = function() { self.open(); };
+        anchor.parentElement.insertBefore(b, anchor.nextSibling);
+      };
+      setTimeout(go, 600);
+      setTimeout(go, 1500);
+      setTimeout(go, 3000);
+    },
+
+    _close: function() {
+      RPGACE.ui.slideOutPanel(document.getElementById('tt-op'), 'right');
+    },
+
+    open: function() {
+      var self = RPGACE.modules.tiktokOracle;
+      if (document.getElementById('tt-op')) { self._close(); return; }
+      var panel = document.createElement('div');
+      panel.id = 'tt-op';
+      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(80,220,180,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
+
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'background:rgba(40,220,180,0.06);border-bottom:1px solid rgba(80,220,180,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+      var ht = document.createElement('div');
+      var lb = document.createElement('div');
+      lb.textContent = 'TIKTOK ORACLE';
+      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(80,220,180,0.8);margin-bottom:3px;';
+      var ch = document.createElement('div');
+      ch.textContent = '@AceSanyaBeats';
+      ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
+      ht.appendChild(lb); ht.appendChild(ch);
+      var cb = document.createElement('button');
+      cb.textContent = '×';
+      cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+      cb.onclick = function() { self._close(); };
+      hdr.appendChild(ht); hdr.appendChild(cb);
+      panel.appendChild(hdr);
+
+      var body = document.createElement('div');
+      body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+      var note = document.createElement('div');
+      note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
+      note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+      body.appendChild(note);
+
+      self.CMDS.forEach(function(cmd, i) {
+        var btn = document.createElement('button');
+        btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+        var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '🎵'; ic.style.fontSize = '15px';
+        var tx = document.createElement('span'); tx.textContent = cmd[0];
+        btn.appendChild(ic); btn.appendChild(tx);
+        btn.onmouseover = function() { this.style.background = 'rgba(80,220,180,0.1)'; };
+        btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+        btn.onclick = function() { self.run(i); };
+        body.appendChild(btn);
+      });
+      panel.appendChild(body);
+      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+    },
+
   },
 
-  _close: function() {
-    RPGACE.ui.slideOutPanel(document.getElementById('tt-op'), 'right');
-  },
-
-  open: function() {
-    if (document.getElementById('tt-op')) { this._close(); return; }
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'tt-op';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(80,220,180,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(40,220,180,0.06);border-bottom:1px solid rgba(80,220,180,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var ht = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.textContent = 'TIKTOK ORACLE';
-    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(80,220,180,0.8);margin-bottom:3px;';
-    var ch = document.createElement('div');
-    ch.textContent = '@AceSanyaBeats';
-    ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
-    ht.appendChild(lb); ht.appendChild(ch);
-    var cb = document.createElement('button');
-    cb.textContent = '×';
-    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-    cb.onclick = function() { self._close(); };
-    hdr.appendChild(ht); hdr.appendChild(cb);
-    panel.appendChild(hdr);
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-    var note = document.createElement('div');
-    note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
-    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-    body.appendChild(note);
-
-    self.CMDS.forEach(function(cmd, i) {
-      var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '🎵'; ic.style.fontSize = '15px';
-      var tx = document.createElement('span'); tx.textContent = cmd[0];
-      btn.appendChild(ic); btn.appendChild(tx);
-      btn.onmouseover = function() { this.style.background = 'rgba(80,220,180,0.1)'; };
-      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-      btn.onclick = function() { self.run(i); };
-      body.appendChild(btn);
-    });
-    panel.appendChild(body);
-    RPGACE.ui.slideInPanel(panel, {edge:'right'});
-  },
-
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    RPGACE.utils.fillGaps(cmd[1], function(filled) {
-      RPGACE.utils.sendToOracle(filled);
-      RPGACE.utils.toast('🎵 ' + cmd[0], 'rgba(80,220,180,0.9)', 2000);
-    });
-  },
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of rpgace_core.js and index.html both), so these exist for
+  // convention and for this module's OWN internal calls: `init` calls
+  // `self._btn()`, `ui._btn` calls `self.open()`, `ui.open` calls
+  // `self.run(i)`/`self._close()`, and `logic.run` calls `self._close()`
+  // — every one of those `self`s is the module.
+  //
+  // REAL EXTERNAL TOUCHPOINT ON THE DATA, THOUGH — found during this
+  // split and worth stating plainly, because the obvious grep does not
+  // show it: `contentProductionLive._findOracleCmdText(moduleName,
+  // cmdName)` reaches this module by DYNAMIC BRACKET LOOKUP,
+  // `RPGACE.modules[moduleName]`, then reads `.CMDS`. A grep for
+  // `RPGACE.modules.tiktokOracle.` structurally cannot see that. It is
+  // called with the literal string 'tiktokOracle' from three real sites
+  // (contentProductionLive's Phase-G caption generator, twice, and
+  // contentRepurpose), pulling this panel's real command text into the
+  // combined captions prompt as its TIKTOK EXPERTISE block. It only ever
+  // reads `.CMDS` — never a method — which is exactly why CMDS and ICONS
+  // stay at module scope here. Had CMDS been moved inside `logic`/`ui`,
+  // all of those lookups would have silently returned null and the
+  // captions prompt would have lost its TikTok expertise with no error.
+  _btn: function() { return this.ui._btn(); },
+  _close: function() { return this.ui._close(); },
+  open: function() { return this.ui.open(); },
+  run: function(i) { return this.logic.run(i); },
 
 });
 /* ===END:tiktokOracle=== */
@@ -5875,6 +6107,70 @@ RPGACE.register('prodOraclePanel', {
 /* ===MODULE:instaOraclePanel=== */
 RPGACE.register('instaOraclePanel', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026) — real, ratified /CEO plan item, and the FOURTEENTH
+  // module to take this shape: split into two internal namespaces, `ui`
+  // (rendering/DOM) and `logic` (business logic/data), following the
+  // exact shape its thirteen predecessors already shipped and verified.
+  // Pure internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale (a
+  // deterministic line-range extract plus an explicit, asserted list of
+  // `this`/`self` requalifications, not a retype).
+  //
+  // 7 real members: 5 functions and TWO plain data fields, CMDS and
+  // ICONS. Both data fields STAY AT MODULE SCOPE. `init` stays a literal
+  // top-level function (RPGACE.register() calls `module.init()`
+  // directly). 3 moved into `ui`, 1 into `logic`.
+  //
+  // NOTE — TWO genuinely non-obvious classification calls here, both
+  // named outright rather than decided silently:
+  //
+  //   1. `_intercept` → `ui`, DESPITE containing zero `document.*` calls.
+  //      A literal DOM-keyword grep of its body says `logic`: it only
+  //      reads `typeof window.toggleInstaPanel`, sets the
+  //      `window._instaOraclePanelIntercepted` guard flag, and reassigns
+  //      `window.toggleInstaPanel` to a closure. But its real
+  //      responsibility is UI wiring — it hijacks the global function an
+  //      existing on-page button's click handler resolves to, so that
+  //      pressing that button opens THIS module's panel instead of
+  //      whatever the legacy main.js code originally wired up. That is
+  //      button-to-panel plumbing, i.e. exactly what `_btn` does on the
+  //      youtubeOracle/tiktokOracle siblings (unambiguous `ui` there),
+  //      just reached by intercepting a global rather than by injecting
+  //      a new element. Classified by dominant responsibility, not by
+  //      literal keyword match — the same precedent phylumPath._jumpToNode
+  //      and bookworm's own similar cases already set, where a body with
+  //      no DOM markers is still `ui` because its whole purpose is live
+  //      page navigation/wiring.
+  //
+  //   2. `run` → `logic`, matching tiktokOracle.run and diverging from
+  //      youtubeOracle.run. It hands the prompt to the shared
+  //      RPGACE.utils.fillGaps → sendToOracle helpers and touches no DOM
+  //      in its own body (verified by a keyword grep of the body itself).
+  //      youtubeOracle.run, by contrast, reads `#chat-input`, writes
+  //      `.value` and clicks `#send-btn` by hand, so it is `ui` there.
+  //      Same method name, genuinely different responsibility.
+  //
+  // The one real risk this split has to get right: a function moved into
+  // `ui`/`logic` is invoked with `this` bound to THAT sub-object, not
+  // the module. Exact accounting for all 4 moved functions:
+  //   • ui._intercept — already had `var self = this;`, swapped for the
+  //     handle IN PLACE. It sits AFTER the two guards rather than on line
+  //     1, and stays exactly where it was (neither guard touches `this`),
+  //     so nothing about its control flow moved.
+  //   • ui._close — touches no module state, moved byte-identical.
+  //   • ui.open — had `var self = this;` on its second line while its
+  //     FIRST line (the already-open guard) calls `this._close()`, so the
+  //     handle is inserted as the first statement and the old line
+  //     removed; the only statement-order change here, and a forced one.
+  //     Its inner `btn.onmouseover`/`onmouseout` closures keep their bare
+  //     `this`: that `this` is the DOM button, not the module.
+  //   • logic.run — had no `var self` and used bare `this.CMDS`/
+  //     `this._close()`; handle inserted as its first statement, both
+  //     rewritten. Left as `this.`, it would have read `logic.CMDS`
+  //     (undefined) and every command press would have silently returned.
+  // ══════════════════════════════════════════════════════════════════
+
   CMDS: [
     ['Content Creator Mode', 'Activate full content creator mode for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. PLATFORMS: Instagram and YouTube. FREQUENCY: 3-4 posts per week. Generate: my positioning, unique voice and angle, content pillars with percentages, the 3 content types that drive the most followers in my niche, and the first 7 posts to create starting today.'],
     ['100 Content Ideas', 'Generate 100 content ideas for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production. AUDIENCE: Aspiring producers aged 18-35. Organise into 9 categories: tutorials, beat showcases, process videos, opinion pieces, reaction content, challenges, collaborations, behind-the-scenes, and trending formats. For each idea: the hook angle, format, and why it performs for this audience. Mark the top 10 with a star.'],
@@ -5898,73 +6194,123 @@ RPGACE.register('instaOraclePanel', {
     RPGACE.registerBootTask(function() { return self._intercept(); });
   },
 
-  _intercept: function() {
-    if (window._instaOraclePanelIntercepted) return;
-    if (typeof window.toggleInstaPanel === 'undefined') return;
-    window._instaOraclePanelIntercepted = true;
-    var self = this;
-    window.toggleInstaPanel = function() { self.open(); };
+  // ============================================================
+  // logic — business logic/data: no DOM, pure computation + dispatch.
+  // ============================================================
+  logic: {
+
+    run: function(i) {
+      var self = RPGACE.modules.instaOraclePanel;
+      var cmd = self.CMDS[i];
+      if (!cmd) return;
+      self._close();
+      RPGACE.utils.fillGaps(cmd[1], function(filled) {
+        RPGACE.utils.sendToOracle(filled);
+        RPGACE.utils.toast('?? ' + cmd[0], 'rgba(155,89,182,0.9)', 2000);
+      });
+    },
+
   },
 
-  _close: function() {
-    RPGACE.ui.slideOutPanel(document.getElementById('insta-op'), 'right');
+  // ============================================================
+  // ui — rendering/DOM + UI wiring: hijacks the existing global
+  // toggle so the on-page button opens this panel, and builds/tears
+  // down the slide-in panel itself.
+  // ============================================================
+  ui: {
+
+    _intercept: function() {
+      if (window._instaOraclePanelIntercepted) return;
+      if (typeof window.toggleInstaPanel === 'undefined') return;
+      window._instaOraclePanelIntercepted = true;
+      var self = RPGACE.modules.instaOraclePanel;
+      window.toggleInstaPanel = function() { self.open(); };
+    },
+
+    _close: function() {
+      RPGACE.ui.slideOutPanel(document.getElementById('insta-op'), 'right');
+    },
+
+    open: function() {
+      var self = RPGACE.modules.instaOraclePanel;
+      if (document.getElementById('insta-op')) { self._close(); return; }
+      var panel = document.createElement('div');
+      panel.id = 'insta-op';
+      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(155,89,182,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
+
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'background:rgba(155,89,182,0.06);border-bottom:1px solid rgba(155,89,182,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
+      var ht = document.createElement('div');
+      var lb = document.createElement('div');
+      lb.textContent = 'INSTA-ORACLE';
+      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
+      var sub = document.createElement('div');
+      sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
+      sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
+      ht.appendChild(lb); ht.appendChild(sub);
+      var cb = document.createElement('button');
+      cb.textContent = '×';
+      cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
+      cb.onclick = function() { self._close(); };
+      hdr.appendChild(ht); hdr.appendChild(cb);
+      panel.appendChild(hdr);
+
+      var body = document.createElement('div');
+      body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
+      var note = document.createElement('div');
+      note.textContent = '13 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
+      note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
+      body.appendChild(note);
+
+      self.CMDS.forEach(function(cmd, i) {
+        var btn = document.createElement('button');
+        btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
+        var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '??'; ic.style.fontSize = '15px';
+        var tx = document.createElement('span'); tx.textContent = cmd[0];
+        btn.appendChild(ic); btn.appendChild(tx);
+        btn.onmouseover = function() { this.style.background = 'rgba(155,89,182,0.1)'; };
+        btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
+        btn.onclick = function() { self.run(i); };
+        body.appendChild(btn);
+      });
+      panel.appendChild(body);
+      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+    },
+
   },
 
-  open: function() {
-    if (document.getElementById('insta-op')) { this._close(); return; }
-    var self = this;
-    var panel = document.createElement('div');
-    panel.id = 'insta-op';
-    panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(155,89,182,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-    var hdr = document.createElement('div');
-    hdr.style.cssText = 'background:rgba(155,89,182,0.06);border-bottom:1px solid rgba(155,89,182,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-    var ht = document.createElement('div');
-    var lb = document.createElement('div');
-    lb.textContent = 'INSTA-ORACLE';
-    lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
-    var sub = document.createElement('div');
-    sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
-    sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
-    ht.appendChild(lb); ht.appendChild(sub);
-    var cb = document.createElement('button');
-    cb.textContent = '×';
-    cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-    cb.onclick = function() { self._close(); };
-    hdr.appendChild(ht); hdr.appendChild(cb);
-    panel.appendChild(hdr);
-
-    var body = document.createElement('div');
-    body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-    var note = document.createElement('div');
-    note.textContent = '13 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
-    note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-    body.appendChild(note);
-
-    self.CMDS.forEach(function(cmd, i) {
-      var btn = document.createElement('button');
-      btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-      var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '??'; ic.style.fontSize = '15px';
-      var tx = document.createElement('span'); tx.textContent = cmd[0];
-      btn.appendChild(ic); btn.appendChild(tx);
-      btn.onmouseover = function() { this.style.background = 'rgba(155,89,182,0.1)'; };
-      btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-      btn.onclick = function() { self.run(i); };
-      body.appendChild(btn);
-    });
-    panel.appendChild(body);
-    RPGACE.ui.slideInPanel(panel, {edge:'right'});
-  },
-
-  run: function(i) {
-    var cmd = this.CMDS[i];
-    if (!cmd) return;
-    this._close();
-    RPGACE.utils.fillGaps(cmd[1], function(filled) {
-      RPGACE.utils.sendToOracle(filled);
-      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(155,89,182,0.9)', 2000);
-    });
-  },
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by grep of rpgace_core.js and index.html both), so these exist for
+  // convention and for this module's OWN internal calls: `init` calls
+  // `self._intercept()`, `ui._intercept` installs a closure calling
+  // `self.open()`, `ui.open` calls `self.run(i)`/`self._close()`, and
+  // `logic.run` calls `self._close()` — every one of those `self`s is
+  // the module. index.html DOES carry two real `onclick=
+  // "toggleInstaPanel()"` handlers, but those hit the GLOBAL that
+  // `ui._intercept` hijacks, never a module method directly — which is
+  // the whole reason `_intercept` is classified `ui` (see the G53 note
+  // at the top of this module).
+  //
+  // REAL EXTERNAL TOUCHPOINT ON THE DATA, THOUGH — found during this
+  // split and worth stating plainly, because the obvious grep does not
+  // show it: `contentProductionLive._findOracleCmdText(moduleName,
+  // cmdName)` reaches this module by DYNAMIC BRACKET LOOKUP,
+  // `RPGACE.modules[moduleName]`, then reads `.CMDS`. A grep for
+  // `RPGACE.modules.instaOraclePanel.` structurally cannot see that. It
+  // is called with the literal string 'instaOraclePanel' from three real
+  // sites (contentProductionLive's Phase-G caption generator, twice, and
+  // contentRepurpose), pulling this panel's real command text into the
+  // combined captions prompt as its INSTAGRAM EXPERTISE block. It only
+  // ever reads `.CMDS` — never a method — which is exactly why CMDS and
+  // ICONS stay at module scope here. Had CMDS been moved inside
+  // `logic`/`ui`, all of those lookups would have silently returned null
+  // and the captions prompt would have lost its Instagram expertise with
+  // no error at all.
+  _intercept: function() { return this.ui._intercept(); },
+  _close: function() { return this.ui._close(); },
+  open: function() { return this.ui.open(); },
+  run: function(i) { return this.logic.run(i); },
 
 });
 /* ===END:instaOraclePanel=== */
