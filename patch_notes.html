@@ -74,6 +74,16 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧩✅ Sep 2 — G53 batch 7 complete: oracleDevBridge + quickActions + encTaxonomyLink split, 20 of 60 modules now done, 2 real requalification bugs fixed</div>
+    <div class="card-body">
+      3 more confirmed zero-external-touchpoint modules. <code>quickActions</code> splits honestly-empty (its two Composio calls live inside click closures it only attaches, never invokes). <code>oracleDevBridge._flag</code> and <code>encTaxonomyLink._propose</code> both mutate a caller-supplied button and construct no DOM of their own — tested against the same discriminator as <code>videoSummary.logic._runRetro</code>/<code>intelDelete.ui._hideCard</code> (does the function have a real data job behind the mutation?) — both answer yes and land in <code>logic</code>.<br><br>
+      <b>Two real, load-bearing requalification bugs found and fixed</b>: <code>oracleDevBridge._flag</code> read bare <code>this.TABLE</code> (a module-scope constant) — inside <code>logic</code> that's <code>undefined</code>, so every real flag write would silently hit <code>secureWrite(undefined, 'insert', ...)</code>. <code>encTaxonomyLink.ui._injectOne</code>'s onclick called <code>self._propose(...)</code>, and <code>_propose</code> moved to <code>logic</code> — left as bare <code>this</code>, the button would render perfectly and only throw at the moment Alex clicked it, no toast, no feedback. Both requalified to the module handle.<br><br>
+      Independently re-verified (not trusted on the dispatched agent's report): <code>node --check</code> clean, self/this sweep clean, touchpoint re-grep clean, marker balance unchanged. Headless Chromium: 17/17 real assertions, both fixes exercised end-to-end (the real table name confirmed via both call paths; the rendered button confirmed correctly reaching <code>logic._propose</code> on a real click).<br><br>
+      Cache-bust <code>20260902o→20260902p</code>. Deployed and confirmed <code>READY</code> on production, commit <code>2d81bf8</code>. <b>20 of RPGACE's 60 real modules now split. Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 6 complete: jargonEncyclopedia + encyclopediaQoL + pathRouter split, 17 of 60 modules now done</div>
     <div class="card-body">
       Real evidence-based batch — 3 confirmed zero-external-touchpoint modules (verified via a repo-wide grep excluding each module's own body, plus index.html), spanning a useful spread of shapes: 2 that split honestly-empty and 1 that splits for real.<br><br>
