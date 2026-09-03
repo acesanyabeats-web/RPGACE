@@ -10085,6 +10085,32 @@ RPGACE.register('researchTabs', {
   // re-fetches/re-fires, matching Alex's "cache for the session" answer.
   _firedKeys: {},
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 40 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 1 logic (_activeTab) / 4 ui (_inject,
+  // _resolveSections, _apply, show). `_resolveSections` goes to `ui`
+  // despite currently always returning `{}` (a real, honest side effect
+  // of A5 Phase 1's dismantling, unchanged by this refactor) — its body
+  // still does real DOM discovery (`getElementById`), matching this
+  // series' own established "any real DOM touch, read or write, is a ui
+  // signal" convention, not just markup construction. `TABS`/
+  // `_firedKeys` stay module-scope fields; `init` stays a literal
+  // top-level function.
+  //
+  // Real, load-bearing external touchpoint, confirmed by grep: a sub-
+  // card click handler elsewhere in this file calls
+  // `RPGACE.modules.researchTabs.show(t.key)` directly, guarded behind
+  // `if (RPGACE.modules.researchTabs)`. Preserved via the pass-through
+  // below.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     // July 23 real find (GODMODE): _inject() - the function that actually
@@ -10103,6 +10129,23 @@ RPGACE.register('researchTabs', {
     });
     RPGACE.hooks.on('research:panel-injected', function() { self._apply(); });
   },
+
+  // ============================================================
+  // logic — the one pure-data function in this module.
+  // ============================================================
+  logic: {
+
+  _activeTab: function() {
+    return localStorage.getItem('rpgace_research_tab') || 'intel';
+  },
+
+  },
+
+  // ============================================================
+  // ui — rendering/DOM: the tab bar, section visibility, and the
+  // Research Lab page-navigation entry point.
+  // ============================================================
+  ui: {
 
   // Section roots resolved fresh on every apply - injected panels may
   // not exist yet on early passes, and that must never break anything.
@@ -10130,12 +10173,8 @@ RPGACE.register('researchTabs', {
     return out;
   },
 
-  _activeTab: function() {
-    return localStorage.getItem('rpgace_research_tab') || 'intel';
-  },
-
   _inject: function() {
-    var self = this;
+    var self = RPGACE.modules.researchTabs;
     if (document.getElementById('research-tab-bar')) return;
     var page = document.getElementById('page-learning');
     if (!page) return;
@@ -10166,9 +10205,9 @@ RPGACE.register('researchTabs', {
   // tab's own module does its one real inject+fetch — never again this
   // session (the _firedKeys guard), and never for the other 6 tabs at once.
   _apply: function() {
-    var self = this;
-    var active = this._activeTab();
-    var sections = this._resolveSections();
+    var self = RPGACE.modules.researchTabs;
+    var active = self._activeTab();
+    var sections = self._resolveSections();
     var bar = document.getElementById('research-tab-bar');
     if (bar) {
       Array.prototype.forEach.call(bar.children, function(btn) {
@@ -10195,17 +10234,35 @@ RPGACE.register('researchTabs', {
   // Public entry point used by the leftNav drawer's Research sub-nav AND
   // the new Research Lab dashboard-card popup's sub-cards.
   show: function(key) {
+    var self = RPGACE.modules.researchTabs;
     localStorage.setItem('rpgace_research_tab', key);
     var page = document.getElementById('page-learning');
     var onResearch = page && page.classList.contains('active');
     if (!onResearch && typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.research);
-    this._inject();
-    this._apply();
-    var sections = this._resolveSections();
+    self._inject();
+    self._apply();
+    var sections = self._resolveSections();
     var target = sections[key];
     if (target) setTimeout(function() { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, onResearch ? 0 : 200);
     RPGACE.hooks.fire('research:tab-changed');
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Real, load-bearing external touchpoint: a sub-card click
+  // handler elsewhere in this file calls
+  // `RPGACE.modules.researchTabs.show(t.key)` directly. Also carries
+  // this module's own internal calls: `init`'s timers and hook
+  // listeners call `self._inject()`/`self._apply()`, and every ui
+  // function above reaches its siblings through `self.X` — every one of
+  // those `self`s is the module, so each lands here first and is
+  // routed on to the right namespace.
+  _activeTab: function() { return this.logic._activeTab(); },
+  _resolveSections: function() { return this.ui._resolveSections(); },
+  _inject: function() { return this.ui._inject(); },
+  _apply: function() { return this.ui._apply(); },
+  show: function(key) { return this.ui.show(key); },
 
 });
 /* ===END:researchTabs=== */
@@ -15566,6 +15623,30 @@ RPGACE.register('taxonomySync', {
     [21, 'Miscellaneous Ordinanda', 'misc unsorted uncategorised general note insight observation todo review'],
   ],
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 41 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 1 ui (_injectUI) / 6 logic (_detectPhylum,
+  // _runSync, _syncBatch, updateGapScore, markApplied, getTopGaps).
+  // `PHYLUM_MAP` stays a module-scope field, read by `logic._detectPhylum`.
+  // `init` stays a literal top-level function.
+  //
+  // Real, load-bearing external touchpoints, confirmed by grep, not
+  // assumed: `getTopGaps` is called directly via
+  // `RPGACE.modules.taxonomySync.getTopGaps(...)` from 3 real real
+  // sites (Bookworm's gap-widget badge, Morning Brief, and one more);
+  // `markApplied` is called directly from 3 real sites (Beat Log's
+  // artist-tagging flow, another). `updateGapScore` is called (guarded)
+  // from Feynman after a study session. All preserved via the
+  // pass-throughs below.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._injectUI(); });
@@ -15576,9 +15657,15 @@ RPGACE.register('taxonomySync', {
     });
   },
 
+  // ============================================================
+  // ui — the one real DOM touch in this module: the "🌿 Sync Taxonomy"
+  // button injected next to the encyclopedia sync control.
+  // ============================================================
+  ui: {
+
   _injectUI: function() {
     if (document.getElementById('tax-sync-btn')) return;
-    var self = this;
+    var self = RPGACE.modules.taxonomySync;
 
     // Find the encyclopedia sync button area to inject near it
     var targets = [
@@ -15605,9 +15692,18 @@ RPGACE.register('taxonomySync', {
     console.log('[RPGACE:taxonomySync] Button injected');
   },
 
+  },
+
+  // ============================================================
+  // logic — business logic/data: taxonomy sync, phylum detection,
+  // Supabase reads/writes. Zero DOM except _injectUI above.
+  // ============================================================
+  logic: {
+
   _detectPhylum: function(text) {
+    var self = RPGACE.modules.taxonomySync;
     var t = (text || '').toLowerCase();
-    var scores = this.PHYLUM_MAP.map(function(p) {
+    var scores = self.PHYLUM_MAP.map(function(p) {
       var keywords = p[2].toLowerCase().split(/[\s,]+/);
       var score = keywords.reduce(function(acc, kw) {
         return acc + (kw.length > 3 && t.includes(kw) ? 1 : 0);
@@ -15622,7 +15718,7 @@ RPGACE.register('taxonomySync', {
   },
 
   _runSync: function() {
-    var self = this;
+    var self = RPGACE.modules.taxonomySync;
     RPGACE.utils.toast('🌿 Fetching encyclopedia entries...', '#2ABFB0', 2000);
 
     RPGACE.sb.select('encyclopedia', 'order=created_at.desc&limit=50')
@@ -15665,7 +15761,7 @@ RPGACE.register('taxonomySync', {
   },
 
   _syncBatch: function(entries, idx, count) {
-    var self = this;
+    var self = RPGACE.modules.taxonomySync;
     if (idx >= entries.length) {
       RPGACE.utils.toast('✅ Taxonomy sync complete — ' + count + ' nodes added', '#2ABFB0', 4000);
       return;
@@ -15747,6 +15843,27 @@ RPGACE.register('taxonomySync', {
       'order=gap_score.desc&limit=' + limit + '&applied_in_beat=eq.false'
     );
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Real, load-bearing external touchpoints: `getTopGaps` and
+  // `markApplied` are each called directly via
+  // `RPGACE.modules.taxonomySync.<method>(...)` from 3 real sites
+  // across the file; `updateGapScore` is called (guarded) from Feynman.
+  // Also carries this module's own internal calls: `init`'s boot task
+  // calls `self._injectUI()`, `ui._injectUI`'s button onclick calls
+  // `self._runSync()`, and `logic._runSync`/`logic._syncBatch` reach
+  // `self._detectPhylum()`/`self._syncBatch()` — every one of those
+  // `self`s is the module, so each lands here first and is routed on to
+  // the right namespace.
+  _injectUI: function() { return this.ui._injectUI(); },
+  _detectPhylum: function(text) { return this.logic._detectPhylum(text); },
+  _runSync: function() { return this.logic._runSync(); },
+  _syncBatch: function(entries, idx, count) { return this.logic._syncBatch(entries, idx, count); },
+  updateGapScore: function(concept, score) { return this.logic.updateGapScore(concept, score); },
+  markApplied: function(concept) { return this.logic.markApplied(concept); },
+  getTopGaps: function(limit) { return this.logic.getTopGaps(limit); },
 
 });
 /* ===END:taxonomySync=== */
@@ -31577,6 +31694,53 @@ RPGACE.register('chroniclesLog', {
   FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System', bibliography: '📚 Bibliography' },
   CATEGORY_SUGGESTIONS: ['Equipment', 'Software & Plugins', 'Drum Kits & Samples', 'Studio & Rent', 'Marketing', 'Beat Sale', 'Sample Pack Sale', 'Mixing/Mastering Service', 'Travel', 'Other'],
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 42 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // predecessors already shipped and verified. Pure internal-structure
+  // refactor — zero functional, behavioural, UX, data or schema change;
+  // every function below was MOVED wholesale, never rewritten and never
+  // split down the middle.
+  //
+  // This module splits 7 ui (_injectPageShell, _renderFilterChips,
+  // _paintDigest, _renderSummary, _renderList, _showAddForm, _openCard)
+  // / 2 logic (_render, _renderOversightDigest). `_render` and
+  // `_renderOversightDigest` both go to `logic` on the same
+  // fetch/render-seam precedent already established this series (their
+  // real job is fetching + orchestrating, delegating the actual DOM
+  // write to already-separate named `ui` functions) — `_render` never
+  // touches DOM directly itself; `_renderOversightDigest`'s one DOM
+  // touch is a presence guard (`getElementById('chron-digest')`, bail
+  // if missing), not construction or a content write, and its real
+  // content write is fully delegated to the separately-named
+  // `_paintDigest`.
+  //
+  // Real, DANGEROUS shared-state risk, checked directly and handled
+  // with extra care: `_activeFilter`/`_searchText`/`_allItems`/
+  // `_digestCache`/`_digestFetching` are ALL undeclared, runtime-
+  // assigned module fields (never a top-level `field: null` key —
+  // `init` creates the first two, `_render`/`_renderOversightDigest`
+  // create the rest) — the exact undeclared-runtime-field bug class
+  // journalQoL._activeSource and oracleDevBridge.TABLE already hit
+  // earlier this series, invisible to a plain top-level-key grep. Every
+  // one of these fields is read/written across BOTH namespaces (e.g.
+  // `logic._render` sets `_allItems`, `ui._renderList` reads it) — every
+  // function that touches any of them uses `var self =
+  // RPGACE.modules.chroniclesLog;` (the MODULE, never `this`), so all
+  // five fields always resolve to the SAME shared storage regardless of
+  // which sub-namespace the reading/writing function lives in. Getting
+  // this wrong (e.g. a stray `this.` inside a moved function) would have
+  // silently split `_allItems` into disconnected `ui`/`logic` copies —
+  // `_render` would populate one copy, `_renderList` would forever read
+  // an empty other one, and the whole page would silently show nothing.
+  //
+  // Real, load-bearing external touchpoint, confirmed by grep: a
+  // dashboard card's `go:` function calls
+  // `RPGACE.modules.chroniclesLog._openCard()` directly. Preserved via
+  // the pass-through below.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     self._activeFilter = 'all';
@@ -31588,8 +31752,15 @@ RPGACE.register('chroniclesLog', {
     });
   },
 
+  // ============================================================
+  // ui — rendering/DOM: the full Chronicles page, filter chips, the
+  // digest paint, the summary chips, the item list, the add-sale/expense
+  // form, and the dashboard-card popup preview.
+  // ============================================================
+  ui: {
+
   _injectPageShell: function() {
-    var self = this;
+    var self = RPGACE.modules.chroniclesLog;
     if (!RPGACE.CONFIG || !RPGACE.CONFIG.pages) return;
     var pageId = 'page-' + RPGACE.CONFIG.pages.chronicles;
     if (document.getElementById(pageId)) return;
@@ -31617,7 +31788,7 @@ RPGACE.register('chroniclesLog', {
   },
 
   _renderFilterChips: function() {
-    var self = this;
+    var self = RPGACE.modules.chroniclesLog;
     var el = document.getElementById('chron-filters');
     if (!el) return;
     el.innerHTML = '';
@@ -31629,60 +31800,6 @@ RPGACE.register('chroniclesLog', {
       b.onclick = function() { self._activeFilter = f; self._renderFilterChips(); self._renderList(); };
       el.appendChild(b);
     });
-  },
-
-  _render: function() {
-    var self = this;
-    var csc = RPGACE.modules.careerStatCard;
-    if (!csc) return;
-    csc._fetchAll().then(function(data) {
-      var shipped = data.content.filter(function(r) { return csc._isShipped(r); });
-      var ideas = data.content.filter(function(r) { return !csc._isShipped(r); });
-      self._allItems = csc._buildItems(data, shipped, ideas);
-      self._renderSummary(data.finance || []);
-      self._renderFilterChips();
-      self._renderList();
-    }).catch(function(e) {
-      console.warn('[RPGACE:chroniclesLog] render failed', e.message);
-    });
-    self._renderOversightDigest();
-  },
-
-  // Journal/Chronicles/oversight cross-feed idea, Alex-confirmed July 24:
-  // "measured doses" on-open digest, sourced from all six oversight docs
-  // (not just minotaur_map) - kept deliberately light. Fetches ONCE per
-  // session (this project's own real freeze history came from repeated
-  // re-fetches on every page:show - careerStatCard._fetchAll had exactly
-  // this bug, fixed earlier), fails open/silent if any doc is unreachable,
-  // and shows short excerpts only - no markdown parsing, no new dependency.
-  _renderOversightDigest: function() {
-    var self = this;
-    var el = document.getElementById('chron-digest');
-    if (!el) return;
-    if (self._digestCache) { self._paintDigest(self._digestCache); return; }
-    if (self._digestFetching) return;
-    self._digestFetching = true;
-
-    Promise.all([
-      fetch('/CLAUDE.md').then(function(r) { return r.ok ? r.text() : null; }).catch(function() { return null; }),
-      fetch('/patch_notes.html').then(function(r) { return r.ok ? r.text() : null; }).catch(function() { return null; }),
-    ]).then(function(results) {
-      var claudeMd = results[0], patchNotes = results[1];
-      var lines = [];
-
-      if (claudeMd) {
-        var stateMatch = claudeMd.match(/^## Current state.*\n- (.+)$/m);
-        if (stateMatch) lines.push('🧭 ' + stateMatch[1].replace(/\*\*/g, '').slice(0, 160));
-      }
-      if (patchNotes) {
-        var cardMatch = patchNotes.match(/<div class="card-title">([^<]+)<\/div>/);
-        if (cardMatch) lines.push('📋 Latest: ' + cardMatch[1].replace(/&amp;/g, '&').slice(0, 160));
-      }
-
-      self._digestCache = lines;
-      self._digestFetching = false;
-      self._paintDigest(lines);
-    }).catch(function() { self._digestFetching = false; });
   },
 
   _paintDigest: function(lines) {
@@ -31717,7 +31834,7 @@ RPGACE.register('chroniclesLog', {
   },
 
   _renderList: function() {
-    var self = this;
+    var self = RPGACE.modules.chroniclesLog;
     var listEl = document.getElementById('chron-list');
     if (!listEl || !self._allItems) return;
     var q = self._searchText;
@@ -31749,7 +31866,7 @@ RPGACE.register('chroniclesLog', {
   },
 
   _showAddForm: function() {
-    var self = this;
+    var self = RPGACE.modules.chroniclesLog;
     var dd = RPGACE.modules.dashDeck;
     if (!dd || !dd._popup) { console.warn('[RPGACE:chroniclesLog] dashDeck._popup unavailable'); return; }
     var pop = dd._popup({ eyebrow: '📜 The Chronicles', title: 'Log a real sale or expense', width: '480px', accent: 'var(--gold)' });
@@ -31805,7 +31922,13 @@ RPGACE.register('chroniclesLog', {
   // _buildItems/detail-popup logic the dashboard feed and full log page
   // already use) plus a real button into the full #page-chronicles page.
   _openCard: function() {
-    var self = this;
+    // Pre-existing dead local, unused anywhere in this function's own
+    // body (checked directly) — kept and swapped to the module handle
+    // in place rather than deleted, same treatment as
+    // knowledgeGap.ui._render / scheduleOracle.ui._showOptionSequence
+    // elsewhere in this series: deleting an inert local would be a real
+    // source change outside a pure refactor's remit.
+    var self = RPGACE.modules.chroniclesLog;
     var dd = RPGACE.modules.dashDeck;
     var csc = RPGACE.modules.careerStatCard;
     if (!dd || !dd._popup || !csc) return;
@@ -31835,6 +31958,88 @@ RPGACE.register('chroniclesLog', {
       if (listEl) listEl.textContent = 'Load failed: ' + e.message;
     });
   }
+
+  },
+
+  // ============================================================
+  // logic — business logic/data: the two fetch-and-delegate
+  // orchestrators. Neither constructs or writes DOM directly.
+  // ============================================================
+  logic: {
+
+  _render: function() {
+    var self = RPGACE.modules.chroniclesLog;
+    var csc = RPGACE.modules.careerStatCard;
+    if (!csc) return;
+    csc._fetchAll().then(function(data) {
+      var shipped = data.content.filter(function(r) { return csc._isShipped(r); });
+      var ideas = data.content.filter(function(r) { return !csc._isShipped(r); });
+      self._allItems = csc._buildItems(data, shipped, ideas);
+      self._renderSummary(data.finance || []);
+      self._renderFilterChips();
+      self._renderList();
+    }).catch(function(e) {
+      console.warn('[RPGACE:chroniclesLog] render failed', e.message);
+    });
+    self._renderOversightDigest();
+  },
+
+  // Journal/Chronicles/oversight cross-feed idea, Alex-confirmed July 24:
+  // "measured doses" on-open digest, sourced from all six oversight docs
+  // (not just minotaur_map) - kept deliberately light. Fetches ONCE per
+  // session (this project's own real freeze history came from repeated
+  // re-fetches on every page:show - careerStatCard._fetchAll had exactly
+  // this bug, fixed earlier), fails open/silent if any doc is unreachable,
+  // and shows short excerpts only - no markdown parsing, no new dependency.
+  _renderOversightDigest: function() {
+    var self = RPGACE.modules.chroniclesLog;
+    var el = document.getElementById('chron-digest');
+    if (!el) return;
+    if (self._digestCache) { self._paintDigest(self._digestCache); return; }
+    if (self._digestFetching) return;
+    self._digestFetching = true;
+
+    Promise.all([
+      fetch('/CLAUDE.md').then(function(r) { return r.ok ? r.text() : null; }).catch(function() { return null; }),
+      fetch('/patch_notes.html').then(function(r) { return r.ok ? r.text() : null; }).catch(function() { return null; }),
+    ]).then(function(results) {
+      var claudeMd = results[0], patchNotes = results[1];
+      var lines = [];
+
+      if (claudeMd) {
+        var stateMatch = claudeMd.match(/^## Current state.*\n- (.+)$/m);
+        if (stateMatch) lines.push('🧭 ' + stateMatch[1].replace(/\*\*/g, '').slice(0, 160));
+      }
+      if (patchNotes) {
+        var cardMatch = patchNotes.match(/<div class="card-title">([^<]+)<\/div>/);
+        if (cardMatch) lines.push('📋 Latest: ' + cardMatch[1].replace(/&amp;/g, '&').slice(0, 160));
+      }
+
+      self._digestCache = lines;
+      self._digestFetching = false;
+      self._paintDigest(lines);
+    }).catch(function() { self._digestFetching = false; });
+  },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Real, load-bearing external touchpoint: a dashboard card's
+  // `go:` function calls `RPGACE.modules.chroniclesLog._openCard()`
+  // directly. Also carries this module's own internal calls and the
+  // shared-state routing described in the G53 block above — every
+  // `self` inside a moved function is the module, so each lands here
+  // first and is routed on to the right namespace.
+  _injectPageShell: function() { return this.ui._injectPageShell(); },
+  _renderFilterChips: function() { return this.ui._renderFilterChips(); },
+  _paintDigest: function(lines) { return this.ui._paintDigest(lines); },
+  _renderSummary: function(finance) { return this.ui._renderSummary(finance); },
+  _renderList: function() { return this.ui._renderList(); },
+  _showAddForm: function() { return this.ui._showAddForm(); },
+  _openCard: function() { return this.ui._openCard(); },
+  _render: function() { return this.logic._render(); },
+  _renderOversightDigest: function() { return this.logic._renderOversightDigest(); },
+
 });
 /* ===END:chroniclesLog=== */
 
