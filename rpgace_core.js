@@ -14016,6 +14016,170 @@ RPGACE.register('dashDeck', {
     RPGACE.registerBootTask(function() { self._inject(); self._relocateQuestBoard(); });
   },
 
+  // Order (July 20, Pass 2 — Fable's grouping): learning/building row, then
+  // daily-use row, then knowledge-storage row. Oversight moved to last slot;
+  // Agenda/Encyclopedia/Journal added as simple showPage navigation cards,
+  // mirroring Oracle's own pattern (no popup needed — each is a full page).
+
+  // Live pending-review count (taxonomy_proposals + taxonomy_links), set by
+  // _refreshGlance. null until the first fetch resolves - see the Taxonomy &
+  // Review card's go() for why null routes to the queue, not the browse page.
+  _pendingReviewCount: null,
+
+  MODULES: [
+    // Aug 15 2026 (A5 Phase 1, then same-day follow-up) — the "🧠 Research
+    // Lab" card is RETIRED entirely, not just narrowed. Idea Bank/Beat
+    // Log/Corpus/Upload Workshop/Bibliography moved to Content
+    // Pipeline/Corpus/Bookworm in Phase 1; File Analyzer + Video Finder
+    // (the last 2 tabs) moved to Bookworm same day, per Alex's direct
+    // ask after hand-testing Phase 1 ("i want these in bookworm under
+    // the bookworm update i wanted too" — ties to A8). Nothing left here
+    // to justify its own dashboard tile. dashDeck._openResearch() is kept
+    // defined but unreferenced (same "kept on disk, nothing 404s"
+    // precedent as the Meanders page) in case a future pass wants it back.
+    // Aug 15 2026 (A5 Phase 1) — Corpus's own stand-alone dashboard card
+    // was added here, per Alex's own literal wording ("corpus should be a
+    // stand-alone card in dashboard"). REAL, CONFIRMED SUPERSESSION, Aug 31
+    // 2026 (UI10) — Alex's own later, direct ask ("fully absorb corpus
+    // into audio worm, the UI module is not needed there"): the card is
+    // retired outright, not kept alongside the worm-picker route. MusicWorm
+    // is now reachable only via Bookworm's own worm-picker (dashDeck
+    // ._openBookworm, UI12) -> the real #page-musicworm (UI11). refCorpus
+    // itself is untouched — still a real River VII module (CLAUDE.md rule
+    // 15) — only this dashboard entry point is gone.
+    { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
+    // July 24 round 3 (Alex: the two tiles read as duplicates). Merged back
+    // into ONE card. Round 2's separate 'reviewQueue' tile had the right
+    // diagnosis (review needed a real card, not a stat line) but the wrong
+    // shape: two adjacent tiles fed by the SAME pending count, one
+    // navigating, one acting, both showing the same number. This card is now
+    // primary-action = review, with Phylum Path browse as the empty-queue
+    // fallback. Browsing is never stranded - leftNav keeps its own
+    // '🧬 Phylum Path' entry. Also drops a real emoji collision: 📋 was used
+    // by both this tile and 'agenda'.
+    // _pendingReviewCount is set by _refreshGlance below. null = the count
+    // hasn't resolved yet, and an unresolved count deliberately opens the
+    // QUEUE rather than navigating away: _openQueue handles empty gracefully
+    // ("Nothing waiting - all caught up"), whereas navigating away from a
+    // click that meant "review" is the exact failure reported twice tonight.
+    // Aug 11 2026 (real /paranoia+/Engineer pass, Alex's own ask: "make a
+    // similar thing to chronicles... top 5 show most recent, skip button
+    // to just access the actual taxonomy") — now opens _openCard() (a
+    // compact top-5-most-recent view, mirroring chroniclesLog._openCard()
+    // exactly) instead of the full _openQueue() (which renders every
+    // pending row — 51 real rows as of this session, genuinely long).
+    // _openCard() itself has the skip-to-tree button; the empty-queue
+    // short-circuit below is unchanged, since there's nothing to review.
+    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements and fusion links, or browse your knowledge tree.', go: function() {
+      var d = RPGACE.modules.dashDeck;
+      var rq = RPGACE.modules.taxonomyReviewQueue;
+      if (d && d._pendingReviewCount !== 0 && rq && rq._openCard) { rq._openCard(); return; }
+      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
+    } },
+    { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
+    { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
+    { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } },
+    { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
+    { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
+    // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
+    // absorption, Alex's explicit /deduplication ask) — this card is
+    // DELETED, not just relabeled. Every real video_jobs row has always
+    // been created by beatLog._submit, so it was always a real step
+    // inside Content Pipeline's own flow, never an independent workflow.
+    // Its real functionality (stage tracker, paths+exports) now lives
+    // inline in the Production Panel's Phase 4 — see
+    // contentProductionLive._buildVideoJobStatus. See
+    // engineer_pass_2026-08-06_11.txt for the full record.
+    { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
+    { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
+    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'Explaining docs, truth docs, and Smoke Test — what actually works.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
+    { key: 'chronicles', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📜', name: 'The Chronicles', desc: 'Every real win, sale, and expense — one searchable log.', go: function() { RPGACE.modules.chroniclesLog._openCard(); } },
+  ],
+
+  // ── GENERIC relocation infra (July 20, Pass 1) — same live-node-move
+  // ── pattern proven by _ensureHolder/_stashBookworm, generalised so the
+  // ── Knowledge Gap Tracker (#kg-panel) and Content Production Live
+  // ── (#cpl-widget) widgets can live in their dashDeck card popups too.
+  // ── One shared hidden holder (#dd-stash-holder) parks any relocated
+  // ── widget while its popup is closed. The bookworm path deliberately
+  // ── keeps its own proven _ensureHolder/_stashBookworm untouched.
+  //
+  // A follow-up pass wanting to relocate the quest board can reuse this
+  // trio verbatim: _ensureStash() (holder), _stashWidget(id,force)
+  // (move-back), _widgetPopups + closeWidgetPopup(id) (let a widget's own
+  // action button dismiss the hosting popup before it navigates / opens a
+  // higher-priority overlay).
+  _widgetPopups: {}, // widgetId -> pop.close fn, registered while its popup is open
+
+  // Metadata for every relocatable panel, in ONE place (rule 8) so
+  // _openBookworm's worm picker, _openPipeline's sub-step buttons, and any
+  // other caller (e.g. loadNote's "Load" handler) all open the exact same
+  // popup for a given panel instead of each re-declaring its identity.
+  PANEL_POPUPS: {
+    'file-analyzer-panel':   { eyebrow: '🐛 Videoworm',                title: 'Analyse a video into real insights',        accent: 'var(--purple)', width: '760px' },
+    'video-finder-panel':    { eyebrow: '🐛 Videoworm: Find Videos',   title: 'Search YouTube and feed URLs into Videoworm', accent: 'var(--purple)', width: '720px' },
+    'bookworm-bibliography': { eyebrow: '📚 Bibliography',             title: 'Books you have finished',                    accent: 'var(--purple)', width: '640px' },
+    'cp-idea-bank':          { eyebrow: '💡 Idea Bank',                title: 'Every saved content idea',                   accent: 'var(--gold)',   width: '720px' },
+    'beat-log-panel':        { eyebrow: '🥁 Beat Log',                 title: 'Log a beat into the Content Pipeline',       accent: 'var(--gold)',   width: '720px' },
+    'video-workshop-panel':  { eyebrow: '🔀 Upload Workshop',          title: 'Turn a finished video into an upload strategy', accent: 'var(--gold)', width: '760px' }
+  },
+
+  // ── PAGE_PANELS / _openPage — Aug 31 2026 (UI11), the real routable-page
+  // sibling to PANEL_POPUPS/_openPanelPopup above. Same relocate-node
+  // discipline (the real DOM node is MOVED, never cloned/rebuilt, so every
+  // listener and inline onclick on it keeps working exactly as before) but
+  // the destination is a real #page-<slug> div instead of a transient
+  // popup. Pages never leave the DOM (showPage() only toggles .active), so
+  // once a panel is moved in on its first real visit, it simply STAYS —
+  // there is no "close" to move it back on, unlike a popup.
+  //
+  // taxtree-manual-btn sibling-carry: identical real problem and identical
+  // fix as _openPanelPopup's own (see that function's own comment) — only
+  // #cp-idea-bank/#beat-log-panel ever anchor phylumPath's manual-placement
+  // button as a DOM sibling. Whichever of Idea Bank/Beat Log is visited
+  // FIRST carries the button along permanently — the exact same order-
+  // dependent behavior _openPanelPopup already had, not a new quirk this
+  // introduces.
+  PAGE_PANELS: {
+    'bookworm-widget':       { slug: 'bookworm',        ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectDashboardWidget) m._injectDashboardWidget(); } },
+    'file-analyzer-panel':   { slug: 'videoworm',        ensure: null },
+    'video-finder-panel':    { slug: 'videoworm',        ensure: null },
+    'ref-corpus-panel':      { slug: 'musicworm',        ensure: function() { var m = RPGACE.modules.refCorpus; if (m && m._inject) m._inject(); } },
+    'bookworm-bibliography': { slug: 'bibliography',     ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectBibliographySection) m._injectBibliographySection(); } },
+    'cpl-widget':            { slug: 'content-pipeline', ensure: function() { var m = RPGACE.modules.contentProductionLive; if (m && m._injectDashboardWidget) m._injectDashboardWidget(); } },
+    'cp-idea-bank':          { slug: 'idea-bank',        ensure: function() { var m = RPGACE.modules.conidPot; if (m && m._injectIdeaBank) m._injectIdeaBank(); } },
+    'beat-log-panel':        { slug: 'beat-log',         ensure: function() { var m = RPGACE.modules.beatLog; if (m && m._inject) m._inject(); } },
+    'video-workshop-panel':  { slug: 'upload-workshop',  ensure: null }
+  },
+
+
+  // G53 (Sep 2026) split note: ui holds real DOM construction - every
+  // card/popup builder, the shared _popup() scaffolding itself (the
+  // single most externally-depended-on function in the whole app, 38
+  // real direct call sites plus dozens more via local alias), and the
+  // widget-relocation helpers. logic holds the 2 genuinely non-DOM
+  // functions - closeWidgetPopup (a lookup + call, no DOM of its own)
+  // and _openPanelById (pure metadata delegation). Every moved function
+  // was MOVED wholesale, never rewritten. Data fields (_pendingReviewCount/
+  // MODULES/_widgetPopups/PANEL_POPUPS/PAGE_PANELS) all stay module-scope,
+  // grouped together here rather than left interleaved with the functions
+  // that use them, matching this series' established data-field convention.
+  // Any function that reads a module-scope field or calls a sibling method
+  // resolves through a direct `RPGACE.modules.dashDeck.X` reference (or
+  // `var self = RPGACE.modules.dashDeck;` where the same field/method is
+  // touched more than once), never bare `this.` - a function invoked as
+  // ui.X()/logic.X() has `this` bound to that sub-object, not the module.
+  // The real, highest-stakes fixes: _widgetPopups is read/written by 4
+  // separate popup-opening functions (_openGaps/_openPanelPopup/
+  // _openMorningBrief/closeWidgetPopup) and PAGE_PANELS is read by
+  // _openPage, a function with dozens of real external callers across the
+  // whole app - both were bare `this.X` in the original source and would
+  // have silently broken (looked up on the wrong sub-object) the instant
+  // this split shipped without the fix.
+
+  // ui - rendering/DOM.
+  ui: {
+
   // ── Pass 2 (July 20): the daily/weekly quest board used to render on the
   // ── dashboard alongside this deck — debulked into the Agenda page
   // ── (#page-quests), which already holds the career/health/lifestyle Quest
@@ -14099,86 +14263,6 @@ RPGACE.register('dashDeck', {
     document.head.appendChild(st);
   },
 
-  // Order (July 20, Pass 2 — Fable's grouping): learning/building row, then
-  // daily-use row, then knowledge-storage row. Oversight moved to last slot;
-  // Agenda/Encyclopedia/Journal added as simple showPage navigation cards,
-  // mirroring Oracle's own pattern (no popup needed — each is a full page).
-
-  // Live pending-review count (taxonomy_proposals + taxonomy_links), set by
-  // _refreshGlance. null until the first fetch resolves - see the Taxonomy &
-  // Review card's go() for why null routes to the queue, not the browse page.
-  _pendingReviewCount: null,
-
-  MODULES: [
-    // Aug 15 2026 (A5 Phase 1, then same-day follow-up) — the "🧠 Research
-    // Lab" card is RETIRED entirely, not just narrowed. Idea Bank/Beat
-    // Log/Corpus/Upload Workshop/Bibliography moved to Content
-    // Pipeline/Corpus/Bookworm in Phase 1; File Analyzer + Video Finder
-    // (the last 2 tabs) moved to Bookworm same day, per Alex's direct
-    // ask after hand-testing Phase 1 ("i want these in bookworm under
-    // the bookworm update i wanted too" — ties to A8). Nothing left here
-    // to justify its own dashboard tile. dashDeck._openResearch() is kept
-    // defined but unreferenced (same "kept on disk, nothing 404s"
-    // precedent as the Meanders page) in case a future pass wants it back.
-    // Aug 15 2026 (A5 Phase 1) — Corpus's own stand-alone dashboard card
-    // was added here, per Alex's own literal wording ("corpus should be a
-    // stand-alone card in dashboard"). REAL, CONFIRMED SUPERSESSION, Aug 31
-    // 2026 (UI10) — Alex's own later, direct ask ("fully absorb corpus
-    // into audio worm, the UI module is not needed there"): the card is
-    // retired outright, not kept alongside the worm-picker route. MusicWorm
-    // is now reachable only via Bookworm's own worm-picker (dashDeck
-    // ._openBookworm, UI12) -> the real #page-musicworm (UI11). refCorpus
-    // itself is untouched — still a real River VII module (CLAUDE.md rule
-    // 15) — only this dashboard entry point is gone.
-    { key: 'bookworm', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📖', name: 'Bookworm', desc: 'Whole books, chapter by chapter, into the taxonomy — with review checkpoints.', go: function() { RPGACE.modules.dashDeck._openBookworm(); } },
-    // July 24 round 3 (Alex: the two tiles read as duplicates). Merged back
-    // into ONE card. Round 2's separate 'reviewQueue' tile had the right
-    // diagnosis (review needed a real card, not a stat line) but the wrong
-    // shape: two adjacent tiles fed by the SAME pending count, one
-    // navigating, one acting, both showing the same number. This card is now
-    // primary-action = review, with Phylum Path browse as the empty-queue
-    // fallback. Browsing is never stranded - leftNav keeps its own
-    // '🧬 Phylum Path' entry. Also drops a real emoji collision: 📋 was used
-    // by both this tile and 'agenda'.
-    // _pendingReviewCount is set by _refreshGlance below. null = the count
-    // hasn't resolved yet, and an unresolved count deliberately opens the
-    // QUEUE rather than navigating away: _openQueue handles empty gracefully
-    // ("Nothing waiting - all caught up"), whereas navigating away from a
-    // click that meant "review" is the exact failure reported twice tonight.
-    // Aug 11 2026 (real /paranoia+/Engineer pass, Alex's own ask: "make a
-    // similar thing to chronicles... top 5 show most recent, skip button
-    // to just access the actual taxonomy") — now opens _openCard() (a
-    // compact top-5-most-recent view, mirroring chroniclesLog._openCard()
-    // exactly) instead of the full _openQueue() (which renders every
-    // pending row — 51 real rows as of this session, genuinely long).
-    // _openCard() itself has the skip-to-tree button; the empty-queue
-    // short-circuit below is unchanged, since there's nothing to review.
-    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements and fusion links, or browse your knowledge tree.', go: function() {
-      var d = RPGACE.modules.dashDeck;
-      var rq = RPGACE.modules.taxonomyReviewQueue;
-      if (d && d._pendingReviewCount !== 0 && rq && rq._openCard) { rq._openCard(); return; }
-      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
-    } },
-    { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
-    { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
-    { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } },
-    { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — turn gaps into study quests.', go: function() { RPGACE.modules.dashDeck._openGaps(); } },
-    { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
-    // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
-    // absorption, Alex's explicit /deduplication ask) — this card is
-    // DELETED, not just relabeled. Every real video_jobs row has always
-    // been created by beatLog._submit, so it was always a real step
-    // inside Content Pipeline's own flow, never an independent workflow.
-    // Its real functionality (stage tracker, paths+exports) now lives
-    // inline in the Production Panel's Phase 4 — see
-    // contentProductionLive._buildVideoJobStatus. See
-    // engineer_pass_2026-08-06_11.txt for the full record.
-    { key: 'encyclopedia', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📖', name: 'Encyclopedia', desc: 'Your compiled knowledge base, auto-built from the content pipeline.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.encyclopedia); } },
-    { key: 'journal', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '📓', name: 'Journal', desc: 'Your running log — reflections, wins, and what to improve next.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.journal); } },
-    { key: 'oversight', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Oversight', desc: 'Explaining docs, truth docs, and Smoke Test — what actually works.', go: function() { RPGACE.modules.dashDeck._openOversight(); } },
-    { key: 'chronicles', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📜', name: 'The Chronicles', desc: 'Every real win, sale, and expense — one searchable log.', go: function() { RPGACE.modules.chroniclesLog._openCard(); } },
-  ],
-
   _inject: function() {
     // Aug 31 2026 (UI13) — cpl-widget is no longer ever relocated into a
     // dashDeck overlay popup (_openPipeline is now pure navigation, see its
@@ -14193,17 +14277,17 @@ RPGACE.register('dashDeck', {
     // same real class of bug (UI12 stopped relocating it into a popup too)
     // — _stashBookworm() removed from both call sites in this function for
     // the identical reason.
-    if (document.getElementById('dd-deck')) { this._stashWidget('kg-panel'); this._stashWidget('mb-wrap'); this._refreshGlance(); return; }
+    if (document.getElementById('dd-deck')) { RPGACE.modules.dashDeck._stashWidget('kg-panel'); RPGACE.modules.dashDeck._stashWidget('mb-wrap'); RPGACE.modules.dashDeck._refreshGlance(); return; }
     var page = document.getElementById('page-dashboard');
     if (!page) return;
-    this._injectStyles();
-    var self = this;
+    RPGACE.modules.dashDeck._injectStyles();
+    var self = RPGACE.modules.dashDeck;
 
     var deck = document.createElement('div');
     deck.id = 'dd-deck';
     var grid = document.createElement('div');
     grid.id = 'dd-grid';
-    this.MODULES.forEach(function(m) {
+    self.MODULES.forEach(function(m) {
       var card = document.createElement('div');
       card.className = 'dd-card';
       card.id = 'dd-card-' + m.key;
@@ -14240,9 +14324,9 @@ RPGACE.register('dashDeck', {
     // child: hero (global) → module grid → needs-you → existing widgets.
     page.insertBefore(deck, page.firstChild);
 
-    this._stashWidget('kg-panel');
-    this._stashWidget('mb-wrap'); // cpl-widget/bookworm-widget deliberately NOT here — see _inject's own comment above.
-    this._refreshGlance();
+    self._stashWidget('kg-panel');
+    self._stashWidget('mb-wrap'); // cpl-widget/bookworm-widget deliberately NOT here — see _inject's own comment above.
+    self._refreshGlance();
   },
 
   // Live stats - cheap reads only (localStorage + two cached Supabase
@@ -14466,27 +14550,12 @@ RPGACE.register('dashDeck', {
   _stashBookworm: function(force) {
     var w = document.getElementById('bookworm-widget');
     if (!w) return;
-    var holder = this._ensureHolder();
+    var holder = RPGACE.modules.dashDeck._ensureHolder();
     if (!holder) return;
     if (w.parentNode === holder) return;                         // already stashed
     if (!force && w.closest && w.closest('.dd-overlay')) return; // inside an open popup — leave it
     holder.appendChild(w);
   },
-
-  // ── GENERIC relocation infra (July 20, Pass 1) — same live-node-move
-  // ── pattern proven by _ensureHolder/_stashBookworm, generalised so the
-  // ── Knowledge Gap Tracker (#kg-panel) and Content Production Live
-  // ── (#cpl-widget) widgets can live in their dashDeck card popups too.
-  // ── One shared hidden holder (#dd-stash-holder) parks any relocated
-  // ── widget while its popup is closed. The bookworm path deliberately
-  // ── keeps its own proven _ensureHolder/_stashBookworm untouched.
-  //
-  // A follow-up pass wanting to relocate the quest board can reuse this
-  // trio verbatim: _ensureStash() (holder), _stashWidget(id,force)
-  // (move-back), _widgetPopups + closeWidgetPopup(id) (let a widget's own
-  // action button dismiss the hosting popup before it navigates / opens a
-  // higher-priority overlay).
-  _widgetPopups: {}, // widgetId -> pop.close fn, registered while its popup is open
 
   _ensureStash: function() {
     var holder = document.getElementById('dd-stash-holder');
@@ -14509,27 +14578,11 @@ RPGACE.register('dashDeck', {
   _stashWidget: function(id, force) {
     var w = document.getElementById(id);
     if (!w) return;
-    var holder = this._ensureStash();
+    var holder = RPGACE.modules.dashDeck._ensureStash();
     if (!holder) return;
     if (w.parentNode === holder) return;                         // already stashed
     if (!force && w.closest && w.closest('.dd-overlay')) return; // inside an open popup — leave it
     holder.appendChild(w);
-  },
-
-  // Called from inside a relocated widget's own action handler (Study Now,
-  // Oracle session, Beatstars Listing) BEFORE it navigates or opens a
-  // drawer/overlay — otherwise that surface renders BEHIND the still-open
-  // dashDeck popup (kg's Feynman drawer is z-index 9999 < the popup's
-  // 99999; showPage('advisor') just swaps pages under the overlay).
-  // Running pop.close() here fires the popup's onClose (force-stashes the
-  // widget back to the holder) then removes the overlay. Returns true if a
-  // popup was actually closed. Safe no-op when no popup hosts the widget
-  // (e.g. the widget is still on the raw dashboard) — the caller proceeds
-  // either way.
-  closeWidgetPopup: function(id) {
-    var fn = this._widgetPopups[id];
-    if (fn) { try { fn(); } catch (e) {} return true; }
-    return false;
   },
 
   // ── Rebuilt Aug 31 2026 (UI12) — this used to embed the live bookworm-
@@ -14543,7 +14596,7 @@ RPGACE.register('dashDeck', {
   // to jump back into" concept (bookworm._openBook(id), pre-existing),
   // so it's the only one that gets a real Resume button.
   _openBookworm: function() {
-    var self = this;
+    var self = RPGACE.modules.dashDeck;
     var pop = self._popup({
       eyebrow: '📖 Bookworm',
       title: 'Choose where to go',
@@ -14629,7 +14682,7 @@ RPGACE.register('dashDeck', {
   // ── - real single-tab lazy loading (see researchTabs' own July 23 note)
   // ── means only that one tab's widget actually loads, not all 7 at once.
   _openResearch: function() {
-    var pop = this._popup({ eyebrow: '🧠 Research Lab', title: 'Pick a sub-nav', accent: 'var(--purple)', width: '520px' });
+    var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🧠 Research Lab', title: 'Pick a sub-nav', accent: 'var(--purple)', width: '520px' });
     var body = pop.box;
     var rt = RPGACE.modules.researchTabs;
     var tabs = (rt && rt.TABS) ? rt.TABS : [];
@@ -14662,7 +14715,7 @@ RPGACE.register('dashDeck', {
     // Oversight section) - smoke_test.html is the genuinely new 8th doc,
     // added here for the first time (it existed as a file with zero
     // in-app link until this fix, a real reachability bug Alex caught).
-    var pop = this._popup({ eyebrow: '📚 Oversight', title: 'Explaining docs, truth docs, and 3 new layers', accent: 'var(--blue)', width: '620px' });
+    var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📚 Oversight', title: 'Explaining docs, truth docs, and 3 new layers', accent: 'var(--blue)', width: '620px' });
     var body = pop.box;
     // July 31 real fix: this list had already unilaterally declared
     // taxonomy_placement_rules.txt "The 7th doc" with no matching entry
@@ -14808,7 +14861,7 @@ RPGACE.register('dashDeck', {
   // ── gap-list query that used to live here is gone — the widget already
   // ── renders the same data (taxonomySync.getTopGaps) with richer rows.
   _openGaps: function() {
-    var self = this;
+    var self = RPGACE.modules.dashDeck;
     var w = document.getElementById('kg-panel');
     if (!w) {
       var kg = RPGACE.modules.knowledgeGap;
@@ -14880,7 +14933,7 @@ RPGACE.register('dashDeck', {
   // AFTER the node is in the popup and visible, so anything measuring or
   // injecting into it sees the real, live layout.
   _openPanelPopup: function(opts) {
-    var self = this;
+    var self = RPGACE.modules.dashDeck;
     opts = opts || {};
     var panelId = opts.panelId;
     var panel = document.getElementById(panelId);
@@ -14942,67 +14995,6 @@ RPGACE.register('dashDeck', {
     return pop;
   },
 
-  // Metadata for every relocatable panel, in ONE place (rule 8) so
-  // _openBookworm's worm picker, _openPipeline's sub-step buttons, and any
-  // other caller (e.g. loadNote's "Load" handler) all open the exact same
-  // popup for a given panel instead of each re-declaring its identity.
-  PANEL_POPUPS: {
-    'file-analyzer-panel':   { eyebrow: '🐛 Videoworm',                title: 'Analyse a video into real insights',        accent: 'var(--purple)', width: '760px' },
-    'video-finder-panel':    { eyebrow: '🐛 Videoworm: Find Videos',   title: 'Search YouTube and feed URLs into Videoworm', accent: 'var(--purple)', width: '720px' },
-    'bookworm-bibliography': { eyebrow: '📚 Bibliography',             title: 'Books you have finished',                    accent: 'var(--purple)', width: '640px' },
-    'cp-idea-bank':          { eyebrow: '💡 Idea Bank',                title: 'Every saved content idea',                   accent: 'var(--gold)',   width: '720px' },
-    'beat-log-panel':        { eyebrow: '🥁 Beat Log',                 title: 'Log a beat into the Content Pipeline',       accent: 'var(--gold)',   width: '720px' },
-    'video-workshop-panel':  { eyebrow: '🔀 Upload Workshop',          title: 'Turn a finished video into an upload strategy', accent: 'var(--gold)', width: '760px' }
-  },
-
-  // Convenience wrapper: open a relocatable panel by id using its own
-  // registered identity above, with an optional lazy-inject function.
-  //
-  // SUPERSEDED, Aug 31 2026 (UI11) — zero real remaining callers: every
-  // real call site that used to open one of these 6 panels in a transient
-  // popup (_openBookworm/_openPipeline's own jump buttons, loadNote's Load
-  // handler, both real Beat Log retroactive-open paths) now calls
-  // dashDeck._openPage() instead, landing on a real permanent page (UI11)
-  // rather than a popup. _openPanelPopup/_openPanelById/PANEL_POPUPS are
-  // left defined rather than deleted — same "kept on disk, nothing 404s"
-  // precedent as _openResearch() — in case a future pass wants the
-  // transient-popup shape back for something new.
-  _openPanelById: function(panelId, ensureFn) {
-    var meta = this.PANEL_POPUPS[panelId] || {};
-    return this._openPanelPopup({
-      panelId: panelId, ensure: ensureFn,
-      eyebrow: meta.eyebrow, title: meta.title, accent: meta.accent, width: meta.width
-    });
-  },
-
-  // ── PAGE_PANELS / _openPage — Aug 31 2026 (UI11), the real routable-page
-  // sibling to PANEL_POPUPS/_openPanelPopup above. Same relocate-node
-  // discipline (the real DOM node is MOVED, never cloned/rebuilt, so every
-  // listener and inline onclick on it keeps working exactly as before) but
-  // the destination is a real #page-<slug> div instead of a transient
-  // popup. Pages never leave the DOM (showPage() only toggles .active), so
-  // once a panel is moved in on its first real visit, it simply STAYS —
-  // there is no "close" to move it back on, unlike a popup.
-  //
-  // taxtree-manual-btn sibling-carry: identical real problem and identical
-  // fix as _openPanelPopup's own (see that function's own comment) — only
-  // #cp-idea-bank/#beat-log-panel ever anchor phylumPath's manual-placement
-  // button as a DOM sibling. Whichever of Idea Bank/Beat Log is visited
-  // FIRST carries the button along permanently — the exact same order-
-  // dependent behavior _openPanelPopup already had, not a new quirk this
-  // introduces.
-  PAGE_PANELS: {
-    'bookworm-widget':       { slug: 'bookworm',        ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectDashboardWidget) m._injectDashboardWidget(); } },
-    'file-analyzer-panel':   { slug: 'videoworm',        ensure: null },
-    'video-finder-panel':    { slug: 'videoworm',        ensure: null },
-    'ref-corpus-panel':      { slug: 'musicworm',        ensure: function() { var m = RPGACE.modules.refCorpus; if (m && m._inject) m._inject(); } },
-    'bookworm-bibliography': { slug: 'bibliography',     ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectBibliographySection) m._injectBibliographySection(); } },
-    'cpl-widget':            { slug: 'content-pipeline', ensure: function() { var m = RPGACE.modules.contentProductionLive; if (m && m._injectDashboardWidget) m._injectDashboardWidget(); } },
-    'cp-idea-bank':          { slug: 'idea-bank',        ensure: function() { var m = RPGACE.modules.conidPot; if (m && m._injectIdeaBank) m._injectIdeaBank(); } },
-    'beat-log-panel':        { slug: 'beat-log',         ensure: function() { var m = RPGACE.modules.beatLog; if (m && m._inject) m._inject(); } },
-    'video-workshop-panel':  { slug: 'upload-workshop',  ensure: null }
-  },
-
   // Navigate to a real page, relocating its real panel node into it on
   // first visit (idempotent — a panel already parented to its target page
   // is left untouched on a repeat call). opts.after runs post-navigation,
@@ -15010,7 +15002,7 @@ RPGACE.register('dashDeck', {
   // specific book/ConID) once the page itself is showing.
   _openPage: function(panelId, opts) {
     opts = opts || {};
-    var meta = this.PAGE_PANELS[panelId];
+    var meta = RPGACE.modules.dashDeck.PAGE_PANELS[panelId];
     if (!meta) { console.warn('[dashDeck] _openPage: no PAGE_PANELS entry for', panelId); return; }
     var target = document.getElementById('page-' + meta.slug);
     if (!target) { console.warn('[dashDeck] _openPage: missing #page-' + meta.slug); return; }
@@ -15055,7 +15047,7 @@ RPGACE.register('dashDeck', {
   // same lazy-load-on-first-real-use behavior the July 23 performance fix
   // relied on (previously gated behind research:tab-active==='corpus').
   _openCorpus: function() {
-    var self = this;
+    var self = RPGACE.modules.dashDeck;
     var w = document.getElementById('ref-corpus-panel');
     if (!w) {
       var rc = RPGACE.modules.refCorpus;
@@ -15121,7 +15113,7 @@ RPGACE.register('dashDeck', {
   // Workshop (its real strategy-generation feature isn't built yet) never
   // do, per Alex's own direct confirmation.
   _openPipeline: function() {
-    var self = this;
+    var self = RPGACE.modules.dashDeck;
     var pop = self._popup({
       eyebrow: '🎬 Content Pipeline',
       title: 'Choose where to go',
@@ -15236,7 +15228,7 @@ RPGACE.register('dashDeck', {
   // output) is MOVED into this popup, never rebuilt, so its real onclick
   // and auto-run output keep working.
   _openMorningBrief: function() {
-    var self = this;
+    var self = RPGACE.modules.dashDeck;
     var w = document.getElementById('mb-wrap');
     if (!w) {
       var mb = RPGACE.modules.morningBrief;
@@ -15270,6 +15262,72 @@ RPGACE.register('dashDeck', {
     foot2.textContent = 'Auto-runs once each morning before noon and sends straight to Oracle — click ☀️ Morning Brief here any time to run it again.';
     body.appendChild(foot2);
   },
+
+  },
+
+  // logic - business logic/data.
+  logic: {
+
+  // Called from inside a relocated widget's own action handler (Study Now,
+  // Oracle session, Beatstars Listing) BEFORE it navigates or opens a
+  // drawer/overlay — otherwise that surface renders BEHIND the still-open
+  // dashDeck popup (kg's Feynman drawer is z-index 9999 < the popup's
+  // 99999; showPage('advisor') just swaps pages under the overlay).
+  // Running pop.close() here fires the popup's onClose (force-stashes the
+  // widget back to the holder) then removes the overlay. Returns true if a
+  // popup was actually closed. Safe no-op when no popup hosts the widget
+  // (e.g. the widget is still on the raw dashboard) — the caller proceeds
+  // either way.
+  closeWidgetPopup: function(id) {
+    var fn = RPGACE.modules.dashDeck._widgetPopups[id];
+    if (fn) { try { fn(); } catch (e) {} return true; }
+    return false;
+  },
+
+  // Convenience wrapper: open a relocatable panel by id using its own
+  // registered identity above, with an optional lazy-inject function.
+  //
+  // SUPERSEDED, Aug 31 2026 (UI11) — zero real remaining callers: every
+  // real call site that used to open one of these 6 panels in a transient
+  // popup (_openBookworm/_openPipeline's own jump buttons, loadNote's Load
+  // handler, both real Beat Log retroactive-open paths) now calls
+  // dashDeck._openPage() instead, landing on a real permanent page (UI11)
+  // rather than a popup. _openPanelPopup/_openPanelById/PANEL_POPUPS are
+  // left defined rather than deleted — same "kept on disk, nothing 404s"
+  // precedent as _openResearch() — in case a future pass wants the
+  // transient-popup shape back for something new.
+  _openPanelById: function(panelId, ensureFn) {
+    var meta = RPGACE.modules.dashDeck.PANEL_POPUPS[panelId] || {};
+    return RPGACE.modules.dashDeck._openPanelPopup({
+      panelId: panelId, ensure: ensureFn,
+      eyebrow: meta.eyebrow, title: meta.title, accent: meta.accent, width: meta.width
+    });
+  },
+
+  },
+
+  // Thin top-level pass-throughs - preserve the exact existing public
+  // API. See ui/logic above for the real implementations.
+  _relocateQuestBoard: function() { return this.ui._relocateQuestBoard(); },
+  _injectStyles: function() { return this.ui._injectStyles(); },
+  _inject: function() { return this.ui._inject(); },
+  _refreshGlance: function() { return this.ui._refreshGlance(); },
+  _popup: function(opts) { return this.ui._popup(opts); },
+  _ensureHolder: function() { return this.ui._ensureHolder(); },
+  _stashBookworm: function(force) { return this.ui._stashBookworm(force); },
+  _ensureStash: function() { return this.ui._ensureStash(); },
+  _stashWidget: function(id, force) { return this.ui._stashWidget(id, force); },
+  _openBookworm: function() { return this.ui._openBookworm(); },
+  _openResearch: function() { return this.ui._openResearch(); },
+  _openOversight: function() { return this.ui._openOversight(); },
+  _openGaps: function() { return this.ui._openGaps(); },
+  _openPanelPopup: function(opts) { return this.ui._openPanelPopup(opts); },
+  _openPage: function(panelId, opts) { return this.ui._openPage(panelId, opts); },
+  _openCorpus: function() { return this.ui._openCorpus(); },
+  _openPipeline: function() { return this.ui._openPipeline(); },
+  _openMorningBrief: function() { return this.ui._openMorningBrief(); },
+  closeWidgetPopup: function(id) { return this.logic.closeWidgetPopup(id); },
+  _openPanelById: function(panelId, ensureFn) { return this.logic._openPanelById(panelId, ensureFn); },
 
 });
 /* ===END:dashDeck=== */
