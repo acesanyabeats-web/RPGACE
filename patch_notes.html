@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧩✅ Sep 2 — G53 batch 8 complete: 6 trivial modules split directly (no dispatch), 26 of 60 modules now done</div>
+    <div class="card-body">
+      Real correction found mid-session: the module-size scan used before batch 5 had a genuine bug (a brace-counting body extractor corrupted by string-escaping edge cases) that inflated several remaining modules to absurd sizes — re-derived every real size directly from the file's own <code>MODULE:</code>/<code>END:</code> markers (reliable ground truth) and found the true remaining set is much smaller than believed: none of the 34 modules left exceed ~1300 lines.<br><br>
+      This batch: 6 confirmed zero-external-touchpoint, genuinely trivial modules (1-4 movable functions each, no real judgment-call fork) — <code>pwaInstall</code>, <code>suppressQuestPopup</code>, <code>scheduleFixes</code>, <code>agentsIntoOracle</code>, <code>docsLinks</code>, <code>encSync</code>. Handled directly rather than dispatched to a background agent (to conserve budget for the larger remaining modules), each independently verified the same way: <code>node --check</code>, self/this sweep, touchpoint re-grep, headless Chromium (26/26 real assertions across all 6). 3 split honestly-empty into <code>logic</code>, 3 into <code>ui</code> — the trivial-scope precedent already established this series. 2 of the 26 assertions failed on first attempt from a real test-fixture bug (a duplicate id colliding with the real live page), corrected and re-verified, not a code regression.<br><br>
+      Cache-bust <code>20260902p→20260902q</code>. Deployed and confirmed <code>READY</code> on production, commit <code>5411917</code>. <b>26 of RPGACE's 60 real modules now split. Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 7 complete: oracleDevBridge + quickActions + encTaxonomyLink split, 20 of 60 modules now done, 2 real requalification bugs fixed</div>
     <div class="card-body">
       3 more confirmed zero-external-touchpoint modules. <code>quickActions</code> splits honestly-empty (its two Composio calls live inside click closures it only attaches, never invokes). <code>oracleDevBridge._flag</code> and <code>encTaxonomyLink._propose</code> both mutate a caller-supplied button and construct no DOM of their own — tested against the same discriminator as <code>videoSummary.logic._runRetro</code>/<code>intelDelete.ui._hideCard</code> (does the function have a real data job behind the mutation?) — both answer yes and land in <code>logic</code>.<br><br>
