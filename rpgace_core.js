@@ -11940,6 +11940,161 @@ RPGACE.register('agendaReminder', {
 // phase and is its own separate pass.
 RPGACE.register('scheduleOracle', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 35 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // thirty-four predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL/shiftSync precedent, so the diff
+  // shows only real changes rather than a whitespace wall.
+  //
+  // 6 real members: 5 functions and ONE declared data field,
+  // `TRIGGER_PREFIXES`, which stays at module scope (it is read once,
+  // by `ui._injectEntryPoints`'s `window.sendChat` wrapper, but module
+  // scope is where it already correctly lives and moving a public-
+  // looking config array into a namespace would change its address for
+  // no gain). Checked for the undeclared-runtime-field trap BOTH ways,
+  // not assumed: a direct read of every top-level key, and a grep of
+  // the whole module body for `self.X =` / `this.X =` (0 hits) — so
+  // this module has none of what journalQoL's `_activeSource` and
+  // oracleDevBridge's `this.TABLE` both hit. `init` stays a literal
+  // top-level function (RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object) — byte-identical, its
+  // own `self = this` genuinely IS the module, so its boot task and
+  // `page:show` listener still reach `_injectEntryPoints` through the
+  // top-level pass-through below.
+  //
+  // NOTE ON COUNT — this batch was briefed as "roughly 8 functions".
+  // The real figure is 5 top-level functions (`init` + 4 movable); the
+  // extra count is nested closures that are NOT module members and are
+  // not split: the three `action: function(done)` handlers inside
+  // `_showOptionSequence`'s `steps` array, plus its local `renderStep`
+  // and `advance`. All of them moved with their enclosing function,
+  // untouched. (This is also why this file's own METHOD_MODULE_MAP has
+  // a bare `"action": "scheduleOracle"` entry — it is a generated
+  // name->module DATA table that picked up those object-literal keys,
+  // not a call site, and is unaffected by this split.)
+  //
+  // This module splits 3 ui / 1 logic. Classification, function by
+  // function, each checked against its actual body rather than its
+  // name:
+  //   • _injectEntryPoints → ui. Unambiguous: `getElementById`,
+  //     `document.querySelector('.quick-row')`, `createElement`, an
+  //     `onclick` assignment and an `appendChild` for entry point A;
+  //     and inside the `window.sendChat` wrapper it installs for entry
+  //     point C, `document.getElementById('chat-input')`, a read of
+  //     `input.value`, a write of `input.value = ''` and a real
+  //     `input.dispatchEvent(new Event('input', …))`.
+  //   • _openPanel → ui. Unambiguous: `getElementById` re-entry guard,
+  //     `dashDeck._popup(...)`, three `createElement` calls, two
+  //     `onclick` assignments, `appendChild` ×3 and `input.focus()`.
+  //   • _showOptionSequence → ui. Its `steps` array is the only part
+  //     with a data flavour, but each entry is a UI STEP DESCRIPTOR
+  //     (icon, title, body copy, button label) whose `action` is a
+  //     handler wired to that step's button; the function's real body
+  //     is the local `renderStep`, which calls `dashDeck._popup(...)`
+  //     once per step, builds the body/button row with `createElement`
+  //     and drives the sequential reveal through `advance`. Nothing
+  //     here is separable into `logic` without splitting the function
+  //     down the middle, which this pass forbids.
+  //   • _ingest → logic. SEE THE DEDICATED NOTE BELOW — the one
+  //     genuine judgment call in this module.
+  //
+  // ─── _ingest: why the two fetches stay in `logic` ─────────────────
+  // `_ingest` contains zero DOM of any kind — no `document.*`, no
+  // `createElement`, no `innerHTML`, no `querySelector`/
+  // `getElementById`, no listener (grepped, not assumed). Its body is
+  // a `POST /api/scout` (URL-or-text detection + Jina fetch), a chained
+  // `POST /api/analyst` on the scout result, and a `.catch`; it then
+  // hands the assembled `{title, analysis, sourceURL}` to
+  // `self._showOptionSequence(...)`. Two real readings existed:
+  //   (a) `ui`, on the INSEPARABLE FETCH+RENDER rule — the scout/
+  //       analyst results are never returned to the caller and never
+  //       stored; their only consumer is the popup sequence.
+  //   (b) `logic` — the function neither BUILDS nor DISCOVERS a DOM
+  //       node of its own; it hands its result to a separate, already-
+  //       existing sibling that does all of that.
+  // (b) was chosen, on exactly the same reasoning applied to
+  // knowledgeGap.logic._load in this same batch: the inseparability
+  // rule's own precondition is that the fetch callback renders
+  // straight into DOM nodes THE SAME FUNCTION built or discovered, and
+  // that is plainly not the case here — the seam already exists in the
+  // source, the author having split ingestion from presentation into
+  // two named functions. The three `RPGACE.utils.toast(...)` calls
+  // (progress, progress, error) do not change this: a toast is a
+  // TRIGGER of UI, not construction of it — the standing rule since
+  // the phylumPath pilot, and the same reasoning that put
+  // ciAutoPropose.logic._scan, encTaxonomyLink.logic._propose and
+  // videoSummary.logic._runRetro in `logic` despite their user-facing
+  // feedback. The honest cost of (b), stated rather than hidden: a
+  // reader chasing "why did Schedule Oracle show an error toast" will
+  // find the failure path in `logic`, one hop away from the `ui` that
+  // would otherwise have drawn the options.
+  //
+  // `this`/`self` accounting for all 4 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • ui._injectEntryPoints — already had `var self = this;`,
+  //     swapped for the module handle IN PLACE (it is the function's
+  //     first statement; nothing precedes it). Captured for
+  //     `self._openPanel()` (entry point A's button onclick),
+  //     `self.TRIGGER_PREFIXES` and `self._openPanel(rest)` (both
+  //     inside the sendChat wrapper). Left as `this.`, the first and
+  //     third would have read `ui._openPanel` — which DOES exist on
+  //     `ui`, so they would have kept working by luck rather than by
+  //     design; the second would have read `ui.TRIGGER_PREFIXES`,
+  //     which does NOT exist, and `undefined.find(...)` is a real
+  //     TypeError thrown INSIDE the global `window.sendChat` wrapper —
+  //     i.e. it would have broken EVERY Oracle chat send in the app,
+  //     not just this module. That is the single most dangerous line
+  //     in this batch. All three requalified.
+  //     ⚠️ DELIBERATELY NOT TOUCHED in the same function:
+  //     `origSend.apply(this, arguments)`. That `this` is the
+  //     wrapper's own call-site receiver being forwarded to the
+  //     original `window.sendChat`, NOT a module reference —
+  //     rewriting it would be a real behavioural change.
+  //   • ui._openPanel — same in-place swap (it sits after the
+  //     `getElementById` re-entry guard, which does not touch `this`).
+  //     Captured once, by the Ingest button's onclick, for
+  //     `self._ingest(text)` — which left bare would have read
+  //     `ui._ingest`, and `_ingest` is the one function that does NOT
+  //     live on `ui`: a real TypeError on the primary button of this
+  //     module's own panel.
+  //   • logic._ingest — same in-place swap. Captured once, inside the
+  //     analyst `.then`, for `self._showOptionSequence(...)` — which
+  //     left bare would have read `logic._showOptionSequence`, another
+  //     real TypeError, and a silent one: it fires inside a promise
+  //     chain whose `.catch` would swallow it into a generic "Error:
+  //     …" toast, so the ingest would appear to fail rather than to
+  //     have half-succeeded.
+  //   • ui._showOptionSequence — see the FLAGGED note at its own
+  //     `var self` line: the local is PRE-EXISTING DEAD, read by
+  //     nothing in the body. Swapped to the module handle in place
+  //     rather than deleted, same as feynman.ui._showOracleOffer.
+  //
+  // Zero external METHOD touchpoints confirmed by a fresh repo-wide
+  // grep, and unlike knowledgeGap/morningBrief in this same batch this
+  // one really is clean: `RPGACE.modules.scheduleOracle` returns 0 hits
+  // in any form — direct, bracket, or local-alias (`var x =
+  // RPGACE.modules.scheduleOracle`) — across rpgace_core.js and
+  // index.html both. The dynamic-lookup check is separately clean: the
+  // only real `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at that call site. The only other
+  // `scheduleOracle` string in code is `window._scheduleOracleChatPatched`,
+  // this module's OWN global patch guard, not a module lookup. The
+  // module is driven entirely by the boot task and `page:show`
+  // listener `init` registers, plus the `window.sendChat` wrapper it
+  // installs. The `"_ingest"`/`"_injectEntryPoints"`/
+  // `"_showOptionSequence"` entries in this file's own
+  // METHOD_MODULE_MAP (G109) are a generated name->module DATA table,
+  // not call sites, and are unaffected by this split.
+  // ══════════════════════════════════════════════════════════════════
+
   TRIGGER_PREFIXES: ['schedule oracle:', 'schedule this:', 'learn later:'],
 
   init: function() {
@@ -11950,10 +12105,18 @@ RPGACE.register('scheduleOracle', {
     });
   },
 
+  // ============================================================
+  // ui — rendering/DOM: installs both visible entry points (the
+  // Oracle-tab launch button and the `window.sendChat` trigger-prefix
+  // wrapper), builds the URL/text intake panel, and drives the
+  // sequential 3-option reveal popup.
+  // ============================================================
+  ui: {
+
   // Entry point A: direct-launch button. Entry point C: chat-mode trigger
   // phrase, wraps window.sendChat once.
   _injectEntryPoints: function() {
-    var self = this;
+    var self = RPGACE.modules.scheduleOracle;
     if (!document.getElementById('sched-oracle-btn')) {
       var row = document.querySelector('.quick-row');
       if (row) {
@@ -12042,7 +12205,7 @@ RPGACE.register('scheduleOracle', {
   // Entry point B: the panel's own URL/text field.
   _openPanel: function(prefill) {
     if (document.getElementById('sched-oracle-panel')) return;
-    var self = this;
+    var self = RPGACE.modules.scheduleOracle;
     var pop = RPGACE.modules.dashDeck._popup({
       dim: '0.9', width: '520px', borderColor: 'rgba(74,144,226,0.3)',
       eyebrow: 'Schedule Oracle · Phase 1', title: 'What do you want to learn / schedule?',
@@ -12076,38 +12239,22 @@ RPGACE.register('scheduleOracle', {
     input.focus();
   },
 
-  // Ingestion: /api/scout handles URL-or-text detection + Jina fetch (works
-  // for YouTube page text and PDF URLs, not a full video transcript pipeline
-  // - that's Content Intelligence's job, not this one) + type identification.
-  // /api/analyst produces a type-aware structured analysis from it.
-  _ingest: function(text) {
-    var self = this;
-    RPGACE.utils.toast('🔮 Ingesting content...', '#4A8CCC', 2500);
-    fetch('/api/scout', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: text, type: 'auto' })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(scout) {
-      if (scout.error) throw new Error(scout.error);
-      RPGACE.utils.toast('🔮 Analysing (' + scout.detectedType + ')...', '#4A8CCC', 2500);
-      return fetch('/api/analyst', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: scout.content, detectedType: scout.detectedType, title: scout.title })
-      }).then(function(r) { return r.json(); }).then(function(analyst) {
-        if (analyst.error) throw new Error(analyst.error);
-        self._showOptionSequence({ title: scout.title, analysis: analyst.analysis, sourceURL: scout.sourceURL });
-      });
-    })
-    .catch(function(e) {
-      RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
-    });
-  },
-
   // Sequential 3-option reveal - one option shown at a time, each requires
   // an explicit action or an explicit skip before the next one appears.
   _showOptionSequence: function(data) {
-    var self = this;
+    // FLAGGED, NOT FIXED (G53 split, Sep 2026) — `self` on the next line
+    // is a PRE-EXISTING DEAD LOCAL: nothing in this body reads it. The
+    // three step `action` handlers reach their targets through globals
+    // and fully-qualified forms (`saveOracleToEncyclopedia`,
+    // `openSchedModal`, `RPGACE.utils._quickPhylaScan`,
+    // `RPGACE.modules.taxonomyTree.silentPropose`, `RPGACE.utils.toast`),
+    // and the local `renderStep`/`advance` closures close over `steps`
+    // and `idx`, never over the module. It was `var self = this;` before
+    // this split and is swapped to the module handle in place like every
+    // other one, so it stays CORRECT if a future edit ever does read it
+    // — deleting it would be a real source change outside a pure
+    // refactor's remit. Same treatment as feynman.ui._showOracleOffer.
+    var self = RPGACE.modules.scheduleOracle;
     var steps = [
       {
         icon: '📖', title: 'Save to Encyclopedia',
@@ -12190,6 +12337,65 @@ RPGACE.register('scheduleOracle', {
     }
     renderStep();
   },
+
+  },
+
+  // ============================================================
+  // logic — business logic/data: the /api/scout + /api/analyst
+  // ingestion chain. No DOM; see the dedicated judgment-call note in
+  // the G53 block above for why the trailing
+  // `self._showOptionSequence(...)` handoff and the three progress/
+  // error toasts do NOT pull it into `ui`.
+  // ============================================================
+  logic: {
+
+  // Ingestion: /api/scout handles URL-or-text detection + Jina fetch (works
+  // for YouTube page text and PDF URLs, not a full video transcript pipeline
+  // - that's Content Intelligence's job, not this one) + type identification.
+  // /api/analyst produces a type-aware structured analysis from it.
+  _ingest: function(text) {
+    var self = RPGACE.modules.scheduleOracle;
+    RPGACE.utils.toast('🔮 Ingesting content...', '#4A8CCC', 2500);
+    fetch('/api/scout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: text, type: 'auto' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(scout) {
+      if (scout.error) throw new Error(scout.error);
+      RPGACE.utils.toast('🔮 Analysing (' + scout.detectedType + ')...', '#4A8CCC', 2500);
+      return fetch('/api/analyst', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: scout.content, detectedType: scout.detectedType, title: scout.title })
+      }).then(function(r) { return r.json(); }).then(function(analyst) {
+        if (analyst.error) throw new Error(analyst.error);
+        self._showOptionSequence({ title: scout.title, analysis: analyst.analysis, sourceURL: scout.sourceURL });
+      });
+    })
+    .catch(function(e) {
+      RPGACE.utils.toast('Error: ' + e.message, '#CC4A4A', 3500);
+    });
+  },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. No external caller invokes any METHOD of this module (verified
+  // by a fresh grep of rpgace_core.js and index.html both — zero hits
+  // for `RPGACE.modules.scheduleOracle` in any form, direct, bracket or
+  // local-alias), so these exist for convention and for its OWN
+  // internal calls: `init`'s boot task and `page:show` listener both
+  // call `self._injectEntryPoints()`, `ui._injectEntryPoints` calls
+  // `self._openPanel()` from the launch button and `self._openPanel(rest)`
+  // from the sendChat trigger-prefix branch, `ui._openPanel`'s Ingest
+  // button calls `self._ingest(text)`, and `logic._ingest` calls
+  // `self._showOptionSequence(...)` once the analyst response lands —
+  // every one of those `self`s is the module, so each lands here first
+  // and is routed on to the right namespace.
+  _injectEntryPoints: function() { return this.ui._injectEntryPoints(); },
+  _openPanel: function(prefill) { return this.ui._openPanel(prefill); },
+  _showOptionSequence: function(data) { return this.ui._showOptionSequence(data); },
+  _ingest: function(text) { return this.logic._ingest(text); },
 
 });
 /* ===END:scheduleOracle=== */
@@ -15469,6 +15675,130 @@ RPGACE.register('taxonomySync', {
 /* ===MODULE:knowledgeGap=== */
 RPGACE.register('knowledgeGap', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 33 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // thirty-two predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL/shiftSync precedent, so the diff
+  // shows only real changes rather than a whitespace wall.
+  //
+  // 4 real members, all functions — ZERO data fields, declared or
+  // otherwise. Checked BOTH ways, not assumed from the shape: a direct
+  // read of every top-level key (only `init`/`_inject`/`_load`/
+  // `_render`), and a grep of the whole module body for `self.X =` /
+  // `this.X =` (0 hits), so this module has none of the undeclared
+  // runtime-assigned field trap that journalQoL's `_activeSource` and
+  // oracleDevBridge's `this.TABLE` both hit. The one `X.Y =` write in
+  // the body — `node.applied_in_beat = true` inside `_render`'s Apply
+  // Tonight handler — is a mutation of the caller-supplied gap ROW,
+  // not of the module. `init` stays a literal top-level function
+  // (RPGACE.register() calls `module.init()` directly and cannot see
+  // into a sub-object) — byte-identical, its own `self = this`
+  // genuinely IS the module, so its boot task and `page:show` listener
+  // still reach `_inject` through the top-level pass-through below.
+  //
+  // This module splits 2 ui / 1 logic. Classification, function by
+  // function, each checked against its actual body rather than its
+  // name:
+  //   • _inject → ui. Unambiguous: two `getElementById` reads, nine
+  //     `document.createElement` calls, a full inline style build, an
+  //     `onclick` assignment, and the `#dd-stash-holder` discover-or-
+  //     create-then-`appendChild` handoff to dashDeck.
+  //   • _render → ui. Unambiguous: three `getElementById` reads, a
+  //     `grid.innerHTML = ''` wipe, then per gap row eleven more
+  //     `createElement` calls, `.style` writes and two `onclick`
+  //     handlers. Its colour-band arithmetic (`gap >= 7 ? … : …`) is
+  //     the only data-shaped work in it and is inseparably a
+  //     presentation decision about the card it is building.
+  //   • _load → logic. SEE THE DEDICATED JUDGMENT-CALL NOTE BELOW —
+  //     it is the one genuine call in this module, so it is argued
+  //     here rather than filed quietly.
+  //
+  // ─── _load: why the fetch stays in `logic` despite feeding a render ─
+  // `_load` contains zero DOM of any kind — no `document.*`, no
+  // `createElement`, no `innerHTML`, no `querySelector`/
+  // `getElementById`, no listener (grepped, not assumed). Its body is a
+  // `RPGACE.modules.taxonomySync` presence guard, the Aug 22 `RPGACE.sb`
+  // boot-race guard with its own 400ms self-retry, a
+  // `taxonomySync.getTopGaps(6)` read, and a `.catch` that only
+  // `console.warn`s. It then calls `self._render(nodes || [])`. Two
+  // real readings existed:
+  //   (a) `ui`, on the INSEPARABLE FETCH+RENDER rule — the rows it
+  //       fetches are never returned, never stored and never reused;
+  //       their only consumer is the render call on the next line.
+  //   (b) `logic` — the function neither BUILDS nor DISCOVERS a DOM
+  //       node of its own; it hands the rows to a separate, already-
+  //       existing sibling that does all of that.
+  // (b) was chosen, and specifically because the inseparability rule
+  // has an explicit precondition this function does not meet: it
+  // describes a fetch whose callback renders "straight into DOM nodes
+  // THE SAME FUNCTION built or discovered" — the shape
+  // journalQoL.ui._injectAuditEntries and jargonEncyclopedia.ui.
+  // _openGlossary were both shipped on, where the element was captured
+  // before the query was issued and there was genuinely no seam to cut
+  // along. Here the seam already exists in the source: the author
+  // split fetch from render into two named functions, and `_render` is
+  // separately reachable (dashDeck's popup calls `_load` to refresh,
+  // and `_render` could be handed rows from anywhere). Sending `_load`
+  // to `ui` would mean an entire namespace-crossing on the strength of
+  // one delegating call. `logic` -> `ui` calls are already normal in
+  // this codebase (contentProductionLive has four, phylumPath and
+  // bookworm many more), so this creates no new pattern. The honest
+  // cost of (b), stated rather than hidden: a reader chasing "why is
+  // the gap grid empty" will find the fetch and its boot-race retry in
+  // `logic`, one hop away from the `ui` that draws it.
+  //
+  // `this`/`self` accounting for all 3 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • ui._inject — already had `var self = this;`, swapped for the
+  //     module handle IN PLACE (it sits after both early-return
+  //     guards, neither of which touches `this`, so control flow is
+  //     unchanged). Captured twice for `self._load()` — once by the ↻
+  //     button's onclick, once as the trailing initial load. Left as
+  //     `this.`, both would have read `ui._load`, which does NOT exist
+  //     on `ui` — a real TypeError on every dashboard boot. This is
+  //     the single most dangerous line in the module.
+  //   • logic._load — same in-place swap. Captured for its own 400ms
+  //     `self._load()` retry and for `self._render(nodes || [])`; the
+  //     second would have read `logic._render`, which does NOT exist
+  //     on `logic` — a second real TypeError, this one silent (it
+  //     fires inside a `.then` whose `.catch` would swallow it into a
+  //     `console.warn`, leaving a permanently blank gap grid with no
+  //     visible error).
+  //   • ui._render — see the FLAGGED note at its own `var self` line:
+  //     the local is PRE-EXISTING DEAD, read by nothing in the body.
+  //     Swapped to the module handle in place rather than deleted,
+  //     same as feynman.ui._showOracleOffer/_showDoNowChoice.
+  //
+  // ─── EXTERNAL TOUCHPOINTS: this module is NOT touchpoint-free ─────
+  // Named plainly because the obvious grep does NOT show them and this
+  // batch was briefed as "0 external touchpoints": a repo-wide grep for
+  // the direct `RPGACE.modules.knowledgeGap.` form returns 0 hits, but
+  // dashDeck._openGaps reaches this module through a LOCAL ALIAS and
+  // calls TWO of its methods —
+  //   `var kg  = RPGACE.modules.knowledgeGap; … kg._inject();`
+  //   `var kg2 = RPGACE.modules.knowledgeGap; … kg2._load();`
+  // — both guarded by `if (kg && kg._inject)` / `if (kg2 && kg2._load)`,
+  // which is exactly what makes this dangerous: had the pass-throughs
+  // below been omitted, those guards would have quietly evaluated
+  // false and dashDeck's Knowledge Gaps card would have silently
+  // stopped injecting and refreshing the widget, with no error thrown
+  // anywhere. Both calls land on the top-level pass-throughs and are
+  // routed on unchanged. The dynamic-lookup check is separately clean:
+  // the only real `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field and is never named at any of its call sites. index.html has
+  // zero references to it in any form. The `"_load": "knowledgeGap"`
+  // entry in this file's own METHOD_MODULE_MAP (G109) is a generated
+  // name->module DATA table, not a call site, and is unaffected.
+  // ══════════════════════════════════════════════════════════════════
+
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._inject(); });
@@ -15479,11 +15809,19 @@ RPGACE.register('knowledgeGap', {
     });
   },
 
+  // ============================================================
+  // ui — rendering/DOM: builds the Knowledge Gap Tracker panel and
+  // stashes it in #dd-stash-holder for dashDeck's card popup to
+  // relocate, then draws the gap cards (colour band, stats row, and
+  // the Study Now / Apply Tonight actions) into its grid.
+  // ============================================================
+  ui: {
+
   _inject: function() {
     if (document.getElementById('kg-panel')) return;
     var page = document.getElementById('page-dashboard');
     if (!page) return;
-    var self = this;
+    var self = RPGACE.modules.knowledgeGap;
 
     var panel = document.createElement('div');
     panel.id = 'kg-panel';
@@ -15547,34 +15885,20 @@ RPGACE.register('knowledgeGap', {
     console.log('[RPGACE:knowledgeGap] Panel injected (stashed for dashDeck popup)');
   },
 
-  _load: function() {
-    var self = this;
-    if (!RPGACE.modules.taxonomySync) return;
-
-    // Aug 22 (real /Routine follow-up, same root cause as
-    // taxonomySync.getTopGaps' own new guard): this runs from a boot
-    // task that fires before config.init() has set RPGACE.sb, so the
-    // very first real call here always landed before RPGACE.sb existed.
-    // getTopGaps' own guard stops the throw, but an empty result on
-    // that first call would otherwise render "0 gaps" and never
-    // self-correct (_inject's own existing-DOM check means _load never
-    // gets called again on its own) — retry once, shortly after, so the
-    // real gap count actually lands once RPGACE.sb is ready.
-    if (!RPGACE.sb || !RPGACE.sb.select) {
-      setTimeout(function() { self._load(); }, 400);
-      return;
-    }
-    RPGACE.modules.taxonomySync.getTopGaps(6)
-      .then(function(nodes) {
-        self._render(nodes || []);
-      })
-      .catch(function(err) {
-        console.warn('[knowledgeGap] load error:', err.message);
-      });
-  },
-
   _render: function(nodes) {
-    var self = this;
+    // FLAGGED, NOT FIXED (G53 split, Sep 2026) — `self` on the next line
+    // is a PRE-EXISTING DEAD LOCAL: nothing in this body reads it. Every
+    // cross-module reach in here is already written in fully-qualified
+    // form (`RPGACE.utils.phylumLabel`, `RPGACE.modules.dashDeck.
+    // closeWidgetPopup`, `RPGACE.modules.feynman.start`, `RPGACE.utils.
+    // sendToOracle`, `RPGACE.modules.taxonomySync.markApplied`), and the
+    // two button handlers close over the `node`/`appliedStat` locals
+    // rather than over the module. It was `var self = this;` before this
+    // split and is swapped to the module handle in place like every
+    // other one, so it stays CORRECT if a future edit ever does read it
+    // — deleting it would be a real source change outside a pure
+    // refactor's remit. Same treatment as feynman.ui._showOracleOffer.
+    var self = RPGACE.modules.knowledgeGap;
     var grid = document.getElementById('kg-grid');
     var badge = document.getElementById('kg-badge');
     var empty = document.getElementById('kg-empty');
@@ -15678,6 +16002,62 @@ RPGACE.register('knowledgeGap', {
       grid.appendChild(card);
     });
   },
+
+  },
+
+  // ============================================================
+  // logic — business logic/data: the guarded gap read. No DOM of any
+  // kind; see the dedicated judgment-call note in the G53 block above
+  // for why the trailing `self._render(...)` handoff does NOT pull it
+  // into `ui`.
+  // ============================================================
+  logic: {
+
+  _load: function() {
+    var self = RPGACE.modules.knowledgeGap;
+    if (!RPGACE.modules.taxonomySync) return;
+
+    // Aug 22 (real /Routine follow-up, same root cause as
+    // taxonomySync.getTopGaps' own new guard): this runs from a boot
+    // task that fires before config.init() has set RPGACE.sb, so the
+    // very first real call here always landed before RPGACE.sb existed.
+    // getTopGaps' own guard stops the throw, but an empty result on
+    // that first call would otherwise render "0 gaps" and never
+    // self-correct (_inject's own existing-DOM check means _load never
+    // gets called again on its own) — retry once, shortly after, so the
+    // real gap count actually lands once RPGACE.sb is ready.
+    if (!RPGACE.sb || !RPGACE.sb.select) {
+      setTimeout(function() { self._load(); }, 400);
+      return;
+    }
+    RPGACE.modules.taxonomySync.getTopGaps(6)
+      .then(function(nodes) {
+        self._render(nodes || []);
+      })
+      .catch(function(err) {
+        console.warn('[knowledgeGap] load error:', err.message);
+      });
+  },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. Unlike most modules in this series these are genuinely
+  // LOAD-BEARING for an external caller: dashDeck._openGaps reaches
+  // `_inject` and `_load` through a local alias (`var kg =
+  // RPGACE.modules.knowledgeGap; … kg._inject();`), behind a
+  // `if (kg && kg._inject)` guard that would have failed SILENTLY had
+  // these been dropped — see the external-touchpoints note in the G53
+  // block above. They also carry this module's own internal calls:
+  // `init`'s boot task and `page:show` listener both call
+  // `self._inject()`, `ui._inject` calls `self._load()` twice (the ↻
+  // button's onclick and the trailing initial load), and `logic._load`
+  // reaches `self._load()` for its 400ms retry and `self._render(...)`
+  // for the draw — every one of those `self`s is the module, so each
+  // lands here first and is routed on to the right namespace.
+  _inject: function() { return this.ui._inject(); },
+  _render: function(nodes) { return this.ui._render(nodes); },
+  _load: function() { return this.logic._load(); },
 
 });
 /* ===END:knowledgeGap=== */
@@ -27801,6 +28181,168 @@ RPGACE.register('conidPot', {
 /* ===MODULE:morningBrief=== */
 RPGACE.register('morningBrief', {
 
+  // ══════════════════════════════════════════════════════════════════
+  // G53 (Sep 2026), module 34 of 60 — real, ratified /CEO plan item:
+  // split into two internal namespaces, `ui` (rendering/DOM) and
+  // `logic` (business logic/data), following the exact shape its
+  // thirty-three predecessors already shipped and verified. Pure
+  // internal-structure refactor — zero functional, behavioural, UX,
+  // data or schema change; every function below was MOVED wholesale,
+  // never rewritten and never split down the middle. Bodies are
+  // deliberately NOT re-indented inside their new namespace, matching
+  // the docsLinks/encSync/journalQoL/shiftSync precedent, so the diff
+  // shows only real changes rather than a whitespace wall.
+  //
+  // 8 real members: 7 functions and ONE declared data field,
+  // `LAST_RUN_KEY`, which stays at module scope (three functions read
+  // it — `ui._injectButton`, `logic._autoRun`, `ui._generate` — so it
+  // would have to be duplicated or cross-referenced whichever
+  // namespace it went into; module scope is where it already correctly
+  // lives). Checked for the undeclared-runtime-field trap BOTH ways,
+  // not assumed: a direct read of every top-level key, and a grep of
+  // the whole module body for `self.X =` / `this.X =` (0 hits) — so
+  // this module has none of what journalQoL's `_activeSource` and
+  // oracleDevBridge's `this.TABLE` both hit. `init` stays a literal
+  // top-level function (RPGACE.register() calls `module.init()`
+  // directly and cannot see into a sub-object) — byte-identical, its
+  // own `self = this` genuinely IS the module, so its boot task and
+  // `page:show` listener still reach `_injectButton`/`_autoRun`
+  // through the top-level pass-throughs below.
+  //
+  // This module splits 2 ui / 5 logic. Classification, function by
+  // function, each checked against its actual body rather than its
+  // name:
+  //   • _injectButton → ui. Unambiguous: two `getElementById` reads,
+  //     six `document.createElement` calls, an `onclick` assignment,
+  //     and the `#dd-stash-holder` discover-or-create-then-`appendChild`
+  //     handoff to dashDeck (identical shape to knowledgeGap._inject).
+  //     Its one non-DOM read, `localStorage.getItem(self.LAST_RUN_KEY)`,
+  //     exists purely to word the "Last run: …" label it is building.
+  //   • _autoRun → logic. Zero DOM of any kind (grepped, not assumed):
+  //     a `localStorage` read, same-day and before-1pm date guards, an
+  //     `authGate._apiSecret` readiness probe, and then either a 2s
+  //     timer or a one-shot `RPGACE.hooks.on('rpgace:login', …)`
+  //     subscription before calling `self._generate()`. `RPGACE.hooks`
+  //     is this project's own event bus, NOT a DOM `addEventListener`
+  //     — the distinction matters and is why this is not `ui`. Its real
+  //     job is scheduling: should the brief run at all today, and when.
+  //   • _generate → ui. SEE THE DEDICATED NOTE BELOW — it is the one
+  //     genuine judgment call in this module.
+  //   • _getGmail → logic. Pure `RPGACE.api('GMAIL_FETCH_EMAILS', …)`
+  //     read, a defensive array coercion, a subject map, and a
+  //     `.catch` returning a fallback shape. No DOM, no UI trigger.
+  //   • _getShifts → logic. Pure `localStorage` read + date arithmetic
+  //     over today's/tomorrow's shifts, wrapped in try/catch, returning
+  //     a resolved promise. No DOM.
+  //   • _getYouTube → logic. Pure `RPGACE.api('SUPADATA_GET_YOUTUBE_
+  //     CHANNEL', …)` read plus a real `localStorage` PERSISTENCE write
+  //     (`rpgace_yt_prev`, so the next brief can report a view delta).
+  //     No DOM.
+  //   • _getKnowledgeGaps → logic. Pure cross-module read via
+  //     `RPGACE.modules.taxonomySync.getTopGaps(1)`. No DOM.
+  //
+  // ─── _generate: why the whole function lands in `ui` ──────────────
+  // A real case exists for calling it `logic`: the bulk of its line
+  // count is data orchestration (a `Promise.all` over the four
+  // `logic._getX` readers, a nested `conidPot.getIdeasForBrief()`
+  // promise, a day-of-week rotation label, and the assembly of the
+  // ~30-line Morning Brief prompt string) and its final act is
+  // `RPGACE.utils.sendToOracle(prompt)` plus a `localStorage.setItem`
+  // — both of which are, on this series' own standing rules,
+  // respectively a TRIGGER of UI and a real persistence write.
+  // It is nevertheless `ui`, on the INSEPARABLE FETCH+RENDER rule as
+  // written — and this time the rule's precondition is genuinely met,
+  // unlike knowledgeGap._load in the previous module of this same
+  // batch. The distinction is worth stating exactly, since the two
+  // functions sit one batch apart and look superficially similar:
+  //   • It DISCOVERS the DOM node first: `var output =
+  //     document.getElementById('mb-output')` is its opening line, and
+  //     `if (!output) return;` on the next line means the function
+  //     refuses to do ANY of its data work at all without that node.
+  //     The fetch is downstream of the DOM, not the other way round.
+  //   • It writes `output.innerHTML` FOUR separate times — a
+  //     "Gathering your morning data…" state before the Promise.all, a
+  //     "Writing your brief…" state inside its `.then`, a success
+  //     state after the send, and an error state in the `.catch`. That
+  //     is a progressive render, interleaved with the data work at
+  //     every stage; there is no seam to cut along without splitting
+  //     the function down the middle, which this pass forbids.
+  //   • It additionally re-discovers and mutates a SECOND node it did
+  //     not create — `document.querySelector('#mb-wrap div[style*=
+  //     "font-size:11px"]')`, the "Last run:" label — to keep it in
+  //     sync after a manual run.
+  // The results of the four `logic._getX` calls are never returned,
+  // never stored, and never reused: their only consumer is the prompt
+  // string this function was already committed to building and the
+  // status markup it writes alongside. Same shape journalQoL.ui.
+  // _injectAuditEntries and jargonEncyclopedia.ui._openGlossary were
+  // both shipped on. The honest cost, stated rather than hidden: the
+  // real Morning Brief PROMPT — the thing that actually determines
+  // what Oracle writes — lives in `ui`, so a future edit to its
+  // wording is made in the rendering namespace.
+  //
+  // `this`/`self` accounting for all 7 moved functions, so a later
+  // reader can check by grep rather than take it on trust:
+  //   • ui._injectButton — already had `var self = this;`, swapped for
+  //     the module handle IN PLACE (it sits after both early-return
+  //     guards, neither of which touches `this`). Captured for
+  //     `self._generate()` (the button's onclick) and `self.
+  //     LAST_RUN_KEY`. Left as `this.`, the first would have read
+  //     `ui._generate` — which DOES exist on `ui`, so it would have
+  //     kept working by luck; the second would have read
+  //     `ui.LAST_RUN_KEY`, which does NOT exist, and
+  //     `localStorage.getItem(undefined)` returns null silently, so
+  //     the button's "Last run: …" label would have permanently and
+  //     wrongly read "Auto-runs once per morning". Both requalified.
+  //   • logic._autoRun — same in-place swap. Captured for
+  //     `self.LAST_RUN_KEY` (the same silent-null trap: left bare,
+  //     `logic.LAST_RUN_KEY` is undefined, the same-day guard would
+  //     never fire and the brief would auto-run on EVERY morning page
+  //     load rather than once) and for `self._generate()` in both the
+  //     already-logged-in and the `rpgace:login`-hook branches — that
+  //     one would have read `logic._generate`, which does NOT exist, a
+  //     real TypeError inside a timer callback.
+  //   • ui._generate — same in-place swap. Captured for all four
+  //     `self._getX()` readers (each of which would have read
+  //     `ui._getGmail` etc., none of which exist — four real
+  //     TypeErrors, thrown synchronously while building the
+  //     `promises` array) and for `self.LAST_RUN_KEY` in the
+  //     `localStorage.setItem` that marks the brief as run for today
+  //     (left bare, it would have written to the literal key
+  //     "undefined", so the once-a-day guard would never see it).
+  //   • logic._getGmail / _getShifts / _getYouTube / _getKnowledgeGaps
+  //     — none of the four references `this` or `self` anywhere; all
+  //     four moved byte-identical, no handle needed and none added.
+  //
+  // ─── EXTERNAL TOUCHPOINT: this module is NOT touchpoint-free ──────
+  // Named plainly because the obvious grep does NOT show it and this
+  // batch was briefed as "0 external touchpoints": a repo-wide grep for
+  // the direct `RPGACE.modules.morningBrief.` form returns 0 hits, but
+  // dashDeck._openMorningBrief reaches this module through a LOCAL
+  // ALIAS — `var mb = RPGACE.modules.morningBrief; if (mb &&
+  // mb._injectButton) { try { mb._injectButton(); } catch (e) {} }` —
+  // to force-inject the widget when `#mb-wrap` is not already in the
+  // DOM. That call is guarded AND inside a `try{}catch{}`, which is
+  // what makes it dangerous: had the pass-through below been omitted,
+  // the guard would have quietly evaluated false and dashDeck's
+  // Morning Brief card would have silently shown its "still loading"
+  // fallback message forever, with nothing thrown anywhere. It lands
+  // on the top-level pass-through and is routed on unchanged. The
+  // dynamic-lookup check is separately clean: the only real
+  // `RPGACE.modules[variable]` site in the file is
+  // contentProductionLive._findOracleCmdText, which reaches modules by
+  // NAME STRING and then reads `.CMDS` — this module has no `CMDS`
+  // field. The `'morningBrief'` string literals in dashDeck's own
+  // MODULES card table and its `set('morningBrief', …)` glance-line
+  // write are dashDeck's CARD key, not a module lookup (that card's
+  // `go:` calls `dashDeck._openMorningBrief()`), so they are
+  // unaffected. index.html has zero references in any form. The six
+  // `"_autoRun"/"_generate"/"_getGmail"/"_getKnowledgeGaps"/
+  // "_getShifts"/"_getYouTube"` entries in this file's own
+  // METHOD_MODULE_MAP (G109) are a generated name->module DATA table,
+  // not call sites, and are unaffected by this split.
+  // ══════════════════════════════════════════════════════════════════
+
   LAST_RUN_KEY: 'rpgace_morning_brief_last',
 
   init: function() {
@@ -27816,11 +28358,20 @@ RPGACE.register('morningBrief', {
     });
   },
 
+  // ============================================================
+  // ui — rendering/DOM: builds the Morning Brief button, last-run
+  // label and output pane, stashes them in #dd-stash-holder for
+  // dashDeck's card popup to relocate, and drives the progressive
+  // gathering -> writing -> sent status render around the real brief
+  // assembly (see the _generate note in the G53 block above).
+  // ============================================================
+  ui: {
+
   _injectButton: function() {
     if (document.getElementById('mb-btn')) return;
     var page = document.getElementById('page-dashboard');
     if (!page) return;
-    var self = this;
+    var self = RPGACE.modules.morningBrief;
 
     var wrap = document.createElement('div');
     wrap.id = 'mb-wrap';
@@ -27872,44 +28423,8 @@ RPGACE.register('morningBrief', {
     console.log('[RPGACE:morningBrief] Button injected (stashed for dashDeck popup)');
   },
 
-  _autoRun: function() {
-    var self = this;
-    var lastRun = localStorage.getItem(self.LAST_RUN_KEY);
-    if (lastRun) {
-      var last = new Date(lastRun);
-      var now = new Date();
-      // Only auto-run if last run was not today
-      if (last.toDateString() === now.toDateString()) return;
-    }
-    // Auto-run if it's before noon (morning session)
-    var hour = new Date().getHours();
-    if (hour >= 13) return;
-    // Aug 22 (real /Routine finding — console evidence: 2x real
-    // "/api/composio: 401" on first login of the day). Root cause: this
-    // runs from registerBootTask, which fires at MODULE-INIT time -
-    // before any real login, since #gate's own hide only happens inside
-    // checkPassword()'s success branch. The old bare setTimeout(fn,2000)
-    // fired _generate()'s real Gmail/YouTube Composio calls 2s after
-    // BOOT, not 2s after LOGIN - almost always still on the password
-    // screen, guaranteed to 401 (authGate._apiSecret is null pre-login,
-    // so the auth header never gets attached). Real fix: if login
-    // hasn't happened yet, wait for the real 'rpgace:login' signal
-    // (fires exactly once on a genuine successful login) instead of a
-    // blind timer: same real signal authGate/pathRouter already key
-    // off, no new mechanism invented (rule 8).
-    var apiSecretReady = RPGACE.modules.authGate && RPGACE.modules.authGate._apiSecret;
-    if (apiSecretReady) {
-      setTimeout(function() { self._generate(); }, 2000);
-    } else {
-      var off = RPGACE.hooks.on('rpgace:login', function() {
-        off();
-        setTimeout(function() { self._generate(); }, 2000);
-      });
-    }
-  },
-
   _generate: function() {
-    var self = this;
+    var self = RPGACE.modules.morningBrief;
     var output = document.getElementById('mb-output');
     if (!output) return;
     output.style.display = 'block';
@@ -27976,6 +28491,54 @@ RPGACE.register('morningBrief', {
     }).catch(function(err) {
       output.innerHTML = '<div style="color:#CC4A4A;font-size:12px;padding:8px 0;">Error: ' + err.message + '</div>';
     });
+  },
+
+  },
+
+  // ============================================================
+  // logic — business logic/data: the once-a-day/before-1pm auto-run
+  // scheduler (which waits for the real `rpgace:login` signal rather
+  // than a blind boot timer), plus the four independent data readers
+  // the brief is assembled from — Gmail unread, today's/tomorrow's
+  // shifts, the YouTube channel delta, and the top knowledge gap. No
+  // DOM in any of them.
+  // ============================================================
+  logic: {
+
+  _autoRun: function() {
+    var self = RPGACE.modules.morningBrief;
+    var lastRun = localStorage.getItem(self.LAST_RUN_KEY);
+    if (lastRun) {
+      var last = new Date(lastRun);
+      var now = new Date();
+      // Only auto-run if last run was not today
+      if (last.toDateString() === now.toDateString()) return;
+    }
+    // Auto-run if it's before noon (morning session)
+    var hour = new Date().getHours();
+    if (hour >= 13) return;
+    // Aug 22 (real /Routine finding — console evidence: 2x real
+    // "/api/composio: 401" on first login of the day). Root cause: this
+    // runs from registerBootTask, which fires at MODULE-INIT time -
+    // before any real login, since #gate's own hide only happens inside
+    // checkPassword()'s success branch. The old bare setTimeout(fn,2000)
+    // fired _generate()'s real Gmail/YouTube Composio calls 2s after
+    // BOOT, not 2s after LOGIN - almost always still on the password
+    // screen, guaranteed to 401 (authGate._apiSecret is null pre-login,
+    // so the auth header never gets attached). Real fix: if login
+    // hasn't happened yet, wait for the real 'rpgace:login' signal
+    // (fires exactly once on a genuine successful login) instead of a
+    // blind timer: same real signal authGate/pathRouter already key
+    // off, no new mechanism invented (rule 8).
+    var apiSecretReady = RPGACE.modules.authGate && RPGACE.modules.authGate._apiSecret;
+    if (apiSecretReady) {
+      setTimeout(function() { self._generate(); }, 2000);
+    } else {
+      var off = RPGACE.hooks.on('rpgace:login', function() {
+        off();
+        setTimeout(function() { self._generate(); }, 2000);
+      });
+    }
   },
 
   _getGmail: function() {
@@ -28064,6 +28627,30 @@ RPGACE.register('morningBrief', {
       })
       .catch(function() { return { top: null, score: null }; });
   },
+
+  },
+
+  // Thin top-level pass-throughs — preserve the exact existing public
+  // API. `_injectButton` is genuinely LOAD-BEARING for an external
+  // caller: dashDeck._openMorningBrief reaches it through a local alias
+  // (`var mb = RPGACE.modules.morningBrief; … mb._injectButton();`)
+  // behind a guard that would have failed SILENTLY had it been dropped
+  // — see the external-touchpoint note in the G53 block above. The rest
+  // carry this module's own internal calls: `init`'s boot task calls
+  // `self._injectButton()` and `self._autoRun()`, its `page:show`
+  // listener calls `self._injectButton()`, `ui._injectButton`'s onclick
+  // calls `self._generate()`, `logic._autoRun` calls `self._generate()`
+  // from both its timer and its `rpgace:login` branch, and
+  // `ui._generate` calls all four `self._getX()` readers — every one of
+  // those `self`s is the module, so each lands here first and is routed
+  // on to the right namespace.
+  _injectButton: function() { return this.ui._injectButton(); },
+  _generate: function() { return this.ui._generate(); },
+  _autoRun: function() { return this.logic._autoRun(); },
+  _getGmail: function() { return this.logic._getGmail(); },
+  _getShifts: function() { return this.logic._getShifts(); },
+  _getYouTube: function() { return this.logic._getYouTube(); },
+  _getKnowledgeGaps: function() { return this.logic._getKnowledgeGaps(); },
 
 });
 /* ===END:morningBrief=== */
