@@ -5102,7 +5102,7 @@ document.addEventListener('keydown', e=>{
     // invisible. One universal fix here closes this whole bug class
     // everywhere a toast can fire under an open popup, not just this
     // one call site.
-    toast: function (msg, color, ms) {
+    toast: function (msg, color, ms, moduleName) {
       color = color || '#C9A84C';
       ms    = ms    || 3000;
       var t = document.createElement('div');
@@ -5142,7 +5142,23 @@ document.addEventListener('keydown', e=>{
       if (color === '#CC4A4A') {
         try {
           var el = RPGACE.modules && RPGACE.modules.errorLog;
-          if (el && el._capture) el._capture('ui_toast', 'toast()', msg, { stack: (new Error()).stack });
+          // Real F2 completion, Sep 2026: a caller that already knows its
+          // own module (moduleName, 4th param, optional - every existing
+          // call site omits it and is completely unaffected) is passed
+          // through as opts.module, which errorLog._capture now prefers
+          // OUTRIGHT over stack-walking. Real reason this exists: a
+          // toast() fired from inside a Promise .catch(function(e){...})
+          // (the shape questEngine._createQuests and most other real error
+          // paths actually use) gets a genuinely SHALLOW new Error().stack
+          // - the microtask boundary means the original synchronous call
+          // chain back to the real calling module is not in it, no matter
+          // how far _extractModule walks the stack. Confirmed by direct
+          // evidence, not assumed: every one of the 15 real toast-sourced
+          // error_log rows to date has linked_perspective_id NULL despite
+          // the stack always being captured. The stack-walk stays as the
+          // real fallback for the ~87 other #CC4A4A call sites that don't
+          // pass a moduleName - nothing about their behavior changes.
+          if (el && el._capture) el._capture('ui_toast', 'toast()', msg, { stack: (new Error()).stack, module: moduleName || null });
         } catch (e) { /* fails open - a logging failure must never break the toast itself */ }
         try { RPGACE.hooks.fire('rpgace:error-toast', { msg: msg, color: color, ts: Date.now() }); } catch (e) {}
       }
@@ -30442,12 +30458,12 @@ RPGACE.register('questEngine', {
                   return null;
                 }
                 console.warn('[questEngine] create failed:', e.message);
-                RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
+                RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000, 'questEngine');
                 return null;
               })
               .catch(function() {
                 console.warn('[questEngine] create failed:', e.message);
-                RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000);
+                RPGACE.utils.toast('Could not create quest "' + c.name + '": ' + e.message, '#CC4A4A', 5000, 'questEngine');
                 return null;
               });
           });
@@ -33443,7 +33459,7 @@ RPGACE.register('perfWatch', {
           console.warn('[RPGACE perfWatch] main thread blocked for ' + ms + 'ms', entry);
           try {
             if (RPGACE.utils && RPGACE.utils.toast) {
-              RPGACE.utils.toast('⚠️ App froze for ' + ms + 'ms (logged)', '#CC4A4A', 4000);
+              RPGACE.utils.toast('⚠️ App froze for ' + ms + 'ms (logged)', '#CC4A4A', 4000, 'perfWatch');
             }
           } catch (e2) {}
         });
@@ -35640,7 +35656,12 @@ RPGACE.register('errorLog', {
     opts = opts || {};
     var self = RPGACE.modules.errorLog;
     var sig = self._signature(type, source, message);
-    var moduleName = self._extractModule(opts.stack);
+    // Real F2 completion, Sep 2026: an explicit opts.module (a caller
+    // that already knows its own module, e.g. toast()'s new 4th param)
+    // is trusted outright and always wins over the stack-walk, which is
+    // a real, evidence-gated best-effort fallback for callers that don't
+    // know their own module name - never the other way around.
+    var moduleName = opts.module || self._extractModule(opts.stack);
     RPGACE.sb.select('error_log', 'error_signature=eq.' + encodeURIComponent(sig) + '&status=eq.active&limit=1')
       .then(function(rows) {
         if (rows && rows.length) {
