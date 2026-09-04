@@ -6562,6 +6562,22 @@ RPGACE.register('quickActions', {
   //     is requalified anyway so the module never depends on two
   //     functions happening to share a namespace.
   // ══════════════════════════════════════════════════════════════════
+  //
+  // REAL, SUPERSEDING UPDATE (F0, Sep 2026): the G53 block above describes
+  // _setup as it was on the day of the split — that description is now
+  // historical, kept as-said per this project's own doc-discipline rather
+  // than rewritten. _setup was rewritten for real, Alex's own directive
+  // ("wire the quickPrompt buttons into how they actually feed Oracle"):
+  // the two Composio calls named above (SUPADATA_GET_YOUTUBE_CHANNEL,
+  // NOTION_CREATE_NOTION_PAGE) moved OUT of this module entirely, into
+  // oracleControl._execute's own yt_stats/log_notion branches — all 4
+  // buttons now dispatch through oracleControl._showActionConfirm instead
+  // of _setup's own bespoke handlers. _setup is still `ui` (still
+  // discovers `.quick-row` and wires real click listeners), still has an
+  // empty `logic`, but no longer clones/replaces DOM nodes and no longer
+  // owns any Composio call. Full spec:
+  // records/2026-09/f0_quickprompt_oracle_rewire_spec_2026-09-04.txt.
+  // ══════════════════════════════════════════════════════════════════
 
   init: function() {
     var self = this;
@@ -6603,78 +6619,55 @@ RPGACE.register('quickActions', {
       }
     },
 
+    // F0 (Sep 2026) — real rewire, per Alex's own directive (Aug 23-24,
+    // un-actioned until now): "they actually work, but are pointless in
+    // this format — it needs to be changed by how it is wired into
+    // oracle." All 4 real quickPrompt buttons now dispatch through
+    // oracleControl's real confirm+execute mechanism (the SAME
+    // oracle_actions row, the SAME confirm popup, the SAME _execute
+    // dispatch a free-form typed/spoken request would hit) instead of each
+    // having its own bespoke click handler — one real, unambiguous
+    // button->action_id map, since a button click already knows exactly
+    // which action is meant (Oracle's own LLM recognition step stays
+    // available for free-form chat, it just isn't needed here). Full
+    // spec: records/2026-09/f0_quickprompt_oracle_rewire_spec_2026-09-04.txt.
+    // Real, previously-undocumented redundancy this replaces: the OLD code
+    // below wired every "broken" quickPrompt button to a generic
+    // self._send(text) chat-relay FIRST, then separately re-found and
+    // ADDED a second listener for the YT-stats/Notion buttons — meaning
+    // both would have fired on one click (a raw "Check my YouTube stats"
+    // chat message, immediately followed by the real fetched-data relay).
+    // This rewrite assigns exactly one handler per button, closing that
+    // gap as a side effect of the real ask, not a separately-flagged fix.
     _setup: function() {
-      var self = RPGACE.modules.quickActions;
       var row = document.querySelector('.quick-row');
       if (!row || row.dataset.qa === '1') return;
       row.dataset.qa = '1';
 
-      // Fix the 4 broken quickPrompt buttons
-      var broken = row.querySelectorAll('button[onclick*="quickPrompt"]');
-      broken.forEach(function(btn) {
-        var match = btn.getAttribute('onclick').match(/quickPrompt\('(.+)'\)/);
-        if (!match) return;
-        var text = match[1];
-        var newBtn = btn.cloneNode(true);
-        newBtn.removeAttribute('onclick');
-        newBtn.addEventListener('click', function() {
-          self._send(text);
-        });
-        btn.parentNode.replaceChild(newBtn, btn);
-      });
+      var TEXT_TO_ACTION = {
+        '📋 New quests':    'new_quests',
+        '📧 Draft email':   'draft_email',
+        '🎬 YT stats':      'yt_stats',
+        '📓 Log to Notion': 'log_notion',
+      };
 
-      var allBtns = Array.from(row.querySelectorAll('button'));
+      var oc = RPGACE.modules.oracleControl;
+      if (!oc || !oc._fetchActions) { console.warn('[quickActions] oracleControl unavailable, quick-action bar not wired'); return; }
 
-      // YT Stats — Composio direct, correct Supadata field names
-      var ytStatsBtn = allBtns.find(function(b) {
-        return b.textContent.trim() === '🎬 YT stats';
-      });
-      if (ytStatsBtn && !ytStatsBtn.dataset.qa) {
-        ytStatsBtn.dataset.qa = '1';
-        ytStatsBtn.removeAttribute('onclick');
-        ytStatsBtn.addEventListener('click', function() {
-          RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
-          RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
-            .then(function(result) {
-              var d = result.data || result;
-              var msg = '📊 YouTube Stats for @AceSanyaBeats:\n'
-                + 'Channel: ' + (d.name || 'AceSanya') + '\n'
-                + 'Handle: ' + (d.handle || '@AceSanyaBeats') + '\n'
-                + 'Total Views: ' + (d.viewCount || 0) + '\n'
-                + 'Videos Published: ' + (d.videoCount || 0) + '\n'
-                + (d.description ? 'Bio: ' + d.description + '\n' : '')
-                + '\nGiven this is an early-stage channel (FL Studio / UK hip hop, targeting aspiring producers 18-35), what are the 3 most important things I should do THIS WEEK to grow @AceSanyaBeats? Be specific and actionable.';
-              self._send(msg);
-            })
-            .catch(function(err) {
-              self._send('YouTube stats fetch failed: ' + err.message);
-            });
-        });
-      }
-
-      // Log to Notion — Composio direct call, no Oracle relay
-      var notionBtn = allBtns.find(function(b) {
-        return b.textContent.includes('Log to Notion');
-      });
-      if (notionBtn && !notionBtn.dataset.qa) {
-        notionBtn.dataset.qa = '1';
-        notionBtn.removeAttribute('onclick');
-        notionBtn.addEventListener('click', function() {
-          var today = new Date().toISOString().split('T')[0];
-          var title = 'RPGACE Session Log — ' + today;
-          RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
-            parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
-            title: title,
-            markdown: '## Session Log\n**Date:** ' + today + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.'
-          }).then(function() {
-            RPGACE.utils.toast('📓 Logged to Notion: ' + title, '#9B6EC8', 3000);
-          }).catch(function(err) {
-            RPGACE.utils.toast('Notion failed: ' + err.message, '#CC4A4A', 3000);
+      oc._fetchActions().then(function() {
+        Array.from(row.querySelectorAll('button')).forEach(function(btn) {
+          var actionId = TEXT_TO_ACTION[btn.textContent.trim()];
+          if (!actionId || btn.dataset.qa) return;
+          btn.dataset.qa = '1';
+          btn.removeAttribute('onclick');
+          btn.addEventListener('click', function() {
+            var actionRow = oc._byId(actionId);
+            if (!actionRow) { RPGACE.utils.toast('⚠️ This quick action isn\'t configured yet', '#E2A83D', 2500); return; }
+            oc._showActionConfirm(actionRow);
           });
         });
-      }
-
-      console.log('[RPGACE:quickActions] Quick-action bar patched');
+        console.log('[RPGACE:quickActions] Quick-action bar patched (F0 rewire — all 4 through oracleControl)');
+      });
     },
 
   },
@@ -7804,14 +7797,18 @@ RPGACE.register('contentRepurpose', {
     if (!row) return;
     var self = RPGACE.modules.contentRepurpose;
 
-    // Remove 4 redundant buttons
-    Array.from(row.querySelectorAll('button')).forEach(function(btn) {
-      var txt = btn.textContent.trim();
-      if (txt === '📋 New quests' || txt === '📧 Draft email' ||
-          txt === '📓 Log to Notion' || txt === '🎬 YT stats') {
-        btn.remove();
-      }
-    });
+    // F0 (Sep 2026): the "remove 4 redundant buttons" step below (Aug 6)
+    // is REMOVED — real, found conflict, not silently patched around.
+    // Those same 4 buttons (New quests/Draft email/Log to Notion/YT
+    // stats) were rewired by F0 to actually do something real
+    // (oracleControl's confirm+execute mechanism, questEngine.refresh(),
+    // a real Gmail draft) per Alex's own later, more specific directive
+    // ("they actually work, but are pointless in this format — rewire
+    // them, don't remove them") — this Aug 6 deletion, run on every boot,
+    // would have silently undone that rewire in production the moment it
+    // shipped. Alex's own direct call: stop removing them, keep
+    // "Repurpose" alongside. Full record:
+    // records/2026-09/f0_quickprompt_oracle_rewire_spec_2026-09-04.txt.
 
     // Add Repurpose button
     if (!document.getElementById('cr-btn')) {
@@ -33810,7 +33807,8 @@ RPGACE.register('oracleControl', {
   },
 
   // ── 4. Real execution — Phase 1 has exactly one real target, unchanged. ──
-  _execute: function(row) {
+  _execute: function(row, details) {
+    details = (details == null ? '' : String(details)).trim();
     if (row.action_id === 'log_beat') {
       var dd = RPGACE.modules.dashDeck;
       var bl = RPGACE.modules.beatLog;
@@ -33836,6 +33834,90 @@ RPGACE.register('oracleControl', {
       }
       return;
     }
+
+    // F0 (Sep 2026) — 4 real dispatch branches for the quickPrompt rewire.
+    // All 4 skip a live Oracle chat round-trip for RECOGNITION (Alex's own
+    // confirmed answer — a button click is already unambiguous, unlike a
+    // free-form typed/spoken request, so Oracle's own LLM doesn't need to
+    // re-interpret it); yt_stats still relays real fetched data INTO
+    // Oracle chat afterward, same as before this rewire — that's the real
+    // payoff of the action, not a redundant recognition step, so it's
+    // unchanged.
+    if (row.action_id === 'new_quests') {
+      var qe = RPGACE.modules.questEngine;
+      if (!qe || !qe.refresh) { RPGACE.utils.toast('⚠️ Quest engine unavailable', '#E2A83D', 2500); return; }
+      RPGACE.utils.toast('🔄 Checking for new quests...', '#9B59B6', 2200);
+      qe.refresh(); // details is genuinely inert here — refresh() takes no real parameters
+      return;
+    }
+
+    if (row.action_id === 'draft_email') {
+      // Real, deliberate design choice: no live Oracle call happens here
+      // (this action skips the chat round-trip like the other 3), so
+      // "details" IS the real draft content — Alex types who it's to and
+      // what it should say, this saves exactly that as a real Gmail draft.
+      // Fails loud on either missing piece rather than guessing or
+      // defaulting to Alex's own address (never sent as a payload value
+      // without his explicit say-so).
+      if (!details) { RPGACE.utils.toast('⚠️ Add who this is to and what it should say in the details box first', '#E2A83D', 3500); return; }
+      var emailMatch = details.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i);
+      if (!emailMatch) { RPGACE.utils.toast('⚠️ Include the recipient\'s email address in the details', '#E2A83D', 3500); return; }
+      var todayStr = new Date().toLocaleDateString();
+      RPGACE.api('GMAIL_CREATE_EMAIL_DRAFT', {
+        subject: 'Collab Outreach — ' + todayStr,
+        body: details,
+        to: emailMatch[0],
+      }).then(function() {
+        RPGACE.utils.toast('📧 Draft saved to Gmail', '#9B6EC8', 3000);
+      }).catch(function(err) {
+        RPGACE.utils.toast('⚠️ Gmail draft failed: ' + err.message, '#CC4A4A', 3500);
+      });
+      return;
+    }
+
+    if (row.action_id === 'yt_stats') {
+      // Real, unchanged Composio call this button has always used — moved
+      // here from quickActions' own bespoke click handler (rule 8, one
+      // real caller now that quickActions dispatches through this
+      // module), only the trigger mechanism changed.
+      var qaSend = RPGACE.modules.quickActions;
+      RPGACE.utils.toast('Fetching YouTube stats...', '#C9A84C', 2000);
+      RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
+        .then(function(result) {
+          var d = result.data || result;
+          var msg = '📊 YouTube Stats for @AceSanyaBeats:\n'
+            + 'Channel: ' + (d.name || 'AceSanya') + '\n'
+            + 'Handle: ' + (d.handle || '@AceSanyaBeats') + '\n'
+            + 'Total Views: ' + (d.viewCount || 0) + '\n'
+            + 'Videos Published: ' + (d.videoCount || 0) + '\n'
+            + (d.description ? 'Bio: ' + d.description + '\n' : '')
+            + (details ? '\nAdditional context: ' + details + '\n' : '')
+            + '\nGiven this is an early-stage channel (FL Studio / UK hip hop, targeting aspiring producers 18-35), what are the 3 most important things I should do THIS WEEK to grow @AceSanyaBeats? Be specific and actionable.';
+          if (qaSend && qaSend._send) qaSend._send(msg);
+        })
+        .catch(function(err) {
+          if (qaSend && qaSend._send) qaSend._send('YouTube stats fetch failed: ' + err.message);
+        });
+      return;
+    }
+
+    if (row.action_id === 'log_notion') {
+      // Real, unchanged Composio call this button has always used — same
+      // rule-8 move as yt_stats above.
+      var today2 = new Date().toISOString().split('T')[0];
+      var pageTitle = 'RPGACE Session Log — ' + today2;
+      RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
+        parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
+        title: pageTitle,
+        markdown: '## Session Log\n**Date:** ' + today2 + '\n\n**Source:** RPGACE Oracle\n\nSession logged from RPGACE.' + (details ? '\n\n**Notes:** ' + details : ''),
+      }).then(function() {
+        RPGACE.utils.toast('📓 Logged to Notion: ' + pageTitle, '#9B6EC8', 3000);
+      }).catch(function(err) {
+        RPGACE.utils.toast('Notion failed: ' + err.message, '#CC4A4A', 3000);
+      });
+      return;
+    }
+
     console.warn('[oracleControl] no execution handler wired for action:', row.action_id);
     RPGACE.utils.toast('⚠️ This Oracle action isn\'t wired up yet', '#E2A83D', 2500);
   },
@@ -33905,7 +33987,20 @@ RPGACE.register('oracleControl', {
       '<div style="font-size:13px;color:rgba(226,226,236,0.85);margin-bottom:10px;"><b>What happens:</b> ' + esc(row.explanation_significance) + '</div>' +
       '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:10px;"><b>Data touched:</b> ' + esc((row.data_touched || []).join(', ')) + '</div>' +
       '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:10px;"><b>Why this path:</b> ' + esc(row.explanation_path_reasoning) + '</div>' +
-      '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:16px;"><b>Benefit:</b> ' + esc(row.explanation_benefit) + '</div>' +
+      '<div style="font-size:13px;color:rgba(226,226,236,0.65);margin-bottom:14px;"><b>Benefit:</b> ' + esc(row.explanation_benefit) + '</div>' +
+      // F0 (Sep 2026): a real, optional free-text field — Alex's own
+      // direct ask alongside confirming "skip the live Oracle chat
+      // round-trip" for the quickPrompt rewire ("question pop up on any
+      // details I want to include, with option to add nothing if
+      // needed"). Read once on Accept, passed straight through to
+      // _execute as a plain string — genuinely inert for an action that
+      // has nothing to attach it to (new_quests), the real required
+      // input for one (draft_email needs a recipient address in here),
+      // optional extra context for the rest.
+      '<div style="margin-bottom:14px;">' +
+        '<label style="display:block;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:rgba(226,226,236,0.5);margin-bottom:6px;">Any details to include? (optional)</label>' +
+        '<textarea id="oc-details-input" rows="2" placeholder="Leave blank if not needed" style="width:100%;resize:vertical;background:rgba(255,255,255,0.04);border:1px solid rgba(226,226,236,0.15);border-radius:8px;color:var(--text);font-size:12.5px;padding:8px 10px;font-family:Rajdhani,sans-serif;box-sizing:border-box;"></textarea>' +
+      '</div>' +
       '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
         '<button id="oc-deny-btn" style="padding:8px 16px;border-radius:8px;border:1px solid rgba(226,226,236,0.2);background:none;color:rgba(226,226,236,0.7);font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;">Deny</button>' +
         '<button id="oc-accept-btn" style="padding:8px 16px;border-radius:8px;border:none;background:#9B59B6;color:#fff;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;">Accept</button>' +
@@ -33917,8 +34012,10 @@ RPGACE.register('oracleControl', {
       // Phase 1, a denial log is real future scope-creep for one action.
     };
     pop.box.querySelector('#oc-accept-btn').onclick = function() {
+      var detailsEl = pop.box.querySelector('#oc-details-input');
+      var details = detailsEl ? detailsEl.value : '';
       pop.close();
-      RPGACE.modules.oracleControl._execute(row);
+      RPGACE.modules.oracleControl._execute(row, details);
     };
   },
 
@@ -34040,7 +34137,7 @@ RPGACE.register('oracleControl', {
   buildSuggestBlock: function() { return this.logic.buildSuggestBlock(); },
   _listenForReplies: function() { return this.logic._listenForReplies(); },
   _approveSuggestedAction: function(suggestion) { return this.logic._approveSuggestedAction(suggestion); },
-  _execute: function(row) { return this.logic._execute(row); },
+  _execute: function(row, details) { return this.logic._execute(row, details); },
   _showSuggestConfirm: function(suggestion) { return this.ui._showSuggestConfirm(suggestion); },
   _showActionConfirm: function(row) { return this.ui._showActionConfirm(row); },
   _injectOverlayButton: function() { return this.ui._injectOverlayButton(); },
