@@ -1,0 +1,127 @@
+F0 — Rewire quickPrompt buttons into how they actually feed Oracle
+Real /interrogation, 2026-09-04, per Alex's own directive from Aug 23-24
+("they actually work, but are pointless in this format — it needs to be
+changed by how it is wired into oracle"), un-actioned until now.
+
+======================================================================
+REAL EVIDENCE GATHERED BEFORE ASKING ANYTHING
+======================================================================
+
+The 4 real quickPrompt buttons (index.html, .quick-row) and their CURRENT
+real behavior (rpgace_core.js, quickActions module):
+
+1. "📋 New quests" → types a raw prompt into #chat-input, sends it as a
+   normal Oracle chat message. Oracle replies conversationally about
+   quests. NOTHING real happens — no quest_log row is created; the real,
+   already-built questEngine.refresh() (Supabase-backed quest generator,
+   A9 Phase 1) is never called.
+
+2. "📧 Draft email" → same shape: raw prompt → chat → Oracle drafts text
+   in the conversation. No real backing mechanism — nothing is saved or
+   sent anywhere.
+
+3. "🎬 YT stats" → a REAL Composio call (SUPADATA_GET_YOUTUBE_CHANNEL)
+   fetches real channel data FIRST, then relays a real-data-backed prompt
+   into Oracle chat for analysis. Already a working "real data → Oracle"
+   pattern — the best of the 4 as they stand.
+
+4. "📓 Log to Notion" → a REAL, direct Composio call
+   (NOTION_CREATE_NOTION_PAGE). Bypasses Oracle chat entirely — click,
+   toast, done.
+
+Oracle Control (G41, shipped Aug 26) already has the real infrastructure
+this needs: a curated `oracle_actions` Supabase table (trigger phrase →
+target module.method → pre-written explanation → confirm_required),
+`oracleControl.ui._showActionConfirm(row)` (a real confirm popup showing
+what will happen), and `oracleControl.logic._execute(row)` (the real
+dispatch — currently only one real branch exists, `log_beat`).
+
+Real target for "Draft email" confirmed via direct read of
+api/_context.js's own documented Composio action catalog:
+GMAIL_CREATE_EMAIL_DRAFT — {subject, body, to} — already real, already
+used elsewhere in this project's Gmail integration (morningBrief).
+
+======================================================================
+REAL /INTERROGATION — 4 rounds, all answered directly by Alex
+======================================================================
+
+Q1 (scope): rewire all 4, or just the 2 that currently do nothing real?
+A1: ALL 4 — for consistency, even though YT stats/Log to Notion already
+work.
+
+Q2 (New quests mechanism): questEngine.refresh() is a real, already-built
+target. Real Oracle Control action / smarter chat prompt / direct action
+with no Oracle at all?
+A2: Real Oracle Control action — matches "wired into oracle" literally.
+
+Q3 (Draft email mechanism): no existing real backing. Real Composio
+Gmail draft / Oracle-drafts-you-copy / leave chat-only?
+A3: Real Composio Gmail draft — GMAIL_CREATE_EMAIL_DRAFT, saved as an
+actual draft in Alex's real Gmail, ready to review/send.
+
+Q4 (button→Oracle mechanism, since all 4 must be consistent): should a
+button click go through a live Oracle chat round-trip every time (costs
+a real Anthropic API call per click, but "Oracle is in the loop" every
+time), or skip straight to the same real confirm popup (instant, free,
+since the button already knows exactly which action is meant — Oracle's
+own LLM recognition exists for free-form input, not a button that's
+already unambiguous)?
+A4: Skip straight to confirm (the recommended, cost-proportionate
+option) — PLUS a real, added requirement: the confirm popup should let
+Alex optionally type extra details/context before it executes, with an
+explicit "add nothing if not needed" affordance. Not a blanket
+requirement on every button equally — most load-bearing for Draft email
+(who is this to, what's the actual context) and Log to Notion (an
+optional note), genuinely optional/rarely-used for New quests/YT stats
+(which take no real parameters today).
+
+======================================================================
+REAL, SCOPED BUILD PLAN
+======================================================================
+
+1. 4 new `oracle_actions` rows (or the equivalent structured config), one
+   per button:
+   - new_quests → target questEngine.refresh(), confirm_required=true,
+     no real parameters — the optional-details field is genuinely inert
+     for this one (nothing to attach it to yet).
+   - draft_email → target a new dispatch calling Composio
+     GMAIL_CREATE_EMAIL_DRAFT — the optional-details field IS the real
+     input here (who it's to / what it should say); a real, honest
+     minimum-input requirement (a "to" address) needs a concrete answer
+     — real open question for the build pass, not guessed here.
+   - yt_stats → target the EXISTING SUPADATA_GET_YOUTUBE_CHANNEL call
+     (reused, not duplicated, rule 8) — optional-details could append
+     extra framing to the growth-advice prompt Oracle already gets.
+   - log_notion → target the EXISTING NOTION_CREATE_NOTION_PAGE call
+     (reused, rule 8) — optional-details becomes real appended note
+     content in the page body.
+
+2. `oracleControl.ui._showActionConfirm(row)` gains a real, optional
+   free-text input field (a textarea, "any details to include? — leave
+   blank if not needed") wired through to `_execute(row, details)`.
+   `_execute`'s existing `log_beat` branch is unaffected (it never reads
+   a details param); the 4 new branches read it where relevant.
+
+3. `quickActions.ui._setup()` is rewritten: all 4 buttons stop wiring
+   their own bespoke click handlers (the current Composio-direct calls
+   for YT stats/Notion, the raw chat-relay for New quests/Draft email)
+   and instead each calls `oracleControl._showActionConfirm(row)` with
+   its own matching `oracle_actions` row, fetched once at setup time.
+
+4. Real, honest UX tradeoff to flag before building, not discovered
+   after: YT stats and Log to Notion currently fire IMMEDIATELY on
+   click with no confirmation step. This rewire adds one. That's a
+   deliberate consequence of "consistency across all 4" (Alex's own
+   answer to Q1) — not an accidental regression, but worth stating
+   plainly since it changes a click from 1 step to 2 for those two.
+
+5. Explicitly NOT in this pass: any change to the existing `log_beat`
+   Oracle Control action, any change to the free-form chat-typed/spoken
+   trigger-phrase path Oracle Control already has — this only changes
+   how the 4 quickPrompt BUTTONS themselves dispatch.
+
+Real open question for the build session itself (not resolved by this
+interrogation, flagged honestly): draft_email's minimum required input
+(a "to" address) — whether to require it in the details field, default
+to a fixed address, or make it a required 2nd field distinct from
+"optional details." Scope this at build time, not guessed here.

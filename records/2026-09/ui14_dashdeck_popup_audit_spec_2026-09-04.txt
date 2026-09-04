@@ -1,0 +1,130 @@
+UI14 — The other real dashDeck popup sites: criteria + inventory + Phase 1 (Bookworm)
+Real /interrogation, 2026-09-04. Alex's own Aug 24 answer ("blue the other 23,
+we need to think it through") left this deliberately unscoped — this pass
+does the real thinking-through.
+
+======================================================================
+REAL EVIDENCE FIRST: the "23" figure is stale
+======================================================================
+
+A direct grep+parse of every real `._popup(` call site in rpgace_core.js
+(excluding the pass-through definition itself and comments) found 49 real
+sites today, not 23 — the Aug 24 count predates UI11/12/13's own rebuild,
+which already converted several of these into real pages (Bookworm's own
+picker, Content Pipeline's picker, MusicWorm/Bibliography/Idea
+Bank/Beat Log/Upload Workshop). 49 is the real, current, post-UI11-13
+number this item should be scoped against.
+
+======================================================================
+REAL /INTERROGATION — 2 rounds
+======================================================================
+
+Q1 (criteria): what actually decides "convert to a page" vs "stay a
+popup" across 49 real sites, none identical?
+A1 (Alex's own words, matching the recommended option): lists/dashboards
++ record-detail views convert; linear wizards and small one-shot
+confirms stay popups — they're genuinely transient, not "crammed."
+
+Q2 (first slice): tackle Bookworm's own chapter-reading flow first
+(closest analog to what UI10-13 already proved), ConID detail views
+first, or scope everything in one pass?
+A2: Bookworm chapter-reading first.
+
+======================================================================
+REAL EVIDENCE: Bookworm's chapter-reading flow, precisely
+======================================================================
+
+7 real render-states (not 5 — corrected by direct function-boundary
+lookup, not assumed from line proximity), each currently spawning its
+OWN fresh `dashDeck._popup()` call, stacking on top of whatever page is
+showing underneath (including, after UI11, potentially on top of the
+real `#page-bookworm` itself):
+
+  _renderStructureFound   (TOC extracted from a new book)
+  _renderChapterList      (all chapters, tap to jump)
+  _renderChapterSummary   (a finished chapter's own summary)
+  _renderChapterRead      (read a chapter's raw text)
+  _renderAddChapterText   (paste in a chapter's text manually)
+  _renderInsightReview    (review one extracted insight)
+  _renderWaitingForNextInsight (background-analysis wait state)
+
+Real, already-existing partial fix (W8, Aug 23): 4 of these 7 already
+carry a "← Back to chapter list" button — but they're still popups
+underneath that button, not real page navigation. This is the exact
+"crammed interface" UI11/12/13 already fixed one level up (the
+book-PICKER level) but never touched one level down (the actual
+reading experience once inside a specific book).
+
+Real, decisive fit against Alex's own confirmed criteria: this is a
+record-detail view of a real record (a specific book, `bookworm_books`)
+— you come back to the same book across many real sessions, exactly the
+shape UI12's own Resume-button logic already assumes exists.
+
+======================================================================
+REAL SCOPED BUILD — Phase 1 (Bookworm)
+======================================================================
+
+1. All 7 render-states move INSIDE the existing real `#page-bookworm`
+   page (built by UI11, currently hosting `bookworm-widget` only at its
+   top/picker level) rather than spawning a new popup per state — the
+   same "navigate within a real page" shape UI12 already uses at the
+   picker level, extended one level deeper.
+2. Real navigation replaces the current popup-stack: moving between
+   chapter list → chapter read → insight review re-renders the SAME
+   page content in place (matching this project's own `showPage()`/
+   `.active` toggle convention), never a popup opening on top of a
+   popup.
+3. The existing "← Back to chapter list" buttons (W8) keep working —
+   their real target becomes "re-render `#page-bookworm` at the chapter-
+   list state" instead of "close this popup, the one underneath is the
+   chapter list" (since there will no longer be a popup underneath).
+4. Explicitly NOT touched: `bookworm`'s own module internals
+   (`_analyzeChapter`, `_continueAnalyzingInBackground`, the real Supabase
+   read/write shape) — this is purely a render-target change, same
+   "pure internal-structure, zero functional change" discipline as G53.
+
+======================================================================
+REAL, CATEGORIZED INVENTORY — the other 42 sites, for the NEXT slice
+======================================================================
+
+Not built this pass (Alex's own answer named Bookworm first) — logged
+here as a real, evidence-checked candidate list rather than left vague,
+so the next slice has a concrete starting point instead of re-deriving
+this from scratch.
+
+REAL CONVERT CANDIDATES (lists/dashboards or record-detail views, per
+Alex's own confirmed criteria) — 10 real sites:
+  - Taxonomy & Review "Recent proposals" (a real list/dashboard)
+  - Knowledge Gaps "What your library doesn't know yet" (a real list)
+  - Morning Brief "Your day in one shot" (a real daily dashboard)
+  - ConID "Manage Deliverables" (a real record-detail view)
+  - "Meme Script + FFmpeg Cut Plan" (a real generated-content detail view)
+  - ConID "Post Details" (a real record-detail view)
+  - "Generate Video" / "OpenMontage Job" / "Platform Captions" (3 real
+    record-detail/status views tied to a specific ConID's video pipeline)
+  - Chronicles "Recent activity" (a real list/dashboard)
+  - Jargon Encyclopedia "Every leaf term across your tree" (a real,
+    potentially large browse/list view)
+  - Fallback Scout "Scouted, Now Answered" (a real list/dashboard,
+    CLAUDE.md's own already-named "real view Alex asked for")
+
+CORRECTLY STAY AS POPUPS (linear wizards / small one-shot confirms, per
+Alex's own criteria) — the remaining ~32 sites, spot-checked not
+exhaustively re-verified one by one: Director Blend picker (a wizard),
+Content Repurpose's own numbered "Step 14" flow, Schedule Oracle's
+option-sequence wizard, Phylum Path/Taxonomy Tree placement confirms
+(deliberate human-gate confirms, rule 4 — must NEVER become a
+navigable page, that would weaken the confirm), Oracle Control's own
+2 real confirm popups (same reasoning — a human-gate confirm is
+supposed to be a modal interrupt, not a page), OBS Raw intake form,
+Reference Corpus backfill tool, ConIDPot's save/dedup-check flow,
+Chronicles' own log-a-sale/expense FORM (distinct from its "recent
+activity" LIST above, which does convert).
+
+Real, honest gap: 2 sites (line ~28161, ~28229) need more direct-code
+context than this pass gathered to classify confidently — flagged for
+the next slice's own evidence pass, not guessed here.
+
+`ceo_plan_items` UI14: blue → red, Phase 1 (Bookworm) scoped and ready
+to build; Phase 2 (the 10 catalogued convert-candidates above) logged
+as real, named future work, not yet formally interrogated in detail.
