@@ -1,0 +1,209 @@
+RPGACE /Routine — daily priorities debate — 2026-09-04
+Session context: opens directly after last night's /Bedtime (commit e2425d0), which closed
+out G53 (all 60 real registered modules split into ui/logic namespaces) and updated
+session_lessons.html per Alex's explicit ask.
+
+======================================================================
+STEP 1 — TEAM 1's EVIDENCE PASS (GODMODE)
+======================================================================
+
+Real Supabase checks run this pass (project gripopghczmrbrhqtqbm):
+- oracle_dev_suggestions status='new': 0
+- graphify_jobs undrained: 0
+- system_map_flags status='flagged': 0
+- error_log status='active': 14 rows
+- ceo_plan_items status='purple': 0
+- ceo_plan_items status in (red,yellow): 14 rows
+- smoke_test_items needs_confirm_highlight=true: 1
+- smoke_test_items status='broken': 1 (videoSummary, module-level row)
+
+FINDING A — the 14 active error_log rows are ALL quest-creation failures
+(questEngine._createQuests via /api/data-write), 2 real symptoms:
+  - "Unauthorized" (pre-login boot-gate race)
+  - "Unexpected token '<', <!DOCTYPE..." (Vercel SSO intercepting the API call
+    with an HTML login redirect instead of JSON)
+last_seen_at on every one of the 14 rows: 2026-08-26 through 2026-08-28. Zero
+recurrence since (checked against "now," 2026-09-04 — 5+ real days clean).
+
+Real fix trail found via git log, not assumed:
+  f4abb3a (2026-08-30 17:41 UTC) — fixed the pre-login boot-gate race
+    (questEngine._boot fires via registerBootTask before login; now waits
+    for the real 'rpgace:login' hook, same pattern already proven for
+    morningBrief._autoRun on Aug 22). Commit message explicitly states this
+    does NOT touch the "Unexpected token '<'" half.
+  f4abb3a (same commit, item 3) — disabled Vercel's SSO/Deployment
+    Protection via the Vercel API (was redundant against RPGACE's own
+    api/auth.js+authGate gate). This is the real, load-bearing fix for the
+    "Unexpected token '<', <!DOCTYPE" half — Vercel SSO intercepting an
+    unauthenticated serverless call and returning an HTML login page instead
+    of JSON is EXACTLY that error signature.
+
+Checked whether any real quest content was silently lost while the bug was
+live (Team 2's real concern, folded in here rather than run as a separate
+round — see Step 2): read questEngine.refresh()/_createQuests directly.
+refresh() re-derives candidates fresh from live source tables every call and
+dedupes against currently-open quest_log rows (haveRef lookup) — it does NOT
+consume a one-shot queue. Since every _createQuests call failed during the
+bug window, none of those candidate quests were ever inserted into
+quest_log, so haveRef never marked them seen — the exact same candidates
+(76 pending taxonomy items, hand-test confirmations, the Oracle suggestion)
+will surface again on the next successful refresh() now that the real fix is
+live. CONCLUSION: no real content was lost. Safe to close this out as a real
+resolved-with-evidence case, not just a row-count cleanup.
+
+CLAUDE.md drift found: line 111 ("A real, LIVE, unresolved production bug...
+not yet fixed") is now STALE — it asks Alex to do Vercel dashboard /
+DevTools diagnostic work that a later session (f4abb3a, same day as the
+bullet before it — G41 Phase 1) already substantially resolved. This is a
+real Cross-Doc Drift Check instance (rule 16/artifact 20): the SUBJECT
+(F1 quest-creation bug status) changed in a later commit, but the earlier
+bullet describing it as open was never revisited.
+
+FINDING B — smoke_test_items row "videoSummary" (module-level, not the
+_delete sub-item) flipped status='broken' on 2026-08-30 21:05:58 UTC, with
+an EMPTY broken_note and no linked_error_id — meaning this was NOT the
+automated G109 error->perspective->smoke_test cascade (that always
+populates both fields). No git commit lands at that exact timestamp, and
+the surrounding session's own commits (f4abb3a 17:41, 886a63a 17:50,
+d0c1cac 18:06, ef25303 18:09 SESSION CLOSED, then a 5hr gap before
+c53fdf3 23:22) show no code activity at 21:05 — the most likely real
+explanation is Alex's own hand-test flip via smoke_test.html itself, in the
+gap between sessions (exactly the "real RPGACE-side activity Claude Code
+did not originate" class /Routine Step 1 names). No broken_note means the
+real symptom he saw was never captured in writing.
+
+Real correlation found, not yet confirmed: G53 batch 2 (commit 24d9a6c,
+2026-09-02 — 3 days AFTER the broken flag) found and fixed a genuine
+videoSummary bug independent of the refactor itself: _fetchProposals's
+catch block never advanced _proposalsAt on a failed fetch, so a
+persistently-failing taxonomy_proposals select caused an unbounded hot loop
+of re-fetches + full re-renders (_maybeRefresh -> _render, no backoff).
+That is exactly the kind of bug that would make a page feel "broken" under
+hand-test (janky, hammering the network, possibly visibly re-rendering).
+PLAUSIBLE this already resolved what Alex hit — but this is real inference,
+not proof: nobody has gone back and closed the loop on the smoke_test row
+since the Sep 2 fix shipped, and the fix's own patch_notes.html card never
+mentions or clears the broken flag.
+
+FINDING C — G53 (all 60 modules split) is now 100% shipped and has had
+ZERO real hands-on verification since the restructure began Aug 26. This is
+the single largest standing risk surface in the project right now, by
+volume of untested changed code, even though every batch was independently
+re-verified via node --check/self-this-sweeps/headless-Chromium.
+
+Cross-checked CLAUDE.md's own "Open forks that need Alex" section (already
+read this session) for everything else genuinely open: the Fable
+Total-Systems Reconciliation & Optimization Audit (provisional, Loop 1
+compile+interrogation not run), Massive Expansion Phase 2 W7/W10 (gated on
+Alex's own Worm-Family Phase 1 hand-test, the real forcing function), W11/
+W12 Articleworm/Debate Worm (blue, need a formal /interrogation), the
+Phylum XP Ledger (blocked on an architecture decision only Alex can make),
+F16/F17/F18 hand-test sweep (zero code needed, pure execution debt), voice-
+input gap (honest, pending Fish Audio key activation — his own explicit
+"not on build" call), Composio key rotation (needs his action), the
+swipe-gesture freeze (deprioritized, needs live evidence from him), the
+journal/Chronicles/Minotaur cross-feed interrogation (needs his real
+answers), the real audio-similarity engine (unscoped future idea), and the
+70-of-99 unverified smoke_test.html rows (his own time budget to set).
+
+TEAM 1's TOP 10 (ranked, each with a real one-line reason):
+
+1. Close the loop on the 14 F1 quest-creation error_log rows — real fix
+   confirmed live 5+ days with zero recurrence, real evidence no quest
+   content was lost; write the diagnosis into each row's rationale/
+   backtrack_note and mark resolved with the trail, rather than leaving
+   them silently "active" forever. Self-reported evidence the app itself
+   surfaced — ranks near top per the G109 addendum's own stated priority.
+2. Investigate + close (or honestly leave open) the videoSummary
+   smoke_test 'broken' flag — real, unactioned self-reported regression
+   evidence sitting 5 days old, with a real plausible fix (the Sep 2 hot-
+   loop bug fix) that's never been checked against it.
+3. Fix CLAUDE.md's stale F1 bug bullet (line 111) — real Cross-Doc Drift,
+   cheap, prevents Alex wasting real time on Vercel-dashboard/DevTools
+   diagnostic legwork a later session already mostly did.
+4. Hand Alex a scoped, concrete G53 hand-test checklist (not "test
+   everything") — the single largest real risk surface in the project
+   right now by volume of unverified changed code.
+5. F16/F17/F18 hand-test sweep — zero code required, oldest standing
+   zero-build execution-debt item in the project.
+6. The Fable Total-Systems Reconciliation & Optimization Audit — highest
+   potential real value in the backlog, but genuinely blocked on Alex's own
+   answers to Loop 1's open forks before it can proceed past compile.
+7. Massive Expansion Phase 2 W7 (Bookworm/researchTabs revisit) / W10
+   (Encyclopedia source-worm filter) — both explicitly gated on his own
+   Worm Family Phase 1 hand-test, the real forcing function, still pending.
+8. The 70-of-99 unverified smoke_test.html rows — the largest standing
+   hand-test backlog, his own time budget to allocate.
+9. Composio key rotation — real, open security hygiene item since July.
+10. The swipe-gesture freeze — deliberately deprioritized; needs a live
+    screen recording or a real console.trace from Alex, not another blind
+    pass (4 have already failed).
+
+======================================================================
+STEP 2 — TEAM 2's COUNTER-CASE
+======================================================================
+
+Ran a genuine second pass hunting for anything Team 1 under-ranked or left
+out. Two real candidates surfaced, both folded honestly into the final list
+below rather than padded for their own sake:
+
+- The "was quest content silently lost" question (above) was a real, fair
+  challenge to Team 1's first-draft "just close the rows" framing — it
+  would have been a real gap if left unchecked. Resolved with direct code
+  evidence (questEngine.refresh() re-derives fresh each call, nothing was
+  consumed and lost) rather than assumed either way. This sharpened item 1
+  rather than displacing it.
+- G41 (Oracle Control) is a real, live, ALREADY-SHIPPED feature (Phase 1+2,
+  yellow status) that is ALSO completely untested by Alex's hand — and it
+  is functionally distinct from G53's internal refactor (G41 changes real
+  user-facing behavior: Oracle can now suggest and, on confirm, execute a
+  curated action). Team 1's item 4 (G53 hand-test checklist) could easily
+  bury this under "test the whole app" framing. Real case: call it out
+  by name in the same checklist rather than leaving it implicit — a
+  genuinely separate, higher-product-value thing to verify than "did the
+  refactor break anything."
+
+No real case was found for reordering the bottom half of Team 1's list
+(items 6-10) — every one of those is honestly gated on Alex's own input
+with no cheap Claude-Code-only path forward, and inflating their rank
+without new evidence would be theater, not a real counter-case. Said so
+plainly rather than manufacturing one.
+
+======================================================================
+STEP 3-4 — /DEBATE + /5THDIMENSION RECONCILIATION (no Fable, per default)
+======================================================================
+
+Real tension: is closing out 2 error/smoke-test housekeeping items (#1-2)
+actually more valuable today than getting G53's hand-test moving (#4), given
+G53 is the far bigger real risk? Resolved: #1-2 are genuinely cheap (minutes,
+no Alex time needed) and directly serve rule 6/16's own standing obligation
+not to leave stale "active"/"broken" state sitting unexamined — doing them
+first costs nothing and doesn't compete with #4, which needs Alex's own
+attention regardless of when it's proposed. Kept the order.
+
+Checked against Alex's real stated goals (48-hour rule, current session's
+own context): nothing in this list requires new architecture or violates
+the governing "beat made or video posted within 48 hours" exception scope
+(G53/error-log/smoke-test housekeeping is all standing RPGACE-infrastructure
+maintenance, the explicit standing exception). No drift found between what's
+proposed and what Alex has actually asked for across recent sessions.
+
+======================================================================
+STEP 5 — FINAL COUNCIL OF 5 LOCK-IN
+======================================================================
+
+Final Top 10 confirmed as Team 1's list above, with Team 2's 2 real
+refinements folded in (item 1 now explicitly includes the "no content lost"
+check; item 4 now explicitly names G41 Oracle Control as its own real
+sub-item, not buried under general regression-testing language).
+
+Nothing real was dropped from either team's evidence — every item raised
+made the final list or was explicitly addressed and resolved inline
+(the "was content lost" question).
+
+Executable today, without Alex, right now: items 1-3 (closing the error_log
+rows with real evidence, investigating the videoSummary flag, fixing the
+CLAUDE.md drift). Items 4-10 are real and correctly ranked, but each one's
+next actual step is either handing Alex a concrete, scoped ask (4, 5) or
+waiting on his own answer/time (6-10) — per rule 10, every one of those
+should ship with a checkable verification, not just "let me know."
